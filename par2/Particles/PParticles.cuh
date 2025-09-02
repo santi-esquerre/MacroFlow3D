@@ -56,10 +56,10 @@ public:
    */
   PParticles(const grid::Grid<T> &_grid, thrust::device_vector<T> &&_datax,
              thrust::device_vector<T> &&_datay,
-             thrust::device_vector<T> &&_dataz,            thrust::device_vector<int> &&_nY,
-           thrust::device_vector<int> &&_nZ, T _molecularDiffusion,
-             T _alphaL, T _alphaT, unsigned int _nParticles,
-             long int _seed = time(NULL), bool _useTrilinearCorrection = true);
+             thrust::device_vector<T> &&_dataz, thrust::device_ptr<int> _nY,
+             thrust::device_ptr<int> _nZ, T _molecularDiffusion, T _alphaL,
+             T _alphaT, unsigned int _nParticles, long int _seed = time(NULL),
+             bool _useTrilinearCorrection = true);
 
   /**
    * @brief Number of particles in the system.

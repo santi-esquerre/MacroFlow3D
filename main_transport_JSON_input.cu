@@ -883,11 +883,8 @@ int main(int argc, char *argv[]) {
   // construimos device_vector temporal **apuntando a la memoria ya existente**
   thrust::device_vector<double> posY_dev(posY_ptr, posY_ptr + nParticles);
   thrust::device_vector<double> posZ_dev(posZ_ptr, posZ_ptr + nParticles);
-  thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
-  thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
-
-  auto nY_dev_param = std::move(nY_dev);
-  auto nZ_dev_param = std::move(nZ_dev);
+  // thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
+  // thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
 
   for (int k = 0; k < nRealizations; k++) {
 
@@ -1031,8 +1028,8 @@ int main(int argc, char *argv[]) {
 
     // 4) Crear PParticles con punteros al layout “cúbico”
     par2::PParticles<double> particles(
-        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube),
-        nY_dev_param, nZ_dev_param, diffusion, alphaL, alphaT, nParticles, seed,
+        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube), nY_ptr,
+        nZ_ptr, diffusion, alphaL, alphaT, nParticles, seed,
         useTrilinearCorrection);
 
     particles.initializeBox(p1x, p1y, p1z, p2x, p2y, p2z, true);
