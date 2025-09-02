@@ -961,15 +961,15 @@ int main(int argc, char *argv[]) {
     iterHead = solver_CG(AH, PCCMG_CG, BLAS, Head, z, r, RHS_flow,
                          _rr[MG.L - 1], 0.0, 1e-6, 200, print_monitor);
 
-    // cudaFree(RHS_flow);
-    // cudaFree(r);
-    // cudaFree(z);
-    // for (int i = 0; i < MG.L; ++i)
-    //   cudaFree(_rr[i]);
-    // for (int i = 0; i < MG.L - 1; ++i) {
-    //   cudaFree(_e[i]);
-    //   cudaFree(_r[i]);
-    // }
+    cudaFree(RHS_flow);
+    cudaFree(r);
+    cudaFree(z);
+    for (int i = 0; i < MG.L; ++i)
+      cudaFree(_rr[i]);
+    for (int i = 0; i < MG.L - 1; ++i) {
+      cudaFree(_e[i]);
+      cudaFree(_r[i]);
+    }
 
     // Reservar memoria para los vectores de velocidad en layout CÚBICO
     thrust::device_vector<double> U_cube((Nx + 1) * (Ny + 1) * (Nz + 1));
@@ -983,13 +983,12 @@ int main(int argc, char *argv[]) {
                                _K[MG.L - 1], Nx, Ny, Nz, h, BCwest, BCeast,
                                BCsouth, BCnorth, BCbottom, BCtop, Hwest, Heast,
                                Hsouth, Hnorth, Hbottom, Htop, grid16, block16);
-    {
-      cudaError_t cerr = cudaDeviceSynchronize();
-      if (cerr != cudaSuccess) {
-        fprintf(stderr, "Error in compute_velocity_from_head: %s\n",
-                cudaGetErrorString(cerr));
-        return -1;
-      }
+
+    cudaError_t cerr = cudaDeviceSynchronize();
+    if (cerr != cudaSuccess) {
+      fprintf(stderr, "Error in compute_velocity_from_head: %s\n",
+              cudaGetErrorString(cerr));
+      return -1;
     }
 
     for (int i = 0; i < MG.L; ++i)
