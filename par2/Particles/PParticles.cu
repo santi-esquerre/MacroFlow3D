@@ -268,18 +268,16 @@ template <typename T> struct InitVolumeByVelocityDistribution {
 };
 
 template <typename T>
-PParticles<T>::PParticles(const grid::Grid<T> &_grid,
-                          thrust::device_vector<T> &&_datax,
-                          thrust::device_vector<T> &&_datay,
-                          thrust::device_vector<T> &&_dataz,
-                          thrust::device_vector<int> &&_nY,
-                          thrust::device_vector<int> &&_nZ,
-                          T _molecularDiffusion, T _alphaL, T _alphaT,
-                          unsigned int _nParticles, long int _seed,
-                          bool _useTrilinearCorrection )
+PParticles<T>::PParticles(
+    const grid::Grid<T> &_grid, thrust::device_vector<T> &&_datax,
+    thrust::device_vector<T> &&_datay, thrust::device_vector<T> &&_dataz,
+    thrust::device_vector<int> &&_nY, thrust::device_vector<int> &&_nZ,
+    T _molecularDiffusion, T _alphaL, T _alphaT, unsigned int _nParticles,
+    long int _seed, bool _useTrilinearCorrection)
     : nParticles(_nParticles), molecularDiffusion(_molecularDiffusion),
       alphaL(_alphaL), alphaT(_alphaT), grid(_grid), moveParticle(_grid),
       useTrilinearCorrection(_useTrilinearCorrection) {
+
   cx.resize(nParticles);
   cy.resize(nParticles);
   cz.resize(nParticles);
@@ -287,7 +285,6 @@ PParticles<T>::PParticles(const grid::Grid<T> &_grid,
   datax = std::move(_datax);
   datay = std::move(_datay);
   dataz = std::move(_dataz);
-
 
   nY = std::move(_nY);
   nZ = std::move(_nZ);
@@ -319,7 +316,7 @@ PParticles<T>::PParticles(const grid::Grid<T> &_grid,
 
   moveParticle.initialize(datax, datay, dataz, cdatax, cdatay, cdataz,
                           molecularDiffusion, alphaL, alphaT, states,
-                          useTrilinearCorrection,nY,nZ);
+                          useTrilinearCorrection, nY, nZ);
 
   // // Setup unwrapping buffers (allocated after knowing nParticles and grid)
   // imgY_.assign(nParticles, 0);
@@ -336,7 +333,8 @@ PParticles<T>::PParticles(const grid::Grid<T> &_grid,
   //     imgY_.empty() ? nullptr : thrust::raw_pointer_cast(imgY_.data()),
   //     imgZ_.empty() ? nullptr : thrust::raw_pointer_cast(imgZ_.data()),
   //     yU_.empty() ? nullptr : thrust::raw_pointer_cast(yU_.data()),
-  //     zU_.empty() ? nullptr : thrust::raw_pointer_cast(zU_.data()), Ly_, Lz_);
+  //     zU_.empty() ? nullptr : thrust::raw_pointer_cast(zU_.data()), Ly_,
+  //     Lz_);
 
   cudaDeviceSynchronize();
 }

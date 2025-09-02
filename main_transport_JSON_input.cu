@@ -858,38 +858,35 @@ int main(int argc, char *argv[]) {
   _rr = (double **)malloc(MG.L * sizeof(double *));
   _K = (double **)malloc(MG.L * sizeof(double *));
 
-  int threadsPerBlock = 256;
-  int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
-
   /* Allocate memory for each level on the GPU */
 
+  int threadsPerBlock = 256;
+  int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
+  double *posY, *posZ;
+  int *nY, *nZ;
+
+  cudaMalloc((void **)&posY, nParticles * sizeof(double));
+  cudaMalloc((void **)&posZ, nParticles * sizeof(double));
+  cudaMalloc((void **)&nY, nParticles * sizeof(int));
+  cudaMalloc((void **)&nZ, nParticles * sizeof(int));
+  // Inicializar a cero
+  cudaMemset(posY, 0, nParticles * sizeof(double));
+  cudaMemset(posZ, 0, nParticles * sizeof(double));
+  cudaMemset(nY, 0, nParticles * sizeof(int));
+  cudaMemset(nZ, 0, nParticles * sizeof(int));
+
+  thrust::device_ptr<double> posY_ptr(posY);
+  thrust::device_ptr<double> posZ_ptr(posZ);
+  thrust::device_ptr<int> nY_ptr(nY);
+  thrust::device_ptr<int> nZ_ptr(nZ);
+
+  // construimos device_vector temporal **apuntando a la memoria ya existente**
+  thrust::device_vector<double> posY_dev(posY_ptr, posY_ptr + nParticles);
+  thrust::device_vector<double> posZ_dev(posZ_ptr, posZ_ptr + nParticles);
+  thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
+  thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
+
   for (int k = 0; k < nRealizations; k++) {
-
-    // Crear vectores de posición dentro del bucle para cada realización
-    double *posY, *posZ;
-    int *nY, *nZ;
-
-    cudaMalloc((void **)&posY, nParticles * sizeof(double));
-    cudaMalloc((void **)&posZ, nParticles * sizeof(double));
-    cudaMalloc((void **)&nY, nParticles * sizeof(int));
-    cudaMalloc((void **)&nZ, nParticles * sizeof(int));
-    // Inicializar a cero
-    cudaMemset(posY, 0, nParticles * sizeof(double));
-    cudaMemset(posZ, 0, nParticles * sizeof(double));
-    cudaMemset(nY, 0, nParticles * sizeof(int));
-    cudaMemset(nZ, 0, nParticles * sizeof(int));
-
-    thrust::device_ptr<double> posY_ptr(posY);
-    thrust::device_ptr<double> posZ_ptr(posZ);
-    thrust::device_ptr<int> nY_ptr(nY);
-    thrust::device_ptr<int> nZ_ptr(nZ);
-
-    // construimos device_vector temporal **apuntando a la memoria ya
-    // existente**
-    thrust::device_vector<double> posY_dev(posY_ptr, posY_ptr + nParticles);
-    thrust::device_vector<double> posZ_dev(posZ_ptr, posZ_ptr + nParticles);
-    thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
-    thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
 
     cout << "Realization " << k + 1 << " of " << nRealizations << endl;
 
@@ -1031,9 +1028,9 @@ int main(int argc, char *argv[]) {
 
     // 4) Crear PParticles con punteros al layout “cúbico”
     par2::PParticles<double> particles(
-        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube),
-        std::move(nY_dev), std::move(nZ_dev), diffusion, alphaL, alphaT,
-        nParticles, seed, useTrilinearCorrection);
+        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube), nY_dev,
+        nZ_dev, diffusion, alphaL, alphaT, nParticles, seed,
+        useTrilinearCorrection);
 
     particles.initializeBox(p1x, p1y, p1z, p2x, p2y, p2z, true);
 
@@ -1137,12 +1134,6 @@ int main(int argc, char *argv[]) {
                             std::to_string(i) + ".csv");
       }
     }
-
-    // Liberar memoria al final de cada realización
-    cudaFree(posY);
-    cudaFree(posZ);
-    cudaFree(nY);
-    cudaFree(nZ);
   }
 
   return 0;
