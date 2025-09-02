@@ -414,6 +414,53 @@ void RHS_head(double *RHS, const double *K, int Nx, int Ny, int Nz, double A,
     cudaMalloc(&_K[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);       \
   }
 
+// Libera _r, _e, _rr, _K creados por ALLOCATE_MG_STRUCTURE_MEMORY
+#define FREE_MG_STRUCTURE_MEMORY(MG)                                           \
+  do {                                                                         \
+    /* Free device arrays for levels 0..L-2 */                                 \
+    if (_e) {                                                                  \
+      for (int i = 0; i < (MG).L - 1; ++i) {                                   \
+        if (_e[i]) {                                                           \
+          cudaFree(_e[i]);                                                     \
+          _e[i] = nullptr;                                                     \
+        }                                                                      \
+      }                                                                        \
+      free(_e);                                                                \
+      _e = nullptr;                                                            \
+    }                                                                          \
+    if (_r) {                                                                  \
+      for (int i = 0; i < (MG).L - 1; ++i) {                                   \
+        if (_r[i]) {                                                           \
+          cudaFree(_r[i]);                                                     \
+          _r[i] = nullptr;                                                     \
+        }                                                                      \
+      }                                                                        \
+      free(_r);                                                                \
+      _r = nullptr;                                                            \
+    }                                                                          \
+    /* Free device arrays for all levels 0..L-1 */                             \
+    if (_rr) {                                                                 \
+      for (int i = 0; i < (MG).L; ++i) {                                       \
+        if (_rr[i]) {                                                          \
+          cudaFree(_rr[i]);                                                    \
+          _rr[i] = nullptr;                                                    \
+        }                                                                      \
+      }                                                                        \
+      free(_rr);                                                               \
+      _rr = nullptr;                                                           \
+    }                                                                          \
+    if (_K) {                                                                  \
+      for (int i = 0; i < (MG).L; ++i) {                                       \
+        if (_K[i]) {                                                           \
+          cudaFree(_K[i]);                                                     \
+          _K[i] = nullptr;                                                     \
+        }                                                                      \
+      }                                                                        \
+      free(_K);                                                                \
+      _K = nullptr;                                                            \
+    }                                                                          \
+  } while (0)
+
 #define INIT_CUBLAS_ENVIRONMENT                                                \
   cublasHandle_t handle;                                                       \
   cublasCreate(&handle);                                                       \
@@ -850,13 +897,13 @@ int main(int argc, char *argv[]) {
   // declare pointer to array of pointer for MG-levels
   // double *_r[MG.L-1], *_e[MG.L-1], *_rr[MG.L], *_K[MG.L]
   /* Declare pointers to arrays for MG levels */
-  double **_r, **_e, **_rr;
-  double **_K;
-  /* Allocate memory for the pointers in the host */
-  _r = (double **)malloc((MG.L - 1) * sizeof(double *));
-  _e = (double **)malloc((MG.L - 1) * sizeof(double *));
-  _rr = (double **)malloc(MG.L * sizeof(double *));
-  _K = (double **)malloc(MG.L * sizeof(double *));
+  // double **_r, **_e, **_rr;
+  // double **_K;
+  // /* Allocate memory for the pointers in the host */
+  // _r = (double **)malloc((MG.L - 1) * sizeof(double *));
+  // _e = (double **)malloc((MG.L - 1) * sizeof(double *));
+  // _rr = (double **)malloc(MG.L * sizeof(double *));
+  // _K = (double **)malloc(MG.L * sizeof(double *));
 
   /* Allocate memory for each level on the GPU */
 
@@ -890,17 +937,19 @@ int main(int argc, char *argv[]) {
 
     cout << "Realization " << k + 1 << " of " << nRealizations << endl;
 
-    for (int i = 0; i < MG.L - 1; ++i) {
-      int N = pow(2, i);
-      cudaMalloc(&_e[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-      cudaMalloc(&_r[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-    }
-    /* Allocate memory for rr at all levels on the GPU */
-    for (int i = 0; i < MG.L; ++i) {
-      int N = pow(2, i);
-      cudaMalloc(&_rr[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-      cudaMalloc(&_K[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-    }
+    // for (int i = 0; i < MG.L - 1; ++i) {
+    //   int N = pow(2, i);
+    //   cudaMalloc(&_e[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
+    //   cudaMalloc(&_r[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
+    // }
+    // /* Allocate memory for rr at all levels on the GPU */
+    // for (int i = 0; i < MG.L; ++i) {
+    //   int N = pow(2, i);
+    //   cudaMalloc(&_rr[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
+    //   cudaMalloc(&_K[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
+    // }
+
+    ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
 
     // declaration variables for flow eq., and PCG solver
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, RHS_flow);
@@ -962,13 +1011,43 @@ int main(int argc, char *argv[]) {
                          _rr[MG.L - 1], 0.0, 1e-6, 200, print_monitor);
 
     cudaFree(RHS_flow);
+    RHS_flow = nullptr;
     cudaFree(r);
+    r = nullptr;
     cudaFree(z);
-    for (int i = 0; i < MG.L; ++i)
-      cudaFree(_rr[i]);
-    for (int i = 0; i < MG.L - 1; ++i) {
-      cudaFree(_e[i]);
-      cudaFree(_r[i]);
+    z = nullptr;
+
+    if (_rr) {
+      for (int i = 0; i < (MG).L; ++i) {
+        if (_rr[i]) {
+          cudaFree(_rr[i]);
+          _rr[i] = nullptr;
+        }
+      }
+      free(_rr);
+      _rr = nullptr;
+    }
+
+    if (_e) {
+      for (int i = 0; i < (MG).L - 1; ++i) {
+        if (_e[i]) {
+          cudaFree(_e[i]);
+          _e[i] = nullptr;
+        }
+      }
+      free(_e);
+      _e = nullptr;
+    }
+
+    if (_r) {
+      for (int i = 0; i < (MG).L - 1; ++i) {
+        if (_r[i]) {
+          cudaFree(_r[i]);
+          _r[i] = nullptr;
+        }
+      }
+      free(_r);
+      _r = nullptr;
     }
 
     // Reservar memoria para los vectores de velocidad en layout CÚBICO
@@ -991,9 +1070,18 @@ int main(int argc, char *argv[]) {
       return -1;
     }
 
-    for (int i = 0; i < MG.L; ++i)
-      cudaFree(_K[i]);
+    if (_K) {
+      for (int i = 0; i < (MG).L; ++i) {
+        if (_K[i]) {
+          cudaFree(_K[i]);
+          _K[i] = nullptr;
+        }
+      }
+      free(_K);
+      _K = nullptr;
+    }
     cudaFree(Head);
+    Head = nullptr;
 
     //%%%%%%%%%%%%%%%%%%%% TRANSPORT SETUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
