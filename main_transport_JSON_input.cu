@@ -687,8 +687,10 @@ int main(int argc, char *argv[]) {
   int nParticles, nRealizations;
 
   if (!loadParameters(filename, sigma2, Nx, Ny, Nz, h, t_max, diffusion, alphaL,
-                      alphaT, nParticles, nRealizations))
+                      alphaT, nParticles, nRealizations)) {
+    std::cerr << "Error loading parameters from " << filename << std::endl;
     return -1;
+  }
 
   double sigma_f = sqrt(sigma2);
 
@@ -858,33 +860,35 @@ int main(int argc, char *argv[]) {
 
   /* Allocate memory for each level on the GPU */
 
-  int threadsPerBlock = 256;
-  int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
-  double *posY, *posZ;
-  int *nY, *nZ;
-
-  cudaMalloc((void **)&posY, nParticles * sizeof(double));
-  cudaMalloc((void **)&posZ, nParticles * sizeof(double));
-  cudaMalloc((void **)&nY, nParticles * sizeof(int));
-  cudaMalloc((void **)&nZ, nParticles * sizeof(int));
-  // Inicializar a cero
-  cudaMemset(posY, 0, nParticles * sizeof(double));
-  cudaMemset(posZ, 0, nParticles * sizeof(double));
-  cudaMemset(nY, 0, nParticles * sizeof(int));
-  cudaMemset(nZ, 0, nParticles * sizeof(int));
-
-  thrust::device_ptr<double> posY_ptr(posY);
-  thrust::device_ptr<double> posZ_ptr(posZ);
-  thrust::device_ptr<int> nY_ptr(nY);
-  thrust::device_ptr<int> nZ_ptr(nZ);
-
-  // construimos device_vector temporal **apuntando a la memoria ya existente**
-  thrust::device_vector<double> posY_dev(posY_ptr, posY_ptr + nParticles);
-  thrust::device_vector<double> posZ_dev(posZ_ptr, posZ_ptr + nParticles);
-  thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
-  thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
-
   for (int k = 0; k < nRealizations; k++) {
+
+    // Crear vectores de posición dentro del bucle para cada realización
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
+    double *posY, *posZ;
+    int *nY, *nZ;
+
+    cudaMalloc((void **)&posY, nParticles * sizeof(double));
+    cudaMalloc((void **)&posZ, nParticles * sizeof(double));
+    cudaMalloc((void **)&nY, nParticles * sizeof(int));
+    cudaMalloc((void **)&nZ, nParticles * sizeof(int));
+    // Inicializar a cero
+    cudaMemset(posY, 0, nParticles * sizeof(double));
+    cudaMemset(posZ, 0, nParticles * sizeof(double));
+    cudaMemset(nY, 0, nParticles * sizeof(int));
+    cudaMemset(nZ, 0, nParticles * sizeof(int));
+
+    thrust::device_ptr<double> posY_ptr(posY);
+    thrust::device_ptr<double> posZ_ptr(posZ);
+    thrust::device_ptr<int> nY_ptr(nY);
+    thrust::device_ptr<int> nZ_ptr(nZ);
+
+    // construimos device_vector temporal **apuntando a la memoria ya
+    // existente**
+    thrust::device_vector<double> posY_dev(posY_ptr, posY_ptr + nParticles);
+    thrust::device_vector<double> posZ_dev(posZ_ptr, posZ_ptr + nParticles);
+    thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
+    thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
 
     cout << "Realization " << k + 1 << " of " << nRealizations << endl;
 
@@ -1132,6 +1136,12 @@ int main(int argc, char *argv[]) {
                             std::to_string(i) + ".csv");
       }
     }
+
+    // Liberar memoria al final de cada realización
+    cudaFree(posY);
+    cudaFree(posZ);
+    cudaFree(nY);
+    cudaFree(nZ);
   }
 
   return 0;
