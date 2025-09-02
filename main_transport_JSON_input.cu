@@ -858,13 +858,14 @@ int main(int argc, char *argv[]) {
   _rr = (double **)malloc(MG.L * sizeof(double *));
   _K = (double **)malloc(MG.L * sizeof(double *));
 
+  int threadsPerBlock = 256;
+  int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
+
   /* Allocate memory for each level on the GPU */
 
   for (int k = 0; k < nRealizations; k++) {
 
     // Crear vectores de posición dentro del bucle para cada realización
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
     double *posY, *posZ;
     int *nY, *nZ;
 
