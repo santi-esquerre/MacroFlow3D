@@ -886,6 +886,9 @@ int main(int argc, char *argv[]) {
   thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
   thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
 
+  auto nY_dev_param = std::move(nY_dev);
+  auto nZ_dev_param = std::move(nZ_dev);
+
   for (int k = 0; k < nRealizations; k++) {
 
     cout << "Realization " << k + 1 << " of " << nRealizations << endl;
@@ -1028,8 +1031,8 @@ int main(int argc, char *argv[]) {
 
     // 4) Crear PParticles con punteros al layout “cúbico”
     par2::PParticles<double> particles(
-        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube), nY_dev,
-        nZ_dev, diffusion, alphaL, alphaT, nParticles, seed,
+        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube),
+        nY_dev_param, nZ_dev_param, diffusion, alphaL, alphaT, nParticles, seed,
         useTrilinearCorrection);
 
     particles.initializeBox(p1x, p1y, p1z, p2x, p2y, p2z, true);
