@@ -1,3 +1,0 @@
- #! /bin/bash
- nvcc -Xcompiler -static alpha_3D.cu AXPBY_3D.cu beta_3D.cu CCMG_V_cycle.cu CG.cu GSRB_Smooth_up_residual_3D.cu  random_field_generation.cu RHS_head_3D.cu stencil_head_3D.cu transf_operator_3D.cu up_residual_3D.cu alphaU_3D.cu betaU_3D.cu omega_r_3D.cu omega_x_3D.cu -c -lcublas
- ar -rcs lib_flow.a alpha_3D.o AXPBY_3D.o beta_3D.o CCMG_V_cycle.o CG.o GSRB_Smooth_up_residual_3D.o random_field_generation.o RHS_head_3D.o stencil_head_3D.o transf_operator_3D.o up_residual_3D.o alphaU_3D.o betaU_3D.o omega_r_3D.o omega_x_3D.o
