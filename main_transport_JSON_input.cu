@@ -908,6 +908,11 @@ int main(int argc, char *argv[]) {
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, r);
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, z);
 
+    cudaMemset(Head, 0, sizeof(double) * Nx * Ny * Nz);
+    cudaMemset(RHS_flow, 0, sizeof(double) * Nx * Ny * Nz);
+    cudaMemset(r, 0, sizeof(double) * Nx * Ny * Nz);
+    cudaMemset(z, 0, sizeof(double) * Nx * Ny * Nz);
+
     random_kernel_3D_gauss<<<grid1, block1>>>(devStates, V1, V2, V3, a, b,
                                               lambda, i_max, 100);
     cudaDeviceSynchronize();
@@ -949,8 +954,6 @@ int main(int argc, char *argv[]) {
     // int print_monitor = 1; //print only last residual
     int print_monitor = 2; // print residual evolution
     // int print_monitor = 0; //hide residual evolution
-    cudaMemset(Head, 0, sizeof(double) * Nx * Ny * Nz);
-    cudaMemset(RHS_flow, 0, sizeof(double) * Nx * Ny * Nz);
 
     RHS_head(RHS_flow, _K[MG.L - 1], Nx, Ny, Nz, A, h, BCbottom, BCtop, BCsouth,
              BCnorth, BCwest, BCeast, Hbottom, Htop, Hsouth, Hnorth, Hwest,
@@ -958,15 +961,15 @@ int main(int argc, char *argv[]) {
     iterHead = solver_CG(AH, PCCMG_CG, BLAS, Head, z, r, RHS_flow,
                          _rr[MG.L - 1], 0.0, 1e-6, 200, print_monitor);
 
-    cudaFree(RHS_flow);
-    cudaFree(r);
-    cudaFree(z);
-    for (int i = 0; i < MG.L; ++i)
-      cudaFree(_rr[i]);
-    for (int i = 0; i < MG.L - 1; ++i) {
-      cudaFree(_e[i]);
-      cudaFree(_r[i]);
-    }
+    // cudaFree(RHS_flow);
+    // cudaFree(r);
+    // cudaFree(z);
+    // for (int i = 0; i < MG.L; ++i)
+    //   cudaFree(_rr[i]);
+    // for (int i = 0; i < MG.L - 1; ++i) {
+    //   cudaFree(_e[i]);
+    //   cudaFree(_r[i]);
+    // }
 
     // Reservar memoria para los vectores de velocidad en layout CÚBICO
     thrust::device_vector<double> U_cube((Nx + 1) * (Ny + 1) * (Nz + 1));
@@ -998,17 +1001,30 @@ int main(int argc, char *argv[]) {
     std::cout << "Setting up transport..." << std::endl;
 
     if (k == 0) {
-      auto absval = [] __device__(double v) { return fabs(v); };
+      // auto absval = [] __device__(double v) { return fabs(v); };
 
-      double umax = thrust::transform_reduce(
-          U_cube.begin(), U_cube.end(), absval, 0.0, thrust::maximum<double>());
-      double vmax = thrust::transform_reduce(
-          V_cube.begin(), V_cube.end(), absval, 0.0, thrust::maximum<double>());
-      double wmax = thrust::transform_reduce(
-          W_cube.begin(), W_cube.end(), absval, 0.0, thrust::maximum<double>());
+      // double umax = thrust::transform_reduce(
+      //     U_cube.begin(), U_cube.end(), absval, 0.0,
+      //     thrust::maximum<double>());
+      // double vmax = thrust::transform_reduce(
+      //     V_cube.begin(), V_cube.end(), absval, 0.0,
+      //     thrust::maximum<double>());
+      // double wmax = thrust::transform_reduce(
+      //     W_cube.begin(), W_cube.end(), absval, 0.0,
+      //     thrust::maximum<double>());
 
-      // cota conservadora de la magnitud máxima
-      max_magnitude = sqrt(umax * umax + vmax * vmax + wmax * wmax);
+      // // cota conservadora de la magnitud máxima
+      // max_magnitude = sqrt(umax * umax + vmax * vmax + wmax * wmax);
+
+      double max_magnitude_squared = thrust::transform_reduce(
+          thrust::make_zip_iterator(thrust::make_tuple(
+              U_cube.begin(), V_cube.begin(), W_cube.begin())),
+          thrust::make_zip_iterator(
+              thrust::make_tuple(U_cube.end(), V_cube.end(), W_cube.end())),
+          squared_magnitude_functor(), 0.0, thrust::maximum<double>());
+
+      max_magnitude = sqrt(max_magnitude_squared);
+
       dt = (h / (2 * max_magnitude));
 
       std::cout << "  - ||v_max|| : " << max_magnitude << std::endl;
