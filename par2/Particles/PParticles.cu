@@ -268,16 +268,16 @@ template <typename T> struct InitVolumeByVelocityDistribution {
 };
 
 template <typename T>
-PParticles<T>::PParticles(
-    const grid::Grid<T> &_grid, thrust::device_vector<T> &&_datax,
-    thrust::device_vector<T> &&_datay, thrust::device_vector<T> &&_dataz,
-    thrust::device_ptr<int> _nY_ptr, thrust::device_ptr<int> _nZ_ptr,
-    T _molecularDiffusion, T _alphaL, T _alphaT, unsigned int _nParticles,
-    long int _seed, bool _useTrilinearCorrection)
+PParticles<T>::PParticles(const grid::Grid<T> &_grid,
+                          thrust::device_vector<T> &&_datax,
+                          thrust::device_vector<T> &&_datay,
+                          thrust::device_vector<T> &&_dataz,
+                          T _molecularDiffusion, T _alphaL, T _alphaT,
+                          unsigned int _nParticles, long int _seed,
+                          bool _useTrilinearCorrection)
     : nParticles(_nParticles), molecularDiffusion(_molecularDiffusion),
       alphaL(_alphaL), alphaT(_alphaT), grid(_grid), moveParticle(_grid),
       useTrilinearCorrection(_useTrilinearCorrection) {
-
   cx.resize(nParticles);
   cy.resize(nParticles);
   cz.resize(nParticles);
@@ -285,9 +285,6 @@ PParticles<T>::PParticles(
   datax = std::move(_datax);
   datay = std::move(_datay);
   dataz = std::move(_dataz);
-
-  nY = thrust::device_vector<int>(_nY_ptr, _nY_ptr + _nParticles);
-  nZ = thrust::device_vector<int>(_nZ_ptr, _nZ_ptr + _nParticles);
 
   if (useTrilinearCorrection) {
     // Inicializar vectores de salida directamente en GPU
@@ -316,25 +313,24 @@ PParticles<T>::PParticles(
 
   moveParticle.initialize(datax, datay, dataz, cdatax, cdatay, cdataz,
                           molecularDiffusion, alphaL, alphaT, states,
-                          useTrilinearCorrection, nY, nZ);
+                          useTrilinearCorrection);
 
-  // // Setup unwrapping buffers (allocated after knowing nParticles and grid)
-  // imgY_.assign(nParticles, 0);
-  // if (grid.nz > 1)
-  //   imgZ_.assign(nParticles, 0);
-  // yU_.assign(nParticles, 0);
-  // if (grid.nz > 1)
-  //   zU_.assign(nParticles, 0);
+  // Setup unwrapping buffers (allocated after knowing nParticles and grid)
+  imgY_.assign(nParticles, 0);
+  if (grid.nz > 1)
+    imgZ_.assign(nParticles, 0);
+  yU_.assign(nParticles, 0);
+  if (grid.nz > 1)
+    zU_.assign(nParticles, 0);
 
-  // Ly_ = grid.dy * grid.ny;
-  // Lz_ = grid.dz * grid.nz;
+  Ly_ = grid.dy * grid.ny;
+  Lz_ = grid.dz * grid.nz;
 
-  // moveParticle.setUnwrapBuffers(
-  //     imgY_.empty() ? nullptr : thrust::raw_pointer_cast(imgY_.data()),
-  //     imgZ_.empty() ? nullptr : thrust::raw_pointer_cast(imgZ_.data()),
-  //     yU_.empty() ? nullptr : thrust::raw_pointer_cast(yU_.data()),
-  //     zU_.empty() ? nullptr : thrust::raw_pointer_cast(zU_.data()), Ly_,
-  //     Lz_);
+  moveParticle.setUnwrapBuffers(
+      imgY_.empty() ? nullptr : thrust::raw_pointer_cast(imgY_.data()),
+      imgZ_.empty() ? nullptr : thrust::raw_pointer_cast(imgZ_.data()),
+      yU_.empty() ? nullptr : thrust::raw_pointer_cast(yU_.data()),
+      zU_.empty() ? nullptr : thrust::raw_pointer_cast(zU_.data()), Ly_, Lz_);
 
   cudaDeviceSynchronize();
 }
@@ -421,7 +417,7 @@ template <typename T> void PParticles<T>::move(T dt) {
       kernelSize = nParticles - i * maxParticles;
     }
 
-    // moveParticle.setBaseIndex(i * maxParticles);
+    moveParticle.setBaseIndex(i * maxParticles);
 
     // ensure id is the 4th element for the functor (local id per chunk)
     auto pBeg = thrust::make_zip_iterator(thrust::make_tuple(
