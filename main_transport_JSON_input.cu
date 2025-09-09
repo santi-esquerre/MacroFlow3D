@@ -951,6 +951,30 @@ int main(int argc, char *argv[]) {
 
     ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
 
+    ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
+
+    /* ================= FIX: limpiar buffers MG ================= */
+    for (int i = 0; i < MG.L - 1; ++i) {
+      size_t Ni = (size_t)pow(2, i) * nx_n;
+      size_t Mi = (size_t)pow(2, i) * ny_n;
+      size_t Ki = (size_t)pow(2, i) * nz_n;
+      size_t bytes = Ni * Mi * Ki * sizeof(double);
+      cudaMemset(_e[i], 0, bytes);
+      cudaMemset(_r[i], 0, bytes);
+    }
+    // _rr se usa como workspace (y algunos kernels leen su [0]); por seguridad:
+    // mínimo: limpia el primer double; recomendado: todo el arreglo por nivel.
+    for (int i = 0; i < MG.L; ++i) {
+      // opción económica:
+      // cudaMemset(_rr[i], 0, sizeof(double));
+      // opción full (si querés ir a lo seguro):
+      size_t Ni = (size_t)pow(2, i) * nx_n;
+      size_t Mi = (size_t)pow(2, i) * ny_n;
+      size_t Ki = (size_t)pow(2, i) * nz_n;
+      cudaMemset(_rr[i], 0, Ni * Mi * Ki * sizeof(double));
+    }
+    /* ========================================================== */
+
     // declaration variables for flow eq., and PCG solver
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, RHS_flow);
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, Head);
@@ -961,6 +985,8 @@ int main(int argc, char *argv[]) {
     cudaMemset(RHS_flow, 0, sizeof(double) * Nx * Ny * Nz);
     cudaMemset(r, 0, sizeof(double) * Nx * Ny * Nz);
     cudaMemset(z, 0, sizeof(double) * Nx * Ny * Nz);
+
+    cudaDeviceSynchronize();
 
     random_kernel_3D_gauss<<<grid1, block1>>>(devStates, V1, V2, V3, a, b,
                                               lambda, i_max, 100);
@@ -1007,47 +1033,53 @@ int main(int argc, char *argv[]) {
     RHS_head(RHS_flow, _K[MG.L - 1], Nx, Ny, Nz, A, h, BCbottom, BCtop, BCsouth,
              BCnorth, BCwest, BCeast, Hbottom, Htop, Hsouth, Hnorth, Hwest,
              Heast, grid16, block16);
+
+    /* ================= FIX: r := b ================= */
+    cudaMemcpy(r, RHS_flow, sizeof(double) * Nx * Ny * Nz,
+               cudaMemcpyDeviceToDevice);
+    /* =============================================== */
+
     iterHead = solver_CG(AH, PCCMG_CG, BLAS, Head, z, r, RHS_flow,
                          _rr[MG.L - 1], 0.0, 1e-6, 200, print_monitor);
 
     cudaFree(RHS_flow);
-    RHS_flow = nullptr;
+    // RHS_flow = nullptr;
     cudaFree(r);
-    r = nullptr;
+    // r = nullptr;
     cudaFree(z);
-    z = nullptr;
+    // z = nullptr;
 
     if (_rr) {
       for (int i = 0; i < (MG).L; ++i) {
         if (_rr[i]) {
           cudaFree(_rr[i]);
-          _rr[i] = nullptr;
+          // _rr[i] = nullptr;
         }
       }
       free(_rr);
-      _rr = nullptr;
+      // _rr = nullptr;
     }
 
     if (_e) {
       for (int i = 0; i < (MG).L - 1; ++i) {
         if (_e[i]) {
           cudaFree(_e[i]);
-          _e[i] = nullptr;
+          // _e[i] = nullptr;
         }
       }
       free(_e);
-      _e = nullptr;
+      // _e = nullptr;
     }
 
     if (_r) {
       for (int i = 0; i < (MG).L - 1; ++i) {
         if (_r[i]) {
           cudaFree(_r[i]);
-          _r[i] = nullptr;
+          // _r[i] = nullptr;
         }
       }
       free(_r);
-      _r = nullptr;
+      // _r = nullptr;
     }
 
     // Reservar memoria para los vectores de velocidad en layout CÚBICO
@@ -1074,14 +1106,14 @@ int main(int argc, char *argv[]) {
       for (int i = 0; i < (MG).L; ++i) {
         if (_K[i]) {
           cudaFree(_K[i]);
-          _K[i] = nullptr;
+          // _K[i] = nullptr;
         }
       }
       free(_K);
-      _K = nullptr;
+      // _K = nullptr;
     }
     cudaFree(Head);
-    Head = nullptr;
+    // Head = nullptr;
 
     //%%%%%%%%%%%%%%%%%%%% TRANSPORT SETUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1137,14 +1169,6 @@ int main(int argc, char *argv[]) {
 
     particles.initializeBox(p1x, p1y, p1z, p2x, p2y, p2z, true);
 
-    // // Pointers to unwrapped buffers provided by PParticles (if available)
-    // const double *yRaw =
-    //     particles.yUnwrapPtr() ? particles.yUnwrapPtr() : particles.yPtr();
-    // const double *zRaw = (particles.zUnwrapPtr() && Nz != 1)
-    //                          ? particles.zUnwrapPtr()
-    //                          : particles.zPtr();
-    // thrust::device_ptr<const double> yBeg(yRaw);
-    // thrust::device_ptr<const double> zBeg(zRaw);
     thrust::device_ptr<const double> xBeg(particles.xPtr());
     thrust::device_ptr<const double> yBeg(posY_ptr);
     thrust::device_ptr<const double> zBeg(posZ_ptr);
@@ -1238,6 +1262,23 @@ int main(int argc, char *argv[]) {
       }
     }
   }
+
+  cudaFree(posY);
+  cudaFree(posZ);
+  cudaFree(nY);
+  cudaFree(nZ);
+  cudaFree(K_eq);
+  delete[] host_K_eq;
+  // si no se destruye solo: cublasDestroy(handle);  // según
+  // INIT_CUBLAS_ENVIRONMENT
+  cudaFree(V1);
+  cudaFree(V2);
+  cudaFree(V3);
+  cudaFree(a);
+  cudaFree(b);
+  cudaFree(devStates);
+  cudaFree(y_coarse);
+  cudaFree(r_coarse);
 
   return 0;
 }

@@ -8,6 +8,6 @@
     "diffusion": 0.0,
     "alphaL": 0.0,
     "alphaT": 0.0,
-    "nRealizations": 500,
+    "nRealizations": 3,
     "nParticles": 10000
 }
