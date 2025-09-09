@@ -951,8 +951,6 @@ int main(int argc, char *argv[]) {
 
     ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
 
-    ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
-
     /* ================= FIX: limpiar buffers MG ================= */
     for (int i = 0; i < MG.L - 1; ++i) {
       size_t Ni = (size_t)pow(2, i) * nx_n;
