@@ -745,147 +745,96 @@ int main(int argc, char *argv[]) {
   cudaSetDevice(device);
   cudaDeviceReset();
 
-  int nx_n = Nx / n; // nx_n = Nx/N ratio
-  int ny_n = Ny / n; // ny_n = Ny/N ratio
-  int nz_n = Nz / n; // nz_n = Nz/N ratio
+  int nx_n = Nx / n;
+  int ny_n = Ny / n;
+  int nz_n = Nz / n;
 
   double A = h * h;
-  double lambda = 10.0 * h; // correlation length
-  double Lx = Nx * h;
-  double Ly = Ny * h;
-  double Lz = Nz * h;
-  size_t N = (size_t)(Nx + 1) * (Ny + 1) * (Nz + 1);
+  double lambda = 10.0 * h;
+  double Lx = Nx * h, Ly = Ny * h, Lz = Nz * h;
 
   double vm = 100 / Lx;
-  t_max /= vm / lambda; // Adjust t_max based on vm and lambda
-  double dt;
-  double max_magnitude;
-  int levels = log(n) / log(2.0) + 1.0;
+  t_max /= vm / lambda; // ajustar t_max con vm y lambda
 
-  // Print simulation parameters
-  std::cout << "======================================================="
-            << std::endl;
-  std::cout << "                 SIMULATION PARAMETERS                 "
-            << std::endl;
-  std::cout << "======================================================="
-            << std::endl;
-  std::cout << "Domain Information:" << std::endl;
-  std::cout << "  - Grid Size: " << Nx << " x " << Ny << " x " << Nz
-            << std::endl;
-  std::cout << "  - Grid Spacing (h): " << h << std::endl;
-  std::cout << "  - Domain Dimensions: " << Lx << " x " << Ly << " x " << Lz
-            << std::endl;
-  std::cout << std::endl;
+  double dt, max_magnitude;
+  int levels = int(std::log(double(n)) / std::log(2.0) + 1.0);
 
-  std::cout << "Flow Parameters:" << std::endl;
-  std::cout << "  - Correlation Length (lambda): " << lambda << std::endl;
-  std::cout << "  - Log-K Variance (sigma²): " << sigma2 << std::endl;
-  std::cout << "  - Standard Deviation (sigma): " << sigma_f << std::endl;
-  std::cout << std::endl;
-
-  std::cout << "Transport Parameters:" << std::endl;
-  std::cout << "  - Maximum Simulation Time: " << t_max << std::endl;
-  std::cout << "  - Molecular Diffusion: " << diffusion << std::endl;
-  std::cout << "  - Longitudinal Dispersivity (αL): " << alphaL << std::endl;
-  std::cout << "  - Transverse Dispersivity (αT): " << alphaT << std::endl;
-  std::cout << "  - Number of Particles: " << nParticles << std::endl;
-  std::cout << std::endl;
-
-  std::cout << "Simulation Configuration:" << std::endl;
-  std::cout << "  - Number of Realizations: " << nRealizations << std::endl;
-  // std::cout << "  - Estimated Time Step (dt): " << dt << std::endl;
-  std::cout << "  - Estimated Mean Velocity: " << vm << std::endl;
-  std::cout << "  - Multigrid Levels: " << levels << std::endl;
-  std::cout << "======================================================="
-            << std::endl;
-  std::cout << std::endl;
+  // --------- Print parámetros -----------
+  std::cout << "=======================================================\n"
+            << "                 SIMULATION PARAMETERS                 \n"
+            << "=======================================================\n"
+            << "Domain Information:\n"
+            << "  - Grid Size: " << Nx << " x " << Ny << " x " << Nz << "\n"
+            << "  - Grid Spacing (h): " << h << "\n"
+            << "  - Domain Dimensions: " << Lx << " x " << Ly << " x " << Lz
+            << "\n\n"
+            << "Flow Parameters:\n"
+            << "  - Correlation Length (lambda): " << lambda << "\n"
+            << "  - Log-K Variance (sigma²): " << sigma2 << "\n"
+            << "  - Standard Deviation (sigma): " << sigma_f << "\n\n"
+            << "Transport Parameters:\n"
+            << "  - Maximum Simulation Time: " << t_max << "\n"
+            << "  - Molecular Diffusion: " << diffusion << "\n"
+            << "  - Longitudinal Dispersivity (αL): " << alphaL << "\n"
+            << "  - Transverse Dispersivity (αT): " << alphaT << "\n"
+            << "  - Number of Particles: " << nParticles << "\n\n"
+            << "Simulation Configuration:\n"
+            << "  - Number of Realizations: " << nRealizations << "\n"
+            << "  - Estimated Mean Velocity: " << vm << "\n"
+            << "  - Multigrid Levels: " << levels << "\n"
+            << "=======================================================\n\n";
 
   //%%%%% INIT MULTIGRID CONFIGURATION %%%%%%%%%%%%%%%%%%%
   std::cout << "Setting multigrid configurations..." << std::endl;
-  SETUP_BLOCK_GRID3D(
-      16) // block32 & grid32: configuration for general kernel ejecution
-  // MG solver config
-  // set multigrid parameters:
+  SETUP_BLOCK_GRID3D(16)
   int npre = 4, npos = 4;
-  struct MG_levels MG = {levels, npre, npos};
+  MG_levels MG{levels, npre, npos};
+  SETUP_GRID_BLOCK_MG(MG, nx_n, ny_n, nz_n)
 
-  // one configuration per grid level
-  // dim3 _grid[MG.L-1],_block[MG.L-1]
-  SETUP_GRID_BLOCK_MG(MG, nx_n, ny_n,
-                      nz_n) // _grid/_block configuration for CUDA-kernels
-
-  // declare pointer to array of pointer for MG-levels
-  // double *_r[MG.L-1], *_e[MG.L-1], *_rr[MG.L], *_K[MG.L]
-  // ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
-
-  // Initialize cuBLAS environment
+  // BLAS/cuBLAS
   INIT_CUBLAS_ENVIRONMENT
+  blas BLAS(Nx, Ny, Nz, grid16, block16, handle);
 
+  // RNG y buffers auxiliares (una vez)
   int i_max = 10000;
-  float time = 0, aux = 0;
-  Crono cron;
-  // initialization random secuences, see cuRAND web page
   curandState *devStates;
   CUDA_CALL(cudaMalloc((void **)&devStates, i_max * sizeof(curandState)));
-  cudaDeviceSynchronize();
   dim3 block1(1024, 1);
   dim3 grid1((i_max + block1.x - 1) / block1.x, 1);
   setup_uniform_distrib<<<grid1, block1>>>(devStates, i_max);
-  // declare & allocatate vector in GPU
-  // K: conductivity field with
-  // CUDA_ALLOCATE_VECTOR(double, Nx*Ny*Nz, K);
-  // K vector is allocated later in _K[MG.L-1]
-  // V1, V2, V3, a, b: auxiliary vectors for random sequences
+  cudaDeviceSynchronize();
+
   CUDA_ALLOCATE_VECTOR(double, i_max, V1);
   CUDA_ALLOCATE_VECTOR(double, i_max, V2);
   CUDA_ALLOCATE_VECTOR(double, i_max, V3);
   CUDA_ALLOCATE_VECTOR(double, i_max, a);
   CUDA_ALLOCATE_VECTOR(double, i_max, b);
-  // std::vector<double> host_ones_double(Nx * Ny * Nz, 1.0);
-  // CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, dev_ones_double);
-  // cudaMemcpy(dev_ones_double, host_ones_double.data(), sizeof(double) * Nx *
-  // Ny * Nz, cudaMemcpyHostToDevice); cudaFree(dev_ones_double);
   double *K_eq;
   cudaMalloc(&K_eq, sizeof(double));
-  double *host_K_eq;
-  host_K_eq = new double[1];
+  double *host_K_eq = new double[1];
   SETUP_BLOCK_GRID_RANDOM_KERNEL(block2, grid2, Nx, Ny, Nz)
 
-  // %%%%%%%%%%%%%%%%%%%% FLOW EQUATION SETUP
-  // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% boundary conditions
+  // BCs para flujo
   std::cout << "Setting up flow equation..." << std::endl;
-  int BCbottom = periodic;
-  int BCtop = periodic;
-  int BCsouth = periodic;
-  int BCnorth = periodic;
-  int BCwest = dirichlet;
-  int BCeast = dirichlet;
+  int BCbottom = periodic, BCtop = periodic;
+  int BCsouth = periodic, BCnorth = periodic;
+  int BCwest = dirichlet, BCeast = dirichlet;
   bool pin1stCell = false;
 
-  double Hbottom = 0.0 / 0.0; // Assign NaN to unused values
-  double Htop = 0.0 / 0.0;    // Assign NaN to unused values
-  double Hsouth = 0.0 / 0.0;  // Assign NaN to unused values
-  double Hnorth = 0.0 / 0.0;  // Assign NaN to unused values
-  double Heast = 0.0;
-  double Hwest = 100.0;
+  double Hbottom = NAN, Htop = NAN, Hsouth = NAN, Hnorth = NAN;
+  double Heast = 0.0, Hwest = 100.0;
 
-  // set the blas operations using in solvers in finest level
-  blas BLAS(Nx, Ny, Nz, grid16, block16, handle);
-  // set linear operator for preconditioner y CG method
-  // ----------coarse solver for CCMG------------------------
-  int Nx_coarse = nx_n;
-  int Ny_coarse = ny_n;
-  int Nz_coarse = nz_n;
-  double h_coarse = Ly / Ny_coarse;
-  double A_coarse = h_coarse * h_coarse;
+  // coarse
+  int Nx_coarse = nx_n, Ny_coarse = ny_n, Nz_coarse = nz_n;
+  double h_coarse = Ly / Ny_coarse, A_coarse = h_coarse * h_coarse;
   CUDA_ALLOCATE_VECTOR(double, nx_n *ny_n *nz_n, y_coarse);
   CUDA_ALLOCATE_VECTOR(double, nx_n *ny_n *nz_n, r_coarse);
   blas BLAS_coarse(Nx_coarse, Ny_coarse, Nz_coarse, _grid[1], _block[1],
                    handle);
   IdentityPrecond Icoarse(Nx_coarse, Ny_coarse, Nz_coarse);
-
   IdentityPrecond I(Nx, Ny, Nz);
 
+  // salida
   char outdir[50];
   sprintf(outdir, "./output/out_%.2f", sigma2);
   std::string outdir_str(outdir);
@@ -893,199 +842,114 @@ int main(int argc, char *argv[]) {
   sprintf(command, "rm -rf %s && mkdir -p %s", outdir, outdir);
   system(command);
 
-  // double vm = 0.0;
-  // declare pointer to array of pointer for MG-levels
-  // double *_r[MG.L-1], *_e[MG.L-1], *_rr[MG.L], *_K[MG.L]
-  /* Declare pointers to arrays for MG levels */
-  // double **_r, **_e, **_rr;
-  // double **_K;
-  // /* Allocate memory for the pointers in the host */
-  // _r = (double **)malloc((MG.L - 1) * sizeof(double *));
-  // _e = (double **)malloc((MG.L - 1) * sizeof(double *));
-  // _rr = (double **)malloc(MG.L * sizeof(double *));
-  // _K = (double **)malloc(MG.L * sizeof(double *));
-
-  /* Allocate memory for each level on the GPU */
-
-  int threadsPerBlock = 256;
-  int blocksPerGrid = (nParticles + threadsPerBlock - 1) / threadsPerBlock;
-  double *posY, *posZ;
-  int *nY, *nZ;
-
-  cudaMalloc((void **)&posY, nParticles * sizeof(double));
-  cudaMalloc((void **)&posZ, nParticles * sizeof(double));
-  cudaMalloc((void **)&nY, nParticles * sizeof(int));
-  cudaMalloc((void **)&nZ, nParticles * sizeof(int));
-  // Inicializar a cero
-  cudaMemset(posY, 0, nParticles * sizeof(double));
-  cudaMemset(posZ, 0, nParticles * sizeof(double));
-  cudaMemset(nY, 0, nParticles * sizeof(int));
-  cudaMemset(nZ, 0, nParticles * sizeof(int));
-
-  thrust::device_ptr<double> posY_ptr(posY);
-  thrust::device_ptr<double> posZ_ptr(posZ);
-  thrust::device_ptr<int> nY_ptr(nY);
-  thrust::device_ptr<int> nZ_ptr(nZ);
-
-  // construimos device_vector temporal **apuntando a la memoria ya existente**
-  thrust::device_vector<double> posY_dev(posY_ptr, posY_ptr + nParticles);
-  thrust::device_vector<double> posZ_dev(posZ_ptr, posZ_ptr + nParticles);
-  // thrust::device_vector<int> nY_dev(nY_ptr, nY_ptr + nParticles);
-  // thrust::device_vector<int> nZ_dev(nZ_ptr, nZ_ptr + nParticles);
-
   for (int k = 0; k < nRealizations; k++) {
+    std::cout << "Realization " << (k + 1) << " of " << nRealizations
+              << std::endl;
 
-    cout << "Realization " << k + 1 << " of " << nRealizations << endl;
-
-    // for (int i = 0; i < MG.L - 1; ++i) {
-    //   int N = pow(2, i);
-    //   cudaMalloc(&_e[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-    //   cudaMalloc(&_r[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-    // }
-    // /* Allocate memory for rr at all levels on the GPU */
-    // for (int i = 0; i < MG.L; ++i) {
-    //   int N = pow(2, i);
-    //   cudaMalloc(&_rr[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-    //   cudaMalloc(&_K[i], sizeof(double) * N * N * N * nx_n * ny_n * nz_n);
-    // }
-
+    // ===== Estructuras MG por realización =====
     ALLOCATE_MG_STRUCTURE_MEMORY(MG, nx_n, ny_n, nz_n);
 
-    /* ================= FIX: limpiar buffers MG ================= */
+    // Limpieza de workspaces MG (evita basura/NaN)
     for (int i = 0; i < MG.L - 1; ++i) {
-      size_t Ni = (size_t)pow(2, i) * nx_n;
-      size_t Mi = (size_t)pow(2, i) * ny_n;
-      size_t Ki = (size_t)pow(2, i) * nz_n;
+      size_t Ni = (size_t)std::pow(2, i) * nx_n;
+      size_t Mi = (size_t)std::pow(2, i) * ny_n;
+      size_t Ki = (size_t)std::pow(2, i) * nz_n;
       size_t bytes = Ni * Mi * Ki * sizeof(double);
       cudaMemset(_e[i], 0, bytes);
       cudaMemset(_r[i], 0, bytes);
     }
-    // _rr se usa como workspace (y algunos kernels leen su [0]); por seguridad:
-    // mínimo: limpia el primer double; recomendado: todo el arreglo por nivel.
     for (int i = 0; i < MG.L; ++i) {
-      // opción económica:
-      // cudaMemset(_rr[i], 0, sizeof(double));
-      // opción full (si querés ir a lo seguro):
-      size_t Ni = (size_t)pow(2, i) * nx_n;
-      size_t Mi = (size_t)pow(2, i) * ny_n;
-      size_t Ki = (size_t)pow(2, i) * nz_n;
+      size_t Ni = (size_t)std::pow(2, i) * nx_n;
+      size_t Mi = (size_t)std::pow(2, i) * ny_n;
+      size_t Ki = (size_t)std::pow(2, i) * nz_n;
       cudaMemset(_rr[i], 0, Ni * Mi * Ki * sizeof(double));
     }
-    /* ========================================================== */
 
-    // declaration variables for flow eq., and PCG solver
+    // ===== Buffers flujo =====
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, RHS_flow);
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, Head);
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, r);
     CUDA_ALLOCATE_VECTOR(double, Nx *Ny *Nz, z);
-
     cudaMemset(Head, 0, sizeof(double) * Nx * Ny * Nz);
     cudaMemset(RHS_flow, 0, sizeof(double) * Nx * Ny * Nz);
     cudaMemset(r, 0, sizeof(double) * Nx * Ny * Nz);
     cudaMemset(z, 0, sizeof(double) * Nx * Ny * Nz);
 
-    cudaDeviceSynchronize();
-
+    // ===== Campo K (logK -> expK) =====
     random_kernel_3D_gauss<<<grid1, block1>>>(devStates, V1, V2, V3, a, b,
                                               lambda, i_max, 100);
     cudaDeviceSynchronize();
     conductivity_kernel_3D_logK<<<grid2, block2>>>(
         V1, V2, V3, a, b, i_max, _K[MG.L - 1], lambda, h, Nx, Ny, Nz, sigma_f);
     cudaDeviceSynchronize();
-
-    // cublasDdot(handle, Nx*Ny*Nz, _K[MG.L-1], 1, dev_ones_double , 1, K_eq);
-    // cudaDeviceSynchronize();
-    // cudaMemcpy(host_K_eq, K_eq, sizeof(double), cudaMemcpyDeviceToHost);
-    // vm += *host_K_eq / (Nx * Ny * Nz)*(Heast-Hwest)/Lx;
     compute_expK<<<grid2, block2>>>(_K[MG.L - 1], Nx, Ny, Nz);
     cudaDeviceSynchronize();
 
-    // compute K for all grid levels
+    // Homogenización niveles
     for (int i = MG.L - 1; i > 1; --i)
-      HomogenizationPermeability(_K[i - 1], _K[i], pow(2, i - 1) * nx_n,
-                                 pow(2, i - 1) * ny_n, pow(2, i - 1) * nz_n,
-                                 _grid[i - 1], _block[i - 1]);
+      HomogenizationPermeability(
+          _K[i - 1], _K[i], (int)std::pow(2, i - 1) * nx_n,
+          (int)std::pow(2, i - 1) * ny_n, (int)std::pow(2, i - 1) * nz_n,
+          _grid[i - 1], _block[i - 1]);
 
-    // set linear operator for preconditioner y CG method
-    // ----------coarse solver for CCMG------------------------
+    // Operadores/precondicionador
     laplacianHead AH(_K[MG.L - 1], Nx, Ny, Nz, A, h, BCbottom, BCtop, BCsouth,
                      BCnorth, BCwest, BCeast, pin1stCell, grid16, block16);
+
     laplacianHeadCoarse Ap_coarse(_K[1], Nx_coarse, Ny_coarse, Nz_coarse,
                                   A_coarse, h_coarse, BCbottom, BCtop, BCsouth,
                                   BCnorth, BCwest, BCeast, pin1stCell, _grid[1],
                                   _block[1]);
-    // ----------preconditioner for CG using CCMG--------------
+
     MGprecond2 PCCMG_CG(Nx, Ny, Nz, BCbottom, BCtop, BCsouth, BCnorth, BCwest,
                         BCeast, pin1stCell, _grid, _block, Ly, nx_n, ny_n, nz_n,
                         handle, _e, _r, _rr, _K, MG, Ap_coarse, Icoarse,
                         BLAS_coarse, r_coarse, y_coarse);
 
-    //%%%%%%%%%%%%%%%%%%%% ASSEMBLY AND SOLUTION OF THE FLOW EQUATION
-    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    // ===== Montaje y solución de flujo =====
     std::cout << "Assembling and solving flow equation..." << std::endl;
-    int iterHead = 0;
-    // int print_monitor = 1; //print only last residual
-    int print_monitor = 2; // print residual evolution
-    // int print_monitor = 0; //hide residual evolution
-
     RHS_head(RHS_flow, _K[MG.L - 1], Nx, Ny, Nz, A, h, BCbottom, BCtop, BCsouth,
              BCnorth, BCwest, BCeast, Hbottom, Htop, Hsouth, Hnorth, Hwest,
              Heast, grid16, block16);
 
-    /* ================= FIX: r := b ================= */
+    // Semilla residual: r := b
     cudaMemcpy(r, RHS_flow, sizeof(double) * Nx * Ny * Nz,
                cudaMemcpyDeviceToDevice);
-    /* =============================================== */
 
-    iterHead = solver_CG(AH, PCCMG_CG, BLAS, Head, z, r, RHS_flow,
-                         _rr[MG.L - 1], 0.0, 1e-6, 200, print_monitor);
+    int print_monitor = 2;
+    int iterHead = solver_CG(AH, PCCMG_CG, BLAS, Head, z, r, RHS_flow,
+                             _rr[MG.L - 1], 0.0, 1e-6, 200, print_monitor);
 
+    // Libera buffers de flujo que no se usan más
     cudaFree(RHS_flow);
-    // RHS_flow = nullptr;
     cudaFree(r);
-    // r = nullptr;
     cudaFree(z);
-    // z = nullptr;
 
     if (_rr) {
-      for (int i = 0; i < (MG).L; ++i) {
-        if (_rr[i]) {
+      for (int i = 0; i < MG.L; ++i)
+        if (_rr[i])
           cudaFree(_rr[i]);
-          // _rr[i] = nullptr;
-        }
-      }
       free(_rr);
-      // _rr = nullptr;
     }
-
     if (_e) {
-      for (int i = 0; i < (MG).L - 1; ++i) {
-        if (_e[i]) {
+      for (int i = 0; i < MG.L - 1; ++i)
+        if (_e[i])
           cudaFree(_e[i]);
-          // _e[i] = nullptr;
-        }
-      }
       free(_e);
-      // _e = nullptr;
     }
-
     if (_r) {
-      for (int i = 0; i < (MG).L - 1; ++i) {
-        if (_r[i]) {
+      for (int i = 0; i < MG.L - 1; ++i)
+        if (_r[i])
           cudaFree(_r[i]);
-          // _r[i] = nullptr;
-        }
-      }
       free(_r);
-      // _r = nullptr;
     }
 
-    // Reservar memoria para los vectores de velocidad en layout CÚBICO
+    // ===== Velocidad (layout cúbico) =====
     thrust::device_vector<double> U_cube((Nx + 1) * (Ny + 1) * (Nz + 1));
     thrust::device_vector<double> V_cube((Nx + 1) * (Ny + 1) * (Nz + 1));
     thrust::device_vector<double> W_cube((Nx + 1) * (Ny + 1) * (Nz + 1));
 
-    std::cout << "Computing velocity field form hydraulic head..." << std::endl;
+    std::cout << "Computing velocity field from hydraulic head..." << std::endl;
     compute_velocity_from_head(thrust::raw_pointer_cast(U_cube.data()),
                                thrust::raw_pointer_cast(V_cube.data()),
                                thrust::raw_pointer_cast(W_cube.data()), Head,
@@ -1093,46 +957,21 @@ int main(int argc, char *argv[]) {
                                BCsouth, BCnorth, BCbottom, BCtop, Hwest, Heast,
                                Hsouth, Hnorth, Hbottom, Htop, grid16, block16);
 
-    cudaError_t cerr = cudaDeviceSynchronize();
-    if (cerr != cudaSuccess) {
-      fprintf(stderr, "Error in compute_velocity_from_head: %s\n",
-              cudaGetErrorString(cerr));
-      return -1;
-    }
+    CUDA_CALL(cudaDeviceSynchronize());
 
+    // _K y Head ya no se usan tras construir velocidades
     if (_K) {
-      for (int i = 0; i < (MG).L; ++i) {
-        if (_K[i]) {
+      for (int i = 0; i < MG.L; ++i)
+        if (_K[i])
           cudaFree(_K[i]);
-          // _K[i] = nullptr;
-        }
-      }
       free(_K);
-      // _K = nullptr;
     }
     cudaFree(Head);
-    // Head = nullptr;
 
-    //%%%%%%%%%%%%%%%%%%%% TRANSPORT SETUP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+    // ===== Transporte =====
     std::cout << "Setting up transport..." << std::endl;
 
     if (k == 0) {
-      // auto absval = [] __device__(double v) { return fabs(v); };
-
-      // double umax = thrust::transform_reduce(
-      //     U_cube.begin(), U_cube.end(), absval, 0.0,
-      //     thrust::maximum<double>());
-      // double vmax = thrust::transform_reduce(
-      //     V_cube.begin(), V_cube.end(), absval, 0.0,
-      //     thrust::maximum<double>());
-      // double wmax = thrust::transform_reduce(
-      //     W_cube.begin(), W_cube.end(), absval, 0.0,
-      //     thrust::maximum<double>());
-
-      // // cota conservadora de la magnitud máxima
-      // max_magnitude = sqrt(umax * umax + vmax * vmax + wmax * wmax);
-
       double max_magnitude_squared = thrust::transform_reduce(
           thrust::make_zip_iterator(thrust::make_tuple(
               U_cube.begin(), V_cube.begin(), W_cube.begin())),
@@ -1140,68 +979,64 @@ int main(int argc, char *argv[]) {
               thrust::make_tuple(U_cube.end(), V_cube.end(), W_cube.end())),
           squared_magnitude_functor(), 0.0, thrust::maximum<double>());
 
-      max_magnitude = sqrt(max_magnitude_squared);
-
-      dt = (h / (2 * max_magnitude));
-
+      max_magnitude = std::sqrt(max_magnitude_squared);
+      dt = h / (2 * max_magnitude); // CFL simple
       std::cout << "  - ||v_max|| : " << max_magnitude << std::endl;
       std::cout << "  - Time Step (dt): " << dt << std::endl;
     }
 
-    // SET INJECTION BOX
+    // Caja de inyección
     const double p1x = 10.0 * h, p1y = Ly * 0.1, p1z = Lz * 0.1;
     const double p2x = 10.0 * h, p2y = Ly - p1y, p2z = Lz - p1z;
 
     bool useTrilinearCorrection = true;
-    long int seed = 123456789 * (k + 1);
-    int steps = t_max / dt; // number of steps to simulate
+    long int seed = 123456789L * (k + 1);
+    int steps = int(t_max / dt);
 
-    // 2) Construir grid PAR2 y reservar “cúbicos” inicializados a 0
     auto grid = par2::grid::build<double>(Nx, Ny, Nz, h, h, h);
 
-    // 4) Crear PParticles con punteros al layout “cúbico”
+    // *** NUEVO: sin nY/nZ ni posY/posZ (periodic adentro de
+    // PParticles/moveParticle) ***
     par2::PParticles<double> particles(
-        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube), nY_ptr,
-        nZ_ptr, diffusion, alphaL, alphaT, nParticles, seed,
-        useTrilinearCorrection);
+        grid, std::move(U_cube), std::move(V_cube), std::move(W_cube),
+        diffusion, alphaL, alphaT, nParticles, seed, useTrilinearCorrection);
 
-    particles.initializeBox(p1x, p1y, p1z, p2x, p2y, p2z, true);
+    // La lib ya maneja periódicos; inicializamos normalmente
+    particles.initializeBox(p1x, p1y, p1z, p2x, p2y, p2z, /*shuffle=*/true);
 
+    // punteros para estadística (asumiendo que yPtr()/zPtr() ya están
+    // “unwrapped” por adentro)
     thrust::device_ptr<const double> xBeg(particles.xPtr());
-    thrust::device_ptr<const double> yBeg(posY_ptr);
-    thrust::device_ptr<const double> zBeg(posZ_ptr);
-    const double *posY0 = particles.yPtr(), *posZ0 = particles.zPtr();
+    thrust::device_ptr<const double> yBeg(
+        particles
+            .yUnwrapPtr()); // si tu clase expone yPtrUnwrapped(), usalo acá
+    thrust::device_ptr<const double> zBeg(particles.zUnwrapPtr());
 
     std::string outPath = outdir_str + "/macrodispersion_var_v9_" +
                           std::to_string(sigma2).substr(0, 4) + "_" +
                           std::to_string(k) + ".csv";
 
-    /* -------- CSV macrodispersion -------- */
     std::ofstream csv(outPath);
     csv << "t,Dx,Dy,Dz\n";
     double prevVarX = 0.0, prevVarY = 0.0, prevVarZ = 0.0;
     const int reg = std::max(1, steps / 300);
-    /* ===================  Bucle principal  =================== */
+
     std::cout << "Starting transport simulation..." << std::endl;
     for (int i = 0; i < steps; i++) {
-      particles.move(dt);
+      particles.move(dt); // *** aquí adentro ya se aplican BC periódicas ***
 
-      if (i % static_cast<int>(round(steps * 0.2)) == 0 && i != 0) {
+      if (i % int(std::round(steps * 0.2)) == 0 && i != 0) {
         std::cout << "  - Step: " << i << " / " << steps << " ("
-                  << static_cast<int>(i * 100.0 / steps) << "%)" << std::endl;
+                  << int(i * 100.0 / steps) << "%)" << std::endl;
       }
 
+      // --- primer pase: guardar var previas
       if ((i + 1) % reg == 0 || i == 1) {
-        shiftParticles<<<blocksPerGrid, threadsPerBlock>>>(
-            posY, posZ, posY0, posZ0, nY, nZ, Ly, Lz, nParticles);
-        cudaDeviceSynchronize();
-        // X
         double sumX = thrust::reduce(xBeg, xBeg + nParticles, 0.0,
                                      thrust::plus<double>());
         double sumX2 = thrust::transform_reduce(
             xBeg, xBeg + nParticles, square(), 0.0, thrust::plus<double>());
 
-        // Y/Z unwrapped if available
         double sumY = thrust::reduce(yBeg, yBeg + nParticles, 0.0,
                                      thrust::plus<double>());
         double sumY2 = thrust::transform_reduce(
@@ -1222,10 +1057,9 @@ int main(int argc, char *argv[]) {
         prevVarY = varY;
         prevVarZ = varZ;
       }
+
+      // --- segundo pase: derivada temporal de varianzas
       if (i % reg == 0 || i == 2) {
-        shiftParticles<<<blocksPerGrid, threadsPerBlock>>>(
-            posY, posZ, posY0, posZ0, nY, nZ, Ly, Lz, nParticles);
-        cudaDeviceSynchronize();
         double sumX = thrust::reduce(xBeg, xBeg + nParticles, 0.0,
                                      thrust::plus<double>());
         double sumX2 = thrust::transform_reduce(
@@ -1261,14 +1095,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  cudaFree(posY);
-  cudaFree(posZ);
-  cudaFree(nY);
-  cudaFree(nZ);
+  // ===== Liberaciones finales (una vez) =====
   cudaFree(K_eq);
   delete[] host_K_eq;
-  // si no se destruye solo: cublasDestroy(handle);  // según
-  // INIT_CUBLAS_ENVIRONMENT
+
+  // cublasDestroy(handle); // si tu macro INIT_CUBLAS_ENVIRONMENT no lo hace
   cudaFree(V1);
   cudaFree(V2);
   cudaFree(V3);

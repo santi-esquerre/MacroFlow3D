@@ -28,6 +28,7 @@
 #include "../Geometry/CartesianGrid.cuh"
 #include "../Geometry/FaceField.cuh"
 #include "MoveParticle.cuh"
+#include <ctime>
 #include <curand_kernel.h>
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -56,10 +57,9 @@ public:
    */
   PParticles(const grid::Grid<T> &_grid, thrust::device_vector<T> &&_datax,
              thrust::device_vector<T> &&_datay,
-             thrust::device_vector<T> &&_dataz, thrust::device_ptr<int> _nY,
-             thrust::device_ptr<int> _nZ, T _molecularDiffusion, T _alphaL,
-             T _alphaT, unsigned int _nParticles, long int _seed = time(NULL),
-             bool _useTrilinearCorrection = true);
+             thrust::device_vector<T> &&_dataz, T _molecularDiffusion,
+             T _alphaL, T _alphaT, unsigned int _nParticles,
+             long int _seed = time(NULL), bool _useTrilinearCorrection = true);
 
   /**
    * @brief Number of particles in the system.
@@ -129,19 +129,19 @@ public:
   const T *zPtr() const { return thrust::raw_pointer_cast(cz.data()); }
   const T *yPtr() const { return thrust::raw_pointer_cast(cy.data()); }
 
-  // // Unwrapping buffers (optional) getters
-  // const int *imgYPtr() const {
-  //   return imgY_.empty() ? nullptr : thrust::raw_pointer_cast(imgY_.data());
-  // }
-  // const int *imgZPtr() const {
-  //   return imgZ_.empty() ? nullptr : thrust::raw_pointer_cast(imgZ_.data());
-  // }
-  // const T *yUnwrapPtr() const {
-  //   return yU_.empty() ? nullptr : thrust::raw_pointer_cast(yU_.data());
-  // }
-  // const T *zUnwrapPtr() const {
-  //   return zU_.empty() ? nullptr : thrust::raw_pointer_cast(zU_.data());
-  // }
+  // Unwrapping buffers (optional) getters
+  const int *imgYPtr() const {
+    return imgY_.empty() ? nullptr : thrust::raw_pointer_cast(imgY_.data());
+  }
+  const int *imgZPtr() const {
+    return imgZ_.empty() ? nullptr : thrust::raw_pointer_cast(imgZ_.data());
+  }
+  const T *yUnwrapPtr() const {
+    return yU_.empty() ? nullptr : thrust::raw_pointer_cast(yU_.data());
+  }
+  const T *zUnwrapPtr() const {
+    return zU_.empty() ? nullptr : thrust::raw_pointer_cast(zU_.data());
+  }
 
 private:
   // Thrust functor for one step of particle tracking
@@ -156,8 +156,6 @@ private:
   thrust::device_vector<T> datax;
   thrust::device_vector<T> datay;
   thrust::device_vector<T> dataz;
-  thrust::device_vector<int> nY;
-  thrust::device_vector<int> nZ;
   // Velocity field stored on device (cornerfield or cellfield)
   thrust::device_vector<T> cdatax;
   thrust::device_vector<T> cdatay;
@@ -173,10 +171,10 @@ private:
   // Max number of particles simulated in each kernel
   const int maxParticles = 65536;
 
-  // // Unwrapping state/buffers
-  // thrust::device_vector<int> imgY_, imgZ_;
-  // thrust::device_vector<T> yU_, zU_;
-  // T Ly_ = 0, Lz_ = 0;
+  // Unwrapping state/buffers
+  thrust::device_vector<int> imgY_, imgZ_;
+  thrust::device_vector<T> yU_, zU_;
+  T Ly_ = 0, Lz_ = 0;
 };
 
 } // namespace par2
