@@ -5,9 +5,9 @@
     "Nz": 256,
     "delta_x": 5,
     "t_max": 1000,
-    "diffusion": 0.0,
-    "alphaL": 0.5,
-    "alphaT": 0.5,
+    "diffusion": 1.2207e-03,
+    "alphaL": 0.0,
+    "alphaT": 0.0,
     "nRealizations": 500,
     "nParticles": 10000
 }
