@@ -1,0 +1,13 @@
+{
+    "sigma2": 1,
+    "Nx": 2048,
+    "Ny": 256,
+    "Nz": 256,
+    "delta_x": 5,
+    "t_max": 1000,
+    "diffusion": 0.0,
+    "alphaL": 0.0,
+    "alphaT": 0.0,
+    "nRealizations": 500,
+    "nParticles": 10000
+}
