@@ -8,7 +8,7 @@ namespace rwpt {
 namespace blas {
 
 struct ReductionWorkspace {
-    DeviceBuffer<std::byte> temp;
+    DeviceBuffer<unsigned char> temp;  // cuBLAS workspace (std::byte not in C++14)
     size_t temp_bytes = 0;
     
     // Device scalar for results (no host sync in hot-path)

@@ -1,5 +1,8 @@
 #pragma once
 
+// Multigrid conventions (mathematical definitions)
+#include "common/mg_conventions.cuh"
+
 // Multigrid types
 #include "mg_types.hpp"
 

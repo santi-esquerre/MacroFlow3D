@@ -14,6 +14,7 @@ struct MGConfig {
     int pre_smooth = 2;
     int post_smooth = 2;
     int coarse_solve_iters = 50;  // GSRB iterations on coarsest level
+    int check_convergence_every = 1;  // Check residual norm every N cycles (1 = every cycle)
     real omega = 1.0;  // Relaxation parameter (if needed)
     bool verbose = false;
 };

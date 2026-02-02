@@ -6,6 +6,7 @@
 #include "../../core/Scalar.hpp"
 #include "../blas/blas.cuh"
 #include <cmath>
+#include <iostream>
 
 namespace rwpt {
 namespace solvers {
@@ -37,6 +38,18 @@ CGResult cg_solve(CudaContext& ctx,
     
     // r = b - A*x
     A.apply(ctx, x, r_span);
+    
+    // DEBUG: Print norms before computing residual
+    if (cfg.verbose) {
+        real b_norm, Ax_norm;
+        blas::dot_device(ctx, b, b, d_rr_span, ws.red);
+        RWPT_CUDA_CHECK(cudaMemcpy(&b_norm, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
+        blas::dot_device(ctx, r_span, r_span, d_rr_span, ws.red);
+        RWPT_CUDA_CHECK(cudaMemcpy(&Ax_norm, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
+        ctx.synchronize();
+        std::cout << "[CG DEBUG] ||b|| = " << std::sqrt(b_norm) << ", ||A*x|| = " << std::sqrt(Ax_norm) << "\n";
+    }
+    
     blas::axpby(ctx, 1.0, b, -1.0, r_span);
     
     // p = r
@@ -56,6 +69,12 @@ CGResult cg_solve(CudaContext& ctx,
     
     result.r0_norm = r0_norm;
     
+    // DEBUG: Print first few values
+    if (cfg.verbose) {
+        std::cout << "[CG] Initial ||r||_2 = " << r0_norm << "\n";
+        std::cout << "[CG] Tolerance = " << tol << "\n";
+    }
+    
     // Check if already converged
     if (r0_norm <= tol) {
         result.converged = true;
@@ -71,6 +90,16 @@ CGResult cg_solve(CudaContext& ctx,
         
         // pAp = dot(p, Ap) - device only
         blas::dot_device(ctx, p_span, Ap_span, d_pAp_span, ws.red);
+        
+        // DEBUG: Print values in first few iterations
+        if (cfg.verbose && iter < 5) {
+            real rr_debug, pAp_debug;
+            RWPT_CUDA_CHECK(cudaMemcpy(&rr_debug, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
+            RWPT_CUDA_CHECK(cudaMemcpy(&pAp_debug, ws.d_pAp.data(), sizeof(real), cudaMemcpyDeviceToHost));
+            ctx.synchronize();
+            std::cout << "[CG iter " << iter << "] rr = " << rr_debug << ", pAp = " << pAp_debug 
+                      << ", alpha = " << (rr_debug / pAp_debug) << "\n";
+        }
         
         // Check for breakdown (pAp ~= 0 or NaN) every check_every
         if ((iter + 1) % cfg.check_every == 0) {

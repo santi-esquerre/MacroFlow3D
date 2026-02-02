@@ -13,6 +13,7 @@ struct CGConfig {
     real rtol = 1e-6;
     real atol = 0.0;
     int check_every = 10;  // Check convergence every N iters (reduces host sync)
+    bool verbose = false;  // Print debug info
 };
 
 struct CGResult {

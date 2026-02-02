@@ -2,6 +2,8 @@
 #include "../src/runtime/GpuTimer.cuh"
 #include "../src/multigrid/multigrid.cuh"
 #include "../src/numerics/blas/blas.cuh"
+#include "../src/numerics/blas/reduction_workspace.cuh"
+#include "../src/physics/flow/coarsen_K.cuh"
 #include <iostream>
 #include <iomanip>
 
@@ -52,17 +54,22 @@ int main() {
     // Set conductivity: K = 1 everywhere (homogeneous for smoke test)
     rwpt::blas::fill(ctx, finest.K.span(), 1.0);
     
-    // Also initialize K on coarser levels (for operators)
+    // Homogenize K to coarser levels using geometric mean (legacy CompactHomogenizationKtensor)
     for (int l = 1; l < hier.num_levels(); ++l) {
-        rwpt::blas::fill(ctx, hier.levels[l].K.span(), 1.0);
+        rwpt::physics::coarsen_K(
+            ctx,
+            hier.levels[l].grid,
+            hier.levels[l-1].grid,
+            hier.levels[l-1].K.span(),
+            hier.levels[l].K.span()
+        );
     }
     
     ctx.synchronize();
     std::cout << "Problem setup complete.\n";
     std::cout << "RHS norm: ";
     
-    ReductionWorkspace red;
-    red.ensure_for_nrm2(n);
+    rwpt::blas::ReductionWorkspace red;
     real b_norm = rwpt::blas::nrm2_host(ctx, finest.b.span(), red);
     std::cout << std::scientific << std::setprecision(6) << b_norm << "\n\n";
     
@@ -80,20 +87,28 @@ int main() {
     std::cout << "  Post-smooth: " << config.post_smooth << "\n";
     std::cout << "  Coarse solve iters: " << config.coarse_solve_iters << "\n\n";
     
+    // Configure boundary conditions
+    BCSpec bc;
+    bc.xmin = BCFace(BCType::Dirichlet, 0.0);
+    bc.xmax = BCFace(BCType::Dirichlet, 0.0);
+    bc.ymin = BCFace(BCType::Dirichlet, 0.0);
+    bc.ymax = BCFace(BCType::Dirichlet, 0.0);
+    bc.zmin = BCFace(BCType::Dirichlet, 0.0);
+    bc.zmax = BCFace(BCType::Dirichlet, 0.0);
+    
     // Solve with MG
     int max_cycles = 10;
     real rtol = 1e-6;
     
-    std::cout << "Starting MG solve (max " << max_cycles << " V-cycles, rtol=" << rtol << ")...\n\n";
+    std::cout << "Starting MG solve (max " << max_cycles << " V-cycles, rtol=" << rtol << ")...\\n\\n";
     
     GpuTimer timer;
     timer.start(ctx.cuda_stream());
     
-    auto result = mg_solve(ctx, hier, config, max_cycles, rtol);
+    auto result = mg_solve(ctx, hier, config, bc, max_cycles, rtol);
     
-    timer.stop(ctx.cuda_stream());
+    float elapsed_ms = timer.stop(ctx.cuda_stream());
     ctx.synchronize();
-    float elapsed_ms = timer.elapsed_ms();
     
     // Report results
     std::cout << "=== Results ===\n";

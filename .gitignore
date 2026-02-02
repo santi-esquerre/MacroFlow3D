@@ -4,3 +4,5 @@ output*
 .vscode
 codebase.md
 *.out
+build
+.aidigestignore

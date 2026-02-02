@@ -1,0 +1,57 @@
+# Test configuration for PCG with MG preconditioner (legacy: solver_CG + PCCMG_CG)
+
+grid:
+  nx: 32
+  ny: 32
+  nz: 32
+  dx: 0.03125  # 1/32, domain [0,1]^3
+
+stochastic:
+  sigma2: 1.0           # Variance of log(K)
+  corr_length: 0.1      # Correlation length
+  n_modes: 1000         # Fourier modes for spectral method
+  covariance_type: 1    # 0 = exponential, 1 = gaussian
+  seed: 12345
+  K_mean: 1.0           # Geometric mean of K
+
+flow:
+  solver: pcg_mg        # PCG with MG preconditioner (default, legacy)
+  mg_levels: 4
+  mg_pre_smooth: 2
+  mg_post_smooth: 2
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 100      # PCG max iterations
+  cg_rtol: 1.0e-6       # PCG relative tolerance
+  cg_check_every: 10    # Check convergence every N iterations
+  rtol: 1.0e-6
+  verify_velocity: true  # Enable theoretical verification
+  
+  pin:
+    mode: auto
+  
+  bc:
+    west:   { type: dirichlet, value: 100.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+transport:
+  n_particles: 1000
+  dt: 0.001
+  n_steps: 100
+  porosity: 1.0
+  diffusion: 0.0
+  seed: 54321
+  output_every: 100
+  inject_x: 0.0
+
+output:
+  output_dir: ./output_pcg_mg_test
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: false
+  format: binary

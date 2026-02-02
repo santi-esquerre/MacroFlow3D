@@ -8,6 +8,7 @@
 #include "../src/numerics/solvers/solvers.cuh"
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 int main() {
     try {
@@ -17,38 +18,58 @@ int main() {
         rwpt::CudaContext ctx(0);
         
         // Setup grid
-        const int n = 32;
-        rwpt::Grid3D grid(n, n, n, 1.0, 1.0, 1.0);
+        const int N = 32;
+        rwpt::Grid3D grid(N, N, N, 1.0/N, 1.0/N, 1.0/N);
         size_t num_cells = grid.num_cells();
         
         std::cout << "Grid: " << grid.nx << " x " << grid.ny << " x " << grid.nz 
                   << " = " << num_cells << " cells\n";
         
-        // Create operator
-        rwpt::operators::Poisson3DOperator A(grid);
+        // Boundary conditions: Dirichlet zero (makes system SPD and well-posed)
+        rwpt::BCSpec bc;
+        bc.xmin = rwpt::BCFace(rwpt::BCType::Dirichlet, 0.0);
+        bc.xmax = rwpt::BCFace(rwpt::BCType::Dirichlet, 0.0);
+        bc.ymin = rwpt::BCFace(rwpt::BCType::Dirichlet, 0.0);
+        bc.ymax = rwpt::BCFace(rwpt::BCType::Dirichlet, 0.0);
+        bc.zmin = rwpt::BCFace(rwpt::BCType::Dirichlet, 0.0);
+        bc.zmax = rwpt::BCFace(rwpt::BCType::Dirichlet, 0.0);
         
         // Allocate vectors
         rwpt::DeviceBuffer<rwpt::real> x(num_cells);
         rwpt::DeviceBuffer<rwpt::real> b(num_cells);
+        rwpt::DeviceBuffer<rwpt::real> K(num_cells);
         
-        // Initialize: x = 0, b = 1 (constant RHS)
+        // Initialize: K = 1 (homogeneous), x = 0
+        rwpt::blas::fill(ctx, K.span(), 1.0);
         rwpt::blas::fill(ctx, x.span(), 0.0);
-        rwpt::blas::fill(ctx, b.span(), 1.0);
         
-        // Alternatively: set b as delta function at center
-        // std::vector<rwpt::real> b_host(num_cells, 0.0);
-        // size_t center_idx = grid.idx(n/2, n/2, n/2);
-        // b_host[center_idx] = 1.0;
-        // RWPT_CUDA_CHECK(cudaMemcpy(b.data(), b_host.data(), 
-        //                            num_cells * sizeof(rwpt::real), 
-        //                            cudaMemcpyHostToDevice));
+        // b = manufactured RHS for u = sin(πx)sin(πy)sin(πz)
+        const double pi = 3.14159265358979323846;
+        std::vector<rwpt::real> b_host(num_cells);
+        for (int k = 0; k < N; k++) {
+            for (int j = 0; j < N; j++) {
+                for (int i = 0; i < N; i++) {
+                    int idx = i + j*N + k*N*N;
+                    rwpt::real xc = (i + 0.5) / N;
+                    rwpt::real yc = (j + 0.5) / N;
+                    rwpt::real zc = (k + 0.5) / N;
+                    b_host[idx] = 3.0 * pi * pi * std::sin(pi*xc) * std::sin(pi*yc) * std::sin(pi*zc);
+                }
+            }
+        }
+        RWPT_CUDA_CHECK(cudaMemcpy(b.data(), b_host.data(), 
+                                   num_cells * sizeof(rwpt::real), 
+                                   cudaMemcpyHostToDevice));
+        
+        // Create VarCoeffLaplacian operator (matches MG semantics)
+        rwpt::operators::VarCoeffLaplacian A(grid, K.span(), bc);
         
         // Configure CG
         rwpt::solvers::CGConfig cfg;
         cfg.max_iter = 200;
         cfg.rtol = 1e-6;
         cfg.atol = 0.0;
-        cfg.check_every = 10;  // Check convergence every 10 iters to reduce host sync
+        cfg.check_every = 1;  // Check every iteration for early convergence
         
         // Create workspace
         rwpt::solvers::CGWorkspace ws;

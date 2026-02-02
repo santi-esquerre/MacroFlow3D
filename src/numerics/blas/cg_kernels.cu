@@ -95,12 +95,14 @@ void update_p(CudaContext& ctx,
 __global__ void check_pAp_valid_kernel(const real* d_pAp, int* d_is_valid) {
     if (threadIdx.x == 0 && blockIdx.x == 0) {
         real pAp = *d_pAp;
-        // Check for zero, NaN, or negative (should be positive for SPD)
+        // Check for zero or NaN
+        // Note: For NEGATIVE definite operators, pAp < 0 is expected and valid!
+        // CG works with negative-definite operators as long as pAp != 0
         const real eps = 1e-30;
-        if (!isfinite(pAp) || pAp < eps) {
+        if (!isfinite(pAp) || fabs(pAp) < eps) {
             *d_is_valid = 0;  // Bad
         } else {
-            *d_is_valid = 1;  // OK
+            *d_is_valid = 1;  // OK (positive OR negative)
         }
     }
 }

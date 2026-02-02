@@ -2,6 +2,8 @@
 
 #include "../mg_types.hpp"
 #include "../../runtime/CudaContext.cuh"
+#include "../../core/BCSpec.hpp"
+#include "../../numerics/pin_spec.hpp"
 
 namespace rwpt {
 namespace multigrid {
@@ -13,23 +15,47 @@ struct VCycleResult {
     bool converged = false;
 };
 
-// Execute one V-cycle on the MG hierarchy
-// Assumes MGHierarchy is already initialized with K fields
+/**
+ * @brief Execute one V-cycle on the MG hierarchy
+ * 
+ * @param ctx     CUDA context
+ * @param hier    MG hierarchy (pre-initialized with K)
+ * @param level   Current level (0 = finest)
+ * @param config  MG configuration
+ * @param bc      Boundary conditions
+ * @param pin     Pin specification (applied to ALL levels - legacy semantics)
+ */
 void v_cycle_recursive(
     CudaContext& ctx,
     MGHierarchy& hier,
     int level,
-    const MGConfig& config
+    const MGConfig& config,
+    const BCSpec& bc,
+    PinSpec pin = {}
 );
 
-// Solve A*x = b using multigrid V-cycles
-// Assumes hier.levels[0].b is set, hier.levels[0].x is initial guess
+/**
+ * @brief Solve A*x = b using multigrid V-cycles
+ * 
+ * Assumes hier.levels[0].b is set, hier.levels[0].x is initial guess.
+ * 
+ * @param ctx        CUDA context
+ * @param hier       MG hierarchy
+ * @param config     MG configuration
+ * @param bc         Boundary conditions
+ * @param max_cycles Maximum number of V-cycles
+ * @param rtol       Relative tolerance
+ * @param pin        Pin specification (for singular systems, applied to all levels)
+ * @return VCycleResult with convergence info
+ */
 VCycleResult mg_solve(
     CudaContext& ctx,
     MGHierarchy& hier,
     const MGConfig& config,
+    const BCSpec& bc,
     int max_cycles = 10,
-    real rtol = 1e-6
+    real rtol = 1e-6,
+    PinSpec pin = {}
 );
 
 } // namespace multigrid
