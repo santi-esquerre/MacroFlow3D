@@ -1,0 +1,3 @@
+[submodule "src/external/Par2_Core"]
+	path = src/external/Par2_Core
+	url = git@github.com:santi-esquerre/Par2_Core.git
