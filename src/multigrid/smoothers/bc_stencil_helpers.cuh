@@ -15,7 +15,7 @@
 #include "../../core/BCSpecDevice.cuh"
 #include "../../core/DeviceSpan.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 namespace bc_helpers {
 
@@ -38,7 +38,7 @@ __device__ inline void neighbor_xminus(
     real& stencil_coeff,
     real& rhs_adjust
 ) {
-    const int nx = grid.nx, ny = grid.ny, nz = grid.nz;
+    const int nx = grid.nx, ny = grid.ny;
     const int idx = i + nx * (j + ny * k);
     
     // Center conductivity
@@ -47,7 +47,6 @@ __device__ inline void neighbor_xminus(
     if (i == 0) {
         // At xmin boundary
         const auto bc_type = static_cast<BCType>(bc.type[0]); // xmin=0
-        const real bc_val = bc.value[0];
         
         if (bc_type == BCType::Periodic) {
             // Wrap to xmax
@@ -91,13 +90,12 @@ __device__ inline void neighbor_xplus(
     real& stencil_coeff,
     real& rhs_adjust
 ) {
-    const int nx = grid.nx, ny = grid.ny, nz = grid.nz;
+    const int nx = grid.nx, ny = grid.ny;
     const int idx = i + nx * (j + ny * k);
     const real Kc = K[idx];
     
     if (i == nx - 1) {
         const auto bc_type = static_cast<BCType>(bc.type[1]); // xmax=1
-        const real bc_val = bc.value[1];
         
         if (bc_type == BCType::Periodic) {
             const int neighbor_idx = 0 + nx * (j + ny * k);
@@ -136,13 +134,12 @@ __device__ inline void neighbor_yminus(
     real& stencil_coeff,
     real& rhs_adjust
 ) {
-    const int nx = grid.nx, ny = grid.ny, nz = grid.nz;
+    const int nx = grid.nx, ny = grid.ny;
     const int idx = i + nx * (j + ny * k);
     const real Kc = K[idx];
     
     if (j == 0) {
         const auto bc_type = static_cast<BCType>(bc.type[2]); // ymin=2
-        const real bc_val = bc.value[2];
         
         if (bc_type == BCType::Periodic) {
             const int neighbor_idx = i + nx * ((ny - 1) + ny * k);
@@ -181,13 +178,12 @@ __device__ inline void neighbor_yplus(
     real& stencil_coeff,
     real& rhs_adjust
 ) {
-    const int nx = grid.nx, ny = grid.ny, nz = grid.nz;
+    const int nx = grid.nx, ny = grid.ny;
     const int idx = i + nx * (j + ny * k);
     const real Kc = K[idx];
     
     if (j == ny - 1) {
         const auto bc_type = static_cast<BCType>(bc.type[3]); // ymax=3
-        const real bc_val = bc.value[3];
         
         if (bc_type == BCType::Periodic) {
             const int neighbor_idx = i + nx * (0 + ny * k);
@@ -232,7 +228,6 @@ __device__ inline void neighbor_zminus(
     
     if (k == 0) {
         const auto bc_type = static_cast<BCType>(bc.type[4]); // zmin=4
-        const real bc_val = bc.value[4];
         
         if (bc_type == BCType::Periodic) {
             const int neighbor_idx = i + nx * (j + ny * (nz - 1));
@@ -277,7 +272,6 @@ __device__ inline void neighbor_zplus(
     
     if (k == nz - 1) {
         const auto bc_type = static_cast<BCType>(bc.type[5]); // zmax=5
-        const real bc_val = bc.value[5];
         
         if (bc_type == BCType::Periodic) {
             const int neighbor_idx = i + nx * (j + ny * 0);
@@ -308,4 +302,4 @@ __device__ inline void neighbor_zplus(
 
 } // namespace bc_helpers
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

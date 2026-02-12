@@ -22,7 +22,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../blas/blas.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 /**
@@ -60,4 +60,4 @@ NegatedOperator<Op> negate_operator(const Op& op) {
 }
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

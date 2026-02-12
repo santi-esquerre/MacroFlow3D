@@ -10,12 +10,13 @@
 #include <cmath>
 #include <cassert>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 // Helper to verify isotropic grid (dx == dy == dz within tolerance)
 inline void assert_isotropic_grid(const Grid3D& grid) {
-    const real tol = 1e-12;
+    constexpr real tol = 1e-12;
+    (void)tol;
     assert(std::abs(grid.dx - grid.dy) < tol * grid.dx && 
            "Grid must be isotropic (dx != dy). See Grid3D.hpp for details.");
     assert(std::abs(grid.dx - grid.dz) < tol * grid.dx && 
@@ -62,7 +63,7 @@ void v_cycle_recursive(
     restrict_3d(ctx, fine.grid, coarse.grid, fine.r.span(), coarse.b.span());
     
     // 4. Initialize coarse correction: e^{2h} = 0
-    rwpt::blas::fill(ctx, coarse.x.span(), 0.0);
+    macroflow3d::blas::fill(ctx, coarse.x.span(), 0.0);
     
     // 5. Recursively solve: A^{2h} * e^{2h} = b^{2h} (pin propagated)
     v_cycle_recursive(ctx, hier, level + 1, config, bc, pin);
@@ -92,8 +93,8 @@ VCycleResult mg_solve(
     
     // Compute initial residual norm
     compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(), finest.r.span(), bc, pin);
-    rwpt::blas::ReductionWorkspace red;
-    result.initial_residual = rwpt::blas::nrm2_host(ctx, finest.r.span(), red);
+    macroflow3d::blas::ReductionWorkspace red;
+    result.initial_residual = macroflow3d::blas::nrm2_host(ctx, finest.r.span(), red);
     
     if (config.verbose) {
         // Would print here, but avoiding I/O in library code
@@ -108,7 +109,7 @@ VCycleResult mg_solve(
         // Check convergence periodically (not every cycle to reduce host sync cost)
         if ((cycle + 1) % config.check_convergence_every == 0 || cycle == max_cycles - 1) {
             compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(), finest.r.span(), bc, pin);
-            result.final_residual = rwpt::blas::nrm2_host(ctx, finest.r.span(), red);
+            result.final_residual = macroflow3d::blas::nrm2_host(ctx, finest.r.span(), red);
             
             real relative_residual = result.final_residual / result.initial_residual;
             if (relative_residual < rtol) {
@@ -122,4 +123,4 @@ VCycleResult mg_solve(
 }
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

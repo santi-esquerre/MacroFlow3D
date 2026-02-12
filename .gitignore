@@ -1,8 +1,25 @@
-output*
+# Build artifacts
+build/
 *.o
 *.a
-.vscode
-codebase.md
 *.out
-build
+
+# IDE / editor
+.vscode/
+.cache/
+.clangd
+compile_commands.json
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project-specific
+output*/
+codebase*.md
 .aidigestignore
+
+# Python
+__pycache__/
+*.pyc

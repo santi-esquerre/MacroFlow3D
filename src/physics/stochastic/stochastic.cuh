@@ -24,7 +24,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 /**
@@ -110,4 +110,4 @@ void compute_field_stats(DeviceSpan<const real> data,
                          const CudaContext& ctx);
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

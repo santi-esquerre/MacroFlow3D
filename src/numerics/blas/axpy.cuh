@@ -4,11 +4,11 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 // Axpy: y = a*x + y
 void axpy(CudaContext& ctx, real a, DeviceSpan<const real> x, DeviceSpan<real> y);
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

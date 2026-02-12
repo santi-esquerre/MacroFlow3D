@@ -11,7 +11,7 @@
 #include "../../core/Scalar.hpp"
 #include <cstdint>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 /**
@@ -117,4 +117,4 @@ struct SimulationConfig {
 };
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

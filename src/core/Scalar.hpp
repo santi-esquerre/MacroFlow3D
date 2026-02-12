@@ -1,8 +1,8 @@
 #pragma once
 
-namespace rwpt {
+namespace macroflow3d {
 
 // Scalar type for the entire project
 using real = double;
 
-} // namespace rwpt
+} // namespace macroflow3d

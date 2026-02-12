@@ -14,7 +14,7 @@
 #include "fields.cuh"
 #include "workspaces.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // Version tag for physics module
@@ -22,4 +22,4 @@ constexpr int PHYSICS_VERSION_MAJOR = 5;
 constexpr int PHYSICS_VERSION_MINOR = 0;
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

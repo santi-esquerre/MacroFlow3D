@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <cstddef>
 
-namespace rwpt {
+namespace macroflow3d {
 
 /**
  * @brief 3D structured grid specification
@@ -44,6 +44,11 @@ struct Grid3D {
         return static_cast<size_t>(nx) * static_cast<size_t>(ny) * static_cast<size_t>(nz);
     }
 
+    // Domain lengths
+    real Lx() const { return nx * dx; }
+    real Ly() const { return ny * dy; }
+    real Lz() const { return nz * dz; }
+
     // Linear index: row-major order i + nx*(j + ny*k)
     __host__ __device__
     size_t idx(int i, int j, int k) const {
@@ -51,4 +56,4 @@ struct Grid3D {
     }
 };
 
-} // namespace rwpt
+} // namespace macroflow3d

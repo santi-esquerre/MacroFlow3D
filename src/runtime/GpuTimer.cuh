@@ -3,13 +3,13 @@
 #include <cuda_runtime.h>
 #include "cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 
 class GpuTimer {
 public:
     GpuTimer() {
-        RWPT_CUDA_CHECK(cudaEventCreate(&start_));
-        RWPT_CUDA_CHECK(cudaEventCreate(&stop_));
+        MACROFLOW3D_CUDA_CHECK(cudaEventCreate(&start_));
+        MACROFLOW3D_CUDA_CHECK(cudaEventCreate(&stop_));
     }
 
     ~GpuTimer() {
@@ -43,15 +43,15 @@ public:
     }
 
     void start(cudaStream_t stream) {
-        RWPT_CUDA_CHECK(cudaEventRecord(start_, stream));
+        MACROFLOW3D_CUDA_CHECK(cudaEventRecord(start_, stream));
     }
 
     float stop(cudaStream_t stream) {
-        RWPT_CUDA_CHECK(cudaEventRecord(stop_, stream));
-        RWPT_CUDA_CHECK(cudaEventSynchronize(stop_));
+        MACROFLOW3D_CUDA_CHECK(cudaEventRecord(stop_, stream));
+        MACROFLOW3D_CUDA_CHECK(cudaEventSynchronize(stop_));
         
         float elapsed_ms = 0.0f;
-        RWPT_CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start_, stop_));
+        MACROFLOW3D_CUDA_CHECK(cudaEventElapsedTime(&elapsed_ms, start_, stop_));
         return elapsed_ms;
     }
 
@@ -60,4 +60,4 @@ private:
     cudaEvent_t stop_;
 };
 
-} // namespace rwpt
+} // namespace macroflow3d

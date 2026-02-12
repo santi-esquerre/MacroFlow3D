@@ -22,7 +22,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 /**
@@ -52,4 +52,4 @@ void coarsen_K(
 );
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <cassert>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 // Legacy: restriction_linear3D
@@ -84,8 +84,8 @@ void restrict_3d(
         b_coarse.data(), r_fine.data(), NX, NY, NZ
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

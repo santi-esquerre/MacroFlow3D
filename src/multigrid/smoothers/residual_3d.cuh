@@ -6,7 +6,7 @@
 #include "../../runtime/CudaContext.cuh"
 #include "../../numerics/pin_spec.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 /**
@@ -39,4 +39,4 @@ void compute_residual_3d(
 );
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

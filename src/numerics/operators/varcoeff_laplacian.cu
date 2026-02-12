@@ -19,7 +19,7 @@
 #include "../../core/BCSpecDevice.cuh"
 #include <cassert>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 VarCoeffLaplacian::VarCoeffLaplacian(
@@ -276,7 +276,7 @@ void VarCoeffLaplacian::apply(
         varcoeff_apply_interior_kernel<<<grid, block, 0, ctx.cuda_stream()>>>(
             x.data(), K_.data(), y.data(), Nx, Ny, Nz, inv_dx2
         );
-        RWPT_CUDA_CHECK(cudaGetLastError());
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // 2. Boundary cells (includes pin logic via diagonal doubling for cell [0,0,0])
@@ -288,9 +288,9 @@ void VarCoeffLaplacian::apply(
         varcoeff_apply_boundary_kernel<<<grid, block, 0, ctx.cuda_stream()>>>(
             x.data(), K_.data(), y.data(), Nx, Ny, Nz, inv_dx2, bc_dev, pin_.enabled
         );
-        RWPT_CUDA_CHECK(cudaGetLastError());
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
 }
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

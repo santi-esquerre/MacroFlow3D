@@ -5,7 +5,7 @@
 #include "../../core/Scalar.hpp"
 #include "reduction_workspace.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 // Dot product (device result, no sync)
@@ -23,4 +23,4 @@ real dot_host(CudaContext& ctx,
               ReductionWorkspace& ws);
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

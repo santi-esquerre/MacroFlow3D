@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <cmath>
 
-namespace rwpt {
+namespace macroflow3d {
 
 enum class BCType {
     Dirichlet,
@@ -79,4 +79,4 @@ struct BCSpec {
     }
 };
 
-} // namespace rwpt
+} // namespace macroflow3d

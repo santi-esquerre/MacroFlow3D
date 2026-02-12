@@ -26,7 +26,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 /**
@@ -127,4 +127,4 @@ void PinnedOperator<Op>::apply_pin_kernel(CudaContext& ctx, DeviceSpan<const rea
 }
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

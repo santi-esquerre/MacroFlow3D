@@ -1,15 +1,15 @@
 #include "CudaContext.cuh"
 #include "cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 
 CudaContext::CudaContext(int device_id)
     : device_id_(device_id), stream_(nullptr), cublas_(nullptr) {
     
-    RWPT_CUDA_CHECK(cudaSetDevice(device_id_));
-    RWPT_CUDA_CHECK(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking));
-    RWPT_CUBLAS_CHECK(cublasCreate(&cublas_));
-    RWPT_CUBLAS_CHECK(cublasSetStream(cublas_, stream_));
+    MACROFLOW3D_CUDA_CHECK(cudaSetDevice(device_id_));
+    MACROFLOW3D_CUDA_CHECK(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking));
+    MACROFLOW3D_CUBLAS_CHECK(cublasCreate(&cublas_));
+    MACROFLOW3D_CUBLAS_CHECK(cublasSetStream(cublas_, stream_));
 }
 
 CudaContext::~CudaContext() {
@@ -40,7 +40,7 @@ CudaContext& CudaContext::operator=(CudaContext&& other) noexcept {
 }
 
 void CudaContext::synchronize() const {
-    RWPT_CUDA_CHECK(cudaStreamSynchronize(stream_));
+    MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(stream_));
 }
 
 void CudaContext::release() {
@@ -54,4 +54,4 @@ void CudaContext::release() {
     }
 }
 
-} // namespace rwpt
+} // namespace macroflow3d

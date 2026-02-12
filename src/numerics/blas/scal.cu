@@ -1,7 +1,7 @@
 #include "scal.cuh"
 #include "../../runtime/cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 __global__ void scal_kernel(real* x, size_t n, real a) {
@@ -24,8 +24,8 @@ void scal(CudaContext& ctx, DeviceSpan<real> x, real a) {
         x.data(), x.size(), a
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

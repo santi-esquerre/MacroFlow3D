@@ -21,7 +21,7 @@
 #include "../../core/Scalar.hpp"
 #include "../../numerics/blas/blas.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 // PCG configuration
@@ -46,6 +46,9 @@ struct PCGWorkspace {
     DeviceBuffer<real> z;  // Preconditioned residual
     DeviceBuffer<real> p;  // Search direction
     DeviceBuffer<real> Ap; // A * p
+    
+    // Reduction workspace for dot/nrm2 (persistent, avoids per-solve alloc)
+    blas::ReductionWorkspace red;
     
     void ensure(size_t n) {
         if (r.size() != n) {
@@ -104,8 +107,8 @@ PCGResult pcg_solve(
     // Ensure workspace
     ws.ensure(n);
     
-    // Reduction workspace for dot products
-    blas::ReductionWorkspace red;
+    // Use persistent reduction workspace from PCGWorkspace (no allocation per solve)
+    auto& red = ws.red;
     
     // Spans for convenience
     auto r  = ws.r.span();
@@ -186,4 +189,4 @@ PCGResult pcg_solve(
 }
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

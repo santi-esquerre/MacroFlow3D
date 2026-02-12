@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: nvidia/cuda:12.2.2-devel-ubuntu22.04
+
+    steps:
+      - name: Install build tools
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq git cmake g++ make > /dev/null
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure (Release)
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CUDA_ARCHITECTURES=80
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Verify binary exists
+        run: test -x build/macroflow3d_pipeline
+
+      - name: Smoke test (--help / no-args returns usage)
+        run: |
+          # Should print usage and return non-zero (no config given)
+          ! build/macroflow3d_pipeline 2>&1 | grep -q "Usage"

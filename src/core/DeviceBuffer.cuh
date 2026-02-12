@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace rwpt {
+namespace macroflow3d {
 
 // RAII wrapper for device memory allocation with capacity
 template<typename T>
@@ -16,7 +16,7 @@ public:
 
     explicit DeviceBuffer(size_t n) : ptr_(nullptr), n_(n), capacity_(0) {
         if (n > 0) {
-            RWPT_CUDA_CHECK(cudaMalloc(&ptr_, n * sizeof(T)));
+            MACROFLOW3D_CUDA_CHECK(cudaMalloc(&ptr_, n * sizeof(T)));
             capacity_ = n;
         }
     }
@@ -54,6 +54,8 @@ public:
     const T* data() const { return ptr_; }
     
     size_t size() const { return n_; }
+    size_t capacity() const { return capacity_; }
+    bool empty() const { return n_ == 0; }
 
     DeviceSpan<T> span() {
         return DeviceSpan<T>(ptr_, n_);
@@ -78,12 +80,15 @@ public:
         if (n > capacity_) {
             reset();
             if (n > 0) {
-                RWPT_CUDA_CHECK(cudaMalloc(&ptr_, n * sizeof(T)));
+                MACROFLOW3D_CUDA_CHECK(cudaMalloc(&ptr_, n * sizeof(T)));
                 capacity_ = n;
             }
         }
         n_ = n;
     }
+
+    // Alias for clarity: guarantee room for at least n elements
+    void ensure_capacity(size_t n) { resize(n); }
     
     void swap(DeviceBuffer& other) noexcept {
         T* tmp_ptr = ptr_;
@@ -105,4 +110,4 @@ private:
     size_t capacity_;
 };
 
-} // namespace rwpt
+} // namespace macroflow3d

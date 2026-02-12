@@ -4,11 +4,11 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 // Copy vector: y = x
 void copy(CudaContext& ctx, DeviceSpan<const real> x, DeviceSpan<real> y);
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

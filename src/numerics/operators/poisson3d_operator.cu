@@ -2,7 +2,7 @@
 #include "../../runtime/cuda_check.cuh"
 #include <cassert>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 __global__ void poisson3d_kernel(const real* x, real* y, 
@@ -75,8 +75,8 @@ void Poisson3DOperator::apply(CudaContext& ctx,
         n
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

@@ -29,7 +29,7 @@
 #include "../../core/Scalar.hpp"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 /**
@@ -54,4 +54,4 @@ void build_rhs_head(DeviceSpan<real> rhs,
                     const CudaContext& ctx);
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

@@ -1,7 +1,7 @@
 #include "copy.cuh"
 #include "../../runtime/cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 __global__ void copy_kernel(const real* x, real* y, size_t n) {
@@ -26,8 +26,8 @@ void copy(CudaContext& ctx, DeviceSpan<const real> x, DeviceSpan<real> y) {
         x.data(), y.data(), n
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

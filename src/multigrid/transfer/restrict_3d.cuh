@@ -4,7 +4,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 // Restriction: fine grid -> coarse grid (averaging)
@@ -20,4 +20,4 @@ void restrict_3d(
 );
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

@@ -30,7 +30,7 @@
 #include "../common/fields.cuh"
 #include "../../core/DeviceSpan.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -52,6 +52,29 @@ namespace physics {
  */
 void compute_velocity_from_head(
     VelocityField& vel,
+    const HeadField& head,
+    const KField& K,
+    const Grid3D& grid,
+    const BCSpec& bc,
+    CudaContext& ctx);
+
+/**
+ * @brief Compute velocity field in padded facefield layout
+ *
+ * Same physics (Darcy + harmonic mean) but writes each component
+ * into an (nx+1)*(ny+1)*(nz+1) array using merge_id indexing,
+ * compatible with Par2_Core's VelocityView / FaceFieldView.
+ * No memory allocation inside this function.
+ *
+ * @param vel       Output padded velocity field (U, V, W already allocated)
+ * @param head      Input head field (cell-centered)
+ * @param K         Input conductivity field (cell-centered)
+ * @param grid      Grid dimensions and spacing
+ * @param bc        Boundary conditions for all 6 faces
+ * @param ctx       CUDA context for synchronization
+ */
+void compute_velocity_from_head(
+    PaddedVelocityField& vel,
     const HeadField& head,
     const KField& K,
     const Grid3D& grid,
@@ -117,4 +140,4 @@ void verify_mean_velocity_darcy(
     CudaContext& ctx);
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

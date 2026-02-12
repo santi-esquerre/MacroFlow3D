@@ -1,7 +1,7 @@
 #include "axpby.cuh"
 #include "../../runtime/cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 __global__ void axpby_kernel(real a, const real* x, real b, real* y, size_t n) {
@@ -26,8 +26,8 @@ void axpby(CudaContext& ctx, real a, DeviceSpan<const real> x, real b, DeviceSpa
         a, x.data(), b, y.data(), n
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

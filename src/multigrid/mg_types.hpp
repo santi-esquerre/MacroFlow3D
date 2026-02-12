@@ -5,7 +5,7 @@
 #include "../core/Scalar.hpp"
 #include <vector>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 // MG configuration
@@ -102,4 +102,4 @@ struct MGWorkspace {
 };
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

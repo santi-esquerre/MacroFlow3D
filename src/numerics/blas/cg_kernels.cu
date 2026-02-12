@@ -1,7 +1,7 @@
 #include "cg_kernels.cuh"
 #include "../../runtime/cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 __global__ void compute_alpha_kernel(const real* d_rr, const real* d_pAp, real* d_alpha) {
@@ -47,7 +47,7 @@ void compute_alpha(CudaContext& ctx,
     compute_alpha_kernel<<<1, 1, 0, ctx.cuda_stream()>>>(
         d_rr.data(), d_pAp.data(), d_alpha.data()
     );
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 void compute_beta(CudaContext& ctx,
@@ -57,7 +57,7 @@ void compute_beta(CudaContext& ctx,
     compute_beta_kernel<<<1, 1, 0, ctx.cuda_stream()>>>(
         d_rr_new.data(), d_rr.data(), d_beta.data()
     );
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 void update_x_and_r(CudaContext& ctx,
@@ -74,7 +74,7 @@ void update_x_and_r(CudaContext& ctx,
     update_x_and_r_kernel<<<grid_size, block_size, 0, ctx.cuda_stream()>>>(
         d_alpha.data(), p.data(), x.data(), Ap.data(), r.data(), n
     );
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 void update_p(CudaContext& ctx,
@@ -89,7 +89,7 @@ void update_p(CudaContext& ctx,
     update_p_kernel<<<grid_size, block_size, 0, ctx.cuda_stream()>>>(
         d_beta.data(), r.data(), p.data(), n
     );
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 __global__ void check_pAp_valid_kernel(const real* d_pAp, int* d_is_valid) {
@@ -113,8 +113,8 @@ void check_pAp_valid(CudaContext& ctx,
     check_pAp_valid_kernel<<<1, 1, 0, ctx.cuda_stream()>>>(
         d_pAp.data(), d_is_valid.data()
     );
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

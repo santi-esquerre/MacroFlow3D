@@ -1,7 +1,7 @@
 #include "mg_preconditioner.cuh"
 #include "../blas/blas.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 MultigridPreconditioner::MultigridPreconditioner(
@@ -41,17 +41,17 @@ void MultigridPreconditioner::apply(
     auto& finest = hierarchy_->levels[0];
     
     // 1. Copy input residual to finest level RHS
-    rwpt::blas::copy(ctx, r, finest.b.span());
+    macroflow3d::blas::copy(ctx, r, finest.b.span());
     
     // 2. Zero initial guess on finest level
-    rwpt::blas::fill(ctx, finest.x.span(), 0.0);
+    macroflow3d::blas::fill(ctx, finest.x.span(), 0.0);
     
     // 3. Execute ONE V-cycle (recursive from level 0, pin propagated)
     multigrid::v_cycle_recursive(ctx, *hierarchy_, 0, config_, bc_, pin_);
     
     // 4. Copy result to output z
-    rwpt::blas::copy(ctx, DeviceSpan<const real>(finest.x.span()), z);
+    macroflow3d::blas::copy(ctx, DeviceSpan<const real>(finest.x.span()), z);
 }
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

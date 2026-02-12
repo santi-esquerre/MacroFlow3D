@@ -1,0 +1,88 @@
+# ============================================================================
+# RWPT Pipeline — Production Configuration
+# ============================================================================
+# Standard Darcy flow + RWPT transport on a 64³ domain.
+# Case: Dirichlet west(1)/east(0), Periodic elsewhere → non-singular.
+#
+# Usage:
+#   ./rwpt_pipeline config_pipeline.yaml
+# ============================================================================
+
+grid:
+  nx: 64
+  ny: 64
+  nz: 64
+  dx: 0.015625          # 1/64 → domain [0,1]³
+
+stochastic:
+  sigma2: 1.0            # Variance of log(K)
+  corr_length: 0.1       # Correlation length [L]
+  n_modes: 1000          # Fourier modes
+  covariance_type: 0     # 0 = exponential
+  seed: 42
+  K_mean: 1.0
+
+flow:
+  solver: pcg_mg
+  mg_levels: 4
+  mg_pre_smooth: 2
+  mg_post_smooth: 2
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 100
+  cg_rtol: 1.0e-8
+  cg_check_every: 10
+  rtol: 1.0e-8
+
+  pin:
+    mode: auto
+
+  bc:
+    west:   { type: dirichlet, value: 1.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+transport:
+  n_particles: 10000
+  dt: 0.001
+  n_steps: 1000
+  porosity: 1.0
+  diffusion: 0.0          # Dm [L²/T]
+  alpha_l: 0.01            # Longitudinal dispersivity [L]
+  alpha_t: 0.001           # Transverse dispersivity [L]
+  seed: 54321
+  output_every: 100
+  snapshot_every: 0        # 0 = disabled
+  inject_x: 0.0
+  velocity_layout: padded  # "padded" for Par2_Core (default)
+
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 4                       # Number of realizations
+    lambda: 0.1                 # Correlation length for alpha
+    vmean_norm: 1.0             # ||<v>|| (provided; could be computed from flow)
+    sample_every: 10            # Sample stats every N transport steps
+    var_estimator: biased       # "biased" (paper, N denom) or "unbiased" (Par2_Core raw)
+  snapshots:
+    enabled: false
+    every: 200
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+output:
+  output_dir: ./output
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary

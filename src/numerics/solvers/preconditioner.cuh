@@ -16,7 +16,7 @@
 #include "../../core/Scalar.hpp"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 /**
@@ -51,4 +51,4 @@ struct IdentityPreconditioner {
  */
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

@@ -4,7 +4,7 @@
 #include "../../core/Scalar.hpp"
 #include <cstddef>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 struct ReductionWorkspace {
@@ -33,4 +33,4 @@ struct ReductionWorkspace {
 };
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

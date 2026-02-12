@@ -5,7 +5,7 @@
 #include "../../core/BCSpec.hpp"
 #include "../../numerics/pin_spec.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 struct VCycleResult {
@@ -59,4 +59,4 @@ VCycleResult mg_solve(
 );
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

@@ -12,7 +12,7 @@
 #include <curand_kernel.h>
 #include <vector>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -284,7 +284,7 @@ void init_stochastic_rng(StochasticWorkspace& workspace,
         seed,
         workspace.n_modes);
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 void generate_gaussian_field(StochasticWorkspace& workspace,
@@ -329,7 +329,7 @@ void generate_gaussian_field(StochasticWorkspace& workspace,
                 n_modes,
                 k_max);
         }
-        RWPT_CUDA_CHECK(cudaGetLastError());
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // === Stage 2: Evaluate spectral sum at each grid cell ===
@@ -352,7 +352,7 @@ void generate_gaussian_field(StochasticWorkspace& workspace,
             grid.nx, grid.ny, grid.nz,
             sigma_f);
         
-        RWPT_CUDA_CHECK(cudaGetLastError());
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
 }
 
@@ -375,7 +375,7 @@ void generate_K_lognormal(DeviceSpan<real> K,
         const_cast<real*>(logK.data()),  // DeviceSpan<const real> workaround
         n);
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 void generate_K_field(DeviceSpan<real> K,
@@ -421,16 +421,16 @@ void compute_field_stats(DeviceSpan<const real> data,
         d_maxs.data(),
         d_sums.data());
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     
     // Copy block results to host and finalize
     std::vector<real> h_mins(n_blocks), h_maxs(n_blocks), h_sums(n_blocks);
     
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(h_mins.data(), d_mins.data(), n_blocks * sizeof(real),
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(h_mins.data(), d_mins.data(), n_blocks * sizeof(real),
                                cudaMemcpyDeviceToHost, ctx.cuda_stream()));
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(h_maxs.data(), d_maxs.data(), n_blocks * sizeof(real),
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(h_maxs.data(), d_maxs.data(), n_blocks * sizeof(real),
                                cudaMemcpyDeviceToHost, ctx.cuda_stream()));
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(h_sums.data(), d_sums.data(), n_blocks * sizeof(real),
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(h_sums.data(), d_sums.data(), n_blocks * sizeof(real),
                                cudaMemcpyDeviceToHost, ctx.cuda_stream()));
     
     ctx.synchronize();
@@ -447,4 +447,4 @@ void compute_field_stats(DeviceSpan<const real> data,
 }
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

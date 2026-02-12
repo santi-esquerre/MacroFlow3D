@@ -3,7 +3,7 @@
 #include <cassert>
 #include <climits>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 void nrm2_device(CudaContext& ctx, 
@@ -13,7 +13,7 @@ void nrm2_device(CudaContext& ctx,
     
     if (x.size() == 0) {
         real zero = 0.0;
-        RWPT_CUDA_CHECK(cudaMemcpyAsync(d_result.data(), &zero, sizeof(real), 
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_result.data(), &zero, sizeof(real), 
                                          cudaMemcpyHostToDevice, ctx.cuda_stream()));
         return;
     }
@@ -26,16 +26,16 @@ void nrm2_device(CudaContext& ctx,
     
     // Save current pointer mode and set to device
     cublasPointerMode_t old_mode;
-    RWPT_CUBLAS_CHECK(cublasGetPointerMode(handle, &old_mode));
-    RWPT_CUBLAS_CHECK(cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_DEVICE));
+    MACROFLOW3D_CUBLAS_CHECK(cublasGetPointerMode(handle, &old_mode));
+    MACROFLOW3D_CUBLAS_CHECK(cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_DEVICE));
     
     // Compute L2 norm: result in device memory
-    RWPT_CUBLAS_CHECK(cublasDnrm2(handle, static_cast<int>(n), 
+    MACROFLOW3D_CUBLAS_CHECK(cublasDnrm2(handle, static_cast<int>(n), 
                                    x.data(), 1, 
                                    d_result.data()));
     
     // Restore pointer mode
-    RWPT_CUBLAS_CHECK(cublasSetPointerMode(handle, old_mode));
+    MACROFLOW3D_CUBLAS_CHECK(cublasSetPointerMode(handle, old_mode));
 }
 
 real nrm2_host(CudaContext& ctx, 
@@ -46,7 +46,7 @@ real nrm2_host(CudaContext& ctx,
     nrm2_device(ctx, x, ws.d_scalar.span(), ws);
     
     real result;
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(&result, ws.d_scalar.data(), sizeof(real), 
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(&result, ws.d_scalar.data(), sizeof(real), 
                                      cudaMemcpyDeviceToHost, ctx.cuda_stream()));
     ctx.synchronize();
     
@@ -54,4 +54,4 @@ real nrm2_host(CudaContext& ctx,
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

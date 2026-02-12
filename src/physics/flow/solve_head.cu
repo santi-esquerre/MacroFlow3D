@@ -19,7 +19,7 @@
 #include <iostream>
 #include <cmath>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -81,7 +81,7 @@ void init_head_guess(
             h.data(), h.size(), real(0.0)
         );
     }
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 HeadSolveResult solve_head(
@@ -93,8 +93,8 @@ HeadSolveResult solve_head(
     CudaContext& ctx,
     FlowWorkspace& workspace
 ) {
-    using namespace rwpt::multigrid;
-    using namespace rwpt::blas;
+    using namespace macroflow3d::multigrid;
+    using namespace macroflow3d::blas;
     
     HeadSolveResult result;
     
@@ -121,7 +121,7 @@ HeadSolveResult solve_head(
     
     // === 2. Copy K to finest level and coarsen ===
     // Copy K to level 0
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
         hier.levels[0].K.data(), K.data(), n * sizeof(real),
         cudaMemcpyDeviceToDevice, ctx.cuda_stream()
     ));
@@ -147,7 +147,7 @@ HeadSolveResult solve_head(
     // === 4. Initial guess ===
     // Copy to MG level 0 x buffer, or use provided h
     init_head_guess(h, grid, bc, ctx);
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
         hier.levels[0].x.data(), h.data(), n * sizeof(real),
         cudaMemcpyDeviceToDevice, ctx.cuda_stream()
     ));
@@ -276,7 +276,7 @@ HeadSolveResult solve_head(
     }
     
     // === 6. Copy solution back ===
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
         h.data(), hier.levels[0].x.data(), n * sizeof(real),
         cudaMemcpyDeviceToDevice, ctx.cuda_stream()
     ));
@@ -287,4 +287,4 @@ HeadSolveResult solve_head(
 }
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

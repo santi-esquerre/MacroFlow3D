@@ -4,7 +4,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 // CG scalar update kernels (device-only, no sync)
@@ -41,4 +41,4 @@ void check_pAp_valid(CudaContext& ctx,
                      DeviceSpan<int> d_is_valid);
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

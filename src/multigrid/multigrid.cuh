@@ -18,4 +18,4 @@
 #include "cycle/v_cycle.cuh"
 
 // Note: No namespace re-export to avoid pollution.
-// Use rwpt::multigrid::* explicitly.
+// Use macroflow3d::multigrid::* explicitly.

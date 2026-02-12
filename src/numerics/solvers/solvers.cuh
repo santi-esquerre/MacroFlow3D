@@ -1,6 +1,6 @@
 #pragma once
 
-// Solvers for rwpt project
+// Solvers for MacroFlow3D
 
 #include "cg_types.hpp"
 #include "cg.cuh"

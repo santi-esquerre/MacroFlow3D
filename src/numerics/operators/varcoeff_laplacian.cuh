@@ -27,11 +27,11 @@
 #include "../../core/Scalar.hpp"
 #include "../pin_spec.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 // Re-export PinSpec in operators namespace for backward compat
-using rwpt::PinSpec;
+using macroflow3d::PinSpec;
 
 /**
  * Variable-coefficient Laplacian operator: -∇·(K∇h)
@@ -69,4 +69,4 @@ private:
 };
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

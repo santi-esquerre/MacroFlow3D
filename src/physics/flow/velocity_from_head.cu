@@ -14,13 +14,14 @@
 #include "velocity_from_head.cuh"
 #include "../../core/BCSpecDevice.cuh"
 #include "../../core/DeviceBuffer.cuh"
+#include "../../runtime/cuda_check.cuh"
 #include <cuda_runtime.h>
 #include <cmath>
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -71,21 +72,12 @@ int W_idx(int i, int j, int k, int nx, int ny) {
 }
 
 /**
- * @brief Periodic wrap for cell index in x direction
+ * @brief Padded merge_id: iz*(ny+1)*(nx+1) + iy*(nx+1) + ix
+ * All components share this index space of size (nx+1)*(ny+1)*(nz+1).
  */
 __device__ __forceinline__
-int wrap_x(int i, int nx) {
-    return (i + nx) % nx;  // handles both negative and positive
-}
-
-__device__ __forceinline__
-int wrap_y(int j, int ny) {
-    return (j + ny) % ny;
-}
-
-__device__ __forceinline__
-int wrap_z(int k, int nz) {
-    return (k + nz) % nz;
+int padded_idx(int ix, int iy, int iz, int nx, int ny) {
+    return iz * (ny + 1) * (nx + 1) + iy * (nx + 1) + ix;
 }
 
 // BC type constants (matching legacy)
@@ -444,6 +436,203 @@ __global__ void kernel_W_top(
 }
 
 // ============================================================================
+// Padded facefield kernels — same physics, padded_idx layout
+// ============================================================================
+
+// --- Interior ---
+
+__global__ void kernel_U_interior_padded(
+    real* __restrict__ U,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dx)
+{
+    int face_i = 1 + threadIdx.x + blockIdx.x * blockDim.x;
+    int j = threadIdx.y + blockIdx.y * blockDim.y;
+    int k = threadIdx.z + blockIdx.z * blockDim.z;
+    if (face_i > nx - 1 || j >= ny || k >= nz) return;
+
+    int c_left  = cell_idx(face_i - 1, j, k, nx, ny);
+    int c_right = cell_idx(face_i,     j, k, nx, ny);
+    real K_eff = harmonic_mean(K[c_left], K[c_right]);
+    real u = -K_eff * (H[c_right] - H[c_left]) / dx;
+    U[padded_idx(face_i, j, k, nx, ny)] = u;
+}
+
+__global__ void kernel_V_interior_padded(
+    real* __restrict__ V,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dy)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int face_j = 1 + threadIdx.y + blockIdx.y * blockDim.y;
+    int k = threadIdx.z + blockIdx.z * blockDim.z;
+    if (i >= nx || face_j > ny - 1 || k >= nz) return;
+
+    int c_south = cell_idx(i, face_j - 1, k, nx, ny);
+    int c_north = cell_idx(i, face_j,     k, nx, ny);
+    real K_eff = harmonic_mean(K[c_south], K[c_north]);
+    real v = -K_eff * (H[c_north] - H[c_south]) / dy;
+    V[padded_idx(i, face_j, k, nx, ny)] = v;
+}
+
+__global__ void kernel_W_interior_padded(
+    real* __restrict__ W,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dz)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int j = threadIdx.y + blockIdx.y * blockDim.y;
+    int face_k = 1 + threadIdx.z + blockIdx.z * blockDim.z;
+    if (i >= nx || j >= ny || face_k > nz - 1) return;
+
+    int c_bottom = cell_idx(i, j, face_k - 1, nx, ny);
+    int c_top    = cell_idx(i, j, face_k,     nx, ny);
+    real K_eff = harmonic_mean(K[c_bottom], K[c_top]);
+    real w = -K_eff * (H[c_top] - H[c_bottom]) / dz;
+    W[padded_idx(i, j, face_k, nx, ny)] = w;
+}
+
+// --- Boundary (padded) ---
+
+__global__ void kernel_U_west_padded(
+    real* __restrict__ U,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dx, uint8_t bc_type, real H_bc)
+{
+    int j = threadIdx.x + blockIdx.x * blockDim.x;
+    int k = threadIdx.y + blockIdx.y * blockDim.y;
+    if (j >= ny || k >= nz) return;
+
+    int c_in = cell_idx(0, j, k, nx, ny);
+    real u = 0.0;
+    if (bc_type == BC_DIRICHLET)
+        u = -K[c_in] * (H[c_in] - H_bc) / (dx * 0.5);
+    else if (bc_type == BC_PERIODIC) {
+        int c_w = cell_idx(nx - 1, j, k, nx, ny);
+        u = -harmonic_mean(K[c_w], K[c_in]) * (H[c_in] - H[c_w]) / dx;
+    }
+    U[padded_idx(0, j, k, nx, ny)] = u;
+}
+
+__global__ void kernel_U_east_padded(
+    real* __restrict__ U,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dx, uint8_t bc_type, real H_bc)
+{
+    int j = threadIdx.x + blockIdx.x * blockDim.x;
+    int k = threadIdx.y + blockIdx.y * blockDim.y;
+    if (j >= ny || k >= nz) return;
+
+    int c_in = cell_idx(nx - 1, j, k, nx, ny);
+    real u = 0.0;
+    if (bc_type == BC_DIRICHLET)
+        u = -K[c_in] * (H_bc - H[c_in]) / (dx * 0.5);
+    else if (bc_type == BC_PERIODIC) {
+        int c_w = cell_idx(0, j, k, nx, ny);
+        u = -harmonic_mean(K[c_in], K[c_w]) * (H[c_w] - H[c_in]) / dx;
+    }
+    U[padded_idx(nx, j, k, nx, ny)] = u;
+}
+
+__global__ void kernel_V_south_padded(
+    real* __restrict__ V,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dy, uint8_t bc_type, real H_bc)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int k = threadIdx.y + blockIdx.y * blockDim.y;
+    if (i >= nx || k >= nz) return;
+
+    int c_in = cell_idx(i, 0, k, nx, ny);
+    real v = 0.0;
+    if (bc_type == BC_DIRICHLET)
+        v = -K[c_in] * (H[c_in] - H_bc) / (dy * 0.5);
+    else if (bc_type == BC_PERIODIC) {
+        int c_w = cell_idx(i, ny - 1, k, nx, ny);
+        v = -harmonic_mean(K[c_w], K[c_in]) * (H[c_in] - H[c_w]) / dy;
+    }
+    V[padded_idx(i, 0, k, nx, ny)] = v;
+}
+
+__global__ void kernel_V_north_padded(
+    real* __restrict__ V,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dy, uint8_t bc_type, real H_bc)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int k = threadIdx.y + blockIdx.y * blockDim.y;
+    if (i >= nx || k >= nz) return;
+
+    int c_in = cell_idx(i, ny - 1, k, nx, ny);
+    real v = 0.0;
+    if (bc_type == BC_DIRICHLET)
+        v = -K[c_in] * (H_bc - H[c_in]) / (dy * 0.5);
+    else if (bc_type == BC_PERIODIC) {
+        int c_w = cell_idx(i, 0, k, nx, ny);
+        v = -harmonic_mean(K[c_in], K[c_w]) * (H[c_w] - H[c_in]) / dy;
+    }
+    V[padded_idx(i, ny, k, nx, ny)] = v;
+}
+
+__global__ void kernel_W_bottom_padded(
+    real* __restrict__ W,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dz, uint8_t bc_type, real H_bc)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int j = threadIdx.y + blockIdx.y * blockDim.y;
+    if (i >= nx || j >= ny) return;
+
+    int c_in = cell_idx(i, j, 0, nx, ny);
+    real w = 0.0;
+    if (bc_type == BC_DIRICHLET)
+        w = -K[c_in] * (H[c_in] - H_bc) / (dz * 0.5);
+    else if (bc_type == BC_PERIODIC) {
+        int c_w = cell_idx(i, j, nz - 1, nx, ny);
+        w = -harmonic_mean(K[c_w], K[c_in]) * (H[c_in] - H[c_w]) / dz;
+    }
+    W[padded_idx(i, j, 0, nx, ny)] = w;
+}
+
+__global__ void kernel_W_top_padded(
+    real* __restrict__ W,
+    const real* __restrict__ H,
+    const real* __restrict__ K,
+    int nx, int ny, int nz,
+    real dz, uint8_t bc_type, real H_bc)
+{
+    int i = threadIdx.x + blockIdx.x * blockDim.x;
+    int j = threadIdx.y + blockIdx.y * blockDim.y;
+    if (i >= nx || j >= ny) return;
+
+    int c_in = cell_idx(i, j, nz - 1, nx, ny);
+    real w = 0.0;
+    if (bc_type == BC_DIRICHLET)
+        w = -K[c_in] * (H_bc - H[c_in]) / (dz * 0.5);
+    else if (bc_type == BC_PERIODIC) {
+        int c_w = cell_idx(i, j, 0, nx, ny);
+        w = -harmonic_mean(K[c_in], K[c_w]) * (H[c_w] - H[c_in]) / dz;
+    }
+    W[padded_idx(i, j, nz, nx, ny)] = w;
+}
+
+// ============================================================================
 // Reduction kernels for checksums
 // ============================================================================
 
@@ -539,6 +728,7 @@ void compute_velocity_from_head(
             (nz + block.z - 1) / block.z
         );
         kernel_U_interior<<<grid_U, block>>>(U, H, K_ptr, nx, ny, nz, dx);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // V interior: faces j = 1 to ny-1
@@ -550,6 +740,7 @@ void compute_velocity_from_head(
             (nz + block.z - 1) / block.z
         );
         kernel_V_interior<<<grid_V, block>>>(V, H, K_ptr, nx, ny, nz, dy);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // W interior: faces k = 1 to nz-1
@@ -561,6 +752,7 @@ void compute_velocity_from_head(
             (num_faces_z + block.z - 1) / block.z
         );
         kernel_W_interior<<<grid_W, block>>>(W, H, K_ptr, nx, ny, nz, dz);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // ========================================================================
@@ -574,6 +766,7 @@ void compute_velocity_from_head(
         dim3 grid_yz((ny + block2D.x - 1) / block2D.x, (nz + block2D.y - 1) / block2D.y);
         kernel_U_west<<<grid_yz, block2D>>>(U, H, K_ptr, nx, ny, nz, dx, bc_xmin, bc.xmin.value);
         kernel_U_east<<<grid_yz, block2D>>>(U, H, K_ptr, nx, ny, nz, dx, bc_xmax, bc.xmax.value);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // V boundaries (south/north faces)
@@ -581,6 +774,7 @@ void compute_velocity_from_head(
         dim3 grid_xz((nx + block2D.x - 1) / block2D.x, (nz + block2D.y - 1) / block2D.y);
         kernel_V_south<<<grid_xz, block2D>>>(V, H, K_ptr, nx, ny, nz, dy, bc_ymin, bc.ymin.value);
         kernel_V_north<<<grid_xz, block2D>>>(V, H, K_ptr, nx, ny, nz, dy, bc_ymax, bc.ymax.value);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // W boundaries (bottom/top faces)
@@ -588,9 +782,108 @@ void compute_velocity_from_head(
         dim3 grid_xy((nx + block2D.x - 1) / block2D.x, (ny + block2D.y - 1) / block2D.y);
         kernel_W_bottom<<<grid_xy, block2D>>>(W, H, K_ptr, nx, ny, nz, dz, bc_zmin, bc.zmin.value);
         kernel_W_top<<<grid_xy, block2D>>>(W, H, K_ptr, nx, ny, nz, dz, bc_zmax, bc.zmax.value);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
     
     // Synchronize
+    ctx.synchronize();
+}
+
+// ============================================================================
+// Padded facefield host orchestration
+// ============================================================================
+
+void compute_velocity_from_head(
+    PaddedVelocityField& vel,
+    const HeadField& head,
+    const KField& K,
+    const Grid3D& grid,
+    const BCSpec& bc,
+    CudaContext& ctx)
+{
+    int nx = grid.nx;
+    int ny = grid.ny;
+    int nz = grid.nz;
+    real dx = grid.dx;
+    real dy = grid.dy;
+    real dz = grid.dz;
+
+    real* U = vel.U_ptr();
+    real* V = vel.V_ptr();
+    real* W = vel.W_ptr();
+    const real* H = head.device_ptr();
+    const real* K_ptr = K.device_ptr();
+
+    uint8_t bc_xmin = bc_to_int(bc.xmin.type);
+    uint8_t bc_xmax = bc_to_int(bc.xmax.type);
+    uint8_t bc_ymin = bc_to_int(bc.ymin.type);
+    uint8_t bc_ymax = bc_to_int(bc.ymax.type);
+    uint8_t bc_zmin = bc_to_int(bc.zmin.type);
+    uint8_t bc_zmax = bc_to_int(bc.zmax.type);
+
+    // ========================================================================
+    // Interior kernels (padded layout)
+    // ========================================================================
+    dim3 block(8, 8, 8);
+
+    // U interior: faces i = 1..nx-1, j = 0..ny-1, k = 0..nz-1
+    {
+        int nf = nx - 1;
+        dim3 g((nf + block.x - 1) / block.x,
+               (ny + block.y - 1) / block.y,
+               (nz + block.z - 1) / block.z);
+        kernel_U_interior_padded<<<g, block>>>(U, H, K_ptr, nx, ny, nz, dx);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+    // V interior: i = 0..nx-1, faces j = 1..ny-1, k = 0..nz-1
+    {
+        int nf = ny - 1;
+        dim3 g((nx + block.x - 1) / block.x,
+               (nf + block.y - 1) / block.y,
+               (nz + block.z - 1) / block.z);
+        kernel_V_interior_padded<<<g, block>>>(V, H, K_ptr, nx, ny, nz, dy);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+    // W interior: i = 0..nx-1, j = 0..ny-1, faces k = 1..nz-1
+    {
+        int nf = nz - 1;
+        dim3 g((nx + block.x - 1) / block.x,
+               (ny + block.y - 1) / block.y,
+               (nf + block.z - 1) / block.z);
+        kernel_W_interior_padded<<<g, block>>>(W, H, K_ptr, nx, ny, nz, dz);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+
+    // ========================================================================
+    // Boundary kernels (padded layout)
+    // ========================================================================
+    dim3 block2D(16, 16);
+
+    // U boundaries
+    {
+        dim3 g((ny + block2D.x - 1) / block2D.x,
+               (nz + block2D.y - 1) / block2D.y);
+        kernel_U_west_padded<<<g, block2D>>>(U, H, K_ptr, nx, ny, nz, dx, bc_xmin, bc.xmin.value);
+        kernel_U_east_padded<<<g, block2D>>>(U, H, K_ptr, nx, ny, nz, dx, bc_xmax, bc.xmax.value);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+    // V boundaries
+    {
+        dim3 g((nx + block2D.x - 1) / block2D.x,
+               (nz + block2D.y - 1) / block2D.y);
+        kernel_V_south_padded<<<g, block2D>>>(V, H, K_ptr, nx, ny, nz, dy, bc_ymin, bc.ymin.value);
+        kernel_V_north_padded<<<g, block2D>>>(V, H, K_ptr, nx, ny, nz, dy, bc_ymax, bc.ymax.value);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+    // W boundaries
+    {
+        dim3 g((nx + block2D.x - 1) / block2D.x,
+               (ny + block2D.y - 1) / block2D.y);
+        kernel_W_bottom_padded<<<g, block2D>>>(W, H, K_ptr, nx, ny, nz, dz, bc_zmin, bc.zmin.value);
+        kernel_W_top_padded<<<g, block2D>>>(W, H, K_ptr, nx, ny, nz, dz, bc_zmax, bc.zmax.value);
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+
     ctx.synchronize();
 }
 
@@ -838,4 +1131,4 @@ void verify_mean_velocity_darcy(
 }
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

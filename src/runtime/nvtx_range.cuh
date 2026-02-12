@@ -6,7 +6,7 @@
 #ifdef USE_NVTX
 #include <nvToolsExt.h>
 
-namespace rwpt {
+namespace macroflow3d {
 
 class NvtxRange {
 public:
@@ -22,15 +22,19 @@ public:
     NvtxRange& operator=(const NvtxRange&) = delete;
 };
 
-#define RWPT_NVTX_RANGE_CONCAT_IMPL(a, b) a##b
-#define RWPT_NVTX_RANGE_CONCAT(a, b) RWPT_NVTX_RANGE_CONCAT_IMPL(a, b)
-#define RWPT_NVTX_RANGE(name) ::rwpt::NvtxRange RWPT_NVTX_RANGE_CONCAT(__nvtx_range__, __COUNTER__)(name)
+// Token pasting helpers (guard against redefinition)
+#ifndef MACROFLOW3D_CAT
+#  define MACROFLOW3D_CAT_INNER(a, b) a##b
+#  define MACROFLOW3D_CAT(a, b)       MACROFLOW3D_CAT_INNER(a, b)
+#endif
 
-} // namespace rwpt
+#define MACROFLOW3D_NVTX_RANGE(name) ::macroflow3d::NvtxRange MACROFLOW3D_CAT(__nvtx_range__, __COUNTER__)(name)
+
+} // namespace macroflow3d
 
 #else
 
-namespace rwpt {
+namespace macroflow3d {
 
 // No-op implementation when NVTX is not available
 class NvtxRange {
@@ -38,8 +42,8 @@ public:
     explicit NvtxRange(const char*) {}
 };
 
-#define RWPT_NVTX_RANGE(name) do {} while(0)
+#define MACROFLOW3D_NVTX_RANGE(name) do {} while(0)
 
-} // namespace rwpt
+} // namespace macroflow3d
 
 #endif // USE_NVTX

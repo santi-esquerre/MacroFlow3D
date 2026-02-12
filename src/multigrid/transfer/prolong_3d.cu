@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <cassert>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 /**
@@ -628,8 +628,8 @@ void prolong_3d_add(
     prolong_vertex_kernel<<<1, 1, 0, stream>>>(phiFine, phiCoarse, Nx, Ny, Nz, Nx - 1, Ny - 1, 0);
     prolong_vertex_kernel<<<1, 1, 0, stream>>>(phiFine, phiCoarse, Nx, Ny, Nz, Nx - 1, Ny - 1, Nz - 1);
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

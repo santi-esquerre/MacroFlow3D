@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
-namespace rwpt {
+namespace macroflow3d {
 
 class CudaContext {
 public:
@@ -34,4 +34,4 @@ private:
     void release();
 };
 
-} // namespace rwpt
+} // namespace macroflow3d

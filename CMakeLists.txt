@@ -1,28 +1,92 @@
 cmake_minimum_required(VERSION 3.18)
-project(rwpt-mdisp-simulator CUDA CXX)
+project(MacroFlow3D LANGUAGES CUDA CXX)
 
-# CUDA setup
+# ============================================================================
+# Standards
+# ============================================================================
 enable_language(CUDA)
-set(CMAKE_CUDA_STANDARD 14)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)  # Adjust for your GPU
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
-# Find CUDA toolkit for cuBLAS
+# ============================================================================
+# Project options
+# ============================================================================
+option(MACROFLOW3D_BUILD_APPS          "Build application executables"                  ON)
+option(MACROFLOW3D_ENABLE_DIAGNOSTICS  "Enable diagnostic prints and sync checks"      OFF)
+option(MACROFLOW3D_ENABLE_PROFILING    "Enable stage profiling with CUDA events"       OFF)
+option(MACROFLOW3D_ENABLE_NVTX         "Enable NVTX markers for Nsight Systems"       OFF)
+
+# CUDA architectures: honour CMAKE_CUDA_ARCHITECTURES if set externally,
+# otherwise provide a sensible default covering Volta → Ampere.
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR CMAKE_CUDA_ARCHITECTURES STREQUAL "")
+    set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
+endif()
+
+# In Debug builds, enable diagnostics by default
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(MACROFLOW3D_ENABLE_DIAGNOSTICS ON CACHE BOOL "" FORCE)
+endif()
+
+# ============================================================================
+# Find CUDA toolkit
+# ============================================================================
 find_package(CUDAToolkit REQUIRED)
 
+# clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CUDA_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
+set(CMAKE_CUDA_USE_RESPONSE_FILE_FOR_LIBRARIES OFF)
+
+
 # ============================================================================
-# External: yaml-cpp (vendorized, static build)
+# External: yaml-cpp (vendorized, static build, tests/tools off)
 # ============================================================================
-set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TESTS   OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS   OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
-set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_INSTALL       OFF CACHE BOOL "" FORCE)
 add_subdirectory(src/external/yaml-cpp-0.8.0 EXCLUDE_FROM_ALL)
 
 # ============================================================================
+# External: nlohmann/json (header-only, vendorized)
+# ============================================================================
+# Included via src/external/nlohmann/json.hpp — no add_subdirectory needed.
+
+# ============================================================================
+# Build metadata: git hash, build type, CUDA architectures (Etapa 8)
+# ============================================================================
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE MACROFLOW3D_GIT_HASH_RAW
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE GIT_RESULT
+)
+if(NOT GIT_RESULT EQUAL 0)
+    set(MACROFLOW3D_GIT_HASH_RAW "unknown")
+endif()
+
+# Stringify CUDA architectures list for embedding
+string(REPLACE ";" " " MACROFLOW3D_CUDA_ARCH_STR "${CMAKE_CUDA_ARCHITECTURES}")
+
+# ============================================================================
+# External: Par2_Core (GPU RWPT engine, static build, extras off)
+# ============================================================================
+set(PAR2_BUILD_EXAMPLES       OFF CACHE BOOL "" FORCE)
+set(PAR2_BUILD_LEGACY_RUNNER  OFF CACHE BOOL "" FORCE)
+set(PAR2_BUILD_ORIGINAL       OFF CACHE BOOL "" FORCE)
+add_subdirectory(src/external/Par2_Core EXCLUDE_FROM_ALL)
+
+# ============================================================================
 # Source files
+# ============================================================================
 set(RUNTIME_SOURCES
     src/runtime/CudaContext.cu
+    src/runtime/pipeline/PipelineRunner.cu
+    src/runtime/ensemble/EnsembleRunner.cu
 )
 
 set(BLAS_SOURCES
@@ -60,14 +124,20 @@ set(PHYSICS_SOURCES
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
     src/physics/stochastic/stochastic.cu
+    src/physics/particles/par2_adapter/Par2TransportAdapter.cu
+    src/physics/particles/par2_adapter/Par2StatsAdapter.cu
+    src/physics/particles/par2_adapter/Par2SnapshotAdapter.cu
 )
 
 set(IO_SOURCES
     src/io/config/ConfigYaml.cpp
+    src/runtime/analysis/AnalysisRunner.cpp
 )
 
-# Library
-add_library(rwpt_lib STATIC
+# ============================================================================
+# Library target: macroflow3d_lib
+# ============================================================================
+add_library(macroflow3d_lib STATIC
     ${RUNTIME_SOURCES}
     ${BLAS_SOURCES}
     ${SOLVER_SOURCES}
@@ -77,40 +147,62 @@ add_library(rwpt_lib STATIC
     ${IO_SOURCES}
 )
 
-target_include_directories(rwpt_lib PUBLIC ${CMAKE_SOURCE_DIR})
-target_link_libraries(rwpt_lib PUBLIC CUDA::cudart CUDA::cublas yaml-cpp)
+target_include_directories(macroflow3d_lib PUBLIC ${CMAKE_SOURCE_DIR})
 
+# Link dependencies — curand is needed by stochastic.cu (in the lib)
+target_link_libraries(macroflow3d_lib
+    PUBLIC  CUDA::cudart CUDA::cublas CUDA::curand
+            yaml-cpp par2_core
+)
+
+# Separable compilation (required for cross-TU __device__ function references)
+set_target_properties(macroflow3d_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+# NVCC flags
+target_compile_options(macroflow3d_lib
+    PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+)
+
+# ============================================================================
+# Build metadata compile definitions (Etapa 8)
+#   Injected so BuildInfo.hpp can read them at compile time.
+# ============================================================================
+target_compile_definitions(macroflow3d_lib PUBLIC
+    MACROFLOW3D_GIT_HASH="${MACROFLOW3D_GIT_HASH_RAW}"
+    MACROFLOW3D_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
+    MACROFLOW3D_CUDA_ARCHITECTURES="${MACROFLOW3D_CUDA_ARCH_STR}"
+)
+
+# ============================================================================
+# Diagnostic and profiling compile definitions
+#
+#   cmake -DCMAKE_BUILD_TYPE=Release ..                      # All flags OFF
+#   cmake -DCMAKE_BUILD_TYPE=Debug ..                        # DIAGNOSTICS ON
+#   cmake -DMACROFLOW3D_ENABLE_PROFILING=ON ..               # Force profiling ON
+# ============================================================================
+if(MACROFLOW3D_ENABLE_DIAGNOSTICS)
+    target_compile_definitions(macroflow3d_lib PUBLIC MACROFLOW3D_ENABLE_DIAGNOSTICS=1)
+else()
+    target_compile_definitions(macroflow3d_lib PUBLIC MACROFLOW3D_ENABLE_DIAGNOSTICS=0)
+endif()
+
+if(MACROFLOW3D_ENABLE_PROFILING)
+    target_compile_definitions(macroflow3d_lib PUBLIC MACROFLOW3D_ENABLE_PROFILING=1)
+else()
+    target_compile_definitions(macroflow3d_lib PUBLIC MACROFLOW3D_ENABLE_PROFILING=0)
+endif()
+
+if(MACROFLOW3D_ENABLE_NVTX)
+    target_compile_definitions(macroflow3d_lib PUBLIC MACROFLOW3D_ENABLE_NVTX=1 USE_NVTX=1)
+    target_link_libraries(macroflow3d_lib PUBLIC CUDA::nvToolsExt)
+else()
+    target_compile_definitions(macroflow3d_lib PUBLIC MACROFLOW3D_ENABLE_NVTX=0)
+endif()
+
+# ============================================================================
 # Apps
-add_executable(smoke_device apps/smoke_device.cu)
-target_link_libraries(smoke_device rwpt_lib)
-
-add_executable(smoke_core apps/smoke_core.cu)
-target_link_libraries(smoke_core rwpt_lib)
-
-add_executable(cg_smoke apps/cg_smoke.cu)
-target_link_libraries(cg_smoke rwpt_lib)
-
-add_executable(mg_smoke apps/mg_smoke.cu)
-target_link_libraries(mg_smoke rwpt_lib)
-
-add_executable(mg_cg_compare apps/mg_cg_compare.cu)
-target_link_libraries(mg_cg_compare rwpt_lib)
-
-add_executable(operator_debug apps/operator_debug.cu)
-target_link_libraries(operator_debug rwpt_lib)
-
-add_executable(pcg_smoke apps/pcg_smoke.cu)
-target_link_libraries(pcg_smoke rwpt_lib)
-
-add_executable(physics_types_smoke apps/physics_types_smoke.cu)
-target_link_libraries(physics_types_smoke rwpt_lib CUDA::curand)
-
-add_executable(rwpt_flow_transport apps/rwpt_flow_transport.cu)
-target_link_libraries(rwpt_flow_transport rwpt_lib CUDA::curand)
-
-add_executable(pin_necessity_test apps/pin_necessity_test.cu)
-target_link_libraries(pin_necessity_test rwpt_lib)
-
-# Compile options
-set_target_properties(rwpt_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-target_compile_options(rwpt_lib PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
+# ============================================================================
+if(MACROFLOW3D_BUILD_APPS)
+    add_executable(macroflow3d_pipeline apps/macroflow3d_pipeline.cu)
+    target_link_libraries(macroflow3d_pipeline PRIVATE macroflow3d_lib)
+endif()

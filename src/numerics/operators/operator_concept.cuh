@@ -24,7 +24,7 @@
 #include "../../core/BCSpec.hpp"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 /**
@@ -72,4 +72,4 @@ struct MGOperator {
 // It needs minor refactoring to fit this concept (currently has apply_add, not apply)
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

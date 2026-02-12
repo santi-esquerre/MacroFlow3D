@@ -5,7 +5,7 @@
 #include <cuda_runtime.h>
 #include <cstdint>
 
-namespace rwpt {
+namespace macroflow3d {
 
 // Device-friendly POD for BC specification
 // Passed by value to kernels (cheap: 6 bytes + 6*8 = 54 bytes)
@@ -51,4 +51,4 @@ inline BCSpecDevice to_device(const BCSpec& bc) {
     return dev;
 }
 
-} // namespace rwpt
+} // namespace macroflow3d

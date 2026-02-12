@@ -3,7 +3,7 @@
 #include <cassert>
 #include <climits>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 void dot_device(CudaContext& ctx, 
@@ -14,7 +14,7 @@ void dot_device(CudaContext& ctx,
     
     if (x.size() == 0 || y.size() == 0) {
         real zero = 0.0;
-        RWPT_CUDA_CHECK(cudaMemcpyAsync(d_result.data(), &zero, sizeof(real), 
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_result.data(), &zero, sizeof(real), 
                                          cudaMemcpyHostToDevice, ctx.cuda_stream()));
         return;
     }
@@ -27,17 +27,17 @@ void dot_device(CudaContext& ctx,
     
     // Save current pointer mode and set to device
     cublasPointerMode_t old_mode;
-    RWPT_CUBLAS_CHECK(cublasGetPointerMode(handle, &old_mode));
-    RWPT_CUBLAS_CHECK(cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_DEVICE));
+    MACROFLOW3D_CUBLAS_CHECK(cublasGetPointerMode(handle, &old_mode));
+    MACROFLOW3D_CUBLAS_CHECK(cublasSetPointerMode(handle, CUBLAS_POINTER_MODE_DEVICE));
     
     // Compute dot product: result in device memory
-    RWPT_CUBLAS_CHECK(cublasDdot(handle, static_cast<int>(n), 
+    MACROFLOW3D_CUBLAS_CHECK(cublasDdot(handle, static_cast<int>(n), 
                                   x.data(), 1, 
                                   y.data(), 1, 
                                   d_result.data()));
     
     // Restore pointer mode
-    RWPT_CUBLAS_CHECK(cublasSetPointerMode(handle, old_mode));
+    MACROFLOW3D_CUBLAS_CHECK(cublasSetPointerMode(handle, old_mode));
 }
 
 real dot_host(CudaContext& ctx, 
@@ -49,7 +49,7 @@ real dot_host(CudaContext& ctx,
     dot_device(ctx, x, y, ws.d_scalar.span(), ws);
     
     real result;
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(&result, ws.d_scalar.data(), sizeof(real), 
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(&result, ws.d_scalar.data(), sizeof(real), 
                                      cudaMemcpyDeviceToHost, ctx.cuda_stream()));
     ctx.synchronize();
     
@@ -57,4 +57,4 @@ real dot_host(CudaContext& ctx,
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

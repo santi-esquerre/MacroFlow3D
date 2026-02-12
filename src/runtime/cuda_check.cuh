@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdio>
 
-namespace rwpt {
+namespace macroflow3d {
 
 // CUDA runtime error checking
 inline void cuda_check_impl(cudaError_t err, const char* file, int line) {
@@ -17,7 +17,7 @@ inline void cuda_check_impl(cudaError_t err, const char* file, int line) {
     }
 }
 
-#define RWPT_CUDA_CHECK(expr) ::rwpt::cuda_check_impl((expr), __FILE__, __LINE__)
+#define MACROFLOW3D_CUDA_CHECK(expr) ::macroflow3d::cuda_check_impl((expr), __FILE__, __LINE__)
 
 // cuBLAS error checking
 inline void cublas_check_impl(cublasStatus_t status, const char* file, int line) {
@@ -28,6 +28,6 @@ inline void cublas_check_impl(cublasStatus_t status, const char* file, int line)
     }
 }
 
-#define RWPT_CUBLAS_CHECK(expr) ::rwpt::cublas_check_impl((expr), __FILE__, __LINE__)
+#define MACROFLOW3D_CUBLAS_CHECK(expr) ::macroflow3d::cublas_check_impl((expr), __FILE__, __LINE__)
 
-} // namespace rwpt
+} // namespace macroflow3d

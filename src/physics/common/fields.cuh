@@ -21,7 +21,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -203,5 +203,115 @@ struct VelocityField {
     Grid3D grid() const { return Grid3D(nx, ny, nz, dx, dy, dz); }
 };
 
+// ============================================================================
+// Velocity layout selector
+// ============================================================================
+
+/**
+ * @brief Selects how U/V/W are stored in memory
+ *
+ * CompactMAC   – legacy default.  Sizes: U=(nx+1)*ny*nz, V=nx*(ny+1)*nz,
+ *               W=nx*ny*(nz+1).  Fastest; used for internal flow solves.
+ *
+ * PaddedFaceField – Par2_Core compatible.  Every component has the same
+ *               size (nx+1)*(ny+1)*(nz+1), indexed via
+ *               merge_id(ix,iy,iz) = iz*(ny+1)*(nx+1) + iy*(nx+1) + ix.
+ *               Only the physically meaningful entries are written;
+ *               the rest stay at 0.
+ */
+enum class VelocityLayout : uint8_t {
+    CompactMAC      = 0,
+    PaddedFaceField = 1
+};
+
+// ============================================================================
+// Padded velocity field — Par2_Core compatible
+// ============================================================================
+
+/**
+ * @brief Padded velocity field where each component is (nx+1)*(ny+1)*(nz+1)
+ *
+ * Indexing: merge_id(ix,iy,iz) = iz*(ny+1)*(nx+1) + iy*(nx+1) + ix
+ * This matches Par2_Core's FaceFieldView / VelocityView layout.
+ *
+ * Only the physically meaningful face values are non-zero:
+ *   U: ix in [0,nx], iy in [0,ny-1], iz in [0,nz-1]
+ *   V: ix in [0,nx-1], iy in [0,ny], iz in [0,nz-1]
+ *   W: ix in [0,nx-1], iy in [0,ny-1], iz in [0,nz]
+ * All other entries remain 0.
+ */
+struct PaddedVelocityField {
+    int nx = 0, ny = 0, nz = 0;
+    real dx = 1.0, dy = 1.0, dz = 1.0;
+
+    DeviceBuffer<real> U;  ///< (nx+1)*(ny+1)*(nz+1) — X-face velocity
+    DeviceBuffer<real> V;  ///< (nx+1)*(ny+1)*(nz+1) — Y-face velocity
+    DeviceBuffer<real> W;  ///< (nx+1)*(ny+1)*(nz+1) — Z-face velocity
+
+    PaddedVelocityField() = default;
+
+    explicit PaddedVelocityField(const Grid3D& grid)
+        : nx(grid.nx), ny(grid.ny), nz(grid.nz)
+        , dx(grid.dx), dy(grid.dy), dz(grid.dz)
+    { allocate(); }
+
+    PaddedVelocityField(int nx_, int ny_, int nz_,
+                        real dx_ = 1.0, real dy_ = 1.0, real dz_ = 1.0)
+        : nx(nx_), ny(ny_), nz(nz_)
+        , dx(dx_), dy(dy_), dz(dz_)
+    { allocate(); }
+
+    void allocate() {
+        if (nx > 0 && ny > 0 && nz > 0) {
+            size_t s = field_size();
+            U.resize(s);
+            V.resize(s);
+            W.resize(s);
+            // Zero-init so unused padding slots are 0
+            cudaMemset(U.data(), 0, s * sizeof(real));
+            cudaMemset(V.data(), 0, s * sizeof(real));
+            cudaMemset(W.data(), 0, s * sizeof(real));
+        }
+    }
+
+    void resize(const Grid3D& grid) {
+        nx = grid.nx; ny = grid.ny; nz = grid.nz;
+        dx = grid.dx; dy = grid.dy; dz = grid.dz;
+        allocate();
+    }
+
+    /// Per-component array size: (nx+1)*(ny+1)*(nz+1)
+    size_t field_size() const {
+        return static_cast<size_t>(nx + 1) * (ny + 1) * (nz + 1);
+    }
+    size_t total_size() const { return 3 * field_size(); }
+    bool empty() const { return U.size() == 0; }
+
+    // Spans
+    DeviceSpan<real>       U_span()       { return U.span(); }
+    DeviceSpan<real>       V_span()       { return V.span(); }
+    DeviceSpan<real>       W_span()       { return W.span(); }
+    DeviceSpan<const real> U_span() const { return U.span(); }
+    DeviceSpan<const real> V_span() const { return V.span(); }
+    DeviceSpan<const real> W_span() const { return W.span(); }
+
+    // Raw pointers
+    real*       U_ptr()       { return U.data(); }
+    real*       V_ptr()       { return V.data(); }
+    real*       W_ptr()       { return W.data(); }
+    const real* U_ptr() const { return U.data(); }
+    const real* V_ptr() const { return V.data(); }
+    const real* W_ptr() const { return W.data(); }
+
+    /// Host-side merge_id helper: iz*(ny+1)*(nx+1) + iy*(nx+1) + ix
+    size_t merge_id(int ix, int iy, int iz) const {
+        return static_cast<size_t>(iz) * (ny + 1) * (nx + 1)
+             + static_cast<size_t>(iy) * (nx + 1)
+             + ix;
+    }
+
+    Grid3D grid() const { return Grid3D(nx, ny, nz, dx, dy, dz); }
+};
+
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

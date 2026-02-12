@@ -5,7 +5,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace operators {
 
 struct Poisson3DOperator {
@@ -22,4 +22,4 @@ struct Poisson3DOperator {
 };
 
 } // namespace operators
-} // namespace rwpt
+} // namespace macroflow3d

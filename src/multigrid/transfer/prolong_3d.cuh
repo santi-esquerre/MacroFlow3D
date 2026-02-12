@@ -4,7 +4,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../runtime/CudaContext.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 // Prolongation: coarse grid -> fine grid (injection + addition)
@@ -20,4 +20,4 @@ void prolong_3d_add(
 );
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

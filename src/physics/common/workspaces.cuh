@@ -25,7 +25,7 @@
 #include "physics_config.hpp"
 #include <curand_kernel.h>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -284,4 +284,4 @@ struct SimulationWorkspace {
 };
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

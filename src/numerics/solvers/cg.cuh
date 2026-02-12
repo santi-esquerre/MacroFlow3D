@@ -8,7 +8,7 @@
 #include <cmath>
 #include <iostream>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 template<typename Operator>
@@ -43,9 +43,9 @@ CGResult cg_solve(CudaContext& ctx,
     if (cfg.verbose) {
         real b_norm, Ax_norm;
         blas::dot_device(ctx, b, b, d_rr_span, ws.red);
-        RWPT_CUDA_CHECK(cudaMemcpy(&b_norm, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(&b_norm, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
         blas::dot_device(ctx, r_span, r_span, d_rr_span, ws.red);
-        RWPT_CUDA_CHECK(cudaMemcpy(&Ax_norm, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(&Ax_norm, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
         ctx.synchronize();
         std::cout << "[CG DEBUG] ||b|| = " << std::sqrt(b_norm) << ", ||A*x|| = " << std::sqrt(Ax_norm) << "\n";
     }
@@ -60,7 +60,7 @@ CGResult cg_solve(CudaContext& ctx,
     
     // Copy initial rr to host for tolerance check (only once at start)
     real rr_host;
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(&rr_host, ws.d_rr.data(), sizeof(real),
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(&rr_host, ws.d_rr.data(), sizeof(real),
                                      cudaMemcpyDeviceToHost, ctx.cuda_stream()));
     ctx.synchronize();
     
@@ -94,8 +94,8 @@ CGResult cg_solve(CudaContext& ctx,
         // DEBUG: Print values in first few iterations
         if (cfg.verbose && iter < 5) {
             real rr_debug, pAp_debug;
-            RWPT_CUDA_CHECK(cudaMemcpy(&rr_debug, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
-            RWPT_CUDA_CHECK(cudaMemcpy(&pAp_debug, ws.d_pAp.data(), sizeof(real), cudaMemcpyDeviceToHost));
+            MACROFLOW3D_CUDA_CHECK(cudaMemcpy(&rr_debug, ws.d_rr.data(), sizeof(real), cudaMemcpyDeviceToHost));
+            MACROFLOW3D_CUDA_CHECK(cudaMemcpy(&pAp_debug, ws.d_pAp.data(), sizeof(real), cudaMemcpyDeviceToHost));
             ctx.synchronize();
             std::cout << "[CG iter " << iter << "] rr = " << rr_debug << ", pAp = " << pAp_debug 
                       << ", alpha = " << (rr_debug / pAp_debug) << "\n";
@@ -105,7 +105,7 @@ CGResult cg_solve(CudaContext& ctx,
         if ((iter + 1) % cfg.check_every == 0) {
             blas::check_pAp_valid(ctx, d_pAp_span, ws.d_is_valid.span());
             int is_valid_host;
-            RWPT_CUDA_CHECK(cudaMemcpyAsync(&is_valid_host, ws.d_is_valid.data(), sizeof(int),
+            MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(&is_valid_host, ws.d_is_valid.data(), sizeof(int),
                                              cudaMemcpyDeviceToHost, ctx.cuda_stream()));
             ctx.synchronize();
             
@@ -130,7 +130,7 @@ CGResult cg_solve(CudaContext& ctx,
         // Check convergence every check_every iterations (requires host sync)
         if ((iter + 1) % cfg.check_every == 0) {
             real rr_new_host;
-            RWPT_CUDA_CHECK(cudaMemcpyAsync(&rr_new_host, ws.d_rr_new.data(), sizeof(real),
+            MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(&rr_new_host, ws.d_rr_new.data(), sizeof(real),
                                              cudaMemcpyDeviceToHost, ctx.cuda_stream()));
             ctx.synchronize();
             
@@ -157,7 +157,7 @@ CGResult cg_solve(CudaContext& ctx,
     // Did not converge - need final sync to get residual
     // After swap in last iteration, current rr is in d_rr (not d_rr_new)
     real rr_final_host;
-    RWPT_CUDA_CHECK(cudaMemcpyAsync(&rr_final_host, ws.d_rr.data(), sizeof(real),
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(&rr_final_host, ws.d_rr.data(), sizeof(real),
                                      cudaMemcpyDeviceToHost, ctx.cuda_stream()));
     ctx.synchronize();
     
@@ -169,4 +169,4 @@ CGResult cg_solve(CudaContext& ctx,
 }
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

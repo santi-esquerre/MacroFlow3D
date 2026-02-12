@@ -22,7 +22,7 @@
 #include "../../numerics/blas/blas.cuh"
 #include "../../numerics/pin_spec.hpp"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 /**
@@ -85,4 +85,4 @@ private:
 };
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

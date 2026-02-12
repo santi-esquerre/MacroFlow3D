@@ -1,6 +1,6 @@
 #pragma once
 
-// BLAS operations for rwpt project
+// BLAS operations for MacroFlow3D
 
 #include "fill.cuh"
 #include "copy.cuh"

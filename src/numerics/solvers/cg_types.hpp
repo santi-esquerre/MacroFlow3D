@@ -5,7 +5,7 @@
 #include "../blas/reduction_workspace.cuh"
 #include <cstddef>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 struct CGConfig {
@@ -63,4 +63,4 @@ struct CGWorkspace {
 };
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

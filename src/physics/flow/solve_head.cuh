@@ -33,12 +33,12 @@
 #include "../../io/config/Config.hpp"
 #include "../common/workspaces.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // Re-export for convenience in physics layer
-using rwpt::io::PinConfig;
-using rwpt::PinMode;
+using macroflow3d::io::PinConfig;
+using macroflow3d::PinMode;
 
 /**
  * @brief Solver type for head equation
@@ -94,7 +94,7 @@ struct HeadSolveConfig {
      * @param flow_cfg FlowYamlConfig from YAML parsing
      * @return HeadSolveConfig ready for use by solve_head()
      */
-    static HeadSolveConfig from_yaml(const rwpt::io::FlowYamlConfig& flow_cfg) {
+    static HeadSolveConfig from_yaml(const macroflow3d::io::FlowYamlConfig& flow_cfg) {
         HeadSolveConfig cfg;
         
         // Parse solver type from string
@@ -183,4 +183,4 @@ void init_head_guess(
 );
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

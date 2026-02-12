@@ -2,7 +2,7 @@
 
 #include <cuda_runtime.h>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 namespace bc_tags {
 
@@ -102,4 +102,4 @@ template<Vertex V> __host__ __device__ constexpr bool on_zmax_vertex() {
 
 } // namespace bc_tags
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

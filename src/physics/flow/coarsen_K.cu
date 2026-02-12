@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cmath>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 /**
@@ -81,8 +81,8 @@ void coarsen_K(
         K_coarse.data(), K_fine.data(), NX, NY, NZ
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

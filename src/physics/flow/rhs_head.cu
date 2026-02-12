@@ -11,7 +11,7 @@
 #include "../../runtime/cuda_check.cuh"
 #include "../../core/BCSpecDevice.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace physics {
 
 // ============================================================================
@@ -216,8 +216,8 @@ void build_rhs_head(DeviceSpan<real> rhs,
     // NOT here. This comment is just for documentation.
     // =======================================================================
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace physics
-} // namespace rwpt
+} // namespace macroflow3d

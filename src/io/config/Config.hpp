@@ -18,11 +18,27 @@
 #include <cstdint>
 #include <array>
 
-namespace rwpt {
+namespace macroflow3d {
 namespace io {
 
 // Re-export PinMode from numerics layer for config usage
-using rwpt::PinMode;
+using macroflow3d::PinMode;
+
+/**
+ * @brief Execution mode for the pipeline.
+ */
+enum class RunMode {
+    SingleRun,     ///< NR=1, single realization
+    Ensemble,      ///< NR>=1, full pipeline + ensemble analysis
+    AnalysisOnly   ///< No GPU — read existing CSV and run macrodispersion
+};
+
+/// Parse run mode from string. Returns Ensemble by default.
+inline RunMode parse_run_mode(const std::string& s) {
+    if (s == "single_run" || s == "single") return RunMode::SingleRun;
+    if (s == "analysis_only" || s == "analysis") return RunMode::AnalysisOnly;
+    return RunMode::Ensemble;  // default
+}
 
 /**
  * @brief Pin configuration for flow solver
@@ -102,14 +118,58 @@ struct TransportYamlConfig {
     real dt = 0.01;
     int n_steps = 1000;
     real porosity = 1.0;
-    real diffusion = 0.0;       // Molecular diffusion
+    real diffusion = 0.0;       // Molecular diffusion (Dm) [L²/T]
+    real alpha_l = 0.0;         // Longitudinal dispersivity [L]
+    real alpha_t = 0.0;         // Transverse dispersivity [L]
     uint64_t seed = 54321;
     
     // Output frequency
     int output_every = 100;
     
-    // Injection (default: x=0 plane)
+    // Snapshot interval (0 = no snapshots, only final)
+    int snapshot_every = 0;
+    
+    // Injection (default: x=0 plane spanning full YZ domain)
     real inject_x = 0.0;
+    
+    // Velocity layout for Par2_Core: "padded" (default) or "compact"
+    std::string velocity_layout = "padded";
+};
+
+/**
+ * @brief Macrodispersion analysis configuration
+ */
+struct MacrodispersionConfig {
+    bool enabled = false;
+    int NR = 1;                  // Number of realizations
+    real lambda = 1.0;           // Correlation length for alpha
+    real vmean_norm = 1.0;       // ||<v>|| (provided; could be computed from flow)
+    int sample_every = 10;       // Stats sampling frequency (transport steps)
+    std::string var_estimator = "biased";  // "biased" (paper) or "unbiased" (Par2_Core raw)
+};
+
+/**
+ * @brief Snapshot configuration (using Par2_Core CsvSnapshotWriter)
+ */
+struct SnapshotConfig {
+    bool enabled = false;
+    int every = 200;             // Steps between snapshots
+    bool legacy_format = true;
+    bool include_time = false;
+    bool include_status = false;
+    bool include_wrap_counts = false;
+    bool include_unwrapped = false;
+    int stride = 1;
+    int max_particles = -1;      // -1 = no limit
+    int precision = 15;
+};
+
+/**
+ * @brief Analysis configuration (macrodispersion + snapshots)
+ */
+struct AnalysisConfig {
+    MacrodispersionConfig macrodispersion;
+    SnapshotConfig snapshots;
 };
 
 /**
@@ -128,10 +188,12 @@ struct OutputYamlConfig {
  * @brief Complete application configuration
  */
 struct AppConfig {
+    RunMode run_mode = RunMode::Ensemble;
     GridConfig grid;
     StochasticYamlConfig stochastic;
     FlowYamlConfig flow;
     TransportYamlConfig transport;
+    AnalysisConfig analysis;
     OutputYamlConfig output;
     
     // Validation helpers
@@ -150,4 +212,4 @@ struct AppConfig {
 AppConfig load_config_yaml(const std::string& path);
 
 } // namespace io
-} // namespace rwpt
+} // namespace macroflow3d

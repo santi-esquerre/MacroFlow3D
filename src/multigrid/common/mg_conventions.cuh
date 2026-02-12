@@ -1,5 +1,17 @@
 #pragma once
 
+/**
+ * @file mg_conventions.cuh
+ * @brief Mathematical conventions for multigrid operator and residual computation.
+ * 
+ * ============================================================================
+ * CONTRACT: This file defines the SINGLE SOURCE OF TRUTH for operator semantics
+ * ============================================================================
+ * 
+ * All modules (VarCoeffLaplacian, residual_3d, gsrb_3d, v_cycle) MUST follow
+ * these conventions. Any deviation will cause solver divergence.
+ */
+
 #include "../../core/Scalar.hpp"
 #include "../../core/Grid3D.hpp"
 
@@ -108,7 +120,7 @@
  * ============================================================================
  */
 
-namespace rwpt {
+namespace macroflow3d {
 namespace multigrid {
 
 // Inline helper: compute harmonic mean of two conductivities
@@ -127,4 +139,4 @@ __device__ __host__ inline real compute_inv_dx2(const Grid3D& grid) {
 }
 
 } // namespace multigrid
-} // namespace rwpt
+} // namespace macroflow3d

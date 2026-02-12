@@ -3,7 +3,7 @@
 // Operator concept (template-based, no virtual dispatch)
 #include "operator_concept.cuh"
 
-// Operators for rwpt project
+// Operators for MacroFlow3D
 
 // Constant-coefficient Laplacian (simple, K=1 everywhere)
 #include "poisson3d_operator.cuh"

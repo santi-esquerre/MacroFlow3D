@@ -1,7 +1,7 @@
 #include "fill.cuh"
 #include "../../runtime/cuda_check.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace blas {
 
 __global__ void fill_kernel(real* y, size_t n, real value) {
@@ -24,8 +24,8 @@ void fill(CudaContext& ctx, DeviceSpan<real> y, real value) {
         y.data(), y.size(), value
     );
     
-    RWPT_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 } // namespace blas
-} // namespace rwpt
+} // namespace macroflow3d

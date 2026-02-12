@@ -6,7 +6,7 @@
 #include "preconditioner.cuh"
 #include "../blas/blas.cuh"
 
-namespace rwpt {
+namespace macroflow3d {
 namespace solvers {
 
 void IdentityPreconditioner::apply(
@@ -15,8 +15,8 @@ void IdentityPreconditioner::apply(
     DeviceSpan<real> z
 ) const {
     // z = r (identity preconditioner)
-    rwpt::blas::copy(ctx, r, z);
+    macroflow3d::blas::copy(ctx, r, z);
 }
 
 } // namespace solvers
-} // namespace rwpt
+} // namespace macroflow3d

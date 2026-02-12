@@ -39,7 +39,7 @@
 #include "../core/BCSpec.hpp"
 #include <cstddef>
 
-namespace rwpt {
+namespace macroflow3d {
 
 // ============================================================================
 // Pin Mode (user configuration)
@@ -130,4 +130,4 @@ inline const char* pin_mode_str(PinMode mode) {
     }
 }
 
-} // namespace rwpt
+} // namespace macroflow3d
