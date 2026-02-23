@@ -3,6 +3,7 @@
 /**
  * @file par2_views.hpp
  * @brief Par2-agnostic view types for particle data (device pointers)
+ * @ingroup physics_particles
  *
  * These POD structs mirror par2::ParticlesView / ConstParticlesView /
  * UnwrappedPositionsView without introducing a dependency on Par2_Core.

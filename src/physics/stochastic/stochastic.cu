@@ -103,8 +103,13 @@ __global__ void kernel_random_modes_exp(curandState* __restrict__ states,
 /**
  * @brief Generate wavenumbers for GAUSSIAN covariance
  * 
- * Legacy: random_kernel_3D_gauss()
- * Uses rejection sampling with k² exp(-0.5 k²) envelope
+ * Target: C(r) = σ² exp(-r²/λ²)
+ * Sampling: κ ~ κ² exp(-κ²/2) is the radial pdf of N(0,I₃).
+ * Rescaling k = κ·√2/λ gives each component ~ N(0, 2/λ²),
+ * so E[cos(k·r)] = exp(-|r|²/λ²).
+ * 
+ * Legacy used k = κ·√(2π)/(2λ) which produced exp(-πr²/(4λ²)).
+ * Changed in v2.0 to match the canonical form C(r)=σ²exp(-r²/λ²).
  */
 __global__ void kernel_random_modes_gauss(curandState* __restrict__ states,
                                           real* __restrict__ V1,
@@ -133,8 +138,9 @@ __global__ void kernel_random_modes_gauss(curandState* __restrict__ states,
         if (curand_uniform_double(&localState) * 2.0 * exp(-1.0) < d) flag = 0;
     }
     
-    // Scale k (legacy formula)
-    k = k / (2.0 * lambda / sqrt(PI_D)) * sqrt(2.0);
+    // Scale k so each component ~ N(0, 2/λ²)
+    // => E[cos(k·r)] = exp(-|r|²/λ²)
+    k = k * sqrt(2.0) / lambda;
     
     // Wavenumber vector components (no additional lambda division here)
     V1[ix] = static_cast<real>(k * sin(fi) * sin(theta));
@@ -203,12 +209,20 @@ __global__ void kernel_eval_logK(const real* __restrict__ V1,
 // Kernel: Transform logK → K = exp(logK)
 // ============================================================================
 
+/**
+ * @brief Transform logK → K = K_g · exp(logK)
+ * 
+ * Y(x) = ln(K_g) + Y0(x), where Y0 is the zero-mean Gaussian field.
+ * K(x) = exp(Y(x)) = K_g · exp(Y0(x)).
+ * When K_g = 1 (default), log_Kg = 0 and this reduces to K = exp(logK).
+ */
 __global__ void kernel_exp(real* __restrict__ K,
                            const real* __restrict__ logK,
+                           const real log_Kg,
                            const size_t n) {
     const size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
     if (idx >= n) return;
-    K[idx] = exp(logK[idx]);
+    K[idx] = exp(logK[idx] + log_Kg);
 }
 
 // ============================================================================
@@ -369,10 +383,12 @@ void generate_K_lognormal(DeviceSpan<real> K,
     const int block = 256;
     const int grid_1d = (n + block - 1) / block;
     
-    // K = exp(logK) — legacy convention (no mean shift)
+    // K = K_g · exp(logK) — with geometric mean shift
+    const real log_Kg = log(cfg.K_geometric_mean);
     kernel_exp<<<grid_1d, block, 0, ctx.cuda_stream()>>>(
         K.data(),
         const_cast<real*>(logK.data()),  // DeviceSpan<const real> workaround
+        log_Kg,
         n);
     
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());

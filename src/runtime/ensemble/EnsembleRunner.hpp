@@ -3,6 +3,7 @@
 /**
  * @file EnsembleRunner.hpp
  * @brief Orchestrates NR realizations, accumulates series, writes ensemble.
+ * @ingroup runtime_pipeline
  *
  * Etapa 10: the NR loop lives ONLY here.
  *

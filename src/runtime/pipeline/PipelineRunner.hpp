@@ -3,6 +3,7 @@
 /**
  * @file PipelineRunner.hpp
  * @brief Orchestrator for the K → head → velocity → RWPT transport pipeline
+ * @ingroup runtime_pipeline
  *
  * Owns all GPU buffers, workspaces, and engine state.  The app layer
  * constructs one PipelineRunner and calls run().

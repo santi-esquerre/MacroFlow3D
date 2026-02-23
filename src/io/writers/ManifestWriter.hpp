@@ -3,6 +3,7 @@
 /**
  * @file ManifestWriter.hpp
  * @brief Writes a rich JSON manifest with run metadata + config.
+ * @ingroup io_writers
  *
  * Etapa 8: uses nlohmann/json for proper JSON. Includes GPU info,
  * build info, git hash, full config snapshot, and effective_config path.

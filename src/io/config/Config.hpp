@@ -3,6 +3,7 @@
 /**
  * @file Config.hpp
  * @brief Application configuration loaded from YAML
+ * @ingroup io_config
  * 
  * Aggregates all config needed for the physics pipeline:
  * Grid + Stochastic + Flow + Transport

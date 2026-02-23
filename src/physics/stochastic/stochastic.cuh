@@ -3,6 +3,7 @@
 /**
  * @file stochastic.cuh
  * @brief Stochastic K field generation (lognormal) - API
+ * @ingroup physics_stochastic
  * 
  * Port of legacy/random_field_generation.cu using Randomized Spectral Method.
  * Does NOT use FFT - direct sum of Fourier modes.
@@ -11,10 +12,12 @@
  *   Räss, Kolyukhin, Minakov (2019), Comp. & Geosci. 131, 158-169
  *   DOI: 10.1016/j.cageo.2019.06.007
  * 
- * Conventions (matching legacy exactly):
+ * Conventions:
  *   - sigma_f = sqrt(sigma2) is the std dev of log-K
  *   - logK = (sigma_f / sqrt(n_modes)) * Σᵢ (aᵢ sin(k·x) + bᵢ cos(k·x))
- *   - K = exp(logK)  (no mean correction in legacy)
+ *   - K = K_g * exp(logK)   (K_g = geometric mean, default 1)
+ *   - Exponential cov: k = κ/λ, κ ~ κ²/(1+κ²)²  → C(r)=σ² exp(-r/λ)
+ *   - Gaussian cov:    k = κ·√2/λ, κ ~ κ² exp(-κ²/2) → C(r)=σ² exp(-r²/λ²)
  *   - Cell-centered coordinates: x = h * (ix + 0.5, iy + 0.5, iz + 0.5)
  */
 
@@ -63,12 +66,14 @@ void generate_gaussian_field(StochasticWorkspace& workspace,
 /**
  * @brief Transform Gaussian field to lognormal K
  * 
- * K = exp(logK) following legacy convention (no mean shift).
+ * K(x) = K_g * exp(logK(x))
+ * where K_g = StochasticConfig::K_geometric_mean (default 1.0).
+ * This shifts the log-field by ln(K_g) before exponentiating.
  * 
  * @param K          Output: lognormal K field (device memory, size = num_cells)
  * @param logK       Input: Gaussian field from workspace.logK
  * @param grid       Grid specification
- * @param cfg        Config (currently unused but reserved for normalization options)
+ * @param cfg        Config (K_geometric_mean used for mean shift)
  * @param ctx        CUDA context
  */
 void generate_K_lognormal(DeviceSpan<real> K,
@@ -98,8 +103,7 @@ void generate_K_field(DeviceSpan<real> K,
 /**
  * @brief Compute basic statistics of a device array (for diagnostics)
  * 
- * @param data       Device data
- * @param n          Number of elements
+ * @param data       Device data (size determines element count)
  * @param min_val    Output: minimum
  * @param max_val    Output: maximum
  * @param mean_val   Output: arithmetic mean

@@ -8,6 +8,7 @@ namespace macroflow3d {
 
 /**
  * @brief 3D structured grid specification
+ * @ingroup core
  * 
  * IMPORTANT: Current implementation assumes ISOTROPIC grids (dx = dy = dz)
  * 

@@ -19,7 +19,15 @@ desktop.ini
 output*/
 codebase*.md
 .aidigestignore
+MacroFlow3D.md
+
 
 # Python
 __pycache__/
 *.pyc
+
+# WIP: Docs
+docs/
+xml/
+
+

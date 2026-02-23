@@ -3,6 +3,7 @@
 /**
  * @file CsvTimeSeriesWriter.hpp
  * @brief Host-side writer for particle-moments time-series CSV.
+ * @ingroup io_writers
  *
  * Receives a batch of samples and flushes to disk in one call.
  * No CUDA, no device pointers — receives host-side data only.

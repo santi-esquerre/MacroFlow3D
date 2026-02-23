@@ -17,6 +17,7 @@ struct VCycleResult {
 
 /**
  * @brief Execute one V-cycle on the MG hierarchy
+ * @ingroup multigrid_cycle
  * 
  * @param ctx     CUDA context
  * @param hier    MG hierarchy (pre-initialized with K)

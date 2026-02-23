@@ -8,7 +8,11 @@
 
 namespace macroflow3d {
 
-// RAII wrapper for device memory allocation with capacity
+/**
+ * @brief RAII wrapper for device memory allocation with capacity.
+ * @ingroup core
+ * @tparam T Element type.
+ */
 template<typename T>
 class DeviceBuffer {
 public:

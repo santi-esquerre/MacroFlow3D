@@ -11,6 +11,7 @@ namespace multigrid {
 
 /**
  * @brief Gauss-Seidel Red-Black smoother
+ * @ingroup multigrid_smoothers
  * 
  * Solves A*x = b using red-black ordering:
  *   Red cells: (i+j+k) % 2 == 0

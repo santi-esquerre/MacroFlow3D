@@ -6,12 +6,20 @@
 
 namespace macroflow3d {
 
+/**
+ * @brief Boundary condition type for a single face.
+ * @ingroup core
+ */
 enum class BCType {
     Dirichlet,
     Neumann,
     Periodic
 };
 
+/**
+ * @brief Per-face boundary condition (type + value).
+ * @ingroup core
+ */
 struct BCFace {
     BCType type;
     real value;
@@ -22,6 +30,10 @@ struct BCFace {
     BCFace(BCType t, real v) : type(t), value(v) {}
 };
 
+/**
+ * @brief Full boundary condition specification for all 6 faces.
+ * @ingroup core
+ */
 struct BCSpec {
     BCFace xmin, xmax;
     BCFace ymin, ymax;

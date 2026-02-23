@@ -8,6 +8,10 @@
 namespace macroflow3d {
 namespace multigrid {
 
+/**
+ * @brief Multigrid configuration parameters.
+ * @ingroup multigrid
+ */
 // MG configuration
 struct MGConfig {
     int num_levels = 4;

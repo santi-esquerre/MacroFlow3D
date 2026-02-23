@@ -3,6 +3,7 @@
 /**
  * @file mg_conventions.cuh
  * @brief Mathematical conventions for multigrid operator and residual computation.
+ * @ingroup multigrid
  * 
  * ============================================================================
  * CONTRACT: This file defines the SINGLE SOURCE OF TRUTH for operator semantics
@@ -123,17 +124,28 @@
 namespace macroflow3d {
 namespace multigrid {
 
-// Inline helper: compute harmonic mean of two conductivities
+/**
+ * @brief Harmonic mean of two conductivities.
+ * @ingroup multigrid
+ *
+ * \f$ K_f = 2/(1/K_1 + 1/K_2) \f$
+ */
 __device__ __host__ inline real harmonic_mean_K(real K1, real K2) {
     return 2.0 / (1.0 / K1 + 1.0 / K2);
 }
 
-// Inline helper: compute dx² from grid
+/**
+ * @brief Compute \f$\Delta x^2\f$ from grid.
+ * @ingroup multigrid
+ */
 __device__ __host__ inline real compute_dx2(const Grid3D& grid) {
     return grid.dx * grid.dx;
 }
 
-// Inline helper: compute 1/dx² from grid (for optimized kernels)
+/**
+ * @brief Compute \f$1/\Delta x^2\f$ from grid (for optimized kernels).
+ * @ingroup multigrid
+ */
 __device__ __host__ inline real compute_inv_dx2(const Grid3D& grid) {
     return 1.0 / (grid.dx * grid.dx);
 }

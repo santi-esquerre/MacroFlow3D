@@ -3,6 +3,7 @@
 /**
  * @file varcoeff_laplacian.cuh
  * @brief Variable-coefficient Laplacian operator for CG/MG comparison
+ * @ingroup numerics_operators
  * 
  * This operator implements the SAME discrete Laplacian used by the multigrid
  * smoother and residual computation:

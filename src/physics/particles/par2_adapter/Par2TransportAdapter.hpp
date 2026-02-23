@@ -3,6 +3,7 @@
 /**
  * @file Par2TransportAdapter.hpp
  * @brief PIMPL wrapper around par2::TransportEngine (no Par2 types in header)
+ * @ingroup physics_particles
  *
  * Owns the engine for ONE realization.  Construct, bind, step, destroy.
  * Hot path (`step(dt)`) goes through a single pointer indirection — negligible

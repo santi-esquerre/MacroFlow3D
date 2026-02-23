@@ -3,6 +3,7 @@
 /**
  * @file pcg.cuh
  * @brief Preconditioned Conjugate Gradient solver
+ * @ingroup numerics_solvers
  * 
  * Legacy correspondence:
  *   - solver_CG(AH, PCCMG_CG, ...) where PCCMG_CG is MG preconditioner

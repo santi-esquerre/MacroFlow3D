@@ -3,6 +3,7 @@
 /**
  * @file solve_head.cuh
  * @brief Solve head (Darcy flow) equation using MG, CG, or PCG
+ * @ingroup physics_flow
  * 
  * Legacy correspondence: main_transport_JSON_input.cu solver calls
  * 

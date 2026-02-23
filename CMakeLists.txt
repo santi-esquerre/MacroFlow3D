@@ -205,4 +205,7 @@ endif()
 if(MACROFLOW3D_BUILD_APPS)
     add_executable(macroflow3d_pipeline apps/macroflow3d_pipeline.cu)
     target_link_libraries(macroflow3d_pipeline PRIVATE macroflow3d_lib)
+
+    add_executable(verify_stochastic apps/verify_stochastic.cu)
+    target_link_libraries(verify_stochastic PRIVATE macroflow3d_lib)
 endif()

@@ -2,7 +2,12 @@
 
 /**
  * @file MacrodispersionAnalysis.hpp
- * @brief Compute macrodispersivity α(t) from particle moment time-series.
+ * @brief Compute dimensionless macrodispersivity α*(t) from particle moment time-series.
+ * @ingroup analysis
+ *
+ * Returns \f$\alpha^*_k(t) = \frac{1}{2\lambda\|\langle\mathbf{v}\rangle\|}\frac{d\mathrm{Var}_k}{dt}\f$
+ * which is the **dimensionless** macrodispersivity (\f$[-]\f$).
+ * The dimensional macrodispersivity is \f$\alpha_k = \lambda\,\alpha^*_k\f$ \f$[L]\f$.
  *
  * Pure CPU — no CUDA dependency. Can consume:
  *   (A) In-memory time-series from the pipeline
@@ -26,26 +31,31 @@ namespace analysis {
 
 /**
  * @brief Row of macrodispersion output.
+ *
+ * `alpha[k]` stores the **dimensionless** macrodispersivity
+ * \f$\alpha^*_k = \frac{1}{2\lambda\|\langle\mathbf{v}\rangle\|}\frac{d\mathrm{Var}_k}{dt}\f$.
+ * Dimensional macrodispersivity: \f$\alpha_k = \lambda\,\alpha^*_k\f$ \f$[L]\f$.
  */
 template <typename T>
 struct MacrodispersionRow {
     T time;
-    T alpha[3];      // α_x, α_y, α_z
-    T dvar_dt[3];    // dVar/dt  (before scaling)
+    T alpha[3];      // α*_x, α*_y, α*_z  (dimensionless)
+    T dvar_dt[3];    // dVar/dt  [L²/T]  (before scaling)
 };
 
 /**
- * @brief Compute macrodispersivity from variance time-series.
+ * @brief Compute dimensionless macrodispersivity from variance time-series.
  *
- * α_k(t) = (1 / (2 λ ||<v>||)) · d(Var_k)/dt
+ * \f$\alpha^*_k(t) = \frac{1}{2\,\lambda\,\|\langle\mathbf{v}\rangle\|}\;\frac{d(\mathrm{Var}_k)}{dt}\f$
  *
+ * This is the **dimensionless** macrodispersivity \f$[-]\f$.
  * Uses central differences (forward/backward at edges).
  * Averages dVar/dt across NR realizations.
  *
  * @param all_series  Per-realization time-series (moments).
- * @param lambda      Correlation length.
- * @param vmean_norm  Mean velocity norm ||<v>||.
- * @return  Vector of MacrodispersionRow (one per time step).
+ * @param lambda      Correlation length \f$\lambda\f$ \f$[L]\f$.
+ * @param vmean_norm  Mean velocity norm \f$\|\langle\mathbf{v}\rangle\|\f$ \f$[L/T]\f$.
+ * @return  Vector of MacrodispersionRow (one per time step); `alpha` is \f$\alpha^*\f$ \f$[-]\f$.
  */
 template <typename T>
 std::vector<MacrodispersionRow<T>> compute_macrodispersion(

@@ -3,6 +3,7 @@
 /**
  * @file velocity_from_head.cuh
  * @brief Compute staggered velocity field from cell-centered head and conductivity
+ * @ingroup physics_flow
  * 
  * Physics: Darcy's law with harmonic mean conductivity
  *   q = -K_eff * grad(H)

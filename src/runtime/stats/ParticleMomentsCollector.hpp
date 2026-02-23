@@ -3,6 +3,7 @@
 /**
  * @file ParticleMomentsCollector.hpp
  * @brief Runtime stats collection: compute mean/var from particle views.
+ * @ingroup runtime_stats
  *
  * This collector works on the device-side views exposed by the transport
  * adapter (ConstParticlesSoA / UnwrappedSoA). It delegates the actual GPU

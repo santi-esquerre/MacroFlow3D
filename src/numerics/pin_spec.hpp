@@ -3,6 +3,7 @@
 /**
  * @file pin_spec.hpp
  * @brief Pin specification and utilities for singular linear systems
+ * @ingroup numerics
  * 
  * When solving the Darcy flow equation with all periodic or Neumann BCs,
  * the system is singular (constant mode in null space). Pinning one cell
