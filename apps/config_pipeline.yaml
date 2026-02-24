@@ -1,45 +1,63 @@
 # ============================================================================
-# RWPT Pipeline — Production Configuration
+# RWPT Pipeline — Legacy-equivalent Configuration
 # ============================================================================
-# Standard Darcy flow + RWPT transport on a 64³ domain.
-# Case: Dirichlet west(1)/east(0), Periodic elsewhere → non-singular.
+# Replicates the legacy main_transport_JSON_input.cu problem with
+# parameters_sigma1.json:
+#
+#   Nx=2048, Ny=Nz=256, delta_x=5, sigma2=1, nRealizations=100,
+#   nParticles=10000, diffusion=0, alphaL=alphaT=0, t_max=1000
+#
+# Derived quantities (from legacy main):
+#   lambda   = 10 * dx       = 50
+#   Lx       = Nx * dx       = 10240
+#   Ly = Lz  = 256 * 5       = 1280
+#   vm       = 100 / Lx      ≈ 0.009766
+#   t_max_adj= 1000 / (vm/λ) = 5,120,000   (adimensionalised)
+#   dt       = h / (2·v_max)  → CFL-based, computed at runtime
+#   steps    = t_max_adj / dt  → depends on CFL dt
+#
+# NOTE: dt and n_steps below are placeholders — the legacy code computes
+#       them from CFL after building the velocity field.  Adjust after the
+#       first run prints ||v_max||.
+#
+# BC: Dirichlet west(H=100) / east(H=0), Periodic elsewhere.
 #
 # Usage:
-#   ./rwpt_pipeline config_pipeline.yaml
+#   ./macroflow3d_pipeline config_pipeline.yaml
 # ============================================================================
 
 grid:
-  nx: 64
-  ny: 64
-  nz: 64
-  dx: 0.015625          # 1/64 → domain [0,1]³
+  nx: 2048
+  ny: 256
+  nz: 256
+  dx: 5.0                # delta_x → domain 10240 × 1280 × 1280
 
 stochastic:
-  sigma2: 1.0            # Variance of log(K)
-  corr_length: 0.1       # Correlation length [L]
-  n_modes: 1000          # Fourier modes
-  covariance_type: 0     # 0 = exponential
+  sigma2: 1.0             # Variance of log(K)
+  corr_length: 50.0       # lambda = 10 * dx = 50 [L]
+  n_modes: 10000          # i_max in legacy (Fourier modes)
+  covariance_type: 0      # 0 = exponential
   seed: 42
-  K_mean: 1.0
+  K_mean: 1.0             # Geometric mean K (exp(0)=1)
 
 flow:
   solver: pcg_mg
-  mg_levels: 4
-  mg_pre_smooth: 2
-  mg_post_smooth: 2
+  mg_levels: 6            # log2(32) + 1 = 6  (legacy n=32 block)
+  mg_pre_smooth: 4        # npre in legacy
+  mg_post_smooth: 4       # npos in legacy
   mg_coarse_iters: 50
   mg_max_cycles: 20
-  cg_max_iter: 100
-  cg_rtol: 1.0e-8
+  cg_max_iter: 200        # 3rd-to-last arg of solver_CG
+  cg_rtol: 1.0e-6         # tolerance in solver_CG
   cg_check_every: 10
-  rtol: 1.0e-8
+  rtol: 1.0e-6
 
   pin:
-    mode: auto
+    mode: off             # legacy: pin1stCell = false
 
   bc:
-    west:   { type: dirichlet, value: 1.0 }
-    east:   { type: dirichlet, value: 0.0 }
+    west:   { type: dirichlet, value: 100.0 }   # Hwest = 100
+    east:   { type: dirichlet, value: 0.0 }     # Heast = 0
     south:  { type: periodic }
     north:  { type: periodic }
     bottom: { type: periodic }
@@ -47,28 +65,28 @@ flow:
 
 transport:
   n_particles: 10000
-  dt: 0.001
-  n_steps: 1000
+  dt: 12.5                  # PLACEHOLDER — legacy: h/(2·v_max), adjust after CFL
+  n_steps: 409600           # PLACEHOLDER — legacy: t_max_adj/dt = 5120000/dt
   porosity: 1.0
-  diffusion: 0.0          # Dm [L²/T]
-  alpha_l: 0.01            # Longitudinal dispersivity [L]
-  alpha_t: 0.001           # Transverse dispersivity [L]
-  seed: 54321
-  output_every: 100
-  snapshot_every: 0        # 0 = disabled
-  inject_x: 0.0
-  velocity_layout: padded  # "padded" for Par2_Core (default)
+  diffusion: 0.0            # Dm = 0 (pure advection)
+  alpha_l: 0.0              # αL = 0 (no mechanical dispersion)
+  alpha_t: 0.0              # αT = 0
+  seed: 123456789           # legacy: 123456789 * (k+1) per realization
+  output_every: 1365        # ~steps/300, legacy reg = max(1, steps/300)
+  snapshot_every: 0         # 0 = disabled
+  inject_x: 50.0            # 10 * h = 50 [L]
+  velocity_layout: padded   # "padded" for Par2_Core (default)
 
 analysis:
   macrodispersion:
     enabled: true
-    NR: 4                       # Number of realizations
-    lambda: 0.1                 # Correlation length for alpha
-    vmean_norm: 1.0             # ||<v>|| (provided; could be computed from flow)
-    sample_every: 10            # Sample stats every N transport steps
-    var_estimator: biased       # "biased" (paper, N denom) or "unbiased" (Par2_Core raw)
+    NR: 100                      # nRealizations
+    lambda: 50.0                 # Correlation length [L]
+    vmean_norm: 0.01      # vm = 100 / Lx = 100 / 10240
+    sample_every: 10             # Sample stats every N transport steps
+    var_estimator: biased        # "biased" (paper, N denom)
   snapshots:
-    enabled: false
+    enabled: true
     every: 200
     legacy_format: true
     include_time: false
