@@ -61,7 +61,7 @@ public:
         const int s = (snap.stride > 0) ? snap.stride : 1;
 
         // Version + Header
-        std::fprintf(f, "# format_version=%d\n", kOutputFormatVersion);
+        // std::fprintf(f, "# format_version=%d\n", kOutputFormatVersion);
         if (snap.has_unwrapped) {
             std::fprintf(f, "t,id,x,y,z,x_u,y_u,z_u\n");
         } else {
