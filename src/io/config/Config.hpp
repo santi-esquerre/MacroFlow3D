@@ -174,6 +174,13 @@ struct AnalysisConfig {
 };
 
 /**
+ * @brief Diagnostics configuration
+ */
+struct DiagnosticsConfig {
+    bool velocity_field = false;  ///< Run divergence/vorticity/helicity diagnostics
+};
+
+/**
  * @brief Output configuration
  */
 struct OutputYamlConfig {
@@ -195,6 +202,7 @@ struct AppConfig {
     FlowYamlConfig flow;
     TransportYamlConfig transport;
     AnalysisConfig analysis;
+    DiagnosticsConfig diagnostics;
     OutputYamlConfig output;
     
     // Validation helpers

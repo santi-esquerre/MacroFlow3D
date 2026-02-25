@@ -38,6 +38,7 @@
 #include "../../physics/stochastic/stochastic.cuh"
 #include "../../physics/flow/solve_head.cuh"
 #include "../../physics/flow/velocity_from_head.cuh"
+#include "../../physics/flow/velocity_diagnostics.cuh"
 
 // Par2 adapters (no <par2_core/...> included here)
 #include "../../physics/particles/par2_adapter/Par2TransportAdapter.hpp"
@@ -135,6 +136,12 @@ int run_ensemble(const AppConfig& cfg,
 
     // Velocity (padded for Par2_Core)
     PaddedVelocityField vel(grid);
+
+    // Velocity diagnostics workspace (allocated once, reused across realizations)
+    VelocityDiagnostics vel_diag;
+    if (cfg.diagnostics.velocity_field) {
+        vel_diag.resize(grid);
+    }
 
     // Particles (device SoA — reused across realizations)
     const int NP = cfg.transport.n_particles;
@@ -243,6 +250,12 @@ int run_ensemble(const AppConfig& cfg,
         profiler.start("velocity");
         compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
         profiler.stop();
+
+        // ── Velocity diagnostics (optional, once per realization) ──────
+        if (cfg.diagnostics.velocity_field) {
+            compute_velocity_diagnostics(vel, vel_diag, grid, ctx);
+            print_velocity_diagnostics(vel_diag, r, ctx);
+        }
 
         // ── Transport via Par2_Core ────────────────────────────────────
         std::printf("  [7] Transport (Par2_Core)\n");

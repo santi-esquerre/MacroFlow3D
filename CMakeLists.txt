@@ -124,6 +124,7 @@ set(PHYSICS_SOURCES
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
     src/physics/stochastic/stochastic.cu
+    src/physics/flow/velocity_diagnostics.cu
     src/physics/particles/par2_adapter/Par2TransportAdapter.cu
     src/physics/particles/par2_adapter/Par2StatsAdapter.cu
     src/physics/particles/par2_adapter/Par2SnapshotAdapter.cu

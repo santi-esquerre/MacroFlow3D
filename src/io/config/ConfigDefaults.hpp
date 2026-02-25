@@ -91,6 +91,9 @@ inline AppConfig make_default_config() {
     cfg.analysis.snapshots.max_particles       = -1;
     cfg.analysis.snapshots.precision           = 15;
 
+    // Diagnostics
+    cfg.diagnostics.velocity_field = false;
+
     // Output
     cfg.output.output_dir    = "./output";
     cfg.output.save_K        = true;

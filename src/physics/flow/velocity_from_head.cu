@@ -12,6 +12,7 @@
  */
 
 #include "velocity_from_head.cuh"
+#include "padded_layout.cuh"
 #include "../../core/BCSpecDevice.cuh"
 #include "../../core/DeviceBuffer.cuh"
 #include "../../runtime/cuda_check.cuh"
@@ -71,14 +72,8 @@ int W_idx(int i, int j, int k, int nx, int ny) {
     return i + j * nx + k * nx * ny;
 }
 
-/**
- * @brief Padded merge_id: iz*(ny+1)*(nx+1) + iy*(nx+1) + ix
- * All components share this index space of size (nx+1)*(ny+1)*(nz+1).
- */
-__device__ __forceinline__
-int padded_idx(int ix, int iy, int iz, int nx, int ny) {
-    return iz * (ny + 1) * (nx + 1) + iy * (nx + 1) + ix;
-}
+// padded_idx: see padded_layout.cuh (shared with velocity_diagnostics.cu)
+// Returns size_t to avoid overflow on large grids.
 
 // BC type constants (matching legacy)
 constexpr uint8_t BC_NEUMANN = 0;

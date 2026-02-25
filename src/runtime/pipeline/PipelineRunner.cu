@@ -55,6 +55,9 @@ void print_config_summary(const AppConfig& cfg) {
                     snap.every, snap.stride, snap.include_unwrapped ? "yes" : "no");
     }
     std::printf("  Output:      %s\n", cfg.output.output_dir.c_str());
+    if (cfg.diagnostics.velocity_field) {
+        std::printf("  Diagnostics: velocity_field ON (div/|ω|/helicity per realization)\n");
+    }
     print_separator();
     print_separator();
 }

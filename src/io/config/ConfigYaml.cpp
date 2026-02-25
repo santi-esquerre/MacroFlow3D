@@ -342,7 +342,7 @@ AppConfig load_config_yaml(const std::string& path) {
 
     // Check top-level keys
     static const std::set<std::string> top_known =
-        {"run_mode","grid","stochastic","flow","transport","analysis","output"};
+        {"run_mode","grid","stochastic","flow","transport","analysis","diagnostics","output"};
     check_unknown_keys(root, top_known, "", unknown_errs);
 
     // Run mode (top-level, optional)
@@ -356,6 +356,15 @@ AppConfig load_config_yaml(const std::string& path) {
     cfg.flow       = parse_flow(root["flow"], cfg.flow, unknown_errs);
     cfg.transport  = parse_transport(root["transport"], cfg.transport, unknown_errs);
     cfg.analysis   = parse_analysis(root["analysis"], cfg.analysis, unknown_errs);
+    // Diagnostics section (simple — single bool)
+    if (root["diagnostics"]) {
+        const auto& dnode = root["diagnostics"];
+        static const std::set<std::string> diag_known = {"velocity_field"};
+        check_unknown_keys(dnode, diag_known, "diagnostics", unknown_errs);
+        cfg.diagnostics.velocity_field = get_or<bool>(dnode, "velocity_field",
+                                                       cfg.diagnostics.velocity_field);
+    }
+
     cfg.output     = parse_output(root["output"], cfg.output, unknown_errs);
 
     // Strict mode: reject unknown keys
