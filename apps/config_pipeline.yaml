@@ -1,93 +1,316 @@
-# ============================================================================
-# RWPT Pipeline — Legacy-equivalent Configuration
-# ============================================================================
-# Replicates the legacy main_transport_JSON_input.cu problem with
-# parameters_sigma1.json:
+# ==============================================================================
+# MacroFlow3D — Pipeline Configuration
+# ==============================================================================
 #
-#   Nx=2048, Ny=Nz=256, delta_x=5, sigma2=1, nRealizations=100,
-#   nParticles=10000, diffusion=0, alphaL=alphaT=0, t_max=1000
+# Este archivo controla todo el comportamiento del programa: generación del
+# campo de conductividad hidráulica K, resolución del flujo estacionario,
+# transporte de partículas (RWPT) y análisis de macrodispersión.
 #
-# Derived quantities (from legacy main):
-#   lambda   = 10 * dx       = 50
-#   Lx       = Nx * dx       = 10240
-#   Ly = Lz  = 256 * 5       = 1280
-#   vm       = 100 / Lx      ≈ 0.009766
-#   t_max_adj= 1000 / (vm/λ) = 5,120,000   (adimensionalised)
-#   dt       = h / (2·v_max)  → CFL-based, computed at runtime
-#   steps    = t_max_adj / dt  → depends on CFL dt
+# Configuración de referencia: replica el problema legacy sigma=1 con
+#   Nx=2048, Ny=Nz=256, delta_x=5, nRealizations=100, nParticles=10000.
 #
-# NOTE: dt and n_steps below are placeholders — the legacy code computes
-#       them from CFL after building the velocity field.  Adjust after the
-#       first run prints ||v_max||.
-#
-# BC: Dirichlet west(H=100) / east(H=0), Periodic elsewhere.
-#
-# Usage:
+# Cómo usar:
 #   ./macroflow3d_pipeline config_pipeline.yaml
-# ============================================================================
+#
+# Reglas básicas:
+#   - Los campos omitidos toman el valor por defecto del programa.
+#   - Las líneas que empiezan con "#" son comentarios y se ignoran.
+#   - Las opciones comentadas con "# <clave>: <valor>" son válidas pero
+#     inactivas; descoméntalas para activarlas.
+# ==============================================================================
 
+
+# ==============================================================================
+# run_mode — Modo de ejecución
+# ==============================================================================
+# Controla qué hace el programa al arrancar.
+#
+#   ensemble      → (defecto) Ejecuta NR realizaciones completas
+#                   (K → head → velocidad → transporte) y calcula
+#                   macrodispersividad α(t). Requiere GPU.
+#   single_run    → Igual que ensemble pero con NR=1. Útil para pruebas.
+#                   Requiere GPU.
+#   analysis_only → No usa GPU. Lee CSVs de salidas previas y recalcula
+#                   macrodispersividad. Útil para post-procesar sin reruns.
+#
+run_mode: single_run
+
+
+# ==============================================================================
+# grid — Malla 3D
+# ==============================================================================
+# Define el dominio de simulación. La malla es estructurada y uniforme.
+# El espaciado es ISÓTROPO: dx = dy = dz.
+#
+#   nx, ny, nz  → Número de celdas en cada dirección.
+#                 Restricción multigrid: nx, ny, nz deben ser divisibles por
+#                 2^(mg_levels-1) para que el ciclo V funcione correctamente.
+#                 Ejemplo: mg_levels=6 → mínimo divisible por 32.
+#   dx          → Tamaño de celda [unidades de longitud]. Define también dy y dz.
+#
+# Dominio resultante: Lx = nx*dx, Ly = ny*dx, Lz = nz*dx.
+# Para este caso: Lx=10240, Ly=Lz=1280 [L].
+#
 grid:
   nx: 2048
   ny: 256
   nz: 256
-  dx: 5.0                # delta_x → domain 10240 × 1280 × 1280
+  dx: 5.0
 
+
+# ==============================================================================
+# stochastic — Campo de conductividad hidráulica K (log-normal)
+# ==============================================================================
+# K se genera como un campo aleatorio log-normal estacionario mediante una
+# superposición de N_modes modos de Fourier (método espectral).
+# En cada realización la semilla se incrementa automáticamente: seed + r.
+#
+#   sigma2         → Varianza de Y = ln(K). Controla la heterogeneidad.
+#                    0 = campo homogéneo (K=K_mean en todas partes).
+#                    1 = heterogeneidad moderada, 4+ = alta heterogeneidad.
+#   corr_length    → Longitud de correlación λ [L]. Determina el tamaño
+#                    típico de los bloques de K. Aquí λ = 10*dx = 50.
+#   n_modes        → Número de modos de Fourier en la superposición.
+#                    Más modos → campo más preciso pero más lento de generar.
+#                    1000 es suficiente para la mayoría de casos; 10000
+#                    para dominios muy grandes (Nx=2048).
+#   covariance_type → Tipo de función de covarianza del campo Y=ln(K):
+#                    0 = exponencial  C(r) = exp(-r/λ)
+#                    1 = gaussiana    C(r) = exp(-(r/λ)²)
+#   seed           → Semilla base del generador pseudoaleatorio (uint64).
+#                    Cambiarla produce un ensemble completamente diferente.
+#   K_mean         → Media geométrica de K: E[K] = exp(E[Y]) = K_mean.
+#                    Todas las realizaciones tienen esta media geométrica.
+#
 stochastic:
-  sigma2: 1.0             # Variance of log(K)
-  corr_length: 50.0       # lambda = 10 * dx = 50 [L]
-  n_modes: 10000          # i_max in legacy (Fourier modes)
-  covariance_type: 0      # 0 = exponential
+  sigma2: 1.0
+  corr_length: 50.0
+  n_modes: 10000
+  covariance_type: 0
   seed: 42
-  K_mean: 1.0             # Geometric mean K (exp(0)=1)
+  K_mean: 1.0
 
+
+# ==============================================================================
+# flow — Solver de flujo estacionario (ecuación de Darcy / Laplaciano variable)
+# ==============================================================================
+# Resuelve ∇·(K ∇h) = 0 con las condiciones de contorno especificadas,
+# obteniendo el campo de carga hidráulica h y luego el campo de velocidad
+# de Darcy v = -K ∇h.
+#
+# --- Tipo de solver ---
+#
+#   solver  → Algoritmo de resolución lineal:
+#               "mg"      → Multigrid algebraico (ciclo V). Más rápido en
+#                           general pero puede no converger en casos difíciles.
+#               "cg"      → Gradiente Conjugado puro. Más robusto, más lento.
+#               "mg_cg"   → CG precondicionado con MG (recomendado).
+#                           Combina robustez del CG con velocidad del MG.
+#
+# --- Parámetros Multigrid (usados si solver = "mg" o "mg_cg") ---
+#
+#   mg_levels      → Número de niveles de la jerarquía de mallas.
+#                    Regla práctica: log2(min(nx,ny,nz)/coarse_size) + 1.
+#                    Aquí min(nx,ny,nz)=256, coarse=8 → levels=6.
+#   mg_pre_smooth  → Iteraciones de suavizado antes de restringir al nivel
+#                    más grueso (pre-smoothing). Típico: 2–4.
+#   mg_post_smooth → Iteraciones de suavizado al volver al nivel fino
+#                    (post-smoothing). Típico: 2–4.
+#   mg_coarse_iters → Iteraciones en el nivel más grueso (solución exacta
+#                    aproximada). Típico: 20–100.
+#   mg_max_cycles  → Máximo número de ciclos V antes de rendirse.
+#
+# --- Parámetros CG (usados si solver = "cg" o "mg_cg") ---
+#
+#   cg_max_iter    → Máximo número de iteraciones del CG.
+#   cg_rtol        → Tolerancia relativa del CG: ||r||/||r0|| < cg_rtol.
+#   cg_check_every → Cada cuántas iteraciones se evalúa la convergencia.
+#                    Reducir este número aumenta el overhead pero detecta
+#                    convergencia antes.
+#
+# --- Tolerancia global ---
+#
+#   rtol → Tolerancia relativa de convergencia global del solver.
+#          El solver para cuando ||residuo|| / ||residuo_inicial|| < rtol.
+#
+# --- Pin (para sistemas singulares) ---
+#
+#   pin.mode → Cómo gestionar la singularidad en sistemas totalmente
+#              Neumann o periódicos (el sistema tiene infinitas soluciones
+#              que difieren en una constante aditiva):
+#                "auto" → (defecto) Detecta automáticamente si hace falta.
+#                "on"   → Fija h[0]=0 explícitamente (añade restricción).
+#                "off"  → No hace nada; usar si las BCs ya fijan la escala
+#                          (e.g. Dirichlet en al menos una cara).
+#
+# --- Condiciones de contorno (BC) ---
+#
+# Se especifican 6 caras del dominio. Los nombres corresponden a:
+#   west/east   → cara x=0  / x=Lx   (dirección del flujo medio)
+#   south/north → cara y=0  / y=Ly
+#   bottom/top  → cara z=0  / z=Lz
+#
+# Tipos disponibles para cada cara:
+#   { type: dirichlet, value: H }  → Carga fija h=H en esa cara.
+#                                    Genera flujo medio si west≠east.
+#   { type: neumann,   value: 0 }  → Flujo nulo (impermeabilidad). value=0
+#                                    es el único valor físico soportado.
+#   { type: periodic }             → Periódica: la cara se acopla con la
+#                                    opuesta. Ambas caras deben ser periodic.
+#
+# Para este caso: flujo medio en x (west=100, east=0), periódico en y,z.
+#
 flow:
-  solver: pcg_mg
-  mg_levels: 6            # log2(32) + 1 = 6  (legacy n=32 block)
-  mg_pre_smooth: 4        # npre in legacy
-  mg_post_smooth: 4       # npos in legacy
+  solver: mg_cg
+  mg_levels: 6
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
   mg_coarse_iters: 50
   mg_max_cycles: 20
-  cg_max_iter: 200        # 3rd-to-last arg of solver_CG
-  cg_rtol: 1.0e-6         # tolerance in solver_CG
+  cg_max_iter: 200
+  cg_rtol: 1.0e-6
   cg_check_every: 10
   rtol: 1.0e-6
 
   pin:
-    mode: off             # legacy: pin1stCell = false
+    mode: off   # off porque tenemos Dirichlet en west/east → sistema no singular
 
+  # Condiciones de contorno del solver de cabeza (hydraulic head)
   bc:
-    west:   { type: dirichlet, value: 100.0 }   # Hwest = 100
-    east:   { type: dirichlet, value: 0.0 }     # Heast = 0
-    south:  { type: periodic }
+    west:   { type: dirichlet, value: 100.0 }  # h=100 en x=0  → genera flujo en +x
+    east:   { type: dirichlet, value: 0.0 }    # h=0   en x=Lx
+    south:  { type: periodic }                 # y=0 acoplado con y=Ly
     north:  { type: periodic }
-    bottom: { type: periodic }
+    bottom: { type: periodic }                 # z=0 acoplado con z=Lz
     top:    { type: periodic }
 
+  # Verificación opcional: compara la velocidad calculada con el valor de
+  # Darcy teórico para detectar errores numéricos. Solo útil para debug.
+  # verify_velocity: false
+
+
+# ==============================================================================
+# transport — Transporte de partículas (RWPT con Par2_Core)
+# ==============================================================================
+# Simula el movimiento de N partículas mediante Random Walk Particle Tracking.
+# Cada partícula sigue la velocidad interpolada de Darcy + difusión molecular
+# + dispersión mecánica.
+#
+#   n_particles  → Número de partículas. Más partículas → estadísticas más
+#                  precisas pero más tiempo de cómputo. Típico: 1000–100000.
+#   dt           → Paso de tiempo [T]. IMPORTANTE: debe satisfacer CFL:
+#                    dt ≤ dx / (2 * v_max)
+#                  Si no se conoce v_max a priori, usar un valor conservador
+#                  y ajustar tras la primera ejecución (el programa imprime
+#                  stats de velocidad si diagnostics.velocity_field: true).
+#   n_steps      → Número total de pasos de tiempo. Define t_max = n_steps*dt.
+#   porosity     → Porosidad efectiva n [-]. Divide la velocidad de Darcy para
+#                  obtener la velocidad de poro: v_poro = v_Darcy / n.
+#                  Para medio saturado simple usar 1.0.
+#   diffusion    → Coeficiente de difusión molecular Dm [L²/T].
+#                  0.0 = transporte puramente advectivo (sin difusión).
+#   alpha_l      → Dispersividad longitudinal αL [L]. Dispersión en la
+#                  dirección del flujo local. 0.0 = sin dispersión mecánica.
+#   alpha_t      → Dispersividad transversal αT [L]. Dispersión perpendicular
+#                  al flujo local. Normalmente αT << αL.
+#   seed         → Semilla del generador aleatorio para la parte estocástica
+#                  del RWPT. En multi-realización se usa seed + r*1000.
+#   output_every → Cada cuántos pasos se guardan estadísticas internas.
+#                  No confundir con sample_every (macrodispersión).
+#   snapshot_every → Cada cuántos pasos se guarda un snapshot de posición
+#                  de partículas (0 = desactivado).
+#   inject_x     → Posición x [L] donde se inyectan las partículas al inicio.
+#                  Las partículas se distribuyen uniformemente en el plano
+#                  x=inject_x, cubriendo todo el dominio Y×Z.
+#                  Típico: inject_x = λ (una longitud de correlación aguas
+#                  abajo de la entrada para evitar efectos de borde).
+#   velocity_layout → Formato interno del campo de velocidades para Par2_Core:
+#                  "padded"  → (recomendado) Compatible con Par2_Core.
+#                              Cada componente U/V/W en array (nx+1)(ny+1)(nz+1).
+#                  "compact" → Layout MAC clásico, más compacto pero no
+#                              compatible con Par2_Core directamente.
+#
 transport:
   n_particles: 10000
-  dt: 12.5                  # PLACEHOLDER — legacy: h/(2·v_max), adjust after CFL
-  n_steps: 409600           # PLACEHOLDER — legacy: t_max_adj/dt = 5120000/dt
+  dt: 12.5          # AJUSTAR: dt = dx/(2*v_max). v_max se imprime en [diag] si
+                    # diagnostics.velocity_field: true. Aquí dx=5, v_max≈0.2 → dt≈12.5
+  n_steps: 409600   # t_max_adj/dt = 5120000/12.5 = 409600 pasos
   porosity: 1.0
-  diffusion: 0.0            # Dm = 0 (pure advection)
-  alpha_l: 0.0              # αL = 0 (no mechanical dispersion)
-  alpha_t: 0.0              # αT = 0
-  seed: 123456789           # legacy: 123456789 * (k+1) per realization
-  output_every: 1365        # ~steps/300, legacy reg = max(1, steps/300)
-  snapshot_every: 0         # 0 = disabled
-  inject_x: 50.0            # 10 * h = 50 [L]
-  velocity_layout: padded   # "padded" for Par2_Core (default)
+  diffusion: 0.0    # Dm=0: transporte puramente advectivo
+  alpha_l: 0.0      # Sin dispersión mecánica
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 1365          # ~steps/300
+  snapshot_every: 0           # 0 = sin snapshots intermedios
+  inject_x: 50.0              # x = λ = 10*dx aguas abajo de la entrada
+  velocity_layout: padded
+
+
+# ==============================================================================
+# analysis — Análisis estadístico post-transporte
+# ==============================================================================
 
 analysis:
+
+  # ----------------------------------------------------------------------------
+  # macrodispersion — Cálculo de macrodispersividad α(t)
+  # ----------------------------------------------------------------------------
+  # Calcula la macrodispersividad longitudinal α_L(t) = d/dt[σ²_x(t)] / (2*<vx>)
+  # promediada sobre NR realizaciones del campo K.
+  # Los resultados se escriben en output_dir/macrodispersion.csv.
+  #
+  #   enabled      → true: activa el ensemble completo. false: solo 1 realización.
+  #   NR           → Número de realizaciones del campo K. Cada una usa una
+  #                  semilla diferente (seed+r). Más realizaciones → estimación
+  #                  más precisa del α(t) ergódico pero más tiempo total.
+  #   lambda       → Longitud de correlación λ [L] para normalizar tiempos.
+  #                  Debe coincidir con stochastic.corr_length.
+  #   vmean_norm   → ||<v>|| = velocidad media del flujo [L/T].
+  #                  Se usa internamente para construir α(t). Puede estimarse
+  #                  como vm = ΔH * K_mean / Lx = (100-0)*1/10240 ≈ 0.009766.
+  #   sample_every → Frecuencia de muestreo de momentos estadísticos (pasos).
+  #                  El programa calcula <x>, <x²>, etc. cada sample_every pasos.
+  #                  Valores menores → más resolución temporal, más overhead.
+  #   var_estimator → Estimador de varianza:
+  #                  "biased"   → divide por N (fórmula del paper de referencia).
+  #                  "unbiased" → divide por N-1 (estimador estadístico estándar).
+  #
   macrodispersion:
     enabled: true
-    NR: 100                      # nRealizations
-    lambda: 50.0                 # Correlation length [L]
-    vmean_norm: 0.01      # vm = 100 / Lx = 100 / 10240
-    sample_every: 10             # Sample stats every N transport steps
-    var_estimator: biased        # "biased" (paper, N denom)
+    NR: 1
+    lambda: 50.0
+    vmean_norm: 0.01    # vm = 100/10240 ≈ 0.009766 [L/T]
+    sample_every: 10
+    var_estimator: biased
+
+  # ----------------------------------------------------------------------------
+  # snapshots — Guardado de posiciones de partículas en disco
+  # ----------------------------------------------------------------------------
+  # Graba archivos CSV con las coordenadas (x,y,z) de todas las partículas
+  # en instantes seleccionados. Útil para visualización y post-proceso externo.
+  # Los archivos se escriben en output_dir/snapshots/.
+  #
+  #   enabled          → true: activa el guardado de snapshots.
+  #   every            → Cada cuántos pasos de transporte se graba un snapshot.
+  #   legacy_format    → true: formato CSV compatible con código legacy (x,y,z
+  #                      sin encabezado). false: formato con encabezado.
+  #   include_time     → true: añade columna con el tiempo físico t=step*dt.
+  #   include_status   → true: añade columna con el estado de cada partícula
+  #                      (activa, absorbida, salida del dominio, etc.).
+  #   include_wrap_counts → true: añade columna con cuántas veces cruzó cada
+  #                      frontera periódica (útil para posición "desenvolvida").
+  #   include_unwrapped → true: añade columnas x_u, y_u, z_u con posición
+  #                      sin envolver (posición real en dominio infinito).
+  #                      Requiere condiciones periódicas activas.
+  #   stride           → Guarda 1 de cada stride partículas. stride=1 guarda
+  #                      todas. stride=10 guarda 1 cada 10 (reduce tamaño).
+  #   max_particles    → Límite máximo de partículas por snapshot (-1 = todas).
+  #   precision        → Dígitos significativos en los valores flotantes del CSV.
+  #                      15 = doble precisión completa.
+  #
   snapshots:
     enabled: true
-    every: 200
+    every: 1365
     legacy_format: true
     include_time: false
     include_status: false
@@ -97,6 +320,64 @@ analysis:
     max_particles: -1
     precision: 15
 
+
+# ==============================================================================
+# diagnostics — Diagnósticos numéricos del campo de velocidades (GPU)
+# ==============================================================================
+# Computa y muestra estadísticas del campo de velocidades una vez por
+# realización, justo después de calcular v = -K∇h y antes del transporte.
+# No modifica nada; es solo lectura del campo.
+#
+#   velocity_field → true: activa el diagnóstico. Para cada realización imprime
+#                    en consola (min/max/mean) de tres cantidades evaluadas en
+#                    los centros de celda:
+#
+#                    div:  Divergencia ∇·v = ∂u/∂x + ∂v/∂y + ∂w/∂z
+#                          En flujo de Darcy incompresible debe ser ≈ 0.
+#                          Valores altos indican problemas numéricos.
+#
+#                    |w|:  Módulo de la vorticidad |Ω| = |∇×v|.
+#                          Para flujo de Darcy puro (dominado por gradiente
+#                          de presión) la vorticidad es pequeña.
+#                          Valores altos indican heterogeneidad fuerte.
+#                          NOTA: las estadísticas incluyen celdas de borde
+#                          fijadas a 0 (interior-only para curl), por lo que
+#                          la media está ligeramente sesgada hacia abajo.
+#
+#                    h:    Helicidad h = v·(∇×v).
+#                          Mide el alineamiento entre velocidad y vorticidad.
+#                          Relevante para transporte en medios altamente
+#                          heterogéneos donde hay estructuras vorticales.
+#
+#                    false: desactivado (sin overhead).
+#
+diagnostics:
+  velocity_field: true
+
+
+# ==============================================================================
+# output — Rutas y formato de salida
+# ==============================================================================
+# Controla qué datos se guardan en disco y dónde.
+#
+#   output_dir    → Directorio raíz de salida. Se crea automáticamente si no
+#                   existe. Dentro se generan subdirectorios para cada tipo
+#                   de dato (snapshots, CSVs, manifesto, etc.).
+#   save_K        → true: guarda el campo K de cada realización en disco.
+#                   Útil para reproducir resultados o visualizar la heterogeneidad.
+#                   Puede ocupar mucho espacio en grillas grandes.
+#   save_head     → true: guarda el campo de carga hidráulica h de cada
+#                   realización. Útil para verificar la solución del flujo.
+#   save_velocity → true: guarda los campos U, V, W (velocidades estaggered).
+#                   Advertencia: 3 arrays de ~500 MB cada uno para Nx=2048.
+#   save_particles → true: guarda las posiciones finales de las partículas
+#                    tras el transporte. Siempre recomendado.
+#   format        → Formato de los archivos de campos (K, head, velocity):
+#                   "binary" → (recomendado) Archivos binarios raw de doubles.
+#                              Más rápido de escribir/leer, menor tamaño.
+#                   "vtk"    → Formato VTK Legacy (.vtk) para visualización
+#                              directa en ParaView o VisIt.
+#
 output:
   output_dir: ./output
   save_K: false
