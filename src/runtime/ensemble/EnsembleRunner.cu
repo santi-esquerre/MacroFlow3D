@@ -44,6 +44,13 @@
 #include "../../physics/particles/par2_adapter/Par2TransportAdapter.hpp"
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
 
+// PSPTA engine + precomputed ψ fields
+#include "../../physics/particles/pspta/PsptaEngine.hpp"
+#include "../../physics/particles/pspta/PsptaPsiField.cuh"
+
+// PSPTA runtime diagnostics writer
+#include "../../runtime/io/CsvDiagnosticsWriter.hpp"
+
 // Runtime — counters + NVTX + printing helpers
 #include "../../runtime/RunCounters.hpp"
 #include "../../runtime/nvtx_range.cuh"
@@ -52,6 +59,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -134,8 +142,12 @@ int run_ensemble(const AppConfig& cfg,
     FlowWorkspace flow_ws;
     flow_ws.allocate(grid, head_cfg.mg_levels);
 
-    // Velocity (padded for Par2_Core)
+    // Velocity (padded for Par2_Core; compact/CompactMAC for PSPTA)
     PaddedVelocityField vel(grid);
+    VelocityField vel_compact;  // default-constructed (no alloc); resized below if pspta
+    if (cfg.transport.method == "pspta") {
+        vel_compact = VelocityField(grid);
+    }
 
     // Velocity diagnostics workspace (allocated once, reused across realizations)
     VelocityDiagnostics vel_diag;
@@ -191,16 +203,36 @@ int run_ensemble(const AppConfig& cfg,
     const int r0_snap_every = (n_steps > 100) ? (n_steps / 100) : 1;
 
     runtime::SchedulerConfig sched_cfg;
-    sched_cfg.stats_every        = do_stats ? mac.sample_every : 0;
-    sched_cfg.snapshot_every     = snap.enabled ? snap.every : 0;
-    sched_cfg.r0_snapshot_every  = r0_snap_every;
-    sched_cfg.include_unwrapped  = snap.include_unwrapped;
-    sched_cfg.snapshot_stride    = snap.stride;
-    sched_cfg.snapshot_precision = snap.precision;
-    sched_cfg.n_particles        = NP;
-    sched_cfg.has_periodic       = any_periodic;
+    sched_cfg.stats_every            = do_stats ? mac.sample_every : 0;
+    sched_cfg.snapshot_every         = snap.enabled ? snap.every : 0;
+    sched_cfg.r0_snapshot_every      = r0_snap_every;
+    sched_cfg.n_particles            = NP;
+    sched_cfg.n_steps                = n_steps;
+    sched_cfg.has_periodic           = any_periodic;
+    // Mirror all Par2-compatible snapshot options from SnapshotConfig (Task 1)
+    sched_cfg.snap_writer.legacy_format       = snap.legacy_format;
+    sched_cfg.snap_writer.include_time        = snap.include_time;
+    sched_cfg.snap_writer.include_status      = snap.include_status;
+    sched_cfg.snap_writer.include_wrap_counts = snap.include_wrap_counts;
+    sched_cfg.snap_writer.include_unwrapped   = snap.include_unwrapped;
+    sched_cfg.snap_writer.stride              = snap.stride;
+    sched_cfg.snap_writer.max_particles       = snap.max_particles;
+    sched_cfg.snap_writer.precision           = snap.precision;
 
     runtime::IOScheduler scheduler(sched_cfg, layout);
+
+    // ── PSPTA objects — hoisted for reuse across realizations (Task 4) ─────
+    // PsptaPsiField and PsptaEngine are constructed once here and rebind each
+    // realization; only precompute_levelA() and bind*() are called per-r.
+    // This eliminates per-realization cudaMalloc/cudaFree of ψ buffers and
+    // engine workspace, keeping the GPU memory footprint stable.
+    std::unique_ptr<pspta::PsptaEngine> pspta_eng;
+    pspta::PsptaPsiField pspta_psi_field;
+    if (cfg.transport.method == "pspta") {
+        pspta_psi_field.resize(grid);
+        pspta_eng = std::make_unique<pspta::PsptaEngine>(
+            grid, ctx.cuda_stream(), cfg.transport.seed);
+    }
 
     // ================================================================
     // REALIZATION LOOP (NR loop lives ONLY here — Etapa 10)
@@ -244,11 +276,20 @@ int run_ensemble(const AppConfig& cfg,
         if (!result.converged)
             std::fprintf(stderr, "       WARNING: Head solve did NOT converge (r=%d)!\n", r);
 
-        // ── Compute velocity (padded) ──────────────────────────────────
-        std::printf("  [6] Computing velocity (padded)\n");
+        // ── Compute velocity ───────────────────────────────────────────
         MACROFLOW3D_NVTX_PUSH("velocity");
         profiler.start("velocity");
-        compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
+        if (cfg.transport.method == "pspta") {
+            std::printf("  [6] Computing velocity (compact)\n");
+            compute_velocity_from_head(vel_compact, head_field, K_field, grid, cfg.flow.bc, ctx);
+            // Compute padded only if needed for diagnostics
+            if (cfg.diagnostics.velocity_field) {
+                compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
+            }
+        } else {
+            std::printf("  [6] Computing velocity (padded)\n");
+            compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
+        }
         profiler.stop();
 
         // ── Velocity diagnostics (optional, once per realization) ──────
@@ -257,20 +298,13 @@ int run_ensemble(const AppConfig& cfg,
             print_velocity_diagnostics(vel_diag, r, ctx);
         }
 
-        // ── Transport via Par2_Core ────────────────────────────────────
-        std::printf("  [7] Transport (Par2_Core)\n");
-
+        // ── Transport ─────────────────────────────────────────────────
         const real dt          = cfg.transport.dt;
         const int sample_every = mac.sample_every;
+        const real Ly = cfg.grid.Ly();
+        const real Lz = cfg.grid.Lz();
 
-        // Build transport adapter (per-realization RNG seed)
-        TransportAdapterConfig r_cfg = ta_cfg;
-        r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
-
-        Par2TransportAdapter engine(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
-        engine.bind_velocity(vel);
-
-        // Build particles view with status + wraps
+        // Common particle view (same for both engines)
         ParticlesSoA<real> pv;
         pv.x = px.data(); pv.y = py.data(); pv.z = pz.data();
         pv.n = NP;
@@ -285,23 +319,7 @@ int run_ensemble(const AppConfig& cfg,
         }
         cudaMemsetAsync(status_buf.data(), 0, NP * sizeof(uint8_t), ctx.cuda_stream());
 
-        engine.bind_particles(pv);
-
-        // Inject particles
-        const real Ly = cfg.grid.Ly();
-        const real Lz = cfg.grid.Lz();
-        engine.inject_box(cfg.transport.inject_x, 0.0, 0.0,
-                          cfg.transport.inject_x, Ly, Lz,
-                          0, NP);
-
-        engine.ensure_tracking();
-        engine.prepare();
-
-        // Reset collector + scheduler for this realization
-        if (do_stats) collector.reset();
-        scheduler.begin_realization(r);
-
-        // Unwrapped view (device)
+        // Common unwrapped view
         UnwrappedSoA<real> unwrap_view;
         if (need_unwrap) {
             unwrap_view.x_u      = ux.data();
@@ -310,64 +328,143 @@ int run_ensemble(const AppConfig& cfg,
             unwrap_view.capacity = NP;
         }
 
-        // ── Hot loop ───────────────────────────────────────────────────
-        MACROFLOW3D_NVTX_PUSH("transport");
-        profiler.start("transport");
-        std::printf("       Stepping %d × %d (dt=%.4e) ...\n", NP, n_steps, dt);
+        // Generic hot loop — templated on engine type; same interface for Par2 and PSPTA.
+        // Engine must expose: bind_particles, inject_box, ensure_tracking, prepare,
+        //                     step, particles(), compute_unwrapped, synchronize.
+        auto run_hot_loop = [&](auto& eng) {
+            eng.bind_particles(pv);
+            eng.inject_box(cfg.transport.inject_x, static_cast<real>(0.0),
+                           static_cast<real>(0.0),
+                           cfg.transport.inject_x, Ly, Lz, 0, NP);
+            eng.ensure_tracking();
+            eng.prepare();
 
-        for (int step = 1; step <= n_steps; ++step) {
-            engine.step(dt);  // async, allocation-free, no sync
-            counters.add_step();
+            if (do_stats) collector.reset();
+            scheduler.begin_realization(r);
 
-            const bool sample_now = do_stats && (step % sample_every == 0);
-            const bool snap_now   = (sched_cfg.snapshot_every > 0) &&
-                                    (step % sched_cfg.snapshot_every == 0);
-            const bool r0_snap    = (r == 0) &&
-                                    (sched_cfg.r0_snapshot_every > 0) &&
-                                    (step % sched_cfg.r0_snapshot_every == 0);
-            const bool any_event  = sample_now || snap_now || r0_snap;
+            MACROFLOW3D_NVTX_PUSH("transport");
+            profiler.start("transport");
+            std::printf("       Stepping %d × %d (dt=%.4e) ...\n", NP, n_steps, dt);
 
-            if (any_event) {
-                // Compute unwrapped if needed
-                if ((sample_now && any_periodic) ||
-                    ((snap_now || r0_snap) && snap.include_unwrapped && unwrap_view.valid()))
-                {
-                    engine.compute_unwrapped(unwrap_view, ctx.cuda_stream());
+            for (int step = 1; step <= n_steps; ++step) {
+                eng.step(dt);
+                counters.add_step();
+
+                // Progress printout (for both Par2 and PSPTA)
+                const int out_every = cfg.transport.output_every;
+                if (out_every > 0 && step % out_every == 0) {
+                    std::printf("           step %5d/%d  t=%.3e\n",
+                                step, n_steps, static_cast<double>(step) * dt);
                 }
+                const bool sample_now = do_stats && (step % sample_every == 0);
+                const bool snap_now   = scheduler.snapshot_due(step);
+                const bool r0_snap    = scheduler.r0_snapshot_due(step);
+                const bool any_event  = sample_now || snap_now || r0_snap;
 
-                // Launch async stats before sync
-                io::TimeSeriesPoint<real> ts_point;
-                bool have_stats = false;
-                if (sample_now) {
-                    ConstParticlesSoA<real> cpv = engine.particles();
-                    collector.sample_async(cpv, ctx.cuda_stream());
+                if (any_event) {
+                    ConstParticlesSoA<real> cpv = eng.particles();
+
+                    // [Task 2] Unwrapped only for regular snapshots that request it
+                    if (snap_now && sched_cfg.snap_writer.include_unwrapped &&
+                        unwrap_view.valid())
+                    {
+                        eng.compute_unwrapped(unwrap_view, ctx.cuda_stream());
+                    }
+
+                    // [Task 3] Stage D2H before the single sync
+                    if (snap_now || r0_snap) {
+                        scheduler.stage_snapshot_async(step, cpv, unwrap_view,
+                                                       ctx.cuda_stream());
+                    }
+                    if (sample_now) {
+                        collector.sample_async(cpv, ctx.cuda_stream());
+                    }
+
+                    // Single sync — covers snapshot D2H and stats reduction
+                    cudaStreamSynchronize(ctx.cuda_stream());
+
+                    io::TimeSeriesPoint<real> ts_point;
+                    bool have_stats = false;
+                    if (sample_now) {
+                        have_stats = collector.store_sample(step, dt, ts_point);
+                        counters.add_stats();
+                    }
+
+                    // Data already synced: scheduler writes without re-staging/re-syncing
+                    scheduler.on_step(step, dt, cpv, unwrap_view,
+                                      have_stats ? &ts_point : nullptr,
+                                      ctx.cuda_stream(), /*pre_synced=*/true);
                 }
-
-                // SINGLE sync point
-                cudaStreamSynchronize(ctx.cuda_stream());
-
-                // Fetch stats result (after sync)
-                if (sample_now) {
-                    have_stats = collector.store_sample(step, dt, ts_point);
-                    counters.add_stats();
-                }
-
-                // Scheduler handles snapshots + records stats point
-                ConstParticlesSoA<real> cpv = engine.particles();
-                scheduler.on_step(step, dt, cpv, unwrap_view,
-                                  have_stats ? &ts_point : nullptr,
-                                  ctx.cuda_stream());
             }
+
+            eng.synchronize();
+
+            // [Task 5] Write final snapshot if last step wasn't covered by cadence
+            {
+                ConstParticlesSoA<real> cpv_fin = eng.particles();
+                if (sched_cfg.snap_writer.include_unwrapped && unwrap_view.valid() &&
+                    sched_cfg.snapshot_every > 0 &&
+                    n_steps % sched_cfg.snapshot_every != 0)
+                {
+                    eng.compute_unwrapped(unwrap_view, ctx.cuda_stream());
+                }
+                scheduler.maybe_write_final(dt, cpv_fin, unwrap_view,
+                                            ctx.cuda_stream());
+            }
+
+            profiler.stop();
+
+            std::printf("       Transport complete (r=%d).\n", r);
+            scheduler.end_realization();
+            counters.add_realization();
+        };  // end run_hot_loop
+
+        if (cfg.transport.method == "pspta") {
+            std::printf("  [7] Transport (PSPTA)\n");
+            // Per-realization: precompute ψ fields for this velocity field
+            // (overwrites existing buffers — no cudaMalloc/cudaFree per Task 4)
+            pspta::PsptaPrecomputeReport psi_rep =
+                pspta_psi_field.precompute_levelA(vel_compact, grid, ctx.cuda_stream());
+            if (psi_rep.n_vx_clamped > 0) {
+                std::printf("       [psi] vx_clamped=%lld / %lld\n",
+                            (long long)psi_rep.n_vx_clamped,
+                            (long long)psi_rep.n_total);
+            }
+            if (cfg.transport.pspta_diagnostics) {
+                auto qual_rep = pspta_psi_field.compute_psi_quality(
+                    vel_compact, grid, ctx.cuda_stream());
+                std::printf("       [psi_quality] rms_r1=%.3e max_r1=%.3e "
+                            "rms_r2=%.3e max_r2=%.3e  ncells=%lld\n",
+                            qual_rep.rms_r1, qual_rep.max_r1,
+                            qual_rep.rms_r2, qual_rep.max_r2,
+                            (long long)qual_rep.n_cells);
+                runtime::CsvDiagnosticsWriter::write_psi_quality_row(
+                    layout.base + "/psi_quality.csv", r, psi_rep, qual_rep);
+            }
+            // Rebind per-realization (engine workspace already allocated)
+            pspta_eng->set_inject_seed(
+                cfg.transport.seed + static_cast<uint64_t>(r) * 100ULL);
+            pspta_eng->bind_velocity(&vel_compact);
+            pspta_eng->bind_psifield(&pspta_psi_field);
+            run_hot_loop(*pspta_eng);
+            // Post-transport PSPTA diagnostics
+            auto ts = pspta_eng->compute_transport_stats();
+            std::printf("       [pspta] active=%d  exited=%d  newton_stalls=%lld  "
+                        "nonzero_fail=%u  max_fail=%u  (NP=%d)\n",
+                        ts.n_active, ts.n_exited, (long long)ts.total_fail,
+                        ts.n_nonzero_fail, ts.max_fail_count, NP);
+            if (cfg.transport.pspta_diagnostics) {
+                runtime::CsvDiagnosticsWriter::write_newton_fail_row(
+                    layout.base + "/newton_fail_summary.csv", r, NP, ts);
+            }
+        } else {
+            std::printf("  [7] Transport (Par2_Core)\n");
+            TransportAdapterConfig r_cfg = ta_cfg;
+            r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
+            Par2TransportAdapter eng(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
+            eng.bind_velocity(vel);
+            run_hot_loop(eng);
         }
-
-        engine.synchronize();
-        profiler.stop();
-
-        std::printf("       Transport complete (r=%d).\n", r);
-
-        // End realization — scheduler flushes stats CSV to disk
-        scheduler.end_realization();
-        counters.add_realization();
 
         // Store this realization's series for post-processing
         if (do_stats) {

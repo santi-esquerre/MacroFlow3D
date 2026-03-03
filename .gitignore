@@ -17,9 +17,9 @@ desktop.ini
 
 # Project-specific
 output*/
-codebase*.md
+*codebase*.md
 .aidigestignore
-MacroFlow3D.md
+MacroFlow3D*.md
 
 
 # Python

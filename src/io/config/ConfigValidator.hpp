@@ -114,9 +114,10 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         warn("transport.alpha_t", "alpha_t > alpha_l is unusual");
     if (cfg.transport.output_every <= 0)
         err("transport.output_every", "must be > 0");
-    if (cfg.transport.velocity_layout != "padded" &&
-        cfg.transport.velocity_layout != "compact")
-        err("transport.velocity_layout", "expected 'padded' or 'compact'");
+    // transport.velocity_layout is now derived from method; no longer validated here.
+    if (cfg.transport.method != "par2" && cfg.transport.method != "pspta")
+        err("transport.method",
+            "'" + cfg.transport.method + "' unknown; expected 'par2' or 'pspta'");
 
     // ── Analysis / macrodispersion ───────────────────────────────────
     const auto& mac = cfg.analysis.macrodispersion;

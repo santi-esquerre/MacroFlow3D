@@ -232,7 +232,8 @@ TransportYamlConfig parse_transport(const YAML::Node& node,
 
     static const std::set<std::string> known =
         {"n_particles","dt","n_steps","porosity","diffusion","alpha_l","alpha_t",
-         "seed","output_every","snapshot_every","inject_x","velocity_layout"};
+         "seed","output_every","snapshot_every","inject_x",
+         "method","pspta_diagnostics"};
     check_unknown_keys(node, known, "transport", errs);
 
     cfg.n_particles    = get_or<int>(node, "n_particles", def.n_particles);
@@ -246,7 +247,9 @@ TransportYamlConfig parse_transport(const YAML::Node& node,
     cfg.output_every   = get_or<int>(node, "output_every", def.output_every);
     cfg.snapshot_every = get_or<int>(node, "snapshot_every", def.snapshot_every);
     cfg.inject_x       = get_or<real>(node, "inject_x", def.inject_x);
-    cfg.velocity_layout = get_or<std::string>(node, "velocity_layout", def.velocity_layout);
+    cfg.method          = get_or<std::string>(node, "method", def.method);
+    cfg.pspta_diagnostics = get_or<bool>(node, "pspta_diagnostics", def.pspta_diagnostics);
+    // velocity_layout is derived after parsing (not user-configurable)
 
     return cfg;
 }
@@ -355,6 +358,8 @@ AppConfig load_config_yaml(const std::string& path) {
     cfg.stochastic = parse_stochastic(root["stochastic"], cfg.stochastic, unknown_errs);
     cfg.flow       = parse_flow(root["flow"], cfg.flow, unknown_errs);
     cfg.transport  = parse_transport(root["transport"], cfg.transport, unknown_errs);
+    // Derive velocity_layout from method — not user-configurable
+    cfg.transport.velocity_layout = (cfg.transport.method == "pspta") ? "compact" : "padded";
     cfg.analysis   = parse_analysis(root["analysis"], cfg.analysis, unknown_errs);
     // Diagnostics section (simple — single bool)
     if (root["diagnostics"]) {

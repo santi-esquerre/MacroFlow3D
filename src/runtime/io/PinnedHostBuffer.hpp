@@ -12,6 +12,7 @@
 
 #include <cuda_runtime.h>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
 namespace macroflow3d {
@@ -91,20 +92,29 @@ private:
 /**
  * @brief Pre-allocated host-side snapshot staging buffers.
  *
- * Holds pinned memory for positions (wrapped + optional unwrapped).
+ * Holds pinned memory for positions (wrapped + optional unwrapped + optional
+ * status and wrap counts for full Par2-compatible snapshot output).
  * Allocated once, reused across all snapshot events.
  */
 template <typename T>
 struct SnapshotStaging {
-    PinnedHostBuffer<T> x, y, z;
-    PinnedHostBuffer<T> x_u, y_u, z_u;  // unwrapped (optional)
-    int capacity = 0;
-    bool has_unwrapped = false;
+    PinnedHostBuffer<T>       x, y, z;
+    PinnedHostBuffer<T>       x_u, y_u, z_u;      // unwrapped (optional)
+    PinnedHostBuffer<uint8_t> status;              // particle status (optional)
+    PinnedHostBuffer<int32_t> wrapX, wrapY, wrapZ; // wrap counters (optional)
 
-    /// Allocate all buffers (call ONCE in prepare)
-    void allocate(int n_particles, bool need_unwrap) {
-        capacity = n_particles;
-        has_unwrapped = need_unwrap;
+    int  capacity        = 0;
+    bool has_unwrapped   = false;
+    bool has_status      = false;
+    bool has_wrap_counts = false;
+
+    /// Allocate all requested buffers (call ONCE in prepare phase, not in hot loop)
+    void allocate(int n_particles, bool need_unwrap,
+                  bool need_status = false, bool need_wrap = false) {
+        capacity        = n_particles;
+        has_unwrapped   = need_unwrap;
+        has_status      = need_status;
+        has_wrap_counts = need_wrap;
         x.allocate(n_particles);
         y.allocate(n_particles);
         z.allocate(n_particles);
@@ -112,6 +122,14 @@ struct SnapshotStaging {
             x_u.allocate(n_particles);
             y_u.allocate(n_particles);
             z_u.allocate(n_particles);
+        }
+        if (need_status) {
+            status.allocate(n_particles);
+        }
+        if (need_wrap) {
+            wrapX.allocate(n_particles);
+            wrapY.allocate(n_particles);
+            wrapZ.allocate(n_particles);
         }
     }
 
@@ -129,6 +147,19 @@ struct SnapshotStaging {
         x_u.copy_from_device_async(dxu, n, stream);
         y_u.copy_from_device_async(dyu, n, stream);
         z_u.copy_from_device_async(dzu, n, stream);
+    }
+
+    /// Async copy particle status array from device
+    void stage_status_async(const uint8_t* d_status, int n, cudaStream_t stream) {
+        status.copy_from_device_async(d_status, n, stream);
+    }
+
+    /// Async copy wrap counters from device
+    void stage_wrap_async(const int32_t* dx, const int32_t* dy, const int32_t* dz,
+                          int n, cudaStream_t stream) {
+        wrapX.copy_from_device_async(dx, n, stream);
+        wrapY.copy_from_device_async(dy, n, stream);
+        wrapZ.copy_from_device_async(dz, n, stream);
     }
 };
 

@@ -133,8 +133,17 @@ struct TransportYamlConfig {
     // Injection (default: x=0 plane spanning full YZ domain)
     real inject_x = 0.0;
     
-    // Velocity layout for Par2_Core: "padded" (default) or "compact"
+    // Velocity layout — DERIVED from method, NOT user-configurable.
+    // "par2"  → "padded";  "pspta" → "compact"
     std::string velocity_layout = "padded";
+
+    // Transport method: "par2" (default) | "pspta"
+    std::string method = "par2";
+
+    // Enable PSPTA-specific diagnostics (ψ quality + Newton fail summary).
+    // Written to psi_quality.csv and newton_fail_summary.csv.
+    // Has no effect for method=="par2".  Default OFF.
+    bool pspta_diagnostics = false;
 };
 
 /**

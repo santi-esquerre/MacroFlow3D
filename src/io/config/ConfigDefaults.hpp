@@ -69,7 +69,9 @@ inline AppConfig make_default_config() {
     cfg.transport.output_every   = 100;
     cfg.transport.snapshot_every = 0;
     cfg.transport.inject_x       = 0.0;
-    cfg.transport.velocity_layout = "padded";
+    cfg.transport.method         = "par2";  // supported: "par2" | "pspta"
+    cfg.transport.pspta_diagnostics = false;
+    // velocity_layout is derived from method — not set here
 
     // Analysis — macrodispersion
     cfg.analysis.macrodispersion.enabled       = false;

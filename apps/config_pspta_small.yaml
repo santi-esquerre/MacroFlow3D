@@ -1,0 +1,132 @@
+# ==============================================================================
+# MacroFlow3D — Configuración PSPTA smoke test (grilla chica)
+# ==============================================================================
+#
+# Caso equivalente al config_pipeline.yaml pero reducido para verificar que
+# el módulo PSPTA compila y corre sin explotar:
+#
+#   Grid:         64×32×32   (original: 2048×256×256)
+#   Particles:    500         (original: 10000)
+#   Steps:        500         (original: 409600)
+#   Method:       pspta       (original: par2)
+#
+# Relaciones conservadas:
+#   dx=5, corr_length=50 → λ/dx = 10  (igual que el original)
+#   sigma2=1.0, covariance_type=0, K_mean=1.0  (idéntico)
+#   head: west=100, east=0, y/z periódico  (idéntico)
+#
+# CFL estimado:
+#   v_mean = ΔH * K_mean / Lx = 100/320 ≈ 0.31 [L/T]
+#   v_max  ≈ 3 * v_mean (con sigma2=1) ≈ 0.94 [L/T]
+#   dt_CFL = dx / (2 * v_max) ≈ 5 / 1.88 ≈ 2.7 → usar dt=1.0 (conservador)
+#
+# Correr con:
+#   ./build/macroflow3d_pipeline apps/config_pspta_small.yaml
+# ==============================================================================
+
+run_mode: single_run
+
+# ------------------------------------------------------------------------------
+# grid
+# ------------------------------------------------------------------------------
+# min(nx,ny,nz) = 32 → divisible por 2^(mg_levels-1)=8  → mg_levels=4
+grid:
+  nx: 64
+  ny: 32
+  nz: 32
+  dx: 5.0
+
+# ------------------------------------------------------------------------------
+# stochastic
+# ------------------------------------------------------------------------------
+stochastic:
+  sigma2: 1.0
+  corr_length: 50.0
+  n_modes: 1000          # 1000 suficiente para grilla chica
+  covariance_type: 0     # exponencial
+  seed: 42
+  K_mean: 1.0
+
+# ------------------------------------------------------------------------------
+# flow
+# ------------------------------------------------------------------------------
+flow:
+  solver: mg_cg
+  mg_levels: 4           # min(64,32,32)=32; 32/2^3=4 celdas en nivel grueso
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-6
+  cg_check_every: 10
+  rtol: 1.0e-6
+
+  pin:
+    mode: off             # Dirichlet en west/east → sistema no singular
+
+  bc:
+    west:   { type: dirichlet, value: 100.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+# ------------------------------------------------------------------------------
+# transport  — PSPTA engine
+# ------------------------------------------------------------------------------
+transport:
+  method: pspta           # ← activa PsptaEngine en lugar de Par2
+  n_particles: 500
+  dt: 1.0                 # conservador; CFL = dx/(2*v_max) ≈ 2.7
+  n_steps: 500
+  porosity: 1.0
+  diffusion: 0.0          # transporte puramente advectivo
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 25        # ~steps/20
+  snapshot_every: 0
+  inject_x: 50.0          # x = λ = 10*dx
+
+# ------------------------------------------------------------------------------
+# analysis
+# ------------------------------------------------------------------------------
+analysis:
+  macrodispersion:
+    enabled: false        # desactivado: smoke test, no ensemble estadístico
+    NR: 1
+    lambda: 50.0
+    vmean_norm: 0.3125    # 100/320
+    sample_every: 10
+    var_estimator: biased
+
+  snapshots:
+    enabled: true
+    every: 100
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+# ------------------------------------------------------------------------------
+# diagnostics
+# ------------------------------------------------------------------------------
+diagnostics:
+  velocity_field: true    # imprime min/max/mean de div, |curl|, helicidad
+
+# ------------------------------------------------------------------------------
+# output
+# ------------------------------------------------------------------------------
+output:
+  output_dir: ./output_pspta_small
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary
