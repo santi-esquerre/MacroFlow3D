@@ -243,7 +243,6 @@ transport:
   output_every: 1365          # ~steps/300
   snapshot_every: 0           # 0 = sin snapshots intermedios
   inject_x: 50.0              # x = λ = 10*dx aguas abajo de la entrada
-  velocity_layout: padded
 
 
 # ==============================================================================

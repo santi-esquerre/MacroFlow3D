@@ -1,0 +1,92 @@
+# ==============================================================================
+# MacroFlow3D — Sigma²=1.0 con transporte PSPTA (Nivel A + Tier-2)
+# Base: config_pipeline_par2.yaml, cambiando method → pspta
+# ==============================================================================
+
+run_mode: ensemble
+
+grid:
+  nx: 2048
+  ny: 256
+  nz: 256
+  dx: 5.0
+
+stochastic:
+  sigma2: 1.0
+  corr_length: 50.0
+  n_modes: 10000
+  covariance_type: 0
+  seed: 42
+  K_mean: 1.0
+
+flow:
+  solver: mg_cg
+  mg_levels: 6
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-6
+  cg_check_every: 10
+  rtol: 1.0e-6
+
+  pin:
+    mode: off
+
+  bc:
+    west:   { type: dirichlet, value: 100.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+transport:
+  method: pspta
+  pspta_diagnostics: true   # escribe psi_quality.csv + newton_fail_summary.csv (si está habilitado en tu build)
+
+  n_particles: 10000
+  dt: 12.5
+  n_steps: 409600
+  porosity: 1.0
+  diffusion: 0.0
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+
+  output_every: 1365
+  snapshot_every: 0
+  inject_x: 50.0
+
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 20
+    lambda: 50.0
+    vmean_norm: 0.01
+    sample_every: 10
+    var_estimator: biased
+
+  snapshots:
+    enabled: true
+    every: 1365
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+diagnostics:
+  velocity_field: true
+
+output:
+  output_dir: ./output_pspta_sigma1
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary

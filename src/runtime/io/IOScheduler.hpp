@@ -6,28 +6,30 @@
  *
  * The scheduler owns:
  *   - Cadence config (snapshot_every, stats_every, flush_every)
- *   - Snapshot staging buffers (pinned host memory, preallocated)
+ *   - A Par2SnapshotAdapter for format-parity snapshot output
  *   - Pending write queue (fixed-capacity, no hot-loop allocs)
  *
  * API:
- *   1) Construct with config → allocates staging buffers.
+ *   1) Construct with config → creates Par2-backed snapshot adapter.
  *   2) Per step: call on_step() → scheduler decides if anything is needed.
- *   3) After realization: call flush() → drain pending writes.
+ *   3) After realization: call end_realization() → flush stats.
  *
  * HPC contract:
  *   - ZERO allocations inside on_step().
- *   - D2H copies are async (pinned mem + stream).
- *   - Disk I/O only happens in flush() or when the write queue is full.
+ *   - D2H copies delegated to Par2SnapshotAdapter (pinned mem + stream).
+ *   - Disk I/O only happens on snapshot/stats write events.
  */
 
 #include "PinnedHostBuffer.hpp"
 #include "../../io/output_layout.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
-#include "../../io/writers/CsvParticleSnapshotWriter.hpp"
+#include "../../physics/particles/par2_adapter/Par2SnapshotAdapter.hpp"
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
 #include "../../core/Scalar.hpp"
 
 #include <cuda_runtime.h>
+#include <filesystem>
+#include <memory>
 #include <vector>
 #include <string>
 #include <cstdio>
@@ -102,14 +104,13 @@ public:
                 const io::OutputLayout& layout)
         : cfg_(cfg), layout_(layout)
     {
-        // Pre-allocate staging buffers ONCE (no hot-loop allocs)
+        // Construct Par2-backed snapshot adapter ONCE (owns its own
+        // pinned staging buffers inside the PIMPL; no hot-loop allocs).
         if (cfg_.n_particles > 0 &&
             (cfg_.snapshot_every > 0 || cfg_.r0_snapshot_every > 0))
         {
-            staging_.allocate(cfg_.n_particles,
-                              cfg_.snap_writer.include_unwrapped,
-                              cfg_.snap_writer.include_status,
-                              cfg_.snap_writer.include_wrap_counts);
+            snap_adapter_ = std::make_unique<Par2SnapshotAdapter>(
+                cfg_.n_particles, cfg_.snap_writer);
         }
 
         // Pre-reserve stats series (no realloc in hot loop)
@@ -142,23 +143,17 @@ public:
     // ── Pre-sync staging (call BEFORE the stream sync) ───────────────────────
 
     /**
-     * @brief Async D2H copy of all snapshot data needed at this step.
+     * @brief No-op.  Retained for API compatibility.
      *
-     * No-op if no snapshot is due.  Caller must issue cudaStreamSynchronize
-     * on the same stream before treating staged data as host-readable.
-     *
-     * Caller is responsible for calling engine.compute_unwrapped() BEFORE this
-     * function if include_unwrapped is true and unwrap.valid().
-     *
-     * HPC contract: no allocations, no sync.
+     * Par2SnapshotAdapter handles its own D2H staging internally,
+     * so pre-staging from the caller is no longer necessary.
      */
-    void stage_snapshot_async(int step,
-                              const ConstParticlesSoA<real>& parts,
-                              const UnwrappedSoA<real>& unwrap,
-                              cudaStream_t stream)
+    void stage_snapshot_async(int /*step*/,
+                              const ConstParticlesSoA<real>& /*parts*/,
+                              const UnwrappedSoA<real>& /*unwrap*/,
+                              cudaStream_t /*stream*/)
     {
-        if (!snapshot_due(step) && !r0_snapshot_due(step)) return;
-        do_stage_all_async(parts, unwrap, stream);
+        // No-op: Par2SnapshotAdapter stages D2H inside write_snapshot().
     }
 
     // ── Main hot-loop entry point ────────────────────────────────────────────
@@ -194,20 +189,21 @@ public:
 
         if (snap_now || r0_snap) {
             if (!pre_synced) {
-                // Legacy path: stage + sync here (two syncs per event step)
-                stage_snapshot_async(step, particles, unwrap, stream);
+                // Ensure any prior kernel work is complete before the
+                // adapter launches its own D2H copies.
                 cudaStreamSynchronize(stream);
             }
-            // Write staged data to disk
+            // Write via Par2SnapshotAdapter (format parity — Task 1)
             if (r0_snap) {
                 write_snapshot_now(layout_.r0_snapshot(step),
-                                   particles.n, step, step * dt,
-                                   false);  // r0: wrapped only
+                                   particles, unwrap, step * dt,
+                                   false, stream);  // r0: wrapped only
             }
             if (snap_now) {
                 write_snapshot_now(layout_.snapshot(current_r_, step),
-                                   particles.n, step, step * dt,
-                                   cfg_.snap_writer.include_unwrapped);
+                                   particles, unwrap, step * dt,
+                                   cfg_.snap_writer.include_unwrapped,
+                                   stream);
             }
         }
     }
@@ -230,13 +226,10 @@ public:
         if (cfg_.snapshot_every <= 0 || n <= 0) return;
         if (n % cfg_.snapshot_every == 0) return;   // already written by cadence
 
-        // Force-stage bypassing the cadence check (this IS the cadence override)
-        do_stage_all_async(parts, unwrap, stream);
-        cudaStreamSynchronize(stream);
-
         write_snapshot_now(layout_.snapshot(current_r_, n),
-                           parts.n, n, static_cast<real>(n) * dt,
-                           cfg_.snap_writer.include_unwrapped);
+                           parts, unwrap, static_cast<real>(n) * dt,
+                           cfg_.snap_writer.include_unwrapped,
+                           stream);
         std::printf("       Wrote final snapshot at step %d (r=%d)\n", n, current_r_);
     }
 
@@ -256,61 +249,36 @@ public:
     }
 
 private:
-    /// Unconditionally stage all configured channels D2H (no sync, no cadence check).
-    void do_stage_all_async(const ConstParticlesSoA<real>& parts,
+    /**
+     * @brief Write one snapshot via Par2SnapshotAdapter.
+     *
+     * The adapter takes device pointers and handles D2H + disk-write
+     * internally, producing the same CSV layout as par2::io::CsvSnapshotWriter.
+     */
+    void write_snapshot_now(const std::string& filename,
+                            const ConstParticlesSoA<real>& particles,
                             const UnwrappedSoA<real>& unwrap,
+                            real time,
+                            bool write_unwrapped,
                             cudaStream_t stream)
     {
-        staging_.stage_wrapped_async(parts.x, parts.y, parts.z, parts.n, stream);
-        if (cfg_.snap_writer.include_status && parts.status)
-            staging_.stage_status_async(parts.status, parts.n, stream);
-        if (cfg_.snap_writer.include_wrap_counts && parts.wrapX)
-            staging_.stage_wrap_async(parts.wrapX, parts.wrapY, parts.wrapZ,
-                                      parts.n, stream);
-        if (cfg_.snap_writer.include_unwrapped && unwrap.valid())
-            staging_.stage_unwrapped_async(unwrap.x_u, unwrap.y_u, unwrap.z_u,
-                                           unwrap.capacity, stream);
-    }
-
-    void write_snapshot_now(const std::string& filename,
-                            int n, int step, real time,
-                            bool write_unwrapped) {
-        io::HostParticleSnapshot<real> snap;
-        snap.x         = staging_.x.data();
-        snap.y         = staging_.y.data();
-        snap.z         = staging_.z.data();
-        snap.n         = n;
-        snap.time      = time;
-        snap.step      = step;
-        snap.stride    = cfg_.snap_writer.stride;
-        snap.precision = cfg_.snap_writer.precision;
-
-        if (write_unwrapped && staging_.has_unwrapped) {
-            snap.x_u          = staging_.x_u.data();
-            snap.y_u          = staging_.y_u.data();
-            snap.z_u          = staging_.z_u.data();
-            snap.has_unwrapped = true;
-        }
-        if (cfg_.snap_writer.include_status && staging_.has_status) {
-            snap.status     = staging_.status.data();
-            snap.has_status = true;
-        }
-        if (cfg_.snap_writer.include_wrap_counts && staging_.has_wrap_counts) {
-            snap.wrapX          = staging_.wrapX.data();
-            snap.wrapY          = staging_.wrapY.data();
-            snap.wrapZ          = staging_.wrapZ.data();
-            snap.has_wrap_counts = true;
-        }
-
-        io::CsvParticleSnapshotWriter::write(filename, snap);
+        if (!snap_adapter_) return;
+        // Ensure parent directory exists (par2 writer may not create it)
+        auto parent = std::filesystem::path(filename).parent_path();
+        if (!parent.empty())
+            std::filesystem::create_directories(parent);
+        snap_adapter_->write_snapshot(
+            particles, filename.c_str(), time, stream,
+            write_unwrapped ? &unwrap : nullptr);
     }
 
     SchedulerConfig cfg_;
     io::OutputLayout layout_;
     int current_r_ = 0;
 
-    // Staging (pinned host memory, allocated ONCE in constructor)
-    SnapshotStaging<real> staging_;
+    // Par2-backed snapshot writer (owns its own pinned staging buffers).
+    // Constructed once in the constructor; reused across all realizations.
+    std::unique_ptr<Par2SnapshotAdapter> snap_adapter_;
 
     // Stats series (capacity reserved in constructor, .clear() reuses memory)
     std::vector<io::TimeSeriesPoint<real>> stats_series_;

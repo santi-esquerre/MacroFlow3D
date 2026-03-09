@@ -20,7 +20,6 @@
 #include "../../io/writers/ManifestWriter.hpp"
 #include "../../io/writers/BuildInfo.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
-#include "../../io/writers/CsvParticleSnapshotWriter.hpp"
 #include "../../runtime/io/IOScheduler.hpp"
 
 // Runtime stats collector (Etapa 6)
