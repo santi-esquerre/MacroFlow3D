@@ -95,7 +95,7 @@ Never merge scientific-core PRs without human approval.
 
 ```bash
 cd ~/src/MacroFlow3D
-git worktree remove ~/worktrees/MacroFlow3D/<short-name>
+git worktree remove .codex/worktrees/<short-name>
 ```
 
 ## 8. Anti-patterns
