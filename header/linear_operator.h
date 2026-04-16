@@ -1,6 +1,6 @@
 
 class Matrix_t{
-public: 
+public:
 	// generic stencil operation output <- A*input
 	virtual void stencil(double *output, double *input)=0;
 };
@@ -12,7 +12,7 @@ public:
 	IdentityPrecond(int Nx, int Ny, int Nz):
 		Nx(Nx), Ny(Ny), Nz(Nz) {};
 	void stencil(double *output, double *input){
-		cudaMemcpy(output,input,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice); 
+		cudaMemcpy(output,input,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
 	}
 };
@@ -37,7 +37,7 @@ public:
 	virtual void omegaX3D(const double *p, double *x, const double *s, const double *rr_, const double *Apr_, const double *Ass, const double *AsAs)=0;
 	virtual void omegaR3D(const double *s, double *r, const double *As, const double *Ass, const double *AsAs)=0;
 
-	// 
+	//
 	virtual void Ddot(double *x, double *y, double *result)=0;
 	virtual void copyVector_d2d(double *dst, double *src)=0;
 	virtual void copyScalar_d2d(double *dst, double *src)=0;
@@ -62,10 +62,10 @@ public:
 		AXPBY(x,y,output,a,b,Nx,Ny,Nz,grid,block);
 	}
 	void alpha3D(const double *y, double *x, const double *rz, const double *yP, bool plus_minus){
-		alpha(y,x,rz,yP,plus_minus,Nx,Ny,Nz,grid,block);	
+		alpha(y,x,rz,yP,plus_minus,Nx,Ny,Nz,grid,block);
 	}
 	void beta3D(const double *x, double *y, const double *rz, const double *rz_old){
-		beta(x,y,rz,rz_old,Nx,Ny,Nz,grid,block);	
+		beta(x,y,rz,rz_old,Nx,Ny,Nz,grid,block);
 	}
 
 	void alphaU3D(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_){
@@ -86,27 +86,27 @@ public:
 		cudaDeviceSynchronize();
 	}
 	void copyVector_d2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice); 
+		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
 	}
 	void copyScalar_d2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToDevice); 
+		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
 	}
 	void copyVector_d2h(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToHost); 
+		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
-	}	
+	}
 	void copyScalar_d2h(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToHost); 
+		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 	}
 	void copyVector_h2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyHostToDevice); 
+		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyHostToDevice);
 		cudaDeviceSynchronize();
-	}	
+	}
 	void copyScalar_h2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyHostToDevice); 
+		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyHostToDevice);
 		cudaDeviceSynchronize();
-	}	
+	}
 };

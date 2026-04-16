@@ -8,23 +8,23 @@ void restriction(double *phiCoarse, const double *phiFine, int Nx, int Ny, int N
 
 void HomogenizationPermeability(double *phiCoarse, const double *phiFine, int Nx, int Ny, int Nz, dim3 grid, dim3 block);
 
-void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K, 
-	double dxdx, int Nx, int Ny, int Nz, 
+void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
+	double dxdx, int Nx, int Ny, int Nz,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int itMAX, bool update_res, dim3 grid, dim3 block);
 
-void update_res(double *xk, const double *rhs, double *rk_1, const double *K, 
+void update_res(double *xk, const double *rhs, double *rk_1, const double *K,
 	double dxdx, int Nx, int Ny, int Nz,
 	int dirichletBottom, int dirichletTop,
 	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	dim3 grid, dim3 block);
 
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell);

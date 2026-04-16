@@ -7,7 +7,7 @@
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine omega_x (uses in BiCGStab)  
+// 	routine omega_x (uses in BiCGStab)
 //  x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
 //	omega = (AMs, s) / (AMs, AMs)
 //  alpha = (r_j, r_star) / (A*M*p, r_star)
@@ -36,7 +36,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
 }
@@ -50,7 +50,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
 }
@@ -282,6 +282,6 @@ void omegaX(const double *p, double *x, const double *s, const double *rr_, cons
 	omega_x_vertex_NWB<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	omega_x_vertex_NWT<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	omega_x_vertex_NEB<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
-	omega_x_vertex_NET<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	omega_x_vertex_NET<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }

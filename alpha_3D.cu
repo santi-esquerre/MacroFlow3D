@@ -7,7 +7,7 @@
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine alpha (uses in ConjGrad) 
+// 	routine alpha (uses in ConjGrad)
 //	plus_minus == true ==> x = x + alpha * y
 //	plus_minus == false ==> x = x - alpha * y
 //	alpha = <r,z>/<y,P>
@@ -15,7 +15,7 @@
 //
 //
 //-----------------------------------------------------------------------
-__global__ void alpha_int_bottom_top(const double *y, double *x, 
+__global__ void alpha_int_bottom_top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -30,7 +30,7 @@ const int Nx, const int Ny, const int Nz){
 	}
 }
 
-__global__ void alpha_south_north(const double *y, double *x, 
+__global__ void alpha_south_north(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -41,13 +41,13 @@ const int Nx, const int Ny, const int Nz){
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_este_oeste(const double *y, double *x, 
+__global__ void alpha_este_oeste(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -58,13 +58,13 @@ const int Nx, const int Ny, const int Nz){
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_South_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_X_South_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -77,7 +77,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_South_Top(const double *y, double *x, 
+__global__ void alpha_edge_X_South_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -90,7 +90,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_North_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_X_North_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -103,7 +103,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_North_Top(const double *y, double *x, 
+__global__ void alpha_edge_X_North_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -116,7 +116,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Z_South_West(const double *y, double *x, 
+__global__ void alpha_edge_Z_South_West(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -129,7 +129,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Z_South_East(const double *y, double *x, 
+__global__ void alpha_edge_Z_South_East(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -141,7 +141,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Z_North_West(const double *y, double *x, 
+__global__ void alpha_edge_Z_North_West(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -154,7 +154,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Z_North_East(const double *y, double *x, 
+__global__ void alpha_edge_Z_North_East(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -167,7 +167,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Y_West_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_Y_West_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -179,7 +179,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Y_West_Top(const double *y, double *x, 
+__global__ void alpha_edge_Y_West_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -191,7 +191,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Y_East_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_Y_East_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -203,7 +203,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Y_East_Top(const double *y, double *x, 
+__global__ void alpha_edge_Y_East_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -216,7 +216,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_vertex_SWB(const double *y, double *x, 
+__global__ void alpha_vertex_SWB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -226,7 +226,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_SWT(const double *y, double *x, 
+__global__ void alpha_vertex_SWT(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -236,7 +236,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_SEB(const double *y, double *x, 
+__global__ void alpha_vertex_SEB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -246,7 +246,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_SET(const double *y, double *x, 
+__global__ void alpha_vertex_SET(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -260,7 +260,7 @@ const int Nx, const int Ny, const int Nz){
 
 
 
-__global__ void alpha_vertex_NWB(const double *y, double *x, 
+__global__ void alpha_vertex_NWB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -270,7 +270,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_NWT(const double *y, double *x, 
+__global__ void alpha_vertex_NWT(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -280,7 +280,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_NEB(const double *y, double *x, 
+__global__ void alpha_vertex_NEB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -290,7 +290,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_NET(const double *y, double *x, 
+__global__ void alpha_vertex_NET(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -302,7 +302,7 @@ const int Nx, const int Ny, const int Nz){
 }
 
 
-void alpha(const double *x, double *y, 
+void alpha(const double *x, double *y,
 const double *rz,  const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block){
@@ -333,8 +333,6 @@ dim3 grid, dim3 block){
 	alpha_vertex_NWB<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
 	alpha_vertex_NWT<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
 	alpha_vertex_NEB<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
-	alpha_vertex_NET<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	alpha_vertex_NET<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
-
-

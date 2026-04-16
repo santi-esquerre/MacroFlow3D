@@ -7,7 +7,7 @@
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine omega_r (uses in BiCGStab) 
+// 	routine omega_r (uses in BiCGStab)
 //	r_{j+1} = s_j - omega*A*M*s
 //	omega = (AMs, s) / (AMs, AMs)
 //#######################################################################
@@ -34,7 +34,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
 }
@@ -48,7 +48,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
 }
@@ -280,6 +280,6 @@ void omegaR(const double *s, double *r, const double *As, const double *Ass, con
 	omega_r_vertex_NWB<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
 	omega_r_vertex_NWT<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
 	omega_r_vertex_NEB<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
-	omega_r_vertex_NET<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	omega_r_vertex_NET<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }

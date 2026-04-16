@@ -7,7 +7,7 @@
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine beta (uses in ConjGrad) 
+// 	routine beta (uses in ConjGrad)
 //	p <- z + beta*p
 //	beta = rho / rho_old
 //	rho = <r,z>
@@ -15,8 +15,8 @@
 //
 //
 //-----------------------------------------------------------------------
-__global__ void beta_int_bottom_top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_int_bottom_top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -29,8 +29,8 @@ const int Nx, const int Ny, const int Nz){
 	}
 }
 
-__global__ void beta_south_north(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_south_north(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iz = threadIdx.y + blockIdx.y*blockDim.y;
@@ -39,13 +39,13 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_este_oeste(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_este_oeste(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	int iz  = threadIdx.y + blockIdx.y*blockDim.y;
@@ -54,13 +54,13 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_South_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_South_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -71,8 +71,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_South_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_South_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -83,8 +83,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_North_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_North_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -95,8 +95,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_North_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_North_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -107,8 +107,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Z_South_West(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_South_West(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -119,8 +119,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Z_South_East(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_South_East(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -130,8 +130,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Z_North_West(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_North_West(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -142,8 +142,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Z_North_East(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_North_East(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -154,8 +154,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Y_West_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_West_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -165,8 +165,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Y_West_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_West_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -176,8 +176,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Y_East_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_East_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -187,8 +187,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Y_East_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_East_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -199,8 +199,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_vertex_SWB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SWB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
@@ -208,8 +208,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_SWT(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SWT(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
@@ -217,8 +217,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_SEB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SEB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
@@ -226,8 +226,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_SET(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SET(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
@@ -239,8 +239,8 @@ const int Nx, const int Ny, const int Nz){
 
 
 
-__global__ void beta_vertex_NWB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NWB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
@@ -248,8 +248,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_NWT(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NWT(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
@@ -257,8 +257,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_NEB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NEB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
@@ -266,8 +266,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_NET(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NET(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
@@ -277,8 +277,8 @@ const int Nx, const int Ny, const int Nz){
 }
 
 
-void beta(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+void beta(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block){
 	beta_int_bottom_top<<<gridXY,blockXY>>>(x,y,rz,rz_old,Nx,Ny,Nz);
@@ -308,6 +308,6 @@ dim3 grid, dim3 block){
 	beta_vertex_NWB<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
 	beta_vertex_NWT<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
 	beta_vertex_NEB<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
-	beta_vertex_NET<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	beta_vertex_NET<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }

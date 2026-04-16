@@ -5,7 +5,7 @@
 #define periodic 1
 #define dirichlet 2
 
-__global__ void velocity_int(double *U, double *V, double *W, 
+__global__ void velocity_int(double *U, double *V, double *W,
  double *H,  double *K, int Nx, int Ny, int Nz, double h){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -14,7 +14,7 @@ __global__ void velocity_int(double *U, double *V, double *W,
 	int idx_U, idx_V, idx_W;
 	double H_current = H[in_idx];
 	double K_current = K[in_idx];
-	in_idx += stride;	
+	in_idx += stride;
 	double H_top = H[in_idx];
 	double K_top = K[in_idx];
 	for(int iz=1; iz<Nz-1; ++iz){
@@ -33,444 +33,444 @@ __global__ void velocity_int(double *U, double *V, double *W,
 	}
 }
 
-__global__ void velocity_side_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_BOTTOM, 
-double H_BOTTOM){ 
-	COMPUTE_INDEX_BOTTOM 
-	COMPUTE_INDEX_NORMAL_VELOCITY_BOTTOM 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
-	if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h; 
+__global__ void velocity_side_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_BOTTOM,
+double H_BOTTOM){
+	COMPUTE_INDEX_BOTTOM
+	COMPUTE_INDEX_NORMAL_VELOCITY_BOTTOM
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
+	if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_side_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_TOP, 
-double H_TOP){ 
-	COMPUTE_INDEX_TOP 
-	COMPUTE_INDEX_NORMAL_VELOCITY_TOP 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-	if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+__global__ void velocity_side_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_TOP,
+double H_TOP){
+	COMPUTE_INDEX_TOP
+	COMPUTE_INDEX_NORMAL_VELOCITY_TOP
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+	if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 	W[idx_W] = result;
 }
 
-__global__ void velocity_side_SOUTH(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, 
-double H_SOUTH){ 
-	COMPUTE_INDEX_SOUTH 
-	COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
+__global__ void velocity_side_SOUTH(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH,
+double H_SOUTH){
+	COMPUTE_INDEX_SOUTH
+	COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH
+	double K_current = K[in_idx], H_current = H[in_idx];
 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
-	if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h; 
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
+	if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_side_WEST(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, 
-double H_WEST){ 
-	COMPUTE_INDEX_WEST 
-	COMPUTE_INDEX_NORMAL_VELOCITY_WEST 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
+__global__ void velocity_side_WEST(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST,
+double H_WEST){
+	COMPUTE_INDEX_WEST
+	COMPUTE_INDEX_NORMAL_VELOCITY_WEST
+	double K_current = K[in_idx], H_current = H[in_idx];
 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
-	if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h; 
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
+	if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
 }
 
-__global__ void velocity_side_NORTH(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, 
-double H_NORTH){ 
-	COMPUTE_INDEX_NORTH 
-	COMPUTE_INDEX_NORMAL_VELOCITY_NORTH 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-	if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+__global__ void velocity_side_NORTH(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH,
+double H_NORTH){
+	COMPUTE_INDEX_NORTH
+	COMPUTE_INDEX_NORMAL_VELOCITY_NORTH
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+	if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 	V[idx_V] = result;
 }
 
-__global__ void velocity_side_EAST(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, 
-double H_EAST){ 
-	COMPUTE_INDEX_EAST 
-	COMPUTE_INDEX_NORMAL_VELOCITY_EAST 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-	if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+__global__ void velocity_side_EAST(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST,
+double H_EAST){
+	COMPUTE_INDEX_EAST
+	COMPUTE_INDEX_NORMAL_VELOCITY_EAST
+	double K_current = K[in_idx], H_current = H[in_idx];
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+	if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 	U[idx_U] = result;
 }
 
-__global__ void velocity_edge_WEST_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_BOTTOM,
-double H_WEST, double H_BOTTOM){ 
+double H_WEST, double H_BOTTOM){
 COMPUTE_INDEX_WEST_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_WEST_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_TOP,
-double H_WEST, double H_TOP){ 
+double H_WEST, double H_TOP){
 COMPUTE_INDEX_WEST_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_EAST_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_BOTTOM,
-double H_EAST, double H_BOTTOM){ 
+double H_EAST, double H_BOTTOM){
 COMPUTE_INDEX_EAST_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_EAST_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_TOP,
-double H_EAST, double H_TOP){ 
+double H_EAST, double H_TOP){
 COMPUTE_INDEX_EAST_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 result = 0;
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_WEST_SOUTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_SOUTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH,
-double H_WEST, double H_SOUTH){ 
+double H_WEST, double H_SOUTH){
 COMPUTE_INDEX_WEST_SOUTH
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_edge_WEST_NORTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_NORTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH,
-double H_WEST, double H_NORTH){ 
+double H_WEST, double H_NORTH){
 COMPUTE_INDEX_WEST_NORTH
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
 }
 
-__global__ void velocity_edge_EAST_SOUTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_SOUTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH,
-double H_EAST, double H_SOUTH){ 
+double H_EAST, double H_SOUTH){
 COMPUTE_INDEX_EAST_SOUTH
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_edge_EAST_NORTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_NORTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH,
-double H_EAST, double H_NORTH){ 
+double H_EAST, double H_NORTH){
 COMPUTE_INDEX_EAST_NORTH
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH
 double K_current = K[in_idx], H_current = H[in_idx];
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
 }
 
-__global__ void velocity_edge_SOUTH_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_SOUTH_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, int BC_BOTTOM,
-double H_SOUTH, double H_BOTTOM){ 
+double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_SOUTH_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_SOUTH_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, int BC_TOP,
-double H_SOUTH, double H_TOP){ 
+double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_NORTH_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_NORTH_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, int BC_BOTTOM,
-double H_NORTH, double H_BOTTOM){ 
+double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_NORTH_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_NORTH_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, int BC_TOP,
-double H_NORTH, double H_TOP){ 
+double H_NORTH, double H_TOP){
 COMPUTE_INDEX_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_WEST_SOUTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_BOTTOM, double H_WEST, double H_SOUTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_WEST_SOUTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_BOTTOM, double H_WEST, double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_WEST_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_WEST_SOUTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_TOP, double H_WEST, double H_SOUTH, double H_TOP){ 
+__global__ void velocity_vertex_WEST_SOUTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_TOP, double H_WEST, double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_WEST_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_WEST_NORTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_BOTTOM, double H_WEST, double H_NORTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_WEST_NORTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_BOTTOM, double H_WEST, double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_WEST_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_WEST_NORTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_TOP, double H_WEST, double H_NORTH, double H_TOP){ 
+__global__ void velocity_vertex_WEST_NORTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_TOP, double H_WEST, double H_NORTH, double H_TOP){
 COMPUTE_INDEX_WEST_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_EAST_SOUTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_BOTTOM, double H_EAST, double H_SOUTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_EAST_SOUTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_BOTTOM, double H_EAST, double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_EAST_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_EAST_SOUTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_TOP, double H_EAST, double H_SOUTH, double H_TOP){ 
+__global__ void velocity_vertex_EAST_SOUTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_TOP, double H_EAST, double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_EAST_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_EAST_NORTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_BOTTOM, double H_EAST, double H_NORTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_EAST_NORTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_BOTTOM, double H_EAST, double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_EAST_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
-if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h; 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
+if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_EAST_NORTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_TOP, double H_EAST, double H_NORTH, double H_TOP){ 
+__global__ void velocity_vertex_EAST_NORTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_TOP, double H_EAST, double H_NORTH, double H_TOP){
 COMPUTE_INDEX_EAST_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
@@ -516,4 +516,4 @@ LAUNCH_KERNEL_VERTEX(EAST,SOUTH,TOP);
 LAUNCH_KERNEL_VERTEX(EAST,NORTH,BOTTOM);
 LAUNCH_KERNEL_VERTEX(EAST,NORTH,TOP);
 cudaDeviceSynchronize();
-}    
+}

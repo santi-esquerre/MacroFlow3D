@@ -38,7 +38,7 @@ __global__ void RHS_head_int(double *RHS, const double *K, int Nx, int Ny, int N
 	if (ix >= Nx-2 || iy >= Ny-2) return;
 	int in_idx = (ix + 1) + (iy + 1)*Nx;
 	int stride = Nx*Ny;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		in_idx += stride;
 		RHS[in_idx] = 0.0;
 	}
@@ -98,7 +98,7 @@ __global__ void RHS_head_side_west(double *RHS, const double *K, int Nx, int Ny,
 	int stride = Nx*Ny;
 	int in_idx;
 	int ix = 0;
-	in_idx = ix + (iy + 1)*Nx + (iz + 1)*stride; 
+	in_idx = ix + (iy + 1)*Nx + (iz + 1)*stride;
     double KC = K[in_idx];
     if(BCtype==dirichlet) RHS[in_idx] -= 2.0*Hb*KC/h*A/h/h/h; //dirichlet contribution
 }
@@ -137,33 +137,33 @@ __global__ void RHS_head_edge_X_South_Top(double *RHS, const double *K, int Nx, 
 	int iz = Nz-1;
 	int in_idx = (ix+1) + iy*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
+    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_X_North_Bottom(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCbottom, double Hnorth, double Hbottom){
     int ix = threadIdx.x + blockIdx.x*blockDim.x;
-    if (ix >= Nx-2) return; 
+    if (ix >= Nx-2) return;
     int stride = Nx*Ny;
-    int iy = Ny-1; 
-    int iz = 0; 
-    int in_idx = (ix+1) + iy*Nx + iz*stride; 
+    int iy = Ny-1;
+    int iz = 0;
+    int in_idx = (ix+1) + iy*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h; 
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_X_North_Top(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCtop, double Hnorth, double Htop){
     int ix = threadIdx.x + blockIdx.x*blockDim.x;
-    if (ix >= Nx-2) return; 
+    if (ix >= Nx-2) return;
     int stride = Nx*Ny;
-    int iy = Ny-1; 
-    int iz = Nz-1; 
-    int in_idx = (ix+1) + iy*Nx + iz*stride; 
+    int iy = Ny-1;
+    int iz = Nz-1;
+    int in_idx = (ix+1) + iy*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
-}   
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
+}
 
 __global__ void RHS_head_edge_Z_South_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCwest, double Hsouth, double Hwest){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -174,8 +174,8 @@ __global__ void RHS_head_edge_Z_South_West(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h; 
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
+    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h;
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Z_South_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast, double Hsouth, double Heast){
@@ -187,8 +187,8 @@ __global__ void RHS_head_edge_Z_South_East(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h; 
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
+    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h;
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Z_North_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest, double Hnorth, double Hwest){
@@ -200,8 +200,8 @@ __global__ void RHS_head_edge_Z_North_West(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Z_North_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast, double Hnorth, double Heast){
@@ -213,8 +213,8 @@ __global__ void RHS_head_edge_Z_North_East(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Bottom_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCbottom, int BCwest, double Hbottom, double Hwest){
@@ -226,8 +226,8 @@ __global__ void RHS_head_edge_Y_Bottom_West(double *RHS, const double *K, int Nx
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
-    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h; 
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
+    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Top_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCwest, double Htop, double Hwest){
@@ -239,8 +239,8 @@ __global__ void RHS_head_edge_Y_Top_West(double *RHS, const double *K, int Nx, i
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Bottom_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCbottom, int BCeast, double Hbottom, double Heast){
@@ -252,8 +252,8 @@ __global__ void RHS_head_edge_Y_Bottom_East(double *RHS, const double *K, int Nx
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
-    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h; 
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
+    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Top_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCeast, double Htop, double Heast){
@@ -265,12 +265,12 @@ __global__ void RHS_head_edge_Y_Top_East(double *RHS, const double *K, int Nx, i
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCwest, int BCbottom, 
+__global__ void RHS_head_vertex_SWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCwest, int BCbottom,
                                   double Hsouth, double Hwest, double Hbottom) {
     int ix = 0;
     int iy = 0;
@@ -283,8 +283,8 @@ __global__ void RHS_head_vertex_SWB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCwest, int BCtop, 
+__global__ void RHS_head_vertex_SWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCwest, int BCtop,
                                   double Hsouth, double Hwest, double Htop) {
 	int stride = Nx*Ny;
 	int ix = 0;
@@ -298,8 +298,8 @@ __global__ void RHS_head_vertex_SWT(double *RHS, const double *K, int Nx, int Ny
     if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCeast, int BCbottom, 
+__global__ void RHS_head_vertex_SEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCeast, int BCbottom,
                                   double Hsouth, double Heast, double Hbottom) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -313,8 +313,8 @@ __global__ void RHS_head_vertex_SEB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCeast, int BCtop, 
+__global__ void RHS_head_vertex_SET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCeast, int BCtop,
                                   double Hsouth, double Heast, double Htop) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -328,8 +328,8 @@ __global__ void RHS_head_vertex_SET(double *RHS, const double *K, int Nx, int Ny
     if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCwest, int BCbottom, 
+__global__ void RHS_head_vertex_NWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCwest, int BCbottom,
                                   double Hnorth, double Hwest, double Hbottom) {
 	int stride = Nx*Ny;
 	int ix = 0;
@@ -343,8 +343,8 @@ __global__ void RHS_head_vertex_NWB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCwest, int BCtop, 
+__global__ void RHS_head_vertex_NWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCwest, int BCtop,
                                   double Hnorth, double Hwest, double Htop) {
 	int stride = Nx*Ny;
 	int ix = 0;
@@ -359,8 +359,8 @@ __global__ void RHS_head_vertex_NWT(double *RHS, const double *K, int Nx, int Ny
     if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCeast, int BCbottom, 
+__global__ void RHS_head_vertex_NEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCeast, int BCbottom,
                                   double Hnorth, double Heast, double Hbottom) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -374,8 +374,8 @@ __global__ void RHS_head_vertex_NEB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCeast, int BCtop, 
+__global__ void RHS_head_vertex_NET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCeast, int BCtop,
                                   double Hnorth, double Heast, double Htop) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -391,8 +391,8 @@ __global__ void RHS_head_vertex_NET(double *RHS, const double *K, int Nx, int Ny
 
 void RHS_head(double *RHS, const double *K,
 	int Nx, int Ny, int Nz, double A, double h,
-	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast, 
-	double Hbottom, double Htop, double Hsouth, double Hnorth, double Hwest, double Heast, 
+	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast,
+	double Hbottom, double Htop, double Hsouth, double Hnorth, double Hwest, double Heast,
 	dim3 grid, dim3 block){
 	RHS_head_int		<<<gridXY,blockXY>>>(RHS,K,Nx,Ny,Nz);
 	RHS_head_side_bottom<<<gridXY,blockXY>>>(RHS,K,Nx,Ny,Nz,A,h,BCbottom,Hbottom);

@@ -10,7 +10,7 @@
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine alpha (uses in ConjGrad) 
+// 	routine alpha (uses in ConjGrad)
 //	plus_minus == true ==> x = x + alpha * y
 //	plus_minus == false ==> x = x - alpha * y
 //	alpha = <r,z>/<y,P>
@@ -18,7 +18,7 @@
 //
 //
 //-----------------------------------------------------------------------
-__global__ void alpha_int_bottom_top(const double *y, double *x, 
+__global__ void alpha_int_bottom_top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -33,7 +33,7 @@ const int Nx, const int Ny, const int Nz){
 	}
 }
 
-__global__ void alpha_south_north(const double *y, double *x, 
+__global__ void alpha_south_north(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -44,13 +44,13 @@ const int Nx, const int Ny, const int Nz){
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_este_oeste(const double *y, double *x, 
+__global__ void alpha_este_oeste(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -61,13 +61,13 @@ const int Nx, const int Ny, const int Nz){
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_South_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_X_South_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -80,7 +80,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_South_Top(const double *y, double *x, 
+__global__ void alpha_edge_X_South_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -93,7 +93,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_North_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_X_North_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -106,7 +106,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_X_North_Top(const double *y, double *x, 
+__global__ void alpha_edge_X_North_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -119,7 +119,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Z_South_West(const double *y, double *x, 
+__global__ void alpha_edge_Z_South_West(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -132,7 +132,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Z_South_East(const double *y, double *x, 
+__global__ void alpha_edge_Z_South_East(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -144,7 +144,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Z_North_West(const double *y, double *x, 
+__global__ void alpha_edge_Z_North_West(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -157,7 +157,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Z_North_East(const double *y, double *x, 
+__global__ void alpha_edge_Z_North_East(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -170,7 +170,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_edge_Y_West_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_Y_West_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -182,7 +182,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Y_West_Top(const double *y, double *x, 
+__global__ void alpha_edge_Y_West_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -194,7 +194,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Y_East_Bottom(const double *y, double *x, 
+__global__ void alpha_edge_Y_East_Bottom(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -206,7 +206,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_edge_Y_East_Top(const double *y, double *x, 
+__global__ void alpha_edge_Y_East_Top(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -219,7 +219,7 @@ const int Nx, const int Ny, const int Nz){
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
 
-__global__ void alpha_vertex_SWB(const double *y, double *x, 
+__global__ void alpha_vertex_SWB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -229,7 +229,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_SWT(const double *y, double *x, 
+__global__ void alpha_vertex_SWT(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -239,7 +239,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_SEB(const double *y, double *x, 
+__global__ void alpha_vertex_SEB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -249,7 +249,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_SET(const double *y, double *x, 
+__global__ void alpha_vertex_SET(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -263,7 +263,7 @@ const int Nx, const int Ny, const int Nz){
 
 
 
-__global__ void alpha_vertex_NWB(const double *y, double *x, 
+__global__ void alpha_vertex_NWB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -273,7 +273,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_NWT(const double *y, double *x, 
+__global__ void alpha_vertex_NWT(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
@@ -283,7 +283,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_NEB(const double *y, double *x, 
+__global__ void alpha_vertex_NEB(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -293,7 +293,7 @@ const int Nx, const int Ny, const int Nz){
 	if(plus_minus) x[in_idx] += rz[0]/yP[0]*y[in_idx];
 	else x[in_idx] -= rz[0]/yP[0]*y[in_idx];
 }
-__global__ void alpha_vertex_NET(const double *y, double *x, 
+__global__ void alpha_vertex_NET(const double *y, double *x,
 const double *rz, const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
@@ -305,7 +305,7 @@ const int Nx, const int Ny, const int Nz){
 }
 
 
-void alpha(const double *x, double *y, 
+void alpha(const double *x, double *y,
 const double *rz,  const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block){
@@ -336,8 +336,8 @@ dim3 grid, dim3 block){
 	alpha_vertex_NWB<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
 	alpha_vertex_NWT<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
 	alpha_vertex_NEB<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
-	alpha_vertex_NET<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	alpha_vertex_NET<<<1,1>>>(x,y,rz,yP,plus_minus,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 
 
@@ -351,7 +351,7 @@ dim3 grid, dim3 block){
 #include <cuda_runtime_api.h>
 
 //#######################################################################
-// 	routine alphaU (uses in BiCGStab) 
+// 	routine alphaU (uses in BiCGStab)
 //	s_j = r_j - alpha * AMp
 //	alpha = (r_j, r_star) / (A*M*p, r_star)
 //#######################################################################
@@ -369,7 +369,7 @@ __global__ void alphaU_int_bottom_top(const double *Ap, const double *r,  double
 	int stride = Nx*Ny;
 	int in_idx = (ix+1) + (iy+1)*Nx;
 	for(int iz = 0; iz<Nz; ++iz){
-		s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+		s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 		in_idx+=stride;
 	}
 }
@@ -381,10 +381,10 @@ __global__ void alphaU_south_north(const double *Ap, const double *r,  double *s
 	int stride = Nx*Ny;
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
-	
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_este_oeste(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -394,10 +394,10 @@ __global__ void alphaU_este_oeste(const double *Ap, const double *r,  double *s,
 	int stride = Nx*Ny;
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
-	
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_X_South_Bottom(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -407,7 +407,7 @@ __global__ void alphaU_edge_X_South_Bottom(const double *Ap, const double *r,  d
 	int iy = 0;
 	int iz = 0;
 	int in_idx = (ix+1) + iy*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_X_South_Top(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -417,7 +417,7 @@ __global__ void alphaU_edge_X_South_Top(const double *Ap, const double *r,  doub
 	int iy = 0;
 	int iz = Nz-1;
 	int in_idx = (ix+1) + iy*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_X_North_Bottom(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -427,7 +427,7 @@ __global__ void alphaU_edge_X_North_Bottom(const double *Ap, const double *r,  d
 	int iy = Ny-1;
 	int iz = 0;
 	int in_idx = (ix+1) + iy*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_X_North_Top(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -437,7 +437,7 @@ __global__ void alphaU_edge_X_North_Top(const double *Ap, const double *r,  doub
 	int iy = Ny-1;
 	int iz = Nz-1;
 	int in_idx = (ix+1) + iy*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_Z_South_West(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -447,7 +447,7 @@ __global__ void alphaU_edge_Z_South_West(const double *Ap, const double *r,  dou
 	int ix = 0;
 	int iy = 0;
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_Z_South_East(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -457,7 +457,7 @@ __global__ void alphaU_edge_Z_South_East(const double *Ap, const double *r,  dou
 	int ix = Nx-1;
 	int iy = 0;
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_edge_Z_North_West(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -466,7 +466,7 @@ __global__ void alphaU_edge_Z_North_West(const double *Ap, const double *r,  dou
 	int ix = 0;
 	int iy = Ny-1;
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_Z_North_East(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -476,7 +476,7 @@ __global__ void alphaU_edge_Z_North_East(const double *Ap, const double *r,  dou
 	int ix = Nx-1;
 	int iy = Ny-1;
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_edge_Y_West_Bottom(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -486,7 +486,7 @@ __global__ void alphaU_edge_Y_West_Bottom(const double *Ap, const double *r,  do
 	int ix = 0;
 	int iz = 0;
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_edge_Y_West_Top(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -495,7 +495,7 @@ __global__ void alphaU_edge_Y_West_Top(const double *Ap, const double *r,  doubl
 	int ix = 0;
 	int iz = Nz-1;
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_edge_Y_East_Bottom(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -504,7 +504,7 @@ __global__ void alphaU_edge_Y_East_Bottom(const double *Ap, const double *r,  do
 	int ix = Nx-1;
 	int iz = 0;
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_edge_Y_East_Top(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -513,7 +513,7 @@ __global__ void alphaU_edge_Y_East_Top(const double *Ap, const double *r,  doubl
 	int ix = Nx-1;
 	int iz = Nz-1;
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 __global__ void alphaU_vertex_SWB(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
@@ -521,28 +521,28 @@ __global__ void alphaU_vertex_SWB(const double *Ap, const double *r,  double *s,
 	int iy = 0;
 	int iz = 0;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_vertex_SWT(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
 	int iz = Nz-1;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_vertex_SEB(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
 	int iz = 0;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_vertex_SET(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
 	int iz = Nz-1;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 
@@ -551,28 +551,28 @@ __global__ void alphaU_vertex_NWB(const double *Ap, const double *r,  double *s,
 	int iy = Ny-1;
 	int iz = 0;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_vertex_NWT(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
 	int iz = Nz-1;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_vertex_NEB(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
 	int iz = 0;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 __global__ void alphaU_vertex_NET(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_, const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
 	int iz = Nz-1;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
-	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx]; 
+	s[in_idx] = r[in_idx] - rr_[0]/Apr_[0]*Ap[in_idx];
 }
 
 
@@ -604,8 +604,8 @@ void alphaU(const double *Ap, const double *r,  double *s, const double *rr_, co
 	alphaU_vertex_NWB<<<1,1>>>(Ap,r,s,rr_,Apr_,Nx,Ny,Nz);
 	alphaU_vertex_NWT<<<1,1>>>(Ap,r,s,rr_,Apr_,Nx,Ny,Nz);
 	alphaU_vertex_NEB<<<1,1>>>(Ap,r,s,rr_,Apr_,Nx,Ny,Nz);
-	alphaU_vertex_NET<<<1,1>>>(Ap,r,s,rr_,Apr_,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	alphaU_vertex_NET<<<1,1>>>(Ap,r,s,rr_,Apr_,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 
 ```
@@ -622,7 +622,7 @@ void alphaU(const double *Ap, const double *r,  double *s, const double *rr_, co
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine AXPBY (uses in ConjGrad) 
+// 	routine AXPBY (uses in ConjGrad)
 //	p <- z + AXPBY*p
 //	AXPBY = rho / rho_old
 //	rho = <r,z>
@@ -630,8 +630,8 @@ void alphaU(const double *Ap, const double *r,  double *s, const double *rr_, co
 //
 //
 //-----------------------------------------------------------------------
-__global__ void AXPBY_int_bottom_top(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_int_bottom_top(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -644,8 +644,8 @@ const int Nx, const int Ny, const int Nz){
 	}
 }
 
-__global__ void AXPBY_south_north(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_south_north(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iz = threadIdx.y + blockIdx.y*blockDim.y;
@@ -654,13 +654,13 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_este_oeste(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_este_oeste(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	int iz  = threadIdx.y + blockIdx.y*blockDim.y;
@@ -669,13 +669,13 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_X_South_Bottom(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_X_South_Bottom(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -686,8 +686,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_X_South_Top(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_X_South_Top(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -698,8 +698,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_X_North_Bottom(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_X_North_Bottom(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -710,8 +710,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_X_North_Top(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_X_North_Top(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -722,8 +722,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_Z_South_West(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Z_South_West(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -734,8 +734,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_Z_South_East(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Z_South_East(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -745,8 +745,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_edge_Z_North_West(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Z_North_West(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -757,8 +757,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_Z_North_East(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Z_North_East(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -769,8 +769,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_edge_Y_West_Bottom(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Y_West_Bottom(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -780,8 +780,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_edge_Y_West_Top(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Y_West_Top(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -791,8 +791,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_edge_Y_East_Bottom(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Y_East_Bottom(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -802,8 +802,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_edge_Y_East_Top(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_edge_Y_East_Top(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -814,8 +814,8 @@ const int Nx, const int Ny, const int Nz){
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
 
-__global__ void AXPBY_vertex_SWB(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_SWB(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
@@ -823,8 +823,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_vertex_SWT(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_SWT(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
@@ -832,8 +832,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_vertex_SEB(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_SEB(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
@@ -841,8 +841,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_vertex_SET(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_SET(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
@@ -854,8 +854,8 @@ const int Nx, const int Ny, const int Nz){
 
 
 
-__global__ void AXPBY_vertex_NWB(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_NWB(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
@@ -863,8 +863,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_vertex_NWT(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_NWT(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
@@ -872,8 +872,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_vertex_NEB(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_NEB(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
@@ -881,8 +881,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	output[in_idx] = a*x[in_idx]+b*y[in_idx];
 }
-__global__ void AXPBY_vertex_NET(const double *x, double *y, double *output, 
-const double a, const double b,   
+__global__ void AXPBY_vertex_NET(const double *x, double *y, double *output,
+const double a, const double b,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
@@ -892,7 +892,7 @@ const int Nx, const int Ny, const int Nz){
 }
 
 
-void AXPBY(const double *x, double *y, double *output, 
+void AXPBY(const double *x, double *y, double *output,
 const double a, const double b,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block){
@@ -923,8 +923,8 @@ dim3 grid, dim3 block){
 	AXPBY_vertex_NWB<<<1,1>>>(x,y,output,a,b,Nx,Ny,Nz);
 	AXPBY_vertex_NWT<<<1,1>>>(x,y,output,a,b,Nx,Ny,Nz);
 	AXPBY_vertex_NEB<<<1,1>>>(x,y,output,a,b,Nx,Ny,Nz);
-	AXPBY_vertex_NET<<<1,1>>>(x,y,output,a,b,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	AXPBY_vertex_NET<<<1,1>>>(x,y,output,a,b,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 
 ```
@@ -941,7 +941,7 @@ dim3 grid, dim3 block){
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine beta (uses in ConjGrad) 
+// 	routine beta (uses in ConjGrad)
 //	p <- z + beta*p
 //	beta = rho / rho_old
 //	rho = <r,z>
@@ -949,8 +949,8 @@ dim3 grid, dim3 block){
 //
 //
 //-----------------------------------------------------------------------
-__global__ void beta_int_bottom_top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_int_bottom_top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -963,8 +963,8 @@ const int Nx, const int Ny, const int Nz){
 	}
 }
 
-__global__ void beta_south_north(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_south_north(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iz = threadIdx.y + blockIdx.y*blockDim.y;
@@ -973,13 +973,13 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_este_oeste(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_este_oeste(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	int iz  = threadIdx.y + blockIdx.y*blockDim.y;
@@ -988,13 +988,13 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_South_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_South_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -1005,8 +1005,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_South_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_South_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -1017,8 +1017,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_North_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_North_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -1029,8 +1029,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_X_North_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_X_North_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	if (ix >= Nx-2) return;
@@ -1041,8 +1041,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Z_South_West(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_South_West(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -1053,8 +1053,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Z_South_East(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_South_East(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -1064,8 +1064,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + (iz+1)*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Z_North_West(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_North_West(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -1076,8 +1076,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Z_North_East(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Z_North_East(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
@@ -1088,8 +1088,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_edge_Y_West_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_West_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -1099,8 +1099,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Y_West_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_West_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -1110,8 +1110,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Y_East_Bottom(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_East_Bottom(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -1121,8 +1121,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + (iy+1)*Nx + iz*stride;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_edge_Y_East_Top(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_edge_Y_East_Top(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iy >= Ny-2) return;
@@ -1133,8 +1133,8 @@ const int Nx, const int Ny, const int Nz){
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
 
-__global__ void beta_vertex_SWB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SWB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
@@ -1142,8 +1142,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_SWT(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SWT(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = 0;
@@ -1151,8 +1151,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_SEB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SEB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
@@ -1160,8 +1160,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_SET(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_SET(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = 0;
@@ -1173,8 +1173,8 @@ const int Nx, const int Ny, const int Nz){
 
 
 
-__global__ void beta_vertex_NWB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NWB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
@@ -1182,8 +1182,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_NWT(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NWT(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = 0;
 	int iy = Ny-1;
@@ -1191,8 +1191,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_NEB(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NEB(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
@@ -1200,8 +1200,8 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	y[in_idx] = x[in_idx]+rz[0]/rz_old[0]*y[in_idx];
 }
-__global__ void beta_vertex_NET(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+__global__ void beta_vertex_NET(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz){
 	int ix = Nx-1;
 	int iy = Ny-1;
@@ -1211,8 +1211,8 @@ const int Nx, const int Ny, const int Nz){
 }
 
 
-void beta(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+void beta(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block){
 	beta_int_bottom_top<<<gridXY,blockXY>>>(x,y,rz,rz_old,Nx,Ny,Nz);
@@ -1242,8 +1242,8 @@ dim3 grid, dim3 block){
 	beta_vertex_NWB<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
 	beta_vertex_NWT<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
 	beta_vertex_NEB<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
-	beta_vertex_NET<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	beta_vertex_NET<<<1,1>>>(x,y,rz,rz_old,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 
 ```
@@ -1260,7 +1260,7 @@ dim3 grid, dim3 block){
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine betaU (uses in BiCGStab) 
+// 	routine betaU (uses in BiCGStab)
 //	p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
 //	beta_j = (r_{j+1}, r_star) / (r_j, r_star) * (alpha/omega)
 //	omega = (AMs, s) / (AMs, AMs)
@@ -1289,7 +1289,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
 }
@@ -1303,7 +1303,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
 }
@@ -1536,8 +1536,8 @@ void betaU(const double *r, double *p, const double *Ap, const double *rr_, cons
 	betaU_vertex_NWB<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	betaU_vertex_NWT<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	betaU_vertex_NEB<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
-	betaU_vertex_NET<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	betaU_vertex_NET<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 ```
 
@@ -1566,10 +1566,10 @@ void resMonitor(int levelPrint, int cccc, double *rr_0_h, double &res_relative_o
 }
 
 // WARNING!
-// Whenever possible the following is used: 
+// Whenever possible the following is used:
 // b (RHS) vector is used as the auxiliary vector P
-int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, 
-	double *x, double *s, double *r, double *r_, 
+int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
+	double *x, double *s, double *r, double *r_,
 	double *Mp, double *Ms,double *AMs, double *AMp, double *RHS,
 	double tol_abs, double tol_rel, int iter_max, int print_monitor){
 
@@ -1580,26 +1580,26 @@ int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
 	cudaMalloc(&rr__new    , sizeof(double));
 	cudaMalloc(&AMpr_		 , sizeof(double));
 	cudaMalloc(&AMss    	 , sizeof(double));
-	cudaMalloc(&AMsAMs		 , sizeof(double));	
+	cudaMalloc(&AMsAMs		 , sizeof(double));
 	double *rr_0_h, *rr_new_h, *ss;
-	rr_0_h = new double[1]; rr_new_h = new double[1]; ss = new double[1];	
-	M.stencil(r,x); // y <- Ax	
-	BLAS.AXPBY3D(RHS,r,r,1.0,-1.0); // r <- b - A*x	
+	rr_0_h = new double[1]; rr_new_h = new double[1]; ss = new double[1];
+	M.stencil(r,x); // y <- Ax
+	BLAS.AXPBY3D(RHS,r,r,1.0,-1.0); // r <- b - A*x
 	BLAS.copyVector_d2d(RHS,r); //p <- r
-	// BLAS.copyVector_d2d(P,r); //p <- r	
+	// BLAS.copyVector_d2d(P,r); //p <- r
 	BLAS.copyVector_d2d(r_,r); //r_ = hat(r) // r_star <- r
 	BLAS.Ddot(r_,r,rr_);
 	BLAS.copyScalar_d2h(rr_0_h,rr_);
-	*rr_new_h = *rr_0_h;	
+	*rr_new_h = *rr_0_h;
 	int i = 0;
 	double res_relative_old = 1;// auxiliar for printing
 	resMonitor(print_monitor,1,rr_0_h,res_relative_old,rr_new_h,i); // if print_monitor==2 (print table)
 	while( ( pow(*rr_new_h,0.5) > tol_abs + pow(*rr_0_h,0.5) * tol_rel ) && i<iter_max){
 		precond.stencil(Mp,RHS); // Mp = M*p
-		// precond.stencil(Mp,P); // Mp = M*p	
-		M.stencil(AMp,Mp); // AMp = A*Mp	
+		// precond.stencil(Mp,P); // Mp = M*p
+		M.stencil(AMp,Mp); // AMp = A*Mp
 		// alpha = (r_j, r_star) / (A*M*p, r_star)
-		BLAS.Ddot(AMp,r_,AMpr_); //AMpr_ = (A*M*p,r_star)		
+		BLAS.Ddot(AMp,r_,AMpr_); //AMpr_ = (A*M*p,r_star)
 		// s_j = r_j - alpha * AMp /////rr_ = (r_j, r_star)
 		BLAS.alphaU3D(AMp,r,s,rr_,AMpr_); //Ap = A*M*p
 		BLAS.Ddot(s,s,AMsAMs); //AMsAMs = ss = <s,s>;
@@ -1607,15 +1607,15 @@ int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
 		if( ( pow(*ss,0.5) < tol_abs + pow(*rr_0_h,0.5) * tol_rel ) || (i>=iter_max)   ){
 			BLAS.alpha3D(Mp,x,rr_,AMpr_,true); // x += alpha*M*p_j
 			break;
-		}		
-		precond.stencil(Ms,s); // Ms = M*s_j		
+		}
+		precond.stencil(Ms,s); // Ms = M*s_j
 		M.stencil(AMs,Ms); // AMs = A*Ms
-		// omega = (AMs, s) / (AMs, AMs)		
+		// omega = (AMs, s) / (AMs, AMs)
 		BLAS.Ddot(AMs,s,AMss); //Ass, //(AMs, s)
 		BLAS.Ddot(AMs,AMs,AMsAMs); //AsAs, //(AMs, AMs)
-		BLAS.omegaX3D(Mp,x,Ms,rr_,AMpr_,AMss,AMsAMs); //x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j		
-		BLAS.omegaR3D(s,r,AMs,AMss,AMsAMs); //r_{j+1} = s_j - omega*A*M*s		
-		// beta_j = (r_{j+1}, r_star) / (r_j, r_star) * (alpha/omega)	
+		BLAS.omegaX3D(Mp,x,Ms,rr_,AMpr_,AMss,AMsAMs); //x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
+		BLAS.omegaR3D(s,r,AMs,AMss,AMsAMs); //r_{j+1} = s_j - omega*A*M*s
+		// beta_j = (r_{j+1}, r_star) / (r_j, r_star) * (alpha/omega)
 		BLAS.Ddot(r_,r,rr__new); //rr__new = (r_{j+1}, r_star)
 		// p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
 		BLAS.betaU3D(r,RHS,AMp,rr__new,AMpr_,AMss,AMsAMs);
@@ -1629,13 +1629,13 @@ int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
 		resMonitor(print_monitor,2,rr_0_h,res_relative_old,rr_new_h,i);
 	}
 	// if print_monitor==1 (print finalAbsRes, iterNumber)
-	resMonitor(print_monitor,0,rr_0_h,res_relative_old,rr_new_h,i); 
+	resMonitor(print_monitor,0,rr_0_h,res_relative_old,rr_new_h,i);
 
 	cudaFree(rr_new);
     cudaFree(rr_);
 	cudaFree(rr__new);
     cudaFree(AMpr_);
-    cudaFree(AMss);    
+    cudaFree(AMss);
 	cudaFree(AMsAMs);
 
 	delete [] rr_0_h;
@@ -1658,7 +1658,7 @@ int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
 void V_cycle(double **e_pre, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	MG_levels MG, int l, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly){
 	int Nx = pow(2,l)*ratioX;
@@ -1687,7 +1687,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 void V_cycle2(double **e_pre, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	MG_levels MG, int l, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly,
 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -1713,11 +1713,11 @@ void V_cycle2(double **e_pre, double **r, double **rr, double **K,
 	smooth_GSRB(e_pre[l],r[l],rr[l],K[l],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,grid[l],block[l]);
 }
 
-void Precond_CCMG_Vcycle(double *e0fine, const double *rfine, 
+void Precond_CCMG_Vcycle(double *e0fine, const double *rfine,
 	double **e, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly){
 	int l = MG.L-1;
@@ -1730,11 +1730,11 @@ void Precond_CCMG_Vcycle(double *e0fine, const double *rfine,
 	smooth_GSRB(e0fine,rfine,rr[l],K[l],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,grid[l],block[l]);
 }
 
-void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine, 
+void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 	double **e, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly,
 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -1750,10 +1750,10 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 }
 
 // // grid defined from  z-direction
-// void V_cycle3(double **e_pre, double **r, double **rr, 
+// void V_cycle3(double **e_pre, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	MG_levels MG, int level, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -1780,11 +1780,11 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 // 	smooth_GSRB(e_pre[level],r[level],rr[level],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,GRID3D_L);
 // }
 
-// void Precond_CCMG_Vcycle3(double *e0fine, const double *rfine, 
-// 	double **e, double **r, double **rr, 
+// void Precond_CCMG_Vcycle3(double *e0fine, const double *rfine,
+// 	double **e, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -1799,16 +1799,16 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 // 	smooth_GSRB(e0fine,rfine,rr[level],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,GRID3D_L);
 // }
 
-// int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, 
-// 	double *x, double *s, double *r, double *r_, 
+// int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
+// 	double *x, double *s, double *r, double *r_,
 // 	double *Mp, double *Ms,double *AMs, double *AMp, double *RHS,
 // 	double tol_abs, double tol_rel, int iter_max, int print_monitor);
 
 // // grid defined from  z-direction
-// void V_cycle4(double **e_pre, double **r, double **rr, 
+// void V_cycle4(double **e_pre, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	MG_levels MG, int level, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2,
@@ -1836,11 +1836,11 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 // 	smooth_GSRB(e_pre[level],r[level],rr[level],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,GRID3D_L);
 // }
 
-// void Precond_CCMG_Vcycle4(double *e0fine, const double *rfine, 
-// 	double **e, double **r, double **rr, 
+// void Precond_CCMG_Vcycle4(double *e0fine, const double *rfine,
+// 	double **e, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2,double *Mp, double *Ms, double *AMs, double *AMp
@@ -1883,7 +1883,7 @@ void resMonitor(int levelPrint, int cccc, double *rr_0_h, double &res_relative_o
 }
 
 // WARNING!
-// Whenever possible the following is used: 
+// Whenever possible the following is used:
 // b (RHS) vector is used as the auxiliary vector P
 // z is used auxiliary vector y
 // otherwise you must modify to add the vectors as input and
@@ -1897,7 +1897,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 	cudaMalloc(&rho_old	, sizeof(double));
 	cudaMalloc(&pAp		, sizeof(double));
 	rr_0_h = new double[1]; rr_new_h = new double[1];
-	M.stencil(y,x);	
+	M.stencil(y,x);
 	BLAS.AXPBY3D(z,y,r,1.0,-1.0);
 	BLAS.Ddot(r,r,rr_new);
 	BLAS.copyScalar_d2h(rr_0_h, rr_new);
@@ -1922,7 +1922,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 		resMonitor(print_monitor,2,rr_0_h,res_relative_old,rr_new_h,i);
 	}
 	// if print_monitor==1 (print finalAbsRes, iterNumber)
-	resMonitor(print_monitor,0,rr_0_h,res_relative_old,rr_new_h,i); 
+	resMonitor(print_monitor,0,rr_0_h,res_relative_old,rr_new_h,i);
     cudaFree(rr_new);
     cudaFree(rho);
     cudaFree(rho_old);
@@ -1943,7 +1943,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 #define periodic 1
 #define dirichlet 2
 
-__global__ void velocity_int(double *U, double *V, double *W, 
+__global__ void velocity_int(double *U, double *V, double *W,
  double *H,  double *K, int Nx, int Ny, int Nz, double h){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -1952,7 +1952,7 @@ __global__ void velocity_int(double *U, double *V, double *W,
 	int idx_U, idx_V, idx_W;
 	double H_current = H[in_idx];
 	double K_current = K[in_idx];
-	in_idx += stride;	
+	in_idx += stride;
 	double H_top = H[in_idx];
 	double K_top = K[in_idx];
 	for(int iz=1; iz<Nz-1; ++iz){
@@ -1974,444 +1974,444 @@ __global__ void velocity_int(double *U, double *V, double *W,
 	}
 }
 
-__global__ void velocity_side_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_BOTTOM, 
-double H_BOTTOM){ 
-	COMPUTE_INDEX_BOTTOM 
-	COMPUTE_INDEX_NORMAL_VELOCITY_BOTTOM 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
-	if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h; 
+__global__ void velocity_side_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_BOTTOM,
+double H_BOTTOM){
+	COMPUTE_INDEX_BOTTOM
+	COMPUTE_INDEX_NORMAL_VELOCITY_BOTTOM
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
+	if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_side_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_TOP, 
-double H_TOP){ 
-	COMPUTE_INDEX_TOP 
-	COMPUTE_INDEX_NORMAL_VELOCITY_TOP 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-	if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+__global__ void velocity_side_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_TOP,
+double H_TOP){
+	COMPUTE_INDEX_TOP
+	COMPUTE_INDEX_NORMAL_VELOCITY_TOP
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+	if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 	W[idx_W] = result;
 }
 
-__global__ void velocity_side_SOUTH(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, 
-double H_SOUTH){ 
-	COMPUTE_INDEX_SOUTH 
-	COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
+__global__ void velocity_side_SOUTH(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH,
+double H_SOUTH){
+	COMPUTE_INDEX_SOUTH
+	COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH
+	double K_current = K[in_idx], H_current = H[in_idx];
 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
-	if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h; 
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
+	if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_side_WEST(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, 
-double H_WEST){ 
-	COMPUTE_INDEX_WEST 
-	COMPUTE_INDEX_NORMAL_VELOCITY_WEST 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
+__global__ void velocity_side_WEST(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST,
+double H_WEST){
+	COMPUTE_INDEX_WEST
+	COMPUTE_INDEX_NORMAL_VELOCITY_WEST
+	double K_current = K[in_idx], H_current = H[in_idx];
 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
-	if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h; 
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
+	if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
 }
 
-__global__ void velocity_side_NORTH(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, 
-double H_NORTH){ 
-	COMPUTE_INDEX_NORTH 
-	COMPUTE_INDEX_NORMAL_VELOCITY_NORTH 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-	if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+__global__ void velocity_side_NORTH(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH,
+double H_NORTH){
+	COMPUTE_INDEX_NORTH
+	COMPUTE_INDEX_NORMAL_VELOCITY_NORTH
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+	if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 	V[idx_V] = result;
 }
 
-__global__ void velocity_side_EAST(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, 
-double H_EAST){ 
-	COMPUTE_INDEX_EAST 
-	COMPUTE_INDEX_NORMAL_VELOCITY_EAST 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-	if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+__global__ void velocity_side_EAST(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST,
+double H_EAST){
+	COMPUTE_INDEX_EAST
+	COMPUTE_INDEX_NORMAL_VELOCITY_EAST
+	double K_current = K[in_idx], H_current = H[in_idx];
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+	if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 	U[idx_U] = result;
 }
 
-__global__ void velocity_edge_WEST_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_BOTTOM,
-double H_WEST, double H_BOTTOM){ 
+double H_WEST, double H_BOTTOM){
 COMPUTE_INDEX_WEST_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_WEST_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_TOP,
-double H_WEST, double H_TOP){ 
+double H_WEST, double H_TOP){
 COMPUTE_INDEX_WEST_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_EAST_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_BOTTOM,
-double H_EAST, double H_BOTTOM){ 
+double H_EAST, double H_BOTTOM){
 COMPUTE_INDEX_EAST_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_EAST_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_TOP,
-double H_EAST, double H_TOP){ 
+double H_EAST, double H_TOP){
 COMPUTE_INDEX_EAST_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 result = 0;
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_WEST_SOUTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_SOUTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH,
-double H_WEST, double H_SOUTH){ 
+double H_WEST, double H_SOUTH){
 COMPUTE_INDEX_WEST_SOUTH
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_edge_WEST_NORTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_NORTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH,
-double H_WEST, double H_NORTH){ 
+double H_WEST, double H_NORTH){
 COMPUTE_INDEX_WEST_NORTH
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
 }
 
-__global__ void velocity_edge_EAST_SOUTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_SOUTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH,
-double H_EAST, double H_SOUTH){ 
+double H_EAST, double H_SOUTH){
 COMPUTE_INDEX_EAST_SOUTH
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_edge_EAST_NORTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_NORTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH,
-double H_EAST, double H_NORTH){ 
+double H_EAST, double H_NORTH){
 COMPUTE_INDEX_EAST_NORTH
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH
 double K_current = K[in_idx], H_current = H[in_idx];
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
 }
 
-__global__ void velocity_edge_SOUTH_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_SOUTH_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, int BC_BOTTOM,
-double H_SOUTH, double H_BOTTOM){ 
+double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_SOUTH_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_SOUTH_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, int BC_TOP,
-double H_SOUTH, double H_TOP){ 
+double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_NORTH_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_NORTH_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, int BC_BOTTOM,
-double H_NORTH, double H_BOTTOM){ 
+double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_NORTH_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_NORTH_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, int BC_TOP,
-double H_NORTH, double H_TOP){ 
+double H_NORTH, double H_TOP){
 COMPUTE_INDEX_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_WEST_SOUTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_BOTTOM, double H_WEST, double H_SOUTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_WEST_SOUTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_BOTTOM, double H_WEST, double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_WEST_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_WEST_SOUTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_TOP, double H_WEST, double H_SOUTH, double H_TOP){ 
+__global__ void velocity_vertex_WEST_SOUTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_TOP, double H_WEST, double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_WEST_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_WEST_NORTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_BOTTOM, double H_WEST, double H_NORTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_WEST_NORTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_BOTTOM, double H_WEST, double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_WEST_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_WEST_NORTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_TOP, double H_WEST, double H_NORTH, double H_TOP){ 
+__global__ void velocity_vertex_WEST_NORTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_TOP, double H_WEST, double H_NORTH, double H_TOP){
 COMPUTE_INDEX_WEST_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_EAST_SOUTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_BOTTOM, double H_EAST, double H_SOUTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_EAST_SOUTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_BOTTOM, double H_EAST, double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_EAST_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_EAST_SOUTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_TOP, double H_EAST, double H_SOUTH, double H_TOP){ 
+__global__ void velocity_vertex_EAST_SOUTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_TOP, double H_EAST, double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_EAST_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-(Nx+1)] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-(Nx+1)] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_EAST_NORTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_BOTTOM, double H_EAST, double H_NORTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_EAST_NORTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_BOTTOM, double H_EAST, double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_EAST_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
-if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h; 
+if (BC_BOTTOM == dirichlet) W[idx_W-(Nx+1)*(Ny+1)] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
+if (BC_BOTTOM == periodic) W[idx_W-(Nx+1)*(Ny+1)] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_EAST_NORTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_TOP, double H_EAST, double H_NORTH, double H_TOP){ 
+__global__ void velocity_vertex_EAST_NORTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_TOP, double H_EAST, double H_NORTH, double H_TOP){
 COMPUTE_INDEX_EAST_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
@@ -2457,7 +2457,7 @@ LAUNCH_KERNEL_VERTEX(EAST,SOUTH,TOP);
 LAUNCH_KERNEL_VERTEX(EAST,NORTH,BOTTOM);
 LAUNCH_KERNEL_VERTEX(EAST,NORTH,TOP);
 cudaDeviceSynchronize();
-}    
+}
 ```
 
 # compute_velocity_from_head_v1.cu
@@ -2470,7 +2470,7 @@ cudaDeviceSynchronize();
 #define periodic 1
 #define dirichlet 2
 
-__global__ void velocity_int(double *U, double *V, double *W, 
+__global__ void velocity_int(double *U, double *V, double *W,
  double *H,  double *K, int Nx, int Ny, int Nz, double h){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	int iy = threadIdx.y + blockIdx.y*blockDim.y;
@@ -2479,7 +2479,7 @@ __global__ void velocity_int(double *U, double *V, double *W,
 	int idx_U, idx_V, idx_W;
 	double H_current = H[in_idx];
 	double K_current = K[in_idx];
-	in_idx += stride;	
+	in_idx += stride;
 	double H_top = H[in_idx];
 	double K_top = K[in_idx];
 	for(int iz=1; iz<Nz-1; ++iz){
@@ -2498,444 +2498,444 @@ __global__ void velocity_int(double *U, double *V, double *W,
 	}
 }
 
-__global__ void velocity_side_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_BOTTOM, 
-double H_BOTTOM){ 
-	COMPUTE_INDEX_BOTTOM 
-	COMPUTE_INDEX_NORMAL_VELOCITY_BOTTOM 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
-	if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h; 
+__global__ void velocity_side_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_BOTTOM,
+double H_BOTTOM){
+	COMPUTE_INDEX_BOTTOM
+	COMPUTE_INDEX_NORMAL_VELOCITY_BOTTOM
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
+	if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_side_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_TOP, 
-double H_TOP){ 
-	COMPUTE_INDEX_TOP 
-	COMPUTE_INDEX_NORMAL_VELOCITY_TOP 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-	if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+__global__ void velocity_side_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_TOP,
+double H_TOP){
+	COMPUTE_INDEX_TOP
+	COMPUTE_INDEX_NORMAL_VELOCITY_TOP
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+	if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 	W[idx_W] = result;
 }
 
-__global__ void velocity_side_SOUTH(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, 
-double H_SOUTH){ 
-	COMPUTE_INDEX_SOUTH 
-	COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
+__global__ void velocity_side_SOUTH(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH,
+double H_SOUTH){
+	COMPUTE_INDEX_SOUTH
+	COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH
+	double K_current = K[in_idx], H_current = H[in_idx];
 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
-	if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h; 
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
+	if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_side_WEST(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, 
-double H_WEST){ 
-	COMPUTE_INDEX_WEST 
-	COMPUTE_INDEX_NORMAL_VELOCITY_WEST 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
+__global__ void velocity_side_WEST(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST,
+double H_WEST){
+	COMPUTE_INDEX_WEST
+	COMPUTE_INDEX_NORMAL_VELOCITY_WEST
+	double K_current = K[in_idx], H_current = H[in_idx];
 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-    
-	if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
-	if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h; 
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+
+	if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
+	if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
 }
 
-__global__ void velocity_side_NORTH(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, 
-double H_NORTH){ 
-	COMPUTE_INDEX_NORTH 
-	COMPUTE_INDEX_NORMAL_VELOCITY_NORTH 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-	if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+__global__ void velocity_side_NORTH(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH,
+double H_NORTH){
+	COMPUTE_INDEX_NORTH
+	COMPUTE_INDEX_NORMAL_VELOCITY_NORTH
+	double K_current = K[in_idx], H_current = H[in_idx];
+	U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+	if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 	V[idx_V] = result;
 }
 
-__global__ void velocity_side_EAST(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, 
-double H_EAST){ 
-	COMPUTE_INDEX_EAST 
-	COMPUTE_INDEX_NORMAL_VELOCITY_EAST 
-	double K_current = K[in_idx], H_current = H[in_idx]; 
-	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
-	double result = 0; // default no flux (neumann BC) 
-	if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-	if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+__global__ void velocity_side_EAST(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST,
+double H_EAST){
+	COMPUTE_INDEX_EAST
+	COMPUTE_INDEX_NORMAL_VELOCITY_EAST
+	double K_current = K[in_idx], H_current = H[in_idx];
+	V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+	W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
+	double result = 0; // default no flux (neumann BC)
+	if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+	if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 	U[idx_U] = result;
 }
 
-__global__ void velocity_edge_WEST_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_BOTTOM,
-double H_WEST, double H_BOTTOM){ 
+double H_WEST, double H_BOTTOM){
 COMPUTE_INDEX_WEST_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_WEST_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_TOP,
-double H_WEST, double H_TOP){ 
+double H_WEST, double H_TOP){
 COMPUTE_INDEX_WEST_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_EAST_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_BOTTOM,
-double H_EAST, double H_BOTTOM){ 
+double H_EAST, double H_BOTTOM){
 COMPUTE_INDEX_EAST_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_EAST_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_TOP,
-double H_EAST, double H_TOP){ 
+double H_EAST, double H_TOP){
 COMPUTE_INDEX_EAST_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 result = 0;
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_WEST_SOUTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_SOUTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH,
-double H_WEST, double H_SOUTH){ 
+double H_WEST, double H_SOUTH){
 COMPUTE_INDEX_WEST_SOUTH
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_edge_WEST_NORTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_WEST_NORTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH,
-double H_WEST, double H_NORTH){ 
+double H_WEST, double H_NORTH){
 COMPUTE_INDEX_WEST_NORTH
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
 }
 
-__global__ void velocity_edge_EAST_SOUTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_SOUTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH,
-double H_EAST, double H_SOUTH){ 
+double H_EAST, double H_SOUTH){
 COMPUTE_INDEX_EAST_SOUTH
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
 }
 
-__global__ void velocity_edge_EAST_NORTH(double *U, double *V, double *W, 
+__global__ void velocity_edge_EAST_NORTH(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH,
-double H_EAST, double H_NORTH){ 
+double H_EAST, double H_NORTH){
 COMPUTE_INDEX_EAST_NORTH
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH
 double K_current = K[in_idx], H_current = H[in_idx];
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
 
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
 }
 
-__global__ void velocity_edge_SOUTH_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_SOUTH_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, int BC_BOTTOM,
-double H_SOUTH, double H_BOTTOM){ 
+double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_SOUTH_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_SOUTH_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_SOUTH, int BC_TOP,
-double H_SOUTH, double H_TOP){ 
+double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_edge_NORTH_BOTTOM(double *U, double *V, double *W, 
+__global__ void velocity_edge_NORTH_BOTTOM(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, int BC_BOTTOM,
-double H_NORTH, double H_BOTTOM){ 
+double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_edge_NORTH_TOP(double *U, double *V, double *W, 
+__global__ void velocity_edge_NORTH_TOP(double *U, double *V, double *W,
 double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_NORTH, int BC_TOP,
-double H_NORTH, double H_TOP){ 
+double H_NORTH, double H_TOP){
 COMPUTE_INDEX_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_WEST_SOUTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_BOTTOM, double H_WEST, double H_SOUTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_WEST_SOUTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_BOTTOM, double H_WEST, double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_WEST_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_WEST_SOUTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_TOP, double H_WEST, double H_SOUTH, double H_TOP){ 
+__global__ void velocity_vertex_WEST_SOUTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_SOUTH, int BC_TOP, double H_WEST, double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_WEST_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_WEST_NORTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_BOTTOM, double H_WEST, double H_NORTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_WEST_NORTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_BOTTOM, double H_WEST, double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_WEST_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_WEST_NORTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_TOP, double H_WEST, double H_NORTH, double H_TOP){ 
+__global__ void velocity_vertex_WEST_NORTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_WEST, int BC_NORTH, int BC_TOP, double H_WEST, double H_NORTH, double H_TOP){
 COMPUTE_INDEX_WEST_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_WEST_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h; 
+U[idx_U] = -2.0/(1.0/K[in_idx+1]+ 1.0/K_current) * (H[in_idx+1]-H_current)/h;
 
-if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0); 
+if (BC_WEST == dirichlet) U[idx_U-1] = -K_current * (H_current-H_WEST)/(h/2.0);
 if (BC_WEST == periodic) U[idx_U-1] = -2.0/(1.0/K[in_idx+PERIODIC_WEST]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_WEST])/h;
-double result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_EAST_SOUTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_BOTTOM, double H_EAST, double H_SOUTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_EAST_SOUTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_BOTTOM, double H_EAST, double H_SOUTH, double H_BOTTOM){
 COMPUTE_INDEX_EAST_SOUTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
 if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_EAST_SOUTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_TOP, double H_EAST, double H_SOUTH, double H_TOP){ 
+__global__ void velocity_vertex_EAST_SOUTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_SOUTH, int BC_TOP, double H_EAST, double H_SOUTH, double H_TOP){
 COMPUTE_INDEX_EAST_SOUTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_SOUTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
-V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h; 
+V[idx_V] = -2.0/(1.0/K[in_idx+Nx]+ 1.0/K_current) * (H[in_idx+Nx]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0); 
+if (BC_SOUTH == dirichlet) V[idx_V-Nx] = -K_current * (H_current-H_SOUTH)/(h/2.0);
 if (BC_SOUTH == periodic) V[idx_V-Nx] = -2.0/(1.0/K[in_idx+PERIODIC_SOUTH]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_SOUTH])/h;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
-__global__ void velocity_vertex_EAST_NORTH_BOTTOM(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_BOTTOM, double H_EAST, double H_NORTH, double H_BOTTOM){ 
+__global__ void velocity_vertex_EAST_NORTH_BOTTOM(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_BOTTOM, double H_EAST, double H_NORTH, double H_BOTTOM){
 COMPUTE_INDEX_EAST_NORTH_BOTTOM
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH_BOTTOM
 double K_current = K[in_idx], H_current = H[in_idx];
-W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h; 
+W[idx_W] = -2.0/(1.0/K[in_idx+stride]+ 1.0/K_current) * (H[in_idx+stride]-H_current)/h;
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0); 
-if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h; 
+if (BC_BOTTOM == dirichlet) W[idx_W-stride] = -K_current * (H_current-H_BOTTOM)/(h/2.0);
+if (BC_BOTTOM == periodic) W[idx_W-stride] = -2.0/(1.0/K[in_idx+PERIODIC_BOTTOM]+ 1.0/K_current) * (H_current-H[in_idx+PERIODIC_BOTTOM])/h;
 }
 
-__global__ void velocity_vertex_EAST_NORTH_TOP(double *U, double *V, double *W, 
-double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_TOP, double H_EAST, double H_NORTH, double H_TOP){ 
+__global__ void velocity_vertex_EAST_NORTH_TOP(double *U, double *V, double *W,
+double *H, double *K, int Nx, int Ny, int Nz, double h, int BC_EAST, int BC_NORTH, int BC_TOP, double H_EAST, double H_NORTH, double H_TOP){
 COMPUTE_INDEX_EAST_NORTH_TOP
 COMPUTE_INDEX_NORMAL_VELOCITY_EAST_NORTH_TOP
 double K_current = K[in_idx], H_current = H[in_idx];
 
-double result = 0; // default no flux (neumann BC) 
-if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0); 
-if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h; 
+double result = 0; // default no flux (neumann BC)
+if (BC_EAST == dirichlet) result = -K_current * (H_EAST-H_current)/(h/2.0);
+if (BC_EAST == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_EAST]+ 1.0/K_current) * (H[in_idx+PERIODIC_EAST]-H_current)/h;
 U[idx_U] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0); 
-if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_NORTH == dirichlet) result = -K_current * (H_NORTH-H_current)/(h/2.0);
+if (BC_NORTH == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_NORTH]+ 1.0/K_current) * (H[in_idx+PERIODIC_NORTH]-H_current)/h;
 V[idx_V] = result;
-result = 0; // default no flux (neumann BC) 
-if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0); 
-if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h; 
+result = 0; // default no flux (neumann BC)
+if (BC_TOP == dirichlet) result = -K_current * (H_TOP-H_current)/(h/2.0);
+if (BC_TOP == periodic) result = -2.0/(1.0/K[in_idx+PERIODIC_TOP]+ 1.0/K_current) * (H[in_idx+PERIODIC_TOP]-H_current)/h;
 W[idx_W] = result;
 }
 
@@ -2981,7 +2981,7 @@ LAUNCH_KERNEL_VERTEX(EAST,SOUTH,TOP);
 LAUNCH_KERNEL_VERTEX(EAST,NORTH,BOTTOM);
 LAUNCH_KERNEL_VERTEX(EAST,NORTH,TOP);
 cudaDeviceSynchronize();
-}    
+}
 ```
 
 # GSRB_Smooth_up_residual_3D_bien.cu
@@ -2989,7 +2989,7 @@ cudaDeviceSynchronize();
 ```cu
 /**
 * @file GSRB_Smooth_up_residual_3D.cu
-* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving 
+* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving
 * the flow equation with CCMG method
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -3039,8 +3039,8 @@ void update_res(double *rk_1, double *xk, const double *rhs, const double *K,
 
 //#######################################################################
 // 	routine smooth_GSRB (system A*phi = r)
-//	perform one iteration Symetric Gauss-Seidel 
-//  Red-Black ordering (two half step) 
+//	perform one iteration Symetric Gauss-Seidel
+//  Red-Black ordering (two half step)
 //  phiC <- (rC - sum(AF*phiF) )/AC , F~{E, W, N, S, T, B}
 //	The matrix A must be SPD, else, change the stencil
 //  for other problems (eg. variable permeability) the stencil must be modified
@@ -3259,11 +3259,11 @@ void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%   SOLVE COARSEST SYSTEM WITH GS-RB   %%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int BCbottom, int BCtop,
-	int BCsouth, int BCnorth, 
+	int BCsouth, int BCnorth,
 	int BCwest, int BCeast, bool pin1stCell){
 	double *rr_new; cudaMalloc(&rr_new,sizeof(double));
 	double *rr_new_h; rr_new_h = new double[1];
@@ -3272,7 +3272,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 	while( (pow((*rr_new_h),0.5) > 1e-16 ) && iter<itMAX){
 		smooth_GSRB(xnew,rhs,r,K,dxdx,Nx,Ny,Nz,
 			BCbottom,BCtop,BCsouth,
-			BCnorth,BCwest,BCeast, 
+			BCnorth,BCwest,BCeast,
 			pin1stCell,4,false,
 			grid,block);
 		iter+=4;
@@ -3293,7 +3293,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 ```cu
 /**
 * @file GSRB_Smooth_up_residual_3D.cu
-* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving 
+* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving
 * the flow equation with CCMG method
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -3342,8 +3342,8 @@ void update_res(double *rk_1, double *xk, const double *rhs, const double *K,
 
 //#######################################################################
 // 	routine smooth_GSRB (system A*phi = r)
-//	perform one iteration Symetric Gauss-Seidel 
-//  Red-Black ordering (two half step) 
+//	perform one iteration Symetric Gauss-Seidel
+//  Red-Black ordering (two half step)
 //  phiC <- (rC - sum(AF*phiF) )/AC , F~{E, W, N, S, T, B}
 //	The matrix A must be SPD, else, change the stencil
 //  for other problems (eg. variable permeability) the stencil must be modified
@@ -3575,9 +3575,9 @@ void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%   SOLVE COARSEST SYSTEM WITH GS-RB   %%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int BC_BOTTOM, int BC_TOP, int BC_SOUTH, int BC_NORTH, int BC_WEST, int BC_EAST, bool pin1stCell){
 	double *rr_new; cudaMalloc(&rr_new,sizeof(double));
 	double *rr_new_h; rr_new_h = new double[1];
@@ -3606,7 +3606,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 ```cu
 /**
 * @file GSRB_Smooth_up_residual_3D.cu
-* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving 
+* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving
 * the flow equation with CCMG method
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -3654,8 +3654,8 @@ void update_res(double *rk_1, double *xk, const double *rhs, const double *K,
 
 //#######################################################################
 // 	routine smooth_GSRB (system A*phi = r)
-//	perform one iteration Symetric Gauss-Seidel 
-//  Red-Black ordering (two half step) 
+//	perform one iteration Symetric Gauss-Seidel
+//  Red-Black ordering (two half step)
 //  phiC <- (rC - sum(AF*phiF) )/AC , F~{E, W, N, S, T, B}
 //	The matrix A must be SPD, else, change the stencil
 //  for other problems (eg. variable permeability) the stencil must be modified
@@ -3674,11 +3674,11 @@ __global__ void GSRB_int(double *h_in, const double *rhs, const double *K, doubl
 		out_idx += stride;
 		KC = K[out_idx];
 		if(isred){
-			if ((ix+1+iy+1+iz)%2 == 0){					
+			if ((ix+1+iy+1+iz)%2 == 0){
 					result=0.0; KN = 0.0; aC = 0.0;
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+1]);
 					result += h_in[out_idx+1 ]*KN;
-					aC += KN;	
+					aC += KN;
 
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+Nx]);
 					result += h_in[out_idx+Nx]*KN;
@@ -3707,7 +3707,7 @@ __global__ void GSRB_int(double *h_in, const double *rhs, const double *K, doubl
 					result=0.0; KN = 0.0; aC = 0.0;
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+1]);
 					result += h_in[out_idx+1 ]*KN;
-					aC += KN;	
+					aC += KN;
 
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+Nx]);
 					result += h_in[out_idx+Nx]*KN;
@@ -4066,7 +4066,7 @@ __global__ void GSRB_side_west(double *h_in, const double *rhs, const double *K,
 					aC += KN;
 				}
 				if(BCtype==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);		
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 	else {if((ix+iy+1+iz+1)%2 != 0){
 				result=0.0; KN = 0.0; aC = 0.0;
@@ -4141,7 +4141,7 @@ __global__ void GSRB_side_east(double *h_in, const double *rhs, const double *K,
 					aC += KN;
 				}
 				if(BCtype==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);	
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 	else {if((ix+iy+1+iz+1)%2 != 0){
 				result=0.0; KN = 0.0; aC = 0.0;
@@ -4172,7 +4172,7 @@ __global__ void GSRB_side_east(double *h_in, const double *rhs, const double *K,
 					aC += KN;
 				}
 				if(BCtype==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);	
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 	}}
 }
 
@@ -4214,7 +4214,7 @@ __global__ void GSRB_edge_X_South_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4246,7 +4246,7 @@ __global__ void GSRB_edge_X_South_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4290,7 +4290,7 @@ __global__ void GSRB_edge_X_South_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4322,7 +4322,7 @@ __global__ void GSRB_edge_X_South_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4367,7 +4367,7 @@ __global__ void GSRB_edge_X_North_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4399,7 +4399,7 @@ __global__ void GSRB_edge_X_North_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4443,7 +4443,7 @@ __global__ void GSRB_edge_X_North_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4475,7 +4475,7 @@ __global__ void GSRB_edge_X_North_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4520,7 +4520,7 @@ __global__ void GSRB_edge_Z_South_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4553,7 +4553,7 @@ __global__ void GSRB_edge_Z_South_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4598,7 +4598,7 @@ __global__ void GSRB_edge_Z_South_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4630,7 +4630,7 @@ __global__ void GSRB_edge_Z_South_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4675,7 +4675,7 @@ __global__ void GSRB_edge_Z_North_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4707,7 +4707,7 @@ __global__ void GSRB_edge_Z_North_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4752,7 +4752,7 @@ __global__ void GSRB_edge_Z_North_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4784,7 +4784,7 @@ __global__ void GSRB_edge_Z_North_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4829,7 +4829,7 @@ __global__ void GSRB_edge_Y_West_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4861,7 +4861,7 @@ __global__ void GSRB_edge_Y_West_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4905,7 +4905,7 @@ __global__ void GSRB_edge_Y_West_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4937,7 +4937,7 @@ __global__ void GSRB_edge_Y_West_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -4982,7 +4982,7 @@ __global__ void GSRB_edge_Y_East_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5014,7 +5014,7 @@ __global__ void GSRB_edge_Y_East_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5058,10 +5058,10 @@ __global__ void GSRB_edge_Y_East_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);		
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 	else {if((ix+iy+1+iz)%2 != 0){
 				result=0.0; KN = 0.0; aC = 0.0;
@@ -5090,10 +5090,10 @@ __global__ void GSRB_edge_Y_East_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);	
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 }
 
@@ -5135,7 +5135,7 @@ __global__ void GSRB_vertex_SWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				if(pin1stCell) aC*=2.0; //if pin first cell for solvabolity (if all BCtype are homog-Neumann)
@@ -5169,7 +5169,7 @@ __global__ void GSRB_vertex_SWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				if(pin1stCell) aC*=2.0; //if pin first cell for solvabolity (if all BCtype are homog-Neumann)
@@ -5214,7 +5214,7 @@ __global__ void GSRB_vertex_SWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5247,7 +5247,7 @@ __global__ void GSRB_vertex_SWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5292,7 +5292,7 @@ __global__ void GSRB_vertex_SEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5325,7 +5325,7 @@ __global__ void GSRB_vertex_SEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5369,7 +5369,7 @@ __global__ void GSRB_vertex_SET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5402,7 +5402,7 @@ __global__ void GSRB_vertex_SET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5447,7 +5447,7 @@ __global__ void GSRB_vertex_NEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5480,7 +5480,7 @@ __global__ void GSRB_vertex_NEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5524,7 +5524,7 @@ __global__ void GSRB_vertex_NET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5557,7 +5557,7 @@ __global__ void GSRB_vertex_NET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5601,7 +5601,7 @@ __global__ void GSRB_vertex_NWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5634,7 +5634,7 @@ __global__ void GSRB_vertex_NWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5678,7 +5678,7 @@ __global__ void GSRB_vertex_NWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5711,7 +5711,7 @@ __global__ void GSRB_vertex_NWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -5791,11 +5791,11 @@ void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%   SOLVE COARSEST SYSTEM WITH GS-RB   %%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int BCbottom, int BCtop,
-	int BCsouth, int BCnorth, 
+	int BCsouth, int BCnorth,
 	int BCwest, int BCeast, bool pin1stCell){
 	double *rr_new; cudaMalloc(&rr_new,sizeof(double));
 	double *rr_new_h; rr_new_h = new double[1];
@@ -5804,7 +5804,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 	while( (pow((*rr_new_h),0.5) > 1e-16 ) && iter<itMAX){
 		smooth_GSRB(xnew,rhs,r,K,dxdx,Nx,Ny,Nz,
 			BCbottom,BCtop,BCsouth,
-			BCnorth,BCwest,BCeast, 
+			BCnorth,BCwest,BCeast,
 			pin1stCell,4,false,
 			grid,block);
 		iter+=4;
@@ -5825,7 +5825,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 ```cu
 /**
 * @file GSRB_Smooth_up_residual_3D.cu
-* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving 
+* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving
 * the flow equation with CCMG method
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -5875,8 +5875,8 @@ void update_res(double *rk_1, double *xk, const double *rhs, const double *K,
 
 //#######################################################################
 // 	routine smooth_GSRB (system A*phi = r)
-//	perform one iteration Symetric Gauss-Seidel 
-//  Red-Black ordering (two half step) 
+//	perform one iteration Symetric Gauss-Seidel
+//  Red-Black ordering (two half step)
 //  phiC <- (rC - sum(AF*phiF) )/AC , F~{E, W, N, S, T, B}
 //	The matrix A must be SPD, else, change the stencil
 //  for other problems (eg. variable permeability) the stencil must be modified
@@ -6095,11 +6095,11 @@ void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%   SOLVE COARSEST SYSTEM WITH GS-RB   %%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int BCbottom, int BCtop,
-	int BCsouth, int BCnorth, 
+	int BCsouth, int BCnorth,
 	int BCwest, int BCeast, bool pin1stCell){
 	double *rr_new; cudaMalloc(&rr_new,sizeof(double));
 	double *rr_new_h; rr_new_h = new double[1];
@@ -6108,7 +6108,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 	while( (pow((*rr_new_h),0.5) > 1e-16 ) && iter<itMAX){
 		smooth_GSRB(xnew,rhs,r,K,dxdx,Nx,Ny,Nz,
 			BCbottom,BCtop,BCsouth,
-			BCnorth,BCwest,BCeast, 
+			BCnorth,BCwest,BCeast,
 			pin1stCell,4,false,
 			grid,block);
 		iter+=4;
@@ -6143,7 +6143,7 @@ void prolongation(double *phiFine, const double *phiCoarse, int Nx, int Ny, int 
 ```h
 
 class Matrix_t{
-public: 
+public:
 	// generic stencil operation output <- A*input
 	virtual void stencil(double *output, double *input)=0;
 };
@@ -6155,7 +6155,7 @@ public:
 	IdentityPrecond(int Nx, int Ny, int Nz):
 		Nx(Nx), Ny(Ny), Nz(Nz) {};
 	void stencil(double *output, double *input){
-		cudaMemcpy(output,input,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice); 
+		cudaMemcpy(output,input,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
 	}
 };
@@ -6180,7 +6180,7 @@ public:
 	virtual void omegaX3D(const double *p, double *x, const double *s, const double *rr_, const double *Apr_, const double *Ass, const double *AsAs)=0;
 	virtual void omegaR3D(const double *s, double *r, const double *As, const double *Ass, const double *AsAs)=0;
 
-	// 
+	//
 	virtual void Ddot(double *x, double *y, double *result)=0;
 	virtual void copyVector_d2d(double *dst, double *src)=0;
 	virtual void copyScalar_d2d(double *dst, double *src)=0;
@@ -6205,10 +6205,10 @@ public:
 		AXPBY(x,y,output,a,b,Nx,Ny,Nz,grid,block);
 	}
 	void alpha3D(const double *y, double *x, const double *rz, const double *yP, bool plus_minus){
-		alpha(y,x,rz,yP,plus_minus,Nx,Ny,Nz,grid,block);	
+		alpha(y,x,rz,yP,plus_minus,Nx,Ny,Nz,grid,block);
 	}
 	void beta3D(const double *x, double *y, const double *rz, const double *rz_old){
-		beta(x,y,rz,rz_old,Nx,Ny,Nz,grid,block);	
+		beta(x,y,rz,rz_old,Nx,Ny,Nz,grid,block);
 	}
 
 	void alphaU3D(const double *Ap, const double *r,  double *s, const double *rr_, const double *Apr_){
@@ -6229,29 +6229,29 @@ public:
 		cudaDeviceSynchronize();
 	}
 	void copyVector_d2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice); 
+		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
 	}
 	void copyScalar_d2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToDevice); 
+		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToDevice);
 		cudaDeviceSynchronize();
 	}
 	void copyVector_d2h(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToHost); 
+		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
-	}	
+	}
 	void copyScalar_d2h(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToHost); 
+		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyDeviceToHost);
 		cudaDeviceSynchronize();
 	}
 	void copyVector_h2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyHostToDevice); 
+		cudaMemcpy(dst,src,sizeof(double)*Nx*Ny*Nz,cudaMemcpyHostToDevice);
 		cudaDeviceSynchronize();
-	}	
+	}
 	void copyScalar_h2d(double *dst, double *src){
-		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyHostToDevice); 
+		cudaMemcpy(dst,src,sizeof(double),cudaMemcpyHostToDevice);
 		cudaDeviceSynchronize();
-	}	
+	}
 };
 ```
 
@@ -6927,25 +6927,25 @@ void restriction(double *phiCoarse, const double *phiFine, int Nx, int Ny, int N
 
 void HomogenizationPermeability(double *phiCoarse, const double *phiFine, int Nx, int Ny, int Nz, dim3 grid, dim3 block);
 
-void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K, 
-	double dxdx, int Nx, int Ny, int Nz, 
+void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
+	double dxdx, int Nx, int Ny, int Nz,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int itMAX, bool update_res, dim3 grid, dim3 block);
 
-void update_res(double *xk, const double *rhs, double *rk_1, const double *K, 
+void update_res(double *xk, const double *rhs, double *rk_1, const double *K,
 	double dxdx, int Nx, int Ny, int Nz,
 	int dirichletBottom, int dirichletTop,
 	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	dim3 grid, dim3 block);
 
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell);
 ```
 
@@ -6953,19 +6953,19 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 
 ```h
 //AUXILIAR ROUTINES FOR CG
-void alpha(const double *x, double *y, 
+void alpha(const double *x, double *y,
 const double *rz,  const double *yP, bool plus_minus,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block);
 
-void beta(const double *x, double *y, 
-const double *rz, const double *rz_old,  
+void beta(const double *x, double *y,
+const double *rz, const double *rz_old,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block);
 
 
 //COMMON ROUTINES FOR SOLVER
-void AXPBY(const double *x, double *y, double *output, 
+void AXPBY(const double *x, double *y, double *output,
 const double a, const double b,
 const int Nx, const int Ny, const int Nz,
 dim3 grid, dim3 block);
@@ -6975,15 +6975,15 @@ dim3 grid, dim3 block);
 # header\routines_solver_type.h
 
 ```h
-// WARNING:  
-// All routines consider variable conductivities K at all grid levels (**K[] array).  
+// WARNING:
+// All routines consider variable conductivities K at all grid levels (**K[] array).
 // If conductivities are constant, the K array should be removed.
 
 // V-cycle using GSRB as the coarsest solver
 void V_cycle(double **e_pre, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	MG_levels MG, int l, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly);
 
@@ -6991,26 +6991,26 @@ void V_cycle(double **e_pre, double **r, double **rr, double **K,
 void V_cycle2(double **e_pre, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	MG_levels MG, int l, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly,
 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2);
 
 // V-cycle (GSRB coarsest solver) using as preconditioner
-void Precond_CCMG_Vcycle(double *e0fine, const double *rfine, 
+void Precond_CCMG_Vcycle(double *e0fine, const double *rfine,
 	double **e, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly);
 
 // V-cycle (CG coarsest solver) using as preconditioner
-void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine, 
+void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 	double **e, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly,
 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2);
@@ -8212,7 +8212,7 @@ rebuild: clean all
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine omega_r (uses in BiCGStab) 
+// 	routine omega_r (uses in BiCGStab)
 //	r_{j+1} = s_j - omega*A*M*s
 //	omega = (AMs, s) / (AMs, AMs)
 //#######################################################################
@@ -8239,7 +8239,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
 }
@@ -8253,7 +8253,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	r[in_idx] = s[in_idx] - Ass[0]/AsAs[0]*As[in_idx];
 }
@@ -8485,8 +8485,8 @@ void omegaR(const double *s, double *r, const double *As, const double *Ass, con
 	omega_r_vertex_NWB<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
 	omega_r_vertex_NWT<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
 	omega_r_vertex_NEB<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
-	omega_r_vertex_NET<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	omega_r_vertex_NET<<<1,1>>>(s,r,As,Ass,AsAs,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 ```
 
@@ -8502,7 +8502,7 @@ void omegaR(const double *s, double *r, const double *As, const double *Ass, con
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine omega_x (uses in BiCGStab)  
+// 	routine omega_x (uses in BiCGStab)
 //  x_{j+1} = x_j + alpha*M*p_j + omega*M*s_j
 //	omega = (AMs, s) / (AMs, AMs)
 //  alpha = (r_j, r_star) / (A*M*p, r_star)
@@ -8531,7 +8531,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
 }
@@ -8545,7 +8545,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	x[in_idx] +=  rr_[0]/Apr_[0]*p[in_idx] + Ass[0]/AsAs[0]*s[in_idx];
 }
@@ -8777,8 +8777,8 @@ void omegaX(const double *p, double *x, const double *s, const double *rr_, cons
 	omega_x_vertex_NWB<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	omega_x_vertex_NWT<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	omega_x_vertex_NEB<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
-	omega_x_vertex_NET<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	omega_x_vertex_NET<<<1,1>>>(p,x,s,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }
 ```
 
@@ -12628,7 +12628,7 @@ __global__ void setup_uniform_distrib(curandState *state, const int i_max){
 }
 
 
-// K: conductivity field with 
+// K: conductivity field with
 // K = I*exp(f(x)) (eq. 2)
 // with f(x) = (2/N)^(1/2) * sigma_f^2 * sum_i_to_N cos(k1_i*x + k2_i*y + theta_i) (eq. 1)
 
@@ -12688,13 +12688,13 @@ __global__ void exp_kernel(double *logK, const int Nx, const int Ny){
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // This code for Exponential Covariance
 // is based on the implementation provided in:
-// 
+//
 // Ludovic Räss, Dmitriy Kolyukhin, Alexander Minakov,
 // "Efficient parallel random field generator for large 3-D geophysical problems,"
 // Computers & Geosciences, Volume 131, Pages 158-169, 2019.
 // DOI: https://doi.org/10.1016/j.cageo.2019.06.007
 // URL: http://www.sciencedirect.com/science/article/pii/S0098300418309944
-// 
+//
 // Only minor modifications were made to adapt the original implementation to this project.
 __global__ void random_kernel_3D(curandState *state, double *V1, double *V2, double *V3, double *a, double *b, const double lambda, const int i_max){
 	const int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -12742,7 +12742,7 @@ __global__ void random_kernel_3D_gauss(curandState *state, double *V1, double *V
 __global__ void conductivity_kernel_3D(double *V1, double *V2, double *V3, double *a, double *b, const int i_max, double *K, const double lambda, const double h, const int Nx, const int Ny, const int Nz,const double sigma_f){
 	const int ix = threadIdx.x + blockIdx.x*blockDim.x;
 	const int iy = threadIdx.y + blockIdx.y*blockDim.y;
-	const int iz = threadIdx.z + blockIdx.z*blockDim.z;	
+	const int iz = threadIdx.z + blockIdx.z*blockDim.z;
 	if (ix >= Nx || iy >= Ny || iz>=Nz) return;
 	int in_idx = ix + iy*Nx + iz*Nx*Ny;
 	double fx=0.0,tmp;
@@ -12799,7 +12799,7 @@ __global__ void RHS_head_int(double *RHS, const double *K, int Nx, int Ny, int N
 	if (ix >= Nx-2 || iy >= Ny-2) return;
 	int in_idx = (ix + 1) + (iy + 1)*Nx;
 	int stride = Nx*Ny;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		in_idx += stride;
 		RHS[in_idx] = 0.0;
 	}
@@ -12859,7 +12859,7 @@ __global__ void RHS_head_side_west(double *RHS, const double *K, int Nx, int Ny,
 	int stride = Nx*Ny;
 	int in_idx;
 	int ix = 0;
-	in_idx = ix + (iy + 1)*Nx + (iz + 1)*stride; 
+	in_idx = ix + (iy + 1)*Nx + (iz + 1)*stride;
     double KC = K[in_idx];
     if(BCtype==dirichlet) RHS[in_idx] -= 2.0*Hb*KC/h*A/h/h/h; //dirichlet contribution
 }
@@ -12898,33 +12898,33 @@ __global__ void RHS_head_edge_X_South_Top(double *RHS, const double *K, int Nx, 
 	int iz = Nz-1;
 	int in_idx = (ix+1) + iy*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
+    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_X_North_Bottom(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCbottom, double Hnorth, double Hbottom){
     int ix = threadIdx.x + blockIdx.x*blockDim.x;
-    if (ix >= Nx-2) return; 
+    if (ix >= Nx-2) return;
     int stride = Nx*Ny;
-    int iy = Ny-1; 
-    int iz = 0; 
-    int in_idx = (ix+1) + iy*Nx + iz*stride; 
+    int iy = Ny-1;
+    int iz = 0;
+    int in_idx = (ix+1) + iy*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h; 
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_X_North_Top(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCtop, double Hnorth, double Htop){
     int ix = threadIdx.x + blockIdx.x*blockDim.x;
-    if (ix >= Nx-2) return; 
+    if (ix >= Nx-2) return;
     int stride = Nx*Ny;
-    int iy = Ny-1; 
-    int iz = Nz-1; 
-    int in_idx = (ix+1) + iy*Nx + iz*stride; 
+    int iy = Ny-1;
+    int iz = Nz-1;
+    int in_idx = (ix+1) + iy*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
-}   
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
+}
 
 __global__ void RHS_head_edge_Z_South_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCwest, double Hsouth, double Hwest){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -12935,8 +12935,8 @@ __global__ void RHS_head_edge_Z_South_West(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h; 
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
+    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h;
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Z_South_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast, double Hsouth, double Heast){
@@ -12948,8 +12948,8 @@ __global__ void RHS_head_edge_Z_South_East(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h; 
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
+    if(BCsouth==dirichlet) RHS[in_idx] -= 2.0*Hsouth*KC/h*A/h/h/h;
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Z_North_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest, double Hnorth, double Hwest){
@@ -12961,8 +12961,8 @@ __global__ void RHS_head_edge_Z_North_West(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Z_North_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast, double Hnorth, double Heast){
@@ -12974,8 +12974,8 @@ __global__ void RHS_head_edge_Z_North_East(double *RHS, const double *K, int Nx,
 	int in_idx;
 	in_idx = ix + iy*Nx + (iz+1)*stride;
     double KC = K[in_idx];
-    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h; 
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
+    if(BCnorth==dirichlet) RHS[in_idx] -= 2.0*Hnorth*KC/h*A/h/h/h;
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Bottom_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCbottom, int BCwest, double Hbottom, double Hwest){
@@ -12987,8 +12987,8 @@ __global__ void RHS_head_edge_Y_Bottom_West(double *RHS, const double *K, int Nx
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
-    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h; 
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
+    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Top_West(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCwest, double Htop, double Hwest){
@@ -13000,8 +13000,8 @@ __global__ void RHS_head_edge_Y_Top_West(double *RHS, const double *K, int Nx, i
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
+    if(BCwest==dirichlet) RHS[in_idx] -= 2.0*Hwest*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Bottom_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCbottom, int BCeast, double Hbottom, double Heast){
@@ -13013,8 +13013,8 @@ __global__ void RHS_head_edge_Y_Bottom_East(double *RHS, const double *K, int Nx
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
-    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h; 
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
+    if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
 __global__ void RHS_head_edge_Y_Top_East(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCeast, double Htop, double Heast){
@@ -13026,12 +13026,12 @@ __global__ void RHS_head_edge_Y_Top_East(double *RHS, const double *K, int Nx, i
 	int in_idx;
 	in_idx = ix + (iy+1)*Nx + iz*stride;
     double KC = K[in_idx];
-    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h; 
-    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h; 
+    if(BCeast==dirichlet) RHS[in_idx] -= 2.0*Heast*KC/h*A/h/h/h;
+    if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCwest, int BCbottom, 
+__global__ void RHS_head_vertex_SWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCwest, int BCbottom,
                                   double Hsouth, double Hwest, double Hbottom) {
     int ix = 0;
     int iy = 0;
@@ -13044,8 +13044,8 @@ __global__ void RHS_head_vertex_SWB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCwest, int BCtop, 
+__global__ void RHS_head_vertex_SWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCwest, int BCtop,
                                   double Hsouth, double Hwest, double Htop) {
 	int stride = Nx*Ny;
 	int ix = 0;
@@ -13059,8 +13059,8 @@ __global__ void RHS_head_vertex_SWT(double *RHS, const double *K, int Nx, int Ny
     if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCeast, int BCbottom, 
+__global__ void RHS_head_vertex_SEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCeast, int BCbottom,
                                   double Hsouth, double Heast, double Hbottom) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -13074,8 +13074,8 @@ __global__ void RHS_head_vertex_SEB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_SET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCsouth, int BCeast, int BCtop, 
+__global__ void RHS_head_vertex_SET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCsouth, int BCeast, int BCtop,
                                   double Hsouth, double Heast, double Htop) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -13089,8 +13089,8 @@ __global__ void RHS_head_vertex_SET(double *RHS, const double *K, int Nx, int Ny
     if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCwest, int BCbottom, 
+__global__ void RHS_head_vertex_NWB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCwest, int BCbottom,
                                   double Hnorth, double Hwest, double Hbottom) {
 	int stride = Nx*Ny;
 	int ix = 0;
@@ -13104,8 +13104,8 @@ __global__ void RHS_head_vertex_NWB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCwest, int BCtop, 
+__global__ void RHS_head_vertex_NWT(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCwest, int BCtop,
                                   double Hnorth, double Hwest, double Htop) {
 	int stride = Nx*Ny;
 	int ix = 0;
@@ -13120,8 +13120,8 @@ __global__ void RHS_head_vertex_NWT(double *RHS, const double *K, int Nx, int Ny
     if(BCtop==dirichlet) RHS[in_idx] -= 2.0*Htop*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCeast, int BCbottom, 
+__global__ void RHS_head_vertex_NEB(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCeast, int BCbottom,
                                   double Hnorth, double Heast, double Hbottom) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -13135,8 +13135,8 @@ __global__ void RHS_head_vertex_NEB(double *RHS, const double *K, int Nx, int Ny
     if(BCbottom==dirichlet) RHS[in_idx] -= 2.0*Hbottom*KC/h*A/h/h/h;
 }
 
-__global__ void RHS_head_vertex_NET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h, 
-                                  int BCnorth, int BCeast, int BCtop, 
+__global__ void RHS_head_vertex_NET(double *RHS, const double *K, int Nx, int Ny, int Nz, double A, double h,
+                                  int BCnorth, int BCeast, int BCtop,
                                   double Hnorth, double Heast, double Htop) {
 	int stride = Nx*Ny;
 	int ix = Nx-1;
@@ -13152,8 +13152,8 @@ __global__ void RHS_head_vertex_NET(double *RHS, const double *K, int Nx, int Ny
 
 void RHS_head(double *RHS, const double *K,
 	int Nx, int Ny, int Nz, double A, double h,
-	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast, 
-	double Hbottom, double Htop, double Hsouth, double Hnorth, double Hwest, double Heast, 
+	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast,
+	double Hbottom, double Htop, double Hsouth, double Hnorth, double Hwest, double Heast,
 	dim3 grid, dim3 block){
 	RHS_head_int		<<<gridXY,blockXY>>>(RHS,K,Nx,Ny,Nz);
 	RHS_head_side_bottom<<<gridXY,blockXY>>>(RHS,K,Nx,Ny,Nz,A,h,BCbottom,Hbottom);
@@ -13303,17 +13303,17 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 
 	// const int tx = threadIdx.x + 1;
 	// const int ty = threadIdx.y + 1;
-	
+
 	H_current = H_input[in_idx];
 	K_current = K[in_idx];
 	out_idx = in_idx;
 	in_idx += stride;
-	
+
 	H_top = H_input[in_idx];
 	K_top = K[in_idx];
 	in_idx += stride;
 	double value;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		// if( (tx < Nx-1) && (ty < Ny-1) ){
 			H_bottom = H_current;
 			H_current = H_top;
@@ -13328,8 +13328,8 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 			// if(tx==1){
 			// 	s_H[0][ty]    = H_input[out_idx-1];
 			// 	s_K[0][ty]    = K[out_idx-1];
-			// }                    
-			// if(ix==Nx-3 || tx==BLOCK_Nx){ 
+			// }
+			// if(ix==Nx-3 || tx==BLOCK_Nx){
 			// 	s_H[tx+1][ty] = H_input[out_idx+1];
 			// 	s_K[tx+1][ty] = K[out_idx+1];
 			// }
@@ -13341,7 +13341,7 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 			// if(iy==Ny-3 || ty==BLOCK_Ny){
 			// 	s_H[tx][ty+1] = H_input[out_idx+Nx];
 			// 	s_K[tx][ty+1] = K[out_idx+Nx];
-			// } 
+			// }
 
 			// s_H[tx][ty] = H_current;
 			// s_K[tx][ty] = K_current;
@@ -13365,7 +13365,7 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 	}
 }
 
-// total 6-faces 
+// total 6-faces
 // xy-face (BCtype: Homogeneous-Neumann (0), Periodic (1), Homogeneous-Dirichlet (2))
 __global__ void stencil_head_side_bottom(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtype){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -13387,7 +13387,7 @@ __global__ void stencil_head_side_bottom(double *H_output, const double *H_input
 	if(BCtype==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
     // *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13421,7 +13421,7 @@ __global__ void stencil_head_side_top(double *H_output, const double *H_input, c
 	if(BCtype==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13444,7 +13444,7 @@ __global__ void stencil_head_side_south(double *H_output, const double *H_input,
 	int in_idx;
 	int iy = 0;
 	in_idx = (ix + 1) + iy*Nx + (iz + 1)*stride;
-	
+
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
@@ -13456,7 +13456,7 @@ __global__ void stencil_head_side_south(double *H_output, const double *H_input,
 	if(BCtype==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13479,11 +13479,11 @@ __global__ void stencil_head_side_north(double *H_output, const double *H_input,
 	int in_idx;
 	int iy = Ny-1;
 	in_idx = (ix + 1) + iy*Nx + (iz + 1)*stride;
-	
+
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet	
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north = HC; //factor (HC-H_north) is zero 0
 	double K_north = KC; //(1.0/KC+1.0/K_north) <- \neq0
 	double result=0.0;
@@ -13491,7 +13491,7 @@ __global__ void stencil_head_side_north(double *H_output, const double *H_input,
 	if(BCtype==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -13518,7 +13518,7 @@ __global__ void stencil_head_side_west(double *H_output, const double *H_input, 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet	
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_west=HC; //factor (HC-H_west) is zero 0
 	double K_west=KC; //(1.0/KC+1.0/K_west) <- \neq0
 	double result=0.0;
@@ -13526,7 +13526,7 @@ __global__ void stencil_head_side_west(double *H_output, const double *H_input, 
 	if(BCtype==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -13553,7 +13553,7 @@ __global__ void stencil_head_side_east(double *H_output, const double *H_input, 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet	
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_east=HC; //factor (HC-H_west) is zero 0
 	double K_east=KC; //(1.0/KC+1.0/K_west) <- \neq0
 	double result=0.0;
@@ -13561,7 +13561,7 @@ __global__ void stencil_head_side_east(double *H_output, const double *H_input, 
 	if(BCtype==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -13589,7 +13589,7 @@ __global__ void stencil_head_edge_X_South_Bottom(double *H_output, const double 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC, H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC, K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13597,11 +13597,11 @@ __global__ void stencil_head_edge_X_South_Bottom(double *H_output, const double 
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -13628,7 +13628,7 @@ __global__ void stencil_head_edge_X_South_Top(double *H_output, const double *H_
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC, H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC, K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13636,11 +13636,11 @@ __global__ void stencil_head_edge_X_South_Top(double *H_output, const double *H_
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -13667,7 +13667,7 @@ __global__ void stencil_head_edge_X_North_Bottom(double *H_output, const double 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13675,11 +13675,11 @@ __global__ void stencil_head_edge_X_North_Bottom(double *H_output, const double 
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -13706,7 +13706,7 @@ __global__ void stencil_head_edge_X_North_Top(double *H_output, const double *H_
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13714,11 +13714,11 @@ __global__ void stencil_head_edge_X_North_Top(double *H_output, const double *H_
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -13742,12 +13742,12 @@ __global__ void stencil_head_edge_Z_South_West(double *H_output, const double *H
 	int ix = 0;
 	int iy = 0;
 	int in_idx;
-	in_idx = ix + iy*Nx + (iz+1)*stride;	
+	in_idx = ix + iy*Nx + (iz+1)*stride;
 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13755,11 +13755,11 @@ __global__ void stencil_head_edge_Z_South_West(double *H_output, const double *H
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13772,7 +13772,7 @@ __global__ void stencil_head_edge_Z_South_West(double *H_output, const double *H
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -13786,7 +13786,7 @@ __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13794,11 +13794,11 @@ __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13811,7 +13811,7 @@ __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -13825,7 +13825,7 @@ __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13833,11 +13833,11 @@ __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -13850,9 +13850,9 @@ __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
-__global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast){	
+__global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
 	int stride = Nx*Ny;
@@ -13864,7 +13864,7 @@ __global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13872,11 +13872,11 @@ __global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -13889,7 +13889,7 @@ __global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 
 // total 4-Y-vertex
@@ -13906,7 +13906,7 @@ __global__ void stencil_head_edge_Y_Bottom_West(double *H_output, const double *
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_bottom=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_bottom=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13914,11 +13914,11 @@ __global__ void stencil_head_edge_Y_Bottom_West(double *H_output, const double *
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13931,7 +13931,7 @@ __global__ void stencil_head_edge_Y_Bottom_West(double *H_output, const double *
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCwest){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -13945,7 +13945,7 @@ __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_i
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_top=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_top=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13953,11 +13953,11 @@ __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_i
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -13970,7 +13970,7 @@ __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_i
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCbottom, int BCeast){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -13984,7 +13984,7 @@ __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_bottom=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_bottom=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -13992,11 +13992,11 @@ __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -14009,7 +14009,7 @@ __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCeast){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -14023,7 +14023,7 @@ __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_i
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_top=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_top=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14031,11 +14031,11 @@ __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_i
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -14048,7 +14048,7 @@ __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_i
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 // total 8-vertex
 //(BCtype: Homogeneous-Neumann (0), Periodic (1), Homogeneous-Dirichlet (2))
@@ -14064,7 +14064,7 @@ __global__ void stencil_head_vertex_SWB(double *H_output, const double *H_input,
 	double KC = K[in_idx];
 	double KN;
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_west=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_west=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14073,15 +14073,15 @@ __global__ void stencil_head_vertex_SWB(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	KN = 1.0/(1.0/KC  +  1.0/K[in_idx+1]);
 	result  = (HC-H_input[in_idx+1])*KN;
@@ -14103,7 +14103,7 @@ __global__ void stencil_head_vertex_SWB(double *H_output, const double *H_input,
 	// *************
 	if(pin1stCell) H_output[in_idx] = -2.0*(result+aC*HC)/h*A/h/h/h;
 	else H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCwest, int BCtop){
 	int stride = Nx*Ny;
@@ -14116,7 +14116,7 @@ __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_west=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_west=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14125,15 +14125,15 @@ __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -14147,7 +14147,7 @@ __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input,
 	if(BCtop==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast, int BCbottom){
 	int stride = Nx*Ny;
@@ -14160,7 +14160,7 @@ __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_east=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_east=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14169,15 +14169,15 @@ __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -14191,7 +14191,7 @@ __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input,
 	if(BCbottom==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast, int BCtop){
 	int stride = Nx*Ny;
@@ -14204,7 +14204,7 @@ __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_east=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_east=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14213,15 +14213,15 @@ __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -14235,7 +14235,7 @@ __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input,
 	if(BCtop==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest, int BCbottom){
 	int stride = Nx*Ny;
@@ -14248,7 +14248,7 @@ __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_west=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_west=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14257,15 +14257,15 @@ __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -14279,7 +14279,7 @@ __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input,
 	if(BCbottom==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 __global__ void stencil_head_vertex_NWT(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest, int BCtop){
 	int stride = Nx*Ny;
@@ -14292,7 +14292,7 @@ __global__ void stencil_head_vertex_NWT(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_west=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_west=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14301,15 +14301,15 @@ __global__ void stencil_head_vertex_NWT(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -14336,7 +14336,7 @@ __global__ void stencil_head_vertex_NEB(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_east=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_east=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14345,15 +14345,15 @@ __global__ void stencil_head_vertex_NEB(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -14367,7 +14367,7 @@ __global__ void stencil_head_vertex_NEB(double *H_output, const double *H_input,
 	if(BCbottom==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast, int BCtop){
 	int stride = Nx*Ny;
@@ -14380,7 +14380,7 @@ __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_east=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_east=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -14389,15 +14389,15 @@ __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -14411,12 +14411,12 @@ __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input,
 	if(BCtop==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 
 void stencil_head(double *H_output, const double *H_input, const double *K,
-	int Nx, int Ny, int Nz, double A, double h, 
-	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast, bool pin1stCell, 
+	int Nx, int Ny, int Nz, double A, double h,
+	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast, bool pin1stCell,
 	dim3 grid, dim3 block){
 
 	stencil_head_int		<<<gridXY,blockXY>>>(H_output,H_input,K,Nx,Ny,Nz,A,h);
@@ -14558,10 +14558,10 @@ __device__ inline double psi(const double &c1, const double &c2, const double &c
 // 	routine step Foward Euler (pure advection eq.)
 //#######################################################################
 //-----------------------------------------------------------------------
-__global__ void step_FE_TVD_all_domain(double *phi_out, double *phi_in, 
-	double *Up, double *Vp, double *Wp, 
-	int Nx, int Ny, int Nz, double A, double V_dt, 
-	int BC_WEST, int BC_EAST, int BC_SOUTH, int BC_NORTH, int BC_BOTTOM, int BC_TOP, 
+__global__ void step_FE_TVD_all_domain(double *phi_out, double *phi_in,
+	double *Up, double *Vp, double *Wp,
+	int Nx, int Ny, int Nz, double A, double V_dt,
+	int BC_WEST, int BC_EAST, int BC_SOUTH, int BC_NORTH, int BC_BOTTOM, int BC_TOP,
 	double phi_WEST, double phi_EAST, double phi_SOUTH, double phi_NORTH, double phi_BOTTOM, double phi_TOP){
 
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -14577,7 +14577,7 @@ __global__ void step_FE_TVD_all_domain(double *phi_out, double *phi_in,
 	mb = -Wp[in_idx]*A;
 	// out_idx = in_idx;
 	// in_idx += stride;
-	
+
 	phiT = phi_in[in_idx+stride];
 	phiB = 0.0;
 	// in_idx += stride;
@@ -14589,18 +14589,18 @@ for(int iz=0; iz<Nz; ++iz){
 		phiT = phi_in[in_idx+stride];
 		mb = -mt;
 	}
-		
-	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)	
+
+	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
 	me = Up[(ix+1)+(iy)*(Nx+1)+(iz)*(Nx+1)*Ny]*A; // Adding offsert because Up is of size (Nx+1)*Ny*Nz
-	mw = -Up[(ix)+(iy)*(Nx+1)+(iz)*(Nx+1)*Ny]*A; 
+	mw = -Up[(ix)+(iy)*(Nx+1)+(iz)*(Nx+1)*Ny]*A;
 	mn = Vp[(ix)+(iy+1)*(Nx)+(iz)*Nx*(Ny+1)]*A; // Adding stride because Vp is of size Nx*(Ny+1)*Nz
 	ms = -Vp[(ix)+(iy)*(Nx)+(iz)*Nx*(Ny+1)]*A;
 	result = 0.0;
-	
+
 	// =============================================================
 	phiU  = (ix<=0)    ? 0 : phi_in[in_idx-1];
 	phiUU = (ix<=1)    ? 0 : phi_in[in_idx-2];
-	phiD  = (ix>=Nx-1) ? 0 : phi_in[in_idx+1];	
+	phiD  = (ix>=Nx-1) ? 0 : phi_in[in_idx+1];
 	phiDD = (ix>=Nx-2) ? 0 : phi_in[in_idx+2];
 
 	if ((BC_WEST==outlet) || (BC_WEST==wall) && (ix==1)) phiUU = phiU;
@@ -14613,7 +14613,7 @@ for(int iz=0; iz<Nz; ++iz){
 	if ((BC_EAST==outlet) || (BC_EAST==wall) && (ix==Nx-2)) phiDD = phiD;
 	if ((BC_EAST==inlet) && (ix==Nx-2)) phiDD = 2.0*phi_EAST-phiD;
 	if ((BC_EAST==periodic) && (ix>=Nx-2)) {
-		phiDD = phi_in[in_idx+1+PERIODIC_EAST];	
+		phiDD = phi_in[in_idx+1+PERIODIC_EAST];
 		if (ix==Nx-1) phiD = phi_in[in_idx+PERIODIC_EAST];
 	}
 
@@ -14636,7 +14636,7 @@ for(int iz=0; iz<Nz; ++iz){
 	// =============================================================
 	phiU  = (iy<=0)    ? 0 : phi_in[in_idx-Nx];
 	phiUU = (iy<=1)    ? 0 : phi_in[in_idx-2*Nx];
-	phiD  = (iy>=Ny-1) ? 0 : phi_in[in_idx+Nx];	
+	phiD  = (iy>=Ny-1) ? 0 : phi_in[in_idx+Nx];
 	phiDD = (iy>=Ny-2) ? 0 : phi_in[in_idx+2*Nx];
 
 	if ((BC_SOUTH==outlet) || (BC_SOUTH==wall) && (iy==1)) phiUU = phiU;
@@ -14649,7 +14649,7 @@ for(int iz=0; iz<Nz; ++iz){
 	if ((BC_NORTH==outlet) || (BC_NORTH==wall) && (iy==Ny-2)) phiDD = phiD;
 	if ((BC_NORTH==inlet) && (iy==Ny-2)) phiDD = 2.0*phi_NORTH-phiD;
 	if ((BC_NORTH==periodic) && (iy>=Ny-2)) {
-		phiDD = phi_in[in_idx+Nx+PERIODIC_NORTH];	
+		phiDD = phi_in[in_idx+Nx+PERIODIC_NORTH];
 		if (iy==Ny-1) phiD = phi_in[in_idx+PERIODIC_NORTH];
 	}
 
@@ -14672,7 +14672,7 @@ for(int iz=0; iz<Nz; ++iz){
 	// =============================================================
 	phiU  = (iz<=0)    ? 0 : phiB;
 	phiUU = (iz<=1)    ? 0 : phi_in[in_idx-2*stride];
-	phiD  = (iz>=Nz-1) ? 0 : phiT;	
+	phiD  = (iz>=Nz-1) ? 0 : phiT;
 	phiDD = (iz>=Nz-2) ? 0 : phi_in[in_idx+2*stride];
 
 	if ((BC_BOTTOM==outlet) || (BC_BOTTOM==wall) && (iz==1)) phiUU = phiU;
@@ -14685,7 +14685,7 @@ for(int iz=0; iz<Nz; ++iz){
 	if ((BC_TOP==outlet) || (BC_TOP==wall) && (iz==Nz-2)) phiDD = phiD;
 	if ((BC_TOP==inlet) && (iz==Nz-2)) phiDD = 2.0*phi_TOP-phiD;
 	if ((BC_TOP==periodic) && (iz>=Nz-2)) {
-		phiDD = phi_in[in_idx+stride+PERIODIC_TOP];	
+		phiDD = phi_in[in_idx+stride+PERIODIC_TOP];
 		if (iz==Nz-1) phiD = phi_in[in_idx+PERIODIC_TOP];
 	}
 
@@ -14817,9 +14817,9 @@ __device__ inline double psi(const double &c1, const double &c2, const double &c
 //#######################################################################
 //-----------------------------------------------------------------------
 __global__ void step_FE_TVD_int(
-double *phi_out, double *phi_in, double *Up, 
- double *Vp, 
- double *Wp, 
+double *phi_out, double *phi_in, double *Up,
+ double *Vp,
+ double *Wp,
 int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *momento1x, float *momento2x, float *momento1y, float*momento2y, float *momento1z, float *momento2z, float *C_float){
 	__shared__ double s_phi[1+BLOCK_Nx+1][1+BLOCK_Ny+1];
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -14838,27 +14838,27 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *mo
 
 //-------------------------------------
 // Rhs = temporal-0.5*3Np+0.5Dp-gradP
-//-------------------------------------	
+//-------------------------------------
 	phi_current = phi_in[in_idx];
-	
+
 	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
-	
+
 	out_idx = in_idx;
 	in_idx += stride;
-	
+
 	phi_top = phi_in[in_idx];
 	in_idx += stride;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		if( (tx < Nx-1) && (ty < Ny-1) ){
 			phi_bottom = phi_current;
 			phi_current = phi_top;
 			phi_top = phi_in[in_idx];
-			
+
 			in_idx += stride;
 			out_idx += stride;
-			
+
 			mb = -mt;
-			mt = Wp[out_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)	
+			mt = Wp[out_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
 
 			if(tx==1) s_phi[0][ty] = phi_in[out_idx-1];
 			if(ix==Nx-3 || tx==BLOCK_Nx) s_phi[tx+1][ty] = phi_in[out_idx+1];
@@ -14868,7 +14868,7 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *mo
 			s_phi[tx][ty] = phi_current;
 
 			me = Up[(ix+1+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A; // Adding offsert because Up is of size (Nx+1)*Ny*Nz
-			mw = -Up[(ix+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A; 
+			mw = -Up[(ix+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A;
 			mn = Vp[(ix+1)+(iy+1+1)*(Nx)+(i)*Nx*(Ny+1)]*A; // Adding stride because Vp is of size Nx*(Ny+1)*Nz
 			ms = -Vp[(ix+1)+(iy+1)*(Nx)+(i)*Nx*(Ny+1)]*A;
 			__syncthreads();
@@ -14878,25 +14878,25 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *mo
 				+mimax(mt,0.0)+mimax(mb,0.0);
 // =============================================================
 if(ix>0 && ix<Nx-3 && iy>0 && iy<Ny-3 && i>1 && i<Nz-2){
-	west = (ix==1) ? - ( -mimax(-mw, 0.0) )*s_phi[tx-1][ty] - mimax(mw,0.0)*phi_current 
+	west = (ix==1) ? - ( -mimax(-mw, 0.0) )*s_phi[tx-1][ty] - mimax(mw,0.0)*phi_current
 				   : - ( phi_current+0.5*psiWplus1*(s_phi[tx-1][ty]-phi_current) )*mimax(mw,0.0) + (s_phi[tx-1][ty]+0.5*psiWminus1*(phi_current-s_phi[tx-1][ty]))*mimax(-mw,0.0);
 
-	east = (ix==Nx-4) ? - ( -mimax(-me, 0.0) )*s_phi[tx+1][ty] - mimax(me,0.0)*phi_current 
+	east = (ix==Nx-4) ? - ( -mimax(-me, 0.0) )*s_phi[tx+1][ty] - mimax(me,0.0)*phi_current
 				      : - ( phi_current+0.5*psiEplus1*(s_phi[tx+1][ty]-phi_current) )*mimax(me,0.0) + (s_phi[tx+1][ty]+0.5*psiEminus1*(phi_current-s_phi[tx+1][ty]))*mimax(-me,0.0);
 
-	south = (iy==1) ? - ( -mimax(-ms, 0.0) )*s_phi[tx][ty-1] - mimax(ms,0.0)*phi_current 
+	south = (iy==1) ? - ( -mimax(-ms, 0.0) )*s_phi[tx][ty-1] - mimax(ms,0.0)*phi_current
 				    : - ( phi_current+0.5*psiSplus1*(s_phi[tx][ty-1]-phi_current) )*mimax(ms,0.0) + (s_phi[tx][ty-1]+0.5*psiSminus1*(phi_current-s_phi[tx][ty-1]))*mimax(-ms,0.0);
 
-	north = (iy==Ny-4) ? - ( -mimax(-mn, 0.0) )*s_phi[tx][ty+1] - mimax(mn,0.0)*phi_current 
+	north = (iy==Ny-4) ? - ( -mimax(-mn, 0.0) )*s_phi[tx][ty+1] - mimax(mn,0.0)*phi_current
 					   : - ( phi_current+0.5*psiNplus1*(s_phi[tx][ty+1]-phi_current) )*mimax(mn,0.0) + (s_phi[tx][ty+1]+0.5*psiNminus1*(phi_current-s_phi[tx][ty+1]))*mimax(-mn,0.0);
 
-	bottom = (i==2) ? - ( -mimax(-mb, 0.0) )*phi_bottom - mimax(mb,0.0)*phi_current 
+	bottom = (i==2) ? - ( -mimax(-mb, 0.0) )*phi_bottom - mimax(mb,0.0)*phi_current
 				    : - ( phi_current+0.5*psiBplus1*(phi_bottom-phi_current) )*mimax(mb,0.0) + (phi_bottom+0.5*psiBminus1*(phi_current-phi_bottom))*mimax(-mb,0.0);
-				    
-	top = (i==Nz-3) ? - ( -mimax(-mt, 0.0) )*phi_top - mimax(mt,0.0)*phi_current 
-					: - ( phi_current+0.5*psiTplus1*(phi_top-phi_current) )*mimax(mt,0.0) + (phi_top+0.5*psiTminus1*(phi_current-phi_top))*mimax(-mt,0.0);								   
-	phi_out[out_idx] = 
-	1.0/V_dt*( 
+
+	top = (i==Nz-3) ? - ( -mimax(-mt, 0.0) )*phi_top - mimax(mt,0.0)*phi_current
+					: - ( phi_current+0.5*psiTplus1*(phi_top-phi_current) )*mimax(mt,0.0) + (phi_top+0.5*psiTminus1*(phi_current-phi_top))*mimax(-mt,0.0);
+	phi_out[out_idx] =
+	1.0/V_dt*(
 		   (V_dt-nuA_h*6.0)*phi_current
 	+ nuA_h* ( s_phi[tx+1][ty]+s_phi[tx-1][ty]
 		      +s_phi[tx][ty+1]+s_phi[tx][ty-1]
@@ -14904,7 +14904,7 @@ if(ix>0 && ix<Nx-3 && iy>0 && iy<Ny-3 && i>1 && i<Nz-2){
 	+ east + west + north + south + top + bottom    //TVD - adv contrib
 	         );
 } else { // upwind scheme
-	phi_out[out_idx] = 
+	phi_out[out_idx] =
 	1.0/V_dt*(
 		(V_dt-nuA_h*6.0 - mc)*phi_current
 	+ (nuA_h + mimax(-me, 0.0)) *s_phi[tx+1][ty]
@@ -15208,9 +15208,9 @@ __device__ inline double psi(const double &c1, const double &c2, const double &c
 //#######################################################################
 //-----------------------------------------------------------------------
 __global__ void step_FE_TVD_int(
-double *phi_out, double *phi_in, double *Up, 
- double *Vp, 
- double *Wp, 
+double *phi_out, double *phi_in, double *Up,
+ double *Vp,
+ double *Wp,
 int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h){
 	__shared__ double s_phi[1+BLOCK_Nx+1][1+BLOCK_Ny+1];
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -15229,27 +15229,27 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h){
 
 //-------------------------------------
 // Rhs = temporal-0.5*3Np+0.5Dp-gradP
-//-------------------------------------	
+//-------------------------------------
 	phi_current = phi_in[in_idx];
-	
+
 	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
-	
+
 	out_idx = in_idx;
 	in_idx += stride;
-	
+
 	phi_top = phi_in[in_idx];
 	in_idx += stride;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		if( (tx < Nx-1) && (ty < Ny-1) ){
 			phi_bottom = phi_current;
 			phi_current = phi_top;
 			phi_top = phi_in[in_idx];
-			
+
 			in_idx += stride;
 			out_idx += stride;
-			
+
 			mb = -mt;
-			mt = Wp[out_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)	
+			mt = Wp[out_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
 
 			if(tx==1) s_phi[0][ty] = phi_in[out_idx-1];
 			if(ix==Nx-3 || tx==BLOCK_Nx) s_phi[tx+1][ty] = phi_in[out_idx+1];
@@ -15259,7 +15259,7 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h){
 			s_phi[tx][ty] = phi_current;
 
 			me = Up[(ix+1+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A; // Adding offsert because Up is of size (Nx+1)*Ny*Nz
-			mw = -Up[(ix+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A; 
+			mw = -Up[(ix+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A;
 			mn = Vp[(ix+1)+(iy+1+1)*(Nx)+(i)*Nx*(Ny+1)]*A; // Adding stride because Vp is of size Nx*(Ny+1)*Nz
 			ms = -Vp[(ix+1)+(iy+1)*(Nx)+(i)*Nx*(Ny+1)]*A;
 			__syncthreads();
@@ -15269,25 +15269,25 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h){
 				+mimax(mt,0.0)+mimax(mb,0.0);
 // =============================================================
 if(ix>0 && ix<Nx-3 && iy>0 && iy<Ny-3 && i>1 && i<Nz-2){
-	west = (ix==1) ? - ( -mimax(-mw, 0.0) )*s_phi[tx-1][ty] - mimax(mw,0.0)*phi_current 
+	west = (ix==1) ? - ( -mimax(-mw, 0.0) )*s_phi[tx-1][ty] - mimax(mw,0.0)*phi_current
 				   : - ( phi_current+0.5*psiWplus1*(s_phi[tx-1][ty]-phi_current) )*mimax(mw,0.0) + (s_phi[tx-1][ty]+0.5*psiWminus1*(phi_current-s_phi[tx-1][ty]))*mimax(-mw,0.0);
 
-	east = (ix==Nx-4) ? - ( -mimax(-me, 0.0) )*s_phi[tx+1][ty] - mimax(me,0.0)*phi_current 
+	east = (ix==Nx-4) ? - ( -mimax(-me, 0.0) )*s_phi[tx+1][ty] - mimax(me,0.0)*phi_current
 				      : - ( phi_current+0.5*psiEplus1*(s_phi[tx+1][ty]-phi_current) )*mimax(me,0.0) + (s_phi[tx+1][ty]+0.5*psiEminus1*(phi_current-s_phi[tx+1][ty]))*mimax(-me,0.0);
 
-	south = (iy==1) ? - ( -mimax(-ms, 0.0) )*s_phi[tx][ty-1] - mimax(ms,0.0)*phi_current 
+	south = (iy==1) ? - ( -mimax(-ms, 0.0) )*s_phi[tx][ty-1] - mimax(ms,0.0)*phi_current
 				    : - ( phi_current+0.5*psiSplus1*(s_phi[tx][ty-1]-phi_current) )*mimax(ms,0.0) + (s_phi[tx][ty-1]+0.5*psiSminus1*(phi_current-s_phi[tx][ty-1]))*mimax(-ms,0.0);
 
-	north = (iy==Ny-4) ? - ( -mimax(-mn, 0.0) )*s_phi[tx][ty+1] - mimax(mn,0.0)*phi_current 
+	north = (iy==Ny-4) ? - ( -mimax(-mn, 0.0) )*s_phi[tx][ty+1] - mimax(mn,0.0)*phi_current
 					   : - ( phi_current+0.5*psiNplus1*(s_phi[tx][ty+1]-phi_current) )*mimax(mn,0.0) + (s_phi[tx][ty+1]+0.5*psiNminus1*(phi_current-s_phi[tx][ty+1]))*mimax(-mn,0.0);
 
-	bottom = (i==2) ? - ( -mimax(-mb, 0.0) )*phi_bottom - mimax(mb,0.0)*phi_current 
+	bottom = (i==2) ? - ( -mimax(-mb, 0.0) )*phi_bottom - mimax(mb,0.0)*phi_current
 				    : - ( phi_current+0.5*psiBplus1*(phi_bottom-phi_current) )*mimax(mb,0.0) + (phi_bottom+0.5*psiBminus1*(phi_current-phi_bottom))*mimax(-mb,0.0);
-				    
-	top = (i==Nz-3) ? - ( -mimax(-mt, 0.0) )*phi_top - mimax(mt,0.0)*phi_current 
-					: - ( phi_current+0.5*psiTplus1*(phi_top-phi_current) )*mimax(mt,0.0) + (phi_top+0.5*psiTminus1*(phi_current-phi_top))*mimax(-mt,0.0);								   
-	phi_out[out_idx] = 
-	1.0/V_dt*( 
+
+	top = (i==Nz-3) ? - ( -mimax(-mt, 0.0) )*phi_top - mimax(mt,0.0)*phi_current
+					: - ( phi_current+0.5*psiTplus1*(phi_top-phi_current) )*mimax(mt,0.0) + (phi_top+0.5*psiTminus1*(phi_current-phi_top))*mimax(-mt,0.0);
+	phi_out[out_idx] =
+	1.0/V_dt*(
 		   (V_dt-nuA_h*6.0)*phi_current
 	+ nuA_h* ( s_phi[tx+1][ty]+s_phi[tx-1][ty]
 		      +s_phi[tx][ty+1]+s_phi[tx][ty-1]
@@ -15295,7 +15295,7 @@ if(ix>0 && ix<Nx-3 && iy>0 && iy<Ny-3 && i>1 && i<Nz-2){
 	+ east + west + north + south + top + bottom    //TVD - adv contrib
 	         );
 } else { // upwind scheme
-	phi_out[out_idx] = 
+	phi_out[out_idx] =
 	1.0/V_dt*(
 		(V_dt-nuA_h*6.0 - mc)*phi_current
 	+ (nuA_h + mimax(-me, 0.0)) *s_phi[tx+1][ty]
@@ -15497,8 +15497,8 @@ cudaDeviceSynchronize();
 ```cu
 /**
 * @file transf_operator_3D.cu
-* @brief Constant piecewise transfer operator and homogenization technique  
-* for the conductivity coefficient of the coarse grid operator A2h,  
+* @brief Constant piecewise transfer operator and homogenization technique
+* for the conductivity coefficient of the coarse grid operator A2h,
 * used in the cell-centered multigrid method.
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -15548,10 +15548,10 @@ __global__ void CompactHomogenizationKtensor(double *phiCoarse, const double *ph
 		IN_IDX = IX + IY*NX + IZ*STRIDE;
 		in_idx = ix + iy*Nx + iz*stride;
 		result = 0.0;
-		result += ( log(phiFine[in_idx]) + log(phiFine[in_idx+1]) 
+		result += ( log(phiFine[in_idx]) + log(phiFine[in_idx+1])
 			      + log(phiFine[in_idx+Nx]) + log(phiFine[in_idx+1+Nx]) );
 
-		result += ( log(phiFine[in_idx+stride]) + log(phiFine[in_idx+1+stride]) 
+		result += ( log(phiFine[in_idx+stride]) + log(phiFine[in_idx+1+stride])
 			      + log(phiFine[in_idx+Nx+stride]) + log(phiFine[in_idx+1+Nx+stride]) );
 
 		phiCoarse[IN_IDX] = exp(result/8.0);
@@ -15567,7 +15567,7 @@ void HomogenizationPermeability(double *phiCoarse, const double *phiFine, int Nx
 
 //#######################################################################
 //  Routine for restriction (R operator), used in MG-Cycle (CCMG)
-//  Linear restriction: transfers a piecewise constant function 
+//  Linear restriction: transfers a piecewise constant function
 //  from a fine grid to a coarse grid
 //#######################################################################
 __global__ void restriction_linear3D(double *phiCoarse, const double *phiFine, int NX, int NY, int NZ){
@@ -15587,10 +15587,10 @@ __global__ void restriction_linear3D(double *phiCoarse, const double *phiFine, i
 		IN_IDX = IX + IY*NX + IZ*STRIDE;
 		in_idx = ix + iy*Nx + iz*stride;
 		result = 0.0;
-		result += phiFine[in_idx] + phiFine[in_idx+1] 
+		result += phiFine[in_idx] + phiFine[in_idx+1]
 			    + phiFine[in_idx+Nx] + phiFine[in_idx+1+Nx];
 
-		result += phiFine[in_idx+stride] + phiFine[in_idx+1+stride] 
+		result += phiFine[in_idx+stride] + phiFine[in_idx+1+stride]
 			    + phiFine[in_idx+Nx+stride] + phiFine[in_idx+1+Nx+stride];
 
 		phiCoarse[IN_IDX] = result/8.0;
@@ -15604,7 +15604,7 @@ void restriction(double *phiCoarse, const double *phiFine, int Nx, int Ny, int N
 
 //#######################################################################
 //  Routine for prolongation (P operator), used in MG-Cycle (CCMG)
-//  Linear prolongation: transfers a piecewise constant function 
+//  Linear prolongation: transfers a piecewise constant function
 //  from a coarse grid to a fine grid
 //#######################################################################
 __global__ void prolongation_interior_linear3D(double *phiFine, const double *phiCoarse, int Nx, int Ny, int Nz){
@@ -15624,7 +15624,7 @@ __global__ void prolongation_interior_linear3D(double *phiFine, const double *ph
 		IZ = iz/2;
 		in_idx = (ix+1) + (iy+1)*Nx + (iz+1)*Nx*Ny;
 		IN_IDX = (IX) + (IY)*NX + (IZ)*NX*NY;
-		
+
 		phiFine[in_idx] += phiCoarse[IN_IDX+fx+fy*NX+fz*NX*NY];
 	}
 }
@@ -16060,7 +16060,7 @@ __global__ void update_int(double *r_out, double *h_in, const double *rhs, const
 		h_top = h_in[in_idx];
 		K_bottom = K_current;
 		K_current = K_top;
-		K_top = K[in_idx];		
+		K_top = K[in_idx];
 		in_idx += stride;
 		out_idx += stride;
 		result=0.0;
@@ -16211,7 +16211,7 @@ __global__ void update_edge_X_South_Bottom(double *r_out, double *h_in, const do
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride]);
@@ -16233,7 +16233,7 @@ __global__ void update_edge_X_South_Top(double *r_out, double *h_in, const doubl
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride]);
@@ -16255,7 +16255,7 @@ __global__ void update_edge_X_North_Bottom(double *r_out, double *h_in, const do
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride]);
@@ -16264,7 +16264,7 @@ __global__ void update_edge_X_North_Bottom(double *r_out, double *h_in, const do
 	if(BCnorth==dirichlet) result -= 2.0*HC*KC;
 	if(BCbottom==dirichlet) result -= 2.0*HC*KC;
 	r_out[in_idx] = rhs[in_idx] - result/dxdx;
-}	
+}
 
 __global__ void update_edge_X_North_Top(double *r_out, double *h_in, const double *rhs, const double *K, double dxdx, int Nx, int Ny, int Nz, int BCnorth, int BCtop){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -16277,7 +16277,7 @@ __global__ void update_edge_X_North_Top(double *r_out, double *h_in, const doubl
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride]);
@@ -16299,7 +16299,7 @@ __global__ void update_edge_Z_South_West(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -16321,7 +16321,7 @@ __global__ void update_edge_Z_South_East(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -16343,7 +16343,7 @@ __global__ void update_edge_Z_North_West(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -16365,7 +16365,7 @@ __global__ void update_edge_Z_North_East(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -16387,7 +16387,7 @@ __global__ void update_edge_Y_West_Bottom(double *r_out, double *h_in, const dou
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ])     /  (1.0/KC  +  1.0/K[in_idx+stride     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -16409,7 +16409,7 @@ __global__ void update_edge_Y_West_Top(double *r_out, double *h_in, const double
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ])     /  (1.0/KC  +  1.0/K[in_idx-stride     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -16431,7 +16431,7 @@ __global__ void update_edge_Y_East_Bottom(double *r_out, double *h_in, const dou
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ])     /  (1.0/KC  +  1.0/K[in_idx+stride     ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -16453,7 +16453,7 @@ __global__ void update_edge_Y_East_Top(double *r_out, double *h_in, const double
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ])     /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -16477,7 +16477,7 @@ __global__ void update_vertex_SWB(double *r_out, double *h_in, const double *rhs
 	double KN = 0.0;
 	result=0.0;
 	KN = 2.0/  (1.0/KC  +  1.0/K[in_idx+Nx]);
-	result -= (HC - h_in[in_idx+Nx])*KN;	
+	result -= (HC - h_in[in_idx+Nx])*KN;
 	aC += KN;
 
 	KN = 2.0/  (1.0/KC  +  1.0/K[in_idx+stride   ]);
@@ -16509,7 +16509,7 @@ __global__ void update_vertex_SWT(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -16531,7 +16531,7 @@ __global__ void update_vertex_SEB(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ]) /  (1.0/KC  +  1.0/K[in_idx+stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCbottom==periodic) result -= 2.0*(HC - h_in[in_idx+(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride ]);
@@ -16553,7 +16553,7 @@ __global__ void update_vertex_SET(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -16575,7 +16575,7 @@ __global__ void update_vertex_NEB(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ]) /  (1.0/KC  +  1.0/K[in_idx+stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCbottom==periodic) result -= 2.0*(HC - h_in[in_idx+(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride ]);
@@ -16597,7 +16597,7 @@ __global__ void update_vertex_NET(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -16619,7 +16619,7 @@ __global__ void update_vertex_NWB(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ]) /  (1.0/KC  +  1.0/K[in_idx+stride   ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
 	if(BCbottom==periodic) result -= 2.0*(HC - h_in[in_idx+(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride ]);
@@ -16641,7 +16641,7 @@ __global__ void update_vertex_NWT(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -16700,4 +16700,3 @@ update_vertex_NWT<<<1,1>>>(rk_1,xk,rhs,K,dxdx,Nx,Ny,Nz,BCnorth,BCwest,BCtop);
 cudaDeviceSynchronize();
 }
 ```
-

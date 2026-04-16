@@ -56,17 +56,17 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 
 	// const int tx = threadIdx.x + 1;
 	// const int ty = threadIdx.y + 1;
-	
+
 	H_current = H_input[in_idx];
 	K_current = K[in_idx];
 	out_idx = in_idx;
 	in_idx += stride;
-	
+
 	H_top = H_input[in_idx];
 	K_top = K[in_idx];
 	in_idx += stride;
 	double value;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		// if( (tx < Nx-1) && (ty < Ny-1) ){
 			H_bottom = H_current;
 			H_current = H_top;
@@ -81,8 +81,8 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 			// if(tx==1){
 			// 	s_H[0][ty]    = H_input[out_idx-1];
 			// 	s_K[0][ty]    = K[out_idx-1];
-			// }                    
-			// if(ix==Nx-3 || tx==BLOCK_Nx){ 
+			// }
+			// if(ix==Nx-3 || tx==BLOCK_Nx){
 			// 	s_H[tx+1][ty] = H_input[out_idx+1];
 			// 	s_K[tx+1][ty] = K[out_idx+1];
 			// }
@@ -94,7 +94,7 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 			// if(iy==Ny-3 || ty==BLOCK_Ny){
 			// 	s_H[tx][ty+1] = H_input[out_idx+Nx];
 			// 	s_K[tx][ty+1] = K[out_idx+Nx];
-			// } 
+			// }
 
 			// s_H[tx][ty] = H_current;
 			// s_K[tx][ty] = K_current;
@@ -118,7 +118,7 @@ __global__ void stencil_head_int(double *H_output, const double *H_input, const 
 	}
 }
 
-// total 6-faces 
+// total 6-faces
 // xy-face (BCtype: Homogeneous-Neumann (0), Periodic (1), Homogeneous-Dirichlet (2))
 __global__ void stencil_head_side_bottom(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtype){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -140,7 +140,7 @@ __global__ void stencil_head_side_bottom(double *H_output, const double *H_input
 	if(BCtype==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
     // *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -174,7 +174,7 @@ __global__ void stencil_head_side_top(double *H_output, const double *H_input, c
 	if(BCtype==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -197,7 +197,7 @@ __global__ void stencil_head_side_south(double *H_output, const double *H_input,
 	int in_idx;
 	int iy = 0;
 	in_idx = (ix + 1) + iy*Nx + (iz + 1)*stride;
-	
+
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
@@ -209,7 +209,7 @@ __global__ void stencil_head_side_south(double *H_output, const double *H_input,
 	if(BCtype==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -232,11 +232,11 @@ __global__ void stencil_head_side_north(double *H_output, const double *H_input,
 	int in_idx;
 	int iy = Ny-1;
 	in_idx = (ix + 1) + iy*Nx + (iz + 1)*stride;
-	
+
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet	
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north = HC; //factor (HC-H_north) is zero 0
 	double K_north = KC; //(1.0/KC+1.0/K_north) <- \neq0
 	double result=0.0;
@@ -244,7 +244,7 @@ __global__ void stencil_head_side_north(double *H_output, const double *H_input,
 	if(BCtype==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -271,7 +271,7 @@ __global__ void stencil_head_side_west(double *H_output, const double *H_input, 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet	
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_west=HC; //factor (HC-H_west) is zero 0
 	double K_west=KC; //(1.0/KC+1.0/K_west) <- \neq0
 	double result=0.0;
@@ -279,7 +279,7 @@ __global__ void stencil_head_side_west(double *H_output, const double *H_input, 
 	if(BCtype==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -306,7 +306,7 @@ __global__ void stencil_head_side_east(double *H_output, const double *H_input, 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet	
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_east=HC; //factor (HC-H_west) is zero 0
 	double K_east=KC; //(1.0/KC+1.0/K_west) <- \neq0
 	double result=0.0;
@@ -314,7 +314,7 @@ __global__ void stencil_head_side_east(double *H_output, const double *H_input, 
 	if(BCtype==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -342,7 +342,7 @@ __global__ void stencil_head_edge_X_South_Bottom(double *H_output, const double 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC, H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC, K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -350,11 +350,11 @@ __global__ void stencil_head_edge_X_South_Bottom(double *H_output, const double 
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -381,7 +381,7 @@ __global__ void stencil_head_edge_X_South_Top(double *H_output, const double *H_
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC, H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC, K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -389,11 +389,11 @@ __global__ void stencil_head_edge_X_South_Top(double *H_output, const double *H_
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -420,7 +420,7 @@ __global__ void stencil_head_edge_X_North_Bottom(double *H_output, const double 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -428,11 +428,11 @@ __global__ void stencil_head_edge_X_North_Bottom(double *H_output, const double 
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -459,7 +459,7 @@ __global__ void stencil_head_edge_X_North_Top(double *H_output, const double *H_
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -467,11 +467,11 @@ __global__ void stencil_head_edge_X_North_Top(double *H_output, const double *H_
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -495,12 +495,12 @@ __global__ void stencil_head_edge_Z_South_West(double *H_output, const double *H
 	int ix = 0;
 	int iy = 0;
 	int in_idx;
-	in_idx = ix + iy*Nx + (iz+1)*stride;	
+	in_idx = ix + iy*Nx + (iz+1)*stride;
 
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -508,11 +508,11 @@ __global__ void stencil_head_edge_Z_South_West(double *H_output, const double *H
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -525,7 +525,7 @@ __global__ void stencil_head_edge_Z_South_West(double *H_output, const double *H
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -539,7 +539,7 @@ __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -547,11 +547,11 @@ __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -564,7 +564,7 @@ __global__ void stencil_head_edge_Z_South_East(double *H_output, const double *H
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
@@ -578,7 +578,7 @@ __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -586,11 +586,11 @@ __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -603,9 +603,9 @@ __global__ void stencil_head_edge_Z_North_West(double *H_output, const double *H
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
-__global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast){	
+__global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast){
 	int iz = threadIdx.x + blockIdx.x*blockDim.x;
 	if (iz >= Nz-2) return;
 	int stride = Nx*Ny;
@@ -617,7 +617,7 @@ __global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -625,11 +625,11 @@ __global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -642,7 +642,7 @@ __global__ void stencil_head_edge_Z_North_East(double *H_output, const double *H
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 
 // total 4-Y-vertex
@@ -659,7 +659,7 @@ __global__ void stencil_head_edge_Y_Bottom_West(double *H_output, const double *
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_bottom=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_bottom=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -667,11 +667,11 @@ __global__ void stencil_head_edge_Y_Bottom_West(double *H_output, const double *
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -684,7 +684,7 @@ __global__ void stencil_head_edge_Y_Bottom_West(double *H_output, const double *
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCwest){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -698,7 +698,7 @@ __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_i
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_top=HC,H_west=HC; //factor (HC-H_boundary) is zero 0
 	double K_top=KC,K_west=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -706,11 +706,11 @@ __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_i
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -723,7 +723,7 @@ __global__ void stencil_head_edge_Y_Top_West(double *H_output, const double *H_i
 	if(BCwest==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCbottom, int BCeast){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -737,7 +737,7 @@ __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_bottom=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_bottom=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -745,11 +745,11 @@ __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -762,7 +762,7 @@ __global__ void stencil_head_edge_Y_Bottom_East(double *H_output, const double *
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCtop, int BCeast){
 	int iy = threadIdx.x + blockIdx.x*blockDim.x;
@@ -776,7 +776,7 @@ __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_i
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_top=HC,H_east=HC; //factor (HC-H_boundary) is zero 0
 	double K_top=KC,K_east=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -784,11 +784,11 @@ __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_i
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -801,7 +801,7 @@ __global__ void stencil_head_edge_Y_Top_East(double *H_output, const double *H_i
 	if(BCeast==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 // total 8-vertex
 //(BCtype: Homogeneous-Neumann (0), Periodic (1), Homogeneous-Dirichlet (2))
@@ -817,7 +817,7 @@ __global__ void stencil_head_vertex_SWB(double *H_output, const double *H_input,
 	double KC = K[in_idx];
 	double KN;
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_west=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_west=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -826,15 +826,15 @@ __global__ void stencil_head_vertex_SWB(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	KN = 1.0/(1.0/KC  +  1.0/K[in_idx+1]);
 	result  = (HC-H_input[in_idx+1])*KN;
@@ -856,7 +856,7 @@ __global__ void stencil_head_vertex_SWB(double *H_output, const double *H_input,
 	// *************
 	if(pin1stCell) H_output[in_idx] = -2.0*(result+aC*HC)/h*A/h/h/h;
 	else H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCwest, int BCtop){
 	int stride = Nx*Ny;
@@ -869,7 +869,7 @@ __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_west=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_west=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -878,15 +878,15 @@ __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -900,7 +900,7 @@ __global__ void stencil_head_vertex_SWT(double *H_output, const double *H_input,
 	if(BCtop==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast, int BCbottom){
 	int stride = Nx*Ny;
@@ -913,7 +913,7 @@ __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_east=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_east=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -922,15 +922,15 @@ __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -944,7 +944,7 @@ __global__ void stencil_head_vertex_SEB(double *H_output, const double *H_input,
 	if(BCbottom==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCsouth, int BCeast, int BCtop){
 	int stride = Nx*Ny;
@@ -957,7 +957,7 @@ __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_south=HC,H_east=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_south=KC,K_east=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -966,15 +966,15 @@ __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input,
 	if(BCsouth==periodic) {
 		H_south = H_input[in_idx+(Ny-1)*Nx];
 		K_south = K[in_idx+(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx+Nx])     /  (1.0/KC  +  1.0/K[in_idx+Nx]);
@@ -988,7 +988,7 @@ __global__ void stencil_head_vertex_SET(double *H_output, const double *H_input,
 	if(BCtop==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest, int BCbottom){
 	int stride = Nx*Ny;
@@ -1001,7 +1001,7 @@ __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_west=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_west=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -1010,15 +1010,15 @@ __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -1032,7 +1032,7 @@ __global__ void stencil_head_vertex_NWB(double *H_output, const double *H_input,
 	if(BCbottom==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}			
+}
 
 __global__ void stencil_head_vertex_NWT(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCwest, int BCtop){
 	int stride = Nx*Ny;
@@ -1045,7 +1045,7 @@ __global__ void stencil_head_vertex_NWT(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_west=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_west=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -1054,15 +1054,15 @@ __global__ void stencil_head_vertex_NWT(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCwest==periodic) {
 		H_west = H_input[in_idx+(Nx-1)];
 		K_west = K[in_idx+(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx+1])      /  (1.0/KC  +  1.0/K[in_idx+1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -1089,7 +1089,7 @@ __global__ void stencil_head_vertex_NEB(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_east=HC,H_bottom=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_east=KC,K_bottom=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -1098,15 +1098,15 @@ __global__ void stencil_head_vertex_NEB(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCbottom==periodic) {
 		H_bottom = H_input[in_idx+(Nz-1)*stride];
 		K_bottom = K[in_idx+(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -1120,7 +1120,7 @@ __global__ void stencil_head_vertex_NEB(double *H_output, const double *H_input,
 	if(BCbottom==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}		
+}
 
 __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input, const double *K, int Nx, int Ny, int Nz, double A, double h, int BCnorth, int BCeast, int BCtop){
 	int stride = Nx*Ny;
@@ -1133,7 +1133,7 @@ __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input,
 	double HC = H_input[in_idx];
 	double KC = K[in_idx];
 	// *************
-	//default BCtype Homogeneous - Neumann or dirichlet		
+	//default BCtype Homogeneous - Neumann or dirichlet
 	double H_north=HC,H_east=HC,H_top=HC; //factor (HC-H_boundary) is zero 0
 	double K_north=KC,K_east=KC,K_top=KC; //factor (1.0/KC+1.0/K_boundary) <- \neq0
 	double result=0.0;
@@ -1142,15 +1142,15 @@ __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input,
 	if(BCnorth==periodic) {
 		H_north = H_input[in_idx-(Ny-1)*Nx];
 		K_north = K[in_idx-(Ny-1)*Nx];
-	} 
+	}
 	if(BCeast==periodic) {
 		H_east = H_input[in_idx-(Nx-1)];
 		K_east = K[in_idx-(Nx-1)];
-	} 
+	}
 	if(BCtop==periodic) {
 		H_top = H_input[in_idx-(Nz-1)*stride];
 		K_top = K[in_idx-(Nz-1)*stride];
-	} 
+	}
 	// *************
 	result  = (HC-H_input[in_idx-1])      /  (1.0/KC  +  1.0/K[in_idx-1]);
 	result += (HC-H_input[in_idx-Nx])     /  (1.0/KC  +  1.0/K[in_idx-Nx]);
@@ -1164,12 +1164,12 @@ __global__ void stencil_head_vertex_NET(double *H_output, const double *H_input,
 	if(BCtop==dirichlet) result += HC*KC; //dirichlet contribution
 	// *************
 	H_output[in_idx] = -2.0*result/h*A/h/h/h;
-}	
+}
 
 
 void stencil_head(double *H_output, const double *H_input, const double *K,
-	int Nx, int Ny, int Nz, double A, double h, 
-	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast, bool pin1stCell, 
+	int Nx, int Ny, int Nz, double A, double h,
+	int BCbottom, int BCtop, int BCsouth, int BCnorth, int BCwest, int BCeast, bool pin1stCell,
 	dim3 grid, dim3 block){
 
 	stencil_head_int		<<<gridXY,blockXY>>>(H_output,H_input,K,Nx,Ny,Nz,A,h);

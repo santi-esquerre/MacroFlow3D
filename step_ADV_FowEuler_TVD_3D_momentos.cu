@@ -93,9 +93,9 @@ __device__ inline double psi(const double &c1, const double &c2, const double &c
 //#######################################################################
 //-----------------------------------------------------------------------
 __global__ void step_FE_TVD_int(
-double *phi_out, double *phi_in, double *Up, 
- double *Vp, 
- double *Wp, 
+double *phi_out, double *phi_in, double *Up,
+ double *Vp,
+ double *Wp,
 int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *momento1x, float *momento2x, float *momento1y, float*momento2y, float *momento1z, float *momento2z, float *C_float){
 	__shared__ double s_phi[1+BLOCK_Nx+1][1+BLOCK_Ny+1];
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -114,27 +114,27 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *mo
 
 //-------------------------------------
 // Rhs = temporal-0.5*3Np+0.5Dp-gradP
-//-------------------------------------	
+//-------------------------------------
 	phi_current = phi_in[in_idx];
-	
+
 	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
-	
+
 	out_idx = in_idx;
 	in_idx += stride;
-	
+
 	phi_top = phi_in[in_idx];
 	in_idx += stride;
-	for(int i=1; i<Nz-1; ++i){ 
+	for(int i=1; i<Nz-1; ++i){
 		if( (tx < Nx-1) && (ty < Ny-1) ){
 			phi_bottom = phi_current;
 			phi_current = phi_top;
 			phi_top = phi_in[in_idx];
-			
+
 			in_idx += stride;
 			out_idx += stride;
-			
+
 			mb = -mt;
-			mt = Wp[out_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)	
+			mt = Wp[out_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
 
 			if(tx==1) s_phi[0][ty] = phi_in[out_idx-1];
 			if(ix==Nx-3 || tx==BLOCK_Nx) s_phi[tx+1][ty] = phi_in[out_idx+1];
@@ -144,7 +144,7 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *mo
 			s_phi[tx][ty] = phi_current;
 
 			me = Up[(ix+1+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A; // Adding offsert because Up is of size (Nx+1)*Ny*Nz
-			mw = -Up[(ix+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A; 
+			mw = -Up[(ix+1)+(iy+1)*(Nx+1)+(i)*(Nx+1)*Ny]*A;
 			mn = Vp[(ix+1)+(iy+1+1)*(Nx)+(i)*Nx*(Ny+1)]*A; // Adding stride because Vp is of size Nx*(Ny+1)*Nz
 			ms = -Vp[(ix+1)+(iy+1)*(Nx)+(i)*Nx*(Ny+1)]*A;
 			__syncthreads();
@@ -154,25 +154,25 @@ int Nx, int Ny, int Nz, double A, double V_dt, double nuA_h, double h, float *mo
 				+mimax(mt,0.0)+mimax(mb,0.0);
 // =============================================================
 if(ix>0 && ix<Nx-3 && iy>0 && iy<Ny-3 && i>1 && i<Nz-2){
-	west = (ix==1) ? - ( -mimax(-mw, 0.0) )*s_phi[tx-1][ty] - mimax(mw,0.0)*phi_current 
+	west = (ix==1) ? - ( -mimax(-mw, 0.0) )*s_phi[tx-1][ty] - mimax(mw,0.0)*phi_current
 				   : - ( phi_current+0.5*psiWplus1*(s_phi[tx-1][ty]-phi_current) )*mimax(mw,0.0) + (s_phi[tx-1][ty]+0.5*psiWminus1*(phi_current-s_phi[tx-1][ty]))*mimax(-mw,0.0);
 
-	east = (ix==Nx-4) ? - ( -mimax(-me, 0.0) )*s_phi[tx+1][ty] - mimax(me,0.0)*phi_current 
+	east = (ix==Nx-4) ? - ( -mimax(-me, 0.0) )*s_phi[tx+1][ty] - mimax(me,0.0)*phi_current
 				      : - ( phi_current+0.5*psiEplus1*(s_phi[tx+1][ty]-phi_current) )*mimax(me,0.0) + (s_phi[tx+1][ty]+0.5*psiEminus1*(phi_current-s_phi[tx+1][ty]))*mimax(-me,0.0);
 
-	south = (iy==1) ? - ( -mimax(-ms, 0.0) )*s_phi[tx][ty-1] - mimax(ms,0.0)*phi_current 
+	south = (iy==1) ? - ( -mimax(-ms, 0.0) )*s_phi[tx][ty-1] - mimax(ms,0.0)*phi_current
 				    : - ( phi_current+0.5*psiSplus1*(s_phi[tx][ty-1]-phi_current) )*mimax(ms,0.0) + (s_phi[tx][ty-1]+0.5*psiSminus1*(phi_current-s_phi[tx][ty-1]))*mimax(-ms,0.0);
 
-	north = (iy==Ny-4) ? - ( -mimax(-mn, 0.0) )*s_phi[tx][ty+1] - mimax(mn,0.0)*phi_current 
+	north = (iy==Ny-4) ? - ( -mimax(-mn, 0.0) )*s_phi[tx][ty+1] - mimax(mn,0.0)*phi_current
 					   : - ( phi_current+0.5*psiNplus1*(s_phi[tx][ty+1]-phi_current) )*mimax(mn,0.0) + (s_phi[tx][ty+1]+0.5*psiNminus1*(phi_current-s_phi[tx][ty+1]))*mimax(-mn,0.0);
 
-	bottom = (i==2) ? - ( -mimax(-mb, 0.0) )*phi_bottom - mimax(mb,0.0)*phi_current 
+	bottom = (i==2) ? - ( -mimax(-mb, 0.0) )*phi_bottom - mimax(mb,0.0)*phi_current
 				    : - ( phi_current+0.5*psiBplus1*(phi_bottom-phi_current) )*mimax(mb,0.0) + (phi_bottom+0.5*psiBminus1*(phi_current-phi_bottom))*mimax(-mb,0.0);
-				    
-	top = (i==Nz-3) ? - ( -mimax(-mt, 0.0) )*phi_top - mimax(mt,0.0)*phi_current 
-					: - ( phi_current+0.5*psiTplus1*(phi_top-phi_current) )*mimax(mt,0.0) + (phi_top+0.5*psiTminus1*(phi_current-phi_top))*mimax(-mt,0.0);								   
-	phi_out[out_idx] = 
-	1.0/V_dt*( 
+
+	top = (i==Nz-3) ? - ( -mimax(-mt, 0.0) )*phi_top - mimax(mt,0.0)*phi_current
+					: - ( phi_current+0.5*psiTplus1*(phi_top-phi_current) )*mimax(mt,0.0) + (phi_top+0.5*psiTminus1*(phi_current-phi_top))*mimax(-mt,0.0);
+	phi_out[out_idx] =
+	1.0/V_dt*(
 		   (V_dt-nuA_h*6.0)*phi_current
 	+ nuA_h* ( s_phi[tx+1][ty]+s_phi[tx-1][ty]
 		      +s_phi[tx][ty+1]+s_phi[tx][ty-1]
@@ -180,7 +180,7 @@ if(ix>0 && ix<Nx-3 && iy>0 && iy<Ny-3 && i>1 && i<Nz-2){
 	+ east + west + north + south + top + bottom    //TVD - adv contrib
 	         );
 } else { // upwind scheme
-	phi_out[out_idx] = 
+	phi_out[out_idx] =
 	1.0/V_dt*(
 		(V_dt-nuA_h*6.0 - mc)*phi_current
 	+ (nuA_h + mimax(-me, 0.0)) *s_phi[tx+1][ty]
