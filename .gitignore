@@ -10,11 +10,11 @@ build/
 .clangd
 compile_commands.json
 
-# Claude Code local settings (not shared)
+# Agent local settings (not shared)
+.agents/worktrees/
 .claude/settings.local.json
 .claude/agent-memory-local/
 CLAUDE.local.md
-.codex/worktrees/
 src/external/petsc/
 src/external/slepc/
 

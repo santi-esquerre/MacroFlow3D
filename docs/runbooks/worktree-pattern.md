@@ -17,7 +17,7 @@ Use separate worktrees for independent work streams. Each worktree:
 
 ```
 ~/src/MacroFlow3D/                         # main checkout (reference)
-~/src/MacroFlow3D/.codex/worktrees/
+~/src/MacroFlow3D/.agents/worktrees/
 ├── tooling/         # chore/tooling-*     — build, hooks, CI, scripts
 ├── docs/            # chore/docs-*        — documentation, AGENTS, runbooks
 ├── pspta/           # science/pspta-*     — PSPTA transport research
@@ -31,7 +31,7 @@ Use separate worktrees for independent work streams. Each worktree:
 
 ```bash
 cd ~/src/MacroFlow3D
-git worktree add -b chore/tooling-sccache ~/.codex/worktrees/tooling
+git worktree add -b chore/tooling-sccache .agents/worktrees/tooling
 ```
 
 ### Helper script
@@ -49,7 +49,7 @@ MACROFLOW3D_WORKTREE_BASE=~/other/path scripts/create-worktree.sh chore/docs-upd
 ## Working in a worktree
 
 ```bash
-cd ~/src/MacroFlow3D/.codex/worktrees/tooling
+cd ~/src/MacroFlow3D/.agents/worktrees/tooling
 
 # Normal git operations work
 git status
@@ -92,7 +92,7 @@ git worktree list
 ```bash
 # Remove a specific worktree
 cd ~/src/MacroFlow3D
-git worktree remove ~/.codex/worktrees/tooling
+git worktree remove .agents/worktrees/tooling
 
 # Prune stale worktree refs
 git worktree prune

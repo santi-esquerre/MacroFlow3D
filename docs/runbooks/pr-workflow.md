@@ -14,8 +14,8 @@ create worktree → edit locally → validate locally → push → create PR →
 
 ```bash
 cd ~/src/MacroFlow3D
-git worktree add -b <type>/<short-name> ~/.codex/worktrees/<short-name>
-cd ~/src/MacroFlow3D/.codex/worktrees/<short-name>
+git worktree add -b <type>/<short-name> .agents/worktrees/<short-name>
+cd ~/src/MacroFlow3D/.agents/worktrees/<short-name>
 ```
 
 Or use the helper:
@@ -95,7 +95,7 @@ Never merge scientific-core PRs without human approval.
 
 ```bash
 cd ~/src/MacroFlow3D
-git worktree remove .codex/worktrees/<short-name>
+git worktree remove .agents/worktrees/<short-name>
 ```
 
 ## 8. Anti-patterns

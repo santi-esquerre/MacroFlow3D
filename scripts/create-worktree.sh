@@ -9,7 +9,7 @@
 #   scripts/create-worktree.sh science/pspta-refinement
 #
 # Creates:
-#   ~/src/MacroFlow3D/.codex/worktrees/<short-name>/
+#   ~/src/MacroFlow3D/.agents/worktrees/<short-name>/
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
@@ -22,7 +22,7 @@ BRANCH="$1"
 # Extract the short name (part after the last /)
 SHORT_NAME="${BRANCH##*/}"
 
-WORKTREE_BASE="${MACROFLOW3D_WORKTREE_BASE:-$HOME/src/MacroFlow3D/.codex/worktrees}"
+WORKTREE_BASE="${MACROFLOW3D_WORKTREE_BASE:-$HOME/src/MacroFlow3D/.agents/worktrees}"
 WORKTREE_DIR="$WORKTREE_BASE/$SHORT_NAME"
 
 # Find repo root

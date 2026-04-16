@@ -153,3 +153,11 @@ Record for every meaningful run:
 - Do not treat V100 as the source of truth for code.
 - Do not assume local WSL perf matches V100.
 - Do not run without first syncing (`rsync_to_v100.sh`).
+
+## Related
+
+- `docs/runbooks/remote-v100.md`
+- `docs/runbooks/petsc-slepc.md`
+- `scripts/rsync_to_v100.sh`
+- `scripts/remote_build_and_test.sh`
+- `scripts/remote_run_pipeline.sh`

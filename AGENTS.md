@@ -21,7 +21,7 @@ Do not trade correctness for convenience.
 - Use **Plan mode first** for any non-trivial task.
 - Read the closest `AGENTS.md` files before editing.
 - Work in a **Git worktree**, not in the main checkout.
-- Create worktrees under `~/src/MacroFlow3D/.codex/worktrees/`, not under `/tmp` or ad hoc locations.
+- Create worktrees under `~/src/MacroFlow3D/.agents/worktrees/`, not under `/tmp` or ad hoc locations.
 - Keep changes **single-purpose**:
   - one physical hypothesis,
   - or one refactor,

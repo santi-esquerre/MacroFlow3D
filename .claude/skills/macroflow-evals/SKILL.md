@@ -154,3 +154,5 @@ Does it change macrodispersion output or ensemble stats?
 - `docs/validation/validation-loop.md` — the fixed validation loop
 - `docs/theory/lester-2023-key-claims.md` — kinematic constraints
 - `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — classical baseline
+- `skills/macroflow-build/SKILL.md` — local build commands
+- `skills/macroflow-remote-v100/SKILL.md` — remote commands

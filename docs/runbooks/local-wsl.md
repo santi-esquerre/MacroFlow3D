@@ -24,7 +24,7 @@ Assumed:
 Suggested layout:
 ```bash
 ~/src/MacroFlow3D
-~/src/MacroFlow3D/.codex/worktrees/<branch-name>
+~/src/MacroFlow3D/.agents/worktrees/<branch-name>
 ```
 
 ---
@@ -34,12 +34,12 @@ Suggested layout:
 ### Create a new worktree
 ```bash
 cd ~/src/MacroFlow3D
-git worktree add -b chore/example ~/.codex/worktrees/example
+git worktree add -b chore/example .agents/worktrees/example
 ```
 
 ### Enter it
 ```bash
-cd ~/src/MacroFlow3D/.codex/worktrees/example
+cd ~/src/MacroFlow3D/.agents/worktrees/example
 ```
 
 ### Open that worktree in Codex App

@@ -25,8 +25,8 @@ Use this skill when creating, reviewing, or merging pull requests.
 ### Create worktree
 ```bash
 cd ~/src/MacroFlow3D
-git worktree add -b <type>/<short-name> .codex/worktrees/<short-name>
-cd .codex/worktrees/<short-name>
+git worktree add -b <type>/<short-name> .agents/worktrees/<short-name>
+cd .agents/worktrees/<short-name>
 ```
 
 Branch name conventions:
