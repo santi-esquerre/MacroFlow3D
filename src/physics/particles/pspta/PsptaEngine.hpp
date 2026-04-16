@@ -38,13 +38,14 @@
  * @ingroup physics_particles_pspta
  */
 
-#include "../par2_adapter/par2_views.hpp"  // ParticlesSoA / ConstParticlesSoA / UnwrappedSoA
-#include "PsptaPsiField.cuh"          // PsptaPsiField, PsptaPrecomputeReport
 #include "../../../core/DeviceBuffer.cuh"
 #include "../../../core/Grid3D.hpp"
-#include "../../common/fields.cuh"    // VelocityField (CompactMAC)
-#include <cuda_runtime.h>
+#include "../../common/fields.cuh"            // VelocityField (CompactMAC)
+#include "../par2_adapter/par2_views.hpp"     // ParticlesSoA / ConstParticlesSoA / UnwrappedSoA
+#include "invariants/PsptaInvariantField.cuh" // PsptaInvariantField
+#include "PsptaPsiField.cuh"                  // PsptaPsiField, PsptaPrecomputeReport
 #include <cstdint>
+#include <cuda_runtime.h>
 
 namespace macroflow3d {
 namespace physics {
@@ -56,21 +57,21 @@ namespace pspta {
 // ============================================================================
 
 /// Maximum Newton iterations per call to NewtonSolveYZ.
-inline constexpr int    PSPTA_N_NEWTON      = 4;
+inline constexpr int PSPTA_N_NEWTON = 4;
 
 /// Newton convergence: tolerance = PSPTA_TOL_FACTOR * fmin(dy, dz).
 /// 1e-4 is appropriate for float32 ψ storage (float resolution ~ 1e-4 * cell).
-inline constexpr double PSPTA_TOL_FACTOR    = 1e-4;
+inline constexpr double PSPTA_TOL_FACTOR = 1e-4;
 
 /// Minimum |det(J)| before declaring Newton ill-conditioned.
-inline constexpr double PSPTA_DET_MIN       = 1e-14;
+inline constexpr double PSPTA_DET_MIN = 1e-14;
 
 /// Trust-region clamp: maximum Newton step as a fraction of cell spacing.
-inline constexpr double PSPTA_TRUST_FACTOR  = 0.5;
+inline constexpr double PSPTA_TRUST_FACTOR = 0.5;
 
 /// Newton step scaling (damping).  1.0 = full Newton step.
 /// Trust-region already bounds steps, so 1.0 is recommended.
-inline constexpr double PSPTA_DAMPING       = 1.0;
+inline constexpr double PSPTA_DAMPING = 1.0;
 
 /// Number of histogram bins for Newton fail-count distribution.
 inline constexpr int PSPTA_FAIL_HIST_BINS = 7;
@@ -90,7 +91,7 @@ inline constexpr uint8_t PSPTA_STATUS_EXITED = 2;
  * Non-PIMPL concrete class; movable but not copyable.
  */
 class PsptaEngine {
-public:
+  public:
     /**
      * @brief Construct engine with fixed grid geometry.
      *
@@ -98,9 +99,7 @@ public:
      * @param stream       CUDA stream for all async launches.
      * @param inject_seed  Base seed for deterministic injection hashing.
      */
-    PsptaEngine(const Grid3D& grid,
-                cudaStream_t  stream,
-                uint64_t      inject_seed = 0ULL);
+    PsptaEngine(const Grid3D& grid, cudaStream_t stream, uint64_t inject_seed = 0ULL);
 
     ~PsptaEngine() = default;
 
@@ -115,8 +114,47 @@ public:
     /// Bind CompactMAC velocity field (owned externally).
     void bind_velocity(const VelocityField* vel);
 
-    /// Bind ψ fields (must already have precompute_levelA called).
+    /**
+     * @brief Bind ψ fields (must already have precompute_levelA called).
+     *
+     * @deprecated Use bind_invariants() for new code.
+     *
+     * ## Legacy Assumptions (still active in this binding)
+     *
+     * The engine's Newton projection uses trilinear sampling with periodic
+     * lifting. The lifting assumes:
+     *
+     *   - ψ1 varies over [0, Ly) ⟹ L_self_psi1 = Ly
+     *   - ψ2 varies over [0, Lz) ⟹ L_self_psi2 = Lz
+     *
+     * This is consistent with the INLET GAUGE from legacy marching:
+     *
+     *   - ψ1(0,j,k) = (j+0.5)*dy  (so ψ1 ~ y)
+     *   - ψ2(0,j,k) = (k+0.5)*dz  (so ψ2 ~ z)
+     *
+     * ## For Strategy A/C Integration (Future)
+     *
+     * If Strategy A/C produces invariants with DIFFERENT periods or gauge,
+     * the engine's sample_psi_and_partials() must be updated to accept
+     * custom L_self values from the invariant field metadata.
+     *
+     * Current workaround: apply inlet gauge normalization after eigensolver
+     * to ensure ψ1~y, ψ2~z structure is preserved.
+     */
     void bind_psifield(const PsptaPsiField* psi);
+
+    /**
+     * @brief Bind invariant field from new interface (PsptaInvariantField).
+     *
+     * This is the preferred method for new code. Internally extracts the
+     * same information as bind_psifield() but from the new container.
+     *
+     * The invariant field must already be populated (e.g., via
+     * LegacyMarchingInvariantBuilder or future Strategy A/C builders).
+     *
+     * @param inv  Valid PsptaInvariantField with is_valid() == true.
+     */
+    void bind_invariants(const PsptaInvariantField* inv);
 
     /// Bind particle arrays (device SoA, non-owning view).
     void bind_particles(ParticlesSoA<real>& p);
@@ -135,9 +173,7 @@ public:
      * @param first      First particle index to initialize.
      * @param count      Number of particles to initialize.
      */
-    void inject_box(real x0, real y0, real z0,
-                    real x1, real y1, real z1,
-                    int first, int count);
+    void inject_box(real x0, real y0, real z0, real x1, real y1, real z1, int first, int count);
 
     /**
      * @brief No-op — wrap arrays are owned by the caller's ParticlesSoA.
@@ -207,14 +243,14 @@ public:
      * Launches a kernel + device-to-host copy; do NOT call inside the hot loop.
      */
     struct TransportStats {
-        int       n_active  = 0;   ///< status == 0 (still being tracked)
-        int       n_exited  = 0;   ///< status == PSPTA_STATUS_EXITED
-        int       n_other   = 0;   ///< other non-zero status
-        long long total_fail = 0;  ///< sum of per-particle Newton fail counts
-        uint32_t  n_nonzero_fail = 0;   ///< particles with fail_count > 0
-        uint32_t  max_fail_count = 0;   ///< maximum fail_count over all particles
+        int n_active = 0;            ///< status == 0 (still being tracked)
+        int n_exited = 0;            ///< status == PSPTA_STATUS_EXITED
+        int n_other = 0;             ///< other non-zero status
+        long long total_fail = 0;    ///< sum of per-particle Newton fail counts
+        uint32_t n_nonzero_fail = 0; ///< particles with fail_count > 0
+        uint32_t max_fail_count = 0; ///< maximum fail_count over all particles
         /// Histogram bins: [0],[1],[2],[3-4],[5-8],[9-16],[>=17]
-        uint32_t  hist[PSPTA_FAIL_HIST_BINS] = {};
+        uint32_t hist[PSPTA_FAIL_HIST_BINS] = {};
     };
 
     /// Compute and return transport stats (synchronizes stream internally).
@@ -231,31 +267,41 @@ public:
     /// x leaves [0, Lx).  true = periodic x (use for doubly-periodic toy flows).
     void set_x_periodic(bool v) { x_periodic_ = v; }
 
-private:
-
+  private:
     // ── Grid constants (host copy for kernel launches) ─────────────────────────
-    Grid3D  grid_;
-    double  Lx_, Ly_, Lz_;
+    Grid3D grid_;
+    double Lx_, Ly_, Lz_;
 
     // ── Bound external pointers ────────────────────────────────────────────────
-    const VelocityField* vel_  = nullptr;
-    const PsptaPsiField* psi_  = nullptr;
-    ParticlesSoA<real>   parts_;        ///< Non-owning view
+    const VelocityField* vel_ = nullptr;
+    const PsptaPsiField* psi_ = nullptr; ///< Legacy binding (deprecated)
+
+    /// Unified psi binding info — populated by either bind_psifield or bind_invariants
+    struct PsiBinding {
+        const float* psi1 = nullptr;
+        const float* psi2 = nullptr;
+        int nx = 0, ny = 0, nz = 0;
+        double dx = 0, dy = 0, dz = 0;
+        bool valid = false;
+    };
+    PsiBinding psi_bind_; ///< Active psi field info for kernels
+
+    ParticlesSoA<real> parts_; ///< Non-owning view
 
     // ── CUDA execution context ────────────────────────────────────────────────
-    cudaStream_t stream_  = nullptr;
-    uint64_t     inject_seed_;
-    bool         x_periodic_ = false;  ///< false = OPEN_X (particle exits at x=0 or x=Lx)
+    cudaStream_t stream_ = nullptr;
+    uint64_t inject_seed_;
+    bool x_periodic_ = false; ///< false = OPEN_X (particle exits at x=0 or x=Lx)
 
     // ── Per-particle invariant buffers (owned, preallocated in prepare()) ──────
-    int capacity_ = 0;                  ///< allocated size
-    DeviceBuffer<float>    d_psi1_const_;  ///< ψ1 invariant per particle
-    DeviceBuffer<float>    d_psi2_const_;  ///< ψ2 invariant per particle
-    DeviceBuffer<float>    d_y_guess_;     ///< last successful y from Newton
-    DeviceBuffer<float>    d_z_guess_;     ///< last successful z from Newton
-    DeviceBuffer<uint32_t>            d_fail_count_;  ///< Newton failure counter per particle
-    DeviceBuffer<unsigned long long>  d_stats_buf_;      ///< 4× ull scratch for compute_transport_stats()
-    DeviceBuffer<uint32_t>            d_fail_detail_buf_; ///< 9× uint32: [n_nonzero, max_fail, hist[7]]
+    int capacity_ = 0;                             ///< allocated size
+    DeviceBuffer<float> d_psi1_const_;             ///< ψ1 invariant per particle
+    DeviceBuffer<float> d_psi2_const_;             ///< ψ2 invariant per particle
+    DeviceBuffer<float> d_y_guess_;                ///< last successful y from Newton
+    DeviceBuffer<float> d_z_guess_;                ///< last successful z from Newton
+    DeviceBuffer<uint32_t> d_fail_count_;          ///< Newton failure counter per particle
+    DeviceBuffer<unsigned long long> d_stats_buf_; ///< 4× ull scratch for compute_transport_stats()
+    DeviceBuffer<uint32_t> d_fail_detail_buf_;     ///< 9× uint32: [n_nonzero, max_fail, hist[7]]
 };
 
 } // namespace pspta

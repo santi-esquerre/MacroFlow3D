@@ -21,8 +21,8 @@
 
 #include "../../io/config/Config.hpp"
 #include "../CudaContext.cuh"
-#include "../StageProfiler.cuh"
 #include "../RunCounters.hpp"
+#include "../StageProfiler.cuh"
 
 namespace macroflow3d {
 namespace ensemble {
@@ -38,9 +38,7 @@ namespace ensemble {
  * @param profiler  Stage profiler (no-op if MACROFLOW3D_ENABLE_PROFILING=0).
  * @return EXIT_SUCCESS or EXIT_FAILURE.
  */
-int run_ensemble(const io::AppConfig& cfg,
-                 CudaContext& ctx,
-                 StageProfiler& profiler);
+int run_ensemble(const io::AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler);
 
 } // namespace ensemble
 } // namespace macroflow3d

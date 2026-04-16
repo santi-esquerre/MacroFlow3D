@@ -31,16 +31,17 @@ struct ConfigSerializer {
     static bool write(const OutputLayout& layout, const AppConfig& cfg) {
         std::string path = layout.effective_config();
         FILE* f = std::fopen(path.c_str(), "w");
-        if (!f) return false;
+        if (!f)
+            return false;
 
         std::fprintf(f, "# Effective configuration (auto-generated, schema_version=%d)\n",
                      kConfigSchemaVersion);
         std::fprintf(f, "# All values are resolved (user + defaults).\n\n");
 
         // Run mode
-        const char* mode_str =
-            cfg.run_mode == RunMode::SingleRun    ? "single_run" :
-            cfg.run_mode == RunMode::AnalysisOnly ? "analysis_only" : "ensemble";
+        const char* mode_str = cfg.run_mode == RunMode::SingleRun      ? "single_run"
+                               : cfg.run_mode == RunMode::AnalysisOnly ? "analysis_only"
+                                                                       : "ensemble";
         std::fprintf(f, "run_mode: %s\n\n", mode_str);
 
         // Grid
@@ -71,28 +72,31 @@ struct ConfigSerializer {
         std::fprintf(f, "  cg_rtol: %.15e\n", (double)cfg.flow.cg_rtol);
         std::fprintf(f, "  cg_check_every: %d\n", cfg.flow.cg_check_every);
         std::fprintf(f, "  rtol: %.15e\n", (double)cfg.flow.rtol);
-        std::fprintf(f, "  verify_velocity: %s\n",
-                     cfg.flow.verify_velocity ? "true" : "false");
+        std::fprintf(f, "  verify_velocity: %s\n", cfg.flow.verify_velocity ? "true" : "false");
 
         // Pin
-        const char* pin_mode =
-            cfg.flow.pin.mode == PinMode::On ? "on" :
-            cfg.flow.pin.mode == PinMode::Off ? "off" : "auto";
+        const char* pin_mode = cfg.flow.pin.mode == PinMode::On    ? "on"
+                               : cfg.flow.pin.mode == PinMode::Off ? "off"
+                                                                   : "auto";
         std::fprintf(f, "  pin:\n");
         std::fprintf(f, "    mode: %s\n", pin_mode);
 
         // BCs
         auto bc_name = [](BCType t) -> const char* {
             switch (t) {
-                case BCType::Dirichlet: return "dirichlet";
-                case BCType::Neumann:   return "neumann";
-                case BCType::Periodic:  return "periodic";
-                default: return "dirichlet";
+            case BCType::Dirichlet:
+                return "dirichlet";
+            case BCType::Neumann:
+                return "neumann";
+            case BCType::Periodic:
+                return "periodic";
+            default:
+                return "dirichlet";
             }
         };
         auto write_face = [&](const char* name, const BCFace& face) {
-            std::fprintf(f, "    %s: { type: %s, value: %.15e }\n",
-                         name, bc_name(face.type), (double)face.value);
+            std::fprintf(f, "    %s: { type: %s, value: %.15e }\n", name, bc_name(face.type),
+                         (double)face.value);
         };
         std::fprintf(f, "  bc:\n");
         write_face("xmin", cfg.flow.bc.xmin);
@@ -116,25 +120,56 @@ struct ConfigSerializer {
         std::fprintf(f, "  output_every: %d\n", cfg.transport.output_every);
         std::fprintf(f, "  snapshot_every: %d\n", cfg.transport.snapshot_every);
         std::fprintf(f, "  inject_x: %.15e\n", (double)cfg.transport.inject_x);
+        std::fprintf(f, "  method: %s\n", cfg.transport.method.c_str());
+        std::fprintf(f, "  pspta_diagnostics: %s\n",
+                     cfg.transport.pspta_diagnostics ? "true" : "false");
+        std::fprintf(f, "  pspta_refine:\n");
+        std::fprintf(f, "    enabled: %s\n", cfg.transport.pspta_refine.enabled ? "true" : "false");
+        std::fprintf(f, "    outer_iters: %d\n", cfg.transport.pspta_refine.outer_iters);
+        std::fprintf(f, "    omega: %.15e\n", (double)cfg.transport.pspta_refine.omega);
+        std::fprintf(f, "    omega_min: %.15e\n", (double)cfg.transport.pspta_refine.omega_min);
+        std::fprintf(f, "    max_backtracks: %d\n", cfg.transport.pspta_refine.max_backtracks);
+        std::fprintf(f, "    eps_vx: %.15e\n", (double)cfg.transport.pspta_refine.eps_vx);
+        std::fprintf(f, "    source_clip_cells: %.15e\n",
+                     (double)cfg.transport.pspta_refine.source_clip_cells);
+        std::fprintf(f, "    no_descent_patience: %d\n",
+                     cfg.transport.pspta_refine.no_descent_patience);
+        std::fprintf(f, "    stop_rel_rms: %.15e\n",
+                     (double)cfg.transport.pspta_refine.stop_rel_rms);
+        std::fprintf(f, "    stop_abs_rms: %.15e\n",
+                     (double)cfg.transport.pspta_refine.stop_abs_rms);
+        std::fprintf(f, "    print_every_iter: %s\n",
+                     cfg.transport.pspta_refine.print_every_iter ? "true" : "false");
+        std::fprintf(f, "    save_history_csv: %s\n",
+                     cfg.transport.pspta_refine.save_history_csv ? "true" : "false");
+        std::fprintf(f, "    eq13_diagnostics: %s\n",
+                     cfg.transport.pspta_refine.eq13_diagnostics ? "true" : "false");
         std::fprintf(f, "  velocity_layout: %s\n\n", cfg.transport.velocity_layout.c_str());
 
         // Analysis
         std::fprintf(f, "analysis:\n");
         std::fprintf(f, "  macrodispersion:\n");
-        std::fprintf(f, "    enabled: %s\n", cfg.analysis.macrodispersion.enabled ? "true" : "false");
+        std::fprintf(f, "    enabled: %s\n",
+                     cfg.analysis.macrodispersion.enabled ? "true" : "false");
         std::fprintf(f, "    NR: %d\n", cfg.analysis.macrodispersion.NR);
         std::fprintf(f, "    lambda: %.15e\n", (double)cfg.analysis.macrodispersion.lambda);
         std::fprintf(f, "    vmean_norm: %.15e\n", (double)cfg.analysis.macrodispersion.vmean_norm);
         std::fprintf(f, "    sample_every: %d\n", cfg.analysis.macrodispersion.sample_every);
-        std::fprintf(f, "    var_estimator: %s\n", cfg.analysis.macrodispersion.var_estimator.c_str());
+        std::fprintf(f, "    var_estimator: %s\n",
+                     cfg.analysis.macrodispersion.var_estimator.c_str());
         std::fprintf(f, "  snapshots:\n");
         std::fprintf(f, "    enabled: %s\n", cfg.analysis.snapshots.enabled ? "true" : "false");
         std::fprintf(f, "    every: %d\n", cfg.analysis.snapshots.every);
-        std::fprintf(f, "    legacy_format: %s\n", cfg.analysis.snapshots.legacy_format ? "true" : "false");
-        std::fprintf(f, "    include_time: %s\n", cfg.analysis.snapshots.include_time ? "true" : "false");
-        std::fprintf(f, "    include_status: %s\n", cfg.analysis.snapshots.include_status ? "true" : "false");
-        std::fprintf(f, "    include_wrap_counts: %s\n", cfg.analysis.snapshots.include_wrap_counts ? "true" : "false");
-        std::fprintf(f, "    include_unwrapped: %s\n", cfg.analysis.snapshots.include_unwrapped ? "true" : "false");
+        std::fprintf(f, "    legacy_format: %s\n",
+                     cfg.analysis.snapshots.legacy_format ? "true" : "false");
+        std::fprintf(f, "    include_time: %s\n",
+                     cfg.analysis.snapshots.include_time ? "true" : "false");
+        std::fprintf(f, "    include_status: %s\n",
+                     cfg.analysis.snapshots.include_status ? "true" : "false");
+        std::fprintf(f, "    include_wrap_counts: %s\n",
+                     cfg.analysis.snapshots.include_wrap_counts ? "true" : "false");
+        std::fprintf(f, "    include_unwrapped: %s\n",
+                     cfg.analysis.snapshots.include_unwrapped ? "true" : "false");
         std::fprintf(f, "    stride: %d\n", cfg.analysis.snapshots.stride);
         std::fprintf(f, "    max_particles: %d\n", cfg.analysis.snapshots.max_particles);
         std::fprintf(f, "    precision: %d\n\n", cfg.analysis.snapshots.precision);

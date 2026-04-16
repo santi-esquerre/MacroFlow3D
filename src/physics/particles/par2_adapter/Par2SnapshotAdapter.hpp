@@ -8,8 +8,8 @@
  * Reuse across realizations — no realloc.
  */
 
-#include "par2_views.hpp"
 #include "../../../core/Scalar.hpp"
+#include "par2_views.hpp"
 #include <cuda_runtime.h>
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@ namespace physics {
 namespace particles {
 
 class Par2SnapshotAdapter {
-public:
+  public:
     Par2SnapshotAdapter(int max_particles, const SnapshotWriterConfig& cfg);
     ~Par2SnapshotAdapter();
 
@@ -29,13 +29,10 @@ public:
     Par2SnapshotAdapter(const Par2SnapshotAdapter&) = delete;
     Par2SnapshotAdapter& operator=(const Par2SnapshotAdapter&) = delete;
 
-    bool write_snapshot(const ConstParticlesSoA<real>& particles,
-                        const char* filename,
-                        real time,
-                        cudaStream_t stream,
-                        const UnwrappedSoA<real>* unwrapped = nullptr);
+    bool write_snapshot(const ConstParticlesSoA<real>& particles, const char* filename, real time,
+                        cudaStream_t stream, const UnwrappedSoA<real>* unwrapped = nullptr);
 
-private:
+  private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

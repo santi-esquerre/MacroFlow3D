@@ -20,19 +20,19 @@
  *   - Disk I/O only happens on snapshot/stats write events.
  */
 
-#include "PinnedHostBuffer.hpp"
+#include "../../core/Scalar.hpp"
 #include "../../io/output_layout.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
-#include "../../physics/particles/par2_adapter/Par2SnapshotAdapter.hpp"
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
-#include "../../core/Scalar.hpp"
+#include "../../physics/particles/par2_adapter/Par2SnapshotAdapter.hpp"
+#include "PinnedHostBuffer.hpp"
 
+#include <cstdio>
 #include <cuda_runtime.h>
 #include <filesystem>
 #include <memory>
-#include <vector>
 #include <string>
-#include <cstdio>
+#include <vector>
 
 namespace macroflow3d {
 namespace runtime {
@@ -47,22 +47,22 @@ using namespace macroflow3d::physics::particles;
  */
 struct SchedulerConfig {
     // Stats (moments) sampling cadence (transport steps)
-    int stats_every        = 0;   // 0 = disabled
+    int stats_every = 0; // 0 = disabled
 
     // Snapshot cadence
-    int snapshot_every     = 0;   // 0 = disabled
+    int snapshot_every = 0; // 0 = disabled
 
     // First-realization dense snapshots (r=0 only)
-    int r0_snapshot_every  = 0;   // 0 = disabled
+    int r0_snapshot_every = 0; // 0 = disabled
 
     // Total step count — used by maybe_write_final() to detect coverage gaps
-    int n_steps            = 0;
+    int n_steps = 0;
 
     // Number of particles
-    int n_particles        = 0;
+    int n_particles = 0;
 
     // Does the domain have periodic BCs?
-    bool has_periodic      = false;
+    bool has_periodic = false;
 
     // Per-snapshot formatting/column options (Par2-compatible superset)
     SnapshotWriterConfig snap_writer;
@@ -75,13 +75,13 @@ struct SchedulerConfig {
  * pre-allocated ring buffer, so no allocation happens.
  */
 struct PendingSnapshot {
-    std::string filename;   // pre-formatted path
+    std::string filename; // pre-formatted path
     real time;
-    int  step;
+    int step;
     bool has_unwrapped;
-    int  n;                 // number of particles
-    int  stride;
-    int  precision;
+    int n; // number of particles
+    int stride;
+    int precision;
     // Data is in the staging buffer at the time of flush
 };
 
@@ -99,18 +99,14 @@ struct PendingSnapshot {
  *   sched.end_realization();
  */
 class IOScheduler {
-public:
-    IOScheduler(const SchedulerConfig& cfg,
-                const io::OutputLayout& layout)
-        : cfg_(cfg), layout_(layout)
-    {
+  public:
+    IOScheduler(const SchedulerConfig& cfg, const io::OutputLayout& layout)
+        : cfg_(cfg), layout_(layout) {
         // Construct Par2-backed snapshot adapter ONCE (owns its own
         // pinned staging buffers inside the PIMPL; no hot-loop allocs).
-        if (cfg_.n_particles > 0 &&
-            (cfg_.snapshot_every > 0 || cfg_.r0_snapshot_every > 0))
-        {
-            snap_adapter_ = std::make_unique<Par2SnapshotAdapter>(
-                cfg_.n_particles, cfg_.snap_writer);
+        if (cfg_.n_particles > 0 && (cfg_.snapshot_every > 0 || cfg_.r0_snapshot_every > 0)) {
+            snap_adapter_ =
+                std::make_unique<Par2SnapshotAdapter>(cfg_.n_particles, cfg_.snap_writer);
         }
 
         // Pre-reserve stats series (no realloc in hot loop)
@@ -122,7 +118,7 @@ public:
     /// Signal start of a realization — reset per-realization state
     void begin_realization(int r) {
         current_r_ = r;
-        stats_series_.clear();   // .clear() does NOT free, capacity retained
+        stats_series_.clear(); // .clear() does NOT free, capacity retained
         pending_snaps_.clear();
     }
 
@@ -135,8 +131,7 @@ public:
 
     /// True if an r=0 dense snapshot should be written at this step.
     bool r0_snapshot_due(int step) const {
-        return (current_r_ == 0) &&
-               (cfg_.r0_snapshot_every > 0) &&
+        return (current_r_ == 0) && (cfg_.r0_snapshot_every > 0) &&
                (step % cfg_.r0_snapshot_every == 0);
     }
 
@@ -148,11 +143,8 @@ public:
      * Par2SnapshotAdapter handles its own D2H staging internally,
      * so pre-staging from the caller is no longer necessary.
      */
-    void stage_snapshot_async(int /*step*/,
-                              const ConstParticlesSoA<real>& /*parts*/,
-                              const UnwrappedSoA<real>& /*unwrap*/,
-                              cudaStream_t /*stream*/)
-    {
+    void stage_snapshot_async(int /*step*/, const ConstParticlesSoA<real>& /*parts*/,
+                              const UnwrappedSoA<real>& /*unwrap*/, cudaStream_t /*stream*/) {
         // No-op: Par2SnapshotAdapter stages D2H inside write_snapshot().
     }
 
@@ -171,13 +163,9 @@ public:
      *
      * HPC contract: NO allocations in hot path.
      */
-    void on_step(int step, real dt,
-                 const ConstParticlesSoA<real>& particles,
-                 const UnwrappedSoA<real>& unwrap,
-                 const io::TimeSeriesPoint<real>* stats_sample,
-                 cudaStream_t stream,
-                 bool pre_synced = false)
-    {
+    void on_step(int step, real dt, const ConstParticlesSoA<real>& particles,
+                 const UnwrappedSoA<real>& unwrap, const io::TimeSeriesPoint<real>* stats_sample,
+                 cudaStream_t stream, bool pre_synced = false) {
         // ── Stats ────────────────────────────────────────────────────
         if (cfg_.stats_every > 0 && (step % cfg_.stats_every == 0) && stats_sample) {
             stats_series_.push_back(*stats_sample);
@@ -185,7 +173,7 @@ public:
 
         // ── Snapshots ───────────────────────────────────────────────
         const bool snap_now = snapshot_due(step);
-        const bool r0_snap  = r0_snapshot_due(step);
+        const bool r0_snap = r0_snapshot_due(step);
 
         if (snap_now || r0_snap) {
             if (!pre_synced) {
@@ -195,15 +183,12 @@ public:
             }
             // Write via Par2SnapshotAdapter (format parity — Task 1)
             if (r0_snap) {
-                write_snapshot_now(layout_.r0_snapshot(step),
-                                   particles, unwrap, step * dt,
-                                   false, stream);  // r0: wrapped only
+                write_snapshot_now(layout_.r0_snapshot(step), particles, unwrap, step * dt, false,
+                                   stream); // r0: wrapped only
             }
             if (snap_now) {
-                write_snapshot_now(layout_.snapshot(current_r_, step),
-                                   particles, unwrap, step * dt,
-                                   cfg_.snap_writer.include_unwrapped,
-                                   stream);
+                write_snapshot_now(layout_.snapshot(current_r_, step), particles, unwrap, step * dt,
+                                   cfg_.snap_writer.include_unwrapped, stream);
             }
         }
     }
@@ -217,19 +202,16 @@ public:
      *
      * No-op if snapshot_every <= 0 or n_steps % snapshot_every == 0.
      */
-    void maybe_write_final(real dt,
-                           const ConstParticlesSoA<real>& parts,
-                           const UnwrappedSoA<real>& unwrap,
-                           cudaStream_t stream)
-    {
+    void maybe_write_final(real dt, const ConstParticlesSoA<real>& parts,
+                           const UnwrappedSoA<real>& unwrap, cudaStream_t stream) {
         const int n = cfg_.n_steps;
-        if (cfg_.snapshot_every <= 0 || n <= 0) return;
-        if (n % cfg_.snapshot_every == 0) return;   // already written by cadence
+        if (cfg_.snapshot_every <= 0 || n <= 0)
+            return;
+        if (n % cfg_.snapshot_every == 0)
+            return; // already written by cadence
 
-        write_snapshot_now(layout_.snapshot(current_r_, n),
-                           parts, unwrap, static_cast<real>(n) * dt,
-                           cfg_.snap_writer.include_unwrapped,
-                           stream);
+        write_snapshot_now(layout_.snapshot(current_r_, n), parts, unwrap,
+                           static_cast<real>(n) * dt, cfg_.snap_writer.include_unwrapped, stream);
         std::printf("       Wrote final snapshot at step %d (r=%d)\n", n, current_r_);
     }
 
@@ -238,38 +220,31 @@ public:
         if (cfg_.stats_every > 0 && !stats_series_.empty()) {
             std::string fname = layout_.realization_timeseries(current_r_);
             io::CsvTimeSeriesWriter::write(fname, stats_series_);
-            std::printf("       Wrote %s (%d samples)\n",
-                        fname.c_str(), (int)stats_series_.size());
+            std::printf("       Wrote %s (%d samples)\n", fname.c_str(), (int)stats_series_.size());
         }
     }
 
     /// Access the current realization's time-series (for post-processing)
-    const std::vector<io::TimeSeriesPoint<real>>& stats_series() const {
-        return stats_series_;
-    }
+    const std::vector<io::TimeSeriesPoint<real>>& stats_series() const { return stats_series_; }
 
-private:
+  private:
     /**
      * @brief Write one snapshot via Par2SnapshotAdapter.
      *
      * The adapter takes device pointers and handles D2H + disk-write
      * internally, producing the same CSV layout as par2::io::CsvSnapshotWriter.
      */
-    void write_snapshot_now(const std::string& filename,
-                            const ConstParticlesSoA<real>& particles,
-                            const UnwrappedSoA<real>& unwrap,
-                            real time,
-                            bool write_unwrapped,
-                            cudaStream_t stream)
-    {
-        if (!snap_adapter_) return;
+    void write_snapshot_now(const std::string& filename, const ConstParticlesSoA<real>& particles,
+                            const UnwrappedSoA<real>& unwrap, real time, bool write_unwrapped,
+                            cudaStream_t stream) {
+        if (!snap_adapter_)
+            return;
         // Ensure parent directory exists (par2 writer may not create it)
         auto parent = std::filesystem::path(filename).parent_path();
         if (!parent.empty())
             std::filesystem::create_directories(parent);
-        snap_adapter_->write_snapshot(
-            particles, filename.c_str(), time, stream,
-            write_unwrapped ? &unwrap : nullptr);
+        snap_adapter_->write_snapshot(particles, filename.c_str(), time, stream,
+                                      write_unwrapped ? &unwrap : nullptr);
     }
 
     SchedulerConfig cfg_;

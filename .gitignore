@@ -10,6 +10,14 @@ build/
 .clangd
 compile_commands.json
 
+# Claude Code local settings (not shared)
+.claude/settings.local.json
+.claude/agent-memory-local/
+CLAUDE.local.md
+.codex/worktrees/
+src/external/petsc/
+src/external/slepc/
+
 # OS junk
 .DS_Store
 Thumbs.db
@@ -26,8 +34,5 @@ MacroFlow3D*.md
 __pycache__/
 *.pyc
 
-# WIP: Docs
-docs/
+# Generated docs (e.g. Doxygen XML)
 xml/
-
-

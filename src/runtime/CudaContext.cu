@@ -1,11 +1,11 @@
-#include "CudaContext.cuh"
 #include "cuda_check.cuh"
+#include "CudaContext.cuh"
 
 namespace macroflow3d {
 
 CudaContext::CudaContext(int device_id)
     : device_id_(device_id), stream_(nullptr), cublas_(nullptr) {
-    
+
     MACROFLOW3D_CUDA_CHECK(cudaSetDevice(device_id_));
     MACROFLOW3D_CUDA_CHECK(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking));
     MACROFLOW3D_CUBLAS_CHECK(cublasCreate(&cublas_));
@@ -17,10 +17,8 @@ CudaContext::~CudaContext() {
 }
 
 CudaContext::CudaContext(CudaContext&& other) noexcept
-    : device_id_(other.device_id_),
-      stream_(other.stream_),
-      cublas_(other.cublas_) {
-    
+    : device_id_(other.device_id_), stream_(other.stream_), cublas_(other.cublas_) {
+
     other.stream_ = nullptr;
     other.cublas_ = nullptr;
 }
@@ -28,11 +26,11 @@ CudaContext::CudaContext(CudaContext&& other) noexcept
 CudaContext& CudaContext::operator=(CudaContext&& other) noexcept {
     if (this != &other) {
         release();
-        
+
         device_id_ = other.device_id_;
         stream_ = other.stream_;
         cublas_ = other.cublas_;
-        
+
         other.stream_ = nullptr;
         other.cublas_ = nullptr;
     }

@@ -6,8 +6,8 @@
  */
 
 #include <cstdio>
-#include <string>
 #include <filesystem>
+#include <string>
 
 namespace macroflow3d {
 namespace pipeline {
@@ -44,19 +44,16 @@ struct OutputPaths {
     std::string snapshot(int r, int step, int NR) const {
         char buf[512];
         if (NR > 1)
-            std::snprintf(buf, sizeof(buf), "%s/snapshot_r%03d_s%06d.csv", base_dir.c_str(), r, step);
+            std::snprintf(buf, sizeof(buf), "%s/snapshot_r%03d_s%06d.csv", base_dir.c_str(), r,
+                          step);
         else
             std::snprintf(buf, sizeof(buf), "%s/snapshot_s%06d.csv", base_dir.c_str(), step);
         return buf;
     }
 
-    std::string ensemble_mean() const {
-        return base_dir + "/stats_mean_over_NR.csv";
-    }
+    std::string ensemble_mean() const { return base_dir + "/stats_mean_over_NR.csv"; }
 
-    std::string alpha_csv() const {
-        return base_dir + "/alpha_over_NR.csv";
-    }
+    std::string alpha_csv() const { return base_dir + "/alpha_over_NR.csv"; }
 };
 
 // ============================================================================

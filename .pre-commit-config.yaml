@@ -1,0 +1,47 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  # --- Standard file hygiene ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^src/external/
+      - id: end-of-file-fixer
+        exclude: ^src/external/
+      - id: check-yaml
+      - id: check-json
+
+  # --- clang-format for C++/CUDA ---
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        types_or: [c, c++, cuda]
+        exclude: ^(src/external/|legacy/)
+
+  # --- Local project hooks ---
+  - repo: local
+    hooks:
+      - id: validate-cmake-presets
+        name: Validate CMakePresets.json
+        entry: bash scripts/hooks/validate-cmake-presets.sh
+        language: system
+        files: CMakePresets\.json$
+        pass_filenames: false
+
+      - id: check-required-docs
+        name: Check required docs exist
+        entry: bash scripts/hooks/check-required-docs.sh
+        language: system
+        always_run: true
+        pass_filenames: false
+
+      - id: scientific-core-guard
+        name: Scientific core change guard
+        entry: bash scripts/hooks/scientific-core-guard.sh
+        language: system
+        always_run: false
+        pass_filenames: true
+        types_or: [c, c++, cuda]
+        files: ^(src/numerics/|src/physics/|src/multigrid/|apps/.*\.(yaml|cu))

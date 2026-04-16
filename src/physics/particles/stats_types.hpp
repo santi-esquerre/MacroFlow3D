@@ -14,11 +14,10 @@
 
 namespace macroflow3d {
 
-template <typename T>
-struct StatsSample {
+template <typename T> struct StatsSample {
     T time;
-    T mean[3];    // mean_x, mean_y, mean_z
-    T var[3];     // var_x, var_y, var_z  (biased or unbiased per config)
+    T mean[3]; // mean_x, mean_y, mean_z
+    T var[3];  // var_x, var_y, var_z  (biased or unbiased per config)
     int active;
 };
 

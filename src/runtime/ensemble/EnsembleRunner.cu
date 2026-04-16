@@ -17,9 +17,9 @@
 
 // I/O — output layout + writers + scheduler (Etapa 5 + 8)
 #include "../../io/output_layout.hpp"
-#include "../../io/writers/ManifestWriter.hpp"
 #include "../../io/writers/BuildInfo.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
+#include "../../io/writers/ManifestWriter.hpp"
 #include "../../runtime/io/IOScheduler.hpp"
 
 // Runtime stats collector (Etapa 6)
@@ -30,18 +30,18 @@
 
 // Physics — fields & workspaces
 #include "../../physics/common/fields.cuh"
-#include "../../physics/common/workspaces.cuh"
 #include "../../physics/common/physics_config.hpp"
+#include "../../physics/common/workspaces.cuh"
 
 // Physics — stages
-#include "../../physics/stochastic/stochastic.cuh"
 #include "../../physics/flow/solve_head.cuh"
-#include "../../physics/flow/velocity_from_head.cuh"
 #include "../../physics/flow/velocity_diagnostics.cuh"
+#include "../../physics/flow/velocity_from_head.cuh"
+#include "../../physics/stochastic/stochastic.cuh"
 
 // Par2 adapters (no <par2_core/...> included here)
-#include "../../physics/particles/par2_adapter/Par2TransportAdapter.hpp"
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
+#include "../../physics/particles/par2_adapter/Par2TransportAdapter.hpp"
 
 // PSPTA engine + precomputed ψ fields
 #include "../../physics/particles/pspta/PsptaEngine.hpp"
@@ -51,13 +51,13 @@
 #include "../../runtime/io/CsvDiagnosticsWriter.hpp"
 
 // Runtime — counters + NVTX + printing helpers
-#include "../../runtime/RunCounters.hpp"
 #include "../../runtime/nvtx_range.cuh"
-#include "../pipeline/OutputPaths.hpp"  // print_separator()
+#include "../../runtime/RunCounters.hpp"
+#include "../pipeline/OutputPaths.hpp" // print_separator()
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -75,33 +75,48 @@ namespace ensemble {
 
 static StochasticConfig make_stochastic_cfg(const StochasticYamlConfig& y) {
     StochasticConfig c;
-    c.sigma2           = y.sigma2;
-    c.corr_length      = y.corr_length;
-    c.n_modes          = y.n_modes;
-    c.covariance_type  = y.covariance_type;
-    c.seed             = y.seed;
+    c.sigma2 = y.sigma2;
+    c.corr_length = y.corr_length;
+    c.n_modes = y.n_modes;
+    c.covariance_type = y.covariance_type;
+    c.seed = y.seed;
     c.K_geometric_mean = y.K_mean;
     return c;
 }
 
 static bool bc_has_any_periodic(const BCSpec& bc) {
-    return bc.xmin.type == BCType::Periodic
-        || bc.ymin.type == BCType::Periodic
-        || bc.zmin.type == BCType::Periodic;
+    return bc.xmin.type == BCType::Periodic || bc.ymin.type == BCType::Periodic ||
+           bc.zmin.type == BCType::Periodic;
+}
+
+static macroflow3d::physics::particles::pspta::PsiRefineConfig
+make_pspta_refine_cfg(const TransportYamlConfig::PsptaRefineConfig& y) {
+    macroflow3d::physics::particles::pspta::PsiRefineConfig c;
+    c.enabled = y.enabled;
+    c.outer_iters = y.outer_iters;
+    c.omega = static_cast<double>(y.omega);
+    c.omega_min = static_cast<double>(y.omega_min);
+    c.max_backtracks = y.max_backtracks;
+    c.eps_vx = static_cast<double>(y.eps_vx);
+    c.source_clip_cells = static_cast<double>(y.source_clip_cells);
+    c.no_descent_patience = y.no_descent_patience;
+    c.stop_rel_rms = static_cast<double>(y.stop_rel_rms);
+    c.stop_abs_rms = static_cast<double>(y.stop_abs_rms);
+    c.print_every_iter = y.print_every_iter;
+    c.save_history_csv = y.save_history_csv;
+    c.eq13_diagnostics = y.eq13_diagnostics;
+    return c;
 }
 
 // ============================================================================
 // run_ensemble
 // ============================================================================
 
-int run_ensemble(const AppConfig& cfg,
-                 CudaContext& ctx,
-                 StageProfiler& profiler)
-{
+int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler) {
     // ── Validate config BEFORE any allocation (Etapa 7) ──────────────
     require_valid_config(cfg);
 
-    const auto& mac  = cfg.analysis.macrodispersion;
+    const auto& mac = cfg.analysis.macrodispersion;
     const auto& snap = cfg.analysis.snapshots;
     const int NR = mac.enabled ? mac.NR : 1;
 
@@ -128,7 +143,7 @@ int run_ensemble(const AppConfig& cfg,
     const size_t N = grid.num_cells();
 
     StochasticConfig stoch_cfg = make_stochastic_cfg(cfg.stochastic);
-    HeadSolveConfig  head_cfg  = HeadSolveConfig::from_yaml(cfg.flow);
+    HeadSolveConfig head_cfg = HeadSolveConfig::from_yaml(cfg.flow);
 
     // Cell-centered fields (reused across realizations)
     ScalarField K_field(grid);
@@ -143,7 +158,7 @@ int run_ensemble(const AppConfig& cfg,
 
     // Velocity (padded for Par2_Core; compact/CompactMAC for PSPTA)
     PaddedVelocityField vel(grid);
-    VelocityField vel_compact;  // default-constructed (no alloc); resized below if pspta
+    VelocityField vel_compact; // default-constructed (no alloc); resized below if pspta
     if (cfg.transport.method == "pspta") {
         vel_compact = VelocityField(grid);
     }
@@ -162,7 +177,9 @@ int run_ensemble(const AppConfig& cfg,
     const bool any_periodic = bc_has_any_periodic(cfg.flow.bc);
     DeviceBuffer<int32_t> wrapX, wrapY, wrapZ;
     if (any_periodic) {
-        wrapX.resize(NP); wrapY.resize(NP); wrapZ.resize(NP);
+        wrapX.resize(NP);
+        wrapY.resize(NP);
+        wrapZ.resize(NP);
     }
 
     // Status array
@@ -172,21 +189,23 @@ int run_ensemble(const AppConfig& cfg,
     DeviceBuffer<real> ux, uy, uz;
     const bool need_unwrap = any_periodic || snap.include_unwrapped;
     if (need_unwrap) {
-        ux.resize(NP); uy.resize(NP); uz.resize(NP);
+        ux.resize(NP);
+        uy.resize(NP);
+        uz.resize(NP);
     }
 
-    std::printf("       Fields: K=%zu  head=%zu  vel=3×%zu  particles=%d\n",
-                N, N, vel.field_size(), NP);
+    std::printf("       Fields: K=%zu  head=%zu  vel=3×%zu  particles=%d\n", N, N, vel.field_size(),
+                NP);
 
     // ── Transport adapter config ─────────────────────────────────────
     using namespace macroflow3d::physics::particles;
 
     TransportAdapterConfig ta_cfg;
-    ta_cfg.molecular_diffusion  = cfg.transport.diffusion;
-    ta_cfg.alpha_l              = cfg.transport.alpha_l;
-    ta_cfg.alpha_t              = cfg.transport.alpha_t;
+    ta_cfg.molecular_diffusion = cfg.transport.diffusion;
+    ta_cfg.alpha_l = cfg.transport.alpha_l;
+    ta_cfg.alpha_t = cfg.transport.alpha_t;
     ta_cfg.linear_interpolation = true;
-    ta_cfg.rng_seed             = cfg.transport.seed;
+    ta_cfg.rng_seed = cfg.transport.seed;
 
     // ── Stats collector (Etapa 6 — par2-neutral wrapper) ─────────────
     const bool do_stats = mac.enabled;
@@ -195,28 +214,29 @@ int run_ensemble(const AppConfig& cfg,
 
     // Per-realization time-series for post-processing
     std::vector<std::vector<io::TimeSeriesPoint<real>>> all_series;
-    if (do_stats) all_series.reserve(NR);
+    if (do_stats)
+        all_series.reserve(NR);
 
     // ── I/O Scheduler (Etapa 5 — single decision point) ──────────────
     const int n_steps = cfg.transport.n_steps;
     const int r0_snap_every = (n_steps > 100) ? (n_steps / 100) : 1;
 
     runtime::SchedulerConfig sched_cfg;
-    sched_cfg.stats_every            = do_stats ? mac.sample_every : 0;
-    sched_cfg.snapshot_every         = snap.enabled ? snap.every : 0;
-    sched_cfg.r0_snapshot_every      = r0_snap_every;
-    sched_cfg.n_particles            = NP;
-    sched_cfg.n_steps                = n_steps;
-    sched_cfg.has_periodic           = any_periodic;
+    sched_cfg.stats_every = do_stats ? mac.sample_every : 0;
+    sched_cfg.snapshot_every = snap.enabled ? snap.every : 0;
+    sched_cfg.r0_snapshot_every = r0_snap_every;
+    sched_cfg.n_particles = NP;
+    sched_cfg.n_steps = n_steps;
+    sched_cfg.has_periodic = any_periodic;
     // Mirror all Par2-compatible snapshot options from SnapshotConfig (Task 1)
-    sched_cfg.snap_writer.legacy_format       = snap.legacy_format;
-    sched_cfg.snap_writer.include_time        = snap.include_time;
-    sched_cfg.snap_writer.include_status      = snap.include_status;
+    sched_cfg.snap_writer.legacy_format = snap.legacy_format;
+    sched_cfg.snap_writer.include_time = snap.include_time;
+    sched_cfg.snap_writer.include_status = snap.include_status;
     sched_cfg.snap_writer.include_wrap_counts = snap.include_wrap_counts;
-    sched_cfg.snap_writer.include_unwrapped   = snap.include_unwrapped;
-    sched_cfg.snap_writer.stride              = snap.stride;
-    sched_cfg.snap_writer.max_particles       = snap.max_particles;
-    sched_cfg.snap_writer.precision           = snap.precision;
+    sched_cfg.snap_writer.include_unwrapped = snap.include_unwrapped;
+    sched_cfg.snap_writer.stride = snap.stride;
+    sched_cfg.snap_writer.max_particles = snap.max_particles;
+    sched_cfg.snap_writer.precision = snap.precision;
 
     runtime::IOScheduler scheduler(sched_cfg, layout);
 
@@ -229,8 +249,8 @@ int run_ensemble(const AppConfig& cfg,
     pspta::PsptaPsiField pspta_psi_field;
     if (cfg.transport.method == "pspta") {
         pspta_psi_field.resize(grid);
-        pspta_eng = std::make_unique<pspta::PsptaEngine>(
-            grid, ctx.cuda_stream(), cfg.transport.seed);
+        pspta_eng =
+            std::make_unique<pspta::PsptaEngine>(grid, ctx.cuda_stream(), cfg.transport.seed);
     }
 
     // ================================================================
@@ -265,13 +285,12 @@ int run_ensemble(const AppConfig& cfg,
         profiler.start("solve_head");
         init_head_guess(head_field.span(), grid, cfg.flow.bc, ctx);
         const ScalarField& K_const = K_field;
-        HeadSolveResult result = solve_head(
-            head_field.span(), K_const.span(),
-            grid, cfg.flow.bc, head_cfg, ctx, flow_ws);
+        HeadSolveResult result = solve_head(head_field.span(), K_const.span(), grid, cfg.flow.bc,
+                                            head_cfg, ctx, flow_ws);
         profiler.stop();
         std::printf("       Converged=%s  iters=%d  res=%.2e → %.2e\n",
-                    result.converged ? "YES" : "NO", result.num_iterations,
-                    result.initial_residual, result.final_residual);
+                    result.converged ? "YES" : "NO", result.num_iterations, result.initial_residual,
+                    result.final_residual);
         if (!result.converged)
             std::fprintf(stderr, "       WARNING: Head solve did NOT converge (r=%d)!\n", r);
 
@@ -298,14 +317,16 @@ int run_ensemble(const AppConfig& cfg,
         }
 
         // ── Transport ─────────────────────────────────────────────────
-        const real dt          = cfg.transport.dt;
+        const real dt = cfg.transport.dt;
         const int sample_every = mac.sample_every;
         const real Ly = cfg.grid.Ly();
         const real Lz = cfg.grid.Lz();
 
         // Common particle view (same for both engines)
         ParticlesSoA<real> pv;
-        pv.x = px.data(); pv.y = py.data(); pv.z = pz.data();
+        pv.x = px.data();
+        pv.y = py.data();
+        pv.z = pz.data();
         pv.n = NP;
         pv.status = status_buf.data();
         if (any_periodic) {
@@ -321,24 +342,25 @@ int run_ensemble(const AppConfig& cfg,
         // Common unwrapped view
         UnwrappedSoA<real> unwrap_view;
         if (need_unwrap) {
-            unwrap_view.x_u      = ux.data();
-            unwrap_view.y_u      = uy.data();
-            unwrap_view.z_u      = uz.data();
+            unwrap_view.x_u = ux.data();
+            unwrap_view.y_u = uy.data();
+            unwrap_view.z_u = uz.data();
             unwrap_view.capacity = NP;
         }
 
-        // Generic hot loop — templated on engine type; same interface for Par2 and PSPTA.
-        // Engine must expose: bind_particles, inject_box, ensure_tracking, prepare,
+        // Generic hot loop — templated on engine type; same interface for Par2 and
+        // PSPTA. Engine must expose: bind_particles, inject_box, ensure_tracking,
+        // prepare,
         //                     step, particles(), compute_unwrapped, synchronize.
         auto run_hot_loop = [&](auto& eng) {
             eng.bind_particles(pv);
-            eng.inject_box(cfg.transport.inject_x, static_cast<real>(0.0),
-                           static_cast<real>(0.0),
+            eng.inject_box(cfg.transport.inject_x, static_cast<real>(0.0), static_cast<real>(0.0),
                            cfg.transport.inject_x, Ly, Lz, 0, NP);
             eng.ensure_tracking();
             eng.prepare();
 
-            if (do_stats) collector.reset();
+            if (do_stats)
+                collector.reset();
             scheduler.begin_realization(r);
 
             MACROFLOW3D_NVTX_PUSH("transport");
@@ -352,28 +374,26 @@ int run_ensemble(const AppConfig& cfg,
                 // Progress printout (for both Par2 and PSPTA)
                 const int out_every = cfg.transport.output_every;
                 if (out_every > 0 && step % out_every == 0) {
-                    std::printf("           step %5d/%d  t=%.3e\n",
-                                step, n_steps, static_cast<double>(step) * dt);
+                    std::printf("           step %5d/%d  t=%.3e\n", step, n_steps,
+                                static_cast<double>(step) * dt);
                 }
                 const bool sample_now = do_stats && (step % sample_every == 0);
-                const bool snap_now   = scheduler.snapshot_due(step);
-                const bool r0_snap    = scheduler.r0_snapshot_due(step);
-                const bool any_event  = sample_now || snap_now || r0_snap;
+                const bool snap_now = scheduler.snapshot_due(step);
+                const bool r0_snap = scheduler.r0_snapshot_due(step);
+                const bool any_event = sample_now || snap_now || r0_snap;
 
                 if (any_event) {
                     ConstParticlesSoA<real> cpv = eng.particles();
 
                     // [Task 2] Unwrapped only for regular snapshots that request it
                     if (snap_now && sched_cfg.snap_writer.include_unwrapped &&
-                        unwrap_view.valid())
-                    {
+                        unwrap_view.valid()) {
                         eng.compute_unwrapped(unwrap_view, ctx.cuda_stream());
                     }
 
                     // [Task 3] Stage D2H before the single sync
                     if (snap_now || r0_snap) {
-                        scheduler.stage_snapshot_async(step, cpv, unwrap_view,
-                                                       ctx.cuda_stream());
+                        scheduler.stage_snapshot_async(step, cpv, unwrap_view, ctx.cuda_stream());
                     }
                     if (sample_now) {
                         collector.sample_async(cpv, ctx.cuda_stream());
@@ -390,9 +410,9 @@ int run_ensemble(const AppConfig& cfg,
                     }
 
                     // Data already synced: scheduler writes without re-staging/re-syncing
-                    scheduler.on_step(step, dt, cpv, unwrap_view,
-                                      have_stats ? &ts_point : nullptr,
-                                      ctx.cuda_stream(), /*pre_synced=*/true);
+                    scheduler.on_step(step, dt, cpv, unwrap_view, have_stats ? &ts_point : nullptr,
+                                      ctx.cuda_stream(),
+                                      /*pre_synced=*/true);
                 }
             }
 
@@ -402,13 +422,10 @@ int run_ensemble(const AppConfig& cfg,
             {
                 ConstParticlesSoA<real> cpv_fin = eng.particles();
                 if (sched_cfg.snap_writer.include_unwrapped && unwrap_view.valid() &&
-                    sched_cfg.snapshot_every > 0 &&
-                    n_steps % sched_cfg.snapshot_every != 0)
-                {
+                    sched_cfg.snapshot_every > 0 && n_steps % sched_cfg.snapshot_every != 0) {
                     eng.compute_unwrapped(unwrap_view, ctx.cuda_stream());
                 }
-                scheduler.maybe_write_final(dt, cpv_fin, unwrap_view,
-                                            ctx.cuda_stream());
+                scheduler.maybe_write_final(dt, cpv_fin, unwrap_view, ctx.cuda_stream());
             }
 
             profiler.stop();
@@ -416,7 +433,7 @@ int run_ensemble(const AppConfig& cfg,
             std::printf("       Transport complete (r=%d).\n", r);
             scheduler.end_realization();
             counters.add_realization();
-        };  // end run_hot_loop
+        }; // end run_hot_loop
 
         if (cfg.transport.method == "pspta") {
             std::printf("  [7] Transport (PSPTA)\n");
@@ -426,23 +443,43 @@ int run_ensemble(const AppConfig& cfg,
                 pspta_psi_field.precompute_levelA(vel_compact, grid, ctx.cuda_stream());
             if (psi_rep.n_vx_clamped > 0) {
                 std::printf("       [psi] vx_clamped=%lld / %lld\n",
-                            (long long)psi_rep.n_vx_clamped,
-                            (long long)psi_rep.n_total);
+                            (long long)psi_rep.n_vx_clamped, (long long)psi_rep.n_total);
             }
-            if (cfg.transport.pspta_diagnostics) {
-                auto qual_rep = pspta_psi_field.compute_psi_quality(
-                    vel_compact, grid, ctx.cuda_stream());
+
+            pspta::PsiQualityReport psi_final_quality;
+            bool has_psi_final_quality = false;
+
+            if (cfg.transport.pspta_refine.enabled) {
+                const auto refine_cfg = make_pspta_refine_cfg(cfg.transport.pspta_refine);
+                auto refine_rep =
+                    pspta_psi_field.refine_psi(vel_compact, grid, ctx.cuda_stream(), refine_cfg);
+                psi_final_quality = refine_rep.final_quality;
+                has_psi_final_quality = true;
+
+                if (refine_cfg.save_history_csv) {
+                    runtime::CsvDiagnosticsWriter::write_psi_refine_history(
+                        layout.base + "/psi_refine_history.csv", r, refine_rep);
+                    runtime::CsvDiagnosticsWriter::write_psi_refine_summary(
+                        layout.base + "/psi_refine_summary.csv", r, refine_rep);
+                }
+            }
+
+            if (!has_psi_final_quality && cfg.transport.pspta_diagnostics) {
+                psi_final_quality =
+                    pspta_psi_field.compute_psi_quality(vel_compact, grid, ctx.cuda_stream());
+                has_psi_final_quality = true;
+            }
+            if (cfg.transport.pspta_diagnostics && has_psi_final_quality) {
                 std::printf("       [psi_quality] rms_r1=%.3e max_r1=%.3e "
                             "rms_r2=%.3e max_r2=%.3e  ncells=%lld\n",
-                            qual_rep.rms_r1, qual_rep.max_r1,
-                            qual_rep.rms_r2, qual_rep.max_r2,
-                            (long long)qual_rep.n_cells);
+                            psi_final_quality.rms_r1, psi_final_quality.max_r1,
+                            psi_final_quality.rms_r2, psi_final_quality.max_r2,
+                            (long long)psi_final_quality.n_cells);
                 runtime::CsvDiagnosticsWriter::write_psi_quality_row(
-                    layout.base + "/psi_quality.csv", r, psi_rep, qual_rep);
+                    layout.base + "/psi_quality.csv", r, psi_rep, psi_final_quality);
             }
             // Rebind per-realization (engine workspace already allocated)
-            pspta_eng->set_inject_seed(
-                cfg.transport.seed + static_cast<uint64_t>(r) * 100ULL);
+            pspta_eng->set_inject_seed(cfg.transport.seed + static_cast<uint64_t>(r) * 100ULL);
             pspta_eng->bind_velocity(&vel_compact);
             pspta_eng->bind_psifield(&pspta_psi_field);
             run_hot_loop(*pspta_eng);
@@ -450,8 +487,8 @@ int run_ensemble(const AppConfig& cfg,
             auto ts = pspta_eng->compute_transport_stats();
             std::printf("       [pspta] active=%d  exited=%d  newton_stalls=%lld  "
                         "nonzero_fail=%u  max_fail=%u  (NP=%d)\n",
-                        ts.n_active, ts.n_exited, (long long)ts.total_fail,
-                        ts.n_nonzero_fail, ts.max_fail_count, NP);
+                        ts.n_active, ts.n_exited, (long long)ts.total_fail, ts.n_nonzero_fail,
+                        ts.max_fail_count, NP);
             if (cfg.transport.pspta_diagnostics) {
                 runtime::CsvDiagnosticsWriter::write_newton_fail_row(
                     layout.base + "/newton_fail_summary.csv", r, NP, ts);
@@ -483,8 +520,7 @@ int run_ensemble(const AppConfig& cfg,
         std::printf("       Wrote %s\n", mean_path.c_str());
 
         // Macrodispersivity α(t)
-        auto alpha_rows = analysis::compute_macrodispersion(
-            all_series, mac.lambda, mac.vmean_norm);
+        auto alpha_rows = analysis::compute_macrodispersion(all_series, mac.lambda, mac.vmean_norm);
 
         std::string alpha_path = layout.macrodispersion_csv();
         analysis::write_macrodispersion_csv(alpha_path, alpha_rows);

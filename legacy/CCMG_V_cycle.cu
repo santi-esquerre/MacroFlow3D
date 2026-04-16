@@ -8,7 +8,7 @@
 void V_cycle(double **e_pre, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	MG_levels MG, int l, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly){
 	int Nx = pow(2,l)*ratioX;
@@ -37,7 +37,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 void V_cycle2(double **e_pre, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	MG_levels MG, int l, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly,
 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -63,11 +63,11 @@ void V_cycle2(double **e_pre, double **r, double **rr, double **K,
 	smooth_GSRB(e_pre[l],r[l],rr[l],K[l],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,grid[l],block[l]);
 }
 
-void Precond_CCMG_Vcycle(double *e0fine, const double *rfine, 
+void Precond_CCMG_Vcycle(double *e0fine, const double *rfine,
 	double **e, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly){
 	int l = MG.L-1;
@@ -80,11 +80,11 @@ void Precond_CCMG_Vcycle(double *e0fine, const double *rfine,
 	smooth_GSRB(e0fine,rfine,rr[l],K[l],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,grid[l],block[l]);
 }
 
-void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine, 
+void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 	double **e, double **r, double **rr, double **K,
 	dim3 *grid, dim3 *block,
 	int dirichletBottom, int dirichletTop,
-	int dirichletSouth, int dirichletNorth, 
+	int dirichletSouth, int dirichletNorth,
 	int dirichletWest, int dirichletEast, bool pin1stCell,
 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioX, int ratioY, int ratioZ, double Ly,
 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -100,10 +100,10 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 }
 
 // // grid defined from  z-direction
-// void V_cycle3(double **e_pre, double **r, double **rr, 
+// void V_cycle3(double **e_pre, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	MG_levels MG, int level, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -130,11 +130,11 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 // 	smooth_GSRB(e_pre[level],r[level],rr[level],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,GRID3D_L);
 // }
 
-// void Precond_CCMG_Vcycle3(double *e0fine, const double *rfine, 
-// 	double **e, double **r, double **rr, 
+// void Precond_CCMG_Vcycle3(double *e0fine, const double *rfine,
+// 	double **e, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2
@@ -149,16 +149,16 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 // 	smooth_GSRB(e0fine,rfine,rr[level],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,GRID3D_L);
 // }
 
-// int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, 
-// 	double *x, double *s, double *r, double *r_, 
+// int solver_BiCGStab(Matrix_t &M, Matrix_t &precond, blas_t &BLAS,
+// 	double *x, double *s, double *r, double *r_,
 // 	double *Mp, double *Ms,double *AMs, double *AMp, double *RHS,
 // 	double tol_abs, double tol_rel, int iter_max, int print_monitor);
 
 // // grid defined from  z-direction
-// void V_cycle4(double **e_pre, double **r, double **rr, 
+// void V_cycle4(double **e_pre, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	MG_levels MG, int level, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2,
@@ -186,11 +186,11 @@ void Precond_CCMG_Vcycle2(double *e0fine, const double *rfine,
 // 	smooth_GSRB(e_pre[level],r[level],rr[level],dxdx,Nx,Ny,Nz,boundaryCond,MG.npos,false,GRID3D_L);
 // }
 
-// void Precond_CCMG_Vcycle4(double *e0fine, const double *rfine, 
-// 	double **e, double **r, double **rr, 
+// void Precond_CCMG_Vcycle4(double *e0fine, const double *rfine,
+// 	double **e, double **r, double **rr,
 // 	dim3 *gridXY, dim3 *blockXY, dim3 *gridXZ, dim3 *blockXZ, dim3 *gridYZ, dim3 *blockYZ,
 // 	bool dirichletBottom, bool dirichletTop,
-// 	bool dirichletSouth, bool dirichletNorth, 
+// 	bool dirichletSouth, bool dirichletNorth,
 // 	bool dirichletWest, bool dirichletEast, bool pin1stCell,
 // 	int Nx, int Ny, int Nz, MG_levels MG, cublasHandle_t handle, int ratioZX, int ratioZY, double Lz,
 // 	Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *aux, double *aux2,double *Mp, double *Ms, double *AMs, double *AMp

@@ -1,14 +1,14 @@
-#include "v_cycle.cuh"
-#include "../transfer/restrict_3d.cuh"
-#include "../transfer/prolong_3d.cuh"
-#include "../smoothers/residual_3d.cuh"
-#include "../smoothers/gsrb_3d.cuh"
+#include "../../core/BCSpec.hpp"
 #include "../../numerics/blas/blas.cuh"
 #include "../../numerics/blas/reduction_workspace.cuh"
 #include "../../numerics/pin_spec.hpp"
-#include "../../core/BCSpec.hpp"
-#include <cmath>
+#include "../smoothers/gsrb_3d.cuh"
+#include "../smoothers/residual_3d.cuh"
+#include "../transfer/prolong_3d.cuh"
+#include "../transfer/restrict_3d.cuh"
+#include "v_cycle.cuh"
 #include <cassert>
+#include <cmath>
 
 namespace macroflow3d {
 namespace multigrid {
@@ -17,9 +17,9 @@ namespace multigrid {
 inline void assert_isotropic_grid(const Grid3D& grid) {
     constexpr real tol = 1e-12;
     (void)tol;
-    assert(std::abs(grid.dx - grid.dy) < tol * grid.dx && 
+    assert(std::abs(grid.dx - grid.dy) < tol * grid.dx &&
            "Grid must be isotropic (dx != dy). See Grid3D.hpp for details.");
-    assert(std::abs(grid.dx - grid.dz) < tol * grid.dx && 
+    assert(std::abs(grid.dx - grid.dz) < tol * grid.dx &&
            "Grid must be isotropic (dx != dz). See Grid3D.hpp for details.");
 }
 
@@ -33,84 +33,77 @@ inline void assert_isotropic_grid(const Grid3D& grid) {
 // 6. Post-smooth on current level
 //
 // Note: pin is propagated to ALL levels (legacy semantics from boundaryCond macro)
-void v_cycle_recursive(
-    CudaContext& ctx,
-    MGHierarchy& hier,
-    int level,
-    const MGConfig& config,
-    const BCSpec& bc,
-    PinSpec pin
-) {
+void v_cycle_recursive(CudaContext& ctx, MGHierarchy& hier, int level, const MGConfig& config,
+                       const BCSpec& bc, PinSpec pin) {
     const int num_levels = hier.num_levels();
-    
+
     // Coarsest level: solve directly with many GSRB iterations
     if (level == num_levels - 1) {
         auto& lvl = hier.levels[level];
-        gsrb_smooth_3d(ctx, lvl.grid, lvl.x.span(), lvl.b.span(), lvl.K.span(), config.coarse_solve_iters, bc, pin);
+        gsrb_smooth_3d(ctx, lvl.grid, lvl.x.span(), lvl.b.span(), lvl.K.span(),
+                       config.coarse_solve_iters, bc, pin);
         return;
     }
-    
+
     auto& fine = hier.levels[level];
     auto& coarse = hier.levels[level + 1];
-    
+
     // 1. Pre-smooth: x^{h} = S(x^{h}, b^{h})
-    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), config.pre_smooth, bc, pin);
-    
+    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), config.pre_smooth,
+                   bc, pin);
+
     // 2. Compute residual: r^{h} = b^{h} - A^{h} * x^{h}
-    compute_residual_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), fine.r.span(), bc, pin);
-    
+    compute_residual_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), fine.r.span(),
+                        bc, pin);
+
     // 3. Restrict residual to coarse RHS: b^{2h} = R * r^{h}
     restrict_3d(ctx, fine.grid, coarse.grid, fine.r.span(), coarse.b.span());
-    
+
     // 4. Initialize coarse correction: e^{2h} = 0
     macroflow3d::blas::fill(ctx, coarse.x.span(), 0.0);
-    
+
     // 5. Recursively solve: A^{2h} * e^{2h} = b^{2h} (pin propagated)
     v_cycle_recursive(ctx, hier, level + 1, config, bc, pin);
-    
+
     // 6. Prolong correction and add: x^{h} += P * e^{2h}
     prolong_3d_add(ctx, coarse.grid, fine.grid, coarse.x.span(), fine.x.span());
-    
+
     // 7. Post-smooth: x^{h} = S(x^{h}, b^{h})
-    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), config.post_smooth, bc, pin);
+    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), config.post_smooth,
+                   bc, pin);
 }
 
-VCycleResult mg_solve(
-    CudaContext& ctx,
-    MGHierarchy& hier,
-    const MGConfig& config,
-    const BCSpec& bc,
-    int max_cycles,
-    real rtol,
-    PinSpec pin
-) {
+VCycleResult mg_solve(CudaContext& ctx, MGHierarchy& hier, const MGConfig& config, const BCSpec& bc,
+                      int max_cycles, real rtol, PinSpec pin) {
     VCycleResult result;
-    
+
     auto& finest = hier.levels[0];
-    
+
     // Verify isotropic grid (required by current implementation)
     assert_isotropic_grid(finest.grid);
-    
+
     // Compute initial residual norm
-    compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(), finest.r.span(), bc, pin);
+    compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(),
+                        finest.r.span(), bc, pin);
     macroflow3d::blas::ReductionWorkspace red;
     result.initial_residual = macroflow3d::blas::nrm2_host(ctx, finest.r.span(), red);
-    
+
     if (config.verbose) {
         // Would print here, but avoiding I/O in library code
     }
-    
+
     for (int cycle = 0; cycle < max_cycles; ++cycle) {
         result.num_cycles = cycle + 1;
-        
+
         // Execute one V-cycle (pin propagated to all levels)
         v_cycle_recursive(ctx, hier, 0, config, bc, pin);
-        
+
         // Check convergence periodically (not every cycle to reduce host sync cost)
         if ((cycle + 1) % config.check_convergence_every == 0 || cycle == max_cycles - 1) {
-            compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(), finest.r.span(), bc, pin);
+            compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(),
+                                finest.r.span(), bc, pin);
             result.final_residual = macroflow3d::blas::nrm2_host(ctx, finest.r.span(), red);
-            
+
             real relative_residual = result.final_residual / result.initial_residual;
             if (relative_residual < rtol) {
                 result.converged = true;
@@ -118,7 +111,7 @@ VCycleResult mg_solve(
             }
         }
     }
-    
+
     return result;
 }
 

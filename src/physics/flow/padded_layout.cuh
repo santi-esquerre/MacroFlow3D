@@ -15,8 +15,8 @@
  * (nx+1)*(ny+1)*(nz+1) exceeds INT_MAX (e.g. 1600^3 → ~4e9 > 2^31).
  */
 
-#include <cuda_runtime.h>
 #include <cstddef>
+#include <cuda_runtime.h>
 
 namespace macroflow3d {
 namespace physics {
@@ -27,11 +27,9 @@ namespace physics {
  * Compatible with Par2_Core's FaceFieldView / VelocityView.
  * All three velocity components (U, V, W) share this index space.
  */
-__host__ __device__ __forceinline__
-size_t padded_idx(int ix, int iy, int iz, int nx, int ny) {
-    return static_cast<size_t>(iz) * static_cast<size_t>(ny + 1) * static_cast<size_t>(nx + 1)
-         + static_cast<size_t>(iy) * static_cast<size_t>(nx + 1)
-         + static_cast<size_t>(ix);
+__host__ __device__ __forceinline__ size_t padded_idx(int ix, int iy, int iz, int nx, int ny) {
+    return static_cast<size_t>(iz) * static_cast<size_t>(ny + 1) * static_cast<size_t>(nx + 1) +
+           static_cast<size_t>(iy) * static_cast<size_t>(nx + 1) + static_cast<size_t>(ix);
 }
 
 } // namespace physics

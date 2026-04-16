@@ -12,11 +12,11 @@
  */
 
 #include "Config.hpp"
+#include <cmath>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <cmath>
-#include <stdexcept>
 
 namespace macroflow3d {
 namespace io {
@@ -53,10 +53,14 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
     };
 
     // ── Grid ─────────────────────────────────────────────────────────
-    if (cfg.grid.nx <= 0) err("grid.nx", std::to_string(cfg.grid.nx) + " <= 0: must be positive");
-    if (cfg.grid.ny <= 0) err("grid.ny", std::to_string(cfg.grid.ny) + " <= 0: must be positive");
-    if (cfg.grid.nz <= 0) err("grid.nz", std::to_string(cfg.grid.nz) + " <= 0: must be positive");
-    if (cfg.grid.dx <= 0) err("grid.dx", std::to_string(cfg.grid.dx) + " <= 0: must be positive");
+    if (cfg.grid.nx <= 0)
+        err("grid.nx", std::to_string(cfg.grid.nx) + " <= 0: must be positive");
+    if (cfg.grid.ny <= 0)
+        err("grid.ny", std::to_string(cfg.grid.ny) + " <= 0: must be positive");
+    if (cfg.grid.nz <= 0)
+        err("grid.nz", std::to_string(cfg.grid.nz) + " <= 0: must be positive");
+    if (cfg.grid.dx <= 0)
+        err("grid.dx", std::to_string(cfg.grid.dx) + " <= 0: must be positive");
 
     // Power-of-2 recommendation (for multigrid)
     auto is_pow2 = [](int n) { return n > 0 && (n & (n - 1)) == 0; };
@@ -84,8 +88,7 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         err("flow.mg_levels", "must be >= 1");
 
     // Periodic BC must be paired
-    auto periodic_pair = [&](const char* lo, const char* hi,
-                             BCType tlo, BCType thi) {
+    auto periodic_pair = [&](const char* lo, const char* hi, BCType tlo, BCType thi) {
         if ((tlo == BCType::Periodic) != (thi == BCType::Periodic)) {
             err(std::string("flow.bc.") + lo + "/" + hi,
                 "periodic BC must appear on both faces of the same axis");
@@ -114,10 +117,37 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         warn("transport.alpha_t", "alpha_t > alpha_l is unusual");
     if (cfg.transport.output_every <= 0)
         err("transport.output_every", "must be > 0");
-    // transport.velocity_layout is now derived from method; no longer validated here.
+    // transport.velocity_layout is now derived from method; no longer validated
+    // here.
     if (cfg.transport.method != "par2" && cfg.transport.method != "pspta")
         err("transport.method",
             "'" + cfg.transport.method + "' unknown; expected 'par2' or 'pspta'");
+    if (cfg.transport.pspta_refine.enabled) {
+        if (cfg.transport.method != "pspta") {
+            warn("transport.pspta_refine.enabled",
+                 "enabled but transport.method!='pspta'; refinement will be ignored");
+        }
+        if (cfg.transport.pspta_refine.outer_iters <= 0)
+            err("transport.pspta_refine.outer_iters", "must be > 0 when enabled");
+        if (cfg.transport.pspta_refine.omega <= 0 || cfg.transport.pspta_refine.omega > 1)
+            err("transport.pspta_refine.omega", "must be in (0, 1]");
+        if (cfg.transport.pspta_refine.omega_min <= 0)
+            err("transport.pspta_refine.omega_min", "must be > 0");
+        if (cfg.transport.pspta_refine.omega_min > cfg.transport.pspta_refine.omega)
+            err("transport.pspta_refine.omega_min", "must be <= omega");
+        if (cfg.transport.pspta_refine.max_backtracks <= 0)
+            err("transport.pspta_refine.max_backtracks", "must be > 0");
+        if (cfg.transport.pspta_refine.eps_vx <= 0)
+            err("transport.pspta_refine.eps_vx", "must be > 0");
+        if (cfg.transport.pspta_refine.source_clip_cells <= 0)
+            err("transport.pspta_refine.source_clip_cells", "must be > 0");
+        if (cfg.transport.pspta_refine.no_descent_patience <= 0)
+            err("transport.pspta_refine.no_descent_patience", "must be > 0");
+        if (cfg.transport.pspta_refine.stop_rel_rms < 0)
+            err("transport.pspta_refine.stop_rel_rms", "must be >= 0");
+        if (cfg.transport.pspta_refine.stop_abs_rms < 0)
+            err("transport.pspta_refine.stop_abs_rms", "must be >= 0");
+    }
 
     // ── Analysis / macrodispersion ───────────────────────────────────
     const auto& mac = cfg.analysis.macrodispersion;
@@ -131,8 +161,7 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         if (mac.sample_every <= 0)
             err("analysis.macrodispersion.sample_every", "must be > 0");
         if (mac.var_estimator != "biased" && mac.var_estimator != "unbiased")
-            err("analysis.macrodispersion.var_estimator",
-                "expected 'biased' or 'unbiased'");
+            err("analysis.macrodispersion.var_estimator", "expected 'biased' or 'unbiased'");
     }
 
     // ── Analysis / snapshots ─────────────────────────────────────────
@@ -166,7 +195,7 @@ inline void require_valid_config(const AppConfig& cfg) {
         throw std::runtime_error(oss.str());
     }
     if (!result.warnings.empty()) {
-        result.dump();  // print warnings even if no errors
+        result.dump(); // print warnings even if no errors
     }
 }
 

@@ -3,15 +3,15 @@
 /**
  * @file physics_types.cuh
  * @brief Aggregated include for all physics types
- * 
+ *
  * Include this single header to get all physics data structures:
  * - Configuration structs (StochasticConfig, FlowConfig, TransportConfig)
  * - Field types (KField, HeadField, VelocityField)
  * - Workspace types (StochasticWorkspace, FlowWorkspace, ParticlesWorkspace)
  */
 
-#include "physics_config.hpp"
 #include "fields.cuh"
+#include "physics_config.hpp"
 #include "workspaces.cuh"
 
 namespace macroflow3d {

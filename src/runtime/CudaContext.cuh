@@ -1,12 +1,12 @@
 #pragma once
 
-#include <cuda_runtime.h>
 #include <cublas_v2.h>
+#include <cuda_runtime.h>
 
 namespace macroflow3d {
 
 class CudaContext {
-public:
+  public:
     explicit CudaContext(int device_id = 0);
     ~CudaContext();
 
@@ -26,7 +26,7 @@ public:
     // Explicit synchronization
     void synchronize() const;
 
-private:
+  private:
     int device_id_;
     cudaStream_t stream_;
     cublasHandle_t cublas_;

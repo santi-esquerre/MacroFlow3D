@@ -21,6 +21,7 @@ Do not trade correctness for convenience.
 - Use **Plan mode first** for any non-trivial task.
 - Read the closest `AGENTS.md` files before editing.
 - Work in a **Git worktree**, not in the main checkout.
+- Create worktrees under `~/src/MacroFlow3D/.codex/worktrees/`, not under `/tmp` or ad hoc locations.
 - Keep changes **single-purpose**:
   - one physical hypothesis,
   - or one refactor,
@@ -72,6 +73,15 @@ Read next when relevant:
 - `docs/runbooks/remote-v100.md`
 - `docs/runbooks/petsc-slepc.md`
 
+Active execution plans (read before starting work in the relevant area):
+
+- `docs/plans/active/pspta-execution-plan.md` — **authoritative operational plan** for PSPTA, invariant recovery, eigensolver integration, refinement, and helicity-free validation. Required reading for any work touching PSPTA, invariants, eigensolver, refinement, or transverse macrodispersion assessment.
+
+Scientific theory references (read before PSPTA, invariant, or macrodispersion work):
+
+- `docs/theory/lester-2023-key-claims.md` — kinematic constraints, helicity-free regime, zero transverse macrodispersion in smooth isotropic Darcy
+- `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — classical 3D macrodispersion baseline, Monte Carlo discipline, historical α_T expectations
+
 More specific local rules live in:
 
 - `src/physics/particles/pspta/AGENTS.md`
@@ -83,6 +93,7 @@ More specific local rules live in:
 ## Canonical workflows
 
 ### 1. Local WSL development
+
 Use WSL for reading, editing, and light validation.
 
 Typical local cycle:
@@ -102,6 +113,7 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ```
 
 ### 2. Remote V100 validation
+
 Use the remote server for heavy builds, profiling, PETSc/SLEPc, and production-like runs.
 
 Canonical flow:
@@ -119,6 +131,7 @@ Do not assume local performance conclusions carry over to V100.
 ## Build, test, and run commands
 
 ### Configure without PETSc/SLEPc
+
 ```bash
 cmake -S . -B build/wsl-debug -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
@@ -127,6 +140,7 @@ cmake -S . -B build/wsl-debug -G Ninja \
 ```
 
 ### Configure with PETSc/SLEPc
+
 ```bash
 cmake -S . -B build/v100-petsc -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
@@ -138,16 +152,19 @@ cmake -S . -B build/v100-petsc -G Ninja \
 ```
 
 ### Build
+
 ```bash
 cmake --build build/wsl-debug -j
 ```
 
 ### Test
+
 ```bash
 ctest --test-dir build/wsl-debug --output-on-failure
 ```
 
 ### Targeted tests
+
 ```bash
 ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
 ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc
@@ -155,12 +172,14 @@ ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensol
 ```
 
 ### Run the pipeline
+
 ```bash
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pipeline_par2.yaml
 ```
 
 ### Useful direct executables
+
 ```bash
 ./build/wsl-debug/run_operator_tests
 ./build/v100-petsc/smoke_test_petsc
@@ -172,7 +191,9 @@ ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensol
 ## Engineering conventions
 
 ### Scientific changes
+
 Any change touching:
+
 - flow solve,
 - velocity reconstruction,
 - interpolation,
@@ -181,23 +202,29 @@ Any change touching:
 - macrodispersion analysis,
 
 must include:
+
 1. the scientific intent,
 2. the numerical effect expected,
 3. the validation path,
 4. the likely regression surface.
 
+For PSPTA, invariant, eigensolver, or refinement work: also read `docs/plans/active/pspta-execution-plan.md` and confirm the task aligns with the current execution phase before starting.
+
 ### Performance rules
+
 - No allocations in hot loops.
 - No hidden host-device synchronizations in hot paths.
 - Reuse workspaces and buffers.
 - Prefer explicit staging areas for diagnostics and I/O.
 
 ### Documentation rules
+
 - Put durable project knowledge in the repo, not only in prompts.
 - Update docs when behavior or accepted workflow changes.
 - Keep the root `AGENTS.md` short; push details into `docs/` or local `AGENTS.md` files.
 
 ### Commit / PR hygiene
+
 - One purpose per branch.
 - Commit messages should say **what changed** and **why**.
 - PR descriptions should include:

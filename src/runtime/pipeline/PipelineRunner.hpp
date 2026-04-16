@@ -42,9 +42,7 @@ void print_config_summary(const io::AppConfig& cfg);
  * @param profiler  Stage profiler (may be no-op in Release).
  * @return EXIT_SUCCESS on completion, EXIT_FAILURE on fatal error.
  */
-int run_pipeline(const io::AppConfig& cfg,
-                 CudaContext& ctx,
-                 StageProfiler& profiler);
+int run_pipeline(const io::AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler);
 
 } // namespace pipeline
 } // namespace macroflow3d

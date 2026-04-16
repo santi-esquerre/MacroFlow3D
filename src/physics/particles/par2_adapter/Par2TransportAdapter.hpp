@@ -10,10 +10,10 @@
  * compared to the GPU kernel launch it triggers.
  */
 
-#include "par2_views.hpp"
-#include "../../../core/Grid3D.hpp"
 #include "../../../core/BCSpec.hpp"
+#include "../../../core/Grid3D.hpp"
 #include "../../common/fields.cuh"
+#include "par2_views.hpp"
 #include <cuda_runtime.h>
 #include <memory>
 
@@ -22,10 +22,8 @@ namespace physics {
 namespace particles {
 
 class Par2TransportAdapter {
-public:
-    Par2TransportAdapter(const Grid3D& grid,
-                         const BCSpec& bc,
-                         const TransportAdapterConfig& cfg,
+  public:
+    Par2TransportAdapter(const Grid3D& grid, const BCSpec& bc, const TransportAdapterConfig& cfg,
                          cudaStream_t stream);
     ~Par2TransportAdapter();
 
@@ -42,9 +40,7 @@ public:
     void bind_particles(ParticlesSoA<real>& p);
 
     /// Inject particles in a box region
-    void inject_box(real x0, real y0, real z0,
-                    real x1, real y1, real z1,
-                    int first, int count);
+    void inject_box(real x0, real y0, real z0, real x1, real y1, real z1, int first, int count);
 
     void ensure_tracking();
     void prepare();
@@ -60,7 +56,7 @@ public:
     /// Compute unwrapped positions into caller-provided buffers
     void compute_unwrapped(UnwrappedSoA<real>& uw, cudaStream_t stream);
 
-private:
+  private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };

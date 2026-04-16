@@ -18,8 +18,8 @@
 #include <string>
 
 #include "src/io/config/Config.hpp"
-#include "src/runtime/pipeline/PipelineRunner.hpp"
 #include "src/runtime/analysis/AnalysisRunner.hpp"
+#include "src/runtime/pipeline/PipelineRunner.hpp"
 
 using namespace macroflow3d;
 

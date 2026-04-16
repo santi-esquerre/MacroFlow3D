@@ -1,9 +1,9 @@
 #pragma once
 
-#include "DeviceSpan.cuh"
 #include "../runtime/cuda_check.cuh"
-#include <cuda_runtime.h>
+#include "DeviceSpan.cuh"
 #include <cstddef>
+#include <cuda_runtime.h>
 #include <utility>
 
 namespace macroflow3d {
@@ -13,9 +13,8 @@ namespace macroflow3d {
  * @ingroup core
  * @tparam T Element type.
  */
-template<typename T>
-class DeviceBuffer {
-public:
+template <typename T> class DeviceBuffer {
+  public:
     DeviceBuffer() : ptr_(nullptr), n_(0), capacity_(0) {}
 
     explicit DeviceBuffer(size_t n) : ptr_(nullptr), n_(n), capacity_(0) {
@@ -25,9 +24,7 @@ public:
         }
     }
 
-    ~DeviceBuffer() {
-        reset();
-    }
+    ~DeviceBuffer() { reset(); }
 
     // Delete copy semantics
     DeviceBuffer(const DeviceBuffer&) = delete;
@@ -56,18 +53,14 @@ public:
 
     T* data() { return ptr_; }
     const T* data() const { return ptr_; }
-    
+
     size_t size() const { return n_; }
     size_t capacity() const { return capacity_; }
     bool empty() const { return n_ == 0; }
 
-    DeviceSpan<T> span() {
-        return DeviceSpan<T>(ptr_, n_);
-    }
+    DeviceSpan<T> span() { return DeviceSpan<T>(ptr_, n_); }
 
-    DeviceSpan<const T> span() const {
-        return DeviceSpan<const T>(ptr_, n_);
-    }
+    DeviceSpan<const T> span() const { return DeviceSpan<const T>(ptr_, n_); }
 
     void reset() noexcept {
         if (ptr_ != nullptr) {
@@ -93,22 +86,22 @@ public:
 
     // Alias for clarity: guarantee room for at least n elements
     void ensure_capacity(size_t n) { resize(n); }
-    
+
     void swap(DeviceBuffer& other) noexcept {
         T* tmp_ptr = ptr_;
         size_t tmp_n = n_;
         size_t tmp_cap = capacity_;
-        
+
         ptr_ = other.ptr_;
         n_ = other.n_;
         capacity_ = other.capacity_;
-        
+
         other.ptr_ = tmp_ptr;
         other.n_ = tmp_n;
         other.capacity_ = tmp_cap;
     }
 
-private:
+  private:
     T* ptr_;
     size_t n_;
     size_t capacity_;

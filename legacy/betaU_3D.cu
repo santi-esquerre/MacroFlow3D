@@ -7,7 +7,7 @@
 #define blockYZ dim3(block.y,block.z)
 
 //#######################################################################
-// 	routine betaU (uses in BiCGStab) 
+// 	routine betaU (uses in BiCGStab)
 //	p_{j+1} = r_{j+1} + beta*(p_j - omega*A*M*p)
 //	beta_j = (r_{j+1}, r_star) / (r_j, r_star) * (alpha/omega)
 //	omega = (AMs, s) / (AMs, AMs)
@@ -36,7 +36,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (ix + 1) + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
-	
+
 	in_idx = (ix + 1) + (Ny - 1)*Nx + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
 }
@@ -50,7 +50,7 @@ const int Nx, const int Ny, const int Nz){
 	int in_idx;
 	in_idx = (Nx - 1) + (iy + 1)*Nx + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
-	
+
 	in_idx = (iy + 1)*Nx + (iz + 1)*stride;
 	p[in_idx] = r[in_idx] + (rr_[0]/Apr_[0])*(AsAs[0]/Ass[0])*(p[in_idx]-Ass[0]/AsAs[0]*Ap[in_idx]);
 }
@@ -283,6 +283,6 @@ void betaU(const double *r, double *p, const double *Ap, const double *rr_, cons
 	betaU_vertex_NWB<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	betaU_vertex_NWT<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
 	betaU_vertex_NEB<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
-	betaU_vertex_NET<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);	
-	cudaDeviceSynchronize();	
+	betaU_vertex_NET<<<1,1>>>(r,p,Ap,rr_,Apr_,Ass,AsAs,Nx,Ny,Nz);
+	cudaDeviceSynchronize();
 }

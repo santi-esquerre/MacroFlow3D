@@ -1,7 +1,7 @@
 /**
 * @file transf_operator_3D.cu
-* @brief Constant piecewise transfer operator and homogenization technique  
-* for the conductivity coefficient of the coarse grid operator A2h,  
+* @brief Constant piecewise transfer operator and homogenization technique
+* for the conductivity coefficient of the coarse grid operator A2h,
 * used in the cell-centered multigrid method.
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -51,10 +51,10 @@ __global__ void CompactHomogenizationKtensor(double *phiCoarse, const double *ph
 		IN_IDX = IX + IY*NX + IZ*STRIDE;
 		in_idx = ix + iy*Nx + iz*stride;
 		result = 0.0;
-		result += ( log(phiFine[in_idx]) + log(phiFine[in_idx+1]) 
+		result += ( log(phiFine[in_idx]) + log(phiFine[in_idx+1])
 			      + log(phiFine[in_idx+Nx]) + log(phiFine[in_idx+1+Nx]) );
 
-		result += ( log(phiFine[in_idx+stride]) + log(phiFine[in_idx+1+stride]) 
+		result += ( log(phiFine[in_idx+stride]) + log(phiFine[in_idx+1+stride])
 			      + log(phiFine[in_idx+Nx+stride]) + log(phiFine[in_idx+1+Nx+stride]) );
 
 		phiCoarse[IN_IDX] = exp(result/8.0);
@@ -70,7 +70,7 @@ void HomogenizationPermeability(double *phiCoarse, const double *phiFine, int Nx
 
 //#######################################################################
 //  Routine for restriction (R operator), used in MG-Cycle (CCMG)
-//  Linear restriction: transfers a piecewise constant function 
+//  Linear restriction: transfers a piecewise constant function
 //  from a fine grid to a coarse grid
 //#######################################################################
 __global__ void restriction_linear3D(double *phiCoarse, const double *phiFine, int NX, int NY, int NZ){
@@ -90,10 +90,10 @@ __global__ void restriction_linear3D(double *phiCoarse, const double *phiFine, i
 		IN_IDX = IX + IY*NX + IZ*STRIDE;
 		in_idx = ix + iy*Nx + iz*stride;
 		result = 0.0;
-		result += phiFine[in_idx] + phiFine[in_idx+1] 
+		result += phiFine[in_idx] + phiFine[in_idx+1]
 			    + phiFine[in_idx+Nx] + phiFine[in_idx+1+Nx];
 
-		result += phiFine[in_idx+stride] + phiFine[in_idx+1+stride] 
+		result += phiFine[in_idx+stride] + phiFine[in_idx+1+stride]
 			    + phiFine[in_idx+Nx+stride] + phiFine[in_idx+1+Nx+stride];
 
 		phiCoarse[IN_IDX] = result/8.0;
@@ -107,7 +107,7 @@ void restriction(double *phiCoarse, const double *phiFine, int Nx, int Ny, int N
 
 //#######################################################################
 //  Routine for prolongation (P operator), used in MG-Cycle (CCMG)
-//  Linear prolongation: transfers a piecewise constant function 
+//  Linear prolongation: transfers a piecewise constant function
 //  from a coarse grid to a fine grid
 //#######################################################################
 __global__ void prolongation_interior_linear3D(double *phiFine, const double *phiCoarse, int Nx, int Ny, int Nz){
@@ -127,7 +127,7 @@ __global__ void prolongation_interior_linear3D(double *phiFine, const double *ph
 		IZ = iz/2;
 		in_idx = (ix+1) + (iy+1)*Nx + (iz+1)*Nx*Ny;
 		IN_IDX = (IX) + (IY)*NX + (IZ)*NX*NY;
-		
+
 		phiFine[in_idx] += phiCoarse[IN_IDX+fx+fy*NX+fz*NX*NY];
 	}
 }

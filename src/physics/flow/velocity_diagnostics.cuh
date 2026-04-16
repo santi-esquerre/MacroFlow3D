@@ -35,17 +35,14 @@ namespace physics {
  * All fields have dimensions (nx, ny, nz) and linear index i + nx*(j + ny*k).
  */
 struct VelocityDiagnostics {
-    ScalarField divergence;   ///< div(v) at cell centers
+    ScalarField divergence;    ///< div(v) at cell centers
     ScalarField vorticity_mag; ///< |curl(v)| at cell centers
-    ScalarField helicity;     ///< v_center · curl(v) at cell centers
+    ScalarField helicity;      ///< v_center · curl(v) at cell centers
 
     VelocityDiagnostics() = default;
 
     explicit VelocityDiagnostics(const Grid3D& grid)
-        : divergence(grid)
-        , vorticity_mag(grid)
-        , helicity(grid)
-    {}
+        : divergence(grid), vorticity_mag(grid), helicity(grid) {}
 
     void resize(const Grid3D& grid) {
         divergence.resize(grid);
@@ -75,11 +72,8 @@ struct VelocityDiagnostics {
  * @param grid   Grid specification (nx, ny, nz, dx, dy, dz).
  * @param ctx    CUDA context (stream).
  */
-void compute_velocity_diagnostics(
-    const PaddedVelocityField& vel,
-    VelocityDiagnostics&       diag,
-    const Grid3D&              grid,
-    const CudaContext&         ctx);
+void compute_velocity_diagnostics(const PaddedVelocityField& vel, VelocityDiagnostics& diag,
+                                  const Grid3D& grid, const CudaContext& ctx);
 
 /**
  * @brief Print velocity diagnostic statistics to stdout.
@@ -93,10 +87,8 @@ void compute_velocity_diagnostics(
  * @param realization_id  Realization index (for labeling).
  * @param ctx             CUDA context (stream).
  */
-void print_velocity_diagnostics(
-    const VelocityDiagnostics& diag,
-    int                        realization_id,
-    const CudaContext&         ctx);
+void print_velocity_diagnostics(const VelocityDiagnostics& diag, int realization_id,
+                                const CudaContext& ctx);
 
 } // namespace physics
 } // namespace macroflow3d

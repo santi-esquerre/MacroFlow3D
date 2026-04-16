@@ -1,69 +1,67 @@
+#:schema https://developers.openai.com/codex/config-schema.json
 
+model = "gpt-5.4"
 review_model = "gpt-5.4"
 
-
-
 approval_policy = "on-request"
-
 sandbox_mode = "workspace-write"
 
-
-
 plan_mode_reasoning_effort = "high"
-
 web_search = "cached"
 
-
-
-project_root_markers = [".git", ".codex/config.toml", "CMakeLists.txt", "compile_commands.json"]
+project_root_markers = [
+    ".git",
+    ".codex/config.toml",
+    "CMakeLists.txt",
+    "compile_commands.json",
+]
 
 project_doc_max_bytes = 65536
 
-
-
 [sandbox_workspace_write]
-
 network_access = false
 
-
+[windows]
+sandbox = "elevated"
 
 [profiles.macroflow]
-
 model = "gpt-5.4"
-
 approval_policy = "on-request"
-
 sandbox_mode = "workspace-write"
-
 plan_mode_reasoning_effort = "high"
-
 web_search = "cached"
-
-
 
 [profiles.macroflow-research]
-
 model = "gpt-5.4"
-
 approval_policy = "on-request"
-
 sandbox_mode = "workspace-write"
-
 plan_mode_reasoning_effort = "high"
-
 web_search = "live"
 
-
-
 [profiles.macroflow-review]
-
 model = "gpt-5.4"
-
 approval_policy = "on-request"
-
 sandbox_mode = "read-only"
-
 plan_mode_reasoning_effort = "high"
-
 web_search = "cached"
 
+[profiles.readonly]
+model = "gpt-5.4"
+approval_policy = "on-request"
+sandbox_mode = "read-only"
+plan_mode_reasoning_effort = "high"
+web_search = "disabled"
+
+# =============================================================================
+# MCP servers
+# =============================================================================
+# MCP config requires per-user auth tokens and is NOT stored here.
+# See docs/runbooks/mcp-setup.md for setup instructions.
+#
+# Supported servers for this project:
+#   1. GitHub — issue/PR operations (requires GITHUB_PERSONAL_ACCESS_TOKEN)
+#   2. Filesystem — project docs exposure (optional, workspace context usually sufficient)
+#   3. Web search — CUDA/PETSc/HPC references (handled by web_search setting above)
+#
+# For VS Code: create .vscode/mcp.json locally (gitignored).
+# For Codex App: web_search="cached"|"live" covers the search MCP use case.

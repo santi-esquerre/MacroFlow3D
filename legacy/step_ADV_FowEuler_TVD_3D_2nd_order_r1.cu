@@ -92,10 +92,10 @@ __device__ inline double psi(const double &c1, const double &c2, const double &c
 // 	routine step Foward Euler (pure advection eq.)
 //#######################################################################
 //-----------------------------------------------------------------------
-__global__ void step_FE_TVD_all_domain(double *phi_out, double *phi_in, 
-	double *Up, double *Vp, double *Wp, 
-	int Nx, int Ny, int Nz, double A, double V_dt, 
-	int BC_WEST, int BC_EAST, int BC_SOUTH, int BC_NORTH, int BC_BOTTOM, int BC_TOP, 
+__global__ void step_FE_TVD_all_domain(double *phi_out, double *phi_in,
+	double *Up, double *Vp, double *Wp,
+	int Nx, int Ny, int Nz, double A, double V_dt,
+	int BC_WEST, int BC_EAST, int BC_SOUTH, int BC_NORTH, int BC_BOTTOM, int BC_TOP,
 	double phi_WEST, double phi_EAST, double phi_SOUTH, double phi_NORTH, double phi_BOTTOM, double phi_TOP){
 
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -111,7 +111,7 @@ __global__ void step_FE_TVD_all_domain(double *phi_out, double *phi_in,
 	mb = -Wp[in_idx]*A;
 	// out_idx = in_idx;
 	// in_idx += stride;
-	
+
 	phiT = phi_in[in_idx+stride];
 	phiB = 0.0;
 	// in_idx += stride;
@@ -123,18 +123,18 @@ for(int iz=0; iz<Nz; ++iz){
 		phiT = phi_in[in_idx+stride];
 		mb = -mt;
 	}
-		
-	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)	
+
+	mt = Wp[in_idx+stride]*A;// Adding stride because Wp is of size Nx*Ny*(Nz+1)
 	me = Up[(ix+1)+(iy)*(Nx+1)+(iz)*(Nx+1)*Ny]*A; // Adding offsert because Up is of size (Nx+1)*Ny*Nz
-	mw = -Up[(ix)+(iy)*(Nx+1)+(iz)*(Nx+1)*Ny]*A; 
+	mw = -Up[(ix)+(iy)*(Nx+1)+(iz)*(Nx+1)*Ny]*A;
 	mn = Vp[(ix)+(iy+1)*(Nx)+(iz)*Nx*(Ny+1)]*A; // Adding stride because Vp is of size Nx*(Ny+1)*Nz
 	ms = -Vp[(ix)+(iy)*(Nx)+(iz)*Nx*(Ny+1)]*A;
 	result = 0.0;
-	
+
 	// =============================================================
 	phiU  = (ix<=0)    ? 0 : phi_in[in_idx-1];
 	phiUU = (ix<=1)    ? 0 : phi_in[in_idx-2];
-	phiD  = (ix>=Nx-1) ? 0 : phi_in[in_idx+1];	
+	phiD  = (ix>=Nx-1) ? 0 : phi_in[in_idx+1];
 	phiDD = (ix>=Nx-2) ? 0 : phi_in[in_idx+2];
 
 	if ((BC_WEST==outlet) || (BC_WEST==wall) && (ix==1)) phiUU = phiU;
@@ -147,7 +147,7 @@ for(int iz=0; iz<Nz; ++iz){
 	if ((BC_EAST==outlet) || (BC_EAST==wall) && (ix==Nx-2)) phiDD = phiD;
 	if ((BC_EAST==inlet) && (ix==Nx-2)) phiDD = 2.0*phi_EAST-phiD;
 	if ((BC_EAST==periodic) && (ix>=Nx-2)) {
-		phiDD = phi_in[in_idx+1+PERIODIC_EAST];	
+		phiDD = phi_in[in_idx+1+PERIODIC_EAST];
 		if (ix==Nx-1) phiD = phi_in[in_idx+PERIODIC_EAST];
 	}
 
@@ -170,7 +170,7 @@ for(int iz=0; iz<Nz; ++iz){
 	// =============================================================
 	phiU  = (iy<=0)    ? 0 : phi_in[in_idx-Nx];
 	phiUU = (iy<=1)    ? 0 : phi_in[in_idx-2*Nx];
-	phiD  = (iy>=Ny-1) ? 0 : phi_in[in_idx+Nx];	
+	phiD  = (iy>=Ny-1) ? 0 : phi_in[in_idx+Nx];
 	phiDD = (iy>=Ny-2) ? 0 : phi_in[in_idx+2*Nx];
 
 	if ((BC_SOUTH==outlet) || (BC_SOUTH==wall) && (iy==1)) phiUU = phiU;
@@ -183,7 +183,7 @@ for(int iz=0; iz<Nz; ++iz){
 	if ((BC_NORTH==outlet) || (BC_NORTH==wall) && (iy==Ny-2)) phiDD = phiD;
 	if ((BC_NORTH==inlet) && (iy==Ny-2)) phiDD = 2.0*phi_NORTH-phiD;
 	if ((BC_NORTH==periodic) && (iy>=Ny-2)) {
-		phiDD = phi_in[in_idx+Nx+PERIODIC_NORTH];	
+		phiDD = phi_in[in_idx+Nx+PERIODIC_NORTH];
 		if (iy==Ny-1) phiD = phi_in[in_idx+PERIODIC_NORTH];
 	}
 
@@ -206,7 +206,7 @@ for(int iz=0; iz<Nz; ++iz){
 	// =============================================================
 	phiU  = (iz<=0)    ? 0 : phiB;
 	phiUU = (iz<=1)    ? 0 : phi_in[in_idx-2*stride];
-	phiD  = (iz>=Nz-1) ? 0 : phiT;	
+	phiD  = (iz>=Nz-1) ? 0 : phiT;
 	phiDD = (iz>=Nz-2) ? 0 : phi_in[in_idx+2*stride];
 
 	if ((BC_BOTTOM==outlet) || (BC_BOTTOM==wall) && (iz==1)) phiUU = phiU;
@@ -219,7 +219,7 @@ for(int iz=0; iz<Nz; ++iz){
 	if ((BC_TOP==outlet) || (BC_TOP==wall) && (iz==Nz-2)) phiDD = phiD;
 	if ((BC_TOP==inlet) && (iz==Nz-2)) phiDD = 2.0*phi_TOP-phiD;
 	if ((BC_TOP==periodic) && (iz>=Nz-2)) {
-		phiDD = phi_in[in_idx+stride+PERIODIC_TOP];	
+		phiDD = phi_in[in_idx+stride+PERIODIC_TOP];
 		if (iz==Nz-1) phiD = phi_in[in_idx+PERIODIC_TOP];
 	}
 

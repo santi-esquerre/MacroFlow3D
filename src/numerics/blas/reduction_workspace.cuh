@@ -8,23 +8,21 @@ namespace macroflow3d {
 namespace blas {
 
 struct ReductionWorkspace {
-    DeviceBuffer<unsigned char> temp;  // cuBLAS workspace (std::byte not in C++14)
+    DeviceBuffer<unsigned char> temp; // cuBLAS workspace (std::byte not in C++14)
     size_t temp_bytes = 0;
-    
+
     // Device scalar for results (no host sync in hot-path)
     DeviceBuffer<real> d_scalar;
-    
-    ReductionWorkspace() {
-        d_scalar.resize(1);
-    }
-    
+
+    ReductionWorkspace() { d_scalar.resize(1); }
+
     void ensure_bytes(size_t required_bytes) {
         if (temp_bytes < required_bytes) {
             temp.resize(required_bytes);
             temp_bytes = required_bytes;
         }
     }
-    
+
     void ensure_scalar() {
         if (d_scalar.size() < 1) {
             d_scalar.resize(1);

@@ -4,32 +4,32 @@
  * @file velocity_from_head.cuh
  * @brief Compute staggered velocity field from cell-centered head and conductivity
  * @ingroup physics_flow
- * 
+ *
  * Physics: Darcy's law with harmonic mean conductivity
  *   q = -K_eff * grad(H)
- * 
+ *
  * where K_eff between two cells is the harmonic mean:
  *   K_eff = 2 / (1/K_a + 1/K_b) = 2*K_a*K_b / (K_a + K_b)
- * 
+ *
  * Layout (standard staggered grid):
  *   U: x-velocity at x-faces, dims (nx+1, ny, nz)
  *   V: y-velocity at y-faces, dims (nx, ny+1, nz)
  *   W: z-velocity at z-faces, dims (nx, ny, nz+1)
- * 
+ *
  * Boundary conditions:
  *   - Neumann homogeneous: flux = 0 at boundary face
  *   - Dirichlet: one-sided gradient with distance h/2, using K_cell (not harmonic)
  *   - Periodic: wrap to opposite side, use harmonic mean as interior
- * 
+ *
  * Reference: legacy/compute_velocity_from_head_for_par2.cu
  * Semantics: identical to legacy, but with clean modular implementation
  */
 
-#include "../../core/Grid3D.hpp"
 #include "../../core/BCSpec.hpp"
+#include "../../core/DeviceSpan.cuh"
+#include "../../core/Grid3D.hpp"
 #include "../../runtime/CudaContext.cuh"
 #include "../common/fields.cuh"
-#include "../../core/DeviceSpan.cuh"
 
 namespace macroflow3d {
 namespace physics {
@@ -40,10 +40,10 @@ namespace physics {
 
 /**
  * @brief Compute velocity field from head using Darcy's law
- * 
+ *
  * Writes U, V, W in-place (already allocated in vel).
  * No memory allocation inside this function.
- * 
+ *
  * @param vel       Output velocity field (U, V, W already allocated)
  * @param head      Input head field (cell-centered)
  * @param K         Input conductivity field (cell-centered)
@@ -51,13 +51,8 @@ namespace physics {
  * @param bc        Boundary conditions for all 6 faces
  * @param ctx       CUDA context for synchronization
  */
-void compute_velocity_from_head(
-    VelocityField& vel,
-    const HeadField& head,
-    const KField& K,
-    const Grid3D& grid,
-    const BCSpec& bc,
-    CudaContext& ctx);
+void compute_velocity_from_head(VelocityField& vel, const HeadField& head, const KField& K,
+                                const Grid3D& grid, const BCSpec& bc, CudaContext& ctx);
 
 /**
  * @brief Compute velocity field in padded facefield layout
@@ -74,13 +69,8 @@ void compute_velocity_from_head(
  * @param bc        Boundary conditions for all 6 faces
  * @param ctx       CUDA context for synchronization
  */
-void compute_velocity_from_head(
-    PaddedVelocityField& vel,
-    const HeadField& head,
-    const KField& K,
-    const Grid3D& grid,
-    const BCSpec& bc,
-    CudaContext& ctx);
+void compute_velocity_from_head(PaddedVelocityField& vel, const HeadField& head, const KField& K,
+                                const Grid3D& grid, const BCSpec& bc, CudaContext& ctx);
 
 // ============================================================================
 // Checksum/validation utilities
@@ -109,36 +99,32 @@ real compute_mean(DeviceSpan<const real> data, CudaContext& ctx);
 
 /**
  * @brief Compute and print checksums for velocity field
- * 
+ *
  * Prints L2 norms and NaN status for U, V, W
  */
 void print_velocity_checksums(const VelocityField& vel, CudaContext& ctx);
 
 /**
  * @brief Verify mean U velocity against theoretical Darcy value
- * 
+ *
  * For Dirichlet west-east with periodic elsewhere:
  *   u_theory = K_eff * (H_west - H_east) / Lx
- * 
+ *
  * where K_eff is the effective (harmonic) conductivity in x-direction.
- * 
+ *
  * This function computes:
  *   1. Mean U velocity from the computed field
  *   2. Theoretical velocity using harmonic mean K
  *   3. Relative error
- * 
+ *
  * @param vel       Computed velocity field
  * @param K         Conductivity field
  * @param grid      Grid dimensions
  * @param bc        Boundary conditions
  * @param ctx       CUDA context
  */
-void verify_mean_velocity_darcy(
-    const VelocityField& vel,
-    const KField& K,
-    const Grid3D& grid,
-    const BCSpec& bc,
-    CudaContext& ctx);
+void verify_mean_velocity_darcy(const VelocityField& vel, const KField& K, const Grid3D& grid,
+                                const BCSpec& bc, CudaContext& ctx);
 
 } // namespace physics
 } // namespace macroflow3d

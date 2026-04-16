@@ -12,15 +12,15 @@
 
 #include "AnalysisRunner.hpp"
 
+#include "../../analysis/macrodispersion/MacrodispersionAnalysis.hpp"
 #include "../../io/output_layout.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
-#include "../../analysis/macrodispersion/MacrodispersionAnalysis.hpp"
 
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 namespace macroflow3d {
 namespace analysis_runner {
@@ -35,8 +35,8 @@ int run_analysis(const io::AppConfig& cfg) {
     const int NR = mac.NR;
     io::OutputLayout layout(cfg.output.output_dir);
 
-    std::printf("[analysis_only] Reading %d realization CSVs from %s\n",
-                NR, layout.stats_dir().c_str());
+    std::printf("[analysis_only] Reading %d realization CSVs from %s\n", NR,
+                layout.stats_dir().c_str());
 
     // ── Read all realization time-series from disk ──────────────────
     std::vector<std::vector<io::TimeSeriesPoint<real>>> all_series;
@@ -68,15 +68,14 @@ int run_analysis(const io::AppConfig& cfg) {
     std::printf("       Wrote %s\n", mean_path.c_str());
 
     // ── Macrodispersivity α(t) ─────────────────────────────────────
-    auto alpha_rows = analysis::compute_macrodispersion(
-        all_series, mac.lambda, mac.vmean_norm);
+    auto alpha_rows = analysis::compute_macrodispersion(all_series, mac.lambda, mac.vmean_norm);
 
     std::string alpha_path = layout.macrodispersion_csv();
     analysis::write_macrodispersion_csv(alpha_path, alpha_rows);
     std::printf("       Wrote %s\n", alpha_path.c_str());
 
-    std::printf("[analysis_only] Done. NR=%d, %d time-points, output=%s\n",
-                NR, (int)alpha_rows.size(), cfg.output.output_dir.c_str());
+    std::printf("[analysis_only] Done. NR=%d, %d time-points, output=%s\n", NR,
+                (int)alpha_rows.size(), cfg.output.output_dir.c_str());
 
     return EXIT_SUCCESS;
 }

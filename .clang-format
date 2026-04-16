@@ -1,0 +1,43 @@
+# MacroFlow3D clang-format configuration
+
+# Applied to src/ (excluding src/external/) and apps/
+
+# Conservative style for scientific CUDA/C++ code
+
+BasedOnStyle: LLVM
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+# Braces
+
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Alignment
+
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignTrailingComments: true
+
+# Includes
+
+SortIncludes: CaseInsensitive
+IncludeBlocks: Preserve
+
+# Pointers/references
+
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# Misc
+
+SpaceAfterCStyleCast: false
+SpaceBeforeParens: ControlStatements
+IndentCaseLabels: false
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackParameters: true
+BinPackArguments: true

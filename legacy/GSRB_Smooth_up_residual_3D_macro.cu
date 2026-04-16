@@ -1,6 +1,6 @@
 /**
 * @file GSRB_Smooth_up_residual_3D.cu
-* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving 
+* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving
 * the flow equation with CCMG method
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -49,8 +49,8 @@ void update_res(double *rk_1, double *xk, const double *rhs, const double *K,
 
 //#######################################################################
 // 	routine smooth_GSRB (system A*phi = r)
-//	perform one iteration Symetric Gauss-Seidel 
-//  Red-Black ordering (two half step) 
+//	perform one iteration Symetric Gauss-Seidel
+//  Red-Black ordering (two half step)
 //  phiC <- (rC - sum(AF*phiF) )/AC , F~{E, W, N, S, T, B}
 //	The matrix A must be SPD, else, change the stencil
 //  for other problems (eg. variable permeability) the stencil must be modified
@@ -282,9 +282,9 @@ void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%   SOLVE COARSEST SYSTEM WITH GS-RB   %%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int BC_BOTTOM, int BC_TOP, int BC_SOUTH, int BC_NORTH, int BC_WEST, int BC_EAST, bool pin1stCell){
 	double *rr_new; cudaMalloc(&rr_new,sizeof(double));
 	double *rr_new_h; rr_new_h = new double[1];

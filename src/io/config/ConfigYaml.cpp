@@ -10,12 +10,12 @@
 
 #include "Config.hpp"
 #include "ConfigDefaults.hpp"
-#include <yaml-cpp/yaml.h>
 #include <fstream>
-#include <stdexcept>
 #include <iostream>
 #include <set>
+#include <stdexcept>
 #include <string>
+#include <yaml-cpp/yaml.h>
 
 namespace macroflow3d {
 namespace io {
@@ -23,8 +23,7 @@ namespace io {
 namespace {
 
 // Helper to get value or keep existing default
-template<typename T>
-T get_or(const YAML::Node& node, const std::string& key, T default_val) {
+template <typename T> T get_or(const YAML::Node& node, const std::string& key, T default_val) {
     if (node[key]) {
         return node[key].as<T>();
     }
@@ -41,12 +40,10 @@ T get_or(const YAML::Node& node, const std::string& key, T default_val) {
  * @param path   Human-readable path prefix for error messages.
  * @param errs   Accumulator for error strings.
  */
-void check_unknown_keys(const YAML::Node& node,
-                        const std::set<std::string>& known,
-                        const std::string& path,
-                        std::vector<std::string>& errs)
-{
-    if (!node || !node.IsMap()) return;
+void check_unknown_keys(const YAML::Node& node, const std::set<std::string>& known,
+                        const std::string& path, std::vector<std::string>& errs) {
+    if (!node || !node.IsMap())
+        return;
     for (auto it = node.begin(); it != node.end(); ++it) {
         std::string key = it->first.as<std::string>();
         if (known.find(key) == known.end()) {
@@ -57,23 +54,27 @@ void check_unknown_keys(const YAML::Node& node,
 
 // Parse BCType from string
 BCType parse_bc_type(const std::string& s) {
-    if (s == "dirichlet" || s == "Dirichlet") return BCType::Dirichlet;
-    if (s == "neumann" || s == "Neumann") return BCType::Neumann;
-    if (s == "periodic" || s == "Periodic") return BCType::Periodic;
+    if (s == "dirichlet" || s == "Dirichlet")
+        return BCType::Dirichlet;
+    if (s == "neumann" || s == "Neumann")
+        return BCType::Neumann;
+    if (s == "periodic" || s == "Periodic")
+        return BCType::Periodic;
     throw std::runtime_error("Unknown BC type: " + s);
 }
 
 // Parse a single BC face with validation
 BCFace parse_bc_face(const YAML::Node& node, const std::string& face_name) {
     BCFace face;
-    if (!node) return face;  // Default: Dirichlet 0
-    
+    if (!node)
+        return face; // Default: Dirichlet 0
+
     std::string type_str = get_or<std::string>(node, "type", "dirichlet");
     face.type = parse_bc_type(type_str);
-    
+
     // Periodic doesn't need a value
     if (face.type == BCType::Periodic) {
-        face.value = 0.0;  // Ignored
+        face.value = 0.0; // Ignored
     } else {
         // Dirichlet/Neumann need value
         if (!node["value"]) {
@@ -90,9 +91,10 @@ BCFace parse_bc_face(const YAML::Node& node, const std::string& face_name) {
 GridConfig parse_grid(const YAML::Node& node, const GridConfig& def,
                       std::vector<std::string>& errs) {
     GridConfig cfg = def;
-    if (!node) return cfg;
+    if (!node)
+        return cfg;
 
-    static const std::set<std::string> known = {"nx","ny","nz","dx"};
+    static const std::set<std::string> known = {"nx", "ny", "nz", "dx"};
     check_unknown_keys(node, known, "grid", errs);
 
     cfg.nx = get_or<int>(node, "nx", def.nx);
@@ -104,59 +106,63 @@ GridConfig parse_grid(const YAML::Node& node, const GridConfig& def,
 }
 
 // Parse stochastic section
-StochasticYamlConfig parse_stochastic(const YAML::Node& node,
-                                      const StochasticYamlConfig& def,
+StochasticYamlConfig parse_stochastic(const YAML::Node& node, const StochasticYamlConfig& def,
                                       std::vector<std::string>& errs) {
     StochasticYamlConfig cfg = def;
-    if (!node) return cfg;
+    if (!node)
+        return cfg;
 
-    static const std::set<std::string> known =
-        {"sigma2","corr_length","n_modes","covariance_type","seed","K_mean"};
+    static const std::set<std::string> known = {"sigma2",          "corr_length", "n_modes",
+                                                "covariance_type", "seed",        "K_mean"};
     check_unknown_keys(node, known, "stochastic", errs);
 
-    cfg.sigma2         = get_or<real>(node, "sigma2", def.sigma2);
-    cfg.corr_length    = get_or<real>(node, "corr_length", def.corr_length);
-    cfg.n_modes        = get_or<int>(node, "n_modes", def.n_modes);
+    cfg.sigma2 = get_or<real>(node, "sigma2", def.sigma2);
+    cfg.corr_length = get_or<real>(node, "corr_length", def.corr_length);
+    cfg.n_modes = get_or<int>(node, "n_modes", def.n_modes);
     cfg.covariance_type = get_or<int>(node, "covariance_type", def.covariance_type);
-    cfg.seed           = get_or<uint64_t>(node, "seed", def.seed);
-    cfg.K_mean         = get_or<real>(node, "K_mean", def.K_mean);
+    cfg.seed = get_or<uint64_t>(node, "seed", def.seed);
+    cfg.K_mean = get_or<real>(node, "K_mean", def.K_mean);
 
     return cfg;
 }
 
 // Parse flow section
 FlowYamlConfig parse_flow(const YAML::Node& node, const FlowYamlConfig& def,
-                           std::vector<std::string>& errs) {
+                          std::vector<std::string>& errs) {
     FlowYamlConfig cfg = def;
-    if (!node) return cfg;
+    if (!node)
+        return cfg;
 
-    static const std::set<std::string> known =
-        {"solver","mg_levels","mg_pre_smooth","mg_post_smooth","mg_coarse_iters",
-         "mg_max_cycles","cg_max_iter","cg_rtol","cg_check_every","rtol",
-         "verify_velocity","pin","pin_first_cell","bc"};
+    static const std::set<std::string> known = {"solver",          "mg_levels",
+                                                "mg_pre_smooth",   "mg_post_smooth",
+                                                "mg_coarse_iters", "mg_max_cycles",
+                                                "cg_max_iter",     "cg_rtol",
+                                                "cg_check_every",  "rtol",
+                                                "verify_velocity", "pin",
+                                                "pin_first_cell",  "bc"};
     check_unknown_keys(node, known, "flow", errs);
 
-    cfg.solver         = get_or<std::string>(node, "solver", def.solver);
-    cfg.mg_levels      = get_or<int>(node, "mg_levels", def.mg_levels);
-    cfg.mg_pre_smooth  = get_or<int>(node, "mg_pre_smooth", def.mg_pre_smooth);
+    cfg.solver = get_or<std::string>(node, "solver", def.solver);
+    cfg.mg_levels = get_or<int>(node, "mg_levels", def.mg_levels);
+    cfg.mg_pre_smooth = get_or<int>(node, "mg_pre_smooth", def.mg_pre_smooth);
     cfg.mg_post_smooth = get_or<int>(node, "mg_post_smooth", def.mg_post_smooth);
     cfg.mg_coarse_iters = get_or<int>(node, "mg_coarse_iters", def.mg_coarse_iters);
-    cfg.mg_max_cycles  = get_or<int>(node, "mg_max_cycles", def.mg_max_cycles);
-    cfg.cg_max_iter    = get_or<int>(node, "cg_max_iter", def.cg_max_iter);
-    cfg.cg_rtol        = get_or<real>(node, "cg_rtol", def.cg_rtol);
+    cfg.mg_max_cycles = get_or<int>(node, "mg_max_cycles", def.mg_max_cycles);
+    cfg.cg_max_iter = get_or<int>(node, "cg_max_iter", def.cg_max_iter);
+    cfg.cg_rtol = get_or<real>(node, "cg_rtol", def.cg_rtol);
     cfg.cg_check_every = get_or<int>(node, "cg_check_every", def.cg_check_every);
-    cfg.rtol           = get_or<real>(node, "rtol", def.rtol);
+    cfg.rtol = get_or<real>(node, "rtol", def.rtol);
 
     // Verification flag
     cfg.verify_velocity = get_or<bool>(node, "verify_velocity", def.verify_velocity);
-    
+
     // Pin configuration (legacy: pin1stCell diagonal doubling)
     // Format: flow.pin.mode = "auto" | "on" | "off"
     // Legacy format: flow.pin_first_cell = true/false (backward compat)
     // Note: pin always applies to cell [0,0,0], value is not configurable
     if (node["pin"]) {
         const auto& pin_node = node["pin"];
-        
+
         // Parse mode: "auto" | "on" | "off"
         std::string mode_str = get_or<std::string>(pin_node, "mode", "auto");
         if (mode_str == "on") {
@@ -164,7 +170,7 @@ FlowYamlConfig parse_flow(const YAML::Node& node, const FlowYamlConfig& def,
         } else if (mode_str == "off") {
             cfg.pin.mode = PinMode::Off;
         } else {
-            cfg.pin.mode = PinMode::Auto;  // default
+            cfg.pin.mode = PinMode::Auto; // default
         }
         // Note: pin.value and pin.index are ignored (legacy diagonal doubling)
     } else if (node["pin_first_cell"]) {
@@ -173,82 +179,116 @@ FlowYamlConfig parse_flow(const YAML::Node& node, const FlowYamlConfig& def,
         cfg.pin.mode = pin_enabled ? PinMode::On : PinMode::Off;
     }
     // else: defaults (mode=Auto)
-    
+
     // Parse boundary conditions
-    // Support both legacy names (west/east/south/north/bottom/top) 
+    // Support both legacy names (west/east/south/north/bottom/top)
     // and coordinate names (xmin/xmax/ymin/ymax/zmin/zmax)
     if (node["bc"]) {
         const auto& bc_node = node["bc"];
-        
+
         // X direction: west/east or xmin/xmax
         if (bc_node["west"]) {
             cfg.bc.xmin = parse_bc_face(bc_node["west"], "west(xmin)");
         } else if (bc_node["xmin"]) {
             cfg.bc.xmin = parse_bc_face(bc_node["xmin"], "xmin");
         }
-        
+
         if (bc_node["east"]) {
             cfg.bc.xmax = parse_bc_face(bc_node["east"], "east(xmax)");
         } else if (bc_node["xmax"]) {
             cfg.bc.xmax = parse_bc_face(bc_node["xmax"], "xmax");
         }
-        
+
         // Y direction: south/north or ymin/ymax
         if (bc_node["south"]) {
             cfg.bc.ymin = parse_bc_face(bc_node["south"], "south(ymin)");
         } else if (bc_node["ymin"]) {
             cfg.bc.ymin = parse_bc_face(bc_node["ymin"], "ymin");
         }
-        
+
         if (bc_node["north"]) {
             cfg.bc.ymax = parse_bc_face(bc_node["north"], "north(ymax)");
         } else if (bc_node["ymax"]) {
             cfg.bc.ymax = parse_bc_face(bc_node["ymax"], "ymax");
         }
-        
+
         // Z direction: bottom/top or zmin/zmax
         if (bc_node["bottom"]) {
             cfg.bc.zmin = parse_bc_face(bc_node["bottom"], "bottom(zmin)");
         } else if (bc_node["zmin"]) {
             cfg.bc.zmin = parse_bc_face(bc_node["zmin"], "zmin");
         }
-        
+
         if (bc_node["top"]) {
             cfg.bc.zmax = parse_bc_face(bc_node["top"], "top(zmax)");
         } else if (bc_node["zmax"]) {
             cfg.bc.zmax = parse_bc_face(bc_node["zmax"], "zmax");
         }
     }
-    
+
     return cfg;
 }
 
 // Parse transport section
-TransportYamlConfig parse_transport(const YAML::Node& node,
-                                    const TransportYamlConfig& def,
+TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlConfig& def,
                                     std::vector<std::string>& errs) {
     TransportYamlConfig cfg = def;
-    if (!node) return cfg;
+    if (!node)
+        return cfg;
 
-    static const std::set<std::string> known =
-        {"n_particles","dt","n_steps","porosity","diffusion","alpha_l","alpha_t",
-         "seed","output_every","snapshot_every","inject_x",
-         "method","pspta_diagnostics"};
+    static const std::set<std::string> known = {"n_particles",       "dt",          "n_steps",
+                                                "porosity",          "diffusion",   "alpha_l",
+                                                "alpha_t",           "seed",        "output_every",
+                                                "snapshot_every",    "inject_x",    "method",
+                                                "pspta_diagnostics", "pspta_refine"};
     check_unknown_keys(node, known, "transport", errs);
 
-    cfg.n_particles    = get_or<int>(node, "n_particles", def.n_particles);
-    cfg.dt             = get_or<real>(node, "dt", def.dt);
-    cfg.n_steps        = get_or<int>(node, "n_steps", def.n_steps);
-    cfg.porosity       = get_or<real>(node, "porosity", def.porosity);
-    cfg.diffusion      = get_or<real>(node, "diffusion", def.diffusion);
-    cfg.alpha_l        = get_or<real>(node, "alpha_l", def.alpha_l);
-    cfg.alpha_t        = get_or<real>(node, "alpha_t", def.alpha_t);
-    cfg.seed           = get_or<uint64_t>(node, "seed", def.seed);
-    cfg.output_every   = get_or<int>(node, "output_every", def.output_every);
+    cfg.n_particles = get_or<int>(node, "n_particles", def.n_particles);
+    cfg.dt = get_or<real>(node, "dt", def.dt);
+    cfg.n_steps = get_or<int>(node, "n_steps", def.n_steps);
+    cfg.porosity = get_or<real>(node, "porosity", def.porosity);
+    cfg.diffusion = get_or<real>(node, "diffusion", def.diffusion);
+    cfg.alpha_l = get_or<real>(node, "alpha_l", def.alpha_l);
+    cfg.alpha_t = get_or<real>(node, "alpha_t", def.alpha_t);
+    cfg.seed = get_or<uint64_t>(node, "seed", def.seed);
+    cfg.output_every = get_or<int>(node, "output_every", def.output_every);
     cfg.snapshot_every = get_or<int>(node, "snapshot_every", def.snapshot_every);
-    cfg.inject_x       = get_or<real>(node, "inject_x", def.inject_x);
-    cfg.method          = get_or<std::string>(node, "method", def.method);
+    cfg.inject_x = get_or<real>(node, "inject_x", def.inject_x);
+    cfg.method = get_or<std::string>(node, "method", def.method);
     cfg.pspta_diagnostics = get_or<bool>(node, "pspta_diagnostics", def.pspta_diagnostics);
+
+    if (node["pspta_refine"]) {
+        const auto& r = node["pspta_refine"];
+        static const std::set<std::string> refine_known = {
+            "enabled",           "outer_iters",         "omega",
+            "omega_min",         "max_backtracks",      "eps_vx",
+            "source_clip_cells", "no_descent_patience", "stop_rel_rms",
+            "stop_abs_rms",      "print_every_iter",    "save_history_csv",
+            "eq13_diagnostics"};
+        check_unknown_keys(r, refine_known, "transport.pspta_refine", errs);
+
+        cfg.pspta_refine.enabled = get_or<bool>(r, "enabled", def.pspta_refine.enabled);
+        cfg.pspta_refine.outer_iters = get_or<int>(r, "outer_iters", def.pspta_refine.outer_iters);
+        cfg.pspta_refine.omega = get_or<real>(r, "omega", def.pspta_refine.omega);
+        cfg.pspta_refine.omega_min = get_or<real>(r, "omega_min", def.pspta_refine.omega_min);
+        cfg.pspta_refine.max_backtracks =
+            get_or<int>(r, "max_backtracks", def.pspta_refine.max_backtracks);
+        cfg.pspta_refine.eps_vx = get_or<real>(r, "eps_vx", def.pspta_refine.eps_vx);
+        cfg.pspta_refine.source_clip_cells =
+            get_or<real>(r, "source_clip_cells", def.pspta_refine.source_clip_cells);
+        cfg.pspta_refine.no_descent_patience =
+            get_or<int>(r, "no_descent_patience", def.pspta_refine.no_descent_patience);
+        cfg.pspta_refine.stop_rel_rms =
+            get_or<real>(r, "stop_rel_rms", def.pspta_refine.stop_rel_rms);
+        cfg.pspta_refine.stop_abs_rms =
+            get_or<real>(r, "stop_abs_rms", def.pspta_refine.stop_abs_rms);
+        cfg.pspta_refine.print_every_iter =
+            get_or<bool>(r, "print_every_iter", def.pspta_refine.print_every_iter);
+        cfg.pspta_refine.save_history_csv =
+            get_or<bool>(r, "save_history_csv", def.pspta_refine.save_history_csv);
+        cfg.pspta_refine.eq13_diagnostics =
+            get_or<bool>(r, "eq13_diagnostics", def.pspta_refine.eq13_diagnostics);
+    }
     // velocity_layout is derived after parsing (not user-configurable)
 
     return cfg;
@@ -258,18 +298,19 @@ TransportYamlConfig parse_transport(const YAML::Node& node,
 OutputYamlConfig parse_output(const YAML::Node& node, const OutputYamlConfig& def,
                               std::vector<std::string>& errs) {
     OutputYamlConfig cfg = def;
-    if (!node) return cfg;
+    if (!node)
+        return cfg;
 
-    static const std::set<std::string> known =
-        {"output_dir","save_K","save_head","save_velocity","save_particles","format"};
+    static const std::set<std::string> known = {"output_dir",    "save_K",         "save_head",
+                                                "save_velocity", "save_particles", "format"};
     check_unknown_keys(node, known, "output", errs);
 
-    cfg.output_dir     = get_or<std::string>(node, "output_dir", def.output_dir);
-    cfg.save_K         = get_or<bool>(node, "save_K", def.save_K);
-    cfg.save_head      = get_or<bool>(node, "save_head", def.save_head);
-    cfg.save_velocity  = get_or<bool>(node, "save_velocity", def.save_velocity);
+    cfg.output_dir = get_or<std::string>(node, "output_dir", def.output_dir);
+    cfg.save_K = get_or<bool>(node, "save_K", def.save_K);
+    cfg.save_head = get_or<bool>(node, "save_head", def.save_head);
+    cfg.save_velocity = get_or<bool>(node, "save_velocity", def.save_velocity);
     cfg.save_particles = get_or<bool>(node, "save_particles", def.save_particles);
-    cfg.format         = get_or<std::string>(node, "format", def.format);
+    cfg.format = get_or<std::string>(node, "format", def.format);
 
     return cfg;
 }
@@ -278,44 +319,53 @@ OutputYamlConfig parse_output(const YAML::Node& node, const OutputYamlConfig& de
 AnalysisConfig parse_analysis(const YAML::Node& node, const AnalysisConfig& def,
                               std::vector<std::string>& errs) {
     AnalysisConfig cfg = def;
-    if (!node) return cfg;
+    if (!node)
+        return cfg;
 
-    static const std::set<std::string> analysis_known = {"macrodispersion","snapshots"};
+    static const std::set<std::string> analysis_known = {"macrodispersion", "snapshots"};
     check_unknown_keys(node, analysis_known, "analysis", errs);
 
     // Macrodispersion sub-section
     if (node["macrodispersion"]) {
         const auto& m = node["macrodispersion"];
-        static const std::set<std::string> mac_known =
-            {"enabled","NR","lambda","vmean_norm","sample_every","var_estimator"};
+        static const std::set<std::string> mac_known = {
+            "enabled", "NR", "lambda", "vmean_norm", "sample_every", "var_estimator"};
         check_unknown_keys(m, mac_known, "analysis.macrodispersion", errs);
 
-        cfg.macrodispersion.enabled       = get_or<bool>(m, "enabled", def.macrodispersion.enabled);
-        cfg.macrodispersion.NR            = get_or<int>(m, "NR", def.macrodispersion.NR);
-        cfg.macrodispersion.lambda        = get_or<real>(m, "lambda", def.macrodispersion.lambda);
-        cfg.macrodispersion.vmean_norm    = get_or<real>(m, "vmean_norm", def.macrodispersion.vmean_norm);
-        cfg.macrodispersion.sample_every  = get_or<int>(m, "sample_every", def.macrodispersion.sample_every);
-        cfg.macrodispersion.var_estimator = get_or<std::string>(m, "var_estimator", def.macrodispersion.var_estimator);
+        cfg.macrodispersion.enabled = get_or<bool>(m, "enabled", def.macrodispersion.enabled);
+        cfg.macrodispersion.NR = get_or<int>(m, "NR", def.macrodispersion.NR);
+        cfg.macrodispersion.lambda = get_or<real>(m, "lambda", def.macrodispersion.lambda);
+        cfg.macrodispersion.vmean_norm =
+            get_or<real>(m, "vmean_norm", def.macrodispersion.vmean_norm);
+        cfg.macrodispersion.sample_every =
+            get_or<int>(m, "sample_every", def.macrodispersion.sample_every);
+        cfg.macrodispersion.var_estimator =
+            get_or<std::string>(m, "var_estimator", def.macrodispersion.var_estimator);
     }
 
     // Snapshots sub-section
     if (node["snapshots"]) {
         const auto& s = node["snapshots"];
-        static const std::set<std::string> snap_known =
-            {"enabled","every","legacy_format","include_time","include_status",
-             "include_wrap_counts","include_unwrapped","stride","max_particles","precision"};
+        static const std::set<std::string> snap_known = {"enabled",           "every",
+                                                         "legacy_format",     "include_time",
+                                                         "include_status",    "include_wrap_counts",
+                                                         "include_unwrapped", "stride",
+                                                         "max_particles",     "precision"};
         check_unknown_keys(s, snap_known, "analysis.snapshots", errs);
 
-        cfg.snapshots.enabled             = get_or<bool>(s, "enabled", def.snapshots.enabled);
-        cfg.snapshots.every               = get_or<int>(s, "every", def.snapshots.every);
-        cfg.snapshots.legacy_format       = get_or<bool>(s, "legacy_format", def.snapshots.legacy_format);
-        cfg.snapshots.include_time        = get_or<bool>(s, "include_time", def.snapshots.include_time);
-        cfg.snapshots.include_status      = get_or<bool>(s, "include_status", def.snapshots.include_status);
-        cfg.snapshots.include_wrap_counts = get_or<bool>(s, "include_wrap_counts", def.snapshots.include_wrap_counts);
-        cfg.snapshots.include_unwrapped   = get_or<bool>(s, "include_unwrapped", def.snapshots.include_unwrapped);
-        cfg.snapshots.stride              = get_or<int>(s, "stride", def.snapshots.stride);
-        cfg.snapshots.max_particles       = get_or<int>(s, "max_particles", def.snapshots.max_particles);
-        cfg.snapshots.precision           = get_or<int>(s, "precision", def.snapshots.precision);
+        cfg.snapshots.enabled = get_or<bool>(s, "enabled", def.snapshots.enabled);
+        cfg.snapshots.every = get_or<int>(s, "every", def.snapshots.every);
+        cfg.snapshots.legacy_format = get_or<bool>(s, "legacy_format", def.snapshots.legacy_format);
+        cfg.snapshots.include_time = get_or<bool>(s, "include_time", def.snapshots.include_time);
+        cfg.snapshots.include_status =
+            get_or<bool>(s, "include_status", def.snapshots.include_status);
+        cfg.snapshots.include_wrap_counts =
+            get_or<bool>(s, "include_wrap_counts", def.snapshots.include_wrap_counts);
+        cfg.snapshots.include_unwrapped =
+            get_or<bool>(s, "include_unwrapped", def.snapshots.include_unwrapped);
+        cfg.snapshots.stride = get_or<int>(s, "stride", def.snapshots.stride);
+        cfg.snapshots.max_particles = get_or<int>(s, "max_particles", def.snapshots.max_particles);
+        cfg.snapshots.precision = get_or<int>(s, "precision", def.snapshots.precision);
     }
 
     return cfg;
@@ -344,8 +394,8 @@ AppConfig load_config_yaml(const std::string& path) {
     std::vector<std::string> unknown_errs;
 
     // Check top-level keys
-    static const std::set<std::string> top_known =
-        {"run_mode","grid","stochastic","flow","transport","analysis","diagnostics","output"};
+    static const std::set<std::string> top_known = {
+        "run_mode", "grid", "stochastic", "flow", "transport", "analysis", "diagnostics", "output"};
     check_unknown_keys(root, top_known, "", unknown_errs);
 
     // Run mode (top-level, optional)
@@ -354,23 +404,23 @@ AppConfig load_config_yaml(const std::string& path) {
     }
 
     // Parse sections (merge over defaults)
-    cfg.grid       = parse_grid(root["grid"], cfg.grid, unknown_errs);
+    cfg.grid = parse_grid(root["grid"], cfg.grid, unknown_errs);
     cfg.stochastic = parse_stochastic(root["stochastic"], cfg.stochastic, unknown_errs);
-    cfg.flow       = parse_flow(root["flow"], cfg.flow, unknown_errs);
-    cfg.transport  = parse_transport(root["transport"], cfg.transport, unknown_errs);
+    cfg.flow = parse_flow(root["flow"], cfg.flow, unknown_errs);
+    cfg.transport = parse_transport(root["transport"], cfg.transport, unknown_errs);
     // Derive velocity_layout from method — not user-configurable
     cfg.transport.velocity_layout = (cfg.transport.method == "pspta") ? "compact" : "padded";
-    cfg.analysis   = parse_analysis(root["analysis"], cfg.analysis, unknown_errs);
+    cfg.analysis = parse_analysis(root["analysis"], cfg.analysis, unknown_errs);
     // Diagnostics section (simple — single bool)
     if (root["diagnostics"]) {
         const auto& dnode = root["diagnostics"];
         static const std::set<std::string> diag_known = {"velocity_field"};
         check_unknown_keys(dnode, diag_known, "diagnostics", unknown_errs);
-        cfg.diagnostics.velocity_field = get_or<bool>(dnode, "velocity_field",
-                                                       cfg.diagnostics.velocity_field);
+        cfg.diagnostics.velocity_field =
+            get_or<bool>(dnode, "velocity_field", cfg.diagnostics.velocity_field);
     }
 
-    cfg.output     = parse_output(root["output"], cfg.output, unknown_errs);
+    cfg.output = parse_output(root["output"], cfg.output, unknown_errs);
 
     // Strict mode: reject unknown keys
     if (!unknown_errs.empty()) {

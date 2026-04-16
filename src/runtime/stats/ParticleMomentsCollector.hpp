@@ -16,11 +16,11 @@
  *   - store_sample reads back results after the caller's sync point.
  */
 
+#include "../../core/Grid3D.hpp"
+#include "../../core/Scalar.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
 #include "../../physics/particles/par2_adapter/Par2StatsAdapter.hpp"
-#include "../../core/Scalar.hpp"
-#include "../../core/Grid3D.hpp"
 
 #include <cuda_runtime.h>
 #include <vector>
@@ -37,15 +37,13 @@ using namespace macroflow3d::physics::particles;
  * io::TimeSeriesPoint — decoupled from par2 types.
  */
 class ParticleMomentsCollector {
-public:
-    ParticleMomentsCollector(int max_particles, const Grid3D& grid,
-                             bool has_periodic_bc, bool use_biased_var)
-        : adapter_(max_particles, grid, has_periodic_bc, use_biased_var)
-    {}
+  public:
+    ParticleMomentsCollector(int max_particles, const Grid3D& grid, bool has_periodic_bc,
+                             bool use_biased_var)
+        : adapter_(max_particles, grid, has_periodic_bc, use_biased_var) {}
 
     /// Launch async GPU reduction (does NOT synchronize)
-    void sample_async(const ConstParticlesSoA<real>& particles,
-                      cudaStream_t stream) {
+    void sample_async(const ConstParticlesSoA<real>& particles, cudaStream_t stream) {
         adapter_.sample_async(particles, stream);
     }
 
@@ -57,11 +55,11 @@ public:
 
         if (adapter_.num_samples() > prev_count) {
             const auto& s = adapter_.samples().back();
-            out.time   = s.time;
+            out.time = s.time;
             out.active = s.active;
             for (int k = 0; k < 3; ++k) {
                 out.mean[k] = s.mean[k];
-                out.var[k]  = s.var[k];
+                out.var[k] = s.var[k];
             }
             return true;
         }
@@ -73,7 +71,7 @@ public:
 
     int num_samples() const { return adapter_.num_samples(); }
 
-private:
+  private:
     Par2StatsAdapter adapter_;
 };
 

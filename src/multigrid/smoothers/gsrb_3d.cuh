@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../../core/Grid3D.hpp"
-#include "../../core/DeviceSpan.cuh"
 #include "../../core/BCSpec.hpp"
-#include "../../runtime/CudaContext.cuh"
+#include "../../core/DeviceSpan.cuh"
+#include "../../core/Grid3D.hpp"
 #include "../../numerics/pin_spec.hpp"
+#include "../../runtime/CudaContext.cuh"
 
 namespace macroflow3d {
 namespace multigrid {
@@ -12,11 +12,11 @@ namespace multigrid {
 /**
  * @brief Gauss-Seidel Red-Black smoother
  * @ingroup multigrid_smoothers
- * 
+ *
  * Solves A*x = b using red-black ordering:
  *   Red cells: (i+j+k) % 2 == 0
  *   Black cells: (i+j+k) % 2 == 1
- * 
+ *
  * @param ctx       CUDA context
  * @param grid      Grid specification
  * @param x         Solution (in/out)
@@ -26,16 +26,9 @@ namespace multigrid {
  * @param bc        Boundary conditions
  * @param pin       Pin specification (optional, default = no pin)
  */
-void gsrb_smooth_3d(
-    CudaContext& ctx,
-    const Grid3D& grid,
-    DeviceSpan<real> x,
-    DeviceSpan<const real> b,
-    DeviceSpan<const real> K,
-    int num_iters,
-    const BCSpec& bc,
-    PinSpec pin = {}
-);
+void gsrb_smooth_3d(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> x,
+                    DeviceSpan<const real> b, DeviceSpan<const real> K, int num_iters,
+                    const BCSpec& bc, PinSpec pin = {});
 
 } // namespace multigrid
 } // namespace macroflow3d

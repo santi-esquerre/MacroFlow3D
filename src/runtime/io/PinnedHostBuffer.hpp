@@ -10,9 +10,9 @@
  * HPC contract: NO allocations in the hot loop.
  */
 
-#include <cuda_runtime.h>
 #include <cstddef>
 #include <cstdint>
+#include <cuda_runtime.h>
 #include <utility>
 
 namespace macroflow3d {
@@ -23,14 +23,11 @@ namespace runtime {
  *
  * Use: allocate once (in prepare), memcpy async per step, read after sync.
  */
-template <typename T>
-class PinnedHostBuffer {
-public:
+template <typename T> class PinnedHostBuffer {
+  public:
     PinnedHostBuffer() : ptr_(nullptr), n_(0) {}
 
-    explicit PinnedHostBuffer(size_t n) : ptr_(nullptr), n_(0) {
-        allocate(n);
-    }
+    explicit PinnedHostBuffer(size_t n) : ptr_(nullptr), n_(0) { allocate(n); }
 
     ~PinnedHostBuffer() { free(); }
 
@@ -39,14 +36,18 @@ public:
     PinnedHostBuffer& operator=(const PinnedHostBuffer&) = delete;
 
     // Movable
-    PinnedHostBuffer(PinnedHostBuffer&& o) noexcept
-        : ptr_(o.ptr_), n_(o.n_) { o.ptr_ = nullptr; o.n_ = 0; }
+    PinnedHostBuffer(PinnedHostBuffer&& o) noexcept : ptr_(o.ptr_), n_(o.n_) {
+        o.ptr_ = nullptr;
+        o.n_ = 0;
+    }
 
     PinnedHostBuffer& operator=(PinnedHostBuffer&& o) noexcept {
         if (this != &o) {
             free();
-            ptr_ = o.ptr_; n_ = o.n_;
-            o.ptr_ = nullptr; o.n_ = 0;
+            ptr_ = o.ptr_;
+            n_ = o.n_;
+            o.ptr_ = nullptr;
+            o.n_ = 0;
         }
         return *this;
     }
@@ -63,20 +64,18 @@ public:
     }
 
     /// Async copy from device to this pinned buffer
-    void copy_from_device_async(const T* d_src, size_t count,
-                                 cudaStream_t stream) {
-        cudaMemcpyAsync(ptr_, d_src, count * sizeof(T),
-                        cudaMemcpyDeviceToHost, stream);
+    void copy_from_device_async(const T* d_src, size_t count, cudaStream_t stream) {
+        cudaMemcpyAsync(ptr_, d_src, count * sizeof(T), cudaMemcpyDeviceToHost, stream);
     }
 
-    T*       data()       { return ptr_; }
+    T* data() { return ptr_; }
     const T* data() const { return ptr_; }
-    size_t   size() const { return n_; }
+    size_t size() const { return n_; }
 
-    T& operator[](size_t i)       { return ptr_[i]; }
+    T& operator[](size_t i) { return ptr_[i]; }
     const T& operator[](size_t i) const { return ptr_[i]; }
 
-private:
+  private:
     void free() {
         if (ptr_) {
             cudaFreeHost(ptr_);
@@ -85,7 +84,7 @@ private:
         }
     }
 
-    T*     ptr_;
+    T* ptr_;
     size_t n_;
 };
 
@@ -96,24 +95,23 @@ private:
  * status and wrap counts for full Par2-compatible snapshot output).
  * Allocated once, reused across all snapshot events.
  */
-template <typename T>
-struct SnapshotStaging {
-    PinnedHostBuffer<T>       x, y, z;
-    PinnedHostBuffer<T>       x_u, y_u, z_u;      // unwrapped (optional)
+template <typename T> struct SnapshotStaging {
+    PinnedHostBuffer<T> x, y, z;
+    PinnedHostBuffer<T> x_u, y_u, z_u;             // unwrapped (optional)
     PinnedHostBuffer<uint8_t> status;              // particle status (optional)
     PinnedHostBuffer<int32_t> wrapX, wrapY, wrapZ; // wrap counters (optional)
 
-    int  capacity        = 0;
-    bool has_unwrapped   = false;
-    bool has_status      = false;
+    int capacity = 0;
+    bool has_unwrapped = false;
+    bool has_status = false;
     bool has_wrap_counts = false;
 
     /// Allocate all requested buffers (call ONCE in prepare phase, not in hot loop)
-    void allocate(int n_particles, bool need_unwrap,
-                  bool need_status = false, bool need_wrap = false) {
-        capacity        = n_particles;
-        has_unwrapped   = need_unwrap;
-        has_status      = need_status;
+    void allocate(int n_particles, bool need_unwrap, bool need_status = false,
+                  bool need_wrap = false) {
+        capacity = n_particles;
+        has_unwrapped = need_unwrap;
+        has_status = need_status;
         has_wrap_counts = need_wrap;
         x.allocate(n_particles);
         y.allocate(n_particles);
@@ -134,16 +132,15 @@ struct SnapshotStaging {
     }
 
     /// Async copy wrapped positions from device
-    void stage_wrapped_async(const T* dx, const T* dy, const T* dz,
-                             int n, cudaStream_t stream) {
+    void stage_wrapped_async(const T* dx, const T* dy, const T* dz, int n, cudaStream_t stream) {
         x.copy_from_device_async(dx, n, stream);
         y.copy_from_device_async(dy, n, stream);
         z.copy_from_device_async(dz, n, stream);
     }
 
     /// Async copy unwrapped positions from device
-    void stage_unwrapped_async(const T* dxu, const T* dyu, const T* dzu,
-                               int n, cudaStream_t stream) {
+    void stage_unwrapped_async(const T* dxu, const T* dyu, const T* dzu, int n,
+                               cudaStream_t stream) {
         x_u.copy_from_device_async(dxu, n, stream);
         y_u.copy_from_device_async(dyu, n, stream);
         z_u.copy_from_device_async(dzu, n, stream);
@@ -155,8 +152,8 @@ struct SnapshotStaging {
     }
 
     /// Async copy wrap counters from device
-    void stage_wrap_async(const int32_t* dx, const int32_t* dy, const int32_t* dz,
-                          int n, cudaStream_t stream) {
+    void stage_wrap_async(const int32_t* dx, const int32_t* dy, const int32_t* dz, int n,
+                          cudaStream_t stream) {
         wrapX.copy_from_device_async(dx, n, stream);
         wrapY.copy_from_device_async(dy, n, stream);
         wrapZ.copy_from_device_async(dz, n, stream);

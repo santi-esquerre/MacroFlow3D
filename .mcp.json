@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+        "github": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ]
+        },
+        "fetch": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@tokenizin/mcp-npx-fetch"
+            ]
+        }
+    }
+}

@@ -8,8 +8,8 @@
  * via CMake compile definitions (MACROFLOW3D_GIT_HASH, MACROFLOW3D_BUILD_TYPE, etc.).
  */
 
-#include <string>
 #include <cuda_runtime.h>
+#include <string>
 
 namespace macroflow3d {
 namespace io {
@@ -22,22 +22,24 @@ struct GPUInfo {
     int compute_major = 0;
     int compute_minor = 0;
     size_t global_mem_bytes = 0;
-    int cuda_runtime_version = 0;   // e.g. 12090
-    int cuda_driver_version  = 0;
+    int cuda_runtime_version = 0; // e.g. 12090
+    int cuda_driver_version = 0;
 
     /// Query the current CUDA device and populate fields.
     static GPUInfo query() {
         GPUInfo info;
 
         int device = 0;
-        if (cudaGetDevice(&device) != cudaSuccess) return info;
+        if (cudaGetDevice(&device) != cudaSuccess)
+            return info;
 
         cudaDeviceProp prop;
-        if (cudaGetDeviceProperties(&prop, device) != cudaSuccess) return info;
+        if (cudaGetDeviceProperties(&prop, device) != cudaSuccess)
+            return info;
 
-        info.device_name      = prop.name;
-        info.compute_major    = prop.major;
-        info.compute_minor    = prop.minor;
+        info.device_name = prop.name;
+        info.compute_major = prop.major;
+        info.compute_minor = prop.minor;
         info.global_mem_bytes = prop.totalGlobalMem;
 
         cudaRuntimeGetVersion(&info.cuda_runtime_version);
@@ -51,9 +53,7 @@ struct GPUInfo {
     }
 
     /// VRAM in MiB (human-readable).
-    int vram_mib() const {
-        return static_cast<int>(global_mem_bytes / (1024ULL * 1024ULL));
-    }
+    int vram_mib() const { return static_cast<int>(global_mem_bytes / (1024ULL * 1024ULL)); }
 };
 
 /**
@@ -82,8 +82,7 @@ struct BuildInfo {
 #endif
 
 #ifdef __NVCC__
-    static constexpr int nvcc_version = __CUDACC_VER_MAJOR__ * 1000
-                                      + __CUDACC_VER_MINOR__ * 10;
+    static constexpr int nvcc_version = __CUDACC_VER_MAJOR__ * 1000 + __CUDACC_VER_MINOR__ * 10;
 #else
     static constexpr int nvcc_version = 0;
 #endif

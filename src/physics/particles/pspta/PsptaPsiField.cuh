@@ -31,9 +31,10 @@
 
 #include "../../../core/DeviceBuffer.cuh"
 #include "../../../core/Grid3D.hpp"
-#include "../../common/fields.cuh"   // VelocityField (CompactMAC / real = double)
-#include <cuda_runtime.h>
+#include "../../common/fields.cuh" // VelocityField (CompactMAC / real = double)
 #include <cstdint>
+#include <cuda_runtime.h>
+#include <vector>
 
 namespace macroflow3d {
 namespace physics {
@@ -54,8 +55,8 @@ namespace pspta {
  *               field has many stagnation regions; PSPTA accuracy may degrade.
  */
 struct PsptaPrecomputeReport {
-    long long n_vx_clamped = 0;  ///< cells where vx_avg was clamped to eps_vx
-    long long n_total      = 0;  ///< total advance-plane cells = (nx-1)*ny*nz
+    long long n_vx_clamped = 0; ///< cells where vx_avg was clamped to eps_vx
+    long long n_total = 0;      ///< total advance-plane cells = (nx-1)*ny*nz
 };
 
 /**
@@ -64,17 +65,69 @@ struct PsptaPrecomputeReport {
  * For each cell c = (i,j,k):
  *   r1(c) = v_cc(c) · ∇ψ1(c)
  *   r2(c) = v_cc(c) · ∇ψ2(c)
- * where v_cc is the cell-centered velocity (average of adjacent CompactMAC faces)
- * and ∇ψ is computed via central FDs (one-sided at x-boundary, periodic-lifted in y,z).
+ * where v_cc is the cell-centered velocity (average of adjacent CompactMAC
+ * faces) and ∇ψ is computed via central FDs (one-sided at x-boundary,
+ * periodic-lifted in y,z).
  *
  * RMS = sqrt(mean(r^2)),  max = max|r|  over all nx*ny*nz cells.
  */
 struct PsiQualityReport {
-    double rms_r1  = 0.0;  ///< RMS of v·∇ψ1
-    double max_r1  = 0.0;  ///< max |v·∇ψ1|
-    double rms_r2  = 0.0;  ///< RMS of v·∇ψ2
-    double max_r2  = 0.0;  ///< max |v·≧ψ2|
+    double rms_r1 = 0.0;   ///< RMS of v·∇ψ1
+    double max_r1 = 0.0;   ///< max |v·∇ψ1|
+    double rms_r2 = 0.0;   ///< RMS of v·∇ψ2
+    double max_r2 = 0.0;   ///< max |v·≧ψ2|
     long long n_cells = 0; ///< number of cells evaluated
+};
+
+/**
+ * @brief Controls iterative refinement of ψ after Level A seed.
+ */
+struct PsiRefineConfig {
+    bool enabled = false;
+    int outer_iters = 5;
+    double omega = 0.5;
+    double omega_min = 1.0e-6;
+    int max_backtracks = 18;
+    double eps_vx = 1.0e-10;
+    double source_clip_cells = 0.1;
+    int no_descent_patience = 4;
+    double stop_rel_rms = 0.25;
+    double stop_abs_rms = 1.0e-6;
+    bool print_every_iter = true;
+    bool save_history_csv = true;
+    bool eq13_diagnostics = false;
+};
+
+/**
+ * @brief Per-iteration diagnostics from ψ refinement.
+ */
+struct PsiRefineIterReport {
+    int iter = 0;
+    double omega_init = 0.0;
+    double omega_accepted = 0.0;
+    int backtracks = 0;
+    bool accepted_step = false;
+    const char* step_status = "accepted";
+    PsiQualityReport before;
+    PsiQualityReport after;
+    long long n_vx_clamped = 0;
+    long long n_total = 0;
+    double vx_clamped_frac = 0.0;
+    double rel_gain = 0.0;
+    bool converged = false;
+};
+
+/**
+ * @brief Full report from refine_psi().
+ */
+struct PsiRefineReport {
+    bool enabled = false;
+    bool converged = false;
+    int iters_done = 0;
+    const char* stop_reason = "disabled";
+    PsiQualityReport seed_quality;
+    PsiQualityReport final_quality;
+    std::vector<PsiRefineIterReport> history;
 };
 
 // ============================================================================
@@ -95,12 +148,12 @@ struct PsiQualityReport {
 struct PsptaPsiField {
 
     // ── Grid metadata ───────────────────────────────────────────────────────
-    int    nx = 0, ny = 0, nz = 0;
+    int nx = 0, ny = 0, nz = 0;
     double dx = 0.0, dy = 0.0, dz = 0.0;
 
     // ── Storage ─────────────────────────────────────────────────────────────
-    DeviceBuffer<float> psi1;  ///< ψ1 cell-centered, size nx*ny*nz, float32
-    DeviceBuffer<float> psi2;  ///< ψ2 cell-centered, size nx*ny*nz, float32
+    DeviceBuffer<float> psi1; ///< ψ1 cell-centered, size nx*ny*nz, float32
+    DeviceBuffer<float> psi2; ///< ψ2 cell-centered, size nx*ny*nz, float32
 
     // ── Lifetime ────────────────────────────────────────────────────────────
     PsptaPsiField() = default;
@@ -114,11 +167,11 @@ struct PsptaPsiField {
     // ── Accessors ───────────────────────────────────────────────────────────
 
     /// Device pointer to ψ1 (float32, size = nx*ny*nz).
-    float*       psi1_ptr()       { return psi1.data(); }
+    float* psi1_ptr() { return psi1.data(); }
     const float* psi1_ptr() const { return psi1.data(); }
 
     /// Device pointer to ψ2 (float32, size = nx*ny*nz).
-    float*       psi2_ptr()       { return psi2.data(); }
+    float* psi2_ptr() { return psi2.data(); }
     const float* psi2_ptr() const { return psi2.data(); }
 
     /// Total number of cell-centered values.
@@ -126,9 +179,7 @@ struct PsptaPsiField {
 
     /// Base grid.
     Grid3D grid() const {
-        return Grid3D(nx, ny, nz,
-                      static_cast<real>(dx),
-                      static_cast<real>(dy),
+        return Grid3D(nx, ny, nz, static_cast<real>(dx), static_cast<real>(dy),
                       static_cast<real>(dz));
     }
 
@@ -167,12 +218,8 @@ struct PsptaPsiField {
      *
      * @return PsptaPrecomputeReport with n_vx_clamped and n_total.
      */
-    PsptaPrecomputeReport precompute_levelA(
-        const VelocityField& vel,
-        const Grid3D&        grid,
-        cudaStream_t         stream,
-        double               eps_vx = 1e-10
-    );
+    PsptaPrecomputeReport precompute_levelA(const VelocityField& vel, const Grid3D& grid,
+                                            cudaStream_t stream, double eps_vx = 1e-10);
 
     // ── Diagnostics ─────────────────────────────────────────────────────────
 
@@ -192,11 +239,26 @@ struct PsptaPsiField {
      * @param stream CUDA stream.
      * @return PsiQualityReport with RMS and max for r1 and r2.
      */
-    PsiQualityReport compute_psi_quality(
-        const VelocityField& vel,
-        const Grid3D&        grid,
-        cudaStream_t         stream
-    ) const;
+    PsiQualityReport compute_psi_quality(const VelocityField& vel, const Grid3D& grid,
+                                         cudaStream_t stream) const;
+
+    /**
+     * @brief Iteratively refine ψ to reduce v·∇ψ residuals.
+     *
+     * Uses defect-correction with x-marching:
+     *   1) compute residuals r = v·∇ψ
+     *   2) solve v·∇(delta_psi) = -r using the same x-marching geometry
+     *   3) psi <- psi + omega * delta_psi
+     *   4) reimpose inlet gauge (psi1=y, psi2=z)
+     *
+     * @param vel    CompactMAC velocity field.
+     * @param grid   Grid metadata.
+     * @param stream CUDA stream.
+     * @param cfg    Refinement controls.
+     * @return Full refinement report with per-iteration history.
+     */
+    PsiRefineReport refine_psi(const VelocityField& vel, const Grid3D& grid, cudaStream_t stream,
+                               const PsiRefineConfig& cfg);
 
     // ── Optional diagnostics ────────────────────────────────────────────────
 
@@ -216,18 +278,26 @@ struct PsptaPsiField {
      * @param out_r2 Device pointer to output buffer for v·∇ψ2, size nx*ny*nz.
      * @param stream CUDA stream.
      */
-    void compute_vdotgradpsi_norms(
-        const VelocityField& vel,
-        float*               out_r1,
-        float*               out_r2,
-        cudaStream_t         stream
-    ) const;
+    void compute_vdotgradpsi_norms(const VelocityField& vel, float* out_r1, float* out_r2,
+                                   cudaStream_t stream) const;
 
-private:
+  private:
+    PsiQualityReport compute_psi_quality_from_buffers(const float* psi1_buf, const float* psi2_buf,
+                                                      const VelocityField& vel, const Grid3D& grid,
+                                                      cudaStream_t stream) const;
+
     /// Device int counter accumulated by kernel_advance_plane.
     DeviceBuffer<int> d_vx_clamped_counter_;
-    /// 5-element double scratch for compute_psi_quality reduction [sumsq1, sumsq2, maxabs1, maxabs2, count].
+    /// 5-element double scratch for compute_psi_quality reduction [sumsq1,
+    /// sumsq2, maxabs1, maxabs2, count].
     mutable DeviceBuffer<double> d_psi_quality_buf_;
+    /// Scratch residual and correction buffers for refinement (size nx*ny*nz).
+    DeviceBuffer<float> d_r1_;
+    DeviceBuffer<float> d_r2_;
+    DeviceBuffer<float> d_delta1_;
+    DeviceBuffer<float> d_delta2_;
+    DeviceBuffer<float> d_trial_psi1_;
+    DeviceBuffer<float> d_trial_psi2_;
 };
 
 } // namespace pspta

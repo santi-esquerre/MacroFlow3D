@@ -2,5 +2,5 @@
 
 // Solvers for MacroFlow3D
 
-#include "cg_types.hpp"
 #include "cg.cuh"
+#include "cg_types.hpp"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../runtime/CudaContext.cuh"
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Scalar.hpp"
+#include "../../runtime/CudaContext.cuh"
 
 namespace macroflow3d {
 namespace blas {

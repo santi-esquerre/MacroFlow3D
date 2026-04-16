@@ -3,9 +3,9 @@
 /**
  * @file preconditioner.cuh
  * @brief Minimal preconditioner interface for iterative solvers
- * 
+ *
  * Legacy correspondence: PCCMG_CG structure and Precond_CCMG_Vcycle* routines
- * 
+ *
  * Design constraints (HPC):
  * - apply() must NOT allocate memory (all workspace pre-allocated)
  * - apply() is called every iteration, must be efficient
@@ -21,13 +21,13 @@ namespace solvers {
 
 /**
  * @brief Identity preconditioner (M = I, so z = r)
- * 
+ *
  * Used as a baseline and for plain CG (no preconditioning).
  */
 struct IdentityPreconditioner {
     /**
      * @brief Apply preconditioner: z = M^{-1} r = r (identity)
-     * 
+     *
      * @param ctx  CUDA context
      * @param r    Input residual vector (device)
      * @param z    Output preconditioned residual (device)
@@ -37,11 +37,11 @@ struct IdentityPreconditioner {
 
 /**
  * @brief Concept documentation for Preconditioner
- * 
+ *
  * Any preconditioner must provide:
- * 
+ *
  *   void apply(CudaContext& ctx, DeviceSpan<const real> r, DeviceSpan<real> z) const;
- * 
+ *
  * Where:
  *   - r is the residual vector (input, device memory)
  *   - z is the preconditioned residual (output, device memory, same size as r)

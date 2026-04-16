@@ -9,8 +9,8 @@
  */
 
 #include <cstdio>
-#include <string>
 #include <filesystem>
+#include <string>
 
 namespace macroflow3d {
 namespace io {
@@ -35,51 +35,39 @@ struct OutputLayout {
     explicit OutputLayout(const std::string& base_dir) : base(base_dir) {}
 
     // ── Sub-directories ──────────────────────────────────────────────
-    std::string stats_dir()    const { return base + "/stats"; }
-    std::string snap_dir()     const { return base + "/snapshots"; }
+    std::string stats_dir() const { return base + "/stats"; }
+    std::string snap_dir() const { return base + "/snapshots"; }
     std::string ensemble_dir() const { return base + "/ensemble"; }
     std::string analysis_dir() const { return base + "/analysis"; }
 
     // ── File paths ───────────────────────────────────────────────────
 
-    std::string manifest() const {
-        return base + "/manifest.json";
-    }
+    std::string manifest() const { return base + "/manifest.json"; }
 
-    std::string effective_config() const {
-        return base + "/effective_config.yaml";
-    }
+    std::string effective_config() const { return base + "/effective_config.yaml"; }
 
     std::string realization_timeseries(int r) const {
         char buf[512];
-        std::snprintf(buf, sizeof(buf),
-                      "%s/stats/realization_%04d_timeseries.csv",
-                      base.c_str(), r);
+        std::snprintf(buf, sizeof(buf), "%s/stats/realization_%04d_timeseries.csv", base.c_str(),
+                      r);
         return buf;
     }
 
     std::string snapshot(int r, int step) const {
         char buf[512];
-        std::snprintf(buf, sizeof(buf),
-                      "%s/snapshots/r_%04d/step_%08d.csv",
-                      base.c_str(), r, step);
+        std::snprintf(buf, sizeof(buf), "%s/snapshots/r_%04d/step_%08d.csv", base.c_str(), r, step);
         return buf;
     }
 
     std::string r0_snapshot(int step) const {
         char buf[512];
-        std::snprintf(buf, sizeof(buf),
-                      "%s/snapshots/step_%08d.csv", base.c_str(), step);
+        std::snprintf(buf, sizeof(buf), "%s/snapshots/step_%08d.csv", base.c_str(), step);
         return buf;
     }
 
-    std::string ensemble_timeseries() const {
-        return base + "/ensemble/ensemble_timeseries.csv";
-    }
+    std::string ensemble_timeseries() const { return base + "/ensemble/ensemble_timeseries.csv"; }
 
-    std::string macrodispersion_csv() const {
-        return base + "/analysis/macrodispersion.csv";
-    }
+    std::string macrodispersion_csv() const { return base + "/analysis/macrodispersion.csv"; }
 
     // ── Directory creation ───────────────────────────────────────────
 
@@ -92,8 +80,7 @@ struct OutputLayout {
 
     void ensure_snapshot_dir(int r) const {
         char buf[512];
-        std::snprintf(buf, sizeof(buf),
-                      "%s/snapshots/r_%04d", base.c_str(), r);
+        std::snprintf(buf, sizeof(buf), "%s/snapshots/r_%04d", base.c_str(), r);
         std::filesystem::create_directories(buf);
     }
 };

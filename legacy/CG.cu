@@ -21,7 +21,7 @@ void resMonitor(int levelPrint, int cccc, double *rr_0_h, double &res_relative_o
 }
 
 // WARNING!
-// Whenever possible the following is used: 
+// Whenever possible the following is used:
 // b (RHS) vector is used as the auxiliary vector P
 // z is used auxiliary vector y
 // otherwise you must modify to add the vectors as input and
@@ -35,7 +35,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 	cudaMalloc(&rho_old	, sizeof(double));
 	cudaMalloc(&pAp		, sizeof(double));
 	rr_0_h = new double[1]; rr_new_h = new double[1];
-	M.stencil(y,x);	
+	M.stencil(y,x);
 	BLAS.AXPBY3D(z,y,r,1.0,-1.0);
 	BLAS.Ddot(r,r,rr_new);
 	BLAS.copyScalar_d2h(rr_0_h, rr_new);
@@ -60,7 +60,7 @@ int solver_CG(Matrix_t &M, Matrix_t &precond, blas_t &BLAS, double *x, double *P
 		resMonitor(print_monitor,2,rr_0_h,res_relative_old,rr_new_h,i);
 	}
 	// if print_monitor==1 (print finalAbsRes, iterNumber)
-	resMonitor(print_monitor,0,rr_0_h,res_relative_old,rr_new_h,i); 
+	resMonitor(print_monitor,0,rr_0_h,res_relative_old,rr_new_h,i);
     cudaFree(rr_new);
     cudaFree(rho);
     cudaFree(rho_old);

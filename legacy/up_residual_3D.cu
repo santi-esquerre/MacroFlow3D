@@ -63,7 +63,7 @@ __global__ void update_int(double *r_out, double *h_in, const double *rhs, const
 		h_top = h_in[in_idx];
 		K_bottom = K_current;
 		K_current = K_top;
-		K_top = K[in_idx];		
+		K_top = K[in_idx];
 		in_idx += stride;
 		out_idx += stride;
 		result=0.0;
@@ -214,7 +214,7 @@ __global__ void update_edge_X_South_Bottom(double *r_out, double *h_in, const do
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride]);
@@ -236,7 +236,7 @@ __global__ void update_edge_X_South_Top(double *r_out, double *h_in, const doubl
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride]);
@@ -258,7 +258,7 @@ __global__ void update_edge_X_North_Bottom(double *r_out, double *h_in, const do
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride]);
@@ -267,7 +267,7 @@ __global__ void update_edge_X_North_Bottom(double *r_out, double *h_in, const do
 	if(BCnorth==dirichlet) result -= 2.0*HC*KC;
 	if(BCbottom==dirichlet) result -= 2.0*HC*KC;
 	r_out[in_idx] = rhs[in_idx] - result/dxdx;
-}	
+}
 
 __global__ void update_edge_X_North_Top(double *r_out, double *h_in, const double *rhs, const double *K, double dxdx, int Nx, int Ny, int Nz, int BCnorth, int BCtop){
 	int ix = threadIdx.x + blockIdx.x*blockDim.x;
@@ -280,7 +280,7 @@ __global__ void update_edge_X_North_Top(double *r_out, double *h_in, const doubl
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);	
+	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1    ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride]);
@@ -302,7 +302,7 @@ __global__ void update_edge_Z_South_West(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -324,7 +324,7 @@ __global__ void update_edge_Z_South_East(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx+Nx ])     /  (1.0/KC  +  1.0/K[in_idx+Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -346,7 +346,7 @@ __global__ void update_edge_Z_North_West(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -368,7 +368,7 @@ __global__ void update_edge_Z_North_East(double *r_out, double *h_in, const doub
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);	
+	result -= 2.0*(HC - h_in[in_idx+stride])  /  (1.0/KC  +  1.0/K[in_idx+stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride])  /  (1.0/KC  +  1.0/K[in_idx-stride    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx ])     /  (1.0/KC  +  1.0/K[in_idx-Nx     ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -390,7 +390,7 @@ __global__ void update_edge_Y_West_Bottom(double *r_out, double *h_in, const dou
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ])     /  (1.0/KC  +  1.0/K[in_idx+stride     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -412,7 +412,7 @@ __global__ void update_edge_Y_West_Top(double *r_out, double *h_in, const double
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ])     /  (1.0/KC  +  1.0/K[in_idx-stride     ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
@@ -434,7 +434,7 @@ __global__ void update_edge_Y_East_Bottom(double *r_out, double *h_in, const dou
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ])     /  (1.0/KC  +  1.0/K[in_idx+stride     ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -456,7 +456,7 @@ __global__ void update_edge_Y_East_Top(double *r_out, double *h_in, const double
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])  /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-Nx])  /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ])     /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
@@ -480,7 +480,7 @@ __global__ void update_vertex_SWB(double *r_out, double *h_in, const double *rhs
 	double KN = 0.0;
 	result=0.0;
 	KN = 2.0/  (1.0/KC  +  1.0/K[in_idx+Nx]);
-	result -= (HC - h_in[in_idx+Nx])*KN;	
+	result -= (HC - h_in[in_idx+Nx])*KN;
 	aC += KN;
 
 	KN = 2.0/  (1.0/KC  +  1.0/K[in_idx+stride   ]);
@@ -512,7 +512,7 @@ __global__ void update_vertex_SWT(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -534,7 +534,7 @@ __global__ void update_vertex_SEB(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ]) /  (1.0/KC  +  1.0/K[in_idx+stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCbottom==periodic) result -= 2.0*(HC - h_in[in_idx+(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride ]);
@@ -556,7 +556,7 @@ __global__ void update_vertex_SET(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx+Nx])      /  (1.0/KC  +  1.0/K[in_idx+Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -578,7 +578,7 @@ __global__ void update_vertex_NEB(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ]) /  (1.0/KC  +  1.0/K[in_idx+stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCbottom==periodic) result -= 2.0*(HC - h_in[in_idx+(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride ]);
@@ -600,7 +600,7 @@ __global__ void update_vertex_NET(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx-1])       /  (1.0/KC  +  1.0/K[in_idx-1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);
@@ -622,7 +622,7 @@ __global__ void update_vertex_NWB(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx+stride ]) /  (1.0/KC  +  1.0/K[in_idx+stride   ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
 	if(BCbottom==periodic) result -= 2.0*(HC - h_in[in_idx+(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride ]);
@@ -644,7 +644,7 @@ __global__ void update_vertex_NWT(double *r_out, double *h_in, const double *rhs
 	double result;
 	double HC=h_in[in_idx], KC=K[in_idx];
 	result=0.0;
-	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);	
+	result -= 2.0*(HC - h_in[in_idx-Nx])      /  (1.0/KC  +  1.0/K[in_idx-Nx    ]);
 	result -= 2.0*(HC - h_in[in_idx-stride ]) /  (1.0/KC  +  1.0/K[in_idx-stride   ]);
 	result -= 2.0*(HC - h_in[in_idx+1])       /  (1.0/KC  +  1.0/K[in_idx+1]);
 	if(BCtop==periodic) result -= 2.0*(HC - h_in[in_idx-(Nz-1)*stride]) /  (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride ]);

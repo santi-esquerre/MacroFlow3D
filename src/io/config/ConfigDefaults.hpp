@@ -35,74 +35,87 @@ inline AppConfig make_default_config() {
     cfg.grid.dx = 1.0;
 
     // Stochastic
-    cfg.stochastic.sigma2         = 1.0;
-    cfg.stochastic.corr_length    = 1.0;
-    cfg.stochastic.n_modes        = 1000;
+    cfg.stochastic.sigma2 = 1.0;
+    cfg.stochastic.corr_length = 1.0;
+    cfg.stochastic.n_modes = 1000;
     cfg.stochastic.covariance_type = 0;
-    cfg.stochastic.seed           = 12345;
-    cfg.stochastic.K_mean         = 1.0;
+    cfg.stochastic.seed = 12345;
+    cfg.stochastic.K_mean = 1.0;
 
     // Flow
-    cfg.flow.solver          = "mg";
-    cfg.flow.mg_levels       = 4;
-    cfg.flow.mg_pre_smooth   = 2;
-    cfg.flow.mg_post_smooth  = 2;
+    cfg.flow.solver = "mg";
+    cfg.flow.mg_levels = 4;
+    cfg.flow.mg_pre_smooth = 2;
+    cfg.flow.mg_post_smooth = 2;
     cfg.flow.mg_coarse_iters = 50;
-    cfg.flow.mg_max_cycles   = 20;
-    cfg.flow.cg_max_iter     = 1000;
-    cfg.flow.cg_rtol         = 1e-8;
-    cfg.flow.cg_check_every  = 10;
-    cfg.flow.rtol            = 1e-6;
-    cfg.flow.pin.mode        = PinMode::Auto;
+    cfg.flow.mg_max_cycles = 20;
+    cfg.flow.cg_max_iter = 1000;
+    cfg.flow.cg_rtol = 1e-8;
+    cfg.flow.cg_check_every = 10;
+    cfg.flow.rtol = 1e-6;
+    cfg.flow.pin.mode = PinMode::Auto;
     cfg.flow.verify_velocity = false;
     // BCs default to Dirichlet(0)
 
     // Transport
-    cfg.transport.n_particles    = 10000;
-    cfg.transport.dt             = 0.01;
-    cfg.transport.n_steps        = 1000;
-    cfg.transport.porosity       = 1.0;
-    cfg.transport.diffusion      = 0.0;
-    cfg.transport.alpha_l        = 0.0;
-    cfg.transport.alpha_t        = 0.0;
-    cfg.transport.seed           = 54321;
-    cfg.transport.output_every   = 100;
+    cfg.transport.n_particles = 10000;
+    cfg.transport.dt = 0.01;
+    cfg.transport.n_steps = 1000;
+    cfg.transport.porosity = 1.0;
+    cfg.transport.diffusion = 0.0;
+    cfg.transport.alpha_l = 0.0;
+    cfg.transport.alpha_t = 0.0;
+    cfg.transport.seed = 54321;
+    cfg.transport.output_every = 100;
     cfg.transport.snapshot_every = 0;
-    cfg.transport.inject_x       = 0.0;
-    cfg.transport.method         = "par2";  // supported: "par2" | "pspta"
+    cfg.transport.inject_x = 0.0;
+    cfg.transport.method = "par2"; // supported: "par2" | "pspta"
     cfg.transport.pspta_diagnostics = false;
+    cfg.transport.pspta_refine.enabled = false;
+    cfg.transport.pspta_refine.outer_iters = 5;
+    cfg.transport.pspta_refine.omega = 0.5;
+    cfg.transport.pspta_refine.omega_min = 1.0e-6;
+    cfg.transport.pspta_refine.max_backtracks = 18;
+    cfg.transport.pspta_refine.eps_vx = 1.0e-10;
+    cfg.transport.pspta_refine.source_clip_cells = 0.1;
+    cfg.transport.pspta_refine.no_descent_patience = 4;
+    cfg.transport.pspta_refine.stop_rel_rms = 0.25;
+    cfg.transport.pspta_refine.stop_abs_rms = 1.0e-6;
+    cfg.transport.pspta_refine.print_every_iter = true;
+    cfg.transport.pspta_refine.save_history_csv = true;
+    cfg.transport.pspta_refine.eq13_diagnostics = false;
     // velocity_layout is derived from method — not set here
 
     // Analysis — macrodispersion
-    cfg.analysis.macrodispersion.enabled       = false;
-    cfg.analysis.macrodispersion.NR            = 1;
-    cfg.analysis.macrodispersion.lambda        = 1.0;
-    cfg.analysis.macrodispersion.vmean_norm    = 1.0;
-    cfg.analysis.macrodispersion.sample_every  = 10;
+    cfg.analysis.macrodispersion.enabled = false;
+    cfg.analysis.macrodispersion.NR = 1;
+    cfg.analysis.macrodispersion.lambda = 1.0;
+    cfg.analysis.macrodispersion.vmean_norm = 1.0;
+    cfg.analysis.macrodispersion.sample_every = 10;
     cfg.analysis.macrodispersion.var_estimator = "biased";
 
     // Analysis — snapshots
-    cfg.analysis.snapshots.enabled             = false;
-    cfg.analysis.snapshots.every               = 200;
-    cfg.analysis.snapshots.legacy_format       = true;
-    cfg.analysis.snapshots.include_time        = false;
-    cfg.analysis.snapshots.include_status      = false;
+    cfg.analysis.snapshots.enabled = false;
+    cfg.analysis.snapshots.every = 200;
+    cfg.analysis.snapshots.legacy_format = true;
+    cfg.analysis.snapshots.include_time = false;
+    cfg.analysis.snapshots.include_status = false;
     cfg.analysis.snapshots.include_wrap_counts = false;
-    cfg.analysis.snapshots.include_unwrapped   = false;
-    cfg.analysis.snapshots.stride              = 1;
-    cfg.analysis.snapshots.max_particles       = -1;
-    cfg.analysis.snapshots.precision           = 15;
+    cfg.analysis.snapshots.include_unwrapped = false;
+    cfg.analysis.snapshots.stride = 1;
+    cfg.analysis.snapshots.max_particles = -1;
+    cfg.analysis.snapshots.precision = 15;
 
     // Diagnostics
     cfg.diagnostics.velocity_field = false;
 
     // Output
-    cfg.output.output_dir    = "./output";
-    cfg.output.save_K        = true;
-    cfg.output.save_head     = true;
+    cfg.output.output_dir = "./output";
+    cfg.output.save_K = true;
+    cfg.output.save_head = true;
     cfg.output.save_velocity = false;
     cfg.output.save_particles = true;
-    cfg.output.format        = "binary";
+    cfg.output.format = "binary";
 
     return cfg;
 }

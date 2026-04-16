@@ -45,6 +45,20 @@ flow:
 transport:
   method: pspta
   pspta_diagnostics: true   # escribe psi_quality.csv + newton_fail_summary.csv (si está habilitado en tu build)
+  pspta_refine:
+    enabled: true
+    outer_iters: 5
+    omega: 0.5
+    omega_min: 1.0e-6
+    max_backtracks: 18
+    eps_vx: 1.0e-10
+    source_clip_cells: 0.1
+    no_descent_patience: 4
+    stop_rel_rms: 0.25
+    stop_abs_rms: 1.0e-6
+    print_every_iter: true
+    save_history_csv: true
+    eq13_diagnostics: false
 
   n_particles: 10000
   dt: 12.5

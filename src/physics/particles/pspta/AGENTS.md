@@ -11,6 +11,19 @@ It is the research path for preserving the kinematic constraints associated with
 
 ---
 
+## Required pre-reading
+
+Before any non-trivial PSPTA task, read:
+
+- `docs/plans/active/pspta-execution-plan.md` — the authoritative operational plan for invariant recovery, eigensolver integration, refinement, and PSPTA transport validation. Confirm that the task aligns with the current execution phase before starting.
+- `docs/theory/lester-2023-key-claims.md` — the scientific foundation for this entire subsystem
+
+Optionally also read:
+
+- `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — if the task involves macrodispersion comparison or baseline interpretation
+
+---
+
 ## Primary goal
 
 Preserve the invariant structure well enough that purely numerical leakage is not misread as physical transverse macrodispersion.
@@ -69,11 +82,13 @@ Before editing, identify exactly which layer you are changing.
 ## Performance rules
 
 The hot loop must remain:
+
 - allocation-free,
 - explicit about host/device synchronization,
 - compatible with large particle counts.
 
 Any new buffer should be:
+
 - owned clearly,
 - allocated in setup / prepare,
 - reused.
@@ -92,6 +107,7 @@ For any non-trivial PSPTA change, inspect at least:
 - smoke trajectory behavior on the small config
 
 If available, also inspect:
+
 - mismatch versus `∇ψ1 × ∇ψ2`
 - refinement history
 - grid sensitivity
@@ -101,15 +117,19 @@ If available, also inspect:
 ## Special caution areas
 
 ### 1. Near-stagnation regions
+
 These can make invariants and Newton projection ill-conditioned.
 
 ### 2. Functional dependence collapse
+
 Two low modes are not useful if they become nearly dependent.
 
 ### 3. Projection masking
+
 A projection that “works” numerically may still hide geometric leakage or unstable convergence.
 
 ### 4. Diagnostics drift
+
 If metrics get renamed, filtered, or weakened, make the change explicit.
 
 ---
@@ -117,17 +137,37 @@ If metrics get renamed, filtered, or weakened, make the change explicit.
 ## Required validation for PSPTA changes
 
 Minimum:
+
 ```bash
 ctest --test-dir <build-dir> --output-on-failure -R operator_tests
 ./<build-dir>/macroflow3d_pipeline apps/config_pspta_small.yaml
 ```
 
 If the eigensolver path is touched:
+
 ```bash
 ctest --test-dir <build-dir> --output-on-failure -R validate_slepc_eigensolver
 ```
 
+## Alignment with the execution plan
+
+All PSPTA implementation work must align with `docs/plans/active/pspta-execution-plan.md`.
+
+Before starting a task, identify which execution phase it belongs to:
+
+| Phase | Scope |
+|-------|-------|
+| 1 | PETSc/SLEPc infrastructure and solver bring-up |
+| 2 | Initial invariant recovery (transport operator, regularized eigenproblem) |
+| 3 | Quality diagnostics and acceptance (r_i, e_x, s metrics) |
+| 4 | Refinement (alternating fit + Poisson projection) |
+| 5 | PSPTA transport integration (invariant-preserving particle stepping) |
+| 6 | Scientific validation (controlled runs, transverse macrodispersion assessment) |
+
+Do not skip phases. Do not start a later phase if an earlier phase is incomplete.
+
 If behavior changes materially, use the acceptance gates in:
+
 - `docs/validation/acceptance-gates.md`
 
 ---
@@ -135,6 +175,7 @@ If behavior changes materially, use the acceptance gates in:
 ## Done criteria
 
 A PSPTA task is done only when:
+
 1. the intended subsystem change is complete,
 2. relevant operator / smoke validation was run,
 3. diagnostics were inspected,

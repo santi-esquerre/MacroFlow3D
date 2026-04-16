@@ -1,6 +1,6 @@
 /**
 * @file GSRB_Smooth_up_residual_3D.cu
-* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving 
+* @brief Gauss Seidel Red Black method implementation (matrix-free style) for solving
 * the flow equation with CCMG method
 *
 * @author Lucas Bessone (contact: lcbessone@gmail.com)
@@ -48,8 +48,8 @@ void update_res(double *rk_1, double *xk, const double *rhs, const double *K,
 
 //#######################################################################
 // 	routine smooth_GSRB (system A*phi = r)
-//	perform one iteration Symetric Gauss-Seidel 
-//  Red-Black ordering (two half step) 
+//	perform one iteration Symetric Gauss-Seidel
+//  Red-Black ordering (two half step)
 //  phiC <- (rC - sum(AF*phiF) )/AC , F~{E, W, N, S, T, B}
 //	The matrix A must be SPD, else, change the stencil
 //  for other problems (eg. variable permeability) the stencil must be modified
@@ -68,11 +68,11 @@ __global__ void GSRB_int(double *h_in, const double *rhs, const double *K, doubl
 		out_idx += stride;
 		KC = K[out_idx];
 		if(isred){
-			if ((ix+1+iy+1+iz)%2 == 0){					
+			if ((ix+1+iy+1+iz)%2 == 0){
 					result=0.0; KN = 0.0; aC = 0.0;
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+1]);
 					result += h_in[out_idx+1 ]*KN;
-					aC += KN;	
+					aC += KN;
 
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+Nx]);
 					result += h_in[out_idx+Nx]*KN;
@@ -101,7 +101,7 @@ __global__ void GSRB_int(double *h_in, const double *rhs, const double *K, doubl
 					result=0.0; KN = 0.0; aC = 0.0;
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+1]);
 					result += h_in[out_idx+1 ]*KN;
-					aC += KN;	
+					aC += KN;
 
 					KN = 2.0 / (1.0/KC  +  1.0/K[out_idx+Nx]);
 					result += h_in[out_idx+Nx]*KN;
@@ -460,7 +460,7 @@ __global__ void GSRB_side_west(double *h_in, const double *rhs, const double *K,
 					aC += KN;
 				}
 				if(BCtype==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);		
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 	else {if((ix+iy+1+iz+1)%2 != 0){
 				result=0.0; KN = 0.0; aC = 0.0;
@@ -535,7 +535,7 @@ __global__ void GSRB_side_east(double *h_in, const double *rhs, const double *K,
 					aC += KN;
 				}
 				if(BCtype==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);	
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 	else {if((ix+iy+1+iz+1)%2 != 0){
 				result=0.0; KN = 0.0; aC = 0.0;
@@ -566,7 +566,7 @@ __global__ void GSRB_side_east(double *h_in, const double *rhs, const double *K,
 					aC += KN;
 				}
 				if(BCtype==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);	
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 	}}
 }
 
@@ -608,7 +608,7 @@ __global__ void GSRB_edge_X_South_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -640,7 +640,7 @@ __global__ void GSRB_edge_X_South_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -684,7 +684,7 @@ __global__ void GSRB_edge_X_South_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -716,7 +716,7 @@ __global__ void GSRB_edge_X_South_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -761,7 +761,7 @@ __global__ void GSRB_edge_X_North_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -793,7 +793,7 @@ __global__ void GSRB_edge_X_North_Bottom(double *h_in, const double *rhs, const 
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nz-1)*stride]);
 					result += h_in[in_idx+(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -837,7 +837,7 @@ __global__ void GSRB_edge_X_North_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -869,7 +869,7 @@ __global__ void GSRB_edge_X_North_Top(double *h_in, const double *rhs, const dou
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nz-1)*stride]);
 					result += h_in[in_idx-(Nz-1)*stride]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -914,7 +914,7 @@ __global__ void GSRB_edge_Z_South_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -947,7 +947,7 @@ __global__ void GSRB_edge_Z_South_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -992,7 +992,7 @@ __global__ void GSRB_edge_Z_South_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1024,7 +1024,7 @@ __global__ void GSRB_edge_Z_South_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1069,7 +1069,7 @@ __global__ void GSRB_edge_Z_North_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1101,7 +1101,7 @@ __global__ void GSRB_edge_Z_North_West(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1146,7 +1146,7 @@ __global__ void GSRB_edge_Z_North_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1178,7 +1178,7 @@ __global__ void GSRB_edge_Z_North_East(double *h_in, const double *rhs, const do
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1223,7 +1223,7 @@ __global__ void GSRB_edge_Y_West_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1255,7 +1255,7 @@ __global__ void GSRB_edge_Y_West_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1299,7 +1299,7 @@ __global__ void GSRB_edge_Y_West_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1331,7 +1331,7 @@ __global__ void GSRB_edge_Y_West_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx+(Nx-1)]);
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1376,7 +1376,7 @@ __global__ void GSRB_edge_Y_East_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1408,7 +1408,7 @@ __global__ void GSRB_edge_Y_East_Bottom(double *h_in, const double *rhs, const d
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1452,10 +1452,10 @@ __global__ void GSRB_edge_Y_East_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);		
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 	else {if((ix+iy+1+iz)%2 != 0){
 				result=0.0; KN = 0.0; aC = 0.0;
@@ -1484,10 +1484,10 @@ __global__ void GSRB_edge_Y_East_Top(double *h_in, const double *rhs, const doub
 					KN = 2.0 / (1.0/KC  +  1.0/K[in_idx-(Nx-1)]);
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
-				}				
+				}
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
-				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);	
+				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
 			}}
 }
 
@@ -1529,7 +1529,7 @@ __global__ void GSRB_vertex_SWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				if(pin1stCell) aC*=2.0; //if pin first cell for solvabolity (if all BCtype are homog-Neumann)
@@ -1563,7 +1563,7 @@ __global__ void GSRB_vertex_SWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				if(pin1stCell) aC*=2.0; //if pin first cell for solvabolity (if all BCtype are homog-Neumann)
@@ -1608,7 +1608,7 @@ __global__ void GSRB_vertex_SWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1641,7 +1641,7 @@ __global__ void GSRB_vertex_SWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1686,7 +1686,7 @@ __global__ void GSRB_vertex_SEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1719,7 +1719,7 @@ __global__ void GSRB_vertex_SEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1763,7 +1763,7 @@ __global__ void GSRB_vertex_SET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1796,7 +1796,7 @@ __global__ void GSRB_vertex_SET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCsouth==dirichlet) aC+=2.0*KC;			
+				if(BCsouth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1841,7 +1841,7 @@ __global__ void GSRB_vertex_NEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1874,7 +1874,7 @@ __global__ void GSRB_vertex_NEB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1918,7 +1918,7 @@ __global__ void GSRB_vertex_NET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1951,7 +1951,7 @@ __global__ void GSRB_vertex_NET(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx-(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCeast==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -1995,7 +1995,7 @@ __global__ void GSRB_vertex_NWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -2028,7 +2028,7 @@ __global__ void GSRB_vertex_NWB(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCbottom==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -2072,7 +2072,7 @@ __global__ void GSRB_vertex_NWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -2105,7 +2105,7 @@ __global__ void GSRB_vertex_NWT(double *h_in, const double *rhs, const double *K
 					result += h_in[in_idx+(Nx-1)]*KN;
 					aC += KN;
 				}
-				if(BCnorth==dirichlet) aC+=2.0*KC;			
+				if(BCnorth==dirichlet) aC+=2.0*KC;
 				if(BCtop==dirichlet) aC+=2.0*KC;
 				if(BCwest==dirichlet) aC+=2.0*KC;
 				h_in[in_idx] = -(rhs[in_idx] - result/dxdx)/(aC/dxdx);
@@ -2185,11 +2185,11 @@ void smooth_GSRB(double *xk, const double *rhs, double *rk_1, const double *K,
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %%%%%%%%   SOLVE COARSEST SYSTEM WITH GS-RB   %%%%%%%%%%%%%%%
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX, 
-	dim3 grid, dim3 block, 
-	cublasHandle_t handle, 
+void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const double *K, double dxdx, int Nx, int Ny, int Nz, const int itMAX,
+	dim3 grid, dim3 block,
+	cublasHandle_t handle,
 	int BCbottom, int BCtop,
-	int BCsouth, int BCnorth, 
+	int BCsouth, int BCnorth,
 	int BCwest, int BCeast, bool pin1stCell){
 	double *rr_new; cudaMalloc(&rr_new,sizeof(double));
 	double *rr_new_h; rr_new_h = new double[1];
@@ -2198,7 +2198,7 @@ void SolveCoarseSystemGSRB(double *xnew, const double *rhs, double *r, const dou
 	while( (pow((*rr_new_h),0.5) > 1e-16 ) && iter<itMAX){
 		smooth_GSRB(xnew,rhs,r,K,dxdx,Nx,Ny,Nz,
 			BCbottom,BCtop,BCsouth,
-			BCnorth,BCwest,BCeast, 
+			BCnorth,BCwest,BCeast,
 			pin1stCell,4,false,
 			grid,block);
 		iter+=4;

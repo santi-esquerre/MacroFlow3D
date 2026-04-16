@@ -1,18 +1,18 @@
 #pragma once
 
-#include <cuda_runtime.h>
+#include <cstdio>
 #include <cublas_v2.h>
+#include <cuda_runtime.h>
 #include <stdexcept>
 #include <string>
-#include <cstdio>
 
 namespace macroflow3d {
 
 // CUDA runtime error checking
 inline void cuda_check_impl(cudaError_t err, const char* file, int line) {
     if (err != cudaSuccess) {
-        std::string msg = std::string("CUDA error at ") + file + ":" + 
-                         std::to_string(line) + " - " + cudaGetErrorString(err);
+        std::string msg = std::string("CUDA error at ") + file + ":" + std::to_string(line) +
+                          " - " + cudaGetErrorString(err);
         throw std::runtime_error(msg);
     }
 }
@@ -22,8 +22,8 @@ inline void cuda_check_impl(cudaError_t err, const char* file, int line) {
 // cuBLAS error checking
 inline void cublas_check_impl(cublasStatus_t status, const char* file, int line) {
     if (status != CUBLAS_STATUS_SUCCESS) {
-        std::string msg = std::string("cuBLAS error at ") + file + ":" + 
-                         std::to_string(line) + " - code " + std::to_string(status);
+        std::string msg = std::string("cuBLAS error at ") + file + ":" + std::to_string(line) +
+                          " - code " + std::to_string(status);
         throw std::runtime_error(msg);
     }
 }
