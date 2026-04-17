@@ -1,0 +1,498 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(git -C "$script_dir/.." rev-parse --show-toplevel 2>/dev/null || true)"
+
+if [[ -z "$repo_root" ]]; then
+  echo "ERROR: scripts/remote must be run inside the repository or a worktree." >&2
+  exit 1
+fi
+
+# Centralized remote defaults live here; environment variables can still override
+# them without changing call sites.
+# shellcheck disable=SC1091
+source "$script_dir/remote.env"
+
+REMOTE_RSYNC_EXCLUDES=("${REMOTE_RSYNC_EXCLUDES[@]:-}")
+
+usage() {
+  cat <<'EOF'
+Usage:
+  scripts/remote sync
+  scripts/remote exec -- "<shell-command>"
+  scripts/remote run <job> -- "<shell-command>"
+  scripts/remote status <job>
+  scripts/remote tail <job> [--lines N] [--no-follow]
+  scripts/remote wait <job> [--interval SEC]
+  scripts/remote cancel <job>
+
+Canonical examples:
+  scripts/remote sync
+  scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+  scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
+  scripts/remote status pspta-prod
+  scripts/remote tail pspta-prod
+  scripts/remote wait pspta-prod
+  scripts/remote cancel pspta-prod
+
+Configuration:
+  Repo defaults are defined in scripts/remote.env.
+  Supported environment overrides include:
+    REMOTE_HOST
+    REMOTE_REPO_DIR
+    REMOTE_STATE_ROOT
+    REMOTE_WAIT_INTERVAL
+    REMOTE_SSH_RETRIES
+    REMOTE_SSH_RETRY_DELAY
+EOF
+}
+
+die() {
+  echo "ERROR: $*" >&2
+  exit 1
+}
+
+require_syncable_vendor_state() {
+  local par2_tree par2_dir
+  par2_tree="$(git -C "$repo_root" ls-tree HEAD src/external/Par2_Core 2>/dev/null || true)"
+  par2_dir="$repo_root/src/external/Par2_Core"
+
+  if [[ "$par2_tree" == 160000* ]] && [[ ! -f "$par2_dir/CMakeLists.txt" ]]; then
+    die "src/external/Par2_Core is a git submodule but this worktree does not have it populated. Run: git submodule update --init --recursive src/external/Par2_Core"
+  fi
+}
+
+require_command_string() {
+  [[ $# -ge 2 && "$1" == "--" ]] || die "expected -- \"<shell-command>\""
+  shift
+  local command="$*"
+  [[ -n "$command" ]] || die "missing shell command"
+  printf '%s' "$command"
+}
+
+validate_job_name() {
+  local job="$1"
+  [[ "$job" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
+    die "job names must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+  }
+}
+
+session_name_for() {
+  printf '%s-%s' "$REMOTE_SESSION_PREFIX" "$1"
+}
+
+remote_log_path_for() {
+  printf '%s/%s.log' "$REMOTE_LOG_DIR" "$1"
+}
+
+remote_status_path_for() {
+  printf '%s/%s.env' "$REMOTE_STATUS_DIR" "$1"
+}
+
+remote_command_path_for() {
+  printf '%s/%s.command' "$REMOTE_COMMAND_DIR" "$1"
+}
+
+remote_launcher_path_for() {
+  printf '%s/%s.sh' "$REMOTE_LAUNCHER_DIR" "$1"
+}
+
+ssh_run() {
+  local remote_cmd="$1"
+  local attempt=1
+  local max_attempts=$((REMOTE_SSH_RETRIES + 1))
+
+  while (( attempt <= max_attempts )); do
+    if ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$remote_cmd")"; then
+      return 0
+    fi
+    if (( attempt == max_attempts )); then
+      return 1
+    fi
+    sleep "$REMOTE_SSH_RETRY_DELAY"
+    attempt=$((attempt + 1))
+  done
+}
+
+ssh_run_capture() {
+  local remote_cmd="$1"
+  local attempt=1
+  local max_attempts=$((REMOTE_SSH_RETRIES + 1))
+  local output
+
+  while (( attempt <= max_attempts )); do
+    if output="$(ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$remote_cmd")")"; then
+      printf '%s' "$output"
+      return 0
+    fi
+    if (( attempt == max_attempts )); then
+      return 1
+    fi
+    sleep "$REMOTE_SSH_RETRY_DELAY"
+    attempt=$((attempt + 1))
+  done
+}
+
+rsync_run() {
+  local args=(-az --delete)
+  local exclude
+  for exclude in "${REMOTE_RSYNC_EXCLUDES[@]}"; do
+    args+=(--exclude "$exclude")
+  done
+  rsync "${args[@]}" "$repo_root/" "${REMOTE_HOST}:${REMOTE_REPO_DIR}/"
+}
+
+ensure_remote_repo() {
+  ssh_run "mkdir -p $REMOTE_REPO_DIR"
+}
+
+ensure_remote_state_dirs() {
+  ssh_run "mkdir -p $REMOTE_LOG_DIR $REMOTE_STATUS_DIR $REMOTE_COMMAND_DIR $REMOTE_LAUNCHER_DIR"
+}
+
+write_remote_file() {
+  local path="$1"
+  local mode="$2"
+  local content="$3"
+  printf '%s\n' "$content" | ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "cat > $path && chmod $mode $path")"
+}
+
+status_snapshot() {
+  local job="$1"
+  local session_name status_path
+  session_name="$(session_name_for "$job")"
+  status_path="$(remote_status_path_for "$job")"
+
+  ssh_run_capture "
+    status_path=$status_path
+    session_name=$(printf '%q' "$session_name")
+    if [[ -f \$status_path ]]; then
+      # shellcheck disable=SC1090
+      source \"\$status_path\"
+    else
+      JOB_NAME=$(printf '%q' "$job")
+      SESSION_NAME=\$session_name
+      STATE=unknown
+      EXIT_CODE=
+      LOG_FILE=$(printf '%q' "$(remote_log_path_for "$job")")
+      STATUS_FILE=\$status_path
+      COMMAND_FILE=$(printf '%q' "$(remote_command_path_for "$job")")
+      WORKING_DIR=$(printf '%q' "$REMOTE_REPO_DIR")
+      UPDATED_AT=
+    fi
+
+    if tmux has-session -t \"\$session_name\" 2>/dev/null; then
+      TMUX_ACTIVE=1
+    else
+      TMUX_ACTIVE=0
+    fi
+
+    printf 'JOB_NAME=%q\n' \"\$JOB_NAME\"
+    printf 'SESSION_NAME=%q\n' \"\$SESSION_NAME\"
+    printf 'STATE=%q\n' \"\$STATE\"
+    printf 'EXIT_CODE=%q\n' \"\${EXIT_CODE-}\"
+    printf 'LOG_FILE=%q\n' \"\$LOG_FILE\"
+    printf 'STATUS_FILE=%q\n' \"\$STATUS_FILE\"
+    printf 'COMMAND_FILE=%q\n' \"\$COMMAND_FILE\"
+    printf 'WORKING_DIR=%q\n' \"\$WORKING_DIR\"
+    printf 'UPDATED_AT=%q\n' \"\${UPDATED_AT-}\"
+    printf 'TMUX_ACTIVE=%q\n' \"\$TMUX_ACTIVE\"
+  "
+}
+
+load_snapshot_into_shell() {
+  local snapshot="$1"
+  eval "$snapshot"
+}
+
+sync_command() {
+  require_syncable_vendor_state
+  ensure_remote_repo
+  echo "Syncing $repo_root -> ${REMOTE_HOST}:${REMOTE_REPO_DIR}"
+  rsync_run
+}
+
+exec_command() {
+  local command="$1"
+  ensure_remote_repo
+  ssh_run "cd $REMOTE_REPO_DIR && $command"
+}
+
+run_command() {
+  local job="$1"
+  local command="$2"
+  local session_name log_path status_path command_path launcher_path launcher_body
+
+  validate_job_name "$job"
+  ensure_remote_repo
+  ensure_remote_state_dirs
+
+  session_name="$(session_name_for "$job")"
+  log_path="$(remote_log_path_for "$job")"
+  status_path="$(remote_status_path_for "$job")"
+  command_path="$(remote_command_path_for "$job")"
+  launcher_path="$(remote_launcher_path_for "$job")"
+
+  write_remote_file "$command_path" 600 "$command"
+
+  launcher_body=$(cat <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+job_name=$(printf '%q' "$job")
+session_name=$(printf '%q' "$session_name")
+repo_dir=$REMOTE_REPO_DIR
+command_file=$command_path
+status_file=$status_path
+log_file=$log_path
+
+write_status() {
+  local state="\$1"
+  local exit_code="\${2-}"
+  {
+    printf 'JOB_NAME=%q\n' "\$job_name"
+    printf 'SESSION_NAME=%q\n' "\$session_name"
+    printf 'STATE=%q\n' "\$state"
+    printf 'EXIT_CODE=%q\n' "\$exit_code"
+    printf 'LOG_FILE=%q\n' "\$log_file"
+    printf 'STATUS_FILE=%q\n' "\$status_file"
+    printf 'COMMAND_FILE=%q\n' "\$command_file"
+    printf 'WORKING_DIR=%q\n' "\$repo_dir"
+    printf 'UPDATED_AT=%q\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  } >"\$status_file"
+}
+
+handle_cancel() {
+  write_status cancelled 130
+  {
+    printf '[%s] job=%s cancelled\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name"
+  } >>"\$log_file"
+  exit 130
+}
+
+trap handle_cancel INT TERM HUP
+
+: >"\$log_file"
+write_status running
+
+{
+  printf '[%s] job=%s session=%s started\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name" "\$session_name"
+  printf '[%s] cwd=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$repo_dir"
+  printf '[%s] command=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$(cat "\$command_file")"
+} >>"\$log_file"
+
+cd "\$repo_dir"
+set +e
+bash -lc "\$(cat "\$command_file")" >>"\$log_file" 2>&1
+rc=\$?
+set -e
+
+{
+  printf '[%s] job=%s finished exit=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name" "\$rc"
+} >>"\$log_file"
+
+if [[ \$rc -eq 0 ]]; then
+  write_status succeeded "\$rc"
+else
+  write_status failed "\$rc"
+fi
+
+exit "\$rc"
+EOF
+)
+
+  write_remote_file "$launcher_path" 700 "$launcher_body"
+
+  ssh_run "
+    tmux kill-session -t $(printf '%q' "$session_name") 2>/dev/null || true
+    tmux new-session -d -s $(printf '%q' "$session_name") $launcher_path
+  "
+
+  echo "Launched remote job '$job'"
+  echo "  session: $session_name"
+  echo "  log: $log_path"
+  echo "  status: $status_path"
+}
+
+status_command() {
+  local job="$1"
+  local snapshot
+  validate_job_name "$job"
+  snapshot="$(status_snapshot "$job")" || die "failed to query remote status for '$job'"
+  load_snapshot_into_shell "$snapshot"
+
+  cat <<EOF
+job: $JOB_NAME
+session: $SESSION_NAME
+state: $STATE
+exit_code: ${EXIT_CODE:-}
+tmux_active: $TMUX_ACTIVE
+log: $LOG_FILE
+status: $STATUS_FILE
+command: $COMMAND_FILE
+updated_at: ${UPDATED_AT:-}
+EOF
+}
+
+tail_command() {
+  local job="$1"
+  shift
+  local lines=50
+  local follow=1
+  local log_path
+
+  validate_job_name "$job"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --lines)
+        shift
+        [[ $# -gt 0 ]] || die "--lines requires a value"
+        lines="$1"
+        ;;
+      --no-follow)
+        follow=0
+        ;;
+      *)
+        die "unknown tail option: $1"
+        ;;
+    esac
+    shift
+  done
+
+  log_path="$(remote_log_path_for "$job")"
+  if [[ "$follow" -eq 1 ]]; then
+    ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "tail -n $lines -f $log_path")"
+  else
+    ssh_run "tail -n $lines $log_path"
+  fi
+}
+
+wait_command() {
+  local job="$1"
+  shift
+  local interval="$REMOTE_WAIT_INTERVAL"
+  local snapshot
+
+  validate_job_name "$job"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --interval)
+        shift
+        [[ $# -gt 0 ]] || die "--interval requires a value"
+        interval="$1"
+        ;;
+      *)
+        die "unknown wait option: $1"
+        ;;
+    esac
+    shift
+  done
+
+  while true; do
+    snapshot="$(status_snapshot "$job")" || die "failed to query remote status for '$job'"
+    load_snapshot_into_shell "$snapshot"
+
+    case "$STATE" in
+      succeeded)
+        echo "Remote job '$job' succeeded."
+        return 0
+        ;;
+      failed)
+        echo "Remote job '$job' failed with exit code ${EXIT_CODE:-1}." >&2
+        return "${EXIT_CODE:-1}"
+        ;;
+      cancelled)
+        echo "Remote job '$job' was cancelled." >&2
+        return 130
+        ;;
+      running|unknown)
+        echo "Waiting on '$job' (state=$STATE, tmux_active=$TMUX_ACTIVE, updated_at=${UPDATED_AT:-unknown})"
+        sleep "$interval"
+        ;;
+      *)
+        echo "Waiting on '$job' (state=$STATE, tmux_active=$TMUX_ACTIVE, updated_at=${UPDATED_AT:-unknown})"
+        sleep "$interval"
+        ;;
+    esac
+  done
+}
+
+cancel_command() {
+  local job="$1"
+  local session_name status_path log_path command_path cancelled_status
+
+  validate_job_name "$job"
+  ensure_remote_state_dirs
+  session_name="$(session_name_for "$job")"
+  status_path="$(remote_status_path_for "$job")"
+  log_path="$(remote_log_path_for "$job")"
+  command_path="$(remote_command_path_for "$job")"
+
+  cancelled_status=$(cat <<EOF
+JOB_NAME=$(printf '%q' "$job")
+SESSION_NAME=$(printf '%q' "$session_name")
+STATE=cancelled
+EXIT_CODE=130
+LOG_FILE=$(printf '%q' "$log_path")
+STATUS_FILE=$(printf '%q' "$status_path")
+COMMAND_FILE=$(printf '%q' "$command_path")
+WORKING_DIR=$(printf '%q' "$REMOTE_REPO_DIR")
+UPDATED_AT=$(printf '%q' "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+EOF
+)
+
+  ssh_run "tmux kill-session -t $(printf '%q' "$session_name") 2>/dev/null || true"
+  write_remote_file "$status_path" 600 "$cancelled_status"
+
+  echo "Cancelled remote job '$job'."
+}
+
+main() {
+  local subcommand="${1:-help}"
+  shift || true
+
+  case "$subcommand" in
+    sync)
+      [[ $# -eq 0 ]] || die "sync takes no arguments"
+      sync_command
+      ;;
+    exec)
+      exec_command "$(require_command_string "$@")"
+      ;;
+    run)
+      [[ $# -ge 1 ]] || die "run requires <job>"
+      local job="$1"
+      shift
+      run_command "$job" "$(require_command_string "$@")"
+      ;;
+    status)
+      [[ $# -eq 1 ]] || die "status requires <job>"
+      status_command "$1"
+      ;;
+    tail)
+      [[ $# -ge 1 ]] || die "tail requires <job>"
+      local job="$1"
+      shift
+      tail_command "$job" "$@"
+      ;;
+    wait)
+      [[ $# -ge 1 ]] || die "wait requires <job>"
+      local job="$1"
+      shift
+      wait_command "$job" "$@"
+      ;;
+    cancel)
+      [[ $# -eq 1 ]] || die "cancel requires <job>"
+      cancel_command "$1"
+      ;;
+    help|-h|--help)
+      usage
+      ;;
+    *)
+      die "unknown subcommand: $subcommand"
+      ;;
+  esac
+}
+
+main "$@"

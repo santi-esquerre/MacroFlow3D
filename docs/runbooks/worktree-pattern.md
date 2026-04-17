@@ -32,6 +32,7 @@ Use separate worktrees for independent work streams. Each worktree:
 ```bash
 cd ~/src/MacroFlow3D
 git worktree add -b chore/tooling-sccache .agents/worktrees/tooling
+git -C .agents/worktrees/tooling submodule update --init --recursive
 ```
 
 ### Helper script
@@ -39,6 +40,8 @@ git worktree add -b chore/tooling-sccache .agents/worktrees/tooling
 ```bash
 scripts/create-worktree.sh chore/tooling-sccache
 ```
+
+The helper initializes required submodules in the new worktree automatically.
 
 Override base directory:
 
@@ -61,7 +64,7 @@ cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
 
 # Sync to remote works normally
-scripts/rsync_to_v100.sh
+scripts/remote sync
 ```
 
 ## Typical concurrent worktrees

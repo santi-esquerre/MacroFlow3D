@@ -52,10 +52,11 @@ ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
 If PETSc/SLEPc is involved (remote V100):
 ```bash
 # SLEPc smoke
-ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc'
+scripts/remote sync
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
 
 # SLEPc eigensolver validation
-ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver'
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
 ```
 
 **Pass criteria:**
@@ -87,16 +88,18 @@ When interpreting Tier C results, apply the Lester practical checklist (§ "Prac
 **Remote V100 (production-level):**
 ```bash
 # Sync
-scripts/rsync_to_v100.sh
+scripts/remote sync
 
 # Build
-scripts/remote_build_and_test.sh
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
 
 # PSPTA production config
-scripts/remote_run_pipeline.sh apps/config_pipeline_pspta.yaml
+scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
+scripts/remote wait pspta-prod
 
 # Par2 baseline
-scripts/remote_run_pipeline.sh apps/config_pipeline_par2.yaml
+scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
+scripts/remote wait par2-prod
 ```
 
 **Pass criteria:**

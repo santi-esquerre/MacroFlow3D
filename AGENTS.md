@@ -61,7 +61,10 @@ Top-level areas:
 - `src/physics/particles/pspta/`
   - PSPTA / invariant-based transport path
 - `src/external/`
-  - vendorized dependencies (`yaml-cpp`, `Par2_Core`, optional PETSc/SLEPc trees)
+  - external dependency area
+  - tracked vendored source: `yaml-cpp`, `nlohmann`
+  - required git submodule: `Par2_Core`
+  - optional local/remote-managed trees: PETSc/SLEPc
 - `docs/`
   - runbooks, validation rules, decisions, plans, experiments
 
@@ -119,12 +122,14 @@ Use the remote server for heavy builds, profiling, PETSc/SLEPc, and production-l
 Canonical flow:
 
 ```bash
-scripts/rsync_to_v100.sh
-scripts/remote_build_and_test.sh
-scripts/remote_run_pipeline.sh apps/config_pspta_small.yaml
+scripts/remote sync
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
+scripts/remote wait pspta-small
 ```
 
 Do not assume local performance conclusions carry over to V100.
+Do not handwrite ad hoc `ssh`/`tmux`/`rsync` command strings for normal remote work; use `scripts/remote`.
 
 ---
 

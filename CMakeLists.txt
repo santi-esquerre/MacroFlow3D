@@ -89,6 +89,12 @@ string(REPLACE ";" " " MACROFLOW3D_CUDA_ARCH_STR "${CMAKE_CUDA_ARCHITECTURES}")
 # ============================================================================
 # External: Par2_Core (GPU RWPT engine, static build, extras off)
 # ============================================================================
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/external/Par2_Core/CMakeLists.txt")
+    message(FATAL_ERROR
+        "Par2_Core is required but src/external/Par2_Core is not populated.\n"
+        "Initialize the submodule in this worktree before configuring:\n"
+        "  git submodule update --init --recursive src/external/Par2_Core")
+endif()
 set(PAR2_BUILD_EXAMPLES       OFF CACHE BOOL "" FORCE)
 set(PAR2_BUILD_LEGACY_RUNNER  OFF CACHE BOOL "" FORCE)
 set(PAR2_BUILD_ORIGINAL       OFF CACHE BOOL "" FORCE)

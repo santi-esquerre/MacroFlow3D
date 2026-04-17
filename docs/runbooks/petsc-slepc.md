@@ -30,24 +30,13 @@ If those are missing, configure should fail early.
 ## 2. Canonical remote configure
 
 ```bash
-ssh v100 '
-  cd ~/MacroFlow3D &&
-  cmake -S . -B build/v100-petsc -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CUDA_ARCHITECTURES=70 \
-    -DMACROFLOW3D_ENABLE_PETSC=ON \
-    -DPETSC_DIR=$HOME/MacroFlow3D/src/external/petsc \
-    -DPETSC_ARCH=arch-cuda \
-    -DSLEPC_DIR=$HOME/MacroFlow3D/src/external/slepc
-'
+scripts/remote sync
+scripts/remote exec -- "cmake --preset v100-petsc"
 ```
 
 Then:
 ```bash
-ssh v100 '
-  cd ~/MacroFlow3D &&
-  cmake --build build/v100-petsc -j
-'
+scripts/remote exec -- "cmake --build build/v100-petsc -j"
 ```
 
 ---
@@ -56,10 +45,7 @@ ssh v100 '
 
 ### Smoke test
 ```bash
-ssh v100 '
-  cd ~/MacroFlow3D &&
-  ./build/v100-petsc/smoke_test_petsc
-'
+scripts/remote exec -- "./build/v100-petsc/smoke_test_petsc"
 ```
 
 What it should prove:
@@ -69,10 +55,7 @@ What it should prove:
 
 ### CTest version
 ```bash
-ssh v100 '
-  cd ~/MacroFlow3D &&
-  ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc
-'
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
 ```
 
 ---
@@ -81,18 +64,12 @@ ssh v100 '
 
 ### Direct run
 ```bash
-ssh v100 '
-  cd ~/MacroFlow3D &&
-  ./build/v100-petsc/validate_slepc_eigensolver
-'
+scripts/remote exec -- "./build/v100-petsc/validate_slepc_eigensolver"
 ```
 
 ### CTest form
 ```bash
-ssh v100 '
-  cd ~/MacroFlow3D &&
-  ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver
-'
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
 ```
 
 Expected focus:

@@ -39,6 +39,7 @@ Suggested layout:
 ```bash
 cd ~/src/MacroFlow3D
 git worktree add -b chore/example .agents/worktrees/example
+git -C .agents/worktrees/example submodule update --init --recursive
 ```
 
 ### Enter it
@@ -150,6 +151,7 @@ Before syncing to `v100`, make sure:
 
 - `git status` is clean enough to understand
 - the worktree contains only intended changes
+- required submodules are populated in the worktree (especially `src/external/Par2_Core`)
 - the local build passed
 - the runbook and AGENTS changes are updated if behavior changed
 
@@ -168,13 +170,13 @@ git log --oneline --decorate -n 5
 Preferred:
 
 ```bash
-scripts/rsync_to_v100.sh
+scripts/remote sync
 ```
 
 Then run:
 
 ```bash
-scripts/remote_build_and_test.sh
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
 ```
 
 If you only changed documentation or scripts, remote sync/build may be unnecessary.

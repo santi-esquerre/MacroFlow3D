@@ -74,7 +74,7 @@ export SCCACHE_CACHE_SIZE="10G"
 If sccache is installed on the remote server, it will be auto-detected there too. Install the same way. To verify:
 
 ```bash
-ssh v100 'which sccache && sccache --show-stats'
+scripts/remote exec -- "which sccache && sccache --show-stats"
 ```
 
 ## Disabling

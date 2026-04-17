@@ -54,9 +54,9 @@ ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
 ### Commands (remote, if PETSc/SLEPc involved)
 
 ```bash
-scripts/rsync_to_v100.sh
-ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc'
-ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver'
+scripts/remote sync
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
 ```
 
 ### Pass criteria
@@ -96,10 +96,12 @@ ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc --output-on-fail
 ### Commands (remote production)
 
 ```bash
-scripts/rsync_to_v100.sh
-scripts/remote_build_and_test.sh
-scripts/remote_run_pipeline.sh apps/config_pipeline_pspta.yaml
-scripts/remote_run_pipeline.sh apps/config_pipeline_par2.yaml
+scripts/remote sync
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
+scripts/remote wait pspta-prod
+scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
+scripts/remote wait par2-prod
 ```
 
 ### Pass criteria

@@ -47,6 +47,11 @@ echo ""
 cd "$REPO_ROOT"
 git worktree add -b "$BRANCH" "$WORKTREE_DIR"
 
+if [[ -f "$REPO_ROOT/.gitmodules" ]]; then
+    echo "Initializing submodules in new worktree..."
+    git -C "$WORKTREE_DIR" submodule update --init --recursive
+fi
+
 echo ""
 echo "Done. To start working:"
 echo "  cd $WORKTREE_DIR"

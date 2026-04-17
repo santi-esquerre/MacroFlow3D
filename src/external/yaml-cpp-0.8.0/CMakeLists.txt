@@ -1,5 +1,7 @@
-# 3.5 is actually available almost everywhere, but this a good minimum
-cmake_minimum_required(VERSION 3.4)
+# CMake 4.x removed compatibility with projects declaring < 3.5 here.
+# MacroFlow3D builds yaml-cpp as a bundled library, so raising the minimum
+# preserves current behavior while keeping remote V100 configure usable.
+cmake_minimum_required(VERSION 3.5)
 
 # enable MSVC_RUNTIME_LIBRARY target property
 # see https://cmake.org/cmake/help/latest/policy/CMP0091.html

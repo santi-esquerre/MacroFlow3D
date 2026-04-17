@@ -3,6 +3,8 @@ set -euo pipefail
 
 # Run a pipeline config on the remote V100 server.
 #
+# Compatibility shim. Prefer `scripts/remote run <job> -- "<command>"`.
+#
 # Example:
 #   scripts/remote_run_pipeline.sh apps/config_pspta_small.yaml
 #   BUILD_DIR=build/v100-release scripts/remote_run_pipeline.sh apps/config_pipeline_pspta.yaml
@@ -13,12 +15,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 CONFIG_PATH="$1"
-REMOTE_HOST="${REMOTE_HOST:-v100}"
-REMOTE_DIR="${REMOTE_DIR:-~/MacroFlow3D}"
 BUILD_DIR="${BUILD_DIR:-build/v100-release}"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-ssh "$REMOTE_HOST" "
-  set -euo pipefail
-  cd $REMOTE_DIR
-  ./$BUILD_DIR/macroflow3d_pipeline $CONFIG_PATH
-"
+exec "$script_dir/remote" exec -- "./$BUILD_DIR/macroflow3d_pipeline $CONFIG_PATH"

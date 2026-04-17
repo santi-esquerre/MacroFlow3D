@@ -37,15 +37,15 @@ Remote V100 is for heavy validation and production-like runs.
 
 | Activity | Command |
 |----------|---------|
-| Sync | `scripts/rsync_to_v100.sh` |
-| Release build | `scripts/remote_build_and_test.sh` |
-| PETSc build | `BUILD_DIR=build/v100-petsc ENABLE_PETSC=ON scripts/remote_build_and_test.sh` |
-| PETSc smoke | `ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc -R smoke_test_petsc'` |
-| SLEPc validation | `ssh v100 'cd ~/MacroFlow3D && ctest --test-dir build/v100-petsc -R validate_slepc_eigensolver'` |
+| Sync | `scripts/remote sync` |
+| Release build | `scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"` |
+| PETSc build | `scripts/remote exec -- "cmake --preset v100-petsc && cmake --build build/v100-petsc -j && ctest --test-dir build/v100-petsc --output-on-failure"` |
+| PETSc smoke | `scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"` |
+| SLEPc validation | `scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"` |
 | Profiling build | Use preset `v100-prof` |
-| PSPTA production | `scripts/remote_run_pipeline.sh apps/config_pipeline_pspta.yaml` |
-| Par2 production | `scripts/remote_run_pipeline.sh apps/config_pipeline_par2.yaml` |
-| Benchmarks | `ssh v100 'cd ~/MacroFlow3D && ./build/v100-petsc/benchmark_eigensolver'` |
+| PSPTA production | `scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"` |
+| Par2 production | `scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"` |
+| Benchmarks | `scripts/remote run eig-bench -- "./build/v100-petsc/benchmark_eigensolver"` |
 | Ensemble runs | remote only |
 
 **Do not use the remote server for:**
@@ -72,7 +72,7 @@ Remote V100 is for heavy validation and production-like runs.
 ```
 Local WSL:    lint → configure → build → test → smoke → [Tier B local]
                 ↓
-Remote V100:  rsync → build → test → [Tier B remote] → [Tier C production]
+Remote V100:  scripts/remote sync → scripts/remote exec -- ... → [Tier B remote] → scripts/remote run/wait
                 ↓
 Local WSL:    review results → create PR
 ```
