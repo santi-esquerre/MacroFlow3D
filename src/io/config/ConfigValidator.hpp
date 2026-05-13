@@ -122,6 +122,24 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
     if (cfg.transport.method != "par2" && cfg.transport.method != "pspta")
         err("transport.method",
             "'" + cfg.transport.method + "' unknown; expected 'par2' or 'pspta'");
+    if (cfg.transport.velocity_eval_mode != "FACE_TRILINEAR" &&
+        cfg.transport.velocity_eval_mode != "face_trilinear" &&
+        cfg.transport.velocity_eval_mode != "KH_POTENTIAL_RECONSTRUCTION" &&
+        cfg.transport.velocity_eval_mode != "kh_potential_reconstruction") {
+        err("transport.velocity_eval_mode",
+            "'" + cfg.transport.velocity_eval_mode +
+                "' unknown; expected FACE_TRILINEAR or KH_POTENTIAL_RECONSTRUCTION");
+    }
+    const bool kh_mode = cfg.transport.velocity_eval_mode == "KH_POTENTIAL_RECONSTRUCTION" ||
+                         cfg.transport.velocity_eval_mode == "kh_potential_reconstruction";
+    if (kh_mode && cfg.transport.method != "par2") {
+        err("transport.velocity_eval_mode", "KH is only supported with transport.method='par2'");
+    }
+    if (kh_mode &&
+        (cfg.transport.diffusion > 0 || cfg.transport.alpha_l > 0 || cfg.transport.alpha_t > 0)) {
+        err("transport.velocity_eval_mode",
+            "KH_POTENTIAL_RECONSTRUCTION currently supports pure advection only");
+    }
     if (cfg.transport.pspta_refine.enabled) {
         if (cfg.transport.method != "pspta") {
             warn("transport.pspta_refine.enabled",

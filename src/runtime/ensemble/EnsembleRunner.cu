@@ -205,6 +205,12 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
     ta_cfg.alpha_l = cfg.transport.alpha_l;
     ta_cfg.alpha_t = cfg.transport.alpha_t;
     ta_cfg.linear_interpolation = true;
+    if (cfg.transport.velocity_eval_mode == "KH_POTENTIAL_RECONSTRUCTION" ||
+        cfg.transport.velocity_eval_mode == "kh_potential_reconstruction") {
+        ta_cfg.velocity_eval_mode = VelocityEvalMode::KhPotentialReconstruction;
+    } else {
+        ta_cfg.velocity_eval_mode = VelocityEvalMode::FaceTrilinear;
+    }
     ta_cfg.rng_seed = cfg.transport.seed;
 
     // ── Stats collector (Etapa 6 — par2-neutral wrapper) ─────────────
@@ -494,11 +500,16 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
                     layout.base + "/newton_fail_summary.csv", r, NP, ts);
             }
         } else {
-            std::printf("  [7] Transport (Par2_Core)\n");
+            std::printf("  [7] Transport (Par2_Core, velocity_eval_mode=%s)\n",
+                        cfg.transport.velocity_eval_mode.c_str());
             TransportAdapterConfig r_cfg = ta_cfg;
             r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
             Par2TransportAdapter eng(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
-            eng.bind_velocity(vel);
+            if (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction) {
+                eng.bind_potential_flow(K_field, head_field, cfg.flow.bc);
+            } else {
+                eng.bind_velocity(vel);
+            }
             run_hot_loop(eng);
         }
 

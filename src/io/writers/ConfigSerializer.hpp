@@ -121,6 +121,7 @@ struct ConfigSerializer {
         std::fprintf(f, "  snapshot_every: %d\n", cfg.transport.snapshot_every);
         std::fprintf(f, "  inject_x: %.15e\n", (double)cfg.transport.inject_x);
         std::fprintf(f, "  method: %s\n", cfg.transport.method.c_str());
+        std::fprintf(f, "  velocity_eval_mode: %s\n", cfg.transport.velocity_eval_mode.c_str());
         std::fprintf(f, "  pspta_diagnostics: %s\n",
                      cfg.transport.pspta_diagnostics ? "true" : "false");
         std::fprintf(f, "  pspta_refine:\n");

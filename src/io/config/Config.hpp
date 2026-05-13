@@ -158,6 +158,11 @@ struct TransportYamlConfig {
     // Transport method: "par2" (default) | "pspta"
     std::string method = "par2";
 
+    // Velocity evaluation backend for method=="par2":
+    // "FACE_TRILINEAR" (current baseline) |
+    // "KH_POTENTIAL_RECONSTRUCTION" (experimental pure-advection mode)
+    std::string velocity_eval_mode = "FACE_TRILINEAR";
+
     // Enable PSPTA-specific diagnostics (ψ quality + Newton fail summary).
     // Written to psi_quality.csv and newton_fail_summary.csv.
     // Has no effect for method=="par2".  Default OFF.

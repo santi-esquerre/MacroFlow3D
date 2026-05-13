@@ -36,6 +36,9 @@ class Par2TransportAdapter {
     /// Bind velocity field (zero-copy; field must outlive the adapter)
     void bind_velocity(const PaddedVelocityField& vel);
 
+    /// Bind K/head scalar fields for KH reconstruction (zero-copy)
+    void bind_potential_flow(const KField& K, const HeadField& head, const BCSpec& bc);
+
     /// Bind particle arrays (non-owning; buffers must outlive the adapter)
     void bind_particles(ParticlesSoA<real>& p);
 

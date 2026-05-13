@@ -38,6 +38,19 @@ inline par2::BoundaryType to_par2_bc(BCType t) {
     }
 }
 
+inline par2::ScalarBoundaryType to_par2_scalar_bc(BCType t) {
+    switch (t) {
+    case BCType::Dirichlet:
+        return par2::ScalarBoundaryType::Dirichlet;
+    case BCType::Neumann:
+        return par2::ScalarBoundaryType::Neumann;
+    case BCType::Periodic:
+        return par2::ScalarBoundaryType::Periodic;
+    default:
+        return par2::ScalarBoundaryType::Extrapolate;
+    }
+}
+
 inline par2::BoundaryConfig<real> make_par2_bc(const BCSpec& bc) {
     par2::BoundaryConfig<real> cfg;
     cfg.x.lo = to_par2_bc(bc.xmin.type);
@@ -47,6 +60,23 @@ inline par2::BoundaryConfig<real> make_par2_bc(const BCSpec& bc) {
     cfg.z.lo = to_par2_bc(bc.zmin.type);
     cfg.z.hi = to_par2_bc(bc.zmax.type);
     return cfg;
+}
+
+inline par2::PotentialBoundaryConfig<real> make_par2_potential_bc(const BCSpec& bc) {
+    par2::PotentialBoundaryConfig<real> out;
+    out.x.lo.type = to_par2_scalar_bc(bc.xmin.type);
+    out.x.lo.value = bc.xmin.value;
+    out.x.hi.type = to_par2_scalar_bc(bc.xmax.type);
+    out.x.hi.value = bc.xmax.value;
+    out.y.lo.type = to_par2_scalar_bc(bc.ymin.type);
+    out.y.lo.value = bc.ymin.value;
+    out.y.hi.type = to_par2_scalar_bc(bc.ymax.type);
+    out.y.hi.value = bc.ymax.value;
+    out.z.lo.type = to_par2_scalar_bc(bc.zmin.type);
+    out.z.lo.value = bc.zmin.value;
+    out.z.hi.type = to_par2_scalar_bc(bc.zmax.type);
+    out.z.hi.value = bc.zmax.value;
+    return out;
 }
 
 // ============================================================================
@@ -67,6 +97,16 @@ inline par2::VelocityView<real> make_velocity_view(const PaddedVelocityField& ve
     v.V = vel.V_ptr();
     v.W = vel.W_ptr();
     v.size = vel.field_size();
+    return v;
+}
+
+inline par2::PotentialFlowView<real>
+make_potential_flow_view(const KField& K, const HeadField& head, const BCSpec& bc) {
+    par2::PotentialFlowView<real> v;
+    v.K = K.device_ptr();
+    v.head = head.device_ptr();
+    v.size = K.size();
+    v.head_bc = make_par2_potential_bc(bc);
     return v;
 }
 

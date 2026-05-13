@@ -329,6 +329,13 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME operator_tests COMMAND run_operator_tests)
 
+    add_executable(kh_potential_reconstruction_tests apps/test_kh_potential_reconstruction.cu)
+    target_link_libraries(kh_potential_reconstruction_tests PRIVATE macroflow3d_lib)
+    target_compile_options(kh_potential_reconstruction_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME kh_potential_reconstruction_tests COMMAND kh_potential_reconstruction_tests)
+
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
         # Minimal smoke test — verifies init, VECCUDA creation, link

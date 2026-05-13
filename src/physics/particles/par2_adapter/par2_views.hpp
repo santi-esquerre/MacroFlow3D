@@ -63,11 +63,14 @@ struct SnapshotWriterConfig {
 };
 
 /// Configuration for transport engine (par2-agnostic)
+enum class VelocityEvalMode : uint8_t { FaceTrilinear = 0, KhPotentialReconstruction = 1 };
+
 struct TransportAdapterConfig {
     real molecular_diffusion = 0.0;
     real alpha_l = 0.0;
     real alpha_t = 0.0;
     bool linear_interpolation = true;
+    VelocityEvalMode velocity_eval_mode = VelocityEvalMode::FaceTrilinear;
     uint64_t rng_seed = 0;
 
     /// True if any form of dispersion is active

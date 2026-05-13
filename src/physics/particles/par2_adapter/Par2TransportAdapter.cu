@@ -12,6 +12,21 @@ namespace particles {
 
 using namespace detail;
 
+namespace {
+
+par2::VelocityEvalMode to_par2_velocity_eval_mode(VelocityEvalMode mode) {
+    switch (mode) {
+    case VelocityEvalMode::FaceTrilinear:
+        return par2::VelocityEvalMode::FaceTrilinear;
+    case VelocityEvalMode::KhPotentialReconstruction:
+        return par2::VelocityEvalMode::KhPotentialReconstruction;
+    default:
+        return par2::VelocityEvalMode::FaceTrilinear;
+    }
+}
+
+} // namespace
+
 // ============================================================================
 // PIMPL body
 // ============================================================================
@@ -40,6 +55,7 @@ Par2TransportAdapter::Par2TransportAdapter(const Grid3D& grid, const BCSpec& bc,
     tp.alpha_t = cfg.alpha_t;
 
     par2::EngineConfig ecfg;
+    ecfg.velocity_eval_mode = to_par2_velocity_eval_mode(cfg.velocity_eval_mode);
     ecfg.interpolation_mode = cfg.linear_interpolation ? par2::InterpolationMode::Linear
                                                        : par2::InterpolationMode::Trilinear;
     ecfg.drift_mode = cfg.has_dispersion() ? par2::DriftCorrectionMode::TrilinearOnFly
@@ -57,6 +73,12 @@ Par2TransportAdapter& Par2TransportAdapter::operator=(Par2TransportAdapter&&) no
 void Par2TransportAdapter::bind_velocity(const PaddedVelocityField& vel) {
     auto vv = make_velocity_view(vel);
     impl_->engine.bind_velocity(vv);
+}
+
+void Par2TransportAdapter::bind_potential_flow(const KField& K, const HeadField& head,
+                                               const BCSpec& bc) {
+    auto vv = make_potential_flow_view(K, head, bc);
+    impl_->engine.bind_potential_flow(vv);
 }
 
 void Par2TransportAdapter::bind_particles(ParticlesSoA<real>& p) {

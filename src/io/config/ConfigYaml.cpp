@@ -236,11 +236,21 @@ TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlC
     if (!node)
         return cfg;
 
-    static const std::set<std::string> known = {"n_particles",       "dt",          "n_steps",
-                                                "porosity",          "diffusion",   "alpha_l",
-                                                "alpha_t",           "seed",        "output_every",
-                                                "snapshot_every",    "inject_x",    "method",
-                                                "pspta_diagnostics", "pspta_refine"};
+    static const std::set<std::string> known = {"n_particles",
+                                                "dt",
+                                                "n_steps",
+                                                "porosity",
+                                                "diffusion",
+                                                "alpha_l",
+                                                "alpha_t",
+                                                "seed",
+                                                "output_every",
+                                                "snapshot_every",
+                                                "inject_x",
+                                                "method",
+                                                "velocity_eval_mode",
+                                                "pspta_diagnostics",
+                                                "pspta_refine"};
     check_unknown_keys(node, known, "transport", errs);
 
     cfg.n_particles = get_or<int>(node, "n_particles", def.n_particles);
@@ -255,6 +265,8 @@ TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlC
     cfg.snapshot_every = get_or<int>(node, "snapshot_every", def.snapshot_every);
     cfg.inject_x = get_or<real>(node, "inject_x", def.inject_x);
     cfg.method = get_or<std::string>(node, "method", def.method);
+    cfg.velocity_eval_mode =
+        get_or<std::string>(node, "velocity_eval_mode", def.velocity_eval_mode);
     cfg.pspta_diagnostics = get_or<bool>(node, "pspta_diagnostics", def.pspta_diagnostics);
 
     if (node["pspta_refine"]) {
