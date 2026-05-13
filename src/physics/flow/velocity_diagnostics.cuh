@@ -17,10 +17,16 @@
  * Statistics (min/max/mean) are printed to stdout via compute_field_stats.
  */
 
+#include "../../core/BCSpec.hpp"
 #include "../../core/Grid3D.hpp"
 #include "../../core/Scalar.hpp"
 #include "../../runtime/CudaContext.cuh"
 #include "../common/fields.cuh"
+
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace macroflow3d {
 namespace physics {
@@ -89,6 +95,85 @@ void compute_velocity_diagnostics(const PaddedVelocityField& vel, VelocityDiagno
  */
 void print_velocity_diagnostics(const VelocityDiagnostics& diag, int realization_id,
                                 const CudaContext& ctx);
+
+// ============================================================================
+// Sampled backend diagnostics for FACE vs KH comparison
+// ============================================================================
+
+enum class VelocityEvalDiagnosticMode : uint8_t {
+    FaceTrilinear = 0,
+    KhPotentialReconstruction = 1
+};
+
+struct VelocityDiagnosticSample {
+    real speed = 0;
+    real div_abs = 0;
+    real curl_mag = 0;
+    real helicity_abs = 0;
+    real helicity_norm = 0;
+    uint8_t finite = 0;
+};
+
+struct VelocityComparisonSample {
+    real diff_mag = 0;
+    real face_sq = 0;
+    real kh_sq = 0;
+    real dot = 0;
+    uint8_t finite = 0;
+};
+
+struct VelocityEvalDiagnosticsSummary {
+    int realization_id = 0;
+    std::string backend;
+    size_t n_samples = 0;
+    size_t sample_stride = 1;
+    int finite_count = 0;
+    int invalid_count = 0;
+    real speed_mean = 0;
+    real speed_max = 0;
+    real div_abs_mean = 0;
+    real div_abs_max = 0;
+    real curl_mag_mean = 0;
+    real curl_mag_max = 0;
+    real helicity_abs_mean = 0;
+    real helicity_abs_max = 0;
+    real helicity_norm_mean = 0;
+    real helicity_norm_p95 = 0;
+    real helicity_norm_max = 0;
+};
+
+struct VelocityBackendComparisonSummary {
+    int realization_id = 0;
+    size_t n_samples = 0;
+    size_t sample_stride = 1;
+    int finite_count = 0;
+    int invalid_count = 0;
+    real rel_l2_diff = 0;
+    real diff_mean = 0;
+    real diff_std = 0;
+    real diff_p50 = 0;
+    real diff_p95 = 0;
+    real diff_max = 0;
+    real vector_correlation = 0;
+};
+
+struct VelocityEvalDiagnosticsWorkspace {
+    DeviceBuffer<VelocityDiagnosticSample> samples;
+    DeviceBuffer<VelocityComparisonSample> comparison_samples;
+    std::vector<VelocityDiagnosticSample> host_samples;
+    std::vector<VelocityComparisonSample> host_comparison_samples;
+};
+
+VelocityEvalDiagnosticsSummary compute_velocity_eval_diagnostics(
+    VelocityEvalDiagnosticMode mode, const PaddedVelocityField& face_velocity, const KField& K,
+    const HeadField& head, const Grid3D& grid, const BCSpec& bc,
+    VelocityEvalDiagnosticsWorkspace& workspace, const CudaContext& ctx, int realization_id,
+    size_t max_samples = 262144);
+
+VelocityBackendComparisonSummary compute_velocity_backend_comparison(
+    const PaddedVelocityField& face_velocity, const KField& K, const HeadField& head,
+    const Grid3D& grid, const BCSpec& bc, VelocityEvalDiagnosticsWorkspace& workspace,
+    const CudaContext& ctx, int realization_id, size_t max_samples = 262144);
 
 } // namespace physics
 } // namespace macroflow3d

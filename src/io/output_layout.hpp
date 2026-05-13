@@ -28,6 +28,10 @@ inline constexpr int kOutputFormatVersion = 1;
  *   <base>/snapshots/r_XXXX/step_XXXXXXXX.csv  (r>0)
  *   <base>/ensemble/ensemble_timeseries.csv
  *   <base>/analysis/macrodispersion.csv
+ *   <base>/field_diagnostics.csv
+ *   <base>/transport_diagnostics.csv
+ *   <base>/runtime_diagnostics.csv
+ *   <base>/velocity_comparison.csv
  */
 struct OutputLayout {
     std::string base;
@@ -68,6 +72,14 @@ struct OutputLayout {
     std::string ensemble_timeseries() const { return base + "/ensemble/ensemble_timeseries.csv"; }
 
     std::string macrodispersion_csv() const { return base + "/analysis/macrodispersion.csv"; }
+
+    std::string field_diagnostics_csv() const { return base + "/field_diagnostics.csv"; }
+
+    std::string transport_diagnostics_csv() const { return base + "/transport_diagnostics.csv"; }
+
+    std::string runtime_diagnostics_csv() const { return base + "/runtime_diagnostics.csv"; }
+
+    std::string velocity_comparison_csv() const { return base + "/velocity_comparison.csv"; }
 
     // ── Directory creation ───────────────────────────────────────────
 

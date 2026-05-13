@@ -21,6 +21,7 @@
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
 #include "../../io/writers/ManifestWriter.hpp"
 #include "../../runtime/io/IOScheduler.hpp"
+#include "../../runtime/io/KhDiagnosticsWriter.hpp"
 
 // Runtime stats collector (Etapa 6)
 #include "../../runtime/stats/ParticleMomentsCollector.hpp"
@@ -55,6 +56,7 @@
 #include "../../runtime/RunCounters.hpp"
 #include "../pipeline/OutputPaths.hpp" // print_separator()
 
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -165,6 +167,7 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
 
     // Velocity diagnostics workspace (allocated once, reused across realizations)
     VelocityDiagnostics vel_diag;
+    VelocityEvalDiagnosticsWorkspace vel_eval_diag_ws;
     if (cfg.diagnostics.velocity_field) {
         vel_diag.resize(grid);
     }
@@ -358,7 +361,7 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         // PSPTA. Engine must expose: bind_particles, inject_box, ensure_tracking,
         // prepare,
         //                     step, particles(), compute_unwrapped, synchronize.
-        auto run_hot_loop = [&](auto& eng) {
+        auto run_hot_loop = [&](auto& eng) -> double {
             eng.bind_particles(pv);
             eng.inject_box(cfg.transport.inject_x, static_cast<real>(0.0), static_cast<real>(0.0),
                            cfg.transport.inject_x, Ly, Lz, 0, NP);
@@ -371,6 +374,7 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
 
             MACROFLOW3D_NVTX_PUSH("transport");
             profiler.start("transport");
+            const auto transport_t0 = std::chrono::steady_clock::now();
             std::printf("       Stepping %d × %d (dt=%.4e) ...\n", NP, n_steps, dt);
 
             for (int step = 1; step <= n_steps; ++step) {
@@ -435,10 +439,13 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             }
 
             profiler.stop();
+            const auto transport_t1 = std::chrono::steady_clock::now();
+            const std::chrono::duration<double> transport_elapsed = transport_t1 - transport_t0;
 
             std::printf("       Transport complete (r=%d).\n", r);
             scheduler.end_realization();
             counters.add_realization();
+            return transport_elapsed.count();
         }; // end run_hot_loop
 
         if (cfg.transport.method == "pspta") {
@@ -488,7 +495,8 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             pspta_eng->set_inject_seed(cfg.transport.seed + static_cast<uint64_t>(r) * 100ULL);
             pspta_eng->bind_velocity(&vel_compact);
             pspta_eng->bind_psifield(&pspta_psi_field);
-            run_hot_loop(*pspta_eng);
+            const double transport_seconds = run_hot_loop(*pspta_eng);
+            (void)transport_seconds;
             // Post-transport PSPTA diagnostics
             auto ts = pspta_eng->compute_transport_stats();
             std::printf("       [pspta] active=%d  exited=%d  newton_stalls=%lld  "
@@ -505,12 +513,47 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             TransportAdapterConfig r_cfg = ta_cfg;
             r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
             Par2TransportAdapter eng(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
+            const std::string backend_name =
+                (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction)
+                    ? "KH_POTENTIAL_RECONSTRUCTION"
+                    : "FACE_TRILINEAR";
+            if (cfg.diagnostics.velocity_field) {
+                const auto diag_mode =
+                    (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction)
+                        ? VelocityEvalDiagnosticMode::KhPotentialReconstruction
+                        : VelocityEvalDiagnosticMode::FaceTrilinear;
+                auto field_summary =
+                    compute_velocity_eval_diagnostics(diag_mode, vel, K_field, head_field, grid,
+                                                      cfg.flow.bc, vel_eval_diag_ws, ctx, r);
+                runtime::KhDiagnosticsWriter::write_field_row(layout.field_diagnostics_csv(),
+                                                              field_summary);
+                std::printf("       [kh_diag] backend=%s speed_mean=%.4e div_abs_mean=%.4e "
+                            "helicity_norm_mean=%.4e p95=%.4e\n",
+                            field_summary.backend.c_str(), field_summary.speed_mean,
+                            field_summary.div_abs_mean, field_summary.helicity_norm_mean,
+                            field_summary.helicity_norm_p95);
+
+                auto comparison_summary = compute_velocity_backend_comparison(
+                    vel, K_field, head_field, grid, cfg.flow.bc, vel_eval_diag_ws, ctx, r);
+                runtime::KhDiagnosticsWriter::write_comparison_row(layout.velocity_comparison_csv(),
+                                                                   comparison_summary);
+                std::printf("       [kh_compare] rel_l2=%.4e diff_p95=%.4e corr=%.4e\n",
+                            comparison_summary.rel_l2_diff, comparison_summary.diff_p95,
+                            comparison_summary.vector_correlation);
+            }
             if (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction) {
                 eng.bind_potential_flow(K_field, head_field, cfg.flow.bc);
             } else {
                 eng.bind_velocity(vel);
             }
-            run_hot_loop(eng);
+            const double transport_seconds = run_hot_loop(eng);
+            const auto& series = scheduler.stats_series();
+            const io::TimeSeriesPoint<real>* final_sample =
+                series.empty() ? nullptr : &series.back();
+            runtime::KhDiagnosticsWriter::write_transport_row(layout.transport_diagnostics_csv(), r,
+                                                              backend_name, NP, final_sample);
+            runtime::KhDiagnosticsWriter::write_runtime_row(
+                layout.runtime_diagnostics_csv(), r, backend_name, transport_seconds, NP, n_steps);
         }
 
         // Store this realization's series for post-processing
