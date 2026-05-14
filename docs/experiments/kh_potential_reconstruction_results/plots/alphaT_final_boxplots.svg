@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<style>text{font-family:Arial,sans-serif;font-size:12px} .title{font-size:16px;font-weight:bold}.axis{stroke:#333;stroke-width:1} .grid{stroke:#ddd;stroke-width:1}.face{stroke:#1f77b4;fill:none;stroke-width:2} .kh{stroke:#d62728;fill:none;stroke-width:2}.band-face{fill:#1f77b4;opacity:.14} .band-kh{fill:#d62728;opacity:.14}</style>
+<text x="450.0" y="28" text-anchor="middle" class="title">Final transverse alpha by seed</text>
+<line x1="70" y1="450" x2="860" y2="450" class="axis"/>
+<line x1="70" y1="50" x2="70" y2="450" class="axis"/>
+<line x1="168.8" y1="391.8" x2="168.8" y2="83.3" stroke="#333"/>
+<rect x="123.8" y="219.0" width="90" height="75.5" fill="#9ecae1" stroke="#333"/>
+<line x1="123.8" y1="267.7" x2="213.8" y2="267.7" stroke="#333" stroke-width="2"/>
+<text x="168.8" y="475" text-anchor="middle">T1 FACE</text>
+<line x1="366.2" y1="390.0" x2="366.2" y2="86.5" stroke="#333"/>
+<rect x="321.2" y="215.7" width="90" height="82.5" fill="#f4a6a6" stroke="#333"/>
+<line x1="321.2" y1="265.7" x2="411.2" y2="265.7" stroke="#333" stroke-width="2"/>
+<text x="366.2" y="475" text-anchor="middle">T1 KH</text>
+<line x1="563.8" y1="416.7" x2="563.8" y2="137.5" stroke="#333"/>
+<rect x="518.8" y="231.6" width="90" height="67.7" fill="#9ecae1" stroke="#333"/>
+<line x1="518.8" y1="267.8" x2="608.8" y2="267.8" stroke="#333" stroke-width="2"/>
+<text x="563.8" y="475" text-anchor="middle">T2 FACE</text>
+<line x1="761.2" y1="415.3" x2="761.2" y2="106.3" stroke="#333"/>
+<rect x="716.2" y="229.8" width="90" height="69.8" fill="#f4a6a6" stroke="#333"/>
+<line x1="716.2" y1="260.9" x2="806.2" y2="260.9" stroke="#333" stroke-width="2"/>
+<text x="761.2" y="475" text-anchor="middle">T2 KH</text></svg>

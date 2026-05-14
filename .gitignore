@@ -25,6 +25,7 @@ desktop.ini
 
 # Project-specific
 output*/
+artifacts/
 *codebase*.md
 .aidigestignore
 MacroFlow3D*.md

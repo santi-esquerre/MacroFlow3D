@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<style>text{font-family:Arial,sans-serif;font-size:12px} .title{font-size:16px;font-weight:bold}.axis{stroke:#333;stroke-width:1} .grid{stroke:#ddd;stroke-width:1}.face{stroke:#1f77b4;fill:none;stroke-width:2} .kh{stroke:#d62728;fill:none;stroke-width:2}.band-face{fill:#1f77b4;opacity:.14} .band-kh{fill:#d62728;opacity:.14}</style>
+<text x="450.0" y="28" text-anchor="middle" class="title">Mean normalized helicity by seed</text>
+<line x1="70" y1="450" x2="860" y2="450" class="axis"/>
+<line x1="70" y1="50" x2="70" y2="450" class="axis"/>
+<line x1="267.5" y1="276.0" x2="267.5" y2="83.3" stroke="#333"/>
+<rect x="222.5" y="153.6" width="90" height="48.1" fill="#9ecae1" stroke="#333"/>
+<line x1="222.5" y1="184.1" x2="312.5" y2="184.1" stroke="#333" stroke-width="2"/>
+<text x="267.5" y="475" text-anchor="middle">FACE</text>
+<line x1="662.5" y1="416.7" x2="662.5" y2="334.7" stroke="#333"/>
+<rect x="617.5" y="366.8" width="90" height="21.8" fill="#f4a6a6" stroke="#333"/>
+<line x1="617.5" y1="379.4" x2="707.5" y2="379.4" stroke="#333" stroke-width="2"/>
+<text x="662.5" y="475" text-anchor="middle">KH</text></svg>
