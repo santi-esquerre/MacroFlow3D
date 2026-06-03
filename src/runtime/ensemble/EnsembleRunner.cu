@@ -110,6 +110,56 @@ make_pspta_refine_cfg(const TransportYamlConfig::PsptaRefineConfig& y) {
     return c;
 }
 
+static macroflow3d::physics::particles::VelocityEvalMode
+parse_velocity_eval_mode(const std::string& mode) {
+    using macroflow3d::physics::particles::VelocityEvalMode;
+    if (mode == "KH_LINEAR" || mode == "kh_linear" || mode == "KH_POTENTIAL_RECONSTRUCTION" ||
+        mode == "kh_potential_reconstruction") {
+        return VelocityEvalMode::KhLinear;
+    }
+    if (mode == "KH_CUBIC_POTENTIAL_RECONSTRUCTION" ||
+        mode == "kh_cubic_potential_reconstruction") {
+        return VelocityEvalMode::KhCubicPotentialReconstruction;
+    }
+    if (mode == "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION" ||
+        mode == "kh_logk_cubic_potential_reconstruction") {
+        return VelocityEvalMode::KhLogKCubicPotentialReconstruction;
+    }
+    return VelocityEvalMode::FaceTrilinear;
+}
+
+static const char*
+velocity_eval_mode_label(macroflow3d::physics::particles::VelocityEvalMode mode) {
+    using macroflow3d::physics::particles::VelocityEvalMode;
+    switch (mode) {
+    case VelocityEvalMode::KhLinear:
+        return "KH_LINEAR";
+    case VelocityEvalMode::KhCubicPotentialReconstruction:
+        return "KH_CUBIC_POTENTIAL_RECONSTRUCTION";
+    case VelocityEvalMode::KhLogKCubicPotentialReconstruction:
+        return "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION";
+    case VelocityEvalMode::FaceTrilinear:
+    default:
+        return "FACE_TRILINEAR";
+    }
+}
+
+static VelocityEvalDiagnosticMode
+to_velocity_diag_mode(macroflow3d::physics::particles::VelocityEvalMode mode) {
+    using macroflow3d::physics::particles::VelocityEvalMode;
+    switch (mode) {
+    case VelocityEvalMode::KhLinear:
+        return VelocityEvalDiagnosticMode::KhLinear;
+    case VelocityEvalMode::KhCubicPotentialReconstruction:
+        return VelocityEvalDiagnosticMode::KhCubicPotentialReconstruction;
+    case VelocityEvalMode::KhLogKCubicPotentialReconstruction:
+        return VelocityEvalDiagnosticMode::KhLogKCubicPotentialReconstruction;
+    case VelocityEvalMode::FaceTrilinear:
+    default:
+        return VelocityEvalDiagnosticMode::FaceTrilinear;
+    }
+}
+
 // ============================================================================
 // run_ensemble
 // ============================================================================
@@ -208,12 +258,7 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
     ta_cfg.alpha_l = cfg.transport.alpha_l;
     ta_cfg.alpha_t = cfg.transport.alpha_t;
     ta_cfg.linear_interpolation = true;
-    if (cfg.transport.velocity_eval_mode == "KH_POTENTIAL_RECONSTRUCTION" ||
-        cfg.transport.velocity_eval_mode == "kh_potential_reconstruction") {
-        ta_cfg.velocity_eval_mode = VelocityEvalMode::KhPotentialReconstruction;
-    } else {
-        ta_cfg.velocity_eval_mode = VelocityEvalMode::FaceTrilinear;
-    }
+    ta_cfg.velocity_eval_mode = parse_velocity_eval_mode(cfg.transport.velocity_eval_mode);
     ta_cfg.rng_seed = cfg.transport.seed;
 
     // ── Stats collector (Etapa 6 — par2-neutral wrapper) ─────────────
@@ -513,15 +558,9 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             TransportAdapterConfig r_cfg = ta_cfg;
             r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
             Par2TransportAdapter eng(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
-            const std::string backend_name =
-                (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction)
-                    ? "KH_POTENTIAL_RECONSTRUCTION"
-                    : "FACE_TRILINEAR";
+            const std::string backend_name = velocity_eval_mode_label(r_cfg.velocity_eval_mode);
             if (cfg.diagnostics.velocity_field) {
-                const auto diag_mode =
-                    (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction)
-                        ? VelocityEvalDiagnosticMode::KhPotentialReconstruction
-                        : VelocityEvalDiagnosticMode::FaceTrilinear;
+                const auto diag_mode = to_velocity_diag_mode(r_cfg.velocity_eval_mode);
                 auto field_summary =
                     compute_velocity_eval_diagnostics(diag_mode, vel, K_field, head_field, grid,
                                                       cfg.flow.bc, vel_eval_diag_ws, ctx, r);
@@ -533,15 +572,16 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
                             field_summary.div_abs_mean, field_summary.helicity_norm_mean,
                             field_summary.helicity_norm_p95);
 
-                auto comparison_summary = compute_velocity_backend_comparison(
-                    vel, K_field, head_field, grid, cfg.flow.bc, vel_eval_diag_ws, ctx, r);
+                auto comparison_summary =
+                    compute_velocity_backend_comparison(vel, K_field, head_field, grid, cfg.flow.bc,
+                                                        diag_mode, vel_eval_diag_ws, ctx, r);
                 runtime::KhDiagnosticsWriter::write_comparison_row(layout.velocity_comparison_csv(),
                                                                    comparison_summary);
                 std::printf("       [kh_compare] rel_l2=%.4e diff_p95=%.4e corr=%.4e\n",
                             comparison_summary.rel_l2_diff, comparison_summary.diff_p95,
                             comparison_summary.vector_correlation);
             }
-            if (r_cfg.velocity_eval_mode == VelocityEvalMode::KhPotentialReconstruction) {
+            if (is_kh_velocity_eval_mode(r_cfg.velocity_eval_mode)) {
                 eng.bind_potential_flow(K_field, head_field, cfg.flow.bc);
             } else {
                 eng.bind_velocity(vel);

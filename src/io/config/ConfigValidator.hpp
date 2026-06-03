@@ -124,21 +124,35 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
             "'" + cfg.transport.method + "' unknown; expected 'par2' or 'pspta'");
     if (cfg.transport.velocity_eval_mode != "FACE_TRILINEAR" &&
         cfg.transport.velocity_eval_mode != "face_trilinear" &&
+        cfg.transport.velocity_eval_mode != "KH_LINEAR" &&
+        cfg.transport.velocity_eval_mode != "kh_linear" &&
+        cfg.transport.velocity_eval_mode != "KH_CUBIC_POTENTIAL_RECONSTRUCTION" &&
+        cfg.transport.velocity_eval_mode != "kh_cubic_potential_reconstruction" &&
+        cfg.transport.velocity_eval_mode != "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION" &&
+        cfg.transport.velocity_eval_mode != "kh_logk_cubic_potential_reconstruction" &&
         cfg.transport.velocity_eval_mode != "KH_POTENTIAL_RECONSTRUCTION" &&
         cfg.transport.velocity_eval_mode != "kh_potential_reconstruction") {
-        err("transport.velocity_eval_mode",
-            "'" + cfg.transport.velocity_eval_mode +
-                "' unknown; expected FACE_TRILINEAR or KH_POTENTIAL_RECONSTRUCTION");
+        err("transport.velocity_eval_mode", "'" + cfg.transport.velocity_eval_mode +
+                                                "' unknown; expected FACE_TRILINEAR, KH_LINEAR, "
+                                                "KH_CUBIC_POTENTIAL_RECONSTRUCTION, or "
+                                                "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION");
     }
-    const bool kh_mode = cfg.transport.velocity_eval_mode == "KH_POTENTIAL_RECONSTRUCTION" ||
-                         cfg.transport.velocity_eval_mode == "kh_potential_reconstruction";
+    const bool kh_mode =
+        cfg.transport.velocity_eval_mode == "KH_LINEAR" ||
+        cfg.transport.velocity_eval_mode == "kh_linear" ||
+        cfg.transport.velocity_eval_mode == "KH_CUBIC_POTENTIAL_RECONSTRUCTION" ||
+        cfg.transport.velocity_eval_mode == "kh_cubic_potential_reconstruction" ||
+        cfg.transport.velocity_eval_mode == "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION" ||
+        cfg.transport.velocity_eval_mode == "kh_logk_cubic_potential_reconstruction" ||
+        cfg.transport.velocity_eval_mode == "KH_POTENTIAL_RECONSTRUCTION" ||
+        cfg.transport.velocity_eval_mode == "kh_potential_reconstruction";
     if (kh_mode && cfg.transport.method != "par2") {
         err("transport.velocity_eval_mode", "KH is only supported with transport.method='par2'");
     }
     if (kh_mode &&
         (cfg.transport.diffusion > 0 || cfg.transport.alpha_l > 0 || cfg.transport.alpha_t > 0)) {
         err("transport.velocity_eval_mode",
-            "KH_POTENTIAL_RECONSTRUCTION currently supports pure advection only");
+            "KH higher-order backends currently support pure advection only");
     }
     if (cfg.transport.pspta_refine.enabled) {
         if (cfg.transport.method != "pspta") {

@@ -102,20 +102,31 @@ void print_velocity_diagnostics(const VelocityDiagnostics& diag, int realization
 
 enum class VelocityEvalDiagnosticMode : uint8_t {
     FaceTrilinear = 0,
-    KhPotentialReconstruction = 1
+    KhLinear = 1,
+    KhCubicPotentialReconstruction = 2,
+    KhLogKCubicPotentialReconstruction = 3,
+    KhPotentialReconstruction = KhLinear
 };
 
 struct VelocityDiagnosticSample {
     real speed = 0;
     real div_abs = 0;
     real curl_mag = 0;
+    real helicity = 0;
     real helicity_abs = 0;
     real helicity_norm = 0;
+    real k_interp = 0;
+    real logk_interp = 0;
     uint8_t finite = 0;
+    uint8_t has_k_interp = 0;
+    uint8_t has_logk_interp = 0;
+    uint8_t k_nonpositive = 0;
+    uint8_t k_clamped = 0;
 };
 
 struct VelocityComparisonSample {
     real diff_mag = 0;
+    real rel_diff = 0;
     real face_sq = 0;
     real kh_sq = 0;
     real dot = 0;
@@ -135,15 +146,26 @@ struct VelocityEvalDiagnosticsSummary {
     real div_abs_max = 0;
     real curl_mag_mean = 0;
     real curl_mag_max = 0;
+    real helicity_mean = 0;
     real helicity_abs_mean = 0;
     real helicity_abs_max = 0;
     real helicity_norm_mean = 0;
+    real helicity_norm_std = 0;
+    real helicity_norm_p50 = 0;
     real helicity_norm_p95 = 0;
     real helicity_norm_max = 0;
+    real k_interp_min = 0;
+    real k_interp_max = 0;
+    real k_interp_mean = 0;
+    int k_interp_nonpositive_count = 0;
+    int k_interp_clamped_count = 0;
+    real logk_interp_min = 0;
+    real logk_interp_max = 0;
 };
 
 struct VelocityBackendComparisonSummary {
     int realization_id = 0;
+    std::string backend;
     size_t n_samples = 0;
     size_t sample_stride = 1;
     int finite_count = 0;
@@ -154,6 +176,9 @@ struct VelocityBackendComparisonSummary {
     real diff_p50 = 0;
     real diff_p95 = 0;
     real diff_max = 0;
+    real rel_diff_mean = 0;
+    real rel_diff_p95 = 0;
+    real rel_diff_max = 0;
     real vector_correlation = 0;
 };
 
@@ -172,8 +197,9 @@ VelocityEvalDiagnosticsSummary compute_velocity_eval_diagnostics(
 
 VelocityBackendComparisonSummary compute_velocity_backend_comparison(
     const PaddedVelocityField& face_velocity, const KField& K, const HeadField& head,
-    const Grid3D& grid, const BCSpec& bc, VelocityEvalDiagnosticsWorkspace& workspace,
-    const CudaContext& ctx, int realization_id, size_t max_samples = 262144);
+    const Grid3D& grid, const BCSpec& bc, VelocityEvalDiagnosticMode mode,
+    VelocityEvalDiagnosticsWorkspace& workspace, const CudaContext& ctx, int realization_id,
+    size_t max_samples = 262144);
 
 } // namespace physics
 } // namespace macroflow3d

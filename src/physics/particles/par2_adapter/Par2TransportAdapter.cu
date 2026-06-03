@@ -18,8 +18,12 @@ par2::VelocityEvalMode to_par2_velocity_eval_mode(VelocityEvalMode mode) {
     switch (mode) {
     case VelocityEvalMode::FaceTrilinear:
         return par2::VelocityEvalMode::FaceTrilinear;
-    case VelocityEvalMode::KhPotentialReconstruction:
-        return par2::VelocityEvalMode::KhPotentialReconstruction;
+    case VelocityEvalMode::KhLinear:
+        return par2::VelocityEvalMode::KhLinear;
+    case VelocityEvalMode::KhCubicPotentialReconstruction:
+        return par2::VelocityEvalMode::KhCubicPotentialReconstruction;
+    case VelocityEvalMode::KhLogKCubicPotentialReconstruction:
+        return par2::VelocityEvalMode::KhLogKCubicPotentialReconstruction;
     default:
         return par2::VelocityEvalMode::FaceTrilinear;
     }

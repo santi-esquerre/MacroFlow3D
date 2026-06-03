@@ -159,8 +159,12 @@ struct TransportYamlConfig {
     std::string method = "par2";
 
     // Velocity evaluation backend for method=="par2":
-    // "FACE_TRILINEAR" (current baseline) |
-    // "KH_POTENTIAL_RECONSTRUCTION" (experimental pure-advection mode)
+    // "FACE_TRILINEAR" |
+    // "KH_LINEAR" |
+    // "KH_CUBIC_POTENTIAL_RECONSTRUCTION" |
+    // "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION"
+    // Backward compatibility:
+    // "KH_POTENTIAL_RECONSTRUCTION" maps to "KH_LINEAR".
     std::string velocity_eval_mode = "FACE_TRILINEAR";
 
     // Enable PSPTA-specific diagnostics (ψ quality + Newton fail summary).

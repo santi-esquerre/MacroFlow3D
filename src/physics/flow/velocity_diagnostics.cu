@@ -322,8 +322,9 @@ __device__ __forceinline__ void sample_backend_at_cell(int mode, const real* __r
     const real y = g.py + (real(j) + real(0.5)) * g.dy;
     const real z = g.pz + (real(k) + real(0.5)) * g.dz;
 
-    if (mode == static_cast<int>(VelocityEvalDiagnosticMode::KhPotentialReconstruction)) {
-        par2::internal::sample_velocity_kh_potential(pf, g, x, y, z, qx, qy, qz);
+    if (mode != static_cast<int>(VelocityEvalDiagnosticMode::FaceTrilinear)) {
+        par2::internal::sample_velocity_potential_backend(
+            pf, g, static_cast<par2::VelocityEvalMode>(mode), x, y, z, qx, qy, qz);
     } else {
         par2::internal::sample_velocity_facefield_2d_aware(U, V, W, g, i, j, k, true, x, y, z, qx,
                                                            qy, qz);
@@ -332,6 +333,35 @@ __device__ __forceinline__ void sample_backend_at_cell(int mode, const real* __r
 
 __device__ __forceinline__ bool finite3(real x, real y, real z) {
     return isfinite(x) && isfinite(y) && isfinite(z);
+}
+
+__device__ __forceinline__ void
+sample_conductivity_at_cell(int mode, const par2::PotentialFlowView<real>& pf,
+                            const par2::GridDesc<real>& g, int i, int j, int k, real& k_interp,
+                            real& logk_interp, uint8_t& has_k_interp, uint8_t& has_logk_interp) {
+    if (mode == static_cast<int>(VelocityEvalDiagnosticMode::FaceTrilinear)) {
+        k_interp = real(0);
+        logk_interp = real(0);
+        has_k_interp = 0;
+        has_logk_interp = 0;
+        return;
+    }
+
+    const real x = g.px + (real(i) + real(0.5)) * g.dx;
+    const real y = g.py + (real(j) + real(0.5)) * g.dy;
+    const real z = g.pz + (real(k) + real(0.5)) * g.dz;
+
+    double logk_value = 0.0;
+    const double k_value = par2::internal::sample_conductivity_potential_backend(
+        pf, g, static_cast<par2::VelocityEvalMode>(mode), x, y, z, &logk_value);
+
+    k_interp = static_cast<real>(k_value);
+    logk_interp = static_cast<real>(logk_value);
+    has_k_interp = 1;
+    has_logk_interp =
+        mode == static_cast<int>(VelocityEvalDiagnosticMode::KhLogKCubicPotentialReconstruction)
+            ? 1
+            : 0;
 }
 
 __global__ void
@@ -396,17 +426,26 @@ kernel_velocity_eval_samples(int mode, const real* __restrict__ U, const real* _
     s.speed = speed;
     s.div_abs = fabs(div);
     s.curl_mag = curl_mag;
+    s.helicity = helicity;
     s.helicity_abs = fabs(helicity);
     s.helicity_norm = fabs(helicity) / (speed * curl_mag + eps);
-    s.finite = finite3(qx, qy, qz) && isfinite(div) && finite3(curl_x, curl_y, curl_z) ? 1 : 0;
+    sample_conductivity_at_cell(mode, pf, g, i, j, k, s.k_interp, s.logk_interp, s.has_k_interp,
+                                s.has_logk_interp);
+    s.k_nonpositive =
+        (s.has_k_interp && isfinite(s.k_interp) && s.k_interp <= real(0)) ? uint8_t(1) : uint8_t(0);
+    s.k_clamped = 0;
+    s.finite = finite3(qx, qy, qz) && isfinite(div) && finite3(curl_x, curl_y, curl_z) &&
+                       (!s.has_k_interp || isfinite(s.k_interp)) &&
+                       (!s.has_logk_interp || isfinite(s.logk_interp))
+                   ? 1
+                   : 0;
     out[sid] = s;
 }
 
-__global__ void
-kernel_velocity_comparison_samples(const real* __restrict__ U, const real* __restrict__ V,
-                                   const real* __restrict__ W, par2::PotentialFlowView<real> pf,
-                                   par2::GridDesc<real> g, size_t total_cells, size_t sample_stride,
-                                   VelocityComparisonSample* __restrict__ out, size_t n_samples) {
+__global__ void kernel_velocity_comparison_samples(
+    const real* __restrict__ U, const real* __restrict__ V, const real* __restrict__ W,
+    par2::PotentialFlowView<real> pf, par2::GridDesc<real> g, int mode, size_t total_cells,
+    size_t sample_stride, VelocityComparisonSample* __restrict__ out, size_t n_samples) {
     const size_t sid = static_cast<size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
     if (sid >= n_samples)
         return;
@@ -422,23 +461,37 @@ kernel_velocity_comparison_samples(const real* __restrict__ U, const real* __res
     real fx, fy, fz, kx, ky, kz;
     sample_backend_at_cell(static_cast<int>(VelocityEvalDiagnosticMode::FaceTrilinear), U, V, W, pf,
                            g, i, j, k, fx, fy, fz);
-    sample_backend_at_cell(static_cast<int>(VelocityEvalDiagnosticMode::KhPotentialReconstruction),
-                           U, V, W, pf, g, i, j, k, kx, ky, kz);
+    sample_backend_at_cell(mode, U, V, W, pf, g, i, j, k, kx, ky, kz);
 
     const real dx = kx - fx;
     const real dy = ky - fy;
     const real dz = kz - fz;
 
     VelocityComparisonSample s;
-    s.diff_mag = sqrt(dx * dx + dy * dy + dz * dz);
     s.face_sq = fx * fx + fy * fy + fz * fz;
     s.kh_sq = kx * kx + ky * ky + kz * kz;
+    s.diff_mag = sqrt(dx * dx + dy * dy + dz * dz);
+    s.rel_diff = s.diff_mag / (sqrt(s.face_sq) + real(1.0e-30));
     s.dot = fx * kx + fy * ky + fz * kz;
     s.finite = finite3(fx, fy, fz) && finite3(kx, ky, kz) ? 1 : 0;
     out[sid] = s;
 }
 
 } // namespace
+
+const char* velocity_diag_mode_label(VelocityEvalDiagnosticMode mode) {
+    switch (mode) {
+    case VelocityEvalDiagnosticMode::KhLinear:
+        return "KH_LINEAR";
+    case VelocityEvalDiagnosticMode::KhCubicPotentialReconstruction:
+        return "KH_CUBIC_POTENTIAL_RECONSTRUCTION";
+    case VelocityEvalDiagnosticMode::KhLogKCubicPotentialReconstruction:
+        return "KH_LOGK_CUBIC_POTENTIAL_RECONSTRUCTION";
+    case VelocityEvalDiagnosticMode::FaceTrilinear:
+    default:
+        return "FACE_TRILINEAR";
+    }
+}
 
 VelocityEvalDiagnosticsSummary
 compute_velocity_eval_diagnostics(VelocityEvalDiagnosticMode mode,
@@ -451,11 +504,14 @@ compute_velocity_eval_diagnostics(VelocityEvalDiagnosticMode mode,
 
     VelocityEvalDiagnosticsSummary summary;
     summary.realization_id = realization_id;
-    summary.backend = (mode == VelocityEvalDiagnosticMode::KhPotentialReconstruction)
-                          ? "KH_POTENTIAL_RECONSTRUCTION"
-                          : "FACE_TRILINEAR";
+    summary.backend = velocity_diag_mode_label(mode);
     summary.n_samples = plan.count;
     summary.sample_stride = plan.stride;
+    summary.k_interp_min = std::numeric_limits<real>::quiet_NaN();
+    summary.k_interp_max = std::numeric_limits<real>::quiet_NaN();
+    summary.k_interp_mean = std::numeric_limits<real>::quiet_NaN();
+    summary.logk_interp_min = std::numeric_limits<real>::quiet_NaN();
+    summary.logk_interp_max = std::numeric_limits<real>::quiet_NaN();
 
     if (plan.count == 0)
         return summary;
@@ -486,8 +542,14 @@ compute_velocity_eval_diagnostics(VelocityEvalDiagnosticMode mode,
     double speed_sum = 0;
     double div_sum = 0;
     double curl_sum = 0;
+    double helicity_signed_sum = 0;
     double helicity_sum = 0;
     double helicity_norm_sum = 0;
+    double helicity_norm_sq_sum = 0;
+    double k_sum = 0;
+    size_t k_count = 0;
+    bool have_k_stats = false;
+    bool have_logk_stats = false;
 
     for (const auto& s : workspace.host_samples) {
         if (!s.finite) {
@@ -498,14 +560,43 @@ compute_velocity_eval_diagnostics(VelocityEvalDiagnosticMode mode,
         speed_sum += s.speed;
         div_sum += s.div_abs;
         curl_sum += s.curl_mag;
+        helicity_signed_sum += s.helicity;
         helicity_sum += s.helicity_abs;
         helicity_norm_sum += s.helicity_norm;
+        helicity_norm_sq_sum +=
+            static_cast<double>(s.helicity_norm) * static_cast<double>(s.helicity_norm);
         summary.speed_max = std::max(summary.speed_max, s.speed);
         summary.div_abs_max = std::max(summary.div_abs_max, s.div_abs);
         summary.curl_mag_max = std::max(summary.curl_mag_max, s.curl_mag);
         summary.helicity_abs_max = std::max(summary.helicity_abs_max, s.helicity_abs);
         summary.helicity_norm_max = std::max(summary.helicity_norm_max, s.helicity_norm);
         helicity_norms.push_back(s.helicity_norm);
+
+        if (s.has_k_interp && isfinite(s.k_interp)) {
+            if (!have_k_stats) {
+                summary.k_interp_min = s.k_interp;
+                summary.k_interp_max = s.k_interp;
+                have_k_stats = true;
+            } else {
+                summary.k_interp_min = std::min(summary.k_interp_min, s.k_interp);
+                summary.k_interp_max = std::max(summary.k_interp_max, s.k_interp);
+            }
+            k_sum += s.k_interp;
+            ++k_count;
+            summary.k_interp_nonpositive_count += s.k_nonpositive ? 1 : 0;
+            summary.k_interp_clamped_count += s.k_clamped ? 1 : 0;
+        }
+
+        if (s.has_logk_interp && isfinite(s.logk_interp)) {
+            if (!have_logk_stats) {
+                summary.logk_interp_min = s.logk_interp;
+                summary.logk_interp_max = s.logk_interp;
+                have_logk_stats = true;
+            } else {
+                summary.logk_interp_min = std::min(summary.logk_interp_min, s.logk_interp);
+                summary.logk_interp_max = std::max(summary.logk_interp_max, s.logk_interp);
+            }
+        }
     }
 
     if (summary.finite_count > 0) {
@@ -513,10 +604,20 @@ compute_velocity_eval_diagnostics(VelocityEvalDiagnosticMode mode,
         summary.speed_mean = real(speed_sum) * inv;
         summary.div_abs_mean = real(div_sum) * inv;
         summary.curl_mag_mean = real(curl_sum) * inv;
+        summary.helicity_mean = real(helicity_signed_sum) * inv;
         summary.helicity_abs_mean = real(helicity_sum) * inv;
         summary.helicity_norm_mean = real(helicity_norm_sum) * inv;
+        const double helicity_norm_var =
+            std::max(0.0, helicity_norm_sq_sum / static_cast<double>(summary.finite_count) -
+                              static_cast<double>(summary.helicity_norm_mean) *
+                                  static_cast<double>(summary.helicity_norm_mean));
+        summary.helicity_norm_std = static_cast<real>(std::sqrt(helicity_norm_var));
         std::sort(helicity_norms.begin(), helicity_norms.end());
+        summary.helicity_norm_p50 = percentile_sorted(helicity_norms, 0.50);
         summary.helicity_norm_p95 = percentile_sorted(helicity_norms, 0.95);
+    }
+    if (k_count > 0) {
+        summary.k_interp_mean = static_cast<real>(k_sum / static_cast<double>(k_count));
     }
 
     return summary;
@@ -524,13 +625,15 @@ compute_velocity_eval_diagnostics(VelocityEvalDiagnosticMode mode,
 
 VelocityBackendComparisonSummary compute_velocity_backend_comparison(
     const PaddedVelocityField& face_velocity, const KField& K, const HeadField& head,
-    const Grid3D& grid, const BCSpec& bc, VelocityEvalDiagnosticsWorkspace& workspace,
-    const CudaContext& ctx, int realization_id, size_t max_samples) {
+    const Grid3D& grid, const BCSpec& bc, VelocityEvalDiagnosticMode mode,
+    VelocityEvalDiagnosticsWorkspace& workspace, const CudaContext& ctx, int realization_id,
+    size_t max_samples) {
     const size_t total = grid.num_cells();
     const SamplingPlan plan = make_sampling_plan(total, max_samples);
 
     VelocityBackendComparisonSummary summary;
     summary.realization_id = realization_id;
+    summary.backend = velocity_diag_mode_label(mode);
     summary.n_samples = plan.count;
     summary.sample_stride = plan.stride;
     if (plan.count == 0)
@@ -545,8 +648,9 @@ VelocityBackendComparisonSummary compute_velocity_backend_comparison(
     const int block = 256;
     const int n_blocks = static_cast<int>((plan.count + block - 1) / block);
     kernel_velocity_comparison_samples<<<n_blocks, block, 0, ctx.cuda_stream()>>>(
-        face_velocity.U_ptr(), face_velocity.V_ptr(), face_velocity.W_ptr(), pf, pg, total,
-        plan.stride, workspace.comparison_samples.data(), plan.count);
+        face_velocity.U_ptr(), face_velocity.V_ptr(), face_velocity.W_ptr(), pf, pg,
+        static_cast<int>(mode), total, plan.stride, workspace.comparison_samples.data(),
+        plan.count);
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
         workspace.host_comparison_samples.data(), workspace.comparison_samples.data(),
@@ -555,8 +659,11 @@ VelocityBackendComparisonSummary compute_velocity_backend_comparison(
 
     std::vector<real> diffs;
     diffs.reserve(plan.count);
+    std::vector<real> rel_diffs;
+    rel_diffs.reserve(plan.count);
     double diff_sum = 0;
     double diff_sq_sum = 0;
+    double rel_diff_sum = 0;
     double face_sq_sum = 0;
     double kh_sq_sum = 0;
     double dot_sum = 0;
@@ -569,11 +676,14 @@ VelocityBackendComparisonSummary compute_velocity_backend_comparison(
         ++summary.finite_count;
         diff_sum += s.diff_mag;
         diff_sq_sum += static_cast<double>(s.diff_mag) * static_cast<double>(s.diff_mag);
+        rel_diff_sum += s.rel_diff;
         face_sq_sum += s.face_sq;
         kh_sq_sum += s.kh_sq;
         dot_sum += s.dot;
         summary.diff_max = std::max(summary.diff_max, s.diff_mag);
+        summary.rel_diff_max = std::max(summary.rel_diff_max, s.rel_diff);
         diffs.push_back(s.diff_mag);
+        rel_diffs.push_back(s.rel_diff);
     }
 
     if (summary.finite_count > 0) {
@@ -582,13 +692,16 @@ VelocityBackendComparisonSummary compute_velocity_backend_comparison(
         const double variance = std::max(0.0, diff_sq_sum * inv - mean * mean);
         summary.diff_mean = static_cast<real>(mean);
         summary.diff_std = static_cast<real>(std::sqrt(variance));
+        summary.rel_diff_mean = static_cast<real>(rel_diff_sum * inv);
         summary.rel_l2_diff =
             static_cast<real>(std::sqrt(diff_sq_sum / std::max(face_sq_sum, 1.0e-300)));
         summary.vector_correlation =
             static_cast<real>(dot_sum / std::sqrt(std::max(face_sq_sum * kh_sq_sum, 1.0e-300)));
         std::sort(diffs.begin(), diffs.end());
+        std::sort(rel_diffs.begin(), rel_diffs.end());
         summary.diff_p50 = percentile_sorted(diffs, 0.50);
         summary.diff_p95 = percentile_sorted(diffs, 0.95);
+        summary.rel_diff_p95 = percentile_sorted(rel_diffs, 0.95);
     }
 
     return summary;

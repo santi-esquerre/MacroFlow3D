@@ -63,7 +63,19 @@ struct SnapshotWriterConfig {
 };
 
 /// Configuration for transport engine (par2-agnostic)
-enum class VelocityEvalMode : uint8_t { FaceTrilinear = 0, KhPotentialReconstruction = 1 };
+enum class VelocityEvalMode : uint8_t {
+    FaceTrilinear = 0,
+    KhLinear = 1,
+    KhCubicPotentialReconstruction = 2,
+    KhLogKCubicPotentialReconstruction = 3,
+    KhPotentialReconstruction = KhLinear
+};
+
+constexpr bool is_kh_velocity_eval_mode(VelocityEvalMode mode) noexcept {
+    return mode == VelocityEvalMode::KhLinear ||
+           mode == VelocityEvalMode::KhCubicPotentialReconstruction ||
+           mode == VelocityEvalMode::KhLogKCubicPotentialReconstruction;
+}
 
 struct TransportAdapterConfig {
     real molecular_diffusion = 0.0;
