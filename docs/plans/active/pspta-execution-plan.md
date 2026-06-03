@@ -50,7 +50,13 @@ where:
 * (\mu > 0) suppresses noisy or checkerboard modes,
 * and the constant trivial mode is removed explicitly.
 
-We then compute the **two smallest nontrivial eigenvectors** of (A). These become the initial candidates for (\psi_1) and (\psi_2). The report states this directly as the recommended MVP path and describes the exact sequence: build (A), deflate the constant mode, solve for the two smallest nontrivial eigenvectors, and treat those as the two invariants.
+We then compute the **lowest nontrivial invariant subspace** of (A). On the simplest controls this may be represented well by the first two nontrivial eigenvectors, but on `darcy_small` the corrected exact small-grid path shows that the scientifically meaningful Strategy A object is a broader low cluster (at least the first four modes), not a privileged fixed pair of scalar fields.
+
+So the current handoff rule is:
+
+* **Strategy A output** = the corrected low invariant subspace of (A),
+* **not** an assumed final 2-field gauge,
+* and any usable (\psi_1,\psi_2) pair must be treated as a downstream representation / refinement problem built from that subspace.
 
 ### Why this is the correct first step
 
@@ -66,7 +72,7 @@ instead of trying to reconstruct streamfunctions by solving a more fragile nonli
 
 ## 2. Measure invariant quality immediately after the eigensolve
 
-Once (\psi_1,\psi_2) are recovered, we do **not** trust them blindly. We evaluate them with three diagnostics:
+Once the low invariant subspace is recovered, we do **not** trust any particular gauge extracted from it blindly. We evaluate candidate realized fields with three diagnostics:
 
 [
 r_i = \frac{|v \cdot \nabla \psi_i|}{|v| , |\nabla \psi_i| + \varepsilon}
@@ -92,11 +98,11 @@ These metrics are not optional. They are the first scientific gate. If the invar
 
 ## 3. Refine the invariants only if necessary
 
-If the eigensolver output is already good enough, we keep it.
+If the low-subspace output already admits a consumed-object gauge that is good enough, we keep it.
 
-If the invariance is acceptable but the cross-product mismatch is still too large, we run a **refinement stage**. This refinement is not a separate conceptual route; it is a follow-up step on top of the initial invariant recovery.
+If the low-subspace output is scientifically sound but the realized 2-field gauge is still poor, we run a **refinement stage**. This refinement is not a separate conceptual route; it is a follow-up step on top of the initial invariant recovery and starts from the low invariant subspace, not from an arbitrary fixed pair.
 
-The refinement works by alternating between the two fields:
+The refinement therefore begins with a **consumed-object-aware gauge initialization** built from the Strategy A low subspace, then alternates between the two fields:
 
 * fix (\psi_2), compute the best target gradient for (\psi_1) that improves the local match to (v);
 * project that target gradient back to an integrable scalar field through a Poisson solve;
@@ -116,6 +122,8 @@ The key point is that this turns the difficult nonlinear coupling into a sequenc
 * Poisson solves,
 * gradient updates,
 * and line-search / quality checks.
+
+For `darcy_small`, current evidence says the correct entry point to this refinement is the first 4D low Strategy A subspace evaluated inside the exact consumed object. Blind linear 2-mode extraction is already saturated and should no longer be treated as the main A->transport interface.
 
 ### Important implementation note
 
@@ -175,46 +183,49 @@ Deliverable:
 
 ## Phase 2 — Initial invariant recovery
 
-Purpose: recover (\psi_1,\psi_2) from the current Darcy velocity field.
+Purpose: recover the low invariant subspace of the current Darcy velocity field.
 
 Tasks:
 
 * construct the discrete transport operator (D);
 * construct the regularized operator (A = D^\top W D + \mu L);
 * remove the constant null mode;
-* solve for the two smallest nontrivial eigenvectors;
-* store them in the project invariant field structure.
+* solve for the lowest nontrivial eigenspace of (A);
+* identify the scientifically stable low cluster on controls;
+* treat that low cluster as the Strategy A handoff object;
+* only then derive candidate gauge fields for consumed-object evaluation.
 
 Deliverable:
 
-* an initial pair of invariants for PSPTA, plus quality metrics.
+* a validated low invariant subspace for PSPTA handoff, plus quality metrics.
 
 ---
 
 ## Phase 3 — Quality diagnostics and acceptance
 
-Purpose: determine whether the initial pair is already usable.
+Purpose: determine whether the recovered low subspace already admits a usable consumed-object gauge.
 
 Tasks:
 
 * compute (r_1, r_2, e_x, s);
-* inspect invariance loss, degeneracy zones, and mismatch patterns;
-* verify that the fields are smooth enough, independent enough, and physically plausible;
-* decide whether refinement is needed.
+* inspect invariance loss, degeneracy zones, and mismatch patterns on candidate consumed-object gauges;
+* verify that the low subspace is more stable and more meaningful than any fixed 2-mode prefix;
+* decide whether consumed-object-aware refinement is needed.
 
 Deliverable:
 
-* a quantitative report saying whether the eigensolver output is good enough for transport.
+* a quantitative report saying whether the low subspace itself is scientifically acceptable and whether a downstream gauge refinement step is required.
 
 ---
 
 ## Phase 4 — Refinement
 
-Purpose: reduce mismatch while preserving or improving invariant quality.
+Purpose: construct a usable gauge from the accepted Strategy A low subspace while preserving or improving invariant quality.
 
 Tasks:
 
-* implement the alternating fit + Poisson projection loop;
+* build a consumed-object-aware gauge initialization from the low Strategy A subspace;
+* implement the alternating fit + Poisson projection loop on top of that initialization;
 * run backtracking line search;
 * reapply gauge fixing after accepted updates;
 * monitor monotonic improvement in quality;
@@ -222,7 +233,7 @@ Tasks:
 
 Deliverable:
 
-* refined invariants with improved velocity reconstruction quality and no collapse of independence.
+* refined consumed-object invariants with improved velocity reconstruction quality and no collapse of independence.
 
 ---
 
@@ -232,7 +243,7 @@ Purpose: use the accepted invariants in transport.
 
 Tasks:
 
-* feed (\psi_1,\psi_2) into the PSPTA invariant field;
+* feed only accepted refined (\psi_1,\psi_2) fields into the PSPTA invariant field;
 * ensure the engine uses them consistently in its step/update logic;
 * keep the hot path allocation-free;
 * expose particle status, invariant quality, and Newton-type failure statistics.

@@ -129,6 +129,63 @@ struct SolveSummary {
     std::vector<double> expected_captures;
 };
 
+// Gauge-ready metrics: after subspace rotation we also apply a global scalar alpha
+// such that alpha * (grad psi1 x grad psi2) best-fits v in the L2 sense. Under any
+// 2x2 rotation with det=1 the cross product is invariant, so alpha_opt and the
+// residual floor depend only on the subspace (not on the intra-subspace rotation).
+struct GaugeReadyMetrics {
+    double angle_deg = 0.0;
+    double mean_psi1 = 0.0;
+    double mean_psi2 = 0.0;
+    double v_norm = 0.0;
+    double cross_norm = 0.0;
+    double v_dot_cross = 0.0;
+    double cos_v_cross = 0.0;
+    double alpha_opt = 0.0;
+    double rel_residual_before_gauge = 0.0; // ||v - c|| / ||v||
+    double rel_residual_after_gauge = 0.0;  // ||v - alpha*c|| / ||v||
+    double residual_floor_rel = 0.0;        // sqrt(1 - cos^2) — minimum residual
+    // invariance of the post-gauge pair (rotated + scaled)
+    double rms_vdotgrad1 = 0.0;
+    double rms_vdotgrad2 = 0.0;
+    double rms_ri1 = 0.0;
+    double rms_ri2 = 0.0;
+    double mean_abs_cos = 0.0;
+    double degeneracy_fraction = 0.0;
+    double post_gauge_grad1_norm = 0.0;
+    double post_gauge_grad2_norm = 0.0;
+};
+
+// Per-mode transport vs regularization energy decomposition. For each eigenvector
+// psi_i the Rayleigh quotient of A = D^T W D + mu L splits as
+//   lambda_i = ( <psi_i, D^T W D psi_i> + mu <psi_i, L psi_i> ) / <psi_i, psi_i>
+// This reveals whether the recovered mode is carried by the transport near-nullspace
+// or by the smoothness (Laplacian) floor.
+struct ModalEnergyRow {
+    int mode_index = 0;
+    double eigenvalue_solver = 0.0;
+    double psi_norm_sq = 0.0;
+    double e_transport = 0.0;
+    double e_regularization = 0.0;
+    double e_total = 0.0;
+    double rayleigh_recomputed = 0.0;
+    double f_transport = 0.0;
+    double f_regularization = 0.0;
+    double residual_Ax_lambda_x_rel = 0.0;
+};
+
+// Refined localization: we report spatial slices of the invariance residual and
+// post-gauge reconstruction residual so we can attribute remaining error to
+// interior, boundary, or regions of near-degenerate cross-product magnitude.
+struct LocalizationStats {
+    double fraction = 0.0;
+    double rms_vdotgrad1 = 0.0;
+    double rms_vdotgrad2 = 0.0;
+    double rel_residual_after_gauge = 0.0;
+    double mean_abs_cos = 0.0;
+    long long cell_count = 0;
+};
+
 static void fill_uniform_velocity(VelocityField& vel, real vx, real vy, real vz) {
     std::vector<real> hU(vel.size_U(), vx);
     std::vector<real> hV(vel.size_V(), vy);
@@ -656,6 +713,274 @@ static RotatedBasisMetrics evaluate_rotation(const Grid3D& grid, const HostVeloc
     return out;
 }
 
+static GaugeReadyMetrics evaluate_gauge_ready(const Grid3D& grid, const HostVelocity& vel,
+                                              const RawFieldData& raw, double angle_deg) {
+    GaugeReadyMetrics out;
+    out.angle_deg = angle_deg;
+    const double theta = angle_deg * M_PI / 180.0;
+    const double c_th = std::cos(theta);
+    const double s_th = std::sin(theta);
+    const size_t n = raw.psi1.size();
+
+    std::vector<double> psi1(n), psi2(n);
+    double m1 = 0.0, m2 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        psi1[i] = c_th * raw.psi1[i] - s_th * raw.psi2[i];
+        psi2[i] = s_th * raw.psi1[i] + c_th * raw.psi2[i];
+        m1 += psi1[i];
+        m2 += psi2[i];
+    }
+    m1 /= std::max<double>(n, 1.0);
+    m2 /= std::max<double>(n, 1.0);
+    out.mean_psi1 = m1;
+    out.mean_psi2 = m2;
+    for (size_t i = 0; i < n; ++i) {
+        psi1[i] -= m1;
+        psi2[i] -= m2;
+    }
+
+    std::vector<double> g1x, g1y, g1z, g2x, g2y, g2z;
+    compute_gradients_periodic_yz(grid, psi1, g1x, g1y, g1z);
+    compute_gradients_periodic_yz(grid, psi2, g2x, g2y, g2z);
+
+    double vnorm_sq = 0.0, cnorm_sq = 0.0, vdotc = 0.0;
+    double ssq_res_before = 0.0;
+    double g1_norm_sq = 0.0, g2_norm_sq = 0.0;
+    double ssq_r1 = 0.0, ssq_r2 = 0.0;
+    double ssq_ri1 = 0.0, ssq_ri2 = 0.0;
+    double sum_cos = 0.0;
+    long long deg_count = 0;
+
+    for (size_t i = 0; i < n; ++i) {
+        const double vx = vel.vx[i], vy = vel.vy[i], vz = vel.vz[i];
+        const double vmag = std::sqrt(vx * vx + vy * vy + vz * vz);
+        vnorm_sq += vx * vx + vy * vy + vz * vz;
+
+        const double cx = g1y[i] * g2z[i] - g1z[i] * g2y[i];
+        const double cy = g1z[i] * g2x[i] - g1x[i] * g2z[i];
+        const double cz = g1x[i] * g2y[i] - g1y[i] * g2x[i];
+        cnorm_sq += cx * cx + cy * cy + cz * cz;
+        vdotc += vx * cx + vy * cy + vz * cz;
+        ssq_res_before += (vx - cx) * (vx - cx) + (vy - cy) * (vy - cy) + (vz - cz) * (vz - cz);
+
+        const double g1sq = g1x[i] * g1x[i] + g1y[i] * g1y[i] + g1z[i] * g1z[i];
+        const double g2sq = g2x[i] * g2x[i] + g2y[i] * g2y[i] + g2z[i] * g2z[i];
+        g1_norm_sq += g1sq;
+        g2_norm_sq += g2sq;
+        const double g1m = std::sqrt(g1sq);
+        const double g2m = std::sqrt(g2sq);
+
+        const double d1 = vx * g1x[i] + vy * g1y[i] + vz * g1z[i];
+        const double d2 = vx * g2x[i] + vy * g2y[i] + vz * g2z[i];
+        ssq_r1 += d1 * d1;
+        ssq_r2 += d2 * d2;
+        const double ri1 = std::fabs(d1) / (vmag * g1m + 1e-12);
+        const double ri2 = std::fabs(d2) / (vmag * g2m + 1e-12);
+        ssq_ri1 += ri1 * ri1;
+        ssq_ri2 += ri2 * ri2;
+        const double abs_cos =
+            std::fabs(g1x[i] * g2x[i] + g1y[i] * g2y[i] + g1z[i] * g2z[i]) / (g1m * g2m + 1e-12);
+        sum_cos += abs_cos;
+        if (abs_cos > 0.9)
+            ++deg_count;
+    }
+
+    out.v_norm = std::sqrt(vnorm_sq);
+    out.cross_norm = std::sqrt(cnorm_sq);
+    out.v_dot_cross = vdotc;
+    out.cos_v_cross = vdotc / std::max(out.v_norm * out.cross_norm, 1e-30);
+    out.alpha_opt = (cnorm_sq > 1e-30) ? vdotc / cnorm_sq : 0.0;
+    out.rel_residual_before_gauge = std::sqrt(ssq_res_before) / std::max(out.v_norm, 1e-30);
+    const double post_sq =
+        vnorm_sq - 2.0 * out.alpha_opt * vdotc + out.alpha_opt * out.alpha_opt * cnorm_sq;
+    out.rel_residual_after_gauge = std::sqrt(std::max(post_sq, 0.0)) / std::max(out.v_norm, 1e-30);
+    out.residual_floor_rel = std::sqrt(std::max(1.0 - out.cos_v_cross * out.cos_v_cross, 0.0));
+    out.rms_vdotgrad1 = std::sqrt(ssq_r1 / std::max<double>(n, 1.0));
+    out.rms_vdotgrad2 = std::sqrt(ssq_r2 / std::max<double>(n, 1.0));
+    out.rms_ri1 = std::sqrt(ssq_ri1 / std::max<double>(n, 1.0));
+    out.rms_ri2 = std::sqrt(ssq_ri2 / std::max<double>(n, 1.0));
+    out.mean_abs_cos = sum_cos / std::max<double>(n, 1.0);
+    out.degeneracy_fraction = static_cast<double>(deg_count) / std::max<double>(n, 1.0);
+    out.post_gauge_grad1_norm = std::sqrt(g1_norm_sq);
+    out.post_gauge_grad2_norm = std::sqrt(g2_norm_sq);
+    return out;
+}
+
+static std::vector<ModalEnergyRow> compute_modal_energy(TransportOperator3D& D,
+                                                        LaplacianOperator3D& L, double mu,
+                                                        const std::vector<DeviceBuffer<real>>& evs,
+                                                        const std::vector<double>& eigenvalues,
+                                                        CudaContext& ctx) {
+    std::vector<ModalEnergyRow> out;
+    if (evs.empty())
+        return out;
+    out.reserve(evs.size());
+    blas::ReductionWorkspace ws;
+    const size_t n = evs[0].size();
+    DeviceBuffer<real> DTD_psi(n), L_psi(n), work(n);
+
+    for (size_t i = 0; i < evs.size(); ++i) {
+        DeviceSpan<const real> psi_s(evs[i].data(), evs[i].size());
+        D.apply_DTD(psi_s, DTD_psi.span(), work.span(), ctx.cuda_stream());
+        L.apply_L(psi_s, L_psi.span(), ctx.cuda_stream());
+        cudaStreamSynchronize(ctx.cuda_stream());
+
+        const double psi_norm_sq = blas::dot_host(ctx, psi_s, psi_s, ws);
+        const double eD =
+            blas::dot_host(ctx, psi_s, DeviceSpan<const real>(DTD_psi.data(), DTD_psi.size()), ws);
+        const double eL =
+            blas::dot_host(ctx, psi_s, DeviceSpan<const real>(L_psi.data(), L_psi.size()), ws);
+
+        ModalEnergyRow row;
+        row.mode_index = static_cast<int>(i);
+        row.eigenvalue_solver = (i < eigenvalues.size()) ? eigenvalues[i] : 0.0;
+        row.psi_norm_sq = psi_norm_sq;
+        row.e_transport = eD;
+        row.e_regularization = mu * eL;
+        row.e_total = row.e_transport + row.e_regularization;
+        row.rayleigh_recomputed = row.e_total / std::max(psi_norm_sq, 1e-30);
+        row.f_transport = row.e_transport / std::max(std::fabs(row.e_total), 1e-30);
+        row.f_regularization = row.e_regularization / std::max(std::fabs(row.e_total), 1e-30);
+
+        const std::vector<double> h_DTD = copy_device_to_host(DTD_psi);
+        const std::vector<double> h_L = copy_device_to_host(L_psi);
+        const std::vector<double> h_psi = copy_device_to_host(evs[i]);
+        const double lam = row.rayleigh_recomputed;
+        double r_sq = 0.0, p_sq = 0.0;
+        for (size_t k = 0; k < n; ++k) {
+            const double Ap = h_DTD[k] + mu * h_L[k];
+            const double r = Ap - lam * h_psi[k];
+            r_sq += r * r;
+            p_sq += h_psi[k] * h_psi[k];
+        }
+        row.residual_Ax_lambda_x_rel = std::sqrt(r_sq) / std::max(std::sqrt(p_sq), 1e-30);
+        out.push_back(row);
+    }
+    return out;
+}
+
+struct LocalAcc {
+    long long count = 0;
+    double ssq_r1 = 0.0;
+    double ssq_r2 = 0.0;
+    double ssq_res_v = 0.0;
+    double ssq_v = 0.0;
+    double sum_cos = 0.0;
+};
+
+static LocalizationStats finalize_local(const LocalAcc& a, long long total,
+                                        const std::string& region) {
+    LocalizationStats s;
+    s.region = region;
+    s.cell_count = a.count;
+    s.fraction = static_cast<double>(a.count) / std::max<double>(total, 1.0);
+    const double nf = std::max<double>(a.count, 1.0);
+    s.rms_vdotgrad1 = std::sqrt(a.ssq_r1 / nf);
+    s.rms_vdotgrad2 = std::sqrt(a.ssq_r2 / nf);
+    s.rel_residual_after_gauge = std::sqrt(a.ssq_res_v / std::max(a.ssq_v, 1e-30));
+    s.mean_abs_cos = a.sum_cos / nf;
+    return s;
+}
+
+static std::vector<LocalizationStats> compute_localization_v2(const Grid3D& grid,
+                                                              const HostVelocity& vel,
+                                                              const RawFieldData& raw,
+                                                              double angle_deg, double alpha) {
+    const double theta = angle_deg * M_PI / 180.0;
+    const double c_th = std::cos(theta);
+    const double s_th = std::sin(theta);
+    const int nx = grid.nx, ny = grid.ny, nz = grid.nz;
+    const size_t n = raw.psi1.size();
+
+    std::vector<double> psi1(n), psi2(n);
+    double m1 = 0.0, m2 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        psi1[i] = c_th * raw.psi1[i] - s_th * raw.psi2[i];
+        psi2[i] = s_th * raw.psi1[i] + c_th * raw.psi2[i];
+        m1 += psi1[i];
+        m2 += psi2[i];
+    }
+    m1 /= std::max<double>(n, 1.0);
+    m2 /= std::max<double>(n, 1.0);
+    for (size_t i = 0; i < n; ++i) {
+        psi1[i] -= m1;
+        psi2[i] -= m2;
+    }
+    std::vector<double> g1x, g1y, g1z, g2x, g2y, g2z;
+    compute_gradients_periodic_yz(grid, psi1, g1x, g1y, g1z);
+    compute_gradients_periodic_yz(grid, psi2, g2x, g2y, g2z);
+
+    auto idx = [nx, ny](int i, int j, int k) { return static_cast<size_t>(i + nx * (j + ny * k)); };
+
+    std::vector<double> cross_mag(n);
+    for (size_t c = 0; c < n; ++c) {
+        const double cx = g1y[c] * g2z[c] - g1z[c] * g2y[c];
+        const double cy = g1z[c] * g2x[c] - g1x[c] * g2z[c];
+        const double cz = g1x[c] * g2y[c] - g1y[c] * g2x[c];
+        cross_mag[c] = std::sqrt(cx * cx + cy * cy + cz * cz);
+    }
+    std::vector<double> sorted = cross_mag;
+    std::nth_element(sorted.begin(), sorted.begin() + sorted.size() / 2, sorted.end());
+    const double median_cross = sorted[sorted.size() / 2];
+
+    LocalAcc interior, boundary, low_c, high_c, deg, nondeg;
+    std::vector<LocalAcc> xslices(static_cast<size_t>(nx));
+
+    for (int k = 0; k < nz; ++k) {
+        for (int j = 0; j < ny; ++j) {
+            for (int i = 0; i < nx; ++i) {
+                const size_t c = idx(i, j, k);
+                const double vx = vel.vx[c], vy = vel.vy[c], vz = vel.vz[c];
+                const double cx = g1y[c] * g2z[c] - g1z[c] * g2y[c];
+                const double cy = g1z[c] * g2x[c] - g1x[c] * g2z[c];
+                const double cz = g1x[c] * g2y[c] - g1y[c] * g2x[c];
+                const double rx = vx - alpha * cx;
+                const double ry = vy - alpha * cy;
+                const double rz = vz - alpha * cz;
+                const double r_sq = rx * rx + ry * ry + rz * rz;
+                const double v_sq = vx * vx + vy * vy + vz * vz;
+                const double d1 = vx * g1x[c] + vy * g1y[c] + vz * g1z[c];
+                const double d2 = vx * g2x[c] + vy * g2y[c] + vz * g2z[c];
+                const double g1m = std::sqrt(g1x[c] * g1x[c] + g1y[c] * g1y[c] + g1z[c] * g1z[c]);
+                const double g2m = std::sqrt(g2x[c] * g2x[c] + g2y[c] * g2y[c] + g2z[c] * g2z[c]);
+                const double abs_cos =
+                    std::fabs(g1x[c] * g2x[c] + g1y[c] * g2y[c] + g1z[c] * g2z[c]) /
+                    (g1m * g2m + 1e-12);
+
+                auto accum = [&](LocalAcc& a) {
+                    ++a.count;
+                    a.ssq_r1 += d1 * d1;
+                    a.ssq_r2 += d2 * d2;
+                    a.ssq_res_v += r_sq;
+                    a.ssq_v += v_sq;
+                    a.sum_cos += abs_cos;
+                };
+
+                accum(xslices[static_cast<size_t>(i)]);
+                const bool is_boundary =
+                    (i == 0 || i == nx - 1 || j == 0 || j == ny - 1 || k == 0 || k == nz - 1);
+                accum(is_boundary ? boundary : interior);
+                accum(cross_mag[c] < median_cross ? low_c : high_c);
+                accum(abs_cos > 0.9 ? deg : nondeg);
+            }
+        }
+    }
+
+    const long long total = static_cast<long long>(n);
+    std::vector<LocalizationStats> rows;
+    rows.push_back(finalize_local(interior, total, "interior"));
+    rows.push_back(finalize_local(boundary, total, "boundary"));
+    rows.push_back(finalize_local(low_c, total, "low_cross_mag"));
+    rows.push_back(finalize_local(high_c, total, "high_cross_mag"));
+    rows.push_back(finalize_local(deg, total, "degenerate"));
+    rows.push_back(finalize_local(nondeg, total, "nondegenerate"));
+    for (int i = 0; i < nx; ++i) {
+        rows.push_back(
+            finalize_local(xslices[static_cast<size_t>(i)], total, "x_slice_" + std::to_string(i)));
+    }
+    return rows;
+}
+
 static void write_summary_header(std::ofstream& os) {
     os << "case,mu,basis_kind,angle_deg,eig0,eig1,eig2,gap01,gap12,subspace_similarity,"
           "modal_ortho,residual1,residual2,gauge_ready,expected_capture_0,expected_capture_1,"
@@ -836,7 +1161,7 @@ int main() {
         std::printf("\n");
     }
 
-    std::printf("Done.\n");
+    std::printf("Done (gauge v2).\n");
     return 0;
 }
 

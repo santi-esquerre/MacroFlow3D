@@ -11,7 +11,7 @@ build/
 compile_commands.json
 
 # Agent local settings (not shared)
-.agents/worktrees/
+.agents/worktrees/*
 .claude/settings.local.json
 .claude/agent-memory-local/
 CLAUDE.local.md

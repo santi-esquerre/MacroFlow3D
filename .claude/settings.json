@@ -6,9 +6,11 @@
       "Bash(ctest *)",
       "Bash(ninja *)",
       "Bash(make *)",
+      "Bash(./build/*)",
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
+      "Bash(git show *)",
       "Bash(git branch *)",
       "Bash(git worktree *)",
       "Bash(gh pr *)",
@@ -22,7 +24,8 @@
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(ls *)",
-      "Bash(wc *)"
+      "Bash(wc *)",
+      "Bash(diff *)"
     ],
     "deny": [
       "Read(./.env)",
