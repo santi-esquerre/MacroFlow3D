@@ -256,6 +256,27 @@ class PsptaEngine {
     /// Compute and return transport stats (synchronizes stream internally).
     TransportStats compute_transport_stats();
 
+    /**
+     * @brief Drift of the bound invariants along the transported particles.
+     *
+     * Uses the exact same `sample_psi_and_partials()` semantics as prepare()/step():
+     * the currently bound field is resampled at the current particle positions and
+     * compared against the per-particle constants captured in prepare().
+     *
+     * This is a post-step diagnostic only; it synchronizes the stream internally.
+     */
+    struct InvariantPreservationStats {
+        double rms_psi1_drift = 0.0;
+        double max_psi1_drift = 0.0;
+        double rms_psi2_drift = 0.0;
+        double max_psi2_drift = 0.0;
+        long long n_active = 0;
+        bool valid = false;
+    };
+
+    /// Compute and return invariant preservation statistics on active particles.
+    InvariantPreservationStats compute_invariant_preservation();
+
     // ── Stream management ─────────────────────────────────────────────────────
     void set_stream(cudaStream_t stream) { stream_ = stream; }
 
@@ -302,6 +323,7 @@ class PsptaEngine {
     DeviceBuffer<uint32_t> d_fail_count_;          ///< Newton failure counter per particle
     DeviceBuffer<unsigned long long> d_stats_buf_; ///< 4× ull scratch for compute_transport_stats()
     DeviceBuffer<uint32_t> d_fail_detail_buf_;     ///< 9× uint32: [n_nonzero, max_fail, hist[7]]
+    DeviceBuffer<double> d_preservation_buf_;      ///< 5× double scratch for invariant drift diag
 };
 
 } // namespace pspta

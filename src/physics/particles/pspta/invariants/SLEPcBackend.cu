@@ -62,6 +62,22 @@ static PetscErrorCode shell_matmult(Mat shell, Vec x, Vec y) {
     PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+Mat SLEPcBackend::create_shell_operator(CombinedOperatorA& A, CudaContext& cuda_ctx,
+                                        ShellContext& sctx) {
+    const PetscInt n = static_cast<PetscInt>(A.size());
+    sctx.A = &A;
+    sctx.stream = cuda_ctx.cuda_stream();
+    sctx.n = static_cast<size_t>(n);
+
+    Mat A_shell = nullptr;
+    MatCreateShell(PETSC_COMM_SELF, n, n, n, n, &sctx, &A_shell);
+    // PETSc utilities such as MatCreateVecs()/MatComputeOperator() must create
+    // vectors compatible with our CUDA-only MATOP_MULT callback.
+    MatShellSetVecType(A_shell, VECSEQCUDA);
+    MatShellSetOperation(A_shell, MATOP_MULT, (void (*)(void))shell_matmult);
+    return A_shell;
+}
+
 // ============================================================================
 // Assemble μL as MATAIJCUSPARSE (7-point stencil, Neumann-x, periodic-yz)
 // ============================================================================
@@ -155,6 +171,108 @@ Mat SLEPcBackend::assemble_laplacian_preconditioner(const LaplacianOperator3D* L
     return Apre;
 }
 
+Mat SLEPcBackend::assemble_explicit_operator(CombinedOperatorA& A, CudaContext& cuda_ctx,
+                                             const char* mat_type) {
+    ShellContext sctx;
+    Mat A_shell = SLEPcBackend::create_shell_operator(A, cuda_ctx, sctx);
+    Mat A_explicit = nullptr;
+    MatComputeOperator(A_shell, mat_type, &A_explicit);
+    MatDestroy(&A_shell);
+    return A_explicit;
+}
+
+Mat SLEPcBackend::assemble_probed_operator(CombinedOperatorA& A, CudaContext& cuda_ctx,
+                                           double diag_shift, const char* mat_type) {
+    const PetscInt n = static_cast<PetscInt>(A.size());
+    const int nx = A.laplacian_operator()->nx();
+    const int ny = A.laplacian_operator()->ny();
+    const int nz = A.laplacian_operator()->nz();
+
+    ShellContext sctx;
+    Mat A_shell = SLEPcBackend::create_shell_operator(A, cuda_ctx, sctx);
+
+    Mat A_pre = nullptr;
+    MatCreate(PETSC_COMM_SELF, &A_pre);
+    MatSetSizes(A_pre, n, n, n, n);
+    MatSetType(A_pre, mat_type);
+    MatSeqAIJSetPreallocation(A_pre, 45, nullptr);
+
+    Vec probe_vec, result_vec;
+    VecCreateSeqCUDA(PETSC_COMM_SELF, n, &probe_vec);
+    VecCreateSeqCUDA(PETSC_COMM_SELF, n, &result_vec);
+
+    std::vector<PetscScalar> res_buf(static_cast<size_t>(n));
+
+    for (int cx = 0; cx < 5; ++cx) {
+        for (int cy = 0; cy < 3; ++cy) {
+            for (int cz = 0; cz < 3; ++cz) {
+                VecSet(probe_vec, 0.0);
+                for (int k = cz; k < nz; k += 3) {
+                    for (int j = cy; j < ny; j += 3) {
+                        for (int i = cx; i < nx; i += 5) {
+                            VecSetValue(probe_vec, i + nx * (j + ny * k), 1.0, INSERT_VALUES);
+                        }
+                    }
+                }
+                VecAssemblyBegin(probe_vec);
+                VecAssemblyEnd(probe_vec);
+
+                shell_matmult(A_shell, probe_vec, result_vec);
+
+                const PetscScalar* d_r = nullptr;
+                VecGetArrayRead(result_vec, &d_r);
+                for (PetscInt i = 0; i < n; ++i)
+                    res_buf[static_cast<size_t>(i)] = d_r[i];
+                VecRestoreArrayRead(result_vec, &d_r);
+
+                for (int kk = 0; kk < nz; ++kk) {
+                    for (int jj = 0; jj < ny; ++jj) {
+                        for (int ii = 0; ii < nx; ++ii) {
+                            const PetscInt row = ii + nx * (jj + ny * kk);
+                            const PetscScalar val = res_buf[static_cast<size_t>(row)];
+                            if (std::fabs(val) < 1e-30)
+                                continue;
+
+                            int di_raw = ((cx - ii % 5) + 5) % 5;
+                            if (di_raw > 2)
+                                di_raw -= 5;
+
+                            int dj_raw = ((cy - jj % 3) + 3) % 3;
+                            if (dj_raw > 1)
+                                dj_raw -= 3;
+
+                            int dk_raw = ((cz - kk % 3) + 3) % 3;
+                            if (dk_raw > 1)
+                                dk_raw -= 3;
+
+                            const int ci = ii + di_raw;
+                            if (ci < 0 || ci >= nx)
+                                continue;
+
+                            const int cj = (jj + dj_raw + ny) % ny;
+                            const int ck = (kk + dk_raw + nz) % nz;
+                            const PetscInt col = ci + nx * (cj + ny * ck);
+                            MatSetValue(A_pre, row, col, val, INSERT_VALUES);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    VecDestroy(&probe_vec);
+    VecDestroy(&result_vec);
+    MatDestroy(&A_shell);
+
+    MatAssemblyBegin(A_pre, MAT_FINAL_ASSEMBLY);
+    MatAssemblyEnd(A_pre, MAT_FINAL_ASSEMBLY);
+
+    if (diag_shift != 0.0)
+        MatShift(A_pre, diag_shift);
+
+    return A_pre;
+}
+
 // ============================================================================
 // GPU-evidence printer
 // ============================================================================
@@ -232,13 +350,7 @@ EigensolverResult SLEPcBackend::solve(CombinedOperatorA& A, const EigensolverCon
     // 1.  Create PETSc MATSHELL wrapping CombinedOperatorA
     // ------------------------------------------------------------------
     ShellContext sctx;
-    sctx.A = &A;
-    sctx.stream = cuda_ctx.cuda_stream();
-    sctx.n = static_cast<size_t>(n);
-
-    Mat A_shell;
-    MatCreateShell(PETSC_COMM_SELF, n, n, n, n, &sctx, &A_shell);
-    MatShellSetOperation(A_shell, MATOP_MULT, (void (*)(void))shell_matmult);
+    Mat A_shell = SLEPcBackend::create_shell_operator(A, cuda_ctx, sctx);
 
     // ------------------------------------------------------------------
     // 2.  Assemble explicit operator A from MATSHELL
@@ -246,8 +358,7 @@ EigensolverResult SLEPcBackend::solve(CombinedOperatorA& A, const EigensolverCon
     //     SLEPc's spectral transforms (SINVERT, etc.) work natively.
     //     Cost: O(n * nnz_per_row) matvecs — fine for validation grids.
     // ------------------------------------------------------------------
-    Mat A_explicit;
-    MatComputeOperator(A_shell, MATAIJCUSPARSE, &A_explicit);
+    Mat A_explicit = assemble_explicit_operator(A, cuda_ctx);
 
     // ------------------------------------------------------------------
     // 3.  Create a VECCUDA template (sets default Vec backend to cuda)
@@ -300,6 +411,7 @@ EigensolverResult SLEPcBackend::solve(CombinedOperatorA& A, const EigensolverCon
     EPSSetTarget(eps, 1e-5); // just above null eigenvalue
     EPSSetDimensions(eps, nev, PETSC_DECIDE, PETSC_DECIDE);
     EPSSetTolerances(eps, config.tolerance, config.max_iterations);
+    EPSSetConvergenceTest(eps, EPS_CONV_ABS);
 
     // -- Deflation: exclude the constant mode ψ = 1/√N --
     {
@@ -467,98 +579,18 @@ EigensolverResult SLEPcProductionBackend::solve(CombinedOperatorA& A,
     // ------------------------------------------------------------------
     auto t_asm0 = std::chrono::high_resolution_clock::now();
     Mat A_pre = nullptr;
-    {
-        const int nx = A.laplacian_operator()->nx();
-        const int ny = A.laplacian_operator()->ny();
-        const int nz = A.laplacian_operator()->nz();
-
-        MatCreate(PETSC_COMM_SELF, &A_pre);
-        MatSetSizes(A_pre, n, n, n, n);
-        MatSetType(A_pre, MATAIJCUSPARSE);
-        MatSeqAIJSetPreallocation(A_pre, 13, nullptr);
-
-        Vec probe_vec, result_vec;
-        VecCreateSeqCUDA(PETSC_COMM_SELF, n, &probe_vec);
-        VecCreateSeqCUDA(PETSC_COMM_SELF, n, &result_vec);
-
-        std::vector<PetscScalar> res_buf(static_cast<size_t>(n));
-
-        for (int cx = 0; cx < 5; ++cx) {
-            for (int cy = 0; cy < 3; ++cy) {
-                for (int cz = 0; cz < 3; ++cz) {
-                    // Build probe: 1 at grid points with (i%5==cx, j%3==cy, k%3==cz)
-                    VecSet(probe_vec, 0.0);
-                    for (int k = cz; k < nz; k += 3) {
-                        for (int j = cy; j < ny; j += 3) {
-                            for (int i = cx; i < nx; i += 5) {
-                                VecSetValue(probe_vec, i + nx * (j + ny * k), 1.0, INSERT_VALUES);
-                            }
-                        }
-                    }
-                    VecAssemblyBegin(probe_vec);
-                    VecAssemblyEnd(probe_vec);
-
-                    shell_matmult(A_shell, probe_vec, result_vec);
-
-                    const PetscScalar* d_r;
-                    VecGetArrayRead(result_vec, &d_r);
-                    for (PetscInt i = 0; i < n; ++i)
-                        res_buf[i] = d_r[i];
-                    VecRestoreArrayRead(result_vec, &d_r);
-
-                    // For each row, find the stencil neighbor with this color
-                    for (int kk = 0; kk < nz; ++kk) {
-                        for (int jj = 0; jj < ny; ++jj) {
-                            for (int ii = 0; ii < nx; ++ii) {
-                                PetscInt row = ii + nx * (jj + ny * kk);
-                                PetscScalar val = res_buf[row];
-                                if (std::fabs(val) < 1e-30)
-                                    continue;
-
-                                // Find di in {-2,-1,0,+1,+2} s.t. (ii+di)%5 == cx
-                                int di_raw = ((cx - ii % 5) + 5) % 5;
-                                if (di_raw > 2)
-                                    di_raw -= 5;
-                                // Find dj in {-1,0,+1} s.t. (jj+dj)%3 == cy
-                                int dj_raw = ((cy - jj % 3) + 3) % 3;
-                                if (dj_raw > 1)
-                                    dj_raw -= 3;
-                                // Find dk in {-1,0,+1} s.t. (kk+dk)%3 == cz
-                                int dk_raw = ((cz - kk % 3) + 3) % 3;
-                                if (dk_raw > 1)
-                                    dk_raw -= 3;
-
-                                // Check x boundary (Neumann — no wrapping)
-                                int ci = ii + di_raw;
-                                if (ci < 0 || ci >= nx)
-                                    continue;
-
-                                // y,z are periodic
-                                int cj = (jj + dj_raw + ny) % ny;
-                                int ck = (kk + dk_raw + nz) % nz;
-
-                                PetscInt col = ci + nx * (cj + ny * ck);
-                                MatSetValue(A_pre, row, col, val, INSERT_VALUES);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        VecDestroy(&probe_vec);
-        VecDestroy(&result_vec);
-
-        MatAssemblyBegin(A_pre, MAT_FINAL_ASSEMBLY);
-        MatAssemblyEnd(A_pre, MAT_FINAL_ASSEMBLY);
-
-        // A is singular (Neumann null space).  Apply diagonal shift δ.
+    const bool use_exact_explicit = (n <= 50000);
+    if (use_exact_explicit) {
+        A_pre = SLEPcBackend::assemble_explicit_operator(A, cuda_ctx);
         MatShift(A_pre, diag_shift);
+    } else {
+        A_pre = SLEPcBackend::assemble_probed_operator(A, cuda_ctx, diag_shift);
     }
     {
         auto t_asm1 = std::chrono::high_resolution_clock::now();
         double asm_ms = std::chrono::duration<double, std::milli>(t_asm1 - t_asm0).count();
-        std::printf("  [SLEPcProduction] Assembly (45-color probing): %.1f ms\n", asm_ms);
+        std::printf("  [SLEPcProduction] Assembly (%s): %.1f ms\n",
+                    use_exact_explicit ? "exact MatComputeOperator" : "45-color probing", asm_ms);
     }
 
     // ------------------------------------------------------------------
@@ -581,6 +613,7 @@ EigensolverResult SLEPcProductionBackend::solve(CombinedOperatorA& A,
     EPSSetTarget(eps, 0.0);
     EPSSetDimensions(eps, nev, PETSC_DECIDE, PETSC_DECIDE);
     EPSSetTolerances(eps, config.tolerance, config.max_iterations);
+    EPSSetConvergenceTest(eps, EPS_CONV_ABS);
 
     // -- Deflation: exclude constant mode ψ = 1/√N --
     {

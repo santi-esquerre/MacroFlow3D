@@ -4,19 +4,19 @@
 
 We are turning MacroFlow3D into a **scientific-grade HPC application** capable of estimating asymptotic macrodispersion coefficients in 3D porous media using a **pseudo-symplectic particle transport method** that is consistent with the kinematic constraints of smooth, locally isotropic Darcy flow.
 
-The target regime is the one emphasized by Lester: in smooth, locally isotropic, helicity-free Darcy flow, the velocity field admits **two streamline invariants** (\psi_1,\psi_2), trajectories are confined to streamsurfaces, and purely advective transverse macrodispersion should not appear. The implementation must therefore preserve these invariants well enough that any measured transverse spreading is not a numerical artifact.
+The target regime is the one emphasized by Lester: in smooth, locally isotropic, helicity-free Darcy flow, the velocity field admits **two streamline invariants** \(\psi_1,\psi_2\), trajectories are confined to streamsurfaces, and purely advective transverse macrodispersion should not appear. The implementation must therefore preserve these invariants well enough that any measured transverse spreading is not a numerical artifact.
 
 Our chosen route is:
 
-1. **recover two numerical invariants (\psi_1,\psi_2)** from the velocity field by solving a smooth near-nullspace problem for the transport operator;
-2. **optionally refine** these invariants to reduce the mismatch between the velocity field and the cross-product representation (v \approx \nabla \psi_1 \times \nabla \psi_2);
+1. **recover two numerical invariants \(\psi_1,\psi_2\)** from the velocity field by solving a smooth near-nullspace problem for the transport operator;
+2. **optionally refine** these invariants to reduce the mismatch between the velocity field and the cross-product representation \(v \approx \nabla \psi_1 \times \nabla \psi_2\);
 3. **feed the resulting invariants into PSPTA** so that particle transport follows the intended streamsurface structure rather than crossing it spuriously.
 
 ---
 
 ## Guiding principle
 
-We are **not** going to solve the coupled nonlinear elliptic streamfunction system directly. The report explicitly recommends replacing that path with a scalable discrete operator formulation centered on the invariant condition (v \cdot \nabla \psi \approx 0), and then using a refinement stage only if necessary.
+We are **not** going to solve the coupled nonlinear elliptic streamfunction system directly. The report explicitly recommends replacing that path with a scalable discrete operator formulation centered on the invariant condition \(v \cdot \nabla \psi \approx 0\), and then using a refinement stage only if necessary.
 
 This gives us a route that is:
 
@@ -31,34 +31,34 @@ This gives us a route that is:
 
 ## 1. Recover two invariants from the discrete transport operator
 
-We start from the computed Darcy velocity field (v) on the structured grid and define a scalar transport operator
+We start from the computed Darcy velocity field \(v\) on the structured grid and define a scalar transport operator
 
-[
+\[
 D\psi \approx v \cdot \nabla \psi
-]
+\]
 
 We then build a symmetric regularized operator
 
-[
+\[
 A = D^\top W D + \mu L
-]
+\]
 
 where:
 
-* (D^\top W D) penalizes violation of the invariant condition,
-* (L) is a Laplacian-type smoothness regularizer,
-* (\mu > 0) suppresses noisy or checkerboard modes,
+* \(D^\top W D\) penalizes violation of the invariant condition,
+* \(L\) is a Laplacian-type smoothness regularizer,
+* \(\mu > 0\) suppresses noisy or checkerboard modes,
 * and the constant trivial mode is removed explicitly.
 
-We then compute the **two smallest nontrivial eigenvectors** of (A). These become the initial candidates for (\psi_1) and (\psi_2). The report states this directly as the recommended MVP path and describes the exact sequence: build (A), deflate the constant mode, solve for the two smallest nontrivial eigenvectors, and treat those as the two invariants.
+We then compute the **two smallest nontrivial eigenvectors** of \(A\). These become the initial candidates for \(\psi_1\) and \(\psi_2\). The report states this directly as the recommended MVP path and describes the exact sequence: build \(A\), deflate the constant mode, solve for the two smallest nontrivial eigenvectors, and treat those as the two invariants.
 
 ### Why this is the correct first step
 
 This directly targets the defining condition of a first integral:
 
-[
+\[
 v \cdot \nabla \psi \approx 0
-]
+\]
 
 instead of trying to reconstruct streamfunctions by solving a more fragile nonlinear PDE system from scratch. In the report, this is the main recommended route because it scales as sparse linear algebra on stencil operators and is naturally suited to GPU execution with AMG-preconditioned eigensolvers.
 
@@ -66,19 +66,19 @@ instead of trying to reconstruct streamfunctions by solving a more fragile nonli
 
 ## 2. Measure invariant quality immediately after the eigensolve
 
-Once (\psi_1,\psi_2) are recovered, we do **not** trust them blindly. We evaluate them with three diagnostics:
+Once \(\psi_1,\psi_2\) are recovered, we do **not** trust them blindly. We evaluate them with three diagnostics:
 
-[
+\[
 r_i = \frac{|v \cdot \nabla \psi_i|}{|v| , |\nabla \psi_i| + \varepsilon}
-]
+\]
 
-[
+\[
 e_x = \frac{|v - \nabla \psi_1 \times \nabla \psi_2|}{|v| + \varepsilon}
-]
+\]
 
-[
+\[
 s = \frac{|\nabla \psi_1 \times \nabla \psi_2|}{|\nabla \psi_1| , |\nabla \psi_2| + \varepsilon}
-]
+\]
 
 These mean, respectively:
 
@@ -98,7 +98,7 @@ If the invariance is acceptable but the cross-product mismatch is still too larg
 
 The refinement works by alternating between the two fields:
 
-* fix (\psi_2), compute the best target gradient for (\psi_1) that improves the local match to (v);
+* fix \(\psi_2\), compute the best target gradient for \(\psi_1\) that improves the local match to \(v\);
 * project that target gradient back to an integrable scalar field through a Poisson solve;
 * then do the same with roles swapped.
 
@@ -125,11 +125,11 @@ The current codebase already contains the **skeleton** of this refinement stage,
 
 ## 4. Integrate the recovered invariants into PSPTA
 
-Once (\psi_1,\psi_2) are accepted, they become the invariant field consumed by the pseudo-symplectic transport engine.
+Once \(\psi_1,\psi_2\) are accepted, they become the invariant field consumed by the pseudo-symplectic transport engine.
 
 This is the whole reason for the construction: PSPTA must move particles in a way that preserves the invariant structure of the flow, instead of letting interpolation or time integration drift particles across streamsurfaces. Lester’s paper is explicit that conventional reconstruction/integration methods can generate spurious transverse macrodispersion by violating these kinematic constraints, and that a pseudo-symplectic approach is precisely about preserving the invariants along trajectories.
 
-So the transport side must be treated as an **invariant-preserving consumer** of (\psi_1,\psi_2), not as an unrelated advection routine.
+So the transport side must be treated as an **invariant-preserving consumer** of \(\psi_1,\psi_2\), not as an unrelated advection routine.
 
 ---
 
@@ -175,12 +175,12 @@ Deliverable:
 
 ## Phase 2 — Initial invariant recovery
 
-Purpose: recover (\psi_1,\psi_2) from the current Darcy velocity field.
+Purpose: recover \(\psi_1,\psi_2\) from the current Darcy velocity field.
 
 Tasks:
 
-* construct the discrete transport operator (D);
-* construct the regularized operator (A = D^\top W D + \mu L);
+* construct the discrete transport operator \(D\);
+* construct the regularized operator \(A = D^\top W D + \mu L\);
 * remove the constant null mode;
 * solve for the two smallest nontrivial eigenvectors;
 * store them in the project invariant field structure.
@@ -197,7 +197,7 @@ Purpose: determine whether the initial pair is already usable.
 
 Tasks:
 
-* compute (r_1, r_2, e_x, s);
+* compute \(r_1, r_2, e_x, s\);
 * inspect invariance loss, degeneracy zones, and mismatch patterns;
 * verify that the fields are smooth enough, independent enough, and physically plausible;
 * decide whether refinement is needed.
@@ -232,7 +232,7 @@ Purpose: use the accepted invariants in transport.
 
 Tasks:
 
-* feed (\psi_1,\psi_2) into the PSPTA invariant field;
+* feed \(\psi_1,\psi_2\) into the PSPTA invariant field;
 * ensure the engine uses them consistently in its step/update logic;
 * keep the hot path allocation-free;
 * expose particle status, invariant quality, and Newton-type failure statistics.
@@ -283,7 +283,7 @@ No skipping.
 We do not call the invariant recovery “done” because the eigenproblem converged.
 It is only acceptable when:
 
-* (v \cdot \nabla \psi_i) is small enough,
+* \(v \cdot \nabla \psi_i\) is small enough,
 * the cross-product mismatch is controlled,
 * the two gradients remain independent,
 * and PSPTA behavior improves in the expected physical regime.
@@ -306,5 +306,5 @@ The plan is simple:
 * compute two numerical invariants from the velocity field by solving a regularized transport near-nullspace problem;
 * measure their quality immediately;
 * refine them only if the initial pair is not good enough;
-* use the resulting (\psi_1,\psi_2) inside PSPTA so particle motion respects the streamsurface structure;
+* use the resulting \(\psi_1,\psi_2\) inside PSPTA so particle motion respects the streamsurface structure;
 * validate the whole path on the V100-backed HPC stack until the method behaves like a scientifically credible invariant-preserving transport scheme.

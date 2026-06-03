@@ -27,17 +27,32 @@ If those are missing, configure should fail early.
 
 ---
 
-## 2. Canonical remote configure
+## 2. Canonical remote bring-up
 
 ```bash
 scripts/remote sync
+scripts/remote exec -- "bash src/external/scripts/build_petsc_slepc.sh clean && bash src/external/scripts/build_petsc_slepc.sh"
 scripts/remote exec -- "cmake --preset v100-petsc"
+scripts/remote exec -- "cmake --build build/v100-petsc -j"
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
 ```
 
-Then:
-```bash
-scripts/remote exec -- "cmake --build build/v100-petsc -j"
-```
+The PETSc/SLEPc build script is the authoritative setup path for the V100 host. It now:
+
+- strips the remote helper path/locale noise that previously leaked Anaconda and `C.UTF-8` into the build,
+- forces a clean locale so PETSc preprocess checks do not fail on `setlocale` noise,
+- prefers system `python3` over the Anaconda interpreter when present,
+- passes explicit `CPP`,
+- forces the MPICH wrappers onto the devtoolset-9 host compiler so PETSc sees a C++17-capable toolchain,
+- passes explicit MPI compiler/include/library settings for the host MPICH install,
+- pins the CUDA toolchain through the configured CUDA home.
+
+The `v100-petsc` preset is the authoritative CMake path for the V100 host. It now:
+
+- pins the MPI wrappers and host compiler environment explicitly,
+- derives PETSc's static external link surface from `arch-cuda/lib/petsc/conf/petscvariables` instead of a handwritten subset,
+- suppresses build-time regeneration, so the supported workflow is the explicit `cmake --preset ...` step followed by `cmake --build ...`.
 
 ---
 

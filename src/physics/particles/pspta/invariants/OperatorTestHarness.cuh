@@ -10,8 +10,9 @@
  *   4. L(linear) ≈ 0 (interior)
  *   5. L symmetry: <Lx, y> ≈ <x, Ly>
  *   6. A symmetry: <Ax, y> ≈ <x, Ay>
- *   7. PsptaInvariantField construction, metadata, quality computation
- *   8. PsptaEngine::bind_invariants() smoke test
+ *   7. A positive semidefinite: <x,Ax> >= 0
+ *   8. PsptaInvariantField construction, metadata, quality computation
+ *   9. PsptaEngine::bind_invariants() smoke test
  *
  * ## Usage
  *
@@ -145,6 +146,7 @@ class OperatorTestHarness {
     TestResult test_L_linear();
     TestResult test_L_symmetry();
     TestResult test_A_symmetry();
+    TestResult test_A_psd();
     TestResult test_invariant_field_smoke();
     TestResult test_engine_bind_invariants(); ///< Engine + new field binding
 
@@ -167,6 +169,7 @@ class OperatorTestHarness {
     static constexpr double TOL_L_CONST = 1e-10;
     static constexpr double TOL_L_LINEAR = 1e-6; // Larger due to boundary effects
     static constexpr double TOL_SYMMETRY = 1e-10;
+    static constexpr double TOL_A_PSD = 1e-12;
 };
 
 /**

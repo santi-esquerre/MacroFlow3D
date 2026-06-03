@@ -70,9 +70,11 @@ struct InvarianceQuality {
  * This metric measures how well the invariants reconstruct the velocity.
  */
 struct CrossProductQuality {
-    double rms_mismatch = 0.0;     ///< RMS of ||v - grad_psi1 x grad_psi2||
-    double max_mismatch = 0.0;     ///< max ||v - grad_psi1 x grad_psi2||
-    double rel_rms_mismatch = 0.0; ///< RMS / mean(|v|)
+    double rms_mismatch = 0.0;       ///< RMS of ||v - grad_psi1 x grad_psi2||
+    double max_mismatch = 0.0;       ///< max ||v - grad_psi1 x grad_psi2||
+    double rel_rms_mismatch = 0.0;   ///< RMS / mean(|v|)
+    double mean_abs_alignment = 0.0; ///< mean |cos(angle(v, grad_psi1 x grad_psi2))|
+    double max_abs_alignment = 0.0;  ///< max |cos(angle(v, grad_psi1 x grad_psi2))|
     long long n_cells = 0;
 };
 

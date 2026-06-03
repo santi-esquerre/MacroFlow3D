@@ -134,9 +134,14 @@ __device__ inline void atomic_max_d(double* addr, double val) {
 /**
  * @brief Compute v*grad(psi) residuals and reduce to sumsq, max.
  *
- * Output buffer layout (8 doubles):
- *   [0] sumsq_r1  [1] sumsq_r2  [2] max_r1  [3] max_r2
- *   [4] sumsq_cross  [5] max_cross  [6] sumsq_vmag  [7] count
+ * Output buffer layout (14 doubles):
+ *   [0] sumsq_r1          [1] sumsq_r2          [2] max_r1
+ * [3] max_r2
+ *   [4] sumsq_mismatch    [5] max_mismatch      [6] sum_vmag         [7] sum_abs_cos
+
+ * *   [8] max_abs_cos       [9] degenerate_cnt    [10] masked_cnt      [11] count
+ *   [12]
+ * sum_abs_align    [13] max_abs_align
  */
 __global__ void kernel_invariance_quality_reduce(
     const float* __restrict__ psi1, const float* __restrict__ psi2, const real* __restrict__ U,
@@ -148,12 +153,30 @@ __global__ void kernel_invariance_quality_reduce(
     double* s_ssq2 = smem + bs;
     double* s_max1 = smem + 2 * bs;
     double* s_max2 = smem + 3 * bs;
+    double* s_ssq_mismatch = smem + 4 * bs;
+    double* s_max_mismatch = smem + 5 * bs;
+    double* s_sum_vmag = smem + 6 * bs;
+    double* s_sum_abs_cos = smem + 7 * bs;
+    double* s_max_abs_cos = smem + 8 * bs;
+    double* s_deg_count = smem + 9 * bs;
+    double* s_masked_count = smem + 10 * bs;
+    double* s_sum_abs_align = smem + 11 * bs;
+    double* s_max_abs_align = smem + 12 * bs;
 
     const int tid = threadIdx.x;
     s_ssq1[tid] = 0.0;
     s_ssq2[tid] = 0.0;
     s_max1[tid] = 0.0;
     s_max2[tid] = 0.0;
+    s_ssq_mismatch[tid] = 0.0;
+    s_max_mismatch[tid] = 0.0;
+    s_sum_vmag[tid] = 0.0;
+    s_sum_abs_cos[tid] = 0.0;
+    s_max_abs_cos[tid] = 0.0;
+    s_deg_count[tid] = 0.0;
+    s_masked_count[tid] = 0.0;
+    s_sum_abs_align[tid] = 0.0;
+    s_max_abs_align[tid] = 0.0;
     __syncthreads();
 
     const int total = nx * ny * nz;
@@ -200,12 +223,14 @@ __global__ void kernel_invariance_quality_reduce(
         p1_jp += Ly * round((p1_c - p1_jp) / Ly);
         const double dp1_dy = (p1_jp - p1_jm) / (2.0 * dy);
 
-        // d/dz (periodic, no lifting for psi1)
+        // d/dz (periodic with lifting for psi1, self-period = Ly)
         const int km = (k - 1 + nz) % nz;
         const int kp = (k + 1) % nz;
-        const double dp1_dz = (static_cast<double>(psi1[i + nx * (j + ny * kp)]) -
-                               static_cast<double>(psi1[i + nx * (j + ny * km)])) /
-                              (2.0 * dz);
+        double p1_km = static_cast<double>(psi1[i + nx * (j + ny * km)]);
+        double p1_kp = static_cast<double>(psi1[i + nx * (j + ny * kp)]);
+        p1_km += Ly * round((p1_c - p1_km) / Ly);
+        p1_kp += Ly * round((p1_c - p1_kp) / Ly);
+        const double dp1_dz = (p1_kp - p1_km) / (2.0 * dz);
 
         // Gradient of psi2
         const double p2_c = static_cast<double>(psi2[c]);
@@ -219,10 +244,12 @@ __global__ void kernel_invariance_quality_reduce(
             dp2_dx =
                 (static_cast<double>(psi2[c + 1]) - static_cast<double>(psi2[c - 1])) / (2.0 * dx);
 
-        // d/dy (periodic, no lifting for psi2)
-        const double dp2_dy = (static_cast<double>(psi2[i + nx * (jp + ny * k)]) -
-                               static_cast<double>(psi2[i + nx * (jm + ny * k)])) /
-                              (2.0 * dy);
+        // d/dy (periodic with lifting for psi2, self-period = Lz)
+        double p2_jm = static_cast<double>(psi2[i + nx * (jm + ny * k)]);
+        double p2_jp = static_cast<double>(psi2[i + nx * (jp + ny * k)]);
+        p2_jm += Lz * round((p2_c - p2_jm) / Lz);
+        p2_jp += Lz * round((p2_c - p2_jp) / Lz);
+        const double dp2_dy = (p2_jp - p2_jm) / (2.0 * dy);
 
         // d/dz (periodic with lifting for psi2, period Lz)
         double p2_km = static_cast<double>(psi2[i + nx * (j + ny * km)]);
@@ -234,11 +261,38 @@ __global__ void kernel_invariance_quality_reduce(
         // Residuals
         const double r1 = vx * dp1_dx + vy * dp1_dy + vz * dp1_dz;
         const double r2 = vx * dp2_dx + vy * dp2_dy + vz * dp2_dz;
+        const double vmag = sqrt(vx * vx + vy * vy + vz * vz);
+        const double g1mag = sqrt(dp1_dx * dp1_dx + dp1_dy * dp1_dy + dp1_dz * dp1_dz);
+        const double g2mag = sqrt(dp2_dx * dp2_dx + dp2_dy * dp2_dy + dp2_dz * dp2_dz);
+
+        const double cx = dp1_dy * dp2_dz - dp1_dz * dp2_dy;
+        const double cy = dp1_dz * dp2_dx - dp1_dx * dp2_dz;
+        const double cz = dp1_dx * dp2_dy - dp1_dy * dp2_dx;
+        const double cross_mag = sqrt(cx * cx + cy * cy + cz * cz);
+        const double mismatch =
+            sqrt((vx - cx) * (vx - cx) + (vy - cy) * (vy - cy) + (vz - cz) * (vz - cz));
+
+        const bool masked = (vmag < 1.0e-12) || (g1mag < 1.0e-12) || (g2mag < 1.0e-12);
+        const double abs_cos =
+            masked ? 0.0
+                   : fabs(dp1_dx * dp2_dx + dp1_dy * dp2_dy + dp1_dz * dp2_dz) / (g1mag * g2mag);
+        const bool align_masked = masked || (cross_mag < 1.0e-12);
+        const double abs_align =
+            align_masked ? 0.0 : fabs(vx * cx + vy * cy + vz * cz) / (vmag * cross_mag);
 
         s_ssq1[tid] = r1 * r1;
         s_ssq2[tid] = r2 * r2;
         s_max1[tid] = fabs(r1);
         s_max2[tid] = fabs(r2);
+        s_ssq_mismatch[tid] = mismatch * mismatch;
+        s_max_mismatch[tid] = mismatch;
+        s_sum_vmag[tid] = vmag;
+        s_sum_abs_cos[tid] = abs_cos;
+        s_max_abs_cos[tid] = abs_cos;
+        s_deg_count[tid] = (!masked && abs_cos > 0.9) ? 1.0 : 0.0;
+        s_masked_count[tid] = masked ? 1.0 : 0.0;
+        s_sum_abs_align[tid] = abs_align;
+        s_max_abs_align[tid] = abs_align;
     }
     __syncthreads();
 
@@ -247,10 +301,22 @@ __global__ void kernel_invariance_quality_reduce(
         if (tid < stride) {
             s_ssq1[tid] += s_ssq1[tid + stride];
             s_ssq2[tid] += s_ssq2[tid + stride];
+            s_ssq_mismatch[tid] += s_ssq_mismatch[tid + stride];
+            s_sum_vmag[tid] += s_sum_vmag[tid + stride];
+            s_sum_abs_cos[tid] += s_sum_abs_cos[tid + stride];
+            s_deg_count[tid] += s_deg_count[tid + stride];
+            s_masked_count[tid] += s_masked_count[tid + stride];
+            s_sum_abs_align[tid] += s_sum_abs_align[tid + stride];
             if (s_max1[tid + stride] > s_max1[tid])
                 s_max1[tid] = s_max1[tid + stride];
             if (s_max2[tid + stride] > s_max2[tid])
                 s_max2[tid] = s_max2[tid + stride];
+            if (s_max_mismatch[tid + stride] > s_max_mismatch[tid])
+                s_max_mismatch[tid] = s_max_mismatch[tid + stride];
+            if (s_max_abs_cos[tid + stride] > s_max_abs_cos[tid])
+                s_max_abs_cos[tid] = s_max_abs_cos[tid + stride];
+            if (s_max_abs_align[tid + stride] > s_max_abs_align[tid])
+                s_max_abs_align[tid] = s_max_abs_align[tid + stride];
         }
         __syncthreads();
     }
@@ -260,8 +326,17 @@ __global__ void kernel_invariance_quality_reduce(
         atomic_add_d(&out[1], s_ssq2[0]);
         atomic_max_d(&out[2], s_max1[0]);
         atomic_max_d(&out[3], s_max2[0]);
-        int block_count = min(bs, total - (int)(blockIdx.x * bs));
-        atomic_add_d(&out[7], static_cast<double>(block_count));
+        atomic_add_d(&out[4], s_ssq_mismatch[0]);
+        atomic_max_d(&out[5], s_max_mismatch[0]);
+        atomic_add_d(&out[6], s_sum_vmag[0]);
+        atomic_add_d(&out[7], s_sum_abs_cos[0]);
+        atomic_max_d(&out[8], s_max_abs_cos[0]);
+        atomic_add_d(&out[9], s_deg_count[0]);
+        atomic_add_d(&out[10], s_masked_count[0]);
+        const int block_count = min(bs, total - static_cast<int>(blockIdx.x * bs));
+        atomic_add_d(&out[11], static_cast<double>(block_count));
+        atomic_add_d(&out[12], s_sum_abs_align[0]);
+        atomic_max_d(&out[13], s_max_abs_align[0]);
     }
 }
 
@@ -351,38 +426,52 @@ InvariantQualityReport PsptaInvariantField::compute_quality(const VelocityField&
 
     const size_t n = num_cells();
 
-    // Ensure scratch buffer (8 doubles)
-    if (d_quality_scratch_.size() < 8) {
-        d_quality_scratch_.resize(8);
+    // Ensure scratch buffer (14 doubles)
+    if (d_quality_scratch_.size() < 14) {
+        d_quality_scratch_.resize(14);
     }
     MACROFLOW3D_CUDA_CHECK(
-        cudaMemsetAsync(d_quality_scratch_.data(), 0, 8 * sizeof(double), stream));
+        cudaMemsetAsync(d_quality_scratch_.data(), 0, 14 * sizeof(double), stream));
 
     const int block = 256;
     const int grid_k = (static_cast<int>(n) + block - 1) / block;
-    const size_t smem = 4 * block * sizeof(double);
+    const size_t smem = 13 * block * sizeof(double);
 
     kernel_invariance_quality_reduce<<<grid_k, block, smem, stream>>>(
         d_psi1_.data(), d_psi2_.data(), vel.U.data(), vel.V.data(), vel.W.data(), nx_, ny_, nz_,
         dx_, dy_, dz_, Ly(), Lz(), d_quality_scratch_.data());
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
-    double host_buf[8] = {};
-    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(host_buf, d_quality_scratch_.data(), 8 * sizeof(double),
+    double host_buf[14] = {};
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(host_buf, d_quality_scratch_.data(), 14 * sizeof(double),
                                            cudaMemcpyDeviceToHost, stream));
     MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(stream));
 
-    const double count = host_buf[7];
+    const double count = host_buf[11];
+    const double masked = host_buf[10];
+    const double valid_independence = count - masked;
     report.invariance.n_cells = static_cast<long long>(count);
     if (count > 0.0) {
         report.invariance.rms_r1 = std::sqrt(host_buf[0] / count);
         report.invariance.rms_r2 = std::sqrt(host_buf[1] / count);
+        report.cross_product.rms_mismatch = std::sqrt(host_buf[4] / count);
+        const double mean_speed = host_buf[6] / count;
+        report.cross_product.rel_rms_mismatch =
+            (mean_speed > 0.0) ? report.cross_product.rms_mismatch / mean_speed : 0.0;
+        report.masked_fraction = masked / count;
     }
     report.invariance.max_r1 = host_buf[2];
     report.invariance.max_r2 = host_buf[3];
-
-    // TODO: Implement cross_product and independence quality metrics
-    // For now, leave them at defaults
+    report.cross_product.max_mismatch = host_buf[5];
+    report.cross_product.n_cells = static_cast<long long>(count);
+    report.independence.max_cos_angle = host_buf[8];
+    report.independence.n_cells = static_cast<long long>(valid_independence);
+    if (valid_independence > 0.0) {
+        report.independence.mean_cos_angle = host_buf[7] / valid_independence;
+        report.independence.degeneracy_score = host_buf[9] / valid_independence;
+        report.cross_product.mean_abs_alignment = host_buf[12] / valid_independence;
+        report.cross_product.max_abs_alignment = host_buf[13];
+    }
 
     report.valid = true;
     quality_ = report;

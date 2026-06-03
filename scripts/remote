@@ -102,13 +102,15 @@ ssh_run() {
   local remote_cmd="$1"
   local attempt=1
   local max_attempts=$((REMOTE_SSH_RETRIES + 1))
+  local rc
 
   while (( attempt <= max_attempts )); do
-    if ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$remote_cmd")"; then
+    if LC_ALL=C LANG=C ssh "$REMOTE_HOST" "env LC_ALL=C LANG=C bash -lc $(printf '%q' "$remote_cmd")"; then
       return 0
     fi
-    if (( attempt == max_attempts )); then
-      return 1
+    rc=$?
+    if (( rc != 255 || attempt == max_attempts )); then
+      return "$rc"
     fi
     sleep "$REMOTE_SSH_RETRY_DELAY"
     attempt=$((attempt + 1))
@@ -120,14 +122,16 @@ ssh_run_capture() {
   local attempt=1
   local max_attempts=$((REMOTE_SSH_RETRIES + 1))
   local output
+  local rc
 
   while (( attempt <= max_attempts )); do
-    if output="$(ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$remote_cmd")")"; then
+    if output="$(LC_ALL=C LANG=C ssh "$REMOTE_HOST" "env LC_ALL=C LANG=C bash -lc $(printf '%q' "$remote_cmd")")"; then
       printf '%s' "$output"
       return 0
     fi
-    if (( attempt == max_attempts )); then
-      return 1
+    rc=$?
+    if (( rc != 255 || attempt == max_attempts )); then
+      return "$rc"
     fi
     sleep "$REMOTE_SSH_RETRY_DELAY"
     attempt=$((attempt + 1))
@@ -140,7 +144,7 @@ rsync_run() {
   for exclude in "${REMOTE_RSYNC_EXCLUDES[@]}"; do
     args+=(--exclude "$exclude")
   done
-  rsync "${args[@]}" "$repo_root/" "${REMOTE_HOST}:${REMOTE_REPO_DIR}/"
+  LC_ALL=C LANG=C rsync "${args[@]}" "$repo_root/" "${REMOTE_HOST}:${REMOTE_REPO_DIR}/"
 }
 
 ensure_remote_repo() {
@@ -155,7 +159,7 @@ write_remote_file() {
   local path="$1"
   local mode="$2"
   local content="$3"
-  printf '%s\n' "$content" | ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "cat > $path && chmod $mode $path")"
+  printf '%s\n' "$content" | LC_ALL=C LANG=C ssh "$REMOTE_HOST" "env LC_ALL=C LANG=C bash -lc $(printf '%q' "cat > $path && chmod $mode $path")"
 }
 
 status_snapshot() {

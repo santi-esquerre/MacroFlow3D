@@ -38,6 +38,30 @@ __device__ __forceinline__ double clamp_d(double v, double lo, double hi) {
     return v < lo ? lo : (v > hi ? hi : v);
 }
 
+__device__ inline void atomic_add_d(double* addr, double val) {
+    unsigned long long* addr_ull = reinterpret_cast<unsigned long long*>(addr);
+    unsigned long long assumed;
+    unsigned long long old = *addr_ull;
+    do {
+        assumed = old;
+        old =
+            atomicCAS(addr_ull, assumed, __double_as_longlong(__longlong_as_double(assumed) + val));
+    } while (assumed != old);
+}
+
+__device__ inline void atomic_max_d(double* addr, double val) {
+    unsigned long long* addr_ull = reinterpret_cast<unsigned long long*>(addr);
+    unsigned long long assumed;
+    unsigned long long old = *addr_ull;
+    do {
+        assumed = old;
+        const double cur = __longlong_as_double(assumed);
+        if (val <= cur)
+            break;
+        old = atomicCAS(addr_ull, assumed, __double_as_longlong(val));
+    } while (assumed != old);
+}
+
 // ============================================================================
 // A.2  Deterministic hash RNG  (inject_box)
 // ============================================================================
@@ -657,6 +681,46 @@ __global__ void kernel_fail_details(const uint32_t* __restrict__ fail_count,
         atomicAdd(&out[2 + threadIdx.x], s_hist[threadIdx.x]);
 }
 
+/**
+ * @brief Compute drift of the preserved invariants on active particles.
+ *
+ * out[0] = sumsq_dpsi1
+ * out[1] = sumsq_dpsi2
+ * out[2] = max_dpsi1
+ * out[3] = max_dpsi2
+ * out[4] = n_active
+ */
+__global__ void kernel_invariant_preservation(
+    const real* __restrict__ px, const real* __restrict__ py, const real* __restrict__ pz,
+    const uint8_t* __restrict__ status, const float* __restrict__ psi1_buf,
+    const float* __restrict__ psi2_buf, const float* __restrict__ psi1_const,
+    const float* __restrict__ psi2_const, double* __restrict__ out, int N, int nx, int ny, int nz,
+    double dx, double dy, double dz, double Ly, double Lz) {
+    const int p = static_cast<int>(blockIdx.x) * blockDim.x + threadIdx.x;
+    if (p >= N || status[p] != 0)
+        return;
+
+    const double x = static_cast<double>(px[p]);
+    const double y = static_cast<double>(py[p]);
+    const double z = static_cast<double>(pz[p]);
+
+    double dp1_dy_dummy, dp1_dz_dummy;
+    const double p1 = sample_psi_and_partials(psi1_buf, x, y, z, nx, ny, nz, dx, dy, dz, Ly, Lz, Ly,
+                                              &dp1_dy_dummy, &dp1_dz_dummy);
+    double dp2_dy_dummy, dp2_dz_dummy;
+    const double p2 = sample_psi_and_partials(psi2_buf, x, y, z, nx, ny, nz, dx, dy, dz, Ly, Lz, Lz,
+                                              &dp2_dy_dummy, &dp2_dz_dummy);
+
+    const double d1 = fabs(wrap_diff(p1 - static_cast<double>(psi1_const[p]), Ly));
+    const double d2 = fabs(wrap_diff(p2 - static_cast<double>(psi2_const[p]), Lz));
+
+    atomic_add_d(&out[0], d1 * d1);
+    atomic_add_d(&out[1], d2 * d2);
+    atomic_max_d(&out[2], d1);
+    atomic_max_d(&out[3], d2);
+    atomic_add_d(&out[4], 1.0);
+}
+
 // ============================================================================
 // B.5  Kernel: compute_unwrapped
 // ============================================================================
@@ -895,6 +959,41 @@ PsptaEngine::TransportStats PsptaEngine::compute_transport_stats() {
     for (int b = 0; b < PSPTA_FAIL_HIST_BINS; ++b)
         ts.hist[b] = detail_buf[2 + b];
     return ts;
+}
+
+PsptaEngine::InvariantPreservationStats PsptaEngine::compute_invariant_preservation() {
+    InvariantPreservationStats stats;
+    const int N = parts_.n;
+    if (N <= 0 || !psi_bind_.valid)
+        return stats;
+
+    if (d_preservation_buf_.size() < 5)
+        d_preservation_buf_.resize(5);
+    MACROFLOW3D_CUDA_CHECK(
+        cudaMemsetAsync(d_preservation_buf_.data(), 0, 5 * sizeof(double), stream_));
+
+    const dim3 block(256);
+    const dim3 grid_k((static_cast<unsigned>(N) + 255u) / 256u);
+    kernel_invariant_preservation<<<grid_k, block, 0, stream_>>>(
+        parts_.x, parts_.y, parts_.z, parts_.status, psi_bind_.psi1, psi_bind_.psi2,
+        d_psi1_const_.data(), d_psi2_const_.data(), d_preservation_buf_.data(), N, psi_bind_.nx,
+        psi_bind_.ny, psi_bind_.nz, psi_bind_.dx, psi_bind_.dy, psi_bind_.dz, Ly_, Lz_);
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+
+    double host[5] = {};
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(host, d_preservation_buf_.data(), 5 * sizeof(double),
+                                           cudaMemcpyDeviceToHost, stream_));
+    MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(stream_));
+
+    stats.n_active = static_cast<long long>(host[4]);
+    if (stats.n_active > 0) {
+        stats.rms_psi1_drift = std::sqrt(host[0] / static_cast<double>(stats.n_active));
+        stats.rms_psi2_drift = std::sqrt(host[1] / static_cast<double>(stats.n_active));
+        stats.max_psi1_drift = host[2];
+        stats.max_psi2_drift = host[3];
+        stats.valid = true;
+    }
+    return stats;
 }
 
 } // namespace pspta

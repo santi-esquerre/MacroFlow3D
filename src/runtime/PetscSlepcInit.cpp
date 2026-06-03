@@ -14,10 +14,18 @@ namespace macroflow3d {
 namespace runtime {
 
 bool PetscSlepcInit::initialized_ = false;
+bool PetscSlepcInit::finalized_ = false;
+bool PetscSlepcInit::atexit_registered_ = false;
 
 void PetscSlepcInit::ensure() {
     if (initialized_)
         return;
+    if (finalized_) {
+        std::fprintf(
+            stderr,
+            "[PetscSlepcInit] ensure() called after explicit finalization in the same process\n");
+        std::abort();
+    }
 
     // Tell PETSc not to require GPU-aware MPI.  Our OpenMPI is not built
     // with CUDA support, which is fine for single-node / single-GPU usage.
@@ -32,8 +40,11 @@ void PetscSlepcInit::ensure() {
         std::abort();
     }
 
-    // Register finalization at exit (reverse order: SLEPc finalize calls PETSc).
-    std::atexit([]() { SlepcFinalize(); });
+    if (!atexit_registered_) {
+        // Register guarded finalization at exit (reverse order: SLEPc finalize calls PETSc).
+        std::atexit([]() { PetscSlepcInit::finalize(); });
+        atexit_registered_ = true;
+    }
 
     initialized_ = true;
 
@@ -47,6 +58,25 @@ void PetscSlepcInit::ensure() {
 
 bool PetscSlepcInit::initialized() {
     return initialized_;
+}
+
+void PetscSlepcInit::finalize() {
+    if (!initialized_ || finalized_)
+        return;
+
+    PetscErrorCode ierr = SlepcFinalize();
+    if (ierr) {
+        std::fprintf(stderr, "[PetscSlepcInit] SlepcFinalize failed (ierr=%d)\n",
+                     static_cast<int>(ierr));
+        std::abort();
+    }
+
+    finalized_ = true;
+    initialized_ = false;
+}
+
+bool PetscSlepcInit::finalized() {
+    return finalized_;
 }
 
 } // namespace runtime

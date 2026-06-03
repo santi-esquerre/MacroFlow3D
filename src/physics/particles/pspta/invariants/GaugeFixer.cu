@@ -66,6 +66,14 @@ void GaugeFixer::apply_inlet_gauge(PsptaInvariantField& inv, cudaStream_t stream
     kernel_apply_inlet_gauge<<<grid, block, 0, stream>>>(inv.psi1_ptr(), inv.psi2_ptr(), inv.nx(),
                                                          inv.ny(), inv.nz(), inv.dy(), inv.dz());
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+
+    auto info = inv.construction_info();
+    info.inlet_gauge_applied = true;
+    info.gauge_method = "inlet";
+    if (!info.notes.empty())
+        info.notes += "; ";
+    info.notes += "GaugeFixer::InletPlane applied";
+    inv.set_construction_info(info);
 }
 
 } // namespace pspta

@@ -88,9 +88,21 @@
             "name": "v100-petsc",
             "inherits": "base",
             "displayName": "V100 Release + PETSc/SLEPc",
+            "environment": {
+                "CC": "/usr/lib64/mpich-3.2/bin/mpicc",
+                "CXX": "/usr/lib64/mpich-3.2/bin/mpicxx",
+                "MPICH_CC": "/opt/rh/devtoolset-9/root/usr/bin/gcc",
+                "MPICH_CXX": "/opt/rh/devtoolset-9/root/usr/bin/g++",
+                "OMPI_CC": "/opt/rh/devtoolset-9/root/usr/bin/gcc",
+                "OMPI_CXX": "/opt/rh/devtoolset-9/root/usr/bin/g++",
+                "CUDAHOSTCXX": "/opt/rh/devtoolset-9/root/usr/bin/g++",
+                "LC_ALL": "C",
+                "LANG": "C"
+            },
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_CUDA_ARCHITECTURES": "70",
+                "CMAKE_SUPPRESS_REGENERATION": "ON",
                 "MACROFLOW3D_ENABLE_DIAGNOSTICS": "OFF",
                 "MACROFLOW3D_ENABLE_PROFILING": "ON",
                 "MACROFLOW3D_ENABLE_NVTX": "ON",

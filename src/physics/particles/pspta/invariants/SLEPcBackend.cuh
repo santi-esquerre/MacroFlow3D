@@ -14,10 +14,14 @@
  *
  * ## SLEPcProductionBackend (Production)
  *
- * Matrix-free path: the operator stays as a PETSc MATSHELL whose
- * MatMult callback invokes CombinedOperatorA CUDA kernels.
- * Uses LOBPCG + STPRECOND with assembled μL as preconditioner.
- * O(n) memory, scalable to large grids.
+ * Uses the authoritative CombinedOperatorA CUDA kernels for operator action,
+ * with explicit assembly choices controlled inside the backend:
+ *   - control/small grids may use exact explicit assembly via MatComputeOperator
+ *   - larger grids may use a probed sparse surrogate when exact assembly is
+ *     too costly
+ *
+ * The solved operator must remain faithful to A = D†WD + μL; production-scale
+ * approximations are therefore subject to separate fidelity checks.
  *
  *   Factory name: "slepc"  (default)
  *
@@ -79,9 +83,15 @@ class SLEPcBackend : public EigensolverBackend {
     std::string name() const override { return "slepc_validation"; }
 
     // Shared helpers (used by production backend too)
+    static Mat create_shell_operator(CombinedOperatorA& A, CudaContext& ctx, ShellContext& sctx);
     static Mat assemble_laplacian_preconditioner(const LaplacianOperator3D* L, double mu,
                                                  PetscInt n, int nx, int ny, int nz, double dx,
                                                  double dy, double dz);
+    static Mat assemble_explicit_operator(CombinedOperatorA& A, CudaContext& ctx,
+                                          const char* mat_type = MATAIJCUSPARSE);
+    static Mat assemble_probed_operator(CombinedOperatorA& A, CudaContext& ctx,
+                                        double diag_shift = 0.0,
+                                        const char* mat_type = MATAIJCUSPARSE);
     static void print_gpu_evidence(EPS eps, Mat A_mat, Mat A_pre, Vec sample);
 };
 

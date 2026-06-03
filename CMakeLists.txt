@@ -117,6 +117,7 @@ if(MACROFLOW3D_ENABLE_PETSC)
 
     set(_PETSC_LIB_DIR "${PETSC_DIR}/${PETSC_ARCH}/lib")
     set(_SLEPC_LIB_DIR "${SLEPC_DIR}/${PETSC_ARCH}/lib")
+    set(_PETSC_CONF_VARS "${_PETSC_LIB_DIR}/petsc/conf/petscvariables")
 
     # --- Pre-flight: verify libraries exist ---
     if(NOT EXISTS "${_PETSC_LIB_DIR}/libpetsc.a")
@@ -133,18 +134,63 @@ if(MACROFLOW3D_ENABLE_PETSC)
             "Build SLEPc first:\n"
             "  bash src/external/scripts/build_petsc_slepc.sh")
     endif()
+    if(NOT EXISTS "${_PETSC_CONF_VARS}")
+        message(FATAL_ERROR
+            "MACROFLOW3D_ENABLE_PETSC=ON but PETSc link metadata not found at:\n"
+            "  ${_PETSC_CONF_VARS}\n"
+            "Rebuild PETSc through the repo workflow:\n"
+            "  bash src/external/scripts/build_petsc_slepc.sh")
+    endif()
+
+    file(STRINGS "${_PETSC_CONF_VARS}" _petsc_external_lib_line
+         REGEX "^PETSC_EXTERNAL_LIB_BASIC = ")
+    if(NOT _petsc_external_lib_line)
+        message(FATAL_ERROR
+            "Could not read PETSC_EXTERNAL_LIB_BASIC from:\n"
+            "  ${_PETSC_CONF_VARS}")
+    endif()
+    string(REPLACE "PETSC_EXTERNAL_LIB_BASIC = " "" _petsc_external_lib_raw
+           "${_petsc_external_lib_line}")
+    separate_arguments(_petsc_external_lib_args UNIX_COMMAND "${_petsc_external_lib_raw}")
+    set(_petsc_interface_link_libs "")
+    foreach(_petsc_arg IN LISTS _petsc_external_lib_args)
+        if(_petsc_arg STREQUAL "-lcudart")
+            list(APPEND _petsc_interface_link_libs CUDA::cudart)
+        elseif(_petsc_arg STREQUAL "-lcublas")
+            list(APPEND _petsc_interface_link_libs CUDA::cublas)
+        elseif(_petsc_arg STREQUAL "-lcusparse")
+            list(APPEND _petsc_interface_link_libs CUDA::cusparse)
+        elseif(_petsc_arg STREQUAL "-lcusolver")
+            list(APPEND _petsc_interface_link_libs CUDA::cusolver)
+        elseif(_petsc_arg STREQUAL "-lcurand")
+            list(APPEND _petsc_interface_link_libs CUDA::curand)
+        elseif(_petsc_arg STREQUAL "-lcufft")
+            list(APPEND _petsc_interface_link_libs CUDA::cufft)
+        elseif(_petsc_arg STREQUAL "-lnvToolsExt")
+            list(APPEND _petsc_interface_link_libs CUDA::nvToolsExt)
+        elseif(_petsc_arg STREQUAL "-lcuda")
+            list(APPEND _petsc_interface_link_libs CUDA::cuda_driver)
+        elseif(_petsc_arg MATCHES "^-l")
+            string(SUBSTRING "${_petsc_arg}" 2 -1 _petsc_lib_name)
+            if(NOT _petsc_lib_name STREQUAL "mpi" AND
+               NOT _petsc_lib_name STREQUAL "mpicxx")
+                list(APPEND _petsc_interface_link_libs "${_petsc_lib_name}")
+            endif()
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES _petsc_interface_link_libs)
 
     # --- Import PETSc (static) ---
-    # PETSc internally uses curand, cufft, cusparse, cusolver.
-    # Declaring them as INTERFACE_LINK_LIBRARIES ensures they appear
-    # AFTER libpetsc.a in the link line (critical for static linking).
+    # PETSc is a static import here, so its full external link surface must
+    # appear after libpetsc.a. Read that surface from PETSc's generated
+    # petscvariables metadata instead of maintaining a fragile handwritten list.
     add_library(petsc STATIC IMPORTED)
     set_target_properties(petsc PROPERTIES
         IMPORTED_LOCATION "${_PETSC_LIB_DIR}/libpetsc.a"
         INTERFACE_INCLUDE_DIRECTORIES
             "${PETSC_DIR}/include;${PETSC_DIR}/${PETSC_ARCH}/include"
         INTERFACE_LINK_LIBRARIES
-            "CUDA::cusparse;CUDA::cusolver;CUDA::curand;CUDA::cufft;lapack;blas;m;stdc++;dl"
+            "${_petsc_interface_link_libs}"
     )
 
     # --- Import SLEPc (static) ---
@@ -221,6 +267,7 @@ set(PHYSICS_SOURCES
     src/physics/particles/pspta/invariants/TransportOperator3D.cu
     src/physics/particles/pspta/invariants/EigensolverBackend.cu
     src/physics/particles/pspta/invariants/GaugeFixer.cu
+    src/physics/particles/pspta/invariants/InvariantPairSearch.cpp
     src/physics/particles/pspta/invariants/RefinementAC.cu
     src/physics/particles/pspta/invariants/OperatorTestHarness.cu
     src/physics/particles/pspta/legacy/LegacyMarchingInvariantBuilder.cu
@@ -329,6 +376,30 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME operator_tests COMMAND run_operator_tests)
 
+    add_executable(test_invariant_pair_search apps/test_invariant_pair_search.cpp)
+    target_link_libraries(test_invariant_pair_search PRIVATE macroflow3d_lib)
+    add_test(NAME invariant_pair_search COMMAND test_invariant_pair_search)
+
+    add_executable(test_refinement_ac apps/test_refinement_ac.cpp)
+    target_link_libraries(test_refinement_ac PRIVATE macroflow3d_lib)
+    add_test(NAME refinement_ac COMMAND test_refinement_ac)
+
+    add_executable(test_refinement_ac_subspace apps/test_refinement_ac_subspace.cpp)
+    target_link_libraries(test_refinement_ac_subspace PRIVATE macroflow3d_lib)
+    add_test(NAME refinement_ac_subspace COMMAND test_refinement_ac_subspace)
+
+    add_executable(test_refinement_ac_subspace_gn apps/test_refinement_ac_subspace_gn.cpp)
+    target_link_libraries(test_refinement_ac_subspace_gn PRIVATE macroflow3d_lib)
+    add_test(NAME refinement_ac_subspace_gn COMMAND test_refinement_ac_subspace_gn)
+
+    add_executable(test_refinement_ac_transport_proxy apps/test_refinement_ac_transport_proxy.cpp)
+    target_link_libraries(test_refinement_ac_transport_proxy PRIVATE macroflow3d_lib)
+    add_test(NAME refinement_ac_transport_proxy COMMAND test_refinement_ac_transport_proxy)
+
+    add_executable(test_refinement_ac_engine_proxy apps/test_refinement_ac_engine_proxy.cpp)
+    target_link_libraries(test_refinement_ac_engine_proxy PRIVATE macroflow3d_lib)
+    add_test(NAME refinement_ac_engine_proxy COMMAND test_refinement_ac_engine_proxy)
+
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
         # Minimal smoke test — verifies init, VECCUDA creation, link
@@ -352,6 +423,13 @@ if(MACROFLOW3D_BUILD_APPS)
         add_executable(benchmark_eigensolver apps/benchmark_eigensolver.cu)
         target_link_libraries(benchmark_eigensolver PRIVATE macroflow3d_lib)
         target_compile_options(benchmark_eigensolver
+            PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+        )
+
+        # Gate 3/5/6 invariant-quality and transport-consumption analysis
+        add_executable(analyze_invariant_quality apps/analyze_invariant_quality.cu)
+        target_link_libraries(analyze_invariant_quality PRIVATE macroflow3d_lib)
+        target_compile_options(analyze_invariant_quality
             PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
         )
     endif()

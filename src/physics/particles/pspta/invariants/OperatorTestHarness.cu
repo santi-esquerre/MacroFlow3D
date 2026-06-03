@@ -7,6 +7,8 @@
 #include "../PsptaEngine.hpp" // For engine binding test
 #include "OperatorTestHarness.cuh"
 #include <cstdio>
+#include <limits>
+#include <random>
 
 namespace macroflow3d {
 namespace physics {
@@ -123,6 +125,51 @@ TestResult OperatorTestHarness::test_A_symmetry() {
     return r;
 }
 
+TestResult OperatorTestHarness::test_A_psd() {
+    TestResult r;
+    r.name = "A PSD: <x,Ax> >= 0";
+    r.tolerance = TOL_A_PSD;
+
+    if (!vel_) {
+        r.passed = false;
+        r.message = "No velocity field provided (needed for D component)";
+        return r;
+    }
+
+    ensure_operators();
+
+    const size_t n = static_cast<size_t>(grid_.nx) * grid_.ny * grid_.nz;
+    DeviceBuffer<real> d_x(n);
+    DeviceBuffer<real> d_Ax(n);
+    std::vector<real> h_x(n);
+
+    std::mt19937 rng(20260420);
+    std::normal_distribution<double> dist(0.0, 1.0);
+    double min_rayleigh = std::numeric_limits<double>::infinity();
+
+    blas::ReductionWorkspace ws;
+    for (int trial = 0; trial < 5; ++trial) {
+        for (size_t i = 0; i < n; ++i)
+            h_x[i] = static_cast<real>(dist(rng));
+
+        cudaMemcpy(d_x.data(), h_x.data(), n * sizeof(real), cudaMemcpyHostToDevice);
+        A_->apply_A(DeviceSpan<const real>(d_x.data(), d_x.size()), d_Ax.span(),
+                    ctx_.cuda_stream());
+        cudaStreamSynchronize(ctx_.cuda_stream());
+
+        const DeviceSpan<const real> x(d_x.data(), d_x.size());
+        const DeviceSpan<const real> Ax(d_Ax.data(), d_Ax.size());
+        const double xx = blas::dot_host(ctx_, x, x, ws);
+        const double xAx = blas::dot_host(ctx_, x, Ax, ws);
+        const double rayleigh = (xx > 0.0) ? (xAx / xx) : 0.0;
+        min_rayleigh = std::min(min_rayleigh, rayleigh);
+    }
+
+    r.value = min_rayleigh;
+    r.passed = (r.value >= -r.tolerance);
+    return r;
+}
+
 TestResult OperatorTestHarness::test_invariant_field_smoke() {
     TestResult r;
     r.name = "PsptaInvariantField smoke test";
@@ -222,6 +269,7 @@ OperatorTestReport OperatorTestHarness::run_all() {
         report.results.push_back(test_D_constant());
         report.results.push_back(test_D_adjoint());
         report.results.push_back(test_A_symmetry());
+        report.results.push_back(test_A_psd());
     }
 
     // Count results

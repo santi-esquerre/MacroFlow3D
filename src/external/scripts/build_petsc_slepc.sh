@@ -45,6 +45,92 @@ SLEPC_SRC="${PROJECT_ROOT}/src/external/slepc"
 CUDA_ARCH="${MACROFLOW3D_CUDA_ARCH:-70}"   # default sm_70 (V100)
 MAKE_NP="${MACROFLOW3D_MAKE_NP:-2}"        # parallel jobs (keep low for CUDA)
 PETSC_ARCH_NAME="arch-cuda"
+DEFAULT_CUDA_HOME="${MACROFLOW3D_CUDA_HOME:-${CUDA_HOME:-/usr/local/cuda-11.4}}"
+
+prepend_path_if_dir() {
+    local dir="$1"
+    if [[ -d "${dir}" ]]; then
+        PATH="${dir}${PATH:+:${PATH}}"
+    fi
+}
+
+pick_python() {
+    if [[ -n "${MACROFLOW3D_PYTHON:-}" ]]; then
+        printf '%s' "${MACROFLOW3D_PYTHON}"
+        return 0
+    fi
+
+    if [[ -x /usr/bin/python3 ]]; then
+        printf '%s' "/usr/bin/python3"
+        return 0
+    fi
+
+    command -v python3
+}
+
+pick_cpp() {
+    if [[ -n "${MACROFLOW3D_CPP:-}" ]]; then
+        printf '%s' "${MACROFLOW3D_CPP}"
+        return 0
+    fi
+
+    if [[ -x /usr/bin/cpp ]]; then
+        printf '%s' "/usr/bin/cpp"
+        return 0
+    fi
+
+    command -v cpp
+}
+
+pick_host_cc() {
+    if [[ -n "${MACROFLOW3D_HOST_CC:-}" ]]; then
+        printf '%s' "${MACROFLOW3D_HOST_CC}"
+        return 0
+    fi
+
+    if [[ -x /opt/rh/devtoolset-9/root/usr/bin/gcc ]]; then
+        printf '%s' "/opt/rh/devtoolset-9/root/usr/bin/gcc"
+        return 0
+    fi
+
+    command -v gcc
+}
+
+pick_host_cxx() {
+    if [[ -n "${MACROFLOW3D_HOST_CXX:-}" ]]; then
+        printf '%s' "${MACROFLOW3D_HOST_CXX}"
+        return 0
+    fi
+
+    if [[ -x /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        printf '%s' "/opt/rh/devtoolset-9/root/usr/bin/g++"
+        return 0
+    fi
+
+    command -v g++
+}
+
+detect_mpi_flag_path() {
+    local flag="$1"
+    local compiler="$2"
+    local show_output
+
+    show_output="$("${compiler}" -show 2>/dev/null || true)"
+    printf '%s\n' "${show_output}" | tr ' ' '\n' | sed -n "s/^-${flag}//p" | head -1
+}
+
+pick_existing_lib() {
+    local dir="$1"
+    shift
+    local candidate
+    for candidate in "$@"; do
+        if [[ -f "${dir}/${candidate}" ]]; then
+            printf '%s' "${dir}/${candidate}"
+            return 0
+        fi
+    done
+    return 1
+}
 
 # ── Clean mode ────────────────────────────────────────────────────────────
 if [[ "${1:-}" == "clean" ]]; then
@@ -57,19 +143,88 @@ if [[ "${1:-}" == "clean" ]]; then
     exit 0
 fi
 
+# ── Deterministic toolchain environment ───────────────────────────────────
+unset CONDA_DEFAULT_ENV CONDA_EXE CONDA_PREFIX CONDA_PROMPT_MODIFIER CONDA_PYTHON_EXE
+unset PYTHONPATH PYTHONHOME _CE_CONDA _CE_M
+export LC_ALL=C
+export LANG=C
+
+PATH=""
+prepend_path_if_dir "/opt/rh/devtoolset-9/root/usr/bin"
+prepend_path_if_dir "${DEFAULT_CUDA_HOME}/bin"
+prepend_path_if_dir "${MPI_BIN:-}"
+prepend_path_if_dir "/usr/lib64/mpich-3.2/bin"
+prepend_path_if_dir "/usr/local/bin"
+prepend_path_if_dir "/usr/bin"
+prepend_path_if_dir "/usr/local/sbin"
+prepend_path_if_dir "/usr/sbin"
+prepend_path_if_dir "${HOME}/.local/bin"
+prepend_path_if_dir "${HOME}/bin"
+export PATH
+
+MPI_CC="${MACROFLOW3D_MPI_CC:-$(command -v mpicc)}"
+MPI_CXX="${MACROFLOW3D_MPI_CXX:-$(command -v mpicxx)}"
+HOST_CC="$(pick_host_cc)"
+HOST_CXX="$(pick_host_cxx)"
+PYTHON_BIN="$(pick_python)"
+CPP_BIN="$(pick_cpp)"
+NVCC_BIN="${MACROFLOW3D_NVCC:-${DEFAULT_CUDA_HOME}/bin/nvcc}"
+MPI_INCLUDE_DIR="${MACROFLOW3D_MPI_INCLUDE:-${MPI_INCLUDE:-}}"
+MPI_LIB_DIR="${MACROFLOW3D_MPI_LIBDIR:-${MPI_LIB:-}}"
+
+# Force MPI wrapper compilers onto a modern host toolchain. On the V100 host the
+# MPICH wrappers otherwise fall back to GCC 4.8-era C++ headers, which PETSc
+# correctly rejects during C++11/14/17 capability checks.
+export MPICH_CC="${MACROFLOW3D_MPICH_CC:-${HOST_CC}}"
+export MPICH_CXX="${MACROFLOW3D_MPICH_CXX:-${HOST_CXX}}"
+export OMPI_CC="${MACROFLOW3D_OMPI_CC:-${HOST_CC}}"
+export OMPI_CXX="${MACROFLOW3D_OMPI_CXX:-${HOST_CXX}}"
+export CUDAHOSTCXX="${MACROFLOW3D_CUDAHOSTCXX:-${HOST_CXX}}"
+
+if [[ -z "${MPI_INCLUDE_DIR}" ]]; then
+    MPI_INCLUDE_DIR="$(detect_mpi_flag_path "I" "${MPI_CC}")"
+fi
+
+if [[ -z "${MPI_LIB_DIR}" ]]; then
+    MPI_LIB_DIR="$(detect_mpi_flag_path "L" "${MPI_CC}")"
+fi
+
+MPI_CXX_LIB="$(pick_existing_lib "${MPI_LIB_DIR}" libmpicxx.so libmpicxx.a)"
+MPI_C_LIB="$(pick_existing_lib "${MPI_LIB_DIR}" libmpi.so libmpi.a)"
+PETSC_MPI_LIBS="[${MPI_CXX_LIB},${MPI_C_LIB}]"
+
 # ── Preflight checks ─────────────────────────────────────────────────────
 echo "=== PETSc + SLEPc Build Script ==="
 echo "  Project root : ${PROJECT_ROOT}"
 echo "  CUDA arch    : sm_${CUDA_ARCH}"
 echo "  Make jobs    : ${MAKE_NP}"
+echo "  Python       : ${PYTHON_BIN}"
+echo "  CPP          : ${CPP_BIN}"
+echo "  MPI C        : ${MPI_CC}"
+echo "  MPI C++      : ${MPI_CXX}"
+echo "  Host CC      : ${HOST_CC}"
+echo "  Host C++     : ${HOST_CXX}"
+echo "  MPI include  : ${MPI_INCLUDE_DIR}"
+echo "  MPI lib dir  : ${MPI_LIB_DIR}"
+echo "  NVCC         : ${NVCC_BIN}"
 echo ""
 
-for cmd in mpicc mpicxx nvcc python3 make; do
-    if ! command -v "$cmd" &>/dev/null; then
-        echo "ERROR: Required command '$cmd' not found in PATH." >&2
+for cmd in "${MPI_CC}" "${MPI_CXX}" "${NVCC_BIN}" "${PYTHON_BIN}" "${CPP_BIN}" make; do
+    if [[ ! -x "${cmd}" ]] && ! command -v "${cmd}" &>/dev/null; then
+        echo "ERROR: Required command '${cmd}' not found." >&2
         exit 1
     fi
 done
+
+if [[ -z "${MPI_INCLUDE_DIR}" ]]; then
+    echo "ERROR: Could not determine MPI include directory." >&2
+    exit 1
+fi
+
+if [[ -z "${MPI_LIB_DIR}" ]]; then
+    echo "ERROR: Could not determine MPI library directory." >&2
+    exit 1
+fi
 
 if [[ ! -d "${PETSC_SRC}/config" ]]; then
     echo "ERROR: PETSc source not found at ${PETSC_SRC}" >&2
@@ -93,19 +248,22 @@ cd "${PETSC_SRC}"
 # Clean previous build if present
 rm -rf "${PETSC_ARCH_NAME}" configure.log RDict.log configtest.mod .nagged 2>/dev/null || true
 
-python3 ./configure \
+"${PYTHON_BIN}" ./configure \
     PETSC_ARCH="${PETSC_ARCH_NAME}" \
-    --with-cc=mpicc \
-    --with-cxx=mpicxx \
+    --with-cc="${MPI_CC}" \
+    --with-cxx="${MPI_CXX}" \
     --with-fc=0 \
+    --with-mpi-include="${MPI_INCLUDE_DIR}" \
+    --with-mpi-lib="${PETSC_MPI_LIBS}" \
     --with-debugging=0 \
     --with-cuda=1 \
-    --with-cudac=nvcc \
+    --with-cudac="${NVCC_BIN}" \
     --with-cuda-arch="${CUDA_ARCH}" \
     --with-shared-libraries=0 \
     --with-precision=double \
     --with-scalar-type=real \
     --with-make-np="${MAKE_NP}" \
+    CPP="${CPP_BIN}" \
     COPTFLAGS="-O2" \
     CXXOPTFLAGS="-O2" \
     CUDAOPTFLAGS="-O2"
@@ -141,7 +299,7 @@ rm -rf "${PETSC_ARCH_NAME}" 2>/dev/null || true
 export PETSC_DIR="${PETSC_SRC}"
 export PETSC_ARCH="${PETSC_ARCH_NAME}"
 
-python3 ./configure
+"${PYTHON_BIN}" ./configure
 
 echo ""
 echo "  SLEPc configure complete."

@@ -1,0 +1,253 @@
+# PSPTA Memory
+
+## Current authoritative status
+
+- Runtime-authoritative PSPTA is still `PsptaPsiField::precompute_levelA()` plus optional `PsptaPsiField::refine_psi()` routed from `EnsembleRunner`.
+- `PsptaEngine::bind_invariants()` now has a control-case harness proving that the engine can consume real Strategy A fields, but the production runtime still does not route through that path.
+- The engine still samples invariants with legacy self-period semantics: `psi1 -> Ly`, `psi2 -> Lz`.
+
+## Legacy prototype status / what it taught us
+
+- Legacy x-marching is still the only end-to-end transported invariant path.
+- It remains useful as:
+  - a baseline for failure modes and gauge semantics,
+  - a data-layout/integration reference,
+  - a fallback control generator during migration.
+- It must not remain hidden behind `transport.method=pspta` as if it were the new authoritative method.
+
+## Open scientific risks
+
+- Production runtime still does not test the same invariant object as the Strategy A control harness.
+- Strategy C is not scientifically usable on `darcy_small` yet:
+  - the first unconstrained variant (`RefinementAC` alternating local fit + Poisson projection) can lower mismatch in trial states, but only by increasing invariance residuals by roughly `O(10^2..10^3)`, so no admissible update is accepted on the exact consumed object;
+  - the first subspace-constrained variant (quadratic gauge maps on the first 4 Strategy A coordinates) does find admissible updates, but only lowers consumed mismatch modestly and does not consistently improve transport failures;
+  - the stronger coefficient-space Gauss-Newton variant improves mismatch further by optimizing linear and quadratic coefficients together, but transport robustness still aligns only intermittently with those gains.
+  - the first projection-aware coefficient-space GN improves mismatch/failure coherence relative to the plain GN variant, but still leaves `rel_mismatch ~ 1.068`, regresses at `mu=3e-5`, and does not make the projection proxy a reliable global selector across consumed-object initializations.
+- `GaugeFixer` only implements inlet-plane overwrite, and that overwrite makes Strategy A fields materially worse on every tested control.
+- `PsptaEngine` still carries hardwired legacy `Ly/Lz` self-period assumptions.
+- Engine-faithful Strategy C surrogates are still not strong enough:
+  - the sampled engine-combined selector improved coherence versus the static projection-aware GN, but still lost to the best unrefined consumed-ranked 4D gauges on transport;
+  - a second iteration that selected on sampled fail fraction first was ruled out because the sampled fail fraction saturated to zero on accepted `darcy_small` candidates while full transport failures remained large.
+- Simple pair/gauge transforms are not enough on `darcy_small`:
+  - best in-subspace rotation only redistributes invariance residual between `psi1` and `psi2`;
+  - period-fit affine normalization makes mismatch and failure counts much worse;
+  - crossfit amplitude scaling can drive Newton failures to zero by collapsing the fields toward constants while leaving `v` vs `∇psi1×∇psi2` mismatch at `O(1)`.
+- Searching the transported pair across the requested six-mode Strategy A subspace helps Newton failures on `darcy_small`, but it does not move the core `v` vs `∇psi1×∇psi2` mismatch off `O(1)` on any control.
+- The large-grid SLEPc production path still relies on a 45-color probed assembled surrogate, and that surrogate remains not proven yet for nontrivial `v_y,v_z`.
+- On `darcy_small`, the small-grid production path has now been switched to exact `MatComputeOperator()` assembly because the probed surrogate was not faithful.
+- Root cause of the apparent exact-path zero cluster was PETSc shell-matrix metadata, not Strategy A physics:
+  - the shell operator did not declare `VECSEQCUDA`, so `MatComputeOperator()` could probe it with incompatible vectors while `MATOP_MULT` assumed `VECCUDA`
+  - after setting `MatShellSetVecType(...,VECSEQCUDA)`, shell-vs-explicit fidelity on `darcy_small` is machine-precision tight (`exact_action_relerr_mean ~ 2e-16`, `exact_rayleigh_relerr_mean ~ 0`, `exact_symmetry_defect ~ 1e-15`)
+  - the previous broad zero cluster was therefore an operator-realization artifact
+
+## Latest validated facts
+
+- `transport.method=pspta` routes into legacy marching in `src/runtime/ensemble/EnsembleRunner.cu`.
+- Strategy A control apps already cover `uniform_x`, `layered_x`, and `darcy_small`.
+- Operator tests include strong algebra checks, but the new invariant container and `bind_invariants()` only have smoke coverage.
+- Local `operator_tests` and `macroflow3d_pipeline apps/config_pspta_small.yaml` both abort in this environment with `CUDA driver version is insufficient for CUDA runtime version`.
+- Remote V100 `v100-release` build succeeded, and `ctest --test-dir build/v100-release --output-on-failure -R operator_tests` passed in `3.26 s`.
+- Remote V100 `macroflow3d_pipeline apps/config_pspta_small.yaml` succeeded on the runtime-authoritative legacy path with `psi_refine` ending at `rms_r1=7.345e-01`, `rms_r2=9.393e-01`, `stop=max_iters`, and `[pspta] active=387 exited=113 newton_stalls=0 nonzero_fail=0 max_fail=0`.
+- The generated runtime artifacts remain legacy-focused: `psi_refine_summary.csv`, `psi_refine_history.csv`, and particle snapshots exist, but no mismatch or independence diagnostics are written.
+- The sampled particle cloud in `output_pspta_small/snapshots` does not show obvious transverse blow-up in this smoke run, but it is not a valid macrodispersion proof because the initial condition already spans the inlet cross-section: `var_y` changed from `2144.69` at `step_00000005` to `1959.12` at `step_00000500`, and `var_z` changed from `2040.99` to `1767.80`.
+- Remote V100 Phase 1 PETSc/SLEPc bring-up is now reproducible through the repo workflow:
+  - `scripts/remote sync`
+  - `scripts/remote exec -- "bash src/external/scripts/build_petsc_slepc.sh clean && bash src/external/scripts/build_petsc_slepc.sh"`
+  - `scripts/remote exec -- "cmake --preset v100-petsc"`
+  - `scripts/remote exec -- "cmake --build build/v100-petsc -j"`
+  - `scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"`
+  - `scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"`
+- The repaired remote PETSc/SLEPc path now forces system Python, explicit `CPP`, MPICH include/libs, and GCC 9 behind the MPICH wrappers; `scripts/remote` also forces a clean locale for ssh/rsync so `C.UTF-8` noise no longer contaminates the build.
+- Remote `build_petsc_slepc.sh` succeeded from clean state and produced `libpetsc.a` (`372M`) and `libslepc.a` (`52M`) under `arch-cuda`.
+- Remote `ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc` passed in `2.52 s`.
+- Remote `ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver` passed in `2.91 s`.
+- Direct remote `./build/v100-petsc/validate_slepc_eigensolver` evidence on `uniform_x`:
+  - `||A(1)||/||1|| = 0.000000e+00`
+  - solver: `krylovschur + sinvert + preonly/lu`
+  - converged `17 / 2` requested modes in `1` iteration, `379.3 ms`
+  - `λ[0] = 0`, `λ[1] = 0`, residuals `0.000e+00`
+  - modal overlap `|<ψ1,ψ2>| = 3.47e-18`
+  - backend reports `method=StrategyA`, `backend=slepc_validation`, `gauge_ready=YES`
+- `SLEPcProductionBackend` required a real fix before control cases could run: PETSc assembly preallocation had to be raised from `13` to `45` nonzeros per row to match the `5x3x3` probing stencil on `darcy_small`.
+- Remote `ctest --test-dir build/v100-petsc --output-on-failure -R 'operator_tests|smoke_test_petsc|validate_slepc_eigensolver'` now passes in `10.59 s` after the Strategy A transport-harness changes.
+- Remote `./build/v100-petsc/analyze_invariant_quality` now emits `artifacts/gate3/invariant_transport_consumed.csv`, which measures the exact `PsptaInvariantField` object consumed by `PsptaEngine::bind_invariants()`.
+- `analyze_invariant_quality` now exits cleanly on the Tesla V100 through the normal repo workflow (`scripts/remote run ...`, `exit_code=0`) after replacing raw `atexit(SlepcFinalize)` with guarded explicit finalization through `PetscSlepcInit::finalize()`.
+- Control-harness verdict for the exact transport-consumed object:
+  - `uniform_x`, raw Strategy A: `quality_rms_r ~ 1e-10 to 1e-9`, `final_drift ~ 1.2e-8`, `total_fail=0`, `nonzero_fail=0`, but `rel_rms_mismatch ~ 1.000`.
+  - `layered_x`, raw Strategy A: `quality_rms_r ~ 0 to 1e-9`, `final_drift ~ 1.2e-8`, `total_fail=0`, `nonzero_fail=0`, but `rel_rms_mismatch ~ 1.021`.
+  - `darcy_small`, raw Strategy A: best tested `mu=3e-5` gave `quality_rms_r1=1.06e-2`, `quality_rms_r2=1.83e-2`, `rel_rms_mismatch=1.073`, `degeneracy=0.303`, `final_drift ~ 1.10e-6 / 1.13e-6`, `total_fail=1621`, `nonzero_fail=291`, `max_fail=8`, with modal `gauge_ready=NO`.
+  - `best_rotation` makes the transported pair more independent on all controls, but does not materially change mismatch (`~1.000` on `uniform_x`, `~1.021` on `layered_x`, `~1.07` on `darcy_small`). On `darcy_small` it only gives tiny transport wins: e.g. `mu=3e-5` improves `total_fail` from `1621` to `1617` and `mu=1e-3` from `2732` to `2724`, while drift stays `O(1e-6)`.
+- `best_rotation_period_fit` is not usable: on `darcy_small` it drives `rel_rms_mismatch` up to `3.87–5.90` and `total_fail` up to `2041–4491`; on smooth controls it also inflates invariance residuals by orders of magnitude.
+- `best_rotation_crossfit` is also not a valid fix. At low-`mu` `darcy_small` it chooses scales near `1e-6`, which collapses the fields, gives `total_fail=0`, and reduces drift to `~1e-8`, but leaves `rel_rms_mismatch ~ 1.070` and therefore does not recover a physically meaningful invariant pair.
+- The exact-object harness now searches all 2D mode planes inside the requested six-mode Strategy A subspace and transports each plane's best rotated pair.
+- Pair-search results on the exact consumed object:
+  - `uniform_x`: the preferred pair moves from `(0,1)` to `(3,4)`, but `rel_rms_mismatch` stays `~1.000`, drift stays `~3e-8`, and failures remain zero.
+  - `layered_x`: the preferred pair varies across `mu` (`(3,4)`, `(2,4)`, `(2,3)`), but `rel_rms_mismatch` stays `~1.021`, drift stays `~3e-8`, and failures remain zero.
+  - `darcy_small`: pair selection materially reduces failures versus the leading pair:
+    - `mu=1e-5`: `(0,1)` `2054/382` -> best `(2,4)` `1048/201`
+    - `mu=3e-5`: `(0,1)` `1617/291` -> best `(2,3)` `801/158`
+    - `mu=1e-4`: `(0,1)` `2190/399` -> best `(2,3)` `1347/238`
+    - `mu=3e-4`: `(0,1)` `2978/521` -> best `(2,3)` `1843/340`
+    - `mu=1e-3`: `(0,1)` `2456/444` -> best `(0,4)` `1424/265`
+  - Those pair-search wins do not fix the scientific blocker: `rel_rms_mismatch` stays `~1.07` and final drift maxima stay `~8e-6` across the winning `darcy_small` pairs.
+- Strategy A faithfulness audit against `deep-research-report.md`:
+  - matrix-free operator contract matches the report at a high level: `D = v·∇`, `D†` algebraic transpose, `L = -∇²`, `A = D†D + mu L`, `W = I`.
+  - new V100 PSD probe stayed positive for the matrix-free `A` on all tested controls:
+    - `uniform_x`: `171.365 .. 172.851`
+    - `layered_x`: `179.157 .. 180.642`
+    - `darcy_small`: `106.881 .. 107.707`
+  - `uniform_x` / `layered_x` exact consumed pairs have `mean_abs_alignment = 1.0` while `rel_rms_mismatch ~ 1.00 / 1.02`, so Strategy A is recovering the control foliation directionally but not a usable final gauge.
+  - full six-mode Strategy A control-subspace capture is much stronger than any transported 2-mode pair:
+    - full six-mode capture of expected `yz` harmonic subspace: `0.863761`
+    - transported 2-mode pair-plane capture: `0.363761 .. 0.431881`
+  - on `darcy_small`, best transported pairs still have strong directional alignment (`0.906 .. 0.987`) but remain transport-poor (`801 .. 1843` failures, drift `~8.2e-6`) and the recovered subspace is unstable under `mu` (`1.0, 0.484, 0.028, 0.043, 0.008` vs the `mu=1e-5` baseline).
+  - the previous probed eigensolver realization was not faithful on `darcy_small`: SLEPc returned negative eigenvalues and large residuals for a should-be-PSD operator, while the matrix-free Rayleigh probe remained strictly positive.
+  - the corrected small-grid exact path now produces a strictly positive low spectrum on `darcy_small`, not a zero cluster:
+    - `mu=1e-5`: `[5.72e-4, 5.83e-4, 6.20e-4, 7.00e-4, 1.12e-3, 1.19e-3]`
+    - `mu=3e-5`: `[1.41e-3, 1.43e-3, 1.46e-3, 1.55e-3, 2.76e-3, 2.85e-3]`
+    - `mu=1e-4`: `[4.21e-3, 4.24e-3, 4.27e-3, 4.36e-3, 8.33e-3, 8.41e-3]`
+- the near-zero targeted Hermitian EPS solve now uses `EPS_CONV_ABS`, which is consistent with SLEPc guidance for origin-near spectra.
+- among the computed modes, the first four remain in a tight low cluster (`<=1.3*eig0 -> 4`) and the first 4D subspace is much more stable in `mu` than the leading 2D pair (`prefix4(mu_ref) ~ 0.968..0.993` vs `prefix2(mu_ref) -> 0.357` by `mu=1e-3`)
+- transport is still not acceptable on that faithful small-grid solve:
+  - best transported pairs now improve materially (`94/17` fails at `mu=3e-5`, `8/2` at `mu=1e-3`)
+  - `rel_mismatch` still stays `~1.068..1.072`
+  - `drift_max` still stays `~8.3e-6`
+ - exact-object 4D-subspace gauge audit:
+   - the first four low Strategy A modes are now treated as the authoritative `darcy_small` Strategy A object
+   - host-side 4D gauge search can find linear 2-field gauges with lower host mismatch than the transported pair search:
+     - `uniform_x`: host-best `rel_mismatch ~ 1.00004`, unchanged on the consumed object
+     - `layered_x`: host-best `rel_mismatch ~ 0.9997..1.0000`, but consumed-object mismatch jumps back to `~1.021` before transport
+     - `darcy_small`: host-best `rel_mismatch ~ 0.9979..0.9985`, but consumed-object mismatch jumps back to `~1.0707..1.0717` before transport
+   - the consumed-object degradation happens before `prepare()` / stepping:
+     - `prepare_drift_max ~ 3e-8` on all cases
+     - `darcy_small final_drift_max ~ 8.29e-6 .. 8.33e-6`
+   - therefore the remaining blocker is not transport stepping; it is that host-extracted 2-field gauges do not survive realization under the exact consumed scalar-field semantics
+   - 4D-subspace transport search helps some `darcy_small` `mu` values but is not uniformly better than the best pair-plane search:
+     - `mu=1e-5`: best pair `382/70` vs best 4D gauge `259/53`
+     - `mu=3e-5`: best pair `94/17` vs best 4D gauge `213/42`
+     - `mu=1e-4`: best pair `135/27` vs best 4D gauge `213/44`
+     - `mu=3e-4`: best pair `244/53` vs best 4D gauge `104/21`
+     - `mu=1e-3`: best pair `8/2` vs best 4D gauge `118/23`
+   - interpretation: the 4D low subspace remains the right Strategy A object, but the current host linear-gauge extraction metric is not aligned with the exact consumed representation
+ - exact-object consumed-ranked 4D-subspace gauge audit:
+   - the search now ranks candidates by `PsptaInvariantField::compute_quality()` immediately after upload, before `prepare()`
+   - this materially improves scientific selection because it removes the misleading host-best gauges:
+     - `uniform_x`: consumed-best remains `~1.000`, matching the control expectation
+     - `layered_x`: consumed-best is already `~1.021`, so the host-best `~1.000` gauge was not a valid consumed-object candidate
+     - `darcy_small`: consumed-best remains `~1.068`, so no scientifically usable consumed-object linear 2-field gauge has been found inside the first 4 Strategy A modes
+   - transported consumed-ranked 4D gauges on `darcy_small`:
+     - `mu=1e-5`: best `282/54`, `rel_mismatch ~ 1.068`
+     - `mu=3e-5`: best `340/68`, `rel_mismatch ~ 1.069`
+     - `mu=1e-4`: best `492/81`, `rel_mismatch ~ 1.068`
+     - `mu=3e-4`: best `241/50`, `rel_mismatch ~ 1.068`
+     - `mu=1e-3`: best `415/78`, `rel_mismatch ~ 1.068`
+   - consumed ranking therefore outperforms host ranking as the scientific selector, but it still does not uncover a usable 2-field gauge in the faithful first-4-mode Strategy A subspace
+   - interpretation: the remaining blocker is still gauge / representation inside the exact consumed object, not transport stepping
+ - A->C handoff is now formalized around the low subspace itself:
+   - on `darcy_small`, Strategy A should hand off the corrected first-4-mode low invariant subspace
+   - Strategy C should start from a consumed-object-aware initialization built from that subspace
+   - fixed pair extraction is no longer the authoritative Strategy A interface
+  - interpretation: once eigensolver fidelity is restored on the control grid, the blocker shifts from “fake zero eigenspace” to “the corrected low invariant subspace is richer than the current fixed 2-field extraction”.
+- first consumed-object-aware Strategy C iteration:
+  - `RefinementAC` is now implemented as an alternating local fit + Poisson projection loop with backtracking and anti-collapse guards
+  - it is initialized from the consumed-ranked first-4-mode Strategy A subspace, not from a fixed leading pair
+  - local and remote regression coverage now includes `refinement_ac`
+   - on `uniform_x`, no update is accepted because the best mismatch-reducing trials violate exact invariance
+   - on `layered_x`, no update is accepted for the same reason
+   - on `darcy_small`, no accepted update is found for any tested `mu` or top consumed-ranked initialization
+   - representative `darcy_small` best-trial behavior:
+     - `mu=1e-5`: `rel_mismatch 1.06845 -> 1.06662`, but invariance sum grows `6.21e-4 -> 1.93e-1`
+     - `mu=3e-5`: `1.06860 -> 1.06830`, invariance sum `7.57e-4 -> 1.78e-1`
+     - `mu=1e-4`: `1.06846 -> 1.06779`, invariance sum `8.66e-4 -> 1.71e-1`
+     - `mu=3e-4`: `1.06857 -> 1.06696`, invariance sum `9.17e-4 -> 2.37e-1`
+     - `mu=1e-3`: `1.06855 -> 1.06776`, invariance sum `9.78e-4 -> 1.88e-1`
+   - conclusion: this first Strategy C variant can lower mismatch only by leaving the recovered Strategy A foliation
+- first subspace-constrained Strategy C iteration:
+  - `RefinementAC` now also supports `RefinementACStrategy::SubspaceQuadraticMap`, which refines two scalar gauge maps as quadratic functions of the corrected first-4-mode Strategy A coordinates
+  - every candidate is scored on the exact consumed object before `prepare()`, then rechecked after `prepare()` and after transport
+  - control behavior remains interpretable:
+    - `uniform_x`: no fake gain is accepted; `rel_mismatch` stays `~1.00004` with invariance remaining zero
+    - `layered_x`: small admissible gains appear (`~1.02107 -> ~1.01884` best) while invariance remains essentially zero and failures remain zero
+  - on `darcy_small`, this is the first Strategy C class that lowers mismatch without catastrophic invariance blow-up:
+    - `mu=3e-5`: `1.06860 -> 1.06837`, `q_r_sum 7.57e-4 -> 9.09e-4`
+    - `mu=1e-4`: `1.06846 -> 1.06775`, `q_r_sum 8.66e-4 -> 1.00e-3`
+    - `mu=3e-4`: `1.06857 -> 1.06770`, `q_r_sum 9.17e-4 -> 1.01e-3`
+    - `mu=1e-3`: `1.06857 -> 1.06732`, `q_r_sum 9.81e-4 -> 1.08e-3`
+  - `prepare_drift_max` stays negligible (`~3e-8`) and `transport_drift_max` stays at the prior `~8.3e-6` scale, so transport is still not the first-order limiter
+  - transport failure counts remain mixed relative to the best consumed-ranked baseline candidates, so mismatch improvement and stepping robustness are not yet aligned
+  - interpretation: the A->C handoff is now validated in the weaker sense that foliation-preserving refinement can improve consumed-object mismatch, but the current quadratic gauge-map representation is still not sufficient to make `darcy_small` scientifically usable
+- stronger coefficient-space Strategy C iteration:
+  - `RefinementAC` now also supports `RefinementACStrategy::SubspaceQuadraticGaussNewton`, which optimizes linear and quadratic gauge coefficients together inside the corrected first-4-mode Strategy A subspace
+  - the proposal generator is a small trust-region / Levenberg-Marquardt-style Gauss-Newton solve in coefficient space; authoritative acceptance still uses `PsptaInvariantField::compute_quality()` on the exact consumed object before `prepare()`
+  - controls remain interpretable:
+    - `uniform_x`: small cleanup only (`1.00004 -> 1.00001` best), invariance remains zero, failures remain zero
+    - `layered_x`: best consumed mismatch improves to `1.02049` with invariance still zero and failures still zero
+  - on `darcy_small`, the new GN refiner improves mismatch more than the earlier quadratic coordinate search:
+    - `mu=1e-5`: best `1.06755`, `258/52` fails
+    - `mu=3e-5`: best mismatch `1.06790`, but best-fail candidate is different (`1.06846`, `253/50`)
+    - `mu=1e-4`: best mismatch `1.06745`, but best-fail candidate is different (`1.06777`, `309/58`)
+    - `mu=3e-4`: best mismatch `1.06745`, but best-fail candidate is different (`1.06776`, `221/43`)
+    - `mu=1e-3`: best `1.06673`, `271/53` fails
+  - final invariance remains in the same `O(4e-4 .. 6e-4)` range as accepted constrained refinements, not the `O(1e-1)` blow-up of the unconstrained variant
+  - `prepare_drift_max` still stays `~3e-8`, so transport is still not the first-order limiter
+  - interpretation: the remaining blocker is narrower again:
+    - the A->C handoff is working,
+    - a stronger coefficient-space refiner can improve consumed-object mismatch inside the Strategy A foliation,
+    - but mismatch improvement and transport robustness are still only partially coupled, so the remaining floor is not just “optimizer weakness”
+- projection-aware Strategy C iteration:
+  - `RefinementAC` now also supports `RefinementACStrategy::SubspaceQuadraticGaussNewtonProjectionProxy`, which augments the coefficient-space GN residual with:
+    - `vx - det(J_yz)`,
+    - lightly weighted `vy,vz` mismatch,
+    - invariance residuals,
+    - and a reciprocal-condition barrier on the `y,z` Newton Jacobian.
+  - accepted candidates remain gated by exact consumed-object quality before `prepare()`, but the proposal and acceptance selector now include a projection-aware score.
+  - control behavior remains interpretable:
+    - `uniform_x`: `rel_mismatch ~ 1.000`, invariance zero, failures zero
+    - `layered_x`: `rel_mismatch ~ 1.021`, invariance zero, failures zero
+  - `darcy_small` best accepted candidates:
+    - `mu=1e-5`: `1.06761`, `234/50`
+    - `mu=3e-5`: `1.06827`, `382/66`
+    - `mu=1e-4`: `1.06771`, `220/42`
+    - `mu=3e-4`: best mismatch `1.06837`, best fail `214/41`
+    - `mu=1e-3`: `1.06768`, `220/46`
+  - compared with the plain GN variant, best-mismatch and best-fail candidate identity now aligns on `4/5` tested `mu` values instead of `2/5`, so the new objective captures a real part of the downstream robustness story.
+  - however, the best accepted projection-aware refinements still lose to the best unrefined consumed-ranked 4D-subspace gauges on transport at every tested `mu` (`234/50 vs 223/37`, `382/66 vs 166/28`, `220/42 vs 98/19`, `214/41 vs 123/28`, `220/46 vs 128/29`).
+  - however, the lowest final projection-proxy score is often *not* the lowest-fail transported candidate, and `mu=3e-5` regresses materially versus the plain GN variant.
+  - interpretation: projection-aware optimization is scientifically useful, but the current proxy is only a partial transport-robustness signal, not a complete upstream selector.
+- engine-sampled Strategy C iteration:
+  - `RefinementAC` now also supports an engine-sampled subspace GN that evaluates a deterministic host-side emulation of the engine's own `x -> x_mid -> x_new` Newton projection path on sampled particles.
+  - first selector (`rel_mismatch + 0.25 * engine.combined_score`) improved transport coherence relative to the static projection-aware GN, but still lost to the best unrefined consumed-ranked 4D gauges on transport:
+    - best refined rows by `mu` were `239/52`, `266/51`, `174/38`, `271/62`, `191/43`
+    - best unrefined consumed-ranked 4D gauges remained `223/37`, `166/28`, `98/19`, `123/28`, `128/29`
+  - an offline selector audit then showed:
+    - `final_eng_fail_fraction` matched the lowest-fail row among the accepted candidates at all five tested `mu`
+    - `final_eng_combined_score` matched none
+  - second selector iteration (fail-fraction-first lexicographic) ruled out binary sampled fail fraction as a sufficient target:
+    - accepted `darcy_small` candidates drove sampled `final_eng_fail_fraction` to `0` across the board,
+    - but full transport still remained poor (`246/50`, `266/51`, `179/44`, `345/69`, `245/51`)
+    - `final_eng_mean_normalized_final_residual` remained mildly informative (`3/5` best-row agreement), but sampled fail fraction itself had become too coarse
+  - interpretation: the next Strategy C limiter is now the **quality of the engine-faithful surrogate**, not foliation loss or fixed-pair extraction.
+
+## Rejected hypotheses
+
+- Rejected: `transport.method=pspta` already means Strategy A/C transport.
+- Rejected: Gate 2/Gate 3 coverage is already sufficient to trust runtime use of reconstructed invariants.
+- Rejected: backend alignment alone is enough to treat the new PSPTA route as scientifically ready.
+- Rejected: the inlet-plane overwrite is a safe gauge fix for Strategy A fields.
+- Rejected: `bind_invariants()` is still only a smoke path with no real transport evidence.
+- Rejected: simple period-fit affine normalization is a viable non-legacy gauge fix for Strategy A.
+- Rejected: amplitude-only crossfit scaling is a valid scientific fix when it suppresses failures by collapsing gradients.
+- Rejected: the leading pair `ev[0],ev[1]` is the main reason `darcy_small` fails. Searching the transported pair inside the requested six-mode Strategy A subspace reduces failures but leaves the `O(1)` mismatch intact.
+- Rejected: current Strategy A failure is explained only by pair choice or simple gauge choice.
+- Rejected: the negative eigenvalues on `darcy_small` were physical. They came from the non-faithful probed surrogate.
+- Rejected: the broad zero cluster on the corrected small-grid path was physical. It came from incompatible PETSc shell-matrix vector metadata during `MatComputeOperator()`.
+- Rejected: the remaining `O(1)` mismatch is mainly caused by `prepare()` / stepping. The dominant degradation already appears when the host-selected gauge is uploaded and re-evaluated as the exact consumed object.
+- Rejected: consumed-object ranking would uncover a scientifically usable linear 2-field gauge inside the first 4 `darcy_small` Strategy A modes. It removes host-ranking artifacts, but the best consumed-object mismatch still stays `~1.068`.
+- Rejected: the first unconstrained correction-based Strategy C variant is enough to make the `darcy_small` gauge usable. It reduces mismatch only when it destroys invariance, so it does not provide an admissible refinement.
+- Rejected: no foliation-preserving Strategy C improvement exists. The subspace-constrained quadratic map produces the first admissible mismatch reductions on `darcy_small`, so the remaining failure is narrower: the current constrained representation is too weak, not the A->C handoff itself.
+- Rejected: stronger coefficient-space optimization alone is enough to make transport robustness follow mismatch monotonically. The Gauss-Newton variant improves consumed-object mismatch more than the earlier constrained search, but mid-`mu` transport still favors different accepted candidates than the best-mismatch ones.
+- Rejected: adding the current `vx-det(J_yz)` plus conditioning proxy is already enough to make downstream robustness a solved upstream selection problem. It improves coherence on most `mu`, but the best final proxy candidate is still often not the best transported candidate and `mu=3e-5` regresses.
+
+## Exact next step
+
+Use the corrected exact small-grid Strategy A solve as the authoritative control-case eigensolver path and keep the first low `darcy_small` eigenspace as the scientific handoff object. The next step is to strengthen Strategy C beyond the current projection-aware proxy: keep consumed-object ranking before `prepare()`, but add a refinement signal that is closer to the actual `PsptaEngine` projection behavior than the current static `J_yz` proxy alone, because `vx-det(J_yz)` plus reciprocal conditioning improves coherence only partially. Do not wire any Strategy A/C path into production runtime and do not revive pair extraction as the main handoff interface.
