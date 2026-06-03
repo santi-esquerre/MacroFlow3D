@@ -132,13 +132,27 @@ if(MACROFLOW3D_ENABLE_PETSC)
     # PETSc internally uses curand, cufft, cusparse, cusolver.
     # Declaring them as INTERFACE_LINK_LIBRARIES ensures they appear
     # AFTER libpetsc.a in the link line (critical for static linking).
+    find_library(MACROFLOW3D_X11_LIB X11)
+    find_library(MACROFLOW3D_XAU_LIB Xau)
+    set(MACROFLOW3D_PETSC_EXTRA_LINK_LIBS "")
+    if(MACROFLOW3D_X11_LIB)
+        list(APPEND MACROFLOW3D_PETSC_EXTRA_LINK_LIBS "${MACROFLOW3D_X11_LIB}")
+    else()
+        message(WARNING "X11 library not found; PETSc static link may fail if the installation depends on X11")
+    endif()
+    if(MACROFLOW3D_XAU_LIB)
+        list(APPEND MACROFLOW3D_PETSC_EXTRA_LINK_LIBS "${MACROFLOW3D_XAU_LIB}")
+    else()
+        message(WARNING "Xau library not found; PETSc static link may fail if the installation depends on Xau")
+    endif()
+
     add_library(petsc STATIC IMPORTED)
     set_target_properties(petsc PROPERTIES
         IMPORTED_LOCATION "${_PETSC_LIB_DIR}/libpetsc.a"
         INTERFACE_INCLUDE_DIRECTORIES
             "${PETSC_DIR}/include;${PETSC_DIR}/${PETSC_ARCH}/include"
         INTERFACE_LINK_LIBRARIES
-            "CUDA::cusparse;CUDA::cusolver;CUDA::curand;CUDA::cufft;lapack;blas;m;stdc++;dl"
+            "CUDA::cusparse;CUDA::cusolver;CUDA::curand;CUDA::cufft;lapack;blas;m;stdc++;dl;${MACROFLOW3D_PETSC_EXTRA_LINK_LIBS}"
     )
 
     # --- Import SLEPc (static) ---
@@ -346,6 +360,12 @@ if(MACROFLOW3D_BUILD_APPS)
         add_executable(benchmark_eigensolver apps/benchmark_eigensolver.cu)
         target_link_libraries(benchmark_eigensolver PRIVATE macroflow3d_lib)
         target_compile_options(benchmark_eigensolver
+            PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+        )
+
+        add_executable(analyze_invariant_quality apps/analyze_invariant_quality.cu)
+        target_link_libraries(analyze_invariant_quality PRIVATE macroflow3d_lib)
+        target_compile_options(analyze_invariant_quality
             PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
         )
     endif()

@@ -129,6 +129,73 @@ struct SolveSummary {
     std::vector<double> expected_captures;
 };
 
+// Gauge readiness: after in-subspace rotation (det=1 preserves the cross product),
+// fit a single scalar alpha such that alpha * (grad psi1 x grad psi2) best-matches v
+// in the L2 sense. The residual floor sqrt(1 - cos^2(v, c)) is a geometric lower bound
+// that depends only on the subspace, not on intra-subspace rotation or scale.
+struct GaugeReadyMetrics {
+    double angle_deg = 0.0;
+    double mean_psi1 = 0.0;
+    double mean_psi2 = 0.0;
+    double orientation_sign = 1.0;
+    double symmetric_scale = 1.0;
+    double v_norm = 0.0;
+    double cross_norm = 0.0;
+    double cross_norm_after_gauge = 0.0;
+    double v_dot_cross = 0.0;
+    double cos_v_cross = 0.0;
+    double alpha_opt = 0.0;
+    double rel_residual_before_gauge = 0.0;
+    double rel_residual_after_gauge = 0.0;
+    double residual_floor_rel = 0.0;
+    double rms_vdotgrad1 = 0.0;
+    double rms_vdotgrad2 = 0.0;
+    double rms_ri1 = 0.0;
+    double rms_ri2 = 0.0;
+    double mean_abs_cos = 0.0;
+    double degeneracy_fraction = 0.0;
+    double post_gauge_grad1_norm = 0.0;
+    double post_gauge_grad2_norm = 0.0;
+};
+
+// Per-mode decomposition of the Rayleigh quotient of A = D^T D + mu L into the
+// transport (D^T D) and regularization (mu L) contributions.
+struct ModalEnergyRow {
+    int mode_index = 0;
+    double eigenvalue_solver = 0.0;
+    double psi_norm_sq = 0.0;
+    double e_transport = 0.0;
+    double e_regularization = 0.0;
+    double e_total = 0.0;
+    double rayleigh_recomputed = 0.0;
+    double f_transport = 0.0;
+    double f_regularization = 0.0;
+    double residual_Ax_lambda_x_rel = 0.0;
+};
+
+// Localization of reconstruction residual by spatial/geometric region.
+struct LocalizationStats {
+    std::string region;
+    double fraction = 0.0;
+    double rms_vdotgrad1 = 0.0;
+    double rms_vdotgrad2 = 0.0;
+    double rel_residual_after_gauge = 0.0;
+    double mean_abs_cos = 0.0;
+    long long cell_count = 0;
+};
+
+struct GaugeReadyEvaluation {
+    GaugeReadyMetrics metrics;
+    std::vector<double> psi1;
+    std::vector<double> psi2;
+    std::vector<double> g1x;
+    std::vector<double> g1y;
+    std::vector<double> g1z;
+    std::vector<double> g2x;
+    std::vector<double> g2y;
+    std::vector<double> g2z;
+};
+
 static void fill_uniform_velocity(VelocityField& vel, real vx, real vy, real vz) {
     std::vector<real> hU(vel.size_U(), vx);
     std::vector<real> hV(vel.size_V(), vy);
@@ -330,6 +397,15 @@ static void apply_operator_host(CombinedOperatorA& A, const DeviceBuffer<real>& 
     A.apply_A(DeviceSpan<const real>(in.data(), in.size()), d_out.span(), ctx.cuda_stream());
     cudaStreamSynchronize(ctx.cuda_stream());
     out = copy_device_to_host(d_out);
+}
+
+static DeviceBuffer<real> copy_host_to_device(const std::vector<double>& host) {
+    DeviceBuffer<real> out(host.size());
+    std::vector<real> tmp(host.size());
+    for (size_t i = 0; i < host.size(); ++i)
+        tmp[i] = static_cast<real>(host[i]);
+    cudaMemcpy(out.data(), tmp.data(), tmp.size() * sizeof(real), cudaMemcpyHostToDevice);
+    return out;
 }
 
 static CaseSpec make_uniform_case() {
@@ -656,6 +732,330 @@ static RotatedBasisMetrics evaluate_rotation(const Grid3D& grid, const HostVeloc
     return out;
 }
 
+static GaugeReadyEvaluation evaluate_gauge_ready(const Grid3D& grid, const HostVelocity& vel,
+                                                 const RawFieldData& raw, double angle_deg) {
+    GaugeReadyEvaluation eval;
+    GaugeReadyMetrics& out = eval.metrics;
+    out.angle_deg = angle_deg;
+
+    const double theta = angle_deg * M_PI / 180.0;
+    const double c_th = std::cos(theta);
+    const double s_th = std::sin(theta);
+    const size_t n = raw.psi1.size();
+
+    eval.psi1.resize(n);
+    eval.psi2.resize(n);
+
+    double mean1 = 0.0;
+    double mean2 = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        eval.psi1[i] = c_th * raw.psi1[i] - s_th * raw.psi2[i];
+        eval.psi2[i] = s_th * raw.psi1[i] + c_th * raw.psi2[i];
+        mean1 += eval.psi1[i];
+        mean2 += eval.psi2[i];
+    }
+    mean1 /= std::max<double>(n, 1.0);
+    mean2 /= std::max<double>(n, 1.0);
+    out.mean_psi1 = mean1;
+    out.mean_psi2 = mean2;
+    for (size_t i = 0; i < n; ++i) {
+        eval.psi1[i] -= mean1;
+        eval.psi2[i] -= mean2;
+    }
+
+    compute_gradients_periodic_yz(grid, eval.psi1, eval.g1x, eval.g1y, eval.g1z);
+    compute_gradients_periodic_yz(grid, eval.psi2, eval.g2x, eval.g2y, eval.g2z);
+
+    double vnorm_sq = 0.0;
+    double cross_norm_sq = 0.0;
+    double vdotc = 0.0;
+    double ssq_res_before = 0.0;
+    for (size_t i = 0; i < n; ++i) {
+        const double vx = vel.vx[i];
+        const double vy = vel.vy[i];
+        const double vz = vel.vz[i];
+        const double cx = eval.g1y[i] * eval.g2z[i] - eval.g1z[i] * eval.g2y[i];
+        const double cy = eval.g1z[i] * eval.g2x[i] - eval.g1x[i] * eval.g2z[i];
+        const double cz = eval.g1x[i] * eval.g2y[i] - eval.g1y[i] * eval.g2x[i];
+        vnorm_sq += vx * vx + vy * vy + vz * vz;
+        cross_norm_sq += cx * cx + cy * cy + cz * cz;
+        vdotc += vx * cx + vy * cy + vz * cz;
+        ssq_res_before += (vx - cx) * (vx - cx) + (vy - cy) * (vy - cy) + (vz - cz) * (vz - cz);
+    }
+
+    out.v_norm = std::sqrt(vnorm_sq);
+    out.cross_norm = std::sqrt(cross_norm_sq);
+    out.v_dot_cross = vdotc;
+    out.cos_v_cross = vdotc / std::max(out.v_norm * out.cross_norm, 1e-30);
+    out.alpha_opt = (cross_norm_sq > 1e-30) ? vdotc / cross_norm_sq : 0.0;
+    out.orientation_sign = (out.alpha_opt >= 0.0) ? 1.0 : -1.0;
+    out.symmetric_scale = std::sqrt(std::fabs(out.alpha_opt));
+    out.rel_residual_before_gauge = std::sqrt(ssq_res_before) / std::max(out.v_norm, 1e-30);
+
+    for (size_t i = 0; i < n; ++i) {
+        eval.psi1[i] *= out.symmetric_scale;
+        eval.psi2[i] *= out.orientation_sign * out.symmetric_scale;
+        eval.g1x[i] *= out.symmetric_scale;
+        eval.g1y[i] *= out.symmetric_scale;
+        eval.g1z[i] *= out.symmetric_scale;
+        eval.g2x[i] *= out.orientation_sign * out.symmetric_scale;
+        eval.g2y[i] *= out.orientation_sign * out.symmetric_scale;
+        eval.g2z[i] *= out.orientation_sign * out.symmetric_scale;
+    }
+
+    double ssq_res_after = 0.0;
+    double ssq_r1 = 0.0;
+    double ssq_r2 = 0.0;
+    double ssq_ri1 = 0.0;
+    double ssq_ri2 = 0.0;
+    double sum_abs_cos = 0.0;
+    double g1_norm_sq = 0.0;
+    double g2_norm_sq = 0.0;
+    double cross_norm_after_sq = 0.0;
+    long long deg_count = 0;
+
+    for (size_t i = 0; i < n; ++i) {
+        const double vx = vel.vx[i];
+        const double vy = vel.vy[i];
+        const double vz = vel.vz[i];
+        const double vmag = std::sqrt(vx * vx + vy * vy + vz * vz);
+
+        const double g1x = eval.g1x[i];
+        const double g1y = eval.g1y[i];
+        const double g1z = eval.g1z[i];
+        const double g2x = eval.g2x[i];
+        const double g2y = eval.g2y[i];
+        const double g2z = eval.g2z[i];
+
+        const double d1 = vx * g1x + vy * g1y + vz * g1z;
+        const double d2 = vx * g2x + vy * g2y + vz * g2z;
+        const double g1sq = g1x * g1x + g1y * g1y + g1z * g1z;
+        const double g2sq = g2x * g2x + g2y * g2y + g2z * g2z;
+        const double g1mag = std::sqrt(g1sq);
+        const double g2mag = std::sqrt(g2sq);
+        const double abs_cos =
+            std::fabs(g1x * g2x + g1y * g2y + g1z * g2z) / (g1mag * g2mag + 1e-12);
+
+        const double cx = g1y * g2z - g1z * g2y;
+        const double cy = g1z * g2x - g1x * g2z;
+        const double cz = g1x * g2y - g1y * g2x;
+        const double rx = vx - cx;
+        const double ry = vy - cy;
+        const double rz = vz - cz;
+
+        ssq_res_after += rx * rx + ry * ry + rz * rz;
+        ssq_r1 += d1 * d1;
+        ssq_r2 += d2 * d2;
+        ssq_ri1 += std::pow(std::fabs(d1) / (vmag * g1mag + 1e-12), 2);
+        ssq_ri2 += std::pow(std::fabs(d2) / (vmag * g2mag + 1e-12), 2);
+        sum_abs_cos += abs_cos;
+        g1_norm_sq += g1sq;
+        g2_norm_sq += g2sq;
+        cross_norm_after_sq += cx * cx + cy * cy + cz * cz;
+        if (abs_cos > 0.9)
+            ++deg_count;
+    }
+
+    out.cross_norm_after_gauge = std::sqrt(cross_norm_after_sq);
+    out.rel_residual_after_gauge = std::sqrt(ssq_res_after) / std::max(out.v_norm, 1e-30);
+    out.residual_floor_rel = std::sqrt(std::max(1.0 - out.cos_v_cross * out.cos_v_cross, 0.0));
+    out.rms_vdotgrad1 = std::sqrt(ssq_r1 / std::max<double>(n, 1.0));
+    out.rms_vdotgrad2 = std::sqrt(ssq_r2 / std::max<double>(n, 1.0));
+    out.rms_ri1 = std::sqrt(ssq_ri1 / std::max<double>(n, 1.0));
+    out.rms_ri2 = std::sqrt(ssq_ri2 / std::max<double>(n, 1.0));
+    out.mean_abs_cos = sum_abs_cos / std::max<double>(n, 1.0);
+    out.degeneracy_fraction = static_cast<double>(deg_count) / std::max<double>(n, 1.0);
+    out.post_gauge_grad1_norm = std::sqrt(g1_norm_sq);
+    out.post_gauge_grad2_norm = std::sqrt(g2_norm_sq);
+    return eval;
+}
+
+static double gauge_ready_score(const GaugeReadyMetrics& m) {
+    return m.rms_ri1 + m.rms_ri2 + m.rel_residual_after_gauge + 0.1 * m.mean_abs_cos +
+           0.1 * m.degeneracy_fraction;
+}
+
+static std::vector<ModalEnergyRow>
+compute_modal_energy(const TransportOperator3D& D, const LaplacianOperator3D& L, double mu,
+                     const std::vector<DeviceBuffer<real>>& vectors,
+                     const std::vector<double>& eigenvalues, CudaContext& ctx) {
+    std::vector<ModalEnergyRow> rows;
+    if (vectors.empty())
+        return rows;
+
+    blas::ReductionWorkspace red;
+    DeviceBuffer<real> d_dtd(vectors.front().size());
+    DeviceBuffer<real> d_l(vectors.front().size());
+    DeviceBuffer<real> d_work(vectors.front().size());
+
+    rows.reserve(vectors.size());
+    for (size_t i = 0; i < vectors.size(); ++i) {
+        const DeviceSpan<const real> psi(vectors[i].data(), vectors[i].size());
+        D.apply_DTD(psi, d_dtd.span(), d_work.span(), ctx.cuda_stream());
+        L.apply_L(psi, d_l.span(), ctx.cuda_stream());
+        cudaStreamSynchronize(ctx.cuda_stream());
+
+        ModalEnergyRow row;
+        row.mode_index = static_cast<int>(i);
+        row.eigenvalue_solver =
+            (i < eigenvalues.size()) ? eigenvalues[i] : std::numeric_limits<double>::quiet_NaN();
+        row.psi_norm_sq = blas::dot_host(ctx, psi, psi, red);
+        row.e_transport =
+            blas::dot_host(ctx, psi, DeviceSpan<const real>(d_dtd.data(), d_dtd.size()), red);
+        row.e_regularization =
+            mu * blas::dot_host(ctx, psi, DeviceSpan<const real>(d_l.data(), d_l.size()), red);
+        row.e_total = row.e_transport + row.e_regularization;
+        row.rayleigh_recomputed = row.e_total / std::max(row.psi_norm_sq, 1e-30);
+        row.f_transport = row.e_transport / std::max(std::fabs(row.e_total), 1e-30);
+        row.f_regularization = row.e_regularization / std::max(std::fabs(row.e_total), 1e-30);
+
+        std::vector<double> h_psi = copy_device_to_host(vectors[i]);
+        std::vector<double> h_dtd = copy_device_to_host(d_dtd);
+        std::vector<double> h_l = copy_device_to_host(d_l);
+        double ssq_resid = 0.0;
+        double ssq_psi = 0.0;
+        for (size_t c = 0; c < h_psi.size(); ++c) {
+            const double ap = h_dtd[c] + mu * h_l[c];
+            const double r = ap - row.rayleigh_recomputed * h_psi[c];
+            ssq_resid += r * r;
+            ssq_psi += h_psi[c] * h_psi[c];
+        }
+        row.residual_Ax_lambda_x_rel = std::sqrt(ssq_resid) / std::max(std::sqrt(ssq_psi), 1e-30);
+        rows.push_back(row);
+    }
+    return rows;
+}
+
+struct LocalAcc {
+    long long cell_count = 0;
+    double ssq_r1 = 0.0;
+    double ssq_r2 = 0.0;
+    double ssq_residual = 0.0;
+    double ssq_v = 0.0;
+    double sum_abs_cos = 0.0;
+};
+
+static LocalizationStats finalize_localization(const LocalAcc& acc, long long total_cells,
+                                               const std::string& region) {
+    LocalizationStats out;
+    out.region = region;
+    out.cell_count = acc.cell_count;
+    out.fraction = static_cast<double>(acc.cell_count) / std::max<double>(total_cells, 1.0);
+    const double denom = std::max<double>(acc.cell_count, 1.0);
+    out.rms_vdotgrad1 = std::sqrt(acc.ssq_r1 / denom);
+    out.rms_vdotgrad2 = std::sqrt(acc.ssq_r2 / denom);
+    out.rel_residual_after_gauge = std::sqrt(acc.ssq_residual / std::max(acc.ssq_v, 1e-30));
+    out.mean_abs_cos = acc.sum_abs_cos / denom;
+    return out;
+}
+
+static std::vector<LocalizationStats> compute_localization_v2(const Grid3D& grid,
+                                                              const HostVelocity& vel,
+                                                              const GaugeReadyEvaluation& gauge) {
+    const int nx = grid.nx;
+    const int ny = grid.ny;
+    const int nz = grid.nz;
+    const size_t n = gauge.psi1.size();
+    auto idx = [nx, ny](int i, int j, int k) { return static_cast<size_t>(i + nx * (j + ny * k)); };
+
+    std::vector<double> cross_mag(n);
+    std::vector<double> abs_cos(n);
+    for (size_t c = 0; c < n; ++c) {
+        const double g1x = gauge.g1x[c];
+        const double g1y = gauge.g1y[c];
+        const double g1z = gauge.g1z[c];
+        const double g2x = gauge.g2x[c];
+        const double g2y = gauge.g2y[c];
+        const double g2z = gauge.g2z[c];
+        const double cx = g1y * g2z - g1z * g2y;
+        const double cy = g1z * g2x - g1x * g2z;
+        const double cz = g1x * g2y - g1y * g2x;
+        cross_mag[c] = std::sqrt(cx * cx + cy * cy + cz * cz);
+        const double g1mag = std::sqrt(g1x * g1x + g1y * g1y + g1z * g1z);
+        const double g2mag = std::sqrt(g2x * g2x + g2y * g2y + g2z * g2z);
+        abs_cos[c] = std::fabs(g1x * g2x + g1y * g2y + g1z * g2z) / (g1mag * g2mag + 1e-12);
+    }
+
+    const double cross_q20 = percentile(cross_mag, 0.20);
+    const double cross_q80 = percentile(cross_mag, 0.80);
+
+    LocalAcc x_boundary_halo;
+    LocalAcc x_interior;
+    LocalAcc low_cross_q20;
+    LocalAcc high_cross_q80;
+    LocalAcc degenerate;
+    LocalAcc nondegenerate;
+    std::vector<LocalAcc> slice_acc(static_cast<size_t>(nx));
+
+    auto accumulate = [&](LocalAcc& acc, size_t c, double d1, double d2, double residual_sq,
+                          double v_sq, double abs_cos_val) {
+        ++acc.cell_count;
+        acc.ssq_r1 += d1 * d1;
+        acc.ssq_r2 += d2 * d2;
+        acc.ssq_residual += residual_sq;
+        acc.ssq_v += v_sq;
+        acc.sum_abs_cos += abs_cos_val;
+    };
+
+    for (int k = 0; k < nz; ++k) {
+        for (int j = 0; j < ny; ++j) {
+            for (int i = 0; i < nx; ++i) {
+                const size_t c = idx(i, j, k);
+                const double vx = vel.vx[c];
+                const double vy = vel.vy[c];
+                const double vz = vel.vz[c];
+                const double g1x = gauge.g1x[c];
+                const double g1y = gauge.g1y[c];
+                const double g1z = gauge.g1z[c];
+                const double g2x = gauge.g2x[c];
+                const double g2y = gauge.g2y[c];
+                const double g2z = gauge.g2z[c];
+                const double d1 = vx * g1x + vy * g1y + vz * g1z;
+                const double d2 = vx * g2x + vy * g2y + vz * g2z;
+                const double cx = g1y * g2z - g1z * g2y;
+                const double cy = g1z * g2x - g1x * g2z;
+                const double cz = g1x * g2y - g1y * g2x;
+                const double residual_sq =
+                    (vx - cx) * (vx - cx) + (vy - cy) * (vy - cy) + (vz - cz) * (vz - cz);
+                const double v_sq = vx * vx + vy * vy + vz * vz;
+
+                accumulate(slice_acc[static_cast<size_t>(i)], c, d1, d2, residual_sq, v_sq,
+                           abs_cos[c]);
+
+                const bool near_x_boundary = (i <= 1) || (i >= nx - 2);
+                accumulate(near_x_boundary ? x_boundary_halo : x_interior, c, d1, d2, residual_sq,
+                           v_sq, abs_cos[c]);
+
+                if (cross_mag[c] <= cross_q20)
+                    accumulate(low_cross_q20, c, d1, d2, residual_sq, v_sq, abs_cos[c]);
+                if (cross_mag[c] >= cross_q80)
+                    accumulate(high_cross_q80, c, d1, d2, residual_sq, v_sq, abs_cos[c]);
+
+                if (abs_cos[c] > 0.9) {
+                    accumulate(degenerate, c, d1, d2, residual_sq, v_sq, abs_cos[c]);
+                } else {
+                    accumulate(nondegenerate, c, d1, d2, residual_sq, v_sq, abs_cos[c]);
+                }
+            }
+        }
+    }
+
+    const long long total_cells = static_cast<long long>(n);
+    std::vector<LocalizationStats> rows;
+    rows.push_back(finalize_localization(x_interior, total_cells, "x_interior"));
+    rows.push_back(finalize_localization(x_boundary_halo, total_cells, "x_boundary_halo"));
+    rows.push_back(finalize_localization(low_cross_q20, total_cells, "cross_mag_q20_low"));
+    rows.push_back(finalize_localization(high_cross_q80, total_cells, "cross_mag_q80_high"));
+    rows.push_back(finalize_localization(degenerate, total_cells, "degenerate_abs_cos_gt_0.9"));
+    rows.push_back(
+        finalize_localization(nondegenerate, total_cells, "nondegenerate_abs_cos_le_0.9"));
+    for (int i = 0; i < nx; ++i) {
+        rows.push_back(finalize_localization(slice_acc[static_cast<size_t>(i)], total_cells,
+                                             "x_slice_" + std::to_string(i)));
+    }
+    return rows;
+}
+
 static void write_summary_header(std::ofstream& os) {
     os << "case,mu,basis_kind,angle_deg,eig0,eig1,eig2,gap01,gap12,subspace_similarity,"
           "modal_ortho,residual1,residual2,gauge_ready,expected_capture_0,expected_capture_1,"
@@ -669,12 +1069,31 @@ static void write_summary_header(std::ofstream& os) {
 static void write_rotation_header(std::ofstream& os) {
     os << "case,mu,angle_deg,lambda1,lambda2,residual1,residual2,norm1,norm2,orthogonality,"
           "gauge_ready,rms_ri1,rms_ri2,rel_rms_mismatch,mean_abs_cos,degeneracy_fraction,"
-          "combined_score\n";
+          "combined_score,alpha_opt,rel_residual_before_gauge,rel_residual_after_gauge,"
+          "residual_floor_rel\n";
 }
 
 static void write_local_header(std::ofstream& os) {
     os << "case,mu,basis_kind,angle_deg,region,fraction,rms_vdotgrad1,rms_vdotgrad2,"
           "rel_rms_mismatch,mean_abs_cos\n";
+}
+
+static void write_gauge_header(std::ofstream& os) {
+    os << "case,mu,basis_kind,angle_deg,mean_psi1,mean_psi2,orientation_sign,symmetric_scale,"
+          "alpha_opt,v_norm,cross_norm,cross_norm_after_gauge,v_dot_cross,cos_v_cross,"
+          "rel_residual_before_gauge,rel_residual_after_gauge,residual_floor_rel,"
+          "rms_vdotgrad1,rms_vdotgrad2,rms_ri1,rms_ri2,mean_abs_cos,degeneracy_fraction\n";
+}
+
+static void write_energy_header(std::ofstream& os) {
+    os << "case,mu,basis_kind,angle_deg,alpha_opt,mode_index,eigenvalue_solver,psi_norm_sq,"
+          "e_transport,e_regularization,e_total,rayleigh_recomputed,f_transport,"
+          "f_regularization,residual_Ax_lambda_x_rel\n";
+}
+
+static void write_local_v2_header(std::ofstream& os) {
+    os << "case,mu,basis_kind,angle_deg,alpha_opt,region,fraction,cell_count,rms_vdotgrad1,"
+          "rms_vdotgrad2,rel_residual_after_gauge,mean_abs_cos\n";
 }
 
 } // namespace
@@ -687,9 +1106,15 @@ int main() {
     std::ofstream summary("artifacts/gate3/invariant_quality_summary.csv");
     std::ofstream rotation("artifacts/gate3/invariant_quality_rotation_scan.csv");
     std::ofstream local("artifacts/gate3/invariant_quality_localization.csv");
+    std::ofstream gauge("artifacts/gate3/invariant_quality_gauge.csv");
+    std::ofstream energy("artifacts/gate3/invariant_quality_energy.csv");
+    std::ofstream local_v2("artifacts/gate3/invariant_quality_localization_v2.csv");
     write_summary_header(summary);
     write_rotation_header(rotation);
     write_local_header(local);
+    write_gauge_header(gauge);
+    write_energy_header(energy);
+    write_local_v2_header(local_v2);
 
     std::vector<CaseSpec> cases;
     cases.push_back(make_uniform_case());
@@ -703,6 +1128,9 @@ int main() {
     std::printf("  artifacts/gate3/invariant_quality_summary.csv\n");
     std::printf("  artifacts/gate3/invariant_quality_rotation_scan.csv\n");
     std::printf("  artifacts/gate3/invariant_quality_localization.csv\n\n");
+    std::printf("  artifacts/gate3/invariant_quality_gauge.csv\n");
+    std::printf("  artifacts/gate3/invariant_quality_energy.csv\n");
+    std::printf("  artifacts/gate3/invariant_quality_localization_v2.csv\n\n");
 
     for (const auto& case_spec : cases) {
         std::printf("=== Case: %s ===\n", case_spec.name.c_str());
@@ -740,10 +1168,16 @@ int main() {
 
             RotatedBasisMetrics original = evaluate_rotation(case_spec.grid, hv, raw, 0.0);
             RotatedBasisMetrics best = original;
+            GaugeReadyEvaluation original_gauge =
+                evaluate_gauge_ready(case_spec.grid, hv, raw, 0.0);
+            GaugeReadyEvaluation best_gauge = original_gauge;
+            double best_gauge_score = gauge_ready_score(original_gauge.metrics);
 
             for (int angle = 0; angle < 180; ++angle) {
                 RotatedBasisMetrics trial =
                     evaluate_rotation(case_spec.grid, hv, raw, static_cast<double>(angle));
+                GaugeReadyEvaluation gauge_trial =
+                    evaluate_gauge_ready(case_spec.grid, hv, raw, static_cast<double>(angle));
                 rotation << case_spec.name << "," << mu << "," << trial.angle_deg << ","
                          << trial.lambda1 << "," << trial.lambda2 << "," << trial.residual1 << ","
                          << trial.residual2 << "," << trial.norm1 << "," << trial.norm2 << ","
@@ -751,9 +1185,16 @@ int main() {
                          << trial.quality.rms_ri1 << "," << trial.quality.rms_ri2 << ","
                          << trial.quality.rel_rms_mismatch << "," << trial.quality.mean_abs_cos
                          << "," << trial.quality.degeneracy_fraction << "," << trial.combined_score
-                         << "\n";
-                if (trial.combined_score < best.combined_score)
+                         << "," << gauge_trial.metrics.alpha_opt << ","
+                         << gauge_trial.metrics.rel_residual_before_gauge << ","
+                         << gauge_trial.metrics.rel_residual_after_gauge << ","
+                         << gauge_trial.metrics.residual_floor_rel << "\n";
+                const double trial_gauge_score = gauge_ready_score(gauge_trial.metrics);
+                if (trial_gauge_score < best_gauge_score) {
                     best = trial;
+                    best_gauge = std::move(gauge_trial);
+                    best_gauge_score = trial_gauge_score;
+                }
             }
 
             const auto write_summary_row = [&](const char* basis_kind,
@@ -810,10 +1251,69 @@ int main() {
             write_summary_row("original", original);
             write_summary_row("best_rotation", best);
 
-            const double improvement =
-                (original.combined_score > 1e-30)
-                    ? (original.combined_score - best.combined_score) / original.combined_score
-                    : 0.0;
+            const auto write_gauge_row = [&](const char* basis_kind,
+                                             const GaugeReadyEvaluation& g_eval) {
+                const auto& g = g_eval.metrics;
+                gauge << case_spec.name << "," << mu << "," << basis_kind << "," << g.angle_deg
+                      << "," << g.mean_psi1 << "," << g.mean_psi2 << "," << g.orientation_sign
+                      << "," << g.symmetric_scale << "," << g.alpha_opt << "," << g.v_norm << ","
+                      << g.cross_norm << "," << g.cross_norm_after_gauge << "," << g.v_dot_cross
+                      << "," << g.cos_v_cross << "," << g.rel_residual_before_gauge << ","
+                      << g.rel_residual_after_gauge << "," << g.residual_floor_rel << ","
+                      << g.rms_vdotgrad1 << "," << g.rms_vdotgrad2 << "," << g.rms_ri1 << ","
+                      << g.rms_ri2 << "," << g.mean_abs_cos << "," << g.degeneracy_fraction << "\n";
+            };
+
+            write_gauge_row("original", original_gauge);
+            write_gauge_row("best_rotation", best_gauge);
+
+            const auto write_energy_rows = [&](const char* basis_kind, double angle_deg,
+                                               double alpha_opt,
+                                               const std::vector<ModalEnergyRow>& rows) {
+                for (const auto& row : rows) {
+                    energy << case_spec.name << "," << mu << "," << basis_kind << "," << angle_deg
+                           << "," << alpha_opt << "," << row.mode_index << ","
+                           << row.eigenvalue_solver << "," << row.psi_norm_sq << ","
+                           << row.e_transport << "," << row.e_regularization << "," << row.e_total
+                           << "," << row.rayleigh_recomputed << "," << row.f_transport << ","
+                           << row.f_regularization << "," << row.residual_Ax_lambda_x_rel << "\n";
+                }
+            };
+
+            const std::vector<ModalEnergyRow> eigenmode_energy =
+                compute_modal_energy(D, L, mu, solve.eigenvectors, solve.result.eigenvalues, ctx);
+            write_energy_rows("solver_modes", 0.0, 1.0, eigenmode_energy);
+
+            std::vector<DeviceBuffer<real>> gauge_vectors;
+            gauge_vectors.push_back(copy_host_to_device(best_gauge.psi1));
+            gauge_vectors.push_back(copy_host_to_device(best_gauge.psi2));
+            const std::vector<ModalEnergyRow> gauge_energy =
+                compute_modal_energy(D, L, mu, gauge_vectors, {}, ctx);
+            write_energy_rows("gauge_ready_best_rotation", best_gauge.metrics.angle_deg,
+                              best_gauge.metrics.alpha_opt, gauge_energy);
+
+            const auto best_localization = compute_localization_v2(case_spec.grid, hv, best_gauge);
+            for (const auto& row : best_localization) {
+                local_v2 << case_spec.name << "," << mu << ",gauge_ready_best_rotation,"
+                         << best_gauge.metrics.angle_deg << "," << best_gauge.metrics.alpha_opt
+                         << "," << row.region << "," << row.fraction << "," << row.cell_count << ","
+                         << row.rms_vdotgrad1 << "," << row.rms_vdotgrad2 << ","
+                         << row.rel_residual_after_gauge << "," << row.mean_abs_cos << "\n";
+            }
+
+            const double improvement = (gauge_ready_score(original_gauge.metrics) > 1e-30)
+                                           ? (gauge_ready_score(original_gauge.metrics) -
+                                              gauge_ready_score(best_gauge.metrics)) /
+                                                 gauge_ready_score(original_gauge.metrics)
+                                           : 0.0;
+
+            auto find_region = [&](const char* name) {
+                return std::find_if(
+                    best_localization.begin(), best_localization.end(),
+                    [&](const LocalizationStats& row) { return row.region == name; });
+            };
+            const auto boundary_it = find_region("x_boundary_halo");
+            const auto interior_it = find_region("x_interior");
 
             std::printf("    eig=[%.4e, %.4e, %.4e] gap12=%.3e subspace(mu_ref)=%.3f\n",
                         solve.result.eigenvalues[0], solve.result.eigenvalues[1],
@@ -832,6 +1332,27 @@ int main() {
                         best.angle_deg, best.quality.rms_ri1, best.quality.rms_ri2,
                         best.quality.rel_rms_mismatch, best.quality.mean_abs_cos,
                         best.quality.degeneracy_fraction, best.combined_score, 100.0 * improvement);
+            std::printf(
+                "    gauge(original): alpha=%.3e rel_before=%.3e rel_after=%.3e floor=%.3e\n",
+                original_gauge.metrics.alpha_opt, original_gauge.metrics.rel_residual_before_gauge,
+                original_gauge.metrics.rel_residual_after_gauge,
+                original_gauge.metrics.residual_floor_rel);
+            std::printf("    gauge(best): angle=%.1f alpha=%.3e rel_before=%.3e rel_after=%.3e "
+                        "floor=%.3e\n",
+                        best_gauge.metrics.angle_deg, best_gauge.metrics.alpha_opt,
+                        best_gauge.metrics.rel_residual_before_gauge,
+                        best_gauge.metrics.rel_residual_after_gauge,
+                        best_gauge.metrics.residual_floor_rel);
+            if (gauge_energy.size() >= 2) {
+                std::printf("    energy(gauge): mode0 fD=%.3f fL=%.3f | mode1 fD=%.3f fL=%.3f\n",
+                            gauge_energy[0].f_transport, gauge_energy[0].f_regularization,
+                            gauge_energy[1].f_transport, gauge_energy[1].f_regularization);
+            }
+            if (boundary_it != best_localization.end() && interior_it != best_localization.end()) {
+                std::printf(
+                    "    local(gauge): x_boundary rel_after=%.3e | x_interior rel_after=%.3e\n",
+                    boundary_it->rel_residual_after_gauge, interior_it->rel_residual_after_gauge);
+            }
         }
         std::printf("\n");
     }
