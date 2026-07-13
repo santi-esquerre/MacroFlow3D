@@ -37,7 +37,7 @@ ctest --test-dir build/wsl-debug --output-on-failure
 
 ### Tier B — Operator / invariant integrity
 
-**Applies to:** changes in `src/numerics/`, `src/multigrid/`, `src/physics/particles/pspta/invariants/`, operator algebra, eigensolver backend.
+**Applies to:** changes in `src/numerics/`, `src/multigrid/`, `src/physics/particles/pspta/invariants/`, operator algebra, eigensolver backend, or Lester equation (14) linear operators.
 
 **Scientific reference:** `docs/theory/lester-2023-key-claims.md` — operator integrity directly supports invariant quality. Residual growth or spectral drift can create spurious streamsurface leakage (Lester 2023 §5).
 
@@ -71,7 +71,7 @@ scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R
 
 ### Tier C — Physics / ensemble
 
-**Applies to:** changes affecting PSPTA transport, macrodispersion output, ensemble statistics, or the central scientific claim.
+**Applies to:** changes affecting Lester equation (14) streamfunction construction, legacy PSPTA compatibility/migration, macrodispersion output, ensemble statistics, or the central scientific claim.
 
 **Scientific references:**
 - `docs/theory/lester-2023-key-claims.md` — the regime where purely advective transverse macrodispersion should be zero
@@ -93,7 +93,7 @@ scripts/remote sync
 # Build
 scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
 
-# PSPTA production config
+# Legacy PSPTA production-like config
 scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
 scripts/remote wait pspta-prod
 
@@ -104,12 +104,20 @@ scripts/remote wait par2-prod
 
 **Pass criteria:**
 - All Tier A and B criteria met
-- Change aligns with the current phase of `docs/plans/active/pspta-execution-plan.md`
-- PSPTA diagnostics inspected:
+- New invariant-construction work aligns with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
+- Legacy PSPTA transport/eigensolver work is compatibility or migration only; use `docs/plans/archive/pspta-execution-plan.md` as historical context
+- Legacy PSPTA diagnostics inspected when that path is touched:
   - `v·∇ψ` residuals
   - independence / degeneracy
   - Newton failure counts
   - particle status summary
+- For Lester equation (14) solver work, Gate 3A metrics inspected:
+  - coupled residual `r_F`
+  - velocity reconstruction error `e_v`
+  - Darcy invariance errors `e_i`
+  - reconstructed-flow divergence `e_div`
+  - denominator minimum and percentiles
+  - gauge and regularization settings
 - Before/after comparison if behavior changed
 - Transverse macrodispersion not claimed as physical without control
 - Run reproducible from reported config/commit
@@ -129,7 +137,7 @@ Is this a docs/scripts/AGENTS change only?
 Does it touch src/numerics/, src/multigrid/, or operator code?
   → Tier A + Tier B
 
-Does it touch src/physics/ or PSPTA?
+Does it touch src/physics/ or legacy PSPTA?
   → Tier A + Tier B + Tier C
 
 Does it change macrodispersion output or ensemble stats?
@@ -142,7 +150,7 @@ Does it change macrodispersion output or ensemble stats?
 |------|--------------|
 | A | Gate 0, Gate 1 |
 | B | Gate 2 |
-| C | Gate 3, Gate 4, Gate 5 |
+| C | Gate 3 or Gate 3A, Gate 4, Gate 5 |
 
 ## Related
 

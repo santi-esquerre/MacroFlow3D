@@ -11,7 +11,7 @@ They are part of the execution harness: agents must read the relevant note befor
 
 | File | Paper | Role in repo |
 |------|-------|-------------|
-| `lester-2023-key-claims.md` | Lester (2023) — kinematic constraints on 3D Darcy transport | Modern constraint reference. Defines the helicity-free regime, proves two invariants exist, establishes that purely advective transverse macrodispersion is zero in smooth isotropic Darcy. Foundation for PSPTA and invariant-preserving tracking. |
+| `lester-2023-key-claims.md` | Lester (2023) — kinematic constraints on 3D Darcy transport | Modern constraint reference. Defines the helicity-free regime, equation (14), two invariants, and the zero transverse macrodispersion claim in smooth isotropic Darcy. Foundation for the streamfunction solver and invariant-preserving tracking. |
 | `beaudoin-de-dreuzy-2013-key-claims.md` | Beaudoin & de Dreuzy (2013) — 3D macrodispersion | Classical baseline reference. Reports positive α_T in numerical 3D Darcy, provides domain-design and Monte Carlo discipline. Must be interpreted with regime awareness after Lester. |
 
 ---
@@ -20,7 +20,8 @@ They are part of the execution harness: agents must read the relevant note befor
 
 | Task | Required | Optional |
 |------|----------|----------|
-| PSPTA / invariant work | Lester | Beaudoin |
+| Lester equation (14) streamfunction solver | Lester | Beaudoin |
+| Legacy PSPTA audit / invariant work | Lester | Beaudoin |
 | Velocity reconstruction | Lester | — |
 | Transverse macrodispersion interpretation | Lester | Beaudoin |
 | Longitudinal macrodispersion validation | Beaudoin | — |
@@ -32,6 +33,6 @@ They are part of the execution harness: agents must read the relevant note befor
 ## Cross-references
 
 - `docs/validation/acceptance-gates.md` — gates informed by these notes
-- `src/physics/particles/pspta/AGENTS.md` — PSPTA pre-reading requirement
+- `src/physics/particles/pspta/AGENTS.md` — legacy PSPTA migration rules
 - `skills/macroflow-physics-review/SKILL.md` — review workflow referencing both notes
 - `skills/macroflow-evals/SKILL.md` — eval tiers referencing both notes

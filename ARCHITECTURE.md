@@ -7,11 +7,12 @@ MacroFlow3D is a GPU-first research codebase for macrodispersion in 3D heterogen
 1. stochastic generation of conductivity fields,
 2. stationary Darcy flow solve,
 3. face-centered velocity reconstruction,
-4. particle transport through either:
+4. particle transport through:
    - the **Par2 baseline path**, or
-   - the **PSPTA / invariant-based path**,
-5. ensemble statistics and macrodispersion analysis,
-6. reproducible output capture.
+   - a future invariant-preserving consumer of accepted streamfunctions,
+5. ongoing integration of a Lester equation (14) streamfunction solver for invariant construction,
+6. ensemble statistics and macrodispersion analysis,
+7. reproducible output capture.
 
 The codebase should be read as a **scientific pipeline with numerical contracts**, not as a generic app.
 
@@ -26,7 +27,7 @@ The canonical flow is:
 3. **Compute Darcy velocity `v(x)`**
 4. **Run transport**
    - baseline RWPT through Par2, or
-   - PSPTA / invariant-preserving path
+   - future invariant-preserving consumer of accepted streamfunctions
 5. **Collect moments and ensemble statistics**
 6. **Compute macrodispersion outputs**
 7. **Write manifests, configs, CSVs, snapshots**
@@ -86,7 +87,7 @@ This is the science layer.
 #### Transport
 `src/physics/particles/`
 - `par2_adapter/`: baseline RWPT path
-- `pspta/`: invariant-based / pseudo-symplectic path
+- `pspta/`: legacy invariant/transport infrastructure to audit, migrate, or retire
 
 ### 3.4 Runtime / orchestration
 `src/runtime/`
@@ -133,44 +134,75 @@ Use it when:
 
 Do not casually change this path.
 
-### 4.2 PSPTA path
-The PSPTA path is the active research path.
-
-Its job is to preserve the kinematic constraints of helicity-free, smooth, locally isotropic Darcy flow well enough to avoid spurious transverse macrodispersion in the purely advective regime.
+### 4.2 Legacy PSPTA path
+The existing PSPTA path is legacy research infrastructure.
 
 It currently includes:
-- invariant field infrastructure,
-- transport operator machinery,
-- optional eigensolver backend,
-- refinement logic,
+- invariant field containers,
+- legacy x-marching invariant construction,
+- transport-near-nullspace operator machinery,
+- optional SLEPc eigensolver backend,
+- refinement skeletons,
 - pseudo-symplectic particle updates,
 - diagnostics and failure accounting.
 
-The PSPTA path is promising, but must be treated as a **validated research path**, not an assumed truth.
+Do not extend the old PSPTA invariant-construction architecture. New invariant construction belongs to the Lester equation (14) streamfunction solver. Existing PSPTA code may still be useful as a compatibility surface, diagnostic source, or transport consumer while the new path is brought up.
+
+### 4.3 Lester equation (14) streamfunction solver
+The new invariant-construction direction is a solver for the coupled nonlinear Lester et al. equation (14) system.
+
+The target is to compute `psi1`, `psi2` such that:
+
+```math
+v = grad(psi1) x grad(psi2),
+v.grad(psi1) = 0,
+v.grad(psi2) = 0.
+```
+
+The preferred linear subproblem uses:
+
+```math
+q = 1/k,
+A psi = -div(q grad psi).
+```
+
+Then a decoupled nonlinear iteration solves:
+
+```math
+A psi1 = -q S2,
+A psi2 = -q S1.
+```
+
+This formulation is now authoritative for new invariant construction because it keeps a variable-coefficient diffusion structure and avoids explicitly differencing `grad(log k)`.
+
+Current status:
+- the equation (14) solver is not implemented yet;
+- existing PCG/MG and variable-coefficient operator code are candidate infrastructure;
+- multigrid reuse is an architectural hypothesis, not a confirmed fact;
+- the legacy PSPTA engine is a possible invariant-preserving transport consumer once accepted `psi1`, `psi2` fields exist, but its role must be re-evaluated during the reformulation.
 
 ---
 
-## 5. PSPTA architecture
+## 5. Invariant-consumer contract
 
 ### 5.1 Conceptual decomposition
 
-PSPTA should be thought of as three coupled pieces:
+The new architecture separates invariant construction from invariant consumption:
 
-1. **Invariant construction**
-   - obtain two scalar labels `ψ1`, `ψ2`
-   - target: near-invariance under `v·∇ψ = 0`
-   - target: usable independence / non-degeneracy
+1. **Construct invariants**
+   - solve the Lester equation (14) streamfunction system;
+   - keep construction residuals, gauges, denominator regularization, and continuation state visible.
 
-2. **Invariant quality measurement**
+2. **Measure invariant quality**
    - residual of `v·∇ψi`
    - reconstruction mismatch
    - gradient degeneracy / collinearity
    - stagnation sensitivity
 
-3. **Transport using invariants**
-   - advance in `x`
-   - project `(y, z)` back to the invariant manifold
-   - track Newton failures and exit behavior
+3. **Consume accepted invariants**
+   - feed only accepted `psi1`, `psi2` fields into transport;
+   - preserve invariant labels during particle motion;
+   - track projection / transport failures separately from construction failures.
 
 ### 5.2 Why this matters
 
@@ -180,7 +212,7 @@ For the smooth, locally isotropic Darcy regime, the theory motivating this proje
 - streamlines remain confined to 2D streamsurfaces,
 - conventional interpolation and tracking can violate those constraints and create spurious transverse dispersion.
 
-So the software must not only “move particles”; it must defend those kinematic constraints.
+So the software must not only “move particles”; it must defend those kinematic constraints. The old PSPTA engine may be adapted or replaced, but it should not dictate the new invariant-construction architecture.
 
 ---
 
@@ -226,13 +258,20 @@ For the scientific core, evidence beats plausibility.
 
 ### 7.4 Baselines are preserved
 Par2 is a baseline, not dead weight.
-PSPTA is a target path, not a free rewrite license.
+Legacy PSPTA is migration context, not a free rewrite license and not the new invariant-construction architecture.
 
 ---
 
 ## 8. What to read before editing
 
-### If you touch transport or macrodispersion
+### If you touch new invariant construction
+Read:
+- `AGENTS.md`
+- `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
+- `docs/theory/lester-2023-key-claims.md`
+- `docs/validation/acceptance-gates.md`
+
+### If you touch legacy PSPTA transport or macrodispersion
 Read:
 - `AGENTS.md`
 - `docs/validation/acceptance-gates.md`
@@ -252,7 +291,7 @@ Read:
 ## 9. Minimal mental model for new contributors
 
 - The **baseline pipeline already works**.
-- The **scientific problem is not “make PSPTA compile”**.
+- The **scientific problem is not “make legacy PSPTA compile”**.
 - The scientific problem is:
   - preserve the correct kinematics,
   - separate physical transverse spreading from numerical leakage,

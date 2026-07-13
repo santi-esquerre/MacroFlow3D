@@ -133,13 +133,13 @@ scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R
 
 ## 7. Remote runs
 
-### Small PSPTA smoke
+### Legacy PSPTA smoke
 ```bash
 scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
 scripts/remote wait pspta-small
 ```
 
-### PSPTA production-like config
+### Legacy PSPTA production-like config
 ```bash
 scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
 scripts/remote tail pspta-prod

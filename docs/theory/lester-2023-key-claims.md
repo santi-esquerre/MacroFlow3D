@@ -10,7 +10,7 @@ Daniel R. Lester, Marco Dentz, Prajwal Singh, and Aditya Bandopadhyay.
 
 ## Why this paper matters for this repository
 
-This paper is the main scientific basis for the current PSPTA / invariant-preserving direction of MacroFlow3D.
+This paper is the main scientific basis for the current Lester equation (14) streamfunction-solver direction and for any future invariant-preserving transport consumer in MacroFlow3D.
 
 Its core claim is not merely that some numerical methods are inaccurate. It is stronger:
 
@@ -90,7 +90,47 @@ Interpretation for MacroFlow3D:
 - diagnostics should not stop at divergence-free reconstruction,
 - preserving `\nabla\cdot v = 0` is not enough if the method destroys the invariant structure.
 
-This is one of the central reasons PSPTA matters.
+This is one of the central reasons invariant construction and invariant-preserving transport matter.
+
+## 3A. Lester equation (14) solver formulation
+
+The current invariant-construction direction is to solve the coupled nonlinear streamfunction system associated with Lester et al. equation (14):
+
+```math
+Delta psi1 - grad(log k).grad(psi1) = S2
+Delta psi2 - grad(log k).grad(psi2) = S1
+```
+
+where:
+
+```math
+S_i =
+((B x grad psi_i).(grad psi1 x grad psi2)) /
+|grad psi1 x grad psi2|^2
+```
+
+and:
+
+```math
+B = (grad psi1.grad) grad psi2 - (grad psi2.grad) grad psi1.
+```
+
+Use the equivalent divergent form:
+
+```math
+Delta psi - grad(log k).grad psi = k div((1/k) grad psi).
+```
+
+With `q=1/k` and `A psi = -div(q grad psi)`, decoupled nonlinear iterations solve:
+
+```math
+A psi1 = -q S2
+A psi2 = -q S1
+```
+
+This reformulation is operationally important because it avoids explicit finite-difference evaluation of `grad(log k)` and exposes a variable-coefficient diffusion operator that may be compatible with existing PCG/MG machinery after verification.
+
+Do not treat multigrid reuse as confirmed by theory. It must be checked against the repository's actual operator sign, coefficient placement, boundary handling, gauge, and residual.
 
 ---
 
@@ -154,9 +194,9 @@ The core logic is:
 - prevent artificial crossing between streamsurfaces.
 
 For MacroFlow3D, this is the scientific rationale for:
-- PSPTA,
+- the Lester equation (14) streamfunction solver,
 - invariant-aware tracking,
-- and any future algorithm that prioritizes geometric preservation over generic ODE integration.
+- and any future transport algorithm that prioritizes geometric preservation over generic ODE integration.
 
 ---
 
@@ -191,6 +231,21 @@ Those cases may exhibit:
 
 This distinction is critical. The repository must never overgeneralize the Lester result beyond its regime of validity.
 
+## 9. Smooth Gaussian fields vs exponential fields
+
+For MacroFlow3D validation, Gaussian-covariance log-conductivity fields are the main smooth benchmark for invariant existence and equation (14) solver development.
+
+Exponential-covariance fields are not automatically equivalent. Their reduced smoothness can violate the classical hypotheses needed for a global two-streamfunction representation. If they are used after regularization, the run must state:
+
+- smoothing scale;
+- resolution dependence;
+- whether the original or regularized problem is solved;
+- whether invariants converge under grid refinement.
+
+## 10. Tensor conductivity and local anisotropy
+
+Do not assume two global invariants exist for locally anisotropic tensor conductivity. That case can break the helicity-free structure and is outside the initial equation (14) solver scope.
+
 ---
 
 ## Operational implications for MacroFlow3D
@@ -216,12 +271,14 @@ When a method changes interpolation, reconstruction, or tracking, the burden of 
 
 ## B. What must be measured
 
-For the PSPTA / invariant path, the following are scientifically meaningful diagnostics:
+For the streamfunction / invariant path, the following are scientifically meaningful diagnostics:
 
 - residuals of `v · ∇ψ1`,
 - residuals of `v · ∇ψ2`,
 - mismatch between `v` and `∇ψ1 × ∇ψ2`,
 - independence / non-degeneracy of `ψ1, ψ2`,
+- coupled equation (14) residual when using the new solver,
+- denominator percentiles for `|∇ψ1 × ∇ψ2|`,
 - Newton / projection failure counts,
 - confinement of trajectories to invariant surfaces,
 - transverse spreading in controlled purely advective smooth-isotropic cases.
@@ -293,7 +350,8 @@ This paper justifies the following repository policies:
 
 Read this note before tasks involving:
 
-- PSPTA / pseudo-symplectic transport
+- Lester equation (14) streamfunction solving
+- invariant-preserving transport
 - invariant construction
 - streamfunction approximations
 - velocity reconstruction
@@ -311,7 +369,7 @@ This paper does **not** say:
 - all isotropic-looking numerical fields are safe,
 - any two scalar labels found numerically are automatically valid invariants,
 - divergence-free interpolation is enough,
-- PSPTA is trivial to implement.
+- invariant-preserving transport is trivial to implement.
 
 Its message is narrower and stronger:
 - in the specific smooth, locally isotropic Darcy regime, the geometry of trajectories is constrained,

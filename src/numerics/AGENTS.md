@@ -51,8 +51,23 @@ High-risk refactors:
 - adjoint/symmetry changes
 - solver stopping criteria
 - reduction / synchronization behavior
+- coefficient placement for `A psi = -div(q grad psi)`
+- gauge or nullspace treatment for singular elliptic systems
 
 Treat high-risk refactors as scientific changes, not cosmetic ones.
+
+## Lester equation (14) support
+
+New streamfunction work uses the linear subproblem:
+
+```math
+q = 1/k,
+A psi = -div(q grad psi).
+```
+
+The existing variable-coefficient flow operator, PCG, and MG preconditioner are candidate infrastructure only. Before reuse is accepted, prove compatibility for sign convention, harmonic face coefficients, boundary conditions, gauge fixing, SPD behavior, and residual consistency with the nonlinear equation (14) solver.
+
+Do not introduce a separate ad hoc diffusion operator if the existing operator can be adapted cleanly, but do not force reuse if the discretization is incompatible.
 
 ---
 

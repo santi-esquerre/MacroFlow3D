@@ -20,3 +20,8 @@ Each plan should include:
 - validation
 - risks
 - done criteria
+
+## Active authority
+
+- `active/lester-eq14-streamfunction-solver-plan.md` is authoritative for new invariant-construction work.
+- `archive/pspta-execution-plan.md` and `archive/deep-research-report.md` are historical context only. They are not active implementation plans.

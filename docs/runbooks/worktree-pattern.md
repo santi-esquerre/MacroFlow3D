@@ -20,7 +20,8 @@ Use separate worktrees for independent work streams. Each worktree:
 ~/src/MacroFlow3D/.agents/worktrees/
 ├── tooling/         # chore/tooling-*     — build, hooks, CI, scripts
 ├── docs/            # chore/docs-*        — documentation, AGENTS, runbooks
-├── pspta/           # science/pspta-*     — PSPTA transport research
+├── lester-eq14/     # science/lester-*    — equation (14) streamfunction solver
+├── legacy-pspta/    # science/legacy-pspta-* — PSPTA audit/migration/removal
 ├── profiling/       # chore/profiling-*   — perf measurement, NVTX, benchmarks
 └── petsc/           # feat/petsc-*        — PETSc/SLEPc integration work
 ```
@@ -73,7 +74,8 @@ scripts/remote sync
 |----------|---------------|-------|---------------|
 | tooling | `chore/tooling-*` | Build, CI, hooks, scripts | High autonomy |
 | docs | `chore/docs-*` | Documentation, AGENTS, runbooks | High autonomy |
-| pspta | `science/pspta-*` | PSPTA research, invariants | Human review required |
+| lester-eq14 | `science/lester-*` | Equation (14) streamfunction solver | Human review required |
+| legacy-pspta | `science/legacy-pspta-*` | PSPTA audit/migration/removal | Human review required |
 | profiling | `chore/profiling-*` | Perf, benchmarks, NVTX | High autonomy |
 | petsc | `feat/petsc-*` | PETSc/SLEPc integration | Human review required |
 

@@ -1,10 +1,10 @@
 # PETSc / SLEPc runbook
 
-This runbook covers the optional eigensolver backend used by the PSPTA / invariant stack.
+This runbook covers the optional PETSc/SLEPc stack currently used by the legacy PSPTA transport-near-nullspace code.
 
 Use this path only when the task actually touches:
 - eigensolver backend work,
-- invariant construction via the transport-operator route,
+- auditing or maintaining legacy invariant construction via the transport-operator route,
 - PETSc/SLEPc integration,
 - grid-ladder or convergence studies that require this stack.
 

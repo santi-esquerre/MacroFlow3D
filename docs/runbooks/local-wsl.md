@@ -112,7 +112,7 @@ cmake --build build/wsl-debug -j
 ctest --test-dir build/wsl-debug --output-on-failure
 ```
 
-### 4.4 Run the small PSPTA smoke case
+### 4.4 Run the legacy PSPTA smoke case
 
 ```bash
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml

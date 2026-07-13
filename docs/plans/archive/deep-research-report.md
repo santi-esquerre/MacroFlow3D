@@ -1,5 +1,16 @@
 # Estimating Two Independent Streamline Invariants (ψ₁, ψ₂) on Large 3D Structured Grids Without Solving Coupled Nonlinear Elliptic PDEs
 
+## Archive status - 2026-07-13
+
+This report is archived historical research for the old transport-near-nullspace / Strategy A+C direction.
+
+It is not an active implementation plan. New invariant construction must follow:
+
+- `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
+- `docs/decisions/2026-07-13-lester-eq14-streamfunction-solver.md`
+
+Do not use this report to reject or bypass the Lester equation (14) streamfunction solver direction.
+
 ## Problem reformulation
 
 You have a steady 3D Darcy velocity field **v(x)** sampled on a structured grid *(Nₓ×Nᵧ×N_z)* (cell-centered or face-centered). The target is to reconstruct **two scalar fields** *(ψ₁, ψ₂)* such that:

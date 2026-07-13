@@ -17,10 +17,11 @@ Before reviewing scientific changes, read the applicable documents:
 
 | Changed area | Required reading |
 |-------------|------------------|
-| PSPTA, invariants, eigensolver, refinement, tracking, velocity reconstruction, transverse macrodispersion | `docs/plans/active/pspta-execution-plan.md` and `docs/theory/lester-2023-key-claims.md` |
+| Lester equation (14), new invariant construction, streamfunction residuals, Picard/Newton, velocity reconstruction from `psi` | `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` and `docs/theory/lester-2023-key-claims.md` |
+| Legacy PSPTA audit, migration, compatibility, or removal | `docs/plans/archive/pspta-execution-plan.md` and `docs/theory/lester-2023-key-claims.md` |
 | Large-domain macrodispersion, Monte Carlo design, historical baseline comparisons | `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` |
 
-For PSPTA-related changes, verify that the change aligns with the current phase of the execution plan before accepting.
+For legacy PSPTA changes, verify that the change is compatibility, migration, audit, or removal. Do not approve new Strategy A/C invariant-construction work.
 
 Skip if the change is Gate 0 or Gate 1 only.
 
@@ -33,7 +34,8 @@ Map changed files to the required acceptance gate:
 | docs / scripts / AGENTS only | Gate 0 |
 | refactor, no numerical change | Gate 1 |
 | operators / eigensolver / algebra | Gate 2 |
-| PSPTA / invariants / tracking | Gate 3 |
+| Legacy PSPTA compatibility / migration | Gate 3 |
+| Lester equation (14) streamfunction solver | Gate 3A |
 | helicity-free regime correctness | Gate 4 |
 | ensemble / macrodispersion output | Gate 5 |
 
@@ -74,12 +76,21 @@ For each affected gate, verify the author provides:
 - [ ] Residual norms reported
 - [ ] Before/after comparison if behavior changed
 
-### Gate 3 (PSPTA local integrity)
+### Gate 3 (legacy PSPTA compatibility)
 - [ ] `v·∇ψ1` and `v·∇ψ2` residuals inspected
 - [ ] Independence / degeneracy signal checked
 - [ ] Newton failure counts reported
 - [ ] Particle status summary (active / exited / failed)
 - [ ] No unexplained metric regression
+
+### Gate 3A (Lester equation (14) solver integrity)
+- [ ] Coupled residual `r_F` reported
+- [ ] Velocity reconstruction error `e_v` reported
+- [ ] Darcy invariance errors `e_i` reported
+- [ ] Reconstructed-flow divergence `e_div` reported
+- [ ] Denominator minimum and percentiles reported
+- [ ] Gauge and denominator regularization settings documented
+- [ ] Work starts on small smooth controls before large grids
 
 ### Gate 4 (helicity-free regime)
 - [ ] Controlled pure-advection test case
@@ -98,6 +109,8 @@ For each affected gate, verify the author provides:
 - required gate evidence is missing
 - residuals materially worsened without explanation
 - Newton failures exploded
+- denominator regularization is hidden or arbitrary
+- exponential covariance is treated as equivalent to smooth Gaussian validation
 - positive transverse macrodispersion is claimed as physical without control
 - diagnostics were weakened silently
 

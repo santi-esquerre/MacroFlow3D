@@ -46,7 +46,7 @@ These areas require human approval before merge, regardless of automated check r
 
 - Any interpolation-affecting code in `src/physics/` or `src/numerics/`
 
-### PSPTA tracking
+### Legacy PSPTA tracking / migration
 
 - `src/physics/particles/pspta/`
 - All files in invariants, transport, projection, Newton, gauge

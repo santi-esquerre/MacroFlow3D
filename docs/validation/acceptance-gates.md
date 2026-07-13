@@ -56,6 +56,7 @@ Use for changes touching:
 - operators
 - eigensolver backend
 - invariant construction algebra
+- Lester equation (14) linear operator `A psi = -div(q grad psi)`
 - adjoint/symmetry assumptions
 - refinement logic
 
@@ -76,9 +77,12 @@ Required evidence:
 
 - pass/fail output
 - residual norms
+- operator sign, boundary, gauge, and coefficient convention if changed or newly introduced
 - if changed: before/after comparison
 
-### Gate 3 — PSPTA local scientific integrity
+For equation (14) operator work, required evidence also includes manufactured-solution checks for `k=1` and smooth variable `k` before any nonlinear solver claim.
+
+### Gate 3 — Legacy PSPTA compatibility integrity
 
 Use for changes touching:
 
@@ -88,7 +92,7 @@ Use for changes touching:
 - invariant sampling
 - transport/invariant coupling
 
-**Operational plan:** `docs/plans/active/pspta-execution-plan.md` — verify that the change aligns with the current execution phase before accepting.
+**Status:** legacy PSPTA compatibility gate. Use `docs/plans/archive/pspta-execution-plan.md` only as historical context. New invariant construction must use Gate 3A instead.
 
 Required:
 
@@ -118,6 +122,40 @@ Reject if:
 - Newton failures explode,
 - particles cross behavior boundaries unexpectedly.
 
+### Gate 3A — Lester equation (14) streamfunction solver integrity
+
+Use for changes touching:
+
+- `psi1`/`psi2` construction through Lester equation (14),
+- `S1`, `S2`, `B`, gradient, Hessian-vector, or denominator kernels,
+- Picard, Anderson, or Newton-Krylov solver loops,
+- gauge restoration for streamfunctions,
+- velocity reconstruction from `grad psi1 x grad psi2`.
+
+**Operational plan:** `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`.
+
+Required:
+
+- Gate 1 and Gate 2;
+- start on `16^3`/`32^3` controls before larger grids;
+- explicit smoothness regime: Gaussian covariance, uniform `k`, or documented regularized field;
+- coupled residual `r_F`;
+- velocity reconstruction error `e_v`;
+- Darcy invariance errors `e_i`;
+- reconstructed-flow divergence `e_div`;
+- minimum and 0.1%, 1%, 5% percentiles of `|grad psi1 x grad psi2|`;
+- denominator regularization value and convergence plan;
+- gauge definition and gauge restoration evidence;
+- grid-convergence plan or result.
+
+Reject if:
+
+- multigrid reuse is assumed without operator compatibility evidence,
+- exponential covariance is treated as a smooth Gaussian-equivalent benchmark,
+- denominator regularization is hidden or arbitrary,
+- a result is accepted solely because the linear or nonlinear residual decreased,
+- tensor/local anisotropy is treated as in-scope without a new theory decision.
+
 ### Gate 4 — Helicity-free regime correctness
 
 Use for changes that can affect the central scientific claim in the smooth, locally isotropic, purely advective regime.
@@ -125,7 +163,7 @@ Use for changes that can affect the central scientific claim in the smooth, loca
 This is the most important gate.
 
 **Scientific basis:** `docs/theory/lester-2023-key-claims.md`
-**Operational plan:** `docs/plans/active/pspta-execution-plan.md` — Phase 6 validation criteria apply.
+**Operational plan:** use `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` for new invariant construction and `docs/plans/archive/pspta-execution-plan.md` for existing PSPTA transport validation.
 
 The target regime is:
 
@@ -137,7 +175,7 @@ The target regime is:
 
 Required:
 
-- Gate 1–3
+- Gate 1-3, or Gate 3A for the Lester equation (14) solver path
 - controlled pure-advection test case
 - careful interpretation of transverse spreading
 - explicit statement whether any observed transverse growth is:
@@ -214,15 +252,15 @@ Need:
 
 - Gate 1
 - Gate 2
-- if runtime behavior changed: Gate 3
+- if runtime behavior changed: Gate 3 or Gate 3A, depending on path
 
-### D. PSPTA / invariant / tracking change
+### D. Legacy PSPTA / invariant / tracking compatibility change
 
 Need:
 
 - Gate 1
 - Gate 2
-- Gate 3
+- Gate 3 for legacy PSPTA compatibility, or Gate 3A for Lester equation (14) invariant construction
 - likely Gate 4
 
 ### E. Macrodispersion / scientific output change
@@ -256,6 +294,9 @@ Paste this into the final summary or PR description:
 ### Metrics checked
 - operator residuals:
 - invariant residuals:
+- equation (14) residuals:
+- velocity reconstruction error:
+- denominator percentiles:
 - Newton failure summary:
 - macrodispersion outputs:
 

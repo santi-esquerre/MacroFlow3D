@@ -2,7 +2,9 @@
 
 ## Mission
 
-MacroFlow3D is scientific software for 3D macrodispersion in heterogeneous porous media. The current strategic goal is to make the PSPTA / invariant-based transport path scientifically trustworthy for the helicity-free, smooth, locally isotropic Darcy regime.
+MacroFlow3D is scientific software for 3D macrodispersion in heterogeneous porous media. The current strategic goal is to design and integrate a trustworthy numerical solver for the coupled nonlinear Lester et al. equation (14) streamfunction system, recovering two invariants `psi1`, `psi2` for steady, smooth, locally isotropic 3D Darcy flow.
+
+The previous PSPTA transport-near-nullspace/eigensolver route is legacy compatibility and migration surface. It is no longer the authoritative invariant-construction strategy and should not be extended unless the task explicitly targets audit, migration, or removal.
 
 Optimize in this order:
 
@@ -59,7 +61,7 @@ Top-level areas:
 - `src/physics/particles/par2_adapter/`
   - RWPT baseline transport path
 - `src/physics/particles/pspta/`
-  - PSPTA / invariant-based transport path
+  - legacy PSPTA transport/invariant infrastructure to audit, migrate, or retire
 - `src/external/`
   - external dependency area
   - tracked vendored source: `yaml-cpp`, `nlohmann`
@@ -78,11 +80,12 @@ Read next when relevant:
 
 Active execution plans (read before starting work in the relevant area):
 
-- `docs/plans/active/pspta-execution-plan.md` — **authoritative operational plan** for PSPTA, invariant recovery, eigensolver integration, refinement, and helicity-free validation. Required reading for any work touching PSPTA, invariants, eigensolver, refinement, or transverse macrodispersion assessment.
+- `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` — **authoritative operational plan** for the Lester et al. equation (14) streamfunction solver, including mathematical scope, discretization work, nonlinear strategy, continuation, validation, and CPU/GPU staging. Required reading for any work touching invariant construction, `psi1`/`psi2` differential operators, streamfunction residuals, or flow reconstruction from invariants.
+- `docs/plans/archive/pspta-execution-plan.md` — archived historical plan for the old PSPTA transport-near-nullspace and eigensolver path. Read only when auditing or retiring legacy PSPTA code.
 
 Scientific theory references (read before PSPTA, invariant, or macrodispersion work):
 
-- `docs/theory/lester-2023-key-claims.md` — kinematic constraints, helicity-free regime, zero transverse macrodispersion in smooth isotropic Darcy
+- `docs/theory/lester-2023-key-claims.md` — kinematic constraints, helicity-free regime, Lester equation (14), two-streamfunction representation, zero transverse macrodispersion in smooth isotropic Darcy
 - `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — classical 3D macrodispersion baseline, Monte Carlo discipline, historical α_T expectations
 
 More specific local rules live in:
@@ -213,7 +216,9 @@ must include:
 3. the validation path,
 4. the likely regression surface.
 
-For PSPTA, invariant, eigensolver, or refinement work: also read `docs/plans/active/pspta-execution-plan.md` and confirm the task aligns with the current execution phase before starting.
+For legacy PSPTA transport, eigensolver, or refinement code: treat the code as frozen compatibility surface unless the task is explicitly about audit, migration, or removal. New invariant construction belongs to the Lester equation (14) path.
+
+For any new invariant-construction work, read `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` first and confirm whether the change is in the operator-test, Picard, continuation, or Newton-Krylov phase. Do not jump directly to production grids.
 
 ### Performance rules
 
@@ -244,11 +249,15 @@ For PSPTA, invariant, eigensolver, or refinement work: also read `docs/plans/act
 
 - Do **not** treat positive transverse macrodispersion in the smooth, locally isotropic, purely advective regime as automatically physical.
 - Do **not** merge “it compiles” changes in the scientific core without validation evidence.
+- Do **not** treat the existing multigrid preconditioner as automatically valid for `A psi = -div(q grad psi)` with `q=1/k`; reuse is a priority hypothesis that must be verified against the actual operator sign, coefficient placement, boundary conditions, gauge, and residual.
+- Do **not** hide small `|grad psi1 x grad psi2|` denominators with arbitrary epsilons. Any regularization must be explicit, configurable, logged, and studied as it tends to zero.
+- Do **not** treat exponential-covariance log-conductivity fields as equivalent to smooth Gaussian-covariance fields for invariant existence validation.
+- Do **not** assume global streamfunction invariants exist for locally anisotropic tensor conductivity; that case is outside the initial scope.
 - Do **not** rewrite major subsystems when a local change is enough.
 - Do **not** introduce silent behavior changes in configs.
 - Do **not** add fallback paths or compatibility layers unless explicitly requested.
 - Do **not** use the remote server as an editing environment; local WSL is the source of truth and remote is for synchronized build/run/measure.
-- Do **not** assume PSPTA is production-trusted by default; it is an actively validated path.
+- Do **not** extend the old PSPTA invariant-construction architecture. It is legacy until replaced or intentionally retired.
 
 ---
 

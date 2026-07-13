@@ -64,7 +64,7 @@ An agent working on scientific or numerical tasks must read the relevant theory 
 
 | Note | When to read |
 |------|-------------|
-| `lester-2023-key-claims.md` | PSPTA, invariants, velocity reconstruction, transverse macrodispersion interpretation, tracking geometry |
+| `lester-2023-key-claims.md` | Lester equation (14), PSPTA, invariants, velocity reconstruction, transverse macrodispersion interpretation, tracking geometry |
 | `beaudoin-de-dreuzy-2013-key-claims.md` | Large-domain macrodispersion studies, Monte Carlo design, historical 3D baseline comparisons, longitudinal validation |
 
 When writing experiment notes or scientific change reports, cite the relevant theory note explicitly.
@@ -79,7 +79,13 @@ Active plans are authoritative operational documents, not optional reading:
 
 | Plan | When to read |
 |------|-------------|
-| `docs/plans/active/pspta-execution-plan.md` | PSPTA, invariant recovery, eigensolver, refinement, helicity-free validation, transverse macrodispersion assessment |
+| `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` | New invariant construction, Lester equation (14), streamfunction residuals, Picard/Newton strategy, continuation, solver validation |
+
+Archived plans are historical evidence, not active authority:
+
+| Plan | When to read |
+|------|-------------|
+| `docs/plans/archive/pspta-execution-plan.md` | Auditing or retiring the old PSPTA transport-near-nullspace path, existing eigensolver code, or legacy Strategy A/C context |
 
 A good plan contains:
 
@@ -108,6 +114,13 @@ Each decision record should include:
 
 Do not write essays.
 Make the reason legible.
+
+For scientific-direction changes, mark whether each item is:
+
+- confirmed in code,
+- accepted scope,
+- proposed architecture,
+- or open question.
 
 ---
 

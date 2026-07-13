@@ -1,183 +1,82 @@
-# PSPTA AGENTS.md
+# Legacy PSPTA AGENTS.md
 
 ## Scope
 
 This file applies to `src/physics/particles/pspta/`.
 
-This is the highest-risk scientific area of the repository.
+This directory contains legacy PSPTA research infrastructure. It is not the active place to design new invariant construction.
 
-Do not treat this directory as “just another transport backend.”
-It is the research path for preserving the kinematic constraints associated with the helicity-free, smooth, locally isotropic Darcy regime.
+The active invariant-construction direction is the Lester equation (14) streamfunction solver:
 
----
+- `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
+- `docs/decisions/2026-07-13-lester-eq14-streamfunction-solver.md`
+
+## Status
+
+Treat the existing PSPTA code as a frozen compatibility and migration surface.
+
+It contains:
+
+- legacy x-marching invariant construction;
+- transport-near-nullspace operator/eigensolver infrastructure;
+- refinement skeletons;
+- a pseudo-symplectic transport engine;
+- diagnostics and failure accounting.
+
+Do not extend the old invariant-construction architecture. Do not add new Strategy A/C features. Do not make PSPTA the owner of the Lester equation (14) nonlinear solver.
+
+## Allowed work in this directory
+
+Allowed:
+
+- auditing existing PSPTA behavior;
+- preserving compatibility while the equation (14) path is brought up;
+- extracting reusable containers, diagnostics, or transport-consumer interfaces;
+- removing or archiving dead PSPTA pieces after a replacement exists and tests prove the removal is safe;
+- fixing build breaks caused by the reformulation branch.
+
+Not allowed without explicit user direction:
+
+- new transport-near-nullspace invariant recovery;
+- new eigensolver-based invariant construction;
+- new Strategy A/C refinement work;
+- silent changes to projection semantics;
+- treating PSPTA smoke success as evidence that equation (14) invariants are correct.
 
 ## Required pre-reading
 
-Before any non-trivial PSPTA task, read:
+For any task in this directory, read:
 
-- `docs/plans/active/pspta-execution-plan.md` — the authoritative operational plan for invariant recovery, eigensolver integration, refinement, and PSPTA transport validation. Confirm that the task aligns with the current execution phase before starting.
-- `docs/theory/lester-2023-key-claims.md` — the scientific foundation for this entire subsystem
+- `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`;
+- `docs/theory/lester-2023-key-claims.md`;
+- `docs/validation/acceptance-gates.md`.
 
-Optionally also read:
+Read `docs/plans/archive/pspta-execution-plan.md` only for historical context when auditing or retiring legacy PSPTA code.
 
-- `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — if the task involves macrodispersion comparison or baseline interpretation
+## Migration rules
 
----
+- Keep invariant construction separate from transport consumption.
+- Prefer a new equation (14) construction module over burying nonlinear solver logic in `PsptaEngine`.
+- If a PSPTA type is reused, document whether it is a confirmed reusable component or a temporary compatibility adapter.
+- If a file is retained only for history, mark that in comments or docs rather than leaving it looking active.
+- Do not delete code until the replacement path and validation are available, unless the user explicitly asks for removal of a known-dead artifact.
 
-## Primary goal
+## Validation
 
-Preserve the invariant structure well enough that purely numerical leakage is not misread as physical transverse macrodispersion.
-
-In practice, this means protecting:
-
-- near-invariance of `ψ1`, `ψ2`
-- usable independence of `ψ1`, `ψ2`
-- robust advance+project transport
-- interpretable diagnostics and failure accounting
-
----
-
-## Mental model
-
-Think in three layers:
-
-1. **construct invariants**
-2. **measure invariant quality**
-3. **transport particles while preserving those invariants**
-
-A change that improves one layer by damaging another is not automatically an improvement.
-
----
-
-## Files you are likely to touch
-
-Typical PSPTA work touches some subset of:
-
-- `PsptaPsiField.*`
-- `PsptaEngine.*`
-- `invariants/TransportOperator3D.*`
-- `invariants/PsptaInvariantField.*`
-- `invariants/EigensolverBackend.*`
-- `invariants/SLEPcBackend.*`
-- `invariants/RefinementAC.*`
-- `invariants/GaugeFixer.*`
-- `invariants/OperatorTestHarness.*`
-
-Before editing, identify exactly which layer you are changing.
-
----
-
-## Hard rules
-
-- Plan first.
-- Do not edit PSPTA code without a validation path.
-- Do not claim physical improvement from a numerical change without control runs.
-- Do not silently weaken diagnostics.
-- Do not move allocations into the hot loop.
-- Do not introduce hidden synchronizations in `step()` or equivalent hot paths.
-- Do not change invariant semantics, projection semantics, or particle status semantics without documenting it.
-
----
-
-## Performance rules
-
-The hot loop must remain:
-
-- allocation-free,
-- explicit about host/device synchronization,
-- compatible with large particle counts.
-
-Any new buffer should be:
-
-- owned clearly,
-- allocated in setup / prepare,
-- reused.
-
----
-
-## Scientific checks
-
-For any non-trivial PSPTA change, inspect at least:
-
-- `v·∇ψ1`
-- `v·∇ψ2`
-- invariant independence / degeneracy
-- Newton failure counts
-- particle exit / inactive behavior
-- smoke trajectory behavior on the small config
-
-If available, also inspect:
-
-- mismatch versus `∇ψ1 × ∇ψ2`
-- refinement history
-- grid sensitivity
-
----
-
-## Special caution areas
-
-### 1. Near-stagnation regions
-
-These can make invariants and Newton projection ill-conditioned.
-
-### 2. Functional dependence collapse
-
-Two low modes are not useful if they become nearly dependent.
-
-### 3. Projection masking
-
-A projection that “works” numerically may still hide geometric leakage or unstable convergence.
-
-### 4. Diagnostics drift
-
-If metrics get renamed, filtered, or weakened, make the change explicit.
-
----
-
-## Required validation for PSPTA changes
-
-Minimum:
+For legacy PSPTA compatibility changes, run the existing compatibility checks:
 
 ```bash
 ctest --test-dir <build-dir> --output-on-failure -R operator_tests
 ./<build-dir>/macroflow3d_pipeline apps/config_pspta_small.yaml
 ```
 
-If the eigensolver path is touched:
-
-```bash
-ctest --test-dir <build-dir> --output-on-failure -R validate_slepc_eigensolver
-```
-
-## Alignment with the execution plan
-
-All PSPTA implementation work must align with `docs/plans/active/pspta-execution-plan.md`.
-
-Before starting a task, identify which execution phase it belongs to:
-
-| Phase | Scope |
-|-------|-------|
-| 1 | PETSc/SLEPc infrastructure and solver bring-up |
-| 2 | Initial invariant recovery (transport operator, regularized eigenproblem) |
-| 3 | Quality diagnostics and acceptance (r_i, e_x, s metrics) |
-| 4 | Refinement (alternating fit + Poisson projection) |
-| 5 | PSPTA transport integration (invariant-preserving particle stepping) |
-| 6 | Scientific validation (controlled runs, transverse macrodispersion assessment) |
-
-Do not skip phases. Do not start a later phase if an earlier phase is incomplete.
-
-If behavior changes materially, use the acceptance gates in:
-
-- `docs/validation/acceptance-gates.md`
-
----
+For equation (14) construction changes, Gate 3A in `docs/validation/acceptance-gates.md` applies. PSPTA-specific smoke tests are not sufficient for accepting the new solver.
 
 ## Done criteria
 
-A PSPTA task is done only when:
+A task touching this directory is done only when:
 
-1. the intended subsystem change is complete,
-2. relevant operator / smoke validation was run,
-3. diagnostics were inspected,
-4. no obvious scientific regression is left unexplained,
-5. the final report states remaining uncertainty explicitly.
+1. the change is clearly classified as compatibility, migration, audit, or removal;
+2. no legacy PSPTA path is accidentally re-promoted as active architecture;
+3. relevant compatibility or Gate 3A validation is run or explicitly deferred;
+4. remaining uncertainty is recorded in the final report or docs.

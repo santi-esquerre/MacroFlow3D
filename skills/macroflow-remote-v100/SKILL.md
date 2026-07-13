@@ -73,14 +73,14 @@ scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R
 
 ## Remote pipeline runs
 
-For PSPTA-related runs, verify alignment with the current execution phase in `docs/plans/active/pspta-execution-plan.md`.
+For new invariant-construction runs, verify alignment with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`. Legacy PSPTA transport/eigensolver runs are compatibility/migration only; use `docs/plans/archive/pspta-execution-plan.md` as historical context.
 
 ```bash
-# PSPTA small smoke
+# Legacy PSPTA small smoke
 scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
 scripts/remote wait pspta-small
 
-# PSPTA production-like
+# Legacy PSPTA production-like
 scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
 scripts/remote tail pspta-prod
 scripts/remote wait pspta-prod

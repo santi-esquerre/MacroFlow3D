@@ -7,7 +7,7 @@ This repository has a comprehensive agentic harness shared across tools (Claude 
 
 ### Quick orientation
 
-**Mission:** 3D macrodispersion in heterogeneous porous media. Current focus: PSPTA / invariant-based transport validation for the helicity-free, smooth, locally isotropic Darcy regime.
+**Mission:** 3D macrodispersion in heterogeneous porous media. Current focus: Lester equation (14) streamfunction solver for `psi1`, `psi2` in smooth, locally isotropic Darcy flow; existing PSPTA code is legacy compatibility/migration surface.
 
 **Optimization priority:** correctness → reproducibility → maintainability → performance → speed.
 
@@ -15,7 +15,8 @@ This repository has a comprehensive agentic harness shared across tools (Claude 
 
 | Work area | Read first |
 |-----------|-----------|
-| PSPTA / invariants / eigensolver / refinement | `docs/plans/active/pspta-execution-plan.md` + `docs/theory/lester-2023-key-claims.md` |
+| Lester equation (14) / new invariant construction | `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` + `docs/theory/lester-2023-key-claims.md` |
+| Legacy PSPTA audit / migration / removal | `docs/plans/archive/pspta-execution-plan.md` + `docs/theory/lester-2023-key-claims.md` |
 | Macrodispersion / ensemble statistics | `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` |
 | Numerics / operators / solvers | `src/numerics/AGENTS.md` |
 | PSPTA transport code | `src/physics/particles/pspta/AGENTS.md` |

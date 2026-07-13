@@ -90,7 +90,8 @@ For scientific changes, also include the scientific change report template from 
 - [ ] Tests fail
 - [ ] Required gate evidence missing (see `docs/validation/acceptance-gates.md`)
 - [ ] Scientific-core change without human review
-- [ ] PSPTA/invariant/eigensolver/refinement change that does not align with the current execution phase (see `docs/plans/active/pspta-execution-plan.md`)
+- [ ] New invariant-construction change that does not align with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
+- [ ] Legacy PSPTA transport/eigensolver/refinement change that is not audit, migration, compatibility, or removal work
 - [ ] Silent behavior change in configs
 - [ ] Diagnostics weakened without explanation
 - [ ] Transverse macrodispersion claimed as physical without control test
@@ -115,7 +116,7 @@ gh pr merge --merge --delete-branch
 
 **Mandatory human review** (agent must NOT merge):
 - solver, operators, interpolation
-- PSPTA tracking
+- legacy PSPTA tracking / migration
 - PETSc/SLEPc integration
 - macrodispersion evals
 

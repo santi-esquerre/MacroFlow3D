@@ -40,7 +40,7 @@ ctest --test-dir build/wsl-debug --output-on-failure
 
 ## Tier B — Operator / invariant integrity
 
-**Applies to:** changes in `src/numerics/`, `src/multigrid/`, operator algebra, eigensolver backend, invariant construction.
+**Applies to:** changes in `src/numerics/`, `src/multigrid/`, operator algebra, eigensolver backend, invariant construction, or Lester equation (14) linear operators.
 
 **Where:** local WSL for operator tests. Remote V100 for PETSc/SLEPc.
 
@@ -80,9 +80,9 @@ scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R
 
 ## Tier C — Physics / ensemble
 
-**Applies to:** PSPTA transport, macrodispersion output, ensemble statistics, or any change affecting the central scientific claim.
+**Applies to:** Lester equation (14) invariant construction, legacy PSPTA compatibility/migration, macrodispersion output, ensemble statistics, or any change affecting the central scientific claim.
 
-**Operational plan:** For PSPTA work, verify alignment with `docs/plans/active/pspta-execution-plan.md` and the current execution phase.
+**Operational plan:** For new invariant construction, verify alignment with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`. Legacy PSPTA work is compatibility or migration only; use `docs/plans/archive/pspta-execution-plan.md` as historical context.
 
 **Where:** local WSL for smoke. Remote V100 for production runs.
 
@@ -107,11 +107,18 @@ scripts/remote wait par2-prod
 ### Pass criteria
 
 - All Tier A and Tier B criteria met
-- PSPTA diagnostics inspected:
+- Legacy PSPTA diagnostics inspected when that path is touched:
   - `v·∇ψ1`, `v·∇ψ2` residuals
   - independence / degeneracy signal
   - Newton failure counts and distribution
   - particle status summary (active / exited / failed)
+- For Lester equation (14) solver work, Gate 3A metrics inspected:
+  - coupled residual `r_F`
+  - velocity reconstruction error `e_v`
+  - Darcy invariance errors `e_i`
+  - reconstructed-flow divergence `e_div`
+  - denominator minimum and percentiles
+  - gauge and regularization settings
 - Before/after comparison if behavior changed
 - Transverse macrodispersion not claimed as physical without control
 - Run reproducible from config + commit
@@ -127,7 +134,7 @@ scripts/remote wait par2-prod
 
 ### Maps to
 
-- Gate 3 (PSPTA local integrity)
+- Gate 3A (Lester equation (14) solver integrity), or Gate 3 only for legacy PSPTA compatibility
 - Gate 4 (helicity-free regime)
 - Gate 5 (ensemble/macrodispersion)
 
@@ -152,7 +159,7 @@ Is this docs / scripts / AGENTS only?
 Does it touch src/numerics/, src/multigrid/, or operator code?
   → Tier A + Tier B
 
-Does it touch src/physics/ or PSPTA?
+Does it touch src/physics/ or legacy PSPTA?
   → Tier A + Tier B + Tier C
 
 Does it change macrodispersion output or ensemble stats?

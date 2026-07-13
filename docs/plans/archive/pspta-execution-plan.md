@@ -1,5 +1,16 @@
 # Operational Plan for PSPTA Integration in MacroFlow3D
 
+## Status note - 2026-07-13
+
+This plan is historical / legacy context for the transport-near-nullspace eigensolver route and for existing PSPTA transport integration.
+
+It is no longer the authoritative plan for new invariant construction. New work to compute `psi1`, `psi2` must follow:
+
+- `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
+- `docs/decisions/2026-07-13-lester-eq14-streamfunction-solver.md`
+
+The existing code described here remains useful infrastructure and scientific history. Do not delete or rewrite it casually. Do not use the text below to argue against implementing the Lester equation (14) solver; that direction supersedes the "not going to solve the coupled nonlinear PDEs directly" rule for new invariant construction.
+
 ## Goal
 
 We are turning MacroFlow3D into a **scientific-grade HPC application** capable of estimating asymptotic macrodispersion coefficients in 3D porous media using a **pseudo-symplectic particle transport method** that is consistent with the kinematic constraints of smooth, locally isotropic Darcy flow.
@@ -127,7 +138,7 @@ For `darcy_small`, current evidence says the correct entry point to this refinem
 
 ### Important implementation note
 
-The current codebase already contains the **skeleton** of this refinement stage, including the conceptual algorithm, data structures, quality reports, backtracking, and gauge reapplication hooks — but it is still marked as **not implemented** in the actual `.cu` path. That means this is already the intended direction of the project, and the work now is to finish and validate it properly rather than invent a new architecture.
+The current codebase already contains the **skeleton** of this refinement stage, including the conceptual algorithm, data structures, quality reports, backtracking, and gauge reapplication hooks — but it is still marked as **not implemented** in the actual `.cu` path. This remains useful historical infrastructure for the transport-near-nullspace route, but new invariant construction is governed by the Lester equation (14) plan.
 
 ---
 
@@ -157,7 +168,7 @@ So the work plan includes:
 1. install PETSc/SLEPc correctly on the V100 server;
 2. build the project with PETSc enabled;
 3. run the smoke and validation executables;
-4. use the eigensolver route as the authoritative path for invariant recovery.
+4. use the eigensolver route as the historical Strategy A path for invariant recovery.
 
 ---
 
