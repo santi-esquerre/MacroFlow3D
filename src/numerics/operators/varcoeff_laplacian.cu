@@ -2,13 +2,13 @@
  * @file varcoeff_laplacian.cu
  * @brief Variable-coefficient Laplacian operator implementation
  *
- * This computes y = A*x where A is the NEGATIVE discrete variable-coefficient Laplacian:
- *   (A*x)_C = -sum_faces( K_face * (x_C - x_neighbor) ) / dx²
+ * This computes y = L(K)*x where L(K) is the legacy discrete divergence operator:
+ *   (L(K)*x)_C = -sum_faces( K_face * (x_C - x_neighbor) ) / dx²
  *
  * K_face is the harmonic mean: K_face = 2 / (1/K_C + 1/K_neighbor)
  *
- * This matches the legacy stencil_head operator which also produces a NEGATIVE operator.
- * The negative sign ensures CG solves the same system as MG.
+ * This matches the legacy stencil_head operator and is negative semidefinite
+ * under triply periodic boundary conditions.
  *
  * For Dirichlet BCs: The BC value contribution goes to RHS (in build_rhs_head),
  * the operator contributes only the diagonal term: -2*KC*xC
@@ -32,8 +32,8 @@ VarCoeffLaplacian::VarCoeffLaplacian(const Grid3D& grid, DeviceSpan<const real> 
 
 // ============================================================================
 // Interior kernel: cells not on any boundary
-// Produces y = -∇·(K∇x) discretized as -sum_faces(K_face*(xC-xN))/dx²
-// Sign convention: NEGATIVE Laplacian, consistent with MG smoother
+// Produces y = div_h(K grad_h x) = -sum_faces(K_face*(xC-xN))/dx².
+// Its legacy sign is consistent with the MG smoother and residual.
 // ============================================================================
 __global__ void varcoeff_apply_interior_kernel(const real* __restrict__ x,
                                                const real* __restrict__ K, real* __restrict__ y,
@@ -61,13 +61,13 @@ __global__ void varcoeff_apply_interior_kernel(const real* __restrict__ x,
         real Kzp = 2.0 / (1.0 / KC + 1.0 / K[idx + stride]);
 
         // Compute sum(K_face*(xC-xN))
-        // NEGATIVE Laplacian: y = -sum(K_face*(xC-xN))/dx²
-        // This matches legacy stencil_head which produces -2*sum((xC-xN)/(1/KC+1/KN))/dx²
+        // Legacy divergence form: y = -sum(K_face*(xC-xN))/dx².
+        // This matches stencil_head's -2*sum((xC-xN)/(1/KC+1/KN))/dx².
         real Ax = Kxm * (xC - x[idx - 1]) + Kxp * (xC - x[idx + 1]) + Kym * (xC - x[idx - Nx]) +
                   Kyp * (xC - x[idx + Nx]) + Kzm * (xC - x[idx - stride]) +
                   Kzp * (xC - x[idx + stride]);
 
-        // NEGATIVE: matches legacy operator sign
+        // Legacy divergence sign: y = div_h(K grad_h x).
         y[idx] = -Ax * inv_dx2;
     }
 }
@@ -233,7 +233,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             Ax += aC * xC;
         }
 
-        // NEGATIVE: matches legacy operator sign
+        // Legacy divergence sign: y = div_h(K grad_h x).
         y[idx] = -Ax * inv_dx2;
     }
 }
