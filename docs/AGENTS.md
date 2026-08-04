@@ -97,6 +97,12 @@ A good plan contains:
 - rollback/regression concerns
 - completion criteria
 
+The Lester equation (14) plan additionally uses the sequential increment
+protocol in `docs/runbooks/lester-increment-workflow.md`.  Its dashboard and
+individual increment files are versioned execution state.  Preserve their
+exact Goal, dependency, checklist, advancement, and append-only bitácora
+fields; validate them with `scripts/hooks/check-lester-increments.sh`.
+
 ---
 
 ## Decisions

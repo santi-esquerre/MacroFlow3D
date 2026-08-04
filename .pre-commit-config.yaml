@@ -37,6 +37,13 @@ repos:
         always_run: true
         pass_filenames: false
 
+      - id: check-lester-increments
+        name: Check Lester increment harness
+        entry: bash scripts/hooks/check-lester-increments.sh
+        language: system
+        always_run: true
+        pass_filenames: false
+
       - id: scientific-core-guard
         name: Scientific core change guard
         entry: bash scripts/hooks/scientific-core-guard.sh

@@ -1,0 +1,96 @@
+# SF-04 — Projected PCG
+
+- State: `pending`
+- Goal: `Resolver el operador periódico singular mediante PCG proyectado.`
+- Depends on: `SF-03`
+- Unlocks: `SF-05`
+- Branch: `science/lester-sf04-projected-pcg`
+- Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf04-projected-pcg`
+- Acceptance gate: `Gate 1 + Gate 2`
+- Human review: `required`
+- Owner: `unassigned`
+- Started: `not started`
+- Completed: `not completed`
+- PR: `not opened`
+- Commit: `not recorded`
+
+## Scientific or engineering intent
+
+Solve the singular periodic diffusion equation in its valid zero-mean quotient
+space while preserving the existing nonprojected PCG API.
+
+## Preconditions
+
+- SF-02 defines `A`; SF-03 provides the projector and workspace.
+
+## In scope
+
+- A projected PCG policy/overload and tests with identity preconditioning.
+
+## Out of scope
+
+- Multigrid preconditioning and nonlinear solves.
+
+## Files and symbols
+
+- Extend `src/numerics/solvers/pcg.cuh` through an optional projector policy.
+- Reuse existing `r`, `z`, `p`, and `Ap` workspace ownership.
+
+## Implementation specification
+
+1. Project raw RHS and log its preprojection compatibility defect.
+2. Project the initial guess, residual, preconditioned residual, and search
+   direction at the mathematically required points.
+3. Report true projected residual and final field mean.
+4. Preserve old PCG behavior when no projector is supplied.
+
+## Expected numerical effect
+
+Compatible periodic systems converge to the unique zero-mean representative;
+incompatible constant RHS components are explicitly diagnosed and removed.
+
+## Validation commands
+
+```bash
+cmake --build build/wsl-debug -j
+ctest --test-dir build/wsl-debug --output-on-failure -R streamfunction_operator_tests
+ctest --test-dir build/wsl-debug --output-on-failure
+```
+
+## Acceptance thresholds
+
+- Projected relative residual is at most `1e-10`.
+- Final gauge meets the SF-03 mean threshold.
+- Solution agrees with the CPU/Fourier manufactured result within discretization
+  error.
+
+## Regression surface
+
+- Current flow PCG iteration counts, sign wrappers, convergence reports, and
+  host-device synchronization.
+
+## Failure and rollback policy
+
+- Do not replace current PCG or change default semantics.
+- If the projected recurrence loses conjugacy, retain the simplest correct
+  projection frequency and log synchronization cost for SF-23.
+
+## Completion checklist
+
+<!-- completion-checklist:start -->
+- [ ] Optional projected PCG path is implemented.
+- [ ] Raw RHS compatibility and final gauge are reported.
+- [ ] Manufactured periodic solves meet tolerance.
+- [ ] Existing PCG callers and tests remain unchanged.
+- [ ] Human review and evidence are recorded.
+- [ ] Dashboard marks SF-04 complete and selects SF-05.
+<!-- completion-checklist:end -->
+
+## Advancement rule
+
+SF-05 may add the multigrid preconditioner to this accepted projected solve.
+
+## Bitácora
+
+| UTC | Commit/state | Observation or action | Evidence/decision | Next action |
+|---|---|---|---|---|
