@@ -1,6 +1,6 @@
 # SF-02 — Discrete operator contract
 
-- State: `pending`
+- State: `active`
 - Goal: `Fijar y demostrar el contrato discreto del operador periódico A=-div(q grad).`
 - Depends on: `SF-01`
 - Unlocks: `SF-03`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf02-operator-contract`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-04T22:01Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -99,3 +99,4 @@ SF-03 may use this accepted operator contract to define its gauge projector.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-04T22:01Z | `0fefaa9`, active | Verified SF-01 closure on default, created the exact SF-02 runtime Goal, and created the canonical worktree. | `master=origin/master=0fefaa9`; checker passed with `next=SF-02`; SF-01 is `done`; SF-02 depends only on SF-01. | Inspect the actual operator/sign/coefficient contracts and construct the SF-02 task DAG. |
