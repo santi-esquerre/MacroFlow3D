@@ -1,6 +1,6 @@
 # SF-01 — Reference test harness
 
-- State: `active`
+- State: `validating`
 - Goal: `Crear un harness de pruebas independiente y referencias CPU para los operadores de streamfunctions.`
 - Depends on: `SF-00`
 - Unlocks: `SF-02`
@@ -82,10 +82,10 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [ ] Independent reference helpers and deterministic fixtures are implemented.
-- [ ] Separate CTest target is registered.
-- [ ] Positive and intentional-failure controls behave as expected.
-- [ ] Full local test suite passes.
+- [x] Independent reference helpers and deterministic fixtures are implemented.
+- [x] Separate CTest target is registered.
+- [x] Positive and intentional-failure controls behave as expected.
+- [x] Full local test suite passes.
 - [ ] Scientific review confirms the reference formulas.
 - [ ] Evidence, PR, and commit are recorded in the bitácora.
 - [ ] Dashboard marks SF-01 complete and selects SF-02.
@@ -106,3 +106,4 @@ SF-02 may start after this target and its analytic reference are merged.
 | 2026-08-04T21:40Z | task `8d7d983` | T05 added the selectable CPU runner and positive/intentional-mutation matrix without changing the oracle or build system. | Strict direct compilation and all cases passed; observed orders were `1.925` (literal cubes), `1.981` (first derivatives), `1.985` (second/mixed), and `1.988` (diffusion); sign error `1.92280` vs correct `0.08574` and wrap error `0.26085` vs correct `0.02550` were detected; invalid CLI exits `2`. | Register the isolated target and exercise it through CTest. |
 | 2026-08-04T21:46Z | integration `6467073` | Independent integration cherry-picked task commits `3238082 -> 8d7d983 -> ddcb0da` as `5fb293d -> cf3e0c6 -> 6467073`; no conflicts, missing commits, duplicate APIs/buffers, production changes, or legacy `OperatorTestHarness`/`run_operator_tests` diff were found. | Checker passed (`29`, `next=SF-01`); configure/build passed on GCC 16.1.1, CMake 4.4.2, CUDA 13.3.73, RTX 3050 Laptop 4 GiB (sm_86). CTest: new target `0.52 s`, legacy `1.91 s`, full `2/2` in `0.73 s`; PSPTA smoke passed: 500 steps, active/exited `387/113`, Newton failures `0`. The first T06 selection attempt used nonexistent `--case periodic_index` and failed as expected; integration instead enumerated the authoritative `--list` cases, each passed, and missing/unknown `--case` both exited `2`. An initial `/usr/bin/time` wrapper was unavailable and was rerun with the canonical command; CMake reported only the pre-existing yaml-cpp deprecation warning. Gate 2 scaffold: positive `A=-div(q grad)` with exact harmonic `q_f(1,4)=1.6`, all-axis periodic wrapping, cubes `16^3->32^3` order `1.925`, anisotropic `16x24x32->32x48x64` orders first/second-mixed/diffusion `1.981/1.985/1.988`; sign mutant `1.9227972` versus `0.085742492`, wrap mutant `0.26084964` versus `0.025504642`. Gate 3A, Gate 4, and V100 are not applicable: this is a CPU-only test-local oracle with no production streamfunction solver, physical fields, or V100 benchmark. | Master-agent audit and required human review; do not advance state or dashboard. |
 | 2026-08-04T21:47Z | integration follow-up | The first new-target CTest attempt reported that `streamfunction_operator_tests` was not yet found immediately after the initial build invocation; no source defect was inferred or changed. | Re-ran the canonical build, verified the explicit `streamfunction_operator_tests` target (`ninja: no work to do`), then CTest passed in `0.52 s`; all later direct and full-suite checks passed. This is retained as integration evidence rather than silently discarded. | Preserve for master audit; investigate only if reproducible in a clean build. |
+| 2026-08-04T21:50Z | master audit PASS at `e069a39` | Audited the complete diff and commit chain from `master`, re-derived the discrete formulas, and independently reran the required positive, negative, regression, and error-path checks. | Scope is test/CMake/state only; `A=-div(q grad)` sign, harmonic face `q`, cell-centered indexing, periodicity, anisotropic isotropic-spacing fixtures, analytic derivatives, norms, thresholds, and CLI are consistent. Checker, configure, 48-step rebuild, target CTest, all/individual cases, invalid exit codes, legacy CTest, full `2/2` CTest, and 500-step smoke passed; ASan/UBSan passed and the CPU target has no project/CUDA link. The transient missing executable did not reproduce. Gate 3A/4/V100 remain not applicable to this non-production scaffold. | Freeze implementation, open the draft PR, and request mandatory human scientific review. |
