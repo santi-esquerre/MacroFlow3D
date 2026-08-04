@@ -11,7 +11,7 @@
 - Owner: `Codex`
 - Started: `2026-08-04T18:56Z`
 - Completed: `2026-08-04T19:12Z`
-- PR: `not opened; publication was not requested`
+- PR: `publication requested; pending URL`
 - Commit: `29bb3be`
 
 ## Scientific or engineering intent
@@ -112,3 +112,4 @@ reference-test harness.  No scientific implementation may begin before then.
 | 2026-08-04T19:05Z | working tree | Canonical local build failed in unchanged vendored code. | GNU 16/15 exposed missing `<cstdint>` in yaml-cpp; a compatibility build progressed but CUDA 13.3 then failed on removed `cub::Sum` usage in Par2. No external source was modified. | Validate with the canonical V100 toolchain. |
 | 2026-08-04T19:12Z | validating | Synchronized through `scripts/remote`; V100 configure, build, CTest, and PSPTA-small smoke passed. | V100 build completed 85 targets; `operator_tests` passed; pipeline completed 500 steps with zero Newton failures. Sync also reported pre-existing undeletable PETSc/SLEPc incomplete directories. | Commit the implementation and close SF-00. |
 | 2026-08-04T19:12Z | `29bb3be`, done | Committed the complete harness and advanced the branch dashboard to SF-01. | All SF-00 checks are satisfied; PR state is explicitly recorded as not opened. | Merge/publish this branch before starting SF-01. |
+| 2026-08-04T19:51Z | rebased on `e07b5ca` | Integrated the separate CUDA 13 build fix and reran the complete local validation from this branch. | Harness checker passed; GNU 16/CUDA 13.3 configure and build passed; CTest 1/1 and PSPTA-small smoke passed. Remote compatibility had already passed on the same fix. | Publish and merge the harness PR. |
