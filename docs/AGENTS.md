@@ -79,6 +79,7 @@ Active plans are authoritative operational documents, not optional reading:
 
 | Plan | When to read |
 |------|-------------|
+| `docs/plans/active/lester-eq14-streamfunction-solver-overview.md` | Scientific objective, equation (14), Lester reference case, and rationale for the Picard/Anderson/Newton-Krylov sequence |
 | `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` | New invariant construction, Lester equation (14), streamfunction residuals, Picard/Newton strategy, continuation, solver validation |
 
 Archived plans are historical evidence, not active authority:
