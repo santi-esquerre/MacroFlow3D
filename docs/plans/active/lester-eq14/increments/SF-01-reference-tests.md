@@ -1,6 +1,6 @@
 # SF-01 — Reference test harness
 
-- State: `pending`
+- State: `active`
 - Goal: `Crear un harness de pruebas independiente y referencias CPU para los operadores de streamfunctions.`
 - Depends on: `SF-00`
 - Unlocks: `SF-02`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf01-reference-tests`
 - Acceptance gate: `Gate 1 + Gate 2 scaffold`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-04T21:24Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -99,3 +99,4 @@ SF-02 may start after this target and its analytic reference are merged.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-04T21:24Z | `e593ea8`, active | Verified clean and fast-forwarded `master`, created the exact persistent Goal, and created the canonical SF-01 worktree. | `origin/master=e593ea8`; increment checker passed with `next=SF-01`; SF-00 is `done`; required central documents and local rules were read completely. | Inspect the existing test/CMake architecture, define the task DAG, and dispatch the first independent tasks. |
