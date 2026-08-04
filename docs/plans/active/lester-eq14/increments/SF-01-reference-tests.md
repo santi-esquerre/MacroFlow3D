@@ -1,6 +1,6 @@
 # SF-01 — Reference test harness
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Crear un harness de pruebas independiente y referencias CPU para los operadores de streamfunctions.`
 - Depends on: `SF-00`
 - Unlocks: `SF-02`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-04T21:24Z`
-- Completed: `not completed`
+- Completed: `2026-08-04T21:58Z`
 - PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/4`
-- Commit: `not recorded`
+- Commit: `8884df9`
 
 ## Scientific or engineering intent
 
@@ -86,9 +86,9 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Separate CTest target is registered.
 - [x] Positive and intentional-failure controls behave as expected.
 - [x] Full local test suite passes.
-- [ ] Scientific review confirms the reference formulas.
-- [ ] Evidence, PR, and commit are recorded in the bitácora.
-- [ ] Dashboard marks SF-01 complete and selects SF-02.
+- [x] Scientific review confirms the reference formulas.
+- [x] Evidence, PR, and commit are recorded in the bitácora.
+- [x] Dashboard marks SF-01 complete and selects SF-02.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -108,3 +108,4 @@ SF-02 may start after this target and its analytic reference are merged.
 | 2026-08-04T21:47Z | integration follow-up | The first new-target CTest attempt reported that `streamfunction_operator_tests` was not yet found immediately after the initial build invocation; no source defect was inferred or changed. | Re-ran the canonical build, verified the explicit `streamfunction_operator_tests` target (`ninja: no work to do`), then CTest passed in `0.52 s`; all later direct and full-suite checks passed. This is retained as integration evidence rather than silently discarded. | Preserve for master audit; investigate only if reproducible in a clean build. |
 | 2026-08-04T21:50Z | master audit PASS at `e069a39` | Audited the complete diff and commit chain from `master`, re-derived the discrete formulas, and independently reran the required positive, negative, regression, and error-path checks. | Scope is test/CMake/state only; `A=-div(q grad)` sign, harmonic face `q`, cell-centered indexing, periodicity, anisotropic isotropic-spacing fixtures, analytic derivatives, norms, thresholds, and CLI are consistent. Checker, configure, 48-step rebuild, target CTest, all/individual cases, invalid exit codes, legacy CTest, full `2/2` CTest, and 500-step smoke passed; ASan/UBSan passed and the CPU target has no project/CUDA link. The transient missing executable did not reproduce. Gate 3A/4/V100 remain not applicable to this non-production scaffold. | Freeze implementation, open the draft PR, and request mandatory human scientific review. |
 | 2026-08-04T21:52Z | PR `#4`, awaiting review | Published `science/lester-sf01-reference-tests` and opened the SF-01 pull request against `master` with the complete scope, commands, numerical results, risks, and intentionally untouched files. | PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/4`; implementation is frozen after the master PASS and mandatory human review is now the only advancement condition. | Human reviewer verifies formulas and thresholds; do not merge, complete the runtime Goal, or start SF-02 before explicit approval. |
+| 2026-08-04T21:58Z | `8884df9`, done | Human review explicitly approved the analytic formulas and thresholds; PR `#4` was merged through GitHub and the implementation merge is visible on `master`. | Final evidence: checker, configure/build, dedicated and full CTest, all selectable controls, invalid CLI paths, legacy operator test, 500-step smoke, and ASan/UBSan passed; observed orders were `1.925–1.988`; sign/wrap mutants were rejected. Residual scope risk is limited to the intended fact that this is a CPU test oracle, not a production operator. | Merge this procedural closure through a follow-up PR, verify `NEXT=SF-02` on default, then complete the SF-01 runtime Goal. |
