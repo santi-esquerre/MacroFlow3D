@@ -1,4 +1,5 @@
 #include "reference_operators.hpp"
+#include "streamfunction_operator_test_cases.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -13,6 +14,7 @@
 #include <vector>
 
 namespace ref = macroflow3d::streamfunctions::reference;
+namespace test = macroflow3d::streamfunctions::test;
 
 namespace {
 
@@ -21,17 +23,7 @@ constexpr double kOrderThreshold = 1.8;
 constexpr double kDiffusionOrderThreshold = 1.6;
 constexpr double kRelativeFloor = 1.0e-14;
 
-struct CaseResult {
-    bool pass{};
-    std::string name;
-    std::string kind;
-    std::string grid;
-    double coarse_norm{};
-    double fine_norm{};
-    std::string expected_order;
-    std::string observed_order{"n/a"};
-    std::string threshold;
-};
+using CaseResult = test::CaseResult;
 
 [[nodiscard]] std::string describe_grid(const ref::Grid& grid) {
     std::ostringstream out;
@@ -266,15 +258,23 @@ void print_result(const CaseResult& result) {
     return {correct < 0.10 && mutant > 0.10, "mutation_wrap", "negative-oracle", describe_grid(coarse.grid), correct, mutant, "n/a", "n/a", "correct<0.10; mutant>0.10"};
 }
 
-using CaseFunction = CaseResult (*)();
+using CaseFunction = test::CaseFunction;
 
 [[nodiscard]] const std::map<std::string, CaseFunction>& cases() {
-    static const std::map<std::string, CaseFunction> registry{
-        {"wrap_general", case_wrap_general}, {"norms_rate", case_norms_rate},
-        {"first_derivative", case_first_derivative}, {"cubic_derivatives", case_cubic_derivatives}, {"second_mixed", case_second_mixed},
-        {"diffusion", case_diffusion}, {"harmonic_mean", case_harmonic_mean},
-        {"cross_product", case_cross_product}, {"mutation_sign", case_mutation_sign},
-        {"mutation_wrap", case_mutation_wrap}};
+    static const std::map<std::string, CaseFunction> registry = [] {
+        std::map<std::string, CaseFunction> result{
+            {"wrap_general", case_wrap_general}, {"norms_rate", case_norms_rate},
+            {"first_derivative", case_first_derivative}, {"cubic_derivatives", case_cubic_derivatives}, {"second_mixed", case_second_mixed},
+            {"diffusion", case_diffusion}, {"harmonic_mean", case_harmonic_mean},
+            {"cross_product", case_cross_product}, {"mutation_sign", case_mutation_sign},
+            {"mutation_wrap", case_mutation_wrap}};
+        for (const auto& [name, function] : test::gpu_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction test case: " + name);
+            }
+        }
+        return result;
+    }();
     return registry;
 }
 
