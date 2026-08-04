@@ -329,6 +329,12 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME operator_tests COMMAND run_operator_tests)
 
+    add_executable(streamfunction_operator_tests
+        tests/streamfunctions/reference_operators.cpp
+        tests/streamfunctions/streamfunction_operator_tests.cpp
+    )
+    add_test(NAME streamfunction_operator_tests COMMAND streamfunction_operator_tests)
+
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
         # Minimal smoke test — verifies init, VECCUDA creation, link
