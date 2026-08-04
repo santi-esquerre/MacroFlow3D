@@ -6,14 +6,19 @@ This is the authoritative execution dashboard for the Lester equation (14)
 streamfunction solver.  It records the decisions shared by all increments and
 selects the only increment that may be worked on next.
 
+For a concise explanation of the scientific problem, the Lester reference
+case, and the Picard/Anderson/Newton-Krylov strategy, read the
+[solver overview](lester-eq14-streamfunction-solver-overview.md).
+
 Read, in order:
 
 1. `AGENTS.md` and the closest local `AGENTS.md`;
-2. `docs/theory/lester-2023-key-claims.md`;
-3. `docs/validation/acceptance-gates.md`;
-4. this dashboard;
-5. the specification linked by `NEXT` below;
-6. `docs/runbooks/lester-increment-workflow.md`.
+2. `docs/plans/active/lester-eq14-streamfunction-solver-overview.md`;
+3. `docs/theory/lester-2023-key-claims.md`;
+4. `docs/validation/acceptance-gates.md`;
+5. this dashboard;
+6. the specification linked by `NEXT` below;
+7. `docs/runbooks/lester-increment-workflow.md`.
 
 The legacy PSPTA invariant-construction route is not part of this plan.
 
