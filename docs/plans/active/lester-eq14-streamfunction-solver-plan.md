@@ -19,11 +19,11 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-00`
-- Active runtime goal: `Establecer el harness incremental versionado del solver de Lester.`
+- NEXT: `SF-01`
+- Active runtime goal: `none`
 - Execution model: strictly sequential
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: none
+- Last completed increment: `SF-00`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`.  The next increment is not enabled until the
@@ -31,7 +31,7 @@ current increment's completion commit has been merged.
 
 ## Master checklist
 
-- [ ] [SF-00 — Increment harness](lester-eq14/increments/SF-00-harness.md)
+- [x] [SF-00 — Increment harness](lester-eq14/increments/SF-00-harness.md)
 - [ ] [SF-01 — Reference test harness](lester-eq14/increments/SF-01-reference-tests.md)
 - [ ] [SF-02 — Discrete operator contract](lester-eq14/increments/SF-02-operator-contract.md)
 - [ ] [SF-03 — Mean-zero projector](lester-eq14/increments/SF-03-mean-zero-projector.md)

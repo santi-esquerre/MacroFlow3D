@@ -1,6 +1,6 @@
 # SF-00 — Increment harness
 
-- State: `validating`
+- State: `done`
 - Goal: `Establecer el harness incremental versionado del solver de Lester.`
 - Depends on: `none`
 - Unlocks: `SF-01`
@@ -10,9 +10,9 @@
 - Human review: `not required`
 - Owner: `Codex`
 - Started: `2026-08-04T18:56Z`
-- Completed: `not completed`
-- PR: `not opened`
-- Commit: `4243495 (base)`
+- Completed: `2026-08-04T19:12Z`
+- PR: `not opened; publication was not requested`
+- Commit: `29bb3be`
 
 ## Scientific or engineering intent
 
@@ -88,14 +88,14 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [ ] Dashboard contains locked decisions and a complete master checklist.
-- [ ] SF-00 through SF-28 specifications exist and pass the checker.
-- [ ] Template and execution runbook are complete.
-- [ ] Root and docs agent routing point to the increment workflow.
-- [ ] Pre-commit runs the increment checker.
-- [ ] Tier A and documentation checks pass.
-- [ ] Final evidence, commit, and PR state are recorded below.
-- [ ] Dashboard marks SF-00 complete and selects SF-01.
+- [x] Dashboard contains locked decisions and a complete master checklist.
+- [x] SF-00 through SF-28 specifications exist and pass the checker.
+- [x] Template and execution runbook are complete.
+- [x] Root and docs agent routing point to the increment workflow.
+- [x] Pre-commit runs the increment checker.
+- [x] Tier A and documentation checks pass.
+- [x] Final evidence, commit, and PR state are recorded below.
+- [x] Dashboard marks SF-00 complete and selects SF-01.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -111,3 +111,4 @@ reference-test harness.  No scientific implementation may begin before then.
 | 2026-08-04T19:02Z | working tree | Added the dashboard, 29 specifications, template, runbook, routing, and structural hook. | `check-lester-increments.sh`, required-docs check, `git diff --check`, ShellCheck, and YAML parsing passed. | Run Tier A. |
 | 2026-08-04T19:05Z | working tree | Canonical local build failed in unchanged vendored code. | GNU 16/15 exposed missing `<cstdint>` in yaml-cpp; a compatibility build progressed but CUDA 13.3 then failed on removed `cub::Sum` usage in Par2. No external source was modified. | Validate with the canonical V100 toolchain. |
 | 2026-08-04T19:12Z | validating | Synchronized through `scripts/remote`; V100 configure, build, CTest, and PSPTA-small smoke passed. | V100 build completed 85 targets; `operator_tests` passed; pipeline completed 500 steps with zero Newton failures. Sync also reported pre-existing undeletable PETSc/SLEPc incomplete directories. | Commit the implementation and close SF-00. |
+| 2026-08-04T19:12Z | `29bb3be`, done | Committed the complete harness and advanced the branch dashboard to SF-01. | All SF-00 checks are satisfied; PR state is explicitly recorded as not opened. | Merge/publish this branch before starting SF-01. |
