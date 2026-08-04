@@ -1,337 +1,251 @@
-# Lester equation (14) streamfunction solver plan
+# Lester equation (14) streamfunction solver — execution dashboard
 
 ## Purpose
 
-This is the authoritative operational plan for new invariant-construction work in MacroFlow3D.
+This is the authoritative execution dashboard for the Lester equation (14)
+streamfunction solver.  It records the decisions shared by all increments and
+selects the only increment that may be worked on next.
 
-The project direction is to design and integrate a numerical solver for the coupled nonlinear Lester et al. equation (14) system that computes two streamfunctions / invariants `psi1`, `psi2` for steady, smooth, locally isotropic 3D Darcy flow.
+Read, in order:
 
-The invariant consumer will be designed after accepted equation (14) invariants exist. Existing PSPTA marching, transport-operator, eigensolver, PETSc/SLEPc, refinement, and transport code are legacy context and possible migration infrastructure, not proof that the equation (14) solver or final transport consumer already exists.
+1. `AGENTS.md` and the closest local `AGENTS.md`;
+2. `docs/theory/lester-2023-key-claims.md`;
+3. `docs/validation/acceptance-gates.md`;
+4. this dashboard;
+5. the specification linked by `NEXT` below;
+6. `docs/runbooks/lester-increment-workflow.md`.
 
-## Current confirmed implementation state
+The legacy PSPTA invariant-construction route is not part of this plan.
 
-Confirmed from the repository on 2026-07-13:
+## Execution state
 
-- `real` is `double` in `src/core/Scalar.hpp`.
-- Structured grids use cell-centered scalar fields with x-fastest indexing `i + nx*(j + ny*k)`.
-- `Grid3D` stores `dx`, `dy`, `dz`, but current multigrid and flow comments state the implementation assumes isotropic spacing.
-- `K` and head are cell-centered in `src/physics/common/fields.cuh`.
-- Darcy velocity is reconstructed on CompactMAC faces: `U(nx+1,ny,nz)`, `V(nx,ny+1,nz)`, `W(nx,ny,nz+1)`.
-- Padded face-field velocity exists for Par2 compatibility.
-- Flow solve targets `-div(K grad h) = rhs` using harmonic face means.
-- Boundary types are Dirichlet, Neumann, Periodic. Periodic boundaries must be paired.
-- Head solvers include CG, standalone MG, and PCG with MG preconditioner.
-- The MG hierarchy uses 2:1 coarsening in all directions and geometric coarsening of `K`.
-- `VarCoeffLaplacian` implements a matrix-free variable-coefficient operator with harmonic face means and legacy sign conventions.
-- `Poisson3DOperator` exists but is homogeneous-Dirichlet `-Delta`, not the equation (14) operator.
-- PSPTA currently has legacy x-marching invariant construction in `PsptaPsiField`, a transport near-nullspace operator `D = v.grad`, SLEPc eigensolver integration, a `RefinementAC` skeleton, and a legacy transport engine.
-- `RefinementAC.cu` is explicitly not implemented.
-- Current configs default to exponential covariance in major smoke/reference cases; Gaussian covariance support exists as `covariance_type: 1`.
+- NEXT: `SF-01`
+- Active runtime goal: `none`
+- Execution model: strictly sequential
+- Canonical state: the state visible on the repository default branch
+- Last completed increment: `SF-00`
 
-## Target mathematical system
+An increment may start only when it is named by `NEXT` and every dependency in
+its specification is `done`.  The next increment is not enabled until the
+current increment's completion commit has been merged.
 
-For scalar, locally isotropic conductivity `k(x)>0`, Lester et al. equation (14) is represented here as:
+## Master checklist
+
+- [x] [SF-00 — Increment harness](lester-eq14/increments/SF-00-harness.md)
+- [ ] [SF-01 — Reference test harness](lester-eq14/increments/SF-01-reference-tests.md)
+- [ ] [SF-02 — Discrete operator contract](lester-eq14/increments/SF-02-operator-contract.md)
+- [ ] [SF-03 — Mean-zero projector](lester-eq14/increments/SF-03-mean-zero-projector.md)
+- [ ] [SF-04 — Projected PCG](lester-eq14/increments/SF-04-projected-pcg.md)
+- [ ] [SF-05 — Multigrid reuse](lester-eq14/increments/SF-05-multigrid-reuse.md)
+- [ ] [SF-06 — Affine-periodic right-hand sides](lester-eq14/increments/SF-06-affine-periodic-rhs.md)
+- [ ] [SF-07 — Streamfunction gradients](lester-eq14/increments/SF-07-gradients.md)
+- [ ] [SF-08 — Hessian-vector products and B](lester-eq14/increments/SF-08-hessian-vector-b.md)
+- [ ] [SF-09 — Nonlinear sources](lester-eq14/increments/SF-09-nonlinear-sources.md)
+- [ ] [SF-10 — Coupled residual](lester-eq14/increments/SF-10-coupled-residual.md)
+- [ ] [SF-11 — Physical diagnostics](lester-eq14/increments/SF-11-physical-diagnostics.md)
+- [ ] [SF-12 — Public API and workspace](lester-eq14/increments/SF-12-public-api-workspace.md)
+- [ ] [SF-13 — Homogeneous solver](lester-eq14/increments/SF-13-homogeneous-solver.md)
+- [ ] [SF-14 — Fixed-relaxation Picard](lester-eq14/increments/SF-14-fixed-picard.md)
+- [ ] [SF-15 — Adaptive Picard](lester-eq14/increments/SF-15-adaptive-picard.md)
+- [ ] [SF-16 — Pipeline, configuration, and output](lester-eq14/increments/SF-16-pipeline-io-config.md)
+- [ ] [SF-17 — Eta and epsilon continuation](lester-eq14/increments/SF-17-eta-epsilon-continuation.md)
+- [ ] [SF-18 — Periodic Gaussian generator](lester-eq14/increments/SF-18-periodic-gaussian-generator.md)
+- [ ] [SF-19 — Affine-periodic Darcy solve](lester-eq14/increments/SF-19-affine-periodic-darcy.md)
+- [ ] [SF-20 — Heterogeneity continuation](lester-eq14/increments/SF-20-heterogeneity-continuation.md)
+- [ ] [SF-21 — Grid continuation](lester-eq14/increments/SF-21-grid-continuation.md)
+- [ ] [SF-22 — Anderson acceleration](lester-eq14/increments/SF-22-anderson.md)
+- [ ] [SF-23 — GPU optimization](lester-eq14/increments/SF-23-gpu-optimization.md)
+- [ ] [SF-24 — V100 benchmark](lester-eq14/increments/SF-24-v100-benchmark.md)
+- [ ] [SF-25 — Matrix-free Jacobian-vector product](lester-eq14/increments/SF-25-matrix-free-jvp.md)
+- [ ] [SF-26 — Restarted GMRES and block preconditioner](lester-eq14/increments/SF-26-gmres-preconditioner.md)
+- [ ] [SF-27 — Globalized Newton-Krylov](lester-eq14/increments/SF-27-newton-krylov.md)
+- [ ] [SF-28 — Mixed-precision preconditioner study](lester-eq14/increments/SF-28-mixed-precision.md)
+
+## Locked mathematical and discrete decisions
+
+For a smooth scalar conductivity `K > 0`, define `q = 1/K` and
 
 ```math
-Delta psi1 - grad(log k).grad(psi1) = S2
-Delta psi2 - grad(log k).grad(psi2) = S1
+A u = -\nabla\cdot(q\nabla u).
+```
+
+Store only periodic, cell-centered fluctuations:
+
+```math
+\psi_1 = \bar v x_2 + \widetilde\psi_1,
+\qquad
+\psi_2 = x_3 + \widetilde\psi_2,
 ```
 
 with
 
 ```math
-S_i =
-((B x grad psi_i).(grad psi1 x grad psi2)) /
-|grad psi1 x grad psi2|^2
+\langle\widetilde\psi_1\rangle=
+\langle\widetilde\psi_2\rangle=0.
 ```
 
-and
+The benchmark affine gradients are
 
 ```math
-B = (grad psi1.grad) grad psi2 - (grad psi2.grad) grad psi1.
+\bar g_1=(0,\bar v,0),\qquad \bar g_2=(0,0,1).
 ```
 
-The ideal constraints are:
+For the fluctuations, solve
 
 ```math
-v = grad psi1 x grad psi2
-v.grad psi1 = 0
-v.grad psi2 = 0
+A\widetilde\psi_1 = \nabla\cdot(q\bar g_1)-\eta qS_2,
+\qquad
+A\widetilde\psi_2 = \nabla\cdot(q\bar g_2)-\eta qS_1.
 ```
 
-Use the equivalent divergent form:
+Locked discretization rules:
+
+- use the actual positive operator `A`; wrap the current legacy-sign operator
+  rather than silently changing all existing flow callers;
+- use the harmonic mean of `q` at faces,
+  `q_f = 2 q_C q_N / (q_C + q_N) = 2 / (K_C + K_N)`;
+- do not obtain `q_f` by inverting the harmonic mean of `K`;
+- assemble affine right-hand sides with the same face coefficients used by `A`;
+- use periodic wrapping in all three directions for the target benchmark;
+- use a mean-zero projection, not `PinSpec`, to remove the periodic null mode;
+- project right-hand sides, iterates, PCG vectors, multigrid corrections,
+  Picard trials, accelerated states, and grid-prolongated states;
+- begin with second-order centered derivatives;
+- compute Hessian-vector products directly; do not store full Hessians;
+- use the radius-one, 19-point union stencil for each streamfunction;
+- evaluate the nonlinear residual with exactly the same discrete `A` and
+  source construction used by the solver;
+- retain double precision through the accepted Picard and V100 benchmark
+  phases.
+
+## Locked nonlinear and continuation policy
+
+Picard starts sequentially: evaluate one authoritative nonlinear state, solve
+the two blocks consecutively with the same operator and multigrid hierarchy,
+then relax both fields as a pair.
+
+Defaults:
+
+- nonlinear tolerance: `1e-6` initially, `1e-8` after mesh convergence;
+- linear relative tolerance: `1e-10`;
+- maximum Picard iterations: `500`;
+- initial relaxation: `0.25`;
+- minimum relaxation: `0.01`;
+- rejected step reduction: `0.5`;
+- accepted-step growth: `1.2` after three easy accepted steps;
+- stagnation: less than 1% residual reduction over ten iterations.
+
+Regularize
 
 ```math
-Delta psi - grad(log k).grad psi = k div((1/k) grad psi).
+d_\epsilon=|\nabla\psi_1\times\nabla\psi_2|^2
+             +(\epsilon v_{\mathrm{rms}})^2.
 ```
 
-Define
+Start at `epsilon=1e-2`, reduce by decades after converged stages, require
+`1e-6` for the first accepted solver, and study `1e-8` later.  Reject a trial
+on NaN/Inf, on more than 1% unexplained degenerate cells, when the unexplained
+fraction exceeds `2*f_previous + 1e-4`, or when the 0.1% percentile collapses
+by more than one decade without a matching Darcy low-speed population.
+
+Continuation order:
+
+1. solve each grid from the previous accepted grid when available;
+2. continue `lambda` in `K_lambda=exp(lambda Y)` with initial step `0.1`,
+   minimum `0.0125`, maximum `0.2`, halving on failure and growing by `1.5`
+   after two easy stages;
+3. keep `eta=1` normally; on a failed lambda stage solve the harmonic-coordinate
+   problem at `eta=0` and ramp `eta` back to one;
+4. reduce `epsilon` only after `lambda=eta=1` is accepted.
+
+## Required physical diagnostics
+
+Use RMS-based, dimensionless normalizations.  With
+`L_ref=(Lx*Ly*Lz)^(1/3)`, report
 
 ```math
-q = 1/k,
-A psi = -div(q grad psi).
+r_i = \frac{\mathrm{RMS}(F_i)}{q_{\mathrm{rms}}g_i/L_{ref}},
+\qquad
+r_F=\sqrt{(r_1^2+r_2^2)/2},
 ```
 
-Then a decoupled nonlinear iteration solves:
+where `g_1=v_rms` and `g_2=1` in the benchmark units.  Also report:
 
-```math
-A psi1 = -q S2
-A psi2 = -q S1
+- L2, Linf, component, magnitude, correlation, and angular errors between
+  reconstructed CompactMAC velocity and Darcy velocity;
+- `RMS(v_D dot grad(psi_i))/(v_D,rms * grad(psi_i),rms)`;
+- `L_ref*RMS(div(v_psi))/v_rms`;
+- min, max, mean, 0.1%, 1%, 5%, and 50% percentiles of `|cross-grad|`;
+- counts below configured relative thresholds, split between cells with
+  genuinely low Darcy speed and unexplained degeneracy;
+- gauge means, raw right-hand-side compatibility defects, linear histories,
+  nonlinear histories, continuation histories, and rejected-step reasons.
+
+The initial CompactMAC reconstruction is expected to be approximately, not
+algebraically, divergence-free.  Its divergence must converge under grid
+refinement.
+
+## Architecture and memory constraints
+
+New invariant construction belongs under `src/physics/streamfunctions/`.  Do
+not extend `src/physics/particles/pspta/`.  Reuse is conditional on the tests
+in SF-02 through SF-05.
+
+The intended public surface is:
+
+```cpp
+struct AffineGauge;
+struct StreamfunctionProblemView;
+struct StreamfunctionFields;
+struct StreamfunctionWorkspace;
+struct StreamfunctionSolveReport;
+
+StreamfunctionSolveReport solve_streamfunctions(
+    CudaContext& context,
+    const StreamfunctionProblemView& problem,
+    const StreamfunctionSolverConfig& config,
+    StreamfunctionFields& fields,
+    StreamfunctionWorkspace& workspace);
 ```
 
-This form is the priority because it avoids explicitly differencing `grad(log k)`, preserves a variable-coefficient diffusion structure, and uses the same linear operator for both streamfunctions for fixed `k`.
+At `256^3`, one double scalar field is 128 MiB.  The sequential Picard design
+must target about 24.6 fine-grid-equivalent scalar fields (about 3.1 GiB), or
+about 3.6–4 GiB including `Y` and Darcy velocity.  Anderson stores four scalar
+fields per history level.  Restarted GMRES stores two scalar fields per coupled
+basis vector; FGMRES adds the preconditioned basis.  No allocation or CPU/GPU
+field transfer is permitted inside hot nonlinear loops.
 
-## Scope assumptions
+## Benchmark progression
 
-Initial work is limited to:
+- operator controls: periodic trigonometric manufactured functions;
+- homogeneous controls: `16^3`, `32^3`, `64^3`;
+- smooth Gaussian smoke: `32^3`, then `64^3`, with
+  `sigma_Y^2={0.25,1,2.25,4}` and fixed seeds;
+- physical mesh study: same continuous periodic realization, physical
+  `ell=1/16`, then `128^3 -> 256^3`;
+- reference run: `[0,1]^3`, `256^3`, `ell=1/16`, `sigma_Y^2=4`,
+  normalized mean velocity one;
+- robustness: 5–10 selected realizations at a validated smaller grid;
+- `sigma_Y^2=6.25` only after the `sigma_Y^2=4` suite is accepted.
 
-- steady Darcy flow;
-- scalar locally isotropic conductivity;
-- `k(x)>0`;
-- sufficiently smooth fields;
-- no stagnation points in the first validation problems;
-- structured domains;
-- mean flow primarily in `x1`;
-- transverse periodic or triply periodic benchmark conditions.
+Exponential covariance, tensor conductivity, a PSPTA consumer, and scientific
+macrodispersion production are outside this execution sequence.
 
-Gaussian-covariance log-conductivity fields are the primary validation case for smooth invariants.
+## Recording and advancement
 
-Exponential-covariance fields are not equivalent. They may be useful later after explicit smoothing, but every such run must record the smoothing scale, resolution dependence, whether the original or regularized problem is being solved, and whether invariants converge under refinement.
+Every increment uses the specification template in
+`docs/plans/increment-template.md` and the runbook in
+`docs/runbooks/lester-increment-workflow.md`.  Real scientific runs also create
+or update a note in `docs/experiments/`.
 
-Tensorial or locally anisotropic conductivity is out of initial scope. Do not assume two global invariants exist there.
+Run before marking an increment complete:
 
-## Architecture hypothesis
-
-Priority hypothesis to verify:
-
-- reuse the existing variable-coefficient operator, PCG, and MG preconditioner for `A psi = -div(q grad psi)` with `q=1/k`.
-
-This is not confirmed yet. Verification must check:
-
-- operator sign convention;
-- whether coefficients should be harmonic means of `q` rather than `K`;
-- boundary treatment for periodic and mean-flow streamfunctions;
-- gauge handling for the nullspace;
-- symmetry / positive definiteness after gauge fixing;
-- compatibility between linear operator residuals and nonlinear differential operators;
-- whether geometric coarsening of `K` is appropriate for `q`;
-- whether the current MG smoother/residual implement the exact same operator.
-
-Do not document MG reuse as accepted until these tests pass.
-
-## Discretization requirements
-
-Before choosing a final discretization, an implementation task must determine:
-
-- storage location for `psi1`, `psi2`;
-- compatible gradient operators;
-- compatible divergence for `A`;
-- how to compute `H(psi2) grad psi1 - H(psi1) grad psi2`;
-- whether Hessian-vector products can be computed directly in local GPU kernels without storing all nine Hessian components;
-- the order of accuracy;
-- boundary-condition behavior for transverse-periodic and triply periodic tests;
-- consistency between the operator used in linear solves and the residual `F(Psi)`.
-
-Avoid mixing unrelated finite-difference formulas for the linear operator, nonlinear source, and validation metrics.
-
-## Incremental strategy
-
-### Stage A: minimal benchmark
-
-Start with small reproducible cases:
-
-- `k=1`;
-- exact expected solution;
-- grids `16^3`, `32^3`, `64^3`;
-- periodic conditions;
-- decomposed fields:
-
-```math
-psi1 = vbar x2 + psi1_tilde
-psi2 = x3 + psi2_tilde
+```bash
+bash scripts/hooks/check-lester-increments.sh
+cmake --preset wsl-debug
+cmake --build build/wsl-debug -j
+ctest --test-dir build/wsl-debug --output-on-failure
 ```
 
-with gauges:
-
-```math
-mean(psi1_tilde)=0
-mean(psi2_tilde)=0
-```
-
-### Stage B: homogeneous linear problem
-
-Solve first with `S1=S2=0`. Use this as the initialization for nonlinear solves.
-
-### Stage C: damped Picard
-
-For `(psi1^n, psi2^n)`:
-
-1. compute gradients;
-2. compute required Hessian-vector products;
-3. build `B`;
-4. compute `S1^n`, `S2^n`;
-5. solve `A psi1_hat = -q S2^n`, `A psi2_hat = -q S1^n`;
-6. relax `psi_i^{n+1} = (1-omega) psi_i^n + omega psi_i_hat`;
-7. restore gauges;
-8. evaluate algebraic and physical residuals.
-
-Anderson acceleration is a later extension, not the first implementation.
-
-### Stage D: continuation
-
-Support continuation in:
-
-- heterogeneity: `k_lambda = exp(lambda Y)`, `lambda: 0 -> 1`;
-- nonlinearity: `A psi1 = -eta q S2`, `A psi2 = -eta q S1`, `eta: 0 -> 1`;
-- grid: `16^3 -> 32^3 -> 64^3 -> 128^3 -> 256^3`.
-
-Reuse the solution from each stage as the initial condition for the next.
-
-### Stage E: matrix-free Newton-Krylov
-
-Only after residuals, Picard, differential operators, and small cases are validated, move toward:
-
-```math
-F(Psi) = [A psi1 + q S2, A psi2 + q S1]^T
-J(Psi) deltaPsi = -F(Psi)
-```
-
-Approximate products without assembling the Jacobian:
-
-```math
-J(Psi) p ~= (F(Psi + epsilon p) - F(Psi)) / epsilon.
-```
-
-Priority preconditioner:
-
-```math
-P = [[A,0],[0,A]].
-```
-
-The intended inverse approximation for each block is the validated multigrid or PCG/MG path.
-
-## Singularity policy
-
-The denominator `|grad psi1 x grad psi2|^2` can become small.
-
-Do not hide this with an arbitrary constant. Initial controlled regularization may use:
-
-```math
-|c|^2 -> |c|^2 + epsilon^2 v_ref^2
-```
-
-where `epsilon` is configurable and logged. Required diagnostics:
-
-- minimum `|c|`;
-- percentiles 0.1%, 1%, 5%;
-- continuation `epsilon -> 0`;
-- distinction between numerical failure and possible physical stagnation.
-
-A result is not converged only because the algebraic residual decreased.
-
-## Validation metrics
-
-Every accepted solver milestone must report more than linear/PDE residuals.
-
-Required metrics:
-
-- coupled residual:
-
-```math
-r_F = sqrt(||F1||_2^2 + ||F2||_2^2)
-```
-
-- velocity reconstruction:
-
-```math
-e_v = ||grad psi1 x grad psi2 - v_D||_2 / ||v_D||_2
-```
-
-- Darcy invariance:
-
-```math
-e_i = ||v_D.grad psi_i||_2 / (||v_D||_2 ||grad psi_i||_2)
-```
-
-- reconstructed-flow divergence:
-
-```math
-e_div = ||div(grad psi1 x grad psi2)||
-```
-
-- non-degeneracy percentiles of `|grad psi1 x grad psi2|`;
-- grid convergence between successive resolutions;
-- conservation of `psi_i(X(t)) - psi_i(X(0))` along trajectories in reconstructed and Darcy velocity fields.
-
-Do not accept a solver on tolerance achievement alone.
-
-## CPU/GPU split
-
-CPU reference is appropriate for:
-
-- small cases;
-- finite-difference verification;
-- Picard/Newton experiments;
-- kernel validation;
-- comparison with external libraries already present or explicitly justified.
-
-GPU production should own:
-
-- operator application;
-- gradients;
-- Hessian-vector products;
-- `S1`, `S2` construction;
-- reductions;
-- Picard loops;
-- multigrid / preconditioning;
-- matrix-free Jacobian products;
-- grids `128^3` and above.
-
-Do not add a heavy dependency without checking the toolchain, CUDA version, target V100/local GPU hardware, deployment, maintenance, and whether existing solvers can be reused.
-
-## Task plan
-
-| # | Task | Probable files/modules | Dependencies | Done criterion | Test | Risk type |
-|---|------|------------------------|--------------|----------------|------|-----------|
-| 1 | `A` operator test with `k=1` | `src/numerics/operators/`, new Lester operator tests | none | `A` matches periodic `-Delta` on manufactured fields and sign is documented | targeted operator executable | engineering |
-| 2 | `A` operator test with smooth variable `k` | numerics operator tests, CPU reference helper | task 1 | manufactured `-div(q grad psi)` converges with refinement | CPU/GPU comparison | research + engineering |
-| 3 | gradient tests | new differential-operator module or PSPTA invariant utilities | task 1 | gradients match manufactured periodic fields | gradient unit test | engineering |
-| 4 | Hessian-vector product tests | local GPU kernels, CPU reference | task 3 | `H(psi) g` matches finite-difference reference | Hessian-vector test | research |
-| 5 | `B` construction test | Lester source-term module | tasks 3-4 | `B=0` for simple analytic controls where expected | `B` unit test | research |
-| 6 | `S1,S2` tests | Lester source-term module | task 5 | controlled regularization and denominator diagnostics work | source-term test | research |
-| 7 | exact uniform-flow case | apps/test config, solver harness | tasks 1-6 | recovers `psi1=vbar*x2`, `psi2=x3` up to gauge | uniform flow executable | engineering |
-| 8 | homogeneous linear solver | PCG/MG wrapper for `A` | tasks 1-2, 7 | solves `S=0`, restores gauges | linear solve test | engineering |
-| 9 | Picard without acceleration | nonlinear solver module | tasks 6, 8 | Picard reduces `r_F` on small cases | Picard smoke | research |
-| 10 | adaptive relaxation | nonlinear solver module | task 9 | rejects worsening steps and logs omega | Picard relaxation test | engineering |
-| 11 | continuation in `eta` | solver orchestration/config | task 10 | staged `eta` path reaches 1 on small cases | continuation smoke | research |
-| 12 | continuation in `lambda` | stochastic/config/orchestration | task 11 | reuses previous solution and records stages | Gaussian small run | research |
-| 13 | grid continuation | solver orchestration, interpolation/prolongation | task 12 | `16^3 -> 64^3` reproducible with metrics | grid ladder | research |
-| 14 | CPU/GPU comparison | CPU reference + GPU kernels | tasks 1-13 | differences within tolerance on small grids | comparison test | engineering |
-| 15 | Anderson acceleration | nonlinear solver module | stable Picard | improves or safely disables when unstable | Anderson benchmark | research |
-| 16 | coupled matrix-free residual | residual module | tasks 6, 9 | `F(Psi)` is validated by finite differences | residual test | engineering |
-| 17 | FGMRES/Newton-Krylov | solver module, possible PETSc or local Krylov | task 16 | Newton step works on small cases | Newton smoke | research |
-| 18 | block preconditioner | PCG/MG adapter for two blocks | task 17 and MG verification | `P^{-1}` reduces Krylov iterations | preconditioner benchmark | engineering |
-| 19 | invariant-consumer integration | `PsptaInvariantField`, possible `PsptaEngine` adapter or replacement, pipeline config | accepted invariants | a transport consumer uses equation (14) invariants with diagnostics | small transport smoke | engineering + science |
-| 20 | scaling and memory analysis | apps/benchmarks, docs/experiments | GPU implementation | memory footprint and runtime recorded for `128^3+` | V100 benchmark | engineering |
-
-## Recording requirements
-
-For every equation (14) experiment, create a note in `docs/experiments/` or update a dedicated run log with:
-
-- question and hypothesis;
-- grid, covariance model, smoothing if any;
-- exact config and command;
-- build directory and commit;
-- residuals and physical metrics above;
-- denominator percentiles;
-- convergence / failure interpretation;
-- whether the result is confirmed, provisional, or an open question.
-
-## Open questions
-
-- Which gauge and boundary formulation is best for throughflow with transverse periodicity?
-- Can the existing MG hierarchy be mathematically reused for `q=1/k` without changing coarsening?
-- Should `psi1`, `psi2` be stored as double for construction and cast only for PSPTA consumption?
-- What is the correct discrete compatibility between CompactMAC Darcy velocity and cell-centered streamfunction gradients?
-- How should multi-valued / affine-periodic mean parts be represented in periodic benchmarks?
-- What denominator regularization path is scientifically acceptable near stagnation or near-degeneracy?
+Add the targeted Gate 2/3A/4 and V100 commands required by the increment.  A
+low algebraic residual alone never completes a scientific increment.

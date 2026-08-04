@@ -24,4 +24,7 @@ Each plan should include:
 ## Active authority
 
 - `active/lester-eq14-streamfunction-solver-plan.md` is authoritative for new invariant-construction work.
+- `active/lester-eq14/increments/` contains the decision-complete, sequential
+  increment specifications and their append-only work logs.  Only the
+  increment selected by the dashboard's `NEXT` field may be active.
 - `archive/pspta-execution-plan.md` and `archive/deep-research-report.md` are historical context only. They are not active implementation plans.

@@ -31,6 +31,23 @@ Do not trade correctness for convenience.
 - Prefer small, reviewable diffs.
 - Do not mix solver changes, transport changes, and tooling changes in the same branch unless explicitly asked.
 
+### Lester increment protocol
+
+For any task in the Lester equation (14) streamfunction path:
+
+1. Read `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`.
+2. Work only on the increment named by its `NEXT` field.
+3. Read that increment specification and
+   `docs/runbooks/lester-increment-workflow.md` completely.
+4. Use the exact documented Goal as the persistent runtime goal when the
+   agent environment supports goals.
+5. Maintain the increment checklist and append-only bitácora during work.
+6. Do not start the next increment until the current completion commit is
+   merged and visible on the default branch.
+
+Run `bash scripts/hooks/check-lester-increments.sh` before committing any
+change to the Lester plan or increment state.
+
 ---
 
 ## Repo map
