@@ -232,12 +232,52 @@ constexpr double kInitialGaugeTolerance = 1.0e-12;
     return project_cpu(residual);
 }
 
+[[nodiscard]] std::vector<real> raw_residual_cpu(const std::vector<real>& q,
+                                                  const std::vector<real>& b,
+                                                  const std::vector<real>& x) {
+    const auto ax = positive_diffusion_cpu(q, x);
+    std::vector<real> residual(kN);
+    for (std::size_t i = 0; i < kN; ++i) residual[i] = b[i] - ax[i];
+    return residual;
+}
+
 class IdentityPreconditioner {
   public:
     void apply(CudaContext& context, DeviceSpan<const real> r, DeviceSpan<real> z) const {
         blas::copy(context, r, z);
     }
 };
+
+class ZeroOperator {
+  public:
+    void apply(CudaContext& context, DeviceSpan<const real>, DeviceSpan<real> output) const {
+        MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(output.data(), 0, output.size() * sizeof(real),
+                                               context.cuda_stream()));
+    }
+};
+
+class ZeroPreconditioner {
+  public:
+    void apply(CudaContext& context, DeviceSpan<const real>, DeviceSpan<real> output) const {
+        MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(output.data(), 0, output.size() * sizeof(real),
+                                               context.cuda_stream()));
+    }
+};
+
+class CountingPreconditioner {
+  public:
+    void apply(CudaContext& context, DeviceSpan<const real> r, DeviceSpan<real> z) const {
+        ++calls;
+        blas::copy(context, r, z);
+    }
+
+    mutable int calls = 0;
+};
+
+[[nodiscard]] bool bitwise_equal(const std::vector<real>& left, const std::vector<real>& right) {
+    return left.size() == right.size() &&
+           std::memcmp(left.data(), right.data(), left.size() * sizeof(real)) == 0;
+}
 
 [[nodiscard]] const char* status_name(solvers::ProjectedPCGStatus status) {
     switch (status) {
@@ -593,6 +633,298 @@ class IdentityPreconditioner {
             "legacy seven-argument pcg_solve remains opt-in unchanged; RMS(P_CPU(xlegacy-xprojected))<=5e-9"};
 }
 
+[[nodiscard]] CaseResult case_projected_pcg_error_status_contract() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b = project_cpu(positive_diffusion_cpu(q, u_star));
+    std::vector<real> b_sentinel(kN), x_sentinel(kN);
+    for (std::size_t i = 0; i < kN; ++i) {
+        b_sentinel[i] = static_cast<real>(-3.25L + static_cast<long double>(i) / kN);
+        x_sentinel[i] = static_cast<real>(7.5L - static_cast<long double>(i) / (2 * kN));
+    }
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+    const solvers::ProjectedPCGConfig invalid_check_every{10, 0, real(1.0e-12)};
+    const solvers::ProjectedPCGConfig normal_config{10, 1, real(1.0e-12)};
+    const solvers::ProjectedPCGConfig zero_iteration_config{0, 1, real(0.5)};
+    const solvers::ProjectedPCGConfig initial_convergence_config{0, 1, real(1.0)};
+
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_b(kN), d_x(kN), d_shared(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    ZeroOperator zero_operator;
+    ZeroPreconditioner zero_preconditioner;
+    constraints::MeanZeroProjector projector;
+
+    solvers::ProjectedPCGWorkspace invalid_workspace;
+    invalid_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b_sentinel.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_x.data(), x_sentinel.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    const auto invalid_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), invalid_check_every, projector, invalid_workspace);
+    std::vector<real> invalid_b_after(kN), invalid_x_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(invalid_b_after.data(), d_b.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(invalid_x_after.data(), d_x.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    context.synchronize();
+    const bool invalid_sentinels = bitwise_equal(b_sentinel, invalid_b_after) &&
+                                   bitwise_equal(x_sentinel, invalid_x_after);
+
+    solvers::ProjectedPCGWorkspace size_workspace;
+    size_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b_sentinel.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_x.data(), x_sentinel.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    const auto size_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b.data(), kN - 1), d_x.span(), normal_config, projector, size_workspace);
+    std::vector<real> size_b_after(kN), size_x_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(size_b_after.data(), d_b.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(size_x_after.data(), d_x.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    context.synchronize();
+    const bool size_sentinels = bitwise_equal(b_sentinel, size_b_after) && bitwise_equal(x_sentinel, size_x_after);
+
+    solvers::ProjectedPCGWorkspace same_span_workspace;
+    same_span_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_shared.data(), x_sentinel.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    const auto same_span_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_shared.span()), d_shared.span(), normal_config, projector, same_span_workspace);
+    std::vector<real> same_span_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(same_span_after.data(), d_shared.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    context.synchronize();
+    const bool same_span_sentinel = bitwise_equal(x_sentinel, same_span_after);
+
+    solvers::ProjectedPCGWorkspace workspace_alias_workspace;
+    workspace_alias_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b_sentinel.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(workspace_alias_workspace.pcg.r.data(), x_sentinel.data(), kN * sizeof(real),
+                                           cudaMemcpyHostToDevice, context.cuda_stream()));
+    const auto workspace_alias_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b.span()), workspace_alias_workspace.pcg.r.span(), normal_config, projector,
+        workspace_alias_workspace);
+    std::vector<real> workspace_alias_b_after(kN), workspace_alias_x_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(workspace_alias_b_after.data(), d_b.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(workspace_alias_x_after.data(), workspace_alias_workspace.pcg.r.data(),
+                                           kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    const bool workspace_alias_sentinels = bitwise_equal(b_sentinel, workspace_alias_b_after) &&
+                                         bitwise_equal(x_sentinel, workspace_alias_x_after);
+
+    solvers::ProjectedPCGWorkspace pap_workspace;
+    pap_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    const auto pap_result = solvers::projected_pcg_solve(context, zero_operator, identity,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), normal_config, projector, pap_workspace);
+
+    solvers::ProjectedPCGWorkspace rz_workspace;
+    rz_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    const auto rz_result = solvers::projected_pcg_solve(context, A, zero_preconditioner,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), normal_config, projector, rz_workspace);
+
+    std::vector<real> nan_rhs = b;
+    nan_rhs[kN / 2] = std::numeric_limits<real>::quiet_NaN();
+    solvers::ProjectedPCGWorkspace nan_workspace;
+    nan_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), nan_rhs.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    const auto nan_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), normal_config, projector, nan_workspace);
+
+    CountingPreconditioner zero_iteration_preconditioner;
+    solvers::ProjectedPCGWorkspace zero_iteration_workspace;
+    zero_iteration_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    const auto zero_iteration_result = solvers::projected_pcg_solve(context, A, zero_iteration_preconditioner,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), zero_iteration_config, projector, zero_iteration_workspace);
+
+    CountingPreconditioner initial_convergence_preconditioner;
+    solvers::ProjectedPCGWorkspace initial_convergence_workspace;
+    initial_convergence_workspace.prepare(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    const auto initial_convergence_result = solvers::projected_pcg_solve(context, A, initial_convergence_preconditioner,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), initial_convergence_config, projector, initial_convergence_workspace);
+
+    const bool statuses = invalid_result.status == solvers::ProjectedPCGStatus::invalid_configuration &&
+        size_result.status == solvers::ProjectedPCGStatus::size_mismatch &&
+        same_span_result.status == solvers::ProjectedPCGStatus::aliasing &&
+        workspace_alias_result.status == solvers::ProjectedPCGStatus::aliasing &&
+        pap_result.status == solvers::ProjectedPCGStatus::breakdown_pAp &&
+        rz_result.status == solvers::ProjectedPCGStatus::breakdown_rz &&
+        nan_result.status == solvers::ProjectedPCGStatus::nonfinite_value &&
+        zero_iteration_result.status == solvers::ProjectedPCGStatus::max_iterations &&
+        initial_convergence_result.status == solvers::ProjectedPCGStatus::converged;
+    const bool no_unexpected_convergence = !invalid_result.converged && !size_result.converged &&
+        !same_span_result.converged && !workspace_alias_result.converged && !pap_result.converged &&
+        !rz_result.converged && !nan_result.converged && !zero_iteration_result.converged &&
+        initial_convergence_result.converged;
+    const bool iteration_and_call_contract = zero_iteration_result.iterations == 0 &&
+        zero_iteration_preconditioner.calls == 0 && initial_convergence_result.iterations == 0 &&
+        initial_convergence_preconditioner.calls == 0;
+    const bool pass = statuses && no_unexpected_convergence && iteration_and_call_contract && invalid_sentinels &&
+        size_sentinels && same_span_sentinel && workspace_alias_sentinels;
+    std::cout << "projected_pcg_contract case=projected_pcg_error_status_contract"
+              << " invalid=" << status_name(invalid_result.status) << " invalid_sentinels=" << invalid_sentinels
+              << " size=" << status_name(size_result.status) << " size_sentinels=" << size_sentinels
+              << " same_span=" << status_name(same_span_result.status) << " same_span_sentinel=" << same_span_sentinel
+              << " workspace_alias=" << status_name(workspace_alias_result.status)
+              << " workspace_alias_sentinels=" << workspace_alias_sentinels
+              << " pAp=" << status_name(pap_result.status) << " rz=" << status_name(rz_result.status)
+              << " nan=" << status_name(nan_result.status)
+              << " max0=" << status_name(zero_iteration_result.status) << ":iter=" << zero_iteration_result.iterations
+              << ":calls=" << zero_iteration_preconditioner.calls
+              << " rtol1=" << status_name(initial_convergence_result.status) << ":iter=" << initial_convergence_result.iterations
+              << ":calls=" << initial_convergence_preconditioner.calls << '\n';
+    return {pass, "projected_pcg_error_status_contract", "gpu-projected-pcg-contract",
+            "17x17x17 q=1 periodic (N=4913)", 0.0, 0.0, "n/a", "n/a",
+            "eight status paths; invalid/size/alias sentinels immutable; only rtol=1 initial check converges"};
+}
+
+[[nodiscard]] CaseResult case_projected_pcg_mutant_no_rhs_projection() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b_compatible = project_cpu(positive_diffusion_cpu(q, u_star));
+    std::vector<real> b_raw = b_compatible;
+    for (real& value : b_raw) value += real(0.375);
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+    const solvers::PCGConfig legacy_config{200, 5, real(1.0e-12), false};
+    const solvers::ProjectedPCGConfig projected_config{2000, kCheckEvery, kRtol};
+
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_b_legacy(kN), d_b_projected(kN), d_x_legacy(kN), d_x_projected(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b_legacy.data(), b_raw.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b_projected.data(), b_raw.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x_legacy.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x_projected.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    solvers::PCGWorkspace legacy_workspace;
+    const auto legacy_result = solvers::pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b_legacy.span()), d_x_legacy.span(), legacy_config, legacy_workspace);
+    constraints::MeanZeroProjector projector;
+    solvers::ProjectedPCGWorkspace projected_workspace;
+    projected_workspace.prepare(kN);
+    const auto projected_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b_projected.span()), d_x_projected.span(), projected_config, projector, projected_workspace);
+    std::vector<real> x_legacy(kN), x_projected(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_legacy.data(), d_x_legacy.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_projected.data(), d_x_projected.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    const double legacy_raw_relative_residual = l2(raw_residual_cpu(q, b_raw, x_legacy)) / l2(b_raw);
+    const double projected_solution_error = rms_difference(project_cpu([&] {
+        std::vector<real> error(kN);
+        for (std::size_t i = 0; i < kN; ++i) error[i] = x_projected[i] - u_star[i];
+        return error;
+    }()), std::vector<real>(kN, real(0.0)));
+    const double projected_gauge = std::abs(static_cast<double>(mean_ld(x_projected)));
+    const bool projected_pass = projected_result.status == solvers::ProjectedPCGStatus::converged &&
+        projected_result.converged && static_cast<double>(projected_result.relative_projected_residual) <= kResidualTolerance &&
+        projected_gauge <= gauge_limit_for(x_projected) && projected_solution_error <= kSolutionTolerance;
+    const bool mutant_rejected = !legacy_result.converged || !std::isfinite(legacy_raw_relative_residual) ||
+        legacy_raw_relative_residual > 1.0e-6;
+    const bool pass = projected_pass && mutant_rejected;
+    std::cout << std::setprecision(12) << "projected_pcg_mutant case=projected_pcg_mutant_no_rhs_projection"
+              << " legacy_converged=" << (legacy_result.converged ? "true" : "false")
+              << " legacy_iterations=" << legacy_result.iterations
+              << " legacy_raw_relative_residual=" << legacy_raw_relative_residual
+              << " projected_status=" << status_name(projected_result.status)
+              << " projected_relative_residual=" << projected_result.relative_projected_residual
+              << " projected_gauge=" << projected_gauge
+              << " projected_solution_error=" << projected_solution_error << '\n';
+    return {pass, "projected_pcg_mutant_no_rhs_projection", "gpu-projected-pcg-mutant",
+            "17x17x17 q=1, b_raw=b_compatible+0.375", static_cast<double>(projected_result.relative_projected_residual),
+            legacy_raw_relative_residual, "n/a", "n/a",
+            "projected solve converges/gauges; unprojected legacy fails or raw CPU ||b_raw-Ax||/||b_raw||>1e-6"};
+}
+
+[[nodiscard]] CaseResult case_projected_pcg_mutant_no_x0_projection() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b = project_cpu(positive_diffusion_cpu(q, u_star));
+    std::vector<real> x0(kN);
+    for (std::size_t iz = 0; iz < kNaxis; ++iz) for (std::size_t iy = 0; iy < kNaxis; ++iy) for (std::size_t ix = 0; ix < kNaxis; ++ix) {
+        const long double x = (static_cast<long double>(ix) + 0.5L) / kNaxis;
+        const long double y = (static_cast<long double>(iy) + 0.5L) / kNaxis;
+        x0[index(ix, iy, iz)] = static_cast<real>(2.75L + 0.17L * std::sin(2.0L * kPi * x) -
+                                                   0.11L * std::cos(2.0L * kPi * y));
+    }
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+    const solvers::PCGConfig legacy_config{2000, kCheckEvery, kRtol, false};
+    const solvers::ProjectedPCGConfig projected_config{2000, kCheckEvery, kRtol};
+
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_b_legacy(kN), d_b_projected(kN), d_x_legacy(kN), d_x_projected(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b_legacy.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b_projected.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_x_legacy.data(), x0.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_x_projected.data(), x0.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    solvers::PCGWorkspace legacy_workspace;
+    const auto legacy_result = solvers::pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b_legacy.span()), d_x_legacy.span(), legacy_config, legacy_workspace);
+    constraints::MeanZeroProjector projector;
+    solvers::ProjectedPCGWorkspace projected_workspace;
+    projected_workspace.prepare(kN);
+    const auto projected_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b_projected.span()), d_x_projected.span(), projected_config, projector, projected_workspace);
+    std::vector<real> x_legacy(kN), x_projected(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_legacy.data(), d_x_legacy.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_projected.data(), d_x_projected.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    const auto quotient_error = [&](const std::vector<real>& x) {
+        std::vector<real> error(kN);
+        for (std::size_t i = 0; i < kN; ++i) error[i] = x[i] - u_star[i];
+        return rms(project_cpu(error));
+    };
+    const double legacy_error = quotient_error(x_legacy);
+    const double projected_error = quotient_error(x_projected);
+    const double legacy_mean = static_cast<double>(mean_ld(x_legacy));
+    const double projected_mean = static_cast<double>(mean_ld(x_projected));
+    const bool quotient_solutions = std::isfinite(legacy_error) && std::isfinite(projected_error) &&
+        legacy_error <= kSolutionTolerance && projected_error <= kSolutionTolerance;
+    const bool projected_pass = projected_result.status == solvers::ProjectedPCGStatus::converged && projected_result.converged &&
+        static_cast<double>(projected_result.relative_projected_residual) <= kResidualTolerance &&
+        std::abs(projected_mean) <= gauge_limit_for(x_projected) &&
+        std::abs(static_cast<double>(projected_result.final_field_mean) - projected_mean) <= reported_gauge_limit_for(x_projected);
+    const bool mutant_rejected = legacy_result.converged && std::abs(legacy_mean) > 1.0e-6;
+    const bool pass = quotient_solutions && projected_pass && mutant_rejected;
+    std::cout << std::setprecision(12) << "projected_pcg_mutant case=projected_pcg_mutant_no_x0_projection"
+              << " legacy_converged=" << (legacy_result.converged ? "true" : "false")
+              << " legacy_iterations=" << legacy_result.iterations << " legacy_mean=" << legacy_mean
+              << " legacy_quotient_error=" << legacy_error << " projected_status=" << status_name(projected_result.status)
+              << " projected_mean=" << projected_mean << " projected_quotient_error=" << projected_error
+              << " projected_relative_residual=" << projected_result.relative_projected_residual << '\n';
+    return {pass, "projected_pcg_mutant_no_x0_projection", "gpu-projected-pcg-mutant",
+            "17x17x17 q=1, compatible b, x0=2.75+T05B modes", projected_error, legacy_error, "n/a", "n/a",
+            "both quotient errors<=5e-9 when finite; projected solve gauges; legacy constant survives with |mean|>1e-6"};
+}
+
 } // namespace
 
 CaseRegistry projected_pcg_case_registry() {
@@ -602,6 +934,9 @@ CaseRegistry projected_pcg_case_registry() {
         {"projected_pcg_incompatible_rhs_contract", case_projected_pcg_incompatible_rhs_contract},
         {"projected_pcg_initial_gauge_contract", case_projected_pcg_initial_gauge_contract},
         {"projected_pcg_legacy_api_unchanged", case_projected_pcg_legacy_api_unchanged},
+        {"projected_pcg_error_status_contract", case_projected_pcg_error_status_contract},
+        {"projected_pcg_mutant_no_rhs_projection", case_projected_pcg_mutant_no_rhs_projection},
+        {"projected_pcg_mutant_no_x0_projection", case_projected_pcg_mutant_no_x0_projection},
     };
 }
 
