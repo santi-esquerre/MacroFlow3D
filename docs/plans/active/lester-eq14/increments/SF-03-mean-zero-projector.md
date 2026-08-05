@@ -1,6 +1,6 @@
 # SF-03 — Mean-zero projector
 
-- State: `validating`
+- State: `awaiting_review`
 - Goal: `Implementar una proyección GPU robusta al subespacio de media cero.`
 - Depends on: `SF-02`
 - Unlocks: `SF-04`
@@ -11,7 +11,7 @@
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-05T00:23Z`
 - Completed: `not completed`
-- PR: `not opened`
+- PR: `#8`
 - Commit: `not recorded`
 
 ## Scientific or engineering intent
@@ -106,3 +106,4 @@ SF-04 may integrate the projector into PCG after this increment is merged.
 | 2026-08-05T01:28Z | `f2a2fbb`, corrective C02 | Removed the unused const `ProjectorFixture::context()` accessor identified during corrective review. | Test-only one-line removal; it eliminates the new-test unused-accessor warning and has no numerical, allocation, stream, or production-code effect. | Reintegrate C01/C02 in topological order and repeat independent validation. |
 | 2026-08-05T01:28Z | `f2a2fbb`, corrective reintegration evidence | Independent corrective reintegration of C01 `136881e -> 20a261a` and C02 `cf32d29 -> f2a2fbb` passed. | REWORK cause: allocation documentation was inaccurate because `ReductionWorkspace` construction can reserve `d_scalar`, and the test had an unused accessor. C01 now documents construction plus prepare semantics truthfully; source audit confirms `project()`/`mean_device()` have no allocation or host sync after exact-size preparation, while `mean_host()` explicitly synchronizes. Checker, fresh Debug configure, one serial `-j1` build, all 7 projector cases, full `26/26` executable suite, focal CTest `1/1`, full CTest `2/2`, and PSPTA smoke passed. The new projector test source emitted no warning; one unrelated legacy `prolong_3d.cu:107` unused `NZ` warning remains. Metrics reproduced: shifted mean `7.83e-18`, CPU/GPU RMS `2.57e-18`, idempotence `6.08e-18`, diagnostic post-mean `9.56e-18`, double RMS `8.59e-10` vs float mutant `6416`, workspace `2815` B, stream RMS `2.57e-18`; smoke head residual `1.02e+01 -> 1.77e-13`, active/exited `387/113`, no stalls/failures. Gate 1 and Gate 2 pass; V100, Gate 3A, and Gate 4 are N/A because this increment does not run the Eq. (14) solver or change reconstruction/tracking. `git diff --check master...HEAD` passed; scope remains SF-03 only. | Master audit and mandatory human review; state, checklist, NEXT, Goal, and PR metadata remain unchanged. |
 | 2026-08-05T01:33Z | `2de232d`, validating | Master audit repeated from the complete diff after corrective reintegration and classified **PASS**; implementation is frozen pending human review. | Personally inspected all nine branch commits and the full 13-file diff against `master=802f5d2`: arithmetic cell-centered gauge, double reduction, exact-size workspace, stream ordering, error paths, ownership, hot-path allocation/synchronization, odd-size coverage, idempotence, and absence of PCG/MG/PSPTA/SF-04 changes are consistent with SF-03. A fresh configure and serial build completed with exit 0 and no warning from the new projector test; 7/7 projector cases, 26/26 executable cases, CTest 2/2, checker, Gate 1, Gate 2, and PSPTA smoke passed. Metrics reproduced exactly: shifted mean `7.83e-18`, CPU/GPU RMS `2.57e-18`, idempotence `6.08e-18`, diagnostic post-mean `9.56e-18`, double RMS `8.59e-10` vs float mutant `6416`, workspace `2815` B; smoke residual `1.02e+01 -> 1.77e-13`, active/exited `387/113`, zero stalls/failures. Gate 3A, Gate 4, and V100 remain N/A for this isolated projector increment. | Open the scientific-core PR, record it, and request mandatory human review without merging. |
+| 2026-08-05T01:34Z | `20c199c`, awaiting_review | Opened ready-for-review PR #8 after the repeated master audit passed and froze implementation changes. | PR #8 targets `master` from `science/lester-sf03-mean-zero-projector`, is open, non-draft, and mergeable. Its description records scope, commands, metrics, residual risks, applicable gates, and files intentionally untouched. GitGuardian security check passed at creation; scientific-core human review remains mandatory. | Await explicit human approval; do not merge, close the Goal, mark SF-03 done, or advance NEXT. |
