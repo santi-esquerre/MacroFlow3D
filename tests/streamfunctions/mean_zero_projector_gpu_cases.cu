@@ -131,7 +131,6 @@ class ProjectorFixture {
 
     void synchronize() const { context_.synchronize(); }
 
-    [[nodiscard]] const CudaContext& context() const { return context_; }
     [[nodiscard]] CudaContext& context() { return context_; }
     [[nodiscard]] DeviceBuffer<real>& values_buffer() { return d_values_; }
     [[nodiscard]] DeviceBuffer<real>& backup_buffer() { return d_backup_; }
