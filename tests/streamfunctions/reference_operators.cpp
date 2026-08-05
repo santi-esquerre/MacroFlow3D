@@ -278,4 +278,76 @@ TrigonometricFixture make_anisotropic_trigonometric_fixture(bool fine) {
     return fixture;
 }
 
+AffineRhsFixture make_affine_rhs_fixture(std::size_t cells_per_axis, bool constant_q) {
+    if (cells_per_axis != 16 && cells_per_axis != 32) {
+        throw std::invalid_argument("affine RHS fixture supports 16^3 or 32^3");
+    }
+    const double h = 1.0 / static_cast<double>(cells_per_axis);
+    AffineRhsFixture fixture{{cells_per_axis, cells_per_axis, cells_per_axis, {h, h, h}}, {}};
+    fixture.q.resize(fixture.grid.cell_count());
+    for (std::size_t iz = 0; iz < cells_per_axis; ++iz) for (std::size_t iy = 0; iy < cells_per_axis; ++iy) for (std::size_t ix = 0; ix < cells_per_axis; ++ix) {
+        const Vec3 p = fixture.grid.cell_center(ix, iy, iz);
+        fixture.q[fixture.grid.index(ix, iy, iz)] = constant_q ? 1.7 :
+            1.40 + 0.15 * std::sin(2.0 * kPi * p.x) + 0.10 * std::cos(2.0 * kPi * p.y) +
+            0.05 * std::sin(2.0 * kPi * p.z);
+    }
+    return fixture;
+}
+
+std::vector<double> affine_rhs_discrete(const Grid& grid, const std::vector<double>& q,
+                                        const Vec3& gradient) {
+    validate_field(grid, q, "q", true);
+    std::vector<double> result(grid.cell_count());
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const auto c = grid.index(ix, iy, iz);
+        const auto xp = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) + 1, grid.nx), iy, iz);
+        const auto xm = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) - 1, grid.nx), iy, iz);
+        const auto yp = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) + 1, grid.ny), iz);
+        const auto ym = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) - 1, grid.ny), iz);
+        const auto zp = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) + 1, grid.nz));
+        const auto zm = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) - 1, grid.nz));
+        const long double qc = q[c];
+        const auto harmonic = [qc](double neighbor) {
+            const long double qn = neighbor;
+            return 2.0L * qc * qn / (qc + qn);
+        };
+        const long double dx = harmonic(q[xp]) - harmonic(q[xm]);
+        const long double dy = harmonic(q[yp]) - harmonic(q[ym]);
+        const long double dz = harmonic(q[zp]) - harmonic(q[zm]);
+        result[c] = static_cast<double>((dx * gradient.x + dy * gradient.y + dz * gradient.z) /
+                                        static_cast<long double>(grid.spacing.x));
+    }
+    return result;
+}
+
+std::vector<double> affine_rhs_continuous(const Grid& grid, const Vec3& gradient) {
+    grid.validate();
+    std::vector<double> result(grid.cell_count());
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const Vec3 p = grid.cell_center(ix, iy, iz);
+        const Vec3 grad_q{0.30 * kPi * std::cos(2.0 * kPi * p.x),
+                          -0.20 * kPi * std::sin(2.0 * kPi * p.y),
+                          0.10 * kPi * std::cos(2.0 * kPi * p.z)};
+        result[grid.index(ix, iy, iz)] = gradient.x * grad_q.x + gradient.y * grad_q.y + gradient.z * grad_q.z;
+    }
+    return result;
+}
+
+long double long_double_mean(const std::vector<double>& values) {
+    if (values.empty()) throw std::invalid_argument("mean requires nonempty values");
+    long double sum = 0.0L;
+    for (double value : values) {
+        if (!std::isfinite(value)) throw std::invalid_argument("mean requires finite values");
+        sum += static_cast<long double>(value);
+    }
+    return sum / static_cast<long double>(values.size());
+}
+
+std::vector<double> mean_zero_projected(const std::vector<double>& values) {
+    const long double mean = long_double_mean(values);
+    std::vector<double> result(values.size());
+    for (std::size_t i = 0; i < values.size(); ++i) result[i] = static_cast<double>(static_cast<long double>(values[i]) - mean);
+    return result;
+}
+
 }  // namespace macroflow3d::streamfunctions::reference

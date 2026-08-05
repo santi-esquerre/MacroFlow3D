@@ -81,4 +81,22 @@ struct TrigonometricFixture {
 // L=(1, 1.5, 2), isotropic h=1/16 and h=1/32 respectively.
 [[nodiscard]] TrigonometricFixture make_anisotropic_trigonometric_fixture(bool fine);
 
+// Independent SF-06 oracle on [0,1]^3.  The stencil deliberately lives in
+// test code and uses long-double arithmetic; it must not call production face
+// coefficient helpers or CUDA kernels.
+struct AffineRhsFixture {
+    Grid grid;
+    std::vector<double> q;
+};
+
+[[nodiscard]] AffineRhsFixture make_affine_rhs_fixture(std::size_t cells_per_axis,
+                                                        bool constant_q = false);
+[[nodiscard]] std::vector<double> affine_rhs_discrete(const Grid& grid,
+                                                       const std::vector<double>& q,
+                                                       const Vec3& gradient);
+[[nodiscard]] std::vector<double> affine_rhs_continuous(const Grid& grid,
+                                                         const Vec3& gradient);
+[[nodiscard]] std::vector<double> mean_zero_projected(const std::vector<double>& values);
+[[nodiscard]] long double long_double_mean(const std::vector<double>& values);
+
 }  // namespace macroflow3d::streamfunctions::reference

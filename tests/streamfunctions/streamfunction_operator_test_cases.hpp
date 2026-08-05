@@ -36,4 +36,8 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // visibly independent from the production kernels.
 [[nodiscard]] CaseRegistry multigrid_reuse_case_registry();
 
+// SF-06 affine-periodic RHS acceptance controls.  Kept separate so their
+// independent long-double oracle cannot accidentally become a production API.
+[[nodiscard]] CaseRegistry affine_periodic_rhs_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
