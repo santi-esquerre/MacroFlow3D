@@ -275,9 +275,11 @@ class IdentityPreconditioner {
         return error;
     }()), std::vector<real>(kN, real(0.0)));
     const double field_rms = rms(x);
-    const double gauge = std::abs(static_cast<double>(mean_ld(x)));
+    const double cpu_field_mean = static_cast<double>(mean_ld(x));
+    const double reported_field_mean = static_cast<double>(result.final_field_mean);
+    const double gauge = std::abs(cpu_field_mean);
     const double gauge_limit = kGaugeFactor * std::numeric_limits<real>::epsilon() * std::max(field_rms, 1.0);
-    const double reported_gauge = std::abs(static_cast<double>(result.final_field_mean));
+    const double reported_gauge = std::abs(reported_field_mean);
     const double reported_gauge_comparison_limit =
         kReportedGaugeComparisonFactor * std::numeric_limits<real>::epsilon() * std::max(field_rms, 1.0);
     const bool rhs_immutable = std::memcmp(b_original.data(), b_after.data(), kN * sizeof(real)) == 0;
@@ -296,7 +298,7 @@ class IdentityPreconditioner {
     const bool pass = result.status == solvers::ProjectedPCGStatus::converged && result.converged &&
         static_cast<double>(result.relative_projected_residual) <= kResidualTolerance &&
         gauge <= gauge_limit && reported_gauge <= gauge_limit &&
-        std::abs(reported_gauge - gauge) <= reported_gauge_comparison_limit &&
+        std::abs(reported_field_mean - cpu_field_mean) <= reported_gauge_comparison_limit &&
         solution_error <= kSolutionTolerance && rhs_immutable &&
         residual_difference <= residual_comparison_limit && fourier_pass;
     std::cout << std::setprecision(12) << "projected_pcg_metrics case=" << name
@@ -309,6 +311,8 @@ class IdentityPreconditioner {
               << " cpu_residual=" << independent_residual
               << " residual_difference=" << residual_difference
               << " residual_limit=" << residual_comparison_limit
+              << " cpu_field_mean=" << cpu_field_mean
+              << " reported_field_mean=" << reported_field_mean
               << " gauge=" << gauge
               << " reported_gauge=" << reported_gauge
               << " gauge_limit=" << gauge_limit
