@@ -5,6 +5,8 @@
  * @brief Shared cell-centered positive coefficient face policy.
  */
 
+#include <cuda_runtime.h>
+
 #include "../../core/Scalar.hpp"
 
 namespace macroflow3d {
