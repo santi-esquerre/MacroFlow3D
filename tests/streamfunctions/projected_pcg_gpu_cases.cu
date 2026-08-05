@@ -36,8 +36,8 @@ constexpr double kSolutionTolerance = 5.0e-9;
 constexpr double kFourierRelativeTolerance = 1.0e-11;
 constexpr double kFourierPointwiseTolerance = 1.0e-10;
 constexpr double kCpuGpuResidualRelativeTolerance = 1.0e-11;
-// Six face terms and harmonic divisions accumulate at O(eps*||b||); 4096 eps
-// is a fixed, deliberately conservative CPU-long-double/GPU-double floor.
+// 4096 eps is a fixed, deliberately conservative CPU-long-double/GPU-double
+// comparison floor.
 constexpr double kCpuGpuResidualRoundoffFactor = 4096.0;
 constexpr double kGaugeFactor = 100.0;
 constexpr double kReportedGaugeComparisonFactor = 200.0;
@@ -221,6 +221,14 @@ constexpr double kMutationRelativeRoundoffFloor =
            std::max(std::abs(reference), 1.0);
 }
 
+[[nodiscard]] double cpu_gpu_true_residual_limit(double cpu_true_residual,
+                                                 double reported_true_residual) {
+    const double scale = std::max(
+        {std::abs(cpu_true_residual), std::abs(reported_true_residual), 1.0});
+    return (kCpuGpuResidualRelativeTolerance +
+            kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon()) * scale;
+}
+
 [[nodiscard]] double gauge_limit_for(const std::vector<real>& values) {
     return kGaugeFactor * std::numeric_limits<real>::epsilon() * std::max(rms(values), 1.0);
 }
@@ -345,11 +353,16 @@ class CountingPreconditioner {
     }());
     const double independent_residual = l2(cpu_residual);
     const double reported_residual = static_cast<double>(result.final_projected_residual);
-    const double residual_scale = std::max({l2(b_original), l2(positive_diffusion_cpu(q, x)), 1.0});
     const double residual_difference = std::abs(independent_residual - reported_residual);
     const double residual_comparison_limit =
-        kCpuGpuResidualRelativeTolerance * std::max({independent_residual, reported_residual, 1.0}) +
-        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() * residual_scale;
+        cpu_gpu_true_residual_limit(independent_residual, reported_residual);
+    constexpr double kZeroReportedResidual = 0.0;
+    const double zero_report_mutant_difference =
+        std::abs(independent_residual - kZeroReportedResidual);
+    const double zero_report_mutant_limit =
+        cpu_gpu_true_residual_limit(independent_residual, kZeroReportedResidual);
+    const bool zero_report_mutant_rejected =
+        zero_report_mutant_difference > zero_report_mutant_limit;
     const double solution_error = rms_difference(project_cpu([&] {
         std::vector<real> error(kN);
         for (std::size_t i = 0; i < kN; ++i) error[i] = x[i] - u_star[i];
@@ -381,7 +394,7 @@ class CountingPreconditioner {
         gauge <= gauge_limit && reported_gauge <= gauge_limit &&
         std::abs(reported_field_mean - cpu_field_mean) <= reported_gauge_comparison_limit &&
         solution_error <= kSolutionTolerance && rhs_immutable &&
-        residual_difference <= residual_comparison_limit && fourier_pass;
+        residual_difference <= residual_comparison_limit && zero_report_mutant_rejected && fourier_pass;
     std::cout << std::setprecision(12) << "projected_pcg_metrics case=" << name
               << " status=" << status_name(result.status)
               << " iterations=" << result.iterations
@@ -392,6 +405,9 @@ class CountingPreconditioner {
               << " cpu_residual=" << independent_residual
               << " residual_difference=" << residual_difference
               << " residual_limit=" << residual_comparison_limit
+              << " zero_report_mutant_difference=" << zero_report_mutant_difference
+              << " zero_report_mutant_limit=" << zero_report_mutant_limit
+              << " zero_report_mutant_rejected=" << (zero_report_mutant_rejected ? "true" : "false")
               << " cpu_field_mean=" << cpu_field_mean
               << " reported_field_mean=" << reported_field_mean
               << " gauge=" << gauge
@@ -473,10 +489,8 @@ class CountingPreconditioner {
     const double cpu_raw_defect = compatibility_defect_cpu(b_raw);
     const double raw_residual = l2(residual_cpu(q, b_raw, x_raw));
     const double raw_residual_difference = std::abs(raw_residual - static_cast<double>(raw_result.final_projected_residual));
-    const double raw_residual_limit = kCpuGpuResidualRelativeTolerance *
-        std::max({raw_residual, static_cast<double>(raw_result.final_projected_residual), 1.0}) +
-        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() *
-        std::max({l2(b_raw), l2(positive_diffusion_cpu(q, x_raw)), 1.0});
+    const double raw_residual_limit =
+        cpu_gpu_true_residual_limit(raw_residual, static_cast<double>(raw_result.final_projected_residual));
     const double raw_solution_error = rms_difference(project_cpu([&] {
         std::vector<real> error(kN);
         for (std::size_t i = 0; i < kN; ++i) error[i] = x_raw[i] - u_star[i];
@@ -515,7 +529,8 @@ class CountingPreconditioner {
               << " raw_l2=" << raw_result.raw_rhs_l2_norm << " cpu_raw_l2=" << cpu_raw_l2
               << " raw_defect=" << raw_result.raw_rhs_compatibility_defect << " cpu_raw_defect=" << cpu_raw_defect
               << " reported_residual=" << raw_result.final_projected_residual << " cpu_residual=" << raw_residual
-              << " residual_difference=" << raw_residual_difference << " raw_gauge=" << raw_gauge
+              << " residual_difference=" << raw_residual_difference << " residual_limit=" << raw_residual_limit
+              << " raw_gauge=" << raw_gauge
               << " solution_error=" << raw_solution_error << " compatible_solution_error=" << compatible_solution_error
               << " projected_solution_difference=" << projected_solution_difference
               << " raw_rhs_immutable=" << (raw_rhs_immutable ? "true" : "false") << '\n';
@@ -619,10 +634,8 @@ class CountingPreconditioner {
     const double quotient_difference = rms(project_cpu(difference));
     const double projected_cpu_residual = l2(residual_cpu(q, b, x_projected));
     const double projected_residual_difference = std::abs(projected_cpu_residual - static_cast<double>(projected_result.final_projected_residual));
-    const double projected_residual_limit = kCpuGpuResidualRelativeTolerance *
-        std::max({projected_cpu_residual, static_cast<double>(projected_result.final_projected_residual), 1.0}) +
-        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() *
-        std::max({l2(b), l2(positive_diffusion_cpu(q, x_projected)), 1.0});
+    const double projected_residual_limit = cpu_gpu_true_residual_limit(
+        projected_cpu_residual, static_cast<double>(projected_result.final_projected_residual));
     const bool pass = legacy_result.converged && projected_result.converged &&
         projected_result.status == solvers::ProjectedPCGStatus::converged &&
         quotient_difference <= kSolutionTolerance &&
@@ -632,7 +645,10 @@ class CountingPreconditioner {
     std::cout << std::setprecision(12) << "projected_pcg_contract case=projected_pcg_legacy_api_unchanged"
               << " legacy_iterations=" << legacy_result.iterations << " legacy_residual=" << legacy_result.final_residual
               << " projected_iterations=" << projected_result.iterations << " projected_residual=" << projected_result.final_projected_residual
-              << " projected_cpu_residual=" << projected_cpu_residual << " quotient_difference=" << quotient_difference
+              << " projected_cpu_residual=" << projected_cpu_residual
+              << " residual_difference=" << projected_residual_difference
+              << " residual_limit=" << projected_residual_limit
+              << " quotient_difference=" << quotient_difference
               << " projected_gauge=" << mean_ld(x_projected) << '\n';
     return {pass, "projected_pcg_legacy_api_unchanged", "gpu-projected-pcg-contract",
             "17x17x17 q=1 periodic (N=4913)", static_cast<double>(projected_result.relative_projected_residual),
@@ -961,11 +977,8 @@ class CountingPreconditioner {
     context.synchronize();
     const double cpu_true_residual = l2(residual_cpu(q, b, x));
     const double cpu_true_relative_residual = cpu_true_residual / l2(b);
-    const double residual_scale = std::max({l2(b), l2(positive_diffusion_cpu(q, x)), 1.0});
-    const double residual_comparison_limit =
-        kCpuGpuResidualRelativeTolerance *
-            std::max({cpu_true_residual, static_cast<double>(result.final_projected_residual), 1.0}) +
-        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() * residual_scale;
+    const double residual_comparison_limit = cpu_gpu_true_residual_limit(
+        cpu_true_residual, static_cast<double>(result.final_projected_residual));
     const double relative_comparison_limit = residual_comparison_limit / std::max(l2(b), 1.0);
     const real mutant_recursive_relative_residual = real(0.0);
     const bool mutant_would_falsely_pass = mutant_recursive_relative_residual <= config.rtol;
@@ -984,6 +997,7 @@ class CountingPreconditioner {
               << " cpu_true_residual=" << cpu_true_residual
               << " gpu_true_relative=" << result.relative_projected_residual
               << " cpu_true_relative=" << cpu_true_relative_residual
+              << " residual_limit=" << residual_comparison_limit
               << " fake_recursive_relative=" << mutant_recursive_relative_residual << '\n';
     return {pass, "projected_pcg_mutant_recursive_residual", "gpu-projected-pcg-mutant",
             "17x17x17 q=1, compatible b, x0=0, max_iter=0", cpu_true_relative_residual,
