@@ -138,11 +138,11 @@ HeadSolveResult solve_head(DeviceSpan<real> h, DeviceSpan<const real> K, const G
         // =====================================================================
         // Plain CG (no preconditioner)
         // =====================================================================
-        // VarCoeffLaplacian produces a NEGATIVE definite operator: A = -∇·(K∇)
+        // VarCoeffLaplacian produces L = div_h(K grad_h), a negative operator.
         // CG requires a POSITIVE definite operator (SPD).
         //
-        // Solution: Use NegatedOperator wrapper to make A_pos = -A (SPD),
-        // and negate the RHS: A_pos*h = -b solves A*h = b.
+        // Solution: Use NegatedOperator wrapper to make A_pos = -L (SPD),
+        // and negate the RHS: A_pos*h = -b solves L*h = b.
         //
         // This is mathematically equivalent and allows standard CG to work.
         // =====================================================================
@@ -182,7 +182,7 @@ HeadSolveResult solve_head(DeviceSpan<real> h, DeviceSpan<const real> K, const G
         // =====================================================================
         // PCG with MG preconditioner (PREFERRED for production)
         // =====================================================================
-        // VarCoeffLaplacian produces a NEGATIVE definite operator: A = -∇·(K∇)
+        // VarCoeffLaplacian produces L = div_h(K grad_h), a negative operator.
         //
         // The MG V-cycle acts as preconditioner M^{-1} ≈ A^{-1}.
         // Since A is negative, M^{-1} is also "negative" in the sense that

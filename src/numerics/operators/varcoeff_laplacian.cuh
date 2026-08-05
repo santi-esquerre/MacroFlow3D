@@ -2,18 +2,18 @@
 
 /**
  * @file varcoeff_laplacian.cuh
- * @brief Variable-coefficient Laplacian operator for CG/MG comparison
+ * @brief Legacy variable-coefficient divergence operator for CG/MG comparison
  * @ingroup numerics_operators
  *
- * This operator implements the SAME discrete Laplacian used by the multigrid
+ * This operator implements the SAME discrete divergence operator used by the multigrid
  * smoother and residual computation:
- *   (A*h)_C = sum_6faces( K_face * (h_C - h_neighbor) ) / dx²
+ *   (L(K)h)_C = -sum_6faces( K_face * (h_C - h_neighbor) ) / dx²
  *
  * where K_face is the harmonic mean:
  *   K_face = 2 / (1/K_C + 1/K_neighbor)
  *
  * This allows direct comparison between CG solve and MG solve on the same
- * mathematical operator.
+ * mathematical legacy operator.
  *
  * ## Pin support (for singular systems)
  *
@@ -35,10 +35,10 @@ namespace operators {
 using macroflow3d::PinSpec;
 
 /**
- * Variable-coefficient Laplacian operator: -∇·(K∇h)
+ * Legacy variable-coefficient operator L(K) = div_h(K grad_h).
  *
- * Stores references to grid, K field, and boundary conditions.
- * The K field must remain valid for the lifetime of the operator.
+ * Stores copies of the grid and boundary conditions plus a non-owning K field.
+ * The K buffer must remain valid for the lifetime of the operator.
  */
 class VarCoeffLaplacian {
   public:
@@ -48,7 +48,7 @@ class VarCoeffLaplacian {
                       PinSpec pin = {} // Optional pin spec
     );
 
-    // Matrix-free apply: y = A*x
+    // Matrix-free apply: y = L(K)*x
     // Uses harmonic mean for face conductivities
     // Handles Dirichlet/Neumann/Periodic BCs
     // If pin enabled: y[pin_index] = x[pin_index] (identity row)

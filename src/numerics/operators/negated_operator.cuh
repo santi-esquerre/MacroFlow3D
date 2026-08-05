@@ -4,18 +4,20 @@
  * @file negated_operator.cuh
  * @brief Wrapper to negate an operator for CG/PCG
  *
- * Problem: VarCoeffLaplacian produces A = -∇·(K∇·), which is NEGATIVE definite.
- *          CG/PCG require a POSITIVE definite operator.
+ * Problem: VarCoeffLaplacian produces L = div_h(K grad_h), which is negative
+ *          semidefinite under periodic boundary conditions.
+ *          CG/PCG require a positive-definite operator after their chosen
+ *          boundary or gauge handling.
  *
- * Solution: Wrap A as -A (negate output), making it SPD.
- *           The solver sees: (-A)*x = -b, which solves A*x = b.
+ * Solution: Wrap L as -L (negate output), making it positive semidefinite.
+ *           The solver sees: (-L)*x = -b, which solves L*x = b.
  *
  * Usage:
- *   VarCoeffLaplacian A_neg(...);  // Negative definite
- *   NegatedOperator<VarCoeffLaplacian> A_pos(A_neg);  // Positive definite
+ *   VarCoeffLaplacian L_neg(...);  // Negative semidefinite
+ *   NegatedOperator<VarCoeffLaplacian> A_pos(L_neg);  // Positive semidefinite
  *   pcg_solve(ctx, A_pos, b_negated, x, ...);
  *
- * Important: The RHS must also be negated: if A*x = b, then (-A)*x = -b.
+ * Important: The RHS must also be negated: if L*x = b, then (-L)*x = -b.
  */
 
 #include "../../core/DeviceSpan.cuh"

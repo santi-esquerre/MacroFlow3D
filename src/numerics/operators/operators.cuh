@@ -13,5 +13,8 @@
 #include "varcoeff_laplacian.cuh"
 
 // Negated operator wrapper (converts negative-definite to positive-definite)
-// Essential for using CG/PCG with our negative Laplacian
+// Essential for using CG/PCG with legacy negative-semidefinite operators
 #include "negated_operator.cuh"
+
+// Explicit positive A(q) = -div_h(q grad_h) for periodic Lester callers.
+#include "lester_positive_diffusion_operator.cuh"
