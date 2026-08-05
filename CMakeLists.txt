@@ -339,6 +339,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/reference_operators.cpp
         tests/streamfunctions/streamfunction_operator_tests.cpp
         tests/streamfunctions/streamfunction_operator_gpu_cases.cu
+        tests/streamfunctions/mean_zero_projector_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
