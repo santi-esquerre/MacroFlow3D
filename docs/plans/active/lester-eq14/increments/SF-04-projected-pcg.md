@@ -1,6 +1,6 @@
 # SF-04 — Projected PCG
 
-- State: `pending`
+- State: `active`
 - Goal: `Resolver el operador periódico singular mediante PCG proyectado.`
 - Depends on: `SF-03`
 - Unlocks: `SF-05`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf04-projected-pcg`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-05T12:20Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -94,3 +94,4 @@ SF-05 may add the multigrid preconditioner to this accepted projected solve.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-05T12:20Z | `c6a66e7`, active | Verified the SF-03 implementation and procedural closeout on the default branch, completed its runtime Goal, created the exact SF-04 Goal, and created the canonical SF-04 worktree. | `master=origin/master=c6a66e7`; increment checker passed with `next=SF-04`; SF-03 is `done` with 7/7 checklist after PR #8 and closeout PR #9; no other Lester Goal is unfinished. | Establish the existing PCG/default-caller contract, projected recurrence points, diagnostics, and manufactured-test DAG before implementation. |

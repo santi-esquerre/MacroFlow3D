@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-04`
-- Active runtime goal: `none`
+- Active runtime goal: `SF-04`
 - Execution model: strictly sequential
 - Canonical state: the state visible on the repository default branch
 - Last completed increment: `SF-03`
