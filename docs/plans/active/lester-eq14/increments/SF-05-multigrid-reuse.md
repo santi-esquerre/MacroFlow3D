@@ -1,6 +1,6 @@
 # SF-05 — Multigrid reuse
 
-- State: `pending`
+- State: `active`
 - Goal: `Validar y adaptar el multigrilla cell-centered como precondicionador de A(q).`
 - Depends on: `SF-04`
 - Unlocks: `SF-06`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf05-multigrid-reuse`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-05T15:11Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -101,3 +101,4 @@ operator and preconditioner.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-05T15:11Z | `c4d77c3`, active | Verified SF-05 is the dashboard `NEXT`, created the exact persistent runtime Goal, and created the canonical SF-05 branch/worktree after completing the required scientific, numerical, validation, workflow, architecture, and code preflight. | `master=origin/master=c4d77c3`; increment checker passed with `next=SF-05`; SF-04 is `done`; Goal is `Validar y adaptar el multigrilla cell-centered como precondicionador de A(q).`; existing MG uses the legacy negative-sign operator, coefficient buffers named `K`, `PinSpec`, and no per-level mean-zero projection. | Build the explicit SF-05 task DAG around coefficient hierarchy, projected sign adapter, quantitative controls, and legacy-flow regression evidence. |
