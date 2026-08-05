@@ -1,6 +1,6 @@
 # SF-03 — Mean-zero projector
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar una proyección GPU robusta al subespacio de media cero.`
 - Depends on: `SF-02`
 - Unlocks: `SF-04`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf03-mean-zero-projector`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-05T00:23Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -96,3 +96,4 @@ SF-04 may integrate the projector into PCG after this increment is merged.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-05T00:23Z | `802f5d2`, active | Verified the reviewed SF-02 implementation and procedural closeout on the default branch, created the exact SF-03 runtime Goal, and created the canonical SF-03 worktree. | `master=origin/master=802f5d2`; increment checker passed with `next=SF-03`; SF-02 is `done`; SF-03 depends only on SF-02. | Audit existing reduction primitives and stream/allocation contracts, then construct the SF-03 task DAG. |
