@@ -1,6 +1,6 @@
 # SF-07 — Streamfunction gradients
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar gradientes periódicos cell-centered con contribuciones afines.`
 - Depends on: `SF-06`
 - Unlocks: `SF-08`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf07-gradients`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A operator subset`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-05T18:35Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -93,3 +93,4 @@ SF-08 may use the accepted total gradients in Hessian-vector products and `B`.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-05T18:35Z | active; master=`origin/master=031e1af` | Activated SF-07 documentation state. | Checker PASS (`next=SF-07`); dependency SF-06 done; persistent Goal `Implementar gradientes periódicos cell-centered con contribuciones afines.`; branch `science/lester-sf07-gradients`; worktree `~/src/MacroFlow3D/.agents/worktrees/lester-sf07-gradients`. | Build DAG. |
