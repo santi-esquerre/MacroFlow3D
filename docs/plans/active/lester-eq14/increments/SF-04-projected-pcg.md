@@ -1,6 +1,6 @@
 # SF-04 — Projected PCG
 
-- State: `active`
+- State: `validating`
 - Goal: `Resolver el operador periódico singular mediante PCG proyectado.`
 - Depends on: `SF-03`
 - Unlocks: `SF-05`
@@ -78,10 +78,10 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [ ] Optional projected PCG path is implemented.
-- [ ] Raw RHS compatibility and final gauge are reported.
-- [ ] Manufactured periodic solves meet tolerance.
-- [ ] Existing PCG callers and tests remain unchanged.
+- [x] Optional projected PCG path is implemented.
+- [x] Raw RHS compatibility and final gauge are reported.
+- [x] Manufactured periodic solves meet tolerance.
+- [x] Existing PCG callers and tests remain unchanged.
 - [ ] Human review and evidence are recorded.
 - [ ] Dashboard marks SF-04 complete and selects SF-05.
 <!-- completion-checklist:end -->
@@ -108,3 +108,4 @@ SF-05 may add the multigrid preconditioner to this accepted projected solve.
 | 2026-08-05T13:55Z | `73b2877`, root audit REWORK | The independent integration passed, but the root audit found that the CPU/GPU true-residual comparison adds a roundoff floor scaled by `max(||b||,||Ax||,1)` rather than by the two residuals being compared. | For the constant manufactured solve, the accepted limit is `2.288e-09`, larger than the correct reported residual `1.419e-09`; a false reported residual of zero would therefore pass this oracle. Observed correct CPU/GPU residual differences are only `6.04e-16` (constant) and `4.91e-15` (smooth), so this is a mutation-sensitivity defect, not a solver failure. Classification: REWORK, Gate 2 not yet accepted by the root auditor. | SF-04-C01 must scale both tolerance terms with `max(|r_cpu|,|r_gpu|,1)`, prove the zero-report mutant is rejected at convergence, and rerun independent integration. |
 | 2026-08-05T14:04Z | `69ff0d2`, corrective accepted | SF-04-C01 centralized the true-residual comparison as `(1e-11 + 4096 eps) max(|r_cpu|,|r_gpu|,1)` in every manufactured, incompatible, legacy, and recursive-residual contract, and added an explicit zero-report mutant at converged constant/smooth solves. | Correct CPU/GPU differences remain `6.04e-16`/`4.91e-15` against the tightened `1.091e-11` limit, while zero-report differences are `1.419e-09`/`7.180e-10` and are rejected. All ten cases and the full runner passed. The first full CTest lacked `run_operator_tests` because only the streamfunction target had been built; that missing target was built serially and CTest then passed 2/2. No solver, tolerance, state, or dashboard code changed. | Cherry-pick only `69ff0d2` through a new integrator, repeat Gate 1 + Gate 2, then repeat the root audit from the complete canonical diff. |
 | 2026-08-05T14:09Z | `d64a09c`, reintegration validation | SF-04-T08 independently verified that `69ff0d2` is the single test-only correction from the canonical REWORK parent `485e213` (the intervening canonical `89110b7` changes only this bitácora), then cherry-picked it as `d64a09c`. The centralized helper is `(1e-11 + 4096 eps) max(|r_cpu|,|r_gpu|,1)` in the manufactured, incompatible-RHS, legacy-API, and recursive-residual contracts; no `b`/`Ax` residual scaling remains. | `diff --check` and checker passed; fresh `wsl-debug` configure, one complete serial build, and incremental `-j` no-op passed. `--list` found 36 cases; all ten `projected_pcg_*` cases, runner, `run_operator_tests` 8/8, focal CTest 1/1, full CTest 2/2, and PSPTA smoke passed. Constant/smooth: 5/35 iterations, CPU/GPU residual differences `6.035e-16`/`4.913e-15` within `1.091e-11`; zero-report mutants `1.419e-09`/`7.180e-10` were rejected and printed `true`. `pcg.cuh` is unchanged from pre-correction and its legacy block matches `174878a`; smoke preserved 10 head iterations, `1.02e+01 -> 1.77e-13`, active/exited `387/113`, zero stalls/failures. Gate 1 PASS; Gate 2 PASS; Gate 3A/Gate 4/V100 N/A. | Root audit and required human review; do not advance state, checklist, or NEXT. Residual risk remains later measurement of host reductions/projector synchronization and GPU memory. |
+| 2026-08-05T14:12Z | `e2ca5aa`, root audit PASS / validating | The root auditor repeated the complete review from the final diff after C01: mathematical sign and quotient-space recurrence, periodic cell-centered gauge, raw compatibility, true residual, vector projection/ownership, alias rejection, loop allocation/synchronization surface, legacy preservation, positive and intentional-failure tests, scope, gates, and reproducibility all satisfy SF-04. | Personal rerun: incremental build no-op, full streamfunction runner `36/36`, `run_operator_tests` `8/8`, CTest `2/2`, and PSPTA smoke passed. Constant/smooth relres are `5.666e-13`/`2.266e-13`; final means are `5.79e-18`/`1.16e-17`; CPU solution errors are `1.01e-14`/`2.18e-15`; tightened residual limits are `1.091e-11`, and both converged zero-report mutants are rejected. Legacy head and transport baseline are unchanged. Classification: PASS; state moved to `validating` and code is frozen. | Publish the reviewed scope, move to `awaiting_review`, and request the required human review without merging or advancing NEXT. |
