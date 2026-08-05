@@ -58,19 +58,22 @@
  *
  * Let dx² = grid.dx * grid.dx (the actual grid spacing squared).
  *
- * The legacy operator Lx is computed WITHOUT dx² scaling in the stencil, i.e.:
- *   Lx = sum_6faces( K_face * (x_C - x_neighbor) )
+ * Define the unscaled positive stencil sum:
+ *   D(x)_C = sum_6faces( K_face * (x_C - x_neighbor) )
  *
- * Then:
- *   - Residual: r = b - Lx / dx²
- *   - GSRB update: x = (result - rhs * dx²) / aC
+ * The discrete legacy operator is therefore:
+ *   Lx = -D(x) / dx²
+ *
+ * Then the residual and GSRB update are:
+ *   - Residual: r = b - Lx = b + D(x) / dx²
+ *   - GSRB update: x_C = (sum_neighbors(K_face * x_neighbor) - b * dx²) / aC
  *
  * where:
  *   - result = sum_neighbors(K_face * x_neighbor)
  *   - aC = sum_6faces(K_face) = diagonal coefficient
  *   - rhs = right-hand side (from problem or previous level)
  *
- * This convention comes from discretizing: -∇·(K∇h) / dx² = rhs / dx²
+ * This convention comes from discretizing: ∇·(K∇h) = rhs.
  *
  * ============================================================================
  * BOUNDARY CONDITIONS
@@ -100,12 +103,13 @@
  *     = (result - rhs*dxdx) / aC       [where dxdx = h*h in legacy]
  *
  * Legacy residual interior (update_int kernel):
- *   result = -sum( 2*(h_C - h_neighbor) / (1/K_C + 1/K_neighbor) )
- *   r = rhs - result/dxdx
+ *   D(h) = sum( 2*(h_C - h_neighbor) / (1/K_C + 1/K_neighbor) )
+ *   result = -D(h)
+ *   r = rhs - result/dxdx = rhs + D(h)/dxdx
  *
  * Current implementation (Task 1 compliant):
  *   dx2 = grid.dx * grid.dx
- *   Residual: r = b - Ax / dx2
+ *   Residual: r = b - Lx = b + D(x) / dx2
  *   GSRB: x = (result - b * dx2) / aC
  *
  * ============================================================================
