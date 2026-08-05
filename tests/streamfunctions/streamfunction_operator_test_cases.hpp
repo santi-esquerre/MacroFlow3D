@@ -31,4 +31,9 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // explicit CPU long-double stencils, kept separate from the GPU operator.
 [[nodiscard]] CaseRegistry projected_pcg_case_registry();
 
+// SF-05 quantitative acceptance controls for the reused, projected positive
+// multigrid hierarchy.  Kept separate so their CPU long-double oracle remains
+// visibly independent from the production kernels.
+[[nodiscard]] CaseRegistry multigrid_reuse_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
