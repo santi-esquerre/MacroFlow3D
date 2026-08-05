@@ -183,12 +183,17 @@ set(BLAS_SOURCES
     src/numerics/blas/axpby.cu
     src/numerics/blas/dot.cu
     src/numerics/blas/nrm2.cu
+    src/numerics/blas/sum.cu
     src/numerics/blas/cg_kernels.cu
 )
 
 set(SOLVER_SOURCES
     src/numerics/solvers/preconditioner.cu
     src/numerics/solvers/mg_preconditioner.cu
+)
+
+set(CONSTRAINT_SOURCES
+    src/numerics/constraints/MeanZeroProjector.cu
 )
 
 set(OPERATOR_SOURCES
@@ -245,6 +250,7 @@ add_library(macroflow3d_lib STATIC
     ${RUNTIME_SOURCES}
     ${BLAS_SOURCES}
     ${SOLVER_SOURCES}
+    ${CONSTRAINT_SOURCES}
     ${OPERATOR_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
@@ -333,6 +339,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/reference_operators.cpp
         tests/streamfunctions/streamfunction_operator_tests.cpp
         tests/streamfunctions/streamfunction_operator_gpu_cases.cu
+        tests/streamfunctions/mean_zero_projector_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
