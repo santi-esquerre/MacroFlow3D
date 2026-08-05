@@ -33,6 +33,7 @@ static_assert(std::is_same_v<real, double>, "SF-05 acceptance controls require d
 constexpr long double kPi = 3.141592653589793238462643383279502884L;
 constexpr double kRoundoff = 4096.0 * std::numeric_limits<real>::epsilon();
 constexpr double kResidualLimit = 1.0e-10;
+constexpr double kSolverTolerance = 1.0e-12;
 constexpr double kGaugeFactor = 4096.0;
 
 [[nodiscard]] std::size_t idx(int n, int x, int y, int z) {
@@ -398,8 +399,8 @@ struct SolveMetrics {
     wi.prepare(b.size());
     wm.prepare(b.size());
     // Identity is a reference solve, not subject to the SF-05 MG cap.
-    solvers::ProjectedPCGConfig identity_cfg{3000, 1, 1e-12};
-    solvers::ProjectedPCGConfig mg_cfg{100, 1, 1e-12};
+    solvers::ProjectedPCGConfig identity_cfg{3000, 1, kSolverTolerance};
+    solvers::ProjectedPCGConfig mg_cfg{100, 1, kSolverTolerance};
     Identity identity;
     const auto ri = solvers::projected_pcg_solve(c, A, identity, db.span(), xi.span(), identity_cfg,
                                                  projector, wi);
@@ -422,7 +423,8 @@ struct SolveMetrics {
                    mg_rel,
                    rms(d),
                    ri.converged && rm.converged && id_rel <= kResidualLimit &&
-                       mg_rel <= kResidualLimit && rm.iterations <= 100 && rms(d) <= 1e-8 &&
+                       mg_rel <= kResidualLimit && rm.iterations <= 100 &&
+                       rms(d) <= kSolverTolerance &&
                        rm.iterations < ri.iterations};
     return z;
 }
@@ -438,14 +440,15 @@ struct SolveMetrics {
               << " N32_mg_relres=" << a.mg_res << " N64_identity_iters=" << b.id_iter
               << " N64_mg_iters=" << b.mg_iter << " N64_id_relres=" << b.id_res
               << " N64_mg_relres=" << b.mg_res << " growth=" << growth
-              << " solution_rms=" << std::max(a.solution, b.solution) << '\n';
+              << " solution_rms=" << std::max(a.solution, b.solution)
+              << " solution_rms_limit=" << kSolverTolerance << '\n';
     return {pass,
             name,
             "gpu-mg-reuse",
             "32^3->64^3",
             a.mg_res,
             b.mg_res,
-            "relres<=1e-10; iters<=100; growth<=1.5",
+            "relres<=1e-10; iters<=100; growth<=1.5; solution_rms<=1e-12",
             std::to_string(growth),
             "true CPU residual, reference agreement, and Identity reduction"};
 }
