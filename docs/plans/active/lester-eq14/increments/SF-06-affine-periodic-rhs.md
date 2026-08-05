@@ -1,6 +1,6 @@
 # SF-06 — Affine-periodic right-hand sides
 
-- State: `pending`
+- State: `active`
 - Goal: `Representar correctamente las partes afines y ensamblar sus lados derechos periódicos.`
 - Depends on: `SF-05`
 - Unlocks: `SF-07`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf06-affine-periodic-rhs`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-05T17:28Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -96,3 +96,4 @@ SF-07 may calculate total gradients from the accepted affine representation.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-05T17:28Z | active | Activated SF-06 after the required documentation preflight and created the exact persistent runtime Goal in the canonical branch/worktree. | Master preflight confirmed `master=origin/master=5c7f7217612012b22c12da28c6535cf9910ff2d0`; this branch is `science/lester-sf06-affine-periodic-rhs` at that base in `~/src/MacroFlow3D/.agents/worktrees/lester-sf06-affine-periodic-rhs`; the increment checker passed with `next=SF-06`; SF-05 is `done`; Goal is `Representar correctamente las partes afines y ensamblar sus lados derechos periódicos.` | Build and execute the SF-06 DAG for affine gauge ownership and periodic RHS assembly. |
