@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-06`
-- Active runtime goal: `none`
+- Active runtime goal: `SF-06 — Representar correctamente las partes afines y ensamblar sus lados derechos periódicos.`
 - Execution model: strictly sequential
 - Canonical state: the state visible on the repository default branch
 - Last completed increment: `SF-05`

@@ -213,6 +213,7 @@ set(MULTIGRID_SOURCES
 )
 
 set(PHYSICS_SOURCES
+    src/physics/streamfunctions/affine_periodic_rhs.cu
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
@@ -344,6 +345,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/mean_zero_projector_gpu_cases.cu
         tests/streamfunctions/projected_pcg_gpu_cases.cu
         tests/streamfunctions/multigrid_reuse_gpu_cases.cu
+        tests/streamfunctions/affine_periodic_rhs_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests

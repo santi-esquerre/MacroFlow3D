@@ -16,6 +16,7 @@
 
 #include "../../core/BCSpecDevice.cuh"
 #include "../../runtime/cuda_check.cuh"
+#include "face_coefficient.cuh"
 #include "varcoeff_laplacian.cuh"
 #include <cassert>
 
@@ -53,12 +54,12 @@ __global__ void varcoeff_apply_interior_kernel(const real* __restrict__ x,
         real KC = K[idx];
 
         // Harmonic mean for each face
-        real Kxm = 2.0 / (1.0 / KC + 1.0 / K[idx - 1]);
-        real Kxp = 2.0 / (1.0 / KC + 1.0 / K[idx + 1]);
-        real Kym = 2.0 / (1.0 / KC + 1.0 / K[idx - Nx]);
-        real Kyp = 2.0 / (1.0 / KC + 1.0 / K[idx + Nx]);
-        real Kzm = 2.0 / (1.0 / KC + 1.0 / K[idx - stride]);
-        real Kzp = 2.0 / (1.0 / KC + 1.0 / K[idx + stride]);
+        real Kxm = harmonic_mean_positive_cell_coefficient(KC, K[idx - 1]);
+        real Kxp = harmonic_mean_positive_cell_coefficient(KC, K[idx + 1]);
+        real Kym = harmonic_mean_positive_cell_coefficient(KC, K[idx - Nx]);
+        real Kyp = harmonic_mean_positive_cell_coefficient(KC, K[idx + Nx]);
+        real Kzm = harmonic_mean_positive_cell_coefficient(KC, K[idx - stride]);
+        real Kzp = harmonic_mean_positive_cell_coefficient(KC, K[idx + stride]);
 
         // Compute sum(K_face*(xC-xN))
         // Legacy divergence form: y = -sum(K_face*(xC-xN))/dx².
@@ -105,7 +106,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
         if (i > 0) {
             int n_idx = idx - 1;
             real Kn = K[n_idx];
-            real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+            real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
             Ax += Kh * (xC - x[n_idx]);
             aC += Kh;
         } else {
@@ -114,7 +115,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             if (bc_type == BCType::Periodic) {
                 int n_idx = (Nx - 1) + j * Nx + k * Nx * Ny;
                 real Kn = K[n_idx];
-                real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+                real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
                 Ax += Kh * (xC - x[n_idx]);
                 // Note: periodic neighbors do NOT add to aC for pin
             } else if (bc_type == BCType::Dirichlet) {
@@ -129,7 +130,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
         if (i < Nx - 1) {
             int n_idx = idx + 1;
             real Kn = K[n_idx];
-            real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+            real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
             Ax += Kh * (xC - x[n_idx]);
             aC += Kh;
         } else {
@@ -137,7 +138,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             if (bc_type == BCType::Periodic) {
                 int n_idx = 0 + j * Nx + k * Nx * Ny;
                 real Kn = K[n_idx];
-                real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+                real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
                 Ax += Kh * (xC - x[n_idx]);
             } else if (bc_type == BCType::Dirichlet) {
                 // Legacy convention: BC value is in RHS, operator only contributes diagonal
@@ -149,7 +150,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
         if (j > 0) {
             int n_idx = idx - Nx;
             real Kn = K[n_idx];
-            real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+            real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
             Ax += Kh * (xC - x[n_idx]);
             aC += Kh;
         } else {
@@ -157,7 +158,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             if (bc_type == BCType::Periodic) {
                 int n_idx = i + (Ny - 1) * Nx + k * Nx * Ny;
                 real Kn = K[n_idx];
-                real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+                real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
                 Ax += Kh * (xC - x[n_idx]);
             } else if (bc_type == BCType::Dirichlet) {
                 // Legacy convention: BC value is in RHS, operator only contributes diagonal
@@ -169,7 +170,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
         if (j < Ny - 1) {
             int n_idx = idx + Nx;
             real Kn = K[n_idx];
-            real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+            real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
             Ax += Kh * (xC - x[n_idx]);
             aC += Kh;
         } else {
@@ -177,7 +178,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             if (bc_type == BCType::Periodic) {
                 int n_idx = i + 0 * Nx + k * Nx * Ny;
                 real Kn = K[n_idx];
-                real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+                real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
                 Ax += Kh * (xC - x[n_idx]);
             } else if (bc_type == BCType::Dirichlet) {
                 // Legacy convention: BC value is in RHS, operator only contributes diagonal
@@ -190,7 +191,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
         if (k > 0) {
             int n_idx = idx - stride;
             real Kn = K[n_idx];
-            real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+            real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
             Ax += Kh * (xC - x[n_idx]);
             aC += Kh;
         } else {
@@ -198,7 +199,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             if (bc_type == BCType::Periodic) {
                 int n_idx = i + j * Nx + (Nz - 1) * stride;
                 real Kn = K[n_idx];
-                real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+                real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
                 Ax += Kh * (xC - x[n_idx]);
             } else if (bc_type == BCType::Dirichlet) {
                 // Legacy convention: BC value is in RHS, operator only contributes diagonal
@@ -210,7 +211,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
         if (k < Nz - 1) {
             int n_idx = idx + stride;
             real Kn = K[n_idx];
-            real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+            real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
             Ax += Kh * (xC - x[n_idx]);
             aC += Kh;
         } else {
@@ -218,7 +219,7 @@ __global__ void varcoeff_apply_boundary_kernel(const real* __restrict__ x,
             if (bc_type == BCType::Periodic) {
                 int n_idx = i + j * Nx + 0 * stride;
                 real Kn = K[n_idx];
-                real Kh = 2.0 / (1.0 / KC + 1.0 / Kn);
+                real Kh = harmonic_mean_positive_cell_coefficient(KC, Kn);
                 Ax += Kh * (xC - x[n_idx]);
             } else if (bc_type == BCType::Dirichlet) {
                 // Legacy convention: BC value is in RHS, operator only contributes diagonal
