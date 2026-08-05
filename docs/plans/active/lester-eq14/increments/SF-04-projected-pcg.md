@@ -1,6 +1,6 @@
 # SF-04 — Projected PCG
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Resolver el operador periódico singular mediante PCG proyectado.`
 - Depends on: `SF-03`
 - Unlocks: `SF-05`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-05T12:20Z`
-- Completed: `not completed`
+- Completed: `2026-08-05T14:28Z`
 - PR: `#10`
-- Commit: `not recorded`
+- Commit: `ef324c6`
 
 ## Scientific or engineering intent
 
@@ -82,8 +82,8 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Raw RHS compatibility and final gauge are reported.
 - [x] Manufactured periodic solves meet tolerance.
 - [x] Existing PCG callers and tests remain unchanged.
-- [ ] Human review and evidence are recorded.
-- [ ] Dashboard marks SF-04 complete and selects SF-05.
+- [x] Human review and evidence are recorded.
+- [x] Dashboard marks SF-04 complete and selects SF-05.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -111,3 +111,4 @@ SF-05 may add the multigrid preconditioner to this accepted projected solve.
 | 2026-08-05T14:12Z | `e2ca5aa`, root audit PASS / validating | The root auditor repeated the complete review from the final diff after C01: mathematical sign and quotient-space recurrence, periodic cell-centered gauge, raw compatibility, true residual, vector projection/ownership, alias rejection, loop allocation/synchronization surface, legacy preservation, positive and intentional-failure tests, scope, gates, and reproducibility all satisfy SF-04. | Personal rerun: incremental build no-op, full streamfunction runner `36/36`, `run_operator_tests` `8/8`, CTest `2/2`, and PSPTA smoke passed. Constant/smooth relres are `5.666e-13`/`2.266e-13`; final means are `5.79e-18`/`1.16e-17`; CPU solution errors are `1.01e-14`/`2.18e-15`; tightened residual limits are `1.091e-11`, and both converged zero-report mutants are rejected. Legacy head and transport baseline are unchanged. Classification: PASS; state moved to `validating` and code is frozen. | Publish the reviewed scope, move to `awaiting_review`, and request the required human review without merging or advancing NEXT. |
 | 2026-08-05T14:16Z | `0335909`, PR #10 / awaiting review | Published the exact root-audited SF-04 branch and opened draft PR #10 with scope, validation commands, numerical evidence, remaining risks, and intentionally untouched files. | Remote branch `science/lester-sf04-projected-pcg` points at the frozen audit commit; GitHub PR #10 targets `master`. The code remains frozen, SF-04 remains the active Goal, and `NEXT` remains SF-04 until the required human review and merge are visible on the default branch. | Commit this state transition, push it to PR #10, mark the PR ready, and await explicit human review. |
 | 2026-08-05T14:17Z | `b7cf82e`, PR #10 ready for review | Pushed the `awaiting_review` transition and converted PR #10 from draft to ready. | GitHub reports head `b7cf82e`, base `master`, state `OPEN`, and the GitGuardian check in progress. No human review decision is attached yet. | Await human review and the completed remote check; do not merge, complete the Goal, or advance `NEXT`. |
+| 2026-08-05T14:28Z | `ef324c6`, done | Required human review was completed and PR #10 was merged to `master`; the user explicitly confirmed the approved merge. | GitHub records PR #10 as `MERGED` at `2026-08-05T14:28:26Z`, merge commit `ef324c62405e84d2b0465f9caa611efa6fcd582d`, with GitGuardian `SUCCESS`. Accepted Gate 1 + Gate 2 evidence remains: projected cases and full runner passed, `run_operator_tests` `8/8`, CTest `2/2`, and PSPTA smoke retained its 10-iteration baseline. Closeout checker is required to report `next=SF-05`; residual risk is limited to later SF-23 measurement of host reductions/projector synchronization and GPU memory, while sampled RSS excludes GPU allocation. | SF-04 completo; enable and preflight SF-05 only after this closeout is merged on the default branch. |
