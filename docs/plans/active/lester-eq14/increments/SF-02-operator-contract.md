@@ -1,6 +1,6 @@
 # SF-02 — Discrete operator contract
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Fijar y demostrar el contrato discreto del operador periódico A=-div(q grad).`
 - Depends on: `SF-01`
 - Unlocks: `SF-03`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-04T22:01Z`
-- Completed: `not completed`
+- Completed: `2026-08-05T00:16Z`
 - PR: `#6`
-- Commit: `not recorded`
+- Commit: `0e27e5e`
 
 ## Scientific or engineering intent
 
@@ -87,8 +87,8 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Harmonic-q face tests pass.
 - [x] Nullspace, symmetry, energy, and convergence thresholds pass.
 - [x] Existing flow tests and smoke pass unchanged.
-- [ ] Human review and evidence are recorded.
-- [ ] Dashboard marks SF-02 complete and selects SF-03.
+- [x] Human review and evidence are recorded.
+- [x] Dashboard marks SF-02 complete and selects SF-03.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -108,3 +108,4 @@ SF-03 may use this accepted operator contract to define its gauge projector.
 | 2026-08-04T22:39Z | `5ed8712`, validating | Master audit classified SF-02 `PASS` and froze implementation changes pending human review. | Independently inspected every commit and the complete diff against `master`; re-derived the sign, `q/h^2` stencil, harmonic face placement, periodic x/y/z wraps, constant gauge mode, symmetry and face-energy identity; checked buffer ownership and absence of allocations/synchronization inside `apply`; confirmed Flow executable tokens and the CPU oracle are unchanged and no SF-03+ work is present. Re-ran checker, incremental build, all 19 cases, full CTest 2/2, and the 500-step PSPTA smoke with head residual `1.77e-13` and zero stalls/failures. Nonlinear residual, velocity reconstruction, invariance, divergence, cross-product percentiles, epsilon dependence, continuation, Gate 3A/4, and V100 are not applicable to this linear operator-contract increment. The inaccurate pre-existing generic pin comment is recorded as deferred and cannot affect the pin-free Lester wrapper. | Commit the validating state, publish the scientific PR, then mark `awaiting_review` and request mandatory human review. |
 | 2026-08-04T22:41Z | `8c08515`, awaiting_review | Pushed the frozen SF-02 branch and opened draft PR `#6` with scope, exact commands, Gate 2 metrics, residual risks, and intentionally untouched files. | Remote head matched audited local `8c08515`; PR base is `master` at `0fefaa9`; the PR contains 6 commits and 12 changed files, all belonging to SF-02 activation, implementation, tests, and evidence. No merge or auto-merge was enabled. | Publish this state update, mark PR `#6` ready, and request mandatory human review. |
 | 2026-08-04T22:42Z | `07f4b7c`, awaiting_review | Published the state update and marked PR `#6` ready for mandatory human review. | GitHub reports PR `#6` open, non-draft, mergeable, base `master`, head `science/lester-sf02-operator-contract`; no auto-merge or merge action is enabled. Implementation remains frozen. | Await explicit human approval or review findings; do not merge, complete the Goal, clean worktrees, or start SF-03. |
+| 2026-08-05T00:16Z | `0e27e5e`, done | Human reviewer explicitly approved and merged PR `#6`; recorded the closure after the merge became visible on the default branch. | User evidence: “Revisada y mergeada”. GitHub reports PR `#6` closed/merged at `2026-08-05T00:16:38Z`, merge commit `0e27e5e`; `master=origin/master=0e27e5e`. The already reproduced validation remains: checker; `cmake --preset wsl-debug`; serialized build; all 19 runner cases; CTest 2/2; PSPTA smoke (`mg_cg` residual `1.02e+01 -> 1.77e-13`); Gate 2 including normalized `RMS(A1)=0`, symmetry `1.1721108e-16`, and manufactured orders `1.953998/1.952429`. Residual risks remain the pin-free wrapper’s intentionally deferred generic `PinSpec` comment/convention and the production operator’s isotropic-grid assumption. | Merge this procedural closeout by PR, verify `next=SF-03` on the default branch, then complete the SF-02 runtime Goal. |
