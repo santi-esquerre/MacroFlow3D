@@ -190,6 +190,7 @@ set(BLAS_SOURCES
 set(SOLVER_SOURCES
     src/numerics/solvers/preconditioner.cu
     src/numerics/solvers/mg_preconditioner.cu
+    src/numerics/solvers/projected_positive_mg_preconditioner.cu
 )
 
 set(CONSTRAINT_SOURCES
@@ -202,15 +203,16 @@ set(OPERATOR_SOURCES
 )
 
 set(MULTIGRID_SOURCES
+    src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
     src/multigrid/transfer/prolong_3d.cu
     src/multigrid/smoothers/residual_3d.cu
     src/multigrid/smoothers/gsrb_3d.cu
     src/multigrid/cycle/v_cycle.cu
+    src/multigrid/cycle/projected_positive_v_cycle.cu
 )
 
 set(PHYSICS_SOURCES
-    src/physics/flow/coarsen_K.cu
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
@@ -341,6 +343,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_operator_gpu_cases.cu
         tests/streamfunctions/mean_zero_projector_gpu_cases.cu
         tests/streamfunctions/projected_pcg_gpu_cases.cu
+        tests/streamfunctions/multigrid_reuse_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests

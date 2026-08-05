@@ -6,6 +6,9 @@
 // Multigrid types
 #include "mg_types.hpp"
 
+// Coefficient hierarchy construction
+#include "coefficient_hierarchy.cuh"
+
 // Transfer operators
 #include "transfer/prolong_3d.cuh"
 #include "transfer/restrict_3d.cuh"
@@ -16,6 +19,7 @@
 
 // V-cycle
 #include "cycle/v_cycle.cuh"
+#include "cycle/projected_positive_v_cycle.cuh"
 
 // Note: No namespace re-export to avoid pollution.
 // Use macroflow3d::multigrid::* explicitly.

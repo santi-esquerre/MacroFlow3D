@@ -9,6 +9,8 @@
 namespace macroflow3d {
 namespace multigrid {
 
+enum class GSRBColorOrder { RedBlack, BlackRed };
+
 /**
  * @brief Gauss-Seidel Red-Black smoother
  * @ingroup multigrid_smoothers
@@ -29,6 +31,12 @@ namespace multigrid {
 void gsrb_smooth_3d(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> x,
                     DeviceSpan<const real> b, DeviceSpan<const real> K, int num_iters,
                     const BCSpec& bc, PinSpec pin = {});
+
+// The explicit order is required when composing an adjoint GSRB sweep.  The
+// default overload above remains red-then-black for legacy callers.
+void gsrb_smooth_3d_ordered(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> x,
+                            DeviceSpan<const real> b, DeviceSpan<const real> K, int num_iters,
+                            const BCSpec& bc, GSRBColorOrder order, PinSpec pin = {});
 
 } // namespace multigrid
 } // namespace macroflow3d

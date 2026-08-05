@@ -368,6 +368,12 @@ __global__ void gsrb_vertex_kernel(Grid3D grid, BCSpecDevice bc, DeviceSpan<real
 void gsrb_smooth_3d(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> x,
                     DeviceSpan<const real> b, DeviceSpan<const real> K, int num_iters,
                     const BCSpec& bc, PinSpec pin) {
+    gsrb_smooth_3d_ordered(ctx, grid, x, b, K, num_iters, bc, GSRBColorOrder::RedBlack, pin);
+}
+
+void gsrb_smooth_3d_ordered(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> x,
+                            DeviceSpan<const real> b, DeviceSpan<const real> K, int num_iters,
+                            const BCSpec& bc, GSRBColorOrder order, PinSpec pin) {
     const int Nx = grid.nx, Ny = grid.ny, Nz = grid.nz;
     const size_t n = grid.num_cells();
 
@@ -388,189 +394,191 @@ void gsrb_smooth_3d(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> x,
 
     dim3 face_block(16, 16);
     int edge_block = 256;
+    const bool first_color = order == GSRBColorOrder::RedBlack;
+    const bool second_color = !first_color;
 
     for (int iter = 0; iter < num_iters; ++iter) {
         // RED pass
-        gsrb_interior_kernel<<<grid_dim, block, 0, ctx.cuda_stream()>>>(grid, x, b, K, true);
+        gsrb_interior_kernel<<<grid_dim, block, 0, ctx.cuda_stream()>>>(grid, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         // Faces RED
         dim3 face_grid_yz((Ny + 15) / 16, (Nz + 15) / 16);
         gsrb_face_kernel<XMIN>
-            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<XMAX>
-            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         dim3 face_grid_xz((Nx + 15) / 16, (Nz + 15) / 16);
         gsrb_face_kernel<YMIN>
-            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<YMAX>
-            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         dim3 face_grid_xy((Nx + 15) / 16, (Ny + 15) / 16);
         gsrb_face_kernel<ZMIN>
-            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<ZMAX>
-            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         // Edges RED
         int edge_grid_z = (Nz + edge_block - 1) / edge_block;
         gsrb_edge_kernel<XMIN_YMIN>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMIN_YMAX>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_YMIN>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_YMAX>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         int edge_grid_y = (Ny + edge_block - 1) / edge_block;
         gsrb_edge_kernel<XMIN_ZMIN>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMIN_ZMAX>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_ZMIN>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_ZMAX>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         int edge_grid_x = (Nx + edge_block - 1) / edge_block;
         gsrb_edge_kernel<YMIN_ZMIN>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMIN_ZMAX>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMAX_ZMIN>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMAX_ZMAX>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         // Vertices RED (pin1stCell only affects XMIN_YMIN_ZMIN)
         gsrb_vertex_kernel<XMIN_YMIN_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, pin.enabled);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, pin.enabled);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMIN_YMIN_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMIN_YMAX_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMIN_YMAX_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMIN_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMIN_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMAX_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMAX_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, true, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, first_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         // BLACK pass (same structure, is_red=false)
-        gsrb_interior_kernel<<<grid_dim, block, 0, ctx.cuda_stream()>>>(grid, x, b, K, false);
+        gsrb_interior_kernel<<<grid_dim, block, 0, ctx.cuda_stream()>>>(grid, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         gsrb_face_kernel<XMIN>
-            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<XMAX>
-            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<face_grid_yz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<YMIN>
-            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<YMAX>
-            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<face_grid_xz, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<ZMIN>
-            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_face_kernel<ZMAX>
-            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<face_grid_xy, face_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         gsrb_edge_kernel<XMIN_YMIN>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMIN_YMAX>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_YMIN>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_YMAX>
-            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_z, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMIN_ZMIN>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMIN_ZMAX>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_ZMIN>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<XMAX_ZMAX>
-            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_y, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMIN_ZMIN>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMIN_ZMAX>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMAX_ZMIN>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_edge_kernel<YMAX_ZMAX>
-            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false);
+            <<<edge_grid_x, edge_block, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 
         gsrb_vertex_kernel<XMIN_YMIN_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, pin.enabled);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, pin.enabled);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMIN_YMIN_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMIN_YMAX_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMIN_YMAX_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMIN_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMIN_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMAX_ZMIN>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
         gsrb_vertex_kernel<XMAX_YMAX_ZMAX>
-            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, false, false);
+            <<<1, 1, 0, ctx.cuda_stream()>>>(grid, bc_dev, x, b, K, second_color, false);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
 }

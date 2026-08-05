@@ -4,6 +4,7 @@
  */
 
 #include "../../multigrid/cycle/v_cycle.cuh"
+#include "../../multigrid/coefficient_hierarchy.cuh"
 #include "../../numerics/blas/blas.cuh"
 #include "../../numerics/operators/negated_operator.cuh"
 #include "../../numerics/operators/varcoeff_laplacian.cuh"
@@ -13,7 +14,6 @@
 #include "../../numerics/solvers/pcg.cuh"
 #include "../../numerics/solvers/preconditioner.cuh"
 #include "../../runtime/cuda_check.cuh"
-#include "coarsen_K.cuh"
 #include "rhs_head.cuh"
 #include "solve_head.cuh"
 #include <cmath>
@@ -101,21 +101,15 @@ HeadSolveResult solve_head(DeviceSpan<real> h, DeviceSpan<const real> K, const G
     mg_cfg.coarse_solve_iters = cfg.mg_coarse_iters;
     mg_cfg.verbose = false;
 
-    // === 2. Copy K to finest level and coarsen ===
-    // Copy K to level 0
-    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(hier.levels[0].K.data(), K.data(), n * sizeof(real),
-                                           cudaMemcpyDeviceToDevice, ctx.cuda_stream()));
-
-    // Coarsen K to all levels (geometric mean)
-    for (int l = 0; l < hier.num_levels() - 1; ++l) {
-        coarsen_K(ctx, hier.levels[l + 1].grid, hier.levels[l].grid,
-                  DeviceSpan<const real>(hier.levels[l].K.data(), hier.levels[l].K.size()),
-                  DeviceSpan<real>(hier.levels[l + 1].K.data(), hier.levels[l + 1].K.size()));
-    }
+    // === 2. Populate the reusable coefficient hierarchy ===
+    // For Darcy flow, the generic coefficient c is conductivity K. Geometric
+    // 2x2x2 coarsening therefore preserves the legacy hierarchy exactly.
+    populate_coefficient_hierarchy(ctx, hier, K);
 
     // === 3. Set up RHS (b = 0 + Dirichlet contributions) ===
     build_rhs_head(DeviceSpan<real>(hier.levels[0].b.data(), hier.levels[0].b.size()),
-                   DeviceSpan<const real>(hier.levels[0].K.data(), hier.levels[0].K.size()), grid,
+                   DeviceSpan<const real>(hier.levels[0].coefficient.data(),
+                                          hier.levels[0].coefficient.size()), grid,
                    bc, ctx);
 
     // === 4. Initial guess ===
