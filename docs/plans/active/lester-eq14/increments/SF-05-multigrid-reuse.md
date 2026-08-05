@@ -1,6 +1,6 @@
 # SF-05 — Multigrid reuse
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Validar y adaptar el multigrilla cell-centered como precondicionador de A(q).`
 - Depends on: `SF-04`
 - Unlocks: `SF-06`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-05T15:11Z`
-- Completed: `not completed`
+- Completed: `2026-08-05T17:11Z`
 - PR: `#12 https://github.com/santi-esquerre/MacroFlow3D/pull/12`
-- Commit: `not recorded`
+- Commit: `9068948`
 
 ## Scientific or engineering intent
 
@@ -88,8 +88,8 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Level projection and nullspace behavior are tested.
 - [x] Symmetry, residual, iteration, and mesh-growth thresholds pass.
 - [x] Existing flow MG results remain unchanged.
-- [ ] Human review and evidence are recorded.
-- [ ] Dashboard marks SF-05 complete and selects SF-06.
+- [x] Human review and evidence are recorded.
+- [x] Dashboard marks SF-05 complete and selects SF-06.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -119,3 +119,4 @@ operator and preconditioner.
 | 2026-08-05T16:31Z | `6d612bb`, root audit PASS post-C03 | Root independently audited `master...HEAD`: scope is limited to generic MG coefficient hierarchy, a sign-correct projected adapter, and SF-05 controls; the adapter maps `b=-P r` through legacy `L=-A`, keeps harmonic face coefficients and geometric `q` coarsening, and uses triply periodic/no-pin execution with gauge projection for every level RHS, residual, and correction. The audit also verified symmetric forward/backward GSRB composition, positive/symmetric measured forms, non-owning reusable buffers with no apply-time allocation/synchronization, and no future-increment or PSPTA production edits. | Root ran the no-work build plus five direct acceptance cases, full CTest `2/2`, PSPTA smoke, checker, and `diff --check`; all passed. Exact post-C03 evidence: coarsening `1.99580752804e-16`, symmetry `1.62586613971e-16`, positive forms `87.3665452453/87.4431236651`, gauge `1.76828053907e-19`; constant/smooth MG iterations `10/10`, mesh growth `1`, true residuals `1.55131283884e-14..7.42934989387e-14`, and reference-solution RMS `9.87519238975e-15/5.92254690611e-14 <= 1e-12`; legacy RedBlack RMS `0`. Smoke preserved head 10 `1.02e+01 -> 1.77e-13`, active/exited `387/113`, and zero stalls/failures. | PASS: freeze implementation in `validating`; retain the unrelated legacy `solve_head` CG-vs-PCG_MG RMS `1.29433062194` at reported relative residual `9.39944659943e-13` as an out-of-scope risk. Open the required PR and move to `awaiting_review`; do not claim human review, complete SF-05, change the dashboard, or start SF-06. |
 | 2026-08-05T16:22Z | `e092bbb`, awaiting review | PR [#12](https://github.com/santi-esquerre/MacroFlow3D/pull/12) is ready for the required human review: base `master`, head `science/lester-sf05-multigrid-reuse` at `e092bbb`. The PR includes the SF-05 scope, exact Gate 1+2 and regression commands, quantitative evidence, residual risks, and intentionally untouched systems; the implementation is frozen. | No approval is asserted. The persistent Goal and dashboard `NEXT` remain SF-05; completion checklist, `Completed`, and `Commit` remain unchanged pending review, remote checks, and merge visibility on the default branch. | Wait for human review and remote checks; if changes are requested, create bounded corrective tasks and repeat integration and audit. |
 | 2026-08-05T16:23Z | `9aca49e`, review readiness | Remote PR [#12](https://github.com/santi-esquerre/MacroFlow3D/pull/12) is open, ready (not draft), `MERGEABLE`/`CLEAN`, based on `master`, and its remote head is `9aca49e0e96e08280e4154550684447830c34bd4`; GitGuardian reported `SUCCESS` at `2026-08-05T16:23:20Z` and there are zero reviews. | The preceding root-audit row's `2026-08-05T16:31Z` is a UTC timestamp transcription error: this append-only correction leaves that audit's content, evidence, and logical order unchanged. | Wait for required human review; do not merge, complete the Goal, change `NEXT`, or start SF-06. |
+| 2026-08-05T17:11Z | `9068948`, done | The user confirmed satisfactory human review; PR [#12](https://github.com/santi-esquerre/MacroFlow3D/pull/12) merged at `2026-08-05T17:11:13Z` as `9068948bc51ccf6a4cbcd054e00abcb6ba548e8e`, with its merge state and GitGuardian check verified. | Gate 1+2 evidence is preserved: symmetric positive projected MG, `10/10` PCG iterations on constant/smooth `32^3/64^3`, growth `1`, true residuals through `7.42934989387e-14`, and solution RMS through `5.92254690611e-14 <= 1e-12`; legacy smoke stayed unchanged. The unrelated `solve_head` CG-vs-PCG_MG RMS `1.29433062194` at reported relative residual `9.39944659943e-13` remains an out-of-scope risk. | Verify the checker reports `next=SF-06`, then merge this documentation closeout before beginning SF-06. |

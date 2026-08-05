@@ -24,11 +24,11 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-05`
-- Active runtime goal: `SF-05`
+- NEXT: `SF-06`
+- Active runtime goal: `none`
 - Execution model: strictly sequential
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-04`
+- Last completed increment: `SF-05`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`.  The next increment is not enabled until the
@@ -41,7 +41,7 @@ current increment's completion commit has been merged.
 - [x] [SF-02 — Discrete operator contract](lester-eq14/increments/SF-02-operator-contract.md)
 - [x] [SF-03 — Mean-zero projector](lester-eq14/increments/SF-03-mean-zero-projector.md)
 - [x] [SF-04 — Projected PCG](lester-eq14/increments/SF-04-projected-pcg.md)
-- [ ] [SF-05 — Multigrid reuse](lester-eq14/increments/SF-05-multigrid-reuse.md)
+- [x] [SF-05 — Multigrid reuse](lester-eq14/increments/SF-05-multigrid-reuse.md)
 - [ ] [SF-06 — Affine-periodic right-hand sides](lester-eq14/increments/SF-06-affine-periodic-rhs.md)
 - [ ] [SF-07 — Streamfunction gradients](lester-eq14/increments/SF-07-gradients.md)
 - [ ] [SF-08 — Hessian-vector products and B](lester-eq14/increments/SF-08-hessian-vector-b.md)
