@@ -34,9 +34,12 @@ struct AffineRhsHostDiagnostics {
 /**
  * Reusable storage for affine RHS projection and diagnostics.
  *
- * prepare() is the only method that may allocate or resize storage.  The
- * workspace and returned diagnostics are overwritten by the next assembly and
- * are not safe for concurrent streams or host threads.
+ * Construction may reserve the reduction result scalar. prepare() may query
+ * the reduction backend and reserve or resize its temporary storage and the
+ * diagnostic buffers. After exact-size preparation, assembly neither
+ * allocates nor synchronizes the host. The workspace and returned diagnostics
+ * are overwritten by the next assembly and are not safe for concurrent streams
+ * or host threads.
  */
 class AffinePeriodicRhsWorkspace {
   public:
