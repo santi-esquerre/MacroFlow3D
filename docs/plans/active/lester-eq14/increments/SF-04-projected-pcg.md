@@ -1,6 +1,6 @@
 # SF-04 — Projected PCG
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Resolver el operador periódico singular mediante PCG proyectado.`
 - Depends on: `SF-03`
 - Unlocks: `SF-05`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-05T12:20Z`
-- Completed: `not completed`
+- Completed: `2026-08-05T14:28Z`
 - PR: `#10`
-- Commit: `not recorded`
+- Commit: `ef324c6`
 
 ## Scientific or engineering intent
 
@@ -82,8 +82,8 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Raw RHS compatibility and final gauge are reported.
 - [x] Manufactured periodic solves meet tolerance.
 - [x] Existing PCG callers and tests remain unchanged.
-- [ ] Human review and evidence are recorded.
-- [ ] Dashboard marks SF-04 complete and selects SF-05.
+- [x] Human review and evidence are recorded.
+- [x] Dashboard marks SF-04 complete and selects SF-05.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -111,3 +111,6 @@ SF-05 may add the multigrid preconditioner to this accepted projected solve.
 | 2026-08-05T14:12Z | `e2ca5aa`, root audit PASS / validating | The root auditor repeated the complete review from the final diff after C01: mathematical sign and quotient-space recurrence, periodic cell-centered gauge, raw compatibility, true residual, vector projection/ownership, alias rejection, loop allocation/synchronization surface, legacy preservation, positive and intentional-failure tests, scope, gates, and reproducibility all satisfy SF-04. | Personal rerun: incremental build no-op, full streamfunction runner `36/36`, `run_operator_tests` `8/8`, CTest `2/2`, and PSPTA smoke passed. Constant/smooth relres are `5.666e-13`/`2.266e-13`; final means are `5.79e-18`/`1.16e-17`; CPU solution errors are `1.01e-14`/`2.18e-15`; tightened residual limits are `1.091e-11`, and both converged zero-report mutants are rejected. Legacy head and transport baseline are unchanged. Classification: PASS; state moved to `validating` and code is frozen. | Publish the reviewed scope, move to `awaiting_review`, and request the required human review without merging or advancing NEXT. |
 | 2026-08-05T14:16Z | `0335909`, PR #10 / awaiting review | Published the exact root-audited SF-04 branch and opened draft PR #10 with scope, validation commands, numerical evidence, remaining risks, and intentionally untouched files. | Remote branch `science/lester-sf04-projected-pcg` points at the frozen audit commit; GitHub PR #10 targets `master`. The code remains frozen, SF-04 remains the active Goal, and `NEXT` remains SF-04 until the required human review and merge are visible on the default branch. | Commit this state transition, push it to PR #10, mark the PR ready, and await explicit human review. |
 | 2026-08-05T14:17Z | `b7cf82e`, PR #10 ready for review | Pushed the `awaiting_review` transition and converted PR #10 from draft to ready. | GitHub reports head `b7cf82e`, base `master`, state `OPEN`, and the GitGuardian check in progress. No human review decision is attached yet. | Await human review and the completed remote check; do not merge, complete the Goal, or advance `NEXT`. |
+| 2026-08-05T14:28Z | `ef324c6`, done | Required human review was completed and PR #10 was merged to `master`; the user explicitly confirmed the approved merge. | GitHub records PR #10 as `MERGED` at `2026-08-05T14:28:26Z`, merge commit `ef324c62405e84d2b0465f9caa611efa6fcd582d`, with GitGuardian `SUCCESS`. Accepted Gate 1 + Gate 2 evidence remains: projected cases and full runner passed, `run_operator_tests` `8/8`, CTest `2/2`, and PSPTA smoke retained its 10-iteration baseline. Closeout checker is required to report `next=SF-05`; residual risk is limited to later SF-23 measurement of host reductions/projector synchronization and GPU memory, while sampled RSS excludes GPU allocation. | SF-04 completo; enable and preflight SF-05 only after this closeout is merged on the default branch. |
+| 2026-08-05T14:40Z | `a46d002`, closeout integration PASS | SF-04 closeout was cherry-picked exactly from T10 after confirming direct parent `ef324c6`, two-doc scope, PR #10 `MERGED` at `2026-08-05T14:28:26Z`, merge `ef324c6`, GitGuardian `SUCCESS`, and no formal GitHub reviews (user approval is recorded above). | Checker passed with `next=SF-05`; fresh `wsl-debug` configure and one serial build completed (an earlier parallel wrapper returned before its build had finished, so that incomplete attempt was discarded), CTest passed `2/2`, and `config_pspta_small.yaml` passed on RTX 3050 Laptop 4 GiB/CUDA 13.3: seed `42`, grid `64x32x32`, head 10 iterations `1.02e+01 -> 1.77e-13`, active/exited `387/113`, zero stalls/failures. Gate 1 + Gate 2 remain retained; Gate 3A/Gate 4/V100 are N/A. `diff --check` is clean and only dashboard plus SF-04 differ from `master`; no new physical solve metrics apply beyond the reproduced smoke. | Root audit and publish closeout; residual risk remains later SF-23 measurement of host reductions/projector synchronization and GPU memory. |
+| 2026-08-05T14:43Z | root closeout audit PASS | The root auditor inspected both closeout commits and the complete diff against `master=ef324c6`: only the dashboard and SF-04 specification change, prior bitácora rows remain intact, the 6/6 checklist and merge metadata agree with GitHub, and no SF-05/source/test/config behavior is introduced. | Personal checker and `diff --check` passed with `next=SF-05`; the existing build session was monitored to exit 0 after the command wrapper yielded early, CTest passed `2/2`, and PSPTA smoke reproduced seed `42`, grid `64x32x32`, head 10 iterations `1.02e+01 -> 1.77e-13`, active/exited `387/113`, and zero stalls/failures. Gate 1 + Gate 2 evidence is preserved; Gate 3A/Gate 4/V100 remain N/A. Classification: PASS. | Publish the procedural closeout PR and await its merge; do not create the SF-05 Goal or worktree before the closeout commit is visible on `master`. |
