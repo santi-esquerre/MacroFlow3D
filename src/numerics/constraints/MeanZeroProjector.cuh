@@ -24,9 +24,11 @@ namespace constraints {
 /**
  * Caller-owned storage for a mean-zero projection.
  *
- * prepare() is the only operation that may allocate or query the reduction
- * backend.  A workspace is valid only for its exact prepared size.  It is not
- * safe to use one workspace concurrently on multiple host threads or streams.
+ * Construction may reserve the reduction result scalar.  prepare() may query
+ * the reduction backend and reserve or resize its temporary storage.  Once
+ * prepared, project() and mean_device() neither allocate nor synchronize the
+ * host.  A workspace is valid only for its exact prepared size and is not safe
+ * to use concurrently on multiple host threads or streams.
  */
 class MeanZeroWorkspace {
   public:
@@ -38,8 +40,8 @@ class MeanZeroWorkspace {
     MeanZeroWorkspace(MeanZeroWorkspace&&) noexcept = default;
     MeanZeroWorkspace& operator=(MeanZeroWorkspace&&) noexcept = default;
 
-    // Prepare exactly n values. This is the only API that may resize the
-    // underlying reduction workspace.
+    // Prepare exactly n values, querying the backend and reserving or resizing
+    // temporary reduction storage outside the projector hot path as needed.
     void prepare(std::size_t n);
 
     [[nodiscard]] bool prepared_for(std::size_t n) const noexcept;
