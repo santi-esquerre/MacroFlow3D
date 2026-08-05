@@ -47,6 +47,13 @@ constexpr double kReportedGaugeComparisonFactor = 200.0;
 constexpr double kRawDiagnosticRoundoffFactor = 4096.0;
 constexpr double kRawMeanTolerance = 1.0e-12;
 constexpr double kInitialGaugeTolerance = 1.0e-12;
+constexpr real kMutationRecursiveRtol = real(0.5);
+constexpr double kMutationResidualRejectionThreshold = 1.0e-6;
+constexpr real kMutationRhsOffset = real(0.375);
+constexpr double kMutationRhsChangeRmsThreshold = 1.0e-3;
+constexpr double kMutationPinDeltaThreshold = 1.0e-3;
+constexpr double kMutationRelativeRoundoffFloor =
+    4096.0 * std::numeric_limits<real>::epsilon();
 
 [[nodiscard]] std::size_t index(std::size_t ix, std::size_t iy, std::size_t iz) {
     return ix + kNaxis * (iy + kNaxis * iz);
@@ -925,6 +932,113 @@ class CountingPreconditioner {
             "both quotient errors<=5e-9 when finite; projected solve gauges; legacy constant survives with |mean|>1e-6"};
 }
 
+[[nodiscard]] CaseResult case_projected_pcg_mutant_recursive_residual() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b = project_cpu(positive_diffusion_cpu(q, u_star));
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+    const solvers::ProjectedPCGConfig config{0, 1, kMutationRecursiveRtol};
+
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_b(kN), d_x(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real),
+                                           cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b.data(), kN * sizeof(real),
+                                           cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    constraints::MeanZeroProjector projector;
+    solvers::ProjectedPCGWorkspace workspace;
+    workspace.prepare(kN);
+    const auto result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), config, projector, workspace);
+
+    std::vector<real> x(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x.data(), d_x.data(), kN * sizeof(real),
+                                           cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    const double cpu_true_residual = l2(residual_cpu(q, b, x));
+    const double cpu_true_relative_residual = cpu_true_residual / l2(b);
+    const double residual_scale = std::max({l2(b), l2(positive_diffusion_cpu(q, x)), 1.0});
+    const double residual_comparison_limit =
+        kCpuGpuResidualRelativeTolerance *
+            std::max({cpu_true_residual, static_cast<double>(result.final_projected_residual), 1.0}) +
+        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() * residual_scale;
+    const double relative_comparison_limit = residual_comparison_limit / std::max(l2(b), 1.0);
+    const real mutant_recursive_relative_residual = real(0.0);
+    const bool mutant_would_falsely_pass = mutant_recursive_relative_residual <= config.rtol;
+    const bool pass = result.status == solvers::ProjectedPCGStatus::max_iterations &&
+        result.iterations == 0 && !result.converged &&
+        std::abs(static_cast<double>(result.final_projected_residual) - cpu_true_residual) <=
+            residual_comparison_limit &&
+        std::abs(static_cast<double>(result.relative_projected_residual) - cpu_true_relative_residual) <=
+            relative_comparison_limit &&
+        mutant_would_falsely_pass && cpu_true_relative_residual > kMutationResidualRejectionThreshold;
+    std::cout << std::setprecision(12)
+              << "projected_pcg_mutant case=projected_pcg_mutant_recursive_residual"
+              << " status=" << status_name(result.status)
+              << " iterations=" << result.iterations
+              << " gpu_true_residual=" << result.final_projected_residual
+              << " cpu_true_residual=" << cpu_true_residual
+              << " gpu_true_relative=" << result.relative_projected_residual
+              << " cpu_true_relative=" << cpu_true_relative_residual
+              << " fake_recursive_relative=" << mutant_recursive_relative_residual << '\n';
+    return {pass, "projected_pcg_mutant_recursive_residual", "gpu-projected-pcg-mutant",
+            "17x17x17 q=1, compatible b, x0=0, max_iter=0", cpu_true_relative_residual,
+            static_cast<double>(mutant_recursive_relative_residual), "n/a", "n/a",
+            "max_iterations at iter=0; GPU true residual agrees with P_CPU(b-Ax); fake recursive zero passes rtol=0.5 while true relative residual>1e-6"};
+}
+
+[[nodiscard]] CaseResult case_projected_pcg_mutant_rhs_alias_or_pin() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b_compatible = project_cpu(positive_diffusion_cpu(q, u_star));
+    std::vector<real> b_raw = b_compatible;
+    for (real& value : b_raw) value += kMutationRhsOffset;
+    const auto b_sentinel = b_raw;
+
+    CudaContext context(0);
+    DeviceBuffer<real> d_rhs_mutant(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_rhs_mutant.data(), b_raw.data(), kN * sizeof(real),
+                                           cudaMemcpyHostToDevice, context.cuda_stream()));
+    constraints::MeanZeroProjector projector;
+    constraints::MeanZeroWorkspace projector_workspace;
+    projector_workspace.prepare(kN);
+    projector.project(context, d_rhs_mutant.span(), projector_workspace);
+    std::vector<real> b_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(b_after.data(), d_rhs_mutant.data(), kN * sizeof(real),
+                                           cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    const bool rhs_sentinel_detects_mutation = !bitwise_equal(b_sentinel, b_after);
+    const double rhs_change_rms = rms_difference(b_after, b_sentinel);
+
+    const double correct_relative_residual =
+        l2(residual_cpu(q, b_compatible, u_star)) / l2(b_compatible);
+    auto x_pin = u_star;
+    const double pin_delta = std::abs(static_cast<double>(x_pin.front()));
+    x_pin.front() = real(0.0);
+    const double pin_relative_residual =
+        l2(residual_cpu(q, b_compatible, x_pin)) / l2(b_compatible);
+    const bool pass = rhs_sentinel_detects_mutation &&
+        rhs_change_rms > kMutationRhsChangeRmsThreshold &&
+        correct_relative_residual <= kMutationRelativeRoundoffFloor &&
+        pin_delta > kMutationPinDeltaThreshold &&
+        pin_relative_residual > kMutationResidualRejectionThreshold;
+    std::cout << std::setprecision(12)
+              << "projected_pcg_mutant case=projected_pcg_mutant_rhs_alias_or_pin"
+              << " rhs_sentinel_detects_mutation=" << (rhs_sentinel_detects_mutation ? "true" : "false")
+              << " rhs_change_rms=" << rhs_change_rms
+              << " pin_delta=" << pin_delta
+              << " correct_relative_residual=" << correct_relative_residual
+              << " pin_relative_residual=" << pin_relative_residual << '\n';
+    return {pass, "projected_pcg_mutant_rhs_alias_or_pin", "gpu-projected-pcg-mutant",
+            "17x17x17 q=1, b_raw=b_compatible+0.375; test-local pin x[0]=0",
+            correct_relative_residual, pin_relative_residual, "n/a", "n/a",
+            "in-place RHS projection changes caller sentinel by RMS>1e-3; correct CPU residual<=4096eps; explicit pin residual>1e-6"};
+}
+
 } // namespace
 
 CaseRegistry projected_pcg_case_registry() {
@@ -937,6 +1051,8 @@ CaseRegistry projected_pcg_case_registry() {
         {"projected_pcg_error_status_contract", case_projected_pcg_error_status_contract},
         {"projected_pcg_mutant_no_rhs_projection", case_projected_pcg_mutant_no_rhs_projection},
         {"projected_pcg_mutant_no_x0_projection", case_projected_pcg_mutant_no_x0_projection},
+        {"projected_pcg_mutant_recursive_residual", case_projected_pcg_mutant_recursive_residual},
+        {"projected_pcg_mutant_rhs_alias_or_pin", case_projected_pcg_mutant_rhs_alias_or_pin},
     };
 }
 
