@@ -27,4 +27,8 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // cases so the projector's workspace and stream contract remains explicit.
 [[nodiscard]] CaseRegistry mean_zero_projector_case_registry();
 
+// GPU projected-PCG manufactured controls.  Their RHS and residual oracle are
+// explicit CPU long-double stencils, kept separate from the GPU operator.
+[[nodiscard]] CaseRegistry projected_pcg_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
