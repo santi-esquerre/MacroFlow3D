@@ -190,6 +190,7 @@ set(BLAS_SOURCES
 set(SOLVER_SOURCES
     src/numerics/solvers/preconditioner.cu
     src/numerics/solvers/mg_preconditioner.cu
+    src/numerics/solvers/projected_positive_mg_preconditioner.cu
 )
 
 set(CONSTRAINT_SOURCES
@@ -208,6 +209,7 @@ set(MULTIGRID_SOURCES
     src/multigrid/smoothers/residual_3d.cu
     src/multigrid/smoothers/gsrb_3d.cu
     src/multigrid/cycle/v_cycle.cu
+    src/multigrid/cycle/projected_positive_v_cycle.cu
 )
 
 set(PHYSICS_SOURCES

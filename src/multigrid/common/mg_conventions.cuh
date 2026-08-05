@@ -42,15 +42,15 @@
  * OPERATOR DEFINITION (Variable-Coefficient Laplacian)
  * ============================================================================
  *
- * Physical equation: -∇·(K∇h) = f
+ * Legacy physical equation: ∇·(K∇h) = f
  *
  * Discrete operator A in cell-centered finite differences:
- *   (A*h)_C = -sum_6faces( K_face * (h_C - h_neighbor) ) / dx²
+ *   (L*h)_C = -sum_6faces( K_face * (h_C - h_neighbor) ) / dx²
  *
  * where K_face is the HARMONIC MEAN of conductivity:
  *   K_face = 2 / (1/K_C + 1/K_neighbor)
  *
- * Sign convention: A is POSITIVE DEFINITE (SPD), representing -∇·(K∇).
+ * Sign convention: L is NEGATIVE semidefinite, representing ∇·(K∇).
  *
  * ============================================================================
  * SCALING WITH dx²

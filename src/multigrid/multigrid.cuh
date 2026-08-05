@@ -19,6 +19,7 @@
 
 // V-cycle
 #include "cycle/v_cycle.cuh"
+#include "cycle/projected_positive_v_cycle.cuh"
 
 // Note: No namespace re-export to avoid pollution.
 // Use macroflow3d::multigrid::* explicitly.
