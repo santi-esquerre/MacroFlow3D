@@ -192,6 +192,10 @@ set(SOLVER_SOURCES
     src/numerics/solvers/mg_preconditioner.cu
 )
 
+set(CONSTRAINT_SOURCES
+    src/numerics/constraints/MeanZeroProjector.cu
+)
+
 set(OPERATOR_SOURCES
     src/numerics/operators/poisson3d_operator.cu
     src/numerics/operators/varcoeff_laplacian.cu
@@ -246,6 +250,7 @@ add_library(macroflow3d_lib STATIC
     ${RUNTIME_SOURCES}
     ${BLAS_SOURCES}
     ${SOLVER_SOURCES}
+    ${CONSTRAINT_SOURCES}
     ${OPERATOR_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
