@@ -41,6 +41,12 @@ constexpr double kCpuGpuResidualRelativeTolerance = 1.0e-11;
 constexpr double kCpuGpuResidualRoundoffFactor = 4096.0;
 constexpr double kGaugeFactor = 100.0;
 constexpr double kReportedGaugeComparisonFactor = 200.0;
+// CUB's double reductions and the CPU long-double reference differ only by
+// reduction order.  This fixed 4096-epsilon envelope covers that roundoff
+// while remaining far below the prescribed 1e-12 contract checks.
+constexpr double kRawDiagnosticRoundoffFactor = 4096.0;
+constexpr double kRawMeanTolerance = 1.0e-12;
+constexpr double kInitialGaugeTolerance = 1.0e-12;
 
 [[nodiscard]] std::size_t index(std::size_t ix, std::size_t iy, std::size_t iz) {
     return ix + kNaxis * (iy + kNaxis * iz);
@@ -198,6 +204,34 @@ constexpr double kReportedGaugeComparisonFactor = 200.0;
     return project_cpu(expected);
 }
 
+[[nodiscard]] double compatibility_defect_cpu(const std::vector<real>& values) {
+    const double value_rms = rms(values);
+    return value_rms > 0.0 ? std::abs(static_cast<double>(mean_ld(values))) / value_rms : 0.0;
+}
+
+[[nodiscard]] double raw_diagnostic_limit(double reference) {
+    return kRawDiagnosticRoundoffFactor * std::numeric_limits<real>::epsilon() *
+           std::max(std::abs(reference), 1.0);
+}
+
+[[nodiscard]] double gauge_limit_for(const std::vector<real>& values) {
+    return kGaugeFactor * std::numeric_limits<real>::epsilon() * std::max(rms(values), 1.0);
+}
+
+[[nodiscard]] double reported_gauge_limit_for(const std::vector<real>& values) {
+    return kReportedGaugeComparisonFactor * std::numeric_limits<real>::epsilon() *
+           std::max(rms(values), 1.0);
+}
+
+[[nodiscard]] std::vector<real> residual_cpu(const std::vector<real>& q,
+                                              const std::vector<real>& b,
+                                              const std::vector<real>& x) {
+    const auto ax = positive_diffusion_cpu(q, x);
+    std::vector<real> residual(kN);
+    for (std::size_t i = 0; i < kN; ++i) residual[i] = b[i] - ax[i];
+    return project_cpu(residual);
+}
+
 class IdentityPreconditioner {
   public:
     void apply(CudaContext& context, DeviceSpan<const real> r, DeviceSpan<real> z) const {
@@ -342,12 +376,232 @@ class IdentityPreconditioner {
     return run_manufactured_case("projected_pcg_smooth_manufactured", true);
 }
 
+[[nodiscard]] CaseResult case_projected_pcg_incompatible_rhs_contract() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b_compatible = project_cpu(positive_diffusion_cpu(q, u_star));
+    std::vector<real> b_raw = b_compatible;
+    for (real& value : b_raw) value += real(0.375);
+    const auto b_raw_original = b_raw;
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_raw(kN), d_compatible(kN), d_x_raw(kN), d_x_compatible(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_raw.data(), b_raw.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_compatible.data(), b_compatible.data(), kN * sizeof(real), cudaMemcpyHostToDevice,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x_raw.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x_compatible.data(), 0, kN * sizeof(real), context.cuda_stream()));
+
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    constraints::MeanZeroProjector projector;
+    solvers::ProjectedPCGConfig config;
+    config.max_iter = 2000;
+    config.check_every = kCheckEvery;
+    config.rtol = kRtol;
+    solvers::ProjectedPCGWorkspace raw_workspace, compatible_workspace;
+    raw_workspace.prepare(kN);
+    compatible_workspace.prepare(kN);
+    const auto raw_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_raw.span()), d_x_raw.span(), config, projector, raw_workspace);
+    const auto compatible_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_compatible.span()), d_x_compatible.span(), config, projector, compatible_workspace);
+
+    std::vector<real> x_raw(kN), x_compatible(kN), raw_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_raw.data(), d_x_raw.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_compatible.data(), d_x_compatible.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(raw_after.data(), d_raw.data(), kN * sizeof(real), cudaMemcpyDeviceToHost,
+                                           context.cuda_stream()));
+    context.synchronize();
+
+    const double cpu_raw_mean = static_cast<double>(mean_ld(b_raw));
+    const double cpu_raw_l2 = l2(b_raw);
+    const double cpu_raw_defect = compatibility_defect_cpu(b_raw);
+    const double raw_residual = l2(residual_cpu(q, b_raw, x_raw));
+    const double raw_residual_difference = std::abs(raw_residual - static_cast<double>(raw_result.final_projected_residual));
+    const double raw_residual_limit = kCpuGpuResidualRelativeTolerance *
+        std::max({raw_residual, static_cast<double>(raw_result.final_projected_residual), 1.0}) +
+        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() *
+        std::max({l2(b_raw), l2(positive_diffusion_cpu(q, x_raw)), 1.0});
+    const double raw_solution_error = rms_difference(project_cpu([&] {
+        std::vector<real> error(kN);
+        for (std::size_t i = 0; i < kN; ++i) error[i] = x_raw[i] - u_star[i];
+        return error;
+    }()), std::vector<real>(kN, real(0.0)));
+    const double compatible_solution_error = rms_difference(project_cpu([&] {
+        std::vector<real> error(kN);
+        for (std::size_t i = 0; i < kN; ++i) error[i] = x_compatible[i] - u_star[i];
+        return error;
+    }()), std::vector<real>(kN, real(0.0)));
+    std::vector<real> solution_difference(kN);
+    for (std::size_t i = 0; i < kN; ++i) solution_difference[i] = x_raw[i] - x_compatible[i];
+    const double projected_solution_difference = rms(project_cpu(solution_difference));
+    const double raw_gauge = std::abs(static_cast<double>(mean_ld(x_raw)));
+    const double compatible_gauge = std::abs(static_cast<double>(mean_ld(x_compatible)));
+    const bool raw_rhs_immutable = std::memcmp(b_raw_original.data(), raw_after.data(), kN * sizeof(real)) == 0;
+    const bool diagnostics_match =
+        std::abs(cpu_raw_mean - 0.375) <= kRawMeanTolerance &&
+        std::abs(static_cast<double>(raw_result.raw_rhs_mean) - cpu_raw_mean) <= kRawMeanTolerance &&
+        std::abs(static_cast<double>(raw_result.raw_rhs_l2_norm) - cpu_raw_l2) <= raw_diagnostic_limit(cpu_raw_l2) &&
+        std::abs(static_cast<double>(raw_result.raw_rhs_compatibility_defect) - cpu_raw_defect) <= raw_diagnostic_limit(cpu_raw_defect);
+    const bool pass = raw_result.converged && compatible_result.converged &&
+        raw_result.status == solvers::ProjectedPCGStatus::converged &&
+        compatible_result.status == solvers::ProjectedPCGStatus::converged &&
+        static_cast<double>(raw_result.relative_projected_residual) <= kResidualTolerance &&
+        static_cast<double>(compatible_result.relative_projected_residual) <= kResidualTolerance &&
+        raw_gauge <= gauge_limit_for(x_raw) && compatible_gauge <= gauge_limit_for(x_compatible) &&
+        std::abs(static_cast<double>(raw_result.final_field_mean) - static_cast<double>(mean_ld(x_raw))) <= reported_gauge_limit_for(x_raw) &&
+        std::abs(static_cast<double>(compatible_result.final_field_mean) - static_cast<double>(mean_ld(x_compatible))) <= reported_gauge_limit_for(x_compatible) &&
+        raw_solution_error <= kSolutionTolerance && compatible_solution_error <= kSolutionTolerance &&
+        projected_solution_difference <= kSolutionTolerance && raw_rhs_immutable && diagnostics_match &&
+        raw_residual_difference <= raw_residual_limit;
+    std::cout << std::setprecision(12) << "projected_pcg_contract case=projected_pcg_incompatible_rhs_contract"
+              << " raw_iterations=" << raw_result.iterations << " compatible_iterations=" << compatible_result.iterations
+              << " raw_mean=" << raw_result.raw_rhs_mean << " cpu_raw_mean=" << cpu_raw_mean
+              << " raw_l2=" << raw_result.raw_rhs_l2_norm << " cpu_raw_l2=" << cpu_raw_l2
+              << " raw_defect=" << raw_result.raw_rhs_compatibility_defect << " cpu_raw_defect=" << cpu_raw_defect
+              << " reported_residual=" << raw_result.final_projected_residual << " cpu_residual=" << raw_residual
+              << " residual_difference=" << raw_residual_difference << " raw_gauge=" << raw_gauge
+              << " solution_error=" << raw_solution_error << " compatible_solution_error=" << compatible_solution_error
+              << " projected_solution_difference=" << projected_solution_difference
+              << " raw_rhs_immutable=" << (raw_rhs_immutable ? "true" : "false") << '\n';
+    return {pass, "projected_pcg_incompatible_rhs_contract", "gpu-projected-pcg-contract",
+            "17x17x17 q=1 periodic (N=4913)", static_cast<double>(raw_result.relative_projected_residual),
+            projected_solution_difference, "n/a", "n/a",
+            "incompatible constant=0.375 diagnosed/projected; relres<=1e-10; CPU residual/gauge/solution contracts"};
+}
+
+[[nodiscard]] CaseResult case_projected_pcg_initial_gauge_contract() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b = project_cpu(positive_diffusion_cpu(q, u_star));
+    const auto b_original = b;
+    std::vector<real> x_initial(kN);
+    for (std::size_t iz = 0; iz < kNaxis; ++iz) for (std::size_t iy = 0; iy < kNaxis; ++iy) for (std::size_t ix = 0; ix < kNaxis; ++ix) {
+        const long double x = (static_cast<long double>(ix) + 0.5L) / kNaxis;
+        const long double y = (static_cast<long double>(iy) + 0.5L) / kNaxis;
+        x_initial[index(ix, iy, iz)] = static_cast<real>(2.75L + 0.17L * std::sin(2.0L * kPi * x) -
+                                                          0.11L * std::cos(2.0L * kPi * y));
+    }
+    const double initial_mean = static_cast<double>(mean_ld(x_initial));
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_b(kN), d_x(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_x.data(), x_initial.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    constraints::MeanZeroProjector projector;
+    solvers::ProjectedPCGWorkspace workspace;
+    workspace.prepare(kN);
+    solvers::ProjectedPCGConfig config;
+    config.max_iter = 2000; config.check_every = kCheckEvery; config.rtol = kRtol;
+    const auto result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b.span()), d_x.span(), config, projector, workspace);
+    std::vector<real> x(kN), b_after(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x.data(), d_x.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(b_after.data(), d_b.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    const double cpu_final_mean = static_cast<double>(mean_ld(x));
+    const double solution_error = rms_difference(project_cpu([&] {
+        std::vector<real> error(kN);
+        for (std::size_t i = 0; i < kN; ++i) error[i] = x[i] - u_star[i];
+        return error;
+    }()), std::vector<real>(kN, real(0.0)));
+    const bool rhs_immutable = std::memcmp(b_original.data(), b_after.data(), kN * sizeof(real)) == 0;
+    const bool pass = result.converged && result.status == solvers::ProjectedPCGStatus::converged &&
+        static_cast<double>(result.relative_projected_residual) <= kResidualTolerance &&
+        std::abs(initial_mean - 2.75) <= kInitialGaugeTolerance &&
+        std::abs(cpu_final_mean) <= gauge_limit_for(x) &&
+        std::abs(static_cast<double>(result.final_field_mean)) <= gauge_limit_for(x) &&
+        std::abs(static_cast<double>(result.final_field_mean) - cpu_final_mean) <= reported_gauge_limit_for(x) &&
+        solution_error <= kSolutionTolerance && rhs_immutable;
+    std::cout << std::setprecision(12) << "projected_pcg_contract case=projected_pcg_initial_gauge_contract"
+              << " iterations=" << result.iterations << " initial_mean=" << initial_mean
+              << " cpu_final_mean=" << cpu_final_mean << " reported_final_mean=" << result.final_field_mean
+              << " relative_residual=" << result.relative_projected_residual
+              << " solution_error=" << solution_error << " rhs_immutable=" << (rhs_immutable ? "true" : "false") << '\n';
+    return {pass, "projected_pcg_initial_gauge_contract", "gpu-projected-pcg-contract",
+            "17x17x17 q=1 periodic (N=4913)", static_cast<double>(result.relative_projected_residual),
+            solution_error, "n/a", "n/a",
+            "initial mean=2.75; projected final gauge; relres<=1e-10; RMS(P_CPU(x-u*))<=5e-9; immutable RHS"};
+}
+
+[[nodiscard]] CaseResult case_projected_pcg_legacy_api_unchanged() {
+    const auto q = coefficient_field(false);
+    const auto u_star = manufactured_solution();
+    const auto b = project_cpu(positive_diffusion_cpu(q, u_star));
+    const Grid3D grid(static_cast<int>(kNaxis), static_cast<int>(kNaxis), static_cast<int>(kNaxis),
+                      1.0 / kNaxis, 1.0 / kNaxis, 1.0 / kNaxis);
+    CudaContext context(0);
+    DeviceBuffer<real> d_q(kN), d_b_legacy(kN), d_b_projected(kN), d_x_legacy(kN), d_x_projected(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_q.data(), q.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b_legacy.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(d_b_projected.data(), b.data(), kN * sizeof(real), cudaMemcpyHostToDevice, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x_legacy.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(d_x_projected.data(), 0, kN * sizeof(real), context.cuda_stream()));
+    operators::LesterPositiveDiffusionOperator A(grid, d_q.span());
+    IdentityPreconditioner identity;
+    solvers::PCGConfig legacy_config;
+    legacy_config.max_iter = 2000; legacy_config.check_every = kCheckEvery; legacy_config.rtol = kRtol;
+    solvers::PCGWorkspace legacy_workspace;
+    const auto legacy_result = solvers::pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b_legacy.span()), d_x_legacy.span(), legacy_config, legacy_workspace);
+    constraints::MeanZeroProjector projector;
+    solvers::ProjectedPCGConfig projected_config;
+    projected_config.max_iter = 2000; projected_config.check_every = kCheckEvery; projected_config.rtol = kRtol;
+    solvers::ProjectedPCGWorkspace projected_workspace;
+    projected_workspace.prepare(kN);
+    const auto projected_result = solvers::projected_pcg_solve(context, A, identity,
+        DeviceSpan<const real>(d_b_projected.span()), d_x_projected.span(), projected_config, projector, projected_workspace);
+    std::vector<real> x_legacy(kN), x_projected(kN);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_legacy.data(), d_x_legacy.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x_projected.data(), d_x_projected.data(), kN * sizeof(real), cudaMemcpyDeviceToHost, context.cuda_stream()));
+    context.synchronize();
+    std::vector<real> difference(kN);
+    for (std::size_t i = 0; i < kN; ++i) difference[i] = x_legacy[i] - x_projected[i];
+    const double quotient_difference = rms(project_cpu(difference));
+    const double projected_cpu_residual = l2(residual_cpu(q, b, x_projected));
+    const double projected_residual_difference = std::abs(projected_cpu_residual - static_cast<double>(projected_result.final_projected_residual));
+    const double projected_residual_limit = kCpuGpuResidualRelativeTolerance *
+        std::max({projected_cpu_residual, static_cast<double>(projected_result.final_projected_residual), 1.0}) +
+        kCpuGpuResidualRoundoffFactor * std::numeric_limits<real>::epsilon() *
+        std::max({l2(b), l2(positive_diffusion_cpu(q, x_projected)), 1.0});
+    const bool pass = legacy_result.converged && projected_result.converged &&
+        projected_result.status == solvers::ProjectedPCGStatus::converged &&
+        quotient_difference <= kSolutionTolerance &&
+        static_cast<double>(projected_result.relative_projected_residual) <= kResidualTolerance &&
+        std::abs(static_cast<double>(mean_ld(x_projected))) <= gauge_limit_for(x_projected) &&
+        projected_residual_difference <= projected_residual_limit;
+    std::cout << std::setprecision(12) << "projected_pcg_contract case=projected_pcg_legacy_api_unchanged"
+              << " legacy_iterations=" << legacy_result.iterations << " legacy_residual=" << legacy_result.final_residual
+              << " projected_iterations=" << projected_result.iterations << " projected_residual=" << projected_result.final_projected_residual
+              << " projected_cpu_residual=" << projected_cpu_residual << " quotient_difference=" << quotient_difference
+              << " projected_gauge=" << mean_ld(x_projected) << '\n';
+    return {pass, "projected_pcg_legacy_api_unchanged", "gpu-projected-pcg-contract",
+            "17x17x17 q=1 periodic (N=4913)", static_cast<double>(projected_result.relative_projected_residual),
+            quotient_difference, "n/a", "n/a",
+            "legacy seven-argument pcg_solve remains opt-in unchanged; RMS(P_CPU(xlegacy-xprojected))<=5e-9"};
+}
+
 } // namespace
 
 CaseRegistry projected_pcg_case_registry() {
     return {
         {"projected_pcg_constant_manufactured", case_projected_pcg_constant_manufactured},
         {"projected_pcg_smooth_manufactured", case_projected_pcg_smooth_manufactured},
+        {"projected_pcg_incompatible_rhs_contract", case_projected_pcg_incompatible_rhs_contract},
+        {"projected_pcg_initial_gauge_contract", case_projected_pcg_initial_gauge_contract},
+        {"projected_pcg_legacy_api_unchanged", case_projected_pcg_legacy_api_unchanged},
     };
 }
 
