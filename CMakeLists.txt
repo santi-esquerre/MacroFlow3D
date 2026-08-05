@@ -202,6 +202,7 @@ set(OPERATOR_SOURCES
 )
 
 set(MULTIGRID_SOURCES
+    src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
     src/multigrid/transfer/prolong_3d.cu
     src/multigrid/smoothers/residual_3d.cu
@@ -210,7 +211,6 @@ set(MULTIGRID_SOURCES
 )
 
 set(PHYSICS_SOURCES
-    src/physics/flow/coarsen_K.cu
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu

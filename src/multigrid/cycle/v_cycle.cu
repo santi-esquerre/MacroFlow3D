@@ -40,7 +40,7 @@ void v_cycle_recursive(CudaContext& ctx, MGHierarchy& hier, int level, const MGC
     // Coarsest level: solve directly with many GSRB iterations
     if (level == num_levels - 1) {
         auto& lvl = hier.levels[level];
-        gsrb_smooth_3d(ctx, lvl.grid, lvl.x.span(), lvl.b.span(), lvl.K.span(),
+        gsrb_smooth_3d(ctx, lvl.grid, lvl.x.span(), lvl.b.span(), lvl.coefficient.span(),
                        config.coarse_solve_iters, bc, pin);
         return;
     }
@@ -49,11 +49,11 @@ void v_cycle_recursive(CudaContext& ctx, MGHierarchy& hier, int level, const MGC
     auto& coarse = hier.levels[level + 1];
 
     // 1. Pre-smooth: x^{h} = S(x^{h}, b^{h})
-    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), config.pre_smooth,
+    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.coefficient.span(), config.pre_smooth,
                    bc, pin);
 
     // 2. Compute residual: r^{h} = b^{h} - A^{h} * x^{h}
-    compute_residual_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), fine.r.span(),
+    compute_residual_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.coefficient.span(), fine.r.span(),
                         bc, pin);
 
     // 3. Restrict residual to coarse RHS: b^{2h} = R * r^{h}
@@ -69,7 +69,7 @@ void v_cycle_recursive(CudaContext& ctx, MGHierarchy& hier, int level, const MGC
     prolong_3d_add(ctx, coarse.grid, fine.grid, coarse.x.span(), fine.x.span());
 
     // 7. Post-smooth: x^{h} = S(x^{h}, b^{h})
-    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.K.span(), config.post_smooth,
+    gsrb_smooth_3d(ctx, fine.grid, fine.x.span(), fine.b.span(), fine.coefficient.span(), config.post_smooth,
                    bc, pin);
 }
 
@@ -83,7 +83,7 @@ VCycleResult mg_solve(CudaContext& ctx, MGHierarchy& hier, const MGConfig& confi
     assert_isotropic_grid(finest.grid);
 
     // Compute initial residual norm
-    compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(),
+    compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.coefficient.span(),
                         finest.r.span(), bc, pin);
     macroflow3d::blas::ReductionWorkspace red;
     result.initial_residual = macroflow3d::blas::nrm2_host(ctx, finest.r.span(), red);
@@ -100,7 +100,7 @@ VCycleResult mg_solve(CudaContext& ctx, MGHierarchy& hier, const MGConfig& confi
 
         // Check convergence periodically (not every cycle to reduce host sync cost)
         if ((cycle + 1) % config.check_convergence_every == 0 || cycle == max_cycles - 1) {
-            compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.K.span(),
+            compute_residual_3d(ctx, finest.grid, finest.x.span(), finest.b.span(), finest.coefficient.span(),
                                 finest.r.span(), bc, pin);
             result.final_residual = macroflow3d::blas::nrm2_host(ctx, finest.r.span(), red);
 

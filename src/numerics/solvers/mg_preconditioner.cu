@@ -10,7 +10,7 @@ MultigridPreconditioner::MultigridPreconditioner(multigrid::MGHierarchy& hierarc
     : hierarchy_(&hierarchy), bc_(bc), config_(config), pin_(pin) {
     // Hierarchy is already constructed with all buffers pre-allocated.
     // No additional allocations needed here.
-    // The MGHierarchy constructor already allocates x, b, r, K per level.
+    // The MGHierarchy constructor already allocates x, b, r, and coefficient per level.
 }
 
 void MultigridPreconditioner::apply(CudaContext& ctx, DeviceSpan<const real> r,

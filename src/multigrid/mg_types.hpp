@@ -36,8 +36,8 @@ struct MGLevel {
     // Residual at this level
     DeviceBuffer<real> r;
 
-    // Conductivity field (if heterogeneous, otherwise can be uniform)
-    DeviceBuffer<real> K;
+    // Positive cell-centered coefficient c in L(c) = div(c grad).
+    DeviceBuffer<real> coefficient;
 
     MGLevel() = default;
 
@@ -46,7 +46,7 @@ struct MGLevel {
         x.resize(n);
         b.resize(n);
         r.resize(n);
-        K.resize(n);
+        coefficient.resize(n);
     }
 
     void ensure(const Grid3D& g) {
@@ -59,8 +59,8 @@ struct MGLevel {
             b.resize(n);
         if (r.size() != n)
             r.resize(n);
-        if (K.size() != n)
-            K.resize(n);
+        if (coefficient.size() != n)
+            coefficient.resize(n);
     }
 };
 

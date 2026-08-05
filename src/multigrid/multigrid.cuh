@@ -6,6 +6,9 @@
 // Multigrid types
 #include "mg_types.hpp"
 
+// Coefficient hierarchy construction
+#include "coefficient_hierarchy.cuh"
+
 // Transfer operators
 #include "transfer/prolong_3d.cuh"
 #include "transfer/restrict_3d.cuh"

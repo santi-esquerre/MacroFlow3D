@@ -36,7 +36,7 @@ class MultigridPreconditioner {
     /**
      * @brief Construct MG preconditioner with pre-allocated hierarchy
      *
-     * @param hierarchy  MG hierarchy (grids + K already coarsened)
+     * @param hierarchy  MG hierarchy (grids + coefficient already coarsened)
      * @param bc         Boundary conditions (propagated to smoothers)
      * @param config     MG configuration (pre/post smooth, coarse iters)
      * @param pin        Pin specification (propagated to all levels)
