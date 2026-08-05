@@ -6,6 +6,8 @@
 #include "../transfer/prolong_3d.cuh"
 #include "../transfer/restrict_3d.cuh"
 
+#include <algorithm>
+#include <cmath>
 #include <stdexcept>
 
 namespace macroflow3d {
@@ -21,6 +23,22 @@ BCSpec periodic_bc() {
 
 void project(CudaContext& ctx, DeviceSpan<real> values, constraints::MeanZeroWorkspace& workspace) {
     constraints::MeanZeroProjector{}.project(ctx, values, workspace);
+}
+
+constexpr real grid_relative_tolerance = real(1e-12);
+
+bool nearly_equal_positive(real lhs, real rhs) {
+    return std::abs(lhs - rhs) <= grid_relative_tolerance * std::max(lhs, rhs);
+}
+
+bool is_valid_isotropic_grid(const Grid3D& grid) {
+    if (grid.nx < 2 || grid.ny < 2 || grid.nz < 2 ||
+        !std::isfinite(grid.dx) || !std::isfinite(grid.dy) || !std::isfinite(grid.dz) ||
+        grid.dx <= real(0.0) || grid.dy <= real(0.0) || grid.dz <= real(0.0)) {
+        return false;
+    }
+    return nearly_equal_positive(grid.dx, grid.dy) &&
+           nearly_equal_positive(grid.dx, grid.dz);
 }
 
 void cycle(CudaContext& ctx, MGHierarchy& hierarchy, int level, const MGConfig& config,
@@ -76,24 +94,35 @@ void validate_projected_positive_hierarchy(const MGHierarchy& hierarchy, const M
     if (hierarchy.num_levels() == 0) {
         throw std::invalid_argument("Projected positive MG requires at least one level");
     }
-    if (config.pre_smooth < 0 || config.post_smooth < 0 || config.pre_smooth != config.post_smooth ||
+    if (config.num_levels != hierarchy.num_levels()) {
+        throw std::invalid_argument("Projected positive MG config level count does not match hierarchy");
+    }
+    if (config.pre_smooth < 1 || config.post_smooth < 1 || config.pre_smooth != config.post_smooth ||
         config.coarse_solve_iters <= 0) {
-        throw std::invalid_argument("Projected positive MG requires equal non-negative pre/post sweeps and a positive coarse solve count");
+        // Zero fine sweeps leave fine-grid modes unpreconditioned and can break SPD use in PCG.
+        throw std::invalid_argument(
+            "Projected positive MG requires equal positive pre/post sweeps and a positive coarse solve count");
     }
     for (int level = 0; level < hierarchy.num_levels(); ++level) {
         const auto& current = hierarchy.levels[level];
-        if (current.grid.nx < 2 || current.grid.ny < 2 || current.grid.nz < 2 ||
+        if (!is_valid_isotropic_grid(current.grid) || current.grid.nx % 2 != 0 ||
+            current.grid.ny % 2 != 0 || current.grid.nz % 2 != 0 ||
             current.x.size() != current.grid.num_cells() || current.b.size() != current.grid.num_cells() ||
             current.r.size() != current.grid.num_cells() ||
             current.coefficient.size() != current.grid.num_cells()) {
-            throw std::invalid_argument("Projected positive MG hierarchy has an invalid level");
+            throw std::invalid_argument(
+                "Projected positive MG requires finite positive isotropic even-sized levels with matching buffers");
         }
         if (level + 1 < hierarchy.num_levels()) {
             const auto& coarse = hierarchy.levels[level + 1];
             if (current.grid.nx != 2 * coarse.grid.nx || current.grid.ny != 2 * coarse.grid.ny ||
                 current.grid.nz != 2 * coarse.grid.nz || current.grid.nx % 2 != 0 ||
-                current.grid.ny % 2 != 0 || current.grid.nz % 2 != 0) {
-                throw std::invalid_argument("Projected positive MG requires exact even 2x2x2 levels");
+                current.grid.ny % 2 != 0 || current.grid.nz % 2 != 0 ||
+                !nearly_equal_positive(coarse.grid.dx, real(2.0) * current.grid.dx) ||
+                !nearly_equal_positive(coarse.grid.dy, real(2.0) * current.grid.dy) ||
+                !nearly_equal_positive(coarse.grid.dz, real(2.0) * current.grid.dz)) {
+                throw std::invalid_argument(
+                    "Projected positive MG requires exact 2x2x2 dimensions and doubled spacing between levels");
             }
         }
     }

@@ -44,7 +44,7 @@
  *
  * Legacy physical equation: ∇·(K∇h) = f
  *
- * Discrete operator A in cell-centered finite differences:
+ * Discrete legacy operator L in cell-centered finite differences:
  *   (L*h)_C = -sum_6faces( K_face * (h_C - h_neighbor) ) / dx²
  *
  * where K_face is the HARMONIC MEAN of conductivity:
@@ -58,11 +58,11 @@
  *
  * Let dx² = grid.dx * grid.dx (the actual grid spacing squared).
  *
- * The operator Ax is computed WITHOUT dx² scaling in the stencil, i.e.:
- *   Ax = sum_6faces( K_face * (x_C - x_neighbor) )
+ * The legacy operator Lx is computed WITHOUT dx² scaling in the stencil, i.e.:
+ *   Lx = sum_6faces( K_face * (x_C - x_neighbor) )
  *
  * Then:
- *   - Residual: r = b - Ax / dx²
+ *   - Residual: r = b - Lx / dx²
  *   - GSRB update: x = (result - rhs * dx²) / aC
  *
  * where:
