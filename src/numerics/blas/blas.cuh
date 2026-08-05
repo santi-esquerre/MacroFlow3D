@@ -11,3 +11,4 @@
 #include "nrm2.cuh"
 #include "reduction_workspace.cuh"
 #include "scal.cuh"
+#include "sum.cuh"

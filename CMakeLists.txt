@@ -183,6 +183,7 @@ set(BLAS_SOURCES
     src/numerics/blas/axpby.cu
     src/numerics/blas/dot.cu
     src/numerics/blas/nrm2.cu
+    src/numerics/blas/sum.cu
     src/numerics/blas/cg_kernels.cu
 )
 
