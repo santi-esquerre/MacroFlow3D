@@ -13,6 +13,13 @@ struct Vec3 {
     double z{};
 };
 
+// Component-wise vector field in the same x-fastest layout as Grid scalar fields.
+struct VectorField {
+    std::vector<double> x;
+    std::vector<double> y;
+    std::vector<double> z;
+};
+
 enum class Axis { x = 0, y = 1, z = 2 };
 
 struct Grid {
@@ -98,5 +105,45 @@ struct AffineRhsFixture {
                                                          const Vec3& gradient);
 [[nodiscard]] std::vector<double> mean_zero_projected(const std::vector<double>& values);
 [[nodiscard]] long double long_double_mean(const std::vector<double>& values);
+
+// SF-07 total-gradient controls. All levels use the same rectangular physical
+// domain; its deliberately unequal lengths make dx, dy, and dz distinct.
+enum class GradientFixtureField { psi1, psi2 };
+
+struct TotalGradientFixture {
+    Grid grid;
+    Vec3 lengths;
+    Vec3 psi1_affine_gradient;
+    Vec3 psi2_affine_gradient;
+    std::vector<double> psi1_fluctuation;
+    std::vector<double> psi2_fluctuation;
+};
+
+// Construct the 16^3, 32^3, or 64^3 smooth periodic control with two
+// distinct fluctuations and nontrivial affine gradients.
+[[nodiscard]] TotalGradientFixture make_total_gradient_fixture(std::size_t cells_per_axis);
+// Same grid and affine gradients as the smooth control, but identically zero
+// periodic fluctuations for pure-affine exactness tests.
+[[nodiscard]] TotalGradientFixture make_pure_affine_total_gradient_fixture(
+    std::size_t cells_per_axis);
+
+[[nodiscard]] double total_gradient_periodic_scalar(GradientFixtureField field,
+                                                     const Vec3& position,
+                                                     const Vec3& lengths);
+[[nodiscard]] Vec3 total_gradient_periodic_analytic(GradientFixtureField field,
+                                                     const Vec3& position,
+                                                     const Vec3& lengths);
+// Analytic gradient of affine dot x plus the selected periodic fluctuation.
+[[nodiscard]] Vec3 total_gradient_analytic(GradientFixtureField field,
+                                           const Vec3& position,
+                                           const Vec3& lengths,
+                                           const Vec3& affine_gradient);
+
+// Independent long-double, centered second-order total-gradient oracle. It
+// wraps x, y, and z separately via Grid/index/wrap_index and adds the affine
+// contribution after differencing the stored periodic fluctuation.
+[[nodiscard]] VectorField centered_total_gradient_oracle(const Grid& grid,
+                                                          const std::vector<double>& fluctuation,
+                                                          const Vec3& affine_gradient);
 
 }  // namespace macroflow3d::streamfunctions::reference
