@@ -214,6 +214,7 @@ set(MULTIGRID_SOURCES
 
 set(PHYSICS_SOURCES
     src/physics/streamfunctions/affine_periodic_rhs.cu
+    src/physics/streamfunctions/DifferentialOperators.cu
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
