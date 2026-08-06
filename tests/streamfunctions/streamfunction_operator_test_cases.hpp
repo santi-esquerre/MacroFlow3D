@@ -40,4 +40,8 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // independent long-double oracle cannot accidentally become a production API.
 [[nodiscard]] CaseRegistry affine_periodic_rhs_case_registry();
 
+// SF-07 positive total-gradient acceptance controls.  These retain an
+// independent long-double CPU stencil and deliberately unequal spacing.
+[[nodiscard]] CaseRegistry streamfunction_gradient_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

@@ -347,6 +347,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/projected_pcg_gpu_cases.cu
         tests/streamfunctions/multigrid_reuse_gpu_cases.cu
         tests/streamfunctions/affine_periodic_rhs_gpu_cases.cu
+        tests/streamfunctions/streamfunction_gradient_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
