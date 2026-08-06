@@ -24,11 +24,11 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-07`
-- Active runtime goal: `SF-07 — Implementar gradientes periódicos cell-centered con contribuciones afines.`
+- NEXT: `SF-08`
+- Active runtime goal: `none`
 - Execution model: strictly sequential
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-06`
+- Last completed increment: `SF-07`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`.  The next increment is not enabled until the
@@ -43,7 +43,7 @@ current increment's completion commit has been merged.
 - [x] [SF-04 — Projected PCG](lester-eq14/increments/SF-04-projected-pcg.md)
 - [x] [SF-05 — Multigrid reuse](lester-eq14/increments/SF-05-multigrid-reuse.md)
 - [x] [SF-06 — Affine-periodic right-hand sides](lester-eq14/increments/SF-06-affine-periodic-rhs.md)
-- [ ] [SF-07 — Streamfunction gradients](lester-eq14/increments/SF-07-gradients.md)
+- [x] [SF-07 — Streamfunction gradients](lester-eq14/increments/SF-07-gradients.md)
 - [ ] [SF-08 — Hessian-vector products and B](lester-eq14/increments/SF-08-hessian-vector-b.md)
 - [ ] [SF-09 — Nonlinear sources](lester-eq14/increments/SF-09-nonlinear-sources.md)
 - [ ] [SF-10 — Coupled residual](lester-eq14/increments/SF-10-coupled-residual.md)
