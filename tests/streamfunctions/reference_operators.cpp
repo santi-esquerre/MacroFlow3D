@@ -23,6 +23,12 @@ void validate_position_and_lengths(const Vec3& position, const Vec3& lengths) {
     }
 }
 
+void validate_vector(const Vec3& value, const char* name) {
+    if (!std::isfinite(value.x) || !std::isfinite(value.y) || !std::isfinite(value.z)) {
+        throw std::invalid_argument(std::string(name) + " must be finite");
+    }
+}
+
 [[nodiscard]] double axis_spacing(const Grid& grid, Axis axis) {
     switch (axis) {
         case Axis::x: return grid.spacing.x;
@@ -347,6 +353,121 @@ std::vector<double> mean_zero_projected(const std::vector<double>& values) {
     const long double mean = long_double_mean(values);
     std::vector<double> result(values.size());
     for (std::size_t i = 0; i < values.size(); ++i) result[i] = static_cast<double>(static_cast<long double>(values[i]) - mean);
+    return result;
+}
+
+TotalGradientFixture make_total_gradient_fixture(std::size_t cells_per_axis) {
+    if (cells_per_axis != 16 && cells_per_axis != 32 && cells_per_axis != 64) {
+        throw std::invalid_argument("total-gradient fixture supports 16^3, 32^3, or 64^3");
+    }
+    const Vec3 lengths{1.0, 1.5, 2.25};
+    const Grid grid{cells_per_axis, cells_per_axis, cells_per_axis,
+                    {lengths.x / static_cast<double>(cells_per_axis),
+                     lengths.y / static_cast<double>(cells_per_axis),
+                     lengths.z / static_cast<double>(cells_per_axis)}};
+    TotalGradientFixture fixture{grid, lengths, {0.7, -1.1, 0.35},
+                                 {-0.45, 0.6, 1.3}, {}, {}};
+    fixture.psi1_fluctuation.resize(grid.cell_count());
+    fixture.psi2_fluctuation.resize(grid.cell_count());
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const std::size_t id = grid.index(ix, iy, iz);
+        const Vec3 position = grid.cell_center(ix, iy, iz);
+        fixture.psi1_fluctuation[id] = total_gradient_periodic_scalar(
+            GradientFixtureField::psi1, position, lengths);
+        fixture.psi2_fluctuation[id] = total_gradient_periodic_scalar(
+            GradientFixtureField::psi2, position, lengths);
+    }
+    return fixture;
+}
+
+TotalGradientFixture make_pure_affine_total_gradient_fixture(std::size_t cells_per_axis) {
+    TotalGradientFixture fixture = make_total_gradient_fixture(cells_per_axis);
+    std::fill(fixture.psi1_fluctuation.begin(), fixture.psi1_fluctuation.end(), 0.0);
+    std::fill(fixture.psi2_fluctuation.begin(), fixture.psi2_fluctuation.end(), 0.0);
+    return fixture;
+}
+
+double total_gradient_periodic_scalar(GradientFixtureField field, const Vec3& position,
+                                      const Vec3& lengths) {
+    validate_position_and_lengths(position, lengths);
+    const double ax = 2.0 * kPi * position.x / lengths.x;
+    const double ay = 2.0 * kPi * position.y / lengths.y;
+    const double az = 2.0 * kPi * position.z / lengths.z;
+    switch (field) {
+        case GradientFixtureField::psi1:
+            return std::sin(ax) + 0.35 * std::cos(2.0 * ay) - 0.20 * std::sin(3.0 * az) +
+                   0.15 * std::sin(ax + ay - az);
+        case GradientFixtureField::psi2:
+            return 0.60 * std::cos(2.0 * ax) + 0.25 * std::sin(ay) + 0.30 * std::cos(2.0 * az) -
+                   0.10 * std::cos(ax - 2.0 * ay + az);
+    }
+    throw std::invalid_argument("unknown total-gradient fixture field");
+}
+
+Vec3 total_gradient_periodic_analytic(GradientFixtureField field, const Vec3& position,
+                                      const Vec3& lengths) {
+    validate_position_and_lengths(position, lengths);
+    const double ax = 2.0 * kPi * position.x / lengths.x;
+    const double ay = 2.0 * kPi * position.y / lengths.y;
+    const double az = 2.0 * kPi * position.z / lengths.z;
+    const double kx = 2.0 * kPi / lengths.x;
+    const double ky = 2.0 * kPi / lengths.y;
+    const double kz = 2.0 * kPi / lengths.z;
+    switch (field) {
+        case GradientFixtureField::psi1: {
+            const double mixed = std::cos(ax + ay - az);
+            return {kx * (std::cos(ax) + 0.15 * mixed),
+                    ky * (-0.70 * std::sin(2.0 * ay) + 0.15 * mixed),
+                    kz * (-0.60 * std::cos(3.0 * az) - 0.15 * mixed)};
+        }
+        case GradientFixtureField::psi2: {
+            const double mixed = std::sin(ax - 2.0 * ay + az);
+            return {kx * (-1.20 * std::sin(2.0 * ax) + 0.10 * mixed),
+                    ky * (0.25 * std::cos(ay) - 0.20 * mixed),
+                    kz * (-0.60 * std::sin(2.0 * az) + 0.10 * mixed)};
+        }
+    }
+    throw std::invalid_argument("unknown total-gradient fixture field");
+}
+
+Vec3 total_gradient_analytic(GradientFixtureField field, const Vec3& position,
+                             const Vec3& lengths, const Vec3& affine_gradient) {
+    validate_vector(affine_gradient, "affine gradient");
+    const Vec3 periodic = total_gradient_periodic_analytic(field, position, lengths);
+    return {periodic.x + affine_gradient.x, periodic.y + affine_gradient.y,
+            periodic.z + affine_gradient.z};
+}
+
+VectorField centered_total_gradient_oracle(const Grid& grid,
+                                           const std::vector<double>& fluctuation,
+                                           const Vec3& affine_gradient) {
+    validate_field(grid, fluctuation, "fluctuation", false);
+    validate_vector(affine_gradient, "affine gradient");
+    VectorField result{{}, {}, {}};
+    result.x.resize(grid.cell_count());
+    result.y.resize(grid.cell_count());
+    result.z.resize(grid.cell_count());
+    const long double inverse_two_dx = 1.0L / (2.0L * static_cast<long double>(grid.spacing.x));
+    const long double inverse_two_dy = 1.0L / (2.0L * static_cast<long double>(grid.spacing.y));
+    const long double inverse_two_dz = 1.0L / (2.0L * static_cast<long double>(grid.spacing.z));
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const std::size_t id = grid.index(ix, iy, iz);
+        const std::size_t xp = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) + 1, grid.nx), iy, iz);
+        const std::size_t xm = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) - 1, grid.nx), iy, iz);
+        const std::size_t yp = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) + 1, grid.ny), iz);
+        const std::size_t ym = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) - 1, grid.ny), iz);
+        const std::size_t zp = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) + 1, grid.nz));
+        const std::size_t zm = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) - 1, grid.nz));
+        result.x[id] = static_cast<double>((static_cast<long double>(fluctuation[xp]) -
+                                            static_cast<long double>(fluctuation[xm])) * inverse_two_dx +
+                                           static_cast<long double>(affine_gradient.x));
+        result.y[id] = static_cast<double>((static_cast<long double>(fluctuation[yp]) -
+                                            static_cast<long double>(fluctuation[ym])) * inverse_two_dy +
+                                           static_cast<long double>(affine_gradient.y));
+        result.z[id] = static_cast<double>((static_cast<long double>(fluctuation[zp]) -
+                                            static_cast<long double>(fluctuation[zm])) * inverse_two_dz +
+                                           static_cast<long double>(affine_gradient.z));
+    }
     return result;
 }
 
