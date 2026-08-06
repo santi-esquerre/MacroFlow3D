@@ -64,6 +64,38 @@ void validate_field(const Grid& grid, const std::vector<double>& field, const ch
     }
 }
 
+void validate_vector_field(const Grid& grid, const VectorField& field, const char* name) {
+    validate_field(grid, field.x, (std::string(name) + ".x").c_str(), false);
+    validate_field(grid, field.y, (std::string(name) + ".y").c_str(), false);
+    validate_field(grid, field.z, (std::string(name) + ".z").c_str(), false);
+}
+
+void validate_total_gradient_fixture(const TotalGradientFixture& fixture) {
+    fixture.grid.validate();
+    validate_position_and_lengths({0.0, 0.0, 0.0}, fixture.lengths);
+    validate_vector(fixture.psi1_affine_gradient, "psi1 affine gradient");
+    validate_vector(fixture.psi2_affine_gradient, "psi2 affine gradient");
+    validate_field(fixture.grid, fixture.psi1_fluctuation, "psi1 fluctuation", false);
+    validate_field(fixture.grid, fixture.psi2_fluctuation, "psi2 fluctuation", false);
+}
+
+[[nodiscard]] VectorField make_vector_field(std::size_t size) {
+    return {std::vector<double>(size, 0.0), std::vector<double>(size, 0.0),
+            std::vector<double>(size, 0.0)};
+}
+
+void set_vector(VectorField& field, std::size_t index, const Vec3& value) {
+    field.x[index] = value.x;
+    field.y[index] = value.y;
+    field.z[index] = value.z;
+}
+
+[[nodiscard]] Vec3 subtract(const Vec3& left, const Vec3& right) {
+    const Vec3 result{left.x - right.x, left.y - right.y, left.z - right.z};
+    validate_vector(result, "vector difference");
+    return result;
+}
+
 [[nodiscard]] double trigonometric_q(const Vec3& position, const Vec3& lengths) {
     validate_position_and_lengths(position, lengths);
     const double phase = 2.0 * kPi * (position.x / lengths.x + position.y / lengths.y + position.z / lengths.z);
@@ -469,6 +501,170 @@ VectorField centered_total_gradient_oracle(const Grid& grid,
                                            static_cast<long double>(affine_gradient.z));
     }
     return result;
+}
+
+SymmetricHessian total_gradient_periodic_hessian_analytic(GradientFixtureField field,
+                                                           const Vec3& position,
+                                                           const Vec3& lengths) {
+    validate_position_and_lengths(position, lengths);
+    const double ax = 2.0 * kPi * position.x / lengths.x;
+    const double ay = 2.0 * kPi * position.y / lengths.y;
+    const double az = 2.0 * kPi * position.z / lengths.z;
+    const double kx = 2.0 * kPi / lengths.x;
+    const double ky = 2.0 * kPi / lengths.y;
+    const double kz = 2.0 * kPi / lengths.z;
+
+    SymmetricHessian result{};
+    switch (field) {
+        case GradientFixtureField::psi1: {
+            const double mixed_sine = std::sin(ax + ay - az);
+            result = {-kx * kx * std::sin(ax) - 0.15 * kx * kx * mixed_sine,
+                      -0.15 * kx * ky * mixed_sine,
+                      0.15 * kx * kz * mixed_sine,
+                      -0.35 * (2.0 * ky) * (2.0 * ky) * std::cos(2.0 * ay) -
+                          0.15 * ky * ky * mixed_sine,
+                      0.15 * ky * kz * mixed_sine,
+                      0.20 * (3.0 * kz) * (3.0 * kz) * std::sin(3.0 * az) -
+                          0.15 * kz * kz * mixed_sine};
+            break;
+        }
+        case GradientFixtureField::psi2: {
+            const double mixed_cosine = std::cos(ax - 2.0 * ay + az);
+            result = {-0.60 * (2.0 * kx) * (2.0 * kx) * std::cos(2.0 * ax) +
+                          0.10 * kx * kx * mixed_cosine,
+                      -0.20 * kx * ky * mixed_cosine,
+                      0.10 * kx * kz * mixed_cosine,
+                      -0.25 * ky * ky * std::sin(ay) + 0.40 * ky * ky * mixed_cosine,
+                      -0.20 * ky * kz * mixed_cosine,
+                      -0.30 * (2.0 * kz) * (2.0 * kz) * std::cos(2.0 * az) +
+                          0.10 * kz * kz * mixed_cosine};
+            break;
+        }
+    }
+    if (!std::isfinite(result.xx) || !std::isfinite(result.xy) || !std::isfinite(result.xz) ||
+        !std::isfinite(result.yy) || !std::isfinite(result.yz) || !std::isfinite(result.zz)) {
+        throw std::invalid_argument("analytic periodic Hessian is not finite");
+    }
+    return result;
+}
+
+Vec3 symmetric_hessian_vector_product(const SymmetricHessian& hessian,
+                                      const Vec3& gradient) {
+    if (!std::isfinite(hessian.xx) || !std::isfinite(hessian.xy) ||
+        !std::isfinite(hessian.xz) || !std::isfinite(hessian.yy) ||
+        !std::isfinite(hessian.yz) || !std::isfinite(hessian.zz)) {
+        throw std::invalid_argument("symmetric Hessian must be finite");
+    }
+    validate_vector(gradient, "Hessian-vector gradient");
+    const Vec3 result{hessian.xx * gradient.x + hessian.xy * gradient.y + hessian.xz * gradient.z,
+                      hessian.xy * gradient.x + hessian.yy * gradient.y + hessian.yz * gradient.z,
+                      hessian.xz * gradient.x + hessian.yz * gradient.y + hessian.zz * gradient.z};
+    validate_vector(result, "Hessian-vector product");
+    return result;
+}
+
+HessianVectorBFields analytic_hessian_vector_b(const TotalGradientFixture& fixture) {
+    validate_total_gradient_fixture(fixture);
+    const std::size_t cells = fixture.grid.cell_count();
+    HessianVectorBFields result{make_vector_field(cells), make_vector_field(cells),
+                                make_vector_field(cells)};
+    for (std::size_t iz = 0; iz < fixture.grid.nz; ++iz) for (std::size_t iy = 0;
+         iy < fixture.grid.ny; ++iy) for (std::size_t ix = 0; ix < fixture.grid.nx; ++ix) {
+        const std::size_t id = fixture.grid.index(ix, iy, iz);
+        const Vec3 position = fixture.grid.cell_center(ix, iy, iz);
+        const Vec3 g1 = total_gradient_analytic(GradientFixtureField::psi1, position,
+                                                 fixture.lengths, fixture.psi1_affine_gradient);
+        const Vec3 g2 = total_gradient_analytic(GradientFixtureField::psi2, position,
+                                                 fixture.lengths, fixture.psi2_affine_gradient);
+        const Vec3 h2g1 = symmetric_hessian_vector_product(
+            total_gradient_periodic_hessian_analytic(GradientFixtureField::psi2, position,
+                                                      fixture.lengths),
+            g1);
+        const Vec3 h1g2 = symmetric_hessian_vector_product(
+            total_gradient_periodic_hessian_analytic(GradientFixtureField::psi1, position,
+                                                      fixture.lengths),
+            g2);
+        set_vector(result.hessian_psi2_times_gradient_psi1, id, h2g1);
+        set_vector(result.hessian_psi1_times_gradient_psi2, id, h1g2);
+        set_vector(result.b, id, subtract(h2g1, h1g2));
+    }
+    return result;
+}
+
+HessianVectorBFields centered_hessian_vector_b_oracle(
+    const Grid& grid, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const VectorField& psi1_total_gradient,
+    const VectorField& psi2_total_gradient) {
+    validate_field(grid, psi1_fluctuation, "psi1 fluctuation", false);
+    validate_field(grid, psi2_fluctuation, "psi2 fluctuation", false);
+    validate_vector_field(grid, psi1_total_gradient, "psi1 total gradient");
+    validate_vector_field(grid, psi2_total_gradient, "psi2 total gradient");
+
+    const std::size_t cells = grid.cell_count();
+    HessianVectorBFields result{make_vector_field(cells), make_vector_field(cells),
+                                make_vector_field(cells)};
+    const long double inverse_dx2 = 1.0L / (static_cast<long double>(grid.spacing.x) * grid.spacing.x);
+    const long double inverse_dy2 = 1.0L / (static_cast<long double>(grid.spacing.y) * grid.spacing.y);
+    const long double inverse_dz2 = 1.0L / (static_cast<long double>(grid.spacing.z) * grid.spacing.z);
+    const long double inverse_4dxdy = 1.0L / (4.0L * grid.spacing.x * grid.spacing.y);
+    const long double inverse_4dxdz = 1.0L / (4.0L * grid.spacing.x * grid.spacing.z);
+    const long double inverse_4dydz = 1.0L / (4.0L * grid.spacing.y * grid.spacing.z);
+
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0;
+         iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const std::size_t id = grid.index(ix, iy, iz);
+        const auto cell_at = [&](std::ptrdiff_t dx, std::ptrdiff_t dy, std::ptrdiff_t dz) {
+            return grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) + dx, grid.nx),
+                              wrap_index(static_cast<std::ptrdiff_t>(iy) + dy, grid.ny),
+                              wrap_index(static_cast<std::ptrdiff_t>(iz) + dz, grid.nz));
+        };
+
+        const auto direct_hvp = [&](const std::vector<double>& fluctuation, const Vec3& gradient) {
+            const auto value = [&](std::ptrdiff_t dx, std::ptrdiff_t dy, std::ptrdiff_t dz) {
+                return static_cast<long double>(fluctuation[cell_at(dx, dy, dz)]);
+            };
+            const long double center = value(0, 0, 0);
+            const long double xx = (value(1, 0, 0) - 2.0L * center + value(-1, 0, 0)) * inverse_dx2;
+            const long double yy = (value(0, 1, 0) - 2.0L * center + value(0, -1, 0)) * inverse_dy2;
+            const long double zz = (value(0, 0, 1) - 2.0L * center + value(0, 0, -1)) * inverse_dz2;
+            const long double xy = (value(1, 1, 0) - value(1, -1, 0) - value(-1, 1, 0) +
+                                    value(-1, -1, 0)) * inverse_4dxdy;
+            const long double xz = (value(1, 0, 1) - value(1, 0, -1) - value(-1, 0, 1) +
+                                    value(-1, 0, -1)) * inverse_4dxdz;
+            const long double yz = (value(0, 1, 1) - value(0, 1, -1) - value(0, -1, 1) +
+                                    value(0, -1, -1)) * inverse_4dydz;
+            return Vec3{static_cast<double>(xx * gradient.x + xy * gradient.y + xz * gradient.z),
+                        static_cast<double>(xy * gradient.x + yy * gradient.y + yz * gradient.z),
+                        static_cast<double>(xz * gradient.x + yz * gradient.y + zz * gradient.z)};
+        };
+
+        const Vec3 g1{psi1_total_gradient.x[id], psi1_total_gradient.y[id],
+                      psi1_total_gradient.z[id]};
+        const Vec3 g2{psi2_total_gradient.x[id], psi2_total_gradient.y[id],
+                      psi2_total_gradient.z[id]};
+        const Vec3 h2g1 = direct_hvp(psi2_fluctuation, g1);
+        const Vec3 h1g2 = direct_hvp(psi1_fluctuation, g2);
+        set_vector(result.hessian_psi2_times_gradient_psi1, id, h2g1);
+        set_vector(result.hessian_psi1_times_gradient_psi2, id, h1g2);
+        set_vector(result.b, id, subtract(h2g1, h1g2));
+    }
+    return result;
+}
+
+TotalGradientFixture make_parallel_total_gradient_fixture(std::size_t cells_per_axis,
+                                                           double scale) {
+    if (!std::isfinite(scale)) {
+        throw std::invalid_argument("parallel total-gradient scale must be finite");
+    }
+    TotalGradientFixture fixture = make_total_gradient_fixture(cells_per_axis);
+    fixture.psi2_affine_gradient = {scale * fixture.psi1_affine_gradient.x,
+                                    scale * fixture.psi1_affine_gradient.y,
+                                    scale * fixture.psi1_affine_gradient.z};
+    validate_vector(fixture.psi2_affine_gradient, "parallel psi2 affine gradient");
+    for (std::size_t id = 0; id < fixture.grid.cell_count(); ++id) {
+        fixture.psi2_fluctuation[id] = scale * fixture.psi1_fluctuation[id];
+    }
+    return fixture;
 }
 
 }  // namespace macroflow3d::streamfunctions::reference
