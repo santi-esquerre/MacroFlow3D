@@ -44,4 +44,8 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // independent long-double CPU stencil and deliberately unequal spacing.
 [[nodiscard]] CaseRegistry streamfunction_gradient_case_registry();
 
+// SF-08 positive Hessian-vector/B controls.  They deliberately run the SF-07
+// total-gradient kernel immediately before the register-only HVP/B kernel.
+[[nodiscard]] CaseRegistry hessian_vector_b_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
