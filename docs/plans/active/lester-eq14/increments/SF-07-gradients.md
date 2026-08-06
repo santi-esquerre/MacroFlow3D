@@ -1,6 +1,6 @@
 # SF-07 — Streamfunction gradients
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Implementar gradientes periódicos cell-centered con contribuciones afines.`
 - Depends on: `SF-06`
 - Unlocks: `SF-08`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-05T18:35Z`
-- Completed: `not completed`
+- Completed: `2026-08-06T01:57:28Z`
 - PR: [#16](https://github.com/santi-esquerre/MacroFlow3D/pull/16)
-- Commit: `not recorded`
+- Commit: `e7f90db39bca1906b8bbc5dd94195edf7084cfac`
 
 ## Scientific or engineering intent
 
@@ -80,9 +80,9 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Total-gradient API and kernel are implemented.
 - [x] Affine exactness and periodic convergence tests pass.
 - [x] Spacing and indexing conventions are documented.
-- [ ] Full regressions and human review pass.
-- [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-07 complete and selects SF-08.
+- [x] Full regressions and human review pass.
+- [x] Evidence, PR, and commit are recorded.
+- [x] Dashboard marks SF-07 complete and selects SF-08.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -99,3 +99,4 @@ SF-08 may use the accepted total gradients in Hessian-vector products and `B`.
 | 2026-08-06T00:52Z | `97d7fe7` metadata correction | The prior literal statement that personal inspection used `git diff 96786f1..HEAD` was inexact. The authoritative scientific audit inspected `git diff master...96786f1` for the integrated implementation and evidence, together with the full commits; the validating transition was inspected separately with `git diff 96786f1..97d7fe7`. This correction changes neither the PASS result, metrics, nor acceptance-gate determinations. | Documentation-only, append-only correction; no numerical effect and no state, checklist, dashboard/NEXT, Goal, completion, PR, or commit metadata change. | Independent validation of this correction. |
 | 2026-08-06T00:55Z | C02 independent validation of `ca27bd2` | Verified `git show ca27bd2`, `git diff --check 97d7fe7..ca27bd2`, prior-bitácora hash equality, and complete `master...HEAD` SF-07-only history/scope; confirmed the scientific audit range is `master...96786f1` and the validating transition is `96786f1..97d7fe7`. | Checker PASS (`29 increments, next=SF-07`); C01/full-range diffs PASS; C01 adds one append-only row and has zero functional effect, so the clean T06R/root binary evidence at `96786f1`/`97d7fe7` remains applicable without rebuild or tests. No state, checklist, dashboard/NEXT, Goal, completion, PR, or commit metadata change. | root final re-audit and publish PR |
 | 2026-08-06T01:00Z | awaiting_review; [PR #16](https://github.com/santi-esquerre/MacroFlow3D/pull/16); initial published head `c12f2236e2ccdd54303490a939ac8ebb8065dd2e` | Draft PR opened from `science/lester-sf07-gradients` to `master` with the reproducible scope/body: centered second-order triply periodic cell-centered total gradients for `psi1`/`psi2`, explicit `dx/dy/dz`, post-derivative affine terms, and six caller-owned buffers; production kernel/API, independent long-double oracle/fixtures, positive/error/mutant tests, and evidence/state documentation. | Prior clean T06R/root evidence remains the validation record: checker; preset; serial clean build; five named gradient cases; streamfunction suite; `run_operator_tests`; focused/full CTest; pipeline smoke; diff check; root incremental no-work re-run plus same acceptance suite. Metrics: all affine six RMS/Linf 0; GPU/CPU normalized RMS max `9.29285e-17`, boundary `4.29506e-16`; minimum L2 order `1.924818` with all Linf decreasing; 24 exact invalid_argument and two allowed `9.29285e-17`; mutants `.277108/.289053/.160674`; CTest 2/2, legacy 8/8; smoke head `1.02e1 -> 1.77e-13`, divergence `-8.1175e-14/+8.2979e-14`, particles `387/113`, zero stalls/fails. Gate 1/2/3A operator subset PASS; physical Gate 3A/Gate 4/Gate 5/V100 N/A because no coupled solver, sources, reconstruction, or performance claim. Risks/intentionally untouched: explicit-buffer kernel intentionally unfused; no production consumer; local RTX 3050 only/V100 N/A; superseded invalid attempts retained; SF-06 RHS/operator/PCG/MG, Hessians/nonlinear sources/residual/Picard, face velocity/reconstruction, runtime configs/transport/legacy PSPTA, and SF-08+ docs/state untouched. Implementation frozen; mandatory human review pending; no acceptance or merge assertion. | human review |
+| 2026-08-06T01:57:28Z | done; [PR #16](https://github.com/santi-esquerre/MacroFlow3D/pull/16) merged by `santi-esquerre`; commit `e7f90db39bca1906b8bbc5dd94195edf7084cfac`, tree `bb08fc4da9289fbe840040114353dec5ae63ac40` | Explicit user approval (“Listo, mergeado, cerrá el SF-07…”) and confirmed PR merge close SF-07; the merged tree is identical to audited head tree `f0d680f25003e4e7b724d9855f780065e9a66d6b`. GitGuardian SUCCESS; GitHub formal review list empty, so human approval is recorded only from the explicit user confirmation and merge. | Validation evidence: affine 0; GPU/CPU max normalized RMS `9.29285e-17`, boundary `4.29506e-16`; minimum order `1.924818` with Linf decreasing; 24 exact `invalid_argument` rejections plus 2 allowed inputs; mutants `.277108/.289053/.160674`; T06R clean build exit 0; CTest 2/2, legacy 8/8; smoke head `1.02e1 -> 1.77e-13`, divergence `-8.1175e-14/+8.2979e-14`, particles `387/113`, zero fails; Gate 1/2/3A operator subset PASS; full physical Gate 3A/Gate 4/5/V100 N/A. Residual risks: explicit-buffer kernel remains unfused with no production consumer; validation was local RTX only; invalid attempts are retained as superseded history. | Independent closeout validation and closeout PR; do not claim the closeout PR merged. |
