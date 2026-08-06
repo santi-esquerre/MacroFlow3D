@@ -1,6 +1,6 @@
 # SF-08 — Hessian-vector products and B
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar productos Hessiano-vector y la construcción de B sin almacenar Hessianos.`
 - Depends on: `SF-07`
 - Unlocks: `SF-09`
@@ -8,8 +8,8 @@
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf08-hessian-vector-b`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A operator subset`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Codex (orchestrator)`
+- Started: `2026-08-06T02:33Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -96,3 +96,4 @@ gradient definitions.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-06T02:33Z | active; master=`origin/master=d3c8ca796ea6cdeb21ddf6bd335d9f1e59575a69` | Activated SF-08 documentation state. | Preflight verified on the default-branch closure: clean master and origin/master at `d3c8ca796ea6cdeb21ddf6bd335d9f1e59575a69`; SF-07 is done; checker PASS (`29 increments, next=SF-08`); persistent Goal `Implementar productos Hessiano-vector y la construcción de B sin almacenar Hessianos.` created; branch `science/lester-sf08-hessian-vector-b`; worktree `~/src/MacroFlow3D/.agents/worktrees/lester-sf08-hessian-vector-b`. | Build and execute the SF-08 DAG. |

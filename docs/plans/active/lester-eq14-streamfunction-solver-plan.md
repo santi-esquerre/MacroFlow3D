@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-08`
-- Active runtime goal: `none`
+- Active runtime goal: `SF-08 — Implementar productos Hessiano-vector y la construcción de B sin almacenar Hessianos.`
 - Execution model: strictly sequential
 - Canonical state: the state visible on the repository default branch
 - Last completed increment: `SF-07`
