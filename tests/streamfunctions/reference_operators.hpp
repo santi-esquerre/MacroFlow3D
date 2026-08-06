@@ -20,6 +20,27 @@ struct VectorField {
     std::vector<double> z;
 };
 
+// Symmetric Hessian stored as its six independent components.  This is a
+// point value for analytic controls only; SF-08 deliberately does not create
+// grid-sized Hessian fields.
+struct SymmetricHessian {
+    double xx{};
+    double xy{};
+    double xz{};
+    double yy{};
+    double yz{};
+    double zz{};
+};
+
+// The three vector fields exposed by the SF-08 test oracle.  The two direct
+// products remain visible for component-wise convergence checks, while B is
+// their signed difference required by Lester equation (14).
+struct HessianVectorBFields {
+    VectorField hessian_psi2_times_gradient_psi1;
+    VectorField hessian_psi1_times_gradient_psi2;
+    VectorField b;
+};
+
 enum class Axis { x = 0, y = 1, z = 2 };
 
 struct Grid {
@@ -145,5 +166,32 @@ struct TotalGradientFixture {
 [[nodiscard]] VectorField centered_total_gradient_oracle(const Grid& grid,
                                                           const std::vector<double>& fluctuation,
                                                           const Vec3& affine_gradient);
+
+// Hessians differentiate the periodic SF-07 fluctuations only.  The affine
+// contribution is intentionally absent because its Hessian is identically
+// zero.
+[[nodiscard]] SymmetricHessian total_gradient_periodic_hessian_analytic(
+    GradientFixtureField field, const Vec3& position, const Vec3& lengths);
+[[nodiscard]] Vec3 symmetric_hessian_vector_product(const SymmetricHessian& hessian,
+                                                     const Vec3& gradient);
+
+// Analytic pointwise controls on the ordinary SF-07 smooth fixture.  The
+// gradients are total (periodic plus affine), whereas Hessians are periodic.
+[[nodiscard]] HessianVectorBFields analytic_hessian_vector_b(
+    const TotalGradientFixture& fixture);
+
+// Independent long-double discrete oracle.  It samples center, six axial
+// neighbours, and twelve edge-diagonal neighbours of each fluctuation;
+// Hessian fields are never assembled.  Input gradients must be the total
+// gradients for the corresponding psi fields at the same cell centers.
+[[nodiscard]] HessianVectorBFields centered_hessian_vector_b_oracle(
+    const Grid& grid, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const VectorField& psi1_total_gradient,
+    const VectorField& psi2_total_gradient);
+
+// Exact discrete parallel-gradient control: psi2_tilde = scale*psi1_tilde
+// and g2 = scale*g1, hence H(psi2)g1 - H(psi1)g2 is zero up to roundoff.
+[[nodiscard]] TotalGradientFixture make_parallel_total_gradient_fixture(
+    std::size_t cells_per_axis, double scale);
 
 }  // namespace macroflow3d::streamfunctions::reference
