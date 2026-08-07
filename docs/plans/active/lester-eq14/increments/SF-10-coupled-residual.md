@@ -1,15 +1,15 @@
 # SF-10 — Coupled residual
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar el residuo acoplado y las reducciones adimensionales del solver.`
 - Depends on: `SF-09`
 - Unlocks: `SF-11`
 - Branch: `science/lester-sf10-coupled-residual`
-- Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf10-coupled-residual`
+- Worktree: `Claude-managed per-node isolated worktrees (native isolation: worktree)`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable (orchestrator)`
+- Started: `2026-08-07T17:39Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -97,3 +97,4 @@ SF-11 may add physical diagnostics without changing this convergence residual.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-07T17:39Z | active; base `master=origin/master=e81cd47378849370272f8ed727659b025de16f44` | Activated SF-10 documentation state under the Claude Code orchestration harness. | Preflight verified on the default branch: SF-09 `done` via PR #19 (`75eafef`) and closure PR #20 (`e81cd47`); checker PASS (`29 increments, next=SF-10`); clean tree. Reuse surface inspected in code: `LesterPositiveDiffusionOperator` (SF-02), `MeanZeroProjector`/`MeanZeroWorkspace` (SF-03), `assemble_affine_periodic_rhs` + workspace/diagnostics (SF-06), `enqueue_total_streamfunction_gradients`/`enqueue_streamfunction_hessian_vector_b` (SF-07/08), `enqueue_streamfunction_nonlinear_sources` (SF-09), `blas` reductions with `ReductionWorkspace`. Interpretive decision recorded for human review: the authoritative convergence residual uses the projected combined right-hand side, `F_i = A u_i - P(div_h(q gbar_i) - eta q S_pair)`, because the locked decisions require projecting right-hand sides and `A u` is discretely mean-zero on the periodic domain, so the literal unprojected spec formula would stagnate at the raw compatibility defect; raw RHS means remain reported as diagnostics and tests verify the projected/literal relationship explicitly. sccache remains disabled locally (documented in SF-09 activation). Persistent Goal `Implementar el residuo acoplado y las reducciones adimensionales del solver.`; delivery branch `science/lester-sf10-coupled-residual`. | Build the SF-10 intra-increment DAG and delegate implementation to isolated workers. |
