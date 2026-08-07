@@ -1,6 +1,6 @@
 # SF-08 — Hessian-vector products and B
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Implementar productos Hessiano-vector y la construcción de B sin almacenar Hessianos.`
 - Depends on: `SF-07`
 - Unlocks: `SF-09`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Codex (orchestrator)`
 - Started: `2026-08-06T02:33Z`
-- Completed: `not completed`
+- Completed: `2026-08-06 (PR #18 merged to master)`
 - PR: [#18 — SF-08: add register-only Hessian-vector B operator](https://github.com/santi-esquerre/MacroFlow3D/pull/18)
-- Commit: `not recorded`
+- Commit: `855dcf14458d3ac92ef31a7a30e373d5d4b16a1b`
 
 ## Scientific or engineering intent
 
@@ -82,9 +82,9 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] B construction and analytic controls pass.
 - [x] Component convergence order is at least 1.8.
 - [x] Temporary memory is measured and documented.
-- [ ] Full regressions and human review pass.
-- [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-08 complete and selects SF-09.
+- [x] Full regressions and human review pass.
+- [x] Evidence, PR, and commit are recorded.
+- [x] Dashboard marks SF-08 complete and selects SF-09.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -103,3 +103,5 @@ gradient definitions.
 | 2026-08-06T03:31Z | root audit PASS; validating | Root audited `git diff master...7bd02f8` (10 files, 7 commits) for exact SF-08 scope: no future increment work, direct register-only HVPs/B, centered diagonal and mixed signs, periodic radius-one 19-point union stencil, total-gradient use with affine Hessian zero, output/input anti-aliasing, and no allocation/copy/synchronization in enqueue. Root reproduced checker PASS (`29 increments, next=SF-08`), configure, exact `cmake --build build/wsl-debug -j` exit 0, five `--case` executions exit 0, targeted/full CTest 1/1 and 2/2 exit 0, and smoke exit 0. Metrics: oracle `4.4122064e-16`, periodic-boundary Linf `3.1262559e-15`, minimum component order `1.8944197`, pure/parallel control zeros `0`, 69 rejects plus 1 accepted read-only overlap, four mutants detected, and resources `REG:64`, `STACK/LOCAL/SHARED:0`; caller diagnostic outputs are 1.125 GiB at 256^3. Gate 1, Gate 2, and Gate 3A operator subset PASS. Full coupled physical metrics/Gate 4/V100 are N/A because SF-08 is pre-source/pre-coupled and not a V100 increment. Earlier Ninja recovery warnings arose from invalid interrupted attempts already recorded; the final exact build is valid. Automatic classification PASS; implementation frozen pending required human review. | Open/update PR and request human review; do not advance NEXT. |
 | 2026-08-06T03:23Z | awaiting_review; PR [#18](https://github.com/santi-esquerre/MacroFlow3D/pull/18); initial published head `9bf658fa0c8bd0885b1e040c760605fdeac8e7b7` | Published the frozen SF-08 implementation for mandatory human review. The PR records scope, API/kernel/reference/tests, exact exit-0 commands, oracle/boundary/order/zero/contract/mutant/resource/memory/smoke evidence, Gate 1/2/3A operator-subset PASS, and invalid attempts excluded from acceptance evidence. | Implementation remains frozen. Residual risks: the explicit nine caller-owned diagnostic outputs cost 1.125 GiB at 256^3; `REG:64` and zero stack/local/shared storage were measured only in local Debug `sm_86`, with no V100 inference. Await human review; do not advance dashboard, checklist, Goal, or NEXT. |
 | 2026-08-06T03:25Z | metadata correction; append-only | The preceding root-audit row is labeled `2026-08-06T03:31Z`, which is inexact/future-dated and is not rewritten. Authoritative timestamps are the validating/root-audit commit `9bf658f` at `2026-08-06T03:20:38Z`, PR #18 creation at `2026-08-06T03:23:04Z`, and the awaiting-review commit `8f5f9ba` at `2026-08-06T03:23:28Z`; therefore the correct order is audit/validating → PR created → awaiting-review commit. | Metadata-only correction with zero numerical effect. PASS classification, all metrics, increment state, PR, NEXT, and persistent Goal are unchanged. |
+| 2026-08-06 | human approval / merge; PR [#18](https://github.com/santi-esquerre/MacroFlow3D/pull/18) -> `master` commit `855dcf14458d3ac92ef31a7a30e373d5d4b16a1b` | Repository owner manually merged the audited SF-08 PR. GitHub records the PR as merged; no separate GitHub review object is present, so closure records the manual owner merge as the explicit human approval event rather than inventing a review. | Accepted source result is the previously audited PR #18 content; Gate 1, Gate 2, and Gate 3A operator subset remain PASS. No post-review scientific/source change is introduced by formal closure. | Repair the stale versioned harness state: mark SF-08 done and advance dashboard NEXT to SF-09. |
+| 2026-08-07 | formal closure repair | Metadata-only repair prepared because PR #18 entered `master` while the increment document still said `awaiting_review` and the dashboard still selected SF-08. | Set `State: done`; recorded canonical default-branch commit `855dcf14458d3ac92ef31a7a30e373d5d4b16a1b`; completed the closure checklist; dashboard repair selects SF-09. Scientific implementation/evidence is unchanged. | Publish/merge the metadata-only harness repair; then start SF-09 only after the repaired state is visible on the default branch. |

@@ -24,15 +24,83 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-08`
-- Active runtime goal: `SF-08 — Implementar productos Hessiano-vector y la construcción de B sin almacenar Hessianos.`
-- Execution model: strictly sequential
+- NEXT: `SF-09`
+- Active runtime goal: `none`
+- Increment ordering: strictly sequential
+- Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
+- Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-07`
+- Last completed increment: `SF-08`
 
 An increment may start only when it is named by `NEXT` and every dependency in
-its specification is `done`.  The next increment is not enabled until the
-current increment's completion commit has been merged.
+its specification is `done`. Within that one active increment, the orchestrator
+may decompose the Goal into a DAG and execute independent nodes concurrently.
+The next increment is not enabled until the current increment's audited PR has
+been merged and its completion state is visible on the default branch.
+
+## Claude Code intra-increment orchestration contract
+
+This section governs **how the single active increment is executed**. It does
+not relax the sequential ordering of increments.
+
+1. **UNDERSTAND — Fable 5 / xhigh**
+   - Read the project foundations, architecture, solver overview, theory note,
+     acceptance gates, this dashboard, the active increment specification, the
+     increment workflow, and the relevant code/tests.
+   - Establish the increment base commit and exact Goal before delegating work.
+
+2. **PLAN — Fable 5 / xhigh**
+   - Build a concrete, acyclic DAG whose complete accepted result implies the
+     increment Goal.
+   - Each node must define objective, dependencies, required context, expected
+     write scope, forbidden scope, deliverables, acceptance criteria, validation
+     commands, and required predecessor commits.
+   - Persist runtime planning/audit state under
+     `.claude/orchestration/<increment-id>/` when useful.
+
+3. **EXECUTE — Sonnet 5 / medium**
+   - Every implementation or corrective node is delegated to
+     `increment-worker`.
+   - Every worker runs with native `isolation: worktree`.
+   - Independent nodes with non-conflicting write scopes may run concurrently.
+   - A dependent node must explicitly incorporate the exact approved predecessor
+     commit hashes supplied by the orchestrator.
+   - Workers commit their own result but do not push or open PRs.
+
+4. **AUDIT / CORRECT — Fable 5 / xhigh**
+   - Worker `success` is only a report, never acceptance.
+   - The orchestrator independently reads the diff, checks the scientific and
+     discrete contracts, re-runs appropriate validation, and evaluates every
+     acceptance criterion.
+   - Failed audits generate a corrective DAG and repeat until no blocking or
+     major findings remain.
+
+5. **INTEGRATE — Sonnet 5 / medium**
+   - After all required nodes are accepted, launch exactly one
+     `increment-integrator` in a fresh isolated worktree.
+   - The integrator starts from the increment base and incorporates only
+     orchestrator-approved commits in dependency-compatible order.
+   - It resolves and documents integration conflicts and runs the full
+     increment validation, but it does not push or open a PR.
+
+6. **FINAL_AUDIT / PUBLISH_PR — Fable 5 / xhigh**
+   - The orchestrator independently audits the integrated commit against the
+     original increment Goal, checklist, acceptance gates, and full diff from
+     the increment base.
+   - Any failure returns to a corrective DAG and fresh integration/audit.
+   - High-autonomy increments may finalize `done`/`NEXT` metadata before opening
+     the PR; the default branch still blocks advancement until human merge.
+   - Human-review increments publish the audited source result as
+     `awaiting_review` with `NEXT` unchanged.
+   - After explicit human approval, resume the **same PR** and add only the
+     closure metadata commit: complete the checklist, set `done`, advance
+     `NEXT`, clear the active goal, and run `check-lester-increments.sh`.
+   - No agent merges the PR.
+
+The autonomous implementation run ends when the audited PR is opened. Formal
+closure of a human-review increment adds the closure-only metadata commit after
+human approval and before human merge. Repository advancement remains blocked
+until that closure state is merged and visible on the default branch.
 
 ## Master checklist
 
@@ -44,7 +112,7 @@ current increment's completion commit has been merged.
 - [x] [SF-05 — Multigrid reuse](lester-eq14/increments/SF-05-multigrid-reuse.md)
 - [x] [SF-06 — Affine-periodic right-hand sides](lester-eq14/increments/SF-06-affine-periodic-rhs.md)
 - [x] [SF-07 — Streamfunction gradients](lester-eq14/increments/SF-07-gradients.md)
-- [ ] [SF-08 — Hessian-vector products and B](lester-eq14/increments/SF-08-hessian-vector-b.md)
+- [x] [SF-08 — Hessian-vector products and B](lester-eq14/increments/SF-08-hessian-vector-b.md)
 - [ ] [SF-09 — Nonlinear sources](lester-eq14/increments/SF-09-nonlinear-sources.md)
 - [ ] [SF-10 — Coupled residual](lester-eq14/increments/SF-10-coupled-residual.md)
 - [ ] [SF-11 — Physical diagnostics](lester-eq14/increments/SF-11-physical-diagnostics.md)

@@ -104,6 +104,24 @@ individual increment files are versioned execution state.  Preserve their
 exact Goal, dependency, checklist, advancement, and append-only bitácora
 fields; validate them with `scripts/hooks/check-lester-increments.sh`.
 
+
+For Claude Code orchestration, **sequential** means sequential *between
+increments*, not necessarily serial execution of every task inside one
+increment. The active increment may be decomposed into a runtime DAG; only
+independent nodes with compatible write scopes may run concurrently.
+
+Detailed DAGs, worker reports, and audit scratch records may live under
+`.claude/orchestration/<increment-id>/` and may be gitignored. They are not a
+replacement for the versioned increment checklist and append-only bitácora.
+The durable increment record must summarize the accepted implementation,
+validation evidence, corrective cycles when material, and the final PR.
+
+The autonomous implementation run ends when an audited PR has been opened. For
+human-review increments, durable closure is finalized on that same PR only after
+explicit human approval: a metadata-only commit marks the increment `done` and
+advances `NEXT`. No agent merges. Do not document the next increment as
+executable until that closure state is merged and visible on the default branch.
+
 ---
 
 ## Decisions

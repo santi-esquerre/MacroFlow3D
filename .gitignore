@@ -36,3 +36,7 @@ __pycache__/
 
 # Generated docs (e.g. Doxygen XML)
 xml/
+
+
+.claude/worktrees/
+.claude/orchestration/

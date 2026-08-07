@@ -20,10 +20,16 @@ Do not trade correctness for convenience.
 
 ## How to work in this repository
 
-- Use **Plan mode first** for any non-trivial task.
+- Plan before editing any non-trivial task. In an orchestrated Claude Code increment,
+  the persisted intra-increment DAG is the authoritative implementation plan; do not
+  create a competing plan that changes the increment scope.
 - Read the closest `AGENTS.md` files before editing.
-- Work in a **Git worktree**, not in the main checkout.
-- Create worktrees under `~/src/MacroFlow3D/.agents/worktrees/`, not under `/tmp` or ad hoc locations.
+- **Implementation, corrective, and integration work must happen in isolated Git
+  worktrees.** In Claude Code, use the project subagents with `isolation: worktree`;
+  native worktrees live under `.claude/worktrees/` by default.
+- The main orchestrator may remain in the control checkout for reading, auditing,
+  comparing commits, updating orchestration metadata, and publishing the final PR,
+  but it must not implement substantial source changes there.
 - Keep changes **single-purpose**:
   - one physical hypothesis,
   - or one refactor,
@@ -42,8 +48,18 @@ For any task in the Lester equation (14) streamfunction path:
 4. Use the exact documented Goal as the persistent runtime goal when the
    agent environment supports goals.
 5. Maintain the increment checklist and append-only bitácora during work.
-6. Do not start the next increment until the current completion commit is
-   merged and visible on the default branch.
+6. Treat **increment ordering** and **intra-increment scheduling** separately:
+   increments are strictly sequential, but the active increment may be decomposed
+   into a DAG and independent nodes may run in parallel.
+7. The deliverable of the autonomous implementation run is an **audited GitHub
+   pull request**. Workers and the integrator do not publish or merge it; the
+   orchestrator publishes it only after final audit.
+8. For increments requiring human review, keep the delivery branch
+   `awaiting_review` and `NEXT` unchanged until explicit human approval. After
+   approval, the orchestrator may add only a closure metadata commit on the same
+   PR branch to set `done`, complete the checklist, and advance `NEXT`.
+9. No agent merges a PR. Do not start the next increment until the closure state
+   is merged and visible on the repository default branch.
 
 Run `bash scripts/hooks/check-lester-increments.sh` before committing any
 change to the Lester plan or increment state.
@@ -254,10 +270,21 @@ For any new invariant-construction work, read `docs/plans/active/lester-eq14-str
 
 - One purpose per branch.
 - Commit messages should say **what changed** and **why**.
+- In orchestrated increments:
+  - each worker commits only its assigned DAG node;
+  - the integrator combines only orchestrator-approved commits;
+  - workers and the integrator never push or open PRs;
+  - only the orchestrator may push the final audited increment branch and create
+    the PR;
+  - the orchestrator never auto-merges the PR.
 - PR descriptions should include:
-  - scope,
+  - increment Goal and scope,
+  - DAG / delegated tasks,
   - commands run,
   - outputs checked,
+  - acceptance evidence,
+  - integration notes,
+  - remaining risks,
   - files intentionally left untouched.
 
 ---
@@ -295,3 +322,26 @@ A task is done only when all of the following are true:
    - any remaining risks or open questions.
 
 If a task touches scientific behavior, “done” also requires alignment with `docs/validation/acceptance-gates.md`.
+
+### Increment-level definition of done
+
+For an orchestrated Lester increment, a successful worker or a green build is
+not enough. The autonomous run is complete only when:
+
+1. the orchestrator has read the required scientific, numerical, architectural,
+   validation, and increment documents;
+2. a complete intra-increment DAG has been constructed;
+3. every required DAG node has been implemented in an isolated worktree;
+4. the orchestrator has independently audited all worker results;
+5. all blocking/major audit findings have been resolved through corrective DAGs;
+6. one isolated integration agent has integrated only approved commits;
+7. the orchestrator has independently audited the integrated commit against the
+   original increment Goal and acceptance criteria;
+8. the increment checklist, bitácora, and required durable docs are updated;
+9. `check-lester-increments.sh` and all required validation gates pass;
+10. the orchestrator has pushed the final audited branch and opened a GitHub PR.
+
+The orchestrator must stop at the PR. The next increment remains disabled until
+that PR is merged and the updated execution state is visible on the default
+branch.
+

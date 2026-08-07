@@ -23,6 +23,22 @@ Si este resumen y el dashboard difieren en un parámetro operativo, gobierna el
 dashboard. Si una interpretación científica difiere de la fuente primaria, se
 debe corregir este resumen y registrar la decisión.
 
+
+### Semántica de ejecución de los incrementos
+
+La secuencia científica `SF-00 -> ... -> SF-28` sigue siendo estrictamente
+secuencial **entre incrementos**. Para el único incremento habilitado por
+`NEXT`, Claude Code puede descomponer el Goal en un DAG de subtareas
+autocontenidas y ejecutar en paralelo solamente nodos independientes y con
+alcances de escritura compatibles.
+
+La ejecución autónoma de un incremento termina en una **pull request auditada**:
+workers Sonnet implementan/corrigen en worktrees aislados, un integrador Sonnet
+combina únicamente commits aprobados y el orchestrator Fable realiza las
+auditorías de aceptación antes de publicar la PR. El siguiente incremento no se
+habilita hasta que esa PR sea mergeada y el nuevo estado sea visible en la rama
+por defecto.
+
 ## Qué queremos obtener
 
 MacroFlow3D ya genera una conductividad escalar heterogénea, resuelve el flujo
@@ -465,5 +481,7 @@ contratos y tests discretos
 ```
 
 La implementación sólo avanza cuando el incremento actual cumple su Goal,
-checklist, comandos de validación, Gate 3A cuando corresponda, bitácora y merge
-en la rama por defecto.
+checklist, comandos de validación, Gate 3A cuando corresponda y bitácora, pasa la
+auditoría final del orchestrator y se publica como PR. El siguiente incremento
+sólo queda habilitado después del merge de esa PR y cuando el estado actualizado
+es visible en la rama por defecto.

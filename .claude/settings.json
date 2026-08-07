@@ -1,38 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "agent": "orchestrator",
   "permissions": {
-    "allow": [
-      "Bash(cmake *)",
-      "Bash(ctest *)",
-      "Bash(ninja *)",
-      "Bash(make *)",
-      "Bash(./build/*)",
-      "Bash(git status *)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(git show *)",
-      "Bash(git branch *)",
-      "Bash(git worktree *)",
-      "Bash(gh pr *)",
-      "Bash(gh issue *)",
-      "Bash(scripts/*)",
-      "Bash(ssh v100 *)",
-      "Bash(rsync *)",
-      "Bash(cat *)",
-      "Bash(head *)",
-      "Bash(tail *)",
-      "Bash(grep *)",
-      "Bash(find *)",
-      "Bash(ls *)",
-      "Bash(wc *)",
-      "Bash(diff *)"
-    ],
-    "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./secrets/**)"
-    ]
+    "defaultMode": "bypassPermissions"
   },
-  "effortLevel": "high",
-  "includeGitInstructions": true
+  "worktree": {
+    "baseRef": "head"
+  },
+  "env": {
+    "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH": "1",
+    "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS": "8"
+  }
 }
