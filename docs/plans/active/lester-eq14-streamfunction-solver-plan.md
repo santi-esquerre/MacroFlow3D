@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-11`
-- Active runtime goal: `none`
+- Active runtime goal: `Reconstruir v_psi sobre CompactMAC y calcular los diagnósticos físicos obligatorios.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
