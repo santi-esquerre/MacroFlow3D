@@ -54,4 +54,11 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // comparing against an independent long-double CPU oracle.
 [[nodiscard]] CaseRegistry nonlinear_sources_case_registry();
 
+// SF-10 coupled residual and dimensionless-reduction acceptance controls.
+// These run the production `ResidualEvaluator` (which itself composes the
+// accepted SF-02/06/07/08/09 modules) and compare against the independent
+// `coupled_residual_reference` CPU oracle, including reductions, the |c|
+// histogram, and its percentile helper.
+[[nodiscard]] CaseRegistry coupled_residual_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
