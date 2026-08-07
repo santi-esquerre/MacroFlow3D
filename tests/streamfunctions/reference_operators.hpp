@@ -407,4 +407,256 @@ struct LogHistogramReference {
 // bound histogram_percentile's error, never to be reproduced on GPU.
 [[nodiscard]] double exact_sorted_percentile(std::vector<double> values, double p);
 
+// SF-11 CompactMAC reconstruction and physical diagnostics mirrors.
+//
+// CompactMAC face layout (must match production `physics::VelocityField`):
+//   U: dims (nx+1, ny, nz), idx = i + j*(nx+1) + k*(nx+1)*ny; U-face i lies
+//      between cells wrap(i-1) and wrap(i).
+//   V: dims (nx, ny+1, nz), idx = i + j*nx + k*nx*(ny+1); V-face j between
+//      cells wrap(j-1), wrap(j).
+//   W: dims (nx, ny, nz+1), idx = i + j*nx + k*nx*ny; W-face k between cells
+//      wrap(k-1), wrap(k).
+// All (n+1) planes are stored explicitly; under periodicity plane n equals
+// plane 0 by construction because index i=n and i=0 both wrap to the same
+// pair of neighbouring cells (wrap(n-1)=wrap(-1)=n-1, wrap(n)=wrap(0)=0).
+struct CompactMacField {
+    std::vector<double> u;
+    std::vector<double> v;
+    std::vector<double> w;
+};
+
+[[nodiscard]] std::size_t compact_mac_u_size(const Grid& grid);
+[[nodiscard]] std::size_t compact_mac_v_size(const Grid& grid);
+[[nodiscard]] std::size_t compact_mac_w_size(const Grid& grid);
+[[nodiscard]] std::size_t compact_mac_u_index(const Grid& grid, std::size_t i, std::size_t j,
+                                              std::size_t k);
+[[nodiscard]] std::size_t compact_mac_v_index(const Grid& grid, std::size_t i, std::size_t j,
+                                              std::size_t k);
+[[nodiscard]] std::size_t compact_mac_w_index(const Grid& grid, std::size_t i, std::size_t j,
+                                              std::size_t k);
+
+// Double-precision mirror of the production SF-07 total-gradient kernel
+// (`total_streamfunction_gradients_kernel` in DifferentialOperators.cu):
+// the same centered-difference expression order, evaluated in plain double
+// rather than long double, with the constant affine gradient added after
+// differencing. Distinct from the long-double `centered_total_gradient_oracle`
+// above, which remains the independent oracle for SF-07 order studies; this
+// mirror exists so downstream double-precision reconstructions and GPU
+// comparisons use bit-comparable arithmetic to the production kernel.
+[[nodiscard]] VectorField total_gradient_double_mirror(const Grid& grid,
+                                                        const std::vector<double>& fluctuation,
+                                                        const Vec3& affine_gradient);
+
+// CompactMAC velocity reconstruction v_psi = grad(psi1) x grad(psi2), LOCKED
+// interpolate-then-cross convention:
+//   U-face (i,j,k): a = cell(wrap(i-1), j, k), b = cell(wrap(i), j, k);
+//     t1y = 0.5*(g1y[a]+g1y[b]), t1z = 0.5*(g1z[a]+g1z[b]), t2y/t2z likewise;
+//     U = t1y*t2z - t1z*t2y.
+//   V-face (i,j,k): a = cell(i, wrap(j-1), k), b = cell(i, wrap(j), k);
+//     t1z, t1x, t2z, t2x are 0.5*(a+b) averages; V = t1z*t2x - t1x*t2z.
+//   W-face (i,j,k): a = cell(i, j, wrap(k-1)), b = cell(i, j, wrap(k));
+//     t1x, t1y, t2x, t2y are 0.5*(a+b) averages; W = t1x*t2y - t1y*t2x.
+// The face-normal compact derivative cancels algebraically from the stored
+// normal component (e.g. on a U-face, both g1x and g2x would multiply a term
+// of the form t1x*t2x - t1x*t2x = 0 in the cross product), so only the four
+// interpolated tangential derivative components enter each stored face
+// value; the normal derivative is never sampled or averaged for that face.
+// Fields never average products; only the cell-centered derivative
+// components are averaged, before the cross product.
+[[nodiscard]] CompactMacField reconstruct_velocity_compact_mac(const Grid& grid,
+                                                                const VectorField& g1_total_gradient,
+                                                                const VectorField& g2_total_gradient);
+
+// Analytic face-velocity oracle: at every face (all (n+1) planes, including
+// the periodic duplicate), evaluates `total_gradient_analytic` for psi1 and
+// psi2 at the exact face-center position and crosses them, storing the
+// normal component. Face-center positions:
+//   U-face (i,j,k): (i*dx, (j+0.5)*dy, (k+0.5)*dz)
+//   V-face (i,j,k): ((i+0.5)*dx, j*dy, (k+0.5)*dz)
+//   W-face (i,j,k): ((i+0.5)*dx, (j+0.5)*dy, k*dz)
+// The continuum divergence of grad(psi1) x grad(psi2) is identically zero,
+// so the discrete divergence of the reconstructed field (natural_mac_divergence
+// below) is itself the error measure used in the divergence order study; no
+// separate analytic divergence reference is provided.
+[[nodiscard]] CompactMacField analytic_face_velocity(const TotalGradientFixture& fixture);
+
+// Natural MAC divergence at cell (i,j,k), pinned expression order:
+//   div = (U[i+1,j,k]-U[i,j,k])/dx + (V[i,j+1,k]-V[i,j,k])/dy +
+//         (W[i,j,k+1]-W[i,j,k])/dz
+[[nodiscard]] std::vector<double> natural_mac_divergence(const Grid& grid,
+                                                          const CompactMacField& velocity);
+
+// Face-to-center averaging, pinned expression order:
+//   vx_c = 0.5*(U[i,j,k]+U[i+1,j,k]); vy_c = 0.5*(V[i,j,k]+V[i,j+1,k]);
+//   vz_c = 0.5*(W[i,j,k]+W[i,j,k+1])
+[[nodiscard]] VectorField compact_mac_face_to_center(const Grid& grid,
+                                                      const CompactMacField& velocity);
+
+// v_D_rms, pinned single expression shared by every metric below: with
+// nu = sqrt(sum vx_c^2), nv = sqrt(sum vy_c^2), nw = sqrt(sum vz_c^2) over the
+// cell-centered components, v_rms = sqrt((nu*nu+nv*nv+nw*nw)/n), n=nx*ny*nz.
+// Algebraically this equals sqrt(mean_over_cells(vx_c^2+vy_c^2+vz_c^2)).
+[[nodiscard]] double compact_mac_v_rms(const Grid& grid, const CompactMacField& velocity);
+
+// Cube root of nx*dx * ny*dy * nz*dz, i.e. L_ref for the divergence
+// dimensionless normalization (distinct helper from
+// dimensionless_length_reference, which takes an explicit lengths triple).
+[[nodiscard]] double mac_grid_length_reference(const Grid& grid);
+
+// Metric 1: per-component face error vs a Darcy CompactMAC field, over
+// UNIQUE faces only (U: i in [0,nx-1], V: j in [0,ny-1], W: k in [0,nz-1],
+// n samples per component). d = v_psi - v_D per unique face;
+// RMS_c = l2/sqrt(n) (i.e. rms_norm(d)), Linf_c = linf_norm(d);
+// e_v = sqrt((l2U^2+l2V^2+l2W^2)/(3n)) / v_rms.
+struct FaceComponentError {
+    double rms{};
+    double linf{};
+};
+
+struct VelocityFaceErrorReport {
+    FaceComponentError u;
+    FaceComponentError v;
+    FaceComponentError w;
+    double e_v{};
+};
+
+[[nodiscard]] VelocityFaceErrorReport velocity_face_error_reference(const Grid& grid,
+                                                                     const CompactMacField& v_psi,
+                                                                     const CompactMacField& v_darcy,
+                                                                     double v_rms);
+
+// Metric 2: Pearson correlation per component over unique faces:
+//   r = (n*Sxy - Sx*Sy) / sqrt((n*Sxx - Sx*Sx)*(n*Syy - Sy*Sy))
+// Degenerate (zero) variance yields NaN; there is no hidden floor.
+struct FaceCorrelationReport {
+    double r_u{};
+    double r_v{};
+    double r_w{};
+};
+
+[[nodiscard]] FaceCorrelationReport velocity_face_correlation_reference(
+    const Grid& grid, const CompactMacField& v_psi, const CompactMacField& v_darcy);
+
+// Metric 3: magnitude error at cell centers.
+//   m = sqrt(px^2+py^2+pz^2) - sqrt(dx_^2+dy_^2+dz_^2)
+// where p is v_psi and d is v_darcy, both averaged to centers with the same
+// pinned face-to-center averaging. Reports RMS(m), Linf(m), and both divided
+// by v_rms.
+struct MagnitudeErrorReport {
+    double rms{};
+    double linf{};
+    double rms_relative{};
+    double linf_relative{};
+};
+
+[[nodiscard]] MagnitudeErrorReport velocity_magnitude_error_reference(
+    const Grid& grid, const CompactMacField& v_psi, const CompactMacField& v_darcy, double v_rms);
+
+// Metric 4: robust angle at cell centers. dot = px*dx_+py*dy_+pz*dz_;
+// cross c = (py*dz_-pz*dy_, pz*dx_-px*dz_, px*dy_-py*dx_);
+// theta = atan2(|c|, dot). A cell is included iff
+// |p| >= angle_exclusion_rel*v_rms AND |d| >= angle_exclusion_rel*v_rms
+// (strict >= for inclusion, i.e. excluded when either magnitude is < the
+// threshold). Excluded cells are only counted, contributing nothing to the
+// theta sums. rms_theta and max_theta are computed over included cells only;
+// if included_count is zero both are reported as 0.0 (no included samples to
+// bound or average, documented convention, not a hidden floor on theta
+// itself).
+struct AngleErrorReport {
+    std::size_t included_count{};
+    std::size_t excluded_count{};
+    double rms_theta{};
+    double max_theta{};
+};
+
+[[nodiscard]] AngleErrorReport velocity_angle_error_reference(const Grid& grid,
+                                                               const CompactMacField& v_psi,
+                                                               const CompactMacField& v_darcy,
+                                                               double v_rms,
+                                                               double angle_exclusion_rel);
+
+// Metric 5: Darcy invariance at cell centers for psi_i, i=1,2, using the
+// double-mirror total gradient g_i and the Darcy velocity averaged to
+// centers d = (dx_,dy_,dz_):
+//   dot_i = dx_*gix + dy_*giy + dz_*giz
+//   raw_rms_i = l2(dot_i)/sqrt(n)
+//   grad_rms_i = sqrt((l2(gix)^2+l2(giy)^2+l2(giz)^2)/n)
+//   e_i = raw_rms_i / (v_rms * grad_rms_i)
+struct InvarianceReport {
+    double raw_rms{};
+    double grad_rms{};
+    double e{};
+};
+
+[[nodiscard]] InvarianceReport darcy_invariance_reference(const Grid& grid,
+                                                           const VectorField& darcy_center,
+                                                           const VectorField& total_gradient,
+                                                           double v_rms);
+
+// Metric 6: divergence metrics.
+//   rms_div = l2(div)/sqrt(n); linf_div = linf_norm(div);
+//   e_div = L_ref * rms_div / v_rms, L_ref = mac_grid_length_reference(grid)
+struct DivergenceReport {
+    double rms_div{};
+    double linf_div{};
+    double e_div{};
+};
+
+[[nodiscard]] DivergenceReport divergence_report_reference(const Grid& grid,
+                                                            const std::vector<double>& divergence,
+                                                            double v_rms);
+
+// Metric 7: |c| at cell centers with c = g1 x g2 (SF-09 convention:
+// cx = g1y*g2z-g1z*g2y, cy = g1z*g2x-g1x*g2z, cz = g1x*g2y-g1y*g2x),
+// |c| = sqrt(cx^2+cy^2+cz^2). Reports min, max, mean (sum/n). For each of up
+// to 4 configured thresholds tau_t (strict comparisons, plain double):
+//   total_t       = count(|c| < tau_t*v_rms)
+//   low_speed_t   = count(|c| < tau_t*v_rms AND |v_D,center| < low_speed_rel*v_rms)
+//   unexplained_t = total_t - low_speed_t
+struct CrossGradientDegeneracyReport {
+    double c_min{};
+    double c_max{};
+    double c_mean{};
+    std::vector<std::size_t> total_degenerate;
+    std::vector<std::size_t> low_speed_degenerate;
+    std::vector<std::size_t> unexplained_degenerate;
+};
+
+[[nodiscard]] CrossGradientDegeneracyReport cross_gradient_degeneracy_reference(
+    const Grid& grid, const VectorField& g1_total_gradient, const VectorField& g2_total_gradient,
+    const VectorField& darcy_center, double v_rms, const std::vector<double>& degeneracy_thresholds,
+    double low_speed_rel);
+
+// Configuration bundle for the composed SF-11 diagnostics driver.
+struct PhysicalDiagnosticsConfig {
+    double angle_exclusion_rel{};
+    double low_speed_rel{};
+    std::vector<double> degeneracy_thresholds;
+};
+
+// Composed CPU reference mirror bundling CompactMAC reconstruction and all
+// Gate 3A physical metrics for the coupled psi1/psi2 fluctuation fields
+// against a supplied Darcy CompactMAC field.
+struct PhysicalDiagnosticsMirror {
+    VectorField g1_total_gradient;
+    VectorField g2_total_gradient;
+    CompactMacField v_psi;
+    VectorField darcy_center;
+    double v_rms{};
+    VelocityFaceErrorReport face_error;
+    FaceCorrelationReport face_correlation;
+    MagnitudeErrorReport magnitude_error;
+    AngleErrorReport angle_error;
+    InvarianceReport invariance_psi1;
+    InvarianceReport invariance_psi2;
+    DivergenceReport divergence;
+    CrossGradientDegeneracyReport cross_gradient;
+};
+
+[[nodiscard]] PhysicalDiagnosticsMirror physical_diagnostics_mirror(
+    const Grid& grid, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const Vec3& psi1_affine_gradient,
+    const Vec3& psi2_affine_gradient, const CompactMacField& darcy_velocity,
+    const PhysicalDiagnosticsConfig& config);
+
 }  // namespace macroflow3d::streamfunctions::reference

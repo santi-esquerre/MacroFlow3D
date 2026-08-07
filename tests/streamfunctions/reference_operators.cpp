@@ -1112,4 +1112,490 @@ double exact_sorted_percentile(std::vector<double> values, double p) {
     return values[static_cast<std::size_t>(rank)];
 }
 
+// ============================================================================
+// SF-11 CompactMAC reconstruction and physical diagnostics mirrors.
+// ============================================================================
+
+namespace {
+
+void require_compact_mac_sizes(const Grid& grid, const CompactMacField& field, const char* name) {
+    grid.validate();
+    if (field.u.size() != compact_mac_u_size(grid) || field.v.size() != compact_mac_v_size(grid) ||
+        field.w.size() != compact_mac_w_size(grid)) {
+        throw std::invalid_argument(std::string(name) + " has inconsistent CompactMAC face sizes");
+    }
+}
+
+}  // namespace
+
+std::size_t compact_mac_u_size(const Grid& grid) {
+    grid.validate();
+    return (grid.nx + 1) * grid.ny * grid.nz;
+}
+
+std::size_t compact_mac_v_size(const Grid& grid) {
+    grid.validate();
+    return grid.nx * (grid.ny + 1) * grid.nz;
+}
+
+std::size_t compact_mac_w_size(const Grid& grid) {
+    grid.validate();
+    return grid.nx * grid.ny * (grid.nz + 1);
+}
+
+std::size_t compact_mac_u_index(const Grid& grid, std::size_t i, std::size_t j, std::size_t k) {
+    grid.validate();
+    if (i > grid.nx || j >= grid.ny || k >= grid.nz) {
+        throw std::out_of_range("CompactMAC U-face index outside extent");
+    }
+    return i + (grid.nx + 1) * (j + grid.ny * k);
+}
+
+std::size_t compact_mac_v_index(const Grid& grid, std::size_t i, std::size_t j, std::size_t k) {
+    grid.validate();
+    if (i >= grid.nx || j > grid.ny || k >= grid.nz) {
+        throw std::out_of_range("CompactMAC V-face index outside extent");
+    }
+    return i + grid.nx * (j + (grid.ny + 1) * k);
+}
+
+std::size_t compact_mac_w_index(const Grid& grid, std::size_t i, std::size_t j, std::size_t k) {
+    grid.validate();
+    if (i >= grid.nx || j >= grid.ny || k > grid.nz) {
+        throw std::out_of_range("CompactMAC W-face index outside extent");
+    }
+    return i + grid.nx * (j + grid.ny * k);
+}
+
+VectorField total_gradient_double_mirror(const Grid& grid, const std::vector<double>& fluctuation,
+                                         const Vec3& affine_gradient) {
+    validate_field(grid, fluctuation, "fluctuation", false);
+    validate_vector(affine_gradient, "affine gradient");
+    VectorField result{{}, {}, {}};
+    result.x.resize(grid.cell_count());
+    result.y.resize(grid.cell_count());
+    result.z.resize(grid.cell_count());
+    const double inverse_two_dx = 1.0 / (2.0 * grid.spacing.x);
+    const double inverse_two_dy = 1.0 / (2.0 * grid.spacing.y);
+    const double inverse_two_dz = 1.0 / (2.0 * grid.spacing.z);
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const std::size_t id = grid.index(ix, iy, iz);
+        const std::size_t xp = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) + 1, grid.nx), iy, iz);
+        const std::size_t xm = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) - 1, grid.nx), iy, iz);
+        const std::size_t yp = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) + 1, grid.ny), iz);
+        const std::size_t ym = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) - 1, grid.ny), iz);
+        const std::size_t zp = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) + 1, grid.nz));
+        const std::size_t zm = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) - 1, grid.nz));
+        result.x[id] = (fluctuation[xp] - fluctuation[xm]) * inverse_two_dx + affine_gradient.x;
+        result.y[id] = (fluctuation[yp] - fluctuation[ym]) * inverse_two_dy + affine_gradient.y;
+        result.z[id] = (fluctuation[zp] - fluctuation[zm]) * inverse_two_dz + affine_gradient.z;
+    }
+    return result;
+}
+
+CompactMacField reconstruct_velocity_compact_mac(const Grid& grid, const VectorField& g1_total_gradient,
+                                                  const VectorField& g2_total_gradient) {
+    validate_vector_field(grid, g1_total_gradient, "g1 total gradient");
+    validate_vector_field(grid, g2_total_gradient, "g2 total gradient");
+    CompactMacField result;
+    result.u.resize(compact_mac_u_size(grid));
+    result.v.resize(compact_mac_v_size(grid));
+    result.w.resize(compact_mac_w_size(grid));
+
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i <= grid.nx; ++i) {
+        const std::size_t a = grid.index(wrap_index(static_cast<std::ptrdiff_t>(i) - 1, grid.nx), j, k);
+        const std::size_t b = grid.index(wrap_index(static_cast<std::ptrdiff_t>(i), grid.nx), j, k);
+        const double t1y = 0.5 * (g1_total_gradient.y[a] + g1_total_gradient.y[b]);
+        const double t1z = 0.5 * (g1_total_gradient.z[a] + g1_total_gradient.z[b]);
+        const double t2y = 0.5 * (g2_total_gradient.y[a] + g2_total_gradient.y[b]);
+        const double t2z = 0.5 * (g2_total_gradient.z[a] + g2_total_gradient.z[b]);
+        result.u[compact_mac_u_index(grid, i, j, k)] = t1y * t2z - t1z * t2y;
+    }
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j <= grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const std::size_t a = grid.index(i, wrap_index(static_cast<std::ptrdiff_t>(j) - 1, grid.ny), k);
+        const std::size_t b = grid.index(i, wrap_index(static_cast<std::ptrdiff_t>(j), grid.ny), k);
+        const double t1z = 0.5 * (g1_total_gradient.z[a] + g1_total_gradient.z[b]);
+        const double t1x = 0.5 * (g1_total_gradient.x[a] + g1_total_gradient.x[b]);
+        const double t2z = 0.5 * (g2_total_gradient.z[a] + g2_total_gradient.z[b]);
+        const double t2x = 0.5 * (g2_total_gradient.x[a] + g2_total_gradient.x[b]);
+        result.v[compact_mac_v_index(grid, i, j, k)] = t1z * t2x - t1x * t2z;
+    }
+    for (std::size_t k = 0; k <= grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const std::size_t a = grid.index(i, j, wrap_index(static_cast<std::ptrdiff_t>(k) - 1, grid.nz));
+        const std::size_t b = grid.index(i, j, wrap_index(static_cast<std::ptrdiff_t>(k), grid.nz));
+        const double t1x = 0.5 * (g1_total_gradient.x[a] + g1_total_gradient.x[b]);
+        const double t1y = 0.5 * (g1_total_gradient.y[a] + g1_total_gradient.y[b]);
+        const double t2x = 0.5 * (g2_total_gradient.x[a] + g2_total_gradient.x[b]);
+        const double t2y = 0.5 * (g2_total_gradient.y[a] + g2_total_gradient.y[b]);
+        result.w[compact_mac_w_index(grid, i, j, k)] = t1x * t2y - t1y * t2x;
+    }
+    return result;
+}
+
+CompactMacField analytic_face_velocity(const TotalGradientFixture& fixture) {
+    validate_total_gradient_fixture(fixture);
+    const Grid& grid = fixture.grid;
+    CompactMacField result;
+    result.u.resize(compact_mac_u_size(grid));
+    result.v.resize(compact_mac_v_size(grid));
+    result.w.resize(compact_mac_w_size(grid));
+
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i <= grid.nx; ++i) {
+        const Vec3 position{static_cast<double>(i) * grid.spacing.x,
+                            (static_cast<double>(j) + 0.5) * grid.spacing.y,
+                            (static_cast<double>(k) + 0.5) * grid.spacing.z};
+        const Vec3 g1 = total_gradient_analytic(GradientFixtureField::psi1, position, fixture.lengths,
+                                                fixture.psi1_affine_gradient);
+        const Vec3 g2 = total_gradient_analytic(GradientFixtureField::psi2, position, fixture.lengths,
+                                                fixture.psi2_affine_gradient);
+        result.u[compact_mac_u_index(grid, i, j, k)] = cross(g1, g2).x;
+    }
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j <= grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const Vec3 position{(static_cast<double>(i) + 0.5) * grid.spacing.x,
+                            static_cast<double>(j) * grid.spacing.y,
+                            (static_cast<double>(k) + 0.5) * grid.spacing.z};
+        const Vec3 g1 = total_gradient_analytic(GradientFixtureField::psi1, position, fixture.lengths,
+                                                fixture.psi1_affine_gradient);
+        const Vec3 g2 = total_gradient_analytic(GradientFixtureField::psi2, position, fixture.lengths,
+                                                fixture.psi2_affine_gradient);
+        result.v[compact_mac_v_index(grid, i, j, k)] = cross(g1, g2).y;
+    }
+    for (std::size_t k = 0; k <= grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const Vec3 position{(static_cast<double>(i) + 0.5) * grid.spacing.x,
+                            (static_cast<double>(j) + 0.5) * grid.spacing.y,
+                            static_cast<double>(k) * grid.spacing.z};
+        const Vec3 g1 = total_gradient_analytic(GradientFixtureField::psi1, position, fixture.lengths,
+                                                fixture.psi1_affine_gradient);
+        const Vec3 g2 = total_gradient_analytic(GradientFixtureField::psi2, position, fixture.lengths,
+                                                fixture.psi2_affine_gradient);
+        result.w[compact_mac_w_index(grid, i, j, k)] = cross(g1, g2).z;
+    }
+    return result;
+}
+
+std::vector<double> natural_mac_divergence(const Grid& grid, const CompactMacField& velocity) {
+    require_compact_mac_sizes(grid, velocity, "velocity");
+    std::vector<double> result(grid.cell_count());
+    const double inverse_dx = 1.0 / grid.spacing.x;
+    const double inverse_dy = 1.0 / grid.spacing.y;
+    const double inverse_dz = 1.0 / grid.spacing.z;
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const double du = velocity.u[compact_mac_u_index(grid, i + 1, j, k)] -
+                          velocity.u[compact_mac_u_index(grid, i, j, k)];
+        const double dv = velocity.v[compact_mac_v_index(grid, i, j + 1, k)] -
+                          velocity.v[compact_mac_v_index(grid, i, j, k)];
+        const double dw = velocity.w[compact_mac_w_index(grid, i, j, k + 1)] -
+                          velocity.w[compact_mac_w_index(grid, i, j, k)];
+        result[grid.index(i, j, k)] = du * inverse_dx + dv * inverse_dy + dw * inverse_dz;
+    }
+    return result;
+}
+
+VectorField compact_mac_face_to_center(const Grid& grid, const CompactMacField& velocity) {
+    require_compact_mac_sizes(grid, velocity, "velocity");
+    VectorField result{{}, {}, {}};
+    result.x.resize(grid.cell_count());
+    result.y.resize(grid.cell_count());
+    result.z.resize(grid.cell_count());
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const std::size_t id = grid.index(i, j, k);
+        result.x[id] = 0.5 * (velocity.u[compact_mac_u_index(grid, i, j, k)] +
+                              velocity.u[compact_mac_u_index(grid, i + 1, j, k)]);
+        result.y[id] = 0.5 * (velocity.v[compact_mac_v_index(grid, i, j, k)] +
+                              velocity.v[compact_mac_v_index(grid, i, j + 1, k)]);
+        result.z[id] = 0.5 * (velocity.w[compact_mac_w_index(grid, i, j, k)] +
+                              velocity.w[compact_mac_w_index(grid, i, j, k + 1)]);
+    }
+    return result;
+}
+
+double compact_mac_v_rms(const Grid& grid, const CompactMacField& velocity) {
+    const VectorField center = compact_mac_face_to_center(grid, velocity);
+    const std::size_t n = grid.cell_count();
+    double nu_sq = 0.0, nv_sq = 0.0, nw_sq = 0.0;
+    for (std::size_t id = 0; id < n; ++id) {
+        nu_sq += center.x[id] * center.x[id];
+        nv_sq += center.y[id] * center.y[id];
+        nw_sq += center.z[id] * center.z[id];
+    }
+    return std::sqrt((nu_sq + nv_sq + nw_sq) / static_cast<double>(n));
+}
+
+double mac_grid_length_reference(const Grid& grid) {
+    grid.validate();
+    const double lx = static_cast<double>(grid.nx) * grid.spacing.x;
+    const double ly = static_cast<double>(grid.ny) * grid.spacing.y;
+    const double lz = static_cast<double>(grid.nz) * grid.spacing.z;
+    return std::cbrt(lx * ly * lz);
+}
+
+namespace {
+
+void require_v_rms(double v_rms) {
+    if (!finite_positive(v_rms)) {
+        throw std::invalid_argument("v_rms must be finite and strictly positive");
+    }
+}
+
+}  // namespace
+
+VelocityFaceErrorReport velocity_face_error_reference(const Grid& grid, const CompactMacField& v_psi,
+                                                       const CompactMacField& v_darcy, double v_rms) {
+    require_compact_mac_sizes(grid, v_psi, "v_psi");
+    require_compact_mac_sizes(grid, v_darcy, "v_darcy");
+    require_v_rms(v_rms);
+
+    std::vector<double> diff_u(grid.cell_count()), diff_v(grid.cell_count()), diff_w(grid.cell_count());
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const std::size_t id = grid.index(i, j, k);
+        diff_u[id] = v_psi.u[compact_mac_u_index(grid, i, j, k)] - v_darcy.u[compact_mac_u_index(grid, i, j, k)];
+        diff_v[id] = v_psi.v[compact_mac_v_index(grid, i, j, k)] - v_darcy.v[compact_mac_v_index(grid, i, j, k)];
+        diff_w[id] = v_psi.w[compact_mac_w_index(grid, i, j, k)] - v_darcy.w[compact_mac_w_index(grid, i, j, k)];
+    }
+
+    VelocityFaceErrorReport report;
+    report.u = {rms_norm(diff_u), linf_norm(diff_u)};
+    report.v = {rms_norm(diff_v), linf_norm(diff_v)};
+    report.w = {rms_norm(diff_w), linf_norm(diff_w)};
+    report.e_v = std::sqrt((report.u.rms * report.u.rms + report.v.rms * report.v.rms +
+                            report.w.rms * report.w.rms) / 3.0) / v_rms;
+    return report;
+}
+
+namespace {
+
+double pearson_correlation(const std::vector<double>& a, const std::vector<double>& b) {
+    if (a.size() != b.size() || a.empty()) {
+        throw std::invalid_argument("Pearson correlation requires matching nonempty samples");
+    }
+    const double n = static_cast<double>(a.size());
+    double sx = 0.0, sy = 0.0, sxx = 0.0, syy = 0.0, sxy = 0.0;
+    for (std::size_t idx = 0; idx < a.size(); ++idx) {
+        sx += a[idx];
+        sy += b[idx];
+        sxx += a[idx] * a[idx];
+        syy += b[idx] * b[idx];
+        sxy += a[idx] * b[idx];
+    }
+    const double numerator = n * sxy - sx * sy;
+    const double denominator = std::sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+    return numerator / denominator;  // 0/0 or nonzero/0 yields NaN/Inf by IEEE semantics; no hidden floor.
+}
+
+}  // namespace
+
+FaceCorrelationReport velocity_face_correlation_reference(const Grid& grid, const CompactMacField& v_psi,
+                                                           const CompactMacField& v_darcy) {
+    require_compact_mac_sizes(grid, v_psi, "v_psi");
+    require_compact_mac_sizes(grid, v_darcy, "v_darcy");
+
+    const std::size_t n = grid.cell_count();
+    std::vector<double> psi_u(n), psi_v(n), psi_w(n), darcy_u(n), darcy_v(n), darcy_w(n);
+    for (std::size_t k = 0; k < grid.nz; ++k) for (std::size_t j = 0; j < grid.ny; ++j) for (std::size_t i = 0; i < grid.nx; ++i) {
+        const std::size_t id = grid.index(i, j, k);
+        psi_u[id] = v_psi.u[compact_mac_u_index(grid, i, j, k)];
+        psi_v[id] = v_psi.v[compact_mac_v_index(grid, i, j, k)];
+        psi_w[id] = v_psi.w[compact_mac_w_index(grid, i, j, k)];
+        darcy_u[id] = v_darcy.u[compact_mac_u_index(grid, i, j, k)];
+        darcy_v[id] = v_darcy.v[compact_mac_v_index(grid, i, j, k)];
+        darcy_w[id] = v_darcy.w[compact_mac_w_index(grid, i, j, k)];
+    }
+    return {pearson_correlation(psi_u, darcy_u), pearson_correlation(psi_v, darcy_v),
+           pearson_correlation(psi_w, darcy_w)};
+}
+
+MagnitudeErrorReport velocity_magnitude_error_reference(const Grid& grid, const CompactMacField& v_psi,
+                                                         const CompactMacField& v_darcy, double v_rms) {
+    require_v_rms(v_rms);
+    const VectorField p = compact_mac_face_to_center(grid, v_psi);
+    const VectorField d = compact_mac_face_to_center(grid, v_darcy);
+    std::vector<double> m(grid.cell_count());
+    for (std::size_t id = 0; id < grid.cell_count(); ++id) {
+        const double p_mag = std::sqrt(p.x[id] * p.x[id] + p.y[id] * p.y[id] + p.z[id] * p.z[id]);
+        const double d_mag = std::sqrt(d.x[id] * d.x[id] + d.y[id] * d.y[id] + d.z[id] * d.z[id]);
+        m[id] = p_mag - d_mag;
+    }
+    MagnitudeErrorReport report;
+    report.rms = rms_norm(m);
+    report.linf = linf_norm(m);
+    report.rms_relative = report.rms / v_rms;
+    report.linf_relative = report.linf / v_rms;
+    return report;
+}
+
+AngleErrorReport velocity_angle_error_reference(const Grid& grid, const CompactMacField& v_psi,
+                                                const CompactMacField& v_darcy, double v_rms,
+                                                double angle_exclusion_rel) {
+    require_v_rms(v_rms);
+    if (!std::isfinite(angle_exclusion_rel) || angle_exclusion_rel < 0.0) {
+        throw std::invalid_argument("angle exclusion relative threshold must be finite and nonnegative");
+    }
+    const VectorField p = compact_mac_face_to_center(grid, v_psi);
+    const VectorField d = compact_mac_face_to_center(grid, v_darcy);
+    const double floor = angle_exclusion_rel * v_rms;
+
+    AngleErrorReport report;
+    double sum_theta_sq = 0.0;
+    for (std::size_t id = 0; id < grid.cell_count(); ++id) {
+        const double px = p.x[id], py = p.y[id], pz = p.z[id];
+        const double dxc = d.x[id], dyc = d.y[id], dzc = d.z[id];
+        const double p_mag = std::sqrt(px * px + py * py + pz * pz);
+        const double d_mag = std::sqrt(dxc * dxc + dyc * dyc + dzc * dzc);
+        if (p_mag < floor || d_mag < floor) {
+            ++report.excluded_count;
+            continue;
+        }
+        ++report.included_count;
+        const double dot = px * dxc + py * dyc + pz * dzc;
+        const double cx = py * dzc - pz * dyc;
+        const double cy = pz * dxc - px * dzc;
+        const double cz = px * dyc - py * dxc;
+        const double cross_mag = std::sqrt(cx * cx + cy * cy + cz * cz);
+        const double theta = std::atan2(cross_mag, dot);
+        sum_theta_sq += theta * theta;
+        report.max_theta = std::max(report.max_theta, theta);
+    }
+    report.rms_theta = report.included_count > 0
+                           ? std::sqrt(sum_theta_sq / static_cast<double>(report.included_count))
+                           : 0.0;
+    if (report.included_count == 0) {
+        report.max_theta = 0.0;
+    }
+    return report;
+}
+
+InvarianceReport darcy_invariance_reference(const Grid& grid, const VectorField& darcy_center,
+                                            const VectorField& total_gradient, double v_rms) {
+    validate_vector_field(grid, darcy_center, "Darcy center velocity");
+    validate_vector_field(grid, total_gradient, "total gradient");
+    require_v_rms(v_rms);
+
+    const std::size_t n = grid.cell_count();
+    std::vector<double> dot(n);
+    double gx_sq = 0.0, gy_sq = 0.0, gz_sq = 0.0;
+    for (std::size_t id = 0; id < n; ++id) {
+        dot[id] = darcy_center.x[id] * total_gradient.x[id] + darcy_center.y[id] * total_gradient.y[id] +
+                  darcy_center.z[id] * total_gradient.z[id];
+        gx_sq += total_gradient.x[id] * total_gradient.x[id];
+        gy_sq += total_gradient.y[id] * total_gradient.y[id];
+        gz_sq += total_gradient.z[id] * total_gradient.z[id];
+    }
+    InvarianceReport report;
+    report.raw_rms = rms_norm(dot);
+    report.grad_rms = std::sqrt((gx_sq + gy_sq + gz_sq) / static_cast<double>(n));
+    report.e = report.raw_rms / (v_rms * report.grad_rms);
+    return report;
+}
+
+DivergenceReport divergence_report_reference(const Grid& grid, const std::vector<double>& divergence,
+                                             double v_rms) {
+    validate_field(grid, divergence, "divergence", false);
+    require_v_rms(v_rms);
+    DivergenceReport report;
+    report.rms_div = rms_norm(divergence);
+    report.linf_div = linf_norm(divergence);
+    report.e_div = mac_grid_length_reference(grid) * report.rms_div / v_rms;
+    return report;
+}
+
+CrossGradientDegeneracyReport cross_gradient_degeneracy_reference(
+    const Grid& grid, const VectorField& g1_total_gradient, const VectorField& g2_total_gradient,
+    const VectorField& darcy_center, double v_rms, const std::vector<double>& degeneracy_thresholds,
+    double low_speed_rel) {
+    validate_vector_field(grid, g1_total_gradient, "g1 total gradient");
+    validate_vector_field(grid, g2_total_gradient, "g2 total gradient");
+    validate_vector_field(grid, darcy_center, "Darcy center velocity");
+    require_v_rms(v_rms);
+    if (!std::isfinite(low_speed_rel) || low_speed_rel < 0.0) {
+        throw std::invalid_argument("low-speed relative threshold must be finite and nonnegative");
+    }
+    for (double tau : degeneracy_thresholds) {
+        if (!std::isfinite(tau) || tau < 0.0) {
+            throw std::invalid_argument("degeneracy thresholds must be finite and nonnegative");
+        }
+    }
+
+    const std::size_t n = grid.cell_count();
+    const std::size_t t_count = degeneracy_thresholds.size();
+    CrossGradientDegeneracyReport report;
+    report.total_degenerate.assign(t_count, 0);
+    report.low_speed_degenerate.assign(t_count, 0);
+    report.unexplained_degenerate.assign(t_count, 0);
+    report.c_min = std::numeric_limits<double>::infinity();
+    report.c_max = -std::numeric_limits<double>::infinity();
+    double c_sum = 0.0;
+
+    std::vector<double> thresholds_scaled(t_count);
+    for (std::size_t t = 0; t < t_count; ++t) {
+        thresholds_scaled[t] = degeneracy_thresholds[t] * v_rms;
+    }
+
+    for (std::size_t id = 0; id < n; ++id) {
+        const double g1x = g1_total_gradient.x[id], g1y = g1_total_gradient.y[id],
+                    g1z = g1_total_gradient.z[id];
+        const double g2x = g2_total_gradient.x[id], g2y = g2_total_gradient.y[id],
+                    g2z = g2_total_gradient.z[id];
+        const double cx = g1y * g2z - g1z * g2y;
+        const double cy = g1z * g2x - g1x * g2z;
+        const double cz = g1x * g2y - g1y * g2x;
+        const double c_mag = std::sqrt(cx * cx + cy * cy + cz * cz);
+
+        report.c_min = std::min(report.c_min, c_mag);
+        report.c_max = std::max(report.c_max, c_mag);
+        c_sum += c_mag;
+
+        const double dxc = darcy_center.x[id], dyc = darcy_center.y[id], dzc = darcy_center.z[id];
+        const double d_mag = std::sqrt(dxc * dxc + dyc * dyc + dzc * dzc);
+
+        for (std::size_t t = 0; t < t_count; ++t) {
+            const bool degenerate = c_mag < thresholds_scaled[t];
+            if (degenerate) {
+                ++report.total_degenerate[t];
+                if (d_mag < low_speed_rel * v_rms) {
+                    ++report.low_speed_degenerate[t];
+                }
+            }
+        }
+    }
+    for (std::size_t t = 0; t < t_count; ++t) {
+        report.unexplained_degenerate[t] = report.total_degenerate[t] - report.low_speed_degenerate[t];
+    }
+    report.c_mean = c_sum / static_cast<double>(n);
+    return report;
+}
+
+PhysicalDiagnosticsMirror physical_diagnostics_mirror(
+    const Grid& grid, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const Vec3& psi1_affine_gradient,
+    const Vec3& psi2_affine_gradient, const CompactMacField& darcy_velocity,
+    const PhysicalDiagnosticsConfig& config) {
+    if (config.degeneracy_thresholds.size() > 4) {
+        throw std::invalid_argument("physical diagnostics support at most 4 degeneracy thresholds");
+    }
+
+    PhysicalDiagnosticsMirror result;
+    result.g1_total_gradient = total_gradient_double_mirror(grid, psi1_fluctuation, psi1_affine_gradient);
+    result.g2_total_gradient = total_gradient_double_mirror(grid, psi2_fluctuation, psi2_affine_gradient);
+    result.v_psi = reconstruct_velocity_compact_mac(grid, result.g1_total_gradient, result.g2_total_gradient);
+    result.darcy_center = compact_mac_face_to_center(grid, darcy_velocity);
+    result.v_rms = compact_mac_v_rms(grid, darcy_velocity);
+
+    result.face_error = velocity_face_error_reference(grid, result.v_psi, darcy_velocity, result.v_rms);
+    result.face_correlation = velocity_face_correlation_reference(grid, result.v_psi, darcy_velocity);
+    result.magnitude_error =
+        velocity_magnitude_error_reference(grid, result.v_psi, darcy_velocity, result.v_rms);
+    result.angle_error = velocity_angle_error_reference(grid, result.v_psi, darcy_velocity, result.v_rms,
+                                                         config.angle_exclusion_rel);
+    result.invariance_psi1 =
+        darcy_invariance_reference(grid, result.darcy_center, result.g1_total_gradient, result.v_rms);
+    result.invariance_psi2 =
+        darcy_invariance_reference(grid, result.darcy_center, result.g2_total_gradient, result.v_rms);
+    const std::vector<double> divergence_field = natural_mac_divergence(grid, result.v_psi);
+    result.divergence = divergence_report_reference(grid, divergence_field, result.v_rms);
+    result.cross_gradient = cross_gradient_degeneracy_reference(
+        grid, result.g1_total_gradient, result.g2_total_gradient, result.darcy_center, result.v_rms,
+        config.degeneracy_thresholds, config.low_speed_rel);
+    return result;
+}
+
 }  // namespace macroflow3d::streamfunctions::reference
