@@ -48,4 +48,10 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // total-gradient kernel immediately before the register-only HVP/B kernel.
 [[nodiscard]] CaseRegistry hessian_vector_b_case_registry();
 
+// SF-09 positive nonlinear-source (`c`, `S1`, `S2`, explicit denominator
+// regularization) acceptance controls. They deliberately run the full SF-07
+// gradient -> SF-08 Hessian-vector/B -> SF-09 source GPU chain before
+// comparing against an independent long-double CPU oracle.
+[[nodiscard]] CaseRegistry nonlinear_sources_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
