@@ -257,7 +257,10 @@ struct PhysicalDiagnosticsReport {
     real rms_magnitude{}, linf_magnitude{};
     real rms_magnitude_rel{}, linf_magnitude_rel{};
 
-    // Robust angular error (radians), excluding near-zero pairs.
+    // Robust angular error (radians), excluding near-zero pairs. rms_theta
+    // and max_theta are NaN when angle_included_count == 0: undefined over an
+    // empty included set, consistent with the no-hidden-values rule (no
+    // silent zero standing in for an undefined average/maximum).
     real rms_theta{}, max_theta{};
     unsigned long long angle_included_count{};
     unsigned long long angle_excluded_count{};

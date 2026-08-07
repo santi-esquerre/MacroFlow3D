@@ -1175,9 +1175,6 @@ VectorField total_gradient_double_mirror(const Grid& grid, const std::vector<dou
     result.x.resize(grid.cell_count());
     result.y.resize(grid.cell_count());
     result.z.resize(grid.cell_count());
-    const double inverse_two_dx = 1.0 / (2.0 * grid.spacing.x);
-    const double inverse_two_dy = 1.0 / (2.0 * grid.spacing.y);
-    const double inverse_two_dz = 1.0 / (2.0 * grid.spacing.z);
     for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
         const std::size_t id = grid.index(ix, iy, iz);
         const std::size_t xp = grid.index(wrap_index(static_cast<std::ptrdiff_t>(ix) + 1, grid.nx), iy, iz);
@@ -1186,9 +1183,9 @@ VectorField total_gradient_double_mirror(const Grid& grid, const std::vector<dou
         const std::size_t ym = grid.index(ix, wrap_index(static_cast<std::ptrdiff_t>(iy) - 1, grid.ny), iz);
         const std::size_t zp = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) + 1, grid.nz));
         const std::size_t zm = grid.index(ix, iy, wrap_index(static_cast<std::ptrdiff_t>(iz) - 1, grid.nz));
-        result.x[id] = (fluctuation[xp] - fluctuation[xm]) * inverse_two_dx + affine_gradient.x;
-        result.y[id] = (fluctuation[yp] - fluctuation[ym]) * inverse_two_dy + affine_gradient.y;
-        result.z[id] = (fluctuation[zp] - fluctuation[zm]) * inverse_two_dz + affine_gradient.z;
+        result.x[id] = (fluctuation[xp] - fluctuation[xm]) / (2.0 * grid.spacing.x) + affine_gradient.x;
+        result.y[id] = (fluctuation[yp] - fluctuation[ym]) / (2.0 * grid.spacing.y) + affine_gradient.y;
+        result.z[id] = (fluctuation[zp] - fluctuation[zm]) / (2.0 * grid.spacing.z) + affine_gradient.z;
     }
     return result;
 }
@@ -1457,9 +1454,9 @@ AngleErrorReport velocity_angle_error_reference(const Grid& grid, const CompactM
     }
     report.rms_theta = report.included_count > 0
                            ? std::sqrt(sum_theta_sq / static_cast<double>(report.included_count))
-                           : 0.0;
+                           : std::numeric_limits<double>::quiet_NaN();
     if (report.included_count == 0) {
-        report.max_theta = 0.0;
+        report.max_theta = std::numeric_limits<double>::quiet_NaN();
     }
     return report;
 }

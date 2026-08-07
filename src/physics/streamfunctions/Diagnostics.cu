@@ -894,9 +894,14 @@ PhysicalDiagnosticsReport synchronize_streamfunction_physical_diagnostics_report
 
     report.angle_included_count = counters_host[kCounterIncluded];
     report.angle_excluded_count = counters_host[kCounterExcluded];
-    const real included_real = static_cast<real>(report.angle_included_count);
-    report.rms_theta = scalars_host[kScalarL2Theta] / std::sqrt(included_real);
-    report.max_theta = scalars_host[kScalarMaxTheta];
+    if (report.angle_included_count == 0) {
+        report.rms_theta = std::numeric_limits<real>::quiet_NaN();
+        report.max_theta = std::numeric_limits<real>::quiet_NaN();
+    } else {
+        const real included_real = static_cast<real>(report.angle_included_count);
+        report.rms_theta = scalars_host[kScalarL2Theta] / std::sqrt(included_real);
+        report.max_theta = scalars_host[kScalarMaxTheta];
+    }
 
     const real raw_l2_dot1 = scalars_host[kScalarL2Dot1];
     const real raw_l2_dot2 = scalars_host[kScalarL2Dot2];

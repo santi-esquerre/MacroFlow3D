@@ -437,12 +437,14 @@ struct CompactMacField {
 
 // Double-precision mirror of the production SF-07 total-gradient kernel
 // (`total_streamfunction_gradients_kernel` in DifferentialOperators.cu):
-// the same centered-difference expression order, evaluated in plain double
-// rather than long double, with the constant affine gradient added after
-// differencing. Distinct from the long-double `centered_total_gradient_oracle`
-// above, which remains the independent oracle for SF-07 order studies; this
-// mirror exists so downstream double-precision reconstructions and GPU
-// comparisons use bit-comparable arithmetic to the production kernel.
+// the same centered-difference expression order, including the literal
+// division-by-`2*spacing` form (not a precomputed reciprocal multiply), in
+// plain double rather than long double, with the constant affine gradient
+// added after differencing. Distinct from the long-double
+// `centered_total_gradient_oracle` above, which remains the independent
+// oracle for SF-07 order studies; this mirror exists so downstream
+// double-precision reconstructions and GPU comparisons use bit-comparable
+// arithmetic to the production kernel.
 [[nodiscard]] VectorField total_gradient_double_mirror(const Grid& grid,
                                                         const std::vector<double>& fluctuation,
                                                         const Vec3& affine_gradient);
@@ -559,9 +561,9 @@ struct MagnitudeErrorReport {
 // (strict >= for inclusion, i.e. excluded when either magnitude is < the
 // threshold). Excluded cells are only counted, contributing nothing to the
 // theta sums. rms_theta and max_theta are computed over included cells only;
-// if included_count is zero both are reported as 0.0 (no included samples to
-// bound or average, documented convention, not a hidden floor on theta
-// itself).
+// if included_count is zero both are reported as quiet NaN: undefined over an
+// empty included set; consistent with the no-hidden-values rule (no silent
+// zero standing in for an undefined average/maximum).
 struct AngleErrorReport {
     std::size_t included_count{};
     std::size_t excluded_count{};
