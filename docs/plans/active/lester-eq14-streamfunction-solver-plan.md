@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-09`
-- Active runtime goal: `none`
+- Active runtime goal: `Implementar c, S1, S2 y la regularización explícita del denominador.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge

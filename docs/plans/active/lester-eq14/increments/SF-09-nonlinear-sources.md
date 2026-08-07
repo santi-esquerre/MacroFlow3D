@@ -1,15 +1,15 @@
 # SF-09 — Nonlinear sources
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar c, S1, S2 y la regularización explícita del denominador.`
 - Depends on: `SF-08`
 - Unlocks: `SF-10`
 - Branch: `science/lester-sf09-nonlinear-sources`
-- Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf09-nonlinear-sources`
+- Worktree: `Claude-managed per-node isolated worktrees (native isolation: worktree)`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable (orchestrator)`
+- Started: `2026-08-07T14:58Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -99,3 +99,4 @@ SF-10 may assemble the coupled residual from these validated sources.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-07T14:58Z | active; base `master=origin/master=3b7a0a05e53732f415f84e2794f4772f340f9bf6` | Activated SF-09 documentation state under the Claude Code orchestration harness. | Preflight verified on the default branch: clean tree; `master` and `origin/master` at `3b7a0a0`; SF-08 `done` with PR #18 merged as `855dcf14458d3ac92ef31a7a30e373d5d4b16a1b`; checker PASS (`29 increments, next=SF-09`); no open PRs. Baseline validation on the base commit: `cmake --preset wsl-debug` (sccache launcher disabled locally with `-DCMAKE_CUDA_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=` because sccache 0.17.0 currently fails CUDA compiles with `fatbinary fatal: Could not open input file '*.ptx'`; sccache is documented optional), `cmake --build build/wsl-debug -j` exit 0, `ctest` 2/2 PASS, PSPTA-small smoke completed. Persistent Goal `Implementar c, S1, S2 y la regularización explícita del denominador.`; delivery branch `science/lester-sf09-nonlinear-sources`; execution uses Claude-managed per-node isolated worktrees. | Build the SF-09 intra-increment DAG and delegate implementation to isolated workers. |
