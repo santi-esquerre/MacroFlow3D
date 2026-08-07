@@ -901,4 +901,213 @@ VectorField inject_nonfinite_values(const VectorField& field,
     return result;
 }
 
+namespace {
+
+[[nodiscard]] CoupledResidualFields coupled_residual_impl(
+    const Grid& grid, const std::vector<double>& q, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const Vec3& psi1_affine_gradient,
+    const Vec3& psi2_affine_gradient, double eta, const NonlinearSourceReferenceConfig& config) {
+    validate_field(grid, q, "q", true);
+    validate_field(grid, psi1_fluctuation, "psi1 fluctuation", false);
+    validate_field(grid, psi2_fluctuation, "psi2 fluctuation", false);
+    validate_vector(psi1_affine_gradient, "psi1 affine gradient");
+    validate_vector(psi2_affine_gradient, "psi2 affine gradient");
+    if (!std::isfinite(eta)) {
+        throw std::invalid_argument("coupled residual eta must be finite");
+    }
+    validate_nonlinear_source_config(config);
+
+    // g1, g2, B, S1, S2: exclusively composed from the existing SF-07/08/09
+    // CPU oracles, never re-derived.
+    const VectorField g1 =
+        centered_total_gradient_oracle(grid, psi1_fluctuation, psi1_affine_gradient);
+    const VectorField g2 =
+        centered_total_gradient_oracle(grid, psi2_fluctuation, psi2_affine_gradient);
+    const HessianVectorBFields hvb =
+        centered_hessian_vector_b_oracle(grid, psi1_fluctuation, psi2_fluctuation, g1, g2);
+    const NonlinearSourceFields sources =
+        centered_nonlinear_source_oracle(grid, g1, g2, hvb.b, config);
+
+    // A u1, A u2 via the SF-02 divergence-form diffusion oracle.
+    const std::vector<double> a_u1 = divergence_form_diffusion(grid, q, psi1_fluctuation);
+    const std::vector<double> a_u2 = divergence_form_diffusion(grid, q, psi2_fluctuation);
+    // div_h(q*gbar1), div_h(q*gbar2) via the SF-06 affine RHS oracle.
+    const std::vector<double> affine1 = affine_rhs_discrete(grid, q, psi1_affine_gradient);
+    const std::vector<double> affine2 = affine_rhs_discrete(grid, q, psi2_affine_gradient);
+
+    const std::size_t cells = grid.cell_count();
+    std::vector<double> raw_rhs1(cells);
+    std::vector<double> raw_rhs2(cells);
+    for (std::size_t id = 0; id < cells; ++id) {
+        // Pairing: F1<->S2, F2<->S1.
+        raw_rhs1[id] = affine1[id] - eta * q[id] * sources.s2[id];
+        raw_rhs2[id] = affine2[id] - eta * q[id] * sources.s1[id];
+    }
+
+    CoupledResidualFields result;
+    result.raw_rhs1_mean = static_cast<double>(long_double_mean(raw_rhs1));
+    result.raw_rhs2_mean = static_cast<double>(long_double_mean(raw_rhs2));
+    result.projected_rhs1 = mean_zero_projected(raw_rhs1);
+    result.projected_rhs2 = mean_zero_projected(raw_rhs2);
+
+    result.f1.resize(cells);
+    result.f2.resize(cells);
+    for (std::size_t id = 0; id < cells; ++id) {
+        result.f1[id] = a_u1[id] - result.projected_rhs1[id];
+        result.f2[id] = a_u2[id] - result.projected_rhs2[id];
+    }
+    result.s1 = sources.s1;
+    result.s2 = sources.s2;
+    return result;
+}
+
+}  // namespace
+
+std::vector<double> make_positive_q_field(const Grid& grid, const Vec3& lengths) {
+    grid.validate();
+    validate_position_and_lengths({0.0, 0.0, 0.0}, lengths);
+    std::vector<double> result(grid.cell_count());
+    for (std::size_t iz = 0; iz < grid.nz; ++iz) for (std::size_t iy = 0; iy < grid.ny; ++iy) for (std::size_t ix = 0; ix < grid.nx; ++ix) {
+        const Vec3 position = grid.cell_center(ix, iy, iz);
+        result[grid.index(ix, iy, iz)] = trigonometric_q(position, lengths);
+    }
+    return result;
+}
+
+double dimensionless_length_reference(const Vec3& lengths) {
+    validate_position_and_lengths({0.0, 0.0, 0.0}, lengths);
+    return std::cbrt(lengths.x * lengths.y * lengths.z);
+}
+
+CoupledResidualFields coupled_residual_reference(
+    const Grid& grid, const std::vector<double>& q, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const Vec3& psi1_affine_gradient,
+    const Vec3& psi2_affine_gradient, double eta, const NonlinearSourceReferenceConfig& config) {
+    return coupled_residual_impl(grid, q, psi1_fluctuation, psi2_fluctuation,
+                                 psi1_affine_gradient, psi2_affine_gradient, eta, config);
+}
+
+CoupledResidualFields coupled_residual_reference(const std::vector<double>& q,
+                                                 const TotalGradientFixture& fixture, double eta,
+                                                 const NonlinearSourceReferenceConfig& config) {
+    validate_total_gradient_fixture(fixture);
+    return coupled_residual_impl(fixture.grid, q, fixture.psi1_fluctuation,
+                                 fixture.psi2_fluctuation, fixture.psi1_affine_gradient,
+                                 fixture.psi2_affine_gradient, eta, config);
+}
+
+ResidualNormalizationReference residual_normalization_reference(double rms_f1, double rms_f2,
+                                                                 double q_rms, double v_rms,
+                                                                 double l_ref) {
+    if (!std::isfinite(rms_f1) || rms_f1 < 0.0 || !std::isfinite(rms_f2) || rms_f2 < 0.0) {
+        throw std::invalid_argument("residual normalization RMS values must be finite and nonnegative");
+    }
+    if (!finite_positive(q_rms) || !finite_positive(v_rms) || !finite_positive(l_ref)) {
+        throw std::invalid_argument(
+            "residual normalization q_rms, v_rms, and l_ref must be finite and strictly positive");
+    }
+    ResidualNormalizationReference result;
+    result.r1 = rms_f1 * l_ref / (q_rms * v_rms);
+    result.r2 = rms_f2 * l_ref / q_rms;
+    result.r_f = std::sqrt((result.r1 * result.r1 + result.r2 * result.r2) / 2.0);
+    return result;
+}
+
+LogHistogramReference log_histogram_reference(const VectorField& c, double c_min, double c_max) {
+    if (c.x.size() != c.y.size() || c.y.size() != c.z.size()) {
+        throw std::invalid_argument("histogram VectorField components must have matching sizes");
+    }
+    if (!finite_positive(c_min) || !finite_positive(c_max) || c_max <= c_min) {
+        throw std::invalid_argument("histogram range requires 0 < c_min < c_max, both finite");
+    }
+
+    const double log_min = std::log10(c_min);
+    const double log_max = std::log10(c_max);
+    const double inv_bin_width = static_cast<double>(kHistogramBins) / (log_max - log_min);
+
+    LogHistogramReference result;
+    for (std::size_t id = 0; id < c.x.size(); ++id) {
+        const double cx = c.x[id];
+        const double cy = c.y[id];
+        const double cz = c.z[id];
+        const double c_sq = cx * cx + cy * cy + cz * cz;
+        const double v = std::sqrt(c_sq);
+        if (!std::isfinite(v)) {
+            ++result.overflow;
+        } else if (v < c_min) {
+            ++result.underflow;
+        } else if (v >= c_max) {
+            ++result.overflow;
+        } else {
+            const double t = (std::log10(v) - log_min) * inv_bin_width;
+            auto idx = static_cast<std::ptrdiff_t>(std::floor(t));
+            idx = std::max<std::ptrdiff_t>(0, std::min<std::ptrdiff_t>(
+                                                  idx, static_cast<std::ptrdiff_t>(kHistogramBins) - 1));
+            ++result.counts[static_cast<std::size_t>(idx)];
+            const double separation = std::abs(t - std::round(t));
+            result.min_edge_separation = std::min(result.min_edge_separation, separation);
+        }
+    }
+    return result;
+}
+
+double histogram_percentile(const std::vector<std::size_t>& counts, std::size_t underflow,
+                            std::size_t overflow, double c_min, double c_max, double p) {
+    if (counts.size() != kHistogramBins) {
+        throw std::invalid_argument("histogram percentile requires exactly kHistogramBins counts");
+    }
+    if (!finite_positive(c_min) || !finite_positive(c_max) || c_max <= c_min) {
+        throw std::invalid_argument("histogram range requires 0 < c_min < c_max, both finite");
+    }
+    if (!std::isfinite(p) || p < 0.0 || p > 1.0) {
+        throw std::invalid_argument("histogram percentile p must be finite and in [0, 1]");
+    }
+
+    long double total = static_cast<long double>(underflow) + static_cast<long double>(overflow);
+    for (std::size_t count : counts) total += static_cast<long double>(count);
+    if (total <= 0.0L) {
+        throw std::invalid_argument("histogram percentile requires a nonempty population");
+    }
+    const long double target = static_cast<long double>(p) * total;
+
+    const double log_min = std::log10(c_min);
+    const double log_max = std::log10(c_max);
+    const double bin_width = (log_max - log_min) / static_cast<double>(kHistogramBins);
+    const auto edge = [&](std::size_t bin_boundary) {
+        return std::pow(10.0, log_min + static_cast<double>(bin_boundary) * bin_width);
+    };
+
+    long double cumulative = static_cast<long double>(underflow);
+    if (cumulative >= target) {
+        return c_min;
+    }
+    for (std::size_t bin = 0; bin < kHistogramBins; ++bin) {
+        cumulative += static_cast<long double>(counts[bin]);
+        if (cumulative >= target) {
+            return edge(bin + 1);
+        }
+    }
+    // Target only reached inside the open-ended overflow bucket.
+    return c_max;
+}
+
+double exact_sorted_percentile(std::vector<double> values, double p) {
+    if (values.empty()) {
+        throw std::invalid_argument("exact sorted percentile requires nonempty values");
+    }
+    if (!std::isfinite(p) || p < 0.0 || p > 1.0) {
+        throw std::invalid_argument("exact sorted percentile p must be finite and in [0, 1]");
+    }
+    for (double value : values) {
+        if (!std::isfinite(value)) {
+            throw std::invalid_argument("exact sorted percentile requires finite values");
+        }
+    }
+    std::sort(values.begin(), values.end());
+    const auto n = static_cast<std::ptrdiff_t>(values.size());
+    auto rank = static_cast<std::ptrdiff_t>(std::ceil(p * static_cast<double>(n))) - 1;
+    rank = std::max<std::ptrdiff_t>(0, std::min<std::ptrdiff_t>(rank, n - 1));
+    return values[static_cast<std::size_t>(rank)];
+}
+
 }  // namespace macroflow3d::streamfunctions::reference

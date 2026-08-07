@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -298,5 +299,111 @@ struct NonfiniteInjection {
 // cells.
 [[nodiscard]] VectorField inject_nonfinite_values(const VectorField& field,
                                                    const std::vector<NonfiniteInjection>& injections);
+
+// SF-10 coupled residual controls.
+//
+// Strictly positive, smooth, deterministic q(x) on an arbitrary SF-07-style
+// grid/lengths pair. Exact formula (identical to the private `trigonometric_q`
+// helper used by the SF-02/SF-06 fixtures):
+//   phase = 2*pi*(x/Lx + y/Ly + z/Lz)
+//   q(x)  = 1.25 + 0.25*cos(phase)   in [1, 1.5], strictly positive.
+[[nodiscard]] std::vector<double> make_positive_q_field(const Grid& grid, const Vec3& lengths);
+
+// Cube root of the physical domain volume, i.e. L_ref = (Lx*Ly*Lz)^(1/3).
+[[nodiscard]] double dimensionless_length_reference(const Vec3& lengths);
+
+// Composed CPU reference for the coupled fluctuation residual:
+//   F1 = A u1 - P(div_h(q*gbar1) - eta*q.*S2)
+//   F2 = A u2 - P(div_h(q*gbar2) - eta*q.*S1)
+// (pairing: F1<->S2, F2<->S1). A is `divergence_form_diffusion`, div_h(q*g) is
+// `affine_rhs_discrete`, P is `mean_zero_projected`, and S1/S2 come from the
+// SF-09 `centered_nonlinear_source_oracle` chain (built on
+// `centered_total_gradient_oracle` and `centered_hessian_vector_b_oracle`).
+// The combined right-hand side is projected before differencing against A u_i
+// because A u is discretely mean-zero on the periodic domain (SF-10 locked
+// interpretive decision); the raw (unprojected) RHS means remain available as
+// diagnostics via raw_rhs1_mean/raw_rhs2_mean.
+struct CoupledResidualFields {
+    std::vector<double> f1;
+    std::vector<double> f2;
+    std::vector<double> s1;
+    std::vector<double> s2;
+    std::vector<double> projected_rhs1;
+    std::vector<double> projected_rhs2;
+    double raw_rhs1_mean{};
+    double raw_rhs2_mean{};
+};
+
+[[nodiscard]] CoupledResidualFields coupled_residual_reference(
+    const Grid& grid, const std::vector<double>& q, const std::vector<double>& psi1_fluctuation,
+    const std::vector<double>& psi2_fluctuation, const Vec3& psi1_affine_gradient,
+    const Vec3& psi2_affine_gradient, double eta, const NonlinearSourceReferenceConfig& config);
+
+// Convenience overload that reads grid, affine gradients, and fluctuations
+// directly from an SF-07 TotalGradientFixture; q is supplied separately
+// because the fixture does not carry a conductivity field.
+[[nodiscard]] CoupledResidualFields coupled_residual_reference(
+    const std::vector<double>& q, const TotalGradientFixture& fixture, double eta,
+    const NonlinearSourceReferenceConfig& config);
+
+// Dimensionless normalization (locked in the SF-10 dashboard/increment spec):
+//   r1  = RMS(F1) * L_ref / (q_rms * v_rms)
+//   r2  = RMS(F2) * L_ref / q_rms
+//   r_F = sqrt((r1^2 + r2^2) / 2)
+struct ResidualNormalizationReference {
+    double r1{};
+    double r2{};
+    double r_f{};
+};
+
+[[nodiscard]] ResidualNormalizationReference residual_normalization_reference(
+    double rms_f1, double rms_f2, double q_rms, double v_rms, double l_ref);
+
+// Fixed-bin, base-10 logarithmic histogram of |c| = |g1 x g2| for exact CPU
+// mirroring of the production GPU binning semantics.
+//
+// Pinned binning arithmetic (this documents production GPU semantics too):
+//   kHistogramBins = 512
+//   log_min        = log10(c_min)
+//   inv_bin_width  = 512 / (log10(c_max) - log_min)
+// For each cell, c_sq is computed with exactly the same expression order as
+// `double_precision_nonlinear_source_mirror` (cx*cx + cy*cy + cz*cz), then
+// v = sqrt(c_sq):
+//   - v not finite            -> overflow
+//   - v < c_min                -> underflow
+//   - v >= c_max                -> overflow
+//   - otherwise: idx = floor((log10(v) - log_min) * inv_bin_width), clamped
+//     to [0, kHistogramBins - 1].
+inline constexpr std::size_t kHistogramBins = 512;
+
+struct LogHistogramReference {
+    std::vector<std::size_t> counts = std::vector<std::size_t>(kHistogramBins, 0);
+    std::size_t underflow{};
+    std::size_t overflow{};
+    // Minimum, over all binned cells, of the distance in index space from
+    // (log10(v)-log_min)*inv_bin_width to its nearest integer bin edge. Guards
+    // exact CPU/GPU bin-count agreement against log10 ulp differences: a
+    // separation well above machine epsilon means no cell sits close enough
+    // to an edge for a ulp difference to change its bin.
+    double min_edge_separation{std::numeric_limits<double>::infinity()};
+};
+
+[[nodiscard]] LogHistogramReference log_histogram_reference(const VectorField& c, double c_min,
+                                                             double c_max);
+
+// Upper edge value of the bin where the cumulative count (underflow, then
+// bins in increasing order, then overflow) first reaches `p` (in [0,1]) of
+// the total count. Relative value error against the true underlying value is
+// bounded by one log bin width, i.e. by the factor
+// 10^((log10(c_max)-log10(c_min))/kHistogramBins). If `p` is only reached
+// inside the overflow bucket, c_max is returned (documented open upper edge).
+[[nodiscard]] double histogram_percentile(const std::vector<std::size_t>& counts,
+                                          std::size_t underflow, std::size_t overflow,
+                                          double c_min, double c_max, double p);
+
+// Test-side-only exact percentile via sorting, using the nearest-rank method:
+// index = clamp(ceil(p*n) - 1, 0, n-1) on the ascending-sorted copy. Used to
+// bound histogram_percentile's error, never to be reproduced on GPU.
+[[nodiscard]] double exact_sorted_percentile(std::vector<double> values, double p);
 
 }  // namespace macroflow3d::streamfunctions::reference
