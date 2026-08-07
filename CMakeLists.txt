@@ -216,6 +216,7 @@ set(PHYSICS_SOURCES
     src/physics/streamfunctions/affine_periodic_rhs.cu
     src/physics/streamfunctions/DifferentialOperators.cu
     src/physics/streamfunctions/NonlinearSources.cu
+    src/physics/streamfunctions/ResidualEvaluator.cu
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
@@ -351,6 +352,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_gradient_gpu_cases.cu
         tests/streamfunctions/hessian_vector_b_gpu_cases.cu
         tests/streamfunctions/nonlinear_sources_gpu_cases.cu
+        tests/streamfunctions/coupled_residual_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
