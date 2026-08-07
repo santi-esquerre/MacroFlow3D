@@ -529,7 +529,16 @@ struct VelocityFaceErrorReport {
 
 // Metric 2: Pearson correlation per component over unique faces:
 //   r = (n*Sxy - Sx*Sy) / sqrt((n*Sxx - Sx*Sx)*(n*Syy - Sy*Sy))
-// Degenerate (zero) variance yields NaN; there is no hidden floor.
+// For exactly-degenerate (zero-variance) component inputs this raw-moment
+// formula is inherently numerically unstable, not just undefined: it may
+// yield NaN or a spurious value of magnitude ~1, with the sign determined by
+// cross-kernel rounding of an algebraically shared numerator/variance term
+// (see the GPU-side analysis in physical_diagnostics_gpu_cases.cu, case 1).
+// This CPU single-loop mirror is less prone to that ±1 collapse than the
+// two-kernel GPU path, but the formula's degenerate-input instability is
+// inherent to the algebra, not an artifact of a particular implementation;
+// nothing is floored or masked, and the value is meaningful only for
+// non-degenerate inputs.
 struct FaceCorrelationReport {
     double r_u{};
     double r_v{};

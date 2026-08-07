@@ -1376,6 +1376,12 @@ double pearson_correlation(const std::vector<double>& a, const std::vector<doubl
     }
     const double numerator = n * sxy - sx * sy;
     const double denominator = std::sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+    // For exactly-degenerate (zero-variance) inputs this single-loop
+    // accumulation is less prone to the ±1 collapse seen on the two-kernel
+    // GPU path (see physical_diagnostics_gpu_cases.cu, case 1), but the
+    // raw-moment Pearson formula's degenerate-input instability is inherent
+    // to the algebra, not an artifact of a particular reduction strategy;
+    // the value is meaningful only for non-degenerate inputs.
     return numerator / denominator;  // 0/0 or nonzero/0 yields NaN/Inf by IEEE semantics; no hidden floor.
 }
 

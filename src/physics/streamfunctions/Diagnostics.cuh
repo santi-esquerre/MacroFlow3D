@@ -82,6 +82,18 @@
  * If the measured `v_rms` is exactly zero (identically zero Darcy field),
  * every metric normalized by it becomes NaN or +infinity in the report;
  * this module never masks that with an implicit floor.
+ *
+ * The per-component raw-moment Pearson correlations (`corr_u/v/w`) are
+ * numerically unstable, not just undefined, for exactly-degenerate
+ * (zero-variance) component inputs: the formula's numerator and the
+ * matching variance term can reduce to the same algebraic quantity computed
+ * by two different reduction kernels (`blas::sum_device` vs
+ * `blas::dot_device`), so the ratio collapses to that quantity's sign.
+ * Whether the underlying quantity rounds to exactly zero (yielding NaN) or
+ * to a tiny nonzero value (yielding a spurious +-1) depends on cross-kernel
+ * rounding and grid size; both outcomes have been observed on identical
+ * degenerate inputs at different grid extents. Nothing is floored or
+ * masked; the correlation is meaningful only for non-degenerate inputs.
  */
 
 #include "../../core/DeviceBuffer.cuh"
@@ -250,7 +262,12 @@ struct PhysicalDiagnosticsReport {
     real linf_u_rel{}, linf_v_rel{}, linf_w_rel{};
     real e_v{};
 
-    // Per-component Pearson correlation over unique faces.
+    // Per-component Pearson correlation over unique faces. For
+    // exactly-degenerate (zero-variance) component inputs this raw-moment
+    // formula is numerically unstable and may report NaN or a spurious +-1
+    // (sign determined by cross-kernel rounding of an algebraically shared
+    // quantity; see the file header); the value is meaningful only for
+    // non-degenerate inputs.
     real corr_u{}, corr_v{}, corr_w{};
 
     // Cell-centered magnitude error m = |v_psi_c| - |v_D_c|.
