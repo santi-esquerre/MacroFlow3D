@@ -96,6 +96,40 @@ void set_vector(VectorField& field, std::size_t index, const Vec3& value) {
     return result;
 }
 
+[[nodiscard]] double dot(const Vec3& left, const Vec3& right) {
+    if (!std::isfinite(left.x) || !std::isfinite(left.y) || !std::isfinite(left.z) ||
+        !std::isfinite(right.x) || !std::isfinite(right.y) || !std::isfinite(right.z)) {
+        throw std::invalid_argument("dot product requires finite vectors");
+    }
+    return left.x * right.x + left.y * right.y + left.z * right.z;
+}
+
+// Long-double vector used only by the independent SF-09 discrete oracle so it
+// stays decoupled from the double-precision Vec3 used everywhere else.
+struct Vec3Ld {
+    long double x{};
+    long double y{};
+    long double z{};
+};
+
+[[nodiscard]] Vec3Ld cross_ld(const Vec3Ld& left, const Vec3Ld& right) {
+    return {left.y * right.z - left.z * right.y, left.z * right.x - left.x * right.z,
+            left.x * right.y - left.y * right.x};
+}
+
+[[nodiscard]] long double dot_ld(const Vec3Ld& left, const Vec3Ld& right) {
+    return left.x * right.x + left.y * right.y + left.z * right.z;
+}
+
+void validate_nonlinear_source_config(const NonlinearSourceReferenceConfig& config) {
+    if (!std::isfinite(config.epsilon) || config.epsilon < 0.0) {
+        throw std::invalid_argument("nonlinear source epsilon must be finite and nonnegative");
+    }
+    if (!finite_positive(config.v_rms)) {
+        throw std::invalid_argument("nonlinear source v_rms must be finite and strictly positive");
+    }
+}
+
 [[nodiscard]] double trigonometric_q(const Vec3& position, const Vec3& lengths) {
     validate_position_and_lengths(position, lengths);
     const double phase = 2.0 * kPi * (position.x / lengths.x + position.y / lengths.y + position.z / lengths.z);
@@ -665,6 +699,206 @@ TotalGradientFixture make_parallel_total_gradient_fixture(std::size_t cells_per_
         fixture.psi2_fluctuation[id] = scale * fixture.psi1_fluctuation[id];
     }
     return fixture;
+}
+
+NonlinearSourceFields analytic_nonlinear_source_reference(
+    const TotalGradientFixture& fixture, const NonlinearSourceReferenceConfig& config) {
+    validate_total_gradient_fixture(fixture);
+    validate_nonlinear_source_config(config);
+    const HessianVectorBFields hvb = analytic_hessian_vector_b(fixture);
+    const std::size_t cells = fixture.grid.cell_count();
+    NonlinearSourceFields result{make_vector_field(cells), std::vector<double>(cells),
+                                 std::vector<double>(cells), std::vector<double>(cells)};
+    const double regularization = config.epsilon * config.v_rms;
+    const double regularization_sq = regularization * regularization;
+    for (std::size_t iz = 0; iz < fixture.grid.nz; ++iz) for (std::size_t iy = 0;
+         iy < fixture.grid.ny; ++iy) for (std::size_t ix = 0; ix < fixture.grid.nx; ++ix) {
+        const std::size_t id = fixture.grid.index(ix, iy, iz);
+        const Vec3 position = fixture.grid.cell_center(ix, iy, iz);
+        const Vec3 g1 = total_gradient_analytic(GradientFixtureField::psi1, position,
+                                                 fixture.lengths, fixture.psi1_affine_gradient);
+        const Vec3 g2 = total_gradient_analytic(GradientFixtureField::psi2, position,
+                                                 fixture.lengths, fixture.psi2_affine_gradient);
+        const Vec3 b{hvb.b.x[id], hvb.b.y[id], hvb.b.z[id]};
+        const Vec3 c = cross(g1, g2);
+        const double d = c.x * c.x + c.y * c.y + c.z * c.z + regularization_sq;
+        const double s1 = dot(cross(b, g1), c) / d;
+        const double s2 = dot(cross(b, g2), c) / d;
+        set_vector(result.c, id, c);
+        result.denominator[id] = d;
+        result.s1[id] = s1;
+        result.s2[id] = s2;
+    }
+    return result;
+}
+
+NonlinearSourceFields centered_nonlinear_source_oracle(
+    const Grid& grid, const VectorField& g1_total_gradient, const VectorField& g2_total_gradient,
+    const VectorField& b, const NonlinearSourceReferenceConfig& config) {
+    validate_vector_field(grid, g1_total_gradient, "g1 total gradient");
+    validate_vector_field(grid, g2_total_gradient, "g2 total gradient");
+    validate_vector_field(grid, b, "B");
+    validate_nonlinear_source_config(config);
+
+    const std::size_t cells = grid.cell_count();
+    NonlinearSourceFields result{make_vector_field(cells), std::vector<double>(cells),
+                                 std::vector<double>(cells), std::vector<double>(cells)};
+    const long double regularization =
+        static_cast<long double>(config.epsilon) * static_cast<long double>(config.v_rms);
+    const long double regularization_sq = regularization * regularization;
+
+    for (std::size_t id = 0; id < cells; ++id) {
+        const Vec3Ld g1{g1_total_gradient.x[id], g1_total_gradient.y[id], g1_total_gradient.z[id]};
+        const Vec3Ld g2{g2_total_gradient.x[id], g2_total_gradient.y[id], g2_total_gradient.z[id]};
+        const Vec3Ld bv{b.x[id], b.y[id], b.z[id]};
+        const Vec3Ld c = cross_ld(g1, g2);
+        const long double d = dot_ld(c, c) + regularization_sq;
+        const long double s1 = dot_ld(cross_ld(bv, g1), c) / d;
+        const long double s2 = dot_ld(cross_ld(bv, g2), c) / d;
+
+        result.c.x[id] = static_cast<double>(c.x);
+        result.c.y[id] = static_cast<double>(c.y);
+        result.c.z[id] = static_cast<double>(c.z);
+        result.denominator[id] = static_cast<double>(d);
+        result.s1[id] = static_cast<double>(s1);
+        result.s2[id] = static_cast<double>(s2);
+    }
+    return result;
+}
+
+NonlinearSourceMirrorDiagnostics double_precision_nonlinear_source_mirror(
+    const VectorField& g1_total_gradient, const VectorField& g2_total_gradient,
+    const VectorField& b, double epsilon, double v_rms,
+    const std::vector<double>& degeneracy_thresholds) {
+    const std::size_t cells = g1_total_gradient.x.size();
+    const auto matches_cells = [cells](const std::vector<double>& values) {
+        return values.size() == cells;
+    };
+    if (!matches_cells(g1_total_gradient.y) || !matches_cells(g1_total_gradient.z) ||
+        !matches_cells(g2_total_gradient.x) || !matches_cells(g2_total_gradient.y) ||
+        !matches_cells(g2_total_gradient.z) || !matches_cells(b.x) || !matches_cells(b.y) ||
+        !matches_cells(b.z)) {
+        throw std::invalid_argument("nonlinear source mirror requires matching field sizes");
+    }
+    if (!std::isfinite(epsilon) || epsilon < 0.0) {
+        throw std::invalid_argument("nonlinear source mirror epsilon must be finite and nonnegative");
+    }
+    if (!finite_positive(v_rms)) {
+        throw std::invalid_argument("nonlinear source mirror v_rms must be finite and strictly positive");
+    }
+    for (double tau : degeneracy_thresholds) {
+        if (!std::isfinite(tau) || tau < 0.0) {
+            throw std::invalid_argument("degeneracy thresholds must be finite and nonnegative");
+        }
+    }
+
+    NonlinearSourceMirrorDiagnostics result;
+    result.fields = NonlinearSourceFields{make_vector_field(cells), std::vector<double>(cells),
+                                          std::vector<double>(cells), std::vector<double>(cells)};
+    result.degenerate_counts.assign(degeneracy_thresholds.size(), 0);
+    result.degenerate_separation.assign(degeneracy_thresholds.size(),
+                                        std::numeric_limits<double>::infinity());
+
+    std::vector<double> threshold_sq(degeneracy_thresholds.size());
+    for (std::size_t t = 0; t < degeneracy_thresholds.size(); ++t) {
+        threshold_sq[t] = std::pow(degeneracy_thresholds[t] * v_rms, 2.0);
+    }
+
+    const double regularization = epsilon * v_rms;
+    const double regularization_sq = regularization * regularization;
+
+    for (std::size_t id = 0; id < cells; ++id) {
+        const double g1x = g1_total_gradient.x[id], g1y = g1_total_gradient.y[id],
+                    g1z = g1_total_gradient.z[id];
+        const double g2x = g2_total_gradient.x[id], g2y = g2_total_gradient.y[id],
+                    g2z = g2_total_gradient.z[id];
+        const double bx = b.x[id], by = b.y[id], bz = b.z[id];
+
+        const double cx = g1y * g2z - g1z * g2y;
+        const double cy = g1z * g2x - g1x * g2z;
+        const double cz = g1x * g2y - g1y * g2x;
+        const double c_sq = cx * cx + cy * cy + cz * cz;
+        const double d = c_sq + regularization_sq;
+
+        const double bxg1x = by * g1z - bz * g1y;
+        const double bxg1y = bz * g1x - bx * g1z;
+        const double bxg1z = bx * g1y - by * g1x;
+        const double bxg2x = by * g2z - bz * g2y;
+        const double bxg2y = bz * g2x - bx * g2z;
+        const double bxg2z = bx * g2y - by * g2x;
+
+        const double s1 = (bxg1x * cx + bxg1y * cy + bxg1z * cz) / d;
+        const double s2 = (bxg2x * cx + bxg2y * cy + bxg2z * cz) / d;
+
+        result.fields.c.x[id] = cx;
+        result.fields.c.y[id] = cy;
+        result.fields.c.z[id] = cz;
+        result.fields.denominator[id] = d;
+        result.fields.s1[id] = s1;
+        result.fields.s2[id] = s2;
+
+        if (!std::isfinite(s1)) {
+            ++result.nonfinite_s1_count;
+        }
+        if (!std::isfinite(s2)) {
+            ++result.nonfinite_s2_count;
+        }
+
+        for (std::size_t t = 0; t < degeneracy_thresholds.size(); ++t) {
+            if (std::isfinite(c_sq) && c_sq < threshold_sq[t]) {
+                ++result.degenerate_counts[t];
+            }
+            if (std::isfinite(c_sq)) {
+                const double denominator_reference = std::max(threshold_sq[t], 1.0);
+                const double separation = std::abs(c_sq - threshold_sq[t]) / denominator_reference;
+                result.degenerate_separation[t] = std::min(result.degenerate_separation[t], separation);
+            }
+        }
+    }
+    return result;
+}
+
+TotalGradientFixture make_near_degenerate_total_gradient_fixture(std::size_t cells_per_axis,
+                                                                  double parallel_scale,
+                                                                  double perturbation_scale) {
+    if (!std::isfinite(parallel_scale) || !std::isfinite(perturbation_scale)) {
+        throw std::invalid_argument("near-degenerate fixture scales must be finite");
+    }
+    TotalGradientFixture fixture = make_total_gradient_fixture(cells_per_axis);
+    const std::vector<double> original_psi2_fluctuation = fixture.psi2_fluctuation;
+    const Vec3 original_psi2_affine_gradient = fixture.psi2_affine_gradient;
+
+    fixture.psi2_affine_gradient = {
+        parallel_scale * fixture.psi1_affine_gradient.x +
+            perturbation_scale * original_psi2_affine_gradient.x,
+        parallel_scale * fixture.psi1_affine_gradient.y +
+            perturbation_scale * original_psi2_affine_gradient.y,
+        parallel_scale * fixture.psi1_affine_gradient.z +
+            perturbation_scale * original_psi2_affine_gradient.z};
+    validate_vector(fixture.psi2_affine_gradient, "near-degenerate psi2 affine gradient");
+
+    for (std::size_t id = 0; id < fixture.grid.cell_count(); ++id) {
+        fixture.psi2_fluctuation[id] = parallel_scale * fixture.psi1_fluctuation[id] +
+                                       perturbation_scale * original_psi2_fluctuation[id];
+    }
+    return fixture;
+}
+
+VectorField inject_nonfinite_values(const VectorField& field,
+                                    const std::vector<NonfiniteInjection>& injections) {
+    if (field.x.size() != field.y.size() || field.y.size() != field.z.size()) {
+        throw std::invalid_argument("VectorField components must have matching sizes");
+    }
+    VectorField result = field;
+    for (const NonfiniteInjection& injection : injections) {
+        if (injection.cell_index >= result.x.size()) {
+            throw std::out_of_range("nonfinite injection cell index out of range");
+        }
+        result.x[injection.cell_index] = injection.replacement.x;
+        result.y[injection.cell_index] = injection.replacement.y;
+        result.z[injection.cell_index] = injection.replacement.z;
+    }
+    return result;
 }
 
 }  // namespace macroflow3d::streamfunctions::reference

@@ -194,4 +194,109 @@ struct TotalGradientFixture {
 [[nodiscard]] TotalGradientFixture make_parallel_total_gradient_fixture(
     std::size_t cells_per_axis, double scale);
 
+// SF-09 nonlinear-source controls.
+//
+// Conventions (must match production `src/physics/streamfunctions` exactly):
+//   c  = g1 cross g2                     (right-handed cross product)
+//   d  = |c|^2 + (epsilon * v_rms)^2     (explicit, dimensionless regularization)
+//   S1 = ((B cross g1) . c) / d
+//   S2 = ((B cross g2) . c) / d
+// `epsilon` is dimensionless; `v_rms` must be finite and strictly positive so
+// the regularization term carries physical units. There is no hidden floor:
+// the only regularization is `(epsilon*v_rms)^2`.
+struct NonlinearSourceReferenceConfig {
+    double epsilon{};
+    double v_rms{};
+};
+
+// c, the regularized denominator d, and both sources, all in the same
+// x-fastest grid layout as VectorField/scalar fields elsewhere in this file.
+struct NonlinearSourceFields {
+    VectorField c;
+    std::vector<double> denominator;
+    std::vector<double> s1;
+    std::vector<double> s2;
+};
+
+// Exact-analytic regularized source reference on a TotalGradientFixture: uses
+// the analytic total gradients (SF-07) and analytic periodic Hessians (SF-08)
+// to build B, c, d, S1, and S2 pointwise in double precision. Suitable as the
+// continuum reference for discretization-error / convergence-order studies.
+//
+// analytic_hessian_vector_b (and therefore this function) always evaluates
+// the fixed smooth-fixture analytic formulas for GradientFixtureField::psi1
+// and psi2, independent of the fixture's stored fluctuation arrays; it is
+// only a valid continuum reference for make_total_gradient_fixture and
+// make_parallel_total_gradient_fixture (which share that analytic form), NOT
+// for make_pure_affine_total_gradient_fixture. The pure-affine/B=0 identity
+// is instead verified by construction on the discrete path: on
+// make_parallel_total_gradient_fixture (psi2_tilde = scale*psi1_tilde, g2 =
+// scale*g1), centered_hessian_vector_b_oracle gives B = 0 up to roundoff, so
+// centered_nonlinear_source_oracle below gives S1 = S2 = 0 up to roundoff
+// regardless of c and d.
+[[nodiscard]] NonlinearSourceFields analytic_nonlinear_source_reference(
+    const TotalGradientFixture& fixture, const NonlinearSourceReferenceConfig& config);
+
+// Independent long-double discrete source oracle. Takes discrete total
+// gradients g1, g2 (e.g. from centered_total_gradient_oracle) and discrete B
+// (e.g. from centered_hessian_vector_b_oracle) and applies exactly the
+// production formulas above in long double. It never calls any production
+// (src/) API. All three input VectorFields are validated to be finite; use
+// double_precision_nonlinear_source_mirror below for nonfinite-input
+// diagnostics.
+[[nodiscard]] NonlinearSourceFields centered_nonlinear_source_oracle(
+    const Grid& grid, const VectorField& g1_total_gradient, const VectorField& g2_total_gradient,
+    const VectorField& b, const NonlinearSourceReferenceConfig& config);
+
+// Diagnostics bundle returned by double_precision_nonlinear_source_mirror:
+// the plain-double fields plus exact-count degeneracy/nonfinite diagnostics.
+struct NonlinearSourceMirrorDiagnostics {
+    NonlinearSourceFields fields;
+    std::size_t nonfinite_s1_count{};
+    std::size_t nonfinite_s2_count{};
+    // Per threshold tau_t: count of cells with |c|^2 < (tau_t*v_rms)^2
+    // (strict less-than, plain double comparison; documented production
+    // degeneracy semantics).
+    std::vector<std::size_t> degenerate_counts;
+    // Per threshold tau_t: min over cells of
+    // | |c|^2 - (tau_t*v_rms)^2 | / max((tau_t*v_rms)^2, 1), used to assert
+    // that the degenerate_counts are robust to roundoff near the boundary.
+    std::vector<double> degenerate_separation;
+};
+
+// Double-precision CPU mirror of the exact production comparison semantics.
+// Unlike centered_nonlinear_source_oracle and analytic_nonlinear_source_reference,
+// this function does NOT validate that g1, g2, or b are finite: it is the
+// authority for counting nonfinite S1/S2 cells and degeneracy-threshold cells
+// in plain double, matching bit-for-bit what a GPU mirror must reproduce.
+// Only field-size consistency, epsilon, v_rms, and threshold finiteness are
+// validated.
+[[nodiscard]] NonlinearSourceMirrorDiagnostics double_precision_nonlinear_source_mirror(
+    const VectorField& g1_total_gradient, const VectorField& g2_total_gradient,
+    const VectorField& b, double epsilon, double v_rms,
+    const std::vector<double>& degeneracy_thresholds);
+
+// Near-degenerate fixture: psi2 := parallel_scale*psi1 + perturbation_scale*psi2,
+// applied to both the affine gradient and the periodic fluctuation of the
+// smooth SF-07 control. As perturbation_scale -> 0 this drives g2 toward the
+// exactly-parallel case (make_parallel_total_gradient_fixture), so |c|
+// shrinks in a controlled, non-exactly-zero way suitable for degeneracy-count
+// tests.
+[[nodiscard]] TotalGradientFixture make_near_degenerate_total_gradient_fixture(
+    std::size_t cells_per_axis, double parallel_scale, double perturbation_scale);
+
+// A single deterministic nonfinite-value injection: replace the VectorField
+// value at cell_index with replacement (which may contain Inf/NaN).
+struct NonfiniteInjection {
+    std::size_t cell_index{};
+    Vec3 replacement{};
+};
+
+// Returns a copy of field with the listed injections applied. Injections are
+// applied in order (later entries win on repeated indices) at explicit,
+// caller-chosen cell indices so CPU and GPU test cases flag exactly the same
+// cells.
+[[nodiscard]] VectorField inject_nonfinite_values(const VectorField& field,
+                                                   const std::vector<NonfiniteInjection>& injections);
+
 }  // namespace macroflow3d::streamfunctions::reference
