@@ -145,13 +145,19 @@ __global__ void residual_c_histogram_kernel(const real* psi1_x, const real* psi1
 }
 
 std::size_t require_valid_grid(const Grid3D& grid) {
-    if (grid.nx <= 0 || grid.ny <= 0 || grid.nz <= 0) {
-        throw std::invalid_argument("Streamfunction residual requires positive grid extents");
+    if (grid.nx < 2 || grid.ny < 2 || grid.nz < 2) {
+        throw std::invalid_argument(
+            "Streamfunction residual requires every grid dimension to be at least 2");
     }
     if (!std::isfinite(grid.dx) || !std::isfinite(grid.dy) || !std::isfinite(grid.dz) ||
         grid.dx <= real{0} || grid.dy <= real{0} || grid.dz <= real{0}) {
         throw std::invalid_argument(
             "Streamfunction residual requires finite positive direction-specific spacing");
+    }
+    if (grid.dx != grid.dy || grid.dx != grid.dz) {
+        throw std::invalid_argument(
+            "Streamfunction residual currently requires the isotropic-spacing grids of the "
+            "accepted SF-02/SF-06 operators (dx == dy == dz)");
     }
 
     const auto max_elements = std::numeric_limits<std::size_t>::max() / sizeof(real);

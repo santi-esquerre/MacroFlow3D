@@ -396,7 +396,8 @@ struct LogHistogramReference {
 // the total count. Relative value error against the true underlying value is
 // bounded by one log bin width, i.e. by the factor
 // 10^((log10(c_max)-log10(c_min))/kHistogramBins). If `p` is only reached
-// inside the overflow bucket, c_max is returned (documented open upper edge).
+// inside the overflow bucket, +infinity is returned (matches the production
+// `residual_histogram_percentile` open-ended overflow convention).
 [[nodiscard]] double histogram_percentile(const std::vector<std::size_t>& counts,
                                           std::size_t underflow, std::size_t overflow,
                                           double c_min, double c_max, double p);

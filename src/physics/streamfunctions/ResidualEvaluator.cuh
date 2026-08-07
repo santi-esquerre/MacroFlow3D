@@ -47,6 +47,14 @@
  * No new PDE discretization is introduced anywhere in this file: every
  * differential or linear-algebra primitive is reused exactly as accepted in
  * increments SF-02..SF-09.
+ *
+ * Grid restriction: this evaluator inherits the accepted SF-02/SF-06
+ * isotropic-grid restriction. `grid.dx`, `grid.dy`, `grid.dz` must be
+ * finite, strictly positive, and exactly equal, and every extent (`nx`,
+ * `ny`, `nz`) must be at least 2; both `enqueue_streamfunction_residual` and
+ * `synchronize_streamfunction_residual_report` fail fast with
+ * `std::invalid_argument` otherwise, matching `assemble_affine_periodic_rhs`
+ * and the production `VarCoeffLaplacian` isotropic-spacing assumption.
  */
 
 #include "../../core/DeviceBuffer.cuh"

@@ -1087,8 +1087,10 @@ double histogram_percentile(const std::vector<std::size_t>& counts, std::size_t 
             return edge(bin + 1);
         }
     }
-    // Target only reached inside the open-ended overflow bucket.
-    return c_max;
+    // Target only reached inside the open-ended overflow bucket. Matches the
+    // production `residual_histogram_percentile` open-ended overflow
+    // convention.
+    return std::numeric_limits<double>::infinity();
 }
 
 double exact_sorted_percentile(std::vector<double> values, double p) {
