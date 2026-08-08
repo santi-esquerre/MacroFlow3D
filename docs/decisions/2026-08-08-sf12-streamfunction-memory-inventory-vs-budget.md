@@ -30,7 +30,7 @@ StreamfunctionWorkspace.cuh/.cu}`, `src/numerics/solvers/pcg.cuh`, and
 `src/multigrid/mg_types.hpp`. Every category below was cross-checked line by
 line against `DeviceBuffer::resize()` call sites and the workspaces' own
 `estimate_device_bytes()` implementations; the totals reconcile exactly to
-byte precision with the totals asserted at increment-activation time (no
+byte precision with the totals recorded in the SF-12 T01 orchestrator audit (no
 discrepancy found).
 
 **Measured reality at `256^3`** (`n = 16,777,216` cells, `sizeof(real) = 8`,

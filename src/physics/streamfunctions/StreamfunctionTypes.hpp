@@ -11,7 +11,7 @@
  * composes rather than duplicates the accepted SF-02..SF-11 primitive types:
  * `AffineGauge` / `PeriodicStreamfunctionFluctuations` (SF-06),
  * `multigrid::MGConfig` (accepted MG stack), `solvers::ProjectedPCGConfig`
- * (SF-08), `ResidualHistogramConfig` (SF-09/10), `PhysicalDiagnosticsConfig`
+ * (SF-04), `ResidualHistogramConfig` (SF-09/10), `PhysicalDiagnosticsConfig`
  * (SF-11), and `CompactMacVelocityConstView` (SF-11).
  *
  * `StreamfunctionSolveReport` and `solve_streamfunctions` are declared in
@@ -58,6 +58,11 @@ enum class ConductivityRepresentation { conductivity_k, log_conductivity_y };
  * keeps every referenced buffer alive for the lifetime of any call that
  * consumes this view.
  *
+ * `grid` must equal, field for field, the grid argument every consuming call
+ * (`validate_streamfunction_problem`, `solve_streamfunctions`, workspace
+ * `prepare`) receives explicitly; a mismatch is rejected by
+ * `validate_streamfunction_problem`.
+ *
  * `conductivity` is cell-centered, `grid.num_cells()` elements, and holds
  * either `K` or `Y = ln K` per `conductivity_representation`. `darcy_velocity`
  * is the reference Darcy flow used by SF-11 physical diagnostics and by the
@@ -86,7 +91,7 @@ static_assert(std::is_trivially_copyable<StreamfunctionProblemView>::value,
  * (SF-13 consumes this; SF-12 only defines and validates it).
  *
  * This struct composes, rather than duplicates, every accepted sub-config:
- * `mg` (the accepted multigrid V-cycle stack), `linear` (SF-08 projected
+ * `mg` (the accepted multigrid V-cycle stack), `linear` (SF-04 projected
  * PCG), `histogram` (SF-09/10 |c| histogram bin range), `diagnostics`
  * (SF-11 physical diagnostics thresholds). `eta` and `epsilon` are the
  * Lester equation (14) nonlinear-source parameters threaded into
@@ -176,6 +181,8 @@ struct StreamfunctionMemoryReport {
  *     the SF-11 diagnostics module, which is anisotropy-capable on its own
  *     but is still driven through this solver-level, isotropic-only gate);
  *   - any grid extent `< 2`;
+ *   - `problem.grid` not exactly matching the `grid` argument (extents and
+ *     spacings all equal; see `StreamfunctionProblemView::grid`);
  *   - a non-finite affine gauge gradient component;
  *   - a grid that cannot support `config.mg.num_levels` under the exact
  *     `multigrid::MGHierarchy` coarsening/break rule together with

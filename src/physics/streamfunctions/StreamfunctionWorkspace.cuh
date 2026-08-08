@@ -41,11 +41,20 @@
  * never invalidates the preconditioner's pointer.
  *
  * Byte accounting: `capacity()`, not `size()`, is the owned-bytes contract
- * throughout this file (`DeviceBuffer::resize()` never shrinks capacity, so
- * re-preparing for a smaller grid keeps the larger capacity; the memory
- * estimator therefore predicts a FRESH preparation, not a reused/shrunk
- * one). cuBLAS/CUB internal handle memory is excluded from owned-bytes
- * accounting project-wide, consistent with every accepted sub-workspace.
+ * throughout this file. The two owned-storage regimes shrink differently on
+ * re-preparation: every `DeviceBuffer`-backed member (the scratch fields and
+ * every sub-workspace's own buffers) never shrinks capacity nor moves its
+ * pointer when re-preparing for a smaller grid, so those buffers individually
+ * keep the larger capacity. The MG hierarchy and preconditioner, held behind
+ * `unique_ptr`/`optional`, cannot be resized in place; they are destroyed and
+ * reconstructed whenever the grid or `config.mg` changes, so their
+ * contribution to `allocated_device_bytes()` shrinks (and the AGGREGATE total
+ * can shrink) across a smaller-grid re-prepare even though the DeviceBuffer
+ * members do not. The memory estimator therefore predicts a FRESH
+ * preparation, not a reused/shrunk one; re-preparing back at the identical
+ * original grid/config restores the aggregate total exactly. cuBLAS/CUB
+ * internal handle memory is excluded from owned-bytes accounting
+ * project-wide, consistent with every accepted sub-workspace.
  *
  * `q` is allocated here (one field) but SF-12 does not fill it; computing
  * `q = 1/K` (or `q = exp(-Y)`) from `StreamfunctionProblemView::conductivity`

@@ -46,7 +46,7 @@ enum class StreamfunctionSolveStatus {
  * accepted per-primitive reports rather than duplicating their fields:
  * `residual` (SF-09/10 coupled residual and its dimensionless reductions),
  * `diagnostics` (SF-11 physical/Gate-3A diagnostics), `psi1_result`/
- * `psi2_result` (the SF-08 projected-PCG result for each sequential linear
+ * `psi2_result` (the SF-04 projected-PCG result for each sequential linear
  * block solve), and `memory` (the SF-12 exact-byte memory report for the
  * workspace that produced this solve). `status` is the SF-12-scoped overall
  * outcome; see `StreamfunctionSolveStatus`.

@@ -270,6 +270,11 @@ void require_valid_source_side_config(const StreamfunctionSolverConfig& config) 
 void validate_streamfunction_problem(const Grid3D& grid, const StreamfunctionProblemView& problem,
                                       const StreamfunctionSolverConfig& config) {
     require_valid_grid_geometry(grid);
+    if (!grids_equal(problem.grid, grid)) {
+        throw std::invalid_argument(
+            "Streamfunction problem view's embedded grid must exactly match the grid argument "
+            "(extents and spacings)");
+    }
 
     const std::size_t n = grid.num_cells();
     if (problem.conductivity.size() != n) {

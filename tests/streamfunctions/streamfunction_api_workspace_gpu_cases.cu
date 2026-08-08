@@ -204,6 +204,18 @@ template <typename Callable>
         validate_streamfunction_problem(base_grid, p, base_config);
     });
 
+    // --- validate_streamfunction_problem: problem.grid must match the grid argument ---
+    require_invalid("problem_grid_mismatch_extents", [&] {
+        auto p = base_problem;
+        p.grid.nx += 1;
+        validate_streamfunction_problem(base_grid, p, base_config);
+    });
+    require_invalid("problem_grid_mismatch_spacing", [&] {
+        auto p = base_problem;
+        p.grid.dx *= 2;
+        validate_streamfunction_problem(base_grid, p, base_config);
+    });
+
     // --- validate_streamfunction_problem: each CompactMAC Darcy component wrong size ---
     // NOTE: base_grid is an isotropic cube (nx==ny==nz), so the three
     // CompactMAC face sizes (nx+1)*ny*nz, nx*(ny+1)*nz, nx*ny*(nz+1) are all
