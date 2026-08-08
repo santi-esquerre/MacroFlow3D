@@ -61,4 +61,12 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // histogram, and its percentile helper.
 [[nodiscard]] CaseRegistry coupled_residual_case_registry();
 
+// SF-11 CompactMAC velocity reconstruction and physical-diagnostics
+// acceptance controls. These run the production
+// `enqueue_streamfunction_physical_diagnostics` /
+// `synchronize_streamfunction_physical_diagnostics_report` chain and compare
+// against the independent `physical_diagnostics_mirror` CPU oracle,
+// including exact-count angle/degeneracy agreement and convergence order.
+[[nodiscard]] CaseRegistry physical_diagnostics_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

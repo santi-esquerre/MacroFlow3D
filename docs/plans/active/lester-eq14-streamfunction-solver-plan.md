@@ -24,13 +24,13 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-11`
+- NEXT: `SF-12`
 - Active runtime goal: `none`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-10`
+- Last completed increment: `SF-11`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`. Within that one active increment, the orchestrator
@@ -115,7 +115,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-08 — Hessian-vector products and B](lester-eq14/increments/SF-08-hessian-vector-b.md)
 - [x] [SF-09 — Nonlinear sources](lester-eq14/increments/SF-09-nonlinear-sources.md)
 - [x] [SF-10 — Coupled residual](lester-eq14/increments/SF-10-coupled-residual.md)
-- [ ] [SF-11 — Physical diagnostics](lester-eq14/increments/SF-11-physical-diagnostics.md)
+- [x] [SF-11 — Physical diagnostics](lester-eq14/increments/SF-11-physical-diagnostics.md)
 - [ ] [SF-12 — Public API and workspace](lester-eq14/increments/SF-12-public-api-workspace.md)
 - [ ] [SF-13 — Homogeneous solver](lester-eq14/increments/SF-13-homogeneous-solver.md)
 - [ ] [SF-14 — Fixed-relaxation Picard](lester-eq14/increments/SF-14-fixed-picard.md)
