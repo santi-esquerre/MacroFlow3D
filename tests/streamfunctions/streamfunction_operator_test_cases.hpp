@@ -86,4 +86,12 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // non-relaxed floating-point-roundoff thresholds.
 [[nodiscard]] CaseRegistry homogeneous_solver_case_registry();
 
+// SF-14 T02 fixed-relaxation Picard manufactured-nonlinear acceptance cases.
+// These run the production `solve_streamfunctions` entry point (SF-14 T01
+// fixed-relaxation Picard loop) on the triply periodic unit torus with a
+// manufactured heterogeneous conductivity field, asserting the documented
+// `PicardIterationRecord`/history-layout semantics and (for the two gating
+// cases) convergence within the configured iteration budget.
+[[nodiscard]] CaseRegistry picard_fixed_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

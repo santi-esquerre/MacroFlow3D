@@ -359,6 +359,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/physical_diagnostics_gpu_cases.cu
         tests/streamfunctions/streamfunction_api_workspace_gpu_cases.cu
         tests/streamfunctions/streamfunction_homogeneous_gpu_cases.cu
+        tests/streamfunctions/streamfunction_picard_fixed_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -370,6 +371,13 @@ if(MACROFLOW3D_BUILD_APPS)
         --case homogeneous_solver_exact_32
         --case homogeneous_solver_exact_64
         --case homogeneous_solver_repeated_reuse
+    )
+    add_test(NAME streamfunction_picard_fixed COMMAND streamfunction_operator_tests
+        --case picard_fixed_manufactured_16
+        --case picard_fixed_manufactured_32
+        --case picard_fixed_research_amplitude_05
+        --case picard_fixed_homogeneous_zero_iterations
+        --case picard_fixed_config_error_contract
     )
 
     # PETSc/SLEPc apps (only when backend is enabled)
