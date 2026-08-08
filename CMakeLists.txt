@@ -218,6 +218,7 @@ set(PHYSICS_SOURCES
     src/physics/streamfunctions/NonlinearSources.cu
     src/physics/streamfunctions/ResidualEvaluator.cu
     src/physics/streamfunctions/Diagnostics.cu
+    src/physics/streamfunctions/StreamfunctionWorkspace.cu
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu

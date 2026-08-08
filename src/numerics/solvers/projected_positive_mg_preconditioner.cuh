@@ -24,6 +24,17 @@ class ProjectedPositiveMGPreconditioner {
     // z = P A(q)^-1 P r, approximately.  The input r is never mutated.
     void apply(CudaContext& ctx, DeviceSpan<const real> r, DeviceSpan<real> z) const;
 
+    // Additive, behavior-neutral byte introspection (SF-12). Exact sum of the
+    // owned per-level mean-zero workspace capacities (the hierarchy itself is
+    // referenced, not owned, and is accounted separately by the caller).
+    // Never allocates.
+    [[nodiscard]] std::size_t allocated_device_bytes() const noexcept;
+
+    // Host-only prediction of allocated_device_bytes() after constructing a
+    // preconditioner over `hierarchy`; kept colocated with the constructor so
+    // it cannot drift. Does not validate `hierarchy`.
+    [[nodiscard]] static std::size_t estimate_device_bytes(const multigrid::MGHierarchy& hierarchy);
+
   private:
     multigrid::MGHierarchy* hierarchy_;
     multigrid::MGConfig config_;

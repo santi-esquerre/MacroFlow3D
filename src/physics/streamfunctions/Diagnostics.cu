@@ -654,6 +654,38 @@ bool StreamfunctionDiagnosticsWorkspace::prepared_for(const Grid3D& grid) const 
            scalars_.size() == kNumScalars && counters_.size() == kNumCounters;
 }
 
+std::size_t StreamfunctionDiagnosticsWorkspace::allocated_device_bytes() const noexcept {
+    std::size_t bytes = 0;
+    const DeviceBuffer<real>* const real_fields[] = {
+        &g1x_,        &g1y_,        &g1z_,        &g2x_,        &g2y_,       &g2z_,
+        &unique_vpsi_u_, &unique_vpsi_v_, &unique_vpsi_w_, &unique_vd_u_, &unique_vd_v_,
+        &unique_vd_w_, &diff_u_,     &diff_v_,     &diff_w_,     &vpsi_cx_,   &vpsi_cy_,
+        &vpsi_cz_,    &vd_cx_,      &vd_cy_,      &vd_cz_,      &magnitude_field_,
+        &theta_field_, &dot1_field_, &dot2_field_, &divergence_field_, &abs_c_field_,
+        &scalars_,
+    };
+    for (const auto* field : real_fields) {
+        bytes += field->capacity() * sizeof(real);
+    }
+    bytes += blas::reduction_workspace_allocated_bytes(reduction_workspace_);
+    bytes += counters_.capacity() * sizeof(unsigned long long);
+    return bytes;
+}
+
+std::size_t StreamfunctionDiagnosticsWorkspace::estimate_device_bytes(const Grid3D& grid) {
+    // Mirrors prepare(grid) exactly: 27 fields of exactly n real elements
+    // (see the enumeration above, minus scalars_), scalars_ (kNumScalars),
+    // reduction_workspace_ prepared via blas::prepare_sum_workspace(n, ...),
+    // and counters_ (kNumCounters).
+    const std::size_t n = grid.num_cells();
+    constexpr std::size_t kNumRealFieldsOfSizeN = 27;
+    std::size_t bytes = kNumRealFieldsOfSizeN * n * sizeof(real);
+    bytes += kNumScalars * sizeof(real);
+    bytes += blas::sum_workspace_bytes(n) + sizeof(real);
+    bytes += kNumCounters * sizeof(unsigned long long);
+    return bytes;
+}
+
 void enqueue_streamfunction_physical_diagnostics(
     CudaContext& ctx, const Grid3D& grid, const PeriodicStreamfunctionFluctuations& fluctuations,
     const AffineGauge& gauge, const CompactMacVelocityConstView& darcy,

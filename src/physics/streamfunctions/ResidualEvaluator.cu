@@ -271,6 +271,42 @@ void StreamfunctionResidualWorkspace::prepare(std::size_t n) {
     has_last_results_ = false;
 }
 
+std::size_t StreamfunctionResidualWorkspace::allocated_device_bytes() const noexcept {
+    std::size_t bytes = 0;
+    const DeviceBuffer<real>* const real_fields[] = {
+        &psi1_x_, &psi1_y_, &psi1_z_, &psi2_x_, &psi2_y_, &psi2_z_,
+        &h2g1_x_, &h2g1_y_, &h2g1_z_, &h1g2_x_, &h1g2_y_, &h1g2_z_,
+        &b_x_,    &b_y_,    &b_z_,    &s1_,     &s2_,     &a_u1_,
+        &a_u2_,   &g1_,     &g2_,     &scalars_,
+    };
+    for (const auto* field : real_fields) {
+        bytes += field->capacity() * sizeof(real);
+    }
+    bytes += source_counters_.capacity() * sizeof(unsigned long long);
+    bytes += histogram_.capacity() * sizeof(unsigned long long);
+    bytes += affine_rhs_workspace_.allocated_device_bytes();
+    bytes += g_projection_workspace_.allocated_device_bytes();
+    bytes += blas::reduction_workspace_allocated_bytes(reduction_workspace_);
+    return bytes;
+}
+
+std::size_t StreamfunctionResidualWorkspace::estimate_device_bytes(std::size_t n) {
+    // Mirrors prepare(n) exactly: 21 fields of exactly n real elements plus
+    // scalars_ (kNumScalars) and histogram_ (kNumHistogramSlots), plus the
+    // three sub-workspaces and reduction_workspace_, which in this module is
+    // only ever used through blas::nrm2_device (cuBLAS, no CUB temp storage),
+    // so its capacity is exactly its default-constructed one-scalar buffer.
+    constexpr std::size_t kNumRealFieldsOfSizeN = 21;
+    std::size_t bytes = kNumRealFieldsOfSizeN * n * sizeof(real);
+    bytes += kNumScalars * sizeof(real);
+    bytes += kNumHistogramSlots * sizeof(unsigned long long);
+    bytes += static_cast<std::size_t>(2 + kMaxDegeneracyThresholds) * sizeof(unsigned long long);
+    bytes += AffinePeriodicRhsWorkspace::estimate_device_bytes(n);
+    bytes += constraints::MeanZeroWorkspace::estimate_device_bytes(n);
+    bytes += sizeof(real); // reduction_workspace_: default-constructed d_scalar only.
+    return bytes;
+}
+
 bool StreamfunctionResidualWorkspace::prepared_for(std::size_t n) const noexcept {
     return n_ == n && psi1_x_.size() == n && psi1_y_.size() == n && psi1_z_.size() == n &&
            psi2_x_.size() == n && psi2_y_.size() == n && psi2_z_.size() == n &&

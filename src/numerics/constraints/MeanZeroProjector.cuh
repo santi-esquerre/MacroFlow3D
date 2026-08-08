@@ -48,6 +48,17 @@ class MeanZeroWorkspace {
     [[nodiscard]] std::size_t prepared_size() const noexcept { return prepared_n_; }
     [[nodiscard]] std::size_t temporary_storage_capacity_bytes() const noexcept;
 
+    // Additive, behavior-neutral byte introspection (SF-12). Exact sum of
+    // owned DeviceBuffer capacities: the CUB temporary storage plus the
+    // one-element result scalar. Never allocates.
+    [[nodiscard]] std::size_t allocated_device_bytes() const noexcept;
+
+    // Host-only, allocation-free prediction of allocated_device_bytes() after
+    // a fresh prepare(n) call. Kept colocated with prepare()/MeanZeroWorkspace
+    // so it cannot drift; issues the same host-side CUB size query that
+    // prepare() issues (see MeanZeroProjector.cu).
+    [[nodiscard]] static std::size_t estimate_device_bytes(std::size_t n);
+
   private:
     blas::ReductionWorkspace reduction_;
     std::size_t prepared_n_ = 0;
