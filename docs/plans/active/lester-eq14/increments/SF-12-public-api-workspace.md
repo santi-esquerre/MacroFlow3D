@@ -1,15 +1,15 @@
 # SF-12 — Public API and workspace
 
-- State: `pending`
+- State: `active`
 - Goal: `Definir la API pública, ownership y workspace reutilizable del solver.`
 - Depends on: `SF-11`
 - Unlocks: `SF-13`
 - Branch: `science/lester-sf12-public-api-workspace`
-- Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf12-public-api-workspace`
+- Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable (orchestrator)`
+- Started: `2026-08-08T19:55Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -97,3 +97,4 @@ SF-13 may implement the first complete homogeneous solve through this API.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-08T19:55Z | activation on `master=6934291` (SF-11 closure merged via PR #23) | SF-12 activated after verifying `NEXT: SF-12`, SF-11 `done`, and checker `OK (29 increments, next=SF-12)` on the default branch. Interpretive decisions recorded for the human reviewer: (1) `AffineGauge` already exists as the accepted SF-06 type in `affine_gauge.cuh`; SF-12 re-exports it through `StreamfunctionTypes.hpp` instead of redefining it. (2) `StreamfunctionSolver.cuh` is declaration-only; the `solve_streamfunctions` body is SF-13's explicit deliverable (`StreamfunctionSolver.cu`), so no stub implementation is added and nothing may call the declaration yet. (3) The "estimated bytes equal actual owned DeviceBuffer capacities" threshold requires byte introspection of sub-workspaces whose buffers are private; SF-12 adds additive, behavior-neutral `allocated_device_bytes()`/estimate accessors to the accepted SF-03/SF-05/SF-06/SF-10/SF-11 workspace types (no numerical or control-flow change). (4) "Tested at all target grid sizes" is interpreted as allocation-backed estimator==actual equality at `16^3/32^3/64^3` on the local 4 GiB GPU plus pure-host estimator evaluation with closed-form cross-checks at `128^3/256^3` (the full `256^3` workspace exceeds local VRAM). (5) Solver-level validation enforces the inherited SF-02/SF-05/SF-06/SF-10 isotropic-spacing and MG-coarsenable restrictions and triply periodic BCs, while SF-11 diagnostics alone remain anisotropy-capable. (6) Estimator output is categorized (fields / solve path / diagnostics path) and compared against the plan's 24.6-field budget; the accepted-primitives inventory is expected to exceed it, triggering the spec's rollback-policy path: record each extra field and produce an ownership-redesign decision record before SF-13. (7) Workspace move-safety: the MG preconditioner holds `MGHierarchy*`, so the hierarchy is held behind a stable address (`unique_ptr`) or moves are explicitly deleted with documented rationale. | Base commit is this activation commit on `master=6934291`. Gate 1 + Gate 2 apply; human review required, so the PR will stop at `awaiting_review` with `NEXT` unchanged. | Build intra-increment DAG; delegate implementation to isolated worker worktrees. |
