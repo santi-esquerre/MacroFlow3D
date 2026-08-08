@@ -1,6 +1,9 @@
 #include "StreamfunctionSolver.cuh"
 
 #include "../../multigrid/coefficient_hierarchy.cuh"
+#include "../../numerics/blas/axpy.cuh"
+#include "../../numerics/blas/copy.cuh"
+#include "../../numerics/blas/scal.cuh"
 #include "../../numerics/constraints/MeanZeroProjector.cuh"
 #include "../../numerics/operators/lester_positive_diffusion_operator.cuh"
 #include "../../runtime/cuda_check.cuh"
@@ -126,18 +129,103 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         source_config.degeneracy_thresholds[t] = config.degeneracy_thresholds[t];
     }
 
-    enqueue_streamfunction_residual(context, grid, DeviceSpan<const real>(workspace.q()),
-                                    fields.fluctuations(), problem.gauge, config.eta, source_config,
-                                    config.histogram, workspace.f1(), workspace.f2(),
-                                    workspace.residual_workspace());
-    report.residual = synchronize_streamfunction_residual_report(
-        context, grid, config.eta, source_config, config.histogram, workspace.residual_workspace());
+    // SF-14 fixed-relaxation Picard outer loop. State 0 is the SF-13
+    // zero-source initialization already produced above; report.psi1_result/
+    // psi2_result still hold that initialization's PCG results until the
+    // first successful update step overwrites them (see the header doc for
+    // the exact picard_history layout convention).
+    report.picard_history.reserve(static_cast<std::size_t>(config.picard.max_iter) + 1);
+
+    solvers::ProjectedPCGResult step_psi1_result{};
+    solvers::ProjectedPCGResult step_psi2_result{};
+
+    for (int k = 0;; ++k) {
+        // Evaluate the coupled residual F1, F2 AT the current, immutable
+        // state k; this single enqueue also produces BOTH block RHSs
+        // G1 = P(rhs_affine1 - eta*q*S2), G2 = P(rhs_affine2 - eta*q*S1) in
+        // the residual workspace's private g1_/g2_ buffers, borrowed
+        // read-only below via combined_rhs_g1()/g2().
+        enqueue_streamfunction_residual(context, grid, DeviceSpan<const real>(workspace.q()),
+                                        fields.fluctuations(), problem.gauge, config.eta,
+                                        source_config, config.histogram, workspace.f1(),
+                                        workspace.f2(), workspace.residual_workspace());
+        const StreamfunctionResidualReport residual_k = synchronize_streamfunction_residual_report(
+            context, grid, config.eta, source_config, config.histogram,
+            workspace.residual_workspace());
+        report.residual = residual_k;
+
+        PicardIterationRecord record;
+        record.r_F = residual_k.r_F;
+        record.r1 = residual_k.r1;
+        record.r2 = residual_k.r2;
+        record.psi1_result = step_psi1_result;
+        record.psi2_result = step_psi2_result;
+        report.picard_history.push_back(record);
+
+        if (residual_k.r_F <= config.picard.tolerance) {
+            report.status = StreamfunctionSolveStatus::converged;
+            report.picard_iterations = k;
+            break;
+        }
+        if (k == config.picard.max_iter) {
+            report.status = StreamfunctionSolveStatus::not_converged;
+            report.picard_iterations = k;
+            break;
+        }
+
+        // Block solves at the frozen state k: b = G views (borrowed from the
+        // residual workspace, NOT re-evaluated between the two solves), x =
+        // f1/f2 (reused as scratch for u_hat1/u_hat2; fully overwritten here
+        // and again by the next iteration's residual enqueue above).
+        blas::copy(context, DeviceSpan<const real>(fields.u1_span()), workspace.f1());
+        step_psi1_result = solvers::projected_pcg_solve(
+            context, A, workspace.preconditioner(), workspace.residual_workspace().combined_rhs_g1(),
+            workspace.f1(), config.linear, projector, workspace.pcg_workspace());
+
+        blas::copy(context, DeviceSpan<const real>(fields.u2_span()), workspace.f2());
+        step_psi2_result = solvers::projected_pcg_solve(
+            context, A, workspace.preconditioner(), workspace.residual_workspace().combined_rhs_g2(),
+            workspace.f2(), config.linear, projector, workspace.pcg_workspace());
+
+        report.psi1_result = step_psi1_result;
+        report.psi2_result = step_psi2_result;
+
+        if (!step_psi1_result.converged || !step_psi2_result.converged) {
+            report.status = StreamfunctionSolveStatus::not_converged;
+            report.picard_iterations = k;
+
+            // The state-(k+1) residual was never evaluated (the failed
+            // update is not applied to u1/u2 below), so this record's
+            // r_F/r1/r2 stay at their default (zero) value; only the failing
+            // linear results are meaningful here.
+            PicardIterationRecord failed_record;
+            failed_record.psi1_result = step_psi1_result;
+            failed_record.psi2_result = step_psi2_result;
+            report.picard_history.push_back(failed_record);
+            break;
+        }
+
+        // Paired fixed relaxation: u_i <- (1-omega)*u_i + omega*u_hat_i,
+        // then re-project both fields to mean zero (gauge maintenance).
+        const real omega = config.picard.omega;
+        blas::scal(context, fields.u1_span(), real{1} - omega);
+        blas::axpy(context, omega, DeviceSpan<const real>(workspace.f1()), fields.u1_span());
+        blas::scal(context, fields.u2_span(), real{1} - omega);
+        blas::axpy(context, omega, DeviceSpan<const real>(workspace.f2()), fields.u2_span());
+        projector.project(context, fields.u1_span(), workspace.pcg_workspace().mean_zero);
+        projector.project(context, fields.u2_span(), workspace.pcg_workspace().mean_zero);
+    }
+
+    // Re-run SF-11 physical diagnostics on the FINAL Picard state so
+    // report.diagnostics reflects the accepted invariants, not the
+    // v_rms-measurement-only evaluation performed before the loop.
+    enqueue_streamfunction_physical_diagnostics(context, grid, fields.fluctuations(), problem.gauge,
+                                                problem.darcy_velocity, config.diagnostics,
+                                                workspace.v_psi(), workspace.diagnostics_workspace());
+    report.diagnostics = synchronize_streamfunction_physical_diagnostics_report(
+        context, grid, config.diagnostics, workspace.diagnostics_workspace());
 
     report.memory = make_streamfunction_memory_report(fields, workspace, grid);
-
-    report.status = (report.psi1_result.converged && report.psi2_result.converged)
-                        ? StreamfunctionSolveStatus::converged
-                        : StreamfunctionSolveStatus::not_converged;
 
     return report;
 }
