@@ -1,6 +1,9 @@
 # SF-12 streamfunction memory inventory exceeds the 24.6-field budget: recorded inventory and ownership-redesign options
 
-- Status: proposed
+- Status: accepted — option (a) adopted for the SF-13 bring-up phase by explicit
+  owner approval of PR #24 (2026-08-08, recorded in the SF-12 bitácora); option
+  (b) remains the first optimization candidate, deferred to a later increment
+  (SF-23 or a dedicated ownership increment). Options (b)-(d) are NOT in effect.
 - Date: 2026-08-08
 
 ## Context

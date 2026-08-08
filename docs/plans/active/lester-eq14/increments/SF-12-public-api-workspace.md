@@ -1,6 +1,6 @@
 # SF-12 — Public API and workspace
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Definir la API pública, ownership y workspace reutilizable del solver.`
 - Depends on: `SF-11`
 - Unlocks: `SF-13`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Claude Fable (orchestrator)`
 - Started: `2026-08-08T19:55Z`
-- Completed: `not completed`
-- PR: [#24 — SF-12: public streamfunction API, owned workspace, and exact memory estimator](https://github.com/santi-esquerre/MacroFlow3D/pull/24) (`awaiting_review`)
-- Commit: `not recorded`
+- Completed: `2026-08-08 (explicit owner approval of PR #24 with memory-decision option (a); closure metadata commit on the same PR)`
+- PR: [#24 — SF-12: public streamfunction API, owned workspace, and exact memory estimator](https://github.com/santi-esquerre/MacroFlow3D/pull/24)
+- Commit: `0610cd0ceda53cddbb9eda83a3e4a6de780087ec (frozen audited source head; later branch commits are increment-state documentation only)`
 
 ## Scientific or engineering intent
 
@@ -81,12 +81,12 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [ ] Public types and ownership boundaries are implemented.
-- [ ] Workspace covers all accepted primitives without hot-loop allocation.
-- [ ] Memory estimator is tested at all target grid sizes.
-- [ ] API validation and full regression tests pass.
-- [ ] Human review and evidence are recorded.
-- [ ] Dashboard marks SF-12 complete and selects SF-13.
+- [x] Public types and ownership boundaries are implemented.
+- [x] Workspace covers all accepted primitives without hot-loop allocation.
+- [x] Memory estimator is tested at all target grid sizes.
+- [x] API validation and full regression tests pass.
+- [x] Human review and evidence are recorded.
+- [x] Dashboard marks SF-12 complete and selects SF-13.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -101,3 +101,5 @@ SF-13 may implement the first complete homogeneous solve through this API.
 | 2026-08-08T22:05Z | `0610cd0`, integration validation | Four-node DAG completed and orchestrator-audited node by node: T01 `71d8828` (public types `StreamfunctionTypes.hpp`, `StreamfunctionFields` owning `u1/u2`, unified `StreamfunctionWorkspace` owning all scratch/solver storage incl. one MG hierarchy behind `unique_ptr` + one projected-PCG workspace for sequential-only block solves, declaration-only `StreamfunctionSolver.cuh`, exact memory estimator, additive behavior-neutral byte-introspection accessors on the accepted SF-03/05/06/10/11 workspaces); T02 `417599a` (six GPU acceptance cases); T03 `6af9185` (decision record on the memory inventory vs the 24.6-field budget, status `proposed`); corrective C01 `0610cd0` (SF-04 provenance fixes, scoped capacity-never-shrinks doc, `problem.grid` consistency rejection + 2 test checks, decision-record provenance sentence — resolving all four MINOR audit findings). Single integrator verified the linear chain (merge-base == base, 20 files +2767/−0, `diff --check` clean, `solve_streamfunctions` declaration-only, docs/plans/apps/particles/multigrid untouched) and reran the full suite green. | Acceptance evidence (worker + integrator + orchestrator reruns all agreeing): error contract 76/76 incl. per-face BC, per-direction spacing/extent, MG-coarsenability, `problem.grid` consistency, and 12 use-before-prepare checks; estimator == actual owned `DeviceBuffer` capacities EXACTLY (every report field, three-way vs an independent closed-form reconstruction) at `16^3`=2,241,941 B, `32^3`=17,762,195 B, `64^3`=141,830,801 B, host-only at `128^3`=1,134,065,039 B and `256^3`=9,070,736,783 B; allocation freedom: warmup + 3 full-chain repeats (affine RHS, coupled residual, physical diagnostics, coefficient hierarchy, projected PCG+MG solve) with byte-identical owned bytes/pointers and exact `cudaMemGetInfo` stability, PCG converged each pass; re-prepare semantics: non-MG capacities/pointers never shrink/move (16,558,451 B constant), aggregate restored exactly at the original grid/config; budget report: 67.58 fine-grid-equivalent fields (~8.45 GiB at `256^3`) > 24.6 recorded explicitly per the rollback policy, with every extra field attributed (SF-10 residual 21.0, SF-11 diagnostics 27.0, PCG 5.0, MG 4.57, scratch 8.01, fields 2.0) and four adjudicable redesign options in `docs/decisions/2026-08-08-sf12-streamfunction-memory-inventory-vs-budget.md`. Full suite: ctest 2/2, streamfunction runner 89/89 PASS, `run_operator_tests` 8/8, PSPTA smoke OK, checker OK. Hardware: RTX 3050 Laptop 4 GiB, Debug sm_86, sccache launchers disabled. | Orchestrator FINAL_AUDIT on the control checkout, then publish PR as `awaiting_review`. |
 | 2026-08-08T22:20Z | `0610cd0`, final audit PASS | Orchestrator personally re-audited the integrated head against the original spec on the control checkout: fresh reconfigure/build, ctest 2/2, 89/89 case verdicts, 8/8 operator tests, smoke, checker all green; every spec acceptance threshold and checklist item (except the two human-review/closure items) has explicit evidence; the only behavior change beyond new files is the C01 `problem.grid` consistency rejection; accessor additions to accepted modules verified hunk-by-hunk as behavior-neutral. Gate 1 + Gate 2 PASS; Gate 3A/4/V100 N/A (no solver loop or numerics introduced). | Flagged for the human reviewer: (1) the 24.6-field budget overshoot (67.58) and the `proposed` ownership-redesign decision record — option (a) bring-up acceptance recommended, (b) gradient-borrowing as first optimization; (2) the seven interpretive decisions recorded at activation; (3) mandatory-review path `src/physics/streamfunctions/`. Frozen audited source head: `0610cd0`. | Publish PR as `awaiting_review`; do not advance `NEXT`; await explicit human approval. |
 | 2026-08-08T22:30Z | `57488f4` published, PR #24 open | Delivery branch pushed and [PR #24](https://github.com/santi-esquerre/MacroFlow3D/pull/24) opened as `awaiting_review` with the frozen audited source head `0610cd0` (later commits on the branch are increment-state documentation only). | PR description carries the DAG, audit summaries, full acceptance evidence, the budget-overshoot decision record (`proposed`), interpretive decisions, and remaining risks. No agent merges; `NEXT` remains `SF-12`. | Await explicit human review/approval of PR #24; on approval, add only the closure metadata commit (`done`, checklist, `NEXT: SF-13`) on this same PR. |
+| 2026-08-08T22:48Z | PR #24 head `7cebc6e`, human approval | The repository owner explicitly approved PR #24 with the instruction "Apruebo la PR #24 con la opción (a), hacé el cierre", adjudicating the memory decision record to **option (a)**: accept the 67.58-field (~8.45 GiB at `256^3`) footprint for the SF-13 bring-up phase and defer memory optimization to SF-23, with option (b) (gradient borrowing) remaining the first optimization candidate. No GitHub review object exists; the approval fact is this recorded instruction. Verified before closure: PR #24 `OPEN` at head `7cebc6e` — exactly the published state; frozen audited source head `0610cd0` unchanged (later commits are increment-state documentation only), so the approval applies to the audited content. | Decision record `docs/decisions/2026-08-08-sf12-streamfunction-memory-inventory-vs-budget.md` status updated `proposed` -> `accepted` recording the option-(a) adjudication in this same closure commit (documentation of the human decision; no source/test/scientific-config change). | Closure metadata commit on this PR: set `done`, complete checklist, advance `NEXT` to `SF-13`. |
+| 2026-08-08T22:48Z | closure metadata commit | SF-12 set `done`; checklist completed 6/6; dashboard updated (`SF-12` checked, `Last completed increment: SF-12`, `NEXT: SF-13`, active goal `none`); checker rerun. The new `NEXT: SF-13` exists only on this PR branch until a human merges it and does not authorize work ahead of the default branch. | Metadata/documentation-only diff (increment spec, dashboard, decision-record status); frozen audited source head remains `0610cd0`. | Human merges PR #24; SF-13 may activate only after this closure state is visible on `master`. |
