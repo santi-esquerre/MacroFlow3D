@@ -78,4 +78,12 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // never referenced here.
 [[nodiscard]] CaseRegistry api_workspace_case_registry();
 
+// SF-13 T02 homogeneous (K=1) exact-control acceptance cases. These run the
+// production `solve_streamfunctions` entry point (SF-13 T01) on the triply
+// periodic unit torus with constant conductivity and the benchmark gauge,
+// where the zero-source linear path, S1/S2, and every SF-11 physical
+// diagnostic are exact in continuous arithmetic, and assert hard,
+// non-relaxed floating-point-roundoff thresholds.
+[[nodiscard]] CaseRegistry homogeneous_solver_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
