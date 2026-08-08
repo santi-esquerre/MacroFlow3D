@@ -49,6 +49,18 @@ std::size_t MeanZeroWorkspace::temporary_storage_capacity_bytes() const noexcept
     return reduction_.temp.capacity();
 }
 
+std::size_t MeanZeroWorkspace::allocated_device_bytes() const noexcept {
+    return blas::reduction_workspace_allocated_bytes(reduction_);
+}
+
+std::size_t MeanZeroWorkspace::estimate_device_bytes(std::size_t n) {
+    // Mirrors prepare(): blas::prepare_sum_workspace(n, reduction_) resizes
+    // reduction_.temp to blas::sum_workspace_bytes(n) and reduction_.d_scalar
+    // to exactly one element (already guaranteed by ReductionWorkspace's
+    // default constructor).
+    return blas::sum_workspace_bytes(n) + sizeof(real);
+}
+
 DeviceSpan<const real> MeanZeroProjector::mean_device(CudaContext& ctx, DeviceSpan<const real> x,
                                                        MeanZeroWorkspace& workspace) const {
     require_prepared(x.size(), workspace);

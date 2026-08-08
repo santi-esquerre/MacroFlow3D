@@ -54,6 +54,15 @@ class AffinePeriodicRhsWorkspace {
     void prepare(std::size_t n);
     [[nodiscard]] bool prepared_for(std::size_t n) const noexcept;
 
+    // Additive, behavior-neutral byte introspection (SF-12). Exact sum of
+    // owned DeviceBuffer capacities, recursing into the private mean-zero
+    // workspace. Never allocates.
+    [[nodiscard]] std::size_t allocated_device_bytes() const noexcept;
+
+    // Host-only prediction of allocated_device_bytes() after a fresh
+    // prepare(n) call; kept colocated with prepare() so it cannot drift.
+    [[nodiscard]] static std::size_t estimate_device_bytes(std::size_t n);
+
   private:
     constraints::MeanZeroWorkspace mean_zero_;
     DeviceBuffer<real> raw_means_;

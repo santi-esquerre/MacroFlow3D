@@ -69,4 +69,13 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // including exact-count angle/degeneracy agreement and convergence order.
 [[nodiscard]] CaseRegistry physical_diagnostics_case_registry();
 
+// SF-12 T02 public API/workspace acceptance controls. These run the
+// production StreamfunctionTypes.hpp/StreamfunctionWorkspace.cuh surface
+// (validation, the owned StreamfunctionFields/StreamfunctionWorkspace pair,
+// the exact-byte memory estimator, allocation-freedom across repeated use,
+// and re-preparation semantics) against an independent closed-form host
+// reconstruction. `solve_streamfunctions` is declaration-only in SF-12 and is
+// never referenced here.
+[[nodiscard]] CaseRegistry api_workspace_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

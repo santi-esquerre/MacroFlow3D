@@ -34,5 +34,24 @@ void ProjectedPositiveMGPreconditioner::apply(CudaContext& ctx, DeviceSpan<const
     blas::copy(ctx, DeviceSpan<const real>(finest.x.span()), z);
 }
 
+std::size_t ProjectedPositiveMGPreconditioner::allocated_device_bytes() const noexcept {
+    std::size_t bytes = 0;
+    for (const auto& workspace : mean_zero_workspaces_) {
+        bytes += workspace.allocated_device_bytes();
+    }
+    return bytes;
+}
+
+std::size_t ProjectedPositiveMGPreconditioner::estimate_device_bytes(
+    const multigrid::MGHierarchy& hierarchy) {
+    // Mirrors the constructor exactly: one MeanZeroWorkspace prepared for
+    // each hierarchy level's exact cell count.
+    std::size_t bytes = 0;
+    for (const auto& level : hierarchy.levels) {
+        bytes += constraints::MeanZeroWorkspace::estimate_device_bytes(level.grid.num_cells());
+    }
+    return bytes;
+}
+
 } // namespace solvers
 } // namespace macroflow3d

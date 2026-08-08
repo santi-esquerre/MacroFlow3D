@@ -39,5 +39,15 @@ struct ReductionWorkspace {
     }
 };
 
+// Additive, behavior-neutral byte introspection helper (SF-12). Sums the
+// exact owned DeviceBuffer capacities of a ReductionWorkspace: `temp` (CUB
+// scratch, capacity already tracked in bytes) plus `d_scalar` (one or more
+// result scalars). This never allocates and never touches cuBLAS/CUB handle
+// memory, which is excluded from owned-bytes accounting project-wide.
+[[nodiscard]] inline std::size_t reduction_workspace_allocated_bytes(
+    const ReductionWorkspace& ws) noexcept {
+    return ws.temp.capacity() + ws.d_scalar.capacity() * sizeof(real);
+}
+
 } // namespace blas
 } // namespace macroflow3d

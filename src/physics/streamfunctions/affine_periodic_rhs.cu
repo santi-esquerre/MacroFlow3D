@@ -100,6 +100,18 @@ bool AffinePeriodicRhsWorkspace::prepared_for(std::size_t n) const noexcept {
     return mean_zero_.prepared_for(n) && raw_means_.size() == 2 && projected_means_.size() == 2;
 }
 
+std::size_t AffinePeriodicRhsWorkspace::allocated_device_bytes() const noexcept {
+    return mean_zero_.allocated_device_bytes() + raw_means_.capacity() * sizeof(real) +
+           projected_means_.capacity() * sizeof(real);
+}
+
+std::size_t AffinePeriodicRhsWorkspace::estimate_device_bytes(std::size_t n) {
+    // Mirrors prepare(): mean_zero_.prepare(n), then raw_means_/projected_means_
+    // each resized to exactly 2 elements.
+    return constraints::MeanZeroWorkspace::estimate_device_bytes(n) + 2 * sizeof(real) +
+           2 * sizeof(real);
+}
+
 AffineRhsDeviceDiagnostics assemble_affine_periodic_rhs(
     CudaContext& ctx, const Grid3D& grid, DeviceSpan<const real> q, const AffineGauge& gauge,
     DeviceSpan<real> rhs1, DeviceSpan<real> rhs2, AffinePeriodicRhsWorkspace& workspace) {
