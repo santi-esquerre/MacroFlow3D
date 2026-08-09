@@ -315,6 +315,84 @@ OutputYamlConfig parse_output(const YAML::Node& node, const OutputYamlConfig& de
     return cfg;
 }
 
+// Parse streamfunction_solver section (SF-16 T01)
+StreamfunctionSolverYamlConfig
+parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYamlConfig& def,
+                            std::vector<std::string>& errs) {
+    StreamfunctionSolverYamlConfig cfg = def;
+    if (!node)
+        return cfg;
+
+    static const std::set<std::string> known = {"enabled", "affine_mean_velocity", "epsilon",
+                                                 "eta",     "picard",              "adaptive",
+                                                 "linear",  "mg",                  "export"};
+    check_unknown_keys(node, known, "streamfunction_solver", errs);
+
+    cfg.enabled = get_or<bool>(node, "enabled", def.enabled);
+    cfg.epsilon = get_or<real>(node, "epsilon", def.epsilon);
+    cfg.eta = get_or<real>(node, "eta", def.eta);
+
+    if (node["affine_mean_velocity"]) {
+        const auto& n = node["affine_mean_velocity"];
+        static const std::set<std::string> affine_known = {"mode", "value"};
+        check_unknown_keys(n, affine_known, "streamfunction_solver.affine_mean_velocity", errs);
+
+        cfg.affine_mean_velocity.mode =
+            get_or<std::string>(n, "mode", def.affine_mean_velocity.mode);
+        cfg.affine_mean_velocity.value = get_or<real>(n, "value", def.affine_mean_velocity.value);
+    }
+
+    if (node["picard"]) {
+        const auto& n = node["picard"];
+        static const std::set<std::string> picard_known = {"max_iter", "tolerance", "omega"};
+        check_unknown_keys(n, picard_known, "streamfunction_solver.picard", errs);
+
+        cfg.picard.max_iter = get_or<int>(n, "max_iter", def.picard.max_iter);
+        cfg.picard.tolerance = get_or<real>(n, "tolerance", def.picard.tolerance);
+        cfg.picard.omega = get_or<real>(n, "omega", def.picard.omega);
+    }
+
+    if (node["adaptive"]) {
+        const auto& n = node["adaptive"];
+        static const std::set<std::string> adaptive_known = {"enabled"};
+        check_unknown_keys(n, adaptive_known, "streamfunction_solver.adaptive", errs);
+
+        cfg.adaptive.enabled = get_or<bool>(n, "enabled", def.adaptive.enabled);
+    }
+
+    if (node["linear"]) {
+        const auto& n = node["linear"];
+        static const std::set<std::string> linear_known = {"rtol", "max_iter", "check_every"};
+        check_unknown_keys(n, linear_known, "streamfunction_solver.linear", errs);
+
+        cfg.linear.rtol = get_or<real>(n, "rtol", def.linear.rtol);
+        cfg.linear.max_iter = get_or<int>(n, "max_iter", def.linear.max_iter);
+        cfg.linear.check_every = get_or<int>(n, "check_every", def.linear.check_every);
+    }
+
+    if (node["mg"]) {
+        const auto& n = node["mg"];
+        static const std::set<std::string> mg_known = {"num_levels"};
+        check_unknown_keys(n, mg_known, "streamfunction_solver.mg", errs);
+
+        cfg.mg.num_levels = get_or<int>(n, "num_levels", def.mg.num_levels);
+    }
+
+    if (node["export"]) {
+        const auto& n = node["export"];
+        static const std::set<std::string> export_known = {"iteration_history", "summary",
+                                                            "fields"};
+        check_unknown_keys(n, export_known, "streamfunction_solver.export", errs);
+
+        cfg.exports.iteration_history =
+            get_or<bool>(n, "iteration_history", def.exports.iteration_history);
+        cfg.exports.summary = get_or<bool>(n, "summary", def.exports.summary);
+        cfg.exports.fields = get_or<bool>(n, "fields", def.exports.fields);
+    }
+
+    return cfg;
+}
+
 // Parse analysis section
 AnalysisConfig parse_analysis(const YAML::Node& node, const AnalysisConfig& def,
                               std::vector<std::string>& errs) {
@@ -395,7 +473,9 @@ AppConfig load_config_yaml(const std::string& path) {
 
     // Check top-level keys
     static const std::set<std::string> top_known = {
-        "run_mode", "grid", "stochastic", "flow", "transport", "analysis", "diagnostics", "output"};
+        "run_mode",     "grid",         "stochastic", "flow",
+        "transport",    "analysis",     "diagnostics", "output",
+        "streamfunction_solver"};
     check_unknown_keys(root, top_known, "", unknown_errs);
 
     // Run mode (top-level, optional)
@@ -421,6 +501,9 @@ AppConfig load_config_yaml(const std::string& path) {
     }
 
     cfg.output = parse_output(root["output"], cfg.output, unknown_errs);
+    cfg.streamfunction_solver =
+        parse_streamfunction_solver(root["streamfunction_solver"], cfg.streamfunction_solver,
+                                    unknown_errs);
 
     // Strict mode: reject unknown keys
     if (!unknown_errs.empty()) {

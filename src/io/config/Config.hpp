@@ -211,6 +211,93 @@ struct DiagnosticsConfig {
 };
 
 /**
+ * @brief Affine mean-velocity source configuration for the streamfunction
+ *        solver (SF-16 T01).
+ *
+ * `mode == "fixed"` uses `value` directly as `vbar` in the SF-06 affine
+ * gauge; `mode == "measured"` is reserved for a later increment to source
+ * `vbar` from the measured Darcy field. This T01 node only parses and
+ * validates the surface; nothing reads it yet.
+ */
+struct StreamfunctionAffineMeanVelocityConfig {
+    std::string mode = "fixed"; // "fixed" | "measured"
+    real value = 1.0;
+};
+
+/**
+ * @brief Fixed-relaxation Picard iteration limits (mirrors
+ *        `streamfunctions::FixedPicardConfig`, SF-14).
+ */
+struct StreamfunctionPicardYamlConfig {
+    int max_iter = 500;
+    real tolerance = 1.0e-6;
+    real omega = 0.25;
+};
+
+/**
+ * @brief Minimal pipeline-facing slice of `streamfunctions::AdaptivePicardConfig`
+ *        (SF-15): only the on/off switch is exposed here.
+ */
+struct StreamfunctionAdaptiveYamlConfig {
+    bool enabled = true;
+};
+
+/**
+ * @brief Pipeline-facing slice of `solvers::ProjectedPCGConfig` used by the
+ *        streamfunction linear subproblem.
+ */
+struct StreamfunctionLinearYamlConfig {
+    real rtol = 1.0e-10;
+    int max_iter = 1000;
+    int check_every = 10;
+};
+
+/**
+ * @brief Pipeline-facing slice of `multigrid::MGConfig` used by the
+ *        streamfunction linear subproblem.
+ */
+struct StreamfunctionMgYamlConfig {
+    int num_levels = 4;
+};
+
+/**
+ * @brief Streamfunction-solver export/output switches (wired in a later
+ *        SF-16 node). YAML key is "export"; the member is named `exports`
+ *        because `export` is a reserved C++ keyword.
+ */
+struct StreamfunctionExportConfig {
+    bool iteration_history = true;
+    bool summary = true;
+    bool fields = false; // raw double u1/u2 dumps
+};
+
+/**
+ * @brief Strict, minimal pipeline configuration surface for the Lester
+ *        equation (14) streamfunction solver (SF-16 T01).
+ *
+ * This maps onto `streamfunctions::StreamfunctionSolverConfig` (see
+ * `src/physics/streamfunctions/StreamfunctionTypes.hpp`) in a later
+ * increment (SF-16 T02); it intentionally does NOT expose the full SF-15
+ * `AdaptivePicardConfig` field set (only `adaptive.enabled`) and does NOT
+ * expose any Anderson/Newton/continuation keys.
+ *
+ * `enabled == false` (the default) means the section, and every nested
+ * subsection, may be entirely absent from the YAML with zero behavior
+ * change: nothing reads this struct at runtime yet.
+ */
+struct StreamfunctionSolverYamlConfig {
+    bool enabled = false;
+    StreamfunctionAffineMeanVelocityConfig affine_mean_velocity;
+    real epsilon = 1.0e-2;
+    real eta = 1.0;
+    StreamfunctionPicardYamlConfig picard;
+    StreamfunctionAdaptiveYamlConfig adaptive;
+    StreamfunctionLinearYamlConfig linear;
+    StreamfunctionMgYamlConfig mg;
+    StreamfunctionExportConfig exports;
+};
+
+/**
  * @brief Output configuration
  */
 struct OutputYamlConfig {
@@ -234,6 +321,7 @@ struct AppConfig {
     AnalysisConfig analysis;
     DiagnosticsConfig diagnostics;
     OutputYamlConfig output;
+    StreamfunctionSolverYamlConfig streamfunction_solver;
 
     // Validation helpers
     bool is_valid() const { return grid.nx > 0 && grid.ny > 0 && grid.nz > 0 && grid.dx > 0; }
