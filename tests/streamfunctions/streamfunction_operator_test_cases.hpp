@@ -94,4 +94,14 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // cases) convergence within the configured iteration budget.
 [[nodiscard]] CaseRegistry picard_fixed_case_registry();
 
+// SF-15 T02 deterministic adaptive-branch acceptance cases. These run the
+// production `solve_streamfunctions` entry point (SF-15 T01 adaptive-Picard
+// globalization) on the triply periodic unit torus with the same
+// manufactured heterogeneous conductivity field, forcing each documented
+// adaptive branch (accept+growth, floor-rejected backtracking, stagnation,
+// degeneracy-guard rejection, disabled-mode SF-14 equivalence, and the
+// `config.adaptive` validation contract) with extreme-but-valid
+// configuration values.
+[[nodiscard]] CaseRegistry picard_adaptive_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
