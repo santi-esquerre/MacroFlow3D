@@ -110,6 +110,66 @@ struct FixedPicardConfig {
 };
 
 /**
+ * Adaptive-Picard globalization configuration (SF-15), composed as
+ * `StreamfunctionSolverConfig::adaptive`. Every default here is
+ * dashboard-locked for the SF-15 increment. `enabled == false` disables the
+ * globalization entirely and `solve_streamfunctions` reproduces the SF-14
+ * fixed-relaxation Picard path exactly (bitwise-identical loop body); see
+ * `StreamfunctionSolver.cuh` for the exact enabled-path semantics
+ * (backtracking, growth, stagnation, and the trial-rejection guards).
+ *
+ *   - `enabled`: globalization on/off switch; `false` reproduces SF-14
+ *     exactly.
+ *   - `omega_min`: the smallest relaxation factor a backtracking trial may
+ *     use; a rejected trial AT this floor is a structured failure
+ *     (`omega_floor_rejected`), not a silently-accepted step.
+ *   - `backtrack_factor`: multiplier applied to a rejected trial's `omega`
+ *     to produce the next trial's `omega`, clamped to `omega_min`.
+ *   - `growth_factor`: multiplier applied to the persistent `omega` after
+ *     `easy_streak` consecutive zero-backtrack acceptances, capped at
+ *     `omega_max`.
+ *   - `omega_max`: the upper cap on the persistent relaxation factor after
+ *     growth.
+ *   - `easy_streak`: number of consecutive zero-backtrack (immediate)
+ *     acceptances required before `omega` grows.
+ *   - `armijo_c`: the sufficient-decrease constant in the Armijo-style
+ *     acceptance test `r_F_trial <= (1 - armijo_c*omega_trial) * r_F_k`.
+ *   - `stagnation_window`: number of accepted steps over which the residual
+ *     reduction is measured for the stagnation exit rule.
+ *   - `stagnation_min_reduction`: the minimum fractional residual reduction
+ *     required over `stagnation_window` accepted steps to avoid a
+ *     `stagnated` exit.
+ *   - `max_unexplained_fraction`: absolute cap on the SF-11 degenerate-cell
+ *     unexplained fraction at a trial state (only enforced when
+ *     `config.diagnostics.num_degeneracy_thresholds > 0`).
+ *   - `unexplained_growth_factor`, `unexplained_growth_offset`: a trial is
+ *     also rejected when its unexplained fraction exceeds
+ *     `unexplained_growth_factor * f_previous + unexplained_growth_offset`
+ *     relative to the accepted state's unexplained fraction (same
+ *     guard-active condition).
+ *   - `percentile_collapse_factor`: a trial is rejected when its |c| 0.1%
+ *     histogram percentile collapses by more than this decade factor
+ *     relative to the accepted state's percentile, without a matching
+ *     increase in the Darcy low-speed population (same guard-active
+ *     condition; see `StreamfunctionSolver.cuh` for the exact test).
+ */
+struct AdaptivePicardConfig {
+    bool enabled{true};
+    real omega_min{real{0.01}};
+    real backtrack_factor{real{0.5}};
+    real growth_factor{real{1.2}};
+    real omega_max{real{1}};
+    int easy_streak{3};
+    real armijo_c{real{1e-4}};
+    int stagnation_window{10};
+    real stagnation_min_reduction{real{0.01}};
+    real max_unexplained_fraction{real{0.01}};
+    real unexplained_growth_factor{real{2}};
+    real unexplained_growth_offset{real{1e-4}};
+    real percentile_collapse_factor{real{10}};
+};
+
+/**
  * Composed, host-only configuration for one `solve_streamfunctions` call
  * (SF-13 consumes this; SF-12 only defines and validates it).
  *
@@ -140,6 +200,7 @@ struct StreamfunctionSolverConfig {
     ResidualHistogramConfig histogram{};
     PhysicalDiagnosticsConfig diagnostics{};
     FixedPicardConfig picard{};
+    AdaptivePicardConfig adaptive{};
 
     real eta{real{1}};
     real epsilon{real{1e-2}};
@@ -161,7 +222,8 @@ struct StreamfunctionSolverConfig {
  *   - `solve_path_bytes`: everything `StreamfunctionWorkspace` allocates
  *     that participates in assembling and solving the linear subproblem and
  *     evaluating the coupled nonlinear residual (`q`, `rhs1`/`rhs2`,
- *     `f1`/`f2`, the `v_psi` CompactMAC scratch, the top-level affine-RHS
+ *     `f1`/`f2`, the SF-15 `u_trial1`/`u_trial2` backtracking trial pair,
+ *     the `v_psi` CompactMAC scratch, the top-level affine-RHS
  *     workspace, the residual workspace, the projected-PCG workspace, the MG
  *     hierarchy, and the MG preconditioner).
  *   - `diagnostics_path_bytes`: the SF-11 physical-diagnostics workspace
@@ -180,7 +242,7 @@ struct StreamfunctionMemoryReport {
     double fine_grid_equivalent_fields{};
 
     // solve_path_bytes breakdown.
-    std::size_t scratch_fields_bytes{}; // q, rhs1, rhs2, f1, f2, v_psi (U/V/W)
+    std::size_t scratch_fields_bytes{}; // q, rhs1, rhs2, f1, f2, u_trial1, u_trial2, v_psi (U/V/W)
     std::size_t residual_workspace_bytes{};
     std::size_t affine_rhs_workspace_bytes{}; // top-level workspace instance only
     std::size_t pcg_workspace_bytes{};
@@ -227,7 +289,15 @@ struct StreamfunctionMemoryReport {
  *     `coarse_solve_iters > 0` (the exact rule enforced downstream by
  *     `multigrid::validate_projected_positive_hierarchy`); `config.picard`
  *     must have `max_iter >= 0`, a finite `tolerance > 0`, and a finite
- *     `omega` in `(0, 1]`.
+ *     `omega` in `(0, 1]`; `config.adaptive` (SF-15) is validated regardless
+ *     of `enabled` and requires: finite `omega_min` in
+ *     `(0, config.picard.omega]`; finite `backtrack_factor` in `(0, 1)`;
+ *     finite `growth_factor >= 1`; finite `omega_max` in
+ *     `[config.picard.omega, 1]`; `easy_streak >= 1`; finite `armijo_c` in
+ *     `[0, 1)`; `stagnation_window >= 1`; finite `stagnation_min_reduction`
+ *     in `(0, 1)`; finite `max_unexplained_fraction` in `(0, 1]`; finite
+ *     `unexplained_growth_factor >= 1`; finite `unexplained_growth_offset
+ *     >= 0`; finite `percentile_collapse_factor > 1`.
  *
  * Device-resident values of `K`/`Y` are intentionally NOT reduced or
  * validated here, matching the SF-06 wording that finiteness/positivity of

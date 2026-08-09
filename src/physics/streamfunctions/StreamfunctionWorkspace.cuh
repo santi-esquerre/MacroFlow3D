@@ -59,6 +59,15 @@
  * `q` is allocated here (one field) but SF-12 does not fill it; computing
  * `q = 1/K` (or `q = exp(-Y)`) from `StreamfunctionProblemView::conductivity`
  * is later increments' job (SF-13).
+ *
+ * `u_trial1`/`u_trial2` (SF-15) are the adaptive-Picard backtracking trial
+ * pair: `solve_streamfunctions` writes each candidate relaxed state
+ * `(1-omega_try)*u_i + omega_try*u_hat_i` here, evaluates the trial's
+ * residual/diagnostics from these buffers, and only copies them into the
+ * caller-owned `StreamfunctionFields::u1_span()`/`u2_span()` once a trial is
+ * accepted. The accepted state in `StreamfunctionFields` is therefore NEVER
+ * overwritten during backtracking; only these two scratch fields are
+ * mutated while a trial is being evaluated.
  */
 
 #include "../../core/DeviceBuffer.cuh"
@@ -169,6 +178,12 @@ class StreamfunctionWorkspace {
     [[nodiscard]] DeviceSpan<real> f1();
     [[nodiscard]] DeviceSpan<real> f2();
 
+    // SF-15 adaptive-Picard backtracking trial pair; see the file header.
+    [[nodiscard]] DeviceSpan<real> u_trial1();
+    [[nodiscard]] DeviceSpan<real> u_trial2();
+    [[nodiscard]] DeviceSpan<const real> u_trial1() const;
+    [[nodiscard]] DeviceSpan<const real> u_trial2() const;
+
     // Caller-owned CompactMAC output view for the reconstructed velocity
     // v_psi (see Diagnostics.cuh). Every plane, including the periodic
     // duplicate planes, is caller-writable.
@@ -215,6 +230,9 @@ class StreamfunctionWorkspace {
     DeviceBuffer<real> rhs2_;
     DeviceBuffer<real> f1_;
     DeviceBuffer<real> f2_;
+
+    DeviceBuffer<real> u_trial1_;
+    DeviceBuffer<real> u_trial2_;
 
     DeviceBuffer<real> v_psi_u_;
     DeviceBuffer<real> v_psi_v_;

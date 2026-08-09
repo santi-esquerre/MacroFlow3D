@@ -7,6 +7,7 @@
 #include "../../numerics/operators/lester_positive_diffusion_operator.cuh"
 #include "../../runtime/cuda_check.cuh"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -129,110 +130,363 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         source_config.degeneracy_thresholds[t] = config.degeneracy_thresholds[t];
     }
 
-    // SF-14 fixed-relaxation Picard outer loop. State 0 is the SF-13
-    // zero-source initialization already produced above; report.psi1_result/
-    // psi2_result still hold that initialization's PCG results until the
-    // first successful update step overwrites them (see the header doc for
-    // the exact picard_history layout convention).
+    // SF-14 fixed-relaxation Picard / SF-15 adaptive-Picard outer loop.
+    // State 0 is the SF-13 zero-source initialization already produced
+    // above; report.psi1_result/psi2_result still hold that initialization's
+    // PCG results until the first successful update step overwrites them
+    // (see the header doc for the exact picard_history layout convention).
     report.picard_history.reserve(static_cast<std::size_t>(config.picard.max_iter) + 1);
 
     solvers::ProjectedPCGResult step_psi1_result{};
     solvers::ProjectedPCGResult step_psi2_result{};
 
-    for (int k = 0;; ++k) {
-        // Evaluate the coupled residual F1, F2 AT the current, immutable
-        // state k; this single enqueue also produces BOTH block RHSs
-        // G1 = P(rhs_affine1 - eta*q*S2), G2 = P(rhs_affine2 - eta*q*S1) in
-        // the residual workspace's private g1_/g2_ buffers, borrowed
-        // read-only below via combined_rhs_g1()/g2().
-        enqueue_streamfunction_residual(context, grid, DeviceSpan<const real>(workspace.q()),
-                                        fields.fluctuations(), problem.gauge, config.eta,
-                                        source_config, config.histogram, workspace.f1(),
-                                        workspace.f2(), workspace.residual_workspace());
-        const StreamfunctionResidualReport residual_k = synchronize_streamfunction_residual_report(
-            context, grid, config.eta, source_config, config.histogram,
-            workspace.residual_workspace());
-        report.residual = residual_k;
+    const std::size_t n = grid.num_cells();
+    const bool guards_active = config.diagnostics.num_degeneracy_thresholds > 0;
 
-        PicardIterationRecord record;
-        record.r_F = residual_k.r_F;
-        record.r1 = residual_k.r1;
-        record.r2 = residual_k.r2;
-        record.psi1_result = step_psi1_result;
-        record.psi2_result = step_psi2_result;
-        report.picard_history.push_back(record);
+    if (!config.adaptive.enabled) {
+        // Bitwise-identical SF-14 fixed-relaxation path.
+        for (int k = 0;; ++k) {
+            // Evaluate the coupled residual F1, F2 AT the current, immutable
+            // state k; this single enqueue also produces BOTH block RHSs
+            // G1 = P(rhs_affine1 - eta*q*S2), G2 = P(rhs_affine2 - eta*q*S1)
+            // in the residual workspace's private g1_/g2_ buffers, borrowed
+            // read-only below via combined_rhs_g1()/g2().
+            enqueue_streamfunction_residual(context, grid, DeviceSpan<const real>(workspace.q()),
+                                            fields.fluctuations(), problem.gauge, config.eta,
+                                            source_config, config.histogram, workspace.f1(),
+                                            workspace.f2(), workspace.residual_workspace());
+            const StreamfunctionResidualReport residual_k =
+                synchronize_streamfunction_residual_report(context, grid, config.eta,
+                                                            source_config, config.histogram,
+                                                            workspace.residual_workspace());
+            report.residual = residual_k;
 
-        if (residual_k.r_F <= config.picard.tolerance) {
-            report.status = StreamfunctionSolveStatus::converged;
-            report.picard_iterations = k;
-            break;
+            PicardIterationRecord record;
+            record.r_F = residual_k.r_F;
+            record.r1 = residual_k.r1;
+            record.r2 = residual_k.r2;
+            record.psi1_result = step_psi1_result;
+            record.psi2_result = step_psi2_result;
+            report.picard_history.push_back(record);
+
+            if (residual_k.r_F <= config.picard.tolerance) {
+                report.status = StreamfunctionSolveStatus::converged;
+                report.exit_reason = PicardExitReason::converged;
+                report.picard_iterations = k;
+                break;
+            }
+            if (k == config.picard.max_iter) {
+                report.status = StreamfunctionSolveStatus::not_converged;
+                report.exit_reason = PicardExitReason::budget_exhausted;
+                report.picard_iterations = k;
+                break;
+            }
+
+            // Block solves at the frozen state k: b = G views (borrowed from
+            // the residual workspace, NOT re-evaluated between the two
+            // solves), x = f1/f2 (reused as scratch for u_hat1/u_hat2; fully
+            // overwritten here and again by the next iteration's residual
+            // enqueue above).
+            //
+            // Zero (not warm-start) initial guess: near the Picard fixed
+            // point the current state u_i is already close to the block
+            // solution, so a warm start makes the initial projected residual
+            // O(||F_i||) (tiny), and the PCG RELATIVE stopping criterion
+            // (final/initial <= rtol) then demands an absolute residual at
+            // the double-precision rounding floor -- unattainable, so PCG
+            // stagnates at max_iterations even though the outer Picard
+            // iteration is healthy. Starting from x=0 keeps the initial
+            // projected residual at the O(1) scale fixed by the affine RHS
+            // G_i at every Picard iteration, so `rtol=1e-10` stays
+            // attainable throughout; the fixed point is unchanged.
+            MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f1().data(), 0,
+                                                   workspace.f1().size() * sizeof(real),
+                                                   context.cuda_stream()));
+            step_psi1_result = solvers::projected_pcg_solve(
+                context, A, workspace.preconditioner(),
+                workspace.residual_workspace().combined_rhs_g1(), workspace.f1(), config.linear,
+                projector, workspace.pcg_workspace());
+
+            MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f2().data(), 0,
+                                                   workspace.f2().size() * sizeof(real),
+                                                   context.cuda_stream()));
+            step_psi2_result = solvers::projected_pcg_solve(
+                context, A, workspace.preconditioner(),
+                workspace.residual_workspace().combined_rhs_g2(), workspace.f2(), config.linear,
+                projector, workspace.pcg_workspace());
+
+            report.psi1_result = step_psi1_result;
+            report.psi2_result = step_psi2_result;
+
+            if (!step_psi1_result.converged || !step_psi2_result.converged) {
+                report.status = StreamfunctionSolveStatus::not_converged;
+                report.exit_reason = PicardExitReason::linear_block_failure;
+                report.picard_iterations = k;
+
+                // The state-(k+1) residual was never evaluated (the failed
+                // update is not applied to u1/u2 below), so this record's
+                // r_F/r1/r2 are set to the documented NaN sentinel ("never
+                // evaluated") rather than a misleading default zero; only
+                // the failing linear results are meaningful here.
+                PicardIterationRecord failed_record;
+                failed_record.r_F = std::numeric_limits<real>::quiet_NaN();
+                failed_record.r1 = std::numeric_limits<real>::quiet_NaN();
+                failed_record.r2 = std::numeric_limits<real>::quiet_NaN();
+                failed_record.psi1_result = step_psi1_result;
+                failed_record.psi2_result = step_psi2_result;
+                report.picard_history.push_back(failed_record);
+                break;
+            }
+
+            // Paired fixed relaxation: u_i <- (1-omega)*u_i + omega*u_hat_i,
+            // then re-project both fields to mean zero (gauge maintenance).
+            const real omega = config.picard.omega;
+            blas::scal(context, fields.u1_span(), real{1} - omega);
+            blas::axpy(context, omega, DeviceSpan<const real>(workspace.f1()), fields.u1_span());
+            blas::scal(context, fields.u2_span(), real{1} - omega);
+            blas::axpy(context, omega, DeviceSpan<const real>(workspace.f2()), fields.u2_span());
+            projector.project(context, fields.u1_span(), workspace.pcg_workspace().mean_zero);
+            projector.project(context, fields.u2_span(), workspace.pcg_workspace().mean_zero);
         }
-        if (k == config.picard.max_iter) {
-            report.status = StreamfunctionSolveStatus::not_converged;
-            report.picard_iterations = k;
-            break;
+        report.final_omega = config.picard.omega;
+    } else {
+        // SF-15 adaptive-Picard globalization over the SAME fixed-point map.
+        report.trial_history.reserve(
+            (static_cast<std::size_t>(config.picard.max_iter) + 1) * 4);
+
+        real omega = config.picard.omega;
+        int easy_streak_count = 0;
+
+        for (int k = 0;; ++k) {
+            // HEAD: residual at the ACCEPTED state k (identical enqueue to
+            // the SF-14 path).
+            enqueue_streamfunction_residual(context, grid, DeviceSpan<const real>(workspace.q()),
+                                            fields.fluctuations(), problem.gauge, config.eta,
+                                            source_config, config.histogram, workspace.f1(),
+                                            workspace.f2(), workspace.residual_workspace());
+            const StreamfunctionResidualReport residual_k =
+                synchronize_streamfunction_residual_report(context, grid, config.eta,
+                                                            source_config, config.histogram,
+                                                            workspace.residual_workspace());
+            report.residual = residual_k;
+            const real r_F_k = residual_k.r_F;
+            const real p_k = residual_histogram_percentile(residual_k, real{0.001});
+
+            // Guard-active only: unexplained fraction at the accepted state,
+            // captured BEFORE any trial evaluation overwrites the shared
+            // diagnostics workspace.
+            real f_prev = real{0};
+            if (guards_active) {
+                enqueue_streamfunction_physical_diagnostics(
+                    context, grid, fields.fluctuations(), problem.gauge, problem.darcy_velocity,
+                    config.diagnostics, workspace.v_psi(), workspace.diagnostics_workspace());
+                const PhysicalDiagnosticsReport diag_k =
+                    synchronize_streamfunction_physical_diagnostics_report(
+                        context, grid, config.diagnostics, workspace.diagnostics_workspace());
+                f_prev = static_cast<real>(diag_k.degeneracy_unexplained[0]) /
+                         static_cast<real>(n);
+            }
+
+            PicardIterationRecord record;
+            record.r_F = r_F_k;
+            record.r1 = residual_k.r1;
+            record.r2 = residual_k.r2;
+            record.psi1_result = step_psi1_result;
+            record.psi2_result = step_psi2_result;
+            report.picard_history.push_back(record);
+
+            if (r_F_k <= config.picard.tolerance) {
+                report.status = StreamfunctionSolveStatus::converged;
+                report.exit_reason = PicardExitReason::converged;
+                report.picard_iterations = k;
+                break;
+            }
+            if (k == config.picard.max_iter) {
+                report.status = StreamfunctionSolveStatus::not_converged;
+                report.exit_reason = PicardExitReason::budget_exhausted;
+                report.picard_iterations = k;
+                break;
+            }
+            if (k >= config.adaptive.stagnation_window) {
+                const real r_F_window_start =
+                    report.picard_history[static_cast<std::size_t>(
+                                               k - config.adaptive.stagnation_window)]
+                        .r_F;
+                if (r_F_k > (real{1} - config.adaptive.stagnation_min_reduction) *
+                                r_F_window_start) {
+                    report.status = StreamfunctionSolveStatus::not_converged;
+                    report.exit_reason = PicardExitReason::stagnated;
+                    report.picard_iterations = k;
+                    break;
+                }
+            }
+
+            // MAP (once per outer iteration k): the two block solves at the
+            // frozen state k, exactly as SF-14. See the SF-14 code path
+            // above for the zero-initial-guess rationale.
+            MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f1().data(), 0,
+                                                   workspace.f1().size() * sizeof(real),
+                                                   context.cuda_stream()));
+            step_psi1_result = solvers::projected_pcg_solve(
+                context, A, workspace.preconditioner(),
+                workspace.residual_workspace().combined_rhs_g1(), workspace.f1(), config.linear,
+                projector, workspace.pcg_workspace());
+
+            MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f2().data(), 0,
+                                                   workspace.f2().size() * sizeof(real),
+                                                   context.cuda_stream()));
+            step_psi2_result = solvers::projected_pcg_solve(
+                context, A, workspace.preconditioner(),
+                workspace.residual_workspace().combined_rhs_g2(), workspace.f2(), config.linear,
+                projector, workspace.pcg_workspace());
+
+            report.psi1_result = step_psi1_result;
+            report.psi2_result = step_psi2_result;
+
+            if (!step_psi1_result.converged || !step_psi2_result.converged) {
+                report.status = StreamfunctionSolveStatus::not_converged;
+                report.exit_reason = PicardExitReason::linear_block_failure;
+                report.picard_iterations = k;
+
+                PicardIterationRecord failed_record;
+                failed_record.r_F = std::numeric_limits<real>::quiet_NaN();
+                failed_record.r1 = std::numeric_limits<real>::quiet_NaN();
+                failed_record.r2 = std::numeric_limits<real>::quiet_NaN();
+                failed_record.psi1_result = step_psi1_result;
+                failed_record.psi2_result = step_psi2_result;
+                report.picard_history.push_back(failed_record);
+                break;
+            }
+
+            // BACKTRACKING: search over omega_try, starting at the
+            // persistent omega, without recomputing the MAP (u_hat1/u_hat2,
+            // held in f1/f2) between trials.
+            real omega_try = omega;
+            int backtracks = 0;
+            bool accepted_this_iteration = false;
+            bool exit_now = false;
+
+            while (!accepted_this_iteration) {
+                MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
+                    workspace.u_trial1().data(), fields.u1_span().data(), n * sizeof(real),
+                    cudaMemcpyDeviceToDevice, context.cuda_stream()));
+                blas::scal(context, workspace.u_trial1(), real{1} - omega_try);
+                blas::axpy(context, omega_try, DeviceSpan<const real>(workspace.f1()),
+                          workspace.u_trial1());
+                projector.project(context, workspace.u_trial1(),
+                                  workspace.pcg_workspace().mean_zero);
+
+                MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
+                    workspace.u_trial2().data(), fields.u2_span().data(), n * sizeof(real),
+                    cudaMemcpyDeviceToDevice, context.cuda_stream()));
+                blas::scal(context, workspace.u_trial2(), real{1} - omega_try);
+                blas::axpy(context, omega_try, DeviceSpan<const real>(workspace.f2()),
+                          workspace.u_trial2());
+                projector.project(context, workspace.u_trial2(),
+                                  workspace.pcg_workspace().mean_zero);
+
+                const PeriodicStreamfunctionFluctuations trial_fluctuations{
+                    workspace.u_trial1(), workspace.u_trial2()};
+
+                // Trial residual evaluation reuses rhs1()/rhs2() as output
+                // buffers: those are idle after the top-level affine-RHS
+                // assembly and are not touched again by this outer
+                // iteration's MAP step (already consumed above).
+                enqueue_streamfunction_residual(
+                    context, grid, DeviceSpan<const real>(workspace.q()), trial_fluctuations,
+                    problem.gauge, config.eta, source_config, config.histogram, workspace.rhs1(),
+                    workspace.rhs2(), workspace.residual_workspace());
+                const StreamfunctionResidualReport residual_t =
+                    synchronize_streamfunction_residual_report(context, grid, config.eta,
+                                                                source_config, config.histogram,
+                                                                workspace.residual_workspace());
+                const real r_F_t = residual_t.r_F;
+                const real p_t = residual_histogram_percentile(residual_t, real{0.001});
+
+                real f_t = real{0};
+                if (guards_active) {
+                    enqueue_streamfunction_physical_diagnostics(
+                        context, grid, trial_fluctuations, problem.gauge, problem.darcy_velocity,
+                        config.diagnostics, workspace.v_psi(), workspace.diagnostics_workspace());
+                    const PhysicalDiagnosticsReport diag_t =
+                        synchronize_streamfunction_physical_diagnostics_report(
+                            context, grid, config.diagnostics, workspace.diagnostics_workspace());
+                    f_t = static_cast<real>(diag_t.degeneracy_unexplained[0]) /
+                          static_cast<real>(n);
+                }
+
+                PicardTrialOutcome outcome;
+                if (!std::isfinite(r_F_t) || residual_t.nonfinite_s1 > 0 ||
+                    residual_t.nonfinite_s2 > 0) {
+                    outcome = PicardTrialOutcome::rejected_nonfinite;
+                } else if (guards_active &&
+                          (f_t > config.adaptive.max_unexplained_fraction ||
+                           f_t > config.adaptive.unexplained_growth_factor * f_prev +
+                                     config.adaptive.unexplained_growth_offset)) {
+                    outcome = PicardTrialOutcome::rejected_degeneracy;
+                } else if (guards_active &&
+                          p_t < p_k / config.adaptive.percentile_collapse_factor &&
+                          f_t > f_prev) {
+                    outcome = PicardTrialOutcome::rejected_percentile;
+                } else if (r_F_t >
+                          (real{1} - config.adaptive.armijo_c * omega_try) * r_F_k) {
+                    outcome = PicardTrialOutcome::rejected_armijo;
+                } else {
+                    outcome = PicardTrialOutcome::accepted;
+                }
+
+                PicardTrialRecord trial_record;
+                trial_record.iteration = k;
+                trial_record.omega = omega_try;
+                trial_record.r_F_trial = r_F_t;
+                trial_record.outcome = outcome;
+                report.trial_history.push_back(trial_record);
+
+                if (outcome == PicardTrialOutcome::accepted) {
+                    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
+                        fields.u1_span().data(), workspace.u_trial1().data(), n * sizeof(real),
+                        cudaMemcpyDeviceToDevice, context.cuda_stream()));
+                    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
+                        fields.u2_span().data(), workspace.u_trial2().data(), n * sizeof(real),
+                        cudaMemcpyDeviceToDevice, context.cuda_stream()));
+
+                    // Persistent omega becomes the accepted trial's omega;
+                    // growth (if the easy streak completes) applies on top.
+                    omega = omega_try;
+                    if (backtracks == 0) {
+                        ++easy_streak_count;
+                        if (easy_streak_count == config.adaptive.easy_streak) {
+                            omega = std::min(omega * config.adaptive.growth_factor,
+                                            config.adaptive.omega_max);
+                            easy_streak_count = 0;
+                        }
+                    } else {
+                        easy_streak_count = 0;
+                    }
+                    accepted_this_iteration = true;
+                } else {
+                    ++backtracks;
+                    if (omega_try <= config.adaptive.omega_min) {
+                        // The rejected trial was already at the floor: a
+                        // structured failure, not a silently-accepted step.
+                        // fields.u1_span()/u2_span() remain exactly the last
+                        // accepted state (state k), untouched.
+                        report.status = StreamfunctionSolveStatus::not_converged;
+                        report.exit_reason = PicardExitReason::omega_floor_rejected;
+                        report.picard_iterations = k;
+                        exit_now = true;
+                        break;
+                    }
+                    omega_try = std::max(omega_try * config.adaptive.backtrack_factor,
+                                        config.adaptive.omega_min);
+                }
+            }
+
+            if (exit_now) {
+                break;
+            }
         }
-
-        // Block solves at the frozen state k: b = G views (borrowed from the
-        // residual workspace, NOT re-evaluated between the two solves), x =
-        // f1/f2 (reused as scratch for u_hat1/u_hat2; fully overwritten here
-        // and again by the next iteration's residual enqueue above).
-        //
-        // Zero (not warm-start) initial guess: near the Picard fixed point
-        // the current state u_i is already close to the block solution, so a
-        // warm start makes the initial projected residual O(||F_i||) (tiny),
-        // and the PCG RELATIVE stopping criterion (final/initial <= rtol)
-        // then demands an absolute residual at the double-precision rounding
-        // floor -- unattainable, so PCG stagnates at max_iterations even
-        // though the outer Picard iteration is healthy. Starting from x=0
-        // keeps the initial projected residual at the O(1) scale fixed by
-        // the affine RHS G_i at every Picard iteration, so `rtol=1e-10`
-        // stays attainable throughout; the fixed point is unchanged.
-        MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f1().data(), 0,
-                                               workspace.f1().size() * sizeof(real),
-                                               context.cuda_stream()));
-        step_psi1_result = solvers::projected_pcg_solve(
-            context, A, workspace.preconditioner(), workspace.residual_workspace().combined_rhs_g1(),
-            workspace.f1(), config.linear, projector, workspace.pcg_workspace());
-
-        MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f2().data(), 0,
-                                               workspace.f2().size() * sizeof(real),
-                                               context.cuda_stream()));
-        step_psi2_result = solvers::projected_pcg_solve(
-            context, A, workspace.preconditioner(), workspace.residual_workspace().combined_rhs_g2(),
-            workspace.f2(), config.linear, projector, workspace.pcg_workspace());
-
-        report.psi1_result = step_psi1_result;
-        report.psi2_result = step_psi2_result;
-
-        if (!step_psi1_result.converged || !step_psi2_result.converged) {
-            report.status = StreamfunctionSolveStatus::not_converged;
-            report.picard_iterations = k;
-
-            // The state-(k+1) residual was never evaluated (the failed
-            // update is not applied to u1/u2 below), so this record's
-            // r_F/r1/r2 are set to the documented NaN sentinel ("never
-            // evaluated") rather than a misleading default zero; only the
-            // failing linear results are meaningful here.
-            PicardIterationRecord failed_record;
-            failed_record.r_F = std::numeric_limits<real>::quiet_NaN();
-            failed_record.r1 = std::numeric_limits<real>::quiet_NaN();
-            failed_record.r2 = std::numeric_limits<real>::quiet_NaN();
-            failed_record.psi1_result = step_psi1_result;
-            failed_record.psi2_result = step_psi2_result;
-            report.picard_history.push_back(failed_record);
-            break;
-        }
-
-        // Paired fixed relaxation: u_i <- (1-omega)*u_i + omega*u_hat_i,
-        // then re-project both fields to mean zero (gauge maintenance).
-        const real omega = config.picard.omega;
-        blas::scal(context, fields.u1_span(), real{1} - omega);
-        blas::axpy(context, omega, DeviceSpan<const real>(workspace.f1()), fields.u1_span());
-        blas::scal(context, fields.u2_span(), real{1} - omega);
-        blas::axpy(context, omega, DeviceSpan<const real>(workspace.f2()), fields.u2_span());
-        projector.project(context, fields.u1_span(), workspace.pcg_workspace().mean_zero);
-        projector.project(context, fields.u2_span(), workspace.pcg_workspace().mean_zero);
+        report.final_omega = omega;
     }
 
     // Re-run SF-11 physical diagnostics on the FINAL Picard state so

@@ -258,6 +258,74 @@ void require_valid_picard_config(const FixedPicardConfig& picard) {
     }
 }
 
+// SF-15: validated unconditionally (regardless of adaptive.enabled) -- an
+// invalid adaptive config is invalid even when the globalization is off.
+void require_valid_adaptive_config(const AdaptivePicardConfig& adaptive,
+                                   const FixedPicardConfig& picard) {
+    if (!std::isfinite(adaptive.omega_min) || adaptive.omega_min <= real{0} ||
+        adaptive.omega_min > picard.omega) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.omega_min in (0, picard.omega]");
+    }
+    if (!std::isfinite(adaptive.backtrack_factor) || adaptive.backtrack_factor <= real{0} ||
+        adaptive.backtrack_factor >= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.backtrack_factor in (0, 1)");
+    }
+    if (!std::isfinite(adaptive.growth_factor) || adaptive.growth_factor < real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.growth_factor >= 1");
+    }
+    if (!std::isfinite(adaptive.omega_max) || adaptive.omega_max < picard.omega ||
+        adaptive.omega_max > real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.omega_max in [picard.omega, 1]");
+    }
+    if (adaptive.easy_streak < 1) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a strictly positive adaptive.easy_streak");
+    }
+    if (!std::isfinite(adaptive.armijo_c) || adaptive.armijo_c < real{0} ||
+        adaptive.armijo_c >= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.armijo_c in [0, 1)");
+    }
+    if (adaptive.stagnation_window < 1) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a strictly positive adaptive.stagnation_window");
+    }
+    if (!std::isfinite(adaptive.stagnation_min_reduction) ||
+        adaptive.stagnation_min_reduction <= real{0} ||
+        adaptive.stagnation_min_reduction >= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.stagnation_min_reduction in "
+            "(0, 1)");
+    }
+    if (!std::isfinite(adaptive.max_unexplained_fraction) ||
+        adaptive.max_unexplained_fraction <= real{0} ||
+        adaptive.max_unexplained_fraction > real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.max_unexplained_fraction in "
+            "(0, 1]");
+    }
+    if (!std::isfinite(adaptive.unexplained_growth_factor) ||
+        adaptive.unexplained_growth_factor < real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.unexplained_growth_factor >= 1");
+    }
+    if (!std::isfinite(adaptive.unexplained_growth_offset) ||
+        adaptive.unexplained_growth_offset < real{0}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite, non-negative "
+            "adaptive.unexplained_growth_offset");
+    }
+    if (!std::isfinite(adaptive.percentile_collapse_factor) ||
+        adaptive.percentile_collapse_factor <= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.percentile_collapse_factor > 1");
+    }
+}
+
 void require_valid_source_side_config(const StreamfunctionSolverConfig& config) {
     if (!std::isfinite(config.eta) || config.eta < real{0}) {
         throw std::invalid_argument("Streamfunction problem requires a finite, non-negative eta");
@@ -324,6 +392,7 @@ void validate_streamfunction_problem(const Grid3D& grid, const StreamfunctionPro
     require_valid_histogram_config(config.histogram);
     require_valid_diagnostics_config(config.diagnostics);
     require_valid_picard_config(config.picard);
+    require_valid_adaptive_config(config.adaptive, config.picard);
     require_valid_source_side_config(config);
 }
 
@@ -370,6 +439,9 @@ void StreamfunctionWorkspace::prepare(const Grid3D& grid, const StreamfunctionSo
     f1_.resize(n);
     f2_.resize(n);
 
+    u_trial1_.resize(n);
+    u_trial2_.resize(n);
+
     v_psi_u_.resize(compact_mac_u_size(grid));
     v_psi_v_.resize(compact_mac_v_size(grid));
     v_psi_w_.resize(compact_mac_w_size(grid));
@@ -404,7 +476,8 @@ bool StreamfunctionWorkspace::prepared_for(const Grid3D& grid,
     }
     const std::size_t n = grid.num_cells();
     return q_.size() == n && rhs1_.size() == n && rhs2_.size() == n && f1_.size() == n &&
-           f2_.size() == n && v_psi_u_.size() == compact_mac_u_size(grid) &&
+           f2_.size() == n && u_trial1_.size() == n && u_trial2_.size() == n &&
+           v_psi_u_.size() == compact_mac_u_size(grid) &&
            v_psi_v_.size() == compact_mac_v_size(grid) &&
            v_psi_w_.size() == compact_mac_w_size(grid) && residual_workspace_.prepared_for(n) &&
            diagnostics_workspace_.prepared_for(grid) && affine_rhs_workspace_.prepared_for(n) &&
@@ -436,6 +509,23 @@ DeviceSpan<real> StreamfunctionWorkspace::f1() {
 DeviceSpan<real> StreamfunctionWorkspace::f2() {
     ensure_prepared();
     return f2_.span();
+}
+
+DeviceSpan<real> StreamfunctionWorkspace::u_trial1() {
+    ensure_prepared();
+    return u_trial1_.span();
+}
+DeviceSpan<real> StreamfunctionWorkspace::u_trial2() {
+    ensure_prepared();
+    return u_trial2_.span();
+}
+DeviceSpan<const real> StreamfunctionWorkspace::u_trial1() const {
+    ensure_prepared();
+    return u_trial1_.span();
+}
+DeviceSpan<const real> StreamfunctionWorkspace::u_trial2() const {
+    ensure_prepared();
+    return u_trial2_.span();
 }
 
 CompactMacVelocityView StreamfunctionWorkspace::v_psi() {
@@ -484,7 +574,8 @@ const solvers::ProjectedPositiveMGPreconditioner& StreamfunctionWorkspace::preco
 std::size_t StreamfunctionWorkspace::allocated_device_bytes() const noexcept {
     std::size_t bytes =
         (q_.capacity() + rhs1_.capacity() + rhs2_.capacity() + f1_.capacity() + f2_.capacity() +
-         v_psi_u_.capacity() + v_psi_v_.capacity() + v_psi_w_.capacity()) *
+         u_trial1_.capacity() + u_trial2_.capacity() + v_psi_u_.capacity() + v_psi_v_.capacity() +
+         v_psi_w_.capacity()) *
         sizeof(real);
     bytes += residual_workspace_.allocated_device_bytes();
     bytes += diagnostics_workspace_.allocated_device_bytes();
@@ -504,7 +595,8 @@ StreamfunctionMemoryReport StreamfunctionWorkspace::memory_report(const Grid3D& 
 
     report.scratch_fields_bytes =
         (q_.capacity() + rhs1_.capacity() + rhs2_.capacity() + f1_.capacity() + f2_.capacity() +
-         v_psi_u_.capacity() + v_psi_v_.capacity() + v_psi_w_.capacity()) *
+         u_trial1_.capacity() + u_trial2_.capacity() + v_psi_u_.capacity() + v_psi_v_.capacity() +
+         v_psi_w_.capacity()) *
         sizeof(real);
     report.residual_workspace_bytes = residual_workspace_.allocated_device_bytes();
     report.affine_rhs_workspace_bytes = affine_rhs_workspace_.allocated_device_bytes();
@@ -553,6 +645,7 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     require_valid_histogram_config(config.histogram);
     require_valid_diagnostics_config(config.diagnostics);
     require_valid_picard_config(config.picard);
+    require_valid_adaptive_config(config.adaptive, config.picard);
     require_valid_source_side_config(config);
 
     const std::size_t n = grid.num_cells();
@@ -562,7 +655,7 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     report.fields_bytes = 2 * n * sizeof(real); // StreamfunctionFields: u1 + u2
 
     report.scratch_fields_bytes =
-        5 * n * sizeof(real) + // q, rhs1, rhs2, f1, f2
+        7 * n * sizeof(real) + // q, rhs1, rhs2, f1, f2, u_trial1, u_trial2
         (compact_mac_u_size(grid) + compact_mac_v_size(grid) + compact_mac_w_size(grid)) *
             sizeof(real);
     report.residual_workspace_bytes = StreamfunctionResidualWorkspace::estimate_device_bytes(n);
