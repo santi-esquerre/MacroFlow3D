@@ -74,7 +74,15 @@ constexpr double kPi = 3.14159265358979323846264338327950288;
 // All config defaults per the task spec: omega=0.25, picard.tolerance=1e-6,
 // picard.max_iter=500, PCG rtol 1e-10 (already the ProjectedPCGConfig
 // default), eta=1, epsilon=1e-2.
-[[nodiscard]] StreamfunctionSolverConfig valid_config() { return StreamfunctionSolverConfig{}; }
+[[nodiscard]] StreamfunctionSolverConfig valid_config() {
+    StreamfunctionSolverConfig config{};
+    // SF-15 pin: keep these SF-14 fixed-relaxation cases on the exact SF-14
+    // path (adaptive.enabled default flipped to true in SF-15), preserving
+    // this file's accepted fixed-map scientific meaning under the new
+    // adaptive-Picard default.
+    config.adaptive.enabled = false;
+    return config;
+}
 
 [[nodiscard]] std::vector<real> download(const DeviceSpan<const real>& span) {
     std::vector<real> host(span.size());

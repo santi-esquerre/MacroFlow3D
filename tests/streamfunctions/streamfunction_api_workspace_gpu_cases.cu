@@ -714,7 +714,8 @@ template <typename Callable>
     StreamfunctionMemoryReport report{};
     report.fields_bytes = 2 * n * sizeof(real); // StreamfunctionFields: u1 + u2
     report.scratch_fields_bytes =
-        5 * n * sizeof(real) + (compact_mac_u_size(grid) + compact_mac_v_size(grid) +
+        7 * n * sizeof(real) + // q, rhs1, rhs2, f1, f2, u_trial1, u_trial2 (SF-15)
+        (compact_mac_u_size(grid) + compact_mac_v_size(grid) +
                                 compact_mac_w_size(grid)) * sizeof(real);
     report.residual_workspace_bytes = closed_residual_workspace_bytes(n);
     report.affine_rhs_workspace_bytes = closed_affine_rhs_bytes(n);
