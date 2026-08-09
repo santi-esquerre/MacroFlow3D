@@ -272,14 +272,68 @@ struct StreamfunctionExportConfig {
 };
 
 /**
+ * @brief Eta-axis continuation stepper parameters (SF-17 T03), mirroring
+ *        `streamfunctions::ContinuationAxisConfig` for the eta axis.
+ *
+ * `start` is the eta continuation's linear-space starting point (spec-locked
+ * default `0.0`); the axis TARGET is deliberately not duplicated here (SF-17
+ * activation bitácora decision 9) — it is the existing top-level
+ * `streamfunction_solver.eta` field, so no field is silently ignored.
+ */
+struct StreamfunctionContinuationEtaYamlConfig {
+    real start = 0.0;
+    real initial_step = 0.1;
+    real min_step = 0.0125;
+    real max_step = 0.25;
+    real backtrack_factor = 0.5;
+    real growth_factor = 1.5;
+    int easy_streak = 2;
+};
+
+/**
+ * @brief Epsilon-axis continuation stepper parameters (SF-17 T03), mirroring
+ *        `streamfunctions::ContinuationAxisConfig` for the epsilon axis, in
+ *        PHYSICAL epsilon units (the step fields are still decades in
+ *        `p = -log10(epsilon)` space, matching the library's
+ *        `epsilon_log10` axis).
+ *
+ * `target` is the physical epsilon continuation TARGET (mapped to
+ * `epsilon_log10.target = -log10(target)`); the axis STARTING point is
+ * deliberately not duplicated here (decision 9) — it is the existing
+ * top-level `streamfunction_solver.epsilon` field.
+ */
+struct StreamfunctionContinuationEpsilonYamlConfig {
+    real target = 1.0e-6;
+    real initial_step_log10 = 1.0;
+    real min_step_log10 = 0.125;
+    real max_step_log10 = 1.0;
+    real backtrack_factor = 0.5;
+    real growth_factor = 1.5;
+    int easy_streak = 2;
+};
+
+/**
+ * @brief Strict pipeline surface for the SF-17 eta/epsilon continuation
+ *        controller. `enabled == false` (the default) means the SF-16
+ *        single-solve path runs byte-identically, regardless of whether this
+ *        subsection (or any of its nested fields) is present in the YAML.
+ */
+struct StreamfunctionContinuationYamlConfig {
+    bool enabled = false;
+    StreamfunctionContinuationEtaYamlConfig eta;
+    StreamfunctionContinuationEpsilonYamlConfig epsilon;
+};
+
+/**
  * @brief Strict, minimal pipeline configuration surface for the Lester
- *        equation (14) streamfunction solver (SF-16 T01).
+ *        equation (14) streamfunction solver (SF-16 T01, extended by SF-17
+ *        T03 with the `continuation` subsection).
  *
  * This maps onto `streamfunctions::StreamfunctionSolverConfig` (see
  * `src/physics/streamfunctions/StreamfunctionTypes.hpp`) in a later
  * increment (SF-16 T02); it intentionally does NOT expose the full SF-15
  * `AdaptivePicardConfig` field set (only `adaptive.enabled`) and does NOT
- * expose any Anderson/Newton/continuation keys.
+ * expose any Anderson/Newton keys.
  *
  * `enabled == false` (the default) means the section, and every nested
  * subsection, may be entirely absent from the YAML with zero behavior
@@ -295,6 +349,7 @@ struct StreamfunctionSolverYamlConfig {
     StreamfunctionLinearYamlConfig linear;
     StreamfunctionMgYamlConfig mg;
     StreamfunctionExportConfig exports;
+    StreamfunctionContinuationYamlConfig continuation;
 };
 
 /**

@@ -28,6 +28,7 @@
 #include "../../core/DeviceSpan.cuh"
 #include "../../core/Grid3D.hpp"
 #include "../../external/nlohmann/json.hpp"
+#include "../../physics/streamfunctions/ContinuationController.hpp"
 #include "../../physics/streamfunctions/StreamfunctionSolver.cuh"
 #include "../../physics/streamfunctions/StreamfunctionWorkspace.cuh"
 #include "../config/Config.hpp"
@@ -75,6 +76,45 @@ struct StreamfunctionSolverWriter {
             return "stagnated";
         case R::omega_floor_rejected:
             return "omega_floor_rejected";
+        }
+        return "unknown";
+    }
+
+    static const char* continuation_status_str(streamfunctions::ContinuationStatus s) {
+        using S = streamfunctions::ContinuationStatus;
+        switch (s) {
+        case S::reached_target:
+            return "reached_target";
+        case S::baseline_failed:
+            return "baseline_failed";
+        case S::step_floor_exhausted:
+            return "step_floor_exhausted";
+        case S::invalid_problem:
+            return "invalid_problem";
+        }
+        return "unknown";
+    }
+
+    static const char* continuation_axis_str(streamfunctions::ContinuationAxis a) {
+        using A = streamfunctions::ContinuationAxis;
+        switch (a) {
+        case A::eta:
+            return "eta";
+        case A::epsilon:
+            return "epsilon";
+        }
+        return "unknown";
+    }
+
+    static const char* continuation_failure_str(streamfunctions::ContinuationStageFailure f) {
+        using F = streamfunctions::ContinuationStageFailure;
+        switch (f) {
+        case F::none:
+            return "none";
+        case F::solver_not_converged:
+            return "solver_not_converged";
+        case F::solver_invalid_problem:
+            return "solver_invalid_problem";
         }
         return "unknown";
     }
@@ -133,11 +173,78 @@ struct StreamfunctionSolverWriter {
         }
     }
 
+    // ── stage_history.csv: one row per SF-17 ContinuationStageRecord ──────
+
+    static void write_stage_history(
+        const std::string& path,
+        const std::vector<streamfunctions::ContinuationStageRecord>& history) {
+        std::ofstream f(path, std::ios::trunc);
+        if (!f.is_open())
+            throw std::runtime_error("[StreamfunctionSolverWriter] Cannot open: " + path);
+
+        f << "axis,param_start,param_attempted,step_attempted,accepted,failure,exit_reason,"
+             "picard_iterations,final_omega,r_F,r1,r2,unexplained_fraction,c_percentile_p001,"
+             "psi1_iterations,psi2_iterations\n";
+
+        for (const auto& s : history) {
+            f << continuation_axis_str(s.axis) << ',' << s.param_start << ',' << s.param_attempted
+              << ',' << s.step_attempted << ',' << (s.accepted ? 1 : 0) << ','
+              << continuation_failure_str(s.failure) << ',' << exit_reason_str(s.exit_reason)
+              << ',' << s.picard_iterations << ',' << s.final_omega << ',' << s.r_F << ','
+              << s.r1 << ',' << s.r2 << ',' << s.unexplained_fraction << ','
+              << s.c_percentile_p001 << ',' << s.psi1_iterations << ',' << s.psi2_iterations
+              << '\n';
+        }
+    }
+
     // ── summary.json: flat, stable-schema single-report summary ───────────
+    //
+    // The 6-argument overload keeps the SF-16 schema byte-identical (no
+    // "continuation" key at all). The 7-argument overload additionally
+    // appends a "continuation" object (SF-17 T03) and is only called from
+    // the pipeline when `streamfunction_solver.continuation.enabled`.
+
+    static void write_summary_json(const std::string& path, const Grid3D& grid,
+                                   const StreamfunctionSolverYamlConfig& cfg_yaml, real vbar_used,
+                                   const streamfunctions::StreamfunctionSolveReport& report,
+                                   const streamfunctions::StreamfunctionContinuationReport&
+                                       continuation_report) {
+        using json = nlohmann::json;
+        json j = build_summary_json(grid, cfg_yaml, vbar_used, report);
+
+        json jc;
+        jc["status"] = continuation_status_str(continuation_report.status);
+        if (continuation_report.status != streamfunctions::ContinuationStatus::reached_target) {
+            jc["failed_axis"] = continuation_axis_str(continuation_report.failed_axis);
+        }
+        jc["final_eta"] = (double)continuation_report.final_eta;
+        jc["final_epsilon"] = (double)continuation_report.final_epsilon;
+        jc["num_stages"] = continuation_report.stage_history.size();
+        jc["snapshot_bytes"] = continuation_report.snapshot_bytes;
+        j["continuation"] = jc;
+
+        std::ofstream f(path, std::ios::trunc);
+        if (!f.is_open())
+            throw std::runtime_error("[StreamfunctionSolverWriter] Cannot open: " + path);
+        f << j.dump(2) << "\n";
+    }
 
     static void write_summary_json(const std::string& path, const Grid3D& grid,
                                    const StreamfunctionSolverYamlConfig& cfg_yaml, real vbar_used,
                                    const streamfunctions::StreamfunctionSolveReport& report) {
+        using json = nlohmann::json;
+        json j = build_summary_json(grid, cfg_yaml, vbar_used, report);
+
+        std::ofstream f(path, std::ios::trunc);
+        if (!f.is_open())
+            throw std::runtime_error("[StreamfunctionSolverWriter] Cannot open: " + path);
+        f << j.dump(2) << "\n";
+    }
+
+  private:
+    static nlohmann::json
+    build_summary_json(const Grid3D& grid, const StreamfunctionSolverYamlConfig& cfg_yaml,
+                       real vbar_used, const streamfunctions::StreamfunctionSolveReport& report) {
         using json = nlohmann::json;
         json j;
 
@@ -203,12 +310,10 @@ struct StreamfunctionSolverWriter {
         j["grid"] = {{"nx", grid.nx},         {"ny", grid.ny},         {"nz", grid.nz},
                      {"dx", (double)grid.dx}, {"dy", (double)grid.dy}, {"dz", (double)grid.dz}};
 
-        std::ofstream f(path, std::ios::trunc);
-        if (!f.is_open())
-            throw std::runtime_error("[StreamfunctionSolverWriter] Cannot open: " + path);
-        f << j.dump(2) << "\n";
+        return j;
     }
 
+  public:
     // ── raw u1/u2 dumps + meta.json (only device transfer in export path) ─
 
     static void write_raw_fields(const std::string& u1_path, const std::string& u2_path,

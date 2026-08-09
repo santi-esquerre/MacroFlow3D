@@ -49,6 +49,8 @@
 #include "../../physics/particles/pspta/PsptaPsiField.cuh"
 
 // Streamfunction solver (Lester eq. 14) — observational stage (SF-16 T02)
+// and eta/epsilon continuation (SF-17 T03).
+#include "../../physics/streamfunctions/ContinuationController.hpp"
 #include "../../physics/streamfunctions/StreamfunctionSolver.cuh"
 #include "../../physics/streamfunctions/StreamfunctionWorkspace.cuh"
 
@@ -405,11 +407,11 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             // sub-tunable stay at the library's dashboard-locked defaults
             // (not exposed by the SF-16 T01 config surface).
 
-            std::printf("  [6b] Solving streamfunctions (Lester eq. 14)\n");
-
             // Release-before-transport: fields/workspace live only inside
             // this scope, freed before the transport stage below runs.
-            {
+            if (!sfcfg.continuation.enabled) {
+                std::printf("  [6b] Solving streamfunctions (Lester eq. 14)\n");
+
                 streamfunctions::StreamfunctionFields sf_fields;
                 streamfunctions::StreamfunctionWorkspace sf_workspace;
                 sf_fields.prepare(grid);
@@ -440,6 +442,77 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
                     io::StreamfunctionSolverWriter::write_summary_json(
                         layout.streamfunction_summary_json(r, grid.nx), grid, sfcfg, vbar,
                         sf_report);
+                }
+                if (sfcfg.exports.fields) {
+                    io::StreamfunctionSolverWriter::write_raw_fields(
+                        layout.streamfunction_u1_raw(r, grid.nx),
+                        layout.streamfunction_u2_raw(r, grid.nx),
+                        layout.streamfunction_fields_meta_json(r, grid.nx), grid,
+                        sf_fields.u1_span(), sf_fields.u2_span());
+                }
+            } else {
+                // SF-17 T03: eta/epsilon continuation. Observational, same as
+                // the single-solve path above -- never gates or alters
+                // transport. Activation bitácora decision 9: the existing
+                // top-level `eta` is the eta TARGET, and the existing
+                // top-level `epsilon` is the STARTING epsilon; no field is
+                // silently ignored.
+                std::printf("  [6b] Solving streamfunctions (Lester eq. 14, continuation)\n");
+
+                const auto& cc = sfcfg.continuation;
+                streamfunctions::StreamfunctionContinuationConfig cont_cfg;
+                cont_cfg.eta.start = cc.eta.start;
+                cont_cfg.eta.target = sfcfg.eta;
+                cont_cfg.eta.initial_step = cc.eta.initial_step;
+                cont_cfg.eta.min_step = cc.eta.min_step;
+                cont_cfg.eta.max_step = cc.eta.max_step;
+                cont_cfg.eta.backtrack_factor = cc.eta.backtrack_factor;
+                cont_cfg.eta.growth_factor = cc.eta.growth_factor;
+                cont_cfg.eta.easy_streak = cc.eta.easy_streak;
+
+                cont_cfg.epsilon_log10.start = -std::log10(static_cast<double>(sfcfg.epsilon));
+                cont_cfg.epsilon_log10.target =
+                    -std::log10(static_cast<double>(cc.epsilon.target));
+                cont_cfg.epsilon_log10.initial_step = cc.epsilon.initial_step_log10;
+                cont_cfg.epsilon_log10.min_step = cc.epsilon.min_step_log10;
+                cont_cfg.epsilon_log10.max_step = cc.epsilon.max_step_log10;
+                cont_cfg.epsilon_log10.backtrack_factor = cc.epsilon.backtrack_factor;
+                cont_cfg.epsilon_log10.growth_factor = cc.epsilon.growth_factor;
+                cont_cfg.epsilon_log10.easy_streak = cc.epsilon.easy_streak;
+
+                streamfunctions::StreamfunctionFields sf_fields;
+                streamfunctions::StreamfunctionWorkspace sf_workspace;
+                sf_fields.prepare(grid);
+                sf_workspace.prepare(grid, sf_lib_cfg);
+
+                streamfunctions::StreamfunctionContinuationReport cont_report =
+                    streamfunctions::run_streamfunction_continuation(
+                        ctx, sf_problem, sf_lib_cfg, cont_cfg, sf_fields, sf_workspace);
+
+                std::printf("       [streamfunctions] continuation status=%s final_eta=%.3e "
+                            "final_epsilon=%.3e stages=%zu\n",
+                            io::StreamfunctionSolverWriter::continuation_status_str(
+                                cont_report.status),
+                            (double)cont_report.final_eta, (double)cont_report.final_epsilon,
+                            cont_report.stage_history.size());
+
+                layout.ensure_streamfunction_dir(r, grid.nx);
+
+                if (sfcfg.exports.iteration_history) {
+                    io::StreamfunctionSolverWriter::write_iteration_history(
+                        layout.streamfunction_iteration_history_csv(r, grid.nx),
+                        cont_report.final_solve.picard_history);
+                    io::StreamfunctionSolverWriter::write_trial_history(
+                        layout.streamfunction_trial_history_csv(r, grid.nx),
+                        cont_report.final_solve.trial_history);
+                    io::StreamfunctionSolverWriter::write_stage_history(
+                        layout.streamfunction_stage_history_csv(r, grid.nx),
+                        cont_report.stage_history);
+                }
+                if (sfcfg.exports.summary) {
+                    io::StreamfunctionSolverWriter::write_summary_json(
+                        layout.streamfunction_summary_json(r, grid.nx), grid, sfcfg, vbar,
+                        cont_report.final_solve, cont_report);
                 }
                 if (sfcfg.exports.fields) {
                     io::StreamfunctionSolverWriter::write_raw_fields(

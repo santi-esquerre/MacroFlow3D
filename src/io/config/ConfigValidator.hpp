@@ -215,6 +215,83 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
 
         if (sf.mg.num_levels < 1)
             err("streamfunction_solver.mg.num_levels", "must be >= 1");
+
+        // ── Continuation (SF-17 T03) ────────────────────────────────────
+        // Mirrors streamfunctions::validate_streamfunction_continuation_config
+        // (ContinuationController.hpp). The eta axis TARGET is the existing
+        // top-level `sf.eta`; the epsilon axis STARTING point is the existing
+        // top-level `sf.epsilon` (activation bitácora decision 9) — neither
+        // is duplicated in the `continuation` subsection.
+        const auto& cont = sf.continuation;
+        {
+            const auto& e = cont.eta;
+            const char* p = "streamfunction_solver.continuation.eta.";
+            if (!std::isfinite(e.start))
+                err(std::string(p) + "start", "must be finite");
+            if (!std::isfinite(e.initial_step))
+                err(std::string(p) + "initial_step", "must be finite");
+            if (!std::isfinite(e.min_step))
+                err(std::string(p) + "min_step", "must be finite");
+            if (!std::isfinite(e.max_step))
+                err(std::string(p) + "max_step", "must be finite");
+            if (!std::isfinite(e.backtrack_factor))
+                err(std::string(p) + "backtrack_factor", "must be finite");
+            if (!std::isfinite(e.growth_factor))
+                err(std::string(p) + "growth_factor", "must be finite");
+            if (std::isfinite(e.start) && std::isfinite(sf.eta) && !(e.start <= sf.eta))
+                err(std::string(p) + "start", "must be <= streamfunction_solver.eta (the eta target)");
+            if (!(e.initial_step > 0))
+                err(std::string(p) + "initial_step", "must be > 0");
+            if (!(e.min_step > 0))
+                err(std::string(p) + "min_step", "must be > 0");
+            if (e.min_step > 0 && e.initial_step > 0 && !(e.min_step <= e.initial_step))
+                err(std::string(p) + "min_step", "must be <= initial_step");
+            if (e.initial_step > 0 && e.max_step > 0 && !(e.initial_step <= e.max_step))
+                err(std::string(p) + "max_step", "must be >= initial_step");
+            if (!(e.backtrack_factor > 0 && e.backtrack_factor < 1))
+                err(std::string(p) + "backtrack_factor", "must be in (0, 1)");
+            if (!(e.growth_factor >= 1))
+                err(std::string(p) + "growth_factor", "must be >= 1");
+            if (!(e.easy_streak >= 1))
+                err(std::string(p) + "easy_streak", "must be >= 1");
+        }
+        {
+            const auto& e = cont.epsilon;
+            const char* p = "streamfunction_solver.continuation.epsilon.";
+            if (!std::isfinite(e.target))
+                err(std::string(p) + "target", "must be finite");
+            if (!std::isfinite(e.initial_step_log10))
+                err(std::string(p) + "initial_step_log10", "must be finite");
+            if (!std::isfinite(e.min_step_log10))
+                err(std::string(p) + "min_step_log10", "must be finite");
+            if (!std::isfinite(e.max_step_log10))
+                err(std::string(p) + "max_step_log10", "must be finite");
+            if (!std::isfinite(e.backtrack_factor))
+                err(std::string(p) + "backtrack_factor", "must be finite");
+            if (!std::isfinite(e.growth_factor))
+                err(std::string(p) + "growth_factor", "must be finite");
+            if (!(e.target > 0))
+                err(std::string(p) + "target", "must be > 0");
+            if (e.target > 0 && std::isfinite(sf.epsilon) && !(e.target <= sf.epsilon))
+                err(std::string(p) + "target",
+                    "must be <= streamfunction_solver.epsilon (the epsilon starting value)");
+            if (!(e.initial_step_log10 > 0))
+                err(std::string(p) + "initial_step_log10", "must be > 0");
+            if (!(e.min_step_log10 > 0))
+                err(std::string(p) + "min_step_log10", "must be > 0");
+            if (e.min_step_log10 > 0 && e.initial_step_log10 > 0 &&
+                !(e.min_step_log10 <= e.initial_step_log10))
+                err(std::string(p) + "min_step_log10", "must be <= initial_step_log10");
+            if (e.initial_step_log10 > 0 && e.max_step_log10 > 0 &&
+                !(e.initial_step_log10 <= e.max_step_log10))
+                err(std::string(p) + "max_step_log10", "must be >= initial_step_log10");
+            if (!(e.backtrack_factor > 0 && e.backtrack_factor < 1))
+                err(std::string(p) + "backtrack_factor", "must be in (0, 1)");
+            if (!(e.growth_factor >= 1))
+                err(std::string(p) + "growth_factor", "must be >= 1");
+            if (!(e.easy_streak >= 1))
+                err(std::string(p) + "easy_streak", "must be >= 1");
+        }
     }
 
     return r;

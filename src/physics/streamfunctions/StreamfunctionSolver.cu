@@ -71,15 +71,6 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
     enqueue_fill_streamfunction_coefficient(context, problem.conductivity,
                                             problem.conductivity_representation, workspace.q());
 
-    // Zero-initialize u1, u2 on every call (deterministic exact control; a
-    // warm-start policy is SF-14 scope).
-    MACROFLOW3D_CUDA_CHECK(
-        cudaMemsetAsync(fields.u1_span().data(), 0, fields.u1_span().size() * sizeof(real),
-                        context.cuda_stream()));
-    MACROFLOW3D_CUDA_CHECK(
-        cudaMemsetAsync(fields.u2_span().data(), 0, fields.u2_span().size() * sizeof(real),
-                        context.cuda_stream()));
-
     multigrid::populate_coefficient_hierarchy(context, workspace.hierarchy(),
                                               DeviceSpan<const real>(workspace.q()));
 
@@ -93,16 +84,37 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
     operators::LesterPositiveDiffusionOperator A(grid, DeviceSpan<const real>(workspace.q()));
     constraints::MeanZeroProjector projector;
 
-    // Sequential block solves, psi1 then psi2, sharing the single
-    // hierarchy/PCG workspace (see StreamfunctionWorkspace.cuh).
-    report.psi1_result =
-        solvers::projected_pcg_solve(context, A, workspace.preconditioner(),
-                                     DeviceSpan<const real>(workspace.rhs1()), fields.u1_span(),
-                                     config.linear, projector, workspace.pcg_workspace());
-    report.psi2_result =
-        solvers::projected_pcg_solve(context, A, workspace.preconditioner(),
-                                     DeviceSpan<const real>(workspace.rhs2()), fields.u2_span(),
-                                     config.linear, projector, workspace.pcg_workspace());
+    // SF-17: `zero_source` (default) is bitwise identical to SF-13..16 --
+    // u1/u2 are zero-initialized and the two zero-source block solves below
+    // produce Picard state 0. `warm_start` instead takes state 0 from the
+    // caller-provided fields (mean-zero projected in place for gauge
+    // defense) and performs NEITHER the zero-init NOR the zero-source block
+    // solves; report.psi1_result/psi2_result then remain default-constructed
+    // until the first Picard update step (see PicardInitialState).
+    if (config.initial_state == PicardInitialState::zero_source) {
+        // Zero-initialize u1, u2 on every call (deterministic exact control).
+        MACROFLOW3D_CUDA_CHECK(
+            cudaMemsetAsync(fields.u1_span().data(), 0, fields.u1_span().size() * sizeof(real),
+                            context.cuda_stream()));
+        MACROFLOW3D_CUDA_CHECK(
+            cudaMemsetAsync(fields.u2_span().data(), 0, fields.u2_span().size() * sizeof(real),
+                            context.cuda_stream()));
+
+        // Sequential block solves, psi1 then psi2, sharing the single
+        // hierarchy/PCG workspace (see StreamfunctionWorkspace.cuh).
+        report.psi1_result = solvers::projected_pcg_solve(
+            context, A, workspace.preconditioner(), DeviceSpan<const real>(workspace.rhs1()),
+            fields.u1_span(), config.linear, projector, workspace.pcg_workspace());
+        report.psi2_result = solvers::projected_pcg_solve(
+            context, A, workspace.preconditioner(), DeviceSpan<const real>(workspace.rhs2()),
+            fields.u2_span(), config.linear, projector, workspace.pcg_workspace());
+    } else {
+        // warm_start: state 0 is the caller-provided fields, mean-zero
+        // projected in place (gauge defense). No zero-init, no zero-source
+        // block solves.
+        projector.project(context, fields.u1_span(), workspace.pcg_workspace().mean_zero);
+        projector.project(context, fields.u2_span(), workspace.pcg_workspace().mean_zero);
+    }
 
     // SF-11 physical diagnostics; the measured Darcy v_rms feeds the
     // nonlinear-source and residual normalization below.

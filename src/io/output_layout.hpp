@@ -29,6 +29,7 @@ inline constexpr int kOutputFormatVersion = 1;
  *   <base>/ensemble/ensemble_timeseries.csv
  *   <base>/analysis/macrodispersion.csv
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/{iteration_history,trial_history}.csv
+ *   <base>/streamfunctions/r_XXXX/grid_XXXX/stage_history.csv  (SF-17 T03, continuation only)
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/summary.json
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/{u1,u2}.raw
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/fields_meta.json
@@ -88,6 +89,13 @@ struct OutputLayout {
 
     std::string streamfunction_trial_history_csv(int r, int nx) const {
         return streamfunction_dir(r, nx) + "/trial_history.csv";
+    }
+
+    // Continuation stage history (SF-17 T03): one row per
+    // streamfunctions::ContinuationStageRecord, gated by the same
+    // `export.iteration_history` switch as `iteration_history.csv`.
+    std::string streamfunction_stage_history_csv(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/stage_history.csv";
     }
 
     std::string streamfunction_summary_json(int r, int nx) const {

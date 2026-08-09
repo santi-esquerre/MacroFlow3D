@@ -104,4 +104,14 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // configuration values.
 [[nodiscard]] CaseRegistry picard_adaptive_case_registry();
 
+// SF-17 T02 adaptive eta/epsilon continuation-with-rollback acceptance
+// cases. These exercise the host-only `ContinuationStepper`/
+// `validate_streamfunction_continuation_config` contract (bitwise/exactly
+// against ContinuationController.hpp's documented policy) and the
+// production `run_streamfunction_continuation` driver on GPU fixtures
+// mirrored from the SF-14/15 Picard acceptance cases (homogeneous K=1
+// controls, rollback/floor/invalid_problem injection via `StageSolveFn`,
+// and the a=0.5 trigonometric headline control).
+[[nodiscard]] CaseRegistry streamfunction_continuation_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
