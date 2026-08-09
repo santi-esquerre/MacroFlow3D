@@ -20,6 +20,7 @@
 #include "../../io/writers/BuildInfo.hpp"
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
 #include "../../io/writers/ManifestWriter.hpp"
+#include "../../io/writers/StreamfunctionSolverWriter.hpp"
 #include "../../runtime/io/IOScheduler.hpp"
 
 // Runtime stats collector (Etapa 6)
@@ -46,6 +47,10 @@
 // PSPTA engine + precomputed ψ fields
 #include "../../physics/particles/pspta/PsptaEngine.hpp"
 #include "../../physics/particles/pspta/PsptaPsiField.cuh"
+
+// Streamfunction solver (Lester eq. 14) — observational stage (SF-16 T02)
+#include "../../physics/streamfunctions/StreamfunctionSolver.cuh"
+#include "../../physics/streamfunctions/StreamfunctionWorkspace.cuh"
 
 // PSPTA runtime diagnostics writer
 #include "../../runtime/io/CsvDiagnosticsWriter.hpp"
@@ -156,10 +161,13 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
     FlowWorkspace flow_ws;
     flow_ws.allocate(grid, head_cfg.mg_levels);
 
-    // Velocity (padded for Par2_Core; compact/CompactMAC for PSPTA)
+    // Velocity (padded for Par2_Core; compact/CompactMAC for PSPTA and for the
+    // streamfunction solver stage, which consumes CompactMAC exclusively)
     PaddedVelocityField vel(grid);
-    VelocityField vel_compact; // default-constructed (no alloc); resized below if pspta
-    if (cfg.transport.method == "pspta") {
+    VelocityField vel_compact; // default-constructed (no alloc); resized below if needed
+    const bool need_vel_compact =
+        (cfg.transport.method == "pspta") || cfg.streamfunction_solver.enabled;
+    if (need_vel_compact) {
         vel_compact = VelocityField(grid);
     }
 
@@ -295,17 +303,27 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             std::fprintf(stderr, "       WARNING: Head solve did NOT converge (r=%d)!\n", r);
 
         // ── Compute velocity ───────────────────────────────────────────
+        // need_vel_compact (hoisted above) also covers the streamfunction
+        // solver stage, which consumes CompactMAC exclusively; need_padded
+        // preserves the exact original per-method requirement (par2 always
+        // needs padded; pspta only needs it when velocity diagnostics run).
         MACROFLOW3D_NVTX_PUSH("velocity");
         profiler.start("velocity");
-        if (cfg.transport.method == "pspta") {
+        const bool need_padded =
+            (cfg.transport.method != "pspta") || cfg.diagnostics.velocity_field;
+        if (need_vel_compact) {
             std::printf("  [6] Computing velocity (compact)\n");
             compute_velocity_from_head(vel_compact, head_field, K_field, grid, cfg.flow.bc, ctx);
-            // Compute padded only if needed for diagnostics
-            if (cfg.diagnostics.velocity_field) {
-                compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
+        }
+        if (need_padded) {
+            // Baseline-stdout contract (T02-F1 fix): the pre-SF-16 pspta
+            // branch computed the diagnostics-only padded velocity silently
+            // (no print); only the non-pspta branch printed this line. Keep
+            // that exact console behavior while still computing padded
+            // velocity whenever it is actually needed.
+            if (cfg.transport.method != "pspta") {
+                std::printf("  [6] Computing velocity (padded)\n");
             }
-        } else {
-            std::printf("  [6] Computing velocity (padded)\n");
             compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
         }
         profiler.stop();
@@ -314,6 +332,125 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         if (cfg.diagnostics.velocity_field) {
             compute_velocity_diagnostics(vel, vel_diag, grid, ctx);
             print_velocity_diagnostics(vel_diag, r, ctx);
+        }
+
+        // ── Streamfunction solver stage (Lester eq. 14, SF-16 T02) ─────
+        // Observational: the stage runs, exports its report, and prints a
+        // summary, but never gates or alters transport, even on a
+        // non-converged/invalid_problem status. That decision is deliberate
+        // for this increment (see SF-16 spec: "pipeline integration without
+        // altering default behavior"); consuming accepted invariants in
+        // transport is future work.
+        if (cfg.streamfunction_solver.enabled) {
+            MACROFLOW3D_NVTX_PUSH("streamfunctions");
+            profiler.start("streamfunctions");
+
+            const auto& sfcfg = cfg.streamfunction_solver;
+
+            // vbar for the SF-06 affine gauge (psi1 = vbar*x2 + u1_tilde).
+            // mode == "fixed": use the configured value directly.
+            // mode == "measured": arithmetic mean of the UNIQUE U faces
+            // (ix in [0, nx-1] for every j, k; the periodic duplicate plane
+            // ix == nx is excluded because it numerically repeats plane 0).
+            // This is the one host transfer of the measured mode: a single
+            // cudaMemcpy of the U buffer, once per realization.
+            real vbar = sfcfg.affine_mean_velocity.value;
+            if (sfcfg.affine_mean_velocity.mode == "measured") {
+                std::vector<real> host_U(vel_compact.size_U());
+                cudaMemcpy(host_U.data(), vel_compact.U.data(), host_U.size() * sizeof(real),
+                           cudaMemcpyDeviceToHost);
+                double sum = 0.0;
+                std::size_t count = 0;
+                for (int k = 0; k < vel_compact.nz; ++k) {
+                    for (int j = 0; j < vel_compact.ny; ++j) {
+                        for (int i = 0; i < vel_compact.nx; ++i) { // unique faces only
+                            sum += static_cast<double>(host_U[vel_compact.idx_U(i, j, k)]);
+                            ++count;
+                        }
+                    }
+                }
+                vbar = static_cast<real>(count > 0 ? sum / static_cast<double>(count) : 0.0);
+            }
+
+            // v1 solver requirement: triply periodic BC, independent of
+            // cfg.flow.bc (which may be Dirichlet/Neumann for the head
+            // solve driving this realization's velocity field).
+            BCSpec sf_bc;
+            sf_bc.xmin = sf_bc.xmax = BCFace(BCType::Periodic, 0.0);
+            sf_bc.ymin = sf_bc.ymax = BCFace(BCType::Periodic, 0.0);
+            sf_bc.zmin = sf_bc.zmax = BCFace(BCType::Periodic, 0.0);
+
+            streamfunctions::StreamfunctionProblemView sf_problem{};
+            sf_problem.grid = grid;
+            sf_problem.conductivity = K_field.span();
+            sf_problem.conductivity_representation =
+                streamfunctions::ConductivityRepresentation::conductivity_k;
+            sf_problem.darcy_velocity = streamfunctions::CompactMacVelocityConstView{
+                vel_compact.U_span(), vel_compact.V_span(), vel_compact.W_span()};
+            sf_problem.bc = sf_bc;
+            sf_problem.gauge = streamfunctions::AffineGauge::benchmark(vbar);
+
+            streamfunctions::StreamfunctionSolverConfig sf_lib_cfg{};
+            sf_lib_cfg.picard.max_iter = sfcfg.picard.max_iter;
+            sf_lib_cfg.picard.tolerance = sfcfg.picard.tolerance;
+            sf_lib_cfg.picard.omega = sfcfg.picard.omega;
+            sf_lib_cfg.adaptive.enabled = sfcfg.adaptive.enabled;
+            sf_lib_cfg.linear.rtol = sfcfg.linear.rtol;
+            sf_lib_cfg.linear.max_iter = sfcfg.linear.max_iter;
+            sf_lib_cfg.linear.check_every = sfcfg.linear.check_every;
+            sf_lib_cfg.mg.num_levels = sfcfg.mg.num_levels;
+            sf_lib_cfg.eta = sfcfg.eta;
+            sf_lib_cfg.epsilon = sfcfg.epsilon;
+            // histogram, diagnostics thresholds, and every other adaptive
+            // sub-tunable stay at the library's dashboard-locked defaults
+            // (not exposed by the SF-16 T01 config surface).
+
+            std::printf("  [6b] Solving streamfunctions (Lester eq. 14)\n");
+
+            // Release-before-transport: fields/workspace live only inside
+            // this scope, freed before the transport stage below runs.
+            {
+                streamfunctions::StreamfunctionFields sf_fields;
+                streamfunctions::StreamfunctionWorkspace sf_workspace;
+                sf_fields.prepare(grid);
+                sf_workspace.prepare(grid, sf_lib_cfg);
+
+                streamfunctions::StreamfunctionSolveReport sf_report =
+                    streamfunctions::solve_streamfunctions(ctx, sf_problem, sf_lib_cfg, sf_fields,
+                                                           sf_workspace);
+
+                std::printf("       [streamfunctions] status=%s exit=%s iters=%d r_F=%.3e "
+                            "omega=%.3e\n",
+                            io::StreamfunctionSolverWriter::status_str(sf_report.status),
+                            io::StreamfunctionSolverWriter::exit_reason_str(sf_report.exit_reason),
+                            sf_report.picard_iterations, (double)sf_report.residual.r_F,
+                            (double)sf_report.final_omega);
+
+                layout.ensure_streamfunction_dir(r, grid.nx);
+
+                if (sfcfg.exports.iteration_history) {
+                    io::StreamfunctionSolverWriter::write_iteration_history(
+                        layout.streamfunction_iteration_history_csv(r, grid.nx),
+                        sf_report.picard_history);
+                    io::StreamfunctionSolverWriter::write_trial_history(
+                        layout.streamfunction_trial_history_csv(r, grid.nx),
+                        sf_report.trial_history);
+                }
+                if (sfcfg.exports.summary) {
+                    io::StreamfunctionSolverWriter::write_summary_json(
+                        layout.streamfunction_summary_json(r, grid.nx), grid, sfcfg, vbar,
+                        sf_report);
+                }
+                if (sfcfg.exports.fields) {
+                    io::StreamfunctionSolverWriter::write_raw_fields(
+                        layout.streamfunction_u1_raw(r, grid.nx),
+                        layout.streamfunction_u2_raw(r, grid.nx),
+                        layout.streamfunction_fields_meta_json(r, grid.nx), grid,
+                        sf_fields.u1_span(), sf_fields.u2_span());
+                }
+            } // sf_fields, sf_workspace destroyed here
+
+            profiler.stop();
         }
 
         // ── Transport ─────────────────────────────────────────────────

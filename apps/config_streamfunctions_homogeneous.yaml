@@ -1,0 +1,176 @@
+# ==============================================================================
+# MacroFlow3D — Streamfunction solver acceptance config (homogeneous K)
+# ==============================================================================
+#
+# SF-16 T03 acceptance fixture for the Lester equation (14) streamfunction
+# solver pipeline stage (`streamfunction_solver:` section, wired in SF-16
+# T01/T02). Purpose: exercise the FULL enabled pipeline path (K field ->
+# head/velocity solve -> streamfunction stage -> exports -> transport) on
+# the SF-13-accepted homogeneous-K benchmark, where the affine RHS telescopes
+# to exactly zero and u1=u2=0 exactly (see
+# docs/plans/active/lester-eq14-streamfunction-solver-plan.md, SF-13).
+#
+# Grid: 32^3, isotropic dx=dy=dz=1.0 (unit cube, Lx=Ly=Lz=32).
+#   min(nx,ny,nz)=32 is divisible by 2^(mg_levels-1)=2^3=8 for mg_levels=4,
+#   matching streamfunction_solver.mg.num_levels=4 below (both the flow-solve
+#   multigrid and the streamfunction linear-subproblem multigrid need a
+#   coarsenable grid).
+#
+# K field: constant K=1.0 everywhere, exactly (not merely close). Achieved
+# with stochastic.sigma2=0.0: the spectral log-K sum is scaled by
+# sigma_f=sqrt(sigma2) (src/physics/stochastic/stochastic.cu,
+# generate_gaussian_field), so sigma2=0.0 forces logK=0.0*sum=0.0 exactly at
+# every cell regardless of the random Fourier modes drawn, and
+# K=K_mean*exp(logK+log(K_geometric_mean))=1.0*exp(0+log(1.0))=1.0 exactly.
+# (corr_length/n_modes/covariance_type/seed are therefore irrelevant to the
+# resulting field but are still required, valid config keys; kept at small/
+# fast defaults.)
+#
+# Flow BC: Dirichlet head drop along x only, sized so that for K=1 the exact
+# 1D Darcy velocity U = -K*dh/dx equals 1.0: dh/dx = (east-west)/Lx must be
+# -1, so with Lx=32, west=32.0, east=0.0 gives dh/dx=(0-32)/32=-1 and
+# U=-1*(-1)=1.0. y/z faces are periodic (required for a clean 1D solution;
+# the streamfunction solver additionally imposes its OWN internal triply
+# periodic BC for the streamfunction sub-problem regardless of these flow
+# BCs — see EnsembleRunner.cu, SF-16 T02 comment on sf_bc).
+#
+# streamfunction_solver: enabled, affine_mean_velocity fixed at 1.0 (matches
+# the exact U above), all other solver keys left at their strict-config
+# defaults (SF-16 T01 defaults: epsilon=1e-2, eta=1.0, picard defaults,
+# adaptive.enabled=true, linear defaults, mg.num_levels=4). All three
+# exports on so the acceptance run can inspect iteration_history.csv,
+# trial_history.csv, summary.json, and the raw u1/u2 fields.
+#
+# Transport: minimal par2 smoke pass (few particles/steps) — this config is
+# about exercising the streamfunction stage and its exports, not about a
+# transport/macrodispersion study, so transport is deliberately small and
+# fast. method left at the default "par2" (no need for the legacy pspta
+# engine here).
+#
+# Run with:
+#   ./build/wsl-debug/macroflow3d_pipeline apps/config_streamfunctions_homogeneous.yaml
+# ==============================================================================
+
+run_mode: single_run
+
+# ------------------------------------------------------------------------------
+# grid
+# ------------------------------------------------------------------------------
+grid:
+  nx: 32
+  ny: 32
+  nz: 32
+  dx: 1.0
+
+# ------------------------------------------------------------------------------
+# stochastic — sigma2=0.0 forces K=K_mean=1.0 exactly at every cell (see
+# rationale above); other keys required by the strict parser but numerically
+# inert for this field.
+# ------------------------------------------------------------------------------
+stochastic:
+  sigma2: 0.0
+  corr_length: 8.0
+  n_modes: 8
+  covariance_type: 0
+  seed: 42
+  K_mean: 1.0
+
+# ------------------------------------------------------------------------------
+# flow — Dirichlet head drop along x sized for exact U=1.0 at K=1
+#   (dh/dx = (0 - 32)/32 = -1  =>  U = -K*dh/dx = 1.0); y/z periodic.
+# ------------------------------------------------------------------------------
+flow:
+  solver: mg_cg
+  mg_levels: 4
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-10
+  cg_check_every: 10
+  rtol: 1.0e-10
+
+  pin:
+    mode: off             # Dirichlet en west/east -> sistema no singular
+
+  bc:
+    west:   { type: dirichlet, value: 32.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+# ------------------------------------------------------------------------------
+# streamfunction_solver — Lester equation (14) solver stage (SF-16).
+# All keys other than enabled/affine_mean_velocity left at strict-parser
+# defaults (see src/io/config/Config.hpp StreamfunctionSolverYamlConfig).
+# ------------------------------------------------------------------------------
+streamfunction_solver:
+  enabled: true
+  affine_mean_velocity:
+    mode: fixed
+    value: 1.0
+  export:
+    iteration_history: true
+    summary: true
+    fields: true
+
+# ------------------------------------------------------------------------------
+# transport — minimal par2 smoke pass (not the point of this fixture)
+# ------------------------------------------------------------------------------
+transport:
+  method: par2
+  n_particles: 50
+  dt: 1.0
+  n_steps: 20
+  porosity: 1.0
+  diffusion: 0.0
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 20
+  snapshot_every: 0
+  inject_x: 1.0
+
+# ------------------------------------------------------------------------------
+# analysis
+# ------------------------------------------------------------------------------
+analysis:
+  macrodispersion:
+    enabled: false
+    NR: 1
+    lambda: 8.0
+    vmean_norm: 1.0
+    sample_every: 10
+    var_estimator: biased
+
+  snapshots:
+    enabled: false
+    every: 100
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+# ------------------------------------------------------------------------------
+# diagnostics
+# ------------------------------------------------------------------------------
+diagnostics:
+  velocity_field: true
+
+# ------------------------------------------------------------------------------
+# output
+# ------------------------------------------------------------------------------
+output:
+  output_dir: ./output_streamfunctions_homogeneous
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary

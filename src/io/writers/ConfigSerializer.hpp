@@ -181,7 +181,34 @@ struct ConfigSerializer {
         std::fprintf(f, "  save_head: %s\n", cfg.output.save_head ? "true" : "false");
         std::fprintf(f, "  save_velocity: %s\n", cfg.output.save_velocity ? "true" : "false");
         std::fprintf(f, "  save_particles: %s\n", cfg.output.save_particles ? "true" : "false");
-        std::fprintf(f, "  format: %s\n", cfg.output.format.c_str());
+        std::fprintf(f, "  format: %s\n\n", cfg.output.format.c_str());
+
+        // Streamfunction solver (SF-16 T01)
+        const auto& sf = cfg.streamfunction_solver;
+        std::fprintf(f, "streamfunction_solver:\n");
+        std::fprintf(f, "  enabled: %s\n", sf.enabled ? "true" : "false");
+        std::fprintf(f, "  affine_mean_velocity:\n");
+        std::fprintf(f, "    mode: %s\n", sf.affine_mean_velocity.mode.c_str());
+        std::fprintf(f, "    value: %.15e\n", (double)sf.affine_mean_velocity.value);
+        std::fprintf(f, "  epsilon: %.15e\n", (double)sf.epsilon);
+        std::fprintf(f, "  eta: %.15e\n", (double)sf.eta);
+        std::fprintf(f, "  picard:\n");
+        std::fprintf(f, "    max_iter: %d\n", sf.picard.max_iter);
+        std::fprintf(f, "    tolerance: %.15e\n", (double)sf.picard.tolerance);
+        std::fprintf(f, "    omega: %.15e\n", (double)sf.picard.omega);
+        std::fprintf(f, "  adaptive:\n");
+        std::fprintf(f, "    enabled: %s\n", sf.adaptive.enabled ? "true" : "false");
+        std::fprintf(f, "  linear:\n");
+        std::fprintf(f, "    rtol: %.15e\n", (double)sf.linear.rtol);
+        std::fprintf(f, "    max_iter: %d\n", sf.linear.max_iter);
+        std::fprintf(f, "    check_every: %d\n", sf.linear.check_every);
+        std::fprintf(f, "  mg:\n");
+        std::fprintf(f, "    num_levels: %d\n", sf.mg.num_levels);
+        std::fprintf(f, "  export:\n");
+        std::fprintf(f, "    iteration_history: %s\n",
+                     sf.exports.iteration_history ? "true" : "false");
+        std::fprintf(f, "    summary: %s\n", sf.exports.summary ? "true" : "false");
+        std::fprintf(f, "    fields: %s\n", sf.exports.fields ? "true" : "false");
 
         std::fclose(f);
         return true;

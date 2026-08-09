@@ -180,6 +180,43 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
     if (cfg.output.output_dir.empty())
         err("output.output_dir", "must not be empty");
 
+    // ── Streamfunction solver (SF-16 T01) ───────────────────────────────
+    // Mirrors the library's own validation ranges
+    // (streamfunctions::validate_streamfunction_problem); only checked when
+    // the section is enabled, so a disabled/absent section never affects
+    // validation outcome.
+    const auto& sf = cfg.streamfunction_solver;
+    if (sf.enabled) {
+        const auto& amv = sf.affine_mean_velocity;
+        if (amv.mode != "fixed" && amv.mode != "measured")
+            err("streamfunction_solver.affine_mean_velocity.mode",
+                "'" + amv.mode + "' unknown; expected 'fixed' or 'measured'");
+        if (!std::isfinite(amv.value) || amv.value <= 0)
+            err("streamfunction_solver.affine_mean_velocity.value", "must be finite and > 0");
+
+        if (!std::isfinite(sf.epsilon) || sf.epsilon < 0)
+            err("streamfunction_solver.epsilon", "must be finite and >= 0");
+        if (!std::isfinite(sf.eta) || sf.eta < 0)
+            err("streamfunction_solver.eta", "must be finite and >= 0");
+
+        if (sf.picard.max_iter < 0)
+            err("streamfunction_solver.picard.max_iter", "must be >= 0");
+        if (!std::isfinite(sf.picard.tolerance) || sf.picard.tolerance <= 0)
+            err("streamfunction_solver.picard.tolerance", "must be finite and > 0");
+        if (!std::isfinite(sf.picard.omega) || sf.picard.omega <= 0 || sf.picard.omega > 1)
+            err("streamfunction_solver.picard.omega", "must be finite and in (0, 1]");
+
+        if (!std::isfinite(sf.linear.rtol) || sf.linear.rtol < 0)
+            err("streamfunction_solver.linear.rtol", "must be finite and >= 0");
+        if (sf.linear.max_iter < 0)
+            err("streamfunction_solver.linear.max_iter", "must be >= 0");
+        if (sf.linear.check_every <= 0)
+            err("streamfunction_solver.linear.check_every", "must be > 0");
+
+        if (sf.mg.num_levels < 1)
+            err("streamfunction_solver.mg.num_levels", "must be >= 1");
+    }
+
     return r;
 }
 

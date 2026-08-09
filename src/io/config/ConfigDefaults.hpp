@@ -117,6 +117,25 @@ inline AppConfig make_default_config() {
     cfg.output.save_particles = true;
     cfg.output.format = "binary";
 
+    // Streamfunction solver (SF-16 T01) — disabled by default, no behavior
+    // change for existing configs.
+    cfg.streamfunction_solver.enabled = false;
+    cfg.streamfunction_solver.affine_mean_velocity.mode = "fixed";
+    cfg.streamfunction_solver.affine_mean_velocity.value = 1.0;
+    cfg.streamfunction_solver.epsilon = 1.0e-2;
+    cfg.streamfunction_solver.eta = 1.0;
+    cfg.streamfunction_solver.picard.max_iter = 500;
+    cfg.streamfunction_solver.picard.tolerance = 1.0e-6;
+    cfg.streamfunction_solver.picard.omega = 0.25;
+    cfg.streamfunction_solver.adaptive.enabled = true;
+    cfg.streamfunction_solver.linear.rtol = 1.0e-10;
+    cfg.streamfunction_solver.linear.max_iter = 1000;
+    cfg.streamfunction_solver.linear.check_every = 10;
+    cfg.streamfunction_solver.mg.num_levels = 4;
+    cfg.streamfunction_solver.exports.iteration_history = true;
+    cfg.streamfunction_solver.exports.summary = true;
+    cfg.streamfunction_solver.exports.fields = false;
+
     return cfg;
 }
 

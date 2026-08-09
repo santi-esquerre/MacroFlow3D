@@ -28,6 +28,10 @@ inline constexpr int kOutputFormatVersion = 1;
  *   <base>/snapshots/r_XXXX/step_XXXXXXXX.csv  (r>0)
  *   <base>/ensemble/ensemble_timeseries.csv
  *   <base>/analysis/macrodispersion.csv
+ *   <base>/streamfunctions/r_XXXX/grid_XXXX/{iteration_history,trial_history}.csv
+ *   <base>/streamfunctions/r_XXXX/grid_XXXX/summary.json
+ *   <base>/streamfunctions/r_XXXX/grid_XXXX/{u1,u2}.raw
+ *   <base>/streamfunctions/r_XXXX/grid_XXXX/fields_meta.json
  */
 struct OutputLayout {
     std::string base;
@@ -68,6 +72,43 @@ struct OutputLayout {
     std::string ensemble_timeseries() const { return base + "/ensemble/ensemble_timeseries.csv"; }
 
     std::string macrodispersion_csv() const { return base + "/analysis/macrodispersion.csv"; }
+
+    // ── Streamfunction solver (SF-16 T02) ──────────────────────────────
+    // One directory per realization × fine-grid nx, so a run that changes
+    // grid resolution across invocations never collides output.
+    std::string streamfunction_dir(int r, int nx) const {
+        char buf[512];
+        std::snprintf(buf, sizeof(buf), "%s/streamfunctions/r_%04d/grid_%04d", base.c_str(), r, nx);
+        return buf;
+    }
+
+    std::string streamfunction_iteration_history_csv(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/iteration_history.csv";
+    }
+
+    std::string streamfunction_trial_history_csv(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/trial_history.csv";
+    }
+
+    std::string streamfunction_summary_json(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/summary.json";
+    }
+
+    std::string streamfunction_u1_raw(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/u1.raw";
+    }
+
+    std::string streamfunction_u2_raw(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/u2.raw";
+    }
+
+    std::string streamfunction_fields_meta_json(int r, int nx) const {
+        return streamfunction_dir(r, nx) + "/fields_meta.json";
+    }
+
+    void ensure_streamfunction_dir(int r, int nx) const {
+        std::filesystem::create_directories(streamfunction_dir(r, nx));
+    }
 
     // ── Directory creation ───────────────────────────────────────────
 

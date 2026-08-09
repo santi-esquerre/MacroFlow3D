@@ -1,18 +1,18 @@
 # SF-16 — Pipeline, configuration, and output
 
-- State: `pending`
+- State: `done`
 - Goal: `Integrar configuración, logging, exportación y pipeline sin alterar el comportamiento por defecto.`
 - Depends on: `SF-15`
 - Unlocks: `SF-17`
 - Branch: `science/lester-sf16-pipeline-io-config`
-- Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf16-pipeline-io-config`
+- Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 3A integration`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
-- Completed: `not completed`
-- PR: `not opened`
-- Commit: `not recorded`
+- Owner: `Claude Fable (orchestrator)`
+- Started: `2026-08-09T09:01Z`
+- Completed: `2026-08-09 (explicit owner approval of PR #28; closure metadata commit on the same PR)`
+- PR: [#28 — SF-16: pipeline configuration, runner stage, and streamfunction exports (default behavior preserved)](https://github.com/santi-esquerre/MacroFlow3D/pull/28)
+- Commit: `44afda526ebcd8eddd5b9b10577e5ff9a499b94d (frozen audited source head; later branch commits are increment-state documentation only)`
 
 ## Scientific or engineering intent
 
@@ -83,13 +83,13 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [ ] Minimal strict config and validation are implemented.
-- [ ] Disabled baseline is unchanged.
-- [ ] Enabled homogeneous pipeline run matches library results.
-- [ ] Histories, summary, manifest, and optional fields are reproducible.
-- [ ] Par2/PSPTA smokes and human review pass.
-- [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-16 complete and selects SF-17.
+- [x] Minimal strict config and validation are implemented.
+- [x] Disabled baseline is unchanged.
+- [x] Enabled homogeneous pipeline run matches library results.
+- [x] Histories, summary, manifest, and optional fields are reproducible.
+- [x] Par2/PSPTA smokes and human review pass.
+- [x] Evidence, PR, and commit are recorded.
+- [x] Dashboard marks SF-16 complete and selects SF-17.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -101,3 +101,9 @@ features.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-09T09:01Z | activation on `master=ead6322` (SF-15 closure merged via PR #27) | SF-16 activated after verifying `NEXT: SF-16`, SF-15 `done`, and checker `OK (29 increments, next=SF-16)` on the default branch. Interpretive decisions recorded for the human reviewer: (1) the pipeline's compact `VelocityField` (U `(nx+1,ny,nz)`, V `(nx,ny+1,nz)`, W `(nx,ny,nz+1)`) has exactly the solver's CompactMAC layout, so the Darcy velocity is adapted by zero-copy spans; the runner sizes/computes `vel_compact` also when the streamfunction solver is enabled. (2) The streamfunction `BCSpec` is constructed triply periodic by the runner (the v1 solver requirement), independent of the flow BCs; enabled runs inherit the library's isotropic-spacing/MG-coarsenability validation and fail fast with its messages. (3) Minimal strict config surface `streamfunction_solver{enabled(false), affine_mean_velocity{mode: fixed|measured, value(1.0)}, epsilon, eta, picard{max_iter, tolerance, omega}, adaptive{enabled}, linear{rtol, max_iter, check_every}, mg{num_levels}, export{iteration_history(true), summary(true), fields(false)}}`; no Anderson/Newton/continuation keys; unknown keys rejected by the existing strict mechanism; effective-config serialization and manifest updated; `measured` mode takes vbar as the arithmetic mean of the unique Darcy U-faces. (4) Output under `output/streamfunctions/r_NNNN/grid_NNNN/` following the existing `r_NNNN` convention with `grid_NNNN` = zero-padded fine-grid `nx`; `iteration_history.csv` carries the accepted-state history plus the SF-15 trial history (omega/outcome per trial); `summary.json` carries exit reason, iterations, final residual and physical diagnostics, memory report, and a config echo. (5) Solver fields/workspace are constructed per realization after the velocity stage and destroyed before transport (the spec's release-before-transport policy); stage profiling via the existing profiler. (6) Enabled homogeneous acceptance thresholds PRESPECIFIED before any run: `picard_iterations=0`, `r_F <= 1e-13`, `RMS(u1/u2) <= 1e-13`, gauge at the SF-03 bound, and `e_v <= 1e-8` — the e_v bound is limited by the pipeline Darcy head-solve relative tolerance (1e-10), not by the streamfunction path, and this rationale is recorded rather than silently reusing the SF-13 1e-13 figure. (7) Disabled-baseline invariance verified by comparing the `config_pspta_small.yaml` and `config_pipeline_par2.yaml` smoke artifacts against references generated from the increment base build with identical seeds/configs. | Base commit is this activation commit on `master=ead6322`. Gate 1 + Gate 3A(integration) apply; human review required, so the PR will stop at `awaiting_review` with `NEXT` unchanged. | Build intra-increment DAG; delegate implementation to isolated worker worktrees. |
+| 2026-08-09T11:20Z | `44afda5`, integration validation | Four-node DAG (T01 config, T02 runner+writers, T03 acceptance/baselines, corrective C01) completed and orchestrator-audited node by node. T01 `af314ea`: strict `streamfunction_solver` section (path-qualified unknown-key rejection at every nesting level, enabled-gated validation mirroring library ranges, resolved effective-config serialization; manifest pattern respected). T02 `545506a`: per-realization observational stage after velocity/before transport (zero-copy CompactMAC spans of the pipeline `VelocityField`, runner-constructed triply periodic BCs, fixed/measured vbar with documented single host transfer, config mapped onto library defaults, fields/workspace scoped and released before transport, exports independently gated: iteration_history.csv + trial_history.csv, summary.json, raw u1/u2 + meta under `streamfunctions/r_NNNN/grid_NNNN/`). T03 `765ac5f`: `apps/config_streamfunctions_homogeneous.yaml` (K=1 exact via sigma2=0, traced through the generator; 32^3 isotropic; PRESPECIFIED thresholds) + base-build baseline comparison. **T03's comparison exposed T02-F1 (MINOR): an extra "[6] Computing velocity (padded)" stdout line on the disabled pspta+diagnostics path** (numerics/artifacts byte-identical); corrective C01 `44afda5` restored the exact baseline print semantics (+8/−1). Single integrator verified the linear chain (9 files +875/−11; physics/multigrid/numerics/tests/docs untouched) and reran everything green; final commit `44afda5`, no integration commit. | Acceptance evidence (worker + integrator + orchestrator reruns agreeing): disabled baseline — artifact trees identical, ALL numeric CSVs byte-identical vs the base build, expected-only deltas (new disabled section in effective config; manifest run-identity), pspta stdout restored to exactly one "(compact)" line, zero streamfunctions dirs emitted; par2 recorded honestly (both binaries OOM at the same pre-existing local 4 GiB ceiling with identical pre-crash artifacts; full par2 needs the remote V100). Enabled homogeneous pipeline run: `status=converged exit=converged iters=0 r_F=0.000e+00`, and from the exported artifacts (orchestrator-verified): r_F=0.0, e_v=0.0 (<= prespecified 1e-8 Darcy-rtol bound), RMS(u1)=RMS(u2)=0.0 and means 0.0 exact (raw float64 dumps, 262144 B each), single k=0 history row, header-only trial history, resolved config section in effective_config.yaml. Config rejections actionable (e.g. "[streamfunction_solver.picard.omega] must be finite and in (0, 1]"). Full suite: ctest 5/5, run_operator_tests 8/8, checker OK. Hardware: RTX 3050 4 GiB, Debug sm_86, sccache launchers disabled. | Orchestrator FINAL_AUDIT on the control checkout, then publish PR as `awaiting_review`. |
+| 2026-08-09T11:25Z | `44afda5`, final audit PASS | Orchestrator personally re-audited the integrated head on the control checkout: fresh reconfigure/build, ctest 5/5, 8/8 operator tests, both smokes, checker green; every spec acceptance threshold personally verified from the artifacts (exact zeros; baseline stdout; no streamfunction output in disabled runs). Gate 1 + Gate 3A(integration) PASS; Gate 2 surface untouched (library unmodified); Gate 4/5, V100 N/A. Rollback policy honored (no compatibility fallback added; solver storage released before transport). | Flagged for the human reviewer: (1) the seven activation interpretive decisions — esp. runner-constructed periodic streamfunction BCs independent of the flow BCs (documented v1 scope limitation) and the observational never-gates-transport semantics; (2) the par2 local-OOM environment ceiling (V100 needed for full par2 validation); (3) per-realization workspace re-prepare (SF-23 optimization candidate); (4) mandatory-review paths `src/io/` + `src/runtime/`. Frozen audited source head: `44afda5`. | Publish PR as `awaiting_review`; do not advance `NEXT`; await explicit human approval. |
+| 2026-08-09T10:38Z | `0a3ba91` published, PR #28 open | Delivery branch pushed and [PR #28](https://github.com/santi-esquerre/MacroFlow3D/pull/28) opened as `awaiting_review` with the frozen audited source head `44afda5` (later commits are increment-state documentation only). | PR description carries the DAG, the corrective cycle (T02-F1 stdout finding caught by T03's base-build comparison), full acceptance evidence, interpretive decisions, and the recorded par2/V100 limitation. No agent merges; `NEXT` remains `SF-16`. | Await explicit human review/approval of PR #28; on approval, add only the closure metadata commit (`done`, checklist, `NEXT: SF-17`) on this same PR. |
+| 2026-08-09T15:45Z | PR #28 head `5cec76b`, human approval | The repository owner explicitly approved PR #28 with the instruction "Apruebo la PR #28, hacé el cierre". No GitHub review object exists (`reviews=0`); the approval fact is this recorded instruction. Verified before closure: PR #28 `OPEN` at head `5cec76b` — exactly the published state; frozen audited source head `44afda5` unchanged (later commits are increment-state documentation only), so the approval applies to the audited content. | The approval covers the items flagged at publication: the seven activation interpretive decisions (runner-constructed periodic streamfunction BCs independent of the flow BCs, observational never-gates-transport semantics, the prespecified `e_v <= 1e-8` Darcy-rtol bound), the T02-F1 corrective cycle, the par2 local-OOM/V100 limitation, the per-realization workspace re-prepare note, and the mandatory-review paths `src/io/` + `src/runtime/`. | Closure metadata commit on this PR: set `done`, complete checklist, advance `NEXT` to `SF-17`. |
+| 2026-08-09T15:45Z | closure metadata commit | SF-16 set `done`; checklist completed 7/7; dashboard updated (`SF-16` checked, `Last completed increment: SF-16`, `NEXT: SF-17`, active goal `none`); checker rerun. The new `NEXT: SF-17` exists only on this PR branch until a human merges it and does not authorize work ahead of the default branch. | Metadata/documentation-only diff (increment spec + dashboard); frozen audited source head remains `44afda5`. | Human merges PR #28; SF-17 (eta/epsilon continuation) may activate only after this closure state is visible on `master`. |
