@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-16`
-- Active runtime goal: `none`
+- Active runtime goal: `Integrar configuración, logging, exportación y pipeline sin alterar el comportamiento por defecto.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
