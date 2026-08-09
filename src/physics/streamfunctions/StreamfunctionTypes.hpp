@@ -170,6 +170,27 @@ struct AdaptivePicardConfig {
 };
 
 /**
+ * How `solve_streamfunctions` initializes `u1`/`u2` before the Picard loop
+ * (SF-17). `zero_source` is the SF-13 default and remains bitwise identical
+ * to every prior increment: `u1`/`u2` are zero-initialized and the two
+ * zero-source block solves run to produce Picard state 0. `warm_start`
+ * (SF-17, used by `ContinuationController` to carry the last ACCEPTED state
+ * across a continuation stage) skips both the zero-init and the zero-source
+ * block solves entirely; state 0 is instead the caller-provided
+ * `fields.u1_span()`/`u2_span()`, mean-zero projected in place (gauge
+ * defense) before the Picard loop starts. In both cases entry 0 of
+ * `report.picard_history` carries default-constructed
+ * `psi1_result`/`psi2_result` per the documented layout convention (see
+ * `StreamfunctionSolveReport::picard_history`): under `zero_source` that
+ * entry is overwritten in-place by the initialization's own PCG results
+ * before the Picard loop runs (unchanged SF-13..16 behavior); under
+ * `warm_start` no such initialization solve exists, so
+ * `report.psi1_result`/`psi2_result` genuinely remain default-constructed
+ * until the first successful Picard update step.
+ */
+enum class PicardInitialState { zero_source, warm_start };
+
+/**
  * Composed, host-only configuration for one `solve_streamfunctions` call
  * (SF-13 consumes this; SF-12 only defines and validates it).
  *
@@ -206,6 +227,11 @@ struct StreamfunctionSolverConfig {
     real epsilon{real{1e-2}};
     int num_degeneracy_thresholds{0};
     real degeneracy_thresholds[kMaxDegeneracyThresholds]{};
+
+    // SF-17: how u1/u2 are initialized before the Picard loop. Defaults to
+    // `zero_source`, the bitwise-unchanged SF-13..16 behavior; see
+    // `PicardInitialState` above.
+    PicardInitialState initial_state{PicardInitialState::zero_source};
 };
 
 /**

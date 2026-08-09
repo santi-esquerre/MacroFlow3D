@@ -13,7 +13,19 @@
  * stagnation detection, trial-rejection guards) on top of the SAME
  * fixed-point map: no new fixed point is introduced anywhere in this file.
  *
- * v1 zero-source initialization (SF-13, unchanged):
+ * SF-17 adds a `config.initial_state` switch (`PicardInitialState` in
+ * `StreamfunctionTypes.hpp`). `zero_source` (default) reproduces the SF-13
+ * v1 initialization below EXACTLY. `warm_start` instead skips the zero-init
+ * and the zero-source block solves entirely: state 0 is the caller-provided
+ * `fields.u1_span()`/`u2_span()`, mean-zero projected in place before the
+ * Picard loop; `report.psi1_result`/`psi2_result` remain default-constructed
+ * until the first Picard update step. This is the mechanism
+ * `ContinuationController` (SF-17) uses to carry the last ACCEPTED state
+ * across a continuation stage; see `PicardInitialState` for the full
+ * contract.
+ *
+ * v1 zero-source initialization (SF-13, unchanged under
+ * `initial_state == zero_source`):
  *   - `u1`, `u2` are zero-initialized on every call (no warm start).
  *   - `q = 1/K` or `q = exp(-Y)` is filled from `problem.conductivity` per
  *     `problem.conductivity_representation`.
