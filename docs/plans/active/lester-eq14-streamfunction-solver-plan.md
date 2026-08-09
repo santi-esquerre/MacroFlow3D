@@ -24,13 +24,13 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-17`
-- Active runtime goal: `Implementar continuación adaptativa en eta y epsilon con rollback.`
+- NEXT: `SF-18`
+- Active runtime goal: `none`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-16`
+- Last completed increment: `SF-17`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`. Within that one active increment, the orchestrator
@@ -121,7 +121,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-14 — Fixed-relaxation Picard](lester-eq14/increments/SF-14-fixed-picard.md)
 - [x] [SF-15 — Adaptive Picard](lester-eq14/increments/SF-15-adaptive-picard.md)
 - [x] [SF-16 — Pipeline, configuration, and output](lester-eq14/increments/SF-16-pipeline-io-config.md)
-- [ ] [SF-17 — Eta and epsilon continuation](lester-eq14/increments/SF-17-eta-epsilon-continuation.md)
+- [x] [SF-17 — Eta and epsilon continuation](lester-eq14/increments/SF-17-eta-epsilon-continuation.md)
 - [ ] [SF-18 — Periodic Gaussian generator](lester-eq14/increments/SF-18-periodic-gaussian-generator.md)
 - [ ] [SF-19 — Affine-periodic Darcy solve](lester-eq14/increments/SF-19-affine-periodic-darcy.md)
 - [ ] [SF-20 — Heterogeneity continuation](lester-eq14/increments/SF-20-heterogeneity-continuation.md)
