@@ -210,6 +210,32 @@ struct ConfigSerializer {
         std::fprintf(f, "    summary: %s\n", sf.exports.summary ? "true" : "false");
         std::fprintf(f, "    fields: %s\n", sf.exports.fields ? "true" : "false");
 
+        // Continuation (SF-17 T03). eta.target == sf.eta (top-level, the eta
+        // TARGET), epsilon.start == sf.epsilon (top-level, the epsilon
+        // STARTING value) — neither is duplicated here (activation bitácora
+        // decision 9).
+        const auto& cont = sf.continuation;
+        std::fprintf(f, "  continuation:\n");
+        std::fprintf(f, "    enabled: %s\n", cont.enabled ? "true" : "false");
+        std::fprintf(f, "    eta:\n");
+        std::fprintf(f, "      start: %.15e\n", (double)cont.eta.start);
+        std::fprintf(f, "      initial_step: %.15e\n", (double)cont.eta.initial_step);
+        std::fprintf(f, "      min_step: %.15e\n", (double)cont.eta.min_step);
+        std::fprintf(f, "      max_step: %.15e\n", (double)cont.eta.max_step);
+        std::fprintf(f, "      backtrack_factor: %.15e\n", (double)cont.eta.backtrack_factor);
+        std::fprintf(f, "      growth_factor: %.15e\n", (double)cont.eta.growth_factor);
+        std::fprintf(f, "      easy_streak: %d\n", cont.eta.easy_streak);
+        std::fprintf(f, "    epsilon:\n");
+        std::fprintf(f, "      target: %.15e\n", (double)cont.epsilon.target);
+        std::fprintf(f, "      initial_step_log10: %.15e\n",
+                     (double)cont.epsilon.initial_step_log10);
+        std::fprintf(f, "      min_step_log10: %.15e\n", (double)cont.epsilon.min_step_log10);
+        std::fprintf(f, "      max_step_log10: %.15e\n", (double)cont.epsilon.max_step_log10);
+        std::fprintf(f, "      backtrack_factor: %.15e\n",
+                     (double)cont.epsilon.backtrack_factor);
+        std::fprintf(f, "      growth_factor: %.15e\n", (double)cont.epsilon.growth_factor);
+        std::fprintf(f, "      easy_streak: %d\n", cont.epsilon.easy_streak);
+
         std::fclose(f);
         return true;
     }

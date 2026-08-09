@@ -136,6 +136,24 @@ inline AppConfig make_default_config() {
     cfg.streamfunction_solver.exports.summary = true;
     cfg.streamfunction_solver.exports.fields = false;
 
+    // Streamfunction solver continuation (SF-17 T03) — disabled by default,
+    // no behavior change: the SF-16 single-solve path stays byte-identical.
+    cfg.streamfunction_solver.continuation.enabled = false;
+    cfg.streamfunction_solver.continuation.eta.start = 0.0;
+    cfg.streamfunction_solver.continuation.eta.initial_step = 0.1;
+    cfg.streamfunction_solver.continuation.eta.min_step = 0.0125;
+    cfg.streamfunction_solver.continuation.eta.max_step = 0.25;
+    cfg.streamfunction_solver.continuation.eta.backtrack_factor = 0.5;
+    cfg.streamfunction_solver.continuation.eta.growth_factor = 1.5;
+    cfg.streamfunction_solver.continuation.eta.easy_streak = 2;
+    cfg.streamfunction_solver.continuation.epsilon.target = 1.0e-6;
+    cfg.streamfunction_solver.continuation.epsilon.initial_step_log10 = 1.0;
+    cfg.streamfunction_solver.continuation.epsilon.min_step_log10 = 0.125;
+    cfg.streamfunction_solver.continuation.epsilon.max_step_log10 = 1.0;
+    cfg.streamfunction_solver.continuation.epsilon.backtrack_factor = 0.5;
+    cfg.streamfunction_solver.continuation.epsilon.growth_factor = 1.5;
+    cfg.streamfunction_solver.continuation.epsilon.easy_streak = 2;
+
     return cfg;
 }
 

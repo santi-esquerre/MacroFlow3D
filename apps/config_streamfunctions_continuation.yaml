@@ -1,0 +1,166 @@
+# ==============================================================================
+# MacroFlow3D — Streamfunction continuation acceptance config (homogeneous K)
+# ==============================================================================
+#
+# SF-17 T03 acceptance fixture for the eta/epsilon continuation controller
+# (`streamfunction_solver.continuation:` section, wired in SF-17 T03; the
+# controller itself is `streamfunctions::run_streamfunction_continuation`,
+# SF-17 T01). This is a NEW file: the SF-16 acceptance fixture
+# `apps/config_streamfunctions_homogeneous.yaml` is left untouched.
+#
+# Physics is copied unchanged from the SF-16 homogeneous fixture (see that
+# file's header comment for the full derivation): 32^3 grid, isotropic
+# dx=dy=dz=1.0, stochastic.sigma2=0.0 forces K=1.0 exactly at every cell
+# (SF-13 homogeneous-K benchmark, where the affine RHS telescopes to exactly
+# zero and u1=u2=0 exactly at every eta/epsilon), Dirichlet head drop along x
+# sized for exact U=1.0, y/z periodic, and the same minimal par2 transport
+# smoke pass.
+#
+# streamfunction_solver.continuation.enabled=true, all export switches on.
+# eta/epsilon are left at their strict-parser defaults (eta=1.0, the eta
+# continuation TARGET; epsilon=1.0e-2, the epsilon continuation STARTING
+# value — activation bitácora decision 9); continuation.eta and
+# continuation.epsilon are left at their strict-parser defaults too (the
+# dashboard-locked stepper values, and epsilon.target=1.0e-6).
+#
+# PRESPECIFIED acceptance thresholds (SF-17 activation bitácora decision 10,
+# never tuned after a run): continuation status=reached_target,
+# final_eta=1, final_epsilon=1e-6, 12 total stages (1 baseline + 7 eta stages
+# 0.1/0.2/0.35/0.5/0.725/0.95/1.0 + 4 epsilon decades 1e-3/1e-4/1e-5/1e-6),
+# EVERY stage accepted=1 with picard_iterations=0 and r_F=0.0 exact (K=1
+# homogeneous telescopes the affine RHS to exactly zero at every stage, so
+# every warm-started Picard solve accepts on iteration 0 with zero
+# halvings — hence every stage is "easy" and the step-growth schedule above
+# is exact, not merely expected).
+#
+# Run with:
+#   ./build/wsl-debug/macroflow3d_pipeline apps/config_streamfunctions_continuation.yaml
+# ==============================================================================
+
+run_mode: single_run
+
+# ------------------------------------------------------------------------------
+# grid
+# ------------------------------------------------------------------------------
+grid:
+  nx: 32
+  ny: 32
+  nz: 32
+  dx: 1.0
+
+# ------------------------------------------------------------------------------
+# stochastic — sigma2=0.0 forces K=K_mean=1.0 exactly at every cell (see
+# rationale above); other keys required by the strict parser but numerically
+# inert for this field.
+# ------------------------------------------------------------------------------
+stochastic:
+  sigma2: 0.0
+  corr_length: 8.0
+  n_modes: 8
+  covariance_type: 0
+  seed: 42
+  K_mean: 1.0
+
+# ------------------------------------------------------------------------------
+# flow — Dirichlet head drop along x sized for exact U=1.0 at K=1
+#   (dh/dx = (0 - 32)/32 = -1  =>  U = -K*dh/dx = 1.0); y/z periodic.
+# ------------------------------------------------------------------------------
+flow:
+  solver: mg_cg
+  mg_levels: 4
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-10
+  cg_check_every: 10
+  rtol: 1.0e-10
+
+  pin:
+    mode: off             # Dirichlet en west/east -> sistema no singular
+
+  bc:
+    west:   { type: dirichlet, value: 32.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+# ------------------------------------------------------------------------------
+# streamfunction_solver — Lester equation (14) solver stage (SF-16), with the
+# SF-17 T03 eta/epsilon continuation controller enabled. All keys other than
+# enabled/affine_mean_velocity/continuation.enabled left at strict-parser
+# defaults (see src/io/config/Config.hpp StreamfunctionSolverYamlConfig and
+# StreamfunctionContinuationYamlConfig).
+# ------------------------------------------------------------------------------
+streamfunction_solver:
+  enabled: true
+  affine_mean_velocity:
+    mode: fixed
+    value: 1.0
+  export:
+    iteration_history: true
+    summary: true
+    fields: true
+  continuation:
+    enabled: true
+
+# ------------------------------------------------------------------------------
+# transport — minimal par2 smoke pass (not the point of this fixture)
+# ------------------------------------------------------------------------------
+transport:
+  method: par2
+  n_particles: 50
+  dt: 1.0
+  n_steps: 20
+  porosity: 1.0
+  diffusion: 0.0
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 20
+  snapshot_every: 0
+  inject_x: 1.0
+
+# ------------------------------------------------------------------------------
+# analysis
+# ------------------------------------------------------------------------------
+analysis:
+  macrodispersion:
+    enabled: false
+    NR: 1
+    lambda: 8.0
+    vmean_norm: 1.0
+    sample_every: 10
+    var_estimator: biased
+
+  snapshots:
+    enabled: false
+    every: 100
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+# ------------------------------------------------------------------------------
+# diagnostics
+# ------------------------------------------------------------------------------
+diagnostics:
+  velocity_field: true
+
+# ------------------------------------------------------------------------------
+# output
+# ------------------------------------------------------------------------------
+output:
+  output_dir: ./output_streamfunctions_continuation
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary

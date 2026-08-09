@@ -325,7 +325,8 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
 
     static const std::set<std::string> known = {"enabled", "affine_mean_velocity", "epsilon",
                                                  "eta",     "picard",              "adaptive",
-                                                 "linear",  "mg",                  "export"};
+                                                 "linear",  "mg",                  "export",
+                                                 "continuation"};
     check_unknown_keys(node, known, "streamfunction_solver", errs);
 
     cfg.enabled = get_or<bool>(node, "enabled", def.enabled);
@@ -388,6 +389,61 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
             get_or<bool>(n, "iteration_history", def.exports.iteration_history);
         cfg.exports.summary = get_or<bool>(n, "summary", def.exports.summary);
         cfg.exports.fields = get_or<bool>(n, "fields", def.exports.fields);
+    }
+
+    if (node["continuation"]) {
+        const auto& n = node["continuation"];
+        static const std::set<std::string> continuation_known = {"enabled", "eta", "epsilon"};
+        check_unknown_keys(n, continuation_known, "streamfunction_solver.continuation", errs);
+
+        cfg.continuation.enabled = get_or<bool>(n, "enabled", def.continuation.enabled);
+
+        if (n["eta"]) {
+            const auto& en = n["eta"];
+            static const std::set<std::string> eta_known = {
+                "start",  "initial_step",    "min_step",     "max_step",
+                "backtrack_factor", "growth_factor", "easy_streak"};
+            check_unknown_keys(en, eta_known, "streamfunction_solver.continuation.eta", errs);
+
+            cfg.continuation.eta.start = get_or<real>(en, "start", def.continuation.eta.start);
+            cfg.continuation.eta.initial_step =
+                get_or<real>(en, "initial_step", def.continuation.eta.initial_step);
+            cfg.continuation.eta.min_step =
+                get_or<real>(en, "min_step", def.continuation.eta.min_step);
+            cfg.continuation.eta.max_step =
+                get_or<real>(en, "max_step", def.continuation.eta.max_step);
+            cfg.continuation.eta.backtrack_factor =
+                get_or<real>(en, "backtrack_factor", def.continuation.eta.backtrack_factor);
+            cfg.continuation.eta.growth_factor =
+                get_or<real>(en, "growth_factor", def.continuation.eta.growth_factor);
+            cfg.continuation.eta.easy_streak =
+                get_or<int>(en, "easy_streak", def.continuation.eta.easy_streak);
+        }
+
+        if (n["epsilon"]) {
+            const auto& en = n["epsilon"];
+            static const std::set<std::string> epsilon_known = {
+                "target",           "initial_step_log10", "min_step_log10",
+                "max_step_log10",   "backtrack_factor",   "growth_factor",
+                "easy_streak"};
+            check_unknown_keys(en, epsilon_known, "streamfunction_solver.continuation.epsilon",
+                               errs);
+
+            cfg.continuation.epsilon.target =
+                get_or<real>(en, "target", def.continuation.epsilon.target);
+            cfg.continuation.epsilon.initial_step_log10 = get_or<real>(
+                en, "initial_step_log10", def.continuation.epsilon.initial_step_log10);
+            cfg.continuation.epsilon.min_step_log10 =
+                get_or<real>(en, "min_step_log10", def.continuation.epsilon.min_step_log10);
+            cfg.continuation.epsilon.max_step_log10 =
+                get_or<real>(en, "max_step_log10", def.continuation.epsilon.max_step_log10);
+            cfg.continuation.epsilon.backtrack_factor = get_or<real>(
+                en, "backtrack_factor", def.continuation.epsilon.backtrack_factor);
+            cfg.continuation.epsilon.growth_factor =
+                get_or<real>(en, "growth_factor", def.continuation.epsilon.growth_factor);
+            cfg.continuation.epsilon.easy_streak =
+                get_or<int>(en, "easy_streak", def.continuation.epsilon.easy_streak);
+        }
     }
 
     return cfg;
