@@ -362,6 +362,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_homogeneous_gpu_cases.cu
         tests/streamfunctions/streamfunction_picard_fixed_gpu_cases.cu
         tests/streamfunctions/streamfunction_picard_adaptive_gpu_cases.cu
+        tests/streamfunctions/streamfunction_continuation_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -388,6 +389,20 @@ if(MACROFLOW3D_BUILD_APPS)
         --case picard_adaptive_degeneracy_rejection
         --case picard_adaptive_fixed_mode_equivalence
         --case picard_adaptive_config_error_contract
+    )
+    add_test(NAME streamfunction_continuation COMMAND streamfunction_operator_tests
+        --case continuation_stepper_eta_all_accept
+        --case continuation_stepper_epsilon_all_accept
+        --case continuation_stepper_reject_halve
+        --case continuation_stepper_floor
+        --case continuation_stepper_growth_streak_reset
+        --case continuation_config_validation_contract
+        --case continuation_warm_start_semantics
+        --case continuation_injected_failure_bitwise_restore
+        --case continuation_floor_exhaustion
+        --case continuation_invalid_problem_propagation
+        --case continuation_trig_control
+        --case continuation_homogeneous_control
     )
 
     # PETSc/SLEPc apps (only when backend is enabled)
