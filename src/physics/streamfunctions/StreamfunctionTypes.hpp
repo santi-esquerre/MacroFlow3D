@@ -181,12 +181,13 @@ struct AdaptivePicardConfig {
  * defense) before the Picard loop starts. In both cases entry 0 of
  * `report.picard_history` carries default-constructed
  * `psi1_result`/`psi2_result` per the documented layout convention (see
- * `StreamfunctionSolveReport::picard_history`): under `zero_source` that
- * entry is overwritten in-place by the initialization's own PCG results
- * before the Picard loop runs (unchanged SF-13..16 behavior); under
- * `warm_start` no such initialization solve exists, so
- * `report.psi1_result`/`psi2_result` genuinely remain default-constructed
- * until the first successful Picard update step.
+ * `StreamfunctionSolveReport::picard_history`); that does not change between
+ * modes. What differs is the top-level `report.psi1_result`/`psi2_result`:
+ * under `zero_source` they hold the initialization's own PCG results until
+ * the first successful Picard update overwrites them (unchanged SF-13..16
+ * behavior); under `warm_start` no initialization solve exists, so they
+ * genuinely remain default-constructed until the first successful Picard
+ * update step.
  */
 enum class PicardInitialState { zero_source, warm_start };
 
