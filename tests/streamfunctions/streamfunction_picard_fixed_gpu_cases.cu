@@ -286,9 +286,32 @@ template <typename Callable>
     return false;
 }
 
+// The trailing entry of a linear-block-failure history (the layout
+// documented on `history_layout_consistent` above: history.size() ==
+// iterations + 2 with a non-converged last entry) is the ONLY layout where a
+// history entry's r_F/r1/r2 are the documented NaN sentinel ("never
+// evaluated") rather than a finite value; every other entry, in every other
+// layout, must still be strictly finite.
 [[nodiscard]] bool history_scalars_finite(const StreamfunctionSolveReport& report) {
-    for (const auto& entry : report.picard_history) {
-        if (!finite_value(entry.r_F) || !finite_value(entry.r1) || !finite_value(entry.r2)) return false;
+    const auto& history = report.picard_history;
+    const auto iterations = static_cast<std::size_t>(report.picard_iterations);
+    const bool has_trailing_failure_record =
+        report.status == StreamfunctionSolveStatus::not_converged &&
+        history.size() == iterations + 2 && !history.empty() &&
+        (!history.back().psi1_result.converged || !history.back().psi2_result.converged);
+
+    for (std::size_t i = 0; i < history.size(); ++i) {
+        const auto& entry = history[i];
+        const bool is_trailing_failure_entry = has_trailing_failure_record && i + 1 == history.size();
+        if (is_trailing_failure_entry) {
+            if (!std::isnan(static_cast<double>(entry.r_F)) ||
+                !std::isnan(static_cast<double>(entry.r1)) ||
+                !std::isnan(static_cast<double>(entry.r2))) {
+                return false;
+            }
+        } else {
+            if (!finite_value(entry.r_F) || !finite_value(entry.r1) || !finite_value(entry.r2)) return false;
+        }
         if (!pcg_result_finite(entry.psi1_result) || !pcg_result_finite(entry.psi2_result)) return false;
     }
     return true;

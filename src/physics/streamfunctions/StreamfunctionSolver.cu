@@ -2,13 +2,13 @@
 
 #include "../../multigrid/coefficient_hierarchy.cuh"
 #include "../../numerics/blas/axpy.cuh"
-#include "../../numerics/blas/copy.cuh"
 #include "../../numerics/blas/scal.cuh"
 #include "../../numerics/constraints/MeanZeroProjector.cuh"
 #include "../../numerics/operators/lester_positive_diffusion_operator.cuh"
 #include "../../runtime/cuda_check.cuh"
 
 #include <cmath>
+#include <limits>
 
 namespace macroflow3d {
 namespace streamfunctions {
@@ -177,12 +177,27 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         // residual workspace, NOT re-evaluated between the two solves), x =
         // f1/f2 (reused as scratch for u_hat1/u_hat2; fully overwritten here
         // and again by the next iteration's residual enqueue above).
-        blas::copy(context, DeviceSpan<const real>(fields.u1_span()), workspace.f1());
+        //
+        // Zero (not warm-start) initial guess: near the Picard fixed point
+        // the current state u_i is already close to the block solution, so a
+        // warm start makes the initial projected residual O(||F_i||) (tiny),
+        // and the PCG RELATIVE stopping criterion (final/initial <= rtol)
+        // then demands an absolute residual at the double-precision rounding
+        // floor -- unattainable, so PCG stagnates at max_iterations even
+        // though the outer Picard iteration is healthy. Starting from x=0
+        // keeps the initial projected residual at the O(1) scale fixed by
+        // the affine RHS G_i at every Picard iteration, so `rtol=1e-10`
+        // stays attainable throughout; the fixed point is unchanged.
+        MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f1().data(), 0,
+                                               workspace.f1().size() * sizeof(real),
+                                               context.cuda_stream()));
         step_psi1_result = solvers::projected_pcg_solve(
             context, A, workspace.preconditioner(), workspace.residual_workspace().combined_rhs_g1(),
             workspace.f1(), config.linear, projector, workspace.pcg_workspace());
 
-        blas::copy(context, DeviceSpan<const real>(fields.u2_span()), workspace.f2());
+        MACROFLOW3D_CUDA_CHECK(cudaMemsetAsync(workspace.f2().data(), 0,
+                                               workspace.f2().size() * sizeof(real),
+                                               context.cuda_stream()));
         step_psi2_result = solvers::projected_pcg_solve(
             context, A, workspace.preconditioner(), workspace.residual_workspace().combined_rhs_g2(),
             workspace.f2(), config.linear, projector, workspace.pcg_workspace());
@@ -196,9 +211,13 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
 
             // The state-(k+1) residual was never evaluated (the failed
             // update is not applied to u1/u2 below), so this record's
-            // r_F/r1/r2 stay at their default (zero) value; only the failing
-            // linear results are meaningful here.
+            // r_F/r1/r2 are set to the documented NaN sentinel ("never
+            // evaluated") rather than a misleading default zero; only the
+            // failing linear results are meaningful here.
             PicardIterationRecord failed_record;
+            failed_record.r_F = std::numeric_limits<real>::quiet_NaN();
+            failed_record.r1 = std::numeric_limits<real>::quiet_NaN();
+            failed_record.r2 = std::numeric_limits<real>::quiet_NaN();
             failed_record.psi1_result = step_psi1_result;
             failed_record.psi2_result = step_psi2_result;
             report.picard_history.push_back(failed_record);

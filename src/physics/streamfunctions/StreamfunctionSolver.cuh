@@ -44,8 +44,15 @@
  *     frozen state k, against the SAME operator/MG hierarchy/PCG workspace:
  *     `u_hat1` solves `A u_hat1 = G1`, `u_hat2` solves `A u_hat2 = G2`. No
  *     residual re-evaluation occurs between the two block solves, so both
- *     sources are guaranteed to come from one immutable state. If either
- *     block solve fails to converge, the loop stops immediately with
+ *     sources are guaranteed to come from one immutable state. Each block
+ *     solve starts from a ZERO initial guess (not a warm start from the
+ *     current `u_i`): near the Picard fixed point a warm start makes the
+ *     initial projected residual O(||F_i||) (tiny), which makes the PCG
+ *     relative-residual stopping criterion (`final/initial <= rtol`)
+ *     unattainable at double precision; zero-initializing keeps the initial
+ *     projected residual at the O(1) scale set by the affine RHS `G_i`, so
+ *     `rtol` stays attainable at every Picard iteration. If either block
+ *     solve fails to converge, the loop stops immediately with
  *     `status == not_converged` (the failing pair is still recorded in
  *     `picard_history`).
  *   - Both fields are then updated as a PAIR with the SAME fixed relaxation
@@ -82,7 +89,8 @@
  *     `picard_history` distinguishes the two: iteration-budget exhaustion
  *     leaves `picard_history.size() == max_iter + 1` with every recorded
  *     block solve converged; a linear failure truncates the history early
- *     at the failing entry.
+ *     at the failing entry, whose `r_F`/`r1`/`r2` are the NaN sentinel
+ *     described on `PicardIterationRecord` (never evaluated).
  *   - `invalid_problem`: unchanged from SF-13 (degenerate measured `v_rms`).
  */
 
@@ -114,7 +122,13 @@ enum class StreamfunctionSolveStatus {
  * evaluated AT state k, together with the linear block results that
  * PRODUCED state k. See the file header for the exact layout convention
  * (entry 0 carries default-constructed `ProjectedPCGResult`s because state 0
- * is the SF-13 zero-source initialization, not a Picard update).
+ * is the SF-13 zero-source initialization, not a Picard update). The
+ * TRAILING record appended when a block solve fails to converge is a
+ * documented exception: its `r_F`/`r1`/`r2` are the NaN sentinel
+ * (`std::isnan`) meaning "never evaluated" (the state-(k+1) residual that
+ * would have produced them was never computed), and that record is
+ * identified by its non-converged `psi1_result`/`psi2_result`, not by its
+ * residual fields.
  */
 struct PicardIterationRecord {
     real r_F{};
