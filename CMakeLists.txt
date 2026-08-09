@@ -225,6 +225,8 @@ set(PHYSICS_SOURCES
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
     src/physics/stochastic/stochastic.cu
+    # SF-18: standalone truly-periodic spectral Gaussian generator (cuFFT).
+    src/physics/stochastic/PeriodicGaussianField.cu
     src/physics/flow/velocity_diagnostics.cu
     src/physics/particles/par2_adapter/Par2TransportAdapter.cu
     src/physics/particles/par2_adapter/Par2StatsAdapter.cu
@@ -270,8 +272,11 @@ add_library(macroflow3d_lib STATIC
 target_include_directories(macroflow3d_lib PUBLIC ${CMAKE_SOURCE_DIR})
 
 # Link dependencies — curand is needed by stochastic.cu (in the lib)
+# CUDA::cufft is needed by PeriodicGaussianField.cu (SF-18 periodic Gaussian
+# generator); scoped here because macroflow3d_lib is the only target that
+# owns this implementation.
 target_link_libraries(macroflow3d_lib
-    PUBLIC  CUDA::cudart CUDA::cublas CUDA::curand
+    PUBLIC  CUDA::cudart CUDA::cublas CUDA::curand CUDA::cufft
             yaml-cpp par2_core
 )
 
