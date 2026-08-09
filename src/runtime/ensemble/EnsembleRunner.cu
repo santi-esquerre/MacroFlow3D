@@ -316,7 +316,14 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             compute_velocity_from_head(vel_compact, head_field, K_field, grid, cfg.flow.bc, ctx);
         }
         if (need_padded) {
-            std::printf("  [6] Computing velocity (padded)\n");
+            // Baseline-stdout contract (T02-F1 fix): the pre-SF-16 pspta
+            // branch computed the diagnostics-only padded velocity silently
+            // (no print); only the non-pspta branch printed this line. Keep
+            // that exact console behavior while still computing padded
+            // velocity whenever it is actually needed.
+            if (cfg.transport.method != "pspta") {
+                std::printf("  [6] Computing velocity (padded)\n");
+            }
             compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
         }
         profiler.stop();
