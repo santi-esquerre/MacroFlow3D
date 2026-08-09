@@ -243,6 +243,21 @@ void require_valid_diagnostics_config(const PhysicalDiagnosticsConfig& diagnosti
     }
 }
 
+void require_valid_picard_config(const FixedPicardConfig& picard) {
+    if (picard.max_iter < 0) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a non-negative picard.max_iter");
+    }
+    if (!std::isfinite(picard.tolerance) || picard.tolerance <= real{0}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite, strictly positive picard.tolerance");
+    }
+    if (!std::isfinite(picard.omega) || picard.omega <= real{0} || picard.omega > real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite picard.omega in (0, 1]");
+    }
+}
+
 void require_valid_source_side_config(const StreamfunctionSolverConfig& config) {
     if (!std::isfinite(config.eta) || config.eta < real{0}) {
         throw std::invalid_argument("Streamfunction problem requires a finite, non-negative eta");
@@ -308,6 +323,7 @@ void validate_streamfunction_problem(const Grid3D& grid, const StreamfunctionPro
     require_valid_linear_config(config.linear);
     require_valid_histogram_config(config.histogram);
     require_valid_diagnostics_config(config.diagnostics);
+    require_valid_picard_config(config.picard);
     require_valid_source_side_config(config);
 }
 
@@ -536,6 +552,7 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     require_valid_linear_config(config.linear);
     require_valid_histogram_config(config.histogram);
     require_valid_diagnostics_config(config.diagnostics);
+    require_valid_picard_config(config.picard);
     require_valid_source_side_config(config);
 
     const std::size_t n = grid.num_cells();

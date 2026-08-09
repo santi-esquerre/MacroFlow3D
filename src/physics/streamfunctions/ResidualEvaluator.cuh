@@ -140,6 +140,15 @@ class StreamfunctionResidualWorkspace {
     void prepare(std::size_t n);
     [[nodiscard]] bool prepared_for(std::size_t n) const noexcept;
 
+    // Views of G_i = P(rhs_affine_i - eta*(q.*S_pair)) as computed by the
+    // most recent enqueue_streamfunction_residual call (SF-14). Valid until
+    // the next enqueue or prepare(). Throws std::logic_error if no enqueue
+    // has occurred. Additive, borrow-don't-own accessors: they expose the
+    // already-owned g1_/g2_ buffers read-only and change no existing
+    // behavior, buffer, or kernel of this evaluator.
+    [[nodiscard]] DeviceSpan<const real> combined_rhs_g1() const;
+    [[nodiscard]] DeviceSpan<const real> combined_rhs_g2() const;
+
     // Additive, behavior-neutral byte introspection (SF-12). Exact sum of
     // every owned DeviceBuffer capacity, recursing into the private
     // sub-workspaces. Never allocates.

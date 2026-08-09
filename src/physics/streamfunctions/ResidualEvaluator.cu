@@ -307,6 +307,24 @@ std::size_t StreamfunctionResidualWorkspace::estimate_device_bytes(std::size_t n
     return bytes;
 }
 
+DeviceSpan<const real> StreamfunctionResidualWorkspace::combined_rhs_g1() const {
+    if (!has_last_results_) {
+        throw std::logic_error(
+            "StreamfunctionResidualWorkspace::combined_rhs_g1 requires a preceding "
+            "enqueue_streamfunction_residual call");
+    }
+    return g1_.span();
+}
+
+DeviceSpan<const real> StreamfunctionResidualWorkspace::combined_rhs_g2() const {
+    if (!has_last_results_) {
+        throw std::logic_error(
+            "StreamfunctionResidualWorkspace::combined_rhs_g2 requires a preceding "
+            "enqueue_streamfunction_residual call");
+    }
+    return g2_.span();
+}
+
 bool StreamfunctionResidualWorkspace::prepared_for(std::size_t n) const noexcept {
     return n_ == n && psi1_x_.size() == n && psi1_y_.size() == n && psi1_z_.size() == n &&
            psi2_x_.size() == n && psi2_y_.size() == n && psi2_z_.size() == n &&

@@ -87,13 +87,37 @@ static_assert(std::is_trivially_copyable<StreamfunctionProblemView>::value,
               "StreamfunctionProblemView must be safe to copy by value (nonowning view)");
 
 /**
+ * Fixed-relaxation Picard configuration for the coupled nonlinear iteration
+ * (SF-14). Both defaults and the omega value are dashboard-locked for this
+ * increment: the outer loop performs plain fixed-point relaxation with no
+ * step rejection, no adaptive relaxation, and no continuation. Those are
+ * explicitly deferred to SF-15 and later increments.
+ *
+ *   - `max_iter`: maximum number of Picard update steps (block-solve pairs)
+ *     performed after the state-0 (zero-source) evaluation. `max_iter == 0`
+ *     performs no update step at all: the reported solution is exactly the
+ *     zero-source initialization, and `picard_iterations == 0`.
+ *   - `tolerance`: the nonlinear stop rule is `r_F <= tolerance`, checked at
+ *     the head of every loop iteration (including k = 0, before any update).
+ *   - `omega`: the SAME fixed relaxation factor applied to both `u1` and
+ *     `u2` as a pair on every update step: `u_i <- (1-omega)*u_i +
+ *     omega*u_hat_i`, where `u_hat_i` solves the frozen-state linear block.
+ */
+struct FixedPicardConfig {
+    int max_iter{500};
+    real tolerance{real{1e-6}};
+    real omega{real{0.25}};
+};
+
+/**
  * Composed, host-only configuration for one `solve_streamfunctions` call
  * (SF-13 consumes this; SF-12 only defines and validates it).
  *
  * This struct composes, rather than duplicates, every accepted sub-config:
  * `mg` (the accepted multigrid V-cycle stack), `linear` (SF-04 projected
  * PCG), `histogram` (SF-09/10 |c| histogram bin range), `diagnostics`
- * (SF-11 physical diagnostics thresholds). `eta` and `epsilon` are the
+ * (SF-11 physical diagnostics thresholds), `picard` (SF-14 fixed-relaxation
+ * Picard iteration limits). `eta` and `epsilon` are the
  * Lester equation (14) nonlinear-source parameters threaded into
  * `NonlinearSourceConfig::epsilon` and the residual combination weight;
  * defaults follow the plan's documented starting values: `eta = 1`
@@ -115,6 +139,7 @@ struct StreamfunctionSolverConfig {
     solvers::ProjectedPCGConfig linear{};
     ResidualHistogramConfig histogram{};
     PhysicalDiagnosticsConfig diagnostics{};
+    FixedPicardConfig picard{};
 
     real eta{real{1}};
     real epsilon{real{1e-2}};
@@ -200,7 +225,9 @@ struct StreamfunctionMemoryReport {
  *     `max_iter >= 0`, `check_every > 0`, and finite `rtol >= 0`;
  *     `config.mg` must have `pre_smooth == post_smooth >= 1` and
  *     `coarse_solve_iters > 0` (the exact rule enforced downstream by
- *     `multigrid::validate_projected_positive_hierarchy`).
+ *     `multigrid::validate_projected_positive_hierarchy`); `config.picard`
+ *     must have `max_iter >= 0`, a finite `tolerance > 0`, and a finite
+ *     `omega` in `(0, 1]`.
  *
  * Device-resident values of `K`/`Y` are intentionally NOT reduced or
  * validated here, matching the SF-06 wording that finiteness/positivity of
