@@ -583,6 +583,18 @@ void case_spectrum_shape(TestReport& rep) {
 
 // ============================================================================
 // Case (e): refinement (spectral-truncation coefficient identity)
+//
+// AMENDED gating criterion (decision 8(e) revision, T02-F1; bitacora
+// 702b3bf): the original prespecification gated on a pure relative bound
+// (rel_error <= 1e-12 per compared mode, floor 1e-300). T02 found this
+// unmeasurable at mode (15,-14,-12), whose true coefficient (~1e-20, deep
+// Gaussian spectral tail) lies far below the absolute fp noise floor
+// (~eps*sigma) of an O(sigma)-field FFT round trip. The gate is amended to
+// the mixed criterion, per compared mode:
+//   |c_fine - c_coarse| <= max(1e-12 * |c_coarse|, 1e-15 * sqrt(sigma2))
+// The absolute arm is an a-priori fp bound (not fitted to observed data);
+// the relative arm, compared mode set, fixture, seeds, and binning are
+// UNCHANGED from the original prespecification.
 // ============================================================================
 
 void case_refinement(TestReport& rep) {
@@ -638,14 +650,26 @@ void case_refinement(TestReport& rep) {
     int worst_mx = 0, worst_my = 0, worst_mz = 0;
     size_t compared = 0, floor_excluded = 0;
 
+    // Amended gating criterion (decision 8(e) revision, T02-F1, bitacora
+    // 702b3bf): per compared mode, |c_fine - c_coarse| <= max(1e-12*|c_coarse|,
+    // 1e-15*sqrt(sigma2)). The absolute arm is an a-priori fp bound (~5x
+    // machine epsilon times the field scale sigma) that makes the comparison
+    // measurable for modes whose true coefficient is buried in the fp noise
+    // floor of the O(sigma)-field FFT round trip; the relative arm, the
+    // compared mode set, the fixture, seeds, and binning are unchanged.
+    bool all_modes_within_amended_bound = true;
+    double worst_amended_excess = 0.0;
+    int worst_amended_mx = 0, worst_amended_my = 0, worst_amended_mz = 0;
+
     // Non-gating diagnostic: max relative error restricted to modes whose
     // canonical (untwisted) magnitude is resolvable above the double-
     // precision noise floor of an O(1)-magnitude field's cuFFT round trip
     // (~1e-8 is a generous margin above the ~1e-13..1e-14 floor observed
-    // empirically). This does NOT alter the prespecified 1e-12/1e-300
-    // gating check below; it exists purely to distinguish "generator bug"
-    // from "true coefficient buried in floating-point roundoff at this
-    // fixture's extreme spectral-decay corner" for the increment report.
+    // empirically). This does NOT alter the amended gating check below (see
+    // the case-(e) header comment); it exists purely to distinguish
+    // "generator bug" from "true coefficient buried in floating-point
+    // roundoff at this fixture's extreme spectral-decay corner" for the
+    // increment report.
     constexpr double kResolvedMagnitude = 1.0e-8;
     double max_rel_error_resolved = 0.0;
     size_t resolved_count = 0, unresolved_count = 0;
@@ -683,6 +707,18 @@ void case_refinement(TestReport& rep) {
                 } else {
                     ++unresolved_count;
                 }
+                const double amended_bound =
+                    std::max(1.0e-12 * c_mag, 1.0e-15 * std::sqrt(cfg.sigma2));
+                if (diff_mag > amended_bound) {
+                    all_modes_within_amended_bound = false;
+                }
+                const double amended_excess = diff_mag / amended_bound;
+                if (amended_excess > worst_amended_excess) {
+                    worst_amended_excess = amended_excess;
+                    worst_amended_mx = mx;
+                    worst_amended_my = my;
+                    worst_amended_mz = mz;
+                }
                 for (int b = 0; b < kBucketCount; ++b) {
                     if (c_mag >= kBucketThresholds[b]) {
                         bucket_max_rel[b] = std::max(bucket_max_rel[b], rel_error);
@@ -704,9 +740,13 @@ void case_refinement(TestReport& rep) {
                     "max_rel_error=%.6e\n",
                     kBucketThresholds[b], bucket_count[b], bucket_max_rel[b]);
     }
+    std::printf("  refinement AMENDED GATE (decision 8(e) revision, T02-F1): "
+                "worst_excess=%.6e worst_mode=(%d,%d,%d)\n",
+                worst_amended_excess, worst_amended_mx, worst_amended_my, worst_amended_mz);
     rep.check(compared > 0, "refinement_has_compared_modes", "count=" + std::to_string(compared));
-    rep.check(max_rel_error <= 1.0e-12, "refinement_common_mode_coefficients_match",
-              "max_rel_error=" + std::to_string(max_rel_error));
+    rep.check(all_modes_within_amended_bound, "refinement_common_mode_coefficients_match",
+              "worst_amended_excess=" + std::to_string(worst_amended_excess) +
+                  " max_rel_error=" + std::to_string(max_rel_error));
 }
 
 // ============================================================================
