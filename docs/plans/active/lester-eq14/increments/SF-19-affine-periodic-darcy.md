@@ -1,6 +1,6 @@
 # SF-19 — Affine-periodic Darcy solve
 
-- State: `awaiting_review`
+- State: `done`
 - Goal: `Resolver el flujo Darcy affine-periodic necesario para el benchmark triplemente periódico.`
 - Depends on: `SF-18`
 - Unlocks: `SF-20`
@@ -10,9 +10,9 @@
 - Human review: `required`
 - Owner: `Claude Fable (orchestrator)`
 - Started: `2026-08-10T15:33Z`
-- Completed: `not completed`
+- Completed: `2026-08-10 (explicit owner approval of PR #31; closure metadata commit on the same PR)`
 - PR: [#31 — SF-19: affine-periodic Darcy solve — homogenization cell problems, effective tensor, prescribed mean flux, mass-conservative CompactMAC velocity](https://github.com/santi-esquerre/MacroFlow3D/pull/31)
-- Commit: `cfcc2e13bdb0650bc3ed6a55378914a4e98d1b04 (frozen audited source head)`
+- Commit: `cfcc2e13bdb0650bc3ed6a55378914a4e98d1b04 (frozen audited source head; later branch commits are increment-state documentation only)`
 
 ## Scientific or engineering intent
 
@@ -89,9 +89,9 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [x] Target mean-flux solve and affine velocity reconstruction are implemented.
 - [x] Homogeneous, symmetry/SPD, flux, and mass tests pass.
 - [x] Existing flow cases remain unchanged.
-- [ ] Gate 4 interpretation and human review are recorded.
-- [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-19 complete and selects SF-20.
+- [x] Gate 4 interpretation and human review are recorded.
+- [x] Evidence, PR, and commit are recorded.
+- [x] Dashboard marks SF-19 complete and selects SF-20.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
@@ -107,3 +107,5 @@ continuation in the streamfunction solver.
 | 2026-08-10T14:45Z | `cfcc2e1`, integration validation | Two-node DAG completed and orchestrator-audited node by node, zero corrective cycles. T01 `0802b7b`: `AffinePeriodicFlowSolver.cuh/.cu` — three zero-mean periodic corrector cell problems `A_K w_d = P(div(K e_d))` on the accepted operator/projected-PCG/MG stack with the coefficient array = K (decision-1 adapter, explicitly commented), RHS via the UNMODIFIED SF-06 assembler with a degenerate `(e_d,e_d)` gauge pair (harmonic-face identity by construction), face-flux kernels using the operator's own `harmonic_mean_positive_cell_coefficient`, RAW unique-face `K_eff` (excludes the duplicated wrap plane; symmetry check is a genuine measurement, not energy-form-symmetrized), symmetry/SPD evidence computed BEFORE the full-3x3 Cramer solve on the UNSYMMETRIZED tensor (transverse coupling never discarded), recombined `h_tilde = sum G_d w_d`, affine CompactMAC velocity + per-cell divergence diagnostics, exact-byte memory report, Gate-4 note in the header; existing flow files byte-untouched. T02 `cfcc2e1`: `affine_periodic_flow` ctest entry implementing the PRESPECIFIED decision-6 fixtures/thresholds verbatim (rtol=1e-11 correctors), 37/37 checks green with no adjustment. Single integrator: trivial fast-forward (both approved commits preserved verbatim), 4 files +1722, zero conflicts, full validation green. | Acceptance evidence: K=1 (16^3, 32^3) all EXACT — 0-iteration correctors, K_eff=I (max dev 0.0), G=(1,0,0), uniform velocity, div=0.0. Trig 32^3: K_eff=1.004972*I, symmetry defect 3.7e-20 (<=1e-10), eigenvalues 1.004972 (>0), flux error 0.0 (<=1e-10), div_max 3.5e-15 (<=1e-8), 10 iters/direction — **effective-medium cross-check: exp(sigma^2/6)=1.0052 predicted, matches**. SF-18 periodic Gaussian 64^3 (sigma2=1, l=8, seed 12345): full tensor with off-diagonals up to 0.057 honored, symmetry defect 5.2e-17, eigenvalues 1.105/1.178/1.248 — **3D lognormal cross-check: e^{1/6}=1.181 predicted vs 1.178 observed**, G=(0.867,-0.003,-0.042), flux error 0.0, div_max 2.6e-13, 20 iters/direction, 3.32 s. Bitwise reproducibility across repeated solves. Four distinct validation messages. Full ctest 8/8. Hardware: RTX 3050 4 GiB, Debug sm_86, sccache launchers disabled. | Orchestrator FINAL_AUDIT on the control checkout. |
 | 2026-08-10T14:50Z | `cfcc2e1`, final audit PASS | Orchestrator personally re-audited the integrated head on the control checkout: fresh configure/build; full ctest 8/8 (793 s); pipeline invariance vs the orchestrator's OWN base build (exact `751071a` refs): pspta_small and the SF-16 homogeneous fixture have IDENTICAL stdout and byte-identical artifacts except manifest git_hash/timestamp — "existing flow cases remain unchanged" proven at the byte level; checker OK with `NEXT: SF-19` unchanged. Gate 1 + Gate 2 + Gate 3A prerequisite PASS; Gate 4 interpretation recorded (activation decision 7: this increment only constructs the reference flow; no transport/dispersion claims). | Flagged for the human reviewer: (1) the seven activation decisions — esp. the coefficient-K adapter reuse, the degenerate gauge-pair RHS trick, the RAW-tensor Cramer solve with SPD check, and the prespecified rtol=1e-11; (2) the Gate-4 statement; (3) the new host 3x3 helpers; (4) mandatory-review paths src/physics/flow/ + tests/. Frozen audited source head: `cfcc2e1`. | Publish PR as `awaiting_review`; do not advance `NEXT`; await explicit human approval. |
 | 2026-08-10T14:58Z | `2a016ff` published, PR #31 open | Delivery branch pushed and [PR #31](https://github.com/santi-esquerre/MacroFlow3D/pull/31) opened as `awaiting_review` with the frozen audited source head `cfcc2e1` (later commits are increment-state documentation only). | PR description carries the DAG (zero corrective cycles), the construction and its by-construction convention-identity arguments, all prespecified acceptance evidence including the two effective-medium physics cross-checks, the Gate-4 interpretation, and the reviewer flags. No agent merges; `NEXT` remains `SF-19`. | Await explicit human review/approval of PR #31; on approval, add only the closure metadata commit (`done`, checklist, `NEXT: SF-20`) on this same PR. |
+| 2026-08-10T17:42Z | PR #31 head `f6896cc`, human approval | The repository owner explicitly approved PR #31 with the instruction "Apruebo la PR #31, hacé el cierre". No GitHub review object exists (`reviews=0`); the approval fact is this recorded instruction. Verified before closure: PR #31 `OPEN` at head `f6896cc` — exactly the published state; frozen audited source head `cfcc2e1` unchanged (later commits are increment-state documentation only), so the approval applies to the audited content. | The approval covers the items flagged at publication: the seven activation interpretive decisions (coefficient-K adapter reuse of the accepted stack, degenerate gauge-pair RHS trick with its by-construction convention-identity argument, RAW-tensor Cramer solve with SPD check, prespecified rtol=1e-11), the Gate-4 interpretation statement (reference-flow construction only, no transport/dispersion claims), the new host 3x3 helpers, and the mandatory-review paths src/physics/flow/ + tests/. | Closure metadata commit on this PR: set `done`, complete checklist, advance `NEXT` to `SF-20`. |
+| 2026-08-10T17:42Z | closure metadata commit | SF-19 set `done`; checklist completed 7/7; dashboard updated (`SF-19` checked, `Last completed increment: SF-19`, `NEXT: SF-20`, active goal `none`); checker rerun. The new `NEXT: SF-20` exists only on this PR branch until a human merges it and does not authorize work ahead of the default branch. | Metadata/documentation-only diff (increment spec + dashboard); frozen audited source head remains `cfcc2e1`. | Human merges PR #31; SF-20 (heterogeneity/lambda continuation combining the SF-18 fields and SF-19 flow with the streamfunction solver) may activate only after this closure state is visible on `master`. |
