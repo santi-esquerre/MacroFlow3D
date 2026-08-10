@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-19`
-- Active runtime goal: `none`
+- Active runtime goal: `Resolver el flujo Darcy affine-periodic necesario para el benchmark triplemente periódico.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
