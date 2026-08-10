@@ -225,6 +225,8 @@ set(PHYSICS_SOURCES
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
     src/physics/stochastic/stochastic.cu
+    # SF-18: standalone truly-periodic spectral Gaussian generator (cuFFT).
+    src/physics/stochastic/PeriodicGaussianField.cu
     src/physics/flow/velocity_diagnostics.cu
     src/physics/particles/par2_adapter/Par2TransportAdapter.cu
     src/physics/particles/par2_adapter/Par2StatsAdapter.cu
@@ -270,8 +272,11 @@ add_library(macroflow3d_lib STATIC
 target_include_directories(macroflow3d_lib PUBLIC ${CMAKE_SOURCE_DIR})
 
 # Link dependencies — curand is needed by stochastic.cu (in the lib)
+# CUDA::cufft is needed by PeriodicGaussianField.cu (SF-18 periodic Gaussian
+# generator); scoped here because macroflow3d_lib is the only target that
+# owns this implementation.
 target_link_libraries(macroflow3d_lib
-    PUBLIC  CUDA::cudart CUDA::cublas CUDA::curand
+    PUBLIC  CUDA::cudart CUDA::cublas CUDA::curand CUDA::cufft
             yaml-cpp par2_core
 )
 
@@ -404,6 +409,16 @@ if(MACROFLOW3D_BUILD_APPS)
         --case continuation_trig_control
         --case continuation_homogeneous_control
     )
+
+    # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3
+    # memory/runtime record. Standalone (mirrors run_operator_tests.cu),
+    # not part of the streamfunctions case registry.
+    add_executable(periodic_gaussian_tests tests/stochastic/periodic_gaussian_tests.cu)
+    target_link_libraries(periodic_gaussian_tests PRIVATE macroflow3d_lib)
+    target_compile_options(periodic_gaussian_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME periodic_gaussian COMMAND periodic_gaussian_tests)
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
