@@ -224,6 +224,9 @@ set(PHYSICS_SOURCES
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
+    # SF-19: standalone affine-periodic Darcy solve for the triply periodic
+    # benchmark (does not touch the Dirichlet head/velocity path above).
+    src/physics/flow/AffinePeriodicFlowSolver.cu
     src/physics/stochastic/stochastic.cu
     # SF-18: standalone truly-periodic spectral Gaussian generator (cuFFT).
     src/physics/stochastic/PeriodicGaussianField.cu
@@ -419,6 +422,17 @@ if(MACROFLOW3D_BUILD_APPS)
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
     add_test(NAME periodic_gaussian COMMAND periodic_gaussian_tests)
+
+    # SF-19 T02: affine-periodic Darcy solve acceptance tests
+    # (AffinePeriodicFlowSolver.cuh). Standalone (mirrors
+    # periodic_gaussian_tests.cu), not part of the streamfunctions case
+    # registry.
+    add_executable(affine_periodic_flow_tests tests/flow/affine_periodic_flow_tests.cu)
+    target_link_libraries(affine_periodic_flow_tests PRIVATE macroflow3d_lib)
+    target_compile_options(affine_periodic_flow_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME affine_periodic_flow COMMAND affine_periodic_flow_tests)
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
