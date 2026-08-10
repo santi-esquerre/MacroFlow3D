@@ -809,7 +809,16 @@ template <typename Callable>
         }
         if (call == 1) {
             // First eta-leg attempt: scribble garbage into fields and
-            // fabricate a not_converged report -- never a real solve.
+            // fabricate a not_converged report -- never a real solve. The
+            // driver's snapshot of the just-accepted baseline state is a
+            // pending stream-ordered `cudaMemcpyAsync` on `c.cuda_stream()`
+            // (a non-blocking stream, see CudaContext); `scribble_fields`
+            // below issues a legacy-default-stream BLOCKING `cudaMemcpy`,
+            // which does NOT implicitly wait on that non-blocking stream, so
+            // without this synchronize the scribble can race ahead of the
+            // pending snapshot copy and corrupt it. Mirrors the call==2
+            // rationale below.
+            c.synchronize();
             scribble_fields(f, real{12345.0});
             return fabricated_report(StreamfunctionSolveStatus::not_converged);
         }
