@@ -423,6 +423,17 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME periodic_gaussian COMMAND periodic_gaussian_tests)
 
+    # SF-19 T02: affine-periodic Darcy solve acceptance tests
+    # (AffinePeriodicFlowSolver.cuh). Standalone (mirrors
+    # periodic_gaussian_tests.cu), not part of the streamfunctions case
+    # registry.
+    add_executable(affine_periodic_flow_tests tests/flow/affine_periodic_flow_tests.cu)
+    target_link_libraries(affine_periodic_flow_tests PRIVATE macroflow3d_lib)
+    target_compile_options(affine_periodic_flow_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME affine_periodic_flow COMMAND affine_periodic_flow_tests)
+
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
         # Minimal smoke test — verifies init, VECCUDA creation, link
