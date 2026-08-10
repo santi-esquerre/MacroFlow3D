@@ -224,6 +224,9 @@ set(PHYSICS_SOURCES
     src/physics/flow/rhs_head.cu
     src/physics/flow/solve_head.cu
     src/physics/flow/velocity_from_head.cu
+    # SF-19: standalone affine-periodic Darcy solve for the triply periodic
+    # benchmark (does not touch the Dirichlet head/velocity path above).
+    src/physics/flow/AffinePeriodicFlowSolver.cu
     src/physics/stochastic/stochastic.cu
     # SF-18: standalone truly-periodic spectral Gaussian generator (cuFFT).
     src/physics/stochastic/PeriodicGaussianField.cu
