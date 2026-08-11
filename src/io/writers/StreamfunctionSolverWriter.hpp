@@ -119,6 +119,38 @@ struct StreamfunctionSolverWriter {
         return "unknown";
     }
 
+    // ── SF-21 T03: heterogeneity (lambda) continuation echo helpers ───────
+
+    static const char* heterogeneity_status_str(streamfunctions::HeterogeneityStatus s) {
+        using S = streamfunctions::HeterogeneityStatus;
+        switch (s) {
+        case S::reached_target:
+            return "reached_target";
+        case S::baseline_failed:
+            return "baseline_failed";
+        case S::lambda_floor_exhausted:
+            return "lambda_floor_exhausted";
+        case S::epsilon_floor_exhausted:
+            return "epsilon_floor_exhausted";
+        case S::invalid_problem:
+            return "invalid_problem";
+        }
+        return "unknown";
+    }
+
+    static const char* heterogeneity_axis_str(streamfunctions::HeterogeneityAxis a) {
+        using A = streamfunctions::HeterogeneityAxis;
+        switch (a) {
+        case A::lambda:
+            return "lambda";
+        case A::eta_rescue:
+            return "eta_rescue";
+        case A::epsilon:
+            return "epsilon";
+        }
+        return "unknown";
+    }
+
     static const char* trial_outcome_str(streamfunctions::PicardTrialOutcome o) {
         using O = streamfunctions::PicardTrialOutcome;
         switch (o) {
@@ -197,6 +229,38 @@ struct StreamfunctionSolverWriter {
         }
     }
 
+    // ── stage_history.csv (heterogeneity runs): one row per SF-21
+    // HeterogeneityStageRecord. Same file path as the SF-17 overload above
+    // (io::OutputLayout::streamfunction_stage_history_csv); only one of the
+    // two overloads is ever called for a given realization/grid.
+
+    static void write_stage_history(
+        const std::string& path,
+        const std::vector<streamfunctions::HeterogeneityStageRecord>& history) {
+        std::ofstream f(path, std::ios::trunc);
+        if (!f.is_open())
+            throw std::runtime_error("[StreamfunctionSolverWriter] Cannot open: " + path);
+
+        f << "axis,lambda,eta,epsilon,base_axis,param_start,param_attempted,step_attempted,"
+             "accepted,failure,exit_reason,picard_iterations,final_omega,r_F,r1,r2,"
+             "mg_rebuild_count,e_v,invariance_e_psi1,invariance_e_psi2,e_div,c_percentile_p001,"
+             "degeneracy_total0,degeneracy_unexplained0,psi1_iterations,psi2_iterations\n";
+
+        for (const auto& s : history) {
+            const auto& b = s.base;
+            f << heterogeneity_axis_str(s.axis) << ',' << s.lambda_value << ',' << s.eta_value
+              << ',' << s.epsilon_value << ',' << continuation_axis_str(b.axis) << ','
+              << b.param_start << ',' << b.param_attempted << ',' << b.step_attempted << ','
+              << (b.accepted ? 1 : 0) << ',' << continuation_failure_str(b.failure) << ','
+              << exit_reason_str(b.exit_reason) << ',' << b.picard_iterations << ','
+              << b.final_omega << ',' << b.r_F << ',' << b.r1 << ',' << b.r2 << ','
+              << s.mg_rebuild_count << ',' << s.e_v << ',' << s.invariance_e_psi1 << ','
+              << s.invariance_e_psi2 << ',' << s.e_div << ',' << s.c_percentile_p001 << ','
+              << s.degeneracy_total0 << ',' << s.degeneracy_unexplained0 << ','
+              << b.psi1_iterations << ',' << b.psi2_iterations << '\n';
+        }
+    }
+
     // ── summary.json: flat, stable-schema single-report summary ───────────
     //
     // The 6-argument overload keeps the SF-16 schema byte-identical (no
@@ -222,6 +286,53 @@ struct StreamfunctionSolverWriter {
         jc["num_stages"] = continuation_report.stage_history.size();
         jc["snapshot_bytes"] = continuation_report.snapshot_bytes;
         j["continuation"] = jc;
+
+        std::ofstream f(path, std::ios::trunc);
+        if (!f.is_open())
+            throw std::runtime_error("[StreamfunctionSolverWriter] Cannot open: " + path);
+        f << j.dump(2) << "\n";
+    }
+
+    // SF-21 T03: heterogeneity (lambda) continuation runs. Extends
+    // build_summary_json (SF-16 schema, computed from
+    // heterogeneity_report.final_solve) with a "heterogeneity" object; never
+    // called together with either overload above for the same realization.
+    static void write_summary_json(
+        const std::string& path, const Grid3D& grid, const StreamfunctionSolverYamlConfig& cfg_yaml,
+        real vbar_used, const streamfunctions::HeterogeneityContinuationReport& heterogeneity_report) {
+        using json = nlohmann::json;
+        json j = build_summary_json(grid, cfg_yaml, vbar_used, heterogeneity_report.final_solve);
+
+        json jh;
+        jh["status"] = heterogeneity_status_str(heterogeneity_report.status);
+        if (heterogeneity_report.status != streamfunctions::HeterogeneityStatus::reached_target) {
+            jh["failed_axis"] = heterogeneity_axis_str(heterogeneity_report.failed_axis);
+        }
+        jh["final_lambda"] = (double)heterogeneity_report.final_lambda;
+        jh["final_eta"] = (double)heterogeneity_report.final_eta;
+        jh["final_epsilon"] = (double)heterogeneity_report.final_epsilon;
+        jh["num_stages"] = heterogeneity_report.stage_history.size();
+        jh["total_mg_rebuilds"] = heterogeneity_report.total_mg_rebuilds;
+        jh["snapshot_bytes"] = heterogeneity_report.snapshot_bytes;
+        jh["driver_owned_bytes"] = heterogeneity_report.driver_owned_bytes;
+
+        const auto& flow = heterogeneity_report.final_flow;
+        json k_eff = json::array();
+        for (int i = 0; i < 3; ++i) {
+            json row = json::array();
+            for (int d = 0; d < 3; ++d)
+                row.push_back((double)flow.K_eff[i][d]);
+            k_eff.push_back(row);
+        }
+        jh["final_flow"] = {
+            {"K_eff", k_eff},
+            {"G", {(double)flow.G[0], (double)flow.G[1], (double)flow.G[2]}},
+            {"achieved_mean_flux",
+             {(double)flow.achieved_mean_flux[0], (double)flow.achieved_mean_flux[1],
+              (double)flow.achieved_mean_flux[2]}},
+            {"div_max_abs", (double)flow.div_max_abs},
+            {"div_rms", (double)flow.div_rms}};
+        j["heterogeneity"] = jh;
 
         std::ofstream f(path, std::ios::trunc);
         if (!f.is_open())

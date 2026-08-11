@@ -1,0 +1,161 @@
+# ==============================================================================
+# MacroFlow3D — Streamfunction heterogeneity continuation, 64^3, sigma_Y^2=4.0
+# ==============================================================================
+#
+# SF-21 T03 recorded-experiment fixture (activation bitácora decision 5c):
+# one of the four 64^3 sigma_Y^2 variances in the fixed-seed suite (dx=1,
+# ell=8 => ell/h=8, L/ell = 64/8 = 8). See
+# config_streamfunctions_gaussian_smoke32.yaml for the full field_source/
+# darcy_source/continuation.lambda rationale (identical wiring, only grid
+# size, sigma2, and continuation.epsilon.target differ).
+#
+# continuation.epsilon.target = 1.0e-6 (the strict-parser default, left
+# explicit here for clarity): unlike the 32^3 smoke fixture, the epsilon leg
+# is NOT degenerate here -- it runs (to 1e-6) after lambda=1 is accepted at
+# eta=1, per the activation bitácora's 64^3 scope (epsilon legs recorded
+# where the local budget allows; the GATE is reaching lambda=1).
+#
+# NOT run by this worker (SF-21 T03): the 64^3 suite is T04's job (recorded
+# experiment under docs/experiments/), per the task's explicit instruction.
+#
+# Run with:
+#   ./build/wsl-debug/macroflow3d_pipeline apps/config_streamfunctions_gaussian_64_var4.yaml
+# ==============================================================================
+
+run_mode: single_run
+
+# ------------------------------------------------------------------------------
+# grid
+# ------------------------------------------------------------------------------
+grid:
+  nx: 64
+  ny: 64
+  nz: 64
+  dx: 1.0
+
+# ------------------------------------------------------------------------------
+# stochastic -- required by the strict parser but numerically INERT (see
+# config_streamfunctions_gaussian_smoke32.yaml header for the rationale).
+# ------------------------------------------------------------------------------
+stochastic:
+  sigma2: 0.0
+  corr_length: 8.0
+  n_modes: 8
+  covariance_type: 0
+  seed: 42
+  K_mean: 1.0
+
+# ------------------------------------------------------------------------------
+# flow -- drives ONLY the ambient (unused-by-the-streamfunction-stage)
+# pipeline head/velocity computation; Dirichlet head drop along x, y/z
+# periodic.
+# ------------------------------------------------------------------------------
+flow:
+  solver: mg_cg
+  mg_levels: 4
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-10
+  cg_check_every: 10
+  rtol: 1.0e-10
+
+  pin:
+    mode: off             # Dirichlet en west/east -> sistema no singular
+
+  bc:
+    west:   { type: dirichlet, value: 64.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+# ------------------------------------------------------------------------------
+# streamfunction_solver -- SF-21 T03 heterogeneity (lambda) continuation over
+# an SF-18 periodic Gaussian K field (sigma_Y^2 = 4.0) and the SF-19
+# affine-periodic Darcy reference velocity.
+# ------------------------------------------------------------------------------
+streamfunction_solver:
+  enabled: true
+  field_source: periodic_gaussian
+  periodic_gaussian:
+    sigma2: 4.0
+    corr_length: 8.0
+    seed: 12345
+    normalize_variance: true
+  darcy_source: affine_periodic
+  export:
+    iteration_history: true
+    summary: true
+    fields: true
+  continuation:
+    lambda:
+      enabled: true
+    epsilon:
+      target: 1.0e-6
+  anderson:
+    enabled: true
+    depth: 5
+    start_iteration: 5
+    condition_limit: 1.0e12
+
+# ------------------------------------------------------------------------------
+# transport -- minimal par2 smoke pass (not the point of this fixture)
+# ------------------------------------------------------------------------------
+transport:
+  method: par2
+  n_particles: 50
+  dt: 1.0
+  n_steps: 20
+  porosity: 1.0
+  diffusion: 0.0
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 20
+  snapshot_every: 0
+  inject_x: 1.0
+
+# ------------------------------------------------------------------------------
+# analysis
+# ------------------------------------------------------------------------------
+analysis:
+  macrodispersion:
+    enabled: false
+    NR: 1
+    lambda: 8.0
+    vmean_norm: 1.0
+    sample_every: 10
+    var_estimator: biased
+
+  snapshots:
+    enabled: false
+    every: 100
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+# ------------------------------------------------------------------------------
+# diagnostics
+# ------------------------------------------------------------------------------
+diagnostics:
+  velocity_field: true
+
+# ------------------------------------------------------------------------------
+# output
+# ------------------------------------------------------------------------------
+output:
+  output_dir: ./output_streamfunctions_gaussian_64_var4
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary

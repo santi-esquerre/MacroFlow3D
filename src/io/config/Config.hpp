@@ -313,31 +313,102 @@ struct StreamfunctionContinuationEpsilonYamlConfig {
 };
 
 /**
+ * @brief Lambda-axis (SF-21 T03) outer heterogeneity continuation stepper
+ *        parameters, mirroring `streamfunctions::ContinuationAxisConfig` for
+ *        the spec-locked `[0, 1]` lambda axis (activation decision 6).
+ *
+ * `enabled == false` (the default) means the SF-17 single-solve /
+ * eta-epsilon continuation path runs byte-identically; `target` is fixed at
+ * `1` by the library (`HeterogeneityContinuationConfig::lambda.target`) and
+ * is therefore not exposed here.
+ */
+struct StreamfunctionLambdaYamlConfig {
+    bool enabled = false;
+    real start = 0.0;
+    real initial_step = 0.1;
+    real min_step = 0.0125;
+    real max_step = 0.2;
+    real backtrack_factor = 0.5;
+    real growth_factor = 1.5;
+    int easy_streak = 2;
+};
+
+/**
  * @brief Strict pipeline surface for the SF-17 eta/epsilon continuation
  *        controller. `enabled == false` (the default) means the SF-16
  *        single-solve path runs byte-identically, regardless of whether this
  *        subsection (or any of its nested fields) is present in the YAML.
+ *
+ * `lambda` (SF-21 T03) is the outer heterogeneity axis; when
+ * `lambda.enabled == true` it replaces both this eta/epsilon single-leg
+ * continuation call and the single-solve path for the streamfunction stage
+ * (see `EnsembleRunner.cu`); `enabled` (this eta/epsilon leg) and
+ * `lambda.enabled` are mutually exclusive (validated).
  */
 struct StreamfunctionContinuationYamlConfig {
     bool enabled = false;
     StreamfunctionContinuationEtaYamlConfig eta;
     StreamfunctionContinuationEpsilonYamlConfig epsilon;
+    StreamfunctionLambdaYamlConfig lambda;
+};
+
+/**
+ * @brief SF-21 T03 pipeline-facing slice of `physics::PeriodicGaussianFieldConfig`
+ *        (SF-18). Only meaningful when `field_source == "periodic_gaussian"`
+ *        (validated); mirrors the library's own validation ranges.
+ */
+struct StreamfunctionPeriodicGaussianYamlConfig {
+    real sigma2 = 1.0;
+    real corr_length = 1.0;
+    unsigned long long seed = 0ULL;
+    bool normalize_variance = true;
+};
+
+/**
+ * @brief SF-21 T03r (re-activation decision R2d) pipeline-facing slice of
+ *        `streamfunctions::AndersonConfig` (SF-20), mirroring the library's
+ *        own validation ranges (`require_valid_anderson_config`,
+ *        `StreamfunctionWorkspace.cu`).
+ *
+ * `enabled == false` (the default) byte-preserves the exact pre-existing
+ * SF-13..SF-21 Picard-only behavior: the Anderson entry-clear at solve entry
+ * (SF-21 T01r) and the accelerator's own `enabled` gate mean nothing reads or
+ * mutates the accelerator state when this stays off.
+ */
+struct StreamfunctionAndersonYamlConfig {
+    bool enabled = false;
+    int depth = 5;
+    int start_iteration = 5;
+    real condition_limit = 1.0e12;
 };
 
 /**
  * @brief Strict, minimal pipeline configuration surface for the Lester
  *        equation (14) streamfunction solver (SF-16 T01, extended by SF-17
- *        T03 with the `continuation` subsection).
+ *        T03 with the `continuation` subsection, SF-21 T03 with
+ *        `field_source`/`periodic_gaussian`/`darcy_source`/
+ *        `continuation.lambda`, and SF-21 T03r with `anderson`).
  *
  * This maps onto `streamfunctions::StreamfunctionSolverConfig` (see
  * `src/physics/streamfunctions/StreamfunctionTypes.hpp`) in a later
  * increment (SF-16 T02); it intentionally does NOT expose the full SF-15
  * `AdaptivePicardConfig` field set (only `adaptive.enabled`) and does NOT
- * expose any Anderson/Newton keys.
+ * expose any Newton keys.
  *
  * `enabled == false` (the default) means the section, and every nested
  * subsection, may be entirely absent from the YAML with zero behavior
  * change: nothing reads this struct at runtime yet.
+ *
+ * `field_source == "stochastic"` (default) and `darcy_source == "pipeline"`
+ * (default) preserve the exact SF-16..19-era pipeline behavior: the
+ * streamfunction stage consumes the pipeline's own `K` field (from
+ * `stochastic:`) and CompactMAC velocity/gauge. `field_source ==
+ * "periodic_gaussian"` replaces the pipeline `K` field's CONTENTS (before
+ * the head solve) with `K = exp(Y)` for a triply periodic SF-18 Gaussian
+ * log-conductivity `Y`; `darcy_source == "affine_periodic"` replaces only
+ * the streamfunction stage's reference velocity/gauge with an SF-19
+ * affine-periodic Darcy solve on the current `K` (both are validated
+ * against `continuation.lambda.enabled`, see `ConfigValidator.hpp`).
  */
 struct StreamfunctionSolverYamlConfig {
     bool enabled = false;
@@ -350,6 +421,10 @@ struct StreamfunctionSolverYamlConfig {
     StreamfunctionMgYamlConfig mg;
     StreamfunctionExportConfig exports;
     StreamfunctionContinuationYamlConfig continuation;
+    std::string field_source = "stochastic"; // "stochastic" | "periodic_gaussian"
+    StreamfunctionPeriodicGaussianYamlConfig periodic_gaussian;
+    std::string darcy_source = "pipeline";   // "pipeline" | "affine_periodic"
+    StreamfunctionAndersonYamlConfig anderson;
 };
 
 /**

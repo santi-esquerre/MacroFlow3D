@@ -216,6 +216,41 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         if (sf.mg.num_levels < 1)
             err("streamfunction_solver.mg.num_levels", "must be >= 1");
 
+        // ── Anderson acceleration (SF-21 T03r, re-activation decision R2d) ──
+        // Mirrors streamfunctions::require_valid_anderson_config
+        // (StreamfunctionWorkspace.cu): validated unconditionally, regardless
+        // of `anderson.enabled`, matching that library convention (an invalid
+        // Anderson config is invalid even when acceleration is off).
+        {
+            const auto& an = sf.anderson;
+            const char* p = "streamfunction_solver.anderson.";
+            if (an.depth < 3 || an.depth > 8)
+                err(std::string(p) + "depth", "must be in [3, 8]");
+            if (an.start_iteration < 1)
+                err(std::string(p) + "start_iteration", "must be >= 1");
+            if (!std::isfinite(an.condition_limit) || an.condition_limit <= 1)
+                err(std::string(p) + "condition_limit", "must be finite and > 1");
+        }
+
+        // ── Field/Darcy sources (SF-21 T03) ─────────────────────────────
+        if (sf.field_source != "stochastic" && sf.field_source != "periodic_gaussian")
+            err("streamfunction_solver.field_source",
+                "'" + sf.field_source + "' unknown; expected 'stochastic' or 'periodic_gaussian'");
+        if (sf.darcy_source != "pipeline" && sf.darcy_source != "affine_periodic")
+            err("streamfunction_solver.darcy_source",
+                "'" + sf.darcy_source + "' unknown; expected 'pipeline' or 'affine_periodic'");
+
+        // Mirrors physics::PeriodicGaussianFieldConfig::validate (SF-18);
+        // only checked when field_source actually selects this generator.
+        if (sf.field_source == "periodic_gaussian") {
+            const auto& pg = sf.periodic_gaussian;
+            if (!std::isfinite(pg.sigma2) || pg.sigma2 < 0)
+                err("streamfunction_solver.periodic_gaussian.sigma2", "must be finite and >= 0");
+            if (!std::isfinite(pg.corr_length) || pg.corr_length <= 0)
+                err("streamfunction_solver.periodic_gaussian.corr_length",
+                    "must be finite and > 0");
+        }
+
         // ── Continuation (SF-17 T03) ────────────────────────────────────
         // Mirrors streamfunctions::validate_streamfunction_continuation_config
         // (ContinuationController.hpp). The eta axis TARGET is the existing
@@ -285,6 +320,55 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
             if (e.initial_step_log10 > 0 && e.max_step_log10 > 0 &&
                 !(e.initial_step_log10 <= e.max_step_log10))
                 err(std::string(p) + "max_step_log10", "must be >= initial_step_log10");
+            if (!(e.backtrack_factor > 0 && e.backtrack_factor < 1))
+                err(std::string(p) + "backtrack_factor", "must be in (0, 1)");
+            if (!(e.growth_factor >= 1))
+                err(std::string(p) + "growth_factor", "must be >= 1");
+            if (!(e.easy_streak >= 1))
+                err(std::string(p) + "easy_streak", "must be >= 1");
+        }
+
+        // ── Lambda (heterogeneity) continuation (SF-21 T03) ─────────────
+        // Mirrors validate_streamfunction_heterogeneity_continuation_config's
+        // lambda-axis checks (ContinuationController.hpp); the axis TARGET
+        // is fixed at 1 by the library, so no `target` field is validated
+        // here. `enabled` (this eta/epsilon leg) and `lambda.enabled` are
+        // mutually exclusive: the lambda driver replaces both the single-solve
+        // and the eta/epsilon-only continuation call for the stage.
+        {
+            const auto& e = cont.lambda;
+            const char* p = "streamfunction_solver.continuation.lambda.";
+            if (cont.enabled && e.enabled)
+                err("streamfunction_solver.continuation",
+                    "'enabled' (eta/epsilon leg) and 'lambda.enabled' cannot both be true");
+            if (e.enabled && sf.field_source != "periodic_gaussian")
+                err(std::string(p) + "enabled",
+                    "requires streamfunction_solver.field_source: periodic_gaussian");
+            if (e.enabled && sf.darcy_source != "affine_periodic")
+                err(std::string(p) + "enabled",
+                    "requires streamfunction_solver.darcy_source: affine_periodic");
+            if (!std::isfinite(e.start))
+                err(std::string(p) + "start", "must be finite");
+            if (!std::isfinite(e.initial_step))
+                err(std::string(p) + "initial_step", "must be finite");
+            if (!std::isfinite(e.min_step))
+                err(std::string(p) + "min_step", "must be finite");
+            if (!std::isfinite(e.max_step))
+                err(std::string(p) + "max_step", "must be finite");
+            if (!std::isfinite(e.backtrack_factor))
+                err(std::string(p) + "backtrack_factor", "must be finite");
+            if (!std::isfinite(e.growth_factor))
+                err(std::string(p) + "growth_factor", "must be finite");
+            if (std::isfinite(e.start) && !(e.start <= real{1}))
+                err(std::string(p) + "start", "must be <= 1 (the lambda target)");
+            if (!(e.initial_step > 0))
+                err(std::string(p) + "initial_step", "must be > 0");
+            if (!(e.min_step > 0))
+                err(std::string(p) + "min_step", "must be > 0");
+            if (e.min_step > 0 && e.initial_step > 0 && !(e.min_step <= e.initial_step))
+                err(std::string(p) + "min_step", "must be <= initial_step");
+            if (e.initial_step > 0 && e.max_step > 0 && !(e.initial_step <= e.max_step))
+                err(std::string(p) + "max_step", "must be >= initial_step");
             if (!(e.backtrack_factor > 0 && e.backtrack_factor < 1))
                 err(std::string(p) + "backtrack_factor", "must be in (0, 1)");
             if (!(e.growth_factor >= 1))

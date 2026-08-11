@@ -323,15 +323,18 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
     if (!node)
         return cfg;
 
-    static const std::set<std::string> known = {"enabled", "affine_mean_velocity", "epsilon",
-                                                 "eta",     "picard",              "adaptive",
-                                                 "linear",  "mg",                  "export",
-                                                 "continuation"};
+    static const std::set<std::string> known = {
+        "enabled",     "affine_mean_velocity", "epsilon",          "eta",
+        "picard",      "adaptive",             "linear",           "mg",
+        "export",      "continuation",         "field_source",     "periodic_gaussian",
+        "darcy_source", "anderson"};
     check_unknown_keys(node, known, "streamfunction_solver", errs);
 
     cfg.enabled = get_or<bool>(node, "enabled", def.enabled);
     cfg.epsilon = get_or<real>(node, "epsilon", def.epsilon);
     cfg.eta = get_or<real>(node, "eta", def.eta);
+    cfg.field_source = get_or<std::string>(node, "field_source", def.field_source);
+    cfg.darcy_source = get_or<std::string>(node, "darcy_source", def.darcy_source);
 
     if (node["affine_mean_velocity"]) {
         const auto& n = node["affine_mean_velocity"];
@@ -391,9 +394,35 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
         cfg.exports.fields = get_or<bool>(n, "fields", def.exports.fields);
     }
 
+    if (node["periodic_gaussian"]) {
+        const auto& n = node["periodic_gaussian"];
+        static const std::set<std::string> pg_known = {"sigma2", "corr_length", "seed",
+                                                        "normalize_variance"};
+        check_unknown_keys(n, pg_known, "streamfunction_solver.periodic_gaussian", errs);
+
+        // Structural (parse-time) requirement: this subsection is only
+        // meaningful with field_source: periodic_gaussian -- checked here
+        // (not ConfigValidator.hpp) because "was this YAML key present" is
+        // not otherwise recoverable after merge-over-defaults.
+        if (cfg.field_source != "periodic_gaussian") {
+            errs.push_back(
+                "streamfunction_solver.periodic_gaussian requires "
+                "streamfunction_solver.field_source: periodic_gaussian");
+        }
+
+        cfg.periodic_gaussian.sigma2 = get_or<real>(n, "sigma2", def.periodic_gaussian.sigma2);
+        cfg.periodic_gaussian.corr_length =
+            get_or<real>(n, "corr_length", def.periodic_gaussian.corr_length);
+        cfg.periodic_gaussian.seed =
+            get_or<unsigned long long>(n, "seed", def.periodic_gaussian.seed);
+        cfg.periodic_gaussian.normalize_variance =
+            get_or<bool>(n, "normalize_variance", def.periodic_gaussian.normalize_variance);
+    }
+
     if (node["continuation"]) {
         const auto& n = node["continuation"];
-        static const std::set<std::string> continuation_known = {"enabled", "eta", "epsilon"};
+        static const std::set<std::string> continuation_known = {"enabled", "eta", "epsilon",
+                                                                   "lambda"};
         check_unknown_keys(n, continuation_known, "streamfunction_solver.continuation", errs);
 
         cfg.continuation.enabled = get_or<bool>(n, "enabled", def.continuation.enabled);
@@ -444,6 +473,46 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
             cfg.continuation.epsilon.easy_streak =
                 get_or<int>(en, "easy_streak", def.continuation.epsilon.easy_streak);
         }
+
+        if (n["lambda"]) {
+            const auto& ln = n["lambda"];
+            static const std::set<std::string> lambda_known = {
+                "enabled",    "start",           "initial_step",  "min_step",
+                "max_step",   "backtrack_factor", "growth_factor", "easy_streak"};
+            check_unknown_keys(ln, lambda_known, "streamfunction_solver.continuation.lambda",
+                               errs);
+
+            cfg.continuation.lambda.enabled =
+                get_or<bool>(ln, "enabled", def.continuation.lambda.enabled);
+            cfg.continuation.lambda.start =
+                get_or<real>(ln, "start", def.continuation.lambda.start);
+            cfg.continuation.lambda.initial_step =
+                get_or<real>(ln, "initial_step", def.continuation.lambda.initial_step);
+            cfg.continuation.lambda.min_step =
+                get_or<real>(ln, "min_step", def.continuation.lambda.min_step);
+            cfg.continuation.lambda.max_step =
+                get_or<real>(ln, "max_step", def.continuation.lambda.max_step);
+            cfg.continuation.lambda.backtrack_factor =
+                get_or<real>(ln, "backtrack_factor", def.continuation.lambda.backtrack_factor);
+            cfg.continuation.lambda.growth_factor =
+                get_or<real>(ln, "growth_factor", def.continuation.lambda.growth_factor);
+            cfg.continuation.lambda.easy_streak =
+                get_or<int>(ln, "easy_streak", def.continuation.lambda.easy_streak);
+        }
+    }
+
+    if (node["anderson"]) {
+        const auto& n = node["anderson"];
+        static const std::set<std::string> anderson_known = {"enabled", "depth", "start_iteration",
+                                                              "condition_limit"};
+        check_unknown_keys(n, anderson_known, "streamfunction_solver.anderson", errs);
+
+        cfg.anderson.enabled = get_or<bool>(n, "enabled", def.anderson.enabled);
+        cfg.anderson.depth = get_or<int>(n, "depth", def.anderson.depth);
+        cfg.anderson.start_iteration =
+            get_or<int>(n, "start_iteration", def.anderson.start_iteration);
+        cfg.anderson.condition_limit =
+            get_or<real>(n, "condition_limit", def.anderson.condition_limit);
     }
 
     return cfg;
