@@ -865,9 +865,11 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
 // anderson_entry_clear -- proves solve_streamfunctions clears the Anderson
 // history at solve entry.
 //
-// Design: a single manufactured 16^3 trig fixture (amplitude 0.5, the SAME
-// fixture family as streamfunction_anderson_gpu_cases.cu's non-regression
-// controls) is solved TWICE, back-to-back, on the SAME workspace/fields/
+// Design: a single manufactured 16^3 trig fixture (amplitude 0.5, domain
+// length 1 i.e. dx=dy=dz=1/n -- see the grid construction below for why this
+// must NOT be dx=1 as in the other cases in this file -- the SAME fixture
+// family as streamfunction_anderson_gpu_cases.cu's non-regression controls)
+// is solved TWICE, back-to-back, on the SAME workspace/fields/
 // config/problem, with Anderson enabled (depth=5, start_iteration=5,
 // condition_limit=1e12) and initial_state left at its default zero_source.
 // Because zero_source unconditionally zero-initializes fields.u1/u2 and
@@ -891,7 +893,18 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
 
 [[nodiscard]] CaseResult case_heterogeneity_anderson_entry_clear() {
     constexpr int n = 16;
-    const Grid3D grid(n, n, n, real{1}, real{1}, real{1});
+    // Domain length 1 (dx=dy=dz=1/n), NOT dx=1 as in the other cases in this
+    // file: with dx=1 the cell centers are half-integers, and
+    // sin(2pi*(k+0.5)) = sin(pi) = 0 EXACTLY for every integer k, so the
+    // manufactured trig log-K field below would degenerate to log_k == 0
+    // (K == 1, exactly homogeneous) at every cell center. That makes the
+    // affine RHS exactly zero, the zero_source initial state the exact
+    // discrete solution, and the first solve converge at iteration 0 with no
+    // Picard iteration and no Anderson history -- silently defeating the
+    // non-vacuousness check below (T02r-F1). Mirrors
+    // streamfunction_anderson_gpu_cases.cu's isotropic_grid(n) so the trig
+    // field is nontrivial at cell centers.
+    const Grid3D grid(n, n, n, real{1} / n, real{1} / n, real{1} / n);
     constexpr double kAmplitude = 0.5;
 
     StreamfunctionSolverConfig config = valid_config();
