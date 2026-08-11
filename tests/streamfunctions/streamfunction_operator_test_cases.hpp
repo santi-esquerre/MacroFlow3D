@@ -114,4 +114,29 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // and the a=0.5 trigonometric headline control).
 [[nodiscard]] CaseRegistry streamfunction_continuation_case_registry();
 
+// SF-20 T02 Anderson-acceleration safeguard/equivalence/non-regression/
+// memory acceptance cases (cheap tier). These exercise
+// `AndersonAccelerator` (SF-20 T01, `AndersonAccelerator.cuh/.cu`) and its
+// `solve_streamfunctions` insertion point directly, including the disabled-
+// path bitwise-equivalence contract, depth-5 non-regression on convergent
+// fixtures, the exact-byte memory contract across every validated depth, the
+// `config.anderson` validation contract, a hostile-`condition_limit`
+// safeguard control, and two hand-checkable `form_candidate` unit tests. See
+// `streamfunction_anderson_gpu_cases.cu` for the exact case list; folded into
+// `streamfunction_operator_tests.cpp`'s aggregated `cases()` map exactly like
+// every other registry above.
+[[nodiscard]] CaseRegistry anderson_case_registry();
+
+// SF-20 T02 Anderson-acceleration STALL-fixture acceptance cases (expensive
+// tier: a full 500-iteration 32^3 Picard budget for both a control and a
+// gate run, per fixture). Deliberately NOT folded into
+// `streamfunction_operator_tests.cpp`'s aggregated `cases()` map (the map
+// backing `--list` and the no-argument "run everything" default): reachable
+// only via an explicit `--case anderson_stall_fixture_a` / `--case
+// anderson_stall_fixture_b`, matching the CMakeLists.txt
+// `streamfunction_anderson_stall` ctest entry. See
+// `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
+// `streamfunction_anderson_gpu_cases.cu` for the exact fixtures.
+[[nodiscard]] CaseRegistry anderson_stall_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

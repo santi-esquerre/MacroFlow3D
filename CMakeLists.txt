@@ -372,6 +372,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_picard_fixed_gpu_cases.cu
         tests/streamfunctions/streamfunction_picard_adaptive_gpu_cases.cu
         tests/streamfunctions/streamfunction_continuation_gpu_cases.cu
+        tests/streamfunctions/streamfunction_anderson_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -412,6 +413,25 @@ if(MACROFLOW3D_BUILD_APPS)
         --case continuation_invalid_problem_propagation
         --case continuation_trig_control
         --case continuation_homogeneous_control
+    )
+    add_test(NAME streamfunction_anderson COMMAND streamfunction_operator_tests
+        --case anderson_disabled_equivalence
+        --case anderson_non_regression_trig32
+        --case anderson_non_regression_homogeneous16
+        --case anderson_memory_bytes
+        --case anderson_config_validation
+        --case anderson_condition_reset_control
+        --case anderson_form_candidate_unit
+    )
+    # SF-20 T02: expensive STALL fixtures (a full 500-iteration 32^3 Picard
+    # budget for both a control and a gate run, per fixture). Kept as a
+    # separate ctest entry (not part of the default `streamfunction_anderson`
+    # or bare `streamfunction_operator_tests` runs); see
+    # streamfunction_anderson_gpu_cases.cu / streamfunction_operator_tests.cpp
+    # (heavy_cases()) for the isolation mechanism.
+    add_test(NAME streamfunction_anderson_stall COMMAND streamfunction_operator_tests
+        --case anderson_stall_fixture_a
+        --case anderson_stall_fixture_b
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3

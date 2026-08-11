@@ -343,6 +343,30 @@ using CaseFunction = test::CaseFunction;
                 throw std::logic_error("duplicate streamfunction test case: " + name);
             }
         }
+        for (const auto& [name, function] : test::anderson_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction test case: " + name);
+            }
+        }
+        return result;
+    }();
+    return registry;
+}
+
+// SF-20 T02: expensive STALL-fixture cases (`anderson_stall_case_registry()`,
+// see streamfunction_anderson_gpu_cases.cu). Deliberately kept OUT of
+// `cases()` above so `--list` and the no-argument "run everything" default
+// stay on the fast tier; reachable only via an explicit `--case
+// anderson_stall_fixture_a`/`anderson_stall_fixture_b`, resolved as a
+// fallback in main() below.
+[[nodiscard]] const std::map<std::string, CaseFunction>& heavy_cases() {
+    static const std::map<std::string, CaseFunction> registry = [] {
+        std::map<std::string, CaseFunction> result;
+        for (const auto& [name, function] : test::anderson_stall_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction heavy test case: " + name);
+            }
+        }
         return result;
     }();
     return registry;
@@ -371,8 +395,16 @@ int main(int argc, char** argv) {
     bool pass = true;
     try {
         for (const auto& name : selected) {
-            const auto found = cases().find(name);
-            if (found == cases().end()) { std::cerr << "unknown case: " << name << '\n'; return 2; }
+            auto found = cases().find(name);
+            if (found == cases().end()) {
+                // Explicit --case fallback only (never part of the default
+                // "run everything" listing): SF-20 heavy stall fixtures.
+                found = heavy_cases().find(name);
+                if (found == heavy_cases().end()) {
+                    std::cerr << "unknown case: " << name << '\n';
+                    return 2;
+                }
+            }
             const auto result = found->second();
             print_result(result);
             pass = pass && result.pass;
