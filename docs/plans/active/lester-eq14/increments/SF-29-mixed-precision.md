@@ -1,10 +1,10 @@
-# SF-28 — Mixed-precision preconditioner study
+# SF-29 — Mixed-precision preconditioner study
 
 - State: `pending`
 - Goal: `Evaluar precisión mixta únicamente dentro del precondicionador.`
-- Depends on: `SF-27`
+- Depends on: `SF-28`
 - Unlocks: `none`
-- Branch: `science/lester-sf28-mixed-precision`
+- Branch: `science/lester-sf-29-mixed-precision`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf28-mixed-precision`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4 + performance evidence`
 - Human review: `required`
@@ -22,7 +22,7 @@ double precision.
 
 ## Preconditions
 
-- SF-27 accepts the full double Newton-Krylov implementation and baseline.
+- SF-28 accepts the full-stack double-precision V100 baseline (Newton-Krylov included since SF-24).
 
 ## In scope
 
@@ -48,7 +48,7 @@ double precision.
    metrics in double.
 3. Use FGMRES when inner preconditioner work or refinement varies by iteration.
 4. Compare memory, preconditioner time, total time, iterations, final fields,
-   and physical metrics against the SF-27 double baseline.
+   and physical metrics against the SF-28 double baseline.
 
 ## Expected numerical effect
 
@@ -91,12 +91,12 @@ scripts/remote wait lester-mixed
 - [ ] Default enablement decision is evidence-backed and documented.
 - [ ] Gate 3A/4 review passes.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-28 complete and sets `NEXT: COMPLETE`.
+- [ ] Dashboard marks SF-29 complete and sets `NEXT: COMPLETE`.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-After SF-28 is merged, the planned Lester solver sequence is complete.  Any
+After SF-29 is merged, the planned Lester solver sequence is complete.  Any
 consumer integration or new scientific regime requires a new decision and
 increment series.
 

@@ -1,10 +1,10 @@
-# SF-27 — Globalized Newton-Krylov
+# SF-24 — Globalized Newton-Krylov
 
 - State: `pending`
 - Goal: `Implementar Newton-Krylov globalizado y su fallback reproducible a Picard.`
-- Depends on: `SF-26`
-- Unlocks: `SF-28`
-- Branch: `science/lester-sf27-newton-krylov`
+- Depends on: `SF-23`
+- Unlocks: `SF-25`
+- Branch: `science/lester-sf-24-newton-krylov`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf27-newton-krylov`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4`
 - Human review: `required`
@@ -21,7 +21,7 @@ Picard continuation path as the authoritative robustness fallback.
 
 ## Preconditions
 
-- SF-26 validates matrix-free GMRES and the block preconditioner.
+- SF-23 validates matrix-free GMRES and the block preconditioner.
 
 ## In scope
 
@@ -94,12 +94,12 @@ scripts/remote wait lester-newton
 - [ ] Runtime/residual-evaluation comparison is recorded.
 - [ ] Gate 3A/4 regressions and human review pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-27 complete and selects SF-28.
+- [ ] Dashboard marks SF-24 complete and selects SF-25.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-SF-28 may study mixed precision only after the full double Newton path is
+SF-25 may re-impose the full heterogeneity gates with Newton terminal convergence once the Newton path is
 accepted and merged.
 
 ## Bitácora

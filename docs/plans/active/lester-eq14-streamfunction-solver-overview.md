@@ -475,10 +475,16 @@ contratos y tests discretos
   -> Anderson (re-secuenciado 2026-08-11: el Picard adaptativo puro se
      estanca asintóticamente en eta=1 sobre campos físicos; ver
      docs/decisions/2026-08-11-anderson-before-heterogeneity.md)
-  -> continuación de heterogeneidad y malla
-  -> optimización y benchmark V100
+  -> continuación de heterogeneidad (cierre parcial 2026-08-11: el mapa
+     Picard/Anderson amortiguado resultó no contractivo exactamente en eta=1
+     para sigma_Y^2>=1 — meseta r_F~1e-3 en lambda~0.5, física limpia; los
+     gates no cumplidos se mueven íntegros a la completación post-Newton;
+     ver docs/decisions/2026-08-11-newton-before-heterogeneity-completion.md)
   -> Jv matrix-free + GMRES
   -> Newton-Krylov globalizado
+  -> completación de heterogeneidad (gates movidos, sin cambios)
+  -> continuación de malla
+  -> optimización y benchmark V100
   -> estudio opcional de precisión mixta
 ```
 
