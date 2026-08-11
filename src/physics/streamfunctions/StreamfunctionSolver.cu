@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 namespace macroflow3d {
 namespace streamfunctions {
@@ -67,19 +68,54 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
 
     StreamfunctionSolveReport report;
 
-    // q = 1/K or q = exp(-Y).
-    enqueue_fill_streamfunction_coefficient(context, problem.conductivity,
-                                            problem.conductivity_representation, workspace.q());
+    // SF-21: clear any Anderson history staged by a PREVIOUS
+    // solve_streamfunctions call on this workspace before this call's Picard
+    // loop can stage any new history. The accelerator's premise is a history
+    // of ONE fixed-point map instance; continuation drivers reuse the same
+    // workspace/accelerator across problem instances (see
+    // StreamfunctionSolver.cuh for the full rationale). clear() on a fresh or
+    // already-cleared accelerator is a no-op, so single-call SF-20 behavior
+    // is unaffected.
+    if (config.anderson.enabled) {
+        workspace.anderson().clear();
+    }
 
-    multigrid::populate_coefficient_hierarchy(context, workspace.hierarchy(),
-                                              DeviceSpan<const real>(workspace.q()));
+    // SF-20: CoefficientState::reuse skips the q-fill, MG coefficient
+    // hierarchy population, and affine-RHS (re)assembly below, reusing
+    // whatever the workspace already holds from a prior CoefficientState::
+    // rebuild call. See CoefficientState in StreamfunctionTypes.hpp for the
+    // exact caller contract this enforces.
+    if (config.coefficient_state == CoefficientState::reuse) {
+        if (config.initial_state != PicardInitialState::warm_start) {
+            throw std::invalid_argument(
+                "StreamfunctionSolverConfig::coefficient_state == reuse requires "
+                "initial_state == warm_start (zero_source consumes rhs1()/rhs2() for its "
+                "initialization solves and must not run against stale buffers)");
+        }
+        if (!workspace.coefficients_valid()) {
+            throw std::invalid_argument(
+                "StreamfunctionSolverConfig::coefficient_state == reuse requires a preceding "
+                "coefficient_state == rebuild call on this workspace for its currently prepared "
+                "grid; the workspace holds no valid q/MG hierarchy/affine RHS to reuse");
+        }
+    } else {
+        // q = 1/K or q = exp(-Y).
+        enqueue_fill_streamfunction_coefficient(context, problem.conductivity,
+                                                problem.conductivity_representation, workspace.q());
 
-    // Assemble and mean-zero-project the affine periodic RHS pair. The
-    // returned device diagnostics need not be separately synchronized: the
-    // PCG result and the residual report both carry RHS-mean evidence.
-    (void)assemble_affine_periodic_rhs(context, grid, DeviceSpan<const real>(workspace.q()),
-                                       problem.gauge, workspace.rhs1(), workspace.rhs2(),
-                                       workspace.affine_rhs_workspace());
+        multigrid::populate_coefficient_hierarchy(context, workspace.hierarchy(),
+                                                  DeviceSpan<const real>(workspace.q()));
+
+        // Assemble and mean-zero-project the affine periodic RHS pair. The
+        // returned device diagnostics need not be separately synchronized:
+        // the PCG result and the residual report both carry RHS-mean
+        // evidence.
+        (void)assemble_affine_periodic_rhs(context, grid, DeviceSpan<const real>(workspace.q()),
+                                           problem.gauge, workspace.rhs1(), workspace.rhs2(),
+                                           workspace.affine_rhs_workspace());
+
+        workspace.mark_coefficients_valid();
+    }
 
     operators::LesterPositiveDiffusionOperator A(grid, DeviceSpan<const real>(workspace.q()));
     constraints::MeanZeroProjector projector;

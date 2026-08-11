@@ -268,6 +268,37 @@
  *   backtracking search also samples; a rejected one is invisible to
  *   `fields.u1_span()`/`u2_span()` and only costs one extra evaluated trial
  *   plus a cleared history.
+ *
+ * SF-21 adds `config.coefficient_state` (`CoefficientState` in
+ * `StreamfunctionTypes.hpp`): `rebuild` (default) reproduces every prior
+ * increment's q-fill/MG-hierarchy-population/affine-RHS-assembly EXACTLY;
+ * `reuse` skips all three, requires `initial_state == warm_start`, and
+ * requires the workspace to already hold a valid rebuild for its currently
+ * prepared grid. See `CoefficientState` for the full caller contract.
+ *
+ * SF-21 also clears the Anderson history (`workspace.anderson().clear()`)
+ * ONCE at the start of every `solve_streamfunctions` call whenever
+ * `config.anderson.enabled`, before the Picard loop begins. Rationale: the
+ * accelerator's premise (`AndersonAccelerator.cuh`) is a history of ONE
+ * fixed-point map instance -- delta pairs `(DeltaX, DeltaF)` staged against a
+ * PREVIOUS accepted `(x, f)` are only meaningful when every pair in the
+ * history comes from the SAME map. The SF-21 heterogeneity continuation
+ * driver (`ContinuationController`) calls `solve_streamfunctions` repeatedly
+ * on the SAME workspace across different problem instances (different
+ * lambda-scaled conductivity, different eta, a freshly re-run affine Darcy
+ * reference velocity) while carrying the accepted state forward via
+ * `initial_state == warm_start`. Without an entry clear, any Anderson history
+ * left over from a PRIOR call's final outer iterations would still be staged
+ * (a `prev_x`/`prev_f` pair from the OLD map instance); the NEXT call's first
+ * `update_history` would then form a `(DeltaX, DeltaF)` column straddling the
+ * parameter change -- mixing residuals of two different fixed-point maps into
+ * one Gram system. Clearing at solve entry guarantees every history column
+ * `form_candidate` ever consumes was staged entirely within the CURRENT call.
+ * `clear()` on a fresh or already-cleared accelerator (every SF-20
+ * single-solve-call use, and every call before `workspace.anderson()` has
+ * been touched) is a no-op, so this is bitwise-preserving for every existing
+ * SF-20 caller. No other Anderson semantics (algebra, guard chain, counters,
+ * mid-loop rejection-clear) change.
  */
 
 #include "../../numerics/solvers/pcg.cuh"
