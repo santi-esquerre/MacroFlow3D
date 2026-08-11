@@ -96,8 +96,9 @@ ctest --test-dir build/wsl-debug --output-on-failure
 
 ## Advancement rule
 
-SF-20 may combine accepted periodic fields and Darcy flow with lambda
-continuation in the streamfunction solver.
+SF-20 (Anderson acceleration, re-sequenced 2026-08-11) may accelerate the
+coupled Picard map using the accepted periodic fields and Darcy flow; the
+lambda continuation follows as SF-21.
 
 ## Bitácora
 

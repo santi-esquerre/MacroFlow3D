@@ -21,7 +21,8 @@ implementation supplies an accepted numerical oracle.
 
 ## Preconditions
 
-- SF-22 establishes stable Picard/Anderson correctness and memory baselines.
+- SF-22 (grid continuation) completes the re-sequenced Picard/Anderson/
+  continuation correctness and memory baselines (2026-08-11 re-sequencing).
 
 ## In scope
 

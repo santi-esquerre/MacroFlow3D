@@ -472,8 +472,10 @@ contratos y tests discretos
   -> Picard fijo y adaptativo
   -> configuración y continuación
   -> campos Gaussianos y Darcy periódico
+  -> Anderson (re-secuenciado 2026-08-11: el Picard adaptativo puro se
+     estanca asintóticamente en eta=1 sobre campos físicos; ver
+     docs/decisions/2026-08-11-anderson-before-heterogeneity.md)
   -> continuación de heterogeneidad y malla
-  -> Anderson
   -> optimización y benchmark V100
   -> Jv matrix-free + GMRES
   -> Newton-Krylov globalizado
