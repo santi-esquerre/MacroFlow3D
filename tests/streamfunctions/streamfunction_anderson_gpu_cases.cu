@@ -754,6 +754,27 @@ template <typename Callable>
 // ===========================================================================
 // (e-ii) anderson_condition_reset_control
 // ===========================================================================
+//
+// AMENDED CRITERION (decision 5(e)(ii) revision, T02-F1, recorded in the
+// versioned bitácora before this corrective run -- see
+// `docs/plans/active/lester-eq14/increments/SF-20-anderson.md`): T02's
+// original control additionally required `anderson_accepted == 0`. That arm
+// rested on a false assumption. With exactly ONE held history column (m=1),
+// the R-diagonal condition estimate is a max/min ratio over a SINGLE diagonal
+// entry, which is MATHEMATICALLY exactly 1 regardless of that column's
+// value -- there is no conditioning question to ask of a single column. Any
+// validated `condition_limit` (> 1 by construction) therefore always passes
+// at m=1, so a one-column (secant-step) Anderson acceleration may legitimately
+// proceed even under a hostile `condition_limit`; the resulting candidate
+// still traverses the FULL SF-15 trial guard chain before ever being
+// accepted, so the safety property that matters here -- "no candidate is
+// ever accepted without passing the Picard safeguard" -- remains intact. The
+// amended gate below therefore checks (i) convergence, (ii) `r_F` within
+// tolerance, and (iii) `anderson_condition_resets >= 1` (every m>=2 attempt
+// is still condition-rejected under this hostile limit); the m=1 property
+// itself is pinned as an explicit, separately tested unit contract in
+// `case_anderson_form_candidate_unit` below (`condition_estimate == 1.0`
+// EXACTLY for a single-column history).
 
 [[nodiscard]] CaseResult case_anderson_condition_reset_control() {
     constexpr int n = 16;
@@ -791,7 +812,6 @@ template <typename Callable>
     add_check("status_converged", report.status == StreamfunctionSolveStatus::converged);
     add_check("r_F_le_tolerance", static_cast<double>(report.residual.r_F) <= 1e-6);
     add_check("condition_resets_ge_1", report.anderson_condition_resets >= 1);
-    add_check("anderson_accepted_eq_0", report.anderson_accepted == 0);
 
     std::cout << std::setprecision(17) << "anderson_condition_reset_control N=" << n
               << " a=" << amplitude << " condition_limit=" << config.anderson.condition_limit
@@ -806,12 +826,8 @@ template <typename Callable>
     }
     if (!pass) {
         std::cout << "  NOTE: this control is a documented, non-tunable prespecified fixture "
-                     "(decision 5(e)(ii)); a failed check here is reported honestly, not "
-                     "adjusted. See the coverage-boundary note in this file's header comment "
-                     "regarding the rejected_armijo path and the m==1 single-column condition "
-                     "estimate (which is always exactly 1 and therefore always passes any valid "
-                     "condition_limit>1) as a possible, honestly-reported cause of a residual "
-                     "anderson_accepted>0 after an intervening history reset.\n";
+                     "(decision 5(e)(ii) revision, T02-F1); a failed check here is reported "
+                     "honestly, not adjusted.\n";
     }
 
     std::ostringstream detail;
@@ -825,11 +841,16 @@ template <typename Callable>
             detail.str(),
             static_cast<double>(report.residual.r_F),
             static_cast<double>(report.picard_iterations),
-            "converged; anderson_condition_resets>=1; anderson_accepted==0",
+            "converged; r_F<=1e-6; anderson_condition_resets>=1 (amended per decision 5(e)(ii) "
+            "revision, T02-F1: the anderson_accepted==0 arm is dropped)",
             pass ? "all pass" : "some failed",
             "a condition_limit barely above the validated floor of 1 forces every multi-column "
-            "Gram-system acceleration attempt to be rejected on conditioning and fall back to "
-            "the unchanged Picard backtracking search, which must still converge"};
+            "(m>=2) Gram-system acceleration attempt to be rejected on conditioning and fall "
+            "back to the unchanged Picard backtracking search, which must still converge; a "
+            "legitimate m=1 (single-column, secant-step) acceleration may still be accepted, "
+            "since its condition estimate is mathematically exactly 1 and therefore always "
+            "passes any validated condition_limit -- see decision 5(e)(ii) revision (T02-F1) "
+            "and the m=1 unit contract in anderson_form_candidate_unit"};
 }
 
 // ===========================================================================
@@ -953,6 +974,47 @@ template <typename Callable>
                   << " (expected 4) out2=" << out2_value << " (expected 6)\n";
     }
 
+    // ---- Unit check 3: exactly ONE history column (m=1) -> condition ------
+    // estimate == 1.0 EXACTLY (decision 5(e)(ii) revision, T02-F1 contract).
+    // n=1, depth=3. Sequence: bootstrap(0,0)->(0,0); col0 via u_hat=(1,0)
+    // (DeltaF_col0=(1,0)) -> num_columns()==1. With a single held column the
+    // R-diagonal condition estimate is a max/min ratio over ONE diagonal
+    // entry, which is mathematically exactly 1 regardless of the column's
+    // value -- there is no conditioning question to ask of a single column.
+    // This is the property `anderson_condition_reset_control` (above) now
+    // relies on for its amended gate: a legitimate m=1 secant-step
+    // acceleration always passes any validated (>1) condition_limit and may
+    // be accepted, still subject to the full SF-15 trial guard chain.
+    {
+        AndersonAccelerator acc;
+        acc.prepare(1, 3);
+
+        DeviceBuffer<real> zero1 = device_scalar(real{0});
+        DeviceBuffer<real> zero2 = device_scalar(real{0});
+        acc.update_history(ctx, DeviceSpan<const real>(zero1.span()), DeviceSpan<const real>(zero2.span()),
+                           DeviceSpan<const real>(zero1.span()), DeviceSpan<const real>(zero2.span()));
+
+        DeviceBuffer<real> uhat1_b = device_scalar(real{1});
+        DeviceBuffer<real> uhat2_b = device_scalar(real{0});
+        acc.update_history(ctx, DeviceSpan<const real>(zero1.span()), DeviceSpan<const real>(zero2.span()),
+                           DeviceSpan<const real>(uhat1_b.span()), DeviceSpan<const real>(uhat2_b.span()));
+        add_check("single_column_num_columns_eq_1", acc.num_columns() == 1);
+
+        DeviceBuffer<real> out1(1), out2(1);
+        real condition_estimate = real{-1};
+        const bool formed = acc.form_candidate(ctx, DeviceSpan<const real>(uhat1_b.span()),
+                                               DeviceSpan<const real>(uhat2_b.span()), real{1e12},
+                                               out1.span(), out2.span(), condition_estimate);
+        add_check("single_column_form_candidate_returns_true", formed);
+        add_check("single_column_condition_estimate_eq_1_exact",
+                  formed && condition_estimate == real{1});
+
+        std::cout << std::setprecision(17)
+                  << "anderson_form_candidate_unit[single-column m=1] num_columns=" << acc.num_columns()
+                  << " formed=" << (formed ? "true" : "false")
+                  << " condition_estimate=" << condition_estimate << '\n';
+    }
+
     for (const auto& [name, ok] : checks) {
         std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
     }
@@ -966,7 +1028,7 @@ template <typename Callable>
     return {pass,
             "anderson_form_candidate_unit",
             "unit",
-            "n=1, depth=3, hand-computed 2x2 least-squares",
+            "n=1, depth=3, hand-computed 2x2 least-squares plus a single-column (m=1) contract",
             static_cast<double>(checks.size()),
             0.0,
             "all checks pass",
@@ -974,7 +1036,10 @@ template <typename Callable>
             "AndersonAccelerator::form_candidate: (1) an exactly singular/duplicate-column "
             "history returns false with a non-finite condition estimate; (2) a well-conditioned "
             "2-column synthetic history reproduces the analytically hand-computed "
-            "gamma=(1,1)/condition=1/candidate=(4,6) exactly"};
+            "gamma=(1,1)/condition=1/candidate=(4,6) exactly; (3) decision 5(e)(ii) revision "
+            "(T02-F1): a single held history column (m=1) reports condition_estimate==1.0 "
+            "EXACTLY and forms a candidate -- the R-diagonal condition estimate is a max/min "
+            "ratio over one diagonal entry, which is mathematically exactly 1 by construction"};
 }
 
 // ===========================================================================

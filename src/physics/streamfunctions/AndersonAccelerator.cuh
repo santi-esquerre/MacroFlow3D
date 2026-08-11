@@ -69,6 +69,22 @@
  * `scratch_bytes()` is the small `n`-independent dot-product transfer buffer
  * plus the (API-required but functionally unused by `blas::dot_device`)
  * `blas::ReductionWorkspace` footprint.
+ *
+ * m=1 condition-estimate property (decision 5(e)(ii) revision, T02-F1): when
+ * exactly ONE history column is held (`num_columns() == 1`), the R-diagonal
+ * condition estimate computed by `form_candidate()` is a max/min ratio over a
+ * SINGLE diagonal entry, which is MATHEMATICALLY exactly `1.0` regardless of
+ * that column's value -- there is no conditioning question to ask of a
+ * single column. Consequently a hostile `condition_limit` (any validated
+ * value is `> 1`) can never suppress a legitimate one-column (secant-step)
+ * Anderson acceleration; the estimate always passes at `m == 1`. This is by
+ * design, not a gap: safety at `m == 1` (and every other `m`) relies on the
+ * full SF-15 trial guard chain that every accelerated candidate must still
+ * pass in `solve_streamfunctions` before it is ever accepted into the
+ * iterate -- `condition_limit` exists to reject ill-conditioned MULTI-column
+ * (`m >= 2`) Gram systems, not to gate `m == 1`. See the `anderson_form_candidate_unit`
+ * single-column unit contract and the amended `anderson_condition_reset_control`
+ * fixture in `tests/streamfunctions/streamfunction_anderson_gpu_cases.cu`.
  */
 
 #include "../../core/DeviceBuffer.cuh"
