@@ -1,10 +1,10 @@
-# SF-24 — V100 benchmark
+# SF-28 — V100 benchmark
 
 - State: `pending`
 - Goal: `Validar robustez, memoria y convergencia del solver Picard en V100 hasta 256 cubed.`
-- Depends on: `SF-23`
-- Unlocks: `SF-25`
-- Branch: `science/lester-sf24-v100-benchmark`
+- Depends on: `SF-27`
+- Unlocks: `SF-29`
+- Branch: `science/lester-sf-28-v100-benchmark`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf24-v100-benchmark`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4`
 - Human review: `required`
@@ -21,7 +21,7 @@ resolution before introducing Newton or mixed precision.
 
 ## Preconditions
 
-- SF-23 provides validated kernels and measured memory behavior on V100.
+- SF-27 provides validated kernels and measured memory behavior on V100.
 
 ## In scope
 
@@ -93,12 +93,12 @@ scripts/remote wait lester-256
 - [ ] Selected 5–10 realization robustness run is documented.
 - [ ] Gate 4 human interpretation accepts or explicitly bounds remaining risk.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-24 complete and selects SF-25.
+- [ ] Dashboard marks SF-28 complete and selects SF-29.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-SF-25 may add matrix-free Jacobian products using this Picard baseline as the
+SF-29 may study mixed precision using this full-stack baseline as the
 fallback and performance reference.
 
 ## Bitácora

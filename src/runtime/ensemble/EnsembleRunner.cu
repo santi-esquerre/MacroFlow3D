@@ -40,6 +40,11 @@
 #include "../../physics/flow/velocity_from_head.cuh"
 #include "../../physics/stochastic/stochastic.cuh"
 
+// Field/Darcy source alternatives for the streamfunction stage (SF-21 T03,
+// building on SF-18/SF-19).
+#include "../../physics/flow/AffinePeriodicFlowSolver.cuh"
+#include "../../physics/stochastic/PeriodicGaussianField.cuh"
+
 // Par2 adapters (no <par2_core/...> included here)
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
 #include "../../physics/particles/par2_adapter/Par2TransportAdapter.hpp"
@@ -179,6 +184,23 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         vel_diag.resize(grid);
     }
 
+    // ── SF-21 T03: streamfunction stage field source ────────────────────
+    // field_source == "periodic_gaussian" replaces the per-realization K
+    // generation below with an SF-18 triply periodic Gaussian log-K field Y
+    // (kept here for the streamfunction stage, e.g. the lambda continuation)
+    // and K = exp(Y) BEFORE the head solve, so every downstream consumer
+    // (head, velocity, transport, streamfunction stage) sees the periodic
+    // conductivity. Y_field/pg_workspace are allocated once and reused
+    // across realizations, exactly like stoch_ws above.
+    const bool field_source_periodic_gaussian =
+        cfg.streamfunction_solver.enabled &&
+        cfg.streamfunction_solver.field_source == "periodic_gaussian";
+    DeviceBuffer<real> Y_field;
+    PeriodicGaussianFieldWorkspace pg_workspace;
+    if (field_source_periodic_gaussian) {
+        Y_field.resize(N);
+    }
+
     // Particles (device SoA — reused across realizations)
     const int NP = cfg.transport.n_particles;
     DeviceBuffer<real> px(NP), py(NP), pz(NP);
@@ -274,14 +296,41 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         }
 
         // ── Generate K (per-realization seed) ──────────────────────────
-        StochasticConfig r_stoch = stoch_cfg;
-        r_stoch.seed = stoch_cfg.seed + static_cast<uint64_t>(r);
+        // SF-21 T03: field_source == "periodic_gaussian" replaces the
+        // default stochastic direct-sum generator with the SF-18 truly
+        // periodic spectral generator, then sets K = exp(Y) via the
+        // project's existing K = K_g*exp(logK) convention (K_g = 1,
+        // generate_K_lognormal below) -- this is the ONLY place K_field is
+        // written for a realization, so every downstream consumer sees the
+        // periodic conductivity.
+        if (field_source_periodic_gaussian) {
+            const auto& pgcfg = cfg.streamfunction_solver.periodic_gaussian;
+            PeriodicGaussianFieldConfig pg_cfg;
+            pg_cfg.sigma2 = pgcfg.sigma2;
+            pg_cfg.corr_length = pgcfg.corr_length;
+            pg_cfg.seed = pgcfg.seed + static_cast<unsigned long long>(r);
+            pg_cfg.normalize_variance = pgcfg.normalize_variance;
 
-        std::printf("  [4] K generation (seed=%lu)\n", (unsigned long)r_stoch.seed);
-        MACROFLOW3D_NVTX_PUSH("K_generation");
-        profiler.start("K_generation");
-        generate_K_field(K_field.span(), stoch_ws, grid, r_stoch, ctx);
-        profiler.stop();
+            std::printf("  [4] Periodic Gaussian field (SF-18, seed=%llu, sigma2=%.4e, "
+                        "corr_length=%.4e); K=exp(Y)\n",
+                        (unsigned long long)pg_cfg.seed, (double)pg_cfg.sigma2,
+                        (double)pg_cfg.corr_length);
+            MACROFLOW3D_NVTX_PUSH("periodic_gaussian_field");
+            profiler.start("K_generation");
+            generate_periodic_gaussian_field(ctx, grid, pg_cfg, Y_field.span(), pg_workspace);
+            StochasticConfig exp_cfg; // K_geometric_mean = 1.0 (default): K = exp(Y) exactly
+            generate_K_lognormal(K_field.span(), Y_field.span(), grid, exp_cfg, ctx);
+            profiler.stop();
+        } else {
+            StochasticConfig r_stoch = stoch_cfg;
+            r_stoch.seed = stoch_cfg.seed + static_cast<uint64_t>(r);
+
+            std::printf("  [4] K generation (seed=%lu)\n", (unsigned long)r_stoch.seed);
+            MACROFLOW3D_NVTX_PUSH("K_generation");
+            profiler.start("K_generation");
+            generate_K_field(K_field.span(), stoch_ws, grid, r_stoch, ctx);
+            profiler.stop();
+        }
 
         if (MACROFLOW3D_DIAGNOSTICS_ENABLED) {
             real kmin, kmax, kmean;
@@ -348,7 +397,119 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             profiler.start("streamfunctions");
 
             const auto& sfcfg = cfg.streamfunction_solver;
+            const bool lambda_enabled = sfcfg.continuation.lambda.enabled;
+            const bool darcy_source_affine = (sfcfg.darcy_source == "affine_periodic");
 
+            streamfunctions::StreamfunctionSolverConfig sf_lib_cfg{};
+            sf_lib_cfg.picard.max_iter = sfcfg.picard.max_iter;
+            sf_lib_cfg.picard.tolerance = sfcfg.picard.tolerance;
+            sf_lib_cfg.picard.omega = sfcfg.picard.omega;
+            sf_lib_cfg.adaptive.enabled = sfcfg.adaptive.enabled;
+            sf_lib_cfg.linear.rtol = sfcfg.linear.rtol;
+            sf_lib_cfg.linear.max_iter = sfcfg.linear.max_iter;
+            sf_lib_cfg.linear.check_every = sfcfg.linear.check_every;
+            sf_lib_cfg.mg.num_levels = sfcfg.mg.num_levels;
+            sf_lib_cfg.eta = sfcfg.eta;
+            sf_lib_cfg.epsilon = sfcfg.epsilon;
+            // Anderson acceleration (SF-21 T03r, re-activation decision R2d):
+            // enabled == false (the default) byte-preserves the exact
+            // pre-existing Picard-only path.
+            sf_lib_cfg.anderson.enabled = sfcfg.anderson.enabled;
+            sf_lib_cfg.anderson.depth = sfcfg.anderson.depth;
+            sf_lib_cfg.anderson.start_iteration = sfcfg.anderson.start_iteration;
+            sf_lib_cfg.anderson.condition_limit = sfcfg.anderson.condition_limit;
+            // histogram, diagnostics thresholds, and every other adaptive
+            // sub-tunable stay at the library's dashboard-locked defaults
+            // (not exposed by the SF-16 T01 config surface).
+
+            // Mode precedence (SF-21 T03 activation decision 6): lambda
+            // continuation replaces BOTH the SF-17 eta/epsilon continuation
+            // call and the single-solve call below; it builds its own
+            // per-lambda K_lambda/velocity/gauge internally from Y_field and
+            // never reads sf_problem/vbar (skip building them entirely).
+            if (lambda_enabled) {
+                std::printf(
+                    "  [6b] Solving streamfunctions (Lester eq. 14, heterogeneity continuation)\n");
+                std::printf("       [streamfunctions] field_source=periodic_gaussian, "
+                            "darcy_source=affine_periodic (per-lambda SF-19 solve)\n");
+
+                const auto& cc = sfcfg.continuation;
+                streamfunctions::HeterogeneityContinuationConfig het_cfg;
+                het_cfg.lambda.start = cc.lambda.start;
+                het_cfg.lambda.target = real{1};
+                het_cfg.lambda.initial_step = cc.lambda.initial_step;
+                het_cfg.lambda.min_step = cc.lambda.min_step;
+                het_cfg.lambda.max_step = cc.lambda.max_step;
+                het_cfg.lambda.backtrack_factor = cc.lambda.backtrack_factor;
+                het_cfg.lambda.growth_factor = cc.lambda.growth_factor;
+                het_cfg.lambda.easy_streak = cc.lambda.easy_streak;
+
+                het_cfg.inner.eta.start = cc.eta.start;
+                het_cfg.inner.eta.target = sfcfg.eta;
+                het_cfg.inner.eta.initial_step = cc.eta.initial_step;
+                het_cfg.inner.eta.min_step = cc.eta.min_step;
+                het_cfg.inner.eta.max_step = cc.eta.max_step;
+                het_cfg.inner.eta.backtrack_factor = cc.eta.backtrack_factor;
+                het_cfg.inner.eta.growth_factor = cc.eta.growth_factor;
+                het_cfg.inner.eta.easy_streak = cc.eta.easy_streak;
+
+                het_cfg.inner.epsilon_log10.start =
+                    -std::log10(static_cast<double>(sfcfg.epsilon));
+                het_cfg.inner.epsilon_log10.target =
+                    -std::log10(static_cast<double>(cc.epsilon.target));
+                het_cfg.inner.epsilon_log10.initial_step = cc.epsilon.initial_step_log10;
+                het_cfg.inner.epsilon_log10.min_step = cc.epsilon.min_step_log10;
+                het_cfg.inner.epsilon_log10.max_step = cc.epsilon.max_step_log10;
+                het_cfg.inner.epsilon_log10.backtrack_factor = cc.epsilon.backtrack_factor;
+                het_cfg.inner.epsilon_log10.growth_factor = cc.epsilon.growth_factor;
+                het_cfg.inner.epsilon_log10.easy_streak = cc.epsilon.easy_streak;
+
+                physics::AffinePeriodicFlowConfig flow_cfg; // qbar=(1,0,0) default
+
+                streamfunctions::StreamfunctionFields sf_fields;
+                streamfunctions::StreamfunctionWorkspace sf_workspace;
+                sf_fields.prepare(grid);
+                sf_workspace.prepare(grid, sf_lib_cfg);
+
+                streamfunctions::HeterogeneityContinuationReport het_report =
+                    streamfunctions::run_streamfunction_heterogeneity_continuation(
+                        ctx, grid, Y_field.span(), het_cfg, flow_cfg, sf_lib_cfg, sf_fields,
+                        sf_workspace);
+
+                std::printf(
+                    "       [streamfunctions] heterogeneity status=%s final_lambda=%.3e "
+                    "final_eta=%.3e final_epsilon=%.3e stages=%zu mg_rebuilds=%d\n",
+                    io::StreamfunctionSolverWriter::heterogeneity_status_str(het_report.status),
+                    (double)het_report.final_lambda, (double)het_report.final_eta,
+                    (double)het_report.final_epsilon, het_report.stage_history.size(),
+                    het_report.total_mg_rebuilds);
+
+                layout.ensure_streamfunction_dir(r, grid.nx);
+
+                if (sfcfg.exports.iteration_history) {
+                    io::StreamfunctionSolverWriter::write_iteration_history(
+                        layout.streamfunction_iteration_history_csv(r, grid.nx),
+                        het_report.final_solve.picard_history);
+                    io::StreamfunctionSolverWriter::write_trial_history(
+                        layout.streamfunction_trial_history_csv(r, grid.nx),
+                        het_report.final_solve.trial_history);
+                    io::StreamfunctionSolverWriter::write_stage_history(
+                        layout.streamfunction_stage_history_csv(r, grid.nx),
+                        het_report.stage_history);
+                }
+                if (sfcfg.exports.summary) {
+                    io::StreamfunctionSolverWriter::write_summary_json(
+                        layout.streamfunction_summary_json(r, grid.nx), grid, sfcfg, real{1},
+                        het_report);
+                }
+                if (sfcfg.exports.fields) {
+                    io::StreamfunctionSolverWriter::write_raw_fields(
+                        layout.streamfunction_u1_raw(r, grid.nx),
+                        layout.streamfunction_u2_raw(r, grid.nx),
+                        layout.streamfunction_fields_meta_json(r, grid.nx), grid,
+                        sf_fields.u1_span(), sf_fields.u2_span());
+                }
+            } else {
             // vbar for the SF-06 affine gauge (psi1 = vbar*x2 + u1_tilde).
             // mode == "fixed": use the configured value directly.
             // mode == "measured": arithmetic mean of the UNIQUE U faces
@@ -382,30 +543,41 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             sf_bc.ymin = sf_bc.ymax = BCFace(BCType::Periodic, 0.0);
             sf_bc.zmin = sf_bc.zmax = BCFace(BCType::Periodic, 0.0);
 
+            // darcy_source == "affine_periodic" (SF-21 T03): replace the
+            // pipeline CompactMAC velocity + configured/measured gauge with
+            // an SF-19 affine-periodic Darcy solve on the CURRENT K,
+            // qbar=(1,0,0), into stage-local buffers, and
+            // AffineGauge::benchmark(1.0) (vbar=1 exact by the prescribed
+            // mean flux). Stage-local: freed at the end of this scope, same
+            // as sf_fields/sf_workspace below.
+            VelocityField affine_vel;
+            AffinePeriodicFlowWorkspace affine_flow_ws;
+            if (darcy_source_affine) {
+                std::printf("       [streamfunctions] darcy_source=affine_periodic: solving "
+                            "SF-19 reference velocity on current K\n");
+                affine_vel = VelocityField(grid);
+                physics::AffinePeriodicFlowConfig flow_cfg; // qbar=(1,0,0) default
+                (void)physics::solve_affine_periodic_flow(
+                    ctx, grid, K_field.span(), flow_cfg,
+                    physics::AffinePeriodicVelocityView{affine_vel.U_span(), affine_vel.V_span(),
+                                                        affine_vel.W_span()},
+                    affine_flow_ws);
+                vbar = real{1};
+            }
+
             streamfunctions::StreamfunctionProblemView sf_problem{};
             sf_problem.grid = grid;
             sf_problem.conductivity = K_field.span();
             sf_problem.conductivity_representation =
                 streamfunctions::ConductivityRepresentation::conductivity_k;
-            sf_problem.darcy_velocity = streamfunctions::CompactMacVelocityConstView{
-                vel_compact.U_span(), vel_compact.V_span(), vel_compact.W_span()};
+            sf_problem.darcy_velocity =
+                darcy_source_affine
+                    ? streamfunctions::CompactMacVelocityConstView{
+                          affine_vel.U_span(), affine_vel.V_span(), affine_vel.W_span()}
+                    : streamfunctions::CompactMacVelocityConstView{
+                          vel_compact.U_span(), vel_compact.V_span(), vel_compact.W_span()};
             sf_problem.bc = sf_bc;
             sf_problem.gauge = streamfunctions::AffineGauge::benchmark(vbar);
-
-            streamfunctions::StreamfunctionSolverConfig sf_lib_cfg{};
-            sf_lib_cfg.picard.max_iter = sfcfg.picard.max_iter;
-            sf_lib_cfg.picard.tolerance = sfcfg.picard.tolerance;
-            sf_lib_cfg.picard.omega = sfcfg.picard.omega;
-            sf_lib_cfg.adaptive.enabled = sfcfg.adaptive.enabled;
-            sf_lib_cfg.linear.rtol = sfcfg.linear.rtol;
-            sf_lib_cfg.linear.max_iter = sfcfg.linear.max_iter;
-            sf_lib_cfg.linear.check_every = sfcfg.linear.check_every;
-            sf_lib_cfg.mg.num_levels = sfcfg.mg.num_levels;
-            sf_lib_cfg.eta = sfcfg.eta;
-            sf_lib_cfg.epsilon = sfcfg.epsilon;
-            // histogram, diagnostics thresholds, and every other adaptive
-            // sub-tunable stay at the library's dashboard-locked defaults
-            // (not exposed by the SF-16 T01 config surface).
 
             // Release-before-transport: fields/workspace live only inside
             // this scope, freed before the transport stage below runs.
@@ -522,6 +694,7 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
                         sf_fields.u1_span(), sf_fields.u2_span());
                 }
             } // sf_fields, sf_workspace destroyed here
+            } // darcy_source_affine / vbar / sf_problem scope (else of lambda_enabled)
 
             profiler.stop();
         }

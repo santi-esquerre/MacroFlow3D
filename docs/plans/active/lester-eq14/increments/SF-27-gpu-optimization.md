@@ -1,10 +1,10 @@
-# SF-23 — GPU optimization
+# SF-27 — GPU optimization
 
 - State: `pending`
 - Goal: `Fusionar kernels y reducir tráfico de memoria sin cambiar resultados.`
-- Depends on: `SF-22`
-- Unlocks: `SF-24`
-- Branch: `science/lester-sf23-gpu-optimization`
+- Depends on: `SF-26`
+- Unlocks: `SF-28`
+- Branch: `science/lester-sf-27-gpu-optimization`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf23-gpu-optimization`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + performance evidence`
 - Human review: `required`
@@ -21,7 +21,7 @@ implementation supplies an accepted numerical oracle.
 
 ## Preconditions
 
-- SF-22 (grid continuation) completes the re-sequenced Picard/Anderson/
+- SF-26 (grid continuation) completes the re-sequenced Picard/Anderson/Newton/
   continuation correctness and memory baselines (2026-08-11 re-sequencing).
 
 ## In scope
@@ -92,12 +92,12 @@ scripts/remote wait lester-sf23
 - [ ] Only measured beneficial optimizations remain enabled.
 - [ ] Gate 3A and human review pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-23 complete and selects SF-24.
+- [ ] Dashboard marks SF-27 complete and selects SF-28.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-SF-24 may run the production-scale V100 acceptance benchmarks.
+SF-28 may run the production-scale V100 acceptance benchmarks.
 
 ## Bitácora
 

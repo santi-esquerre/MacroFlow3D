@@ -481,6 +481,12 @@ void StreamfunctionWorkspace::prepare(const Grid3D& grid, const StreamfunctionSo
         mg_preconditioner_.reset();
         mg_hierarchy_ = std::make_unique<multigrid::MGHierarchy>(grid, config.mg.num_levels);
         mg_preconditioner_.emplace(*mg_hierarchy_, config.mg);
+
+        // SF-21: a freshly (re)constructed hierarchy holds no populated
+        // coefficient data, and a grid/mg-config change invalidates whatever
+        // q/RHS contents existed for the old grid; any previously recorded
+        // CoefficientState::rebuild is no longer valid to reuse.
+        coefficients_valid_ = false;
     }
 
     // SF-20: optional Anderson accelerator, allocated ONLY when enabled (see

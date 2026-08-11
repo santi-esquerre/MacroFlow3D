@@ -154,6 +154,35 @@ inline AppConfig make_default_config() {
     cfg.streamfunction_solver.continuation.epsilon.growth_factor = 1.5;
     cfg.streamfunction_solver.continuation.epsilon.easy_streak = 2;
 
+    // Heterogeneity (lambda) continuation (SF-21 T03) — disabled by default,
+    // no behavior change: the SF-17/SF-16 paths stay byte-identical.
+    cfg.streamfunction_solver.continuation.lambda.enabled = false;
+    cfg.streamfunction_solver.continuation.lambda.start = 0.0;
+    cfg.streamfunction_solver.continuation.lambda.initial_step = 0.1;
+    cfg.streamfunction_solver.continuation.lambda.min_step = 0.0125;
+    cfg.streamfunction_solver.continuation.lambda.max_step = 0.2;
+    cfg.streamfunction_solver.continuation.lambda.backtrack_factor = 0.5;
+    cfg.streamfunction_solver.continuation.lambda.growth_factor = 1.5;
+    cfg.streamfunction_solver.continuation.lambda.easy_streak = 2;
+
+    // Field/Darcy sources (SF-21 T03) — default to the SF-16..19-era pipeline
+    // behavior (byte-identical): stochastic K field, pipeline velocity/gauge.
+    cfg.streamfunction_solver.field_source = "stochastic";
+    cfg.streamfunction_solver.periodic_gaussian.sigma2 = 1.0;
+    cfg.streamfunction_solver.periodic_gaussian.corr_length = 1.0;
+    cfg.streamfunction_solver.periodic_gaussian.seed = 0ULL;
+    cfg.streamfunction_solver.periodic_gaussian.normalize_variance = true;
+    cfg.streamfunction_solver.darcy_source = "pipeline";
+
+    // Anderson acceleration (SF-21 T03r, re-activation decision R2d) —
+    // disabled by default, no behavior change: the SF-13..SF-21 Picard-only
+    // path stays byte-identical (the values below are the SF-20-validated
+    // defaults, applied only when a config explicitly sets enabled: true).
+    cfg.streamfunction_solver.anderson.enabled = false;
+    cfg.streamfunction_solver.anderson.depth = 5;
+    cfg.streamfunction_solver.anderson.start_iteration = 5;
+    cfg.streamfunction_solver.anderson.condition_limit = 1.0e12;
+
     return cfg;
 }
 

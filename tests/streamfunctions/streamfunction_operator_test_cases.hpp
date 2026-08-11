@@ -139,4 +139,29 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // `streamfunction_anderson_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry anderson_stall_case_registry();
 
+// SF-21 (first built pre-re-sequencing as SF-20 T02) heterogeneity-
+// continuation acceptance cases (cheap tier). These exercise the host+GPU
+// `CoefficientState`/lambda/eta-rescue contract (bitwise/exactly against
+// `ContinuationController.hpp`'s documented policy) via `StageSolveFn`
+// injection, plus the SF-21 re-activation addition (decision R2a): a
+// deterministic proof that `solve_streamfunctions` clears the Anderson
+// history at solve entry. See `heterogeneity_continuation_gpu_cases.cu` for
+// the exact case list; folded into `streamfunction_operator_tests.cpp`'s
+// aggregated `cases()` map exactly like every other cheap-tier registry
+// above.
+[[nodiscard]] CaseRegistry heterogeneity_continuation_case_registry();
+
+// SF-21 (first built pre-re-sequencing as SF-20 T02, decision 5(b))
+// heterogeneity-continuation PHYSICAL Gaussian gating smokes (heavy tier:
+// two 32^3 runs of the production `run_streamfunction_heterogeneity_
+// continuation` driver, each potentially many lambda/eta-rescue stages).
+// Deliberately NOT folded into `streamfunction_operator_tests.cpp`'s
+// aggregated `cases()` map (the map backing `--list` and the no-argument
+// "run everything" default): reachable only via an explicit `--case
+// heterogeneity_smoke_sigma025` / `--case heterogeneity_smoke_sigma1`,
+// matching the CMakeLists.txt `streamfunction_heterogeneity_smoke` ctest
+// entry. See `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup
+// and `heterogeneity_continuation_gpu_cases.cu` for the exact fixtures.
+[[nodiscard]] CaseRegistry heterogeneity_continuation_smoke_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

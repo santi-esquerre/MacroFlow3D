@@ -227,6 +227,53 @@ struct AndersonConfig {
 enum class PicardInitialState { zero_source, warm_start };
 
 /**
+ * SF-21: whether `solve_streamfunctions` (re)builds the coefficient-dependent
+ * state -- `q` (`workspace.q()`), the MG coefficient hierarchy
+ * (`multigrid::populate_coefficient_hierarchy`), and the affine periodic RHS
+ * pair (`workspace.rhs1()`/`rhs2()`, via `assemble_affine_periodic_rhs`) --
+ * or reuses whatever the workspace already holds from a prior call.
+ *
+ *   - `rebuild` (default): bitwise identical to every prior increment. Fills
+ *     `q` from `problem.conductivity`, repopulates the MG hierarchy from `q`,
+ *     and reassembles/mean-zero-projects `rhs1()`/`rhs2()` from `q` and
+ *     `problem.gauge`, exactly as before.
+ *   - `reuse`: skips all three steps. `workspace.q()`, the MG hierarchy, and
+ *     `rhs1()`/`rhs2()` retain whatever content the workspace already holds.
+ *
+ * DOCUMENTED CALLER CONTRACT (undefined behavior otherwise): `reuse` is valid
+ * ONLY when the immediately preceding `solve_streamfunctions` call on the
+ * SAME `workspace` used the SAME grid, the SAME `problem.conductivity`
+ * contents (and representation), and the SAME `problem.gauge` -- i.e. nothing
+ * that would change `q`, the MG hierarchy, or the affine RHS. This is the
+ * exact `ContinuationController` SF-21 heterogeneity-continuation use case:
+ * one MG hierarchy rebuild per lambda value, reused across every warm-started
+ * solve call at that lambda (eta-rescue ramps included).
+ *
+ * `reuse` REQUIRES `config.initial_state == PicardInitialState::warm_start`
+ * and throws `std::invalid_argument` otherwise (enforced by
+ * `solve_streamfunctions`, not by host-only `validate_streamfunction_problem`,
+ * since it is a cross-call/workspace-history precondition, not a per-call
+ * value precondition). Rationale: the `zero_source` initialization path
+ * solves `A u_i = rhs_i` directly against `workspace.rhs1()`/`rhs2()` as its
+ * RHS, so those buffers must hold a freshly assembled affine RHS for the
+ * CURRENT `q`/gauge; running `zero_source` with `reuse` would silently solve
+ * against a stale RHS from a previous `q`. Under `warm_start`, by contrast,
+ * neither the zero-init nor the zero-source block solves run at all (see
+ * `PicardInitialState`), and `rhs1()`/`rhs2()` are consumed only as the
+ * SF-15 adaptive-Picard trial residual evaluator's OWN scratch OUTPUT buffers
+ * (`enqueue_streamfunction_residual` fully overwrites them every trial before
+ * anything reads them back) -- their pre-call contents are never read under
+ * `warm_start`, so skipping their (re)assembly is safe exactly in that case.
+ *
+ * A `reuse` call also throws `std::invalid_argument` if the workspace has
+ * never completed a `rebuild` call for its currently prepared grid (tracked
+ * by `StreamfunctionWorkspace`'s internal `coefficients_valid_` guard, which
+ * `prepare()` clears whenever the grid changes): there would be nothing valid
+ * to reuse.
+ */
+enum class CoefficientState { rebuild, reuse };
+
+/**
  * Composed, host-only configuration for one `solve_streamfunctions` call
  * (SF-13 consumes this; SF-12 only defines and validates it).
  *
@@ -269,6 +316,12 @@ struct StreamfunctionSolverConfig {
     // `zero_source`, the bitwise-unchanged SF-13..16 behavior; see
     // `PicardInitialState` above.
     PicardInitialState initial_state{PicardInitialState::zero_source};
+
+    // SF-21: whether q/the MG hierarchy/the affine RHS are (re)built or
+    // reused from the workspace's prior contents. Defaults to `rebuild`, the
+    // bitwise-unchanged SF-13..19 behavior; see `CoefficientState` above for
+    // the full caller contract.
+    CoefficientState coefficient_state{CoefficientState::rebuild};
 };
 
 /**

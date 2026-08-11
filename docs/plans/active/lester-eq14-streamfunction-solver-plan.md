@@ -24,13 +24,13 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-21`
+- NEXT: `SF-22`
 - Active runtime goal: `none`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-20`
+- Last completed increment: `SF-21`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`. Within that one active increment, the orchestrator
@@ -125,14 +125,15 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-18 — Periodic Gaussian generator](lester-eq14/increments/SF-18-periodic-gaussian-generator.md)
 - [x] [SF-19 — Affine-periodic Darcy solve](lester-eq14/increments/SF-19-affine-periodic-darcy.md)
 - [x] [SF-20 — Anderson acceleration](lester-eq14/increments/SF-20-anderson.md)
-- [ ] [SF-21 — Heterogeneity continuation](lester-eq14/increments/SF-21-heterogeneity-continuation.md)
-- [ ] [SF-22 — Grid continuation](lester-eq14/increments/SF-22-grid-continuation.md)
-- [ ] [SF-23 — GPU optimization](lester-eq14/increments/SF-23-gpu-optimization.md)
-- [ ] [SF-24 — V100 benchmark](lester-eq14/increments/SF-24-v100-benchmark.md)
-- [ ] [SF-25 — Matrix-free Jacobian-vector product](lester-eq14/increments/SF-25-matrix-free-jvp.md)
-- [ ] [SF-26 — Restarted GMRES and block preconditioner](lester-eq14/increments/SF-26-gmres-preconditioner.md)
-- [ ] [SF-27 — Globalized Newton-Krylov](lester-eq14/increments/SF-27-newton-krylov.md)
-- [ ] [SF-28 — Mixed-precision preconditioner study](lester-eq14/increments/SF-28-mixed-precision.md)
+- [x] [SF-21 — Heterogeneity continuation](lester-eq14/increments/SF-21-heterogeneity-continuation.md)
+- [ ] [SF-22 — Matrix-free Jacobian-vector product](lester-eq14/increments/SF-22-matrix-free-jvp.md)
+- [ ] [SF-23 — Restarted GMRES and block preconditioner](lester-eq14/increments/SF-23-gmres-preconditioner.md)
+- [ ] [SF-24 — Globalized Newton-Krylov](lester-eq14/increments/SF-24-newton-krylov.md)
+- [ ] [SF-25 — Heterogeneity completion](lester-eq14/increments/SF-25-heterogeneity-completion.md)
+- [ ] [SF-26 — Grid continuation](lester-eq14/increments/SF-26-grid-continuation.md)
+- [ ] [SF-27 — GPU optimization](lester-eq14/increments/SF-27-gpu-optimization.md)
+- [ ] [SF-28 — V100 benchmark](lester-eq14/increments/SF-28-v100-benchmark.md)
+- [ ] [SF-29 — Mixed-precision preconditioner study](lester-eq14/increments/SF-29-mixed-precision.md)
 
 ## Locked mathematical and discrete decisions
 

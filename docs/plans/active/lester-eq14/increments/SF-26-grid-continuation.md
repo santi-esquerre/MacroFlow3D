@@ -1,10 +1,10 @@
-# SF-22 — Grid continuation
+# SF-26 — Grid continuation
 
 - State: `pending`
 - Goal: `Implementar continuación de malla preservando gauge y realización aleatoria.`
-- Depends on: `SF-21`
-- Unlocks: `SF-23`
-- Branch: `science/lester-sf22-grid-continuation`
+- Depends on: `SF-25`
+- Unlocks: `SF-27`
+- Branch: `science/lester-sf-26-grid-continuation`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf21-grid-continuation`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4`
 - Human review: `required`
@@ -21,7 +21,7 @@ the random realization, affine part, periodicity, and zero-mean gauge fixed.
 
 ## Preconditions
 
-- SF-21 converges fixed-seed Gaussian cases at individual grids.
+- SF-25 (heterogeneity completion) converges the fixed-seed Gaussian suite at individual grids with the full Picard/Anderson/Newton stack.
 
 ## In scope
 
@@ -87,16 +87,16 @@ scripts/remote exec -- "<fixed-seed-128-grid-ladder-command>"
 - [ ] `32^3 -> 64^3 -> 128^3` fixed ladder completes.
 - [ ] Gate 3A/4 review and experiment note pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-22 complete and selects SF-23.
+- [ ] Dashboard marks SF-26 complete and selects SF-27.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-SF-23 may optimize kernels using the accepted Picard/Anderson/continuation
+SF-27 may optimize kernels using the accepted Picard/Anderson/Newton/continuation
 outputs as correctness baselines.
 
 ## Bitácora
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
-| 2026-08-11T14:10Z | re-sequenced into slot SF-22 (was SF-21) | Owner decision (option (a), 2026-08-11): Anderson moved before heterogeneity; grid continuation follows heterogeneity unchanged. See `docs/decisions/2026-08-11-anderson-before-heterogeneity.md`. | Content otherwise untouched. | Activate only when named by `NEXT`. |
+| 2026-08-11T14:10Z | re-sequenced into slot SF-26 (was SF-21, then SF-22) | First rotation: Anderson before heterogeneity (`docs/decisions/2026-08-11-anderson-before-heterogeneity.md`). Second rotation (owner option (a), 2026-08-11): the Newton phase and the heterogeneity completion now precede grid continuation (`docs/decisions/2026-08-11-newton-before-heterogeneity-completion.md`). | Content otherwise untouched. | Activate only when named by `NEXT`. |

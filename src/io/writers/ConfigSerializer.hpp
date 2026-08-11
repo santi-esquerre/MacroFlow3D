@@ -210,6 +210,16 @@ struct ConfigSerializer {
         std::fprintf(f, "    summary: %s\n", sf.exports.summary ? "true" : "false");
         std::fprintf(f, "    fields: %s\n", sf.exports.fields ? "true" : "false");
 
+        // Field/Darcy sources (SF-21 T03)
+        std::fprintf(f, "  field_source: %s\n", sf.field_source.c_str());
+        std::fprintf(f, "  periodic_gaussian:\n");
+        std::fprintf(f, "    sigma2: %.15e\n", (double)sf.periodic_gaussian.sigma2);
+        std::fprintf(f, "    corr_length: %.15e\n", (double)sf.periodic_gaussian.corr_length);
+        std::fprintf(f, "    seed: %llu\n", (unsigned long long)sf.periodic_gaussian.seed);
+        std::fprintf(f, "    normalize_variance: %s\n",
+                     sf.periodic_gaussian.normalize_variance ? "true" : "false");
+        std::fprintf(f, "  darcy_source: %s\n", sf.darcy_source.c_str());
+
         // Continuation (SF-17 T03). eta.target == sf.eta (top-level, the eta
         // TARGET), epsilon.start == sf.epsilon (top-level, the epsilon
         // STARTING value) — neither is duplicated here (activation bitácora
@@ -235,6 +245,24 @@ struct ConfigSerializer {
                      (double)cont.epsilon.backtrack_factor);
         std::fprintf(f, "      growth_factor: %.15e\n", (double)cont.epsilon.growth_factor);
         std::fprintf(f, "      easy_streak: %d\n", cont.epsilon.easy_streak);
+
+        // Lambda (heterogeneity) continuation (SF-21 T03).
+        std::fprintf(f, "    lambda:\n");
+        std::fprintf(f, "      enabled: %s\n", cont.lambda.enabled ? "true" : "false");
+        std::fprintf(f, "      start: %.15e\n", (double)cont.lambda.start);
+        std::fprintf(f, "      initial_step: %.15e\n", (double)cont.lambda.initial_step);
+        std::fprintf(f, "      min_step: %.15e\n", (double)cont.lambda.min_step);
+        std::fprintf(f, "      max_step: %.15e\n", (double)cont.lambda.max_step);
+        std::fprintf(f, "      backtrack_factor: %.15e\n", (double)cont.lambda.backtrack_factor);
+        std::fprintf(f, "      growth_factor: %.15e\n", (double)cont.lambda.growth_factor);
+        std::fprintf(f, "      easy_streak: %d\n", cont.lambda.easy_streak);
+
+        // Anderson acceleration (SF-21 T03r, re-activation decision R2d).
+        std::fprintf(f, "  anderson:\n");
+        std::fprintf(f, "    enabled: %s\n", sf.anderson.enabled ? "true" : "false");
+        std::fprintf(f, "    depth: %d\n", sf.anderson.depth);
+        std::fprintf(f, "    start_iteration: %d\n", sf.anderson.start_iteration);
+        std::fprintf(f, "    condition_limit: %.15e\n", (double)sf.anderson.condition_limit);
 
         std::fclose(f);
         return true;

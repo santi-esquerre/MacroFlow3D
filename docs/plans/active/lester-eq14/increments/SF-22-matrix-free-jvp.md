@@ -1,10 +1,10 @@
-# SF-25 — Matrix-free Jacobian-vector product
+# SF-22 — Matrix-free Jacobian-vector product
 
 - State: `pending`
 - Goal: `Implementar el vector acoplado y el producto Jacobiano-vector matrix-free.`
-- Depends on: `SF-24`
-- Unlocks: `SF-26`
-- Branch: `science/lester-sf25-matrix-free-jvp`
+- Depends on: `SF-21`
+- Unlocks: `SF-23`
+- Branch: `science/lester-sf-22-matrix-free-jvp`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf25-matrix-free-jvp`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A`
 - Human review: `required`
@@ -21,7 +21,7 @@ assembling or storing a coupled Jacobian.
 
 ## Preconditions
 
-- SF-24 establishes the accepted Picard residual and production baseline.
+- SF-21 (partial closure, owner option (a) 2026-08-11) establishes the accepted Picard/Anderson residual evaluator and the heterogeneity-continuation machinery whose eta=1 non-contractive plateau motivates this Newton phase.
 
 ## In scope
 
@@ -90,12 +90,12 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [ ] Central-difference comparison and gauge thresholds pass.
 - [ ] Gate 3A regressions and human review pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-25 complete and selects SF-26.
+- [ ] Dashboard marks SF-22 complete and selects SF-23.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-SF-26 may use this Jv as the matrix-free operator in restarted GMRES.
+SF-23 may use this Jv as the matrix-free operator in restarted GMRES.
 
 ## Bitácora
 

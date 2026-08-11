@@ -1,10 +1,10 @@
-# SF-26 — Restarted GMRES and block preconditioner
+# SF-23 — Restarted GMRES and block preconditioner
 
 - State: `pending`
 - Goal: `Implementar GMRES reiniciado con precondicionador bloque diagonal.`
-- Depends on: `SF-25`
-- Unlocks: `SF-27`
-- Branch: `science/lester-sf26-gmres-preconditioner`
+- Depends on: `SF-22`
+- Unlocks: `SF-24`
+- Branch: `science/lester-sf-23-gmres-preconditioner`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf26-gmres-preconditioner`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A`
 - Human review: `required`
@@ -21,7 +21,7 @@ validated diffusion blocks as a physics-informed preconditioner.
 
 ## Preconditions
 
-- SF-25 provides an accepted matrix-free Jv.
+- SF-22 provides an accepted matrix-free Jv.
 
 ## In scope
 
@@ -44,7 +44,7 @@ validated diffusion blocks as a physics-informed preconditioner.
 2. Use modified Gram-Schmidt with reorthogonalization trigger and Givens updates.
 3. Project each coupled basis vector and true residual component.
 4. Keep the preconditioner fixed and linear in this increment, so standard
-   GMRES is valid; introduce FGMRES only when SF-28 makes it necessary.
+   GMRES is valid; introduce FGMRES only when SF-29 makes it necessary.
 5. Recompute the true residual at each restart and termination.
 
 ## Expected numerical effect
@@ -88,12 +88,12 @@ ctest --test-dir build/wsl-debug --output-on-failure
 - [ ] Restart memory accounting is measured and documented.
 - [ ] Gate 3A regressions and human review pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-26 complete and selects SF-27.
+- [ ] Dashboard marks SF-23 complete and selects SF-24.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
 
-SF-27 may use the accepted linear solver inside a globalized Newton iteration.
+SF-24 may use the accepted linear solver inside a globalized Newton iteration.
 
 ## Bitácora
 

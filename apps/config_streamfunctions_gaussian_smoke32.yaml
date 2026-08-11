@@ -1,0 +1,191 @@
+# ==============================================================================
+# MacroFlow3D — Streamfunction heterogeneity continuation smoke fixture (32^3)
+# ==============================================================================
+#
+# SF-21 T03 acceptance fixture for the lambda/eta-rescue/epsilon heterogeneity
+# continuation pipeline surface (`streamfunction_solver.field_source:
+# periodic_gaussian`, `streamfunction_solver.darcy_source: affine_periodic`,
+# `streamfunction_solver.continuation.lambda:`), wired in SF-21 T03. The
+# controller itself is `streamfunctions::run_streamfunction_heterogeneity_
+# continuation` (SF-21 T01r, `ContinuationController.cu`).
+#
+# field_source: periodic_gaussian -- EVERY realization replaces the pipeline
+# K field's contents with K = exp(Y) for a fresh SF-18 truly periodic
+# Gaussian log-conductivity Y (fixed seed 12345, sigma_Y^2 = 0.25,
+# corr_length = 8, normalize_variance = true) BEFORE the head solve, so every
+# downstream consumer (head, velocity, transport, streamfunction stage) sees
+# the periodic conductivity.
+#
+# darcy_source: affine_periodic -- the streamfunction stage's reference
+# velocity/gauge come from the SF-19 affine-periodic Darcy solve
+# (qbar=(1,0,0), vbar=1 exact) instead of the pipeline's own head/velocity
+# solve; flow.bc below (Dirichlet x, periodic y/z) drives ONLY the ambient
+# pipeline head/velocity computation (needed because the streamfunction
+# stage's need_vel_compact gate is unconditional) and is otherwise unused by
+# the streamfunction problem in this mode.
+#
+# continuation.lambda: enabled, spec-locked defaults (start=0, initial_step
+# =0.1, min_step=0.0125, max_step=0.2, backtrack=0.5, growth=1.5,
+# easy_streak=2; target fixed at 1 by the library). continuation.epsilon.
+# target = 1.0e-2 == the top-level epsilon (1.0e-2, the strict-parser
+# default) makes the post-lambda epsilon leg DEGENERATE (start == target, a
+# single zero-length stage): this fixture gates ONLY the lambda leg reaching
+# lambda=1, matching the SF-21 activation bitácora's ctest smoke scope
+# (T02/T04 own the numerical acceptance gate; this fixture only proves the
+# pipeline wiring runs end to end and the run completes with
+# status=reached_target).
+#
+# 32^3, dx=1 (ell/h = 8/1 = 8, matching the activation bitácora's ctest
+# smoke fixture geometry); mg.num_levels=4 needs min(nx,ny,nz) divisible by
+# 2^3=8 -- 32 qualifies. All exports on; minimal par2 transport smoke pass
+# (mirrors config_streamfunctions_continuation.yaml).
+#
+# Run with:
+#   ./build/wsl-debug/macroflow3d_pipeline apps/config_streamfunctions_gaussian_smoke32.yaml
+# ==============================================================================
+
+run_mode: single_run
+
+# ------------------------------------------------------------------------------
+# grid
+# ------------------------------------------------------------------------------
+grid:
+  nx: 32
+  ny: 32
+  nz: 32
+  dx: 1.0
+
+# ------------------------------------------------------------------------------
+# stochastic -- required by the strict parser but numerically INERT: with
+# field_source: periodic_gaussian below, the per-realization K generation is
+# entirely replaced by generate_periodic_gaussian_field + K=exp(Y); this
+# stochastic section is never consumed.
+# ------------------------------------------------------------------------------
+stochastic:
+  sigma2: 0.0
+  corr_length: 8.0
+  n_modes: 8
+  covariance_type: 0
+  seed: 42
+  K_mean: 1.0
+
+# ------------------------------------------------------------------------------
+# flow -- drives ONLY the ambient (unused-by-the-streamfunction-stage)
+# pipeline head/velocity computation; Dirichlet head drop along x, y/z
+# periodic (same pattern as the SF-16/17 fixtures).
+# ------------------------------------------------------------------------------
+flow:
+  solver: mg_cg
+  mg_levels: 4
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-10
+  cg_check_every: 10
+  rtol: 1.0e-10
+
+  pin:
+    mode: off             # Dirichlet en west/east -> sistema no singular
+
+  bc:
+    west:   { type: dirichlet, value: 32.0 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+# ------------------------------------------------------------------------------
+# streamfunction_solver -- Lester equation (14) solver stage (SF-16), with
+# the SF-21 T03 heterogeneity (lambda) continuation enabled over an SF-18
+# periodic Gaussian K field and the SF-19 affine-periodic Darcy reference
+# velocity. eta/epsilon (top-level) left at strict-parser defaults (1.0 /
+# 1.0e-2); picard/adaptive/linear/mg left at strict-parser defaults.
+# anderson: enabled with the SF-20-validated defaults (depth=5,
+# start_iteration=5, condition_limit=1.0e12), per SF-21 T03r (re-activation
+# decision R2d) -- applied per continuation stage the same as every other
+# `base_config` field.
+# ------------------------------------------------------------------------------
+streamfunction_solver:
+  enabled: true
+  field_source: periodic_gaussian
+  periodic_gaussian:
+    sigma2: 0.25
+    corr_length: 8.0
+    seed: 12345
+    normalize_variance: true
+  darcy_source: affine_periodic
+  export:
+    iteration_history: true
+    summary: true
+    fields: true
+  continuation:
+    lambda:
+      enabled: true
+    epsilon:
+      target: 1.0e-2   # == top-level epsilon: degenerate (fixed) epsilon leg
+  anderson:
+    enabled: true
+    depth: 5
+    start_iteration: 5
+    condition_limit: 1.0e12
+
+# ------------------------------------------------------------------------------
+# transport -- minimal par2 smoke pass (not the point of this fixture)
+# ------------------------------------------------------------------------------
+transport:
+  method: par2
+  n_particles: 50
+  dt: 1.0
+  n_steps: 20
+  porosity: 1.0
+  diffusion: 0.0
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 20
+  snapshot_every: 0
+  inject_x: 1.0
+
+# ------------------------------------------------------------------------------
+# analysis
+# ------------------------------------------------------------------------------
+analysis:
+  macrodispersion:
+    enabled: false
+    NR: 1
+    lambda: 8.0
+    vmean_norm: 1.0
+    sample_every: 10
+    var_estimator: biased
+
+  snapshots:
+    enabled: false
+    every: 100
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+# ------------------------------------------------------------------------------
+# diagnostics
+# ------------------------------------------------------------------------------
+diagnostics:
+  velocity_field: true
+
+# ------------------------------------------------------------------------------
+# output
+# ------------------------------------------------------------------------------
+output:
+  output_dir: ./output_streamfunctions_gaussian_smoke32
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary
