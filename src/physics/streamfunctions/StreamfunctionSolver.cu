@@ -131,6 +131,7 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         // the nonlinear residual undefined, not merely inaccurate.
         report.status = StreamfunctionSolveStatus::invalid_problem;
         report.memory = make_streamfunction_memory_report(fields, workspace, grid);
+        report.anderson_history_bytes = report.memory.anderson_history_bytes;
         return report;
     }
 
@@ -370,6 +371,140 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
                 break;
             }
 
+            // SF-20: Anderson acceleration, inserted AFTER the MAP step and
+            // BEFORE the SF-15 backtracking search. See StreamfunctionSolver.cuh
+            // for the exact, order-sensitive semantics implemented below.
+            // config.anderson.enabled == false skips this entire block, so
+            // the disabled path is bitwise identical to pre-SF-20 SF-15.
+            bool anderson_accepted_this_iteration = false;
+            if (config.anderson.enabled) {
+                AndersonAccelerator& anderson = workspace.anderson();
+
+                // History maintenance (unconditional, every enabled outer
+                // iteration): x_k is the CURRENT accepted state
+                // (fields.u1_span()/u2_span(), untouched by MAP above);
+                // u_hat_k is this iteration's frozen MAP output (f1()/f2()).
+                anderson.update_history(context, DeviceSpan<const real>(fields.u1_span()),
+                                        DeviceSpan<const real>(fields.u2_span()),
+                                        DeviceSpan<const real>(workspace.f1()),
+                                        DeviceSpan<const real>(workspace.f2()));
+
+                if (k >= config.anderson.start_iteration && anderson.num_columns() >= 1) {
+                    real condition_estimate = std::numeric_limits<real>::infinity();
+                    const bool formed = anderson.form_candidate(
+                        context, DeviceSpan<const real>(workspace.f1()),
+                        DeviceSpan<const real>(workspace.f2()), config.anderson.condition_limit,
+                        workspace.u_trial1(), workspace.u_trial2(), condition_estimate);
+
+                    if (!formed) {
+                        // Gram system too ill-conditioned (or, unreachable
+                        // here given the guard above, no history): do NOT
+                        // accelerate this iteration; clear history and fall
+                        // through to the unchanged Picard backtracking below.
+                        anderson.clear();
+                        ++report.anderson_condition_resets;
+                    } else {
+                        projector.project(context, workspace.u_trial1(),
+                                          workspace.pcg_workspace().mean_zero);
+                        projector.project(context, workspace.u_trial2(),
+                                          workspace.pcg_workspace().mean_zero);
+
+                        const PeriodicStreamfunctionFluctuations anderson_fluctuations{
+                            workspace.u_trial1(), workspace.u_trial2()};
+
+                        // Trial residual evaluation reuses rhs1()/rhs2(),
+                        // exactly as an SF-15 backtracking trial does (idle
+                        // at this point in the outer iteration).
+                        enqueue_streamfunction_residual(
+                            context, grid, DeviceSpan<const real>(workspace.q()),
+                            anderson_fluctuations, problem.gauge, config.eta, source_config,
+                            config.histogram, workspace.rhs1(), workspace.rhs2(),
+                            workspace.residual_workspace());
+                        const StreamfunctionResidualReport residual_a =
+                            synchronize_streamfunction_residual_report(
+                                context, grid, config.eta, source_config, config.histogram,
+                                workspace.residual_workspace());
+                        const real r_F_a = residual_a.r_F;
+                        const real p_a = residual_histogram_percentile(residual_a, real{0.001});
+
+                        real f_a = real{0};
+                        if (guards_active) {
+                            enqueue_streamfunction_physical_diagnostics(
+                                context, grid, anderson_fluctuations, problem.gauge,
+                                problem.darcy_velocity, config.diagnostics, workspace.v_psi(),
+                                workspace.diagnostics_workspace());
+                            const PhysicalDiagnosticsReport diag_a =
+                                synchronize_streamfunction_physical_diagnostics_report(
+                                    context, grid, config.diagnostics,
+                                    workspace.diagnostics_workspace());
+                            f_a = static_cast<real>(diag_a.degeneracy_unexplained[0]) /
+                                  static_cast<real>(n);
+                        }
+
+                        // IDENTICAL guard order to the SF-15 backtracking
+                        // trial classification below, with omega_try fixed
+                        // at 1 for the Armijo test (see StreamfunctionSolver.cuh).
+                        PicardTrialOutcome outcome;
+                        if (!std::isfinite(r_F_a) || residual_a.nonfinite_s1 > 0 ||
+                            residual_a.nonfinite_s2 > 0) {
+                            outcome = PicardTrialOutcome::rejected_nonfinite;
+                        } else if (guards_active &&
+                                  (f_a > config.adaptive.max_unexplained_fraction ||
+                                   f_a > config.adaptive.unexplained_growth_factor * f_prev +
+                                             config.adaptive.unexplained_growth_offset)) {
+                            outcome = PicardTrialOutcome::rejected_degeneracy;
+                        } else if (guards_active &&
+                                  p_a < p_k / config.adaptive.percentile_collapse_factor &&
+                                  f_a > f_prev) {
+                            outcome = PicardTrialOutcome::rejected_percentile;
+                        } else if (r_F_a > (real{1} - config.adaptive.armijo_c) * r_F_k) {
+                            outcome = PicardTrialOutcome::rejected_armijo;
+                        } else {
+                            outcome = PicardTrialOutcome::accepted;
+                        }
+
+                        PicardTrialRecord anderson_trial;
+                        anderson_trial.iteration = k;
+                        anderson_trial.omega = real{1};
+                        anderson_trial.r_F_trial = r_F_a;
+                        anderson_trial.outcome = outcome;
+                        anderson_trial.anderson = true;
+                        report.trial_history.push_back(anderson_trial);
+
+                        if (outcome == PicardTrialOutcome::accepted) {
+                            // Only accepted-state change: copy the trial
+                            // pair into fields, exactly as an SF-15
+                            // acceptance. omega/easy-streak state is left
+                            // UNCHANGED by an Anderson acceptance.
+                            MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
+                                fields.u1_span().data(), workspace.u_trial1().data(),
+                                n * sizeof(real), cudaMemcpyDeviceToDevice,
+                                context.cuda_stream()));
+                            MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(
+                                fields.u2_span().data(), workspace.u_trial2().data(),
+                                n * sizeof(real), cudaMemcpyDeviceToDevice,
+                                context.cuda_stream()));
+                            ++report.anderson_accepted;
+                            anderson_accepted_this_iteration = true;
+                        } else {
+                            // REJECTED: never accept a candidate that fails
+                            // the trial guard chain. Clear history and fall
+                            // through to the unchanged Picard backtracking
+                            // search below, starting at the persistent omega
+                            // exactly as if Anderson had not been attempted.
+                            anderson.clear();
+                            ++report.anderson_rejected;
+                        }
+                    }
+                }
+            }
+
+            if (anderson_accepted_this_iteration) {
+                // Skip the SF-15 backtracking search entirely for this k;
+                // proceed to the next outer iteration's HEAD.
+                continue;
+            }
+
             // BACKTRACKING: search over omega_try, starting at the
             // persistent omega, without recomputing the MAP (u_hat1/u_hat2,
             // held in f1/f2) between trials.
@@ -511,6 +646,7 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         context, grid, config.diagnostics, workspace.diagnostics_workspace());
 
     report.memory = make_streamfunction_memory_report(fields, workspace, grid);
+    report.anderson_history_bytes = report.memory.anderson_history_bytes;
 
     return report;
 }

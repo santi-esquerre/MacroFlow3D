@@ -326,6 +326,24 @@ void require_valid_adaptive_config(const AdaptivePicardConfig& adaptive,
     }
 }
 
+// SF-20: validated unconditionally (regardless of anderson.enabled), mirroring
+// require_valid_adaptive_config's convention -- an invalid Anderson config is
+// invalid even when acceleration is off.
+void require_valid_anderson_config(const AndersonConfig& anderson) {
+    if (anderson.depth < 3 || anderson.depth > 8) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires anderson.depth in [3, 8]");
+    }
+    if (anderson.start_iteration < 1) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a strictly positive anderson.start_iteration");
+    }
+    if (!std::isfinite(anderson.condition_limit) || anderson.condition_limit <= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite anderson.condition_limit > 1");
+    }
+}
+
 void require_valid_source_side_config(const StreamfunctionSolverConfig& config) {
     if (!std::isfinite(config.eta) || config.eta < real{0}) {
         throw std::invalid_argument("Streamfunction problem requires a finite, non-negative eta");
@@ -393,6 +411,7 @@ void validate_streamfunction_problem(const Grid3D& grid, const StreamfunctionPro
     require_valid_diagnostics_config(config.diagnostics);
     require_valid_picard_config(config.picard);
     require_valid_adaptive_config(config.adaptive, config.picard);
+    require_valid_anderson_config(config.anderson);
     require_valid_source_side_config(config);
 }
 
@@ -464,6 +483,21 @@ void StreamfunctionWorkspace::prepare(const Grid3D& grid, const StreamfunctionSo
         mg_preconditioner_.emplace(*mg_hierarchy_, config.mg);
     }
 
+    // SF-20: optional Anderson accelerator, allocated ONLY when enabled (see
+    // StreamfunctionWorkspace.cuh and AndersonAccelerator.cuh). Disabling
+    // deallocates it, matching the "allocated only when enabled" contract;
+    // an already-prepared (n, depth) pair performs no device allocation.
+    if (config.anderson.enabled) {
+        if (!anderson_.has_value()) {
+            anderson_.emplace();
+        }
+        if (!anderson_->prepared_for(n, config.anderson.depth)) {
+            anderson_->prepare(n, config.anderson.depth);
+        }
+    } else {
+        anderson_.reset();
+    }
+
     prepared_grid_ = grid;
     prepared_mg_config_ = config.mg;
     prepared_ = true;
@@ -475,6 +509,10 @@ bool StreamfunctionWorkspace::prepared_for(const Grid3D& grid,
         return false;
     }
     const std::size_t n = grid.num_cells();
+    const bool anderson_ok = config.anderson.enabled
+                                 ? (anderson_.has_value() &&
+                                    anderson_->prepared_for(n, config.anderson.depth))
+                                 : !anderson_.has_value();
     return q_.size() == n && rhs1_.size() == n && rhs2_.size() == n && f1_.size() == n &&
            f2_.size() == n && u_trial1_.size() == n && u_trial2_.size() == n &&
            v_psi_u_.size() == compact_mac_u_size(grid) &&
@@ -483,7 +521,7 @@ bool StreamfunctionWorkspace::prepared_for(const Grid3D& grid,
            diagnostics_workspace_.prepared_for(grid) && affine_rhs_workspace_.prepared_for(n) &&
            pcg_workspace_.prepared_for(n) && mg_hierarchy_ != nullptr &&
            mg_preconditioner_.has_value() && grids_equal(prepared_grid_, grid) &&
-           mg_config_equal(prepared_mg_config_, config.mg);
+           mg_config_equal(prepared_mg_config_, config.mg) && anderson_ok;
 }
 
 DeviceSpan<real> StreamfunctionWorkspace::q() {
@@ -571,6 +609,19 @@ const solvers::ProjectedPositiveMGPreconditioner& StreamfunctionWorkspace::preco
     return *mg_preconditioner_;
 }
 
+AndersonAccelerator& StreamfunctionWorkspace::anderson() {
+    ensure_prepared();
+    if (!anderson_.has_value()) {
+        throw std::logic_error(
+            "StreamfunctionWorkspace::anderson() requires config.anderson.enabled at the last "
+            "prepare() call");
+    }
+    return *anderson_;
+}
+bool StreamfunctionWorkspace::anderson_enabled() const noexcept {
+    return anderson_.has_value();
+}
+
 std::size_t StreamfunctionWorkspace::allocated_device_bytes() const noexcept {
     std::size_t bytes =
         (q_.capacity() + rhs1_.capacity() + rhs2_.capacity() + f1_.capacity() + f2_.capacity() +
@@ -586,6 +637,10 @@ std::size_t StreamfunctionWorkspace::allocated_device_bytes() const noexcept {
     }
     if (mg_preconditioner_.has_value()) {
         bytes += mg_preconditioner_->allocated_device_bytes();
+    }
+    if (anderson_.has_value()) {
+        bytes += anderson_->history_bytes() + anderson_->staging_bytes() +
+                 anderson_->scratch_bytes();
     }
     return bytes;
 }
@@ -606,10 +661,19 @@ StreamfunctionMemoryReport StreamfunctionWorkspace::memory_report(const Grid3D& 
         mg_preconditioner_.has_value() ? mg_preconditioner_->allocated_device_bytes() : 0;
     report.diagnostics_workspace_bytes = diagnostics_workspace_.allocated_device_bytes();
 
+    // SF-20: additive, exactly zero when disabled (see StreamfunctionTypes.hpp).
+    if (anderson_.has_value()) {
+        report.anderson_history_bytes = anderson_->history_bytes();
+        report.anderson_staging_bytes = anderson_->staging_bytes();
+        report.anderson_scratch_bytes = anderson_->scratch_bytes();
+    }
+
     report.fields_bytes = 0;
     report.solve_path_bytes = report.scratch_fields_bytes + report.residual_workspace_bytes +
                               report.affine_rhs_workspace_bytes + report.pcg_workspace_bytes +
-                              report.mg_hierarchy_bytes + report.mg_preconditioner_bytes;
+                              report.mg_hierarchy_bytes + report.mg_preconditioner_bytes +
+                              report.anderson_history_bytes + report.anderson_staging_bytes +
+                              report.anderson_scratch_bytes;
     report.diagnostics_path_bytes = report.diagnostics_workspace_bytes;
     report.total_bytes = report.fields_bytes + report.solve_path_bytes + report.diagnostics_path_bytes;
 
@@ -646,6 +710,7 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     require_valid_diagnostics_config(config.diagnostics);
     require_valid_picard_config(config.picard);
     require_valid_adaptive_config(config.adaptive, config.picard);
+    require_valid_anderson_config(config.anderson);
     require_valid_source_side_config(config);
 
     const std::size_t n = grid.num_cells();
@@ -666,9 +731,20 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     report.diagnostics_workspace_bytes =
         StreamfunctionDiagnosticsWorkspace::estimate_device_bytes(grid);
 
+    // SF-20: additive, exactly zero when disabled (see StreamfunctionTypes.hpp).
+    if (config.anderson.enabled) {
+        const AndersonMemoryEstimate anderson_estimate =
+            estimate_anderson_device_bytes(n, config.anderson.depth);
+        report.anderson_history_bytes = anderson_estimate.history_bytes;
+        report.anderson_staging_bytes = anderson_estimate.staging_bytes;
+        report.anderson_scratch_bytes = anderson_estimate.scratch_bytes;
+    }
+
     report.solve_path_bytes = report.scratch_fields_bytes + report.residual_workspace_bytes +
                               report.affine_rhs_workspace_bytes + report.pcg_workspace_bytes +
-                              report.mg_hierarchy_bytes + report.mg_preconditioner_bytes;
+                              report.mg_hierarchy_bytes + report.mg_preconditioner_bytes +
+                              report.anderson_history_bytes + report.anderson_staging_bytes +
+                              report.anderson_scratch_bytes;
     report.diagnostics_path_bytes = report.diagnostics_workspace_bytes;
     report.total_bytes = report.fields_bytes + report.solve_path_bytes + report.diagnostics_path_bytes;
     report.fine_grid_equivalent_fields =

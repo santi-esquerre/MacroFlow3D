@@ -24,13 +24,13 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-20`
+- NEXT: `SF-21`
 - Active runtime goal: `none`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-19`
+- Last completed increment: `SF-20`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`. Within that one active increment, the orchestrator
@@ -124,7 +124,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-17 — Eta and epsilon continuation](lester-eq14/increments/SF-17-eta-epsilon-continuation.md)
 - [x] [SF-18 — Periodic Gaussian generator](lester-eq14/increments/SF-18-periodic-gaussian-generator.md)
 - [x] [SF-19 — Affine-periodic Darcy solve](lester-eq14/increments/SF-19-affine-periodic-darcy.md)
-- [ ] [SF-20 — Anderson acceleration](lester-eq14/increments/SF-20-anderson.md)
+- [x] [SF-20 — Anderson acceleration](lester-eq14/increments/SF-20-anderson.md)
 - [ ] [SF-21 — Heterogeneity continuation](lester-eq14/increments/SF-21-heterogeneity-continuation.md)
 - [ ] [SF-22 — Grid continuation](lester-eq14/increments/SF-22-grid-continuation.md)
 - [ ] [SF-23 — GPU optimization](lester-eq14/increments/SF-23-gpu-optimization.md)
