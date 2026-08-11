@@ -194,6 +194,80 @@
  *     the final `residual`/`diagnostics` reports, `final_omega`, and the
  *     complete `picard_history`/`trial_history`.
  *   - `invalid_problem`: unchanged from SF-13 (degenerate measured `v_rms`).
+ *
+ * SF-20 Anderson acceleration (`config.anderson`, see `AndersonConfig` in
+ * `StreamfunctionTypes.hpp` and `AndersonAccelerator.cuh`; default
+ * `enabled == false`, bitwise identical to SF-15):
+ *
+ *   `config.anderson.enabled == false` executes IDENTICAL statements to the
+ *   SF-15 adaptive loop above (every Anderson step below is wrapped in
+ *   `if (config.anderson.enabled)`); `workspace.anderson()` is never
+ *   constructed and `report.anderson_*` fields stay default (`0`).
+ *
+ *   `config.anderson.enabled == true` inserts, once per outer iteration `k`,
+ *   AFTER the MAP step (3, unchanged: `u_hat1`/`u_hat2` in `workspace.f1()`/
+ *   `f2()`) and BEFORE the SF-15 BACKTRACKING search (4):
+ *
+ *   1. HISTORY MAINTENANCE (unconditional, every enabled outer iteration):
+ *      `workspace.anderson().update_history(context, fields.u1_span(),
+ *      fields.u2_span(), workspace.f1(), workspace.f2())` forms the coupled
+ *      fixed-point residual `f_k = u_hat_k - x_k` (`x_k` the current
+ *      ACCEPTED state, read here BEFORE any trial touches it) and appends a
+ *      new `(DeltaX, DeltaF)` ring-buffer column against the PREVIOUS
+ *      accepted `(x, f)` pair, if one is staged; the staged pair is then
+ *      replaced by `(x_k, f_k)` unconditionally. This runs regardless of `k`
+ *      relative to `start_iteration`, so history accumulates from the first
+ *      enabled outer iteration.
+ *   2. ATTEMPT GATE: acceleration is attempted only when
+ *      `k >= config.anderson.start_iteration` AND
+ *      `workspace.anderson().num_columns() >= 1`.
+ *   3. CANDIDATE FORMATION (attempt gate true): `workspace.anderson()
+ *      .form_candidate(context, workspace.f1(), workspace.f2(),
+ *      config.anderson.condition_limit, workspace.u_trial1(),
+ *      workspace.u_trial2(), condition_estimate)` solves the small
+ *      Gram-system least squares and writes the UNPROJECTED candidate
+ *      `x_acc = u_hat_k - sum_j gamma_j*(DeltaX_j + DeltaF_j)` (algebraically
+ *      `x_k + f_k - (X_k+F_k)*gamma`, see `AndersonAccelerator.cuh`) into the
+ *      SAME `u_trial1()`/`u_trial2()` scratch pair the SF-15 backtracking
+ *      search below uses (reused safely: stream-ordered, and Anderson always
+ *      runs to completion, whether accepted or rejected, before backtracking
+ *      would touch those buffers again). A `false` return (condition
+ *      estimate `> condition_limit`, or `num_columns() == 0`, unreachable
+ *      here given the attempt gate) counts `anderson_condition_resets`,
+ *      clears the history (`workspace.anderson().clear()`), and falls
+ *      through to the UNCHANGED SF-15 backtracking search over the Picard
+ *      candidate (`u_hat1`/`u_hat2`, still held in `f1()`/`f2()`) for this
+ *      same `k` -- omega/streak state is untouched by a condition reset.
+ *   4. TRIAL EVALUATION (candidate formed): `workspace.u_trial1()`/
+ *      `u_trial2()` are mean-zero projected in place (gauge), then evaluated
+ *      through the IDENTICAL trial guard chain as an SF-15 backtracking
+ *      trial (step 4 above: nonfinite -> degeneracy -> percentile ->
+ *      Armijo), with `omega_try` fixed at `1` for the Armijo sufficient-
+ *      decrease test (`r_F_trial > (1 - armijo_c) * r_F_k`) and reusing
+ *      `workspace.rhs1()`/`rhs2()` as the residual-evaluation output buffers
+ *      (idle at this point, exactly as the SF-15 backtracking trial reuses
+ *      them). The trial is appended to `report.trial_history` with
+ *      `PicardTrialRecord::anderson == true`.
+ *        - ACCEPTED: `u_trial1()`/`u_trial2()` are copied into
+ *          `fields.u1_span()`/`u2_span()` (the only accepted-state change,
+ *          identical mechanism to an SF-15 acceptance); `anderson_accepted`
+ *          is counted; the persistent `omega`/easy-streak state is left
+ *          UNCHANGED (Anderson acceptance neither grows nor shrinks it); the
+ *          SF-15 backtracking search is SKIPPED entirely for this `k`
+ *          (`continue` to the next outer iteration's HEAD).
+ *        - REJECTED (any guard): the history is cleared
+ *          (`workspace.anderson().clear()`), `anderson_rejected` is
+ *          counted, and the loop falls through to the UNCHANGED SF-15
+ *          backtracking search over the Picard candidate for this same `k`,
+ *          starting at the persistent `omega` exactly as if Anderson had
+ *          never been attempted.
+ *
+ *   Anderson therefore NEVER bypasses a trial guard and NEVER introduces a
+ *   new fixed point: an accepted Anderson candidate is just another
+ *   guard-passing point on the same coupled fixed-point map that the SF-15
+ *   backtracking search also samples; a rejected one is invisible to
+ *   `fields.u1_span()`/`u2_span()` and only costs one extra evaluated trial
+ *   plus a cleared history.
  */
 
 #include "../../numerics/solvers/pcg.cuh"
@@ -252,12 +326,20 @@ enum class PicardTrialOutcome {
  * to, the relaxation factor it tried, the trial's coupled residual `r_F`,
  * and its outcome. Every trial evaluated by the adaptive loop is recorded
  * here, accepted or rejected, in evaluation order.
+ *
+ * `anderson` (SF-20, default `false`) marks a trial as a type-II Anderson
+ * mixing candidate (`omega == 1` by construction, see
+ * `StreamfunctionSolver.cuh`'s SF-20 section) rather than a plain SF-15
+ * backtracking trial; it is evaluated through the IDENTICAL guard chain
+ * (`outcome` uses the same `PicardTrialOutcome` values) before ever touching
+ * the accepted state.
  */
 struct PicardTrialRecord {
     int iteration{};
     real omega{};
     real r_F_trial{};
     PicardTrialOutcome outcome{PicardTrialOutcome::accepted};
+    bool anderson{false};
 };
 
 /**
@@ -295,6 +377,21 @@ struct PicardIterationRecord {
  * globalization record; see the file header), and `memory` (the SF-12
  * exact-byte memory report for the workspace that produced this solve).
  * `status` is the overall outcome; see `StreamfunctionSolveStatus`.
+ *
+ * SF-20 Anderson acceleration counters (all `0`/unset when
+ * `config.anderson.enabled == false`, matching the bitwise-preserving
+ * disabled path): `anderson_accepted` counts outer iterations where an
+ * Anderson-mixed candidate was accepted (state advanced without the SF-15
+ * Picard backtracking search running that iteration); `anderson_rejected`
+ * counts outer iterations where an attempted Anderson candidate failed the
+ * trial guard chain (history cleared, SF-15 Picard backtracking ran as the
+ * fallback); `anderson_condition_resets` counts outer iterations where the
+ * Gram-system condition estimate exceeded `config.anderson.condition_limit`
+ * BEFORE a candidate was even evaluated (history cleared, same Picard
+ * fallback). `anderson_history_bytes` mirrors
+ * `memory.anderson_history_bytes` (the workspace's actual, exact
+ * `4 * depth * n * sizeof(real)` history footprint) for convenient top-level
+ * reporting; see `StreamfunctionMemoryReport` for the full byte accounting.
  */
 struct StreamfunctionSolveReport {
     StreamfunctionSolveStatus status{StreamfunctionSolveStatus::not_run};
@@ -312,6 +409,12 @@ struct StreamfunctionSolveReport {
     PicardExitReason exit_reason{PicardExitReason::none};
     real final_omega{};
     std::vector<PicardTrialRecord> trial_history{};
+
+    // SF-20 Anderson acceleration; see above.
+    int anderson_accepted{0};
+    int anderson_rejected{0};
+    int anderson_condition_resets{0};
+    std::size_t anderson_history_bytes{0};
 };
 
 /**

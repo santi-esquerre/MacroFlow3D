@@ -77,6 +77,7 @@
 #include "../../multigrid/mg_types.hpp"
 #include "../../numerics/solvers/pcg.cuh"
 #include "../../numerics/solvers/projected_positive_mg_preconditioner.cuh"
+#include "AndersonAccelerator.cuh"
 #include "Diagnostics.cuh"
 #include "ResidualEvaluator.cuh"
 #include "StreamfunctionTypes.hpp"
@@ -211,6 +212,14 @@ class StreamfunctionWorkspace {
     [[nodiscard]] solvers::ProjectedPositiveMGPreconditioner& preconditioner();
     [[nodiscard]] const solvers::ProjectedPositiveMGPreconditioner& preconditioner() const;
 
+    // SF-20: non-null only when this workspace was last prepare()'d with
+    // config.anderson.enabled == true (allocated ONLY in that case; see the
+    // file header and AndersonAccelerator.cuh). Throws std::logic_error if
+    // called while disabled (mirroring every other ensure_prepared()
+    // accessor's failure mode).
+    [[nodiscard]] AndersonAccelerator& anderson();
+    [[nodiscard]] bool anderson_enabled() const noexcept;
+
     // Exact sum of every owned DeviceBuffer capacity across this workspace
     // and every sub-workspace/hierarchy/preconditioner it owns, in bytes.
     // Never allocates.
@@ -247,6 +256,10 @@ class StreamfunctionWorkspace {
     // pointer stability under StreamfunctionWorkspace moves.
     std::unique_ptr<multigrid::MGHierarchy> mg_hierarchy_;
     std::optional<solvers::ProjectedPositiveMGPreconditioner> mg_preconditioner_;
+
+    // SF-20: optional, allocated only when config.anderson.enabled (see the
+    // file header and AndersonAccelerator.cuh).
+    std::optional<AndersonAccelerator> anderson_;
 
     Grid3D prepared_grid_{};
     multigrid::MGConfig prepared_mg_config_{};

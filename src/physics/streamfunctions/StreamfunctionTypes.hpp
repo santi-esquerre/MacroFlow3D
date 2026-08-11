@@ -170,6 +170,41 @@ struct AdaptivePicardConfig {
 };
 
 /**
+ * Anderson acceleration configuration (SF-20), composed as
+ * `StreamfunctionSolverConfig::anderson`. `enabled == false` is the
+ * dashboard-locked default and is bitwise-preserving: `solve_streamfunctions`
+ * executes IDENTICAL statements to the pre-SF-20 SF-15 adaptive-Picard loop
+ * (the Anderson bookkeeping and candidate formation are wrapped in
+ * `if (config.anderson.enabled)`; see `StreamfunctionSolver.cuh` for the
+ * exact insertion point, coupled-state history semantics, and safeguard
+ * chain). `enabled == true` wraps the SAME SF-15 fixed-point map with a
+ * type-II Anderson mixing candidate, evaluated through the identical trial
+ * guard chain before ever touching the accepted state.
+ *
+ *   - `enabled`: acceleration on/off switch; `false` reproduces the SF-15
+ *     adaptive loop exactly.
+ *   - `depth`: number of retained coupled `(DeltaX, DeltaF)` history columns
+ *     (validated to `[3, 8]`); the accelerator's device history storage is
+ *     exactly `4 * depth * n * sizeof(real)` bytes for a grid of `n` cells
+ *     (see `AndersonAccelerator.cuh`).
+ *   - `start_iteration`: the first outer Picard iteration `k` (validated
+ *     `>= 1`) at which an accelerated candidate may be attempted; history
+ *     accumulates from the first enabled outer iteration regardless of this
+ *     threshold, so by `k == start_iteration` up to `min(start_iteration,
+ *     depth)` columns are typically already available.
+ *   - `condition_limit`: the maximum allowed condition-number estimate
+ *     (R-diagonal ratio from the pivoted-QR solve of the small Gram system)
+ *     before an iteration's acceleration attempt is abandoned in favor of the
+ *     unchanged SF-15 Picard fallback (validated finite `> 1`).
+ */
+struct AndersonConfig {
+    bool enabled{false};
+    int depth{5};
+    int start_iteration{5};
+    real condition_limit{real{1e12}};
+};
+
+/**
  * How `solve_streamfunctions` initializes `u1`/`u2` before the Picard loop
  * (SF-17). `zero_source` is the SF-13 default and remains bitwise identical
  * to every prior increment: `u1`/`u2` are zero-initialized and the two
@@ -223,6 +258,7 @@ struct StreamfunctionSolverConfig {
     PhysicalDiagnosticsConfig diagnostics{};
     FixedPicardConfig picard{};
     AdaptivePicardConfig adaptive{};
+    AndersonConfig anderson{};
 
     real eta{real{1}};
     real epsilon{real{1e-2}};
@@ -260,6 +296,21 @@ struct StreamfunctionSolverConfig {
  * The per-subworkspace breakdown fields duplicate parts of `solve_path_bytes`
  * / `diagnostics_path_bytes` by name for direct reporting; they always sum
  * back to their respective category total.
+ *
+ * SF-20 additive extension: `anderson_history_bytes`, `anderson_staging_bytes`,
+ * and `anderson_scratch_bytes` are folded into `solve_path_bytes` alongside
+ * the existing breakdown fields, and are exactly zero whenever
+ * `config.anderson.enabled == false` -- the SF-12 closed-form memory tests'
+ * disabled-config fixtures are therefore untouched (`solve_path_bytes` and
+ * `total_bytes` are bitwise unchanged for those fixtures). When enabled,
+ * `anderson_history_bytes == 4 * config.anderson.depth * n * sizeof(real)`
+ * exactly (the `DeltaX1`/`DeltaX2`/`DeltaF1`/`DeltaF2` coupled history
+ * columns); `anderson_staging_bytes == 4 * n * sizeof(real)` exactly (the
+ * previous-accepted-state/previous-fixed-point-residual staging pair,
+ * `prev_x1`/`prev_x2`/`prev_f1`/`prev_f2`); `anderson_scratch_bytes` is the
+ * small dense Gram/rhs device transfer buffer plus the (unused-by-dot_device
+ * but API-required) `blas::ReductionWorkspace` -- both independent of `n`.
+ * See `AndersonAccelerator.cuh` for the exact accounting.
  */
 struct StreamfunctionMemoryReport {
     std::size_t fields_bytes{};
@@ -278,6 +329,11 @@ struct StreamfunctionMemoryReport {
 
     // diagnostics_path_bytes breakdown (currently a single sub-workspace).
     std::size_t diagnostics_workspace_bytes{};
+
+    // SF-20 Anderson acceleration: additive, zero when disabled (see above).
+    std::size_t anderson_history_bytes{};
+    std::size_t anderson_staging_bytes{};
+    std::size_t anderson_scratch_bytes{};
 };
 
 /**
@@ -324,7 +380,10 @@ struct StreamfunctionMemoryReport {
  *     `[0, 1)`; `stagnation_window >= 1`; finite `stagnation_min_reduction`
  *     in `(0, 1)`; finite `max_unexplained_fraction` in `(0, 1]`; finite
  *     `unexplained_growth_factor >= 1`; finite `unexplained_growth_offset
- *     >= 0`; finite `percentile_collapse_factor > 1`.
+ *     >= 0`; finite `percentile_collapse_factor > 1`; `config.anderson`
+ *     (SF-20) is likewise validated regardless of `enabled` and requires:
+ *     `depth` in `[3, 8]`; `start_iteration >= 1`; finite
+ *     `condition_limit > 1`.
  *
  * Device-resident values of `K`/`Y` are intentionally NOT reduced or
  * validated here, matching the SF-06 wording that finiteness/positivity of

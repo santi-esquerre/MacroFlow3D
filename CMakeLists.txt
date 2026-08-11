@@ -218,6 +218,7 @@ set(PHYSICS_SOURCES
     src/physics/streamfunctions/NonlinearSources.cu
     src/physics/streamfunctions/ResidualEvaluator.cu
     src/physics/streamfunctions/Diagnostics.cu
+    src/physics/streamfunctions/AndersonAccelerator.cu
     src/physics/streamfunctions/StreamfunctionWorkspace.cu
     src/physics/streamfunctions/StreamfunctionSolver.cu
     src/physics/streamfunctions/ContinuationController.cu
