@@ -170,7 +170,7 @@ class StreamfunctionWorkspace {
     [[nodiscard]] bool prepared_for(const Grid3D& grid,
                                     const StreamfunctionSolverConfig& config) const noexcept;
 
-    // SF-20: whether this workspace currently holds a valid `q`/MG
+    // SF-21: whether this workspace currently holds a valid `q`/MG
     // hierarchy/affine-RHS built by a `CoefficientState::rebuild` call for
     // its currently prepared grid. `prepare()` clears this whenever the grid
     // changes (see StreamfunctionWorkspace.cu); `solve_streamfunctions` sets
@@ -275,7 +275,7 @@ class StreamfunctionWorkspace {
     multigrid::MGConfig prepared_mg_config_{};
     bool prepared_ = false;
 
-    // SF-20: see coefficients_valid() above.
+    // SF-21: see coefficients_valid() above.
     bool coefficients_valid_ = false;
 };
 

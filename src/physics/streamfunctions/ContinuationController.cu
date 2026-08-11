@@ -172,20 +172,20 @@ ContinuationStageRecord make_stage_record(ContinuationAxis axis, real param_star
 }
 
 // Sink for one ContinuationStageRecord + the StreamfunctionSolveReport it was
-// built from (SF-20 needs the full report to harvest Gate-3A metrics per
+// built from (SF-21 needs the full report to harvest Gate-3A metrics per
 // stage; SF-17 only keeps the trimmed record).
 using StageRecordSink =
     std::function<void(const ContinuationStageRecord&, const StreamfunctionSolveReport&)>;
 
 // Shared by run_streamfunction_continuation (SF-17) and
-// run_streamfunction_heterogeneity_continuation (SF-20): runs the
+// run_streamfunction_heterogeneity_continuation (SF-21): runs the
 // epsilon_log10 stepper leg at a fixed eta, every stage warm-started, exactly
 // the SF-17 epsilon-leg semantics documented in the file header. `base_config`
 // supplies every field a stage config copies verbatim except `eta` (set to
 // `fixed_eta`), `epsilon` (set to the attempted physical value), and
 // `initial_state` (always `warm_start`) -- notably `base_config.
 // coefficient_state` is NOT touched here, so SF-17 (which leaves it at the
-// default `rebuild`) and SF-20 (which passes a `base_config` with `reuse`
+// default `rebuild`) and SF-21 (which passes a `base_config` with `reuse`
 // already set) get their own, distinct, unmodified behavior. `accepted_u1`/
 // `accepted_u2` are the caller-owned accepted-state snapshot pair this leg
 // snapshots into/restores from; `accepted_epsilon_log10`/`final_solve` are
@@ -346,7 +346,7 @@ StreamfunctionContinuationReport run_streamfunction_continuation(
     }
 
     // --- Epsilon leg: fixed final eta, warm-started stages. Shared with
-    // SF-20 via run_epsilon_leg (see its doc comment); base_config here still
+    // SF-21 via run_epsilon_leg (see its doc comment); base_config here still
     // leaves coefficient_state at its caller-supplied default (rebuild),
     // exactly reproducing the pre-refactor behavior bitwise. ---
     const ContinuationStatus epsilon_status = run_epsilon_leg(
@@ -382,7 +382,7 @@ StreamfunctionContinuationReport run_streamfunction_continuation(
 
 namespace {
 
-// --- SF-20 heterogeneity continuation helpers. ---
+// --- SF-21 heterogeneity continuation helpers. ---
 
 std::size_t heterogeneity_compact_mac_u_size(const Grid3D& g) {
     return static_cast<std::size_t>(g.nx + 1) * static_cast<std::size_t>(g.ny) *
@@ -596,7 +596,7 @@ HeterogeneityContinuationReport run_streamfunction_heterogeneity_continuation(
     real accepted_epsilon_log10 = continuation_config.inner.epsilon_log10.start;
     report.final_solve = baseline_report;
 
-    // --- Lambda leg with eta rescue (decisions 1 and 2 of the SF-20
+    // --- Lambda leg with eta rescue (decisions 1 and 2 of the SF-21
     // activation bitácora). ---
     ContinuationStepper lambda_stepper(continuation_config.lambda);
     while (!lambda_stepper.reached_target()) {

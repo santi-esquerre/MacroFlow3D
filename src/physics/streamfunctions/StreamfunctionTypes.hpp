@@ -227,7 +227,7 @@ struct AndersonConfig {
 enum class PicardInitialState { zero_source, warm_start };
 
 /**
- * SF-20: whether `solve_streamfunctions` (re)builds the coefficient-dependent
+ * SF-21: whether `solve_streamfunctions` (re)builds the coefficient-dependent
  * state -- `q` (`workspace.q()`), the MG coefficient hierarchy
  * (`multigrid::populate_coefficient_hierarchy`), and the affine periodic RHS
  * pair (`workspace.rhs1()`/`rhs2()`, via `assemble_affine_periodic_rhs`) --
@@ -245,7 +245,7 @@ enum class PicardInitialState { zero_source, warm_start };
  * SAME `workspace` used the SAME grid, the SAME `problem.conductivity`
  * contents (and representation), and the SAME `problem.gauge` -- i.e. nothing
  * that would change `q`, the MG hierarchy, or the affine RHS. This is the
- * exact `ContinuationController` SF-20 heterogeneity-continuation use case:
+ * exact `ContinuationController` SF-21 heterogeneity-continuation use case:
  * one MG hierarchy rebuild per lambda value, reused across every warm-started
  * solve call at that lambda (eta-rescue ramps included).
  *
@@ -317,7 +317,7 @@ struct StreamfunctionSolverConfig {
     // `PicardInitialState` above.
     PicardInitialState initial_state{PicardInitialState::zero_source};
 
-    // SF-20: whether q/the MG hierarchy/the affine RHS are (re)built or
+    // SF-21: whether q/the MG hierarchy/the affine RHS are (re)built or
     // reused from the workspace's prior contents. Defaults to `rebuild`, the
     // bitwise-unchanged SF-13..19 behavior; see `CoefficientState` above for
     // the full caller contract.

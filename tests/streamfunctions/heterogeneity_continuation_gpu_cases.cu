@@ -185,6 +185,14 @@ struct ManufacturedProblemBuffers {
 // field, mirrored from the picard/continuation ManufacturedProblemBuffers's
 // K, but uploaded directly as Y (the SF-21 driver builds K_lambda=exp(lambda*Y)
 // internally from a raw log-conductivity buffer).
+//
+// NOTE: on a dx=dy=dz=1 grid (every injection-only case below), cell centers
+// sit at half-integer coordinates, so sin(2*pi*(k+0.5)) == 0 exactly for
+// every integer k; the sampled field is EXACTLY zero at every cell center and
+// K_lambda == exp(lambda*Y) == 1 identically, regardless of `amplitude`. This
+// is intentional and benign for those cases: their contracts (rescue
+// ordering, halving/rollback, floor exhaustion) are driven entirely by the
+// injected StageSolveFn outcomes, not by the field values themselves.
 [[nodiscard]] DeviceBuffer<real> manufactured_y_field(const Grid3D& grid, double amplitude) {
     std::vector<real> y_host(grid.num_cells());
     for (int iz = 0; iz < grid.nz; ++iz) {
@@ -448,6 +456,12 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
 
 // ---------------------------------------------------------------------------
 // Case 2: heterogeneity_rescue_ordering (GPU, 16^3, mild manufactured Y).
+//
+// NOTE: at dx=1, manufactured_y_field's sin(2pi*(k+0.5)) sampling is EXACTLY
+// zero at every cell center (see manufactured_y_field's doc comment above),
+// so Y is identically zero here and K_lambda == 1 regardless of `kAmplitude`.
+// This is intentional and benign: this case's contract (rescue ordering) is
+// driven entirely by the injected StageSolveFn outcomes, not by the field.
 // ---------------------------------------------------------------------------
 
 [[nodiscard]] CaseResult case_heterogeneity_rescue_ordering() {
@@ -621,6 +635,12 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
 
 // ---------------------------------------------------------------------------
 // Case 3: heterogeneity_rescue_failure_lambda_halving (GPU, 16^3, injection-only).
+//
+// NOTE: at dx=1, manufactured_y_field's sin(2pi*(k+0.5)) sampling is EXACTLY
+// zero at every cell center (see manufactured_y_field's doc comment above),
+// so Y is identically zero here and K_lambda == 1 regardless of `kAmplitude`.
+// This is intentional and benign: this case's contract (halving/rollback) is
+// driven entirely by the injected StageSolveFn outcomes, not by the field.
 // ---------------------------------------------------------------------------
 
 [[nodiscard]] CaseResult case_heterogeneity_rescue_failure_lambda_halving() {
@@ -738,6 +758,12 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
 
 // ---------------------------------------------------------------------------
 // Case 4: heterogeneity_lambda_floor_exhaustion (GPU, 16^3, injection-only).
+//
+// NOTE: at dx=1, manufactured_y_field's sin(2pi*(k+0.5)) sampling is EXACTLY
+// zero at every cell center (see manufactured_y_field's doc comment above),
+// so Y is identically zero here and K_lambda == 1 regardless of `kAmplitude`.
+// This is intentional and benign: this case's contract (floor exhaustion) is
+// driven entirely by the injected StageSolveFn outcomes, not by the field.
 // ---------------------------------------------------------------------------
 
 [[nodiscard]] CaseResult case_heterogeneity_lambda_floor_exhaustion() {

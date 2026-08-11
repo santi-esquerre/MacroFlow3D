@@ -80,7 +80,7 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         workspace.anderson().clear();
     }
 
-    // SF-20: CoefficientState::reuse skips the q-fill, MG coefficient
+    // SF-21: CoefficientState::reuse skips the q-fill, MG coefficient
     // hierarchy population, and affine-RHS (re)assembly below, reusing
     // whatever the workspace already holds from a prior CoefficientState::
     // rebuild call. See CoefficientState in StreamfunctionTypes.hpp for the

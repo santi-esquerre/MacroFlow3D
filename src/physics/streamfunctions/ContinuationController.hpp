@@ -103,7 +103,7 @@
  * `fields` before reporting failure -- to verify step halving and bitwise
  * state restore. It is never a fallback/compatibility path.
  *
- * == SF-20: heterogeneity continuation ==
+ * == SF-21: heterogeneity continuation ==
  *
  * `run_streamfunction_heterogeneity_continuation` adds an OUTER `lambda` leg
  * on top of the SAME reusable `ContinuationStepper` machine and the SAME
@@ -444,11 +444,11 @@ using StageSolveFn = std::function<StreamfunctionSolveReport(
     const StreamfunctionContinuationConfig& continuation_config, StreamfunctionFields& fields,
     StreamfunctionWorkspace& workspace, StageSolveFn stage_solver = {});
 
-// --- SF-20: heterogeneity continuation. See the file header for the exact
+// --- SF-21: heterogeneity continuation. See the file header for the exact
 // nested lambda/eta-rescue/epsilon protocol. ---
 
 /**
- * Composed, host-only SF-20 configuration. `lambda` is the spec-locked outer
+ * Composed, host-only SF-21 configuration. `lambda` is the spec-locked outer
  * axis (initial step `0.1`, min `0.0125`, max `0.2`, halve on failure, grow
  * by `1.5` after 2 consecutive easy stages, `[0, 1]`); `inner.eta` is the
  * SAME SF-17 eta axis used for the rescue ramp; `inner.epsilon_log10` is the
@@ -468,11 +468,11 @@ struct HeterogeneityContinuationConfig {
 void validate_streamfunction_heterogeneity_continuation_config(
     const HeterogeneityContinuationConfig& config);
 
-/** Which SF-20 leg a `HeterogeneityStageRecord`/failure belongs to. */
+/** Which SF-21 leg a `HeterogeneityStageRecord`/failure belongs to. */
 enum class HeterogeneityAxis { lambda, eta_rescue, epsilon };
 
 /**
- * One recorded SF-20 stage attempt (baseline, lambda, eta-rescue, or
+ * One recorded SF-21 stage attempt (baseline, lambda, eta-rescue, or
  * epsilon), append-only. `base` is built by the SAME `make_stage_record`
  * helper `ContinuationController.cu` uses for SF-17 (its `axis` field is
  * `eta` for baseline/lambda/eta-rescue records and `epsilon` for epsilon-leg
@@ -560,7 +560,7 @@ struct HeterogeneityContinuationReport {
 };
 
 /**
- * Run the SF-20 lambda/eta-rescue/epsilon heterogeneity continuation
+ * Run the SF-21 lambda/eta-rescue/epsilon heterogeneity continuation
  * described in the file header. `Y` is the caller-owned, triply periodic
  * SF-18 log-conductivity field at `lambda = 1` scale (`grid.num_cells()`
  * elements); `flow_config` parameterizes every per-lambda SF-19
