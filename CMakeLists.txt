@@ -373,6 +373,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_picard_adaptive_gpu_cases.cu
         tests/streamfunctions/streamfunction_continuation_gpu_cases.cu
         tests/streamfunctions/streamfunction_anderson_gpu_cases.cu
+        tests/streamfunctions/heterogeneity_continuation_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -432,6 +433,30 @@ if(MACROFLOW3D_BUILD_APPS)
     add_test(NAME streamfunction_anderson_stall COMMAND streamfunction_operator_tests
         --case anderson_stall_fixture_a
         --case anderson_stall_fixture_b
+    )
+    # SF-21 (first built pre-re-sequencing as SF-20 T02): CoefficientState +
+    # lambda/eta-rescue contract cases, plus the SF-21 re-activation Anderson
+    # entry-clear proof (fast, 16^3, host+small-GPU). Kept in a separate
+    # ctest entry (rather than extended into streamfunction_continuation or
+    # streamfunction_anderson) so the two very different runtime profiles
+    # (fast unit cases vs. the tens-of-minutes 32^3 physical smokes below)
+    # are independently attributable.
+    add_test(NAME streamfunction_heterogeneity_unit COMMAND streamfunction_operator_tests
+        --case heterogeneity_coefficient_state_contract
+        --case heterogeneity_rescue_ordering
+        --case heterogeneity_rescue_failure_lambda_halving
+        --case heterogeneity_lambda_floor_exhaustion
+        --case heterogeneity_anderson_entry_clear
+    )
+    # SF-21 (first built pre-re-sequencing as SF-20 T02, activation bitácora
+    # decision 5(b); SF-21 re-activation decision R5 enables Anderson):
+    # PRESPECIFIED 32^3 physical Gaussian gating smokes. May take tens of
+    # minutes combined; deliberately NOT budget-capped below the solver's
+    # documented defaults. Heavy tier: see streamfunction_operator_tests.cpp
+    # (heavy_cases()) for the isolation mechanism.
+    add_test(NAME streamfunction_heterogeneity_smoke COMMAND streamfunction_operator_tests
+        --case heterogeneity_smoke_sigma025
+        --case heterogeneity_smoke_sigma1
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3

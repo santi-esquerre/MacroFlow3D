@@ -348,21 +348,34 @@ using CaseFunction = test::CaseFunction;
                 throw std::logic_error("duplicate streamfunction test case: " + name);
             }
         }
+        for (const auto& [name, function] : test::heterogeneity_continuation_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction test case: " + name);
+            }
+        }
         return result;
     }();
     return registry;
 }
 
-// SF-20 T02: expensive STALL-fixture cases (`anderson_stall_case_registry()`,
-// see streamfunction_anderson_gpu_cases.cu). Deliberately kept OUT of
+// SF-20 T02 / SF-21: expensive heavy-tier cases (`anderson_stall_case_
+// registry()`, see streamfunction_anderson_gpu_cases.cu; `heterogeneity_
+// continuation_smoke_case_registry()`, see
+// heterogeneity_continuation_gpu_cases.cu). Deliberately kept OUT of
 // `cases()` above so `--list` and the no-argument "run everything" default
 // stay on the fast tier; reachable only via an explicit `--case
-// anderson_stall_fixture_a`/`anderson_stall_fixture_b`, resolved as a
+// anderson_stall_fixture_a`/`anderson_stall_fixture_b`/
+// `heterogeneity_smoke_sigma025`/`heterogeneity_smoke_sigma1`, resolved as a
 // fallback in main() below.
 [[nodiscard]] const std::map<std::string, CaseFunction>& heavy_cases() {
     static const std::map<std::string, CaseFunction> registry = [] {
         std::map<std::string, CaseFunction> result;
         for (const auto& [name, function] : test::anderson_stall_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction heavy test case: " + name);
+            }
+        }
+        for (const auto& [name, function] : test::heterogeneity_continuation_smoke_case_registry()) {
             if (!result.emplace(name, function).second) {
                 throw std::logic_error("duplicate streamfunction heavy test case: " + name);
             }
