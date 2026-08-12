@@ -26,6 +26,7 @@
 #include "../../core/Scalar.hpp"
 #include "../../multigrid/mg_types.hpp"
 #include "../../numerics/solvers/pcg.cuh"
+#include "CoupledGmres.cuh"
 #include "Diagnostics.cuh"
 #include "NonlinearSources.cuh"
 #include "ResidualEvaluator.cuh"
@@ -205,6 +206,95 @@ struct AndersonConfig {
 };
 
 /**
+ * The disposition of one SF-15 backtracking trial (or, SF-24, one Newton
+ * line-search trial -- see `NewtonKrylovSolver.cuh`). Defined here, rather
+ * than in `StreamfunctionSolver.cuh` where `PicardTrialRecord` lives, so that
+ * both `StreamfunctionSolver.cuh` (the SF-15 `trial_history`) and
+ * `NewtonKrylovSolver.cuh` (the SF-24 `NewtonTrialRecord`) can reuse the SAME
+ * type without either header including the other (SF-24 T01: `StreamfunctionSolver.cuh`
+ * includes `NewtonKrylovSolver.cuh` for the additive `StreamfunctionSolveReport`
+ * fields, so `NewtonKrylovSolver.cuh` cannot include `StreamfunctionSolver.cuh`
+ * back). See `StreamfunctionSolver.cuh` (step 4) for the exact, order-sensitive
+ * rejection test each non-`accepted` value corresponds to for an SF-15/SF-20
+ * trial, and `NewtonKrylovSolver.cuh` for the SF-24 Newton line-search trial's
+ * identical guard chain with an Armijo test on `0.5*r_F^2` in place of `r_F`.
+ */
+enum class PicardTrialOutcome {
+    accepted,
+    rejected_nonfinite,
+    rejected_degeneracy,
+    rejected_percentile,
+    rejected_armijo,
+};
+
+/**
+ * SF-24 globalized Newton-Krylov configuration, composed as
+ * `StreamfunctionSolverConfig::newton`. `enabled == false` (default) is
+ * bitwise-preserving: every Newton statement in `solve_streamfunctions`'
+ * adaptive loop is guarded by `if (config.newton.enabled)`, so the disabled
+ * path executes IDENTICAL statements to the pre-SF-24 SF-15/SF-20 adaptive
+ * loop (the same standard SF-20 Anderson met for its own disabled path). See
+ * `NewtonKrylovSolver.cuh` for the full activation, forcing, line-search, and
+ * failure-protocol semantics this configuration drives, and
+ * `StreamfunctionSolver.cuh` (SF-24 section) for the exact adaptive-loop
+ * insertion point.
+ *
+ *   - `enabled`: Newton phase on/off switch; `false` reproduces the SF-15/
+ *     SF-20 adaptive loop exactly.
+ *   - `activation_r_F`: the accepted-state coupled residual threshold at or
+ *     below which the Newton phase activates at an outer-loop HEAD (checked
+ *     before the stagnation exit rule).
+ *   - `stagnation_activation_r_F`: the (looser, `>= activation_r_F`)
+ *     threshold under which a stagnation exit is instead redirected into the
+ *     Newton phase, provided the accepted state's SF-11 degeneracy is clean
+ *     (see `NewtonKrylovSolver.cuh`).
+ *   - `forcing_coefficient`, `forcing_min`, `forcing_max`: the inexact-Newton
+ *     forcing rule `rel_tol_k = clamp(forcing_coefficient * sqrt(r_F_k),
+ *     forcing_min, forcing_max)` that OVERWRITES `gmres.rel_tol` every Newton
+ *     iteration (the `gmres` field's own `rel_tol` default is otherwise
+ *     unused by the Newton phase).
+ *   - `armijo_c`: the sufficient-decrease constant in the Newton line-search
+ *     Armijo test on the merit `phi = 0.5*r_F^2`:
+ *     `phi_trial <= (1 - armijo_c*alpha) * phi_k`.
+ *   - `alpha_min`: the smallest line-search step length attempted (default
+ *     `2^-5`); a rejected trial at or below this floor ends the line search
+ *     without acceptance (a Newton step failure, not a silently-accepted
+ *     step).
+ *   - `backtrack_factor`: multiplier applied to `alpha` between line-search
+ *     trials (`alpha *= backtrack_factor`, starting at `alpha = 1`).
+ *   - `max_newton_iterations`: the Newton-iteration budget for one Newton
+ *     phase activation; reaching it without convergence is a structured
+ *     `newton_budget_exhausted` exit (terminal for the whole solve, not
+ *     retried).
+ *   - `rescue_picard_steps`: number of ACCEPTED SF-15/SF-20 Picard/Anderson
+ *     advances run (through the UNCHANGED loop body) after a Newton step
+ *     failure, before retrying the Newton phase once; `0` is a valid value
+ *     that skips straight to the retry (used to test bitwise-deterministic
+ *     failure-protocol state preservation).
+ *   - `gmres`: the SF-23 `CoupledGmresConfig` used verbatim for `restart`/
+ *     `max_iterations`; `rel_tol` is overwritten every Newton iteration by
+ *     the forcing rule above (its own default value is therefore never
+ *     actually used by the Newton phase).
+ *   - `delta`: the SF-22 `JvpDeltaConfig` forward-difference delta clamp,
+ *     passed straight through to every `JvpWorkspace`/`CoupledGmres` call.
+ */
+struct NewtonKrylovConfig {
+    bool enabled{false};
+    real activation_r_F{real{1e-2}};
+    real stagnation_activation_r_F{real{1e-1}};
+    real forcing_coefficient{real{1}};
+    real forcing_min{real{1e-8}};
+    real forcing_max{real{1e-1}};
+    real armijo_c{real{1e-4}};
+    real alpha_min{real{0.03125}}; // 2^-5
+    real backtrack_factor{real{0.5}};
+    int max_newton_iterations{50};
+    int rescue_picard_steps{5};
+    CoupledGmresConfig gmres{};
+    JvpDeltaConfig delta{};
+};
+
+/**
  * How `solve_streamfunctions` initializes `u1`/`u2` before the Picard loop
  * (SF-17). `zero_source` is the SF-13 default and remains bitwise identical
  * to every prior increment: `u1`/`u2` are zero-initialized and the two
@@ -307,6 +397,10 @@ struct StreamfunctionSolverConfig {
     AdaptivePicardConfig adaptive{};
     AndersonConfig anderson{};
 
+    // SF-24: globalized Newton-Krylov phase, opt-in, bitwise-preserving when
+    // disabled. See NewtonKrylovConfig above.
+    NewtonKrylovConfig newton{};
+
     real eta{real{1}};
     real epsilon{real{1e-2}};
     int num_degeneracy_thresholds{0};
@@ -364,6 +458,22 @@ struct StreamfunctionSolverConfig {
  * small dense Gram/rhs device transfer buffer plus the (unused-by-dot_device
  * but API-required) `blas::ReductionWorkspace` -- both independent of `n`.
  * See `AndersonAccelerator.cuh` for the exact accounting.
+ *
+ * SF-24 additive extension: `newton_jvp_bytes`, `newton_gmres_bytes`,
+ * `newton_preconditioner_bytes`, and `newton_delta_bytes` are folded into
+ * `solve_path_bytes` alongside the existing breakdown fields, and are exactly
+ * zero whenever `config.newton.enabled == false` (same disabled-config
+ * bitwise-preservation contract as the SF-20 Anderson fields above).  When
+ * enabled: `newton_jvp_bytes == JvpWorkspace::estimate_device_bytes(n)`;
+ * `newton_gmres_bytes == CoupledGmres::estimate_device_bytes(n,
+ * config.newton.gmres.restart)`; `newton_preconditioner_bytes ==
+ * BlockDiagonalMGPreconditioner::estimate_device_bytes(hierarchy)` (the
+ * per-level `MeanZeroWorkspace` set plus the two finest-grid-sized scratch
+ * buffers); `newton_delta_bytes == 2 * n * sizeof(real)` exactly (the two
+ * dedicated Newton-step delta buffers,`newton_delta1()`/`newton_delta2()`,
+ * distinct from the preconditioner's own internal scratch). See
+ * `StreamfunctionWorkspace.cuh` for the exact optional-sub-workspace
+ * lifecycle these bytes are colocated with.
  */
 struct StreamfunctionMemoryReport {
     std::size_t fields_bytes{};
@@ -387,6 +497,12 @@ struct StreamfunctionMemoryReport {
     std::size_t anderson_history_bytes{};
     std::size_t anderson_staging_bytes{};
     std::size_t anderson_scratch_bytes{};
+
+    // SF-24 Newton-Krylov: additive, zero when disabled (see above).
+    std::size_t newton_jvp_bytes{};
+    std::size_t newton_gmres_bytes{};
+    std::size_t newton_preconditioner_bytes{};
+    std::size_t newton_delta_bytes{};
 };
 
 /**
@@ -436,7 +552,15 @@ struct StreamfunctionMemoryReport {
  *     >= 0`; finite `percentile_collapse_factor > 1`; `config.anderson`
  *     (SF-20) is likewise validated regardless of `enabled` and requires:
  *     `depth` in `[3, 8]`; `start_iteration >= 1`; finite
- *     `condition_limit > 1`.
+ *     `condition_limit > 1`; `config.newton` (SF-24) is likewise validated
+ *     regardless of `enabled` and requires: finite `activation_r_F > 0`;
+ *     finite `stagnation_activation_r_F >= activation_r_F`; finite
+ *     `0 < forcing_min <= forcing_max <= 1`; finite `forcing_coefficient > 0`;
+ *     finite `armijo_c` in `[0, 1)`; finite `alpha_min` in `(0, 1]`; finite
+ *     `backtrack_factor` in `(0, 1)`; `max_newton_iterations >= 1`;
+ *     `rescue_picard_steps >= 0`; nested `gmres` valid per
+ *     `validate_coupled_gmres_config`; nested `delta` valid per
+ *     `validate_jvp_delta_config`.
  *
  * Device-resident values of `K`/`Y` are intentionally NOT reduced or
  * validated here, matching the SF-06 wording that finiteness/positivity of

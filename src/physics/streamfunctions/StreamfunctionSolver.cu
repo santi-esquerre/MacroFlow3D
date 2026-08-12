@@ -6,6 +6,7 @@
 #include "../../numerics/constraints/MeanZeroProjector.cuh"
 #include "../../numerics/operators/lester_positive_diffusion_operator.cuh"
 #include "../../runtime/cuda_check.cuh"
+#include "NewtonKrylovSolver.cuh"
 
 #include <algorithm>
 #include <cmath>
@@ -306,6 +307,20 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         real omega = config.picard.omega;
         int easy_streak_count = 0;
 
+        // SF-24: globalized Newton-Krylov activation/rescue/retry state
+        // (see StreamfunctionSolver.cuh's SF-24 section and
+        // NewtonKrylovSolver.cuh). Entirely inert when config.newton.enabled
+        // == false (every use below is guarded), preserving the pre-SF-24
+        // loop bitwise.
+        int newton_rescue_remaining = 0;
+        bool newton_force_retry = false;
+        bool newton_activation_used_rescue = false;
+        long long newton_jv_evaluations_before = 0;
+        if (config.newton.enabled) {
+            newton_jv_evaluations_before = workspace.newton_jvp().base_evaluations() +
+                                           workspace.newton_jvp().apply_evaluations();
+        }
+
         for (int k = 0;; ++k) {
             // HEAD: residual at the ACCEPTED state k (identical enqueue to
             // the SF-14 path).
@@ -356,6 +371,90 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
                 report.picard_iterations = k;
                 break;
             }
+
+            // SF-24: Newton-Krylov activation (E2), inserted BEFORE the SF-15
+            // stagnation check, EXACTLY as StreamfunctionSolver.cuh's SF-24
+            // section documents. Entirely inert (activate_newton stays
+            // false) when config.newton.enabled == false.
+            bool newton_consider_this_iteration = config.newton.enabled;
+            if (newton_consider_this_iteration && newton_rescue_remaining > 0) {
+                // Rescue-window step: forced through the UNCHANGED Picard/
+                // Anderson body below (E6); Newton activation is suppressed
+                // for exactly this iteration.
+                --newton_rescue_remaining;
+                if (newton_rescue_remaining == 0) {
+                    newton_force_retry = true;
+                }
+                newton_consider_this_iteration = false;
+            }
+
+            bool activate_newton = false;
+            bool newton_would_stagnate = false;
+            if (newton_consider_this_iteration) {
+                if (newton_force_retry) {
+                    activate_newton = true;
+                    newton_force_retry = false;
+                    ++report.newton_rescue_events;
+                } else if (r_F_k <= config.newton.activation_r_F) {
+                    activate_newton = true;
+                } else if (k >= config.adaptive.stagnation_window) {
+                    const real r_F_window_start =
+                        report.picard_history[static_cast<std::size_t>(
+                                                   k - config.adaptive.stagnation_window)]
+                            .r_F;
+                    newton_would_stagnate =
+                        r_F_k > (real{1} - config.adaptive.stagnation_min_reduction) *
+                                    r_F_window_start;
+                    const bool degeneracy_clean =
+                        !guards_active || f_prev <= config.adaptive.max_unexplained_fraction;
+                    if (newton_would_stagnate && r_F_k <= config.newton.stagnation_activation_r_F &&
+                        degeneracy_clean) {
+                        activate_newton = true;
+                    }
+                }
+            }
+
+            if (activate_newton) {
+                if (config.anderson.enabled) {
+                    workspace.anderson().clear();
+                }
+                ++report.newton_activations;
+
+                const NewtonPhaseOutcome newton_outcome = run_newton_phase(
+                    context, problem, config, fields, workspace, source_config, k,
+                    report.newton_history, report.newton_steps_accepted,
+                    report.newton_step_failures, report.residual);
+
+                if (newton_outcome.status == NewtonPhaseStatus::converged) {
+                    report.status = StreamfunctionSolveStatus::converged;
+                    report.exit_reason = PicardExitReason::converged;
+                    report.picard_iterations = k;
+                    break;
+                }
+                if (newton_outcome.status == NewtonPhaseStatus::budget_exhausted) {
+                    report.status = StreamfunctionSolveStatus::not_converged;
+                    report.exit_reason = PicardExitReason::newton_budget_exhausted;
+                    report.picard_iterations = k;
+                    break;
+                }
+                // step_failed (E6): the accepted state is unchanged by
+                // construction (see NewtonKrylovSolver.cuh).
+                if (!newton_activation_used_rescue) {
+                    newton_activation_used_rescue = true;
+                    newton_rescue_remaining = config.newton.rescue_picard_steps;
+                    if (newton_rescue_remaining == 0) {
+                        // Degenerate rescue window (0 configured advances):
+                        // retry immediately at the very next HEAD.
+                        newton_force_retry = true;
+                    }
+                    continue;
+                }
+                report.status = StreamfunctionSolveStatus::not_converged;
+                report.exit_reason = PicardExitReason::newton_exhausted;
+                report.picard_iterations = k;
+                break;
+            }
+
             if (k >= config.adaptive.stagnation_window) {
                 const real r_F_window_start =
                     report.picard_history[static_cast<std::size_t>(
@@ -670,6 +769,15 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
             }
         }
         report.final_omega = omega;
+
+        // SF-24: total matrix-free Jacobian-vector evaluations (SF-22's own
+        // monotone counters) issued by this solve, via a before/after delta.
+        if (config.newton.enabled) {
+            const long long newton_jv_evaluations_after =
+                workspace.newton_jvp().base_evaluations() + workspace.newton_jvp().apply_evaluations();
+            report.newton_jv_evaluations =
+                newton_jv_evaluations_after - newton_jv_evaluations_before;
+        }
     }
 
     // Re-run SF-11 physical diagnostics on the FINAL Picard state so

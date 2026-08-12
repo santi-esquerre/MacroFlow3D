@@ -226,6 +226,10 @@ set(PHYSICS_SOURCES
     src/physics/streamfunctions/CoupledGmres.cu
     src/physics/streamfunctions/Diagnostics.cu
     src/physics/streamfunctions/AndersonAccelerator.cu
+    # SF-24: globalized Newton-Krylov phase (inexact-Newton GMRES step +
+    # Armijo line search) consuming the SF-22/SF-23 JVP/GMRES/preconditioner
+    # surface; opt-in and bitwise-preserving when disabled.
+    src/physics/streamfunctions/NewtonKrylovSolver.cu
     src/physics/streamfunctions/StreamfunctionWorkspace.cu
     src/physics/streamfunctions/StreamfunctionSolver.cu
     src/physics/streamfunctions/ContinuationController.cu
