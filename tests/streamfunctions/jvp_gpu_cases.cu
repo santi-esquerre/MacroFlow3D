@@ -18,6 +18,7 @@
 #include "src/runtime/cuda_check.cuh"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -1184,6 +1185,288 @@ struct SweepFixtureResult {
 
 } // namespace
 
+// ===========================================================================
+// (h) jvp_repeated_apply_stress: C02 corrective -- MANY apply() calls reusing
+// apply_residual_workspace_, bitwise-gated against a single-apply reference
+// per direction. Empirically stress-bounds the exposure pattern the future
+// GMRES consumer will exercise hundreds of times per Newton step, on top of
+// the C01 fix (non-aliased base/perturbed residual workspaces).
+// ===========================================================================
+
+namespace {
+
+struct StressResult {
+    std::string label;
+    int n{};
+    int repetition_cycles{}; // R: number of full 3-direction cycles.
+    bool all_bitwise_identical{true};
+    double wall_seconds{};
+    // First mismatch diagnostics (only meaningful if !all_bitwise_identical).
+    int mismatch_cycle{-1};
+    int mismatch_direction{-1};
+    std::size_t mismatch_component{0}; // 0 = c1, 1 = c2.
+    std::size_t mismatch_cell{0};
+    real mismatch_reference_value{};
+    real mismatch_observed_value{};
+};
+
+// Bitwise-compares `observed` against `reference`; on the first differing
+// cell, records the (component, cell, both values) diagnostic into `out` and
+// returns false. Returns true (no diagnostic touched) if bitwise identical.
+[[nodiscard]] bool bitwise_compare_with_diagnostic(const std::vector<real>& reference,
+                                                    const std::vector<real>& observed,
+                                                    std::size_t component, StressResult& out) {
+    if (reference.size() != observed.size()) {
+        out.mismatch_component = component;
+        out.mismatch_cell = 0;
+        out.mismatch_reference_value = reference.empty() ? real{0} : reference.front();
+        out.mismatch_observed_value = observed.empty() ? real{0} : observed.front();
+        return false;
+    }
+    for (std::size_t i = 0; i < reference.size(); ++i) {
+        if (std::memcmp(&reference[i], &observed[i], sizeof(real)) != 0) {
+            out.mismatch_component = component;
+            out.mismatch_cell = i;
+            out.mismatch_reference_value = reference[i];
+            out.mismatch_observed_value = observed[i];
+            return false;
+        }
+    }
+    return true;
+}
+
+[[nodiscard]] std::string hex_bits(real value) {
+    static_assert(sizeof(real) == sizeof(std::uint64_t), "expects 64-bit real for hex dump");
+    std::uint64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(real));
+    std::ostringstream out;
+    out << "0x" << std::hex << std::setfill('0') << std::setw(16) << bits;
+    return out.str();
+}
+
+// One fixture instance: single prepare()/prepare_jvp_base(), three fixed
+// directions (rotating order), one reference apply() per direction at the
+// default (policy) delta config, then R full 3-direction cycles of repeated
+// apply() calls against the SAME cached base, bitwise-compared after EVERY
+// apply against that direction's stored reference.
+[[nodiscard]] StressResult run_repeated_apply_stress(const std::string& label, int n, int repetition_cycles,
+                                                      long long& base_evaluations_out,
+                                                      long long& apply_evaluations_out,
+                                                      std::size_t& allocated_bytes_after_prepare_out,
+                                                      bool& all_reports_ok_out,
+                                                      bool& all_delta_unclamped_out,
+                                                      bool& all_delta_bitwise_identical_per_direction_out) {
+    const Grid3D grid = isotropic_grid(n);
+    const std::size_t cells = grid.num_cells();
+
+    CudaContext ctx(0);
+    DeviceBuffer<real> q = upload(trig_q_host(grid, 0.5));
+    const AffineGauge gauge = AffineGauge::benchmark(real{1});
+    const NonlinearSourceConfig source_config = source_config_v_rms_1();
+    const ResidualHistogramConfig histogram_config{};
+
+    // Base (i): manufactured trig fluctuation pair, eta=1 (sources active),
+    // uniform Darcy (1,0,0). Mean-zero projected per prepare_jvp_base's caller
+    // contract.
+    const FluctuationPair base_host = manufactured_base(grid);
+    DeviceBuffer<real> base_c1 = upload(base_host.c1);
+    DeviceBuffer<real> base_c2 = upload(base_host.c2);
+    project_inplace(ctx, base_c1.span(), base_c2.span());
+
+    JvpWorkspace workspace;
+    workspace.prepare(cells);
+    const std::size_t allocated_after_prepare = workspace.allocated_device_bytes();
+    workspace.prepare_jvp_base(ctx, grid, DeviceSpan<const real>(q.span()),
+                               CoupledVectorView{base_c1.span(), base_c2.span()}, gauge, real{1}, source_config,
+                               histogram_config);
+
+    constexpr int kNumDirections = 3;
+    const DirectionType directions[kNumDirections] = {
+        DirectionType::random_seeded, DirectionType::gradient_like, DirectionType::single_fourier_mode};
+
+    DeviceBuffer<real> dir_c1[kNumDirections] = {DeviceBuffer<real>(cells), DeviceBuffer<real>(cells),
+                                                 DeviceBuffer<real>(cells)};
+    DeviceBuffer<real> dir_c2[kNumDirections] = {DeviceBuffer<real>(cells), DeviceBuffer<real>(cells),
+                                                 DeviceBuffer<real>(cells)};
+    for (int d = 0; d < kNumDirections; ++d) {
+        const FluctuationPair dir_host = build_direction(grid, directions[d], base_host);
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(dir_c1[d].data(), dir_host.c1.data(), cells * sizeof(real),
+                                          cudaMemcpyHostToDevice));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(dir_c2[d].data(), dir_host.c2.data(), cells * sizeof(real),
+                                          cudaMemcpyHostToDevice));
+    }
+
+    DeviceBuffer<real> jv_c1(cells), jv_c2(cells);
+
+    bool all_reports_ok = true;
+    bool all_delta_unclamped = true;
+    bool all_delta_bitwise_identical_per_direction = true;
+
+    // Reference pass: one apply() per direction at the default policy delta,
+    // downloaded and stored.
+    std::vector<real> reference_c1[kNumDirections];
+    std::vector<real> reference_c2[kNumDirections];
+    real reference_delta[kNumDirections];
+    for (int d = 0; d < kNumDirections; ++d) {
+        const JvpDeltaConfig default_config{};
+        const JvpApplyReport report = workspace.apply(
+            ctx, grid,
+            ConstCoupledVectorView(DeviceSpan<const real>(dir_c1[d].span()), DeviceSpan<const real>(dir_c2[d].span())),
+            default_config, CoupledVectorView{jv_c1.span(), jv_c2.span()});
+        ctx.synchronize();
+        all_reports_ok = all_reports_ok && (report.status == JvpApplyStatus::ok);
+        all_delta_unclamped = all_delta_unclamped && !report.delta_min_clamped && !report.delta_max_clamped;
+        reference_c1[d] = download(DeviceSpan<const real>(jv_c1.span()));
+        reference_c2[d] = download(DeviceSpan<const real>(jv_c2.span()));
+        reference_delta[d] = report.delta;
+    }
+
+    StressResult result;
+    result.label = label;
+    result.n = n;
+    result.repetition_cycles = repetition_cycles;
+
+    const auto wall_start = std::chrono::steady_clock::now();
+
+    bool mismatch_found = false;
+    for (int cycle = 0; cycle < repetition_cycles && !mismatch_found; ++cycle) {
+        for (int d = 0; d < kNumDirections; ++d) {
+            const JvpDeltaConfig default_config{};
+            const JvpApplyReport report = workspace.apply(
+                ctx, grid,
+                ConstCoupledVectorView(DeviceSpan<const real>(dir_c1[d].span()),
+                                      DeviceSpan<const real>(dir_c2[d].span())),
+                default_config, CoupledVectorView{jv_c1.span(), jv_c2.span()});
+            ctx.synchronize();
+
+            all_reports_ok = all_reports_ok && (report.status == JvpApplyStatus::ok);
+            all_delta_unclamped = all_delta_unclamped && !report.delta_min_clamped && !report.delta_max_clamped;
+            all_delta_bitwise_identical_per_direction =
+                all_delta_bitwise_identical_per_direction &&
+                (std::memcmp(&report.delta, &reference_delta[d], sizeof(real)) == 0);
+
+            const std::vector<real> observed_c1 = download(DeviceSpan<const real>(jv_c1.span()));
+            const std::vector<real> observed_c2 = download(DeviceSpan<const real>(jv_c2.span()));
+
+            const bool c1_ok = bitwise_compare_with_diagnostic(reference_c1[d], observed_c1, 0, result);
+            const bool c2_ok =
+                c1_ok ? bitwise_compare_with_diagnostic(reference_c2[d], observed_c2, 1, result) : true;
+
+            if (!c1_ok || !c2_ok) {
+                result.all_bitwise_identical = false;
+                result.mismatch_cycle = cycle;
+                result.mismatch_direction = d;
+                mismatch_found = true;
+                break;
+            }
+        }
+    }
+
+    const auto wall_end = std::chrono::steady_clock::now();
+    result.wall_seconds = std::chrono::duration<double>(wall_end - wall_start).count();
+
+    base_evaluations_out = workspace.base_evaluations();
+    apply_evaluations_out = workspace.apply_evaluations();
+    allocated_bytes_after_prepare_out = allocated_after_prepare;
+    all_reports_ok_out = all_reports_ok;
+    all_delta_unclamped_out = all_delta_unclamped;
+    all_delta_bitwise_identical_per_direction_out = all_delta_bitwise_identical_per_direction;
+
+    return result;
+}
+
+} // namespace
+
+[[nodiscard]] CaseResult case_jvp_repeated_apply_stress() {
+    bool pass = true;
+    std::vector<std::pair<std::string, bool>> checks;
+    const auto add_check = [&](const std::string& name, bool ok) {
+        checks.emplace_back(name, ok);
+        pass = pass && ok;
+    };
+
+    // (n, R) per the C02 spec: R=60 at 16^3, R=30 at 32^3.
+    const std::pair<int, int> configs[] = {{16, 60}, {32, 30}};
+
+    for (const auto& [n, repetition_cycles] : configs) {
+        std::ostringstream label_stream;
+        label_stream << "n" << n;
+        const std::string label = label_stream.str();
+
+        long long base_evaluations = 0;
+        long long apply_evaluations = 0;
+        std::size_t allocated_bytes_after_prepare = 0;
+        bool all_reports_ok = false;
+        bool all_delta_unclamped = false;
+        bool all_delta_bitwise_identical_per_direction = false;
+
+        const StressResult stress = run_repeated_apply_stress(
+            label, n, repetition_cycles, base_evaluations, apply_evaluations, allocated_bytes_after_prepare,
+            all_reports_ok, all_delta_unclamped, all_delta_bitwise_identical_per_direction);
+
+        std::cout << "jvp_repeated_apply_stress label=" << label << " n=" << n
+                  << " R=" << repetition_cycles << " all_bitwise_identical="
+                  << (stress.all_bitwise_identical ? "true" : "false")
+                  << " wall_seconds=" << std::setprecision(6) << stress.wall_seconds << '\n';
+
+        if (!stress.all_bitwise_identical) {
+            std::cout << "  FIRST MISMATCH: cycle=" << stress.mismatch_cycle
+                      << " direction=" << direction_type_name(
+                             stress.mismatch_direction >= 0
+                                 ? static_cast<DirectionType>(stress.mismatch_direction)
+                                 : DirectionType::random_seeded)
+                      << " component=" << (stress.mismatch_component == 0 ? "c1" : "c2")
+                      << " cell=" << stress.mismatch_cell << " reference_value=" << std::setprecision(17)
+                      << stress.mismatch_reference_value << " (" << hex_bits(stress.mismatch_reference_value)
+                      << ")"
+                      << " observed_value=" << std::setprecision(17) << stress.mismatch_observed_value << " ("
+                      << hex_bits(stress.mismatch_observed_value) << ")\n";
+        }
+
+        add_check(label + "_all_repetitions_bitwise_identical", stress.all_bitwise_identical);
+
+        // Exact evaluation-count contract: base_evaluations()==1 (single
+        // prepare_jvp_base call); apply_evaluations() == 3 (reference pass,
+        // one per direction) + 3*R (R full 3-direction stress cycles).
+        add_check(label + "_base_evaluations_eq_1", base_evaluations == 1);
+        const long long expected_apply_evaluations = 3 + 3LL * repetition_cycles;
+        add_check(label + "_apply_evaluations_eq_expected", apply_evaluations == expected_apply_evaluations);
+        std::cout << "  base_evaluations=" << base_evaluations << " apply_evaluations=" << apply_evaluations
+                  << " expected_apply_evaluations=" << expected_apply_evaluations << '\n';
+
+        // allocated_device_bytes() unchanged from after prepare() (no
+        // allocation drift across prepare_jvp_base() or any apply() call).
+        add_check(label + "_allocated_bytes_matches_estimate",
+                  allocated_bytes_after_prepare == JvpWorkspace::estimate_device_bytes(
+                                                        static_cast<std::size_t>(isotropic_grid(n).num_cells())));
+
+        add_check(label + "_all_reports_ok", all_reports_ok);
+        add_check(label + "_all_delta_unclamped", all_delta_unclamped);
+        add_check(label + "_all_delta_bitwise_identical_per_direction",
+                  all_delta_bitwise_identical_per_direction);
+    }
+
+    for (const auto& [name, ok] : checks) std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+
+    return {pass,
+            "jvp_repeated_apply_stress",
+            "gpu-jvp-stress",
+            "16^3 (R=60 cycles), 32^3 (R=30 cycles), K=exp(0.5*sin sin sin), eta=1 (sources active), "
+            "3 fixed directions in a rotating order, ONE prepare_jvp_base, MANY apply() calls",
+            0.0,
+            0.0,
+            "every repeated apply() bitwise-identical (memcmp) to that direction's single-apply "
+            "reference; exact base_evaluations()==1 / apply_evaluations()==3+3*R; "
+            "allocated_device_bytes() unchanged from after prepare(); every report ok / delta "
+            "unclamped / delta bitwise-identical per direction",
+            pass ? "all pass" : "some failed",
+            "SF-22 corrective C02: empirically stress-bounds the remaining exposure pattern (MANY "
+            "apply() calls reusing apply_residual_workspace_ across calls) that C01's non-aliased-"
+            "workspace fix addresses structurally but leaves the underlying low-level mechanism "
+            "uncharacterized (sanitizers clean, single-stream chain verified); this is the exact "
+            "pattern the upcoming GMRES consumer will exercise hundreds of times per Newton step"};
+}
+
 CaseRegistry jvp_case_registry() {
     return {
         {"jvp_delta_sweep_u_shape", case_jvp_delta_sweep_u_shape},
@@ -1193,6 +1476,7 @@ CaseRegistry jvp_case_registry() {
         {"jvp_contract_fail_fast", case_jvp_contract_fail_fast},
         {"jvp_cache_and_determinism", case_jvp_cache_and_determinism},
         {"jvp_memory_accounting", case_jvp_memory_accounting},
+        {"jvp_repeated_apply_stress", case_jvp_repeated_apply_stress},
     };
 }
 

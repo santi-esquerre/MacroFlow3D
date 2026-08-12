@@ -473,6 +473,7 @@ if(MACROFLOW3D_BUILD_APPS)
         --case jvp_contract_fail_fast
         --case jvp_cache_and_determinism
         --case jvp_memory_accounting
+        --case jvp_repeated_apply_stress
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3
