@@ -220,6 +220,10 @@ set(PHYSICS_SOURCES
     # SF-22: matrix-free Jacobian-vector product, reusing the accepted
     # residual evaluator verbatim (no second PDE discretization).
     src/physics/streamfunctions/JacobianVectorProduct.cu
+    # SF-23: block diagonal MG preconditioner adapter and restarted,
+    # right-preconditioned coupled GMRES built on the SF-22 matrix-free JVP.
+    src/physics/streamfunctions/BlockDiagonalMGPreconditioner.cu
+    src/physics/streamfunctions/CoupledGmres.cu
     src/physics/streamfunctions/Diagnostics.cu
     src/physics/streamfunctions/AndersonAccelerator.cu
     src/physics/streamfunctions/StreamfunctionWorkspace.cu
