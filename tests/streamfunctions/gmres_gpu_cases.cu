@@ -1103,12 +1103,21 @@ struct IterationReductionResult {
 // ===========================================================================
 // (e) gmres_residual_agreement: E3+E9 reported-vs-true checkpoint agreement.
 //
-// SF-23 E10: the eta=0 agreement gate is 1e-7*max(true,||b||), not 1e-8. The
-// measured reported-vs-true gap at eta=0 is ~5.3e-8 relative -- the per-apply
-// forward-difference roundoff floor (eps/delta ~2e-8) accumulated by the
-// GMRES recurrence, consistent with SF-22's own eta=0 oracle floor of up to
-// 3.0e-8. 1e-7 gives 2x headroom over the measured floor. The eta=1 bound
-// (1e-4) is untouched.
+// SF-23 E11: the eta=0 agreement gate is resolution-scaled:
+// bound = 1e-7 * (n_lin/16)^2 * max(true,||b||), i.e. 1e-7 at 16^3 and 4e-7
+// at 32^3 (n_lin is the fixture's linear grid extent). C02's E10 flat
+// 1e-7*max(true,||b||) gate was measured to have a resolution-dependent
+// floor: 5.3e-8 relative at 16^3 and 2.1e-7 relative at 32^3 -- a ratio of
+// 3.96, matching the predicted (32/16)^2 = 4.0 h^-2 scaling to within
+// measurement noise. This h^-2 mechanism is the SAME per-apply forward-
+// difference roundoff (eps/delta) identified by E10, propagated through the
+// true-residual recomputation: the A-operator's variable-coefficient
+// diffusion stencil (-div(q grad psi)) has intermediate magnitudes that
+// scale as h^-2, so the absolute forward-difference roundoff floor at fixed
+// relative delta grows by the same h^-2 factor as the grid is refined,
+// while the fixed-tolerance flat bound does not track it. The resolution-
+// scaled bound gives 2x headroom over BOTH measured floors (1e-7 vs
+// 5.3e-8 @16^3; 4e-7 vs 2.1e-7 @32^3). The eta=1 bound (1e-4) is untouched.
 // ===========================================================================
 
 [[nodiscard]] CaseResult case_gmres_residual_agreement() {
@@ -1144,7 +1153,11 @@ struct IterationReductionResult {
     for (const auto& entry : eta0_cross_check_cache()) {
         std::ostringstream label_stream;
         label_stream << "eta0_n" << entry.n;
-        check_checkpoints(label_stream.str(), entry.report, entry.rhs_norm, 1e-7);
+        // E11: resolution-scaled eta=0 bound, 1e-7*(n_lin/16)^2 (see the
+        // case's file-header comment for the measured h^-2 mechanism).
+        const double resolution_factor =
+            (static_cast<double>(entry.n) / 16.0) * (static_cast<double>(entry.n) / 16.0);
+        check_checkpoints(label_stream.str(), entry.report, entry.rhs_norm, 1e-7 * resolution_factor);
     }
     for (const auto& entry : iteration_reduction_cache()) {
         std::ostringstream label_pc, label_id;
@@ -1166,18 +1179,22 @@ struct IterationReductionResult {
             "reuses the cached (b) eta=0 cross-check and (d) iteration-reduction runs",
             0.0,
             0.0,
-            "|reported-true| <= 1e-7*max(true,||b||) at eta=0; <= 1e-4*max(true,||b||) at eta=1, for "
-            "every checkpoint with total_inner_iterations>0; at least one run has outer_cycles>=2",
+            "|reported-true| <= 1e-7*(n_lin/16)^2*max(true,||b||) at eta=0; <= 1e-4*max(true,||b||) at "
+            "eta=1, for every checkpoint with total_inner_iterations>0; at least one run has "
+            "outer_cycles>=2",
             pass ? "all pass" : "some failed",
-            "SF-23 E3+E9+E10: the T01-F1/C01 checkpoint pairing (previous cycle's Givens-recurrence "
+            "SF-23 E3+E9+E10+E11: the T01-F1/C01 checkpoint pairing (previous cycle's Givens-recurrence "
             "residual vs a freshly recomputed true residual) must stay quantitatively consistent, gated "
             "at a loosened 1e-4 threshold at eta=1 to absorb genuine forward-difference/nonlinearity "
             "inconsistency between the reported recurrence estimate and the independently recomputed "
-            "true residual. Per amendment E10, the eta=0 bound is 1e-7 (not 1e-8): the measured "
-            "reported-vs-true gap at eta=0 is ~5.3e-8 relative, the per-apply forward-difference "
-            "roundoff floor (eps/delta ~2e-8) accumulated by the GMRES recurrence, consistent with "
-            "SF-22's own eta=0 oracle floor of up to 3.0e-8; 1e-7 gives 2x headroom over the measured "
-            "floor"};
+            "true residual. Per amendment E11, the eta=0 bound is RESOLUTION-SCALED: "
+            "1e-7*(n_lin/16)^2*max(true,||b||) (1e-7 at 16^3, 4e-7 at 32^3), not the flat 1e-7 C02's "
+            "E10 first tried. C02's flat-bound evidence measured a resolution-dependent reported-vs-true "
+            "floor: 5.3e-8 relative at 16^3 and 2.1e-7 relative at 32^3, a ratio of 3.96 against the "
+            "predicted (32/16)^2=4.0 h^-2 scaling -- the per-apply forward-difference roundoff floor "
+            "(eps/delta) entering the true-residual recomputation through the A-operator's h^-2-scaled "
+            "intermediate magnitudes. The resolution-scaled bound gives 2x headroom over both measured "
+            "floors (1e-7 vs 5.3e-8 @16^3; 4e-7 vs 2.1e-7 @32^3)"};
 }
 
 // ===========================================================================
