@@ -360,7 +360,20 @@ void require_valid_anderson_config(const AndersonConfig& anderson) {
 
 // SF-24: validated unconditionally (regardless of newton.enabled), mirroring
 // require_valid_adaptive_config/require_valid_anderson_config's convention.
-void require_valid_newton_config(const NewtonKrylovConfig& newton) {
+// SF-24 C01 (audit finding T01-F1): the Newton phase is integrated ONLY into
+// the config.adaptive.enabled == true loop of solve_streamfunctions -- the
+// SF-14 fixed-Picard path is a frozen compatibility surface and never
+// activates Newton. newton.enabled && !adaptive.enabled must therefore be
+// rejected here rather than silently allocating a Newton sub-workspace that
+// is never used (AGENTS.md: "Do not introduce silent behavior changes in
+// configs").
+void require_valid_newton_config(const NewtonKrylovConfig& newton, const AdaptivePicardConfig& adaptive) {
+    if (newton.enabled && !adaptive.enabled) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires config.adaptive.enabled when config.newton.enabled "
+            "(the SF-24 Newton phase is integrated only into the adaptive Picard loop; the "
+            "SF-14 fixed-relaxation path is a frozen compatibility surface)");
+    }
     if (!std::isfinite(newton.activation_r_F) || newton.activation_r_F <= real{0}) {
         throw std::invalid_argument(
             "Streamfunction problem requires a finite, strictly positive "
@@ -478,7 +491,7 @@ void validate_streamfunction_problem(const Grid3D& grid, const StreamfunctionPro
     require_valid_picard_config(config.picard);
     require_valid_adaptive_config(config.adaptive, config.picard);
     require_valid_anderson_config(config.anderson);
-    require_valid_newton_config(config.newton);
+    require_valid_newton_config(config.newton, config.adaptive);
     require_valid_source_side_config(config);
 }
 
@@ -886,7 +899,7 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     require_valid_picard_config(config.picard);
     require_valid_adaptive_config(config.adaptive, config.picard);
     require_valid_anderson_config(config.anderson);
-    require_valid_newton_config(config.newton);
+    require_valid_newton_config(config.newton, config.adaptive);
     require_valid_source_side_config(config);
 
     const std::size_t n = grid.num_cells();

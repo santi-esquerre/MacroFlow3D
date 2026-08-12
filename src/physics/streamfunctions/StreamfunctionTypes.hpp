@@ -240,7 +240,15 @@ enum class PicardTrialOutcome {
  * insertion point.
  *
  *   - `enabled`: Newton phase on/off switch; `false` reproduces the SF-15/
- *     SF-20 adaptive loop exactly.
+ *     SF-20 adaptive loop exactly. `enabled == true` REQUIRES
+ *     `StreamfunctionSolverConfig::adaptive.enabled == true` (SF-24 C01):
+ *     the Newton phase is integrated only into the adaptive Picard loop of
+ *     `solve_streamfunctions`, and the SF-14 fixed-relaxation path is a
+ *     frozen compatibility surface that never activates Newton.
+ *     `validate_streamfunction_problem`/`estimate_streamfunction_memory`
+ *     reject `newton.enabled && !adaptive.enabled` with
+ *     `std::invalid_argument` rather than silently allocating a Newton
+ *     sub-workspace that is never used.
  *   - `activation_r_F`: the accepted-state coupled residual threshold at or
  *     below which the Newton phase activates at an outer-loop HEAD (checked
  *     before the stagnation exit rule).
@@ -553,7 +561,11 @@ struct StreamfunctionMemoryReport {
  *     (SF-20) is likewise validated regardless of `enabled` and requires:
  *     `depth` in `[3, 8]`; `start_iteration >= 1`; finite
  *     `condition_limit > 1`; `config.newton` (SF-24) is likewise validated
- *     regardless of `enabled` and requires: finite `activation_r_F > 0`;
+ *     regardless of `enabled`, and additionally (SF-24 C01) rejects
+ *     `newton.enabled && !adaptive.enabled` as its FIRST check (the Newton
+ *     phase is integrated only into the adaptive Picard loop; see
+ *     `NewtonKrylovConfig::enabled` above), then requires: finite
+ *     `activation_r_F > 0`;
  *     finite `stagnation_activation_r_F >= activation_r_F`; finite
  *     `0 < forcing_min <= forcing_max <= 1`; finite `forcing_coefficient > 0`;
  *     finite `armijo_c` in `[0, 1)`; finite `alpha_min` in `(0, 1]`; finite

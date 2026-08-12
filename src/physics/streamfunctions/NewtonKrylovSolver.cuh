@@ -170,7 +170,10 @@
  * == Disabled-path bitwise-preservation claim ==
  *
  * `run_newton_phase` is called ONLY from inside `if (config.newton.enabled)`
- * blocks in `solve_streamfunctions`; when `config.newton.enabled == false`,
+ * blocks in `solve_streamfunctions`, and only inside the `config.adaptive.enabled`
+ * loop (SF-24 C01: `require_valid_newton_config` in `StreamfunctionWorkspace.cu`
+ * rejects `config.newton.enabled && !config.adaptive.enabled` before this file
+ * is ever reached). When `config.newton.enabled == false`,
  * `StreamfunctionWorkspace` never constructs its optional Newton sub-
  * workspace (see `StreamfunctionWorkspace.cuh`) and this file's code is never
  * reached, so the disabled adaptive-Picard/Anderson loop executes IDENTICAL
