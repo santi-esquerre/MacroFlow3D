@@ -1102,6 +1102,13 @@ struct IterationReductionResult {
 
 // ===========================================================================
 // (e) gmres_residual_agreement: E3+E9 reported-vs-true checkpoint agreement.
+//
+// SF-23 E10: the eta=0 agreement gate is 1e-7*max(true,||b||), not 1e-8. The
+// measured reported-vs-true gap at eta=0 is ~5.3e-8 relative -- the per-apply
+// forward-difference roundoff floor (eps/delta ~2e-8) accumulated by the
+// GMRES recurrence, consistent with SF-22's own eta=0 oracle floor of up to
+// 3.0e-8. 1e-7 gives 2x headroom over the measured floor. The eta=1 bound
+// (1e-4) is untouched.
 // ===========================================================================
 
 [[nodiscard]] CaseResult case_gmres_residual_agreement() {
@@ -1137,7 +1144,7 @@ struct IterationReductionResult {
     for (const auto& entry : eta0_cross_check_cache()) {
         std::ostringstream label_stream;
         label_stream << "eta0_n" << entry.n;
-        check_checkpoints(label_stream.str(), entry.report, entry.rhs_norm, 1e-8);
+        check_checkpoints(label_stream.str(), entry.report, entry.rhs_norm, 1e-7);
     }
     for (const auto& entry : iteration_reduction_cache()) {
         std::ostringstream label_pc, label_id;
@@ -1159,14 +1166,18 @@ struct IterationReductionResult {
             "reuses the cached (b) eta=0 cross-check and (d) iteration-reduction runs",
             0.0,
             0.0,
-            "|reported-true| <= 1e-8*max(true,||b||) at eta=0; <= 1e-4*max(true,||b||) at eta=1, for "
+            "|reported-true| <= 1e-7*max(true,||b||) at eta=0; <= 1e-4*max(true,||b||) at eta=1, for "
             "every checkpoint with total_inner_iterations>0; at least one run has outer_cycles>=2",
             pass ? "all pass" : "some failed",
-            "SF-23 E3+E9: the T01-F1/C01 checkpoint pairing (previous cycle's Givens-recurrence residual "
-            "vs a freshly recomputed true residual) must stay quantitatively consistent, gated at a "
-            "loosened 1e-4 threshold at eta=1 to absorb genuine forward-difference/nonlinearity "
+            "SF-23 E3+E9+E10: the T01-F1/C01 checkpoint pairing (previous cycle's Givens-recurrence "
+            "residual vs a freshly recomputed true residual) must stay quantitatively consistent, gated "
+            "at a loosened 1e-4 threshold at eta=1 to absorb genuine forward-difference/nonlinearity "
             "inconsistency between the reported recurrence estimate and the independently recomputed "
-            "true residual"};
+            "true residual. Per amendment E10, the eta=0 bound is 1e-7 (not 1e-8): the measured "
+            "reported-vs-true gap at eta=0 is ~5.3e-8 relative, the per-apply forward-difference "
+            "roundoff floor (eps/delta ~2e-8) accumulated by the GMRES recurrence, consistent with "
+            "SF-22's own eta=0 oracle floor of up to 3.0e-8; 1e-7 gives 2x headroom over the measured "
+            "floor"};
 }
 
 // ===========================================================================
