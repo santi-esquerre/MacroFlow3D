@@ -25,6 +25,14 @@ void require_exact_component_size(DeviceSpan<const real> c1, DeviceSpan<const re
     }
 }
 
+// C01 (T01-F1): exact-equality grid identity check used to fail fast when
+// apply() is called with a grid different from the one prepare_jvp_base()
+// cached. Compares every field exactly (no tolerance): nx/ny/nz/dx/dy/dz.
+bool same_grid_identity(const Grid3D& a, const Grid3D& b) {
+    return a.nx == b.nx && a.ny == b.ny && a.nz == b.nz && a.dx == b.dx && a.dy == b.dy &&
+           a.dz == b.dz;
+}
+
 } // namespace
 
 CoupledVectorView split_coupled_vector(DeviceSpan<real> combined, std::size_t n) {
@@ -82,6 +90,7 @@ void JvpWorkspace::prepare(std::size_t n) {
     norm_scratch_.resize(2);
 
     residual_workspace_.prepare(n);
+    apply_residual_workspace_.prepare(n);
     projection_workspace_.prepare(n);
     reduction_workspace_.ensure_scalar();
 
@@ -90,13 +99,15 @@ void JvpWorkspace::prepare(std::size_t n) {
     q_ = DeviceSpan<const real>{};
     base_fluctuations_ = PeriodicStreamfunctionFluctuations{};
     weighted_base_term_ = real{};
+    base_grid_ = Grid3D{};
 }
 
 bool JvpWorkspace::prepared_for(std::size_t n) const noexcept {
     return n_ == n && base_f1_.size() == n && base_f2_.size() == n && proj_p1_.size() == n &&
            proj_p2_.size() == n && pert_u1_.size() == n && pert_u2_.size() == n &&
            pert_f1_.size() == n && pert_f2_.size() == n && norm_scratch_.size() == 2 &&
-           residual_workspace_.prepared_for(n) && projection_workspace_.prepared_for(n);
+           residual_workspace_.prepared_for(n) && apply_residual_workspace_.prepared_for(n) &&
+           projection_workspace_.prepared_for(n);
 }
 
 real JvpWorkspace::compute_weighted_norm(CudaContext& ctx, DeviceSpan<const real> a,
@@ -132,17 +143,27 @@ void JvpWorkspace::prepare_jvp_base(CudaContext& ctx, const Grid3D& grid, Device
     // non-owning copy of the caller's spans, not a device copy: the caller
     // contract is that base.c1/base.c2 remain valid and unchanged for the
     // lifetime of every subsequent apply() call against this cached base.
+    // C01 (T01-F1): the grid is ALSO cached here (by value, exact fields) so
+    // apply() can fail fast (std::invalid_argument) if later called with a
+    // different grid than the one the cached base/identity were built from.
     q_ = q;
     base_fluctuations_ = PeriodicStreamfunctionFluctuations{base.c1, base.c2};
     gauge_ = gauge;
     eta_ = eta;
     source_config_ = source_config;
     histogram_config_ = histogram_config;
+    base_grid_ = grid;
 
     // F(Psi), evaluated exactly once and cached on device. No synchronize()
     // is required here: Jv is formed entirely on-device from base_f1_/
     // base_f2_ inside apply(); nothing here needs a host-visible value of
     // F(Psi) itself.
+    //
+    // C01: this evaluates into residual_workspace_, a StreamfunctionResidualWorkspace
+    // reserved EXCLUSIVELY for this ONE-TIME base evaluation. apply() below
+    // uses a SEPARATE apply_residual_workspace_ for every perturbed
+    // evaluation -- see the C01 root-cause note on this file's header for why
+    // the two must not alias.
     enqueue_streamfunction_residual(ctx, grid, q_, base_fluctuations_, gauge_, eta_, source_config_,
                                     histogram_config_, base_f1_.span(), base_f2_.span(),
                                     residual_workspace_);
@@ -161,6 +182,11 @@ JvpApplyReport JvpWorkspace::apply(CudaContext& ctx, const Grid3D& grid,
                                    ConstCoupledVectorView direction,
                                    const JvpDeltaConfig& delta_config, CoupledVectorView jv_out) {
     ensure_base_prepared();
+    if (!same_grid_identity(grid, base_grid_)) {
+        throw std::invalid_argument(
+            "JvpWorkspace::apply requires the SAME grid (nx/ny/nz/dx/dy/dz, exact) passed to the "
+            "most recent prepare_jvp_base() call");
+    }
     validate_jvp_delta_config(delta_config);
     require_exact_component_size(direction.c1, direction.c2, n_, "direction");
     require_exact_component_size(DeviceSpan<const real>(jv_out.c1), DeviceSpan<const real>(jv_out.c2),
@@ -213,13 +239,17 @@ JvpApplyReport JvpWorkspace::apply(CudaContext& ctx, const Grid3D& grid,
     projector.project(ctx, pert_u2_.span(), projection_workspace_);
 
     // Exactly one perturbed residual evaluation per apply() call (D4).
+    //
+    // C01: this uses apply_residual_workspace_, NOT residual_workspace_ (the
+    // base evaluation's workspace) -- see the C01 root-cause note on this
+    // file's header.
     const PeriodicStreamfunctionFluctuations perturbed_fluctuations{pert_u1_.span(),
                                                                      pert_u2_.span()};
     enqueue_streamfunction_residual(ctx, grid, q_, perturbed_fluctuations, gauge_, eta_,
                                     source_config_, histogram_config_, pert_f1_.span(),
-                                    pert_f2_.span(), residual_workspace_);
+                                    pert_f2_.span(), apply_residual_workspace_);
     const StreamfunctionResidualReport perturbed_report = synchronize_streamfunction_residual_report(
-        ctx, grid, eta_, source_config_, histogram_config_, residual_workspace_);
+        ctx, grid, eta_, source_config_, histogram_config_, apply_residual_workspace_);
     ++apply_evaluations_;
 
     report.perturbed_rms_f1 = perturbed_report.rms_f1;
@@ -259,6 +289,7 @@ std::size_t JvpWorkspace::allocated_device_bytes() const noexcept {
         bytes += field->capacity() * sizeof(real);
     }
     bytes += residual_workspace_.allocated_device_bytes();
+    bytes += apply_residual_workspace_.allocated_device_bytes();
     bytes += projection_workspace_.allocated_device_bytes();
     bytes += blas::reduction_workspace_allocated_bytes(reduction_workspace_);
     return bytes;
@@ -267,14 +298,18 @@ std::size_t JvpWorkspace::allocated_device_bytes() const noexcept {
 std::size_t JvpWorkspace::estimate_device_bytes(std::size_t n) {
     // Mirrors prepare(n) exactly: 8 fields of exactly n real elements
     // (base_f1/f2, proj_p1/p2, pert_u1/u2, pert_f1/f2) plus the fixed
-    // 2-element norm_scratch_, plus the residual workspace, the mean-zero
-    // projection workspace, and reduction_workspace_'s default-constructed
-    // one-scalar footprint (only ever used through blas::nrm2_device here,
-    // exactly like ResidualEvaluator.cu's own reduction_workspace_).
+    // 2-element norm_scratch_, plus TWO independent residual workspaces
+    // (residual_workspace_ for the one-time base evaluation,
+    // apply_residual_workspace_ for every perturbed evaluation -- see the
+    // C01 root-cause note on this file's header for why the two must not
+    // alias), the mean-zero projection workspace, and reduction_workspace_'s
+    // default-constructed one-scalar footprint (only ever used through
+    // blas::nrm2_device here, exactly like ResidualEvaluator.cu's own
+    // reduction_workspace_).
     constexpr std::size_t kNumRealFieldsOfSizeN = 8;
     std::size_t bytes = kNumRealFieldsOfSizeN * n * sizeof(real);
     bytes += 2 * sizeof(real); // norm_scratch_
-    bytes += StreamfunctionResidualWorkspace::estimate_device_bytes(n);
+    bytes += 2 * StreamfunctionResidualWorkspace::estimate_device_bytes(n);
     bytes += constraints::MeanZeroWorkspace::estimate_device_bytes(n);
     bytes += sizeof(real); // reduction_workspace_: default-constructed d_scalar only.
     return bytes;

@@ -119,6 +119,55 @@
  * (the weighted direction-norm evaluation, then the residual evaluator's own
  * `synchronize_streamfunction_residual_report()` call) -- no additional
  * hidden synchronization is added anywhere in this file.
+ *
+ * == C01: non-aliased base/perturbed residual workspaces (forensic corrective) ==
+ *
+ * `JvpWorkspace` owns TWO `StreamfunctionResidualWorkspace` instances:
+ * `residual_workspace_`, used ONLY by `prepare_jvp_base()`'s one-time base
+ * evaluation `F(Psi)`, and `apply_residual_workspace_`, used for EVERY
+ * perturbed evaluation `F(Psi + delta*p)`. This replaces the original T01
+ * design, which reused ONE `StreamfunctionResidualWorkspace` for both.
+ *
+ * Root-cause evidence (SF-22 corrective C01): the reused-workspace design was
+ * nondeterministic at 32^3 (never at 16^3) on both the V100 (release, sm_70)
+ * and locally (Debug, sm_86): `jvp_eta0_linearity_oracle` intermittently
+ * failed with an O(1) relative error against the exact eta=0 affine oracle
+ * (`Jv == A*project(p)`), while bitwise-identical reruns of the same fixture
+ * sometimes passed cleanly. `compute-sanitizer --tool initcheck`/`racecheck`
+ * reported 0 errors (as documented in the SF-22 dashboard/bitácora before
+ * this corrective).
+ *
+ * A chain of targeted host-vs-device checksum comparisons (base-state
+ * projection, perturbed-state formation, the perturbed/base residual fields
+ * themselves, and the final `Jv` assembly), each validated against an
+ * independent pure-host recomputation of `A*project(direction)`, localized
+ * the defect to a SMALL NUMBER OF INDIVIDUAL CELLS whose `F(Psi+delta*p)`
+ * value was IDENTICAL to `F(Psi)` at that same cell -- i.e., on the
+ * perturbed evaluation, the shared residual workspace's per-cell buffers
+ * (e.g. `a_u1_`/`a_u2_`/`g1_`/`g2_`) occasionally retained a value from the
+ * PRECEDING base evaluation instead of being freshly overwritten, even
+ * though the perturbed input (`pert_u1_`/`pert_u2_`) was independently
+ * confirmed correct at every cell. This is consistent with dossier candidate
+ * (e): reusing one `StreamfunctionResidualWorkspace` across two sequential
+ * `enqueue_streamfunction_residual` calls against the identical buffers is
+ * not safe on the observed hardware/driver stack for this problem size.
+ *
+ * Splitting the two evaluations onto non-aliased workspaces removes the
+ * structural precondition for this stale-cell leakage entirely: repeated
+ * local runs (Debug, sm_86) of `jvp_eta0_linearity_oracle` were consistently
+ * unstable before this change (intermittent O(1) relative-error failures at
+ * 32^3) and were clean across 90 consecutive runs after it. The exact
+ * low-level (driver/hardware) mechanism by which the SECOND
+ * `enqueue_streamfunction_residual` call into the SAME buffers occasionally
+ * failed to fully overwrite every cell was not further characterized beyond
+ * this evidence; `compute-sanitizer` did not flag it under any tool tried
+ * (`initcheck`, `racecheck`, `synccheck`, `memcheck`).
+ *
+ * The extra `StreamfunctionResidualWorkspace` roughly doubles this module's
+ * static device footprint (accounted for exactly in
+ * `estimate_device_bytes()`/`allocated_device_bytes()`); no allocation is
+ * added to the hot `apply()` path itself (both workspaces are sized once in
+ * `prepare()`).
  */
 
 #include "../../core/DeviceBuffer.cuh"
@@ -255,11 +304,13 @@ class JvpWorkspace {
 
     // Evaluates and caches F(Psi) exactly once (D4), plus the weighted
     // base-norm term 1 + ||Psi||_w, and freezes the (eta, source_config,
-    // histogram_config, gauge, q, fluctuations) identity every subsequent
-    // apply() call reuses. `base` is a CALLER contract: already mean-zero
-    // projected (D3); this call does not project it. `base.c1`/`base.c2`
-    // must remain valid and unchanged (device contents) for the lifetime of
-    // every apply() call made against this cached base. Throws
+    // histogram_config, gauge, q, fluctuations, grid) identity every
+    // subsequent apply() call reuses. `base` is a CALLER contract: already
+    // mean-zero projected (D3); this call does not project it. `base.c1`/
+    // `base.c2` must remain valid and unchanged (device contents) for the
+    // lifetime of every apply() call made against this cached base. `grid`
+    // is cached BY VALUE (exact nx/ny/nz/dx/dy/dz) so a later apply() call
+    // can fail fast (C01, T01-F1) if given a different grid. Throws
     // std::logic_error if prepare(n) was not called for
     // grid.num_cells() == n; delegates every other precondition (q/gauge/eta
     // /source_config/histogram_config validity, grid isotropy) to
@@ -275,10 +326,14 @@ class JvpWorkspace {
     // `jv_out` is the caller-owned output, of exactly n elements per
     // component, NOT projected on output (see the file header). Throws
     // std::logic_error if prepare_jvp_base has not been called since the
-    // last prepare(); throws std::invalid_argument if delta_config is
-    // invalid, if direction/jv_out are not exactly n elements per component,
-    // or if the projected direction's weighted norm is zero or non-finite
-    // (D2). Performs exactly one perturbed residual evaluation (D4).
+    // last prepare(); throws std::invalid_argument if `grid` does not
+    // EXACTLY match (nx/ny/nz/dx/dy/dz) the grid passed to the most recent
+    // prepare_jvp_base call (C01, T01-F1), if delta_config is invalid, if
+    // direction/jv_out are not exactly n elements per component, or if the
+    // projected direction's weighted norm is zero or non-finite (D2).
+    // Performs exactly one perturbed residual evaluation (D4), into a
+    // StreamfunctionResidualWorkspace that is NEVER shared with the base
+    // evaluation above (C01; see the file header).
     [[nodiscard]] JvpApplyReport apply(CudaContext& ctx, const Grid3D& grid,
                                        ConstCoupledVectorView direction,
                                        const JvpDeltaConfig& delta_config,
@@ -338,7 +393,11 @@ class JvpWorkspace {
     // reduction (component-1 norm, component-2 norm), n-independent.
     DeviceBuffer<real> norm_scratch_;
 
+    // C01: residual_workspace_ is used ONLY by prepare_jvp_base()'s one-time
+    // base evaluation; apply_residual_workspace_ is used for EVERY perturbed
+    // evaluation. The two are never shared (see the file header, C01).
     StreamfunctionResidualWorkspace residual_workspace_;
+    StreamfunctionResidualWorkspace apply_residual_workspace_;
     constraints::MeanZeroWorkspace projection_workspace_;
     blas::ReductionWorkspace reduction_workspace_;
 
@@ -350,6 +409,7 @@ class JvpWorkspace {
     NonlinearSourceConfig source_config_{};
     ResidualHistogramConfig histogram_config_{};
     real weighted_base_term_{}; // 1 + ||Psi||_w
+    Grid3D base_grid_{}; // C01 (T01-F1): grid identity apply() must match exactly.
 
     long long base_evaluations_ = 0;
     long long apply_evaluations_ = 0;

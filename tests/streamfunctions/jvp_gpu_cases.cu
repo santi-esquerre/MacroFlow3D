@@ -447,7 +447,11 @@ struct SweepFixtureResult {
     result.policy_discrepancy = policy_point.discrepancy;
     result.policy_unclamped = !policy_point.delta_min_clamped && !policy_point.delta_max_clamped;
 
-    for (int k = -3; k <= 3; ++k) {
+    // C01 (F2 amendment, recorded in the SF-22 bitácora before this run):
+    // k=-5..+3 (9 points, was -3..+3/7 points) so the large-delta/roundoff
+    // side of the U has room to rise before the sweep ends; the both-ends
+    // >=10x-minimum U-shape gate below is otherwise unchanged.
+    for (int k = -5; k <= 3; ++k) {
         const real delta_fixed = static_cast<real>(policy_point.delta * std::pow(10.0, k));
         const JvpDeltaConfig cfg = forced_delta_config(delta_fixed);
         const SweepPoint point = evaluate_and_track_ratio(cfg);
@@ -513,7 +517,20 @@ struct SweepFixtureResult {
         add_check(fixture.label + "_u_shape_interior_minimum", interior_minimum);
         add_check(fixture.label + "_u_shape_ends_ge_10x_min", ends_exceed_10x);
         add_check(fixture.label + "_policy_unclamped", fixture.policy_unclamped);
-        add_check(fixture.label + "_policy_discrepancy_le_1e-5", fixture.policy_discrepancy <= 1e-5);
+        // C01 (F3 amendment, restoring the spec's own wording "on small
+        // cases"): the policy-delta<=1e-5 discrepancy check gates ONLY the
+        // 16^3 combos. For 32^3 combos the policy-point discrepancy is
+        // printed/recorded above (no 1e-5 check); the 32^3 gates remain the
+        // U-shape checks above plus the O(delta) evidence case
+        // (jvp_fd_convergence_order).
+        if (fixture.n == 16) {
+            add_check(fixture.label + "_policy_discrepancy_le_1e-5_on_small_cases",
+                      fixture.policy_discrepancy <= 1e-5);
+        } else {
+            std::cout << "  " << fixture.label
+                      << "_policy_discrepancy (32^3, not gated at 1e-5 per F3)="
+                      << fixture.policy_discrepancy << '\n';
+        }
         add_check(fixture.label + "_gauge_mean_within_limit", fixture.max_mean_abs_over_limit_ratio <= 1.0);
     }
 
@@ -522,14 +539,16 @@ struct SweepFixtureResult {
     return {pass,
             "jvp_delta_sweep_u_shape",
             "gpu-jvp-fd-sweep",
-            "16^3, 32^3, K=exp(0.5*sin sin sin), 3 direction types, 7-point forced-delta sweep",
+            "16^3, 32^3, K=exp(0.5*sin sin sin), 3 direction types, 9-point forced-delta sweep",
             0.0,
             0.0,
-            "U-shaped curve (interior minimum, both ends >=10x min); policy discrepancy<=1e-5; "
-            "gauge mean within jv_mean_limit",
+            "U-shaped curve (interior minimum, both ends >=10x min); policy discrepancy<=1e-5 on "
+            "small (16^3) cases; gauge mean within jv_mean_limit",
             pass ? "all pass" : "some failed",
-            "SF-22 activation bitácora decision D6: prespecified U-study + 1e-5 policy gate on the "
-            "small trig fixtures, plus the D3/(d) gauge mean-zero check on every Jv computed"};
+            "SF-22 activation bitácora decision D6 (as amended by corrective C01, F2/F3): prespecified "
+            "U-study over a 9-point (k=-5..+3) forced-delta sweep, plus the 1e-5 policy-discrepancy "
+            "gate restricted to the small (16^3) cases per the spec's own wording, plus the D3/(d) "
+            "gauge mean-zero check on every Jv computed"};
 }
 
 // ===========================================================================
@@ -547,10 +566,11 @@ struct SweepFixtureResult {
     };
 
     for (const auto& fixture : fixtures) {
-        // points[] index 4,5,6 correspond to multipliers k=+1,+2,+3 (large-
-        // delta / truncation-dominated side); use k=+1 vs k=+2 (10x apart).
-        const double d1 = fixture.points[4].discrepancy; // k=+1
-        const double d2 = fixture.points[5].discrepancy; // k=+2
+        // points[] index = k+5 for the 9-point k=-5..+3 sweep (C01, F2
+        // amendment). Large-delta/truncation-dominated side: k=+1 -> index
+        // 6, k=+2 -> index 7 (10x apart).
+        const double d1 = fixture.points[6].discrepancy; // k=+1
+        const double d2 = fixture.points[7].discrepancy; // k=+2
         const bool finite = std::isfinite(d1) && std::isfinite(d2) && d1 > 0.0;
         const double ratio = finite ? d2 / d1 : std::numeric_limits<double>::quiet_NaN();
         const bool in_range = finite && ratio >= 5.0 && ratio <= 20.0;
@@ -936,6 +956,38 @@ struct SweepFixtureResult {
         std::cout << std::setprecision(10) << "jvp_contract_fail_fast tiny_direction delta=" << report.delta
                   << " weighted_p_norm=" << report.weighted_p_norm << " clamp_count_before=" << before
                   << " clamp_count_after=" << after << '\n';
+    }
+
+    // C01 (T01-F1): apply() called with a DIFFERENT grid than
+    // prepare_jvp_base() cached (different n, so also different nx/ny/nz) ->
+    // std::invalid_argument, message fragment documented.
+    {
+        JvpWorkspace ws;
+        ws.prepare(cells);
+        ws.prepare_jvp_base(ctx, grid, DeviceSpan<const real>(q.span()),
+                            CoupledVectorView{base_c1.span(), base_c2.span()}, gauge, real{1}, source_config,
+                            histogram_config);
+        const Grid3D mismatched_grid = isotropic_grid(n + 1);
+        DeviceBuffer<real> d1 = upload(base_host.c1);
+        DeviceBuffer<real> d2 = upload(base_host.c2);
+        DeviceBuffer<real> out1(cells), out2(cells);
+        bool threw_invalid_argument = false;
+        std::string message;
+        try {
+            const JvpApplyReport unused_report = ws.apply(
+                ctx, mismatched_grid,
+                ConstCoupledVectorView(DeviceSpan<const real>(d1.span()), DeviceSpan<const real>(d2.span())),
+                JvpDeltaConfig{}, CoupledVectorView{out1.span(), out2.span()});
+            (void)unused_report;
+        } catch (const std::invalid_argument& error) {
+            threw_invalid_argument = true;
+            message = error.what();
+        } catch (const std::exception&) {
+        }
+        const bool has_fragment = message.find("SAME grid") != std::string::npos;
+        add_check("mismatched_grid_throws_invalid_argument", threw_invalid_argument);
+        add_check("mismatched_grid_message_fragment", has_fragment);
+        std::cout << "jvp_contract_fail_fast mismatched_grid message=\"" << message << "\"\n";
     }
 
     for (const auto& [name, ok] : checks) std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
