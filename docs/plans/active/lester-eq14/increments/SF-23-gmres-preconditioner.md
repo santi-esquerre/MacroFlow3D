@@ -1,15 +1,15 @@
 # SF-23 — Restarted GMRES and block preconditioner
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar GMRES reiniciado con precondicionador bloque diagonal.`
 - Depends on: `SF-22`
 - Unlocks: `SF-24`
-- Branch: `science/lester-sf-23-gmres-preconditioner`
-- Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf26-gmres-preconditioner`
+- Branch: `science/lester-sf23-gmres-preconditioner`
+- Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable (orchestrator)`
+- Started: `2026-08-12T05:10Z`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -99,3 +99,4 @@ SF-24 may use the accepted linear solver inside a globalized Newton iteration.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-12T05:10Z | activation on `master=21dd32e` (SF-22 closure merged via PR #35) | SF-23 activated after verifying `NEXT: SF-23`, SF-22 `done`, checker `OK (30 increments, next=SF-23)`. Interpretive decisions PRESPECIFIED before implementation: (E1) **RIGHT preconditioning**: GMRES solves J M^-1 u = b with delta = M^-1 u, so the Givens-recurrence residual estimates the TRUE unpreconditioned residual ||b - J delta|| and the spec's reported-vs-true agreement check is meaningful in one norm (left preconditioning would change the residual norm and weaken that check; standard inexact-Newton practice). (E2) **block preconditioner adapter**: M^-1 = diag(M_A, M_A) with M_A = TWO successive projected positive V-cycles per block (zero initial guess, dashboard-locked smoothing counts, existing `projected_positive_v_cycle` machinery and hierarchy; per-component mean-zero projection at input/output as in the accepted SF-05 adapter); FIXEDNESS/LINEARITY is a prespecified TEST, not an assumption: bitwise repeatability of M v across calls AND ||M(ax+by) - aMx - bMy|| <= 1e-12 * scale on fixture vectors — if the cycle is observably nonlinear the increment STOPS per the spec's failure policy. (E3) **GMRES core**: restart m=10 default (15 only via explicit config + measured memory per the spec); storage (m+1) coupled basis vectors as contiguous 2N buffers (SF-22 CoupledVectorView layout) + work vectors, exact closed-form byte accounting; modified Gram-Schmidt with ONE-pass reorthogonalization triggered by the classical norm-drop criterion kappa = 1/sqrt(2) (reorthogonalization events counted in the report); Givens rotations for the Hessenberg least squares; TRUE residual recomputed at every restart and at termination — GATE: |true - reported| <= 1e-8 * max(true, ||b||) at each such point. (E4) **projection discipline**: rhs components projected on entry; every Krylov basis vector projected after Jv and after M application, before orthogonalization; the returned correction projected. (E5) **reference-correction oracles (prespecified)**: (i) eta=0 exactness: J = diag(A,A) exactly, so the GMRES correction must match the accepted projected-PCG per-block solutions within 1e-8 relative L2 (spec threshold 1); (ii) eta=1 dense oracle on 8^3 (2N=1024): assemble J column-by-column from the SF-22-validated Jv on unit directions, dense partial-pivot LU on host, GMRES correction within 1e-8 relative (validates GMRES+preconditioner treating Jv as the operator definition); (iii) iteration-reduction gate (spec threshold 3): preconditioned GMRES must use STRICTLY fewer total inner iterations than unpreconditioned on the fixed eta=1 trig suite (16^3 and 32^3, fixed seeds/states), ratios recorded — the spec fixes no numeric factor and none is invented. (E6) **memory**: restart-10 basis cost formula 2*(m+1)*n*8 B documented and checked: exact allocated==estimate equality at test sizes plus the arithmetic 256^3 prediction ~2.75 GiB (spec threshold 4) — no 256^3 allocation in tests. (E7) **SF-22 re-stress obligation discharged here**: a GMRES bitwise-determinism case at 32^3 eta=1 (two identical solves -> bitwise-identical corrections), which exercises the repeated-Jv-apply pattern under real Krylov load, PLUS the SF-22 jvp_repeated_apply_stress case remaining green in the suite. (E8) venue policy stands (workers: local compile gate only; all test execution on the remote V100; checksum-verified syncs). Out-of-scope confirmed: Newton globalization, line search, FGMRES, mixed precision. Branch field normalized to the house slug. | Gate 1 + Gate 2 + Gate 3A apply; human review required, so the PR stops at `awaiting_review` with `NEXT` unchanged. | Build the intra-increment DAG; delegate T01 (GMRES + preconditioner library) then T02 (tests) to isolated workers. |
