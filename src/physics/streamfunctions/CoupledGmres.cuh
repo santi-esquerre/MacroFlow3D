@@ -60,7 +60,34 @@
  *     TRUE residual recomputed HERE at every restart AND at the final
  *     termination (one extra call after the loop if the last cycle's own
  *     recomputation is not already the terminal one) -- see
- *     `CoupledGmresResidualCheckpoint`.
+ *     `CoupledGmresResidualCheckpoint`. EXCEPT: on the very first cycle
+ *     `x_total` is still identically zero (the initial `blas::fill(...,
+ *     real{0})`), and `JvpWorkspace::apply` THROWS `std::invalid_argument` on
+ *     a zero weighted-direction norm (SF-22 D2 contract, intentionally NOT
+ *     special-cased inside `JvpWorkspace` -- see `JacobianVectorProduct.cuh`).
+ *     `J(0) = 0` algebraically, so `compute_true_residual` tracks a host-side
+ *     `correction_is_zero` flag (true until the first cycle successfully
+ *     accumulates a nonzero correction into `x_total`, i.e. false from the
+ *     first non-singular back-substitution onward; a singular
+ *     back-substitution skips accumulation and leaves the flag unchanged)
+ *     and, whenever it is true, SKIPS the `JvpWorkspace::apply` call
+ *     entirely: the true residual is simply `||P(rhs_)||`, computed by
+ *     copying the already-projected `rhs_` into the scratch output span (the
+ *     caller then seeds `v_1` from that same scratch span, so the copy keeps
+ *     that seeding path correct without a separate case).
+ *
+ * == T01-F1/F2 fix note ==
+ *
+ * `correction_is_zero` above is a `solve()`-local host `bool` (reset to
+ * `true` at the start of every `solve()` call, not a persistent
+ * `CoupledGmres` member): each `solve()` call restarts `x_total` at zero, so
+ * there is nothing to persist across calls, and keeping it local avoids any
+ * possibility of a stale flag leaking between unrelated `solve()`
+ * invocations on the same (reusable) `CoupledGmres` object. It is threaded
+ * into `compute_true_residual` as an explicit parameter (not a member)
+ * because the value differs at the two call sites within one `solve()` (the
+ * per-cycle recompute and the post-loop termination recompute) depending on
+ * whether a correction has been accumulated by that point.
  *  2. `v_1 = r0 / beta` (the first Krylov basis vector).
  *  3. For `j = 1..m` (bounded by the total inner-iteration budget too):
  *     `z = M^-1 v_j` (right preconditioner, `BlockDiagonalMGPreconditioner`
@@ -99,6 +126,44 @@
  *  5. Recompute the TRUE residual `||P(rhs_ - J(x_total))||` (step 1 of the
  *     next cycle, or the final termination checkpoint if the loop is about
  *     to stop) and check it against `rel_tol * ||rhs_||`.
+ *
+ * == E3 residual checkpoints: what is actually being compared (T01-F1) ==
+ *
+ * The point of recording BOTH a "reported" and a "true" residual per
+ * checkpoint is to compare the cheap Givens-recurrence estimate against
+ * reality -- so the two fields must never be computed from the same
+ * quantity. Each checkpoint is therefore paired as follows:
+ *
+ *  - The very FIRST checkpoint, taken before any inner iteration has run
+ *    (`total_inner_iterations == 0`), has no prior cycle's recurrence
+ *    residual to compare against yet, so it records `{reported = beta, true
+ *    = beta}` (both fields ARE the freshly recomputed true residual). This
+ *    checkpoint is EXCLUDED from E3 reported-vs-true agreement gating by the
+ *    `total_inner_iterations == 0` convention.
+ *  - Every checkpoint taken at the START of a LATER restart cycle (`k >= 1`,
+ *    i.e. a previous cycle actually ran to completion) records `{reported =
+ *    that PREVIOUS cycle's final Givens-recurrence residual (`|g[j+1]|` at
+ *    the column where it stopped), true = the freshly recomputed beta for
+ *    THIS cycle}`. This is the meaningful comparison: it measures how far
+ *    the recurrence estimate the previous cycle trusted had drifted from the
+ *    true residual measured independently afterward.
+ *  - The early-exit checkpoint (pre-cycle `beta <= tol` immediately
+ *    terminates the solve without running a cycle) is a restart checkpoint
+ *    like any other and follows the SAME rule above: the `k >= 1` pairing if
+ *    a previous cycle ran, or the first-checkpoint rule if it is itself the
+ *    very first checkpoint.
+ *  - The termination checkpoint (max_iterations budget exhausted, or a
+ *    genuine breakdown) records `{reported = the last cycle's final
+ *    Givens-recurrence residual, true = the freshly recomputed final true
+ *    residual}` -- the same pairing rule as the `k >= 1` case, just taken
+ *    after the loop instead of before the next cycle.
+ *
+ * `solve()` carries the last cycle's final recurrence residual in a single
+ * host `real` that survives across outer-loop iterations (assigned to
+ * `beta` at the start of each cycle, then updated to `|g[j+1]|` on every
+ * Arnoldi column); the checkpoint push at the top of each cycle reads that
+ * variable's value from the PREVIOUS cycle before overwriting it for the
+ * current one.
  *
  * == Breakdown resolution (spec: "breakdown(happy or lucky handled
  *    correctly)") ==
@@ -169,10 +234,20 @@ enum class CoupledGmresStatus { converged, max_iterations, breakdown, nonfinite 
 /**
  * One true-vs-reported residual sample, taken at the start of every restart
  * cycle (the recomputed true residual driving that cycle's initial `v_1`)
- * and once more at termination (see the file header, E3).
+ * and once more at termination (see the file header, E3). `reported_residual`
+ * and `true_residual` are NOT computed from the same quantity except for the
+ * very first checkpoint: `reported_residual` is the PREVIOUS cycle's final
+ * Givens-recurrence estimate (or, for the very first checkpoint only, the
+ * same freshly recomputed value as `true_residual`, since no previous
+ * cycle exists yet), while `true_residual` is always the independently
+ * recomputed `||P(rhs_ - J(x_total))||` for the current point. See the file
+ * header's "E3 residual checkpoints" section for the exact per-exit-path
+ * pairing rules.
  * `total_inner_iterations` is the CUMULATIVE inner-iteration count at the
  * moment this checkpoint was taken (0 for the very first, pre-iteration
- * checkpoint).
+ * checkpoint; that checkpoint is EXCLUDED from reported-vs-true agreement
+ * gating by this `== 0` convention, since it has no meaningful prior
+ * recurrence estimate to compare).
  */
 struct CoupledGmresResidualCheckpoint {
     int total_inner_iterations{};
@@ -259,12 +334,19 @@ class CoupledGmres {
     // residual (see JacobianVectorProduct.cuh). One JvpWorkspace::apply call
     // (does NOT increment the caller's inner-iteration counter -- residual
     // recomputation is accounted separately from Arnoldi iterations, per the
-    // SF-23 spec's checkpoint list).
+    // SF-23 spec's checkpoint list) -- EXCEPT when `correction_is_zero` is
+    // true (T01-F2): `x_total` is then identically zero, `J(0) = 0`
+    // algebraically, and calling `JvpWorkspace::apply` with a zero direction
+    // would throw (SF-22 D2 contract, kept as-is in JvpWorkspace itself), so
+    // this skips the apply call entirely and returns `||P(rhs_)||` (`r_out`
+    // is set to a copy of the already-projected `rhs_`). See the file header
+    // for the full rationale.
     [[nodiscard]] real compute_true_residual(CudaContext& ctx, const Grid3D& grid,
                                              JvpWorkspace& jvp,
                                              const JvpDeltaConfig& delta_config,
                                              DeviceSpan<const real> x_total_flat,
-                                             DeviceSpan<real> r_out_flat, bool& ok);
+                                             DeviceSpan<real> r_out_flat,
+                                             bool correction_is_zero, bool& ok);
 
     std::size_t n_ = 0;
     int m_ = 0;
@@ -341,6 +423,20 @@ CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid, Jvp
     bool converged = false;
     bool broke = false;
     bool nonfinite_flag = false;
+    // T01-F2: true on the first cycle only (x_total == 0 identically, so
+    // J(x_total) must not be formed via JvpWorkspace::apply -- see the file
+    // header and compute_true_residual's doc comment). Flips to false the
+    // first time a cycle successfully accumulates a nonzero correction into
+    // x_total (a singular back-substitution skips accumulation and leaves
+    // this flag unchanged). solve()-local, not a CoupledGmres member: reset
+    // fresh on every solve() call, see the file header.
+    bool correction_is_zero = true;
+    // T01-F1: the last completed cycle's final Givens-recurrence residual,
+    // carried across outer-loop iterations so the checkpoint pushed at the
+    // START of the next cycle can report the PREVIOUS cycle's recurrence
+    // estimate paired against a freshly (independently) recomputed true
+    // residual -- see the file header's "E3 residual checkpoints" section.
+    real reported_residual = real{0};
 
     while (!converged && !broke && !nonfinite_flag && total_iters < config.max_iterations) {
         ++report.outer_cycles;
@@ -348,12 +444,23 @@ CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid, Jvp
         bool ok = true;
         real beta = compute_true_residual(ctx, grid, jvp, delta_config,
                                           DeviceSpan<const real>(correction_total_.span()),
-                                          residual_scratch_.span(), ok);
+                                          residual_scratch_.span(), correction_is_zero, ok);
         if (!ok || !std::isfinite(beta)) {
             nonfinite_flag = true;
             break;
         }
-        report.checkpoints.push_back(CoupledGmresResidualCheckpoint{total_iters, beta, beta});
+        if (report.outer_cycles == 1) {
+            // First checkpoint: no previous cycle's recurrence residual
+            // exists yet, excluded from agreement gating by the
+            // total_inner_iterations == 0 convention (see the file header).
+            report.checkpoints.push_back(CoupledGmresResidualCheckpoint{total_iters, beta, beta});
+        } else {
+            // reported_residual still holds the PREVIOUS cycle's final
+            // recurrence residual here (not yet overwritten for this
+            // cycle) -- this is the meaningful reported-vs-true pairing.
+            report.checkpoints.push_back(
+                CoupledGmresResidualCheckpoint{total_iters, reported_residual, beta});
+        }
         if (beta <= config.rel_tol * rhs_norm) {
             converged = true;
             break;
@@ -370,7 +477,7 @@ CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid, Jvp
         g[0] = beta;
 
         int completed = 0;
-        real reported_residual = beta;
+        reported_residual = beta;
         bool cycle_breakdown = false;
 
         for (int j = 0; j < m && total_iters < config.max_iterations; ++j) {
@@ -498,6 +605,8 @@ CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid, Jvp
             blas::axpy(ctx, real{1}, DeviceSpan<const real>(z_.span()), correction_total_.span());
             project_pair(ctx, DeviceSpan<real>(correction_total_.data(), n_),
                         DeviceSpan<real>(correction_total_.data() + n_, n_));
+            // T01-F2: x_total is no longer identically zero from here on.
+            correction_is_zero = false;
         }
 
         if (singular || cycle_breakdown) {
@@ -518,12 +627,16 @@ CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid, Jvp
         bool ok = true;
         real final_true = compute_true_residual(ctx, grid, jvp, delta_config,
                                                 DeviceSpan<const real>(correction_total_.span()),
-                                                residual_scratch_.span(), ok);
+                                                residual_scratch_.span(), correction_is_zero, ok);
         if (!ok || !std::isfinite(final_true)) {
             nonfinite_flag = true;
         } else {
+            // T01-F1: pair the LAST completed cycle's final recurrence
+            // residual against this freshly recomputed true residual (same
+            // rule as the k >= 1 restart checkpoint above), not against
+            // itself.
             report.checkpoints.push_back(
-                CoupledGmresResidualCheckpoint{total_iters, final_true, final_true});
+                CoupledGmresResidualCheckpoint{total_iters, reported_residual, final_true});
             if (final_true <= config.rel_tol * rhs_norm) {
                 converged = true;
             }
