@@ -217,6 +217,9 @@ set(PHYSICS_SOURCES
     src/physics/streamfunctions/DifferentialOperators.cu
     src/physics/streamfunctions/NonlinearSources.cu
     src/physics/streamfunctions/ResidualEvaluator.cu
+    # SF-22: matrix-free Jacobian-vector product, reusing the accepted
+    # residual evaluator verbatim (no second PDE discretization).
+    src/physics/streamfunctions/JacobianVectorProduct.cu
     src/physics/streamfunctions/Diagnostics.cu
     src/physics/streamfunctions/AndersonAccelerator.cu
     src/physics/streamfunctions/StreamfunctionWorkspace.cu
