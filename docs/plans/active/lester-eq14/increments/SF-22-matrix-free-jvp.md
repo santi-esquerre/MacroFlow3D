@@ -11,7 +11,7 @@
 - Owner: `Claude Fable (orchestrator)`
 - Started: `2026-08-12T01:20Z`
 - Completed: `not completed`
-- PR: `to be recorded at publication`
+- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/35`
 - Commit: `ed6e016 (frozen audited source head; later branch commits are increment-state documentation only)`
 
 ## Scientific or engineering intent
