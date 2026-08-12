@@ -358,6 +358,11 @@ using CaseFunction = test::CaseFunction;
                 throw std::logic_error("duplicate streamfunction test case: " + name);
             }
         }
+        for (const auto& [name, function] : test::gmres_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction test case: " + name);
+            }
+        }
         return result;
     }();
     return registry;

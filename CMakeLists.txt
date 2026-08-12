@@ -382,6 +382,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_anderson_gpu_cases.cu
         tests/streamfunctions/heterogeneity_continuation_gpu_cases.cu
         tests/streamfunctions/jvp_gpu_cases.cu
+        tests/streamfunctions/gmres_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -478,6 +479,21 @@ if(MACROFLOW3D_BUILD_APPS)
         --case jvp_cache_and_determinism
         --case jvp_memory_accounting
         --case jvp_repeated_apply_stress
+    )
+    # SF-23 T02: restarted, right-preconditioned coupled GMRES (CoupledGmres,
+    # SF-23 T01) and BlockDiagonalMGPreconditioner acceptance cases. Cheap
+    # tier: see gmres_gpu_cases.cu / streamfunction_operator_tests.cpp
+    # (cases()) for the exact fixtures.
+    add_test(NAME streamfunction_gmres COMMAND streamfunction_operator_tests
+        --case gmres_preconditioner_fixed_linear
+        --case gmres_eta0_pcg_cross_check
+        --case gmres_dense_lu_oracle
+        --case gmres_iteration_reduction
+        --case gmres_residual_agreement
+        --case gmres_determinism
+        --case gmres_memory_accounting
+        --case gmres_restart15_path
+        --case gmres_fail_fast_contracts
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3

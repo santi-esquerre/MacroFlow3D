@@ -176,4 +176,20 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // like every other cheap-tier registry above.
 [[nodiscard]] CaseRegistry jvp_case_registry();
 
+// SF-23 T02 restarted, right-preconditioned coupled GMRES (`CoupledGmres`,
+// SF-23 T01 `CoupledGmres.cuh/.cu`) and block-diagonal MG preconditioner
+// (`BlockDiagonalMGPreconditioner.cuh/.cu`) acceptance cases (cheap tier),
+// incorporating C01's zero-direction/checkpoint-pairing fix. Covers the
+// PRESPECIFIED E2/E3/E5/E6/E7 activation gates as amended by E9: the
+// preconditioner fixedness/linearity STOP-semantics gate, an eta=0 cross-
+// check against the accepted `projected_pcg_solve`, an 8^3 dense-LU column-
+// by-column oracle at eta in {0,1}, a preconditioned-vs-unpreconditioned
+// iteration-reduction gate, reported-vs-true residual checkpoint agreement,
+// repeated-solve determinism through one reused workspace stack, the exact-
+// byte memory contract, the restart=15/16 boundary, and the ordering/size/
+// zero-rhs fail-fast contract. See `gmres_gpu_cases.cu` for the exact case
+// list; folded into `streamfunction_operator_tests.cpp`'s aggregated
+// `cases()` map exactly like every other cheap-tier registry above.
+[[nodiscard]] CaseRegistry gmres_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test
