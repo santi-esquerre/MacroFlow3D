@@ -164,4 +164,16 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // and `heterogeneity_continuation_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry heterogeneity_continuation_smoke_case_registry();
 
+// SF-22 T02 matrix-free Jacobian-vector product (`JvpWorkspace`, SF-22 T01
+// `JacobianVectorProduct.cuh/.cu`) acceptance cases (cheap tier): the D6
+// U-shaped forward/central delta-sweep study plus its 1e-5 policy gate, the
+// D6-adjacent O(delta) forward-truncation evidence, the D7 eta=0 exact-
+// linearity oracle against `operators::LesterPositiveDiffusionOperator`, an
+// extra converged-adaptive-Picard base-state fixture, the D2/D3/D4
+// fail-fast/clamp/cache/determinism contract, and the exact-byte memory
+// contract. See `jvp_gpu_cases.cu` for the exact case list; folded into
+// `streamfunction_operator_tests.cpp`'s aggregated `cases()` map exactly
+// like every other cheap-tier registry above.
+[[nodiscard]] CaseRegistry jvp_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

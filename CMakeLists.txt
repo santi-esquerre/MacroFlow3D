@@ -377,6 +377,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/streamfunction_continuation_gpu_cases.cu
         tests/streamfunctions/streamfunction_anderson_gpu_cases.cu
         tests/streamfunctions/heterogeneity_continuation_gpu_cases.cu
+        tests/streamfunctions/jvp_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -460,6 +461,18 @@ if(MACROFLOW3D_BUILD_APPS)
     add_test(NAME streamfunction_heterogeneity_smoke COMMAND streamfunction_operator_tests
         --case heterogeneity_smoke_sigma025
         --case heterogeneity_smoke_sigma1
+    )
+    # SF-22 T02: matrix-free Jacobian-vector product (JvpWorkspace, SF-22 T01)
+    # acceptance cases. Cheap tier: see jvp_gpu_cases.cu / streamfunction_
+    # operator_tests.cpp (cases()) for the exact fixtures.
+    add_test(NAME streamfunction_jvp COMMAND streamfunction_operator_tests
+        --case jvp_delta_sweep_u_shape
+        --case jvp_fd_convergence_order
+        --case jvp_eta0_linearity_oracle
+        --case jvp_converged_picard_base
+        --case jvp_contract_fail_fast
+        --case jvp_cache_and_determinism
+        --case jvp_memory_accounting
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3
