@@ -275,7 +275,13 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
                   << " e_v=" << r.e_v << " invariance_e_psi1=" << r.invariance_e_psi1
                   << " invariance_e_psi2=" << r.invariance_e_psi2 << " e_div=" << r.e_div
                   << " c_p001=" << r.c_percentile_p001 << " degeneracy_total0=" << r.degeneracy_total0
-                  << " degeneracy_unexplained0=" << r.degeneracy_unexplained0 << '\n';
+                  << " degeneracy_unexplained0=" << r.degeneracy_unexplained0
+                  << " anderson_acc=" << r.anderson_accepted << " anderson_rej=" << r.anderson_rejected
+                  << " anderson_resets=" << r.anderson_condition_resets
+                  << " newton_act=" << r.newton_activations << " newton_acc=" << r.newton_steps_accepted
+                  << " newton_fail=" << r.newton_step_failures
+                  << " newton_rescue=" << r.newton_rescue_events << " newton_jv=" << r.newton_jv_evaluations
+                  << '\n';
     }
 }
 
@@ -1092,6 +1098,13 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
     base_config.anderson.start_iteration = 5;
     base_config.anderson.condition_limit = real{1e12};
 
+    // SF-25 (E1a): enable the SF-24-accepted Newton terminal phase with its
+    // validated defaults (activation r_F<=1e-2, stagnation redirect <=1e-1,
+    // forcing clamp(sqrt(r_F),1e-8,1e-1), rescue 5, retry once) -- the ONLY
+    // sanctioned fixture change of SF-25; everything else stays VERBATIM from
+    // the SF-21 prespecification.
+    base_config.newton.enabled = true;
+
     HeterogeneityContinuationConfig continuation_config{}; // lambda axis defaults
     // Degenerate epsilon leg: start==target==2 (epsilon fixed at 1e-2), so
     // this run gates exactly on the lambda leg, per the PRESPECIFIED fixture.
@@ -1119,6 +1132,7 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
     std::size_t accepted_count = 0;
     std::size_t rescue_stage_count = 0;
     bool every_accepted_r_f_ok = true;
+    bool attribution_counters_populated = false;
     for (const auto& record : report.stage_history) {
         if (record.axis == HeterogeneityAxis::eta_rescue) {
             ++rescue_stage_count;
@@ -1127,9 +1141,16 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
             ++accepted_count;
             every_accepted_r_f_ok =
                 every_accepted_r_f_ok && static_cast<double>(record.base.r_F) <= 1e-6;
+            if (record.newton_activations >= 1 || record.anderson_accepted >= 1) {
+                attribution_counters_populated = true;
+            }
         }
     }
     add_check("every_accepted_stage_r_F_le_1e-6", every_accepted_r_f_ok);
+    // SF-25 T03: additive sanity check (not a moved gate) -- with newton and
+    // anderson both enabled on this physical 32^3 run, solver-phase
+    // attribution must be actually populated on at least one accepted stage.
+    add_check("attribution_counters_populated", attribution_counters_populated);
 
     std::cout << std::setprecision(17) << name << " N=" << n << " sigma2=" << sigma2
               << " corr_length=" << field_config.corr_length << " seed=" << field_config.seed
@@ -1151,7 +1172,7 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
     std::ostringstream detail;
     detail << n << "^3, dx=1, sigma_Y^2=" << sigma2
            << ", corr_length=8, seed=12345, epsilon fixed at 1e-2 (degenerate epsilon leg), anderson "
-              "depth=5 start=5 limit=1e12";
+              "depth=5 start=5 limit=1e12 + newton enabled (SF-25 E1a)";
 
     return {pass,
             name,
@@ -1165,7 +1186,7 @@ void print_heterogeneity_stage_history(const std::vector<HeterogeneityStageRecor
             "the lambda/eta-rescue continuation must reach the full lognormal target conductivity "
             "for this seed/correlation length/variance, gating exclusively on the lambda leg (the "
             "epsilon leg is held degenerate at 1e-2), now run with the SF-20-validated Anderson "
-            "defaults enabled (SF-21 re-activation decision R5)"};
+            "defaults enabled (SF-21 re-activation decision R5) + newton enabled (SF-25 E1a)"};
 }
 
 [[nodiscard]] CaseResult case_heterogeneity_smoke_sigma025() {
