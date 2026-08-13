@@ -383,17 +383,73 @@ struct StreamfunctionAndersonYamlConfig {
 };
 
 /**
+ * @brief SF-24 T02 pipeline-facing slice of
+ *        `streamfunctions::CoupledGmresConfig` used by the Newton-Krylov
+ *        phase's inner GMRES solve. Only `restart` and `max_iterations` are
+ *        exposed: `rel_tol` is deliberately NOT exposed here because the
+ *        library OVERWRITES it every Newton iteration via the inexact-Newton
+ *        forcing rule (`StreamfunctionNewtonYamlConfig::forcing_coefficient`/
+ *        `forcing_min`/`forcing_max`), so a YAML-supplied `rel_tol` would be
+ *        silently discarded before ever taking effect.
+ */
+struct StreamfunctionNewtonGmresYamlConfig {
+    int restart = 10;
+    int max_iterations = 100;
+};
+
+/**
+ * @brief SF-24 T02 pipeline-facing slice of `streamfunctions::JvpDeltaConfig`
+ *        used by the Newton-Krylov phase's matrix-free Jacobian-vector
+ *        product forward-difference delta clamp.
+ */
+struct StreamfunctionNewtonDeltaYamlConfig {
+    real delta_min = 1.0e-12;
+    real delta_max = 1.0e2;
+};
+
+/**
+ * @brief SF-24 T02 pipeline-facing slice of
+ *        `streamfunctions::NewtonKrylovConfig` (SF-24 T01/C01, composed as
+ *        `streamfunctions::StreamfunctionSolverConfig::newton`), mirroring
+ *        the library's own validation ranges (`require_valid_newton_config`,
+ *        `StreamfunctionWorkspace.cu`).
+ *
+ * `enabled == false` (the default) byte-preserves the exact pre-existing
+ * SF-13..SF-23 Picard/Anderson-only behavior: every Newton statement in
+ * `solve_streamfunctions` is guarded by `config.newton.enabled`. `enabled ==
+ * true` REQUIRES `adaptive.enabled == true` (SF-24 C01); a config setting
+ * `newton.enabled: true` with `adaptive.enabled: false` is rejected by
+ * `ConfigValidator.hpp` with a distinct message rather than silently
+ * allocating a Newton sub-workspace that is never used.
+ */
+struct StreamfunctionNewtonYamlConfig {
+    bool enabled = false;
+    real activation_r_F = 1.0e-2;
+    real stagnation_activation_r_F = 1.0e-1;
+    real forcing_coefficient = 1.0;
+    real forcing_min = 1.0e-8;
+    real forcing_max = 1.0e-1;
+    real armijo_c = 1.0e-4;
+    real alpha_min = 0.03125; // 2^-5
+    real backtrack_factor = 0.5;
+    int max_newton_iterations = 50;
+    int rescue_picard_steps = 5;
+    StreamfunctionNewtonGmresYamlConfig gmres;
+    StreamfunctionNewtonDeltaYamlConfig delta;
+};
+
+/**
  * @brief Strict, minimal pipeline configuration surface for the Lester
  *        equation (14) streamfunction solver (SF-16 T01, extended by SF-17
  *        T03 with the `continuation` subsection, SF-21 T03 with
  *        `field_source`/`periodic_gaussian`/`darcy_source`/
- *        `continuation.lambda`, and SF-21 T03r with `anderson`).
+ *        `continuation.lambda`, SF-21 T03r with `anderson`, and SF-24 T02
+ *        with `newton`).
  *
  * This maps onto `streamfunctions::StreamfunctionSolverConfig` (see
- * `src/physics/streamfunctions/StreamfunctionTypes.hpp`) in a later
- * increment (SF-16 T02); it intentionally does NOT expose the full SF-15
- * `AdaptivePicardConfig` field set (only `adaptive.enabled`) and does NOT
- * expose any Newton keys.
+ * `src/physics/streamfunctions/StreamfunctionTypes.hpp`); it intentionally
+ * does NOT expose the full SF-15 `AdaptivePicardConfig` field set (only
+ * `adaptive.enabled`).
  *
  * `enabled == false` (the default) means the section, and every nested
  * subsection, may be entirely absent from the YAML with zero behavior
@@ -425,6 +481,7 @@ struct StreamfunctionSolverYamlConfig {
     StreamfunctionPeriodicGaussianYamlConfig periodic_gaussian;
     std::string darcy_source = "pipeline";   // "pipeline" | "affine_periodic"
     StreamfunctionAndersonYamlConfig anderson;
+    StreamfunctionNewtonYamlConfig newton;
 };
 
 /**

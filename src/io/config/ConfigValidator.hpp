@@ -232,6 +232,63 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
                 err(std::string(p) + "condition_limit", "must be finite and > 1");
         }
 
+        // ── Newton-Krylov phase (SF-24 T02) ──────────────────────────────
+        // Mirrors streamfunctions::require_valid_newton_config
+        // (StreamfunctionWorkspace.cu): validated unconditionally, regardless
+        // of `newton.enabled`, matching that library convention (an invalid
+        // Newton config is invalid even when the phase is off). The SF-24
+        // C01 `enabled` requires `adaptive.enabled` rule is checked first, as
+        // its own distinct message, mirroring the library's FIRST-check
+        // ordering.
+        {
+            const auto& nw = sf.newton;
+            const char* p = "streamfunction_solver.newton.";
+            if (nw.enabled && !sf.adaptive.enabled)
+                err(std::string(p) + "enabled",
+                    "requires streamfunction_solver.adaptive.enabled: true");
+            if (!std::isfinite(nw.activation_r_F) || nw.activation_r_F <= 0)
+                err(std::string(p) + "activation_r_F", "must be finite and > 0");
+            if (!std::isfinite(nw.stagnation_activation_r_F) ||
+                nw.stagnation_activation_r_F < nw.activation_r_F)
+                err(std::string(p) + "stagnation_activation_r_F",
+                    "must be finite and >= activation_r_F");
+            if (!std::isfinite(nw.forcing_min) || nw.forcing_min <= 0 ||
+                !std::isfinite(nw.forcing_max) || nw.forcing_max < nw.forcing_min ||
+                nw.forcing_max > 1)
+                err(std::string(p) + "forcing_min/forcing_max",
+                    "must satisfy finite 0 < forcing_min <= forcing_max <= 1");
+            if (!std::isfinite(nw.forcing_coefficient) || nw.forcing_coefficient <= 0)
+                err(std::string(p) + "forcing_coefficient", "must be finite and > 0");
+            if (!std::isfinite(nw.armijo_c) || nw.armijo_c < 0 || nw.armijo_c >= 1)
+                err(std::string(p) + "armijo_c", "must be finite and in [0, 1)");
+            if (!std::isfinite(nw.alpha_min) || nw.alpha_min <= 0 || nw.alpha_min > 1)
+                err(std::string(p) + "alpha_min", "must be finite and in (0, 1]");
+            if (!std::isfinite(nw.backtrack_factor) ||
+                !(nw.backtrack_factor > 0 && nw.backtrack_factor < 1))
+                err(std::string(p) + "backtrack_factor", "must be finite and in (0, 1)");
+            if (nw.max_newton_iterations < 1)
+                err(std::string(p) + "max_newton_iterations", "must be >= 1");
+            if (nw.rescue_picard_steps < 0)
+                err(std::string(p) + "rescue_picard_steps", "must be >= 0");
+
+            // Mirrors streamfunctions::validate_coupled_gmres_config
+            // (CoupledGmres.cu); `rel_tol` is not exposed here (see
+            // StreamfunctionNewtonGmresYamlConfig), so it is not validated.
+            const char* gp = "streamfunction_solver.newton.gmres.";
+            if (nw.gmres.restart < 1 || nw.gmres.restart > 15)
+                err(std::string(gp) + "restart", "must be in [1, 15]");
+            if (nw.gmres.max_iterations < 1)
+                err(std::string(gp) + "max_iterations", "must be >= 1");
+
+            // Mirrors streamfunctions::validate_jvp_delta_config
+            // (JacobianVectorProduct.cu).
+            const char* dp = "streamfunction_solver.newton.delta.";
+            if (!std::isfinite(nw.delta.delta_min) || !std::isfinite(nw.delta.delta_max) ||
+                !(nw.delta.delta_min > 0) || !(nw.delta.delta_max > nw.delta.delta_min))
+                err(std::string(dp) + "delta_min/delta_max",
+                    "must satisfy finite 0 < delta_min < delta_max");
+        }
+
         // ── Field/Darcy sources (SF-21 T03) ─────────────────────────────
         if (sf.field_source != "stochastic" && sf.field_source != "periodic_gaussian")
             err("streamfunction_solver.field_source",
