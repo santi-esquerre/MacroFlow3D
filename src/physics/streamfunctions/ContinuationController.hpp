@@ -186,6 +186,20 @@
  * num_degeneracy_thresholds > 0`; see `PhysicalDiagnosticsReport` in
  * `Diagnostics.cuh` for every available field).
  *
+ * SF-25 additionally harvests the SF-20 Anderson and SF-24 Newton-Krylov
+ * per-solve attribution counters (`anderson_accepted`, `anderson_rejected`,
+ * `anderson_condition_resets`, `newton_activations`, `newton_steps_accepted`,
+ * `newton_step_failures`, `newton_rescue_events`, `newton_jv_evaluations`)
+ * straight off the SAME `StreamfunctionSolveReport` used for the Gate-3A
+ * fields above, verbatim, onto every `HeterogeneityStageRecord` (baseline,
+ * lambda attempt, eta-rescue eta=0 and ramp stages, epsilon stages) -- this
+ * closes the SF-21 caveat and the SF-24 Anderson-export backlog at stage
+ * granularity so per-stage solver-phase attribution (which safeguard
+ * produced this stage's accepted/failed result) is directly legible from
+ * `stage_history` without re-deriving it from `final_solve`. These counters
+ * are additive, host-only bookkeeping; they do not change control flow,
+ * acceptance, rollback, or any existing field.
+ *
  * Allocation policy: every driver-owned buffer (`Y_lambda`, `K_lambda`, the
  * SF-19 CompactMAC velocity triple, the outer accepted-state pair, and the
  * separate eta-rescue accepted-state pair) is allocated ONCE, up front,
@@ -486,6 +500,16 @@ enum class HeterogeneityAxis { lambda, eta_rescue, epsilon };
  * `PhysicalDiagnosticsReport` in `Diagnostics.cuh`); `degeneracy_total0`/
  * `degeneracy_unexplained0` are threshold-0 counts, left at 0 when
  * `config.diagnostics.num_degeneracy_thresholds == 0` (guards inactive).
+ *
+ * SF-25: the trailing eight fields are the per-stage solver-phase
+ * attribution counters, copied verbatim off this SAME stage's
+ * `StreamfunctionSolveReport` (`anderson_accepted`/`anderson_rejected`/
+ * `anderson_condition_resets` from SF-20; `newton_activations`/
+ * `newton_steps_accepted`/`newton_step_failures`/`newton_rescue_events`/
+ * `newton_jv_evaluations` from SF-24). All left at their zero default
+ * whenever the corresponding `config.anderson.enabled`/`config.newton.
+ * enabled` is `false` for this stage, matching the bitwise-preserving
+ * disabled path documented on `StreamfunctionSolveReport`.
  */
 struct HeterogeneityStageRecord {
     ContinuationStageRecord base{};
@@ -503,6 +527,16 @@ struct HeterogeneityStageRecord {
     real c_percentile_p001{};
     unsigned long long degeneracy_total0{0};
     unsigned long long degeneracy_unexplained0{0};
+
+    // SF-25 per-stage Anderson/Newton attribution; see above.
+    int anderson_accepted{0};
+    int anderson_rejected{0};
+    int anderson_condition_resets{0};
+    int newton_activations{0};
+    int newton_steps_accepted{0};
+    int newton_step_failures{0};
+    int newton_rescue_events{0};
+    long long newton_jv_evaluations{0};
 };
 
 /**

@@ -452,6 +452,20 @@ HeterogeneityStageRecord make_heterogeneity_stage_record(HeterogeneityAxis axis,
         record.degeneracy_total0 = report.diagnostics.degeneracy_total[0];
         record.degeneracy_unexplained0 = report.diagnostics.degeneracy_unexplained[0];
     }
+
+    // SF-25 per-stage Anderson/Newton attribution: copied verbatim off this
+    // SAME StreamfunctionSolveReport, for every stage kind (baseline, lambda
+    // attempt, eta-rescue eta=0/ramp, epsilon) since this is the single
+    // record-builder site every call site routes through.
+    record.anderson_accepted = report.anderson_accepted;
+    record.anderson_rejected = report.anderson_rejected;
+    record.anderson_condition_resets = report.anderson_condition_resets;
+    record.newton_activations = report.newton_activations;
+    record.newton_steps_accepted = report.newton_steps_accepted;
+    record.newton_step_failures = report.newton_step_failures;
+    record.newton_rescue_events = report.newton_rescue_events;
+    record.newton_jv_evaluations = report.newton_jv_evaluations;
+
     return record;
 }
 
