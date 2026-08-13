@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-25`
-- Active runtime goal: `none`
+- Active runtime goal: `Completar la continuación de heterogeneidad hasta lambda uno con convergencia terminal Newton para todas las varianzas objetivo.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge

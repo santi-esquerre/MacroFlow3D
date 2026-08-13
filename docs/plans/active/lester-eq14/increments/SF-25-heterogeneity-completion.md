@@ -1,6 +1,6 @@
 # SF-25 — Heterogeneity completion
 
-- State: `pending`
+- State: `active`
 - Goal: `Completar la continuación de heterogeneidad hasta lambda uno con convergencia terminal Newton para todas las varianzas objetivo.`
 - Depends on: `SF-24`
 - Unlocks: `SF-26`
@@ -8,8 +8,8 @@
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Code orchestrator (Fable) + delegated workers`
+- Started: `2026-08-13`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -124,4 +124,5 @@ periodic realization.
 
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
+| 2026-08-13T16:10Z | activation on `master=23c5555` (SF-24 merged; checker OK next=SF-25) | UNDERSTAND: full re-read of `ContinuationController.hpp` (stage-solver contract: `base_config` supplies every non-overridden field for EVERY stage — baseline, lambda attempts, eta-rescue ramp, epsilon leg — so `config.newton` flows into all stages; the rescue/rollback machinery already consumes the SF-24 structured `newton_exhausted`/`newton_budget_exhausted` exits as `solver_not_converged`), the smoke fixture (`run_heterogeneity_smoke`: R5 Anderson block + degenerate epsilon 1e-2 + verbatim gates reached_target/final_lambda==1/every-accepted-r_F<=1e-6), and the five benchmark YAMLs (smoke32 degenerate-epsilon; the 64^3 quartet with epsilon leg to 1e-6, whose own SF-21 comment fixes "the GATE is reaching lambda=1", epsilon legs recorded where budget allows). PRESPECIFIED decisions (recorded verbatim in `.claude/orchestration/SF-25-heterogeneity-completion/understanding.md` BEFORE implementation): E1 the ONLY sanctioned fixture change is `newton.enabled=true` with SF-24 defaults in the smoke base_config and the five YAMLs (exact analogue of SF-21 R5 Anderson enablement); controller control flow untouched; E2 per-stage attribution = additive HeterogeneityStageRecord Anderson/Newton counters (closing the recorded SF-21 caveat and the SF-24 Anderson-export backlog at stage granularity), additive export/prints, SF-17 record untouched; E3 64^3 budget policy: sequential tmux jobs (025->1->225->4), no artificial kill, 12 h per-variance stop-and-record bound, acceptance gate = lambda=1 per variance, epsilon-leg outcomes recorded as-is; E4 regression: full ctest on the final head expected 16/16 (the known-fail heterogeneity smoke becomes PASSING — the increment's headline), byte-compares vs fresh 23c5555 base refs fully identical mod manifest timestamp/stdout timing; E5 all claims are invariant-CONSTRUCTION claims, no transport claim. Recorded risks: near-singular-Jacobian GMRES budget pressure at sigma^2>=2.25/64^3 (honest fallback chain ends in a recorded lambda-floor failure, not tuning); 64^3 epsilon legs at 1e-6 may be the hard part (gate is lambda=1). | DAG: T01 stage-record counters -> {T02 export+YAML enablement, T03 smoke wiring} (parallel) -> I01 -> F01 (Gate A smoke + full suite + byte-compares, then Gate B 64^3 experiment suite). | Delegate T01. |
 | 2026-08-11T23:30Z | created by the owner-directed option (a) restructuring | This increment inherits, UNCHANGED, the sigma^2>=1 heterogeneity gates that SF-21 closed partially: 32^3 sigma^2=1 (floor-exhausted at lambda=0.5 under Picard/Anderson, non-contractive eta=1 plateau r_F~1e-3, zero degeneracy) and the full 64^3 suite. See `docs/decisions/2026-08-11-newton-before-heterogeneity-completion.md` and the SF-21 bitácora/audit records for the complete evidence. | Gates moved verbatim; no tuning. | Activate only when named by `NEXT` after SF-24 is done. |
