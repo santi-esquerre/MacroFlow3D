@@ -501,6 +501,25 @@ template <typename Callable>
 // ===========================================================================
 // G3: newton_forced_failure_preservation (three variants on the 16^3
 // fixture)
+//
+// SF-24 E13 (recorded amendment, corrective C02): the original mechanism used
+// `armijo_c = 0.999999` alone to force every line-search trial to be
+// rejected. That is invalid for damped alphas: the Armijo-on-merit test
+// accepts iff `phi_trial <= (1 - c*alpha) * phi_k`. At alpha=1, c=0.999999
+// demands an r_F reduction factor of ~1e-3 (correctly rejected), but at
+// alpha=0.5 the threshold relaxes to `(1 - c/2) ~ 0.5` on phi (~0.71 on
+// r_F), which any (1-alpha)-damped Newton step satisfies -- so the ladder
+// always accepted at alpha=0.5 and the solves converged instead of failing.
+// The corrected mechanism forces deterministic single-trial rejection
+// instead: `alpha_min = 1` restricts the line search to exactly one trial at
+// alpha=1 (the loop `for (alpha = 1; alpha >= alpha_min; alpha *=
+// backtrack_factor)` then runs once), `armijo_c = 1 - 1e-8` requires that
+// single trial to achieve `phi_t <= 1e-8 * phi_k` (an r_F factor of 1e-4),
+// and a loose fixed GMRES tolerance (`forcing_min = forcing_max = 1e-1`)
+// floors the achievable single-step r_F reduction near ~1e-1..1e-2 -- about
+// 200x above the 1e-4 rejection threshold, so the trial is rejected
+// deterministically and the outer Newton step is exhausted after exactly one
+// trial.
 // ===========================================================================
 
 [[nodiscard]] CaseResult case_newton_forced_failure_preservation() {
@@ -576,7 +595,10 @@ template <typename Callable>
         StreamfunctionWorkspace workspace3;
         StreamfunctionSolverConfig config3{};
         config3.newton.enabled = true;
-        config3.newton.armijo_c = real{0.999999};
+        config3.newton.alpha_min = real{1};
+        config3.newton.armijo_c = real{1} - real{1e-8};
+        config3.newton.forcing_min = real{1e-1};
+        config3.newton.forcing_max = real{1e-1};
         config3.newton.rescue_picard_steps = 0;
         const StreamfunctionSolveReport report3 =
             solve_streamfunctions(ctx3, problem3, config3, fields3, workspace3);
@@ -597,19 +619,19 @@ template <typename Callable>
                                          record.step_failed &&
                                          record.failure_reason ==
                                              NewtonStepFailureReason::line_search_exhausted;
-            if (record.trials.size() != 6) {
+            // SF-24 E13: with alpha_min = 1, the line search attempts exactly
+            // one trial at alpha=1; the corrected armijo_c forces that single
+            // trial to be rejected deterministically.
+            if (record.trials.size() != 1) {
                 ladder_ok = false;
                 continue;
             }
-            real alpha = real{1};
-            for (const auto& trial : record.trials) {
-                ladder_ok = ladder_ok && std::abs(static_cast<double>(trial.alpha - alpha)) < 1e-15 &&
-                           trial.outcome == PicardTrialOutcome::rejected_armijo;
-                alpha *= config3.newton.backtrack_factor;
-            }
+            const auto& trial = record.trials.front();
+            ladder_ok = ladder_ok && std::abs(static_cast<double>(trial.alpha - real{1})) < 1e-15 &&
+                       trial.outcome == PicardTrialOutcome::rejected_armijo;
         }
         check("A", "both_failures_line_search_exhausted", both_line_search_exhausted);
-        check("A", "full_rejected_armijo_ladder", ladder_ok);
+        check("A", "single_trial_alpha_one_rejected_armijo", ladder_ok);
 
         const std::vector<real> u1_3 = download(fields3.u1_span());
         const std::vector<real> u2_3 = download(fields3.u2_span());
@@ -645,9 +667,10 @@ template <typename Callable>
         StreamfunctionSolverConfig config4{};
         config4.newton.enabled = true;
         config4.newton.gmres.max_iterations = 1;
-        config4.newton.forcing_min = real{1e-8};
-        config4.newton.forcing_max = real{1e-8};
-        config4.newton.armijo_c = real{0.999999};
+        config4.newton.alpha_min = real{1};
+        config4.newton.forcing_min = real{1e-1};
+        config4.newton.forcing_max = real{1e-1};
+        config4.newton.armijo_c = real{1} - real{1e-8};
         config4.newton.rescue_picard_steps = 0;
         const StreamfunctionSolveReport report4 =
             solve_streamfunctions(ctx4, problem4, config4, fields4, workspace4);
@@ -690,7 +713,10 @@ template <typename Callable>
         StreamfunctionWorkspace workspace5;
         StreamfunctionSolverConfig config5{};
         config5.newton.enabled = true;
-        config5.newton.armijo_c = real{0.999999};
+        config5.newton.alpha_min = real{1};
+        config5.newton.armijo_c = real{1} - real{1e-8};
+        config5.newton.forcing_min = real{1e-1};
+        config5.newton.forcing_max = real{1e-1};
         // rescue_picard_steps left at its default (5).
         const StreamfunctionSolveReport report5 =
             solve_streamfunctions(ctx5, problem5, config5, fields5, workspace5);
@@ -731,14 +757,18 @@ template <typename Callable>
     return {pass,
             "newton_forced_failure_preservation",
             "gpu-newton-failure-preservation",
-            "16^3 (a=0.25) manufactured trig-K fixture, three armijo_c=0.999999 variants",
+            "16^3 (a=0.25) manufactured trig-K fixture, three SF-24 E13 single-trial-ladder variants "
+            "(alpha_min=1, armijo_c=1-1e-8, forcing_min=forcing_max=1e-1)",
             static_cast<double>(k_star),
             0.0,
             "G3",
             pass ? "all pass" : "some failed",
-            "hostile armijo_c forces every Newton line search to exhaust; the accepted state stays "
-            "bitwise-preserved across every failed activation; the rescue window advances the outer "
-            "Picard context by exactly rescue_picard_steps+1 before the forced retry"};
+            "SF-24 E13: alpha_min=1 restricts the line search to a single alpha=1 trial; armijo_c="
+            "1-1e-8 demands a 1e-8 merit reduction (1e-4 r_F factor) that the 1e-1 forcing floor "
+            "cannot deliver, so every Newton activation is rejected deterministically at that one "
+            "trial; the accepted state stays bitwise-preserved across every failed activation; the "
+            "rescue window advances the outer Picard context by exactly rescue_picard_steps+1 before "
+            "the forced retry"};
 }
 
 // ===========================================================================
