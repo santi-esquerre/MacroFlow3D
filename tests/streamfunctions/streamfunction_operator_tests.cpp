@@ -363,6 +363,11 @@ using CaseFunction = test::CaseFunction;
                 throw std::logic_error("duplicate streamfunction test case: " + name);
             }
         }
+        for (const auto& [name, function] : test::newton_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction test case: " + name);
+            }
+        }
         return result;
     }();
     return registry;
@@ -386,6 +391,11 @@ using CaseFunction = test::CaseFunction;
             }
         }
         for (const auto& [name, function] : test::heterogeneity_continuation_smoke_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction heavy test case: " + name);
+            }
+        }
+        for (const auto& [name, function] : test::newton_difficult_case_registry()) {
             if (!result.emplace(name, function).second) {
                 throw std::logic_error("duplicate streamfunction heavy test case: " + name);
             }
