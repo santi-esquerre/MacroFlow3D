@@ -248,7 +248,16 @@ struct StreamfunctionSolverWriter {
         f << "axis,lambda,eta,epsilon,base_axis,param_start,param_attempted,step_attempted,"
              "accepted,failure,exit_reason,picard_iterations,final_omega,r_F,r1,r2,"
              "mg_rebuild_count,e_v,invariance_e_psi1,invariance_e_psi2,e_div,c_percentile_p001,"
-             "degeneracy_total0,degeneracy_unexplained0,psi1_iterations,psi2_iterations\n";
+             "degeneracy_total0,degeneracy_unexplained0,psi1_iterations,psi2_iterations,"
+             // SF-25 T02 (E2): per-stage Anderson/Newton attribution counters
+             // harvested onto HeterogeneityStageRecord by SF-25 T01;
+             // appended at the end so all existing columns/offsets are
+             // unchanged. Left at their zero default whenever
+             // config.anderson.enabled/config.newton.enabled was false for
+             // that stage.
+             "anderson_accepted,anderson_rejected,anderson_condition_resets,"
+             "newton_activations,newton_steps_accepted,newton_step_failures,"
+             "newton_rescue_events,newton_jv_evaluations\n";
 
         for (const auto& s : history) {
             const auto& b = s.base;
@@ -261,7 +270,11 @@ struct StreamfunctionSolverWriter {
               << s.mg_rebuild_count << ',' << s.e_v << ',' << s.invariance_e_psi1 << ','
               << s.invariance_e_psi2 << ',' << s.e_div << ',' << s.c_percentile_p001 << ','
               << s.degeneracy_total0 << ',' << s.degeneracy_unexplained0 << ','
-              << b.psi1_iterations << ',' << b.psi2_iterations << '\n';
+              << b.psi1_iterations << ',' << b.psi2_iterations << ','
+              << s.anderson_accepted << ',' << s.anderson_rejected << ','
+              << s.anderson_condition_resets << ',' << s.newton_activations << ','
+              << s.newton_steps_accepted << ',' << s.newton_step_failures << ','
+              << s.newton_rescue_events << ',' << s.newton_jv_evaluations << '\n';
         }
     }
 

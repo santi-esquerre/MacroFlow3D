@@ -131,6 +131,11 @@ streamfunction_solver:
     depth: 5
     start_iteration: 5
     condition_limit: 1.0e12
+  # SF-25: newton enabled with strict-parser defaults (activation=1.0e-2,
+  # restart=10, rescue=5) -- Newton terminal convergence is the sanctioned
+  # SF-25 wiring, per the SF-25 activation prespecification.
+  newton:
+    enabled: true
 
 # ------------------------------------------------------------------------------
 # transport -- minimal par2 smoke pass (not the point of this fixture)
