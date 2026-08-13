@@ -76,6 +76,10 @@ struct StreamfunctionSolverWriter {
             return "stagnated";
         case R::omega_floor_rejected:
             return "omega_floor_rejected";
+        case R::newton_exhausted:
+            return "newton_exhausted";
+        case R::newton_budget_exhausted:
+            return "newton_budget_exhausted";
         }
         return "unknown";
     }
@@ -417,6 +421,24 @@ struct StreamfunctionSolverWriter {
                        {"linear_max_iter", cfg_yaml.linear.max_iter},
                        {"linear_check_every", cfg_yaml.linear.check_every},
                        {"mg_num_levels", cfg_yaml.mg.num_levels}};
+
+        // SF-24 T02: additive "newton" object, following the same conditional
+        // pattern as the "continuation" object in the 7-argument
+        // write_summary_json overload above -- only present when the
+        // subsystem is enabled, so a default (disabled) config's summary.json
+        // stays byte-identical to the pre-SF-24 schema. Anderson counters
+        // (report.anderson_accepted/anderson_rejected/
+        // anderson_condition_resets) are NOT currently exported anywhere in
+        // this writer or in EnsembleRunner.cu (verified by inspection); no
+        // established "reports Anderson counters" export site exists to
+        // mirror, so none is invented here for Newton either.
+        if (cfg_yaml.newton.enabled) {
+            j["newton"] = {{"activations", report.newton_activations},
+                           {"steps_accepted", report.newton_steps_accepted},
+                           {"step_failures", report.newton_step_failures},
+                           {"rescue_events", report.newton_rescue_events},
+                           {"jv_evaluations", report.newton_jv_evaluations}};
+        }
 
         j["grid"] = {{"nx", grid.nx},         {"ny", grid.ny},         {"nz", grid.nz},
                      {"dx", (double)grid.dx}, {"dy", (double)grid.dy}, {"dz", (double)grid.dz}};

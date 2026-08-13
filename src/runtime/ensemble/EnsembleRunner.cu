@@ -418,6 +418,24 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             sf_lib_cfg.anderson.depth = sfcfg.anderson.depth;
             sf_lib_cfg.anderson.start_iteration = sfcfg.anderson.start_iteration;
             sf_lib_cfg.anderson.condition_limit = sfcfg.anderson.condition_limit;
+            // Globalized Newton-Krylov phase (SF-24 T02): enabled == false
+            // (the default) byte-preserves the exact pre-existing
+            // Picard/Anderson-only path.
+            sf_lib_cfg.newton.enabled = sfcfg.newton.enabled;
+            sf_lib_cfg.newton.activation_r_F = sfcfg.newton.activation_r_F;
+            sf_lib_cfg.newton.stagnation_activation_r_F = sfcfg.newton.stagnation_activation_r_F;
+            sf_lib_cfg.newton.forcing_coefficient = sfcfg.newton.forcing_coefficient;
+            sf_lib_cfg.newton.forcing_min = sfcfg.newton.forcing_min;
+            sf_lib_cfg.newton.forcing_max = sfcfg.newton.forcing_max;
+            sf_lib_cfg.newton.armijo_c = sfcfg.newton.armijo_c;
+            sf_lib_cfg.newton.alpha_min = sfcfg.newton.alpha_min;
+            sf_lib_cfg.newton.backtrack_factor = sfcfg.newton.backtrack_factor;
+            sf_lib_cfg.newton.max_newton_iterations = sfcfg.newton.max_newton_iterations;
+            sf_lib_cfg.newton.rescue_picard_steps = sfcfg.newton.rescue_picard_steps;
+            sf_lib_cfg.newton.gmres.restart = sfcfg.newton.gmres.restart;
+            sf_lib_cfg.newton.gmres.max_iterations = sfcfg.newton.gmres.max_iterations;
+            sf_lib_cfg.newton.delta.delta_min = sfcfg.newton.delta.delta_min;
+            sf_lib_cfg.newton.delta.delta_max = sfcfg.newton.delta.delta_max;
             // histogram, diagnostics thresholds, and every other adaptive
             // sub-tunable stay at the library's dashboard-locked defaults
             // (not exposed by the SF-16 T01 config surface).
@@ -599,6 +617,19 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
                             io::StreamfunctionSolverWriter::exit_reason_str(sf_report.exit_reason),
                             sf_report.picard_iterations, (double)sf_report.residual.r_F,
                             (double)sf_report.final_omega);
+
+                // SF-24 T02: additive Newton-Krylov counter line, conditional
+                // on sfcfg.newton.enabled (mirroring the field_source/
+                // darcy_source conditional log lines above); when disabled
+                // (the default) this printf does not run, so default stdout
+                // stays byte-identical.
+                if (sfcfg.newton.enabled) {
+                    std::printf("       [streamfunctions] newton activations=%d accepted=%d "
+                                "failures=%d rescues=%d jv_evals=%lld\n",
+                                sf_report.newton_activations, sf_report.newton_steps_accepted,
+                                sf_report.newton_step_failures, sf_report.newton_rescue_events,
+                                sf_report.newton_jv_evaluations);
+                }
 
                 layout.ensure_streamfunction_dir(r, grid.nx);
 

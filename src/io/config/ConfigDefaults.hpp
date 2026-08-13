@@ -183,6 +183,26 @@ inline AppConfig make_default_config() {
     cfg.streamfunction_solver.anderson.start_iteration = 5;
     cfg.streamfunction_solver.anderson.condition_limit = 1.0e12;
 
+    // Globalized Newton-Krylov phase (SF-24 T02) — disabled by default, no
+    // behavior change: the SF-13..SF-23 Picard/Anderson-only path stays
+    // byte-identical (the values below are the SF-24-validated library
+    // defaults, applied only when a config explicitly sets enabled: true).
+    cfg.streamfunction_solver.newton.enabled = false;
+    cfg.streamfunction_solver.newton.activation_r_F = 1.0e-2;
+    cfg.streamfunction_solver.newton.stagnation_activation_r_F = 1.0e-1;
+    cfg.streamfunction_solver.newton.forcing_coefficient = 1.0;
+    cfg.streamfunction_solver.newton.forcing_min = 1.0e-8;
+    cfg.streamfunction_solver.newton.forcing_max = 1.0e-1;
+    cfg.streamfunction_solver.newton.armijo_c = 1.0e-4;
+    cfg.streamfunction_solver.newton.alpha_min = 0.03125;
+    cfg.streamfunction_solver.newton.backtrack_factor = 0.5;
+    cfg.streamfunction_solver.newton.max_newton_iterations = 50;
+    cfg.streamfunction_solver.newton.rescue_picard_steps = 5;
+    cfg.streamfunction_solver.newton.gmres.restart = 10;
+    cfg.streamfunction_solver.newton.gmres.max_iterations = 100;
+    cfg.streamfunction_solver.newton.delta.delta_min = 1.0e-12;
+    cfg.streamfunction_solver.newton.delta.delta_max = 1.0e2;
+
     return cfg;
 }
 

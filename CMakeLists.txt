@@ -226,6 +226,10 @@ set(PHYSICS_SOURCES
     src/physics/streamfunctions/CoupledGmres.cu
     src/physics/streamfunctions/Diagnostics.cu
     src/physics/streamfunctions/AndersonAccelerator.cu
+    # SF-24: globalized Newton-Krylov phase (inexact-Newton GMRES step +
+    # Armijo line search) consuming the SF-22/SF-23 JVP/GMRES/preconditioner
+    # surface; opt-in and bitwise-preserving when disabled.
+    src/physics/streamfunctions/NewtonKrylovSolver.cu
     src/physics/streamfunctions/StreamfunctionWorkspace.cu
     src/physics/streamfunctions/StreamfunctionSolver.cu
     src/physics/streamfunctions/ContinuationController.cu
@@ -383,6 +387,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/heterogeneity_continuation_gpu_cases.cu
         tests/streamfunctions/jvp_gpu_cases.cu
         tests/streamfunctions/gmres_gpu_cases.cu
+        tests/streamfunctions/newton_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -494,6 +499,27 @@ if(MACROFLOW3D_BUILD_APPS)
         --case gmres_memory_accounting
         --case gmres_restart15_path
         --case gmres_fail_fast_contracts
+    )
+    # SF-24 T03: globalized Newton-Krylov (NewtonKrylovSolver, SF-24 T01)
+    # PRESPECIFIED-gate acceptance cases (G1/G2/G3/G6/G7). Cheap tier: see
+    # newton_gpu_cases.cu / streamfunction_operator_tests.cpp (cases()) for
+    # the exact fixtures.
+    add_test(NAME streamfunction_newton COMMAND streamfunction_operator_tests
+        --case newton_equivalence
+        --case newton_activation_semantics
+        --case newton_forced_failure_preservation
+        --case newton_memory_accounting
+        --case newton_fail_fast
+    )
+    # SF-24 T03: globalized Newton-Krylov "difficult case" acceptance control
+    # (G4/G5: two 32^3 solves of the SF-21 heterogeneity-continuation stall
+    # fixture, plus a determinism rerun). Kept as a separate ctest entry (not
+    # part of the default `streamfunction_newton` or bare
+    # `streamfunction_operator_tests` runs); see newton_gpu_cases.cu /
+    # streamfunction_operator_tests.cpp (heavy_cases()) for the isolation
+    # mechanism.
+    add_test(NAME streamfunction_newton_difficult COMMAND streamfunction_operator_tests
+        --case newton_difficult_case
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3

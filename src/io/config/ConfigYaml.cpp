@@ -327,7 +327,7 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
         "enabled",     "affine_mean_velocity", "epsilon",          "eta",
         "picard",      "adaptive",             "linear",           "mg",
         "export",      "continuation",         "field_source",     "periodic_gaussian",
-        "darcy_source", "anderson"};
+        "darcy_source", "anderson",            "newton"};
     check_unknown_keys(node, known, "streamfunction_solver", errs);
 
     cfg.enabled = get_or<bool>(node, "enabled", def.enabled);
@@ -513,6 +513,55 @@ parse_streamfunction_solver(const YAML::Node& node, const StreamfunctionSolverYa
             get_or<int>(n, "start_iteration", def.anderson.start_iteration);
         cfg.anderson.condition_limit =
             get_or<real>(n, "condition_limit", def.anderson.condition_limit);
+    }
+
+    if (node["newton"]) {
+        const auto& n = node["newton"];
+        static const std::set<std::string> newton_known = {
+            "enabled",       "activation_r_F",     "stagnation_activation_r_F",
+            "forcing_coefficient", "forcing_min",   "forcing_max",
+            "armijo_c",      "alpha_min",           "backtrack_factor",
+            "max_newton_iterations", "rescue_picard_steps", "gmres", "delta"};
+        check_unknown_keys(n, newton_known, "streamfunction_solver.newton", errs);
+
+        cfg.newton.enabled = get_or<bool>(n, "enabled", def.newton.enabled);
+        cfg.newton.activation_r_F =
+            get_or<real>(n, "activation_r_F", def.newton.activation_r_F);
+        cfg.newton.stagnation_activation_r_F =
+            get_or<real>(n, "stagnation_activation_r_F", def.newton.stagnation_activation_r_F);
+        cfg.newton.forcing_coefficient =
+            get_or<real>(n, "forcing_coefficient", def.newton.forcing_coefficient);
+        cfg.newton.forcing_min = get_or<real>(n, "forcing_min", def.newton.forcing_min);
+        cfg.newton.forcing_max = get_or<real>(n, "forcing_max", def.newton.forcing_max);
+        cfg.newton.armijo_c = get_or<real>(n, "armijo_c", def.newton.armijo_c);
+        cfg.newton.alpha_min = get_or<real>(n, "alpha_min", def.newton.alpha_min);
+        cfg.newton.backtrack_factor =
+            get_or<real>(n, "backtrack_factor", def.newton.backtrack_factor);
+        cfg.newton.max_newton_iterations =
+            get_or<int>(n, "max_newton_iterations", def.newton.max_newton_iterations);
+        cfg.newton.rescue_picard_steps =
+            get_or<int>(n, "rescue_picard_steps", def.newton.rescue_picard_steps);
+
+        if (n["gmres"]) {
+            const auto& gn = n["gmres"];
+            static const std::set<std::string> gmres_known = {"restart", "max_iterations"};
+            check_unknown_keys(gn, gmres_known, "streamfunction_solver.newton.gmres", errs);
+
+            cfg.newton.gmres.restart = get_or<int>(gn, "restart", def.newton.gmres.restart);
+            cfg.newton.gmres.max_iterations =
+                get_or<int>(gn, "max_iterations", def.newton.gmres.max_iterations);
+        }
+
+        if (n["delta"]) {
+            const auto& dn = n["delta"];
+            static const std::set<std::string> delta_known = {"delta_min", "delta_max"};
+            check_unknown_keys(dn, delta_known, "streamfunction_solver.newton.delta", errs);
+
+            cfg.newton.delta.delta_min =
+                get_or<real>(dn, "delta_min", def.newton.delta.delta_min);
+            cfg.newton.delta.delta_max =
+                get_or<real>(dn, "delta_max", def.newton.delta.delta_max);
+        }
     }
 
     return cfg;

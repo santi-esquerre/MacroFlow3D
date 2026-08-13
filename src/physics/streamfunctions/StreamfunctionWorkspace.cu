@@ -154,6 +154,20 @@ std::size_t mg_preconditioner_estimate_bytes(const std::vector<Grid3D>& levels) 
     return bytes;
 }
 
+// SF-24: mirrors BlockDiagonalMGPreconditioner::estimate_device_bytes exactly
+// (per-level MeanZeroWorkspace set, matching mg_preconditioner_estimate_bytes
+// above, PLUS two finest-grid-sized scratch buffers), without a real
+// multigrid::MGHierarchy (this is the host-only, no-real-hierarchy estimator
+// path; `levels.front()` is the finest level by the same convention every
+// other estimator here relies on).
+std::size_t newton_preconditioner_estimate_bytes(const std::vector<Grid3D>& levels) {
+    std::size_t bytes = mg_preconditioner_estimate_bytes(levels);
+    if (!levels.empty()) {
+        bytes += 2 * levels.front().num_cells() * sizeof(real);
+    }
+    return bytes;
+}
+
 // --- Shared config validation (mirrors the accepted sub-modules' own
 // require_valid_config rules exactly; see StreamfunctionTypes.hpp).
 
@@ -344,6 +358,71 @@ void require_valid_anderson_config(const AndersonConfig& anderson) {
     }
 }
 
+// SF-24: validated unconditionally (regardless of newton.enabled), mirroring
+// require_valid_adaptive_config/require_valid_anderson_config's convention.
+// SF-24 C01 (audit finding T01-F1): the Newton phase is integrated ONLY into
+// the config.adaptive.enabled == true loop of solve_streamfunctions -- the
+// SF-14 fixed-Picard path is a frozen compatibility surface and never
+// activates Newton. newton.enabled && !adaptive.enabled must therefore be
+// rejected here rather than silently allocating a Newton sub-workspace that
+// is never used (AGENTS.md: "Do not introduce silent behavior changes in
+// configs").
+void require_valid_newton_config(const NewtonKrylovConfig& newton, const AdaptivePicardConfig& adaptive) {
+    if (newton.enabled && !adaptive.enabled) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires config.adaptive.enabled when config.newton.enabled "
+            "(the SF-24 Newton phase is integrated only into the adaptive Picard loop; the "
+            "SF-14 fixed-relaxation path is a frozen compatibility surface)");
+    }
+    if (!std::isfinite(newton.activation_r_F) || newton.activation_r_F <= real{0}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite, strictly positive "
+            "newton.activation_r_F");
+    }
+    if (!std::isfinite(newton.stagnation_activation_r_F) ||
+        newton.stagnation_activation_r_F < newton.activation_r_F) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite newton.stagnation_activation_r_F >= "
+            "newton.activation_r_F");
+    }
+    if (!std::isfinite(newton.forcing_min) || newton.forcing_min <= real{0} ||
+        !std::isfinite(newton.forcing_max) || newton.forcing_max < newton.forcing_min ||
+        newton.forcing_max > real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires finite 0 < newton.forcing_min <= "
+            "newton.forcing_max <= 1");
+    }
+    if (!std::isfinite(newton.forcing_coefficient) || newton.forcing_coefficient <= real{0}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite, strictly positive "
+            "newton.forcing_coefficient");
+    }
+    if (!std::isfinite(newton.armijo_c) || newton.armijo_c < real{0} || newton.armijo_c >= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite newton.armijo_c in [0, 1)");
+    }
+    if (!std::isfinite(newton.alpha_min) || newton.alpha_min <= real{0} ||
+        newton.alpha_min > real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite newton.alpha_min in (0, 1]");
+    }
+    if (!std::isfinite(newton.backtrack_factor) || newton.backtrack_factor <= real{0} ||
+        newton.backtrack_factor >= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite newton.backtrack_factor in (0, 1)");
+    }
+    if (newton.max_newton_iterations < 1) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires newton.max_newton_iterations >= 1");
+    }
+    if (newton.rescue_picard_steps < 0) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires newton.rescue_picard_steps >= 0");
+    }
+    validate_coupled_gmres_config(newton.gmres);
+    validate_jvp_delta_config(newton.delta);
+}
+
 void require_valid_source_side_config(const StreamfunctionSolverConfig& config) {
     if (!std::isfinite(config.eta) || config.eta < real{0}) {
         throw std::invalid_argument("Streamfunction problem requires a finite, non-negative eta");
@@ -412,6 +491,7 @@ void validate_streamfunction_problem(const Grid3D& grid, const StreamfunctionPro
     require_valid_picard_config(config.picard);
     require_valid_adaptive_config(config.adaptive, config.picard);
     require_valid_anderson_config(config.anderson);
+    require_valid_newton_config(config.newton, config.adaptive);
     require_valid_source_side_config(config);
 }
 
@@ -504,6 +584,31 @@ void StreamfunctionWorkspace::prepare(const Grid3D& grid, const StreamfunctionSo
         anderson_.reset();
     }
 
+    // SF-24: optional Newton-Krylov sub-workspace, allocated ONLY when
+    // enabled (see the file header). The BlockDiagonalMGPreconditioner
+    // member cannot be resized in place (it holds an MGHierarchy*), so it is
+    // (re)constructed whenever the hierarchy itself was just (re)constructed
+    // above (mg_already_current == false) or whenever the Newton
+    // sub-workspace is newly created against an already-current hierarchy.
+    if (config.newton.enabled) {
+        if (!newton_.has_value()) {
+            newton_.emplace();
+        }
+        if (!newton_->jvp.prepared_for(n)) {
+            newton_->jvp.prepare(n);
+        }
+        if (!newton_->gmres.prepared_for(n, config.newton.gmres.restart)) {
+            newton_->gmres.prepare(n, config.newton.gmres.restart);
+        }
+        newton_->delta1.resize(n);
+        newton_->delta2.resize(n);
+        if (!mg_already_current || !newton_->preconditioner.has_value()) {
+            newton_->preconditioner.emplace(*mg_hierarchy_, config.mg);
+        }
+    } else {
+        newton_.reset();
+    }
+
     prepared_grid_ = grid;
     prepared_mg_config_ = config.mg;
     prepared_ = true;
@@ -519,6 +624,13 @@ bool StreamfunctionWorkspace::prepared_for(const Grid3D& grid,
                                  ? (anderson_.has_value() &&
                                     anderson_->prepared_for(n, config.anderson.depth))
                                  : !anderson_.has_value();
+    const bool newton_ok =
+        config.newton.enabled
+            ? (newton_.has_value() && newton_->jvp.prepared_for(n) &&
+               newton_->gmres.prepared_for(n, config.newton.gmres.restart) &&
+               newton_->delta1.size() == n && newton_->delta2.size() == n &&
+               newton_->preconditioner.has_value())
+            : !newton_.has_value();
     return q_.size() == n && rhs1_.size() == n && rhs2_.size() == n && f1_.size() == n &&
            f2_.size() == n && u_trial1_.size() == n && u_trial2_.size() == n &&
            v_psi_u_.size() == compact_mac_u_size(grid) &&
@@ -527,7 +639,7 @@ bool StreamfunctionWorkspace::prepared_for(const Grid3D& grid,
            diagnostics_workspace_.prepared_for(grid) && affine_rhs_workspace_.prepared_for(n) &&
            pcg_workspace_.prepared_for(n) && mg_hierarchy_ != nullptr &&
            mg_preconditioner_.has_value() && grids_equal(prepared_grid_, grid) &&
-           mg_config_equal(prepared_mg_config_, config.mg) && anderson_ok;
+           mg_config_equal(prepared_mg_config_, config.mg) && anderson_ok && newton_ok;
 }
 
 DeviceSpan<real> StreamfunctionWorkspace::q() {
@@ -628,6 +740,55 @@ bool StreamfunctionWorkspace::anderson_enabled() const noexcept {
     return anderson_.has_value();
 }
 
+JvpWorkspace& StreamfunctionWorkspace::newton_jvp() {
+    ensure_prepared();
+    if (!newton_.has_value()) {
+        throw std::logic_error(
+            "StreamfunctionWorkspace::newton_jvp() requires config.newton.enabled at the last "
+            "prepare() call");
+    }
+    return newton_->jvp;
+}
+CoupledGmres& StreamfunctionWorkspace::newton_gmres() {
+    ensure_prepared();
+    if (!newton_.has_value()) {
+        throw std::logic_error(
+            "StreamfunctionWorkspace::newton_gmres() requires config.newton.enabled at the last "
+            "prepare() call");
+    }
+    return newton_->gmres;
+}
+BlockDiagonalMGPreconditioner& StreamfunctionWorkspace::newton_preconditioner() {
+    ensure_prepared();
+    if (!newton_.has_value() || !newton_->preconditioner.has_value()) {
+        throw std::logic_error(
+            "StreamfunctionWorkspace::newton_preconditioner() requires config.newton.enabled at "
+            "the last prepare() call");
+    }
+    return *newton_->preconditioner;
+}
+DeviceSpan<real> StreamfunctionWorkspace::newton_delta1() {
+    ensure_prepared();
+    if (!newton_.has_value()) {
+        throw std::logic_error(
+            "StreamfunctionWorkspace::newton_delta1() requires config.newton.enabled at the last "
+            "prepare() call");
+    }
+    return newton_->delta1.span();
+}
+DeviceSpan<real> StreamfunctionWorkspace::newton_delta2() {
+    ensure_prepared();
+    if (!newton_.has_value()) {
+        throw std::logic_error(
+            "StreamfunctionWorkspace::newton_delta2() requires config.newton.enabled at the last "
+            "prepare() call");
+    }
+    return newton_->delta2.span();
+}
+bool StreamfunctionWorkspace::newton_enabled() const noexcept {
+    return newton_.has_value();
+}
+
 std::size_t StreamfunctionWorkspace::allocated_device_bytes() const noexcept {
     std::size_t bytes =
         (q_.capacity() + rhs1_.capacity() + rhs2_.capacity() + f1_.capacity() + f2_.capacity() +
@@ -647,6 +808,14 @@ std::size_t StreamfunctionWorkspace::allocated_device_bytes() const noexcept {
     if (anderson_.has_value()) {
         bytes += anderson_->history_bytes() + anderson_->staging_bytes() +
                  anderson_->scratch_bytes();
+    }
+    if (newton_.has_value()) {
+        bytes += newton_->jvp.allocated_device_bytes();
+        bytes += newton_->gmres.allocated_device_bytes();
+        if (newton_->preconditioner.has_value()) {
+            bytes += newton_->preconditioner->allocated_device_bytes();
+        }
+        bytes += (newton_->delta1.capacity() + newton_->delta2.capacity()) * sizeof(real);
     }
     return bytes;
 }
@@ -674,12 +843,25 @@ StreamfunctionMemoryReport StreamfunctionWorkspace::memory_report(const Grid3D& 
         report.anderson_scratch_bytes = anderson_->scratch_bytes();
     }
 
+    // SF-24: additive, exactly zero when disabled (see StreamfunctionTypes.hpp).
+    if (newton_.has_value()) {
+        report.newton_jvp_bytes = newton_->jvp.allocated_device_bytes();
+        report.newton_gmres_bytes = newton_->gmres.allocated_device_bytes();
+        report.newton_preconditioner_bytes =
+            newton_->preconditioner.has_value() ? newton_->preconditioner->allocated_device_bytes()
+                                                : 0;
+        report.newton_delta_bytes =
+            (newton_->delta1.capacity() + newton_->delta2.capacity()) * sizeof(real);
+    }
+
     report.fields_bytes = 0;
     report.solve_path_bytes = report.scratch_fields_bytes + report.residual_workspace_bytes +
                               report.affine_rhs_workspace_bytes + report.pcg_workspace_bytes +
                               report.mg_hierarchy_bytes + report.mg_preconditioner_bytes +
                               report.anderson_history_bytes + report.anderson_staging_bytes +
-                              report.anderson_scratch_bytes;
+                              report.anderson_scratch_bytes + report.newton_jvp_bytes +
+                              report.newton_gmres_bytes + report.newton_preconditioner_bytes +
+                              report.newton_delta_bytes;
     report.diagnostics_path_bytes = report.diagnostics_workspace_bytes;
     report.total_bytes = report.fields_bytes + report.solve_path_bytes + report.diagnostics_path_bytes;
 
@@ -717,6 +899,7 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
     require_valid_picard_config(config.picard);
     require_valid_adaptive_config(config.adaptive, config.picard);
     require_valid_anderson_config(config.anderson);
+    require_valid_newton_config(config.newton, config.adaptive);
     require_valid_source_side_config(config);
 
     const std::size_t n = grid.num_cells();
@@ -746,11 +929,21 @@ StreamfunctionMemoryReport estimate_streamfunction_memory(const Grid3D& grid,
         report.anderson_scratch_bytes = anderson_estimate.scratch_bytes;
     }
 
+    // SF-24: additive, exactly zero when disabled (see StreamfunctionTypes.hpp).
+    if (config.newton.enabled) {
+        report.newton_jvp_bytes = JvpWorkspace::estimate_device_bytes(n);
+        report.newton_gmres_bytes = CoupledGmres::estimate_device_bytes(n, config.newton.gmres.restart);
+        report.newton_preconditioner_bytes = newton_preconditioner_estimate_bytes(mg_levels);
+        report.newton_delta_bytes = 2 * n * sizeof(real);
+    }
+
     report.solve_path_bytes = report.scratch_fields_bytes + report.residual_workspace_bytes +
                               report.affine_rhs_workspace_bytes + report.pcg_workspace_bytes +
                               report.mg_hierarchy_bytes + report.mg_preconditioner_bytes +
                               report.anderson_history_bytes + report.anderson_staging_bytes +
-                              report.anderson_scratch_bytes;
+                              report.anderson_scratch_bytes + report.newton_jvp_bytes +
+                              report.newton_gmres_bytes + report.newton_preconditioner_bytes +
+                              report.newton_delta_bytes;
     report.diagnostics_path_bytes = report.diagnostics_workspace_bytes;
     report.total_bytes = report.fields_bytes + report.solve_path_bytes + report.diagnostics_path_bytes;
     report.fine_grid_equivalent_fields =

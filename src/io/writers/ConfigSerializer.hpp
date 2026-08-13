@@ -264,6 +264,27 @@ struct ConfigSerializer {
         std::fprintf(f, "    start_iteration: %d\n", sf.anderson.start_iteration);
         std::fprintf(f, "    condition_limit: %.15e\n", (double)sf.anderson.condition_limit);
 
+        // Globalized Newton-Krylov phase (SF-24 T02).
+        std::fprintf(f, "  newton:\n");
+        std::fprintf(f, "    enabled: %s\n", sf.newton.enabled ? "true" : "false");
+        std::fprintf(f, "    activation_r_F: %.15e\n", (double)sf.newton.activation_r_F);
+        std::fprintf(f, "    stagnation_activation_r_F: %.15e\n",
+                     (double)sf.newton.stagnation_activation_r_F);
+        std::fprintf(f, "    forcing_coefficient: %.15e\n", (double)sf.newton.forcing_coefficient);
+        std::fprintf(f, "    forcing_min: %.15e\n", (double)sf.newton.forcing_min);
+        std::fprintf(f, "    forcing_max: %.15e\n", (double)sf.newton.forcing_max);
+        std::fprintf(f, "    armijo_c: %.15e\n", (double)sf.newton.armijo_c);
+        std::fprintf(f, "    alpha_min: %.15e\n", (double)sf.newton.alpha_min);
+        std::fprintf(f, "    backtrack_factor: %.15e\n", (double)sf.newton.backtrack_factor);
+        std::fprintf(f, "    max_newton_iterations: %d\n", sf.newton.max_newton_iterations);
+        std::fprintf(f, "    rescue_picard_steps: %d\n", sf.newton.rescue_picard_steps);
+        std::fprintf(f, "    gmres:\n");
+        std::fprintf(f, "      restart: %d\n", sf.newton.gmres.restart);
+        std::fprintf(f, "      max_iterations: %d\n", sf.newton.gmres.max_iterations);
+        std::fprintf(f, "    delta:\n");
+        std::fprintf(f, "      delta_min: %.15e\n", (double)sf.newton.delta.delta_min);
+        std::fprintf(f, "      delta_max: %.15e\n", (double)sf.newton.delta.delta_max);
+
         std::fclose(f);
         return true;
     }

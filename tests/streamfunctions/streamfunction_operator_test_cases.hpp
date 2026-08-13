@@ -192,4 +192,28 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // `cases()` map exactly like every other cheap-tier registry above.
 [[nodiscard]] CaseRegistry gmres_case_registry();
 
+// SF-24 T03 globalized Newton-Krylov (`NewtonKrylovSolver`, SF-24 T01
+// `NewtonKrylovSolver.cuh/.cu`) PRESPECIFIED-gate acceptance cases (cheap
+// tier): G1 Newton/Picard equivalence on convergent 16^3/32^3 fixtures, G2
+// activation-semantics exactness, G3 forced-failure/rescue/retry state-
+// machine bitwise preservation (three variants), G6 exact-byte memory
+// accounting, and G7 the C01/E10 validation fail-fast contract plus a
+// never-activated homogeneous control. See `newton_gpu_cases.cu` for the
+// exact case list; folded into `streamfunction_operator_tests.cpp`'s
+// aggregated `cases()` map exactly like every other cheap-tier registry
+// above.
+[[nodiscard]] CaseRegistry newton_case_registry();
+
+// SF-24 T03 globalized Newton-Krylov "difficult case" acceptance control
+// (G4/G5, heavy tier: two 32^3 solves of the SF-21 heterogeneity-continuation
+// stall fixture, one SF-20 Anderson-gate control and one +Newton run, plus a
+// determinism rerun). Deliberately NOT folded into
+// `streamfunction_operator_tests.cpp`'s aggregated `cases()` map (the map
+// backing `--list` and the no-argument "run everything" default): reachable
+// only via an explicit `--case newton_difficult_case`, matching the
+// CMakeLists.txt `streamfunction_newton_difficult` ctest entry. See
+// `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
+// `newton_gpu_cases.cu` for the exact fixture.
+[[nodiscard]] CaseRegistry newton_difficult_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

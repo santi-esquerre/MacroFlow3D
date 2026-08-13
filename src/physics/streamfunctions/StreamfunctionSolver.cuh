@@ -299,11 +299,63 @@
  * been touched) is a no-op, so this is bitwise-preserving for every existing
  * SF-20 caller. No other Anderson semantics (algebra, guard chain, counters,
  * mid-loop rejection-clear) change.
+ *
+ * SF-24 adds `config.newton` (`NewtonKrylovConfig`, `StreamfunctionTypes.hpp`;
+ * default `enabled == false`), a globalized Newton-Krylov phase inserted into
+ * the `config.adaptive.enabled == true` loop above (the SF-14 fixed-Picard
+ * path, `config.adaptive.enabled == false`, is UNTOUCHED by SF-24). Every
+ * Newton statement below is guarded by `if (config.newton.enabled)`, so
+ * `enabled == false` executes IDENTICAL statements to the pre-SF-24
+ * SF-15/SF-20 adaptive loop (the same standard SF-20 met for its own disabled
+ * path). The full per-Newton-iteration mechanics (HEAD, forcing, GMRES
+ * linear-accept rule, Armijo line search, and the Newton-step-failure/rescue/
+ * retry state machine) are documented in `NewtonKrylovSolver.cuh`; this
+ * section documents only the OUTER activation/rescue/retry state machine
+ * `solve_streamfunctions` itself drives around `run_newton_phase`.
+ *
+ *   ACTIVATION (E2): inserted at the outer-loop HEAD, AFTER the existing
+ *   `converged`/`budget_exhausted` exit checks and BEFORE the stagnation
+ *   check. Entry into a Newton phase happens for exactly one of three
+ *   reasons: (a) `r_F_k <= config.newton.activation_r_F`; (b) the SF-15
+ *   stagnation condition would otherwise fire AND `r_F_k <=
+ *   config.newton.stagnation_activation_r_F` AND the accepted state's SF-11
+ *   degeneracy is clean (`f_prev <= config.adaptive.max_unexplained_fraction`
+ *   when guards are active, vacuously clean otherwise) -- this REPLACES a
+ *   `stagnated` exit with a Newton-phase entry instead; (c) a forced retry
+ *   after a completed rescue window (below), which bypasses (a)/(b)
+ *   entirely. On EVERY entry, if `config.anderson.enabled`,
+ *   `workspace.anderson().clear()` runs first (the SF-21 premise: a Newton
+ *   acceptance changes the accepted state outside Anderson's own staging).
+ *   `report.newton_activations` counts every entry (original activations and
+ *   forced retries alike).
+ *
+ *   RESCUE WINDOW (E6): while an internal `newton_rescue_remaining` counter is
+ *   positive, outer iteration HEADs are forced through the UNCHANGED SF-15/
+ *   SF-20 Picard/Anderson loop body (Newton activation is suppressed for
+ *   exactly that many iterations, decrementing the counter each time); their
+ *   normal `converged`/`budget_exhausted`/`linear_block_failure`/`stagnated`/
+ *   `omega_floor_rejected` exits resolve exactly as they always have. When
+ *   the counter reaches zero, the NEXT HEAD forces a Newton-phase retry
+ *   unconditionally (reason (c) above), counted once in
+ *   `report.newton_rescue_events`.
+ *
+ *   RESOLUTION: `run_newton_phase` returning `converged` ends the WHOLE solve
+ *   (`status = converged`, `exit_reason = converged`, the SAME
+ *   `config.picard.tolerance` fixed point the Picard loop targets);
+ *   `budget_exhausted` ends the whole solve (`status = not_converged`,
+ *   `exit_reason = newton_budget_exhausted`); `step_failed` on an activation
+ *   that has not yet used its rescue-retry schedules
+ *   `config.newton.rescue_picard_steps` rescue-window iterations (`0` valid,
+ *   forcing an immediate retry) and continues the outer loop; `step_failed` a
+ *   SECOND time for the SAME activation is terminal (`status =
+ *   not_converged`, `exit_reason = newton_exhausted`, the last ACCEPTED state
+ *   unchanged by either failed attempt).
  */
 
 #include "../../numerics/solvers/pcg.cuh"
 #include "../../runtime/CudaContext.cuh"
 #include "Diagnostics.cuh"
+#include "NewtonKrylovSolver.cuh"
 #include "ResidualEvaluator.cuh"
 #include "StreamfunctionTypes.hpp"
 #include "StreamfunctionWorkspace.cuh"
@@ -337,20 +389,18 @@ enum class PicardExitReason {
     linear_block_failure,
     stagnated,
     omega_floor_rejected,
+    // SF-24: terminal Newton-Krylov phase exits (see the file header's SF-24
+    // section and NewtonKrylovSolver.cuh). Both map to status =
+    // not_converged, exactly like every prior not_converged reason above.
+    newton_exhausted,
+    newton_budget_exhausted,
 };
 
-/**
- * The disposition of one SF-15 backtracking trial. See the file header
- * (step 4) for the exact, order-sensitive rejection test each non-`accepted`
- * value corresponds to.
- */
-enum class PicardTrialOutcome {
-    accepted,
-    rejected_nonfinite,
-    rejected_degeneracy,
-    rejected_percentile,
-    rejected_armijo,
-};
+// `PicardTrialOutcome` (the disposition of one SF-15 backtracking trial, and,
+// SF-24, one Newton line-search trial) is defined in `StreamfunctionTypes.hpp`
+// (included via StreamfunctionWorkspace.cuh below), not here -- see that
+// header for the rationale (it must be visible to both this file and
+// `NewtonKrylovSolver.cuh` without either including the other).
 
 /**
  * One recorded SF-15 backtracking trial: which outer iteration it belongs
@@ -446,6 +496,16 @@ struct StreamfunctionSolveReport {
     int anderson_rejected{0};
     int anderson_condition_resets{0};
     std::size_t anderson_history_bytes{0};
+
+    // SF-24 globalized Newton-Krylov; see the file header's SF-24 section and
+    // NewtonKrylovSolver.cuh. All default-zero/empty and untouched whenever
+    // config.newton.enabled == false.
+    std::vector<NewtonIterationRecord> newton_history{};
+    int newton_activations{0};
+    int newton_steps_accepted{0};
+    int newton_step_failures{0};
+    int newton_rescue_events{0};
+    long long newton_jv_evaluations{0};
 };
 
 /**

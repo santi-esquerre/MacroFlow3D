@@ -67,7 +67,36 @@
  * caller-owned `StreamfunctionFields::u1_span()`/`u2_span()` once a trial is
  * accepted. The accepted state in `StreamfunctionFields` is therefore NEVER
  * overwritten during backtracking; only these two scratch fields are
- * mutated while a trial is being evaluated.
+ * mutated while a trial is being evaluated. SF-24's Newton line search
+ * (`NewtonKrylovSolver.cu`) reuses this SAME `u_trial1`/`u_trial2` pair for
+ * its own trials, under the identical "only an accepted trial touches
+ * `StreamfunctionFields`" discipline.
+ *
+ * == SF-24: optional Newton sub-workspace ==
+ *
+ * `StreamfunctionWorkspace` additionally owns an OPTIONAL Newton-Krylov sub-
+ * workspace, allocated ONLY when `config.newton.enabled` at the last
+ * `prepare()` call -- the exact `std::optional` lifecycle SF-20's
+ * `anderson_` already established (disabling deallocates it; an
+ * already-prepared `(n, restart)` pair performs no device allocation;
+ * accessors throw `std::logic_error` when disabled). It bundles:
+ *
+ *   - a `JvpWorkspace` (SF-22) prepared for `n`;
+ *   - a `CoupledGmres` (SF-23) prepared for `(n, config.newton.gmres.restart)`;
+ *   - a `BlockDiagonalMGPreconditioner` (SF-23) constructed over
+ *     `hierarchy()` + `config.mg`. UNLIKE the JVP/GMRES members, this cannot
+ *     be resized in place (it holds an `MGHierarchy*`), so it follows the
+ *     SAME lifecycle rule as `mg_preconditioner_` below: it is (re)constructed
+ *     whenever the MG hierarchy itself is (re)constructed (grid or
+ *     `config.mg` change), AND whenever the Newton sub-workspace is newly
+ *     created (`config.newton.enabled` transitioning from `false` to `true`
+ *     against an already-current hierarchy);
+ *   - two dedicated `n`-sized delta buffers (`newton_delta1()`/
+ *     `newton_delta2()`), the GMRES solve's output `delta = M^-1 u` for the
+ *     Newton line search to read from.
+ *
+ * No allocation occurs in the Newton solve path after `prepare()` (see
+ * `NewtonKrylovSolver.cuh`).
  */
 
 #include "../../core/DeviceBuffer.cuh"
@@ -78,7 +107,10 @@
 #include "../../numerics/solvers/pcg.cuh"
 #include "../../numerics/solvers/projected_positive_mg_preconditioner.cuh"
 #include "AndersonAccelerator.cuh"
+#include "BlockDiagonalMGPreconditioner.cuh"
+#include "CoupledGmres.cuh"
 #include "Diagnostics.cuh"
+#include "JacobianVectorProduct.cuh"
 #include "ResidualEvaluator.cuh"
 #include "StreamfunctionTypes.hpp"
 #include "affine_gauge.cuh"
@@ -230,6 +262,17 @@ class StreamfunctionWorkspace {
     [[nodiscard]] AndersonAccelerator& anderson();
     [[nodiscard]] bool anderson_enabled() const noexcept;
 
+    // SF-24: non-null only when this workspace was last prepare()'d with
+    // config.newton.enabled == true (allocated ONLY in that case; see the
+    // file header). Each throws std::logic_error if called while disabled
+    // (mirroring anderson()'s failure mode).
+    [[nodiscard]] JvpWorkspace& newton_jvp();
+    [[nodiscard]] CoupledGmres& newton_gmres();
+    [[nodiscard]] BlockDiagonalMGPreconditioner& newton_preconditioner();
+    [[nodiscard]] DeviceSpan<real> newton_delta1();
+    [[nodiscard]] DeviceSpan<real> newton_delta2();
+    [[nodiscard]] bool newton_enabled() const noexcept;
+
     // Exact sum of every owned DeviceBuffer capacity across this workspace
     // and every sub-workspace/hierarchy/preconditioner it owns, in bytes.
     // Never allocates.
@@ -270,6 +313,18 @@ class StreamfunctionWorkspace {
     // SF-20: optional, allocated only when config.anderson.enabled (see the
     // file header and AndersonAccelerator.cuh).
     std::optional<AndersonAccelerator> anderson_;
+
+    // SF-24: bundles the optional Newton-Krylov sub-workspace (see the file
+    // header). BlockDiagonalMGPreconditioner is not default-constructible
+    // (it binds to *mg_hierarchy_), hence its own nested optional.
+    struct NewtonSubWorkspace {
+        JvpWorkspace jvp;
+        CoupledGmres gmres;
+        std::optional<BlockDiagonalMGPreconditioner> preconditioner;
+        DeviceBuffer<real> delta1;
+        DeviceBuffer<real> delta2;
+    };
+    std::optional<NewtonSubWorkspace> newton_;
 
     Grid3D prepared_grid_{};
     multigrid::MGConfig prepared_mg_config_{};
