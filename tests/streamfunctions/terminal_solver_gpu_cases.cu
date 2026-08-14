@@ -1433,11 +1433,18 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
 // resolution-per-correlation-length (ell/h) effect: R1a doubles ell/h to 16
 // (the paper's own resolution) at the 32^3 fixture's domain ratio (L/ell=4);
 // R1b (control) keeps ell/h=8 at the new grid size (L/ell=8), isolating
-// ell/h from grid size and domain ratio. This case is an ALWAYS-PASS
-// evidence recorder -- the printed "R1 joint-verdict" line is evidence for
-// the orchestrator/owner's resolution-surface decision, NOT a pass/fail
-// test gate (per the owner-approved experiment design, bitácora
-// 2026-08-14T15:20Z).
+// ell/h from grid size and domain ratio. SF-25 C06 adds the PRESPECIFIED
+// deconfounding run R2 (bitácora 2026-08-14T15:55Z): the R1 run showed
+// BOTH R1a/R1b dying of premature adaptive-omega collapse mid-descent
+// (never reaching the 32^3 shelf phenomenology), confounding the readout;
+// R2a/R2b rerun the SAME two problems with `newton.enabled = true` (SF-24
+// defaults) -- the accepted stack as designed, whose activation threshold
+// and rescue machinery are the designed answer to globalizer stalls. This
+// case is an ALWAYS-PASS evidence recorder -- the printed "R1 joint-verdict"
+// and "R2 joint-verdict" lines are evidence for the orchestrator/owner's
+// resolution-surface decision, NOT a pass/fail test gate (per the
+// owner-approved experiment design, bitácora 2026-08-14T15:20Z, extended by
+// the R2 decision at 2026-08-14T15:55Z).
 // ---------------------------------------------------------------------------
 
 struct ResolutionProbeResult {
@@ -1445,13 +1452,19 @@ struct ResolutionProbeResult {
     double r_F{std::numeric_limits<double>::quiet_NaN()};
 };
 
-// Shared helper for R1a/R1b: a single DIRECT zero-source 64^3 solve at the
-// critical amplitude 0.5125*Y_unit, sigma_Y^2=1, seed 12345, the requested
-// correlation length `ell`. Mirrors the E2/E8 per-lambda setup (Y scale,
-// K=exp(Y), SF-19 affine flow solve, log_conductivity_y problem view,
-// benchmark(1) gauge) but with NO continuation: a fresh field/flow/fields/
-// workspace pair per call, exactly as R1 specifies.
-[[nodiscard]] ResolutionProbeResult run_resolution_probe_solve(const char* label, int n, real ell) {
+// Shared helper for R1a/R1b/R2a/R2b: a single DIRECT zero-source 64^3 solve
+// at the critical amplitude 0.5125*Y_unit, sigma_Y^2=1, seed 12345, the
+// requested correlation length `ell`. Mirrors the E2/E8 per-lambda setup (Y
+// scale, K=exp(Y), SF-19 affine flow solve, log_conductivity_y problem
+// view, benchmark(1) gauge) but with NO continuation: a fresh
+// field/flow/fields/workspace pair per call, exactly as R1 specifies. SF-25
+// C06 (bitácora 2026-08-14T15:55Z, deconfounding run R2): `enable_newton`
+// threads `config.newton.enabled` -- SF-24 defaults otherwise (newton
+// requires `adaptive.enabled`, which is the solver default `true`); `label`
+// is printed verbatim as the line prefix (e.g. "R1a"/"R2a") so the R1 and
+// R2 sub-runs are distinguishable in the raw log.
+[[nodiscard]] ResolutionProbeResult run_resolution_probe_solve(const char* label, int n, real ell,
+                                                                bool enable_newton) {
     std::cout << std::setprecision(17);
 
     const Grid3D grid(n, n, n, real{1}, real{1}, real{1}); // dx=1, per the R1 spec.
@@ -1506,6 +1519,7 @@ struct ResolutionProbeResult {
     config.initial_state = PicardInitialState::zero_source; // default; explicit -- the R1 spec.
     config.coefficient_state = CoefficientState::rebuild;   // default; explicit.
     config.picard.max_iter = 500;
+    config.newton.enabled = enable_newton; // SF-25 C06 (R2): SF-24 defaults otherwise.
 
     StreamfunctionFields fields;
     StreamfunctionWorkspace workspace;
@@ -1521,20 +1535,24 @@ struct ResolutionProbeResult {
     const double domain_length = static_cast<double>(n) * static_cast<double>(grid.dx);
     const double l_over_ell = domain_length / static_cast<double>(ell);
 
-    std::cout << "R1" << label << " n=" << n << " ell=" << static_cast<double>(ell)
+    std::cout << label << " n=" << n << " ell=" << static_cast<double>(ell)
               << " ell_over_h=" << ell_over_h << " L_over_ell=" << l_over_ell
               << " field_final_variance=" << field_report.final_variance
               << " status=" << solve_status_label(report.status)
               << " exit_reason=" << exit_reason_label(report.exit_reason)
               << " picard_iterations=" << report.picard_iterations << " r_F=" << report.residual.r_F
               << " anderson_acc=" << report.anderson_accepted << " anderson_rej=" << report.anderson_rejected
-              << " wall_seconds=" << wall_seconds << '\n';
+              << " wall_seconds=" << wall_seconds << " newton=" << (enable_newton ? 1 : 0)
+              << " newton_act=" << report.newton_activations
+              << " newton_acc=" << report.newton_steps_accepted
+              << " newton_fail=" << report.newton_step_failures
+              << " newton_rescue=" << report.newton_rescue_events << '\n';
 
     if (!report.picard_history.empty()) {
-        std::cout << "R1" << label << " r_F_history first=" << report.picard_history.front().r_F
+        std::cout << label << " r_F_history first=" << report.picard_history.front().r_F
                   << " last=" << report.picard_history.back().r_F << '\n';
     } else {
-        std::cout << "R1" << label << " r_F_history first=n/a last=n/a\n";
+        std::cout << label << " r_F_history first=n/a last=n/a\n";
     }
 
     return {report.status, static_cast<double>(report.residual.r_F)};
@@ -1544,11 +1562,21 @@ struct ResolutionProbeResult {
     std::cout << std::setprecision(17);
 
     // R1a: 64^3, ell=16 (ell/h=16, L/ell=4 -- the paper's own ell/h at the
-    // 32^3 fixture's domain ratio).
-    const ResolutionProbeResult r1a = run_resolution_probe_solve("a", 64, real{16});
+    // 32^3 fixture's domain ratio). newton disabled -- the R1 spec.
+    const ResolutionProbeResult r1a = run_resolution_probe_solve("R1a", 64, real{16}, /*enable_newton=*/false);
     // R1b (control): 64^3, ell=8 (ell/h=8, L/ell=8 -- the OLD ell/h at the
-    // new grid size, isolating ell/h from grid size/domain ratio).
-    const ResolutionProbeResult r1b = run_resolution_probe_solve("b", 64, real{8});
+    // new grid size, isolating ell/h from grid size/domain ratio). newton
+    // disabled -- the R1 spec.
+    const ResolutionProbeResult r1b = run_resolution_probe_solve("R1b", 64, real{8}, /*enable_newton=*/false);
+
+    // SF-25 C06 (bitácora 2026-08-14T15:55Z): PRESPECIFIED deconfounding run
+    // R2 -- the SAME two problems with `newton.enabled = true` (SF-24
+    // defaults), the accepted stack as designed, whose threshold activation
+    // (r_F<=1e-2) fires exactly where R1a's omega-floor collapse died
+    // (9.1e-3) and whose stagnation-redirect/rescue machinery is the
+    // designed answer to globalizer stalls.
+    const ResolutionProbeResult r2a = run_resolution_probe_solve("R2a", 64, real{16}, /*enable_newton=*/true);
+    const ResolutionProbeResult r2b = run_resolution_probe_solve("R2b", 64, real{8}, /*enable_newton=*/true);
 
     const bool r1a_confirming =
         r1a.status == StreamfunctionSolveStatus::converged && r1a.r_F <= 1e-6;
@@ -1572,8 +1600,25 @@ struct ResolutionProbeResult {
               << " r1a_r_F=" << r1a.r_F << " r1b_status=" << solve_status_label(r1b.status)
               << " r1b_r_F=" << r1b.r_F << ")\n";
 
+    // SF-25 C06 (bitácora 2026-08-14T15:55Z): PRESPECIFIED R2 joint-verdict,
+    // deconfounding the R1 readout with the full accepted stack
+    // (newton.enabled = true, SF-24 defaults).
+    const bool r2a_confirming = r2a.status == StreamfunctionSolveStatus::converged && r2a.r_F <= 1e-6;
+    const bool r2a_wall = r2a.status != StreamfunctionSolveStatus::converged && r2a.r_F >= 1e-4 && r2a.r_F <= 1e-2;
+    const char* r2_verdict;
+    if (r2a_confirming) {
+        r2_verdict = "RESOLUTION_CONFIRMED_VIA_STACK";
+    } else if (r2a_wall) {
+        r2_verdict = "WALL_AT_ELLH16";
+    } else {
+        r2_verdict = "INCONCLUSIVE";
+    }
+    std::cout << "R2 joint-verdict: " << r2_verdict << " (raw: r2a_status=" << solve_status_label(r2a.status)
+              << " r2a_r_F=" << r2a.r_F << ") | R2b: " << solve_status_label(r2b.status) << "/" << r2b.r_F
+              << '\n';
+
     std::cout << "case=terminal_resolution_probe verdict=PASS (always-pass evidence recorder; the "
-                 "printed R1 joint-verdict line above is evidence for the owner/orchestrator "
+                 "printed R1/R2 joint-verdict lines above are evidence for the owner/orchestrator "
                  "resolution-surface decision, not a test gate)\n";
 
     std::ostringstream detail;
@@ -1581,9 +1626,13 @@ struct ResolutionProbeResult {
               "both sigma_Y^2=1, seed=12345, normalize_variance, amplitude 0.5125*Y_unit, eta=1, "
               "epsilon=1e-2, zero_source init, coefficient rebuild, anderson R5 (depth 5, start 5, "
               "limit 1e12), newton disabled, picard.max_iter=500, SF-19 affine flow qbar=(1,0,0); "
-              "owner-approved experiment R1 (bitácora 2026-08-14T15:20Z), always-pass evidence "
-              "recorder -- the reported verdict is evidence for the orchestrator/owner, not a test "
-              "gate";
+              "owner-approved experiment R1 (bitácora 2026-08-14T15:20Z); PLUS the PRESPECIFIED "
+              "deconfounding run R2 (bitácora 2026-08-14T15:55Z): the SAME two problems with "
+              "newton.enabled=true (SF-24 defaults, the accepted stack as designed), rerun because "
+              "R1a/R1b both died of premature adaptive-omega collapse mid-descent "
+              "(omega_floor_rejected at r_F 9.1e-3 / 2.6e-2) rather than exhibiting the 32^3 shelf "
+              "phenomenology; always-pass evidence recorder -- the reported verdicts are evidence "
+              "for the orchestrator/owner, not a test gate";
 
     return {true,
             "terminal_resolution_probe",
@@ -1592,11 +1641,13 @@ struct ResolutionProbeResult {
             r1a.r_F,
             r1b.r_F,
             verdict,
-            "always pass (evidence recorder; see the printed R1 joint-verdict line)",
-            "owner-approved experiment R1 (bitácora 2026-08-14T15:20Z): PRESPECIFIED R1a/R1b "
-            "resolution-discriminating probe, print-only, no pass/fail assertion -- the case "
-            "ALWAYS returns pass=true because it is an evidence recorder for the owner's "
-            "resolution-surface decision, not a D-gate-style test gate"};
+            "always pass (evidence recorder; see the printed R1/R2 joint-verdict lines)",
+            "owner-approved experiment R1 (bitácora 2026-08-14T15:20Z) PLUS the PRESPECIFIED "
+            "deconfounding run R2 (bitácora 2026-08-14T15:55Z): R1a/R1b (newton disabled) then "
+            "R2a/R2b (newton enabled, SF-24 defaults, the accepted stack as designed) at the SAME "
+            "two problems, print-only, no pass/fail assertion -- the case ALWAYS returns pass=true "
+            "because it is an evidence recorder for the owner's resolution-surface decision, not a "
+            "D-gate-style test gate"};
 }
 
 } // namespace
