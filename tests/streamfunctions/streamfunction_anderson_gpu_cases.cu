@@ -704,6 +704,12 @@ template <typename Callable>
         config.anderson.condition_limit = real{1};
         validate_streamfunction_problem(base_grid, base_problem, config);
     });
+    // SF-25 Phase-1 (S2-c): max_restarts >= 0, validated unconditionally.
+    require_invalid("anderson_max_restarts_negative", [&] {
+        auto config = base_config;
+        config.anderson.max_restarts = -1;
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
 
     require_ok("anderson_all_defaults_valid",
               [&] { validate_streamfunction_problem(base_grid, base_problem, base_config); });
@@ -720,16 +726,26 @@ template <typename Callable>
         config.anderson.depth = 8;
         validate_streamfunction_problem(base_grid, base_problem, config);
     });
+    require_ok("anderson_max_restarts_zero_valid_disabled", [&] {
+        auto config = base_config;
+        config.anderson.restart_on_stagnation = false;
+        config.anderson.max_restarts = 0;
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
 
     // Distinct-message check: the depth violation shares one message across
     // both boundary cases (depth 2 and depth 9), but that message must be
-    // distinct from the start_iteration and condition_limit messages.
-    bool distinct_messages = messages.size() == 4;
+    // distinct from the start_iteration, condition_limit, and (SF-25)
+    // max_restarts messages.
+    bool distinct_messages = messages.size() == 5;
     if (distinct_messages) {
         distinct_messages = distinct_messages && messages[0] == messages[1]; // depth_2 == depth_9
         distinct_messages = distinct_messages && messages[0] != messages[2]; // depth != start_iteration
         distinct_messages = distinct_messages && messages[0] != messages[3]; // depth != condition_limit
+        distinct_messages = distinct_messages && messages[0] != messages[4]; // depth != max_restarts
         distinct_messages = distinct_messages && messages[2] != messages[3]; // start_iteration != condition_limit
+        distinct_messages = distinct_messages && messages[2] != messages[4]; // start_iteration != max_restarts
+        distinct_messages = distinct_messages && messages[3] != messages[4]; // condition_limit != max_restarts
     }
     pass = pass && distinct_messages;
 
@@ -747,8 +763,9 @@ template <typename Callable>
             pass ? "all pass" : "some failed",
             "validate_streamfunction_problem throws std::invalid_argument, with a message "
             "distinct per violated field, for anderson.depth outside [3,8], "
-            "anderson.start_iteration<1, and anderson.condition_limit<=1; validated regardless "
-            "of anderson.enabled"};
+            "anderson.start_iteration<1, anderson.condition_limit<=1, and (SF-25) "
+            "anderson.max_restarts<0; validated regardless of anderson.enabled/"
+            "restart_on_stagnation"};
 }
 
 // ===========================================================================
@@ -1261,6 +1278,128 @@ void anderson_stall_device_exp(CudaContext& ctx, DeviceSpan<const real> in, Devi
             "depth-5 Anderson-accelerated gate must converge on the SAME fixed-point map"};
 }
 
+// ===========================================================================
+// (f) anderson_stagnation_restart -- SF-25 Phase-1 (S2-c) ON-path evidence.
+// ===========================================================================
+//
+// Reuses the SAME deterministic 16^3 (amplitude 0.25) manufactured fixture,
+// unreachable tolerance, and 99%-per-window stagnation trigger as
+// `streamfunction_picard_adaptive_gpu_cases.cu`'s `case_picard_adaptive_
+// stagnation` (an unreachable `picard.tolerance` plus a stagnation_min_
+// reduction so strict this problem's own ~92%-per-window reduction cannot
+// satisfy it forces a deterministic `stagnated` exit at exactly outer
+// iteration `stagnation_window`). `config.anderson.enabled = true` with
+// `start_iteration` set far beyond the stagnation point means Anderson's
+// history maintenance runs (harmlessly -- it never mutates
+// `fields.u1_span()`/`u2_span()`) but its attempt gate never fires before
+// the stagnation point, so the BASELINE (`restart_on_stagnation = false`)
+// trajectory is bitwise-identical to the disabled-Anderson stagnation case:
+// it stagnates at exactly `stagnation_window`. The RESTART arm (`restart_on_
+// stagnation = true`) must instead intercept that exact stagnation, count
+// it, and continue past it.
+[[nodiscard]] CaseResult case_anderson_stagnation_restart() {
+    constexpr int n = 16;
+    constexpr double amplitude = 0.25;
+    const Grid3D grid = isotropic_grid(n);
+
+    StreamfunctionSolverConfig base_config{};
+    base_config.picard.tolerance = real{1e-30};
+    base_config.adaptive.stagnation_min_reduction = real{0.99};
+    base_config.anderson.enabled = true;
+    base_config.anderson.depth = 5;
+    base_config.anderson.start_iteration = 1000; // never reached before stagnation.
+    base_config.anderson.condition_limit = real{1e12};
+
+    // --- Baseline: restart_on_stagnation = false (bitwise SF-15/SF-20
+    //     stagnation exit, exactly as picard_adaptive_stagnation). -----------
+    StreamfunctionSolverConfig baseline_config = base_config;
+    baseline_config.anderson.restart_on_stagnation = false;
+
+    CudaContext ctx_base(0);
+    ManufacturedProblemBuffers buffers_base(grid, amplitude);
+    const StreamfunctionProblemView problem_base = manufactured_problem_view(grid, buffers_base);
+    StreamfunctionFields fields_base;
+    StreamfunctionWorkspace workspace_base;
+    const StreamfunctionSolveReport baseline_report =
+        solve_streamfunctions(ctx_base, problem_base, baseline_config, fields_base, workspace_base);
+    ctx_base.synchronize();
+
+    // --- Restart arm: restart_on_stagnation = true, max_restarts = 2. ------
+    StreamfunctionSolverConfig restart_config = base_config;
+    restart_config.anderson.restart_on_stagnation = true;
+    restart_config.anderson.max_restarts = 2;
+
+    CudaContext ctx_restart(0);
+    ManufacturedProblemBuffers buffers_restart(grid, amplitude);
+    const StreamfunctionProblemView problem_restart =
+        manufactured_problem_view(grid, buffers_restart);
+    StreamfunctionFields fields_restart;
+    StreamfunctionWorkspace workspace_restart;
+    const StreamfunctionSolveReport restart_report = solve_streamfunctions(
+        ctx_restart, problem_restart, restart_config, fields_restart, workspace_restart);
+    ctx_restart.synchronize();
+
+    bool pass = true;
+    std::vector<std::pair<std::string, bool>> checks;
+    const auto add_check = [&](const char* name, bool ok) {
+        checks.emplace_back(name, ok);
+        pass = pass && ok;
+    };
+
+    add_check("baseline_stagnated_at_window",
+              baseline_config.anderson.enabled &&
+                  baseline_report.exit_reason == PicardExitReason::stagnated &&
+                  baseline_report.picard_iterations ==
+                      baseline_config.adaptive.stagnation_window);
+    add_check("baseline_anderson_stagnation_restarts_zero",
+              baseline_report.anderson_stagnation_restarts == 0);
+
+    add_check("restart_stagnation_restarts_ge_1", restart_report.anderson_stagnation_restarts >= 1);
+    add_check("restart_continued_past_first_stagnation",
+              restart_report.picard_iterations > baseline_report.picard_iterations);
+    add_check("restart_capped_by_max_restarts",
+              restart_report.anderson_stagnation_restarts <= restart_config.anderson.max_restarts);
+
+    std::cout << std::setprecision(17) << "anderson_stagnation_restart N=" << n << " a=" << amplitude
+              << '\n'
+              << "  baseline (restart_on_stagnation=false): status="
+              << status_label(baseline_report.status)
+              << " exit_reason=" << exit_reason_label(baseline_report.exit_reason)
+              << " picard_iterations=" << baseline_report.picard_iterations
+              << " anderson_stagnation_restarts=" << baseline_report.anderson_stagnation_restarts
+              << '\n'
+              << "  restart (restart_on_stagnation=true, max_restarts=2): status="
+              << status_label(restart_report.status)
+              << " exit_reason=" << exit_reason_label(restart_report.exit_reason)
+              << " picard_iterations=" << restart_report.picard_iterations
+              << " anderson_stagnation_restarts=" << restart_report.anderson_stagnation_restarts
+              << '\n';
+    for (const auto& [name, ok] : checks) {
+        std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    }
+
+    std::ostringstream detail;
+    detail << n << "^3, K=exp(" << amplitude
+           << "*sin(2pi x)sin(2pi y)sin(2pi z)), benchmark gauge, uniform Darcy v=(1,0,0), "
+              "picard.tolerance=1e-30, adaptive.stagnation_min_reduction=0.99, anderson enabled "
+              "(depth=5, start_iteration=1000 so it never intervenes before the stagnation point)";
+
+    return {pass,
+            "anderson_stagnation_restart",
+            "gpu-anderson-stagnation-restart",
+            detail.str(),
+            static_cast<double>(baseline_report.picard_iterations),
+            static_cast<double>(restart_report.picard_iterations),
+            "baseline stagnates at stagnation_window; restart arm counts >=1 restart and "
+            "continues past it",
+            pass ? "all pass" : "some failed",
+            "SF-25 Phase-1 (S2-c): reuses the picard_adaptive_stagnation deterministic-stagnation "
+            "fixture verbatim; restart_on_stagnation=false is bitwise-identical to the pre-SF-25 "
+            "stagnated exit (Anderson's start_iteration=1000 keeps it from ever intervening "
+            "before iteration stagnation_window), while restart_on_stagnation=true intercepts "
+            "that same stagnation, resets omega/history, and continues iterating"};
+}
+
 [[nodiscard]] CaseResult case_anderson_stall_fixture_a() {
     return run_anderson_stall_fixture("anderson_stall_fixture_a", 1.0, 0.1125);
 }
@@ -1277,7 +1416,8 @@ CaseRegistry anderson_case_registry() {
             {"anderson_memory_bytes", case_anderson_memory_bytes},
             {"anderson_config_validation", case_anderson_config_validation},
             {"anderson_condition_reset_control", case_anderson_condition_reset_control},
-            {"anderson_form_candidate_unit", case_anderson_form_candidate_unit}};
+            {"anderson_form_candidate_unit", case_anderson_form_candidate_unit},
+            {"anderson_stagnation_restart", case_anderson_stagnation_restart}};
 }
 
 CaseRegistry anderson_stall_case_registry() {

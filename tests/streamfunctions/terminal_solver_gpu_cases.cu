@@ -1558,6 +1558,148 @@ struct ResolutionProbeResult {
     return {report.status, static_cast<double>(report.residual.r_F)};
 }
 
+// ===========================================================================
+// SF-25 Phase-1 (S2-b) ON-path evidence: terminal_floor_guard_continuation.
+//
+// Reuses the SAME R1a fixture (bitácora 2026-08-14T15:55Z, D-gate run
+// `sf25-resprobe`): 64^3, dx=1, ell=16 (ell/h=16, L/ell=4, the paper's own
+// resolution-per-correlation-length), sigma_Y^2=1, seed=12345,
+// normalize_variance, amplitude 0.5125*Y_unit, eta=1, epsilon=1e-2,
+// zero_source init, anderson R5 (depth 5, start 5, limit 1e12), newton
+// disabled, adaptive defaults, picard.max_iter=500 -- the EXACT, bitwise-
+// reproducible (four independent D-gate reruns) configuration documented to
+// die `omega_floor_rejected` at k=21, r_F=9.075e-3, with the trajectory
+// "STILL DESCENDING healthily" (0.263 -> 9.1e-3 over the 21 accepted
+// iterations, an ~29x reduction -- far exceeding any plausible
+// drop_factor=0.9-over-5-iterations floor). This is real, previously
+// measured phenomenology (premature adaptive-omega collapse mid-descent),
+// not a forced/synthetic mechanism, making it the PRESPECIFIED-fallback
+// exemplar for the floor_guard ON-path condition ("a small problem that is
+// steadily descending when the first rejection occurs").
+// ===========================================================================
+
+[[nodiscard]] CaseResult case_terminal_floor_guard_continuation() {
+    std::cout << std::setprecision(17);
+
+    constexpr int n = 64;
+    const Grid3D grid(n, n, n, real{1}, real{1}, real{1}); // dx=1, per the R1 spec.
+    const std::size_t cells = grid.num_cells();
+    CudaContext ctx(0);
+
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{1};
+    field_config.corr_length = real{16}; // ell/h=16, the R1a resolution.
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    DeviceBuffer<real> y(cells);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    (void)physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(),
+                                                     field_workspace);
+    ctx.synchronize();
+
+    // Scale by the critical amplitude 0.5125 (the SF-25 D-gate frozen
+    // amplitude that shelves at 32^3, ell/h=8, and premature-omega-collapses
+    // at 64^3, ell/h=16 -- R1a, bitácora 2026-08-14T15:55Z).
+    blas::scal(ctx, y.span(), real{0.5125});
+
+    DeviceBuffer<real> k(cells);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y.span()), k.span());
+
+    const std::size_t u_size = compact_mac_u_size(grid);
+    const std::size_t v_size = compact_mac_v_size(grid);
+    const std::size_t w_size = compact_mac_w_size(grid);
+    DeviceBuffer<real> flow_u(u_size), flow_v(v_size), flow_w(w_size);
+    physics::AffinePeriodicFlowWorkspace flow_workspace;
+    physics::AffinePeriodicVelocityView velocity{flow_u.span(), flow_v.span(), flow_w.span()};
+    const physics::AffinePeriodicFlowConfig flow_config{}; // qbar=(1,0,0) default.
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k.span()),
+                                               flow_config, velocity, flow_workspace);
+    ctx.synchronize();
+
+    StreamfunctionProblemView problem_view;
+    problem_view.grid = grid;
+    problem_view.conductivity = DeviceSpan<const real>(y.span());
+    problem_view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    problem_view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u.span()),
+                                                               DeviceSpan<const real>(flow_v.span()),
+                                                               DeviceSpan<const real>(flow_w.span())};
+    problem_view.bc = triply_periodic();
+    problem_view.gauge = AffineGauge::benchmark(real{1});
+
+    StreamfunctionSolverConfig config{}; // full defaults (eta=1, epsilon=1e-2, newton disabled).
+    config.anderson.enabled = true;
+    config.anderson.depth = 5;
+    config.anderson.start_iteration = 5;
+    config.anderson.condition_limit = real{1e12};
+    config.initial_state = PicardInitialState::zero_source; // default; explicit -- the R1 spec.
+    config.coefficient_state = CoefficientState::rebuild;   // default; explicit.
+    config.picard.max_iter = 500;
+    // SF-25 Phase-1 (S2-b): the floor guard under test. window=5,
+    // drop_factor=0.9 are the documented defaults; max_resets=1 is enough to
+    // demonstrate continuation past the first (R1a-documented) floor hit
+    // without masking a genuine terminal state indefinitely.
+    config.adaptive.floor_guard.enabled = true;
+    config.adaptive.floor_guard.window = 5;
+    config.adaptive.floor_guard.drop_factor = real{0.9};
+    config.adaptive.floor_guard.max_resets = 1;
+
+    StreamfunctionFields fields;
+    StreamfunctionWorkspace workspace;
+    const StreamfunctionSolveReport report =
+        solve_streamfunctions(ctx, problem_view, config, fields, workspace);
+    ctx.synchronize();
+
+    bool pass = true;
+    std::vector<std::pair<std::string, bool>> checks;
+    const auto add_check = [&](const char* name, bool ok) {
+        checks.emplace_back(name, ok);
+        pass = pass && ok;
+    };
+
+    // The R1a-documented first floor hit is at k=21; the guard must have
+    // intercepted at least once, and the solve must have continued strictly
+    // past that point (more outer iterations than the un-guarded R1a run).
+    add_check("omega_floor_guard_resets_ge_1", report.omega_floor_guard_resets >= 1);
+    add_check("omega_floor_guard_resets_le_max_resets",
+              report.omega_floor_guard_resets <= config.adaptive.floor_guard.max_resets);
+    add_check("continued_past_r1a_first_floor_hit", report.picard_iterations > 21);
+
+    std::cout << "terminal_floor_guard_continuation n=" << n << " ell=16 status="
+              << solve_status_label(report.status)
+              << " exit_reason=" << exit_reason_label(report.exit_reason)
+              << " picard_iterations=" << report.picard_iterations << " r_F=" << report.residual.r_F
+              << " omega_floor_guard_resets=" << report.omega_floor_guard_resets
+              << " anderson_acc=" << report.anderson_accepted
+              << " anderson_rej=" << report.anderson_rejected << '\n';
+    for (const auto& [name, ok] : checks) {
+        std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    }
+
+    std::ostringstream detail;
+    detail << "64^3 ell=16 (ell/h=16, L/ell=4), sigma_Y^2=1, seed=12345, normalize_variance, "
+              "amplitude 0.5125*Y_unit, eta=1, epsilon=1e-2, zero_source init, coefficient "
+              "rebuild, anderson R5 (depth 5, start 5, limit 1e12), newton disabled, "
+              "picard.max_iter=500, SF-19 affine flow qbar=(1,0,0) -- the R1a fixture (bitácora "
+              "2026-08-14T15:55Z), plus adaptive.floor_guard (window=5, drop_factor=0.9, "
+              "max_resets=1)";
+
+    return {pass,
+            "terminal_floor_guard_continuation",
+            "gpu-terminal-floor-guard-continuation",
+            detail.str(),
+            static_cast<double>(report.omega_floor_guard_resets),
+            static_cast<double>(report.picard_iterations),
+            "omega_floor_guard_resets>=1, picard_iterations>21 (past R1a's documented first floor "
+            "hit at k=21)",
+            pass ? "all pass" : "some failed",
+            "SF-25 Phase-1 (S2-b): the R1a fixture is documented (bitácora 2026-08-14T15:55Z, four "
+            "bitwise-reproduced D-gate reruns) to die omega_floor_rejected at k=21 while the "
+            "residual is still descending healthily (0.263->9.1e-3, ~29x over 21 iterations, far "
+            "exceeding a 10%-per-5-iterations requirement); with the floor guard enabled, that "
+            "same rejection is intercepted, omega is reset, and the solve continues past k=21"};
+}
+
 [[nodiscard]] CaseResult case_terminal_resolution_probe() {
     std::cout << std::setprecision(17);
 
@@ -1658,7 +1800,8 @@ CaseRegistry terminal_solver_case_registry() {
 
 CaseRegistry terminal_solver_dgate_case_registry() {
     return {{"terminal_dgate_diagnostic", case_terminal_dgate_diagnostic},
-            {"terminal_resolution_probe", case_terminal_resolution_probe}};
+            {"terminal_resolution_probe", case_terminal_resolution_probe},
+            {"terminal_floor_guard_continuation", case_terminal_floor_guard_continuation}};
 }
 
 } // namespace macroflow3d::streamfunctions::test

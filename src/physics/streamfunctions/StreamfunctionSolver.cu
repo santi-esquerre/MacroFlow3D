@@ -307,6 +307,12 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
         real omega = config.picard.omega;
         int easy_streak_count = 0;
 
+        // SF-25 Phase-1 (S2-b/S2-c) hygiene state, entirely inert (never
+        // read in a way that changes behavior) unless the corresponding
+        // config flag is enabled.
+        int floor_guard_last_reset_k = 0;
+        int stagnation_baseline_k = 0;
+
         // SF-24: globalized Newton-Krylov activation/rescue/retry state
         // (see StreamfunctionSolver.cuh's SF-24 section and
         // NewtonKrylovSolver.cuh). Entirely inert when config.newton.enabled
@@ -442,6 +448,15 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
                 if (!newton_activation_used_rescue) {
                     newton_activation_used_rescue = true;
                     newton_rescue_remaining = config.newton.rescue_picard_steps;
+                    // SF-25 Phase-1 (S2-a): on entry to the rescue window,
+                    // reset the persistent adaptive omega to its solve-start
+                    // initial value, so the rescue window's Picard/Anderson
+                    // trials are not doomed to reject at a collapsed omega.
+                    // Inert (bitwise-preserving) when disabled.
+                    if (config.newton.rescue_resets_omega) {
+                        omega = config.picard.omega;
+                        ++report.newton_rescue_omega_resets;
+                    }
                     if (newton_rescue_remaining == 0) {
                         // Degenerate rescue window (0 configured advances):
                         // retry immediately at the very next HEAD.
@@ -455,17 +470,33 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
                 break;
             }
 
-            if (k >= config.adaptive.stagnation_window) {
+            if (k - stagnation_baseline_k >= config.adaptive.stagnation_window) {
                 const real r_F_window_start =
                     report.picard_history[static_cast<std::size_t>(
                                                k - config.adaptive.stagnation_window)]
                         .r_F;
                 if (r_F_k > (real{1} - config.adaptive.stagnation_min_reduction) *
                                 r_F_window_start) {
-                    report.status = StreamfunctionSolveStatus::not_converged;
-                    report.exit_reason = PicardExitReason::stagnated;
-                    report.picard_iterations = k;
-                    break;
+                    // SF-25 Phase-1 (S2-c): intercept a would-be `stagnated`
+                    // exit when Anderson stagnation-restart hygiene is
+                    // enabled and restarts remain. Inert (bitwise-
+                    // preserving) when disabled.
+                    if (config.anderson.enabled && config.anderson.restart_on_stagnation &&
+                        report.anderson_stagnation_restarts < config.anderson.max_restarts) {
+                        workspace.anderson().clear();
+                        omega = config.picard.omega;
+                        // Reset the stagnation-window baseline so the SAME
+                        // window cannot immediately re-fire at k+1; the next
+                        // check requires stagnation_window NEW accepted
+                        // iterations past this point.
+                        stagnation_baseline_k = k + 1;
+                        ++report.anderson_stagnation_restarts;
+                    } else {
+                        report.status = StreamfunctionSolveStatus::not_converged;
+                        report.exit_reason = PicardExitReason::stagnated;
+                        report.picard_iterations = k;
+                        break;
+                    }
                 }
             }
 
@@ -749,6 +780,25 @@ StreamfunctionSolveReport solve_streamfunctions(CudaContext& context,
                 } else {
                     ++backtracks;
                     if (omega_try <= config.adaptive.omega_min) {
+                        // SF-25 Phase-1 (S2-b): intercept a would-be
+                        // omega_floor_rejected exit when the omega-floor
+                        // guard is enabled, still has resets available, and
+                        // the accepted-iteration residual history proves the
+                        // solve is still descending healthily. Inert
+                        // (bitwise-preserving) when disabled.
+                        if (config.adaptive.floor_guard.enabled &&
+                            report.omega_floor_guard_resets < config.adaptive.floor_guard.max_resets &&
+                            k - floor_guard_last_reset_k >= config.adaptive.floor_guard.window) {
+                            const int window = config.adaptive.floor_guard.window;
+                            const real r_F_window_start =
+                                report.picard_history[static_cast<std::size_t>(k - window)].r_F;
+                            if (r_F_k <= config.adaptive.floor_guard.drop_factor * r_F_window_start) {
+                                omega = config.picard.omega;
+                                floor_guard_last_reset_k = k;
+                                ++report.omega_floor_guard_resets;
+                                break;
+                            }
+                        }
                         // The rejected trial was already at the floor: a
                         // structured failure, not a silently-accepted step.
                         // fields.u1_span()/u2_span() remain exactly the last
