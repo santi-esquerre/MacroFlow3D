@@ -1,10 +1,10 @@
-# SF-29 — Mixed-precision preconditioner study
+# SF-30 — Mixed-precision preconditioner study
 
 - State: `pending`
 - Goal: `Evaluar precisión mixta únicamente dentro del precondicionador.`
-- Depends on: `SF-28`
+- Depends on: `SF-29`
 - Unlocks: `none`
-- Branch: `science/lester-sf-29-mixed-precision`
+- Branch: `science/lester-sf-30-mixed-precision`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf28-mixed-precision`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4 + performance evidence`
 - Human review: `required`
@@ -91,7 +91,7 @@ scripts/remote wait lester-mixed
 - [ ] Default enablement decision is evidence-backed and documented.
 - [ ] Gate 3A/4 review passes.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-29 complete and sets `NEXT: COMPLETE`.
+- [ ] Dashboard marks SF-30 complete; the execution sequence ends.
 <!-- completion-checklist:end -->
 
 ## Advancement rule

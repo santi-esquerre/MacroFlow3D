@@ -1,10 +1,10 @@
-# SF-26 — Grid continuation
+# SF-27 — Grid continuation
 
 - State: `pending`
 - Goal: `Implementar continuación de malla preservando gauge y realización aleatoria.`
-- Depends on: `SF-25`
-- Unlocks: `SF-27`
-- Branch: `science/lester-sf-26-grid-continuation`
+- Depends on: `SF-26`
+- Unlocks: `SF-28`
+- Branch: `science/lester-sf-27-grid-continuation`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf21-grid-continuation`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4`
 - Human review: `required`
@@ -87,7 +87,7 @@ scripts/remote exec -- "<fixed-seed-128-grid-ladder-command>"
 - [ ] `32^3 -> 64^3 -> 128^3` fixed ladder completes.
 - [ ] Gate 3A/4 review and experiment note pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-26 complete and selects SF-27.
+- [ ] Dashboard marks SF-27 complete and selects SF-28.
 <!-- completion-checklist:end -->
 
 ## Advancement rule

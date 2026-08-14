@@ -26,7 +26,7 @@ debe corregir este resumen y registrar la decisión.
 
 ### Semántica de ejecución de los incrementos
 
-La secuencia científica `SF-00 -> ... -> SF-28` sigue siendo estrictamente
+La secuencia científica `SF-00 -> ... -> SF-30` sigue siendo estrictamente
 secuencial **entre incrementos**. Para el único incremento habilitado por
 `NEXT`, Claude Code puede descomponer el Goal en un DAG de subtareas
 autocontenidas y ejecutar en paralelo solamente nodos independientes y con
@@ -482,6 +482,11 @@ contratos y tests discretos
      ver docs/decisions/2026-08-11-newton-before-heterogeneity-completion.md)
   -> Jv matrix-free + GMRES
   -> Newton-Krylov globalizado
+  -> solver terminal robusto a la variedad de gauge en eta=1
+     (re-secuenciado 2026-08-14: Newton puro se degrada exactamente en
+     eta=1 para sigma_Y^2>=1 — cluster casi-nulo del Jacobiano por la
+     libertad de recombinación de Clebsch; ver
+     docs/decisions/2026-08-14-manifold-robust-terminal-solver.md)
   -> completación de heterogeneidad (gates movidos, sin cambios)
   -> continuación de malla
   -> optimización y benchmark V100

@@ -129,11 +129,12 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-22 — Matrix-free Jacobian-vector product](lester-eq14/increments/SF-22-matrix-free-jvp.md)
 - [x] [SF-23 — Restarted GMRES and block preconditioner](lester-eq14/increments/SF-23-gmres-preconditioner.md)
 - [x] [SF-24 — Globalized Newton-Krylov](lester-eq14/increments/SF-24-newton-krylov.md)
-- [ ] [SF-25 — Heterogeneity completion](lester-eq14/increments/SF-25-heterogeneity-completion.md)
-- [ ] [SF-26 — Grid continuation](lester-eq14/increments/SF-26-grid-continuation.md)
-- [ ] [SF-27 — GPU optimization](lester-eq14/increments/SF-27-gpu-optimization.md)
-- [ ] [SF-28 — V100 benchmark](lester-eq14/increments/SF-28-v100-benchmark.md)
-- [ ] [SF-29 — Mixed-precision preconditioner study](lester-eq14/increments/SF-29-mixed-precision.md)
+- [ ] [SF-25 — Manifold-robust terminal solver](lester-eq14/increments/SF-25-terminal-manifold-solver.md)
+- [ ] [SF-26 — Heterogeneity completion](lester-eq14/increments/SF-26-heterogeneity-completion.md)
+- [ ] [SF-27 — Grid continuation](lester-eq14/increments/SF-27-grid-continuation.md)
+- [ ] [SF-28 — GPU optimization](lester-eq14/increments/SF-28-gpu-optimization.md)
+- [ ] [SF-29 — V100 benchmark](lester-eq14/increments/SF-29-v100-benchmark.md)
+- [ ] [SF-30 — Mixed-precision preconditioner study](lester-eq14/increments/SF-30-mixed-precision.md)
 
 ## Locked mathematical and discrete decisions
 
