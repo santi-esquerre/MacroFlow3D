@@ -18,6 +18,8 @@
 #include "src/physics/streamfunctions/BlockDiagonalMGPreconditioner.cuh"
 #include "src/physics/streamfunctions/ContinuationController.hpp"
 #include "src/physics/streamfunctions/CoupledGmres.cuh"
+#include "src/physics/streamfunctions/Diagnostics.cuh"
+#include "src/physics/streamfunctions/DifferentialOperators.cuh"
 #include "src/physics/streamfunctions/JacobianVectorProduct.cuh"
 #include "src/physics/streamfunctions/NonlinearSources.cuh"
 #include "src/physics/streamfunctions/ResidualEvaluator.cuh"
@@ -34,9 +36,11 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -175,6 +179,281 @@ constexpr double kPi = 3.14159265358979323846264338327950288;
         case HeterogeneityStatus::invalid_problem: return "invalid_problem";
         default: return "unknown";
     }
+}
+
+// ---------------------------------------------------------------------------
+// SF-25 Phase-1 (P1-I) shared helpers: host-side percentile/concentration
+// reducers and the SF-11-consistent pointwise defect-field replication used
+// by `case_terminal_shelf_probe_phase1`'s S6 battery. Route taken (recorded
+// in the P1-I worker report): `PhysicalDiagnosticsWorkspace`'s per-cell
+// scratch (`dot1_field_`, `dot2_field_`, `vpsi_c*_`, `vd_c*_`, `abs_c_field_`)
+// is PRIVATE with no public accessor, so the aggregate `PhysicalDiagnosticsReport`
+// is reused verbatim (via the public enqueue/synchronize pair,
+// `Diagnostics.cuh`) for the reduction-level SF-11 metrics, while the
+// PER-CELL fields needed for percentiles/concentration are replicated on the
+// HOST, reusing the PUBLIC `enqueue_total_streamfunction_gradients` (SF-07,
+// `DifferentialOperators.cuh`) for `g1`/`g2` and then reproducing, exactly,
+// the interpolate-then-cross face reconstruction, face-to-center averaging,
+// Darcy-invariance dot products, and `|c| = |grad(psi1) x grad(psi2)|`
+// formulas from `Diagnostics.cu`'s `reconstruct_and_face_diagnostics_kernel`,
+// `face_to_center_kernel`, and `cell_metrics_kernel` (cited inline below).
+// 32^3 = 32768 cells makes this trivially cheap host-side.
+// ---------------------------------------------------------------------------
+
+// Linear interpolation percentile (0..100) over a copy of `values` (sorted in
+// place on the copy; caller's vector is untouched).
+[[nodiscard]] double host_percentile(std::vector<double> values, double p) {
+    if (values.empty()) return std::numeric_limits<double>::quiet_NaN();
+    std::sort(values.begin(), values.end());
+    const double idx = p / 100.0 * static_cast<double>(values.size() - 1);
+    const std::size_t lo = static_cast<std::size_t>(std::floor(idx));
+    const std::size_t hi = static_cast<std::size_t>(std::ceil(idx));
+    if (lo == hi) return values[lo];
+    const double frac = idx - static_cast<double>(lo);
+    return values[lo] * (1.0 - frac) + values[hi] * frac;
+}
+
+// Fraction of the total SQUARED value carried by the top `fraction` (e.g.
+// 0.01 for the top 1%) of cells, by |value|.
+[[nodiscard]] double host_top_fraction_energy(const std::vector<double>& values, double fraction) {
+    if (values.empty()) return std::numeric_limits<double>::quiet_NaN();
+    std::vector<double> sq(values.size());
+    for (std::size_t i = 0; i < values.size(); ++i) sq[i] = values[i] * values[i];
+    const double total = std::accumulate(sq.begin(), sq.end(), 0.0);
+    std::sort(sq.begin(), sq.end());
+    const std::size_t top_k =
+        std::max<std::size_t>(1, static_cast<std::size_t>(std::ceil(fraction * static_cast<double>(sq.size()))));
+    const double top_sum = std::accumulate(sq.end() - static_cast<std::ptrdiff_t>(top_k), sq.end(), 0.0);
+    return total > 0.0 ? top_sum / total : std::numeric_limits<double>::quiet_NaN();
+}
+
+struct PointwiseDiagnosticsHost {
+    std::vector<double> invariance_defect1; // |v_D . grad(psi1)| at cell centers.
+    std::vector<double> invariance_defect2; // |v_D . grad(psi2)| at cell centers.
+    std::vector<double> reconstruction_error; // |v_psi_c - v_D_c| at cell centers.
+    std::vector<double> abs_c;                // |grad(psi1) x grad(psi2)| at cell centers.
+};
+
+// Host replication of Diagnostics.cu's per-cell defect fields at ONE state.
+// `u1`/`u2` are the periodic fluctuations (already-accepted state);
+// `darcy` is the SAME CompactMAC Darcy field the state was solved against.
+[[nodiscard]] PointwiseDiagnosticsHost compute_pointwise_diagnostics_host(
+    CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> u1, DeviceSpan<real> u2, const AffineGauge& gauge,
+    const CompactMacVelocityConstView& darcy) {
+    const int nx = grid.nx, ny = grid.ny, nz = grid.nz;
+    const std::size_t n = grid.num_cells();
+
+    // SF-07 total gradients, reused via the public enqueue call
+    // (DifferentialOperators.cuh).
+    DeviceBuffer<real> g1x(n), g1y(n), g1z(n), g2x(n), g2y(n), g2z(n);
+    const TotalStreamfunctionGradientOutput grad_out{g1x.span(), g1y.span(), g1z.span(),
+                                                      g2x.span(), g2y.span(), g2z.span()};
+    enqueue_total_streamfunction_gradients(ctx, grid, PeriodicStreamfunctionFluctuations{u1, u2}, gauge, grad_out);
+    ctx.synchronize();
+
+    const std::vector<real> g1x_h = download(DeviceSpan<const real>(g1x.span()));
+    const std::vector<real> g1y_h = download(DeviceSpan<const real>(g1y.span()));
+    const std::vector<real> g1z_h = download(DeviceSpan<const real>(g1z.span()));
+    const std::vector<real> g2x_h = download(DeviceSpan<const real>(g2x.span()));
+    const std::vector<real> g2y_h = download(DeviceSpan<const real>(g2y.span()));
+    const std::vector<real> g2z_h = download(DeviceSpan<const real>(g2z.span()));
+
+    const std::vector<real> darcy_u_h = download(darcy.u);
+    const std::vector<real> darcy_v_h = download(darcy.v);
+    const std::vector<real> darcy_w_h = download(darcy.w);
+
+    const std::size_t y_stride = static_cast<std::size_t>(nx);
+    const std::size_t face_u_j_stride = static_cast<std::size_t>(nx + 1);
+    const std::size_t face_u_k_stride = face_u_j_stride * static_cast<std::size_t>(ny);
+    const std::size_t face_v_k_stride = y_stride * static_cast<std::size_t>(ny + 1);
+    const std::size_t face_w_k_stride = y_stride * static_cast<std::size_t>(ny);
+
+    const std::size_t size_u = face_u_k_stride * static_cast<std::size_t>(nz);
+    const std::size_t size_v = face_v_k_stride * static_cast<std::size_t>(nz);
+    const std::size_t size_w = face_w_k_stride * static_cast<std::size_t>(nz + 1);
+
+    std::vector<double> vpsi_u(size_u), vpsi_v(size_v), vpsi_w(size_w);
+
+    const auto cell_index = [&](int i, int j, int k) -> std::size_t {
+        return static_cast<std::size_t>(i) +
+               y_stride * (static_cast<std::size_t>(j) + static_cast<std::size_t>(ny) * static_cast<std::size_t>(k));
+    };
+
+    // Interpolate-then-cross face reconstruction, EXACTLY mirroring
+    // Diagnostics.cu's reconstruct_and_face_diagnostics_kernel (lines
+    // ~112-245), including the periodic duplicate planes.
+    for (int k = 0; k < nz; ++k) {
+        for (int j = 0; j < ny; ++j) {
+            for (int i = 0; i < nx; ++i) {
+                const std::size_t b = cell_index(i, j, k);
+                {
+                    const int a_i = (i == 0) ? nx - 1 : i - 1;
+                    const std::size_t a = cell_index(a_i, j, k);
+                    const double t1y = 0.5 * (static_cast<double>(g1y_h[a]) + static_cast<double>(g1y_h[b]));
+                    const double t1z = 0.5 * (static_cast<double>(g1z_h[a]) + static_cast<double>(g1z_h[b]));
+                    const double t2y = 0.5 * (static_cast<double>(g2y_h[a]) + static_cast<double>(g2y_h[b]));
+                    const double t2z = 0.5 * (static_cast<double>(g2z_h[a]) + static_cast<double>(g2z_h[b]));
+                    const double uval = t1y * t2z - t1z * t2y;
+                    const std::size_t face = static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * face_u_j_stride +
+                                             static_cast<std::size_t>(k) * face_u_k_stride;
+                    vpsi_u[face] = uval;
+                    if (i == 0) {
+                        vpsi_u[static_cast<std::size_t>(nx) + static_cast<std::size_t>(j) * face_u_j_stride +
+                              static_cast<std::size_t>(k) * face_u_k_stride] = uval;
+                    }
+                }
+                {
+                    const int b_j = (j == 0) ? ny - 1 : j - 1;
+                    const std::size_t a = cell_index(i, b_j, k);
+                    const double t1z = 0.5 * (static_cast<double>(g1z_h[a]) + static_cast<double>(g1z_h[b]));
+                    const double t1x = 0.5 * (static_cast<double>(g1x_h[a]) + static_cast<double>(g1x_h[b]));
+                    const double t2z = 0.5 * (static_cast<double>(g2z_h[a]) + static_cast<double>(g2z_h[b]));
+                    const double t2x = 0.5 * (static_cast<double>(g2x_h[a]) + static_cast<double>(g2x_h[b]));
+                    const double vval = t1z * t2x - t1x * t2z;
+                    const std::size_t face = static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * y_stride +
+                                             static_cast<std::size_t>(k) * face_v_k_stride;
+                    vpsi_v[face] = vval;
+                    if (j == 0) {
+                        vpsi_v[static_cast<std::size_t>(i) + static_cast<std::size_t>(ny) * y_stride +
+                              static_cast<std::size_t>(k) * face_v_k_stride] = vval;
+                    }
+                }
+                {
+                    const int c_k = (k == 0) ? nz - 1 : k - 1;
+                    const std::size_t a = cell_index(i, j, c_k);
+                    const double t1x = 0.5 * (static_cast<double>(g1x_h[a]) + static_cast<double>(g1x_h[b]));
+                    const double t1y = 0.5 * (static_cast<double>(g1y_h[a]) + static_cast<double>(g1y_h[b]));
+                    const double t2x = 0.5 * (static_cast<double>(g2x_h[a]) + static_cast<double>(g2x_h[b]));
+                    const double t2y = 0.5 * (static_cast<double>(g2y_h[a]) + static_cast<double>(g2y_h[b]));
+                    const double wval = t1x * t2y - t1y * t2x;
+                    const std::size_t face = static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * y_stride +
+                                             static_cast<std::size_t>(k) * face_w_k_stride;
+                    vpsi_w[face] = wval;
+                    if (k == 0) {
+                        vpsi_w[static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * y_stride +
+                              static_cast<std::size_t>(nz) * face_w_k_stride] = wval;
+                    }
+                }
+            }
+        }
+    }
+
+    PointwiseDiagnosticsHost out;
+    out.invariance_defect1.resize(n);
+    out.invariance_defect2.resize(n);
+    out.reconstruction_error.resize(n);
+    out.abs_c.resize(n);
+
+    // Face-to-center averaging + cell-centered metrics, EXACTLY mirroring
+    // Diagnostics.cu's face_to_center_kernel and cell_metrics_kernel's dot1/
+    // dot2/|c| formulas (lines ~247-419).
+    for (int k = 0; k < nz; ++k) {
+        for (int j = 0; j < ny; ++j) {
+            for (int i = 0; i < nx; ++i) {
+                const std::size_t cell = cell_index(i, j, k);
+
+                const std::size_t face_u0 = static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * face_u_j_stride +
+                                            static_cast<std::size_t>(k) * face_u_k_stride;
+                const std::size_t face_u1 = face_u0 + 1;
+                const double vpsi_cx = 0.5 * (vpsi_u[face_u0] + vpsi_u[face_u1]);
+                const double vd_cx = 0.5 * (static_cast<double>(darcy_u_h[face_u0]) + static_cast<double>(darcy_u_h[face_u1]));
+
+                const std::size_t face_v0 = static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * y_stride +
+                                            static_cast<std::size_t>(k) * face_v_k_stride;
+                const std::size_t face_v1 = face_v0 + y_stride;
+                const double vpsi_cy = 0.5 * (vpsi_v[face_v0] + vpsi_v[face_v1]);
+                const double vd_cy = 0.5 * (static_cast<double>(darcy_v_h[face_v0]) + static_cast<double>(darcy_v_h[face_v1]));
+
+                const std::size_t face_w0 = static_cast<std::size_t>(i) + static_cast<std::size_t>(j) * y_stride +
+                                            static_cast<std::size_t>(k) * face_w_k_stride;
+                const std::size_t face_w1 = face_w0 + face_w_k_stride;
+                const double vpsi_cz = 0.5 * (vpsi_w[face_w0] + vpsi_w[face_w1]);
+                const double vd_cz = 0.5 * (static_cast<double>(darcy_w_h[face_w0]) + static_cast<double>(darcy_w_h[face_w1]));
+
+                const double g1xv = static_cast<double>(g1x_h[cell]), g1yv = static_cast<double>(g1y_h[cell]),
+                             g1zv = static_cast<double>(g1z_h[cell]);
+                const double g2xv = static_cast<double>(g2x_h[cell]), g2yv = static_cast<double>(g2y_h[cell]),
+                             g2zv = static_cast<double>(g2z_h[cell]);
+
+                const double dot1 = vd_cx * g1xv + vd_cy * g1yv + vd_cz * g1zv;
+                const double dot2 = vd_cx * g2xv + vd_cy * g2yv + vd_cz * g2zv;
+                out.invariance_defect1[cell] = std::abs(dot1);
+                out.invariance_defect2[cell] = std::abs(dot2);
+
+                const double cx = g1yv * g2zv - g1zv * g2yv;
+                const double cy = g1zv * g2xv - g1xv * g2zv;
+                const double cz = g1xv * g2yv - g1yv * g2xv;
+                out.abs_c[cell] = std::sqrt(cx * cx + cy * cy + cz * cz);
+
+                const double ddx = vpsi_cx - vd_cx, ddy = vpsi_cy - vd_cy, ddz = vpsi_cz - vd_cz;
+                out.reconstruction_error[cell] = std::sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
+            }
+        }
+    }
+    return out;
+}
+
+struct S6StateEvidence {
+    PhysicalDiagnosticsReport sf11;
+    PointwiseDiagnosticsHost pointwise;
+};
+
+// The SF-11 aggregate report reused verbatim (public enqueue/synchronize
+// pair) plus the host-replicated pointwise fields, both at the SAME
+// `u1`/`u2`/`darcy` state.
+[[nodiscard]] S6StateEvidence evaluate_s6_state(CudaContext& ctx, const Grid3D& grid, DeviceSpan<real> u1,
+                                                DeviceSpan<real> u2, const AffineGauge& gauge,
+                                                const CompactMacVelocityConstView& darcy,
+                                                const PhysicalDiagnosticsConfig& diag_config) {
+    S6StateEvidence out;
+    StreamfunctionDiagnosticsWorkspace diag_ws;
+    diag_ws.prepare(grid);
+    DeviceBuffer<real> vpsi_u(compact_mac_u_size(grid)), vpsi_v(compact_mac_v_size(grid)),
+        vpsi_w(compact_mac_w_size(grid));
+    enqueue_streamfunction_physical_diagnostics(
+        ctx, grid, PeriodicStreamfunctionFluctuations{u1, u2}, gauge, darcy, diag_config,
+        CompactMacVelocityView{vpsi_u.span(), vpsi_v.span(), vpsi_w.span()}, diag_ws);
+    out.sf11 = synchronize_streamfunction_physical_diagnostics_report(ctx, grid, diag_config, diag_ws);
+    out.pointwise = compute_pointwise_diagnostics_host(ctx, grid, u1, u2, gauge, darcy);
+    return out;
+}
+
+void print_s6_state_report(const char* label, const S6StateEvidence& ev, double epsilon_scale) {
+    std::cout << label << " SF11 e_v=" << ev.sf11.e_v << " invariance_e_psi1=" << ev.sf11.invariance_e_psi1
+              << " invariance_e_psi2=" << ev.sf11.invariance_e_psi2 << " e_div=" << ev.sf11.e_div
+              << " c_min=" << ev.sf11.c_min << " c_max=" << ev.sf11.c_max << " c_mean=" << ev.sf11.c_mean
+              << " v_d_rms=" << ev.sf11.v_d_rms << '\n';
+
+    const double p[5] = {50.0, 90.0, 99.0, 99.9, 100.0};
+    const char* pname[5] = {"p50", "p90", "p99", "p99.9", "max"};
+    for (int t = 0; t < 5; ++t) {
+        std::cout << label << " invariance_defect1 " << pname[t] << "="
+                  << host_percentile(ev.pointwise.invariance_defect1, p[t]) << '\n';
+    }
+    for (int t = 0; t < 5; ++t) {
+        std::cout << label << " invariance_defect2 " << pname[t] << "="
+                  << host_percentile(ev.pointwise.invariance_defect2, p[t]) << '\n';
+    }
+    for (int t = 0; t < 5; ++t) {
+        std::cout << label << " reconstruction_error " << pname[t] << "="
+                  << host_percentile(ev.pointwise.reconstruction_error, p[t]) << '\n';
+    }
+
+    const double conc1_1 = host_top_fraction_energy(ev.pointwise.invariance_defect1, 0.01);
+    const double conc1_01 = host_top_fraction_energy(ev.pointwise.invariance_defect1, 0.001);
+    const double conc2_1 = host_top_fraction_energy(ev.pointwise.invariance_defect2, 0.01);
+    const double conc2_01 = host_top_fraction_energy(ev.pointwise.invariance_defect2, 0.001);
+    const double concr_1 = host_top_fraction_energy(ev.pointwise.reconstruction_error, 0.01);
+    const double concr_01 = host_top_fraction_energy(ev.pointwise.reconstruction_error, 0.001);
+    std::cout << label << " concentration invariance_defect1 top1%=" << conc1_1 << " top0.1%=" << conc1_01 << '\n';
+    std::cout << label << " concentration invariance_defect2 top1%=" << conc2_1 << " top0.1%=" << conc2_01 << '\n';
+    std::cout << label << " concentration reconstruction_error top1%=" << concr_1 << " top0.1%=" << concr_01 << '\n';
+
+    std::cout << label
+              << " abs_c min=" << *std::min_element(ev.pointwise.abs_c.begin(), ev.pointwise.abs_c.end());
+    const double cp[4] = {0.1, 1.0, 10.0, 50.0};
+    for (double q : cp) std::cout << " p" << q << "=" << host_percentile(ev.pointwise.abs_c, q);
+    std::cout << " epsilon_times_scale=" << epsilon_scale << '\n';
 }
 
 // ---------------------------------------------------------------------------
@@ -1792,6 +2071,887 @@ struct ResolutionProbeResult {
             "D-gate-style test gate"};
 }
 
+// ===========================================================================
+// SF-25 Phase-1 (P1-I) Case: terminal_eta_endgame (S1). Host-loop eta walk
+// (NO ContinuationController changes): a FIXED prespecified eta ladder,
+// each stage warm-started from the previous stage's ACCEPTED fields (first
+// stage from zero_source init), on the SAME field/flow/gauge recipe the
+// campaign uses (32^3, dx=1, seed 12345, corr_length 8, sigma^2=1
+// normalize_variance, amplitude 0.5125*Y_unit, K=exp, log_conductivity_y,
+// SF-19 affine flow qbar=(1,0,0), benchmark gauge). eta=1 is
+// `StreamfunctionSolverConfig::eta`, the SAME Lester-source coupling weight
+// being walked from 0 to 1 -- config.eta is set per stage exactly as the
+// bitácora prescribes ("Set config.eta per stage").
+// ===========================================================================
+
+// The 19-value FIXED ladder: the coarse leg then the endgame halvings of
+// `1-eta`, bound BEFORE any run (bitácora 2026-08-14T17:40Z).
+constexpr double kEtaEndgameLadder[] = {
+    0.0,       0.25,        0.5,          0.75,          0.9,
+    0.95,      0.975,       0.9875,       0.99375,       0.996875,
+    0.9984375, 0.99921875,  0.999609375,  0.9998046875,  0.99990234375,
+    0.999951171875, 0.9999755859375, 0.99998779296875, 0.999993896484375};
+constexpr int kEtaEndgameLadderSize = static_cast<int>(sizeof(kEtaEndgameLadder) / sizeof(kEtaEndgameLadder[0]));
+
+struct EtaEndgameArm {
+    // Verdict inputs.
+    bool last_valid{false};
+    double last_eta{std::numeric_limits<double>::quiet_NaN()};
+    double last_r_F{std::numeric_limits<double>::quiet_NaN()};
+    bool walk_stopped{false};
+    double eta_fail{std::numeric_limits<double>::quiet_NaN()};
+    bool eta_fail_plateau_signature{false}; // exit_reason in {stagnated, omega_floor_rejected}.
+    double eta_fail_r_F{std::numeric_limits<double>::quiet_NaN()};
+    bool coda_last_ran{false};
+    StreamfunctionSolveStatus coda_last_status{StreamfunctionSolveStatus::not_run};
+    double coda_last_r_F{std::numeric_limits<double>::quiet_NaN()};
+    bool coda_extrap_ran{false};
+    StreamfunctionSolveStatus coda_extrap_status{StreamfunctionSolveStatus::not_run};
+    double coda_extrap_r_F{std::numeric_limits<double>::quiet_NaN()};
+    double coda_extrap_init_r_F{std::numeric_limits<double>::quiet_NaN()};
+    bool basin_entered{false};
+};
+
+// Runs ONE arm of the eta walk (fresh StreamfunctionFields/Workspace pair,
+// starting from zero_source). `hygiene_on` applies the S1b hygiene settings
+// (adaptive.floor_guard + anderson.restart_on_stagnation) verbatim per the
+// bitácora; `hygiene_on == false` is S1a (pure P1-H-default behavior).
+[[nodiscard]] EtaEndgameArm run_eta_endgame_arm(CudaContext& ctx, const StreamfunctionProblemView& problem_view,
+                                                const char* arm_label, bool hygiene_on) {
+    const Grid3D& grid = problem_view.grid;
+    const std::size_t n = grid.num_cells();
+
+    StreamfunctionFields fields;
+    StreamfunctionWorkspace workspace;
+
+    // Fixed-size state-history staging, allocated ONCE (no allocations
+    // inside the ladder loop): `last` (the most recently accepted stage's
+    // state) and `prev` (the accepted stage immediately before `last`),
+    // both sized n each (2*n per pair, per the memory constraint).
+    DeviceBuffer<real> last_u1(n), last_u2(n), prev_u1(n), prev_u2(n);
+    bool last_valid = false, prev_valid = false;
+    double last_eta_val = 0.0, prev_eta_val = 0.0;
+
+    EtaEndgameArm result;
+
+    for (int i = 0; i < kEtaEndgameLadderSize; ++i) {
+        const double eta_i = kEtaEndgameLadder[i];
+
+        StreamfunctionSolverConfig config; // full defaults.
+        config.eta = static_cast<real>(eta_i);
+        config.epsilon = real{1e-2};
+        config.anderson.enabled = true;
+        config.anderson.depth = 5;
+        config.anderson.start_iteration = 5;
+        config.anderson.condition_limit = real{1e12};
+        config.picard.max_iter = 500;
+        if (hygiene_on) {
+            config.adaptive.floor_guard.enabled = true;
+            config.adaptive.floor_guard.window = 5;
+            config.adaptive.floor_guard.drop_factor = real{0.9};
+            config.adaptive.floor_guard.max_resets = 3;
+            config.anderson.restart_on_stagnation = true;
+            config.anderson.max_restarts = 2;
+        }
+        if (i == 0) {
+            config.initial_state = PicardInitialState::zero_source;
+            config.coefficient_state = CoefficientState::rebuild;
+        } else {
+            config.initial_state = PicardInitialState::warm_start;
+            config.coefficient_state = CoefficientState::reuse;
+        }
+
+        const StreamfunctionSolveReport report = solve_streamfunctions(ctx, problem_view, config, fields, workspace);
+        ctx.synchronize();
+
+        const double r_F = static_cast<double>(report.residual.r_F);
+        const bool pass = report.status == StreamfunctionSolveStatus::converged && r_F <= 1e-6;
+
+        std::cout << arm_label << " eta=" << eta_i << " status=" << solve_status_label(report.status)
+                  << " exit_reason=" << exit_reason_label(report.exit_reason)
+                  << " iterations=" << report.picard_iterations << " r_F=" << r_F
+                  << " anderson_acc=" << report.anderson_accepted << " anderson_rej=" << report.anderson_rejected
+                  << " omega_floor_guard_resets=" << report.omega_floor_guard_resets
+                  << " anderson_stagnation_restarts=" << report.anderson_stagnation_restarts
+                  << " pass=" << (pass ? "true" : "false") << '\n';
+
+        if (!pass) {
+            result.walk_stopped = true;
+            result.eta_fail = eta_i;
+            result.eta_fail_r_F = r_F;
+            result.eta_fail_plateau_signature = report.exit_reason == PicardExitReason::stagnated ||
+                                                report.exit_reason == PicardExitReason::omega_floor_rejected;
+            break;
+        }
+
+        if (last_valid) {
+            blas::copy(ctx, DeviceSpan<const real>(last_u1.span()), prev_u1.span());
+            blas::copy(ctx, DeviceSpan<const real>(last_u2.span()), prev_u2.span());
+            prev_eta_val = last_eta_val;
+            prev_valid = true;
+        }
+        blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), last_u1.span());
+        blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), last_u2.span());
+        ctx.synchronize();
+        last_eta_val = eta_i;
+        last_valid = true;
+        result.last_r_F = r_F; // the LAST ACCEPTED ladder stage's own r_F (frontier_r_F).
+    }
+
+    result.last_valid = last_valid;
+    result.last_eta = last_eta_val;
+
+    // Coda (i): eta=1 attempt from the last accepted state.
+    if (last_valid) {
+        blas::copy(ctx, DeviceSpan<const real>(last_u1.span()), fields.u1_span());
+        blas::copy(ctx, DeviceSpan<const real>(last_u2.span()), fields.u2_span());
+        ctx.synchronize();
+
+        StreamfunctionSolverConfig coda_config;
+        coda_config.eta = real{1};
+        coda_config.epsilon = real{1e-2};
+        coda_config.anderson.enabled = true;
+        coda_config.anderson.depth = 5;
+        coda_config.anderson.start_iteration = 5;
+        coda_config.anderson.condition_limit = real{1e12};
+        coda_config.picard.max_iter = 500;
+        if (hygiene_on) {
+            coda_config.adaptive.floor_guard.enabled = true;
+            coda_config.adaptive.floor_guard.window = 5;
+            coda_config.adaptive.floor_guard.drop_factor = real{0.9};
+            coda_config.adaptive.floor_guard.max_resets = 3;
+            coda_config.anderson.restart_on_stagnation = true;
+            coda_config.anderson.max_restarts = 2;
+        }
+        coda_config.initial_state = PicardInitialState::warm_start;
+        coda_config.coefficient_state = CoefficientState::reuse;
+
+        const StreamfunctionSolveReport coda_report =
+            solve_streamfunctions(ctx, problem_view, coda_config, fields, workspace);
+        ctx.synchronize();
+
+        result.coda_last_ran = true;
+        result.coda_last_status = coda_report.status;
+        result.coda_last_r_F = static_cast<double>(coda_report.residual.r_F);
+        if (coda_report.status == StreamfunctionSolveStatus::converged && result.coda_last_r_F <= 1e-6) {
+            result.basin_entered = true;
+        }
+
+        std::cout << arm_label << " coda_last eta=1 status=" << solve_status_label(coda_report.status)
+                  << " exit_reason=" << exit_reason_label(coda_report.exit_reason)
+                  << " iterations=" << coda_report.picard_iterations << " r_F=" << result.coda_last_r_F << '\n';
+    } else {
+        std::cout << arm_label << " coda_last: skipped (no accepted stage)\n";
+    }
+
+    // Coda (ii): two-point linear extrapolation to eta=1, only when >=2
+    // accepted stages had eta>=0.99 (last_eta and prev_eta both >=0.99).
+    if (last_valid && prev_valid && last_eta_val >= 0.99 && prev_eta_val >= 0.99) {
+        const double factor = (1.0 - last_eta_val) / (last_eta_val - prev_eta_val);
+
+        DeviceBuffer<real> diff1(n), diff2(n), extrap1(n), extrap2(n);
+        blas::copy(ctx, DeviceSpan<const real>(last_u1.span()), diff1.span());
+        blas::copy(ctx, DeviceSpan<const real>(last_u2.span()), diff2.span());
+        blas::axpy(ctx, real{-1}, DeviceSpan<const real>(prev_u1.span()), diff1.span());
+        blas::axpy(ctx, real{-1}, DeviceSpan<const real>(prev_u2.span()), diff2.span());
+        blas::copy(ctx, DeviceSpan<const real>(last_u1.span()), extrap1.span());
+        blas::copy(ctx, DeviceSpan<const real>(last_u2.span()), extrap2.span());
+        blas::axpy(ctx, static_cast<real>(factor), DeviceSpan<const real>(diff1.span()), extrap1.span());
+        blas::axpy(ctx, static_cast<real>(factor), DeviceSpan<const real>(diff2.span()), extrap2.span());
+        ctx.synchronize();
+
+        // r_F AT u* under eta=1, BEFORE iterating: reuse the residual
+        // evaluation path (ResidualEvaluator.cuh). v_rms is the measured
+        // Darcy speed, constant for this fixed problem_view across every
+        // stage; measure it once here via a standalone SF-11 physical-
+        // diagnostics evaluation at the last accepted state (the same
+        // measurement `solve_streamfunctions` performs internally).
+        NonlinearSourceConfig source_config;
+        source_config.epsilon = real{1e-2};
+        StreamfunctionDiagnosticsWorkspace vrms_ws;
+        vrms_ws.prepare(grid);
+        DeviceBuffer<real> vrms_vpsi_u(compact_mac_u_size(grid)), vrms_vpsi_v(compact_mac_v_size(grid)),
+            vrms_vpsi_w(compact_mac_w_size(grid));
+        const PhysicalDiagnosticsConfig vrms_diag_config{};
+        enqueue_streamfunction_physical_diagnostics(
+            ctx, grid, PeriodicStreamfunctionFluctuations{last_u1.span(), last_u2.span()}, problem_view.gauge,
+            problem_view.darcy_velocity, vrms_diag_config,
+            CompactMacVelocityView{vrms_vpsi_u.span(), vrms_vpsi_v.span(), vrms_vpsi_w.span()}, vrms_ws);
+        const PhysicalDiagnosticsReport vrms_report =
+            synchronize_streamfunction_physical_diagnostics_report(ctx, grid, vrms_diag_config, vrms_ws);
+        source_config.v_rms = vrms_report.v_d_rms;
+
+        const ResidualHistogramConfig histogram_config{};
+        const DeviceSpan<const real> q_att = workspace.q();
+
+        StreamfunctionResidualWorkspace init_residual_ws;
+        init_residual_ws.prepare(n);
+        DeviceBuffer<real> init_f1(n), init_f2(n);
+        enqueue_streamfunction_residual(ctx, grid, q_att,
+                                        PeriodicStreamfunctionFluctuations{extrap1.span(), extrap2.span()},
+                                        problem_view.gauge, real{1}, source_config, histogram_config,
+                                        init_f1.span(), init_f2.span(), init_residual_ws);
+        const StreamfunctionResidualReport init_res =
+            synchronize_streamfunction_residual_report(ctx, grid, real{1}, source_config, histogram_config,
+                                                        init_residual_ws);
+        result.coda_extrap_init_r_F = static_cast<double>(init_res.r_F);
+        std::cout << arm_label << " coda_extrap init_r_F=" << result.coda_extrap_init_r_F
+                  << " factor=" << factor << " last_eta=" << last_eta_val << " prev_eta=" << prev_eta_val << '\n';
+
+        blas::copy(ctx, DeviceSpan<const real>(extrap1.span()), fields.u1_span());
+        blas::copy(ctx, DeviceSpan<const real>(extrap2.span()), fields.u2_span());
+        ctx.synchronize();
+
+        StreamfunctionSolverConfig extrap_config;
+        extrap_config.eta = real{1};
+        extrap_config.epsilon = real{1e-2};
+        extrap_config.anderson.enabled = true;
+        extrap_config.anderson.depth = 5;
+        extrap_config.anderson.start_iteration = 5;
+        extrap_config.anderson.condition_limit = real{1e12};
+        extrap_config.picard.max_iter = 500;
+        if (hygiene_on) {
+            extrap_config.adaptive.floor_guard.enabled = true;
+            extrap_config.adaptive.floor_guard.window = 5;
+            extrap_config.adaptive.floor_guard.drop_factor = real{0.9};
+            extrap_config.adaptive.floor_guard.max_resets = 3;
+            extrap_config.anderson.restart_on_stagnation = true;
+            extrap_config.anderson.max_restarts = 2;
+        }
+        extrap_config.initial_state = PicardInitialState::warm_start;
+        extrap_config.coefficient_state = CoefficientState::reuse;
+
+        const StreamfunctionSolveReport extrap_report =
+            solve_streamfunctions(ctx, problem_view, extrap_config, fields, workspace);
+        ctx.synchronize();
+
+        result.coda_extrap_ran = true;
+        result.coda_extrap_status = extrap_report.status;
+        result.coda_extrap_r_F = static_cast<double>(extrap_report.residual.r_F);
+        if (extrap_report.status == StreamfunctionSolveStatus::converged && result.coda_extrap_r_F <= 1e-6) {
+            result.basin_entered = true;
+        }
+
+        std::cout << arm_label << " coda_extrap eta=1 status=" << solve_status_label(extrap_report.status)
+                  << " exit_reason=" << exit_reason_label(extrap_report.exit_reason)
+                  << " iterations=" << extrap_report.picard_iterations << " r_F=" << result.coda_extrap_r_F << '\n';
+    } else {
+        std::cout << arm_label
+                  << " coda_extrap: skipped (fewer than 2 accepted stages with eta>=0.99)\n";
+    }
+
+    // Readout verdicts, mechanical application of the prespecified rules.
+    const bool frontier_extended = last_valid && last_eta_val > 0.996875;
+    const bool cliff_climbable = last_valid && last_eta_val >= (1.0 - 1e-4);
+    const bool basin_entered = result.basin_entered;
+    const bool eta_fold_suggested =
+        result.walk_stopped && result.eta_fail < (1.0 - 1e-4) && result.eta_fail_r_F > 1e-5;
+
+    std::cout << arm_label << " rule FRONTIER_EXTENDED: last accepted eta > 0.996875 -> "
+              << (frontier_extended ? "true" : "false") << '\n';
+    std::cout << arm_label << " rule CLIFF_CLIMBABLE: last accepted eta >= 1-1e-4 -> "
+              << (cliff_climbable ? "true" : "false") << '\n';
+    std::cout << arm_label << " rule BASIN_ENTERED: any eta=1 coda attempt converges to <=1e-6 -> "
+              << (basin_entered ? "true" : "false") << '\n';
+    std::cout << arm_label
+              << " rule ETA_FOLD_SUGGESTED: walk stopped at eta_fail<1-1e-4 with r_F>1e-5 -> "
+              << (eta_fold_suggested ? "true" : "false") << '\n';
+
+    std::ostringstream verdicts;
+    if (frontier_extended) verdicts << "FRONTIER_EXTENDED ";
+    if (cliff_climbable) verdicts << "CLIFF_CLIMBABLE ";
+    if (basin_entered) verdicts << "BASIN_ENTERED ";
+    if (eta_fold_suggested) verdicts << "ETA_FOLD_SUGGESTED ";
+    if (verdicts.str().empty()) verdicts << "NONE";
+    std::cout << arm_label << " verdicts: " << verdicts.str() << '\n';
+
+    std::cout << arm_label << " summary frontier_eta=" << (last_valid ? last_eta_val : -1.0)
+              << " frontier_r_F=" << result.last_r_F
+              << " walk_stopped_at=" << (result.walk_stopped ? std::to_string(result.eta_fail) : std::string("none"))
+              << " coda_last=" << (result.coda_last_ran ? solve_status_label(result.coda_last_status) : "skipped")
+              << "/" << result.coda_last_r_F
+              << " coda_extrap=" << (result.coda_extrap_ran ? solve_status_label(result.coda_extrap_status) : "skipped")
+              << "/" << result.coda_extrap_r_F << '\n';
+
+    return result;
+}
+
+[[nodiscard]] CaseResult case_terminal_eta_endgame() {
+    std::cout << std::setprecision(17);
+
+    constexpr int n32 = 32;
+    const Grid3D grid(n32, n32, n32, real{1}, real{1}, real{1});
+    const std::size_t n = grid.num_cells();
+    CudaContext ctx(0);
+
+    // The SAME field/flow/gauge recipe the campaign uses (identical
+    // construction to terminal_resolution_probe's 32^3-equivalent path):
+    // sigma_Y^2=1, seed=12345, corr_length=8, normalize_variance, amplitude
+    // 0.5125*Y_unit, K=exp(Y_att), SF-19 affine flow qbar=(1,0,0),
+    // log_conductivity_y problem view, benchmark(1) gauge. This is a DIRECT
+    // build (no continuation), reusing the E2/R1 per-lambda construction
+    // pattern at a single fixed amplitude.
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{1};
+    field_config.corr_length = real{8};
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    DeviceBuffer<real> y(n);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    (void)physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(), field_workspace);
+    ctx.synchronize();
+
+    blas::scal(ctx, y.span(), real{0.5125});
+
+    DeviceBuffer<real> k(n);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y.span()), k.span());
+
+    const std::size_t u_size = compact_mac_u_size(grid);
+    const std::size_t v_size = compact_mac_v_size(grid);
+    const std::size_t w_size = compact_mac_w_size(grid);
+    DeviceBuffer<real> flow_u(u_size), flow_v(v_size), flow_w(w_size);
+    physics::AffinePeriodicFlowWorkspace flow_workspace;
+    physics::AffinePeriodicVelocityView velocity{flow_u.span(), flow_v.span(), flow_w.span()};
+    const physics::AffinePeriodicFlowConfig flow_config{};
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k.span()), flow_config, velocity,
+                                              flow_workspace);
+    ctx.synchronize();
+
+    StreamfunctionProblemView problem_view;
+    problem_view.grid = grid;
+    problem_view.conductivity = DeviceSpan<const real>(y.span());
+    problem_view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    problem_view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u.span()),
+                                                               DeviceSpan<const real>(flow_v.span()),
+                                                               DeviceSpan<const real>(flow_w.span())};
+    problem_view.bc = triply_periodic();
+    problem_view.gauge = AffineGauge::benchmark(real{1});
+
+    const EtaEndgameArm s1a = run_eta_endgame_arm(ctx, problem_view, "S1a", /*hygiene_on=*/false);
+    const EtaEndgameArm s1b = run_eta_endgame_arm(ctx, problem_view, "S1b", /*hygiene_on=*/true);
+
+    std::cout << "case=terminal_eta_endgame verdict=PASS (always-pass evidence recorder; see the "
+                 "printed per-stage table and per-arm rule/verdict lines above)\n";
+
+    std::ostringstream detail;
+    detail << "32^3 dx=1 seed=12345 corr_length=8 sigma_Y^2=1 normalize_variance amplitude=0.5125*Y_unit "
+              "K=exp log_conductivity_y SF-19 affine flow qbar=(1,0,0) benchmark gauge epsilon=1e-2 fixed "
+              "anderson R5 newton disabled picard.max_iter=500; FIXED prespecified eta ladder ("
+           << kEtaEndgameLadderSize << " stages) warm-started stage-to-stage; two arms S1a (hygiene OFF) / "
+              "S1b (floor_guard+anderson-restart ON); coda: eta=1 from last accepted state, and (when "
+              ">=2 accepted stages had eta>=0.99) a two-point linear extrapolation to eta=1";
+
+    return {true,
+            "terminal_eta_endgame",
+            "gpu-terminal-eta-endgame",
+            detail.str(),
+            s1a.last_valid ? s1a.last_eta : -1.0,
+            s1b.last_valid ? s1b.last_eta : -1.0,
+            "S1a/S1b frontier etas (see printed per-stage table)",
+            "always pass (evidence recorder; see the printed per-stage table, per-arm summary, and "
+            "verdict lines above)",
+            "SF-25 Phase-1 (P1-I) S1 eta-endgame probe (bitácora 2026-08-14T17:40Z): host-loop eta "
+            "walk over the FIXED prespecified ladder, two hygiene arms, coda attempts at eta=1 (last "
+            "accepted state and two-point linear extrapolation), mechanical FRONTIER_EXTENDED/"
+            "CLIFF_CLIMBABLE/BASIN_ENTERED/ETA_FOLD_SUGGESTED readouts; always-pass evidence recorder"};
+}
+
+// ===========================================================================
+// SF-25 Phase-1 (P1-I) Case: terminal_shelf_probe_phase1 (S3micro + S6, ONE
+// shared E2 freeze). Reuses the dgate case's E2 freeze protocol VERBATIM
+// (hygiene flags all OFF) so the frozen state MUST reproduce the recorded
+// `r_F_frozen = 1.1204722529922055e-3` bitwise. S3micro Part A (single-step
+// mu-scan) and Part B (sustained descent) reuse the E6b/E5 shifted-Newton
+// machinery pattern (`ShiftedJacobianOperator` + `CoupledGmres`). S6 reuses
+// the SF-11 `PhysicalDiagnosticsReport` verbatim (public enqueue/synchronize
+// pair) plus the host-replicated pointwise defect fields (see the shared
+// helpers above) on BOTH the frozen shelf state and the lambda=0.5 accepted
+// predecessor baseline (captured BEFORE the 0.5125 stage mutates `fields`).
+// ===========================================================================
+
+[[nodiscard]] CaseResult case_terminal_shelf_probe_phase1() {
+    std::cout << std::setprecision(17);
+    bool pass = true;
+    const auto check = [&](const char* name, bool ok) {
+        pass = pass && ok;
+        std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    };
+
+    constexpr int n32 = 32;
+    const Grid3D grid(n32, n32, n32, real{1}, real{1}, real{1});
+    const std::size_t n = grid.num_cells();
+    CudaContext ctx(0);
+
+    // =========================================================================
+    // E2 freeze, VERBATIM from case_terminal_dgate_diagnostic (hygiene flags
+    // all OFF): the sigma_Y^2=1, 32^3 smoke (seed 12345, ell=8,
+    // normalize_variance, anderson R5, newton disabled) to its lambda floor,
+    // then the lambda=0.5125 warm-started stage to its plateau exit.
+    // =========================================================================
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{1};
+    field_config.corr_length = real{8};
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    DeviceBuffer<real> y(n);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    (void)physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(), field_workspace);
+    ctx.synchronize();
+
+    StreamfunctionFields fields;
+    StreamfunctionWorkspace workspace;
+    StreamfunctionSolverConfig base_config; // full defaults (adaptive Picard, newton DISABLED).
+    base_config.anderson.enabled = true;
+    base_config.anderson.depth = 5;
+    base_config.anderson.start_iteration = 5;
+    base_config.anderson.condition_limit = real{1e12};
+
+    HeterogeneityContinuationConfig continuation_config{}; // lambda axis defaults.
+    continuation_config.inner.epsilon_log10.target = continuation_config.inner.epsilon_log10.start;
+    const physics::AffinePeriodicFlowConfig flow_config{}; // qbar=(1,0,0) default.
+
+    const HeterogeneityContinuationReport freeze_report = run_streamfunction_heterogeneity_continuation(
+        ctx, grid, DeviceSpan<const real>(y.span()), continuation_config, flow_config, base_config, fields,
+        workspace);
+    ctx.synchronize();
+
+    std::cout << "E2 freeze: status=" << heterogeneity_status_label(freeze_report.status)
+              << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
+              << '\n';
+
+    check("E2_freeze_status_lambda_floor_exhausted",
+          freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
+    check("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
+    check("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
+
+    // S6 baseline column: the accepted (lambda=0.5, eta=1) predecessor state,
+    // captured BEFORE the 0.5125 warm-started stage mutates `fields`.
+    DeviceBuffer<real> baseline_u1(n), baseline_u2(n);
+    blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), baseline_u1.span());
+    blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), baseline_u2.span());
+    ctx.synchronize();
+
+    // Rebuild the lambda=0.5 attempt's Y_att/K_att/flow -- the SAME
+    // deterministic per-lambda construction ContinuationController.cu's
+    // build_attempt uses (mirrored below for lambda=0.5125 exactly as
+    // case_terminal_dgate_diagnostic does) -- so the S6 baseline diagnostics
+    // compare against the CORRECT Darcy field that produced baseline_u1/u2.
+    const std::size_t u_size = compact_mac_u_size(grid);
+    const std::size_t v_size = compact_mac_v_size(grid);
+    const std::size_t w_size = compact_mac_w_size(grid);
+
+    DeviceBuffer<real> y_att0(n);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(y_att0.data(), y.data(), n * sizeof(real), cudaMemcpyDeviceToDevice,
+                                           ctx.cuda_stream()));
+    blas::scal(ctx, y_att0.span(), real{0.5});
+    DeviceBuffer<real> k_att0(n);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y_att0.span()), k_att0.span());
+    DeviceBuffer<real> flow_u0(u_size), flow_v0(v_size), flow_w0(w_size);
+    physics::AffinePeriodicFlowWorkspace flow_workspace0;
+    physics::AffinePeriodicVelocityView velocity0{flow_u0.span(), flow_v0.span(), flow_w0.span()};
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k_att0.span()), flow_config,
+                                              velocity0, flow_workspace0);
+    ctx.synchronize();
+
+    StreamfunctionProblemView problem_view0;
+    problem_view0.grid = grid;
+    problem_view0.conductivity = DeviceSpan<const real>(y_att0.span());
+    problem_view0.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    problem_view0.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u0.span()),
+                                                                DeviceSpan<const real>(flow_v0.span()),
+                                                                DeviceSpan<const real>(flow_w0.span())};
+    problem_view0.bc = triply_periodic();
+    problem_view0.gauge = AffineGauge::benchmark(real{1});
+
+    // lambda=0.5125 attempt (identical to case_terminal_dgate_diagnostic).
+    constexpr real kLambdaAttempt = real{0.5125};
+    DeviceBuffer<real> y_att(n);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(y_att.data(), y.data(), n * sizeof(real), cudaMemcpyDeviceToDevice,
+                                           ctx.cuda_stream()));
+    blas::scal(ctx, y_att.span(), kLambdaAttempt);
+    DeviceBuffer<real> k_att(n);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y_att.span()), k_att.span());
+    DeviceBuffer<real> flow_u(u_size), flow_v(v_size), flow_w(w_size);
+    physics::AffinePeriodicFlowWorkspace flow_workspace;
+    physics::AffinePeriodicVelocityView velocity{flow_u.span(), flow_v.span(), flow_w.span()};
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k_att.span()), flow_config,
+                                              velocity, flow_workspace);
+    ctx.synchronize();
+
+    StreamfunctionProblemView problem_view;
+    problem_view.grid = grid;
+    problem_view.conductivity = DeviceSpan<const real>(y_att.span());
+    problem_view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    problem_view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u.span()),
+                                                               DeviceSpan<const real>(flow_v.span()),
+                                                               DeviceSpan<const real>(flow_w.span())};
+    problem_view.bc = triply_periodic();
+    problem_view.gauge = AffineGauge::benchmark(real{1});
+
+    StreamfunctionSolverConfig stage_config = base_config;
+    stage_config.eta = real{1};
+    stage_config.epsilon = real{1e-2};
+    stage_config.initial_state = PicardInitialState::warm_start;
+    stage_config.coefficient_state = CoefficientState::rebuild;
+
+    const StreamfunctionSolveReport stage_report =
+        solve_streamfunctions(ctx, problem_view, stage_config, fields, workspace);
+    ctx.synchronize();
+
+    const double r_F_frozen = static_cast<double>(stage_report.residual.r_F);
+    std::cout << "E2 stage: status=" << solve_status_label(stage_report.status)
+              << " exit_reason=" << exit_reason_label(stage_report.exit_reason)
+              << " picard_iterations=" << stage_report.picard_iterations << " r_F_frozen=" << r_F_frozen << '\n';
+
+    check("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
+    check("E2_stage_exit_reason_plateau_signature",
+          stage_report.exit_reason == PicardExitReason::stagnated ||
+              stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
+    const bool r_f_band_ok = r_F_frozen >= 1e-4 && r_F_frozen <= 1e-2;
+    check("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
+
+    constexpr double kRecordedRFFrozen = 1.1204722529922055e-3;
+    std::cout << "E2 warn-only exact compare: r_F_frozen=" << r_F_frozen << " recorded=" << kRecordedRFFrozen
+              << " " << (r_F_frozen == kRecordedRFFrozen ? "MATCH" : "DIFFERS") << '\n';
+
+    // S6 shelf column / S3micro base state: the frozen plateau iterate,
+    // captured now (this IS the last mutation of `fields` before S3micro).
+    DeviceBuffer<real> frozen_u1(n), frozen_u2(n);
+    blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), frozen_u1.span());
+    blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), frozen_u2.span());
+    ctx.synchronize();
+
+    const DeviceSpan<const real> q_att = workspace.q();
+    const double v_rms = static_cast<double>(stage_report.diagnostics.v_d_rms);
+    NonlinearSourceConfig source_config;
+    source_config.epsilon = real{1e-2};
+    source_config.v_rms = static_cast<real>(v_rms);
+    const ResidualHistogramConfig histogram_config{};
+    const AffineGauge gauge = AffineGauge::benchmark(real{1});
+
+    JvpWorkspace jvp;
+    jvp.prepare(n);
+    jvp.prepare_jvp_base(ctx, grid, q_att, CoupledVectorView{fields.u1_span(), fields.u2_span()}, gauge, real{1},
+                         source_config, histogram_config);
+
+    StreamfunctionResidualWorkspace frozen_residual_ws;
+    frozen_residual_ws.prepare(n);
+    DeviceBuffer<real> f1(n), f2(n);
+    enqueue_streamfunction_residual(ctx, grid, q_att,
+                                    PeriodicStreamfunctionFluctuations{fields.u1_span(), fields.u2_span()}, gauge,
+                                    real{1}, source_config, histogram_config, f1.span(), f2.span(),
+                                    frozen_residual_ws);
+    (void)synchronize_streamfunction_residual_report(ctx, grid, real{1}, source_config, histogram_config,
+                                                      frozen_residual_ws);
+
+    DeviceBuffer<real> b1(n), b2(n);
+    blas::copy(ctx, DeviceSpan<const real>(f1.span()), b1.span());
+    blas::copy(ctx, DeviceSpan<const real>(f2.span()), b2.span());
+    blas::scal(ctx, b1.span(), real{-1});
+    blas::scal(ctx, b2.span(), real{-1});
+    ctx.synchronize();
+
+    multigrid::MGConfig mg_config = base_config.mg;
+    BlockDiagonalMGPreconditioner precond(workspace.hierarchy(), mg_config);
+
+    // =========================================================================
+    // S3micro Part A: single-step mu-scan, fresh from the frozen state each
+    // time, exactly in the E6b pattern (full step, no line search).
+    // =========================================================================
+    struct MuScanResult {
+        double mu;
+        CoupledGmresStatus status;
+        int inner;
+        double r_F_candidate;
+        double delta_rF;
+    };
+    std::vector<MuScanResult> mu_scan;
+    const double mu_scan_list[] = {0.3, 0.4, 0.5, 0.7, 1.0, 2.0};
+    const real s3_rel_tol = std::clamp(static_cast<real>(std::sqrt(r_F_frozen)), real{1e-8}, real{1e-1});
+
+    StreamfunctionResidualWorkspace scan_residual_ws;
+    scan_residual_ws.prepare(n);
+
+    for (double mu_d : mu_scan_list) {
+        const real mu = static_cast<real>(mu_d);
+        ShiftedJacobianOperator op(jvp, grid, q_att, mu);
+        op.prepare(n);
+        CoupledGmres gmres;
+        gmres.prepare(n, 10);
+
+        DeviceBuffer<real> s1(n), s2(n);
+        blas::fill(ctx, s1.span(), real{0});
+        blas::fill(ctx, s2.span(), real{0});
+
+        CoupledGmresConfig cfg;
+        cfg.restart = 10;
+        cfg.max_iterations = 100;
+        cfg.rel_tol = s3_rel_tol;
+
+        const CoupledGmresReport report = gmres.solve(
+            ctx, grid, op, precond,
+            ConstCoupledVectorView(DeviceSpan<const real>(b1.span()), DeviceSpan<const real>(b2.span())), cfg,
+            JvpDeltaConfig{}, CoupledVectorView{s1.span(), s2.span()});
+        ctx.synchronize();
+
+        DeviceBuffer<real> cand1(n), cand2(n);
+        blas::copy(ctx, DeviceSpan<const real>(frozen_u1.span()), cand1.span());
+        blas::copy(ctx, DeviceSpan<const real>(frozen_u2.span()), cand2.span());
+        blas::axpy(ctx, real{1}, DeviceSpan<const real>(s1.span()), cand1.span());
+        blas::axpy(ctx, real{1}, DeviceSpan<const real>(s2.span()), cand2.span());
+
+        DeviceBuffer<real> scan_f1(n), scan_f2(n);
+        enqueue_streamfunction_residual(ctx, grid, q_att,
+                                        PeriodicStreamfunctionFluctuations{cand1.span(), cand2.span()}, gauge,
+                                        real{1}, source_config, histogram_config, scan_f1.span(), scan_f2.span(),
+                                        scan_residual_ws);
+        const StreamfunctionResidualReport cand_res = synchronize_streamfunction_residual_report(
+            ctx, grid, real{1}, source_config, histogram_config, scan_residual_ws);
+        const double r_F_candidate = static_cast<double>(cand_res.r_F);
+        const double delta_rF = r_F_candidate - r_F_frozen;
+        mu_scan.push_back({mu_d, report.status, report.total_inner_iterations, r_F_candidate, delta_rF});
+
+        std::cout << "S3micro mu=" << mu_d << " gmres_status=" << gmres_status_label(report.status)
+                  << " inner=" << report.total_inner_iterations << " r_F_candidate=" << r_F_candidate
+                  << " delta_rF=" << delta_rF << '\n';
+    }
+
+    bool any_descent = false;
+    double mu_best = 0.0, best_delta = 0.0;
+    for (const auto& r : mu_scan) {
+        if (r.delta_rF >= 0.0) continue;
+        if (!any_descent) {
+            any_descent = true;
+            mu_best = r.mu;
+            best_delta = r.delta_rF;
+            continue;
+        }
+        if (r.delta_rF < best_delta || (r.delta_rF == best_delta && r.mu < mu_best)) {
+            mu_best = r.mu;
+            best_delta = r.delta_rF;
+        }
+    }
+    std::cout << "S3micro selection: any_descent=" << (any_descent ? "true" : "false") << " mu_best=" << mu_best
+              << " best_single_step_delta_rF=" << best_delta << '\n';
+
+    // =========================================================================
+    // S3micro Part B: N=100 consecutive full steps at fixed mu_best, from the
+    // frozen state, unconditional acceptance, abort on nonfinite or
+    // r_F>2*r_F_frozen. Every device buffer used inside the 100-step loop is
+    // allocated ONCE, before the loop.
+    // =========================================================================
+    std::vector<double> sustained_rF;
+    std::vector<double> sustained_delta;
+    std::vector<int> sustained_inner;
+    bool aborted = false;
+    int abort_step = -1;
+    double wall_seconds_total = 0.0;
+
+    if (any_descent) {
+        ShiftedJacobianOperator sustained_op(jvp, grid, q_att, static_cast<real>(mu_best));
+        sustained_op.prepare(n);
+        CoupledGmres sustained_gmres;
+        sustained_gmres.prepare(n, 10);
+
+        DeviceBuffer<real> state1(n), state2(n);
+        blas::copy(ctx, DeviceSpan<const real>(frozen_u1.span()), state1.span());
+        blas::copy(ctx, DeviceSpan<const real>(frozen_u2.span()), state2.span());
+        ctx.synchronize();
+
+        DeviceBuffer<real> step_s1(n), step_s2(n);
+        DeviceBuffer<real> step_rhs1(n), step_rhs2(n);
+        DeviceBuffer<real> step_f1(n), step_f2(n);
+        blas::copy(ctx, DeviceSpan<const real>(f1.span()), step_f1.span());
+        blas::copy(ctx, DeviceSpan<const real>(f2.span()), step_f2.span());
+        StreamfunctionResidualWorkspace step_residual_ws;
+        step_residual_ws.prepare(n);
+
+        double r_F_k = r_F_frozen;
+        sustained_rF.push_back(r_F_frozen);
+
+        const auto t0 = std::chrono::steady_clock::now();
+        for (int step = 0; step < 100; ++step) {
+            jvp.prepare_jvp_base(ctx, grid, q_att, CoupledVectorView{state1.span(), state2.span()}, gauge, real{1},
+                                 source_config, histogram_config);
+
+            blas::copy(ctx, DeviceSpan<const real>(step_f1.span()), step_rhs1.span());
+            blas::copy(ctx, DeviceSpan<const real>(step_f2.span()), step_rhs2.span());
+            blas::scal(ctx, step_rhs1.span(), real{-1});
+            blas::scal(ctx, step_rhs2.span(), real{-1});
+
+            const real rel_tol = std::clamp(static_cast<real>(std::sqrt(r_F_k)), real{1e-8}, real{1e-1});
+            CoupledGmresConfig step_cfg;
+            step_cfg.restart = 10;
+            step_cfg.max_iterations = 100;
+            step_cfg.rel_tol = rel_tol;
+
+            blas::fill(ctx, step_s1.span(), real{0});
+            blas::fill(ctx, step_s2.span(), real{0});
+            const CoupledGmresReport step_report = sustained_gmres.solve(
+                ctx, grid, sustained_op, precond,
+                ConstCoupledVectorView(DeviceSpan<const real>(step_rhs1.span()), DeviceSpan<const real>(step_rhs2.span())),
+                step_cfg, JvpDeltaConfig{}, CoupledVectorView{step_s1.span(), step_s2.span()});
+            ctx.synchronize();
+
+            blas::axpy(ctx, real{1}, DeviceSpan<const real>(step_s1.span()), state1.span());
+            blas::axpy(ctx, real{1}, DeviceSpan<const real>(step_s2.span()), state2.span());
+
+            enqueue_streamfunction_residual(ctx, grid, q_att,
+                                            PeriodicStreamfunctionFluctuations{state1.span(), state2.span()}, gauge,
+                                            real{1}, source_config, histogram_config, step_f1.span(), step_f2.span(),
+                                            step_residual_ws);
+            const StreamfunctionResidualReport new_res = synchronize_streamfunction_residual_report(
+                ctx, grid, real{1}, source_config, histogram_config, step_residual_ws);
+            const double r_F_new = static_cast<double>(new_res.r_F);
+            const bool finite_ok = std::isfinite(r_F_new);
+
+            std::cout << "S3B k=" << step << " gmres_status=" << gmres_status_label(step_report.status)
+                      << " inner=" << step_report.total_inner_iterations << " r_F=" << r_F_new
+                      << " delta=" << (r_F_new - r_F_k) << '\n';
+
+            if (!finite_ok || r_F_new > 2.0 * r_F_frozen) {
+                std::cout << "S3B_ABORT step=" << step << " r_F=" << r_F_new << '\n';
+                aborted = true;
+                abort_step = step;
+                break;
+            }
+            sustained_rF.push_back(r_F_new);
+            sustained_delta.push_back(r_F_new - r_F_k);
+            sustained_inner.push_back(step_report.total_inner_iterations);
+            r_F_k = r_F_new;
+        }
+        const auto t1 = std::chrono::steady_clock::now();
+        wall_seconds_total = std::chrono::duration<double>(t1 - t0).count();
+    } else {
+        std::cout << "PARTB_SKIPPED_NO_DESCENT\n";
+    }
+    if (aborted) {
+        std::cout << "S3B abort_step=" << abort_step << '\n';
+    }
+
+    // Readouts (mechanical, print-only).
+    if (any_descent && !sustained_rF.empty()) {
+        const int completed = static_cast<int>(sustained_rF.size()) - 1;
+        if (completed > 0) {
+            const double rF0 = sustained_rF.front();
+            const double rFN = sustained_rF.back();
+            const double mean_sec_per_step = wall_seconds_total / static_cast<double>(completed);
+            double rho = std::numeric_limits<double>::quiet_NaN();
+            double steps_to_1e6 = std::numeric_limits<double>::quiet_NaN();
+            double projected_wall_hours = std::numeric_limits<double>::quiet_NaN();
+            if (rF0 > 0.0 && rFN > 0.0) {
+                rho = (std::log(rF0) - std::log(rFN)) / static_cast<double>(completed);
+            }
+            bool projected_feasible = false;
+            if (rho > 0.0) {
+                steps_to_1e6 = std::log(r_F_frozen / 1e-6) / rho;
+                projected_wall_hours = steps_to_1e6 * mean_sec_per_step / 3600.0;
+                projected_feasible = steps_to_1e6 <= 1e6 && projected_wall_hours <= 4.0;
+            }
+
+            double mean_abs_delta = 0.0;
+            for (double d : sustained_delta) mean_abs_delta += std::abs(d);
+            mean_abs_delta /= static_cast<double>(sustained_delta.size());
+            const bool curvature_limited = std::abs(best_delta) >= 3.0 * mean_abs_delta;
+
+            bool flow_stalls = rho <= 0.0;
+            if (!flow_stalls && static_cast<int>(sustained_delta.size()) >= 20) {
+                double first20 = 0.0, last20 = 0.0;
+                for (int i = 0; i < 20; ++i) first20 += std::abs(sustained_delta[i]);
+                for (int i = static_cast<int>(sustained_delta.size()) - 20;
+                     i < static_cast<int>(sustained_delta.size()); ++i)
+                    last20 += std::abs(sustained_delta[i]);
+                first20 /= 20.0;
+                last20 /= 20.0;
+                flow_stalls = last20 <= 0.1 * first20;
+            } else if (!flow_stalls) {
+                std::cout << "FLOW_STALLS_WINDOW_INSUFFICIENT completed=" << completed << " (<20)\n";
+            }
+
+            std::cout << "S3B wall_seconds_total=" << wall_seconds_total
+                      << " mean_sec_per_step=" << mean_sec_per_step << " completed_steps=" << completed
+                      << (aborted ? " ABORTED" : "") << '\n';
+            std::cout << "S3B readout: rho=" << rho << " steps_to_1e-6=" << steps_to_1e6
+                      << " projected_wall_hours=" << projected_wall_hours << '\n';
+            std::cout << "S3B readout: best_single_step_delta_rF=" << best_delta
+                      << " sustained_mean_abs_delta=" << mean_abs_delta << '\n';
+            if (projected_feasible) std::cout << "PROJECTED_FEASIBLE\n";
+            if (curvature_limited) std::cout << "CURVATURE_LIMITED\n";
+            if (flow_stalls) std::cout << "FLOW_STALLS\n";
+        }
+    }
+
+    // =========================================================================
+    // S6 battery on BOTH the frozen shelf state (A) and the lambda=0.5
+    // accepted predecessor baseline (B).
+    // =========================================================================
+    const PhysicalDiagnosticsConfig diag_config{}; // default thresholds.
+
+    const S6StateEvidence shelf_evidence =
+        evaluate_s6_state(ctx, grid, frozen_u1.span(), frozen_u2.span(), gauge, problem_view.darcy_velocity,
+                          diag_config);
+    const S6StateEvidence baseline_evidence =
+        evaluate_s6_state(ctx, grid, baseline_u1.span(), baseline_u2.span(), gauge, problem_view0.darcy_velocity,
+                          diag_config);
+
+    const double epsilon_scale = static_cast<double>(source_config.epsilon) * v_rms;
+    std::cout << "S6 shelf (lambda=0.5125 frozen plateau iterate):\n";
+    print_s6_state_report("S6_shelf", shelf_evidence, epsilon_scale);
+    std::cout << "S6 baseline (lambda=0.5 accepted predecessor):\n";
+    print_s6_state_report("S6_baseline", baseline_evidence, epsilon_scale);
+
+    const double shelf_top1_defect1 = host_top_fraction_energy(shelf_evidence.pointwise.invariance_defect1, 0.01);
+    const double baseline_top1_defect1 =
+        host_top_fraction_energy(baseline_evidence.pointwise.invariance_defect1, 0.01);
+    const double shelf_top1_defect2 = host_top_fraction_energy(shelf_evidence.pointwise.invariance_defect2, 0.01);
+    const double baseline_top1_defect2 =
+        host_top_fraction_energy(baseline_evidence.pointwise.invariance_defect2, 0.01);
+
+    std::cout << "S6 concentration_ratio invariance_defect1 shelf/baseline="
+              << (baseline_top1_defect1 > 0.0 ? shelf_top1_defect1 / baseline_top1_defect1
+                                              : std::numeric_limits<double>::quiet_NaN())
+              << '\n';
+    std::cout << "S6 concentration_ratio invariance_defect2 shelf/baseline="
+              << (baseline_top1_defect2 > 0.0 ? shelf_top1_defect2 / baseline_top1_defect2
+                                              : std::numeric_limits<double>::quiet_NaN())
+              << '\n';
+
+    const auto rubric = [&](const char* name, double shelf_top1, double baseline_top1) {
+        const bool localized =
+            shelf_top1 >= 0.50 && (baseline_top1 > 0.0 ? shelf_top1 >= 5.0 * baseline_top1 : shelf_top1 > 0.0);
+        std::cout << "S6 rubric " << name << ": " << (localized ? "LOCALIZED_OBSTRUCTION" : "DIFFUSE")
+                  << " (shelf_top1%=" << shelf_top1 << " baseline_top1%=" << baseline_top1 << ")\n";
+    };
+    rubric("invariance_defect1", shelf_top1_defect1, baseline_top1_defect1);
+    rubric("invariance_defect2", shelf_top1_defect2, baseline_top1_defect2);
+
+    std::cout << "case=terminal_shelf_probe_phase1 verdict=" << (pass ? "PASS" : "FAIL")
+              << " (E2 freeze hard asserts gate `pass`; S3micro/S6 are print-only evidence)\n";
+
+    std::ostringstream detail;
+    detail << "ONE shared E2 freeze (VERBATIM from case_terminal_dgate_diagnostic, hygiene OFF): "
+              "sigma_Y^2=1, 32^3, seed=12345, corr_length=8, lambda_attempt=0.5125, r_F_frozen="
+           << r_F_frozen << "; S3micro Part A single-step mu-scan {0.3,0.4,0.5,0.7,1.0,2.0} "
+              "(E6b pattern); Part B N<=100 sustained full steps at mu_best; S6 SF-11 report + "
+              "host-replicated pointwise defect fields (percentiles, concentration) on the frozen "
+              "shelf state and the lambda=0.5 accepted baseline";
+
+    return {pass,
+            "terminal_shelf_probe_phase1",
+            "gpu-terminal-shelf-probe-phase1",
+            detail.str(),
+            r_F_frozen,
+            mu_best,
+            "E2_freeze_status/lambda/eta + E2_stage_not_converged/exit_reason/r_F band [1e-4,1e-2]",
+            pass ? "all pass" : "some failed",
+            "SF-25 Phase-1 (P1-I) S3micro+S6 probe (bitácora 2026-08-14T17:40Z): the E2 freeze hard "
+            "asserts gate `pass`; the S3micro mu-scan/sustained-descent readouts (PROJECTED_FEASIBLE/"
+            "CURVATURE_LIMITED/FLOW_STALLS) and the S6 LOCALIZED_OBSTRUCTION/DIFFUSE rubric are "
+            "print-only evidence for the owner/orchestrator, not test gates"};
+}
+
 } // namespace
 
 CaseRegistry terminal_solver_case_registry() {
@@ -1801,7 +2961,9 @@ CaseRegistry terminal_solver_case_registry() {
 CaseRegistry terminal_solver_dgate_case_registry() {
     return {{"terminal_dgate_diagnostic", case_terminal_dgate_diagnostic},
             {"terminal_resolution_probe", case_terminal_resolution_probe},
-            {"terminal_floor_guard_continuation", case_terminal_floor_guard_continuation}};
+            {"terminal_floor_guard_continuation", case_terminal_floor_guard_continuation},
+            {"terminal_eta_endgame", case_terminal_eta_endgame},
+            {"terminal_shelf_probe_phase1", case_terminal_shelf_probe_phase1}};
 }
 
 } // namespace macroflow3d::streamfunctions::test
