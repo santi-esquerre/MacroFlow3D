@@ -676,20 +676,31 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
         if (r.mu == 0.0) it0 = r.total_inner_iterations;
     }
 
+    // E3 gate: mechanism_confirmed requires a mu>0 that CONVERGED with a
+    // >=10x reduction in inner iterations vs the mu=0 baseline (it0).
+    // E5 decision: mu_star is a SEPARATE selection rule, the smallest
+    // converged-within-budget mu (mu>0, status==converged), independent of
+    // the 10x iteration-reduction filter used for mechanism_confirmed.
     bool mechanism_confirmed = false;
-    double mu_star = -1.0;
-    int mu_star_iterations = 0;
     for (const auto& r : mu_results) {
         if (r.mu > 0.0 && r.status == CoupledGmresStatus::converged && r.total_inner_iterations * 10 <= it0) {
             mechanism_confirmed = true;
+        }
+    }
+    double mu_star = -1.0;
+    int mu_star_iterations = 0;
+    for (const auto& r : mu_results) {
+        if (r.mu > 0.0 && r.status == CoupledGmresStatus::converged) {
             if (mu_star < 0.0 || r.mu < mu_star) {
                 mu_star = r.mu;
                 mu_star_iterations = r.total_inner_iterations;
             }
         }
     }
-    std::cout << "E3 gate: it0(mu=0)=" << it0 << " mechanism_confirmed=" << (mechanism_confirmed ? "true" : "false")
-              << " mu_star=" << mu_star << " mu_star_iterations=" << mu_star_iterations << '\n';
+    std::cout << "E3 gate (>=10x reduction exists): it0(mu=0)=" << it0
+              << " mechanism_confirmed=" << (mechanism_confirmed ? "true" : "false")
+              << " | E5 decision (smallest converged-within-budget mu): mu_star=" << mu_star
+              << " mu_star_iterations=" << mu_star_iterations << '\n';
     check("E3_mechanism_confirmed_ge_10x_reduction", mechanism_confirmed);
 
     // =========================================================================
