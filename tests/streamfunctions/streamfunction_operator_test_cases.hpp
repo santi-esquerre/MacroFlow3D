@@ -216,4 +216,27 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // `newton_gpu_cases.cu` for the exact fixture.
 [[nodiscard]] CaseRegistry newton_difficult_case_registry();
 
+// SF-25 T02 D-gate diagnostic (`ShiftedJacobianOperator`, SF-25 T01
+// `ShiftedJacobianOperator.cuh/.cu`) acceptance cases. `terminal_solver_
+// case_registry()` (cheap tier) has one enabler unit case
+// (`terminal_shifted_apply_unit`): shifted-apply exactness against an
+// independently recomputed `Jp+mu*Ap`, the `mu=0` bitwise passthrough, and
+// the `set_mu`/unprepared-apply fail-fast contract. See
+// `terminal_solver_gpu_cases.cu` for the exact case list; folded into
+// `streamfunction_operator_tests.cpp`'s aggregated `cases()` map exactly
+// like every other cheap-tier registry above.
+[[nodiscard]] CaseRegistry terminal_solver_case_registry();
+
+// SF-25 T02 D-gate diagnostic PROTOCOL case (`terminal_dgate_diagnostic`,
+// HEAVY tier: freezes a genuine sigma_Y^2=1, 32^3 Picard/Anderson plateau
+// state, then runs the PRESPECIFIED E2-E5 mu-sweep/spectral-probe/LM
+// mini-solve protocol from the SF-25 activation bitácora). Deliberately NOT
+// folded into `streamfunction_operator_tests.cpp`'s aggregated `cases()` map
+// (the map backing `--list` and the no-argument "run everything" default):
+// reachable only via an explicit `--case terminal_dgate_diagnostic`,
+// matching the CMakeLists.txt `streamfunction_terminal_dgate` ctest entry.
+// See `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
+// `terminal_solver_gpu_cases.cu` for the exact fixture.
+[[nodiscard]] CaseRegistry terminal_solver_dgate_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

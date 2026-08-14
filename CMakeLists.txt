@@ -392,6 +392,7 @@ if(MACROFLOW3D_BUILD_APPS)
         tests/streamfunctions/jvp_gpu_cases.cu
         tests/streamfunctions/gmres_gpu_cases.cu
         tests/streamfunctions/newton_gpu_cases.cu
+        tests/streamfunctions/terminal_solver_gpu_cases.cu
     )
     target_link_libraries(streamfunction_operator_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_operator_tests
@@ -524,6 +525,20 @@ if(MACROFLOW3D_BUILD_APPS)
     # mechanism.
     add_test(NAME streamfunction_newton_difficult COMMAND streamfunction_operator_tests
         --case newton_difficult_case
+    )
+    # SF-25 T02: ShiftedJacobianOperator (SF-25 T01) cheap enabler unit case.
+    # Cheap tier: see terminal_solver_gpu_cases.cu / streamfunction_operator_
+    # tests.cpp (cases()) for the exact fixture.
+    add_test(NAME streamfunction_terminal_unit COMMAND streamfunction_operator_tests
+        --case terminal_shifted_apply_unit
+    )
+    # SF-25 T02: the D-gate diagnostic protocol (E2-E5, PRESPECIFIED in the
+    # SF-25 activation bitácora). Kept as a separate ctest entry (not part of
+    # the default `streamfunction_operator_tests` runs); see
+    # terminal_solver_gpu_cases.cu / streamfunction_operator_tests.cpp
+    # (heavy_cases()) for the isolation mechanism.
+    add_test(NAME streamfunction_terminal_dgate COMMAND streamfunction_operator_tests
+        --case terminal_dgate_diagnostic
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3
