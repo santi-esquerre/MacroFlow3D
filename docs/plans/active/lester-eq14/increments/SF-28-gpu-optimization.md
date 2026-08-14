@@ -1,10 +1,10 @@
-# SF-27 — GPU optimization
+# SF-28 — GPU optimization
 
 - State: `pending`
 - Goal: `Fusionar kernels y reducir tráfico de memoria sin cambiar resultados.`
-- Depends on: `SF-26`
-- Unlocks: `SF-28`
-- Branch: `science/lester-sf-27-gpu-optimization`
+- Depends on: `SF-27`
+- Unlocks: `SF-29`
+- Branch: `science/lester-sf-28-gpu-optimization`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf23-gpu-optimization`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + performance evidence`
 - Human review: `required`
@@ -92,7 +92,7 @@ scripts/remote wait lester-sf23
 - [ ] Only measured beneficial optimizations remain enabled.
 - [ ] Gate 3A and human review pass.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-27 complete and selects SF-28.
+- [ ] Dashboard marks SF-28 complete and selects SF-29.
 <!-- completion-checklist:end -->
 
 ## Advancement rule

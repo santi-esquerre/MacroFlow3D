@@ -26,7 +26,7 @@ if (( failures > 0 )); then
 fi
 
 mapfile -t files < <(find "$increment_dir" -maxdepth 1 -type f -name 'SF-*.md' | sort)
-expected_count=30
+expected_count=31
 [[ ${#files[@]} -eq $expected_count ]] || \
     fail "expected $expected_count increment files, found ${#files[@]}"
 

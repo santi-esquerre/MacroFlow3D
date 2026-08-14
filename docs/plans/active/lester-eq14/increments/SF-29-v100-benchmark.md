@@ -1,10 +1,10 @@
-# SF-28 — V100 benchmark
+# SF-29 — V100 benchmark
 
 - State: `pending`
 - Goal: `Validar robustez, memoria y convergencia del solver Picard en V100 hasta 256 cubed.`
-- Depends on: `SF-27`
-- Unlocks: `SF-29`
-- Branch: `science/lester-sf-28-v100-benchmark`
+- Depends on: `SF-28`
+- Unlocks: `SF-30`
+- Branch: `science/lester-sf-29-v100-benchmark`
 - Worktree: `~/src/MacroFlow3D/.agents/worktrees/lester-sf24-v100-benchmark`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A + Gate 4`
 - Human review: `required`
@@ -93,7 +93,7 @@ scripts/remote wait lester-256
 - [ ] Selected 5–10 realization robustness run is documented.
 - [ ] Gate 4 human interpretation accepts or explicitly bounds remaining risk.
 - [ ] Evidence, PR, and commit are recorded.
-- [ ] Dashboard marks SF-28 complete and selects SF-29.
+- [ ] Dashboard marks SF-29 complete and selects SF-30.
 <!-- completion-checklist:end -->
 
 ## Advancement rule
