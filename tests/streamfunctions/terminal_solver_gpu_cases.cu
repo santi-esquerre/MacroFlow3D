@@ -1333,6 +1333,57 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
     blas::copy(ctx, DeviceSpan<const real>(e7_saved_u2.span()), fields.u2_span());
     ctx.synchronize();
 
+    // =========================================================================
+    // E8 (PRESPECIFIED, bitácora 2026-08-14T14:00Z, corrective C04): the LAST
+    // probe before escalation, print-only, no verdict change. Every stalled
+    // path above is warm-started along the lambda-continuation branch; the
+    // paper instead initializes with the harmonic (zero-source) solve at
+    // FULL heterogeneity. E8 tests a DIRECT zero-source solve at the frozen
+    // attempt's parameters (lambda=0.5125, sigma_Y^2=1) using the SAME
+    // `problem_view` (Y_att/log_conductivity_y, the attempt flow velocity,
+    // benchmark(1) gauge) already in scope. A NEW fields/workspace pair is
+    // used so the E2 workspace's coefficient/hierarchy state and the frozen
+    // `fields` used by any later code stay untouched for auditability.
+    // =========================================================================
+    StreamfunctionFields e8_fields;
+    StreamfunctionWorkspace e8_workspace;
+
+    StreamfunctionSolverConfig e8_config = base_config; // E2 freeze config: adaptive
+                                                         // defaults, anderson R5 enabled,
+                                                         // newton disabled.
+    e8_config.eta = real{1};                            // default; explicit per the E8 spec.
+    e8_config.epsilon = real{1e-2};                     // default; explicit per the E8 spec.
+    e8_config.initial_state = PicardInitialState::zero_source; // default; explicit -- the
+                                                                 // harmonic-init probe itself.
+    e8_config.coefficient_state = CoefficientState::rebuild;   // default; explicit.
+    e8_config.picard.max_iter = 500;
+
+    const StreamfunctionSolveReport e8_report =
+        solve_streamfunctions(ctx, problem_view, e8_config, e8_fields, e8_workspace);
+    ctx.synchronize();
+
+    std::cout << "E8 harmonic_init: status=" << solve_status_label(e8_report.status)
+              << " exit_reason=" << exit_reason_label(e8_report.exit_reason)
+              << " picard_iterations=" << e8_report.picard_iterations << " r_F=" << e8_report.residual.r_F
+              << " anderson_acc=" << e8_report.anderson_accepted
+              << " anderson_rej=" << e8_report.anderson_rejected << '\n';
+
+    if (!e8_report.picard_history.empty()) {
+        std::cout << "E8 r_F_history first=" << e8_report.picard_history.front().r_F
+                  << " last=" << e8_report.picard_history.back().r_F << '\n';
+    } else {
+        std::cout << "E8 r_F_history first=n/a last=n/a\n";
+    }
+
+    const double e8_r_F = static_cast<double>(e8_report.residual.r_F);
+    const bool e8_converged = e8_report.status == StreamfunctionSolveStatus::converged;
+    const char* e8_verdict_evidence =
+        (e8_converged && e8_r_F <= 1e-6)
+            ? "decisive_branch_fold(r_F<=1e-6)"
+            : ((!e8_converged && e8_r_F >= 1e-4 && e8_r_F <= 1e-2) ? "refuting_intrinsic(~1e-3)"
+                                                                    : "inconclusive");
+    std::cout << "E8 verdict-evidence: " << e8_verdict_evidence << '\n';
+
     check("terminal_method_demonstrated_E5_or_E6", e5_pass || e6_pass);
 
     (void)e2_freeze_ok;
@@ -1347,7 +1398,8 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
               "bounded-non-monotone safeguards (dtau_0=1/mu_star, SER schedule, <=60 steps) run "
               "iff E3 confirmed the mechanism and E5 failed (amendment E6a + decision E6, "
               "bitácora 2026-08-14T12:10Z); E6b micro-step scan + E7 epsilon-fold probe (print-only "
-              "evidence, bitácora 2026-08-14T13:05Z)";
+              "evidence, bitácora 2026-08-14T13:05Z); E8 harmonic-init probe (print-only, "
+              "bitácora 2026-08-14T14:00Z)";
 
     return {pass,
             "terminal_dgate_diagnostic",
