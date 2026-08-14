@@ -1088,6 +1088,251 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
         std::cout << "E6_SKIPPED_E5_PASSED\n";
     }
 
+    // =========================================================================
+    // E6b (PRESPECIFIED, bitácora 2026-08-14T13:05Z, corrective C03):
+    // micro-step scan from the FROZEN state -- print-only evidence, no state
+    // update, no check. Closes the step-size loophole: if even near-
+    // infinitesimal flow steps (large mu, i.e. small dtau=1/mu) ascend r_F,
+    // F^T J A^-1 F < 0 is established directly at the frozen state,
+    // independent of the SER dtau schedule E6 explored.
+    // =========================================================================
+    jvp.prepare_jvp_base(ctx, grid, q_att, CoupledVectorView{fields.u1_span(), fields.u2_span()}, gauge,
+                         real{1}, source_config, histogram_config);
+
+    const real e6b_rel_tol = std::clamp(static_cast<real>(std::sqrt(r_F_frozen)), real{1e-8}, real{1e-1});
+    const double e6b_mu_list[] = {1.0, 10.0};
+    for (double e6b_mu_d : e6b_mu_list) {
+        const real e6b_mu = static_cast<real>(e6b_mu_d);
+        ShiftedJacobianOperator e6b_op(jvp, grid, q_att, e6b_mu);
+        e6b_op.prepare(n);
+        CoupledGmres e6b_gmres;
+        e6b_gmres.prepare(n, 10);
+
+        DeviceBuffer<real> e6b_delta1(n), e6b_delta2(n);
+        blas::fill(ctx, e6b_delta1.span(), real{0});
+        blas::fill(ctx, e6b_delta2.span(), real{0});
+
+        CoupledGmresConfig e6b_config;
+        e6b_config.restart = 10;
+        e6b_config.max_iterations = 100;
+        e6b_config.rel_tol = e6b_rel_tol;
+
+        const CoupledGmresReport e6b_report = e6b_gmres.solve(
+            ctx, grid, e6b_op, precond,
+            ConstCoupledVectorView(DeviceSpan<const real>(b1.span()), DeviceSpan<const real>(b2.span())),
+            e6b_config, JvpDeltaConfig{}, CoupledVectorView{e6b_delta1.span(), e6b_delta2.span()});
+        ctx.synchronize();
+
+        DeviceBuffer<real> e6b_candidate1(n), e6b_candidate2(n);
+        blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), e6b_candidate1.span());
+        blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), e6b_candidate2.span());
+        blas::axpy(ctx, real{1}, DeviceSpan<const real>(e6b_delta1.span()), e6b_candidate1.span());
+        blas::axpy(ctx, real{1}, DeviceSpan<const real>(e6b_delta2.span()), e6b_candidate2.span());
+        projector.project(ctx, e6b_candidate1.span(), mean_zero_ws);
+        projector.project(ctx, e6b_candidate2.span(), mean_zero_ws);
+
+        StreamfunctionResidualWorkspace e6b_residual_ws;
+        e6b_residual_ws.prepare(n);
+        DeviceBuffer<real> e6b_cand_f1(n), e6b_cand_f2(n);
+        enqueue_streamfunction_residual(
+            ctx, grid, q_att, PeriodicStreamfunctionFluctuations{e6b_candidate1.span(), e6b_candidate2.span()},
+            gauge, real{1}, source_config, histogram_config, e6b_cand_f1.span(), e6b_cand_f2.span(),
+            e6b_residual_ws);
+        const StreamfunctionResidualReport e6b_cand_res = synchronize_streamfunction_residual_report(
+            ctx, grid, real{1}, source_config, histogram_config, e6b_residual_ws);
+        const double r_F_candidate = static_cast<double>(e6b_cand_res.r_F);
+
+        std::cout << "E6b mu=" << e6b_mu_d << " gmres_status=" << gmres_status_label(e6b_report.status)
+                  << " inner=" << e6b_report.total_inner_iterations << " r_F_frozen=" << r_F_frozen
+                  << " r_F_candidate=" << r_F_candidate << " delta_rF=" << (r_F_candidate - r_F_frozen)
+                  << '\n';
+    }
+
+    // =========================================================================
+    // E7 (PRESPECIFIED, bitácora 2026-08-14T13:05Z, corrective C03):
+    // epsilon-fold probe at the SAME frozen state -- print-only evidence, no
+    // verdict change. Tests whether the eta=1 plateau is an epsilon=1e-2
+    // regularization artifact of a fold in the solution branch (eta_fold
+    // crossing eta=1 near lambda~0.5 for sigma^2=1) rather than an intrinsic
+    // obstruction at eta=1.
+    // =========================================================================
+    NonlinearSourceConfig e7_source_config;
+    e7_source_config.epsilon = real{1e-3};
+    e7_source_config.v_rms = static_cast<real>(v_rms);
+
+    // (i) frozen-state residual under epsilon=1e-3.
+    StreamfunctionResidualWorkspace e7_frozen_residual_ws;
+    e7_frozen_residual_ws.prepare(n);
+    DeviceBuffer<real> e7_frozen_f1(n), e7_frozen_f2(n);
+    enqueue_streamfunction_residual(ctx, grid, q_att,
+                                    PeriodicStreamfunctionFluctuations{fields.u1_span(), fields.u2_span()},
+                                    gauge, real{1}, e7_source_config, histogram_config, e7_frozen_f1.span(),
+                                    e7_frozen_f2.span(), e7_frozen_residual_ws);
+    const StreamfunctionResidualReport e7_frozen_residual = synchronize_streamfunction_residual_report(
+        ctx, grid, real{1}, e7_source_config, histogram_config, e7_frozen_residual_ws);
+    std::cout << "E7 frozen_state_r_F_at_eps1e-3 = " << e7_frozen_residual.r_F << '\n';
+
+    // Save the frozen fields before the warm-started probe mutates them.
+    DeviceBuffer<real> e7_saved_u1(n), e7_saved_u2(n);
+    blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), e7_saved_u1.span());
+    blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), e7_saved_u2.span());
+    ctx.synchronize();
+
+    // (ii) one warm-started stage solve at eta=1 with epsilon=1e-3, reusing
+    // the E2 stage's lambda/q/hierarchy (coefficient_state=reuse); epsilon
+    // does not touch q/hierarchy/the affine RHS, so this is exactly the
+    // reuse contract.
+    StreamfunctionSolverConfig e7_stage_config = stage_config;
+    e7_stage_config.epsilon = real{1e-3};
+    e7_stage_config.picard.max_iter = 200;
+    e7_stage_config.coefficient_state = CoefficientState::reuse;
+
+    const StreamfunctionSolveReport e7_stage_report =
+        solve_streamfunctions(ctx, problem_view, e7_stage_config, fields, workspace);
+    ctx.synchronize();
+
+    double e7_best_r_F = static_cast<double>(e7_stage_report.residual.r_F);
+    std::cout << "E7 stage_eps1e-3: status=" << solve_status_label(e7_stage_report.status)
+              << " exit_reason=" << exit_reason_label(e7_stage_report.exit_reason)
+              << " picard_iterations=" << e7_stage_report.picard_iterations
+              << " r_F=" << e7_stage_report.residual.r_F
+              << " anderson_acc=" << e7_stage_report.anderson_accepted << '\n';
+
+    // (iii) if (ii) did not converge, the E5-style LM mini-solve at
+    // epsilon=1e-3, continuing from (ii)'s resulting fields state.
+    if (e7_stage_report.status != StreamfunctionSolveStatus::converged) {
+        DeviceBuffer<real> e7lm_state1(n), e7lm_state2(n);
+        blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), e7lm_state1.span());
+        blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), e7lm_state2.span());
+        ctx.synchronize();
+
+        ShiftedJacobianOperator e7lm_op(jvp, grid, q_att, real{0});
+        e7lm_op.prepare(n);
+        CoupledGmres e7lm_gmres;
+        e7lm_gmres.prepare(n, 10);
+
+        StreamfunctionResidualWorkspace e7lm_residual_ws;
+        e7lm_residual_ws.prepare(n);
+        DeviceBuffer<real> e7lm_f1(n), e7lm_f2(n);
+        DeviceBuffer<real> e7lm_trial1(n), e7lm_trial2(n);
+        DeviceBuffer<real> e7lm_trial_f1(n), e7lm_trial_f2(n);
+        DeviceBuffer<real> e7lm_delta1(n), e7lm_delta2(n);
+        DeviceBuffer<real> e7lm_rhs1(n), e7lm_rhs2(n);
+
+        const double theta = mu_star / r_F_frozen; // theta rule unchanged (E5).
+        constexpr real kE7LmAlphaMin = real{0.03125}; // 2^-5, matches E5's kAlphaMin.
+        constexpr real kE7LmArmijoC = real{1e-4};      // matches E5's kArmijoC.
+
+        bool e7lm_reached = false;
+        bool e7lm_step_failure = false;
+        double e7lm_final_r_F = std::numeric_limits<double>::quiet_NaN();
+        for (int k = 0; k < 30 && !e7lm_reached && !e7lm_step_failure; ++k) {
+            enqueue_streamfunction_residual(
+                ctx, grid, q_att, PeriodicStreamfunctionFluctuations{e7lm_state1.span(), e7lm_state2.span()},
+                gauge, real{1}, e7_source_config, histogram_config, e7lm_f1.span(), e7lm_f2.span(),
+                e7lm_residual_ws);
+            const StreamfunctionResidualReport res_k = synchronize_streamfunction_residual_report(
+                ctx, grid, real{1}, e7_source_config, histogram_config, e7lm_residual_ws);
+            const double r_F_k = static_cast<double>(res_k.r_F);
+            e7lm_final_r_F = r_F_k;
+
+            if (r_F_k <= 1e-4) {
+                e7lm_reached = true;
+                std::cout << "E7-LM k=" << k << " r_F=" << r_F_k << " REACHED\n";
+                break;
+            }
+
+            jvp.prepare_jvp_base(ctx, grid, q_att, CoupledVectorView{e7lm_state1.span(), e7lm_state2.span()},
+                                 gauge, real{1}, e7_source_config, histogram_config);
+
+            blas::copy(ctx, DeviceSpan<const real>(e7lm_f1.span()), e7lm_rhs1.span());
+            blas::copy(ctx, DeviceSpan<const real>(e7lm_f2.span()), e7lm_rhs2.span());
+            blas::scal(ctx, e7lm_rhs1.span(), real{-1});
+            blas::scal(ctx, e7lm_rhs2.span(), real{-1});
+
+            const real mu_k = static_cast<real>(theta * r_F_k);
+            e7lm_op.set_mu(mu_k);
+
+            CoupledGmresConfig e7lm_config;
+            e7lm_config.restart = 10;
+            e7lm_config.max_iterations = 100;
+            e7lm_config.rel_tol = std::clamp(static_cast<real>(std::sqrt(r_F_k)), real{1e-8}, real{1e-1});
+
+            blas::fill(ctx, e7lm_delta1.span(), real{0});
+            blas::fill(ctx, e7lm_delta2.span(), real{0});
+            const CoupledGmresReport gmres_report = e7lm_gmres.solve(
+                ctx, grid, e7lm_op, precond,
+                ConstCoupledVectorView(DeviceSpan<const real>(e7lm_rhs1.span()),
+                                      DeviceSpan<const real>(e7lm_rhs2.span())),
+                e7lm_config, JvpDeltaConfig{}, CoupledVectorView{e7lm_delta1.span(), e7lm_delta2.span()});
+            ctx.synchronize();
+
+            bool accepted = false;
+            real accepted_alpha = real{0};
+            real alpha = real{1};
+            const double phi_k = 0.5 * r_F_k * r_F_k;
+            while (alpha >= kE7LmAlphaMin) {
+                blas::copy(ctx, DeviceSpan<const real>(e7lm_state1.span()), e7lm_trial1.span());
+                blas::copy(ctx, DeviceSpan<const real>(e7lm_state2.span()), e7lm_trial2.span());
+                blas::axpy(ctx, alpha, DeviceSpan<const real>(e7lm_delta1.span()), e7lm_trial1.span());
+                blas::axpy(ctx, alpha, DeviceSpan<const real>(e7lm_delta2.span()), e7lm_trial2.span());
+                projector.project(ctx, e7lm_trial1.span(), mean_zero_ws);
+                projector.project(ctx, e7lm_trial2.span(), mean_zero_ws);
+
+                enqueue_streamfunction_residual(
+                    ctx, grid, q_att, PeriodicStreamfunctionFluctuations{e7lm_trial1.span(), e7lm_trial2.span()},
+                    gauge, real{1}, e7_source_config, histogram_config, e7lm_trial_f1.span(),
+                    e7lm_trial_f2.span(), e7lm_residual_ws);
+                const StreamfunctionResidualReport trial_res = synchronize_streamfunction_residual_report(
+                    ctx, grid, real{1}, e7_source_config, histogram_config, e7lm_residual_ws);
+                const double r_F_trial = static_cast<double>(trial_res.r_F);
+                const bool finite_ok = std::isfinite(r_F_trial);
+                const double phi_trial = 0.5 * r_F_trial * r_F_trial;
+                const bool armijo_ok = finite_ok && phi_trial <= (1.0 - static_cast<double>(kE7LmArmijoC) *
+                                                                          static_cast<double>(alpha)) *
+                                                                        phi_k;
+
+                std::cout << "  E7-LM k=" << k << " alpha=" << alpha << " r_F_trial=" << r_F_trial
+                          << " finite=" << (finite_ok ? "true" : "false")
+                          << " armijo=" << (armijo_ok ? "accept" : "reject") << '\n';
+
+                if (armijo_ok) {
+                    accepted = true;
+                    accepted_alpha = alpha;
+                    blas::copy(ctx, DeviceSpan<const real>(e7lm_trial1.span()), e7lm_state1.span());
+                    blas::copy(ctx, DeviceSpan<const real>(e7lm_trial2.span()), e7lm_state2.span());
+                    ctx.synchronize();
+                    break;
+                }
+                alpha *= real{0.5};
+            }
+
+            std::cout << "E7-LM k=" << k << " r_F=" << r_F_k << " mu_k=" << mu_k
+                      << " gmres_status=" << gmres_status_label(gmres_report.status)
+                      << " gmres_inner=" << gmres_report.total_inner_iterations
+                      << " accepted_alpha=" << (accepted ? static_cast<double>(accepted_alpha) : 0.0) << '\n';
+
+            if (!accepted) {
+                std::cout << "E7-LM_STEP_FAILURE k=" << k << '\n';
+                e7lm_step_failure = true;
+            }
+        }
+
+        std::cout << "E7_LM_result r_F=" << e7lm_final_r_F << '\n';
+        if (std::isfinite(e7lm_final_r_F)) {
+            e7_best_r_F = std::min(e7_best_r_F, e7lm_final_r_F);
+        }
+    }
+
+    const char* e7_verdict_evidence =
+        e7_best_r_F < 1e-5 ? "decisive" : (e7_best_r_F <= 1e-4 ? "supportive" : "refuting");
+    std::cout << "E7 verdict-evidence: " << e7_verdict_evidence << " (best_r_F=" << e7_best_r_F << ")\n";
+
+    // Restore fields to the frozen state so any later code sees it unchanged.
+    blas::copy(ctx, DeviceSpan<const real>(e7_saved_u1.span()), fields.u1_span());
+    blas::copy(ctx, DeviceSpan<const real>(e7_saved_u2.span()), fields.u2_span());
+    ctx.synchronize();
+
     check("terminal_method_demonstrated_E5_or_E6", e5_pass || e6_pass);
 
     (void)e2_freeze_ok;
@@ -1101,7 +1346,8 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
               "(theta=mu_star/r_F_frozen, <=30 steps); E6 Psi-tc/backward-Euler probe with "
               "bounded-non-monotone safeguards (dtau_0=1/mu_star, SER schedule, <=60 steps) run "
               "iff E3 confirmed the mechanism and E5 failed (amendment E6a + decision E6, "
-              "bitácora 2026-08-14T12:10Z)";
+              "bitácora 2026-08-14T12:10Z); E6b micro-step scan + E7 epsilon-fold probe (print-only "
+              "evidence, bitácora 2026-08-14T13:05Z)";
 
     return {pass,
             "terminal_dgate_diagnostic",
