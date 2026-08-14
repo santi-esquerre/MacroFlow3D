@@ -540,6 +540,16 @@ if(MACROFLOW3D_BUILD_APPS)
     add_test(NAME streamfunction_terminal_dgate COMMAND streamfunction_operator_tests
         --case terminal_dgate_diagnostic
     )
+    # SF-25 corrective C05: the owner-approved R1a/R1b resolution-
+    # discriminating experiment (`terminal_resolution_probe`, always-pass
+    # print-only evidence recorder, bitácora 2026-08-14T15:20Z). Kept as a
+    # separate ctest entry (not part of the default `streamfunction_
+    # operator_tests` runs); see terminal_solver_gpu_cases.cu /
+    # streamfunction_operator_tests.cpp (heavy_cases()) for the isolation
+    # mechanism.
+    add_test(NAME streamfunction_terminal_resolution COMMAND streamfunction_operator_tests
+        --case terminal_resolution_probe
+    )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3
     # memory/runtime record. Standalone (mirrors run_operator_tests.cu),

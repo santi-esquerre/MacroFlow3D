@@ -30,6 +30,7 @@
 #include "src/runtime/cuda_check.cuh"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstring>
@@ -1422,6 +1423,182 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
             "(bitácora 2026-08-14T12:10Z)"};
 }
 
+// ---------------------------------------------------------------------------
+// Case 3: terminal_resolution_probe (HEAVY, print-only evidence recorder).
+// Implements the owner-approved experiment R1a/R1b PRESPECIFIED in the SF-25
+// bitácora at 2026-08-14T15:20Z: two DIRECT (no continuation) 64^3 solves at
+// the critical amplitude 0.5125*Y_unit (sigma_Y^2=1, seed 12345,
+// normalize_variance) that shelves at ~1e-3 on the 32^3 D-gate fixture,
+// discriminating whether the eta=1 attainability boundary is a
+// resolution-per-correlation-length (ell/h) effect: R1a doubles ell/h to 16
+// (the paper's own resolution) at the 32^3 fixture's domain ratio (L/ell=4);
+// R1b (control) keeps ell/h=8 at the new grid size (L/ell=8), isolating
+// ell/h from grid size and domain ratio. This case is an ALWAYS-PASS
+// evidence recorder -- the printed "R1 joint-verdict" line is evidence for
+// the orchestrator/owner's resolution-surface decision, NOT a pass/fail
+// test gate (per the owner-approved experiment design, bitácora
+// 2026-08-14T15:20Z).
+// ---------------------------------------------------------------------------
+
+struct ResolutionProbeResult {
+    StreamfunctionSolveStatus status{StreamfunctionSolveStatus::not_run};
+    double r_F{std::numeric_limits<double>::quiet_NaN()};
+};
+
+// Shared helper for R1a/R1b: a single DIRECT zero-source 64^3 solve at the
+// critical amplitude 0.5125*Y_unit, sigma_Y^2=1, seed 12345, the requested
+// correlation length `ell`. Mirrors the E2/E8 per-lambda setup (Y scale,
+// K=exp(Y), SF-19 affine flow solve, log_conductivity_y problem view,
+// benchmark(1) gauge) but with NO continuation: a fresh field/flow/fields/
+// workspace pair per call, exactly as R1 specifies.
+[[nodiscard]] ResolutionProbeResult run_resolution_probe_solve(const char* label, int n, real ell) {
+    std::cout << std::setprecision(17);
+
+    const Grid3D grid(n, n, n, real{1}, real{1}, real{1}); // dx=1, per the R1 spec.
+    const std::size_t cells = grid.num_cells();
+    CudaContext ctx(0);
+
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{1};
+    field_config.corr_length = ell;
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    DeviceBuffer<real> y(cells);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    const physics::PeriodicGaussianFieldReport field_report =
+        physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(), field_workspace);
+    ctx.synchronize();
+
+    // Scale by the critical amplitude 0.5125 (the SF-25 D-gate frozen
+    // amplitude that shelves at 32^3, ell/h=8).
+    blas::scal(ctx, y.span(), real{0.5125});
+
+    DeviceBuffer<real> k(cells);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y.span()), k.span());
+
+    const std::size_t u_size = compact_mac_u_size(grid);
+    const std::size_t v_size = compact_mac_v_size(grid);
+    const std::size_t w_size = compact_mac_w_size(grid);
+    DeviceBuffer<real> flow_u(u_size), flow_v(v_size), flow_w(w_size);
+    physics::AffinePeriodicFlowWorkspace flow_workspace;
+    physics::AffinePeriodicVelocityView velocity{flow_u.span(), flow_v.span(), flow_w.span()};
+    const physics::AffinePeriodicFlowConfig flow_config{}; // qbar=(1,0,0) default.
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k.span()), flow_config,
+                                               velocity, flow_workspace);
+    ctx.synchronize();
+
+    StreamfunctionProblemView problem_view;
+    problem_view.grid = grid;
+    problem_view.conductivity = DeviceSpan<const real>(y.span());
+    problem_view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    problem_view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u.span()),
+                                                               DeviceSpan<const real>(flow_v.span()),
+                                                               DeviceSpan<const real>(flow_w.span())};
+    problem_view.bc = triply_periodic();
+    problem_view.gauge = AffineGauge::benchmark(real{1});
+
+    StreamfunctionSolverConfig config{}; // full defaults (eta=1, epsilon=1e-2, newton disabled).
+    config.anderson.enabled = true;
+    config.anderson.depth = 5;
+    config.anderson.start_iteration = 5;
+    config.anderson.condition_limit = real{1e12};
+    config.initial_state = PicardInitialState::zero_source; // default; explicit -- the R1 spec.
+    config.coefficient_state = CoefficientState::rebuild;   // default; explicit.
+    config.picard.max_iter = 500;
+
+    StreamfunctionFields fields;
+    StreamfunctionWorkspace workspace;
+
+    const auto t0 = std::chrono::steady_clock::now();
+    const StreamfunctionSolveReport report =
+        solve_streamfunctions(ctx, problem_view, config, fields, workspace);
+    ctx.synchronize();
+    const auto t1 = std::chrono::steady_clock::now();
+    const double wall_seconds = std::chrono::duration<double>(t1 - t0).count();
+
+    const double ell_over_h = static_cast<double>(ell) / static_cast<double>(grid.dx);
+    const double domain_length = static_cast<double>(n) * static_cast<double>(grid.dx);
+    const double l_over_ell = domain_length / static_cast<double>(ell);
+
+    std::cout << "R1" << label << " n=" << n << " ell=" << static_cast<double>(ell)
+              << " ell_over_h=" << ell_over_h << " L_over_ell=" << l_over_ell
+              << " field_final_variance=" << field_report.final_variance
+              << " status=" << solve_status_label(report.status)
+              << " exit_reason=" << exit_reason_label(report.exit_reason)
+              << " picard_iterations=" << report.picard_iterations << " r_F=" << report.residual.r_F
+              << " anderson_acc=" << report.anderson_accepted << " anderson_rej=" << report.anderson_rejected
+              << " wall_seconds=" << wall_seconds << '\n';
+
+    if (!report.picard_history.empty()) {
+        std::cout << "R1" << label << " r_F_history first=" << report.picard_history.front().r_F
+                  << " last=" << report.picard_history.back().r_F << '\n';
+    } else {
+        std::cout << "R1" << label << " r_F_history first=n/a last=n/a\n";
+    }
+
+    return {report.status, static_cast<double>(report.residual.r_F)};
+}
+
+[[nodiscard]] CaseResult case_terminal_resolution_probe() {
+    std::cout << std::setprecision(17);
+
+    // R1a: 64^3, ell=16 (ell/h=16, L/ell=4 -- the paper's own ell/h at the
+    // 32^3 fixture's domain ratio).
+    const ResolutionProbeResult r1a = run_resolution_probe_solve("a", 64, real{16});
+    // R1b (control): 64^3, ell=8 (ell/h=8, L/ell=8 -- the OLD ell/h at the
+    // new grid size, isolating ell/h from grid size/domain ratio).
+    const ResolutionProbeResult r1b = run_resolution_probe_solve("b", 64, real{8});
+
+    const bool r1a_confirming =
+        r1a.status == StreamfunctionSolveStatus::converged && r1a.r_F <= 1e-6;
+    const bool r1a_shelved = r1a.status == StreamfunctionSolveStatus::not_converged;
+    const bool r1b_shelf =
+        r1b.status == StreamfunctionSolveStatus::not_converged && r1b.r_F >= 1e-4 && r1b.r_F <= 1e-2;
+    const bool r1b_converged = r1b.status == StreamfunctionSolveStatus::converged;
+
+    const char* verdict;
+    if (r1a_confirming && r1b_shelf) {
+        verdict = "RESOLUTION_HYPOTHESIS_CONFIRMED";
+    } else if (!r1a_confirming && r1a_shelved) {
+        verdict = "HYPOTHESIS_REFUTED_R1A_SHELVED";
+    } else if (r1a_confirming && !r1b_shelf && r1b_converged) {
+        verdict = "GRID_SIZE_EFFECT_R1B_CONVERGED";
+    } else {
+        verdict = "INCONCLUSIVE";
+    }
+
+    std::cout << "R1 joint-verdict: " << verdict << " (raw: r1a_status=" << solve_status_label(r1a.status)
+              << " r1a_r_F=" << r1a.r_F << " r1b_status=" << solve_status_label(r1b.status)
+              << " r1b_r_F=" << r1b.r_F << ")\n";
+
+    std::cout << "case=terminal_resolution_probe verdict=PASS (always-pass evidence recorder; the "
+                 "printed R1 joint-verdict line above is evidence for the owner/orchestrator "
+                 "resolution-surface decision, not a test gate)\n";
+
+    std::ostringstream detail;
+    detail << "R1a n=64 ell=16 (ell/h=16, L/ell=4) vs R1b n=64 ell=8 (ell/h=8, L/ell=8) control, "
+              "both sigma_Y^2=1, seed=12345, normalize_variance, amplitude 0.5125*Y_unit, eta=1, "
+              "epsilon=1e-2, zero_source init, coefficient rebuild, anderson R5 (depth 5, start 5, "
+              "limit 1e12), newton disabled, picard.max_iter=500, SF-19 affine flow qbar=(1,0,0); "
+              "owner-approved experiment R1 (bitácora 2026-08-14T15:20Z), always-pass evidence "
+              "recorder -- the reported verdict is evidence for the orchestrator/owner, not a test "
+              "gate";
+
+    return {true,
+            "terminal_resolution_probe",
+            "gpu-terminal-resolution-probe",
+            detail.str(),
+            r1a.r_F,
+            r1b.r_F,
+            verdict,
+            "always pass (evidence recorder; see the printed R1 joint-verdict line)",
+            "owner-approved experiment R1 (bitácora 2026-08-14T15:20Z): PRESPECIFIED R1a/R1b "
+            "resolution-discriminating probe, print-only, no pass/fail assertion -- the case "
+            "ALWAYS returns pass=true because it is an evidence recorder for the owner's "
+            "resolution-surface decision, not a D-gate-style test gate"};
+}
+
 } // namespace
 
 CaseRegistry terminal_solver_case_registry() {
@@ -1429,7 +1606,8 @@ CaseRegistry terminal_solver_case_registry() {
 }
 
 CaseRegistry terminal_solver_dgate_case_registry() {
-    return {{"terminal_dgate_diagnostic", case_terminal_dgate_diagnostic}};
+    return {{"terminal_dgate_diagnostic", case_terminal_dgate_diagnostic},
+            {"terminal_resolution_probe", case_terminal_resolution_probe}};
 }
 
 } // namespace macroflow3d::streamfunctions::test

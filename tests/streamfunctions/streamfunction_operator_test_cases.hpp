@@ -230,13 +230,20 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // SF-25 T02 D-gate diagnostic PROTOCOL case (`terminal_dgate_diagnostic`,
 // HEAVY tier: freezes a genuine sigma_Y^2=1, 32^3 Picard/Anderson plateau
 // state, then runs the PRESPECIFIED E2-E5 mu-sweep/spectral-probe/LM
-// mini-solve protocol from the SF-25 activation bitácora). Deliberately NOT
-// folded into `streamfunction_operator_tests.cpp`'s aggregated `cases()` map
-// (the map backing `--list` and the no-argument "run everything" default):
-// reachable only via an explicit `--case terminal_dgate_diagnostic`,
-// matching the CMakeLists.txt `streamfunction_terminal_dgate` ctest entry.
-// See `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
-// `terminal_solver_gpu_cases.cu` for the exact fixture.
+// mini-solve protocol from the SF-25 activation bitácora), plus the SF-25
+// corrective C05 owner-approved experiment case
+// (`terminal_resolution_probe`, HEAVY tier: two DIRECT 64^3 zero-source
+// solves at the critical amplitude 0.5125*Y_unit, sigma_Y^2=1 -- R1a at
+// ell/h=16 vs R1b control at ell/h=8 -- discriminating the resolution-per-
+// correlation-length hypothesis; ALWAYS-PASS print-only evidence recorder,
+// bitácora 2026-08-14T15:20Z). Deliberately NOT folded into
+// `streamfunction_operator_tests.cpp`'s aggregated `cases()` map (the map
+// backing `--list` and the no-argument "run everything" default): reachable
+// only via an explicit `--case terminal_dgate_diagnostic` / `--case
+// terminal_resolution_probe`, matching the CMakeLists.txt
+// `streamfunction_terminal_dgate` / `streamfunction_terminal_resolution`
+// ctest entries. See `streamfunction_operator_tests.cpp`'s `heavy_cases()`
+// lookup and `terminal_solver_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry terminal_solver_dgate_case_registry();
 
 }  // namespace macroflow3d::streamfunctions::test
