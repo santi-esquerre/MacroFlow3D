@@ -224,6 +224,10 @@ set(PHYSICS_SOURCES
     # right-preconditioned coupled GMRES built on the SF-22 matrix-free JVP.
     src/physics/streamfunctions/BlockDiagonalMGPreconditioner.cu
     src/physics/streamfunctions/CoupledGmres.cu
+    # SF-25 T01: shifted-system matrix-free operator (mu*A_blk + J), a D-gate
+    # enabler for the manifold-robust terminal solver diagnostic; see
+    # docs/decisions/2026-08-14-manifold-robust-terminal-solver.md.
+    src/physics/streamfunctions/ShiftedJacobianOperator.cu
     src/physics/streamfunctions/Diagnostics.cu
     src/physics/streamfunctions/AndersonAccelerator.cu
     # SF-24: globalized Newton-Krylov phase (inexact-Newton GMRES step +
