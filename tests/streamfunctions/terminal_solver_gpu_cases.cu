@@ -36,6 +36,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <deque>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -2376,12 +2377,76 @@ struct EtaEndgameArm {
     return result;
 }
 
+// ---------------------------------------------------------------------------
+// SF-25 Phase-2 (P2-I) shared helper: `EtaEndgameProblem`/
+// `build_eta_endgame_problem`. Caller-owned buffers backing a
+// `StreamfunctionProblemView` built by the E2/E8/R1-style per-amplitude
+// recipe (field * 0.5125 -> K=exp -> SF-19 affine flow -> log_conductivity_y
+// view, benchmark gauge), parameterized by grid resolution `n` and
+// correlation length `ell` (dx=1 fixed, matching every other 32^3/64^3
+// fixture in this file). `case_terminal_eta_endgame`'s 32^3 call site below
+// is refactored to call this helper with EXACTLY the previous constants
+// (n=32, ell=8) -- identical construction order/values, identical prints
+// (this construction path prints nothing of its own, so behavior is
+// unchanged bit-for-bit). Movable (DeviceBuffer is move-only); the views
+// inside `view` remain valid across the move because they hold device
+// pointer VALUES, not addresses into this struct.
+// ---------------------------------------------------------------------------
+
+struct EtaEndgameProblem {
+    DeviceBuffer<real> y;
+    DeviceBuffer<real> k;
+    DeviceBuffer<real> flow_u;
+    DeviceBuffer<real> flow_v;
+    DeviceBuffer<real> flow_w;
+    StreamfunctionProblemView view;
+};
+
+[[nodiscard]] EtaEndgameProblem build_eta_endgame_problem(CudaContext& ctx, int n, real ell) {
+    EtaEndgameProblem result;
+    const Grid3D grid(n, n, n, real{1}, real{1}, real{1});
+    const std::size_t cells = grid.num_cells();
+
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{1};
+    field_config.corr_length = ell;
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    result.y = DeviceBuffer<real>(cells);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    (void)physics::generate_periodic_gaussian_field(ctx, grid, field_config, result.y.span(), field_workspace);
+    ctx.synchronize();
+
+    blas::scal(ctx, result.y.span(), real{0.5125});
+
+    result.k = DeviceBuffer<real>(cells);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(result.y.span()), result.k.span());
+
+    result.flow_u = DeviceBuffer<real>(compact_mac_u_size(grid));
+    result.flow_v = DeviceBuffer<real>(compact_mac_v_size(grid));
+    result.flow_w = DeviceBuffer<real>(compact_mac_w_size(grid));
+    physics::AffinePeriodicFlowWorkspace flow_workspace;
+    physics::AffinePeriodicVelocityView velocity{result.flow_u.span(), result.flow_v.span(), result.flow_w.span()};
+    const physics::AffinePeriodicFlowConfig flow_config{}; // qbar=(1,0,0) default.
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(result.k.span()), flow_config,
+                                              velocity, flow_workspace);
+    ctx.synchronize();
+
+    result.view.grid = grid;
+    result.view.conductivity = DeviceSpan<const real>(result.y.span());
+    result.view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    result.view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(result.flow_u.span()),
+                                                              DeviceSpan<const real>(result.flow_v.span()),
+                                                              DeviceSpan<const real>(result.flow_w.span())};
+    result.view.bc = triply_periodic();
+    result.view.gauge = AffineGauge::benchmark(real{1});
+    return result;
+}
+
 [[nodiscard]] CaseResult case_terminal_eta_endgame() {
     std::cout << std::setprecision(17);
 
-    constexpr int n32 = 32;
-    const Grid3D grid(n32, n32, n32, real{1}, real{1}, real{1});
-    const std::size_t n = grid.num_cells();
     CudaContext ctx(0);
 
     // The SAME field/flow/gauge recipe the campaign uses (identical
@@ -2390,43 +2455,10 @@ struct EtaEndgameArm {
     // 0.5125*Y_unit, K=exp(Y_att), SF-19 affine flow qbar=(1,0,0),
     // log_conductivity_y problem view, benchmark(1) gauge. This is a DIRECT
     // build (no continuation), reusing the E2/R1 per-lambda construction
-    // pattern at a single fixed amplitude.
-    physics::PeriodicGaussianFieldConfig field_config;
-    field_config.sigma2 = real{1};
-    field_config.corr_length = real{8};
-    field_config.seed = 12345ULL;
-    field_config.normalize_variance = true;
-
-    DeviceBuffer<real> y(n);
-    physics::PeriodicGaussianFieldWorkspace field_workspace;
-    (void)physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(), field_workspace);
-    ctx.synchronize();
-
-    blas::scal(ctx, y.span(), real{0.5125});
-
-    DeviceBuffer<real> k(n);
-    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y.span()), k.span());
-
-    const std::size_t u_size = compact_mac_u_size(grid);
-    const std::size_t v_size = compact_mac_v_size(grid);
-    const std::size_t w_size = compact_mac_w_size(grid);
-    DeviceBuffer<real> flow_u(u_size), flow_v(v_size), flow_w(w_size);
-    physics::AffinePeriodicFlowWorkspace flow_workspace;
-    physics::AffinePeriodicVelocityView velocity{flow_u.span(), flow_v.span(), flow_w.span()};
-    const physics::AffinePeriodicFlowConfig flow_config{};
-    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k.span()), flow_config, velocity,
-                                              flow_workspace);
-    ctx.synchronize();
-
-    StreamfunctionProblemView problem_view;
-    problem_view.grid = grid;
-    problem_view.conductivity = DeviceSpan<const real>(y.span());
-    problem_view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
-    problem_view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u.span()),
-                                                               DeviceSpan<const real>(flow_v.span()),
-                                                               DeviceSpan<const real>(flow_w.span())};
-    problem_view.bc = triply_periodic();
-    problem_view.gauge = AffineGauge::benchmark(real{1});
+    // pattern at a single fixed amplitude -- via `build_eta_endgame_problem`
+    // (SF-25 P2-I), EXACTLY the previous constants (n=32, ell=8).
+    EtaEndgameProblem problem32 = build_eta_endgame_problem(ctx, 32, real{8});
+    const StreamfunctionProblemView& problem_view = problem32.view;
 
     const EtaEndgameArm s1a = run_eta_endgame_arm(ctx, problem_view, "S1a", /*hygiene_on=*/false);
     const EtaEndgameArm s1b = run_eta_endgame_arm(ctx, problem_view, "S1b", /*hygiene_on=*/true);
@@ -2952,6 +2984,630 @@ struct EtaEndgameArm {
             "print-only evidence for the owner/orchestrator, not test gates"};
 }
 
+// ===========================================================================
+// SF-25 Phase-2 (P2-I) Case: terminal_explicit_flow_probe (P2-A). PRESPECIFIED
+// protocol recorded VERBATIM in the SF-25 bitácora at 2026-08-15T00:20Z:
+// explicit pseudo-time flow u <- u - dtau*F(u) (forward Euler on the coupled
+// projected residual) on the SAME 32^3, lambda=0.5125, eta=1 problem the E2
+// freeze characterizes, discriminating "no flow-stable 32^3 solution" from
+// "saddle-between-basins with a stable solution elsewhere". Two arms sharing
+// ONE E2 freeze (armA1 = frozen shelf state; armA2 = zero fluctuations on the
+// same coefficient state). Always-pass evidence recorder except the E2
+// freeze hard asserts (identical gating discipline to
+// `case_terminal_shelf_probe_phase1`).
+//
+// Rolling-residual cost structure (bitácora-mandated halving): a naive
+// implementation would evaluate F twice per accepted step (once at u, once
+// at the trial). Instead, `f_cur1_`/`f_cur2_` always hold F(u) for the
+// CURRENT accepted state; each step's trial evaluation produces F(u_trial)
+// into `f_trial1_`/`f_trial2_`, and on ACCEPT the two buffer pairs are
+// exchanged via `DeviceBuffer::swap` (a pointer swap, not a device-to-device
+// copy) so the just-computed F(u_trial) becomes F(u) for the NEXT step with
+// zero extra evaluations. Net cost: ONE residual evaluation per accepted
+// step, plus ONE per rejected retry (the seed evaluation of F(u0) before the
+// loop starts is the only "extra" evaluation of the whole run).
+// ===========================================================================
+
+struct ExplicitFlowArmResult {
+    long final_k{0};
+    double final_tau{0.0};
+    double final_dtau{0.0};
+    double final_r_F{std::numeric_limits<double>::quiet_NaN()};
+    long rejections{0};
+    double min_r_F{std::numeric_limits<double>::infinity()};
+    long min_at_k{0};
+    double min_at_tau{0.0};
+    double wall_s{0.0};
+    std::string bound{"n/a"};
+    bool attractor_found{false};
+    bool attractor_verified{false};
+    bool exceeded_2x_ref{false}; // r_F ever exceeded 2*saddle_reference_r_F (armA1 only, meaningful).
+    double main_segment_slope{std::numeric_limits<double>::quiet_NaN()};   // final-<=10k-step mean d(ln r_F)/dtau.
+    double coda_slope{std::numeric_limits<double>::quiet_NaN()};          // control-coda mean d(ln r_F)/dtau.
+    bool growth_suspect{false};
+    long band_samples{0};
+    long band_hits{0};
+    bool band_wandering{false};
+};
+
+// Runs ONE arm of the P2-A explicit pseudo-time flow, starting from
+// `init_u1`/`init_u2` on the SHARED (q_att, gauge, source_config,
+// histogram_config, darcy) coefficient state. Every device buffer used
+// inside the step loop is allocated ONCE, before the loop (preallocation
+// discipline). `saddle_reference_r_F` is `r_F_frozen` for armA1 (the
+// SADDLE_ESCAPE_CONFIRMED reference) and NaN for armA2 (rule not
+// applicable).
+[[nodiscard]] ExplicitFlowArmResult run_explicit_flow_arm(
+    CudaContext& ctx, const Grid3D& grid, DeviceSpan<const real> q_att, const AffineGauge& gauge,
+    const NonlinearSourceConfig& source_config, const ResidualHistogramConfig& histogram_config,
+    const CompactMacVelocityConstView& darcy, DeviceSpan<const real> init_u1, DeviceSpan<const real> init_u2,
+    const char* arm_label, double saddle_reference_r_F) {
+    const std::size_t n = grid.num_cells();
+    ExplicitFlowArmResult result;
+
+    DeviceBuffer<real> u1(n), u2(n), trial_u1(n), trial_u2(n);
+    DeviceBuffer<real> f_cur1(n), f_cur2(n), f_trial1(n), f_trial2(n);
+    DeviceBuffer<real> min_u1(n), min_u2(n);
+    blas::copy(ctx, init_u1, u1.span());
+    blas::copy(ctx, init_u2, u2.span());
+
+    StreamfunctionResidualWorkspace residual_ws;
+    residual_ws.prepare(n);
+
+    // Seed F(u0), r_F(u0): the ONE evaluation that is NOT reused from a
+    // trial (there is no prior trial yet).
+    enqueue_streamfunction_residual(ctx, grid, q_att, PeriodicStreamfunctionFluctuations{u1.span(), u2.span()},
+                                    gauge, real{1}, source_config, histogram_config, f_cur1.span(), f_cur2.span(),
+                                    residual_ws);
+    const StreamfunctionResidualReport init_report =
+        synchronize_streamfunction_residual_report(ctx, grid, real{1}, source_config, histogram_config, residual_ws);
+
+    double r_F_current = static_cast<double>(init_report.r_F);
+    double max_r_F_seen = r_F_current;
+    double tau = 0.0;
+    double dtau = 1e-3;
+    constexpr double kDtauMin = 1e-8;
+    constexpr double kDtauMax = 1.0;
+    long accept_streak = 0;
+    long accepted = 0;
+    long rejections = 0;
+
+    blas::copy(ctx, DeviceSpan<const real>(u1.span()), min_u1.span());
+    blas::copy(ctx, DeviceSpan<const real>(u2.span()), min_u2.span());
+    double min_r_F = r_F_current;
+    long min_at_k = 0;
+    double min_at_tau = 0.0;
+
+    std::cout << arm_label << " init r_F=" << r_F_current << '\n';
+
+    int current_decade = (std::isfinite(r_F_current) && r_F_current > 0.0)
+                              ? static_cast<int>(std::floor(std::log10(r_F_current)))
+                              : 0;
+
+    std::deque<std::pair<double, double>> history; // (tau, r_F), most recent <=10001 accepted steps.
+    history.emplace_back(0.0, r_F_current);
+
+    long band_samples = 0, band_hits = 0;
+
+    // One step attempt: trial = u - dtau*F(u); evaluate F(trial); accept per
+    // the PRESPECIFIED rule (reject iff nonfinite or > 2x growth). Returns
+    // true iff accepted (state/F/tau/counters mutated in place); false iff
+    // dtau underflowed `kDtauMin` (caller must treat as ABORT_DTAU_FLOOR).
+    // `allow_growth` gates the streak-based dtau growth (disabled for the
+    // fixed-step CONTROL coda, which must isolate the accuracy/stability
+    // servo from the growth policy).
+    const auto attempt_step = [&](bool allow_growth) -> bool {
+        for (;;) {
+            blas::copy(ctx, DeviceSpan<const real>(u1.span()), trial_u1.span());
+            blas::copy(ctx, DeviceSpan<const real>(u2.span()), trial_u2.span());
+            blas::axpy(ctx, static_cast<real>(-dtau), DeviceSpan<const real>(f_cur1.span()), trial_u1.span());
+            blas::axpy(ctx, static_cast<real>(-dtau), DeviceSpan<const real>(f_cur2.span()), trial_u2.span());
+
+            enqueue_streamfunction_residual(
+                ctx, grid, q_att, PeriodicStreamfunctionFluctuations{trial_u1.span(), trial_u2.span()}, gauge,
+                real{1}, source_config, histogram_config, f_trial1.span(), f_trial2.span(), residual_ws);
+            const StreamfunctionResidualReport trial_report = synchronize_streamfunction_residual_report(
+                ctx, grid, real{1}, source_config, histogram_config, residual_ws);
+            const double r_F_trial = static_cast<double>(trial_report.r_F);
+
+            const bool reject = !std::isfinite(r_F_trial) || r_F_trial > 2.0 * r_F_current;
+            if (reject) {
+                ++rejections;
+                dtau /= 2.0;
+                accept_streak = 0;
+                if (dtau < kDtauMin) return false;
+                continue;
+            }
+
+            u1.swap(trial_u1);
+            u2.swap(trial_u2);
+            f_cur1.swap(f_trial1);
+            f_cur2.swap(f_trial2);
+            r_F_current = r_F_trial;
+            tau += dtau;
+            ++accept_streak;
+            if (allow_growth && accept_streak >= 50) {
+                dtau = std::min(1.5 * dtau, kDtauMax);
+                accept_streak = 0;
+            }
+            return true;
+        }
+    };
+
+    constexpr long kNMax = 1000000;
+    constexpr double kWallCapSeconds = 2.5 * 3600.0;
+
+    const auto t0 = std::chrono::steady_clock::now();
+    bool dtau_floor_hit = false;
+    bool wall_hit = false;
+
+    while (accepted < kNMax) {
+        if (!attempt_step(/*allow_growth=*/true)) {
+            dtau_floor_hit = true;
+            std::cout << arm_label << " ABORT_DTAU_FLOOR k=" << accepted << " tau=" << tau << " dtau=" << dtau
+                      << '\n';
+            break;
+        }
+        ++accepted;
+        max_r_F_seen = std::max(max_r_F_seen, r_F_current);
+
+        const int new_decade = (std::isfinite(r_F_current) && r_F_current > 0.0)
+                                    ? static_cast<int>(std::floor(std::log10(r_F_current)))
+                                    : current_decade;
+        if (new_decade != current_decade) {
+            std::cout << arm_label << " DECADE r_F=" << r_F_current << " k=" << accepted << " tau=" << tau << '\n';
+            current_decade = new_decade;
+        }
+
+        if (r_F_current < min_r_F) {
+            min_r_F = r_F_current;
+            min_at_k = accepted;
+            min_at_tau = tau;
+            blas::copy(ctx, DeviceSpan<const real>(u1.span()), min_u1.span());
+            blas::copy(ctx, DeviceSpan<const real>(u2.span()), min_u2.span());
+        }
+
+        history.emplace_back(tau, r_F_current);
+        if (history.size() > 10001) history.pop_front();
+
+        if (accepted % 1000 == 0) {
+            std::cout << arm_label << " k=" << accepted << " tau=" << tau << " dtau=" << dtau
+                      << " r_F=" << r_F_current << " rejections=" << rejections << '\n';
+            ++band_samples;
+            if (r_F_current >= 1e-4 && r_F_current <= 1e-2) ++band_hits;
+
+            const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+            if (elapsed > kWallCapSeconds) {
+                wall_hit = true;
+                break;
+            }
+        }
+
+        if (r_F_current <= 1e-6) {
+            std::cout << arm_label << " ATTRACTOR_CANDIDATE k=" << accepted << " tau=" << tau << '\n';
+            bool verified = true;
+            for (int v = 0; v < 100; ++v) {
+                if (!attempt_step(/*allow_growth=*/true)) {
+                    verified = false;
+                    break;
+                }
+                if (r_F_current > 2e-6) verified = false;
+            }
+            result.attractor_found = true;
+            result.attractor_verified = verified;
+            std::cout << arm_label << (verified ? " ATTRACTOR_FOUND VERIFIED" : " ATTRACTOR_FOUND")
+                      << " k=" << accepted << " tau=" << tau << " r_F=" << r_F_current << '\n';
+            break;
+        }
+    }
+
+    const double main_final_dtau = dtau;
+    const double main_final_tau = tau;
+    const double main_final_r_F = r_F_current;
+
+    // Main-run final-<=10k-accepted-step segment slope: mean d(ln r_F)/dtau
+    // (per unit tau), an endpoint estimate over the retained history window
+    // (matching the S3B `rho` endpoint-slope pattern used elsewhere in this
+    // file for the same kind of "is it still descending" readout).
+    double main_slope = std::numeric_limits<double>::quiet_NaN();
+    if (history.size() >= 2) {
+        const auto& seg_start = history.front();
+        const auto& seg_end = history.back();
+        const double dtau_seg = seg_end.first - seg_start.first;
+        if (dtau_seg > 0.0 && seg_start.second > 0.0 && seg_end.second > 0.0) {
+            main_slope = (std::log(seg_end.second) - std::log(seg_start.second)) / dtau_seg;
+        }
+    }
+
+    // Step-refinement CONTROL coda: 1000 steps at dtau_final/10, FIXED (no
+    // growth), same accept/reject rule, isolating whether the observed
+    // trend is a numerical-stepsize artifact.
+    double coda_slope = std::numeric_limits<double>::quiet_NaN();
+    if (!dtau_floor_hit) {
+        const double coda_dtau0 = std::max(main_final_dtau / 10.0, kDtauMin);
+        dtau = coda_dtau0;
+        const double coda_tau0 = tau;
+        const double coda_rF0 = r_F_current;
+        int coda_completed = 0;
+        for (int c = 0; c < 1000; ++c) {
+            if (!attempt_step(/*allow_growth=*/false)) {
+                std::cout << arm_label << " CODA_ABORT_DTAU_FLOOR c=" << c << '\n';
+                break;
+            }
+            ++coda_completed;
+        }
+        if (coda_completed > 0) {
+            const double dtau_seg = tau - coda_tau0;
+            if (dtau_seg > 0.0 && coda_rF0 > 0.0 && r_F_current > 0.0) {
+                coda_slope = (std::log(r_F_current) - std::log(coda_rF0)) / dtau_seg;
+            }
+        }
+        std::cout << arm_label << " coda completed=" << coda_completed << " dtau0=" << coda_dtau0
+                  << " r_F_start=" << coda_rF0 << " r_F_end=" << r_F_current << '\n';
+    } else {
+        std::cout << arm_label << " coda: skipped (main run hit the dtau floor)\n";
+    }
+
+    bool growth_suspect = false;
+    if (std::isfinite(main_slope) && std::isfinite(coda_slope)) {
+        const bool sign_flip =
+            ((main_slope > 0.0) != (coda_slope > 0.0)) && main_slope != 0.0 && coda_slope != 0.0;
+        const double main_abs = std::abs(main_slope);
+        const double coda_abs = std::abs(coda_slope);
+        const bool magnitude_2x = main_abs > 0.0 && (coda_abs > 2.0 * main_abs || coda_abs < 0.5 * main_abs);
+        growth_suspect = sign_flip || magnitude_2x;
+    }
+    std::cout << arm_label << " NUMERICAL_GROWTH_SUSPECT=" << (growth_suspect ? "true" : "false")
+              << " main_segment_slope=" << main_slope << " coda_slope=" << coda_slope << '\n';
+
+    // SF-11 PhysicalDiagnosticsReport AT THE ARGMIN STATE (one diagnostics
+    // call on the preallocated snapshot pair, the shared enqueue/synchronize
+    // pair used throughout this file).
+    {
+        StreamfunctionDiagnosticsWorkspace diag_ws;
+        diag_ws.prepare(grid);
+        DeviceBuffer<real> vpsi_u(compact_mac_u_size(grid)), vpsi_v(compact_mac_v_size(grid)),
+            vpsi_w(compact_mac_w_size(grid));
+        const PhysicalDiagnosticsConfig diag_config{};
+        enqueue_streamfunction_physical_diagnostics(
+            ctx, grid, PeriodicStreamfunctionFluctuations{min_u1.span(), min_u2.span()}, gauge, darcy, diag_config,
+            CompactMacVelocityView{vpsi_u.span(), vpsi_v.span(), vpsi_w.span()}, diag_ws);
+        const PhysicalDiagnosticsReport diag_report =
+            synchronize_streamfunction_physical_diagnostics_report(ctx, grid, diag_config, diag_ws);
+        std::cout << arm_label << " argmin SF11 e_v=" << diag_report.e_v
+                  << " invariance_e_psi1=" << diag_report.invariance_e_psi1
+                  << " invariance_e_psi2=" << diag_report.invariance_e_psi2 << " e_div=" << diag_report.e_div
+                  << " c_min=" << diag_report.c_min << " c_max=" << diag_report.c_max
+                  << " c_mean=" << diag_report.c_mean << " v_d_rms=" << diag_report.v_d_rms << '\n';
+    }
+
+    const char* bound_reason = "N_max";
+    if (dtau_floor_hit) {
+        bound_reason = "dtau_floor";
+    } else if (wall_hit) {
+        bound_reason = "wall";
+    } else if (result.attractor_found) {
+        // Not one of the three budget-exhaustion reasons in the PRESPECIFIED
+        // enum: mission-accomplished early exit, recorded explicitly.
+        bound_reason = "attractor";
+    }
+
+    result.final_k = accepted;
+    result.final_tau = main_final_tau;
+    result.final_dtau = main_final_dtau;
+    result.final_r_F = main_final_r_F;
+    result.rejections = rejections;
+    result.min_r_F = min_r_F;
+    result.min_at_k = min_at_k;
+    result.min_at_tau = min_at_tau;
+    result.wall_s = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+    result.bound = bound_reason;
+    result.exceeded_2x_ref = std::isfinite(saddle_reference_r_F) && saddle_reference_r_F > 0.0 &&
+                             max_r_F_seen > 2.0 * saddle_reference_r_F;
+    result.main_segment_slope = main_slope;
+    result.coda_slope = coda_slope;
+    result.growth_suspect = growth_suspect;
+    result.band_samples = band_samples;
+    result.band_hits = band_hits;
+    result.band_wandering = band_samples > 0 && !result.attractor_found &&
+                            static_cast<double>(band_hits) >= 0.5 * static_cast<double>(band_samples);
+
+    std::cout << arm_label << " final k=" << result.final_k << " tau=" << result.final_tau
+              << " r_F=" << result.final_r_F << " min_r_F=" << result.min_r_F << " min_at_k=" << result.min_at_k
+              << " min_at_tau=" << result.min_at_tau << " rejections=" << result.rejections
+              << " wall_s=" << result.wall_s << " bound=" << result.bound << '\n';
+
+    return result;
+}
+
+[[nodiscard]] CaseResult case_terminal_explicit_flow_probe() {
+    std::cout << std::setprecision(17);
+    bool pass = true;
+    const auto check = [&](const char* name, bool ok) {
+        pass = pass && ok;
+        std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    };
+
+    constexpr int n32 = 32;
+    const Grid3D grid(n32, n32, n32, real{1}, real{1}, real{1});
+    const std::size_t n = grid.num_cells();
+    CudaContext ctx(0);
+
+    // =========================================================================
+    // E2 freeze, VERBATIM from case_terminal_shelf_probe_phase1 (hygiene OFF):
+    // the sigma_Y^2=1, 32^3 smoke to its lambda floor, then the lambda=0.5125
+    // warm-started stage to its plateau exit.
+    // =========================================================================
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{1};
+    field_config.corr_length = real{8};
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    DeviceBuffer<real> y(n);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    (void)physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(), field_workspace);
+    ctx.synchronize();
+
+    StreamfunctionFields fields;
+    StreamfunctionWorkspace workspace;
+    StreamfunctionSolverConfig base_config; // full defaults (adaptive Picard, newton DISABLED).
+    base_config.anderson.enabled = true;
+    base_config.anderson.depth = 5;
+    base_config.anderson.start_iteration = 5;
+    base_config.anderson.condition_limit = real{1e12};
+
+    HeterogeneityContinuationConfig continuation_config{}; // lambda axis defaults.
+    continuation_config.inner.epsilon_log10.target = continuation_config.inner.epsilon_log10.start;
+    const physics::AffinePeriodicFlowConfig flow_config{}; // qbar=(1,0,0) default.
+
+    const HeterogeneityContinuationReport freeze_report = run_streamfunction_heterogeneity_continuation(
+        ctx, grid, DeviceSpan<const real>(y.span()), continuation_config, flow_config, base_config, fields,
+        workspace);
+    ctx.synchronize();
+
+    std::cout << "E2 freeze: status=" << heterogeneity_status_label(freeze_report.status)
+              << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
+              << '\n';
+
+    check("E2_freeze_status_lambda_floor_exhausted",
+          freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
+    check("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
+    check("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
+
+    const std::size_t u_size = compact_mac_u_size(grid);
+    const std::size_t v_size = compact_mac_v_size(grid);
+    const std::size_t w_size = compact_mac_w_size(grid);
+
+    constexpr real kLambdaAttempt = real{0.5125};
+    DeviceBuffer<real> y_att(n);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(y_att.data(), y.data(), n * sizeof(real), cudaMemcpyDeviceToDevice,
+                                           ctx.cuda_stream()));
+    blas::scal(ctx, y_att.span(), kLambdaAttempt);
+    DeviceBuffer<real> k_att(n);
+    terminal_dgate_enqueue_exp(ctx, DeviceSpan<const real>(y_att.span()), k_att.span());
+    DeviceBuffer<real> flow_u(u_size), flow_v(v_size), flow_w(w_size);
+    physics::AffinePeriodicFlowWorkspace flow_workspace;
+    physics::AffinePeriodicVelocityView velocity{flow_u.span(), flow_v.span(), flow_w.span()};
+    (void)physics::solve_affine_periodic_flow(ctx, grid, DeviceSpan<const real>(k_att.span()), flow_config,
+                                              velocity, flow_workspace);
+    ctx.synchronize();
+
+    StreamfunctionProblemView problem_view;
+    problem_view.grid = grid;
+    problem_view.conductivity = DeviceSpan<const real>(y_att.span());
+    problem_view.conductivity_representation = ConductivityRepresentation::log_conductivity_y;
+    problem_view.darcy_velocity = CompactMacVelocityConstView{DeviceSpan<const real>(flow_u.span()),
+                                                               DeviceSpan<const real>(flow_v.span()),
+                                                               DeviceSpan<const real>(flow_w.span())};
+    problem_view.bc = triply_periodic();
+    problem_view.gauge = AffineGauge::benchmark(real{1});
+
+    StreamfunctionSolverConfig stage_config = base_config;
+    stage_config.eta = real{1};
+    stage_config.epsilon = real{1e-2};
+    stage_config.initial_state = PicardInitialState::warm_start;
+    stage_config.coefficient_state = CoefficientState::rebuild;
+
+    const StreamfunctionSolveReport stage_report =
+        solve_streamfunctions(ctx, problem_view, stage_config, fields, workspace);
+    ctx.synchronize();
+
+    const double r_F_frozen = static_cast<double>(stage_report.residual.r_F);
+    std::cout << "E2 stage: status=" << solve_status_label(stage_report.status)
+              << " exit_reason=" << exit_reason_label(stage_report.exit_reason)
+              << " picard_iterations=" << stage_report.picard_iterations << " r_F_frozen=" << r_F_frozen << '\n';
+
+    check("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
+    check("E2_stage_exit_reason_plateau_signature",
+          stage_report.exit_reason == PicardExitReason::stagnated ||
+              stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
+    const bool r_f_band_ok = r_F_frozen >= 1e-4 && r_F_frozen <= 1e-2;
+    check("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
+
+    constexpr double kRecordedRFFrozen = 1.1204722529922055e-3;
+    std::cout << "E2 warn-only exact compare: r_F_frozen=" << r_F_frozen << " recorded=" << kRecordedRFFrozen
+              << " " << (r_F_frozen == kRecordedRFFrozen ? "MATCH" : "DIFFERS") << '\n';
+
+    // armA1 init: the frozen shelf state, deep-copied NOW (this IS the last
+    // mutation of `fields` before the arms run).
+    DeviceBuffer<real> frozen_u1(n), frozen_u2(n);
+    blas::copy(ctx, DeviceSpan<const real>(fields.u1_span()), frozen_u1.span());
+    blas::copy(ctx, DeviceSpan<const real>(fields.u2_span()), frozen_u2.span());
+    ctx.synchronize();
+
+    // Shared coefficient state for both arms (the lambda=0.5125, eta=1
+    // problem the E2 freeze characterizes).
+    const DeviceSpan<const real> q_att = workspace.q();
+    const double v_rms = static_cast<double>(stage_report.diagnostics.v_d_rms);
+    NonlinearSourceConfig source_config;
+    source_config.epsilon = real{1e-2};
+    source_config.v_rms = static_cast<real>(v_rms);
+    const ResidualHistogramConfig histogram_config{};
+    const AffineGauge gauge = AffineGauge::benchmark(real{1});
+
+    // armA2 init: zero fluctuations on the SAME (q_att/gauge/source_config)
+    // coefficient state (E8-style start).
+    DeviceBuffer<real> zero_u1(n), zero_u2(n);
+    blas::fill(ctx, zero_u1.span(), real{0});
+    blas::fill(ctx, zero_u2.span(), real{0});
+    ctx.synchronize();
+
+    std::cout << "P2A shared coefficient state: v_rms=" << v_rms << " r_F_frozen=" << r_F_frozen << '\n';
+
+    const ExplicitFlowArmResult armA1 = run_explicit_flow_arm(
+        ctx, grid, q_att, gauge, source_config, histogram_config, problem_view.darcy_velocity,
+        DeviceSpan<const real>(frozen_u1.span()), DeviceSpan<const real>(frozen_u2.span()), "P2A A1", r_F_frozen);
+
+    const ExplicitFlowArmResult armA2 = run_explicit_flow_arm(
+        ctx, grid, q_att, gauge, source_config, histogram_config, problem_view.darcy_velocity,
+        DeviceSpan<const real>(zero_u1.span()), DeviceSpan<const real>(zero_u2.span()), "P2A A2",
+        std::numeric_limits<double>::quiet_NaN());
+
+    // Mechanical readouts, jointly and per-arm, per the PRESPECIFIED rules
+    // (bitácora 2026-08-15T00:20Z). Raw operands printed alongside each.
+    const bool saddle_escape_confirmed = armA1.exceeded_2x_ref && armA1.min_r_F < 1e-4;
+    std::cout << "P2A rule SADDLE_ESCAPE_CONFIRMED: " << (saddle_escape_confirmed ? "true" : "false")
+              << " (armA1_exceeded_2x_frozen=" << (armA1.exceeded_2x_ref ? "true" : "false")
+              << " armA1_min_r_F=" << armA1.min_r_F << " r_F_frozen=" << r_F_frozen << ")\n";
+
+    const bool armA1_no_stable =
+        armA1.min_r_F > 1e-5 && std::isfinite(armA1.main_segment_slope) && armA1.main_segment_slope >= 0.0;
+    const bool armA2_no_stable =
+        armA2.min_r_F > 1e-5 && std::isfinite(armA2.main_segment_slope) && armA2.main_segment_slope >= 0.0;
+    const bool no_stable_solution_at_horizon = armA1_no_stable && armA2_no_stable;
+    std::cout << "P2A rule NO_STABLE_SOLUTION_AT_HORIZON: " << (no_stable_solution_at_horizon ? "true" : "false")
+              << " (armA1_min_r_F=" << armA1.min_r_F << " armA1_final_segment_slope=" << armA1.main_segment_slope
+              << " armA2_min_r_F=" << armA2.min_r_F << " armA2_final_segment_slope=" << armA2.main_segment_slope
+              << ")\n";
+
+    const bool armA1_horizon_descending =
+        armA1.min_r_F > 1e-5 && std::isfinite(armA1.main_segment_slope) && armA1.main_segment_slope < 0.0;
+    const bool armA2_horizon_descending =
+        armA2.min_r_F > 1e-5 && std::isfinite(armA2.main_segment_slope) && armA2.main_segment_slope < 0.0;
+    std::cout << "P2A rule HORIZON_BOUND_DESCENDING[A1]: " << (armA1_horizon_descending ? "true" : "false")
+              << " (min_r_F=" << armA1.min_r_F << " final_segment_slope=" << armA1.main_segment_slope << ")\n";
+    std::cout << "P2A rule HORIZON_BOUND_DESCENDING[A2]: " << (armA2_horizon_descending ? "true" : "false")
+              << " (min_r_F=" << armA2.min_r_F << " final_segment_slope=" << armA2.main_segment_slope << ")\n";
+
+    std::cout << "P2A rule ATTRACTOR_FOUND[A1]: "
+              << (armA1.attractor_found ? (armA1.attractor_verified ? "true_VERIFIED" : "true") : "false")
+              << " (min_r_F=" << armA1.min_r_F << ")\n";
+    std::cout << "P2A rule ATTRACTOR_FOUND[A2]: "
+              << (armA2.attractor_found ? (armA2.attractor_verified ? "true_VERIFIED" : "true") : "false")
+              << " (min_r_F=" << armA2.min_r_F << ")\n";
+
+    std::cout << "P2A rule BAND_WANDERING[A1]: " << (armA1.band_wandering ? "true" : "false")
+              << " (band_hits=" << armA1.band_hits << "/" << armA1.band_samples
+              << " attractor_found=" << (armA1.attractor_found ? "true" : "false") << ")\n";
+    std::cout << "P2A rule BAND_WANDERING[A2]: " << (armA2.band_wandering ? "true" : "false")
+              << " (band_hits=" << armA2.band_hits << "/" << armA2.band_samples
+              << " attractor_found=" << (armA2.attractor_found ? "true" : "false") << ")\n";
+
+    std::cout << "case=terminal_explicit_flow_probe verdict=" << (pass ? "PASS" : "FAIL")
+              << " (E2 freeze hard asserts gate `pass`; the explicit-flow readouts above are "
+                 "print-only evidence)\n";
+
+    std::ostringstream detail;
+    detail << "ONE shared E2 freeze (VERBATIM from case_terminal_shelf_probe_phase1, hygiene OFF): "
+              "sigma_Y^2=1, 32^3, seed=12345, corr_length=8, lambda_attempt=0.5125, eta=1, r_F_frozen="
+           << r_F_frozen << "; P2-A explicit pseudo-time flow u<-u-dtau*F(u), two arms (armA1=frozen "
+              "shelf state, armA2=zero fluctuations), dtau_0=1e-3/dtau_min=1e-8/dtau_max=1.0, "
+              "N_max=1e6 accepted steps / wall<=2.5h, rolling one-residual-eval-per-accepted-step "
+              "structure, argmin snapshot + SF-11 diagnostics, step-refinement control coda, "
+              "mechanical ATTRACTOR_FOUND/SADDLE_ESCAPE_CONFIRMED/NO_STABLE_SOLUTION_AT_HORIZON/"
+              "HORIZON_BOUND_DESCENDING/BAND_WANDERING readouts";
+
+    return {pass,
+            "terminal_explicit_flow_probe",
+            "gpu-terminal-explicit-flow-probe",
+            detail.str(),
+            armA1.min_r_F,
+            armA2.min_r_F,
+            "E2_freeze_status/lambda/eta + E2_stage_not_converged/exit_reason/r_F band [1e-4,1e-2]",
+            pass ? "all pass" : "some failed",
+            "SF-25 Phase-2 (P2-I) case P2-A (bitácora 2026-08-15T00:20Z): the E2 freeze hard asserts "
+            "gate `pass`; the explicit pseudo-time flow readouts (ATTRACTOR_FOUND[_VERIFIED]/"
+            "SADDLE_ESCAPE_CONFIRMED/NO_STABLE_SOLUTION_AT_HORIZON/HORIZON_BOUND_DESCENDING/"
+            "BAND_WANDERING) are print-only evidence for the owner/orchestrator, not test gates"};
+}
+
+// ===========================================================================
+// SF-25 Phase-2 (P2-I) Case: terminal_eta_endgame_64 (P2-C). The S1
+// eta-endgame instrument (`run_eta_endgame_arm`, already generically
+// parameterized by `problem_view`/`arm_label`/`hygiene_on`) at n=64, ell=16,
+// dx=1 -- the SAME dimensionless problem as the 32^3/ell=8 fixture with h
+// halved (the R1a fixture from `run_resolution_probe_solve`). Only the
+// PROBLEM CONSTRUCTION needed extraction into a resolution-parameterized
+// helper (`EtaEndgameProblem`/`build_eta_endgame_problem`, defined just
+// above `case_terminal_eta_endgame` below, next to `run_eta_endgame_arm`,
+// since that case's 32^3 call sites are refactored to call it with EXACTLY
+// the previous constants, n=32/ell=8, so its behavior is unchanged: same
+// construction order/values, same prints).
+// ===========================================================================
+
+[[nodiscard]] CaseResult case_terminal_eta_endgame_64() {
+    std::cout << std::setprecision(17);
+
+    std::cout << "terminal_eta_endgame_64 SF-18 caveat: statistically equivalent field, not the same "
+                 "continuum realization\n";
+
+    CudaContext ctx(0);
+    EtaEndgameProblem problem64 = build_eta_endgame_problem(ctx, 64, real{16});
+    const StreamfunctionProblemView& problem_view = problem64.view;
+
+    const EtaEndgameArm s1c64 = run_eta_endgame_arm(ctx, problem_view, "S1c64", /*hygiene_on=*/true);
+
+    // Bracket comparison vs the 32^3 S1b frontier eta (bracket [7.8125e-4,
+    // 1.5625e-3), last accepted eta = 1 - 1.5625e-3 = 0.9984375).
+    constexpr double kBracket32LastEta = 0.9984375;
+    const char* bracket_verdict = "BRACKET_UNAVAILABLE";
+    if (s1c64.last_valid) {
+        if (s1c64.last_eta > kBracket32LastEta) {
+            bracket_verdict = "BRACKET_MOVED_TOWARD_1";
+        } else if (s1c64.last_eta == kBracket32LastEta) {
+            bracket_verdict = "BRACKET_SAME";
+        } else {
+            bracket_verdict = "BRACKET_MOVED_AWAY";
+        }
+    }
+    std::cout << "S1c64 rule bracket comparison vs 32^3 [7.8125e-4, 1.5625e-3): " << bracket_verdict
+              << " (last_accepted_eta_64=" << (s1c64.last_valid ? s1c64.last_eta : -1.0)
+              << " reference_last_accepted_eta_32=" << kBracket32LastEta << ")\n";
+
+    std::cout << "case=terminal_eta_endgame_64 verdict=PASS (always-pass evidence recorder; see the "
+                 "printed per-stage table, per-arm summary, verdict lines, and bracket comparison "
+                 "above)\n";
+
+    std::ostringstream detail;
+    detail << "64^3 dx=1 seed=12345 corr_length=16 (ell/h=16, L/ell=4, the R1a fixture) sigma_Y^2=1 "
+              "normalize_variance amplitude=0.5125*Y_unit K=exp log_conductivity_y SF-19 affine flow "
+              "qbar=(1,0,0) benchmark gauge epsilon=1e-2 fixed anderson R5 newton disabled "
+              "picard.max_iter=500; the SAME FIXED "
+           << kEtaEndgameLadderSize
+           << "-stage prespecified eta ladder, warm-started stage-to-stage; ONE arm (S1c64), hygiene "
+              "ON with the S1b config (floor_guard{5,0.9,3} + anderson restart{2}); codas: eta=1 "
+              "from last accepted state, and (when >=2 accepted stages had eta>=0.99) a two-point "
+              "linear extrapolation to eta=1; SF-18 hash-mode realization caveat: statistically "
+              "equivalent field, not the same continuum realization";
+
+    return {true,
+            "terminal_eta_endgame_64",
+            "gpu-terminal-eta-endgame-64",
+            detail.str(),
+            s1c64.last_valid ? s1c64.last_eta : -1.0,
+            kBracket32LastEta,
+            bracket_verdict,
+            "always pass (evidence recorder; see the printed per-stage table, per-arm summary, "
+            "verdict lines, and bracket comparison above)",
+            "SF-25 Phase-2 (P2-I) case P2-C (bitácora 2026-08-15T00:20Z): the S1 eta-endgame "
+            "instrument at n=64, ell=16, dx=1 (the R1a fixture), ONE arm (hygiene ON, S1b config), "
+            "identical ladder/stage-acceptance/per-stage budget/codas to the 32^3 case (identical "
+            "iteration-budget-vs-floor exit_reason distinction, reused verbatim from "
+            "`run_eta_endgame_arm`), plus a bracket comparison against the 32^3 S1b frontier eta; "
+            "always-pass evidence recorder"};
+}
+
 } // namespace
 
 CaseRegistry terminal_solver_case_registry() {
@@ -2963,7 +3619,9 @@ CaseRegistry terminal_solver_dgate_case_registry() {
             {"terminal_resolution_probe", case_terminal_resolution_probe},
             {"terminal_floor_guard_continuation", case_terminal_floor_guard_continuation},
             {"terminal_eta_endgame", case_terminal_eta_endgame},
-            {"terminal_shelf_probe_phase1", case_terminal_shelf_probe_phase1}};
+            {"terminal_shelf_probe_phase1", case_terminal_shelf_probe_phase1},
+            {"terminal_explicit_flow_probe", case_terminal_explicit_flow_probe},
+            {"terminal_eta_endgame_64", case_terminal_eta_endgame_64}};
 }
 
 } // namespace macroflow3d::streamfunctions::test
