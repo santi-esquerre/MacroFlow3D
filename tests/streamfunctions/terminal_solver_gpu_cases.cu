@@ -3067,7 +3067,13 @@ struct ExplicitFlowArmResult {
     double tau = 0.0;
     double dtau = 1e-3;
     constexpr double kDtauMin = 1e-8;
-    constexpr double kDtauMax = 1.0;
+    // Amendment P2-A' (bitácora 2026-08-15T17:20Z): the servo cap was lowered
+    // from 1.0 to 0.005 (>=3x below the empirically measured explicit-Euler
+    // destabilization threshold ~0.026, ~5x below the 2/lambda_max estimate)
+    // after forensic analysis showed the original cap let the growth servo
+    // cross the stability boundary, confounding the P2-A readout. Every
+    // other rule/budget/readout is unchanged.
+    constexpr double kDtauMax = 0.005;
     long accept_streak = 0;
     long accepted = 0;
     long rejections = 0;
@@ -3512,7 +3518,8 @@ struct ExplicitFlowArmResult {
     detail << "ONE shared E2 freeze (VERBATIM from case_terminal_shelf_probe_phase1, hygiene OFF): "
               "sigma_Y^2=1, 32^3, seed=12345, corr_length=8, lambda_attempt=0.5125, eta=1, r_F_frozen="
            << r_F_frozen << "; P2-A explicit pseudo-time flow u<-u-dtau*F(u), two arms (armA1=frozen "
-              "shelf state, armA2=zero fluctuations), dtau_0=1e-3/dtau_min=1e-8/dtau_max=1.0, "
+              "shelf state, armA2=zero fluctuations), dtau_0=1e-3/dtau_min=1e-8/dtau_max=0.005 "
+              "(amendment P2-A', bitacora 2026-08-15T17:20Z), "
               "N_max=1e6 accepted steps / wall<=2.5h, rolling one-residual-eval-per-accepted-step "
               "structure, argmin snapshot + SF-11 diagnostics, step-refinement control coda, "
               "mechanical ATTRACTOR_FOUND/SADDLE_ESCAPE_CONFIRMED/NO_STABLE_SOLUTION_AT_HORIZON/"
