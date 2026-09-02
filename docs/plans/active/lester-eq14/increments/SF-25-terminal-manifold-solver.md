@@ -11,8 +11,8 @@
 - Owner: `Claude Code orchestrator (Fable) + delegated workers`
 - Started: `2026-08-14`
 - Completed: `not completed`
-- PR: `not opened`
-- Commit: `not recorded`
+- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/39`
+- Commit: `14efceb` (audited campaign head at PR publication)
 
 ## Scientific or engineering intent
 
