@@ -86,48 +86,6 @@ void CoupledGmres::project_rhs(CudaContext& ctx, ConstCoupledVectorView b) {
     project_pair(ctx, DeviceSpan<real>(rhs_.data(), n_), DeviceSpan<real>(rhs_.data() + n_, n_));
 }
 
-real CoupledGmres::compute_true_residual(CudaContext& ctx, const Grid3D& grid, JvpWorkspace& jvp,
-                                         const JvpDeltaConfig& delta_config,
-                                         DeviceSpan<const real> x_total_flat,
-                                         DeviceSpan<real> r_out_flat,
-                                         bool correction_is_zero, bool& ok) {
-    if (correction_is_zero) {
-        // T01-F2: x_total is identically zero here (the initial
-        // blas::fill(..., real{0}), no cycle has accumulated a correction
-        // yet). J(0) = 0 algebraically, so the true residual is simply
-        // ||P(rhs_)|| -- and this MUST skip JvpWorkspace::apply rather than
-        // just optimize it away: apply() throws std::invalid_argument on a
-        // zero weighted-direction norm (SF-22 D2 contract, unchanged in
-        // JvpWorkspace itself, see JacobianVectorProduct.cuh), so calling it
-        // with x_total_flat == 0 would abort every solve() call on its very
-        // first cycle. rhs_ is already projected (project_rhs()), so a plain
-        // copy keeps r_out_flat consistent with the caller's use of
-        // residual_scratch_ as the v_1 seed.
-        ok = true;
-        blas::copy(ctx, DeviceSpan<const real>(rhs_.span()), r_out_flat);
-        return norm2n(ctx, DeviceSpan<const real>(r_out_flat));
-    }
-
-    // r_out <- J(x_total) (one JvpWorkspace::apply call; NOT counted in the
-    // caller's inner-iteration budget -- residual recomputation is a
-    // separate, explicitly checkpointed activity, see the file header).
-    ConstCoupledVectorView x_view = split_coupled_vector(x_total_flat, n_);
-    CoupledVectorView jx_view = split_coupled_vector(r_out_flat, n_);
-    JvpApplyReport jr = jvp.apply(ctx, grid, x_view, delta_config, jx_view);
-    if (jr.status != JvpApplyStatus::ok) {
-        ok = false;
-        return real{0};
-    }
-    ok = true;
-
-    // r_out <- P(rhs_) - J(x_total).
-    blas::scal(ctx, r_out_flat, real{-1});
-    blas::axpy(ctx, real{1}, DeviceSpan<const real>(rhs_.span()), r_out_flat);
-    project_pair(ctx, DeviceSpan<real>(r_out_flat.data(), n_),
-                DeviceSpan<real>(r_out_flat.data() + n_, n_));
-    return norm2n(ctx, DeviceSpan<const real>(r_out_flat));
-}
-
 std::size_t CoupledGmres::allocated_device_bytes() const noexcept {
     std::size_t bytes = 0;
     const DeviceBuffer<real>* const real_fields[] = {

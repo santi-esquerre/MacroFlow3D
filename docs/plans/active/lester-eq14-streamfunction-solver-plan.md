@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-25`
-- Active runtime goal: `none`
+- Active runtime goal: `Implementar el solver terminal robusto a la variedad de gauge en eta=1: Newton desplazado (mu*A + J) con schedule Levenberg-Marquardt y contingencia pseudo-transitoria, activado por el diagnostico D-gate.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
