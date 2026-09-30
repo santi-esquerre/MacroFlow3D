@@ -549,6 +549,10 @@ if(MACROFLOW3D_BUILD_APPS)
     # the default `streamfunction_operator_tests` runs); see
     # terminal_solver_gpu_cases.cu / streamfunction_operator_tests.cpp
     # (heavy_cases()) for the isolation mechanism.
+    # SF-26 T03 (bitácora 2026-09-30): re-classified as an always-pass
+    # evidence recorder (E2 asserts -> recorded evidence; the frozen plateau
+    # belonged to the crossed-pairing system SF-26 corrects); the entry is
+    # KEPT so the V100 suite log records whether the plateau still exists.
     add_test(NAME streamfunction_terminal_dgate COMMAND streamfunction_operator_tests
         --case terminal_dgate_diagnostic
     )

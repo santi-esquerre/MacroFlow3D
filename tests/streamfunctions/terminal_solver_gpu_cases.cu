@@ -182,6 +182,40 @@ constexpr double kPi = 3.14159265358979323846264338327950288;
     }
 }
 
+[[nodiscard]] const char* terminal_heterogeneity_axis_label(HeterogeneityAxis axis) {
+    switch (axis) {
+        case HeterogeneityAxis::lambda: return "lambda";
+        case HeterogeneityAxis::eta_rescue: return "eta_rescue";
+        case HeterogeneityAxis::epsilon: return "epsilon";
+        default: return "unknown";
+    }
+}
+
+// SF-26 T03 (bitácora 2026-09-30): re-classification evidence helper. Prints
+// the freeze report's per-stage table in the same format
+// `heterogeneity_continuation_gpu_cases.cu`'s `print_heterogeneity_stage_history`
+// uses, so an `E2_PLATEAU_ABSENT` branch can show exactly how the
+// continuation now behaves once SF-26's pairing fix removes the frozen
+// plateau this instrument was built to characterize.
+void print_terminal_stage_history(const std::vector<HeterogeneityStageRecord>& history) {
+    for (std::size_t i = 0; i < history.size(); ++i) {
+        const auto& r = history[i];
+        std::cout << std::setprecision(17) << "  stage[" << i << "] axis=" << terminal_heterogeneity_axis_label(r.axis)
+                  << " lambda=" << r.lambda_value << " eta=" << r.eta_value << " epsilon=" << r.epsilon_value
+                  << " mg_rebuilds=" << r.mg_rebuild_count << " accepted=" << (r.base.accepted ? "true" : "false")
+                  << " picard_iterations=" << r.base.picard_iterations << " r_F=" << r.base.r_F
+                  << " e_v=" << r.e_v << " invariance_e_psi1=" << r.invariance_e_psi1
+                  << " invariance_e_psi2=" << r.invariance_e_psi2 << " e_div=" << r.e_div
+                  << " c_p001=" << r.c_percentile_p001 << " degeneracy_total0=" << r.degeneracy_total0
+                  << " degeneracy_unexplained0=" << r.degeneracy_unexplained0
+                  << " anderson_acc=" << r.anderson_accepted << " anderson_rej=" << r.anderson_rejected
+                  << " anderson_resets=" << r.anderson_condition_resets
+                  << " newton_act=" << r.newton_activations << " newton_acc=" << r.newton_steps_accepted
+                  << " newton_fail=" << r.newton_step_failures << " newton_rescue=" << r.newton_rescue_events
+                  << " newton_jv=" << r.newton_jv_evaluations << '\n';
+    }
+}
+
 // ---------------------------------------------------------------------------
 // SF-25 Phase-1 (P1-I) shared helpers: host-side percentile/concentration
 // reducers and the SF-11-consistent pointwise defect-field replication used
@@ -701,6 +735,10 @@ struct ManufacturedProblemBuffers {
 // Case 2: terminal_dgate_diagnostic (HEAVY, separate registry). Implements
 // D-gate protocol E2-E5 exactly, per the SF-25 activation bitácora and
 // docs/decisions/2026-08-14-manifold-robust-terminal-solver.md.
+//
+// Re-classified by SF-26 (bitácora 2026-09-30): the frozen plateau these
+// cases assert on belongs to the crossed-pairing system; E2 asserts are
+// recorded evidence; always-pass evidence recorder.
 // ---------------------------------------------------------------------------
 
 // K_att = exp(Y_att), elementwise -- the SAME small kernel
@@ -733,6 +771,14 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
     const auto check = [&](const char* name, bool ok) {
         pass = pass && ok;
         std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    };
+    // SF-26 T03 (bitácora 2026-09-30): the E2 freeze/stage checks below assert
+    // on a plateau that belongs to the crossed-pairing system (root cause:
+    // docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md). They are
+    // recorded as evidence (HOLDS/ABSENT), never gating `pass`, under the
+    // SAME printed names so old and new logs stay comparable.
+    const auto evidence = [](const char* name, bool ok) {
+        std::cout << "  evidence " << name << "=" << (ok ? "HOLDS" : "ABSENT") << '\n';
     };
 
     constexpr int n32 = 32;
@@ -787,10 +833,10 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
 
     const bool e2_freeze_ok = freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted &&
                               freeze_report.final_lambda == real{0.5} && freeze_report.final_eta == real{1};
-    check("E2_freeze_status_lambda_floor_exhausted",
-          freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
-    check("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
-    check("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
+    evidence("E2_freeze_status_lambda_floor_exhausted",
+             freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
+    evidence("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
+    evidence("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
 
     // =========================================================================
     // E2 freeze, steps 2-3: mirror ContinuationController.cu's per-lambda
@@ -856,17 +902,63 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
               << " picard_iterations=" << stage_report.picard_iterations << " r_F_frozen=" << r_F_frozen
               << '\n';
 
-    check("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
+    evidence("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
     // AMENDMENT E6a (SF-25 bitácora 2026-08-14T12:10Z): both `stagnated` and
     // `omega_floor_rejected` are documented SF-21 plateau signatures (ramp
     // continuation attempts stagnate; a direct-lambda attempt can instead
     // hit the omega floor first, rejecting every Picard trial) -- accept
     // either as the E2 freeze's plateau signature.
-    check("E2_stage_exit_reason_plateau_signature",
-          stage_report.exit_reason == PicardExitReason::stagnated ||
-              stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
+    const bool exit_reason_is_plateau_signature =
+        stage_report.exit_reason == PicardExitReason::stagnated ||
+        stage_report.exit_reason == PicardExitReason::omega_floor_rejected;
+    evidence("E2_stage_exit_reason_plateau_signature", exit_reason_is_plateau_signature);
     const bool r_f_band_ok = r_F_frozen >= 1e-4 && r_F_frozen <= 1e-2;
-    check("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
+    evidence("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
+
+    // =========================================================================
+    // SF-26 T03 `E2_PLATEAU_ABSENT` branch (bitácora 2026-09-30): the
+    // root-cause decision predicts the frozen plateau disappears once the
+    // source pairing is corrected (SF-26 T01). If the continuation now
+    // reaches the target amplitude, or the mirrored 0.5125 stage now
+    // converges, the plateau this instrument was built to characterize is
+    // gone: print the evidence and the per-stage table, skip the
+    // plateau-dependent E3..E8 protocol (it has no frozen state to operate
+    // on), and return PASS as an always-pass evidence recorder, exactly like
+    // `case_terminal_resolution_probe`.
+    // =========================================================================
+    const bool plateau_absent = freeze_report.status == HeterogeneityStatus::reached_target ||
+                                 stage_report.status == StreamfunctionSolveStatus::converged;
+    if (plateau_absent) {
+        std::cout << "E2_PLATEAU_ABSENT post-SF-26: freeze_status=" << heterogeneity_status_label(freeze_report.status)
+                  << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
+                  << " stage_status=" << solve_status_label(stage_report.status) << " stage_r_F=" << r_F_frozen
+                  << '\n';
+        print_terminal_stage_history(freeze_report.stage_history);
+        std::cout << "case=terminal_dgate_diagnostic verdict=PASS (always-pass evidence recorder; plateau "
+                     "absent -- SF-26 corrected the eq. 14 source pairing and the crossed-pairing plateau "
+                     "this instrument froze no longer exists; E3..E8 skipped, no frozen state to probe)\n";
+        std::ostringstream absent_detail;
+        absent_detail << "SF-26 T03 E2_PLATEAU_ABSENT: sigma_Y^2=1, 32^3, seed=12345, corr_length=8, "
+                         "lambda_attempt=0.5125; freeze_status="
+                      << heterogeneity_status_label(freeze_report.status)
+                      << " final_lambda=" << freeze_report.final_lambda
+                      << " final_eta=" << freeze_report.final_eta
+                      << " stage_status=" << solve_status_label(stage_report.status) << " stage_r_F=" << r_F_frozen
+                      << "; always-pass evidence recorder; plateau absent";
+        return {true,
+                "terminal_dgate_diagnostic",
+                "gpu-terminal-dgate-diagnostic",
+                absent_detail.str(),
+                freeze_report.final_lambda,
+                r_F_frozen,
+                "E2_PLATEAU_ABSENT (post-SF-26)",
+                "always pass (evidence recorder; plateau absent; E3..E8 skipped)",
+                "SF-26 T03 re-classification (bitácora 2026-09-30): the frozen plateau this instrument "
+                "asserted on belonged to the crossed-pairing system corrected by SF-26 T01; once the "
+                "continuation reaches the target amplitude or the mirrored stage converges, the plateau is "
+                "gone and this case becomes an always-pass evidence recorder, same as "
+                "`case_terminal_resolution_probe`"};
+    }
 
     // =========================================================================
     // Shared setup for E3-E5.
@@ -1669,7 +1761,16 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
 
     (void)e2_freeze_ok;
 
-    std::cout << "case=terminal_dgate_diagnostic verdict=" << (pass ? "PASS" : "FAIL") << '\n';
+    // SF-26 T03 (bitácora 2026-09-30): re-classified as an always-pass
+    // evidence recorder, same as `case_terminal_resolution_probe`. The
+    // internal `pass` bool above still reflects whether every E3..E8
+    // mechanism/threshold check held (printed PASS/FAIL per sub-step,
+    // UNCHANGED), but it is evidence for the owner/orchestrator, not a test
+    // gate: the plateau it was measuring belongs to the crossed-pairing
+    // system this increment corrects (SF-26 T01).
+    std::cout << "case=terminal_dgate_diagnostic verdict=PASS (always-pass evidence recorder; internal "
+                 "mechanism/threshold verdict=" << (pass ? "PASS" : "FAIL")
+              << "; see docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md)\n";
 
     std::ostringstream detail;
     detail << "sigma_Y^2=1, 32^3, dx=1, seed=12345, corr_length=8, lambda_attempt=0.5125, newton "
@@ -1680,27 +1781,25 @@ void terminal_dgate_enqueue_exp(CudaContext& ctx, DeviceSpan<const real> y_att, 
               "iff E3 confirmed the mechanism and E5 failed (amendment E6a + decision E6, "
               "bitácora 2026-08-14T12:10Z); E6b micro-step scan + E7 epsilon-fold probe (print-only "
               "evidence, bitácora 2026-08-14T13:05Z); E8 harmonic-init probe (print-only, "
-              "bitácora 2026-08-14T14:00Z)";
+              "bitácora 2026-08-14T14:00Z); SF-26 T03 re-classification: internal mechanism/threshold "
+              "verdict=" << (pass ? "PASS" : "FAIL") << " (evidence, not a gate)";
 
-    return {pass,
+    return {true,
             "terminal_dgate_diagnostic",
             "gpu-terminal-dgate-diagnostic",
             detail.str(),
             mu_star,
             r_F_frozen,
-            "E2+E3+(E5 or E6) (E4 recorded, non-blocking) -- SF-25 D-gate",
-            pass ? "all pass" : "some failed",
+            "E2+E3+(E5 or E6) (E4 recorded, non-blocking) -- SF-25 D-gate, re-classified by SF-26",
+            pass ? "internal mechanism/threshold checks all pass" : "some internal mechanism/threshold checks failed",
             "PRESPECIFIED SF-25 activation-bitácora D-gate protocol (E2-E5) plus the recorded "
             "corrective amendment E6a (E2 exit-reason assert accepts the {stagnated, "
             "omega_floor_rejected} plateau signatures) and decision E6 (Psi-tc/backward-Euler "
-            "contingency probe): verdict PASS iff the amended E2 freeze asserts hold, the E3 "
-            "mu-sweep confirms the shift mechanism (>=10x inner-iteration reduction over the mu=0 "
-            "budget-exhaustion baseline), and EITHER the E5 monotone-Armijo LM mini-solve reaches "
-            "r_F<=1e-4 within 30 steps OR the E6 Psi-tc probe reaches r_F<=1e-4 within 60 steps "
-            "(the prespecified contingency when E5 stalls at a spurious merit local minimum); a "
-            "failed E3 sweep is the honest falsification path (E5/E6 skipped, case FAILs with the "
-            "E3/E4 evidence printed), citing amendment E6a + decision E6 "
-            "(bitácora 2026-08-14T12:10Z)"};
+            "contingency probe). SF-26 T03 (bitácora 2026-09-30) re-classifies this case as an "
+            "always-pass evidence recorder: the frozen plateau it characterizes belongs to the "
+            "crossed-pairing system corrected by SF-26 T01, so the E2 asserts, and the case-level "
+            "verdict they used to gate, are recorded evidence, not a test gate; the internal "
+            "mechanism/threshold PASS/FAIL prints for E3..E8 are unchanged"};
 }
 
 // ---------------------------------------------------------------------------
@@ -2500,14 +2599,29 @@ struct EtaEndgameProblem {
 // pair) plus the host-replicated pointwise defect fields (see the shared
 // helpers above) on BOTH the frozen shelf state and the lambda=0.5 accepted
 // predecessor baseline (captured BEFORE the 0.5125 stage mutates `fields`).
+//
+// Re-classified by SF-26 (bitácora 2026-09-30): the frozen plateau these
+// cases assert on belongs to the crossed-pairing system; E2 asserts are
+// recorded evidence; always-pass evidence recorder.
 // ===========================================================================
 
 [[nodiscard]] CaseResult case_terminal_shelf_probe_phase1() {
     std::cout << std::setprecision(17);
     bool pass = true;
-    const auto check = [&](const char* name, bool ok) {
+    // SF-26 T03 (bitácora 2026-09-30): every E2 check in this case became an
+    // `evidence` print (below); `check` is kept for symmetry with the other
+    // terminal_* cases but this case has no non-E2 mechanism check left to
+    // gate, hence [[maybe_unused]].
+    [[maybe_unused]] const auto check = [&](const char* name, bool ok) {
         pass = pass && ok;
         std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    };
+    // SF-26 T03 (bitácora 2026-09-30): see case_terminal_dgate_diagnostic's
+    // `evidence` lambda doc comment -- the E2 checks below are recorded
+    // evidence (HOLDS/ABSENT), never gating `pass`, under the SAME printed
+    // names.
+    const auto evidence = [](const char* name, bool ok) {
+        std::cout << "  evidence " << name << "=" << (ok ? "HOLDS" : "ABSENT") << '\n';
     };
 
     constexpr int n32 = 32;
@@ -2553,10 +2667,10 @@ struct EtaEndgameProblem {
               << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
               << '\n';
 
-    check("E2_freeze_status_lambda_floor_exhausted",
-          freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
-    check("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
-    check("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
+    evidence("E2_freeze_status_lambda_floor_exhausted",
+             freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
+    evidence("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
+    evidence("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
 
     // S6 baseline column: the accepted (lambda=0.5, eta=1) predecessor state,
     // captured BEFORE the 0.5125 warm-started stage mutates `fields`.
@@ -2637,16 +2751,56 @@ struct EtaEndgameProblem {
               << " exit_reason=" << exit_reason_label(stage_report.exit_reason)
               << " picard_iterations=" << stage_report.picard_iterations << " r_F_frozen=" << r_F_frozen << '\n';
 
-    check("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
-    check("E2_stage_exit_reason_plateau_signature",
-          stage_report.exit_reason == PicardExitReason::stagnated ||
-              stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
+    evidence("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
+    evidence("E2_stage_exit_reason_plateau_signature",
+             stage_report.exit_reason == PicardExitReason::stagnated ||
+                 stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
     const bool r_f_band_ok = r_F_frozen >= 1e-4 && r_F_frozen <= 1e-2;
-    check("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
+    evidence("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
 
     constexpr double kRecordedRFFrozen = 1.1204722529922055e-3;
     std::cout << "E2 warn-only exact compare: r_F_frozen=" << r_F_frozen << " recorded=" << kRecordedRFFrozen
               << " " << (r_F_frozen == kRecordedRFFrozen ? "MATCH" : "DIFFERS") << '\n';
+
+    // =========================================================================
+    // SF-26 T03 `E2_PLATEAU_ABSENT` branch (bitácora 2026-09-30): see
+    // case_terminal_dgate_diagnostic for the full rationale. Skips the
+    // plateau-dependent S3micro/S6 protocol (it has no frozen state to
+    // operate on) and returns PASS as an always-pass evidence recorder.
+    // =========================================================================
+    const bool plateau_absent = freeze_report.status == HeterogeneityStatus::reached_target ||
+                                 stage_report.status == StreamfunctionSolveStatus::converged;
+    if (plateau_absent) {
+        std::cout << "E2_PLATEAU_ABSENT post-SF-26: freeze_status=" << heterogeneity_status_label(freeze_report.status)
+                  << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
+                  << " stage_status=" << solve_status_label(stage_report.status) << " stage_r_F=" << r_F_frozen
+                  << '\n';
+        print_terminal_stage_history(freeze_report.stage_history);
+        std::cout << "case=terminal_shelf_probe_phase1 verdict=PASS (always-pass evidence recorder; plateau "
+                     "absent -- SF-26 corrected the eq. 14 source pairing and the crossed-pairing plateau "
+                     "this instrument froze no longer exists; S3micro/S6 skipped, no frozen state to probe)\n";
+        std::ostringstream absent_detail;
+        absent_detail << "SF-26 T03 E2_PLATEAU_ABSENT: sigma_Y^2=1, 32^3, seed=12345, corr_length=8, "
+                         "lambda_attempt=0.5125; freeze_status="
+                      << heterogeneity_status_label(freeze_report.status)
+                      << " final_lambda=" << freeze_report.final_lambda
+                      << " final_eta=" << freeze_report.final_eta
+                      << " stage_status=" << solve_status_label(stage_report.status) << " stage_r_F=" << r_F_frozen
+                      << "; always-pass evidence recorder; plateau absent";
+        return {true,
+                "terminal_shelf_probe_phase1",
+                "gpu-terminal-shelf-probe-phase1",
+                absent_detail.str(),
+                freeze_report.final_lambda,
+                r_F_frozen,
+                "E2_PLATEAU_ABSENT (post-SF-26)",
+                "always pass (evidence recorder; plateau absent; S3micro/S6 skipped)",
+                "SF-26 T03 re-classification (bitácora 2026-09-30): the frozen plateau this instrument "
+                "asserted on belonged to the crossed-pairing system corrected by SF-26 T01; once the "
+                "continuation reaches the target amplitude or the mirrored stage converges, the plateau is "
+                "gone and this case becomes an always-pass evidence recorder, same as "
+                "`case_terminal_resolution_probe`"};
+    }
 
     // S6 shelf column / S3micro base state: the frozen plateau iterate,
     // captured now (this IS the last mutation of `fields` before S3micro).
@@ -2959,8 +3113,14 @@ struct EtaEndgameProblem {
     rubric("invariance_defect1", shelf_top1_defect1, baseline_top1_defect1);
     rubric("invariance_defect2", shelf_top1_defect2, baseline_top1_defect2);
 
-    std::cout << "case=terminal_shelf_probe_phase1 verdict=" << (pass ? "PASS" : "FAIL")
-              << " (E2 freeze hard asserts gate `pass`; S3micro/S6 are print-only evidence)\n";
+    // SF-26 T03 (bitácora 2026-09-30): re-classified as an always-pass
+    // evidence recorder, same as `case_terminal_resolution_probe`; the E2
+    // freeze asserted on a plateau belonging to the crossed-pairing system
+    // this increment corrects (SF-26 T01).
+    std::cout << "case=terminal_shelf_probe_phase1 verdict=PASS (always-pass evidence recorder; internal "
+                 "mechanism verdict=" << (pass ? "PASS" : "FAIL")
+              << "; S3micro/S6 are print-only evidence; see "
+                 "docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md)\n";
 
     std::ostringstream detail;
     detail << "ONE shared E2 freeze (VERBATIM from case_terminal_dgate_diagnostic, hygiene OFF): "
@@ -2968,19 +3128,24 @@ struct EtaEndgameProblem {
            << r_F_frozen << "; S3micro Part A single-step mu-scan {0.3,0.4,0.5,0.7,1.0,2.0} "
               "(E6b pattern); Part B N<=100 sustained full steps at mu_best; S6 SF-11 report + "
               "host-replicated pointwise defect fields (percentiles, concentration) on the frozen "
-              "shelf state and the lambda=0.5 accepted baseline";
+              "shelf state and the lambda=0.5 accepted baseline; SF-26 T03 re-classification: internal "
+              "mechanism verdict=" << (pass ? "PASS" : "FAIL") << " (evidence, not a gate)";
 
-    return {pass,
+    return {true,
             "terminal_shelf_probe_phase1",
             "gpu-terminal-shelf-probe-phase1",
             detail.str(),
             r_F_frozen,
             mu_best,
-            "E2_freeze_status/lambda/eta + E2_stage_not_converged/exit_reason/r_F band [1e-4,1e-2]",
-            pass ? "all pass" : "some failed",
-            "SF-25 Phase-1 (P1-I) S3micro+S6 probe (bitácora 2026-08-14T17:40Z): the E2 freeze hard "
-            "asserts gate `pass`; the S3micro mu-scan/sustained-descent readouts (PROJECTED_FEASIBLE/"
-            "CURVATURE_LIMITED/FLOW_STALLS) and the S6 LOCALIZED_OBSTRUCTION/DIFFUSE rubric are "
+            "E2_freeze_status/lambda/eta + E2_stage_not_converged/exit_reason/r_F band [1e-4,1e-2], "
+            "re-classified by SF-26",
+            pass ? "internal mechanism checks all pass" : "some internal mechanism checks failed",
+            "SF-25 Phase-1 (P1-I) S3micro+S6 probe (bitácora 2026-08-14T17:40Z). SF-26 T03 (bitácora "
+            "2026-09-30) re-classifies this case as an always-pass evidence recorder: the frozen "
+            "plateau it characterizes belongs to the crossed-pairing system corrected by SF-26 T01, so "
+            "the E2 asserts, and the case-level verdict they used to gate, are recorded evidence, not a "
+            "test gate; the S3micro mu-scan/sustained-descent readouts (PROJECTED_FEASIBLE/"
+            "CURVATURE_LIMITED/FLOW_STALLS) and the S6 LOCALIZED_OBSTRUCTION/DIFFUSE rubric remain "
             "print-only evidence for the owner/orchestrator, not test gates"};
 }
 
@@ -2995,6 +3160,10 @@ struct EtaEndgameProblem {
 // same coefficient state). Always-pass evidence recorder except the E2
 // freeze hard asserts (identical gating discipline to
 // `case_terminal_shelf_probe_phase1`).
+//
+// Re-classified by SF-26 (bitácora 2026-09-30): the frozen plateau these
+// cases assert on belongs to the crossed-pairing system; E2 asserts are
+// recorded evidence; always-pass evidence recorder.
 //
 // Rolling-residual cost structure (bitácora-mandated halving): a naive
 // implementation would evaluate F twice per accepted step (once at u, once
@@ -3329,9 +3498,20 @@ struct ExplicitFlowArmResult {
 [[nodiscard]] CaseResult case_terminal_explicit_flow_probe() {
     std::cout << std::setprecision(17);
     bool pass = true;
-    const auto check = [&](const char* name, bool ok) {
+    // SF-26 T03 (bitácora 2026-09-30): every E2 check in this case became an
+    // `evidence` print (below); `check` is kept for symmetry with the other
+    // terminal_* cases but this case has no non-E2 mechanism check left to
+    // gate, hence [[maybe_unused]].
+    [[maybe_unused]] const auto check = [&](const char* name, bool ok) {
         pass = pass && ok;
         std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    };
+    // SF-26 T03 (bitácora 2026-09-30): see case_terminal_dgate_diagnostic's
+    // `evidence` lambda doc comment -- the E2 checks below are recorded
+    // evidence (HOLDS/ABSENT), never gating `pass`, under the SAME printed
+    // names.
+    const auto evidence = [](const char* name, bool ok) {
+        std::cout << "  evidence " << name << "=" << (ok ? "HOLDS" : "ABSENT") << '\n';
     };
 
     constexpr int n32 = 32;
@@ -3376,10 +3556,10 @@ struct ExplicitFlowArmResult {
               << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
               << '\n';
 
-    check("E2_freeze_status_lambda_floor_exhausted",
-          freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
-    check("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
-    check("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
+    evidence("E2_freeze_status_lambda_floor_exhausted",
+             freeze_report.status == HeterogeneityStatus::lambda_floor_exhausted);
+    evidence("E2_freeze_final_lambda_eq_0_5", freeze_report.final_lambda == real{0.5});
+    evidence("E2_freeze_final_eta_eq_1", freeze_report.final_eta == real{1});
 
     const std::size_t u_size = compact_mac_u_size(grid);
     const std::size_t v_size = compact_mac_v_size(grid);
@@ -3424,16 +3604,57 @@ struct ExplicitFlowArmResult {
               << " exit_reason=" << exit_reason_label(stage_report.exit_reason)
               << " picard_iterations=" << stage_report.picard_iterations << " r_F_frozen=" << r_F_frozen << '\n';
 
-    check("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
-    check("E2_stage_exit_reason_plateau_signature",
-          stage_report.exit_reason == PicardExitReason::stagnated ||
-              stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
+    evidence("E2_stage_not_converged", stage_report.status == StreamfunctionSolveStatus::not_converged);
+    evidence("E2_stage_exit_reason_plateau_signature",
+             stage_report.exit_reason == PicardExitReason::stagnated ||
+                 stage_report.exit_reason == PicardExitReason::omega_floor_rejected);
     const bool r_f_band_ok = r_F_frozen >= 1e-4 && r_F_frozen <= 1e-2;
-    check("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
+    evidence("E2_stage_r_F_in_prespecified_band_1e-4_1e-2", r_f_band_ok);
 
     constexpr double kRecordedRFFrozen = 1.1204722529922055e-3;
     std::cout << "E2 warn-only exact compare: r_F_frozen=" << r_F_frozen << " recorded=" << kRecordedRFFrozen
               << " " << (r_F_frozen == kRecordedRFFrozen ? "MATCH" : "DIFFERS") << '\n';
+
+    // =========================================================================
+    // SF-26 T03 `E2_PLATEAU_ABSENT` branch (bitácora 2026-09-30): see
+    // case_terminal_dgate_diagnostic for the full rationale. Skips the
+    // plateau-dependent explicit-flow arms (they have no frozen state to
+    // operate on) and returns PASS as an always-pass evidence recorder.
+    // =========================================================================
+    const bool plateau_absent = freeze_report.status == HeterogeneityStatus::reached_target ||
+                                 stage_report.status == StreamfunctionSolveStatus::converged;
+    if (plateau_absent) {
+        std::cout << "E2_PLATEAU_ABSENT post-SF-26: freeze_status=" << heterogeneity_status_label(freeze_report.status)
+                  << " final_lambda=" << freeze_report.final_lambda << " final_eta=" << freeze_report.final_eta
+                  << " stage_status=" << solve_status_label(stage_report.status) << " stage_r_F=" << r_F_frozen
+                  << '\n';
+        print_terminal_stage_history(freeze_report.stage_history);
+        std::cout << "case=terminal_explicit_flow_probe verdict=PASS (always-pass evidence recorder; plateau "
+                     "absent -- SF-26 corrected the eq. 14 source pairing and the crossed-pairing plateau "
+                     "this instrument froze no longer exists; the explicit-flow arms are skipped, no frozen "
+                     "state to probe)\n";
+        std::ostringstream absent_detail;
+        absent_detail << "SF-26 T03 E2_PLATEAU_ABSENT: sigma_Y^2=1, 32^3, seed=12345, corr_length=8, "
+                         "lambda_attempt=0.5125; freeze_status="
+                      << heterogeneity_status_label(freeze_report.status)
+                      << " final_lambda=" << freeze_report.final_lambda
+                      << " final_eta=" << freeze_report.final_eta
+                      << " stage_status=" << solve_status_label(stage_report.status) << " stage_r_F=" << r_F_frozen
+                      << "; always-pass evidence recorder; plateau absent";
+        return {true,
+                "terminal_explicit_flow_probe",
+                "gpu-terminal-explicit-flow-probe",
+                absent_detail.str(),
+                freeze_report.final_lambda,
+                r_F_frozen,
+                "E2_PLATEAU_ABSENT (post-SF-26)",
+                "always pass (evidence recorder; plateau absent; explicit-flow arms skipped)",
+                "SF-26 T03 re-classification (bitácora 2026-09-30): the frozen plateau this instrument "
+                "asserted on belonged to the crossed-pairing system corrected by SF-26 T01; once the "
+                "continuation reaches the target amplitude or the mirrored stage converges, the plateau is "
+                "gone and this case becomes an always-pass evidence recorder, same as "
+                "`case_terminal_resolution_probe`"};
+    }
 
     // armA1 init: the frozen shelf state, deep-copied NOW (this IS the last
     // mutation of `fields` before the arms run).
@@ -3510,9 +3731,14 @@ struct ExplicitFlowArmResult {
               << " (band_hits=" << armA2.band_hits << "/" << armA2.band_samples
               << " attractor_found=" << (armA2.attractor_found ? "true" : "false") << ")\n";
 
-    std::cout << "case=terminal_explicit_flow_probe verdict=" << (pass ? "PASS" : "FAIL")
-              << " (E2 freeze hard asserts gate `pass`; the explicit-flow readouts above are "
-                 "print-only evidence)\n";
+    // SF-26 T03 (bitácora 2026-09-30): re-classified as an always-pass
+    // evidence recorder, same as `case_terminal_resolution_probe`; the E2
+    // freeze asserted on a plateau belonging to the crossed-pairing system
+    // this increment corrects (SF-26 T01).
+    std::cout << "case=terminal_explicit_flow_probe verdict=PASS (always-pass evidence recorder; internal "
+                 "mechanism verdict=" << (pass ? "PASS" : "FAIL")
+              << "; the explicit-flow readouts above are print-only evidence; see "
+                 "docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md)\n";
 
     std::ostringstream detail;
     detail << "ONE shared E2 freeze (VERBATIM from case_terminal_shelf_probe_phase1, hygiene OFF): "
@@ -3523,20 +3749,25 @@ struct ExplicitFlowArmResult {
               "N_max=1e6 accepted steps / wall<=2.5h, rolling one-residual-eval-per-accepted-step "
               "structure, argmin snapshot + SF-11 diagnostics, step-refinement control coda, "
               "mechanical ATTRACTOR_FOUND/SADDLE_ESCAPE_CONFIRMED/NO_STABLE_SOLUTION_AT_HORIZON/"
-              "HORIZON_BOUND_DESCENDING/BAND_WANDERING readouts";
+              "HORIZON_BOUND_DESCENDING/BAND_WANDERING readouts; SF-26 T03 re-classification: internal "
+              "mechanism verdict=" << (pass ? "PASS" : "FAIL") << " (evidence, not a gate)";
 
-    return {pass,
+    return {true,
             "terminal_explicit_flow_probe",
             "gpu-terminal-explicit-flow-probe",
             detail.str(),
             armA1.min_r_F,
             armA2.min_r_F,
-            "E2_freeze_status/lambda/eta + E2_stage_not_converged/exit_reason/r_F band [1e-4,1e-2]",
-            pass ? "all pass" : "some failed",
-            "SF-25 Phase-2 (P2-I) case P2-A (bitácora 2026-08-15T00:20Z): the E2 freeze hard asserts "
-            "gate `pass`; the explicit pseudo-time flow readouts (ATTRACTOR_FOUND[_VERIFIED]/"
+            "E2_freeze_status/lambda/eta + E2_stage_not_converged/exit_reason/r_F band [1e-4,1e-2], "
+            "re-classified by SF-26",
+            pass ? "internal mechanism checks all pass" : "some internal mechanism checks failed",
+            "SF-25 Phase-2 (P2-I) case P2-A (bitácora 2026-08-15T00:20Z). SF-26 T03 (bitácora "
+            "2026-09-30) re-classifies this case as an always-pass evidence recorder: the frozen "
+            "plateau it characterizes belongs to the crossed-pairing system corrected by SF-26 T01, so "
+            "the E2 asserts, and the case-level verdict they used to gate, are recorded evidence, not a "
+            "test gate; the explicit pseudo-time flow readouts (ATTRACTOR_FOUND[_VERIFIED]/"
             "SADDLE_ESCAPE_CONFIRMED/NO_STABLE_SOLUTION_AT_HORIZON/HORIZON_BOUND_DESCENDING/"
-            "BAND_WANDERING) are print-only evidence for the owner/orchestrator, not test gates"};
+            "BAND_WANDERING) remain print-only evidence for the owner/orchestrator, not test gates"};
 }
 
 // ===========================================================================
@@ -3621,6 +3852,14 @@ CaseRegistry terminal_solver_case_registry() {
     return {{"terminal_shifted_apply_unit", case_terminal_shifted_apply_unit}};
 }
 
+// Re-classified by SF-26 (bitácora 2026-09-30): `terminal_dgate_diagnostic`,
+// `terminal_shelf_probe_phase1`, and `terminal_explicit_flow_probe` freeze a
+// frozen plateau that belongs to the crossed-pairing system this increment
+// corrects (docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md);
+// their E2 asserts are recorded evidence, not test gates, and all three are
+// always-pass evidence recorders (each case's own header comment carries the
+// same note; not silently deleted -- see the increment spec's
+// "Re-classification of the SF-25 instrument" bullet).
 CaseRegistry terminal_solver_dgate_case_registry() {
     return {{"terminal_dgate_diagnostic", case_terminal_dgate_diagnostic},
             {"terminal_resolution_probe", case_terminal_resolution_probe},
