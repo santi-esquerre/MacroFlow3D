@@ -87,10 +87,14 @@ gates must now pass with the accepted implicit stack.
    reference; update comments to the derived form and cite the decision.
 2. Implement the four contract cases with a shared exact-pair fixture; the
    mutant uses a test-local kernel/host recombination, never a config flag.
-3. Rebuild and run the full suite locally (WSL debug) — the SF-09/SF-10
-   GPU-vs-CPU agreement cases must remain green (both sides change together).
-4. On the V100: full ctest, `heterogeneity_smoke_sigma1`, then the 64^3
-   quartet sequentially (12 h per-variance bound, stop-and-record).
+3. Rebuild locally (WSL debug) and run the fast targeted operator/coupled-
+   residual cases — the SF-09/SF-10 GPU-vs-CPU agreement cases must remain
+   green (both sides change together). The full suite is long-duration
+   computation and runs on V100 as a detached job (step 4), not locally.
+4. On the V100, as detached jobs (`scripts/remote run` + `scripts/remote
+   wait`, one at a time — the remote mirror is shared state, do not overlap
+   jobs): full ctest, then `heterogeneity_smoke_sigma1`, then the 64^3 quartet
+   sequentially (12 h per-variance bound, stop-and-record).
 5. Record Gate 3A metrics per accepted stage and the `e_v`, invariance, and
    `e_div` comparison 32^3 vs 64^3 on the same dimensionless problem.
 
@@ -106,15 +110,28 @@ gates must now pass with the accepted implicit stack.
 
 ## Validation commands
 
+Local (fast dev loop):
+
 ```bash
 cmake --preset wsl-debug && cmake --build build/wsl-debug -j
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R streamfunction_operator_tests
 ./build/wsl-debug/streamfunction_operator_tests --case coupled_residual_exact_pair_k1
 ./build/wsl-debug/streamfunction_operator_tests --case coupled_residual_pairing_mutant
+```
+
+Remote V100 (long-duration computation — detached jobs, run one at a time;
+the remote mirror is shared state, do not overlap jobs — see
+`docs/runbooks/remote-v100.md` Section 0):
+
+```bash
 scripts/remote sync
-scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
 scripts/remote run sf26-smoke32 -- "./build/v100-release/macroflow3d_pipeline apps/config_streamfunctions_gaussian_smoke32.yaml"
+scripts/remote wait sf26-smoke32
 scripts/remote run sf26-64var1 -- "./build/v100-release/macroflow3d_pipeline apps/config_streamfunctions_gaussian_64_var1.yaml"
+scripts/remote wait sf26-64var1
 ```
 
 ## Acceptance thresholds

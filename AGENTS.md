@@ -133,7 +133,8 @@ More specific local rules live in:
 
 ### 1. Local WSL development
 
-Use WSL for reading, editing, and light validation.
+Use WSL for reading, editing, and **light** validation only: configure, build,
+and a small, fast, targeted subset of tests used to iterate on a change.
 
 Typical local cycle:
 
@@ -147,25 +148,57 @@ cmake -S . -B build/wsl-debug -G Ninja \
   -DMACROFLOW3D_ENABLE_PETSC=OFF
 
 cmake --build build/wsl-debug -j
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
 ```
 
-### 2. Remote V100 validation
+**The full local `ctest` suite is long-duration computation and must not be
+run as increment acceptance/validation evidence.** Several registered `ctest`
+entries are multi-case solver/continuation sweeps; running the full suite on
+CPU-bound local GPU emulation routinely takes several minutes or more. See
+rule 2: the authoritative full-suite/heavy run always goes to V100 as a
+detached job, never to a local blocking call.
 
-Use the remote server for heavy builds, profiling, PETSc/SLEPc, and production-like runs.
+### 2. Remote V100 validation — long-duration computation is always a detached job
+
+Use the remote server for heavy builds, profiling, PETSc/SLEPc, production-like
+runs, and **any computation whose duration is not short and bounded**. This
+explicitly includes:
+
+- a full or near-full `ctest` run (as opposed to one fast `-R`-filtered case);
+- any test binary that internally sweeps many cases (operator tests,
+  streamfunction Picard/Anderson/continuation ladders, etc.);
+- production-like pipeline runs, ensemble runs, benchmarks, and profiling runs.
+
+**Rule:** long-duration computation must run as a `scripts/remote run <job>`
+detached background job, polled with `scripts/remote wait <job>`. It must
+never run inside a subagent's local isolated worktree, and it must never run
+as a long blocking `scripts/remote exec` call that ties up the calling agent
+turn for the whole duration. Reserve `scripts/remote exec` for short, bounded
+steps (configure, compile, a single fast smoke command) that finish in
+roughly under a minute.
 
 Canonical flow:
 
 ```bash
 scripts/remote sync
-scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
 scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
 scripts/remote wait pspta-small
 ```
 
 Do not assume local performance conclusions carry over to V100.
 Do not handwrite ad hoc `ssh`/`tmux`/`rsync` command strings for normal remote work; use `scripts/remote`.
+
+**Concurrency:** the remote mirror (`REMOTE_REPO_DIR` in `scripts/remote.env`,
+default `~/MacroFlow3D`) is one shared execution surface, not one per
+branch/worktree/agent. Two agents must not `scripts/remote sync` or run heavy
+jobs against it at the same time; a second sync overwrites the tree a prior
+job is still executing against. DAG nodes that both need remote execution must
+be serialized even if their local write scopes would otherwise allow parallel
+execution — see `docs/runbooks/remote-v100.md`.
 
 ---
 
@@ -302,6 +335,12 @@ For any new invariant-construction work, read `docs/plans/active/lester-eq14-str
 - Do **not** add fallback paths or compatibility layers unless explicitly requested.
 - Do **not** use the remote server as an editing environment; local WSL is the source of truth and remote is for synchronized build/run/measure.
 - Do **not** extend the old PSPTA invariant-construction architecture. It is legacy until replaced or intentionally retired.
+- Do **not** run long-duration computation — a full/near-full `ctest` suite, a
+  multi-case solver sweep, a production/ensemble run, a benchmark, or a
+  profiling run — locally, or via a long blocking `scripts/remote exec` call.
+  Launch it as a detached `scripts/remote run <job>` background job on V100 and
+  collect evidence with `scripts/remote wait <job>` / `scripts/remote tail
+  <job>`.
 
 ---
 
@@ -344,4 +383,3 @@ not enough. The autonomous run is complete only when:
 The orchestrator must stop at the PR. The next increment remains disabled until
 that PR is merged and the updated execution state is visible on the default
 branch.
-

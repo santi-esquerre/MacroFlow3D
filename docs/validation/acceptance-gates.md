@@ -49,6 +49,12 @@ ctest --test-dir <build-dir> --output-on-failure
 ./<build-dir>/macroflow3d_pipeline apps/config_pspta_small.yaml
 ```
 
+The full `ctest --test-dir <build-dir> --output-on-failure` pass is
+long-duration computation: local WSL runs only a fast targeted `-R` subset for
+iteration, and the authoritative full pass runs on V100 as a detached
+`scripts/remote run <job>` job, not locally and not via blocking
+`scripts/remote exec` — see `docs/runbooks/remote-v100.md` Section 0.
+
 ### Gate 2 — Algebra / operator integrity
 
 Use for changes touching:
@@ -72,6 +78,10 @@ Minimum commands:
 ctest --test-dir <build-dir> --output-on-failure -R operator_tests
 ctest --test-dir <build-dir> --output-on-failure -R validate_slepc_eigensolver
 ```
+
+`validate_slepc_eigensolver` requires PETSc/SLEPc and runs on V100 as a
+detached job (`scripts/remote run` + `scripts/remote wait`), never locally —
+see `docs/runbooks/remote-v100.md` Section 0.
 
 Required evidence:
 

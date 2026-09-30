@@ -1,7 +1,7 @@
 ---
 name: increment-worker
 description: Implements exactly one concrete MacroFlow3D increment DAG node or one corrective node. Use proactively for all delegated implementation and correction work.
-model: claude-sonnet-5
+model: sonnet
 effort: medium
 permissionMode: bypassPermissions
 isolation: worktree
@@ -81,6 +81,40 @@ Never hide failures, skipped tests, assumptions, or unexpected behavior.
 
 For scientific/numerical changes, report the expected numerical effect and
 regression surface.
+
+## Long-duration computation is always a detached V100 job
+
+Do not run a full/near-full `ctest` suite, a multi-case solver/continuation
+sweep, a production-like pipeline run, an ensemble run, a benchmark, or a
+PETSc/SLEPc test inside your local worktree. That is long-duration computation
+and belongs on the remote V100 host as a detached job, per
+`docs/runbooks/remote-v100.md` Section 0:
+
+```bash
+scripts/remote sync
+scripts/remote exec -- "<short, bounded configure/build command>"
+scripts/remote run <job> -- "<the long-duration command>"
+scripts/remote wait <job>
+```
+
+Rules:
+
+- your own worktree may run only fast, bounded validation locally (a single
+  targeted `-R` test case, a build, one quick smoke command completing in
+  roughly under a minute);
+- anything with unknown or plausibly-long duration goes to V100 as
+  `scripts/remote run` + `scripts/remote wait`, never `scripts/remote exec`
+  and never local;
+- before you `scripts/remote sync` or start a job, check
+  `scripts/remote status <job>` for any job already `RUNNING` against the
+  shared remote mirror; do not overlap your sync/run with another agent's
+  in-flight remote job — the mirror is single shared external state, not one
+  per worktree;
+- report the exact remote job name(s), log path(s), and outcome in your
+  VALIDATION section, the same as any other validation command.
+
+If the orchestrator's supplied validation commands already specify the
+detached-job form, run them exactly as given.
 
 ## Git restrictions
 

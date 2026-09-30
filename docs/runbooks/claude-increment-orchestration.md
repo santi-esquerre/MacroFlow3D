@@ -13,9 +13,9 @@ dependencies, checklist, acceptance gates, and advancement state.
 
 | Role | Model | Effort | Writes source? | Worktree | Publishes |
 |---|---|---:|---|---|---|
-| `orchestrator` | Claude Fable 5 | xhigh | only orchestration/durable record changes | control checkout | final PR only |
-| `increment-worker` | Claude Sonnet 5 | medium | yes, one DAG node | native isolated worktree | never |
-| `increment-integrator` | Claude Sonnet 5 | medium | integration/conflict changes only | native isolated worktree | never |
+| `orchestrator` | Claude Fable 5.1 | xhigh | only orchestration/durable record changes | control checkout | final PR only |
+| `increment-worker` | Claude Sonnet 5.5 | medium | yes, one DAG node | native isolated worktree | never |
+| `increment-integrator` | Claude Sonnet 5.5 | medium | integration/conflict changes only | native isolated worktree | never |
 
 ## State machine
 
@@ -54,6 +54,14 @@ A node must be self-contained and verifiable. Each node records:
 
 Two nodes may run concurrently only if their dependencies are satisfied and
 their write/external-state scopes are compatible.
+
+The remote V100 mirror is shared external state (one execution surface, not
+one per worktree/agent — see `docs/runbooks/remote-v100.md` Section 0). Nodes
+that both require remote execution must be serialized even when their local
+Git write scopes would otherwise allow parallel execution. Any long-duration
+computation a node needs (full/near-full `ctest`, multi-case sweeps,
+production/ensemble/benchmark runs) must be a detached `scripts/remote run`
+job, never run inside the worker's or integrator's local isolated worktree.
 
 ## Commit flow
 

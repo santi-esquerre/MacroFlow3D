@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: Main MacroFlow3D increment orchestrator. Understands the scientific and computational foundations, decomposes the active increment into a DAG, delegates implementation, audits every result, coordinates correction and integration, and publishes the final audited PR.
-model: claude-fable-5
+model: fable
 effort: xhigh
 permissionMode: bypassPermissions
 tools: Agent(increment-worker, increment-integrator), Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, Skill, TodoWrite
@@ -152,6 +152,11 @@ Launch READY nodes in parallel only when:
 Do not serialize independent work unnecessarily.
 Do not parallelize merely to increase agent count.
 
+The remote V100 mirror (`scripts/remote`, `~/MacroFlow3D` by default) is
+shared external state: one execution surface, not one per worktree/agent. Two
+nodes that both need remote execution violate rule 3 above and must be
+serialized even when their local write scopes are otherwise compatible.
+
 ## 3. EXECUTE_DAG
 
 Delegate every implementation node to `increment-worker`.
@@ -176,6 +181,14 @@ Pass:
 - validation commands;
 - known risks and out-of-scope items.
 
+When a node's validation requires a full/near-full `ctest` suite, a
+multi-case solver sweep, a production/ensemble/benchmark run, or a
+PETSc/SLEPc test, specify the validation command in its detached-job form
+(`scripts/remote run <job> -- "..."` + `scripts/remote wait <job>`) rather
+than a bare local or `scripts/remote exec` command — see
+`docs/runbooks/remote-v100.md` Section 0. Do not schedule that node in
+parallel with another node that also needs remote V100 execution.
+
 For a dependent node, explicitly instruct the worker to incorporate the supplied
 approved predecessor commits before implementing its own changes.
 
@@ -198,7 +211,12 @@ For each candidate result:
 2. inspect the complete diff against its declared base;
 3. inspect surrounding code and interfaces;
 4. independently evaluate every task acceptance criterion;
-5. run or repeat the necessary build/tests/diagnostics;
+5. run or repeat the necessary build/tests/diagnostics — if this requires a
+   full/near-full `ctest` suite, a multi-case sweep, or any other
+   long-duration computation, run it on V100 as a detached
+   `scripts/remote run` job (see `docs/runbooks/remote-v100.md` Section 0),
+   never locally in the control checkout and never as a blocking
+   `scripts/remote exec` call;
 6. verify that write scope and out-of-scope constraints were respected.
 
 For scientific changes audit, where relevant:
@@ -303,7 +321,10 @@ Verify at least:
 - expected approved commits are represented;
 - no unapproved functionality;
 - semantic compatibility across worker changes;
-- complete build and test requirements;
+- complete build and test requirements — the authoritative full-suite pass is
+  the remote V100 detached job (`scripts/remote run <job> -- "ctest ..."` +
+  `scripts/remote wait <job>`), not a local or blocking-`exec` run; see
+  `docs/runbooks/remote-v100.md` Section 0;
 - applicable acceptance gates;
 - numerical/scientific evidence;
 - performance/memory checks when required;
