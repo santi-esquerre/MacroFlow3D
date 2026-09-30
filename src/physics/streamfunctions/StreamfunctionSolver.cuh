@@ -350,6 +350,38 @@
  *   SECOND time for the SAME activation is terminal (`status =
  *   not_converged`, `exit_reason = newton_exhausted`, the last ACCEPTED state
  *   unchanged by either failed attempt).
+ *
+ * SF-25 Phase-1 (S2) state-machine hygiene: three independently config-gated
+ * fixes, each default OFF and exactly bitwise-preserving in that state (see
+ * `NewtonKrylovConfig::rescue_resets_omega`,
+ * `AdaptivePicardConfig::FloorGuardConfig`, and
+ * `AndersonConfig::restart_on_stagnation`/`max_restarts` in
+ * `StreamfunctionTypes.hpp` for the full field-level contract).
+ *
+ *   (a) `config.newton.rescue_resets_omega`: on entry to the rescue window
+ *       (the same statement that sets `newton_rescue_remaining =
+ *       config.newton.rescue_picard_steps` after a Newton step failure), the
+ *       persistent adaptive `omega` is reset to `config.picard.omega`;
+ *       `report.newton_rescue_omega_resets` counts each such reset.
+ *   (b) `config.adaptive.floor_guard`: at the omega-floor rejection site (the
+ *       backtracking trial at `omega_try <= config.adaptive.omega_min`),
+ *       intercepts the would-be `omega_floor_rejected` exit when at least
+ *       `floor_guard.window` accepted outer iterations have elapsed since
+ *       solve start or the last guard reset AND the accepted-iteration
+ *       residual history is still descending by `floor_guard.drop_factor`
+ *       over that window; resets `omega` to `config.picard.omega`, counts
+ *       `report.omega_floor_guard_resets`, and lets the outer loop continue
+ *       (state k unchanged) instead of exiting; capped at
+ *       `floor_guard.max_resets` interceptions per solve.
+ *   (c) `config.anderson.restart_on_stagnation` (meaningful only together
+ *       with `config.anderson.enabled`): at the ordinary SF-15 `stagnated`
+ *       exit site, intercepts it while `report.anderson_stagnation_restarts
+ *       < config.anderson.max_restarts`: clears the Anderson history
+ *       (`AndersonAccelerator::clear()`), resets `omega` to
+ *       `config.picard.omega`, resets the stagnation-window baseline (so the
+ *       identical window cannot immediately re-fire), counts
+ *       `report.anderson_stagnation_restarts`, and continues the outer loop
+ *       instead of exiting.
  */
 
 #include "../../numerics/solvers/pcg.cuh"
@@ -506,6 +538,15 @@ struct StreamfunctionSolveReport {
     int newton_step_failures{0};
     int newton_rescue_events{0};
     long long newton_jv_evaluations{0};
+
+    // SF-25 Phase-1 (S2) state-machine hygiene counters: additive, zero when
+    // the corresponding config flag is off (config.newton.rescue_resets_omega,
+    // config.adaptive.floor_guard.enabled, config.anderson.restart_on_
+    // stagnation respectively). See StreamfunctionTypes.hpp for the exact
+    // semantics of each counted event.
+    int newton_rescue_omega_resets{0};
+    int omega_floor_guard_resets{0};
+    int anderson_stagnation_restarts{0};
 };
 
 /**

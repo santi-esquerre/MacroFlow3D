@@ -153,6 +153,8 @@ struct FixedPicardConfig {
  *     relative to the accepted state's percentile, without a matching
  *     increase in the Darcy low-speed population (same guard-active
  *     condition; see `StreamfunctionSolver.cuh` for the exact test).
+ *   - `floor_guard`: SF-25 Phase-1 state-machine hygiene (S2), config-gated,
+ *     default OFF and bitwise-preserving (see `FloorGuardConfig` below).
  */
 struct AdaptivePicardConfig {
     bool enabled{true};
@@ -168,6 +170,52 @@ struct AdaptivePicardConfig {
     real unexplained_growth_factor{real{2}};
     real unexplained_growth_offset{real{1e-4}};
     real percentile_collapse_factor{real{10}};
+
+    /**
+     * SF-25 Phase-1 (S2) omega-floor-collapse guard, config-gated, default
+     * `enabled == false` and exactly bitwise-preserving in that state (the
+     * intercept below is never reached when `enabled == false`, so the
+     * `omega_floor_rejected` exit fires exactly as before -- see
+     * `StreamfunctionSolver.cu`'s backtracking step for the insertion
+     * point).
+     *
+     * `enabled == true` intercepts an omega-floor rejection that would
+     * otherwise terminate the adaptive stage (`PicardExitReason::
+     * omega_floor_rejected`) IFF BOTH: (i) at least `window` ACCEPTED outer
+     * iterations exist since solve start or since the last guard reset
+     * (`k - floor_guard_last_reset_k >= window`, mirroring the
+     * `stagnation_window` index-safety convention above); and (ii) the
+     * accepted-iteration residual history is still descending by at least
+     * `drop_factor` over that window: `r_F[k] <= drop_factor *
+     * r_F[k-window]`, read from `report.picard_history` exactly like the
+     * stagnation check. When intercepted: the persistent adaptive `omega` is
+     * reset to `config.picard.omega` (the solve-start initial value), the
+     * additive `StreamfunctionSolveReport::omega_floor_guard_resets` counter
+     * increments, and the outer loop CONTINUES to the next iteration's HEAD
+     * (the accepted state is left untouched -- exactly as an ordinary
+     * `omega_floor_rejected` exit leaves it, except the solve does not
+     * terminate). After `max_resets` interceptions for this solve, any
+     * further floor rejection behaves exactly as today
+     * (`omega_floor_rejected`). If the guard condition does not hold (either
+     * (i) or (ii) fails), the floor rejection also behaves exactly as
+     * today.
+     *
+     *   - `window`: the accepted-iteration lookback window (validated `>=
+     *     1`).
+     *   - `drop_factor`: the required fractional descent over `window`
+     *     accepted iterations (validated finite, in `(0, 1)`).
+     *   - `max_resets`: the maximum number of guard interceptions permitted
+     *     for one `solve_streamfunctions` call (validated `>= 0`; `0`
+     *     disables interception even when `enabled == true`, matching the
+     *     `rescue_picard_steps == 0` degenerate-but-valid convention used
+     *     elsewhere in this file).
+     */
+    struct FloorGuardConfig {
+        bool enabled{false};
+        int window{5};
+        real drop_factor{real{0.9}};
+        int max_resets{3};
+    } floor_guard{};
 };
 
 /**
@@ -197,12 +245,33 @@ struct AdaptivePicardConfig {
  *     (R-diagonal ratio from the pivoted-QR solve of the small Gram system)
  *     before an iteration's acceleration attempt is abandoned in favor of the
  *     unchanged SF-15 Picard fallback (validated finite `> 1`).
+ *   - `restart_on_stagnation`, `max_restarts`: SF-25 Phase-1 (S2)
+ *     stagnation-restart hygiene, config-gated, default `restart_on_
+ *     stagnation == false` and exactly bitwise-preserving in that state.
+ *     `restart_on_stagnation == true` (only meaningful together with
+ *     `enabled == true`; inert otherwise, since no Anderson history exists
+ *     to restart) intercepts the moment the SF-15 `stagnated` exit
+ *     (`PicardExitReason::stagnated`) would fire: while the additive
+ *     `StreamfunctionSolveReport::anderson_stagnation_restarts` counter is
+ *     `< max_restarts`, the Anderson history is cleared
+ *     (`AndersonAccelerator::clear()`), the persistent adaptive `omega` is
+ *     reset to `config.picard.omega` (the solve-start initial value), the
+ *     stagnation-window baseline is reset so the SAME window cannot
+ *     immediately re-fire on the next outer iteration, the counter
+ *     increments, and the outer loop CONTINUES instead of exiting. Once
+ *     `max_restarts` interceptions have occurred, the `stagnated` exit fires
+ *     exactly as today. `max_restarts` is validated `>= 0` regardless of
+ *     `restart_on_stagnation`/`enabled` (mirroring this file's other
+ *     unconditional-validation convention); `0` disables interception even
+ *     when `restart_on_stagnation == true`.
  */
 struct AndersonConfig {
     bool enabled{false};
     int depth{5};
     int start_iteration{5};
     real condition_limit{real{1e12}};
+    bool restart_on_stagnation{false};
+    int max_restarts{2};
 };
 
 /**
@@ -285,6 +354,21 @@ enum class PicardTrialOutcome {
  *     actually used by the Newton phase).
  *   - `delta`: the SF-22 `JvpDeltaConfig` forward-difference delta clamp,
  *     passed straight through to every `JvpWorkspace`/`CoupledGmres` call.
+ *   - `rescue_resets_omega`: SF-25 Phase-1 (S2) rescue-omega-reset hygiene,
+ *     config-gated, default `false` and exactly bitwise-preserving in that
+ *     state. `true` resets the persistent adaptive `omega` to its
+ *     solve-start initial value (`config.picard.omega`) on ENTRY to the
+ *     rescue window (the same point `solve_streamfunctions` sets
+ *     `newton_rescue_remaining = config.newton.rescue_picard_steps` after a
+ *     Newton step failure), before any rescue-window Picard/Anderson step
+ *     runs. Without this, the rescue window's Picard/Anderson trials start
+ *     from whatever `omega` the SF-15 backtracking search had collapsed to
+ *     immediately before Newton activated, which can be at or near
+ *     `adaptive.omega_min` and make every rescue trial doomed to reject. The
+ *     additive `StreamfunctionSolveReport::newton_rescue_omega_resets`
+ *     counter increments once per rescue-window entry where the reset is
+ *     applied (regardless of `rescue_picard_steps`, including the
+ *     degenerate `0`-step case).
  */
 struct NewtonKrylovConfig {
     bool enabled{false};
@@ -300,6 +384,7 @@ struct NewtonKrylovConfig {
     int rescue_picard_steps{5};
     CoupledGmresConfig gmres{};
     JvpDeltaConfig delta{};
+    bool rescue_resets_omega{false};
 };
 
 /**
@@ -557,10 +642,15 @@ struct StreamfunctionMemoryReport {
  *     `[0, 1)`; `stagnation_window >= 1`; finite `stagnation_min_reduction`
  *     in `(0, 1)`; finite `max_unexplained_fraction` in `(0, 1]`; finite
  *     `unexplained_growth_factor >= 1`; finite `unexplained_growth_offset
- *     >= 0`; finite `percentile_collapse_factor > 1`; `config.anderson`
+ *     >= 0`; finite `percentile_collapse_factor > 1`; nested
+ *     `adaptive.floor_guard` (SF-25) is likewise validated regardless of
+ *     `adaptive.enabled`/`adaptive.floor_guard.enabled` and requires:
+ *     `window >= 1`; finite `drop_factor` in `(0, 1)`; `max_resets >= 0`;
+ *     `config.anderson`
  *     (SF-20) is likewise validated regardless of `enabled` and requires:
  *     `depth` in `[3, 8]`; `start_iteration >= 1`; finite
- *     `condition_limit > 1`; `config.newton` (SF-24) is likewise validated
+ *     `condition_limit > 1`; `max_restarts >= 0` (SF-25, regardless of
+ *     `restart_on_stagnation`); `config.newton` (SF-24) is likewise validated
  *     regardless of `enabled`, and additionally (SF-24 C01) rejects
  *     `newton.enabled && !adaptive.enabled` as its FIRST check (the Newton
  *     phase is integrated only into the adaptive Picard loop; see

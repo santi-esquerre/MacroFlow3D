@@ -169,16 +169,22 @@ A psi = -div(q grad psi).
 Then a decoupled nonlinear iteration solves:
 
 ```math
-A psi1 = -q S2,
-A psi2 = -q S1.
+A psi1 = -q S1,
+A psi2 = -q S2.
 ```
+
+(same-index pairing; the paper's printed equation (14) crosses the indices —
+see `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`)
 
 This formulation is now authoritative for new invariant construction because it keeps a variable-coefficient diffusion structure and avoids explicitly differencing `grad(log k)`.
 
-Current status:
-- the equation (14) solver is not implemented yet;
-- existing PCG/MG and variable-coefficient operator code are candidate infrastructure;
-- multigrid reuse is an architectural hypothesis, not a confirmed fact;
+Current status (2026-09-30):
+- the equation (14) solver stack exists under `src/physics/streamfunctions/`
+  (operators, projected PCG/MG, Picard, Anderson, Newton-Krylov,
+  continuation, diagnostics — SF-02..SF-25);
+- its residual still pairs the sources crosswise (SF-26 corrects it); a
+  paper-faithful explicit pseudo-time solver (SF-27) and a pseudo-symplectic
+  tracker (SF-29) are the next additions;
 - the legacy PSPTA engine is a possible invariant-preserving transport consumer once accepted `psi1`, `psi2` fields exist, but its role must be re-evaluated during the reformulation.
 
 ---

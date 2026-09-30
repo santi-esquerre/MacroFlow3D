@@ -23,7 +23,7 @@ This decision record separates confirmed project choices from hypotheses that st
    - Status: accepted.
    - Rationale: avoids explicit finite differences of `grad(log k)` and exposes a variable-coefficient diffusion operator.
 
-4. Define `q=1/k` and `A psi = -div(q grad psi)` so decoupled iterations solve `A psi1 = -q S2` and `A psi2 = -q S1`.
+4. Define `q=1/k` and `A psi = -div(q grad psi)` so decoupled iterations solve `A psi1 = -q S2` and `A psi2 = -q S1`. **Corrected 2026-09-30:** the pairing must be `A psi1 = -q S1`, `A psi2 = -q S2` (same index); the crossed form copied the paper's printed equation (14) and is not satisfied by exact Darcy streamfunction pairs — see `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`.
    - Status: accepted as mathematical formulation.
 
 5. Reuse of the existing PCG/MG stack is the priority architecture hypothesis.

@@ -905,6 +905,30 @@ template <typename Callable>
         validate_streamfunction_problem(base_grid, base_problem, config);
     });
 
+    // SF-25 Phase-1 (S2-b): floor_guard.window >= 1.
+    require_invalid("adaptive_floor_guard_window_zero", [&] {
+        auto config = base_config;
+        config.adaptive.floor_guard.window = 0;
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
+    // floor_guard.drop_factor: finite, in (0, 1).
+    require_invalid("adaptive_floor_guard_drop_factor_zero", [&] {
+        auto config = base_config;
+        config.adaptive.floor_guard.drop_factor = real{0};
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
+    require_invalid("adaptive_floor_guard_drop_factor_one", [&] {
+        auto config = base_config;
+        config.adaptive.floor_guard.drop_factor = real{1};
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
+    // floor_guard.max_resets: >= 0.
+    require_invalid("adaptive_floor_guard_max_resets_negative", [&] {
+        auto config = base_config;
+        config.adaptive.floor_guard.max_resets = -1;
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
+
     // Positives: all defaults, and enabled=false with otherwise-invalid-
     // looking-but-valid boundary values.
     require_ok("adaptive_all_defaults_valid",
@@ -915,6 +939,16 @@ template <typename Callable>
         config.adaptive.armijo_c = real{0};
         config.adaptive.omega_max = config.picard.omega;
         config.adaptive.max_unexplained_fraction = real{1};
+        validate_streamfunction_problem(base_grid, base_problem, config);
+    });
+    // SF-25 Phase-1: floor_guard is validated unconditionally, even when both
+    // adaptive.enabled and floor_guard.enabled are false, and its own
+    // boundary values (window=1, max_resets=0) are valid.
+    require_ok("adaptive_floor_guard_disabled_boundary_values_valid", [&] {
+        auto config = base_config;
+        config.adaptive.floor_guard.enabled = false;
+        config.adaptive.floor_guard.window = 1;
+        config.adaptive.floor_guard.max_resets = 0;
         validate_streamfunction_problem(base_grid, base_problem, config);
     });
 

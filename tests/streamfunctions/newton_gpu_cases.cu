@@ -772,6 +772,96 @@ template <typename Callable>
 }
 
 // ===========================================================================
+// SF-25 Phase-1 (S2-a) ON-path evidence: newton_rescue_omega_reset.
+//
+// Reuses the SAME 16^3 (amplitude 0.25) "Variant A" forced-line-search-
+// failure mechanism as `case_newton_forced_failure_preservation` (SF-24
+// E13): alpha_min=1, armijo_c=1-1e-8, forcing_min=forcing_max=1e-1,
+// rescue_picard_steps=0, which deterministically produces exactly ONE
+// rescue-window entry (newton_rescue_events==1, the degenerate 0-step
+// rescue forces an immediate retry that fails again -> newton_exhausted).
+// `rescue_resets_omega` threads straight through that single rescue-window
+// entry point, so this fixture is a clean, deterministic ON/OFF control for
+// the counter.
+// ===========================================================================
+
+[[nodiscard]] CaseResult case_newton_rescue_omega_reset() {
+    constexpr int n = 16;
+    constexpr double amplitude = 0.25;
+    const Grid3D grid = isotropic_grid(n);
+
+    bool pass = true;
+    const auto check = [&](const char* name, bool ok) {
+        pass = pass && ok;
+        std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
+    };
+
+    const auto run = [&](bool rescue_resets_omega) {
+        CudaContext ctx(0);
+        ManufacturedProblemBuffers buffers(grid, amplitude);
+        const StreamfunctionProblemView problem = manufactured_problem_view(grid, buffers);
+        StreamfunctionFields fields;
+        StreamfunctionWorkspace workspace;
+        StreamfunctionSolverConfig config{};
+        config.newton.enabled = true;
+        config.newton.alpha_min = real{1};
+        config.newton.armijo_c = real{1} - real{1e-8};
+        config.newton.forcing_min = real{1e-1};
+        config.newton.forcing_max = real{1e-1};
+        config.newton.rescue_picard_steps = 0;
+        config.newton.rescue_resets_omega = rescue_resets_omega;
+        const StreamfunctionSolveReport report =
+            solve_streamfunctions(ctx, problem, config, fields, workspace);
+        ctx.synchronize();
+        return report;
+    };
+
+    const StreamfunctionSolveReport report_off = run(/*rescue_resets_omega=*/false);
+    const StreamfunctionSolveReport report_on = run(/*rescue_resets_omega=*/true);
+
+    check("off_exit_reason_newton_exhausted",
+          report_off.status == StreamfunctionSolveStatus::not_converged &&
+              report_off.exit_reason == PicardExitReason::newton_exhausted);
+    check("off_rescue_events_eq_1", report_off.newton_rescue_events == 1);
+    check("off_newton_rescue_omega_resets_eq_0", report_off.newton_rescue_omega_resets == 0);
+
+    check("on_exit_reason_newton_exhausted",
+          report_on.status == StreamfunctionSolveStatus::not_converged &&
+              report_on.exit_reason == PicardExitReason::newton_exhausted);
+    check("on_rescue_events_eq_1", report_on.newton_rescue_events == 1);
+    check("on_newton_rescue_omega_resets_eq_1", report_on.newton_rescue_omega_resets == 1);
+
+    // OFF/ON must otherwise be identical (same activations/step_failures/
+    // history size): the reset only touches the persistent `omega` used by
+    // the (never-reached, 0-step) rescue window's Picard trials, not the
+    // Newton phase itself.
+    check("activations_equal", report_off.newton_activations == report_on.newton_activations);
+    check("step_failures_equal", report_off.newton_step_failures == report_on.newton_step_failures);
+
+    std::cout << std::setprecision(17) << "newton_rescue_omega_reset: off.rescue_omega_resets="
+              << report_off.newton_rescue_omega_resets
+              << " on.rescue_omega_resets=" << report_on.newton_rescue_omega_resets
+              << " off.rescue_events=" << report_off.newton_rescue_events
+              << " on.rescue_events=" << report_on.newton_rescue_events << '\n';
+    std::cout << "case=newton_rescue_omega_reset verdict=" << (pass ? "PASS" : "FAIL") << '\n';
+
+    return {pass,
+            "newton_rescue_omega_reset",
+            "gpu-newton-rescue-omega-reset",
+            "16^3 (a=0.25) manufactured trig-K fixture, SF-24 E13 single-trial-ladder forced "
+            "failure (alpha_min=1, armijo_c=1-1e-8, forcing_min=forcing_max=1e-1, "
+            "rescue_picard_steps=0)",
+            static_cast<double>(report_off.newton_rescue_omega_resets),
+            static_cast<double>(report_on.newton_rescue_omega_resets),
+            "off: newton_rescue_omega_resets==0; on: newton_rescue_omega_resets==1",
+            pass ? "all pass" : "some failed",
+            "SF-25 Phase-1 (S2-a): rescue_resets_omega=false reproduces newton_rescue_omega_resets"
+            "==0 bitwise (the counter never increments); rescue_resets_omega=true increments it "
+            "exactly once, at the single rescue-window entry this deterministic forced-failure "
+            "fixture produces"};
+}
+
+// ===========================================================================
 // G4/G5: newton_difficult_case (HEAVY tier, separate registry).
 //
 // The problem fixture below is copied VERBATIM from streamfunction_anderson_
@@ -1254,6 +1344,7 @@ CaseRegistry newton_case_registry() {
         {"newton_equivalence", case_newton_equivalence},
         {"newton_activation_semantics", case_newton_activation_semantics},
         {"newton_forced_failure_preservation", case_newton_forced_failure_preservation},
+        {"newton_rescue_omega_reset", case_newton_rescue_omega_reset},
         {"newton_memory_accounting", case_newton_memory_accounting},
         {"newton_fail_fast", case_newton_fail_fast},
     };

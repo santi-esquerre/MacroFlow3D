@@ -189,6 +189,32 @@
  * buffers total; and the `n`-sized `MeanZeroWorkspace` this file's
  * component-wise projections share. No allocation occurs in `solve()`.
  * `estimate_device_bytes(n, m)` mirrors this exactly.
+ *
+ * == SF-25 T01: duck-typed JacobianOperator (E1, D-gate enabler) ==
+ *
+ * `solve()` and its private `compute_true_residual` helper are templated on
+ * a SECOND parameter, `JacobianOperator`, defaulted to `JvpWorkspace` (the
+ * SAME pattern this file's `Preconditioner` template parameter already
+ * uses, see E3/E4 above). A `JacobianOperator` must provide
+ *
+ *   JvpApplyReport apply(CudaContext&, const Grid3D&, ConstCoupledVectorView
+ *                        direction, const JvpDeltaConfig&, CoupledVectorView
+ *                        jv_out);
+ *
+ * with the SAME D2 (forward-difference delta policy)/D3 (projection
+ * discipline; direction never mutated, output not re-projected) semantics
+ * `JvpWorkspace::apply` documents -- `JvpWorkspace` itself is the canonical
+ * instance, and every accepted call site (`gmres.solve(ctx, grid, jvp,
+ * preconditioner, ...)`) passes a `JvpWorkspace&` unchanged, so template
+ * argument deduction resolves `JacobianOperator = JvpWorkspace` exactly as
+ * before this parameter was added: this generalization is
+ * behavior-neutral for every accepted call site. It exists so a
+ * `ShiftedJacobianOperator` (`ShiftedJacobianOperator.cuh`, the shifted
+ * system `(mu*A_blk + J) p` the SF-25 manifold-robust terminal solver
+ * needs) can be solved by the SAME accepted GMRES machinery without
+ * duplicating it. No other `solve()` logic changes with this
+ * generalization: the algorithm, checkpoints, breakdown resolution, and
+ * memory contract above are unchanged.
  */
 
 #include "../../core/DeviceBuffer.cuh"
@@ -302,9 +328,11 @@ class CoupledGmres {
     // Throws std::invalid_argument for a config/size mismatch;
     // std::logic_error if !prepared_for(n, config.restart). See the file
     // header for the full algorithm, the breakdown-resolution rule, and the
-    // memory contract.
-    template <typename Preconditioner>
-    CoupledGmresReport solve(CudaContext& ctx, const Grid3D& grid, JvpWorkspace& jvp,
+    // memory contract. `JacobianOperator` is duck-typed (SF-25 T01, E1; see
+    // the file header) and defaults to `JvpWorkspace`, so every accepted
+    // call site (passing a `JvpWorkspace&`) is unchanged.
+    template <typename Preconditioner, typename JacobianOperator = JvpWorkspace>
+    CoupledGmresReport solve(CudaContext& ctx, const Grid3D& grid, JacobianOperator& jvp,
                              const Preconditioner& preconditioner, ConstCoupledVectorView b,
                              const CoupledGmresConfig& config, const JvpDeltaConfig& delta_config,
                              CoupledVectorView correction);
@@ -330,19 +358,24 @@ class CoupledGmres {
     void project_rhs(CudaContext& ctx, ConstCoupledVectorView b);
 
     // r_out = P(rhs_ - J(x_total)); returns ||r_out||; `ok` is false iff the
-    // underlying JvpWorkspace::apply reported a non-finite perturbed
-    // residual (see JacobianVectorProduct.cuh). One JvpWorkspace::apply call
-    // (does NOT increment the caller's inner-iteration counter -- residual
-    // recomputation is accounted separately from Arnoldi iterations, per the
-    // SF-23 spec's checkpoint list) -- EXCEPT when `correction_is_zero` is
-    // true (T01-F2): `x_total` is then identically zero, `J(0) = 0`
-    // algebraically, and calling `JvpWorkspace::apply` with a zero direction
-    // would throw (SF-22 D2 contract, kept as-is in JvpWorkspace itself), so
-    // this skips the apply call entirely and returns `||P(rhs_)||` (`r_out`
-    // is set to a copy of the already-projected `rhs_`). See the file header
-    // for the full rationale.
+    // underlying JacobianOperator::apply reported a non-finite perturbed
+    // residual (see JacobianVectorProduct.cuh). One JacobianOperator::apply
+    // call (does NOT increment the caller's inner-iteration counter --
+    // residual recomputation is accounted separately from Arnoldi
+    // iterations, per the SF-23 spec's checkpoint list) -- EXCEPT when
+    // `correction_is_zero` is true (T01-F2): `x_total` is then identically
+    // zero, `J(0) = 0` algebraically, and calling `JacobianOperator::apply`
+    // with a zero direction would throw (SF-22 D2 contract, kept as-is in
+    // JvpWorkspace itself), so this skips the apply call entirely and
+    // returns `||P(rhs_)||` (`r_out` is set to a copy of the already-
+    // projected `rhs_`). See the file header for the full rationale.
+    // Templated on `JacobianOperator` (SF-25 T01, E1; defined here in the
+    // header, not in CoupledGmres.cu, so it can be instantiated for any
+    // caller-supplied JacobianOperator type) -- byte-identical logic to the
+    // pre-T01 non-template `JvpWorkspace&`-only version.
+    template <typename JacobianOperator>
     [[nodiscard]] real compute_true_residual(CudaContext& ctx, const Grid3D& grid,
-                                             JvpWorkspace& jvp,
+                                             JacobianOperator& jvp,
                                              const JvpDeltaConfig& delta_config,
                                              DeviceSpan<const real> x_total_flat,
                                              DeviceSpan<real> r_out_flat,
@@ -371,8 +404,53 @@ class CoupledGmres {
     mutable blas::ReductionWorkspace reduction_workspace_;
 };
 
-template <typename Preconditioner>
-CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid, JvpWorkspace& jvp,
+template <typename JacobianOperator>
+real CoupledGmres::compute_true_residual(CudaContext& ctx, const Grid3D& grid,
+                                         JacobianOperator& jvp,
+                                         const JvpDeltaConfig& delta_config,
+                                         DeviceSpan<const real> x_total_flat,
+                                         DeviceSpan<real> r_out_flat, bool correction_is_zero,
+                                         bool& ok) {
+    if (correction_is_zero) {
+        // T01-F2: x_total is identically zero here (the initial
+        // blas::fill(..., real{0}), no cycle has accumulated a correction
+        // yet). J(0) = 0 algebraically, so the true residual is simply
+        // ||P(rhs_)|| -- and this MUST skip JacobianOperator::apply rather
+        // than just optimize it away: apply() throws std::invalid_argument
+        // on a zero weighted-direction norm (SF-22 D2 contract, unchanged in
+        // JvpWorkspace itself, see JacobianVectorProduct.cuh), so calling it
+        // with x_total_flat == 0 would abort every solve() call on its very
+        // first cycle. rhs_ is already projected (project_rhs()), so a plain
+        // copy keeps r_out_flat consistent with the caller's use of
+        // residual_scratch_ as the v_1 seed.
+        ok = true;
+        blas::copy(ctx, DeviceSpan<const real>(rhs_.span()), r_out_flat);
+        return norm2n(ctx, DeviceSpan<const real>(r_out_flat));
+    }
+
+    // r_out <- J(x_total) (one JacobianOperator::apply call; NOT counted in
+    // the caller's inner-iteration budget -- residual recomputation is a
+    // separate, explicitly checkpointed activity, see the file header).
+    ConstCoupledVectorView x_view = split_coupled_vector(x_total_flat, n_);
+    CoupledVectorView jx_view = split_coupled_vector(r_out_flat, n_);
+    JvpApplyReport jr = jvp.apply(ctx, grid, x_view, delta_config, jx_view);
+    if (jr.status != JvpApplyStatus::ok) {
+        ok = false;
+        return real{0};
+    }
+    ok = true;
+
+    // r_out <- P(rhs_) - J(x_total).
+    blas::scal(ctx, r_out_flat, real{-1});
+    blas::axpy(ctx, real{1}, DeviceSpan<const real>(rhs_.span()), r_out_flat);
+    project_pair(ctx, DeviceSpan<real>(r_out_flat.data(), n_),
+                DeviceSpan<real>(r_out_flat.data() + n_, n_));
+    return norm2n(ctx, DeviceSpan<const real>(r_out_flat));
+}
+
+template <typename Preconditioner, typename JacobianOperator>
+CoupledGmresReport CoupledGmres::solve(CudaContext& ctx, const Grid3D& grid,
+                                       JacobianOperator& jvp,
                                        const Preconditioner& preconditioner,
                                        ConstCoupledVectorView b, const CoupledGmresConfig& config,
                                        const JvpDeltaConfig& delta_config,

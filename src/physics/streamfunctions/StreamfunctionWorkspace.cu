@@ -338,6 +338,23 @@ void require_valid_adaptive_config(const AdaptivePicardConfig& adaptive,
         throw std::invalid_argument(
             "Streamfunction problem requires a finite adaptive.percentile_collapse_factor > 1");
     }
+
+    // SF-25 Phase-1 (S2): validated unconditionally (regardless of
+    // adaptive.floor_guard.enabled), mirroring this function's own
+    // convention for every other field above.
+    if (adaptive.floor_guard.window < 1) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a strictly positive adaptive.floor_guard.window");
+    }
+    if (!std::isfinite(adaptive.floor_guard.drop_factor) ||
+        adaptive.floor_guard.drop_factor <= real{0} || adaptive.floor_guard.drop_factor >= real{1}) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a finite adaptive.floor_guard.drop_factor in (0, 1)");
+    }
+    if (adaptive.floor_guard.max_resets < 0) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a non-negative adaptive.floor_guard.max_resets");
+    }
 }
 
 // SF-20: validated unconditionally (regardless of anderson.enabled), mirroring
@@ -355,6 +372,12 @@ void require_valid_anderson_config(const AndersonConfig& anderson) {
     if (!std::isfinite(anderson.condition_limit) || anderson.condition_limit <= real{1}) {
         throw std::invalid_argument(
             "Streamfunction problem requires a finite anderson.condition_limit > 1");
+    }
+    // SF-25 Phase-1 (S2): validated unconditionally (regardless of
+    // restart_on_stagnation), mirroring this function's own convention.
+    if (anderson.max_restarts < 0) {
+        throw std::invalid_argument(
+            "Streamfunction problem requires a non-negative anderson.max_restarts");
     }
 }
 
