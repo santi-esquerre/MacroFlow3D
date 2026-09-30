@@ -709,8 +709,15 @@ template <typename Callable>
 
     // SF-14 recorded values from this same binary lineage (picard_fixed_
     // manufactured_16, before SF-15): 40 Picard iterations,
-    // r_F ~= 9.9099533174336207e-07.
-    add_check("disabled_iterations_eq_40", disabled_report.picard_iterations == 40);
+    // r_F ~= 9.9099533174336207e-07 -- on the CROSSED-pairing coupled
+    // system. SF-26 T01 corrected the residual to the same-index pairing
+    // (docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md); the
+    // fixed-relaxation Picard map (unchanged apart from that source
+    // correction) is a second-order-different fixed-point map on the same
+    // manufactured problem, so its iteration count to the SAME r_F<=1e-6
+    // convergence gate is expected to change. SF-26 C01 re-baselined this
+    // check by running it on the corrected system (converged, r_F=9.696e-7).
+    add_check("disabled_iterations_eq_40", disabled_report.picard_iterations == 131);
     add_check("disabled_status_converged",
               disabled_report.status == StreamfunctionSolveStatus::converged);
     add_check("disabled_exit_reason_converged",
@@ -763,12 +770,15 @@ template <typename Callable>
             detail.str(),
             static_cast<double>(disabled_report.residual.r_F),
             static_cast<double>(disabled_report.picard_iterations),
-            "adaptive.enabled=false reproduces the SF-14 recorded profile exactly (40 iterations, "
-            "r_F<=1e-6, converged, empty trial_history)",
+            "adaptive.enabled=false reproduces the SF-26-re-baselined fixed-relaxation profile exactly "
+            "(131 iterations, r_F<=1e-6, converged, empty trial_history)",
             pass ? "all pass" : "some failed",
-            "adaptive.enabled=false must reproduce the SF-14 fixed-relaxation path exactly on the "
-            "same manufactured problem/binary lineage; the adaptive-default run is printed only "
-            "for audit comparison"};
+            "adaptive.enabled=false must reproduce the fixed-relaxation path exactly on the same "
+            "manufactured problem/binary lineage. SF-14 recorded 40 iterations on the crossed-pairing "
+            "system; re-baselined by SF-26 (bitácora 2026-09-30) to 131 on the same-index system "
+            "(second-order change in the Picard map -- see "
+            "docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md). The adaptive-default run is "
+            "printed only for audit comparison"};
 }
 
 // ---------------------------------------------------------------------------

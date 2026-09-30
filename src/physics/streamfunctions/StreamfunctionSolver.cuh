@@ -46,9 +46,12 @@
  *
  * SF-14 fixed-relaxation Picard fixed-point map (unchanged, still the map
  * SF-15 globalizes):
- *   - The nonlinear system solved is `A u1 = P(rhs_affine1 - eta*q*S2)`,
- *     `A u2 = P(rhs_affine2 - eta*q*S1)` (pairing F1<->S2, F2<->S1), i.e. the
- *     full coupled Lester equation (14) system in the periodic fluctuations.
+ *   - The nonlinear system solved is `A u1 = P(rhs_affine1 - eta*q*S1)`,
+ *     `A u2 = P(rhs_affine2 - eta*q*S2)` (SAME-index pairing, corrected by
+ *     SF-26 T01; see `docs/decisions/2026-09-30-eq14-source-pairing-root-
+ *     cause.md` for the derivation showing the paper's printed equation (14)
+ *     crosses the indices relative to its own definitions), i.e. the full
+ *     coupled Lester equation (14) system in the periodic fluctuations.
  *   - At the head of every outer iteration `k = 0, 1, ...`, the coupled
  *     residual `F1`, `F2` is evaluated ONCE from the current, immutable
  *     ACCEPTED state (`enqueue_streamfunction_residual`), producing BOTH
