@@ -939,9 +939,13 @@ namespace {
     std::vector<double> raw_rhs1(cells);
     std::vector<double> raw_rhs2(cells);
     for (std::size_t id = 0; id < cells; ++id) {
-        // Pairing: F1<->S2, F2<->S1.
-        raw_rhs1[id] = affine1[id] - eta * q[id] * sources.s2[id];
-        raw_rhs2[id] = affine2[id] - eta * q[id] * sources.s1[id];
+        // Pairing: SAME index, F1<->S1, F2<->S2 (derived from
+        // grad(psi1) L2 - grad(psi2) L1 = B; see
+        // docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md. The
+        // paper's printed equation (14) crosses the indices and was
+        // implemented through SF-25).
+        raw_rhs1[id] = affine1[id] - eta * q[id] * sources.s1[id];
+        raw_rhs2[id] = affine2[id] - eta * q[id] * sources.s2[id];
     }
 
     CoupledResidualFields result;

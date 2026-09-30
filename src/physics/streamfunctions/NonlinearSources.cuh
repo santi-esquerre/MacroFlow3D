@@ -133,6 +133,16 @@ static_assert(std::is_trivially_copyable<NonlinearSourceCounters>::value,
  * host synchronization. All spans must remain alive and unchanged until work
  * previously queued on `ctx.cuda_stream()` has completed, and
  * `total_gradients` and `b` must correspond to the same streamfunction state.
+ *
+ * `S_i` as computed here is the source of the SAME-index block of the
+ * coupled system: `A psi_i = -q S_i` (i.e. `S1` feeds only the `psi1`
+ * equation, `S2` only the `psi2` equation). This follows from crossing
+ * `grad(psi1) L2 - grad(psi2) L1 = B` with `grad(psi2)`/`grad(psi1)`
+ * respectively; see
+ * docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md. The paper's
+ * printed equation (14) crosses the indices relative to its own definitions
+ * of `S_i` and `B`; the pairing at the consumer (`ResidualEvaluator.cu`) is
+ * corrected in SF-26, not here.
  */
 void enqueue_streamfunction_nonlinear_sources(
     CudaContext& ctx, const Grid3D& grid, const TotalStreamfunctionGradientView& total_gradients,

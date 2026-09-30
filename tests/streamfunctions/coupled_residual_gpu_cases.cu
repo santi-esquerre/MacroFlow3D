@@ -1049,11 +1049,16 @@ class CoupledResidualGpuFixture {
     const auto& s2 = correct.s2;
     const std::size_t cells = fixture.grid.cell_count();
 
-    // (a) pairing swap: G1 uses S1 (not S2), G2 uses S2 (not S1).
+    // (a) pairing swap: the production residual is SAME-index (SF-26:
+    // G1 uses S1, G2 uses S2; see
+    // docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md). This
+    // mutant reintroduces the CROSSED pairing (the paper's printed equation
+    // (14) form, implemented through SF-25: G1 uses S2, G2 uses S1) and must
+    // differ measurably from `correct`.
     std::vector<double> raw1_swap(cells), raw2_swap(cells);
     for (std::size_t i = 0; i < cells; ++i) {
-        raw1_swap[i] = affine1[i] - eta * q[i] * s1[i];
-        raw2_swap[i] = affine2[i] - eta * q[i] * s2[i];
+        raw1_swap[i] = affine1[i] - eta * q[i] * s2[i];
+        raw2_swap[i] = affine2[i] - eta * q[i] * s1[i];
     }
     const auto proj1_swap = ref::mean_zero_projected(raw1_swap);
     const auto proj2_swap = ref::mean_zero_projected(raw2_swap);
@@ -1072,11 +1077,13 @@ class CoupledResidualGpuFixture {
     }
     const double sign_dev = normalized_two_field_rms(f1_sign, f2_sign, correct.f1, correct.f2);
 
-    // (c) projection omitted: F = Au - raw G (correct pairing, no mean-zero projection).
+    // (c) projection omitted: F = Au - raw G (correct SAME-index pairing, no
+    // mean-zero projection), to isolate the projection-omission effect from
+    // the pairing effect tested in (a).
     std::vector<double> raw1(cells), raw2(cells);
     for (std::size_t i = 0; i < cells; ++i) {
-        raw1[i] = affine1[i] - eta * q[i] * s2[i];
-        raw2[i] = affine2[i] - eta * q[i] * s1[i];
+        raw1[i] = affine1[i] - eta * q[i] * s1[i];
+        raw2[i] = affine2[i] - eta * q[i] * s2[i];
     }
     std::vector<double> f1_noproj(cells), f2_noproj(cells);
     for (std::size_t i = 0; i < cells; ++i) {
@@ -1094,9 +1101,12 @@ class CoupledResidualGpuFixture {
 
     // Explicit thresholds, each documented at least 10x below the measured
     // deviation on this fixture (eta=1, 16^3 isotropic unit cube), never below
-    // 1e-6. Measured on this fixture: pairing_dev ~ 9.089e-1, sign_dev ~
-    // 1.449e0, noproj_dev ~ 1.472e-1 (all comfortably detectable without
-    // increasing eta beyond the shared default of 1).
+    // 1e-6. Measured on this fixture AFTER SF-26 (mutant (a) is now the
+    // crossed/pre-SF-26 pairing vs the SAME-index production residual, and
+    // mutant (c) omits projection on the SAME-index pairing):
+    // pairing_dev ~ 1.0801, sign_dev ~ 1.7220, noproj_dev ~ 1.7497e-1 (all
+    // comfortably detectable without increasing eta beyond the shared
+    // default of 1).
     constexpr double kPairingThreshold = 9.0e-2;
     constexpr double kSignThreshold = 1.4e-1;
     constexpr double kProjectionThreshold = 1.4e-2;

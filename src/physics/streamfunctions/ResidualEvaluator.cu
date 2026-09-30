@@ -41,16 +41,22 @@ __device__ __forceinline__ void atomic_max_double(double* addr, double val) {
     } while (assumed != old);
 }
 
-// G_i[j] = rhs_i[j] - eta * q[j] * s_pair[j], evaluated in place into rhs1, rhs2.
-// Pairing: G1 uses s2, G2 uses s1.
+// G_i[j] = rhs_i[j] - eta * q[j] * s_i[j], evaluated in place into rhs1, rhs2.
+// Pairing: SAME index (G1 uses s1, G2 uses s2). Derived from
+// grad(psi1) L2 - grad(psi2) L1 = B, crossed with grad(psi2)/grad(psi1) and
+// with c = grad(psi1) x grad(psi2): L_i = ((B x grad psi_i).c)/|c|^2 = S_i,
+// same index i. See docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md.
+// The paper's printed equation (14) crosses the indices (a typo relative to
+// its own definitions of S_i and B); that crossed form was implemented
+// through SF-25 and is corrected here (SF-26).
 __global__ void combine_residual_rhs_kernel(real* rhs1, real* rhs2, const real* q, const real* s1,
                                              const real* s2, real eta, std::size_t n) {
     const std::size_t start = static_cast<std::size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
     const std::size_t stride = static_cast<std::size_t>(gridDim.x) * blockDim.x;
     for (std::size_t index = start; index < n; index += stride) {
         const real qc = q[index];
-        const real g1 = rhs1[index] - eta * qc * s2[index];
-        const real g2 = rhs2[index] - eta * qc * s1[index];
+        const real g1 = rhs1[index] - eta * qc * s1[index];
+        const real g2 = rhs2[index] - eta * qc * s2[index];
         rhs1[index] = g1;
         rhs2[index] = g2;
     }
@@ -391,7 +397,9 @@ void enqueue_streamfunction_residual(
     op.apply(ctx, DeviceSpan<const real>(fluctuations.u1), workspace.a_u1_.span());
     op.apply(ctx, DeviceSpan<const real>(fluctuations.u2), workspace.a_u2_.span());
 
-    // 6) G_i = rhs_affine_i - eta*(q.*S_pair), in place into g1_, g2_.
+    // 6) G_i = rhs_affine_i - eta*(q.*S_i), SAME index (see
+    //    docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md), in
+    //    place into g1_, g2_.
     const std::size_t requested_blocks = (n + kBlockSize - 1) / kBlockSize;
     const int blocks = static_cast<int>(
         requested_blocks < static_cast<std::size_t>(kMaxBlocks) ? requested_blocks : kMaxBlocks);

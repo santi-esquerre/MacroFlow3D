@@ -8,8 +8,12 @@
  * This module assembles, from an already-accepted set of production
  * primitives, the coupled residual pair
  *
- *   F1 = A u1 - P( rhs_affine1 - eta * q .* S2 )
- *   F2 = A u2 - P( rhs_affine2 - eta * q .* S1 )      (pairing: F1<->S2, F2<->S1)
+ *   F1 = A u1 - P( rhs_affine1 - eta * q .* S1 )
+ *   F2 = A u2 - P( rhs_affine2 - eta * q .* S2 )      (pairing: SAME index,
+ *   F1<->S1, F2<->S2; derived from grad(psi1) L2 - grad(psi2) L1 = B, see
+ *   docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md; the paper's
+ *   printed equation (14) crosses the indices and was implemented through
+ *   SF-25)
  *
  * where:
  *   - `A u = -div_h(q grad_h u)` is `operators::LesterPositiveDiffusionOperator`,
@@ -20,10 +24,11 @@
  *     projects `rhs1`, `rhs2` in place; the diagnostics it returns (raw and
  *     projected means) are surfaced unchanged in the report.
  *   - `P` is `constraints::MeanZeroProjector` applied to the *combined* RHS
- *     `G_i = rhs_affine_i - eta*(q.*S_pair)`. Because `rhs_affine_i` is
- *     already projected, re-projecting `G_i` is idempotent on that part and
- *     only actually projects the (generally non-zero-mean) source
- *     contribution `eta*(q.*S_pair)`. This is a recorded increment decision:
+ *     `G_i = rhs_affine_i - eta*(q.*S_i)` (SAME index; see
+ *     docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md). Because
+ *     `rhs_affine_i` is already projected, re-projecting `G_i` is idempotent
+ *     on that part and only actually projects the (generally non-zero-mean)
+ *     source contribution `eta*(q.*S_i)`. This is a recorded increment decision:
  *     the residual compares `A u_i` (which is discretely mean-zero for the
  *     periodic operator `A`, since summing `-div_h(q grad_h u)` over a
  *     periodic grid telescopes to zero) against a RHS that is also forced to
@@ -109,7 +114,7 @@ struct StreamfunctionResidualReport;
  *   - the two nonlinear source fields `S1`, `S2`,
  *   - the two `A`-apply outputs `A u1`, `A u2`,
  *   - the two combined-RHS/`G` fields (the affine RHS buffers are reused
- *     in place as the `G` buffers once combined with `-eta*q.*S_pair`),
+ *     in place as the `G` buffers once combined with `-eta*q.*S_i` (SAME index)),
  *   - the SF-09 nonlinear-source diagnostic counter buffer, sized for the
  *     worst case `2 + kMaxDegeneracyThresholds` so any per-call
  *     `NonlinearSourceConfig::num_degeneracy_thresholds` fits without
@@ -140,7 +145,7 @@ class StreamfunctionResidualWorkspace {
     void prepare(std::size_t n);
     [[nodiscard]] bool prepared_for(std::size_t n) const noexcept;
 
-    // Views of G_i = P(rhs_affine_i - eta*(q.*S_pair)) as computed by the
+    // Views of G_i = P(rhs_affine_i - eta*(q.*S_i)) (SAME index) as computed by the
     // most recent enqueue_streamfunction_residual call (SF-14). Valid until
     // the next enqueue or prepare(). Throws std::logic_error if no enqueue
     // has occurred. Additive, borrow-don't-own accessors: they expose the
@@ -265,7 +270,7 @@ struct StreamfunctionResidualReport {
  * Enqueue the full evaluation chain on `ctx.cuda_stream()`:
  *
  *   affine RHS -> total gradients -> Hessian-vector B -> nonlinear sources
- *   -> A.apply(u1), A.apply(u2) -> G_i = rhs_i - eta*(q.*S_pair)
+ *   -> A.apply(u1), A.apply(u2) -> G_i = rhs_i - eta*(q.*S_i) (SAME index)
  *   -> project(G_i) -> F_i = A u_i - G_i
  *   -> reductions (RMS/Linf F1, F2; q_rms) -> |c| histogram.
  *
