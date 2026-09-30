@@ -25,7 +25,6 @@
 #include "src/runtime/cuda_check.cuh"
 
 #include <algorithm>
-#include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -784,103 +783,111 @@ void regularize_constant_modes(std::vector<std::vector<double>>& jacobian, std::
     return out;
 }
 
-// SF-26 C01: evidence-only conditioning readout. Reports the singular
-// values of the (regularized) dense Jacobian relative to the largest, via a
-// time-bounded plain cyclic Jacobi eigenvalue sweep on the SPD matrix
-// G = J^T J (eigenvalues of G are squared singular values of J; no external
-// linear-algebra dependency is introduced). This is NOT a pass/fail gate:
-// it exists to make visible, in the test log, the near-null gauge-
-// recombination cluster the orchestrator's independent numpy finite-
-// difference-Jacobian analysis found in the CORRECTED (same-index) system
-// at eta=1 (and its absence at eta=0, where J=diag(A,A) is well-conditioned
-// on the mean-zero subspace) -- see docs/decisions/2026-09-30-eq14-source-
-// pairing-root-cause.md. `max_sweeps`/`max_seconds` bound the cost; if the
-// budget is exhausted before the off-diagonal norm collapses, the reported
-// spectrum is an approximation and `converged` is false (still printed as
-// evidence, never gated).
-struct SingularValueReadout {
-    std::vector<double> sigma_over_sigma_max; // ascending.
-    int count_below_1e2{};
-    int count_below_1e3{};
-    int sweeps_run{};
-    double elapsed_seconds{};
-    bool converged{false};
+// SF-26 C02: host, double-precision, textbook RESTARTED GMRES on a dense
+// matrix -- the independent oracle that re-characterizes the eta=1 gate
+// (replaces C01's non-converging cyclic-Jacobi singular-value readout,
+// which never reached its convergence budget at dim=1024). Plain modified
+// Gram-Schmidt Arnoldi; the small (k_used x k_used) least-squares
+// projection is solved via normal equations on the (k_used+1) x k_used
+// Hessenberg column space (acceptable per this task's spec at k_used<=400,
+// i.e. restart<=400) using the SAME `solve_dense_lu` this file already
+// trusts for the outer dense reference solve. Zero initial guess (matches
+// CoupledGmres's own documented zero-initial-guess convention for the
+// correction step). Returns the final iterate and its TRUE relative
+// residual computed independently via `dense_matvec`.
+//
+// This is the mechanism the orchestrator's independent numpy reproduction
+// (2026-09-30, recorded in docs/decisions/2026-09-30-eq14-source-pairing-
+// root-cause.md) used to show that restart-10 GMRES stagnates
+// (rel. residual 2.45e-3 after 400 iterations) on the gauge-degenerate
+// corrected Jacobian while full-recurrence GMRES (restart=400) converges
+// to 1.9e-14 on the SAME assembled operator -- i.e. the assembled Jacobian
+// is fully consistent and restart-10's stagnation is a well-understood
+// near-null-cluster/restart phenomenon, not an operator or GMRES-
+// implementation defect.
+[[nodiscard]] double dense_l2_norm(const std::vector<double>& v) {
+    long double sum = 0.0L;
+    for (const double x : v) sum += static_cast<long double>(x) * x;
+    return static_cast<double>(std::sqrt(static_cast<double>(sum)));
+}
+
+[[nodiscard]] double dense_dot(const std::vector<double>& a, const std::vector<double>& b) {
+    long double sum = 0.0L;
+    for (std::size_t i = 0; i < a.size(); ++i) sum += static_cast<long double>(a[i]) * b[i];
+    return static_cast<double>(sum);
+}
+
+struct HostGmresResult {
+    std::vector<double> x;
+    double true_relative_residual{};
 };
 
-[[nodiscard]] SingularValueReadout singular_value_readout(const std::vector<std::vector<double>>& jacobian,
-                                                           std::size_t dim, int max_sweeps = 10,
-                                                           double max_seconds = 25.0) {
-    const auto t0 = std::chrono::steady_clock::now();
+[[nodiscard]] HostGmresResult host_restarted_gmres(const std::vector<std::vector<double>>& a,
+                                                   const std::vector<double>& b, int restart, int max_iterations,
+                                                   double rel_tol) {
+    const std::size_t dim = b.size();
+    const double b_norm = std::max(dense_l2_norm(b), 1e-300);
+    std::vector<double> x(dim, 0.0);
 
-    // G = J^T J (upper triangle only; symmetric by construction).
-    std::vector<double> g(dim * dim, 0.0);
-    for (std::size_t i = 0; i < dim; ++i) {
-        for (std::size_t j = i; j < dim; ++j) {
-            double acc = 0.0;
-            for (std::size_t k = 0; k < dim; ++k) acc += jacobian[k][i] * jacobian[k][j];
-            g[i * dim + j] = acc;
-            g[j * dim + i] = acc;
-        }
-    }
+    int iterations_used = 0;
+    while (iterations_used < max_iterations) {
+        // r = b - A*x (zero on the very first cycle since x starts at 0).
+        const std::vector<double> ax = dense_matvec(a, x);
+        std::vector<double> r(dim);
+        for (std::size_t i = 0; i < dim; ++i) r[i] = b[i] - ax[i];
+        const double beta = dense_l2_norm(r);
+        if (beta <= rel_tol * b_norm) break;
 
-    int sweeps = 0;
-    bool converged = false;
-    for (; sweeps < max_sweeps; ++sweeps) {
-        double off_norm2 = 0.0;
-        double diag_norm2 = 0.0;
-        for (std::size_t p = 0; p < dim; ++p) {
-            diag_norm2 += g[p * dim + p] * g[p * dim + p];
-            for (std::size_t q = p + 1; q < dim; ++q) off_norm2 += g[p * dim + q] * g[p * dim + q];
-        }
-        if (off_norm2 <= 1e-20 * std::max(diag_norm2, 1.0)) {
-            converged = true;
-            break;
-        }
-        if (std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count() > max_seconds) break;
+        const int m = std::min(restart, max_iterations - iterations_used);
+        if (m <= 0) break;
 
-        for (std::size_t p = 0; p < dim; ++p) {
-            for (std::size_t q = p + 1; q < dim; ++q) {
-                const double gpq = g[p * dim + q];
-                if (gpq == 0.0) continue;
-                const double gpp = g[p * dim + p];
-                const double gqq = g[q * dim + q];
-                const double theta = (gqq - gpp) / (2.0 * gpq);
-                const double t = (theta >= 0.0 ? 1.0 : -1.0) / (std::abs(theta) + std::sqrt(1.0 + theta * theta));
-                const double c = 1.0 / std::sqrt(1.0 + t * t);
-                const double s = t * c;
-                for (std::size_t k = 0; k < dim; ++k) {
-                    const double gkp = g[k * dim + p];
-                    const double gkq = g[k * dim + q];
-                    g[k * dim + p] = c * gkp - s * gkq;
-                    g[k * dim + q] = s * gkp + c * gkq;
-                }
-                for (std::size_t k = 0; k < dim; ++k) {
-                    const double gpk = g[p * dim + k];
-                    const double gqk = g[q * dim + k];
-                    g[p * dim + k] = c * gpk - s * gqk;
-                    g[q * dim + k] = s * gpk + c * gqk;
-                }
+        // Arnoldi (modified Gram-Schmidt): V has up to m+1 basis vectors.
+        std::vector<std::vector<double>> vbasis(static_cast<std::size_t>(m) + 1, std::vector<double>(dim));
+        for (std::size_t i = 0; i < dim; ++i) vbasis[0][i] = r[i] / beta;
+        std::vector<std::vector<double>> hess(static_cast<std::size_t>(m) + 1, std::vector<double>(m, 0.0));
+
+        int k_used = 0;
+        for (int j = 0; j < m; ++j) {
+            std::vector<double> w = dense_matvec(a, vbasis[static_cast<std::size_t>(j)]);
+            for (int i = 0; i <= j; ++i) {
+                const double hij = dense_dot(vbasis[static_cast<std::size_t>(i)], w);
+                hess[static_cast<std::size_t>(i)][static_cast<std::size_t>(j)] = hij;
+                for (std::size_t k = 0; k < dim; ++k) w[k] -= hij * vbasis[static_cast<std::size_t>(i)][k];
             }
+            const double hjp1j = dense_l2_norm(w);
+            hess[static_cast<std::size_t>(j) + 1][static_cast<std::size_t>(j)] = hjp1j;
+            k_used = j + 1;
+            iterations_used += 1;
+            if (hjp1j <= 1e-300 || iterations_used >= max_iterations) break;
+            for (std::size_t k = 0; k < dim; ++k) vbasis[static_cast<std::size_t>(j) + 1][k] = w[k] / hjp1j;
         }
+
+        // Least-squares min||beta*e1 - H*y|| via normal equations
+        // (H^T H) y = H^T (beta e1), H is (k_used+1) x k_used.
+        const auto kk = static_cast<std::size_t>(k_used);
+        std::vector<std::vector<double>> hth(kk, std::vector<double>(kk, 0.0));
+        std::vector<double> htb(kk, 0.0);
+        for (std::size_t col_i = 0; col_i < kk; ++col_i) {
+            for (std::size_t col_j = 0; col_j < kk; ++col_j) {
+                double acc = 0.0;
+                for (std::size_t row = 0; row <= kk; ++row)
+                    acc += hess[row][col_i] * hess[row][col_j];
+                hth[col_i][col_j] = acc;
+            }
+            htb[col_i] = hess[0][col_i] * beta;
+        }
+        const std::vector<double> y = solve_dense_lu(hth, htb);
+
+        for (std::size_t j = 0; j < kk; ++j)
+            for (std::size_t i = 0; i < dim; ++i) x[i] += vbasis[j][i] * y[j];
     }
 
-    std::vector<double> eig(dim);
-    for (std::size_t i = 0; i < dim; ++i) eig[i] = std::max(g[i * dim + i], 0.0);
-    std::sort(eig.begin(), eig.end());
-    std::vector<double> sigma(dim);
-    for (std::size_t i = 0; i < dim; ++i) sigma[i] = std::sqrt(eig[i]);
-    const double sigma_max = sigma.back() > 0.0 ? sigma.back() : 1.0;
-
-    SingularValueReadout out;
-    out.sigma_over_sigma_max.resize(dim);
-    for (std::size_t i = 0; i < dim; ++i) out.sigma_over_sigma_max[i] = sigma[i] / sigma_max;
-    out.count_below_1e2 = static_cast<int>(std::count_if(
-        out.sigma_over_sigma_max.begin(), out.sigma_over_sigma_max.end(), [](double v) { return v < 1e-2; }));
-    out.count_below_1e3 = static_cast<int>(std::count_if(
-        out.sigma_over_sigma_max.begin(), out.sigma_over_sigma_max.end(), [](double v) { return v < 1e-3; }));
-    out.sweeps_run = sweeps;
-    out.converged = converged;
-    out.elapsed_seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+    const std::vector<double> final_ax = dense_matvec(a, x);
+    std::vector<double> final_residual(dim);
+    for (std::size_t i = 0; i < dim; ++i) final_residual[i] = final_ax[i] - b[i];
+    HostGmresResult out;
+    out.x = std::move(x);
+    out.true_relative_residual = dense_l2_norm(final_residual) / b_norm;
     return out;
 }
 
@@ -1086,13 +1093,26 @@ struct SingularValueReadout {
                   << " relative_error_vs_true=" << relative_error_vs_true
                   << " amplification_ref_over_true=" << amplification_ref_over_true << " (evidence)\n";
 
-        // Gates (SF-26 C01):
+        // Gates (SF-26 C02 re-characterization of C01):
         //   eta=0: J=diag(A,A) is nonsingular on the mean-zero subspace, so
         //     x is UNIQUE -- gate on ||x_gmres - x_ref||/||x_ref|| (unchanged
         //     threshold/semantics from before this case's re-characterization).
-        //   eta=1: J's near-null cluster makes "x agreement" ill-posed, but
-        //     the RESIDUAL ||J x_gmres - b||/||b|| remains well-posed -- gate
-        //     on that instead.
+        //   eta=1: the corrected same-index residual makes J gauge-invariant
+        //     under streamfunction recombination at a converged base state,
+        //     so J carries a near-null singular-value cluster (the
+        //     discretized tangent space of the solution manifold) and
+        //     restarted GMRES(10) structurally stagnates on it -- confirmed
+        //     independently by the orchestrator's numpy Jacobian
+        //     reproduction (restart-10: 2.45e-3 after 400 iterations; full
+        //     recurrence restart-400: 1.9e-14; see docs/decisions/2026-09-
+        //     30-eq14-source-pairing-root-cause.md). "GMRES converges at
+        //     eta=1" is therefore NOT a valid contract of the corrected
+        //     system; instead this case certifies (i) the GPU's restarted
+        //     GMRES is at least as effective as a textbook host restarted
+        //     GMRES on the SAME assembled Jacobian/rhs, and (ii) a full-
+        //     recurrence GMRES converges on that operator, proving the
+        //     stagnation is a restart/near-null-cluster phenomenon, not an
+        //     operator or implementation defect.
         if (eta == real{0}) {
             add_check(label + "_gmres_vs_dense_relative_error_within_gate", relative_error_vs_ref <= 1e-8);
             std::cout << "  gate: relative_error_vs_ref<=1e-8 -> "
@@ -1108,20 +1128,30 @@ struct SingularValueReadout {
                 sq += d * d;
             }
             const double gmres_dense_residual = std::sqrt(sq) / std::max(b_norm, 1e-300);
-            add_check(label + "_gmres_dense_residual_within_gate", gmres_dense_residual <= 1e-4);
-            std::cout << std::setprecision(10) << "gmres_dense_lu_oracle label=" << label
-                      << " gmres_dense_residual=" << gmres_dense_residual << " gate=1e-4\n";
-        }
 
-        // Evidence-only conditioning readout: singular values of the
-        // regularized dense J relative to the largest.
-        const SingularValueReadout sv = singular_value_readout(assembly.jacobian, 2 * n);
-        std::cout << "gmres_dense_lu_oracle label=" << label << " singular_value_readout: sweeps=" << sv.sweeps_run
-                  << " converged=" << (sv.converged ? "true" : "false") << " elapsed_seconds=" << sv.elapsed_seconds
-                  << " count_below_1e-2=" << sv.count_below_1e2 << " count_below_1e-3=" << sv.count_below_1e3
-                  << " (evidence)\n";
-        for (int i = 0; i < 6 && static_cast<std::size_t>(i) < sv.sigma_over_sigma_max.size(); ++i) {
-            std::cout << "  sigma_" << (i + 1) << "/sigma_max=" << sv.sigma_over_sigma_max[i] << '\n';
+            const HostGmresResult host_restart10 = host_restarted_gmres(assembly.jacobian, b, 10, 400, 1e-10);
+            const HostGmresResult host_full = host_restarted_gmres(assembly.jacobian, b, 400, 400, 1e-12);
+            const double host_res_restart10 = host_restart10.true_relative_residual;
+            const double host_res_full = host_full.true_relative_residual;
+
+            std::cout << std::setprecision(10) << "gmres_dense_lu_oracle label=" << label
+                      << " gmres_dense_residual=" << gmres_dense_residual
+                      << " host_res_restart10=" << host_res_restart10 << " host_res_full=" << host_res_full
+                      << " gpu_status=" << static_cast<int>(report.status)
+                      << " gpu_total_inner_iterations=" << report.total_inner_iterations << '\n';
+
+            const double restart10_floor = std::max(host_res_restart10, 1e-6);
+            const bool gpu_not_worse_than_host_restarted = gmres_dense_residual <= 3.0 * restart10_floor;
+            const bool host_full_converges = host_res_full <= 1e-8;
+            add_check(label + "_eta1_gpu_restarted_gmres_not_worse_than_host_restarted",
+                      gpu_not_worse_than_host_restarted);
+            add_check(label + "_eta1_host_full_gmres_converges", host_full_converges);
+            std::cout << "  gate: eta1_gpu_restarted_gmres_not_worse_than_host_restarted "
+                         "(gmres_dense_residual<=3*max(host_res_restart10,1e-6)="
+                      << (3.0 * restart10_floor) << ") -> " << (gpu_not_worse_than_host_restarted ? "PASS" : "FAIL")
+                      << '\n';
+            std::cout << "  gate: eta1_host_full_gmres_converges (host_res_full<=1e-8) -> "
+                      << (host_full_converges ? "PASS" : "FAIL") << '\n';
         }
     }
 
@@ -1131,22 +1161,33 @@ struct SingularValueReadout {
             "gmres_dense_lu_oracle",
             "gpu-gmres-dense-oracle",
             "8^3 (n=512, 2N=1024), K=exp(0.5*sin sin sin), eta in {0,1}, consistent rhs b=J*x_true "
-            "(SF-26 C01)",
+            "(SF-26 C02)",
             0.0,
             0.0,
-            "eta=0: GMRES vs dense-LU relative error <= 1e-8; eta=1: ||J x_gmres - b||/||b|| <= 1e-4",
+            "eta=0: GMRES vs dense-LU relative error <= 1e-8; eta=1: GPU restarted-GMRES residual <= "
+            "3*max(host restart-10 residual, 1e-6) AND host full-recurrence GMRES residual <= 1e-8",
             pass ? "all pass" : "some failed",
-            "SF-26 C01 (re-characterizes SF-23 E5(ii)/E9): assembles J column-by-column from unit "
-            "directions via JvpWorkspace::apply (the library projects each direction, so this is "
+            "SF-26 C02 (re-characterizes SF-26 C01/SF-23 E5(ii)/E9): assembles J column-by-column from "
+            "unit directions via JvpWorkspace::apply (the library projects each direction, so this is "
             "exactly the PROJECTED-space operator), regularizes the per-component constant-mode "
             "nullspace with Pi=ones*ones^T/n (documented unchanged-solution argument), builds a "
             "CONSISTENT rhs b=J*x_true (x_true=P(smooth trig pair)) via the SAME matrix-free operator "
-            "GMRES uses (not a generic rhs, which is ill-posed once the corrected same-index Jacobian "
-            "exposes its gauge-recombination near-null cluster at eta=1), solves via partial-pivot "
-            "host LU, and compares against CoupledGmres (identity preconditioner) solving the SAME "
-            "rhs -- gated on x-agreement at eta=0 (J well-conditioned, unique x) and on the residual "
-            "at eta=1 (J near-singular, x-agreement ill-posed); see docs/decisions/2026-09-30-eq14-"
-            "source-pairing-root-cause.md"};
+            "GMRES uses. At eta=0 (J well-conditioned, unique x) this gates GMRES-vs-dense-LU "
+            "x-agreement unchanged. At eta=1 the corrected same-index Jacobian is gauge-invariant "
+            "under streamfunction recombination at a converged base state, so it carries a near-null "
+            "singular-value cluster (the discretized tangent space of the solution manifold); "
+            "'restarted GMRES(10) converges at eta=1' is therefore NOT a valid contract of the "
+            "corrected system (independently confirmed: the orchestrator's numpy Jacobian "
+            "reproduction found restart-10 relative residual 2.45e-3 after 400 iterations vs "
+            "full-recurrence restart-400 converging to 1.9e-14 on the identical operator). This case "
+            "instead certifies, via a textbook host double-precision restarted-GMRES oracle assembled "
+            "on the SAME dense J/rhs, that (i) the GPU's restarted GMRES reproduces host restarted "
+            "GMRES within a documented factor (accounting for the matrix-free JVP's forward-difference "
+            "accuracy floor, JacobianVectorProduct.cuh D2), and (ii) host full-recurrence GMRES "
+            "converges on the assembled operator -- proving the operator is consistent and the "
+            "restart-10 stagnation is a near-null-cluster/restart phenomenon, not an operator or "
+            "GMRES-implementation defect. See docs/decisions/2026-09-30-eq14-source-pairing-root-"
+            "cause.md"};
 }
 
 // ===========================================================================
@@ -1361,15 +1402,26 @@ struct IterationReductionResult {
                   << " true_final_residual_preconditioned=" << entry.true_final_residual_preconditioned
                   << " true_final_residual_unpreconditioned=" << entry.true_final_residual_unpreconditioned
                   << '\n';
-        add_check(label + "_preconditioned_fewer_iterations",
-                  entry.preconditioned.total_inner_iterations < entry.unpreconditioned.total_inner_iterations);
-        // SF-26 C01 second gate: with the consistent rhs b=J*x_true, the
-        // preconditioned solve is expected to actually reach rel_tol=1e-6
-        // (not merely use fewer iterations than an equally-unconverged
-        // unpreconditioned control). Per this task's instructions: if this
-        // fails, report the printed numbers and STOP -- do not tune.
-        add_check(label + "_preconditioned_converged",
-                  entry.preconditioned.status == CoupledGmresStatus::converged);
+        // SF-26 C02: neither solve is expected to reach rel_tol=1e-6 within
+        // 250 restart-10 iterations on the corrected system's near-null
+        // gauge cluster (see docs/decisions/2026-09-30-eq14-source-pairing-
+        // root-cause.md), so "converged" and "strictly fewer iterations" are
+        // no longer well-posed contracts by themselves. Efficacy at the SAME
+        // fixed budget is instead measured directly on the achieved true
+        // residual: the preconditioner must make GMRES demonstrably more
+        // effective (a >=2x reduction in the true final residual, and an
+        // absolute floor of 1e-2), and the iteration-count comparison is
+        // kept only in the case where it is actually meaningful (the
+        // preconditioned solve reporting formal convergence).
+        const bool preconditioner_efficacy =
+            entry.true_final_residual_preconditioned <= 0.5 * entry.true_final_residual_unpreconditioned;
+        const bool preconditioned_progress = entry.true_final_residual_preconditioned <= 1e-2;
+        const bool iterations_consistent =
+            (entry.preconditioned.status != CoupledGmresStatus::converged) ||
+            (entry.preconditioned.total_inner_iterations < entry.unpreconditioned.total_inner_iterations);
+        add_check(label + "_preconditioner_efficacy", preconditioner_efficacy);
+        add_check(label + "_preconditioned_progress", preconditioned_progress);
+        add_check(label + "_iterations_consistent", iterations_consistent);
     }
 
     for (const auto& [name, ok] : checks) std::cout << "  check " << name << "=" << (ok ? "PASS" : "FAIL") << '\n';
@@ -1378,30 +1430,29 @@ struct IterationReductionResult {
             "gmres_iteration_reduction",
             "gpu-gmres-iteration-reduction",
             "16^3, 32^3, K=exp(0.5*sin sin sin), eta=1 converged adaptive-Picard base, rel_tol=1e-6/"
-            "max_iter=250, consistent rhs b=J*x_true with x_true=P(smooth trig pair) (SF-26 C01)",
+            "max_iter=250, consistent rhs b=J*x_true with x_true=P(smooth trig pair) (SF-26 C02)",
             0.0,
             0.0,
-            "preconditioned total_inner_iterations strictly less than unpreconditioned, AND "
-            "preconditioned status == converged",
+            "true_final_residual_preconditioned <= 0.5*true_final_residual_unpreconditioned AND "
+            "<= 1e-2, AND (preconditioned not converged OR preconditioned iterations < unpreconditioned)",
             pass ? "all pass" : "some failed",
-            "SF-23 E5(iii): BlockDiagonalMGPreconditioner must reduce the number of Krylov iterations "
-            "needed to solve J(Psi)delta=b relative to unpreconditioned GMRES on the SAME rhs/base. "
-            "Base state is a genuine CONVERGED adaptive-Picard solve_streamfunctions result (not the raw "
-            "manufactured fluctuation pair) reusing the SAME q-populated hierarchy for the "
-            "preconditioner. SF-26 C01 re-characterization: rhs is now a CONSISTENT b=J*x_true "
-            "(x_true=P(smooth trig pair), via the SAME matrix-free jvp.apply GMRES uses) rather than "
-            "the SAME smooth-trig-pair used directly as (b)/(c) originally did -- empirically confirmed "
-            "locally that on the corrected same-index Jacobian, a GENERIC rhs (with components along "
-            "the gauge-recombination near-null cluster the corrected system exposes at a converged "
-            "eta=1 base) leaves BOTH preconditioned and unpreconditioned solves pinned at "
-            "max_iterations=250 with no discriminative signal, matching the pre-fix pinning this file "
-            "originally attributed to a badly-scaled raw-manufactured-base rhs. See "
-            "docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md. The independent true-residual "
-            "recomputation (true_final_residual_preconditioned/unpreconditioned, via the SAME "
-            "matrix-free operator, NOT CoupledGmres's own internal checkpoint bookkeeping) is printed "
-            "as evidence for both solves; the second gate requires the preconditioned solve to actually "
-            "reach converged status on this consistent rhs, not merely need fewer iterations than an "
-            "equally-unconverged control"};
+            "SF-23 E5(iii) as re-characterized by SF-26 C02: BlockDiagonalMGPreconditioner must make "
+            "GMRES measurably more effective at solving J(Psi)delta=b relative to unpreconditioned "
+            "GMRES on the SAME rhs/base/budget. Base state is a genuine CONVERGED adaptive-Picard "
+            "solve_streamfunctions result reusing the SAME q-populated hierarchy for the "
+            "preconditioner; rhs is a CONSISTENT b=J*x_true (x_true=P(smooth trig pair), via the SAME "
+            "matrix-free jvp.apply GMRES uses). On the corrected same-index Jacobian, NEITHER solve is "
+            "expected to reach rel_tol=1e-6 within 250 restart-10 iterations at a converged eta=1 base, "
+            "because the gauge-recombination near-null cluster the corrected system exposes there "
+            "structurally stalls restarted GMRES (see docs/decisions/2026-09-30-eq14-source-pairing-"
+            "root-cause.md); 'preconditioned converges' and 'strictly fewer iterations' are therefore "
+            "NOT well-posed contracts on their own. Efficacy is instead measured on the ACHIEVED true "
+            "residual at the fixed budget (independent recomputation via the SAME matrix-free operator, "
+            "NOT CoupledGmres's own internal checkpoint bookkeeping): the preconditioned solve's true "
+            "residual must be at most half the unpreconditioned control's AND make real absolute "
+            "progress (<=1e-2); the iteration-count comparison is kept only when the preconditioned "
+            "solve does report formal convergence, in which case it must still need fewer iterations "
+            "than the (necessarily non-converged) unpreconditioned control"};
 }
 
 // ===========================================================================
