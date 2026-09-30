@@ -106,11 +106,16 @@ Adjust `CMAKE_CUDA_ARCHITECTURES` if your local GPU is not `86`.
 cmake --build build/wsl-debug -j
 ```
 
-### 4.3 Run all tests available in that build
+### 4.3 Run a fast, targeted subset of tests
 
 ```bash
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
 ```
+
+**Do not run the full local suite as your acceptance evidence.** It is
+long-duration computation (several registered `ctest` entries are multi-case
+solver/continuation sweeps) and belongs on V100 as a detached job — see
+`docs/runbooks/remote-v100.md` Section 0 and Section 7 below.
 
 ### 4.4 Run the legacy PSPTA smoke case
 
@@ -176,8 +181,14 @@ scripts/remote sync
 Then run:
 
 ```bash
-scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
 ```
+
+The full test pass is long-duration computation and must be a detached job
+(`run` + `wait`), not a blocking `exec` call — see
+`docs/runbooks/remote-v100.md` Section 0.
 
 If you only changed documentation or scripts, remote sync/build may be unnecessary.
 
@@ -206,3 +217,6 @@ Avoid:
 - pushing large unvalidated changes straight to the server
 - treating local performance as representative of V100
 - mixing multiple scientific hypotheses in one worktree
+- running the full local `ctest` suite (or any other long-duration
+  computation) as acceptance evidence instead of dispatching it to V100 as a
+  detached `scripts/remote run` job

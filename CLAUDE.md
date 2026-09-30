@@ -16,17 +16,17 @@ The checked-in Claude Code configuration is:
   - subagent worktree base: current local `HEAD`
   - nested subagent spawning disabled
 - `.claude/agents/orchestrator.md`
-  - Claude Fable 5
+  - Claude Fable 5.1
   - `xhigh` effort
   - owns UNDERSTAND -> PLAN -> EXECUTE -> AUDIT -> CORRECT -> INTEGRATE ->
     FINAL_AUDIT -> PUBLISH_PR -> review/closure coordination
 - `.claude/agents/increment-worker.md`
-  - Claude Sonnet 5
+  - Claude Sonnet 5.5
   - `medium` effort
   - one implementation/corrective DAG node
   - native `isolation: worktree`
 - `.claude/agents/increment-integrator.md`
-  - Claude Sonnet 5
+  - Claude Sonnet 5.5
   - `medium` effort
   - integrates only orchestrator-approved commits
   - native `isolation: worktree`
@@ -92,8 +92,14 @@ performance -> development speed.
 ### Local / remote split
 
 - **Edit locally** in WSL. Local is the source of truth for code.
-- **Validate locally** with `cmake --preset wsl-debug`, `ctest`, smoke runs.
-- **Sync remotely** for release builds, PETSc/SLEPc, profiling, ensemble runs.
+- **Validate locally** only with a fast, targeted subset: configure, build,
+  and one or a few quick `-R`-filtered `ctest` cases, plus a single smoke run.
+- **Long-duration computation is always a detached V100 job.** A full/near-full
+  `ctest` suite, a multi-case solver/continuation sweep, PETSc/SLEPc builds,
+  production-like runs, ensembles, benchmarks, and profiling all run as
+  `scripts/remote run <job> -- "..."` + `scripts/remote wait <job>` on the
+  remote V100 host — never locally, and never as a long blocking
+  `scripts/remote exec` call. See `docs/runbooks/remote-v100.md`.
 - **Never edit on the remote server.**
 
 ### Claude-native helpers
@@ -120,3 +126,7 @@ Explicit commands remain available:
 - Never let a worker or integrator push, open, or merge the increment PR.
 - Do NOT treat positive transverse macrodispersion as automatically physical.
 - Do NOT accept scientific-core changes without validation evidence.
+- Do NOT run long-duration computation (full/near-full `ctest` suites,
+  multi-case solver sweeps, production/ensemble runs, benchmarks, profiling)
+  locally or via a blocking remote `exec`; it must be a detached
+  `scripts/remote run` job on V100.

@@ -88,13 +88,18 @@ uses Claude-managed per-node worktrees.
 
 ## 3. Validate locally
 
-Minimum local validation:
+Minimum local validation (fast dev loop only):
 
 ```bash
 cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
 ```
+
+The full local `ctest` suite is long-duration computation and is not the
+authoritative acceptance evidence; run the full suite on V100 as a detached
+job before publication (`scripts/remote run <job> -- "ctest ..."` +
+`scripts/remote wait <job>`, see `docs/runbooks/remote-v100.md` Section 0).
 
 Run the relevant smoke command when the increment or acceptance gate requires
 it.

@@ -225,8 +225,23 @@ Run the fixed baseline plus exact increment commands:
 bash scripts/hooks/check-lester-increments.sh
 cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
 ```
+
+The full `ctest` suite is long-duration computation: it is not run locally as
+final-audit evidence. Run the authoritative full pass on V100 as a detached
+job before recording final-audit evidence:
+
+```bash
+scripts/remote sync
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
+```
+
+See `docs/runbooks/remote-v100.md` Section 0 for the general policy and its
+concurrency rule — do not overlap this remote job with another agent's remote
+job for the same increment.
 
 Add the increment's Gate 2/3A/4/V100/experiment commands as required.
 

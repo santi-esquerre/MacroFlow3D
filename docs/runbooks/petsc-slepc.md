@@ -55,7 +55,8 @@ What it should prove:
 
 ### CTest version
 ```bash
-scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote wait ctest-petsc-smoke
 ```
 
 ---
@@ -69,7 +70,8 @@ scripts/remote exec -- "./build/v100-petsc/validate_slepc_eigensolver"
 
 ### CTest form
 ```bash
-scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
+scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
+scripts/remote wait ctest-slepc-eigensolver
 ```
 
 Expected focus:

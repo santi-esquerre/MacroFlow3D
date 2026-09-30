@@ -331,7 +331,18 @@ Run before marking an increment complete:
 bash scripts/hooks/check-lester-increments.sh
 cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
+```
+
+The full `ctest` suite is long-duration computation: run the authoritative
+full pass on V100 as a detached job, never locally and never as a blocking
+`scripts/remote exec` call (`docs/runbooks/remote-v100.md` Section 0):
+
+```bash
+scripts/remote sync
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
 ```
 
 Add the targeted Gate 2/3A/4 and V100 commands required by the increment.  A

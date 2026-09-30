@@ -1,7 +1,7 @@
 ---
 name: increment-integrator
 description: Integrates only orchestrator-approved MacroFlow3D increment commits in an isolated worktree, resolves semantic conflicts, and validates the combined increment.
-model: claude-sonnet-5
+model: sonnet
 effort: medium
 permissionMode: bypassPermissions
 isolation: worktree
@@ -70,6 +70,28 @@ Do not edit the control checkout.
 11. Return the exact final integrated commit.
 
 A clean cherry-pick/merge sequence is not evidence of semantic compatibility.
+
+## Long-duration computation is always a detached V100 job
+
+The required increment validation in step 8 may include a full/near-full
+`ctest` suite, a multi-case solver sweep, a production-like run, or a
+PETSc/SLEPc test. That is long-duration computation: run it on the remote V100
+host as a detached job, never inside your local integration worktree and never
+as a blocking `scripts/remote exec` call. See `docs/runbooks/remote-v100.md`
+Section 0.
+
+```bash
+scripts/remote sync
+scripts/remote exec -- "<short, bounded configure/build command>"
+scripts/remote run <job> -- "<the long-duration validation command>"
+scripts/remote wait <job>
+```
+
+Before syncing or starting a job, check `scripts/remote status <job>` for any
+job already `RUNNING` against the shared remote mirror; the mirror is one
+shared execution surface, not one per worktree/agent — do not overlap your
+sync/run with another agent's in-flight remote job. Report the exact job
+name(s), log path(s), and outcome in your VALIDATION section.
 
 ## Required semantic checks
 

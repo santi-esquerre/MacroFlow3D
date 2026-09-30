@@ -8,22 +8,36 @@ Practical evaluation structure for MacroFlow3D changes.
 
 **Applies to:** every change, no exceptions.
 
-**Where:** local WSL.
+**Where:** local WSL for configure/build/fast-subset iteration; remote V100
+(detached job) for the authoritative full-suite pass.
 
-### Commands
+### Commands (local — fast dev loop)
 
 ```bash
 cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
-ctest --test-dir build/wsl-debug --output-on-failure
+ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+```
+
+### Commands (remote — authoritative full suite, detached)
+
+The full local suite is long-duration computation (several registered
+`ctest` entries are multi-case solver/continuation sweeps); it must not be
+run locally as acceptance evidence. Run it on V100 as a detached job instead:
+
+```bash
+scripts/remote sync
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
 ```
 
 ### Pass criteria
 
 - Configure succeeds
 - Build succeeds with no new warnings in changed files
-- All registered tests pass
+- All registered tests pass (authoritative evidence: the remote detached job)
 - Smoke run completes without crash or assertion failure
 
 ### Artifacts
@@ -51,12 +65,18 @@ ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
 ./build/wsl-debug/run_operator_tests
 ```
 
-### Commands (remote, if PETSc/SLEPc involved)
+If `operator_tests` grows into a long-running multi-case sweep, treat it like
+Tier C's remote detached runs instead of running it locally as acceptance
+evidence.
+
+### Commands (remote, if PETSc/SLEPc involved — detached, long-duration)
 
 ```bash
 scripts/remote sync
-scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
-scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
+scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote wait ctest-petsc-smoke
+scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
+scripts/remote wait ctest-slepc-eigensolver
 ```
 
 ### Pass criteria
@@ -93,16 +113,22 @@ scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pipeline_par2.yaml
 ```
 
-### Commands (remote production)
+### Commands (remote production — detached, long-duration)
 
 ```bash
 scripts/remote sync
-scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
+scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-full
 scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
 scripts/remote wait pspta-prod
 scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
 scripts/remote wait par2-prod
 ```
+
+Do not run two of these jobs concurrently against the same remote mirror; wait
+for each before starting the next (see `docs/runbooks/remote-v100.md`
+Section 0, Concurrency).
 
 ### Pass criteria
 

@@ -14,6 +14,55 @@ The server is **not** the primary edit surface.
 
 ---
 
+## 0. Policy: long-duration computation is always a detached V100 job
+
+**Any computation whose duration is not short and bounded must run on V100 as
+a `scripts/remote run <job>` detached background job, polled with
+`scripts/remote wait <job>` / `scripts/remote tail <job>`. It must never run
+inside a local WSL worktree (including a Claude Code subagent's isolated
+worktree), and it must never run as a long blocking `scripts/remote exec`
+call.**
+
+This explicitly includes, but is not limited to:
+
+- a full or near-full `ctest` run (as opposed to one fast `-R`-filtered case);
+- any test binary that internally sweeps many cases (operator tests,
+  streamfunction Picard/Anderson/continuation ladders, mesh refinement
+  studies, etc.);
+- production-like pipeline runs, ensemble runs, benchmarks, and profiling
+  runs;
+- PETSc/SLEPc builds and their test suites.
+
+`scripts/remote exec` is reserved for short, bounded steps only: configure, a
+single compile, a quick single-command smoke check — work that reliably
+finishes in roughly under a minute. If a command's duration is unknown or
+could plausibly run longer, treat it as long-duration and use `scripts/remote
+run` + `scripts/remote wait`, not `exec`.
+
+Rationale: local WSL has no GPU-equivalent execution path for CUDA test
+binaries at V100 scale; heavy test/production runs there are both slower and
+not representative. Claude Code subagents (`increment-worker`,
+`increment-integrator`) must dispatch their heavy validation commands to V100
+through this mechanism rather than executing them synchronously inside their
+own isolated worktree.
+
+### Concurrency: the remote mirror is shared, single-flight state
+
+`REMOTE_REPO_DIR` (default `~/MacroFlow3D`, see `scripts/remote.env`) is one
+shared execution surface — not one mirror per branch, worktree, or agent. A
+`scripts/remote sync` overwrites the tree in place; running it while another
+job is still executing on V100 corrupts that job's build/source state, and two
+concurrent heavy jobs against the same build directory race each other.
+
+Do not run `scripts/remote sync` or launch a new `scripts/remote run` job
+while another job for the same increment/session is still `RUNNING`
+(`scripts/remote status <job>`). If an orchestrated DAG has two nodes that
+both require remote V100 execution, serialize them even if their local Git
+write scopes would otherwise allow them to run in parallel — remote V100 is
+shared external state under the DAG parallelism rule.
+
+---
+
 ## 1. Model
 
 Source of truth:
@@ -117,19 +166,29 @@ scripts/remote exec -- "cmake --preset v100-petsc && cmake --build build/v100-pe
 
 ## 6. Remote tests
 
-### Release test pass
+Full or multi-case test runs are long-duration computation (see Section 0):
+launch them detached and wait, do not run them as a blocking `exec` call.
+
+### Release test pass (detached)
 ```bash
-scripts/remote exec -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote run ctest-release -- "ctest --test-dir build/v100-release --output-on-failure"
+scripts/remote wait ctest-release
 ```
 
-### PETSc/SLEPc targeted tests
+### PETSc/SLEPc targeted tests (detached)
 ```bash
-scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
+scripts/remote wait ctest-petsc-smoke
 ```
 
 ```bash
-scripts/remote exec -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
+scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
+scripts/remote wait ctest-slepc-eigensolver
 ```
+
+A single, genuinely fast, narrowly `-R`-filtered case may still use `exec` if
+it reliably completes in well under a minute; when in doubt, use `run` +
+`wait`.
 
 ## 7. Remote runs
 
@@ -224,3 +283,9 @@ Avoid:
 - running production-like experiments from unvalidated local changes
 - overwriting remote outputs without preserving metadata
 - bypassing `scripts/remote` with raw `ssh`, `tmux`, or `rsync`
+- running a full/heavy `ctest` suite, a production run, an ensemble, or a
+  benchmark locally in WSL instead of as a detached V100 job
+- running a long-duration remote command with blocking `scripts/remote exec`
+  instead of `scripts/remote run` + `scripts/remote wait`
+- running `scripts/remote sync` or a new `scripts/remote run` job while another
+  job is still `RUNNING` against the same shared remote mirror
