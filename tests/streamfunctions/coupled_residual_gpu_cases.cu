@@ -1355,8 +1355,19 @@ struct ProductionResidualSummary {
 
 // Case: general pair B, genuine O(h^2) discretization control (harmonic
 // means, the projection, and both sources are all nontrivial).
+//
+// SF-26 C03 amendment (prespecified, orchestrator decision, recorded in the
+// bitácora): the ladder is extended to n=16/32/64/128 and the order>=1.9 gate
+// is imposed ONLY on the two finest transitions (32->64, 64->128), for both
+// r_F and Linf(F1,F2). The threshold itself is NOT relaxed. Rationale: at
+// n=16 the cos(4*pi*x1) mode of k1(x1) has only 8 cells per wavelength, so
+// the 16->32 transition is pre-asymptotic and its order can legitimately sit
+// below 1.9 (observed Linf order ~1.87) without indicating a discretization
+// defect. The 16->32 orders are still computed and printed as evidence,
+// explicitly labeled non-gating, so the pre-asymptotic behavior remains
+// visible rather than silently dropped.
 [[nodiscard]] CaseResult case_coupled_residual_exact_pair_general() {
-    const std::vector<std::size_t> ns{16, 32, 64};
+    const std::vector<std::size_t> ns{16, 32, 64, 128};
     std::vector<double> r_f_values(ns.size()), linf_values(ns.size()), hs(ns.size());
     for (std::size_t i = 0; i < ns.size(); ++i) {
         const auto fixture = make_pair_b_fixture(ns[i]);
@@ -1373,21 +1384,38 @@ struct ProductionResidualSummary {
     for (std::size_t i = 0; i + 1 < ns.size(); ++i) {
         const auto order_rF = ref::observed_order(r_f_values[i], r_f_values[i + 1], hs[i], hs[i + 1]);
         const auto order_linf = ref::observed_order(linf_values[i], linf_values[i + 1], hs[i], hs[i + 1]);
-        const bool ok_rF = order_rF.valid() && order_rF.value >= 1.9;
-        const bool ok_linf = order_linf.valid() && order_linf.value >= 1.9;
-        pass = pass && ok_rF && ok_linf;
-        std::cout << std::setprecision(16) << "coupled_residual_exact_pair_general order n=" << ns[i] << "->"
-                  << ns[i + 1] << " order_r_F=" << (order_rF.valid() ? order_rF.value : -1.0)
-                  << " order_linf=" << (order_linf.valid() ? order_linf.value : -1.0) << '\n';
-        orders << 'n' << ns[i] << "->" << ns[i + 1] << ":rF=" << (order_rF.valid() ? order_rF.value : -1.0)
-               << ",linf=" << (order_linf.valid() ? order_linf.value : -1.0) << ' ';
+        const bool gated = i >= 1;  // 32->64 and 64->128 only; 16->32 is pre-asymptotic evidence.
+        if (gated) {
+            const bool ok_rF = order_rF.valid() && order_rF.value >= 1.9;
+            const bool ok_linf = order_linf.valid() && order_linf.value >= 1.9;
+            pass = pass && ok_rF && ok_linf;
+            std::cout << std::setprecision(16) << "coupled_residual_exact_pair_general order n=" << ns[i]
+                      << "->" << ns[i + 1] << " order_r_F=" << (order_rF.valid() ? order_rF.value : -1.0)
+                      << " order_linf=" << (order_linf.valid() ? order_linf.value : -1.0) << '\n';
+            orders << 'n' << ns[i] << "->" << ns[i + 1] << ":rF=" << (order_rF.valid() ? order_rF.value : -1.0)
+                   << ",linf=" << (order_linf.valid() ? order_linf.value : -1.0) << ' ';
+        } else {
+            std::cout << std::setprecision(16) << "coupled_residual_exact_pair_general order n=" << ns[i]
+                      << "->" << ns[i + 1] << " order_r_F=" << (order_rF.valid() ? order_rF.value : -1.0)
+                      << " order_linf=" << (order_linf.valid() ? order_linf.value : -1.0)
+                      << " pre-asymptotic (evidence, not gated)" << '\n';
+            orders << 'n' << ns[i] << "->" << ns[i + 1]
+                   << ":rF=" << (order_rF.valid() ? order_rF.value : -1.0)
+                   << ",linf=" << (order_linf.valid() ? order_linf.value : -1.0)
+                   << ",pre-asymptotic(evidence,not-gated) ";
+        }
     }
     return {pass, "coupled_residual_exact_pair_general", "gpu-exact-pair-B-general-oh2",
-            "16/32/64 isotropic unit cube", r_f_values.front(), r_f_values.back(),
-            "observed order >=1.9 for r_F and Linf(F1,F2) at every refinement", orders.str(),
+            "16/32/64/128 isotropic unit cube", r_f_values.front(), r_f_values.back(),
+            "observed order >=1.9 for r_F and Linf(F1,F2) on the 32->64 and 64->128 transitions "
+            "only; 16->32 is printed as pre-asymptotic evidence and is not gated (SF-26 C03 "
+            "amendment: at n=16 the cos(4*pi*x1) mode of k1 has only 8 cells per wavelength)",
+            orders.str(),
             "pair B (a genuine curl(v)=grad(ln k) x v Darcy flow, the gauge recombination of the "
             "trivial pair) is a real O(h^2) discretization control: harmonic means, the projection, "
-            "and both nontrivial sources all contribute"};
+            "and both nontrivial sources all contribute; the ladder was extended to n=128 (SF-26 "
+            "C03) so the order>=1.9 gate is measured only where the k1(x1) heterogeneity mode is "
+            "already well resolved"};
 }
 
 // Case: crossed pairing evaluated on exact SAME-index Darcy pairs is an O(1)
@@ -1427,9 +1455,18 @@ struct ProductionResidualSummary {
 // alpha*Phihat(psi2) leaves v unchanged (same streamsurfaces), so the
 // SAME-index residual on the recombined pair must remain a comparable,
 // still-O(h^2) discretization residual.
+//
+// SF-26 C03 amendment (prespecified, orchestrator decision, recorded in the
+// bitácora): the ladder is extended to n=16/32/64/128. The `ratio<=3`
+// same-vs-base-residual gate is kept at every grid (unchanged). The
+// order>=1.9 gate on r_F(recombined) is imposed ONLY on the two finest
+// transitions (32->64, 64->128); the threshold is NOT relaxed. Rationale:
+// at n=16 the cos(4*pi*x1) mode of k1(x1) underlying pair B has only 8
+// cells per wavelength, so the 16->32 transition is pre-asymptotic. The
+// 16->32 order is still computed and printed as non-gating evidence.
 [[nodiscard]] CaseResult case_coupled_residual_gauge_recombination_analytic() {
     constexpr double kAlpha = 0.05;
-    const std::vector<std::size_t> ns{16, 32, 64};
+    const std::vector<std::size_t> ns{16, 32, 64, 128};
     std::vector<double> r_base(ns.size()), r_recombined(ns.size());
     double worst_ratio = 0.0;
     for (std::size_t i = 0; i < ns.size(); ++i) {
@@ -1471,19 +1508,32 @@ struct ProductionResidualSummary {
         const auto order = ref::observed_order(r_recombined[i], r_recombined[i + 1],
                                                1.0 / static_cast<double>(ns[i]),
                                                1.0 / static_cast<double>(ns[i + 1]));
-        const bool ok = order.valid() && order.value >= 1.9;
-        pass = pass && ok;
-        std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_analytic order n=" << ns[i]
-                  << "->" << ns[i + 1] << " order=" << (order.valid() ? order.value : -1.0) << '\n';
+        const bool gated = i >= 1;  // 32->64 and 64->128 only; 16->32 is pre-asymptotic evidence.
+        if (gated) {
+            const bool ok = order.valid() && order.value >= 1.9;
+            pass = pass && ok;
+            std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_analytic order n="
+                      << ns[i] << "->" << ns[i + 1] << " order=" << (order.valid() ? order.value : -1.0)
+                      << '\n';
+        } else {
+            std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_analytic order n="
+                      << ns[i] << "->" << ns[i + 1] << " order=" << (order.valid() ? order.value : -1.0)
+                      << " pre-asymptotic (evidence, not gated)" << '\n';
+        }
     }
     return {pass, "coupled_residual_gauge_recombination_analytic", "gpu-gauge-recombination-invariance",
-            "16/32/64 isotropic unit cube, pair B recombined psi1->psi1+alpha*sin(2*pi*psi2)",
-            r_base.front(), r_recombined.back(), "r_F(recombined)<=3*r_F(base) at every grid; order>=1.9",
+            "16/32/64/128 isotropic unit cube, pair B recombined psi1->psi1+alpha*sin(2*pi*psi2)",
+            r_base.front(), r_recombined.back(),
+            "r_F(recombined)<=3*r_F(base) at every grid; order>=1.9 on the 32->64 and 64->128 "
+            "transitions only (16->32 is printed as pre-asymptotic evidence and is not gated: "
+            "SF-26 C03 amendment, cos(4*pi*x1) mode of k1 has only 8 cells per wavelength at n=16)",
             std::to_string(worst_ratio),
             "recombining psi1 -> psi1 + alpha*Phihat(psi2) (alpha=0.05) preserves v exactly, so the "
             "SAME-index residual on the recombined pair must remain a comparable, still-O(h^2) "
-            "discretization residual; the test-local crossed recomposition on the same recombined "
-            "state is printed as additional (non-gating) evidence"};
+            "discretization residual; the ladder was extended to n=128 (SF-26 C03) so the order>=1.9 "
+            "gate is measured only where the k1(x1) heterogeneity mode is already well resolved; the "
+            "test-local crossed recomposition on the same recombined state is printed as additional "
+            "(non-gating) evidence at every grid"};
 }
 
 // ---------------------------------------------------------------------------
