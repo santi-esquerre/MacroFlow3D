@@ -399,6 +399,18 @@ if(MACROFLOW3D_BUILD_APPS)
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
     add_test(NAME streamfunction_operator_tests COMMAND streamfunction_operator_tests)
+    # SF-26 T02: source-pairing correction Gate 2 contract cases (cheap
+    # tier): exact SAME-index Darcy pairs (roundoff-exact and O(h^2) general),
+    # the crossed-pairing mutant, and the analytic gauge-recombination
+    # invariance control. See coupled_residual_gpu_cases.cu /
+    # streamfunction_operator_tests.cpp (cases()) for the exact fixtures.
+    add_test(NAME streamfunction_exact_pair COMMAND streamfunction_operator_tests
+        --case coupled_residual_exact_pair_k1
+        --case coupled_residual_exact_pair_kx1
+        --case coupled_residual_exact_pair_general
+        --case coupled_residual_pairing_mutant
+        --case coupled_residual_gauge_recombination_analytic
+    )
     add_test(NAME streamfunction_homogeneous COMMAND streamfunction_operator_tests
         --case homogeneous_solver_exact_16
         --case homogeneous_solver_exact_32
@@ -549,6 +561,17 @@ if(MACROFLOW3D_BUILD_APPS)
     # mechanism.
     add_test(NAME streamfunction_terminal_resolution COMMAND streamfunction_operator_tests
         --case terminal_resolution_probe
+    )
+    # SF-26 T02 HEAVY case: gauge recombination on a genuinely converged
+    # sigma_Y^2=0.25, 32^3 heterogeneous state (VERBATIM run_heterogeneity_
+    # smoke fixture parameters), comparing the production SAME-index residual
+    # against a test-local crossed recomposition on the same recombined
+    # state. Kept as a separate ctest entry (not part of the default
+    # `streamfunction_operator_tests` runs); see coupled_residual_gpu_cases.cu
+    # / streamfunction_operator_tests.cpp (heavy_cases()) for the isolation
+    # mechanism. Expected runtime locally: 10-25 minutes.
+    add_test(NAME streamfunction_gauge_recombination_heavy COMMAND streamfunction_operator_tests
+        --case coupled_residual_gauge_recombination_sigma025
     )
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3

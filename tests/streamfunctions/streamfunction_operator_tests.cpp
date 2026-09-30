@@ -410,6 +410,11 @@ using CaseFunction = test::CaseFunction;
                 throw std::logic_error("duplicate streamfunction heavy test case: " + name);
             }
         }
+        for (const auto& [name, function] : test::coupled_residual_heavy_case_registry()) {
+            if (!result.emplace(name, function).second) {
+                throw std::logic_error("duplicate streamfunction heavy test case: " + name);
+            }
+        }
         return result;
     }();
     return registry;
