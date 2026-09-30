@@ -97,9 +97,18 @@ This is one of the central reasons invariant construction and invariant-preservi
 The current invariant-construction direction is to solve the coupled nonlinear streamfunction system associated with Lester et al. equation (14):
 
 ```math
-Delta psi1 - grad(log k).grad(psi1) = S2
-Delta psi2 - grad(log k).grad(psi2) = S1
+Delta psi1 - grad(log k).grad(psi1) = S1
+Delta psi2 - grad(log k).grad(psi2) = S2
 ```
+
+**Index convention (corrected 2026-09-30).** The paper prints the right-hand
+sides crossed (`... psi1 = S2`, `... psi2 = S1`). Deriving from `v = grad psi1 x
+grad psi2` and `curl v = grad(ln k) x v` gives `grad(psi1) L2 - grad(psi2) L1 = B`
+with `L_i = Delta psi_i - grad(ln k).grad(psi_i)`, hence `L_i = S_i` with the
+paper's own definition of `S_i` below. The exact Darcy pair `k = k(x1)`,
+`psi1 = x2 + Phi(x3)`, `psi2 = x3` (`v = e1`) satisfies the same-index form to
+roundoff and violates the crossed form by `|Phi''|`. Full derivation, numerical
+check, and consequences: `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`.
 
 where:
 
@@ -124,8 +133,8 @@ Delta psi - grad(log k).grad psi = k div((1/k) grad psi).
 With `q=1/k` and `A psi = -div(q grad psi)`, decoupled nonlinear iterations solve:
 
 ```math
-A psi1 = -q S2
-A psi2 = -q S1
+A psi1 = -q S1
+A psi2 = -q S2
 ```
 
 This reformulation is operationally important because it avoids explicit finite-difference evaluation of `grad(log k)` and exposes a variable-coefficient diffusion operator that may be compatible with existing PCG/MG machinery after verification.

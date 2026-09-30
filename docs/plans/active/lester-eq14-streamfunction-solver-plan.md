@@ -24,13 +24,13 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-25`
-- Active runtime goal: `Implementar el solver terminal robusto a la variedad de gauge en eta=1: Newton desplazado (mu*A + J) con schedule Levenberg-Marquardt y contingencia pseudo-transitoria, activado por el diagnostico D-gate.`
+- NEXT: `SF-26`
+- Active runtime goal: `none`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-24`
+- Last completed increment: `SF-25`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`. Within that one active increment, the orchestrator
@@ -129,12 +129,18 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-22 — Matrix-free Jacobian-vector product](lester-eq14/increments/SF-22-matrix-free-jvp.md)
 - [x] [SF-23 — Restarted GMRES and block preconditioner](lester-eq14/increments/SF-23-gmres-preconditioner.md)
 - [x] [SF-24 — Globalized Newton-Krylov](lester-eq14/increments/SF-24-newton-krylov.md)
-- [ ] [SF-25 — Manifold-robust terminal solver](lester-eq14/increments/SF-25-terminal-manifold-solver.md)
-- [ ] [SF-26 — Heterogeneity completion](lester-eq14/increments/SF-26-heterogeneity-completion.md)
-- [ ] [SF-27 — Grid continuation](lester-eq14/increments/SF-27-grid-continuation.md)
-- [ ] [SF-28 — GPU optimization](lester-eq14/increments/SF-28-gpu-optimization.md)
-- [ ] [SF-29 — V100 benchmark](lester-eq14/increments/SF-29-v100-benchmark.md)
-- [ ] [SF-30 — Mixed-precision preconditioner study](lester-eq14/increments/SF-30-mixed-precision.md)
+- [x] [SF-25 — Manifold-robust terminal solver](lester-eq14/increments/SF-25-terminal-manifold-solver.md)
+- [ ] [SF-26 — Equation (14) source pairing correction](lester-eq14/increments/SF-26-source-pairing-correction.md)
+- [ ] [SF-27 — Paper-faithful explicit pseudo-time solver](lester-eq14/increments/SF-27-pseudo-time-solver.md)
+- [ ] [SF-28 — Reference case reproduction (256^3, sigma^2 = 4)](lester-eq14/increments/SF-28-reference-case-reproduction.md)
+- [ ] [SF-29 — Pseudo-symplectic particle tracker (GPU)](lester-eq14/increments/SF-29-pseudo-symplectic-tracker.md)
+- [ ] [SF-30 — Transverse macrodispersion validation](lester-eq14/increments/SF-30-transverse-macrodispersion-validation.md)
+
+Re-sequencing 2026-09-30: SF-26..SF-30 were replaced after the root-cause
+finding in `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`.
+The former heterogeneity gates live verbatim inside SF-26; grid continuation
+is absorbed by SF-28; GPU optimization, V100 benchmark, and mixed precision
+are deferred (their specifications remain in git history at `9a71963`).
 
 ## Locked mathematical and discrete decisions
 
@@ -168,10 +174,16 @@ The benchmark affine gradients are
 For the fluctuations, solve
 
 ```math
-A\widetilde\psi_1 = \nabla\cdot(q\bar g_1)-\eta qS_2,
+A\widetilde\psi_1 = \nabla\cdot(q\bar g_1)-\eta qS_1,
 \qquad
-A\widetilde\psi_2 = \nabla\cdot(q\bar g_2)-\eta qS_1.
+A\widetilde\psi_2 = \nabla\cdot(q\bar g_2)-\eta qS_2.
 ```
+
+Source pairing (corrected 2026-09-30): each block receives its OWN source,
+`S_i = ((B x grad psi_i) . c)/|c|^2`, as derived in
+`docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`. The paper's
+printed equation (14) crosses the indices relative to its own definitions;
+the code implemented that crossed form through SF-25 and SF-26 corrects it.
 
 Locked discretization rules:
 

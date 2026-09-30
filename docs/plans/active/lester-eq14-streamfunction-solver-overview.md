@@ -95,10 +95,14 @@ En ausencia de estancamiento, el régimen considerado admite dos potenciales de
 Euler o streamfunctions. Lester et al. expresan sus ecuaciones acopladas como
 
 ```math
-\nabla^2\psi_1-\nabla\ln K\cdot\nabla\psi_1=S_2,
+\nabla^2\psi_1-\nabla\ln K\cdot\nabla\psi_1=S_1,
 \qquad
-\nabla^2\psi_2-\nabla\ln K\cdot\nabla\psi_2=S_1,
+\nabla^2\psi_2-\nabla\ln K\cdot\nabla\psi_2=S_2,
 ```
+
+(mismo índice: la ecuación impresa en el paper cruza los índices respecto de
+sus propias definiciones; la derivación y la verificación numérica están en
+`docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`)
 
 con
 
@@ -188,12 +192,12 @@ no lineal `eta`, las ecuaciones para las fluctuaciones son
 
 ```math
 A\widetilde\psi_1=
-\nabla\cdot(q\bar{\mathbf g}_1)-\eta qS_2,
+\nabla\cdot(q\bar{\mathbf g}_1)-\eta qS_1,
 ```
 
 ```math
 A\widetilde\psi_2=
-\nabla\cdot(q\bar{\mathbf g}_2)-\eta qS_1.
+\nabla\cdot(q\bar{\mathbf g}_2)-\eta qS_2.
 ```
 
 Los términos afines se construyen con exactamente los mismos coeficientes de
@@ -362,8 +366,8 @@ acoplado de las fluctuaciones como
 ```math
 F(\Psi)=
 \begin{bmatrix}
-A\widetilde\psi_1-\nabla\cdot(q\bar{\mathbf g}_1)+\eta qS_2\\
-A\widetilde\psi_2-\nabla\cdot(q\bar{\mathbf g}_2)+\eta qS_1
+A\widetilde\psi_1-\nabla\cdot(q\bar{\mathbf g}_1)+\eta qS_1\\
+A\widetilde\psi_2-\nabla\cdot(q\bar{\mathbf g}_2)+\eta qS_2
 \end{bmatrix}.
 ```
 
@@ -487,10 +491,17 @@ contratos y tests discretos
      eta=1 para sigma_Y^2>=1 — cluster casi-nulo del Jacobiano por la
      libertad de recombinación de Clebsch; ver
      docs/decisions/2026-08-14-manifold-robust-terminal-solver.md)
-  -> completación de heterogeneidad (gates movidos, sin cambios)
-  -> continuación de malla
-  -> optimización y benchmark V100
-  -> estudio opcional de precisión mixta
+  -> [SF-25 cerrado 2026-09-30: el método terminal fue falsificado por su
+     D-gate y la campaña quedó explicada por una causa raíz: el residuo
+     emparejaba S1/S2 cruzados (forma impresa del paper); ver
+     docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md]
+  -> corrección del emparejamiento + gates de heterogeneidad (SF-26)
+  -> solver pseudo-tiempo explícito fiel al paper (SF-27, contraste con el
+     stack implícito, que se mantiene)
+  -> reproducción del caso de referencia 256^3 con iteración anidada (SF-28)
+  -> tracker pseudo-simpléctico GPU con Newton 2x2 por partícula (SF-29)
+  -> validación de macrodispersión transversal (SF-30)
+  -> optimización, benchmark V100 y precisión mixta (diferidos)
 ```
 
 La implementación sólo avanza cuando el incremento actual cumple su Goal,

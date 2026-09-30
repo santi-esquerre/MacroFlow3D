@@ -18,6 +18,13 @@
 
 ## 1. Executive summary
 
+> **Post-closure addendum (2026-09-30, §12):** the measurements below stand;
+> their interpretation (§8) is superseded. The coupled system the solver
+> was applied to pairs the sources crosswise (`G1 <- S2`, `G2 <- S1`, copied
+> from the paper's printed eq. 14) and is not satisfied by exact Darcy
+> streamfunction pairs. See §12 and
+> `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`.
+
 MacroFlow3D's Lester eq. (14) solver — Picard/adaptive-relaxation/Anderson/
 Newton-Krylov with eta-, epsilon-, and amplitude-continuation — **fully
 solves the sigma_Y^2 = 0.25 benchmark** (residual r_F <= 1e-6 at full
@@ -385,6 +392,43 @@ ctest --test-dir build/v100-release --output-on-failure
   threshold was modified after seeing results (all instrument corrections
   are recorded as measurement-methodology amendments with raw first-run
   numbers retained).
+
+## 12. Post-closure root-cause finding (2026-09-30)
+
+On the owner's request to validate this report's diagnosis and re-read the
+source paper, the orchestrator re-derived eq. (14) from `v = grad psi1 x grad
+psi2` and `curl v = grad(ln k) x v`:
+
+```
+grad(psi1) L2 - grad(psi2) L1 = B,   L_i = lap psi_i - grad(ln k).grad psi_i
+=> L_i = ((B x grad psi_i) . c)/|c|^2 = S_i          (same index)
+```
+
+The paper prints the indices crossed; `ResidualEvaluator.cu:45` implements
+that crossed form ("G1 uses s2, G2 uses s1"). Exact counterexample: `k =
+k(x1)`, `psi1 = x2 + Phi(x3)`, `psi2 = x3` (`v = e1`): same-index residual
+`2.2e-14`, crossed residual `11.8` (= `max|Phi''|`), spectral check at 32^3.
+No existing test had a control with `S != 0`.
+
+Mapping to the facts of §5: the two systems agree to first order in the
+field amplitude and differ at second order (F1 explained); the crossed
+system loses solvability at finite amplitude and the shelf is its
+least-squares stationary point (`J^T F ~ 0`, `F != 0`, `J` indefinite — F2,
+F3, F4, F6); finer grids approximate the wrong continuum system better (F7,
+the fact H1 could not explain); the `e_v ~ 2.5 %` floor is model error, not
+truncation (F10/F-SAT); the explicit flow of the crossed residual has no
+nearby equilibrium either (F8/F9). H1-H5 are superseded; the campaign's
+recommended sequencing (V1 -> A1 -> ...) is replaced by the re-sequenced
+SF-26..SF-30 in the dashboard: pairing correction with an exact-pair contract
+test and the unchanged `sigma^2 >= 1` gates (SF-26), the paper-faithful
+explicit pseudo-time solver kept alongside the implicit stack (SF-27), the
+256^3 reference case (SF-28), the pseudo-symplectic GPU tracker (SF-29), and
+the transverse-macrodispersion validation (SF-30).
+
+The instrument delivered by this campaign asserts on the frozen plateau
+state (`r_F = 1.1204722529922055e-3`) that will not exist once the pairing
+is corrected; SF-26 re-classifies those asserts (recorded, not silently
+deleted).
 
 ## 11. References
 
