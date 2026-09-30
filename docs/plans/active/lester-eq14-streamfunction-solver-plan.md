@@ -25,7 +25,7 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 ## Execution state
 
 - NEXT: `SF-26`
-- Active runtime goal: `none`
+- Active runtime goal: `Corregir el emparejamiento de las fuentes S1/S2 en el residuo acoplado al sistema derivado (mismo índice), demostrarlo con un par exacto y re-imponer sin cambios los gates de heterogeneidad sigma_Y^2>=1.`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
