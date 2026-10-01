@@ -122,7 +122,12 @@ floors, not converged.
    two seeds): ell/h = 8 (32^3): 1.0e-4 / 8.3e-5; ell/h = 16 (32^3):
    4.7e-5 / 6.2e-5; ell/h = 16 (48^3): 3.5e-5. The floor decreases with
    resolution, but only ~x2 per doubling of ell/h.
-6. Explicit pseudo-time on the rough field at the linear-stability dt:
+6. Same continuum field (band-limited at 24^3, exact spectral upsampling) at
+   24^3 (ell/h = 8) and 48^3 (ell/h = 16), eps = 1e-2, Anderson m = 8, 2000 its:
+   floor 7.62e-5 -> 1.31e-5, i.e. a factor 5.8 for h -> h/2 (~h^2.5): the floor
+   is a discretization (truncation-structure) effect that vanishes under
+   refinement at roughly second order.
+7. Explicit pseudo-time on the rough field at the linear-stability dt:
    decays to 1.2e-4 at tau 2.5, then destabilizes (state-dependent nonlinear
    stiffness) — the SF-27 spec's Gershgorin cap on the LINEAR part is not a
    sufficient stability guarantee.
@@ -139,7 +144,8 @@ floors, not converged.
   fields the corrected DISCRETE system has a residual floor at eta = 1
   (~1e-4 at lambda = 0.11, sigma^2 = 1, ell/h = 8) that is independent of the
   solver (Picard, Anderson, restarted/full-recurrence Newton, explicit flow)
-  and of epsilon, and decreases only weakly with ell/h. Its origin is the
+  and of epsilon; at fixed realization it decreases ~h^2.5 under refinement
+  (7.6e-5 -> 1.3e-5 for 24^3 -> 48^3), so it is a truncation-type floor. Its origin is the
   exact gauge invariance of the correct equation: the discrete Jacobian has a
   large near-null cluster, the discrete equations are effectively inconsistent
   at the level of that cluster, and the algebraic tolerance 1e-6 is unreachable

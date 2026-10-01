@@ -25,7 +25,9 @@ prespecified prediction: every method in the stack stalls exactly at eta = 1.
    NOT have a reachable zero: residual floor ~1e-4 (lambda = 0.11, sigma^2 = 1)
    independent of the solver (Picard, Anderson, restarted and full-recurrence
    Newton, explicit pseudo-time) and of the denominator regularization epsilon;
-   it decreases only ~x2 per doubling of ell/h.
+   across realizations it decreases ~x2 per doubling of ell/h, and for the SAME
+   continuum field it decreases ~h^2.5 (7.6e-5 -> 1.3e-5 for 24^3 -> 48^3):
+   a truncation-type floor that vanishes under refinement.
 4. The crossed (pre-SF-26) system had isolated solutions at small amplitude
    (fast Anderson) but an unstable explicit flow and an unsolvable shelf at
    finite amplitude; the corrected system has the opposite profile: stable
