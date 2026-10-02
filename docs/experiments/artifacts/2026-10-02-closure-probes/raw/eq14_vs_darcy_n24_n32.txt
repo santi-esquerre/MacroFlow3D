@@ -1,0 +1,8 @@
+control2d  eps=0.250 N= 24 its=  14 r_F=2.98e-12 | e_v=1.553e-09 inv=(3.19e-10,0.00e+00) min|c|=0.74 | curl(c/k): along_c=0.000e+00 across_c=5.95e-08 [Darcy curl(v/k)=5.0e-15] meanflux_c=(1.000000,-1.0e-18,+0.0e+00) t=1s
+two_mode   eps=0.250 N= 24 its= 109 r_F=9.83e-12 | e_v=7.743e-03 inv=(5.61e-03,5.61e-03) min|c|=0.79 | curl(c/k): along_c=6.526e-02 across_c=1.50e-11 [Darcy curl(v/k)=8.2e-15] meanflux_c=(1.000000,+1.2e-18,+2.6e-19) t=2s
+generic3d  eps=0.125 N= 24 its= 102 r_F=9.80e-12 | e_v=3.536e-03 inv=(1.39e-03,3.27e-03) min|c|=0.81 | curl(c/k): along_c=2.504e-02 across_c=2.10e-10 [Darcy curl(v/k)=8.2e-15] meanflux_c=(1.000000,+0.0e+00,-7.6e-20) t=2s
+lester2021 eps=0.250 N= 32 its=3000 r_F=1.96e-08 | e_v=1.684e-07 inv=(8.38e-09,5.30e-09) min|c|=0.78 | curl(c/k): along_c=9.750e-07 across_c=1.64e-06 [Darcy curl(v/k)=8.8e-15] meanflux_c=(1.000000,+3.2e-20,+3.0e-20) t=262s
+gauss      eps=0.250 N= 16 its=3000 r_F=5.43e-05 | e_v=4.894e-03 inv=(1.32e-03,4.78e-03) min|c|=0.50 | curl(c/k): along_c=3.734e-02 across_c=6.54e-04 [Darcy curl(v/k)=4.6e-15] meanflux_c=(1.000000,+0.0e+00,+3.3e-19) t=14s
+gauss      eps=0.250 N= 24 its=3000 r_F=2.34e-06 | e_v=4.893e-03 inv=(1.31e-03,4.78e-03) min|c|=0.50 | curl(c/k): along_c=3.733e-02 across_c=2.36e-05 [Darcy curl(v/k)=8.0e-15] meanflux_c=(1.000000,-2.6e-19,+6.4e-20) t=38s
+gauss      eps=0.125 N= 24 its=3000 r_F=1.85e-08 | e_v=1.212e-03 inv=(3.11e-04,1.18e-03) min|c|=0.72 | curl(c/k): along_c=9.405e-03 across_c=2.70e-07 [Darcy curl(v/k)=8.2e-15] meanflux_c=(1.000000,+6.4e-20,+0.0e+00) t=39s
+gauss      eps=0.500 N= 16 its=3000 r_F=1.88e-03 | e_v=1.964e-02 inv=(5.97e-03,1.96e-02) min|c|=0.24 | curl(c/k): along_c=1.438e-01 across_c=1.69e-02 [Darcy curl(v/k)=4.8e-15] meanflux_c=(1.000000,+0.0e+00,-1.3e-18) t=76s

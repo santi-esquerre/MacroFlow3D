@@ -1,0 +1,26 @@
+two_mode eps=0.5 N=16: transverse displacement after n periods (mean flux exactly along x1)
+  n=  1  rms|d|=0.0293  max|d|=0.0480  var(dy)=4.309e-04 var(dz)=3.797e-04
+  n=  2  rms|d|=0.0587  max|d|=0.0950  var(dy)=1.733e-03 var(dz)=1.513e-03
+  n=  5  rms|d|=0.1461  max|d|=0.2278  var(dy)=1.084e-02 var(dz)=9.303e-03
+  n= 10  rms|d|=0.2876  max|d|=0.4182  var(dy)=4.199e-02 var(dz)=3.607e-02
+  n= 20  rms|d|=0.5575  max|d|=0.8243  var(dy)=1.525e-01 var(dz)=1.424e-01
+  n= 40  rms|d|=1.0940  max|d|=1.6352  var(dy)=5.714e-01 var(dz)=5.547e-01
+  n= 80  rms|d|=2.1831  max|d|=3.2611  var(dy)=2.253e+00 var(dz)=2.234e+00
+gauss eps=1.0 N=16: transverse displacement after n periods (mean flux exactly along x1)
+  n=  1  rms|d|=0.0875  max|d|=0.1317  var(dy)=1.302e-03 var(dz)=6.013e-03
+  n=  2  rms|d|=0.1557  max|d|=0.2157  var(dy)=2.793e-03 var(dz)=2.037e-02
+  n=  5  rms|d|=0.3177  max|d|=0.4121  var(dy)=8.342e-03 var(dz)=9.014e-02
+  n= 10  rms|d|=0.6233  max|d|=0.9661  var(dy)=1.314e-02 var(dz)=3.674e-01
+  n= 20  rms|d|=1.1626  max|d|=1.9224  var(dy)=1.141e-02 var(dz)=1.302e+00
+  n= 40  rms|d|=2.2569  max|d|=3.7017  var(dy)=1.156e-02 var(dz)=4.974e+00
+control2d eps=1.0 N=24: transverse displacement after n periods (mean flux exactly along x1)
+  n=  1  rms|d|=0.0000  max|d|=0.0000  var(dy)=2.314e-17 var(dz)=0.000e+00
+  n=  2  rms|d|=0.0000  max|d|=0.0000  var(dy)=9.253e-17 var(dz)=0.000e+00
+  n=  5  rms|d|=0.0000  max|d|=0.0000  var(dy)=5.783e-16 var(dz)=0.000e+00
+  n= 10  rms|d|=0.0000  max|d|=0.0000  var(dy)=2.313e-15 var(dz)=0.000e+00
+  n= 20  rms|d|=0.0000  max|d|=0.0000  var(dy)=9.252e-15 var(dz)=0.000e+00
+lester2021 eps=1.0 N=24: transverse displacement after n periods (mean flux exactly along x1)
+  n=  1  rms|d|=0.0000  max|d|=0.0000  var(dy)=2.724e-27 var(dz)=2.206e-25
+  n=  2  rms|d|=0.0000  max|d|=0.0000  var(dy)=5.071e-27 var(dz)=3.873e-25
+  n=  5  rms|d|=0.0000  max|d|=0.0000  var(dy)=5.556e-26 var(dz)=4.591e-24
+  n= 10  rms|d|=0.0000  max|d|=0.0000  var(dy)=1.977e-25 var(dz)=1.579e-23
