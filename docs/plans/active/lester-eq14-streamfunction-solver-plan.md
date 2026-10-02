@@ -40,8 +40,8 @@ default branch.
 
 ## Claude Code intra-increment orchestration contract
 
-This section governs **how the single active increment is executed**. It does
-not relax the sequential ordering of increments.
+This section governs **how each active increment is executed**. It does
+not relax the dependency ordering of increments.
 
 1. **UNDERSTAND — Fable 5 / xhigh**
    - Read the project foundations, architecture, solver overview, theory note,
@@ -131,33 +131,33 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-24 — Globalized Newton-Krylov](lester-eq14/increments/SF-24-newton-krylov.md)
 - [x] [SF-25 — Manifold-robust terminal solver](lester-eq14/increments/SF-25-terminal-manifold-solver.md)
 - [x] [SF-26 — Equation (14) source pairing correction](lester-eq14/increments/SF-26-source-pairing-correction.md)
-- [ ] [SF-27 — Paper-faithful explicit pseudo-time solver](lester-eq14/increments/SF-27-pseudo-time-solver.md)
-- [ ] [SF-28 — Reference case reproduction (256^3, sigma^2 = 4)](lester-eq14/increments/SF-28-reference-case-reproduction.md)
-- [ ] [SF-29 — Pseudo-symplectic particle tracker (GPU)](lester-eq14/increments/SF-29-pseudo-symplectic-tracker.md)
-- [ ] [SF-30 — Transverse macrodispersion validation](lester-eq14/increments/SF-30-transverse-macrodispersion-validation.md)
+- [ ] [SF-27 — Validation-tier hygiene](lester-eq14/increments/SF-27-validation-tier-hygiene.md)
+- [ ] [SF-28 — Periodic tricubic B-spline interpolation](lester-eq14/increments/SF-28-periodic-tricubic-spline.md)
+- [ ] [SF-29 — CPU prototype: equation (14) with `x1` non-periodic and inlet labels](lester-eq14/increments/SF-29-eq14-inlet-labels-cpu-prototype.md)
+- [ ] [SF-30 — Streamline-closure gate on the production stack](lester-eq14/increments/SF-30-streamline-closure-gate.md)
+- [ ] [SF-31 — Pseudo-symplectic tracker core and RK reference](lester-eq14/increments/SF-31-pseudo-symplectic-tracker-core.md)
+- [ ] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
 
-Re-sequencing 2026-09-30: SF-26..SF-30 were replaced after the root-cause
-finding in `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`.
-The former heterogeneity gates live verbatim inside SF-26; grid continuation
-is absorbed by SF-28; GPU optimization, V100 benchmark, and mixed precision
-are deferred (their specifications remain in git history at `9a71963`).
-
-SF-26 closure 2026-10-02 (owner directive): the same-index pairing and its
-contract tests are accepted; the heterogeneity gates re-imposed in SF-26 are
-recorded UNMET and untuned (both 32^3 smokes exhaust the lambda floor at
-eta = 1; the 64^3 suite was not run). They are not attached to any pending
-increment. Open decisions D1-D7 live in
-`docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: acceptance
-at eta = 1 (D1), the fate of the unmet gates (D2), the residual discretization
-(D3), the SF-27 specification (D4), Newton at eta = 1 (D5), the four red ctest
-entries (D6), reference resolution and paper parity (D7). No locked decision
-below is changed; D1 and D3 put three of them in question (the 1e-6 nonlinear
-tolerance, harmonic-mean face coefficients, not differencing `grad(log K)`).
-`NEXT` names SF-27, but its specification is invalid as written (D4): an
-orchestrator activating SF-27 must stop at UNDERSTAND and report unless the
-owner has resolved D4.
+Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
+periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
+not close on the torus, so no affine plus triply periodic invariant pair exists
+for them and the periodic solution of eq. (14) is a different flow (see
+`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md` and
+`docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`). The
+former SF-27..SF-30 are cancelled (their specifications remain in git history at
+`4670fb5`) and replaced by SF-27..SF-32 above. Dependency graph: SF-27 and SF-29
+start in parallel; SF-28 follows SF-27; SF-30 and SF-31 follow SF-28 (in
+parallel); SF-32 follows SF-31. Disposition of the open decisions D1-D7 of
+`docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
+D5 are moot (they tune a system whose solution is not the target); D2 is retired
+with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
+pseudo-time increment; D6 is resolved by SF-27; D7 is resolved by adopting the
+Lester (2021) field as positive control, the paper's `1e-16` remaining
+unreconciled and non-blocking.
 
 ## Locked mathematical and discrete decisions
+
+*Contract of the frozen periodic-fluctuation stack (SF-02..SF-26). These rules do not govern the `x1`-non-periodic inlet-label formulation; SF-29 selects that formulation and its closure PR writes the corresponding locked decisions.*
 
 For a smooth scalar conductivity `K > 0`, define `q = 1/K` and
 
@@ -221,6 +221,8 @@ Locked discretization rules:
   phases.
 
 ## Locked nonlinear and continuation policy
+
+*Contract of the frozen periodic-fluctuation stack (SF-02..SF-26). These rules do not govern the `x1`-non-periodic inlet-label formulation; SF-29 selects that formulation and its closure PR writes the corresponding locked decisions.*
 
 Picard starts sequentially: evaluate one authoritative nonlinear state, solve
 the two blocks consecutively with the same operator and multigrid hierarchy,
@@ -319,6 +321,8 @@ field transfer is permitted inside hot nonlinear loops.
 
 ## Benchmark progression
 
+Applies to the frozen periodic stack; the closure-gate matrix lives in SF-30.
+
 - operator controls: periodic trigonometric manufactured functions;
 - homogeneous controls: `16^3`, `32^3`, `64^3`;
 - smooth Gaussian smoke: `32^3`, then `64^3`, with
@@ -332,6 +336,36 @@ field transfer is permitted inside hot nonlinear loops.
 
 Exponential covariance, tensor conductivity, a PSPTA consumer, and scientific
 macrodispersion production are outside this execution sequence.
+
+## Process rules (2026-10-02)
+
+1. Run an independent existence or positive-control check before building any
+   solver for a new target.
+2. Accept on a physics metric under refinement, never on a residual alone.
+3. Build a CPU prototype before a GPU increment.
+4. `ctest` holds fast contract tests only; science runs are experiment notes run
+   as detached V100 jobs.
+
+## Later phases (prose; specifications are created by the SF-29 closure PR)
+
+1. GPU generalization of `src/physics/streamfunctions/` to `x1` non-periodic per
+   the SF-29 choice, reusing PCG/MG, SF-18, SF-19, and `Diagnostics.cuh`.
+2. Acceptance in the periodic medium: `e_v(h)` and invariance convergent and the
+   labels' return map agreeing with SF-30 at `sigma^2 = 0.25, 1, 2.25`;
+   `(4, 1/16, 256^3)` is non-blocking.
+3. Long domain (Dirichlet in `x`, periodic in `y`, `z`; 2048x256x256,
+   `lambda/h = 10`): runner wiring and the study. `alpha_L` must match RWPT;
+   `alpha_T` is reported with grid and tolerance convergence without
+   presupposing its value; `sigma^2` in `{1, 2.25}` then `{4, 6.25}`. Open items:
+   the generator (periodic SF-18 vs baseline) and memory at 1.3e8 cells on one
+   V100.
+4. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5).
+
+The periodic-cell study (`D_T` by re-injection, deterministic many-period
+iteration) has no increment of its own: it is read off the return map that SF-30
+measures and that the labels must reproduce. The move to the long domain
+requires `e_v(h)` convergent and the return map concordant up to
+`sigma^2 = 2.25`.
 
 ## Recording and advancement
 
