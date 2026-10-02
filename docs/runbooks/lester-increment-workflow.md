@@ -143,7 +143,7 @@ reason.
 ## 5. Execute workers in isolated worktrees
 
 Every implementation/corrective node is delegated to `increment-worker`
-(Sonnet 5 / medium).
+(Opus / medium).
 
 The delegation must be self-contained because workers do not inherit the parent
 conversation. Supply:
@@ -183,7 +183,7 @@ Findings are classified `BLOCKING`, `MAJOR`, `MINOR`, or `INFORMATIONAL`.
 A node is accepted only when no blocking/major findings remain and all required
 criteria have evidence.
 
-Failures produce a corrective DAG. Corrective Sonnet workers run in isolated
+Failures produce a corrective DAG. Corrective Opus workers run in isolated
 worktrees and are audited exactly like original nodes. Repeat until accepted or
 explicitly `blocked`.
 
@@ -192,7 +192,7 @@ explicitly `blocked`.
 ## 7. Integrate accepted work
 
 After all required nodes are accepted, launch exactly one
-`increment-integrator` (Sonnet 5 / medium) in a fresh isolated worktree.
+`increment-integrator` (Opus / medium) in a fresh isolated worktree.
 
 Give it:
 

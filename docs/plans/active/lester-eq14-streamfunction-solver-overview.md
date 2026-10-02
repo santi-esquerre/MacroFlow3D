@@ -36,7 +36,7 @@ un DAG de subtareas autocontenidas y ejecutar en paralelo solamente nodos
 independientes y con alcances de escritura compatibles.
 
 La ejecución autónoma de un incremento termina en una **pull request auditada**:
-workers Sonnet implementan/corrigen en worktrees aislados, un integrador Sonnet
+workers Opus implementan/corrigen en worktrees aislados, un integrador Opus
 combina únicamente commits aprobados y el orchestrator Fable realiza las
 auditorías de aceptación antes de publicar la PR. Un incremento dependiente no
 entra al conjunto READY hasta que la PR de sus predecesores sea mergeada y el

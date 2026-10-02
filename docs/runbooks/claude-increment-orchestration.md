@@ -14,8 +14,8 @@ dependencies, checklist, acceptance gates, and completion state.
 | Role | Model | Effort | Writes source? | Worktree | Publishes |
 |---|---|---:|---|---|---|
 | `orchestrator` | Claude Fable 5.1 | xhigh | only orchestration/durable record changes | control checkout | final PR only |
-| `increment-worker` | Claude Sonnet 5.5 | medium | yes, one DAG node | native isolated worktree | never |
-| `increment-integrator` | Claude Sonnet 5.5 | medium | integration/conflict changes only | native isolated worktree | never |
+| `increment-worker` | Claude Opus (model alias `opus`) | medium | yes, one DAG node | native isolated worktree | never |
+| `increment-integrator` | Claude Opus (model alias `opus`) | medium | integration/conflict changes only | native isolated worktree | never |
 
 ## State machine
 

@@ -7,7 +7,7 @@ Formal branch / worktree / PR lifecycle for MacroFlow3D.
 The repository supports two execution styles:
 
 1. ordinary manual/single-agent work;
-2. orchestrated increments executed by Fable with isolated Sonnet workers and a
+2. orchestrated increments executed by Fable with isolated Opus workers and a
    single isolated integrator.
 
 Both end in a pull request. **Agents never merge pull requests.**
@@ -26,9 +26,9 @@ worktree -> edit -> validate -> audit/review as required -> push -> PR -> human 
 
 ```text
 Fable UNDERSTAND/PLAN
-  -> Sonnet worker worktrees
+  -> Opus worker worktrees
   -> Fable AUDIT / corrective DAG
-  -> Sonnet integration worktree
+  -> Opus integration worktree
   -> Fable FINAL_AUDIT
   -> PR
   -> human review when required

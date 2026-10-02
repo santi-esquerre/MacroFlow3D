@@ -1,7 +1,7 @@
 ---
 name: increment-worker
 description: Implements exactly one concrete MacroFlow3D increment DAG node or one corrective node. Use proactively for all delegated implementation and correction work.
-model: sonnet
+model: opus
 effort: medium
 permissionMode: bypassPermissions
 isolation: worktree

@@ -58,7 +58,7 @@ not relax the dependency ordering of increments.
    - Persist runtime planning/audit state under
      `.claude/orchestration/<increment-id>/` when useful.
 
-3. **EXECUTE — Sonnet 5 / medium**
+3. **EXECUTE — Opus / medium**
    - Every implementation or corrective node is delegated to
      `increment-worker`.
    - Every worker runs with native `isolation: worktree`.
@@ -75,7 +75,7 @@ not relax the dependency ordering of increments.
    - Failed audits generate a corrective DAG and repeat until no blocking or
      major findings remain.
 
-5. **INTEGRATE — Sonnet 5 / medium**
+5. **INTEGRATE — Opus / medium**
    - After all required nodes are accepted, launch exactly one
      `increment-integrator` in a fresh isolated worktree.
    - The integrator starts from the increment base and incorporates only

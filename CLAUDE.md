@@ -21,12 +21,12 @@ The checked-in Claude Code configuration is:
   - owns UNDERSTAND -> PLAN -> EXECUTE -> AUDIT -> CORRECT -> INTEGRATE ->
     FINAL_AUDIT -> PUBLISH_PR -> review/closure coordination
 - `.claude/agents/increment-worker.md`
-  - Claude Sonnet 5.5
+  - Claude Opus (model alias `opus`)
   - `medium` effort
   - one implementation/corrective DAG node
   - native `isolation: worktree`
 - `.claude/agents/increment-integrator.md`
-  - Claude Sonnet 5.5
+  - Claude Opus (model alias `opus`)
   - `medium` effort
   - integrates only orchestrator-approved commits
   - native `isolation: worktree`
