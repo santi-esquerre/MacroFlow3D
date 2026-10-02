@@ -17,10 +17,12 @@ Its core claim is not merely that some numerical methods are inaccurate. It is s
 - for **steady 3D Darcy flow with smooth, locally isotropic scalar conductivity** and **no stagnation points**, the flow is **helicity-free**,
 - such flows admit **two invariants / streamfunctions**,
 - those invariants constrain trajectories to 2D streamsurfaces,
-- therefore **purely advective transverse macrodispersion is zero** in that regime,
+- therefore, **under the paper's assumptions (bounded label fluctuations, §4 of the paper)**, purely advective transverse macrodispersion is zero in that regime,
 - and conventional particle-tracking methods can produce **spurious positive transverse macrodispersion** if they do not preserve those kinematic constraints.
 
-This means that, for MacroFlow3D, positive transverse spreading in the purely advective smooth-isotropic Darcy regime must be treated as **suspicious by default**, not as automatically physical.
+This note labels each claim below as either **What the paper states** or **Verified / refuted in this project**. Since 2026-10-02 the project does not use the zero-transverse claim as a regime expectation or as an acceptance oracle (owner decision O3 of `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`).
+
+For MacroFlow3D, positive transverse spreading in the purely advective smooth-isotropic Darcy regime is **not automatically physical**; zero transverse spreading is **not presupposed** either. Every observed growth is classified physical / numerical / unresolved with refinement evidence.
 
 ---
 
@@ -53,7 +55,7 @@ For this project, this is a **hard scientific constraint**, not a cosmetic detai
 
 ## 2. Helicity-free steady 3D flows admit two invariants
 
-The paper states that steady 3D helicity-free flows admit two invariants / streamfunctions `ψ1(x), ψ2(x)` satisfying
+**What the paper states.** Steady 3D helicity-free flows admit two invariants / streamfunctions `ψ1(x), ψ2(x)` satisfying
 
 ```math
 \mathbf{v}(x) \cdot \nabla \psi_1(x) = 0,
@@ -68,16 +70,21 @@ Interpretation:
 - streamlines lie on 2D streamsurfaces,
 - streamline motion is effectively constrained in the same essential sense that forbids unbounded transverse wandering.
 
-This is the conceptual bridge between:
+In the paper this is the conceptual bridge between:
 - helicity-free Darcy flow,
 - integrability,
 - and the absence of purely advective transverse macrodispersion.
+
+**Verified / refuted in this project** (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; limits: CPU probes, smooth Gaussian-covariance field, amplitude <= 1, `L/ell = 4`, one realization; the production-stack repeat is pending in SF-30).
+- Two invariants exist **locally**: Euler potentials exist locally for any divergence-free field, so §1 (helicity-free) and local existence stand.
+- A **global, affine + triply periodic** nondegenerate pair does **not** exist for a generic smooth scalar periodic `k`. Such a pair forces every Darcy streamline to close on the torus; the return map of the face `x1 = 0` instead differs from the identity at second order in the amplitude, independently of resolution. A 2-D control and the mirror-symmetric Lester (2021) §3 field close to roundoff; breaking the symmetry breaks closure.
+- The periodic solution of equation (14) exists, but it is the closed-streamline field nearest to Darcy in the `1/k` energy (`e_v ~ amplitude^2`, resolution independent). Equation (14) imposes only the two components of `curl(c/k) = 0` across `c`; the helicity component `B . c = 0` is not imposed.
 
 ---
 
 ## 3. Euler-potential / dual-streamfunction representation
 
-The same paper gives the velocity representation
+**What the paper states.** The same paper gives the velocity representation
 
 ```math
 \mathbf{v}(x) = \nabla \psi_1(x) \times \nabla \psi_2(x),
@@ -92,9 +99,11 @@ Interpretation for MacroFlow3D:
 
 This is one of the central reasons invariant construction and invariant-preserving transport matter.
 
+**Verified / refuted in this project.** The representation holds locally. Globally, with affine + periodic labels, it holds only for flows with closed streamlines (see §2 above); on a generic periodic Gaussian field the pair solving (14) represents a different flow than Darcy.
+
 ## 3A. Lester equation (14) solver formulation
 
-The current invariant-construction direction is to solve the coupled nonlinear streamfunction system associated with Lester et al. equation (14):
+**What the paper states.** The paper's invariant-construction equation is the coupled nonlinear streamfunction system of Lester et al. equation (14), here in the form used by the project's frozen solver stack:
 
 ```math
 Delta psi1 - grad(log k).grad(psi1) = S1
@@ -139,33 +148,37 @@ A psi2 = -q S2
 
 This reformulation is operationally important because it avoids explicit finite-difference evaluation of `grad(log k)` and exposes a variable-coefficient diffusion operator that may be compatible with existing PCG/MG machinery after verification.
 
+**Provenance of the index swap (verified against Lester 2021).** Eq. (2.16) of Lester et al. (2021) prints `+B`, where the identity `curl(a x b) = a div b - b div a + (b.grad)a - (a.grad)b` gives `-B`. Eq. (2.20) is correct: crossing it with `grad psi2` and `grad psi1` gives `L2 = a1`, `L1 = a2`, with `L_i = Delta psi_i - grad f . grad psi_i`. Since the 2021 `a1 = (B x grad psi2).v/|v|^2` equals the 2023 `S2` and `a2` equals `S1`, this is `L_i = S_i` (same index). Eqs. (2.22)-(2.23) nevertheless print `L1 = a1`, `L2 = a2`, and the 2023 eq. (14) copies that swap. Same-index was also established independently by SF-26.
+
+**Contract of the frozen stack versus the project's new target.** The affine + periodic-fluctuation formulation (and its gauge) is the contract of the frozen stack (SF-02..SF-26); it is verified infrastructure and the producer of invariants on symmetric controls (the Lester 2021 field). The project's new target is the **Darcy labels anchored at the inlet face and non-periodic in `x1`** (decision O1 = B), prototyped on CPU in SF-29.
+
 Do not treat multigrid reuse as confirmed by theory. It must be checked against the repository's actual operator sign, coefficient placement, boundary handling, gauge, and residual.
 
 ---
 
 ## 4. Zero purely advective transverse macrodispersion in the target regime
 
-The paper proves that when the conductivity field is:
+**What the paper states.** The paper proves that when the conductivity field is:
 - smooth,
 - locally isotropic,
 - finite,
 - and the flow is stagnation-free,
 
-the asymptotic transverse macrodispersion coefficients vanish in the purely advective limit.
-
-Practical consequence:
-- in this regime, the target result is
+the asymptotic transverse macrodispersion coefficients vanish in the purely advective limit, under the assumption of bounded label fluctuations (§4 of the paper):
 
 ```math
 D^m_{22} = D^m_{33} = 0
 ```
 
-for pure advection.
+**Verified / refuted in this project** (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; limits: CPU probes, smooth Gaussian-covariance field, amplitude <= 1, `L/ell = 4`, one realization; the production-stack repeat is pending in SF-30).
+- In the periodic cell the bounded-fluctuation assumption fails: the transverse displacement of the Darcy streamlines grows without bound over many periods (finding 3 of the note), because the streamlines do not close.
+- The paper's `D_T = 0` for the periodic surrogate is a property of the surrogate (closed streamlines by construction), not a measurement on the Darcy flow.
+- The project does not use `D_T = 0` as an oracle (owner decision O3). The value of `alpha_T` in a random, non-periodic medium is not established.
 
 So for this repository:
 
-- a numerically positive `α_T` in a smooth-isotropic purely advective Darcy case is **not validation**,
-- it is a sign that the numerical pipeline may be leaking across streamsurfaces.
+- a numerically positive `α_T` in a smooth-isotropic purely advective Darcy case is **not validation by itself and not automatically physical**; it must be classified physical / numerical / unresolved,
+- a numerically zero `α_T` is not presupposed either, and is not by itself evidence of correctness.
 
 ---
 
@@ -217,15 +230,15 @@ Main point:
 - for helicity-free locally isotropic Darcy flow, transverse macrodispersion with local dispersion present scales with the local dispersion magnitude,
 - it smoothly tends to zero as local dispersion tends to zero.
 
-Interpretation:
+Interpretation (**what the paper states**, under its bounded-label-fluctuation assumption; not verified by this project, and see §4 for the limits found in the periodic cell):
 - the limit is **regular**, not singular, in the non-chaotic isotropic Darcy case,
-- so if your numerical method predicts non-zero transverse macrodispersion in the pure-advection limit, that is not an innocent artifact of taking `D0 -> 0`; it is likely numerical leakage.
+- the project measures `D_T(Pe)` in a later phase instead of assuming this scaling.
 
 ---
 
 ## 8. Flows where the Lester result does NOT apply
 
-The paper is very clear that the zero-transverse result is not universal.
+**What the paper states:** the zero-transverse result is not universal.
 
 The constraints can be broken by:
 - **locally anisotropic conductivity**,
@@ -262,7 +275,7 @@ Do not assume two global invariants exist for locally anisotropic tensor conduct
 ## A. Scientific interpretation rules
 
 ### Rule 1
-For smooth, locally isotropic, purely advective Darcy cases, positive asymptotic transverse macrodispersion is **not** accepted as physical by default.
+For smooth, locally isotropic, purely advective Darcy cases, positive asymptotic transverse macrodispersion is **not** accepted as physical by default, **nor is zero presupposed**. Classify every observed growth as physical / numerical / unresolved with grid and tolerance refinement evidence, and compare against the streamline-closure oracle (SF-30).
 
 ### Rule 2
 A method is not validated just because it is:
@@ -290,7 +303,9 @@ For the streamfunction / invariant path, the following are scientifically meanin
 - denominator percentiles for `|∇ψ1 × ∇ψ2|`,
 - Newton / projection failure counts,
 - confinement of trajectories to invariant surfaces,
-- transverse spreading in controlled purely advective smooth-isotropic cases.
+- transverse spreading in controlled purely advective smooth-isotropic cases,
+- the return map of independently integrated Darcy streamlines (closure oracle, SF-30),
+- `e_v` under grid refinement on the same continuum field, with observed order.
 
 A change that improves runtime but weakens these diagnostics is not automatically an improvement.
 
@@ -323,7 +338,8 @@ So in MacroFlow3D:
 
 - baseline RWPT methods remain useful,
 - but they are not the scientific oracle in the smooth-isotropic pure-advection regime,
-- the invariant-preserving path is the scientifically privileged path for that regime.
+- the invariant-preserving path is the scientifically privileged path for that regime, with labels of the actual Darcy flow (not the periodic surrogate),
+- baseline results are not accepted as physical by default, and zero transverse spreading is not presupposed either.
 
 ---
 
@@ -351,7 +367,8 @@ This paper justifies the following repository policies:
 - invariant diagnostics are mandatory, not optional,
 - operator/invariant evals must exist before autonomy increases,
 - local-vs-remote validation split must preserve scientific checks, not only HPC throughput,
-- a “working” numerical method is insufficient if it violates the kinematic structure.
+- a “working” numerical method is insufficient if it violates the kinematic structure,
+- the existence of any new target object is checked independently of the solver before the solver is accepted.
 
 ---
 
@@ -378,8 +395,9 @@ This paper does **not** say:
 - all isotropic-looking numerical fields are safe,
 - any two scalar labels found numerically are automatically valid invariants,
 - divergence-free interpolation is enough,
-- invariant-preserving transport is trivial to implement.
+- invariant-preserving transport is trivial to implement,
+- that a periodic solution of equation (14) represents the Darcy flow of a generic periodic Gaussian field (refuted in this project, see §2).
 
 Its message is narrower and stronger:
-- in the specific smooth, locally isotropic Darcy regime, the geometry of trajectories is constrained,
+- in the specific smooth, locally isotropic Darcy regime, the geometry of trajectories is constrained under the paper's assumptions (bounded label fluctuations, which this project found to fail in the periodic cell),
 - and numerical methods must respect that geometry if we want physically trustworthy transverse-dispersion predictions.

@@ -1,15 +1,16 @@
 # Roadmap audit (SF-21..SF-26) and foundational redesign toward the pseudo-symplectic tracker
 
-- Status: proposed — owner decision required (O1-O3 below). Nothing in the dashboard,
-  the increment specifications, the gates, or the code is changed by this record.
+- Status: accepted (2026-10-02, owner). O1-O3 are decided below. This record changes
+  the roadmap and the premise documents; the dashboard and increment specifications
+  are updated by the orchestrator's roadmap run.
 - Date: 2026-10-02
 - Deciders: owner (direction), Claude Code orchestrator (audit and analysis)
 - Evidence: `docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`
   (new probes), `docs/experiments/2026-10-01-sf26-pairing-correction-gates.md`,
   `docs/experiments/2026-08-15-sf25-terminal-solver-campaign-report.md`,
   Lester et al. (2023) and Lester et al. (2021) read in full at the cited locations.
-- Puts in question: `2026-07-13-lester-eq14-streamfunction-solver.md` (the target
-  itself); the open decisions D1-D7 of `2026-10-01-eta1-residual-floor-gauge-degeneracy.md`.
+- Refutes the target of: `2026-07-13-lester-eq14-streamfunction-solver.md` (the target
+  itself); closes the open decisions D1-D7 of `2026-10-01-eta1-residual-floor-gauge-degeneracy.md`.
 
 ## Context
 
@@ -106,15 +107,17 @@ eta = 1 floor is related to item 3.
    dashboard's "Benchmark progression" excludes a tracker that SF-29/SF-30 include;
    Gate 4 and the theory note state the zero-dispersion claim without the limits above.
 
-## Decision (proposed)
+## Decision (accepted)
 
 Freeze the periodic equation (14) solver stack as it is (no deletion, no further
 solver work), and replace pending SF-27..SF-30 by the sequence below. Each phase
 unlocks the next; phase 0 and phase 1 do not depend on the owner's choice in O1.
+The R-numbering below is the original proposal; "Resulting roadmap" gives the
+increment mapping and the order decided by the owner (O1 = B, O2).
 
 **Phase 0 — settle the premise on the production stack (no new solver).**
 
-- R0. Accept or reject this record; if accepted, qualify theory note §2-§4, Gate 4,
+- R0. Accept this record (done 2026-10-02); qualify theory note §2-§4, Gate 4,
   `ARCHITECTURE.md` §4.3, the overview and the dashboard accordingly; retire D1-D7 with
   the dispositions below; re-tier the four red ctest entries as recorded experiments.
 - R1. Periodic tricubic B-spline interpolation of cell-centered periodic fields
@@ -172,30 +175,85 @@ before any solver for a new target; acceptance on a physics metric under refinem
 never on a residual; a CPU prototype before a GPU increment; ctest holds fast contract
 tests only, science runs are experiment notes.
 
-## Owner decisions
+## Owner decisions (resolved 2026-10-02)
 
-- **O1 — What the tracker preserves.** (A) the paper's construction: the periodic
-  solution of (14), a closed-streamline surrogate of the Darcy flow, zero transverse
-  dispersion by construction, `e_v` reported as its distance to Darcy; or (B) labels of
-  the actual Darcy flow, anchored at an inlet and not periodic in `x1`. Recommendation:
-  B, keeping the Lester (2021) field from A as the tracker's verification case.
-- **O2 — Order.** Run R2 before anything else (recommended: it repeats the refutation
-  on the project's own stack and at the paper's parameters), or accept the probes and
-  start R1/R3 in parallel with it.
-- **O3 — Scope of the scientific claim.** Whether the project's stated regime
-  expectation (zero transverse macrodispersion) is withdrawn now or after R2.
+- **O1 = B — What the tracker preserves.** The tracker preserves the labels of the
+  **actual Darcy flow**, non-periodic in `x1`, anchored at the inlet face (`x1 = 0`).
+  It does not preserve the paper's periodic surrogate, which gives `D_T = 0` by
+  construction and says nothing about Darcy flow. The Lester (2021) field stays as the
+  positive control and tracker verification case.
+- **O2 — Order.** The probes are accepted as they stand. The re-sequenced roadmap
+  starts SF-27 (ctest validation-tier hygiene) and SF-29 (CPU prototype of equation
+  (14) with `x1` non-periodic and inlet labels) in parallel. The streamline-closure
+  gate on the production stack (SF-30) follows SF-28 (periodic tricubic spline).
+- **O3 — Scope of the scientific claim.** The project withdraws "zero purely advective
+  transverse macrodispersion" as a regime expectation and as an acceptance oracle now.
+  It stays recorded as the paper's claim under the paper's assumptions (bounded label
+  fluctuations). No acceptance criterion presupposes the value of `alpha_T`. The rule
+  "positive transverse spreading is not automatically physical" stays; its converse is
+  not established either.
+
+Delegated decisions, resolved with the plan:
+
+| Theme | Decision | Reason |
+|---|---|---|
+| Formulation | One formulation (operator, right-hand sides, residual, sources generalized to `x1` non-periodic with labels fixed on the inlet face) serves both the periodic cell and the long domain (Dirichlet in `x`, periodic in `y`, `z`). | Avoids two solvers whose agreement would itself need validation. |
+| Characteristics | Out of production. The streamline integrator of the closure gate is the label-independent oracle. | An oracle must not share the construction it checks. |
+| Periodic-cell study | `D_T` by re-injection (eq. 36 of the 2023 paper) and the deterministic many-period iteration are read off the return map that the closure gate measures. | The return map is the quantity that decides closure; no separate machinery. |
+| Move to the long domain | Requires `e_v(h)` convergent and the labels' return map agreeing with the closure gate up to `sigma^2 = 2.25`; `(4, 1/16, 256^3)` is attempted, non-blocking. | Existence and agreement are checked where affordable before the expensive domain; the paper's parameters are not established. |
+| Covariance | Gaussian only. | Smooth fields are the regime where invariants are meaningful (AGENTS.md hard rule). |
+| x-marching | The `x`-marching construction is discarded. | Legacy PSPTA construction; superseded. |
+| Paper figures | Figures 3-4 of the 2023 paper now; figure 5 later. | Tracker comparisons first; local dispersion needs the long domain. |
+| Order of implementation | The CPU prototype runs before any GPU code; runner wiring is deferred past the prototype. | Process rule: a CPU prototype before a GPU increment. |
+
+## Resulting roadmap
+
+| Record item | Increment | Content | Depends on |
+|---|---|---|---|
+| R0 | this record + the premise documents | Accept, qualify theory note, Gate 3A/4/5, `ARCHITECTURE.md`, `AGENTS.md`, overview, dashboard; D1-D7 dispositions below; re-tier red ctest entries (SF-27) | SF-26 |
+| (R0 tiering) | SF-27 | ctest validation-tier hygiene | SF-26 |
+| R1 | SF-28 | Periodic tricubic B-spline interpolation | SF-27 |
+| R2 | SF-30 | Streamline-closure gate on the production stack | SF-28 |
+| R3 | SF-31 | Pseudo-symplectic tracker core + RK reference | SF-28 |
+| R3 (references) | SF-32 | Face-flux reference trackers + the paper's scalings | SF-31 |
+| R4 | SF-29 | CPU prototype of equation (14), `x1` non-periodic, inlet labels | SF-26 |
+| R5-R7 | later phases | Specs created when SF-29 closes (below) | SF-29 |
+
+Later phases (prose; specifications are written when SF-29 closes):
+
+- GPU generalization of `src/physics/streamfunctions/` to `x1` non-periodic.
+- Acceptance in the periodic medium: `e_v(h)`, invariance, and the return map against
+  SF-30 at `sigma^2 = 0.25, 1, 2.25`.
+- Long domain (2048 x 256 x 256, `lambda/h = 10`): `alpha_L` must match RWPT;
+  `alpha_T` is reported with grid and tolerance convergence without presupposing its
+  value.
+- Local dispersion and `D_T(Pe)`.
+
+Process rules adopted: an independent existence or positive-control check before any
+solver for a new target; acceptance on a physics metric under refinement, never on a
+residual alone; a CPU prototype before a GPU increment; `ctest` holds fast contract
+tests only, science runs are experiment notes.
+
+Disposition of D1-D7 of `2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3,
+D5 moot (they tune a system whose solution is not the target); D2 retired with this
+record as the reason; D4 resolved by cancelling the pseudo-time increment; D6 resolved
+by SF-27 (heavy entries leave ctest and become documented experiments); D7 resolved by
+adopting the Lester (2021) field as the positive control, the paper's `1e-16` left
+unreconciled and non-blocking.
 
 ## Consequences
 
-- If accepted: the next increments are small and each one is checkable against an
-  independent measurement; the tracker no longer waits for a 256^3 solve; the solver
-  stack (11.5 k lines, 26 k lines of tests) stays as verified infrastructure and as the
-  producer of invariants on symmetric controls.
+- The next increments are small and each one is checkable against an independent
+  measurement; the tracker no longer waits for a 256^3 solve; the solver stack
+  (11.5 k lines, 26 k lines of tests) stays frozen as verified infrastructure and as
+  the producer of invariants on symmetric controls.
 - The project stops reproducing Lester (2023) §5 as a statement about Darcy flow. A
-  reproduction as a statement about the paper's surrogate remains possible under O1-A.
-- Risk: R2 at the paper's parameters could show something the small probes do not.
-  That is why R2 precedes Phase 2 and why this record stays `proposed` until the owner
-  decides.
+  reproduction as a statement about the paper's surrogate remains possible with the
+  Lester (2021) field as control.
+- No acceptance criterion presupposes `alpha_T`; Gate 4 and Gate 5, the theory note,
+  `ARCHITECTURE.md`, `AGENTS.md` and the overview are qualified accordingly.
+- Risk: the closure gate at the paper's parameters and on the production stack (SF-30)
+  could show something the small probes do not; the long-domain move is gated on it.
 
 ## Classification (docs/AGENTS.md)
 
@@ -203,6 +261,6 @@ tests only, science runs are experiment notes.
   part of `curl(c/k) = 0`; the dissipation identity.
 - Confirmed in runs (CPU probes, smooth fields, amplitude <= 1, `L/ell = 4`): the new
   finding, items 1-4.
-- Proposed architecture: R0-R7, the process rules.
-- Open question: the paper's parameters and the production stack (R2); transverse
-  macrodispersion in a random non-periodic medium; O1-O3.
+- Accepted scope: R0-R7 as re-sequenced in "Resulting roadmap", the process rules, O1-O3.
+- Open question: the paper's parameters and the production stack (SF-30); transverse
+  macrodispersion in a random non-periodic medium.

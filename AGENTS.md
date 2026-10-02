@@ -2,7 +2,7 @@
 
 ## Mission
 
-MacroFlow3D is scientific software for 3D macrodispersion in heterogeneous porous media. The current strategic goal is to design and integrate a trustworthy numerical solver for the coupled nonlinear Lester et al. equation (14) streamfunction system, recovering two invariants `psi1`, `psi2` for steady, smooth, locally isotropic 3D Darcy flow.
+MacroFlow3D is scientific software for 3D macrodispersion in heterogeneous porous media. The current strategic goal is to measure macrodispersion in smooth Gaussian lognormal fields with a correct pseudo-symplectic tracker. The Lester et al. equation (14) streamfunction solver is being generalized to `x1` non-periodic with inlet-anchored labels (Darcy labels); the periodic-fluctuation stack (SF-02..SF-26) is frozen verified infrastructure, because its periodic solution on generic Gaussian fields is not the Darcy flow (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`, `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`).
 
 The previous PSPTA transport-near-nullspace/eigensolver route is legacy compatibility and migration surface. It is no longer the authoritative invariant-construction strategy and should not be extended unless the task explicitly targets audit, migration, or removal.
 
@@ -327,6 +327,9 @@ For any new invariant-construction work, read `docs/plans/active/lester-eq14-str
 ## Hard constraints / do-not rules
 
 - Do **not** treat positive transverse macrodispersion in the smooth, locally isotropic, purely advective regime as automatically physical.
+- Do **not** presuppose the value of `alpha_T` in any acceptance criterion; the paper's zero-transverse claim is recorded, not assumed.
+- Do **not** start a solver for a new target object without an independent existence or positive-control check.
+- Do **not** register multi-case solver sweeps or science smokes as `ctest` entries; they are documented experiments.
 - Do **not** merge “it compiles” changes in the scientific core without validation evidence.
 - Do **not** treat the existing multigrid preconditioner as automatically valid for `A psi = -div(q grad psi)` with `q=1/k`; reuse is a priority hypothesis that must be verified against the actual operator sign, coefficient placement, boundary conditions, gauge, and residual.
 - Do **not** hide small `|grad psi1 x grad psi2|` denominators with arbitrary epsilons. Any regularization must be explicit, configurable, logged, and studied as it tends to zero.
