@@ -6,7 +6,7 @@
 - Unlocks: `none`
 - Branch: `science/lester-sf30-streamline-closure-gate`
 - Worktree: `Claude-managed per-node isolated worktrees`
-- Acceptance gate: `Gate 1 + Gate 2 + Gate 4 (qualified form: classification, not a presupposed `D_T`)`
+- Acceptance gate: `Gate 1 + Gate 2 + Gate 4 (qualified form: classification, not a presupposed D_T)`
 - Human review: `required`
 - Owner: `unassigned`
 - Started: `not started`

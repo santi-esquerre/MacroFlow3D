@@ -9,8 +9,9 @@ numérica avanza desde Picard hasta Newton–Krylov**.
 Usarlo como mapa conceptual antes de trabajar en cualquier incremento del
 solver. No contiene el estado de ejecución ni habilita trabajo por sí mismo:
 
-- el estado `NEXT`, la checklist y las decisiones operativas bloqueadas viven
-  en el [dashboard](lester-eq14-streamfunction-solver-plan.md);
+- el estado de cada incremento, la checklist maestra y las decisiones operativas
+  bloqueadas viven en el [dashboard](lester-eq14-streamfunction-solver-plan.md)
+  y en cada especificación; el conjunto READY lo calcula el checker;
 - el fundamento científico ampliado vive en la
   [nota de teoría](../../theory/lester-2023-key-claims.md);
 - los criterios de aceptación viven en

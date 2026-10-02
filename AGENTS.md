@@ -120,7 +120,7 @@ Active execution plans (read before starting work in the relevant area):
 
 Scientific theory references (read before PSPTA, invariant, or macrodispersion work):
 
-- `docs/theory/lester-2023-key-claims.md` — kinematic constraints, helicity-free regime, Lester equation (14), two-streamfunction representation, zero transverse macrodispersion in smooth isotropic Darcy
+- `docs/theory/lester-2023-key-claims.md` — kinematic constraints, helicity-free regime, Lester equation (14), two-streamfunction representation, the paper's zero-transverse claim and its project-verified limits (closure oracle; `alpha_T` not presupposed)
 - `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — classical 3D macrodispersion baseline, Monte Carlo discipline, historical α_T expectations
 
 More specific local rules live in:
