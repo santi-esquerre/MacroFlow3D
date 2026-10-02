@@ -178,13 +178,20 @@ see `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`)
 
 This formulation is now authoritative for new invariant construction because it keeps a variable-coefficient diffusion structure and avoids explicitly differencing `grad(log k)`.
 
-Current status (2026-09-30):
+Current status (2026-10-02):
 - the equation (14) solver stack exists under `src/physics/streamfunctions/`
   (operators, projected PCG/MG, Picard, Anderson, Newton-Krylov,
-  continuation, diagnostics — SF-02..SF-25);
-- its residual still pairs the sources crosswise (SF-26 corrects it); a
-  paper-faithful explicit pseudo-time solver (SF-27) and a pseudo-symplectic
-  tracker (SF-29) are the next additions;
+  continuation, diagnostics — SF-02..SF-26);
+- since SF-26 the residual pairs each block with its own source (same index),
+  verified by exact-pair contract tests;
+- on random Gaussian fields the corrected discrete system does not reach the
+  `1e-6` stage tolerance at `eta = 1` (residual floor that falls under
+  refinement and grows with amplitude): both 32^3 Gaussian smokes
+  (`sigma_Y^2 = 0.25` and `1`) fail, so no accepted `psi1`, `psi2` exist yet
+  for heterogeneous Gaussian fields; the open decisions are in
+  `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`;
+- the planned next additions (explicit pseudo-time solver SF-27,
+  pseudo-symplectic tracker SF-29) depend on those decisions;
 - the legacy PSPTA engine is a possible invariant-preserving transport consumer once accepted `psi1`, `psi2` fields exist, but its role must be re-evaluated during the reformulation.
 
 ---

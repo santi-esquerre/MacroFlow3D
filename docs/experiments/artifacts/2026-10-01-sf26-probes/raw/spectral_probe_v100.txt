@@ -1,0 +1,56 @@
+[spectral-probe] n=16 ell/h=4.0 L/ell=4.0 sigma2=1.0 lambda=0.1125 seed=7 Kmax/Kmin=1.8 dense=True
+[FD] Anderson m=8 w=0.5: its=1500 final=3.920e-04 min=2.769e-04 @200=3.18e-04 @800=4.08e-04 (42s)
+[FD] newton step 0: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.0e-06 |d|=1.91e+00 alpha=0.015625 r_F=2.761e-04 (161s)
+[FD] newton step 1: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.1e-06 |d|=1.72e+00 alpha=0.0078125 r_F=2.755e-04 (145s)
+[FD] newton step 2: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.1e-06 |d|=1.65e+00 alpha=0.0078125 r_F=2.751e-04 (145s)
+[FD] newton step 3: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.1e-06 |d|=1.59e+00 alpha=0.0078125 r_F=2.749e-04 (145s)
+[FD] newton step 4: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.1e-06 |d|=1.54e+00 alpha=0.0078125 r_F=2.746e-04 (146s)
+[FD] newton step 5: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.2e-06 |d|=1.50e+00 alpha=0.0078125 r_F=2.745e-04 (147s)
+[FD] newton step 6: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.2e-06 |d|=1.46e+00 alpha=0.0078125 r_F=2.743e-04 (145s)
+[FD] newton step 7: rank=8192 #sv<1e-3=29 #<1e-5=1 min_rel_sv=1.2e-06 |d|=1.42e+00 alpha=0.0078125 r_F=2.742e-04 (143s)
+[SP] Anderson m=8 w=0.5: its=1500 final=8.017e-07 min=8.017e-07 @200=8.67e-07 @800=8.14e-07 (17s)
+[SP] newton step 0: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=1.3e-13 |d|=1.19e+00 alpha=0.000488281 r_F=8.016e-07 (123s)
+[SP] newton step 1: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=5.5e-13 |d|=5.74e-01 alpha=0.000488281 r_F=8.013e-07 (126s)
+[SP] newton step 2: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=2.0e-13 |d|=1.32e+00 alpha=0.00012207 r_F=8.012e-07 (117s)
+[SP] newton step 3: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=1.9e-13 |d|=4.36e+00 alpha=3.05176e-05 r_F=8.012e-07 (120s)
+[SP] newton step 4: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=1.9e-13 |d|=4.37e+00 alpha=3.05176e-05 r_F=8.012e-07 (119s)
+[SP] newton step 5: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=2.9e-13 |d|=3.13e+00 alpha=3.05176e-05 r_F=8.012e-07 (129s)
+[SP] newton step 6: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=2.5e-13 |d|=3.17e+00 alpha=3.05176e-05 r_F=8.012e-07 (125s)
+[SP] newton step 7: rank=8192 #sv<1e-3=192 #<1e-5=125 min_rel_sv=2.3e-13 |d|=3.61e+00 alpha=3.05176e-05 r_F=8.012e-07 (124s)
+[spectral-probe] done
+[spectral-probe] n=16 ell/h=4.0 L/ell=4.0 sigma2=1.0 lambda=0.5 seed=7 Kmax/Kmin=12.6 dense=True
+[FD] Anderson m=8 w=0.5: its=1500 final=1.683e-02 min=1.349e-02 @200=1.84e-02 @800=1.88e-02 (32s)
+[FD] newton step 0: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=3.1e-06 |d|=1.66e+01 alpha=0.00390625 r_F=1.346e-02 (160s)
+[FD] newton step 1: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=2.4e-06 |d|=2.12e+01 alpha=0.00195312 r_F=1.345e-02 (143s)
+[FD] newton step 2: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=2.1e-06 |d|=2.42e+01 alpha=0.00195312 r_F=1.344e-02 (147s)
+[FD] newton step 3: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=1.8e-06 |d|=2.74e+01 alpha=0.00195312 r_F=1.343e-02 (145s)
+[FD] newton step 4: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=1.6e-06 |d|=3.05e+01 alpha=0.000976562 r_F=1.343e-02 (143s)
+[FD] newton step 5: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=1.6e-06 |d|=3.17e+01 alpha=0.000976562 r_F=1.342e-02 (163s)
+[FD] newton step 6: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=1.5e-06 |d|=3.27e+01 alpha=0.000976562 r_F=1.342e-02 (147s)
+[FD] newton step 7: rank=8192 #sv<1e-3=26 #<1e-5=1 min_rel_sv=1.5e-06 |d|=3.35e+01 alpha=0.000976562 r_F=1.341e-02 (144s)
+[SP] Anderson m=8 w=0.5: its=1500 final=3.659e-04 min=3.653e-04 @200=4.48e-04 @800=3.68e-04 (16s)
+[SP] newton step 0: rank=8192 #sv<1e-3=187 #<1e-5=76 min_rel_sv=2.9e-11 |d|=3.23e+01 alpha=0.000488281 r_F=3.653e-04 (127s)
+[SP] newton step 1: rank=8192 #sv<1e-3=187 #<1e-5=76 min_rel_sv=1.2e-10 |d|=1.65e+01 alpha=0.000976562 r_F=3.650e-04 (119s)
+[SP] newton step 2: rank=8192 #sv<1e-3=187 #<1e-5=76 min_rel_sv=3.9e-11 |d|=6.64e+01 alpha=0.00012207 r_F=3.649e-04 (119s)
+[SP] newton step 3: rank=8192 #sv<1e-3=187 #<1e-5=76 min_rel_sv=9.0e-11 |d|=2.17e+01 alpha=0.000488281 r_F=3.649e-04 (119s)
+[SP] newton step 4: rank=8192 #sv<1e-3=187 #<1e-5=76 min_rel_sv=3.1e-10 |d|=4.60e+00 alpha=0.00390625 r_F=3.647e-04 (122s)
+[SP] newton step 5: rank=8192 #sv<1e-3=187 #<1e-5=76 min_rel_sv=7.6e-10 |d|=2.01e+00 alpha=0.00390625 r_F=3.636e-04 (122s)
+[SP] newton step 6: rank=8192 #sv<1e-3=188 #<1e-5=76 min_rel_sv=6.2e-10 |d|=1.47e+00 alpha=0.0078125 r_F=3.629e-04 (121s)
+[SP] newton step 7: rank=8192 #sv<1e-3=188 #<1e-5=76 min_rel_sv=2.8e-10 |d|=3.56e+00 alpha=0.00195312 r_F=3.628e-04 (119s)
+[spectral-probe] done
+[spectral-probe] n=32 ell/h=8.0 L/ell=4.0 sigma2=1.0 lambda=0.1125 seed=7 Kmax/Kmin=2.1 dense=False
+[FD] Anderson m=8 w=0.5: its=1500 final=2.240e-04 min=1.065e-04 @200=1.81e-04 @800=1.08e-04 (408s)
+[SP] Anderson m=8 w=0.5: its=1500 final=4.622e-11 min=4.585e-11 @200=6.83e-11 @800=4.77e-11 (111s)
+[spectral-probe] done
+[spectral-probe] n=32 ell/h=8.0 L/ell=4.0 sigma2=1.0 lambda=0.5 seed=7 Kmax/Kmin=29.2 dense=False
+[FD] Anderson m=8 w=0.5: its=1500 final=7.816e-03 min=3.578e-03 @200=1.01e-02 @800=1.12e-02 (408s)
+[SP] Anderson m=8 w=0.5: its=1500 final=2.598e-05 min=2.540e-05 @200=3.37e-05 @800=2.63e-05 (107s)
+[spectral-probe] done
+[spectral-probe] n=32 ell/h=8.0 L/ell=4.0 sigma2=1.0 lambda=1.0 seed=7 Kmax/Kmin=854.1 dense=False
+[FD] Anderson m=8 w=0.5: its=1500 final=7.394e-02 min=1.457e-02 @200=3.79e-02 @800=6.53e-02 (410s)
+[SP] Anderson m=8 w=0.5: its=1500 final=1.062e+02 min=3.943e-01 @200=4.57e-01 @800=8.05e-01 (108s)
+[spectral-probe] done
+[spectral-probe] n=32 ell/h=8.0 L/ell=4.0 sigma2=0.25 lambda=1.0 seed=7 Kmax/Kmin=29.2 dense=False
+[FD] Anderson m=8 w=0.5: its=1500 final=7.816e-03 min=3.578e-03 @200=1.01e-02 @800=1.12e-02 (399s)
+[SP] Anderson m=8 w=0.5: its=1500 final=2.598e-05 min=2.540e-05 @200=3.37e-05 @800=2.63e-05 (106s)
+[spectral-probe] done

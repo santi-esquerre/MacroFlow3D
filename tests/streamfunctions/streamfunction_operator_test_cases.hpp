@@ -246,4 +246,20 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // lookup and `terminal_solver_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry terminal_solver_dgate_case_registry();
 
+// SF-26 T02 gauge-recombination HEAVY acceptance case
+// (`coupled_residual_gauge_recombination_sigma025`): converges the VERBATIM
+// sigma_Y^2=0.25, 32^3 `run_heterogeneity_smoke` fixture (heterogeneity_
+// continuation_gpu_cases.cu) via the production
+// `run_streamfunction_heterogeneity_continuation` driver, then compares the
+// SAME-index production residual against a test-local crossed recomposition
+// on a gauge-recombined state of the converged fields. Deliberately NOT
+// folded into `streamfunction_operator_tests.cpp`'s aggregated `cases()` map
+// (the map backing `--list` and the no-argument "run everything" default):
+// reachable only via an explicit `--case
+// coupled_residual_gauge_recombination_sigma025`, matching the
+// CMakeLists.txt `streamfunction_gauge_recombination_heavy` ctest entry. See
+// `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
+// `coupled_residual_gpu_cases.cu` for the exact fixture.
+[[nodiscard]] CaseRegistry coupled_residual_heavy_case_registry();
+
 }  // namespace macroflow3d::streamfunctions::test

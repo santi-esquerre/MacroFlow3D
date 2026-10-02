@@ -6,11 +6,15 @@
 #include "src/core/Grid3D.hpp"
 #include "src/core/Scalar.hpp"
 #include "src/numerics/operators/lester_positive_diffusion_operator.cuh"
+#include "src/physics/streamfunctions/ContinuationController.hpp"
 #include "src/physics/streamfunctions/DifferentialOperators.cuh"
 #include "src/physics/streamfunctions/NonlinearSources.cuh"
 #include "src/physics/streamfunctions/ResidualEvaluator.cuh"
+#include "src/physics/streamfunctions/StreamfunctionTypes.hpp"
+#include "src/physics/streamfunctions/StreamfunctionWorkspace.cuh"
 #include "src/physics/streamfunctions/affine_gauge.cuh"
 #include "src/physics/streamfunctions/affine_periodic_rhs.cuh"
+#include "src/physics/stochastic/PeriodicGaussianField.cuh"
 #include "src/runtime/CudaContext.cuh"
 #include "src/runtime/cuda_check.cuh"
 
@@ -35,6 +39,14 @@ namespace ref = macroflow3d::streamfunctions::reference;
 constexpr double kEpsilon = 1.0e-2;
 constexpr double kVRms = 1.0;
 constexpr std::size_t kGridN = 16;
+
+// SF-26 T02: exact-pair / general-pair / crossed-mutant / gauge-recombination
+// contract cases use eta=1, v_rms=1, epsilon=0 throughout (a positive epsilon
+// would add an O(eps^2) model error that swamps the O(h^2) discretization
+// signal being measured).
+constexpr double kPairPi = 3.14159265358979323846264338327950288;
+constexpr double kExactPairEpsilon = 0.0;
+constexpr double kExactPairVRms = 1.0;
 
 constexpr double kOracleTolerance = 5.0e-11;
 constexpr double kDirectEtaZeroTolerance = 1.0e-13;
@@ -393,7 +405,8 @@ class CoupledResidualGpuFixture {
     const double plinf_f2 = linf_diff(actual_f2, expected.f2) / scale_f2;
 
     // report.raw_rhs_mean_psi{1,2} are the SF-06 assemble_affine_periodic_rhs
-    // diagnostics, captured before the eta*q.*S_pair combination step (see
+    // diagnostics, captured before the eta*q.*S_i (SAME-index) combination
+    // step (see
     // ResidualEvaluator.cuh's documented "diagnostics ... surfaced unchanged"
     // contract) -- i.e. the mean of the *affine-only* RHS, not of
     // CoupledResidualFields::raw_rhs1_mean (which is the mean of the fully
@@ -455,7 +468,8 @@ class CoupledResidualGpuFixture {
         std::max(linf_diff(manual_f1_eta0, eval_eta0_f1), linf_diff(manual_f2_eta0, eval_eta0_f2)) / eta0_scale;
 
     // eta = 1: independently rerun SF-07/08/09 and A.apply, then combine on
-    // the host with a long-double mean-zero projection of G = rhs - eta*q.*S_pair.
+    // the host with a long-double mean-zero projection of G_i = rhs_i -
+    // eta*q.*S_i (SAME index, SF-26).
     const auto grads = gpu.run_gradients(gauge);
     gpu.run_hessian_b();
     const auto sources = gpu.run_sources(source_config);
@@ -465,8 +479,8 @@ class CoupledResidualGpuFixture {
     std::vector<double> g1_raw(n), g2_raw(n);
     for (std::size_t i = 0; i < n; ++i) {
         const double qc = q[i];
-        g1_raw[i] = static_cast<double>(manual_rhs_eta1.rhs1[i]) - qc * static_cast<double>(sources.s2[i]);
-        g2_raw[i] = static_cast<double>(manual_rhs_eta1.rhs2[i]) - qc * static_cast<double>(sources.s1[i]);
+        g1_raw[i] = static_cast<double>(manual_rhs_eta1.rhs1[i]) - qc * static_cast<double>(sources.s1[i]);
+        g2_raw[i] = static_cast<double>(manual_rhs_eta1.rhs2[i]) - qc * static_cast<double>(sources.s2[i]);
     }
     const auto g1_proj = ref::mean_zero_projected(g1_raw);
     const auto g2_proj = ref::mean_zero_projected(g2_raw);
@@ -1049,11 +1063,16 @@ class CoupledResidualGpuFixture {
     const auto& s2 = correct.s2;
     const std::size_t cells = fixture.grid.cell_count();
 
-    // (a) pairing swap: G1 uses S1 (not S2), G2 uses S2 (not S1).
+    // (a) pairing swap: the production residual is SAME-index (SF-26:
+    // G1 uses S1, G2 uses S2; see
+    // docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md). This
+    // mutant reintroduces the CROSSED pairing (the paper's printed equation
+    // (14) form, implemented through SF-25: G1 uses S2, G2 uses S1) and must
+    // differ measurably from `correct`.
     std::vector<double> raw1_swap(cells), raw2_swap(cells);
     for (std::size_t i = 0; i < cells; ++i) {
-        raw1_swap[i] = affine1[i] - eta * q[i] * s1[i];
-        raw2_swap[i] = affine2[i] - eta * q[i] * s2[i];
+        raw1_swap[i] = affine1[i] - eta * q[i] * s2[i];
+        raw2_swap[i] = affine2[i] - eta * q[i] * s1[i];
     }
     const auto proj1_swap = ref::mean_zero_projected(raw1_swap);
     const auto proj2_swap = ref::mean_zero_projected(raw2_swap);
@@ -1072,11 +1091,13 @@ class CoupledResidualGpuFixture {
     }
     const double sign_dev = normalized_two_field_rms(f1_sign, f2_sign, correct.f1, correct.f2);
 
-    // (c) projection omitted: F = Au - raw G (correct pairing, no mean-zero projection).
+    // (c) projection omitted: F = Au - raw G (correct SAME-index pairing, no
+    // mean-zero projection), to isolate the projection-omission effect from
+    // the pairing effect tested in (a).
     std::vector<double> raw1(cells), raw2(cells);
     for (std::size_t i = 0; i < cells; ++i) {
-        raw1[i] = affine1[i] - eta * q[i] * s2[i];
-        raw2[i] = affine2[i] - eta * q[i] * s1[i];
+        raw1[i] = affine1[i] - eta * q[i] * s1[i];
+        raw2[i] = affine2[i] - eta * q[i] * s2[i];
     }
     std::vector<double> f1_noproj(cells), f2_noproj(cells);
     for (std::size_t i = 0; i < cells; ++i) {
@@ -1094,9 +1115,12 @@ class CoupledResidualGpuFixture {
 
     // Explicit thresholds, each documented at least 10x below the measured
     // deviation on this fixture (eta=1, 16^3 isotropic unit cube), never below
-    // 1e-6. Measured on this fixture: pairing_dev ~ 9.089e-1, sign_dev ~
-    // 1.449e0, noproj_dev ~ 1.472e-1 (all comfortably detectable without
-    // increasing eta beyond the shared default of 1).
+    // 1e-6. Measured on this fixture AFTER SF-26 (mutant (a) is now the
+    // crossed/pre-SF-26 pairing vs the SAME-index production residual, and
+    // mutant (c) omits projection on the SAME-index pairing):
+    // pairing_dev ~ 1.0801, sign_dev ~ 1.7220, noproj_dev ~ 1.7497e-1 (all
+    // comfortably detectable without increasing eta beyond the shared
+    // default of 1).
     constexpr double kPairingThreshold = 9.0e-2;
     constexpr double kSignThreshold = 1.4e-1;
     constexpr double kProjectionThreshold = 1.4e-2;
@@ -1112,6 +1136,609 @@ class CoupledResidualGpuFixture {
             "normalized-RMS threshold"};
 }
 
+// ---------------------------------------------------------------------------
+// SF-26 T02: exact-pair, general-pair, crossed-mutant, and gauge-
+// recombination contract cases. These build explicit, closed-form Darcy
+// streamfunction pairs (continuum solutions of the SAME-index system; see
+// docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md) and run the
+// production evaluator on them directly -- independent of the fixed SF-07
+// `make_isotropic_fixture`/`make_total_gradient_fixture` analytic forms used
+// above.
+// ---------------------------------------------------------------------------
+
+// gbar1 = (0, vbar, 0), vbar = 1; gbar2 = (0, 0, 1) (benchmark gauge,
+// AffineGauge::benchmark(1)); host-side mirror for the CPU oracle calls.
+constexpr ref::Vec3 kGbar1{0.0, 1.0, 0.0};
+constexpr ref::Vec3 kGbar2{0.0, 0.0, 1.0};
+
+// Pair A: psi1 = x2 + Phi(x3), psi2 = x3, v = grad(psi1) x grad(psi2) = e1
+// exactly. S1 = Phi''(x3), S2 = 0.
+[[nodiscard]] double pair_a_phi(double z) {
+    return 0.3 * std::sin(2.0 * kPairPi * z) + 0.05 * std::cos(4.0 * kPairPi * z);
+}
+// Upper bound on max|Phi''| (sum of the two mode amplitudes; the true
+// pointwise maximum cannot exceed this since the two terms have different
+// frequencies and cannot exceed unit amplitude simultaneously by more than
+// their sum): 0.3*(2*pi)^2 + 0.05*(4*pi)^2 ~= 19.74.
+constexpr double kPairAPhiSecondDerivativeBound =
+    0.3 * (2.0 * kPairPi) * (2.0 * kPairPi) + 0.05 * (4.0 * kPairPi) * (4.0 * kPairPi);
+
+// Pair B: psi1 = x2 + Phi(x3), psi2 = x3 + Theta(x2), v = f(x2,x3)*e1 with
+// f = 1 - Phi'(x3)*Theta'(x2) (a genuine curl(v) = grad(ln k) x v Darcy flow;
+// the gauge recombination of the trivial pair (x2, x3)). S1, S2 both
+// nontrivial.
+[[nodiscard]] double pair_b_phi(double z) { return 0.1 * std::sin(2.0 * kPairPi * z); }
+[[nodiscard]] double pair_b_phi_prime(double z) { return 0.1 * 2.0 * kPairPi * std::cos(2.0 * kPairPi * z); }
+[[nodiscard]] double pair_b_theta(double y) { return 0.1 * std::cos(2.0 * kPairPi * y); }
+[[nodiscard]] double pair_b_theta_prime(double y) { return -0.1 * 2.0 * kPairPi * std::sin(2.0 * kPairPi * y); }
+
+// k1(x1) = exp(0.7*sin(2*pi*x1) + 0.3*cos(4*pi*x1)), shared by both pairs'
+// x1-dependent conductivity factor.
+[[nodiscard]] double kx1_conductivity(double x) {
+    return std::exp(0.7 * std::sin(2.0 * kPairPi * x) + 0.3 * std::cos(4.0 * kPairPi * x));
+}
+
+struct AnalyticPairFixture {
+    ref::Grid grid;
+    std::vector<double> q;
+    std::vector<double> u1;
+    std::vector<double> u2;
+};
+
+[[nodiscard]] AnalyticPairFixture make_pair_a_fixture(std::size_t n, bool homogeneous_k) {
+    const double h = 1.0 / static_cast<double>(n);
+    const ref::Grid grid{n, n, n, {h, h, h}};
+    AnalyticPairFixture fixture;
+    fixture.grid = grid;
+    fixture.q.resize(grid.cell_count());
+    fixture.u1.resize(grid.cell_count());
+    fixture.u2.assign(grid.cell_count(), 0.0);
+    for (std::size_t iz = 0; iz < n; ++iz) {
+        for (std::size_t iy = 0; iy < n; ++iy) {
+            for (std::size_t ix = 0; ix < n; ++ix) {
+                const auto id = grid.index(ix, iy, iz);
+                const auto p = grid.cell_center(ix, iy, iz);
+                const double k = homogeneous_k ? 1.0 : kx1_conductivity(p.x);
+                fixture.q[id] = 1.0 / k;
+                fixture.u1[id] = pair_a_phi(p.z);
+            }
+        }
+    }
+    return fixture;
+}
+
+[[nodiscard]] AnalyticPairFixture make_pair_b_fixture(std::size_t n) {
+    const double h = 1.0 / static_cast<double>(n);
+    const ref::Grid grid{n, n, n, {h, h, h}};
+    AnalyticPairFixture fixture;
+    fixture.grid = grid;
+    fixture.q.resize(grid.cell_count());
+    fixture.u1.resize(grid.cell_count());
+    fixture.u2.resize(grid.cell_count());
+    for (std::size_t iz = 0; iz < n; ++iz) {
+        for (std::size_t iy = 0; iy < n; ++iy) {
+            for (std::size_t ix = 0; ix < n; ++ix) {
+                const auto id = grid.index(ix, iy, iz);
+                const auto p = grid.cell_center(ix, iy, iz);
+                const double f = 1.0 - pair_b_phi_prime(p.z) * pair_b_theta_prime(p.y);
+                const double k = kx1_conductivity(p.x) * f;
+                fixture.q[id] = 1.0 / k;
+                fixture.u1[id] = pair_b_phi(p.z);
+                fixture.u2[id] = pair_b_theta(p.y);
+            }
+        }
+    }
+    return fixture;
+}
+
+struct ProductionResidualSummary {
+    double r_F{};
+    double linf_f1{};
+    double linf_f2{};
+};
+
+[[nodiscard]] ProductionResidualSummary run_production_residual_summary(
+    const AnalyticPairFixture& fixture, double eta, double epsilon = kExactPairEpsilon,
+    double v_rms = kExactPairVRms) {
+    CoupledResidualGpuFixture gpu(fixture.grid);
+    gpu.upload(fixture.q, fixture.u1, fixture.u2);
+    const AffineGauge gauge = AffineGauge::benchmark(real{1});
+    NonlinearSourceConfig source_config{};
+    source_config.epsilon = static_cast<real>(epsilon);
+    source_config.v_rms = static_cast<real>(v_rms);
+    const ResidualHistogramConfig histogram_config{};
+    const auto run = gpu.run_evaluator(gauge, static_cast<real>(eta), source_config, histogram_config);
+    return {static_cast<double>(run.report.r_F), static_cast<double>(run.report.linf_f1),
+            static_cast<double>(run.report.linf_f2)};
+}
+
+// Test-local CROSSED recomposition (the paper-printed, pre-SF-26 pairing:
+// G1 uses S2, G2 uses S1), built exclusively from the accepted public CPU
+// oracle pieces (never re-derived), exactly like
+// case_coupled_residual_mutation_sensitivity above.
+[[nodiscard]] double crossed_r_F(const AnalyticPairFixture& fixture, double eta, double epsilon, double v_rms) {
+    const ref::NonlinearSourceReferenceConfig config{epsilon, v_rms};
+    const auto a_u1 = ref::divergence_form_diffusion(fixture.grid, fixture.q, fixture.u1);
+    const auto a_u2 = ref::divergence_form_diffusion(fixture.grid, fixture.q, fixture.u2);
+    const auto affine1 = ref::affine_rhs_discrete(fixture.grid, fixture.q, kGbar1);
+    const auto affine2 = ref::affine_rhs_discrete(fixture.grid, fixture.q, kGbar2);
+    const auto g1 = ref::centered_total_gradient_oracle(fixture.grid, fixture.u1, kGbar1);
+    const auto g2 = ref::centered_total_gradient_oracle(fixture.grid, fixture.u2, kGbar2);
+    const auto hvb = ref::centered_hessian_vector_b_oracle(fixture.grid, fixture.u1, fixture.u2, g1, g2);
+    const auto sources = ref::centered_nonlinear_source_oracle(fixture.grid, g1, g2, hvb.b, config);
+    const std::size_t cells = fixture.grid.cell_count();
+    std::vector<double> raw1(cells), raw2(cells);
+    for (std::size_t i = 0; i < cells; ++i) {
+        raw1[i] = affine1[i] - eta * fixture.q[i] * sources.s2[i];
+        raw2[i] = affine2[i] - eta * fixture.q[i] * sources.s1[i];
+    }
+    const auto proj1 = ref::mean_zero_projected(raw1);
+    const auto proj2 = ref::mean_zero_projected(raw2);
+    std::vector<double> f1(cells), f2(cells);
+    for (std::size_t i = 0; i < cells; ++i) {
+        f1[i] = a_u1[i] - proj1[i];
+        f2[i] = a_u2[i] - proj2[i];
+    }
+    const double rms_f1 = ref::rms_norm(f1);
+    const double rms_f2 = ref::rms_norm(f2);
+    const double q_rms = ref::rms_norm(fixture.q);
+    const ref::Vec3 lengths{static_cast<double>(fixture.grid.nx) * fixture.grid.spacing.x,
+                            static_cast<double>(fixture.grid.ny) * fixture.grid.spacing.y,
+                            static_cast<double>(fixture.grid.nz) * fixture.grid.spacing.z};
+    const double l_ref = ref::dimensionless_length_reference(lengths);
+    return ref::residual_normalization_reference(rms_f1, rms_f2, q_rms, v_rms, l_ref).r_f;
+}
+
+[[nodiscard]] double max_abs_value(const std::vector<double>& values) {
+    double result = 0.0;
+    for (double value : values) result = std::max(result, std::abs(value));
+    return result;
+}
+
+// Case: exact pair A, homogeneous k=1. DISCRETE FACT (prespecified): the
+// discrete residual is ZERO TO ROUNDOFF at every grid (the HVP stencil
+// equals the operator's 3-point stencil for a 1D field, z-face harmonic
+// means of equal q are exact, and mean(q(x1)*Phi''_h(x3))=0 by separability).
+[[nodiscard]] CaseResult case_coupled_residual_exact_pair_k1() {
+    bool pass = true;
+    double worst_r_F = 0.0;
+    std::ostringstream detail;
+    for (std::size_t n : {std::size_t{16}, std::size_t{32}, std::size_t{64}}) {
+        const auto fixture = make_pair_a_fixture(n, /*homogeneous_k=*/true);
+        const auto summary = run_production_residual_summary(fixture, 1.0);
+        const double max_q = max_abs_value(fixture.q);
+        const double linf_bound = 1.0e-10 * kPairAPhiSecondDerivativeBound * max_q;
+        const bool this_pass = std::isfinite(summary.r_F) && summary.r_F <= 1.0e-12 &&
+                               std::max(summary.linf_f1, summary.linf_f2) <= linf_bound;
+        pass = pass && this_pass;
+        worst_r_F = std::max(worst_r_F, summary.r_F);
+        std::cout << std::setprecision(16) << "coupled_residual_exact_pair_k1 n=" << n
+                  << " r_F=" << summary.r_F << " linf_f1=" << summary.linf_f1
+                  << " linf_f2=" << summary.linf_f2 << " linf_bound=" << linf_bound
+                  << " pass=" << (this_pass ? "true" : "false") << '\n';
+        detail << 'n' << n << ":r_F=" << summary.r_F << ' ';
+    }
+    return {pass, "coupled_residual_exact_pair_k1", "gpu-exact-pair-A-k-constant", "16/32/64 isotropic unit cube",
+            worst_r_F, worst_r_F, "r_F<=1e-12, Linf(F1,F2)<=1e-10*max|Phi''|*max(q)", "n/a (roundoff)",
+            "pair A (psi1=x2+Phi(x3), psi2=x3, v=e1 exactly) with k=1: the discrete residual must be "
+            "exactly zero to roundoff at every grid (separable exact identity), never merely convergent"};
+}
+
+// Case: exact pair A, heterogeneous k=k1(x1). Same discrete-exactness claim
+// as k=1: k depends only on x1, u1 depends only on x3, so every harmonic
+// mean and the mean-zero projection factorize exactly.
+[[nodiscard]] CaseResult case_coupled_residual_exact_pair_kx1() {
+    bool pass = true;
+    double worst_r_F = 0.0;
+    std::ostringstream detail;
+    for (std::size_t n : {std::size_t{16}, std::size_t{32}, std::size_t{64}}) {
+        const auto fixture = make_pair_a_fixture(n, /*homogeneous_k=*/false);
+        const auto summary = run_production_residual_summary(fixture, 1.0);
+        const double max_q = max_abs_value(fixture.q);
+        const double linf_bound = 1.0e-10 * kPairAPhiSecondDerivativeBound * max_q;
+        const bool this_pass = std::isfinite(summary.r_F) && summary.r_F <= 1.0e-12 &&
+                               std::max(summary.linf_f1, summary.linf_f2) <= linf_bound;
+        pass = pass && this_pass;
+        worst_r_F = std::max(worst_r_F, summary.r_F);
+        std::cout << std::setprecision(16) << "coupled_residual_exact_pair_kx1 n=" << n
+                  << " r_F=" << summary.r_F << " linf_f1=" << summary.linf_f1
+                  << " linf_f2=" << summary.linf_f2 << " linf_bound=" << linf_bound
+                  << " pass=" << (this_pass ? "true" : "false") << '\n';
+        detail << 'n' << n << ":r_F=" << summary.r_F << ' ';
+    }
+    return {pass, "coupled_residual_exact_pair_kx1", "gpu-exact-pair-A-k-x1-dependent",
+            "16/32/64 isotropic unit cube", worst_r_F, worst_r_F,
+            "r_F<=1e-12, Linf(F1,F2)<=1e-10*max|Phi''|*max(q)", "n/a (roundoff)",
+            "pair A with k=k1(x1)=exp(0.7*sin(2*pi*x1)+0.3*cos(4*pi*x1)): still separable, so the "
+            "discrete residual remains exactly zero to roundoff at every grid"};
+}
+
+// Case: general pair B, genuine O(h^2) discretization control (harmonic
+// means, the projection, and both sources are all nontrivial).
+//
+// SF-26 C03 amendment (prespecified, orchestrator decision, recorded in the
+// bitácora): the ladder is extended to n=16/32/64/128 and the order>=1.9 gate
+// is imposed ONLY on the two finest transitions (32->64, 64->128), for both
+// r_F and Linf(F1,F2). The threshold itself is NOT relaxed. Rationale: at
+// n=16 the cos(4*pi*x1) mode of k1(x1) has only 8 cells per wavelength, so
+// the 16->32 transition is pre-asymptotic and its order can legitimately sit
+// below 1.9 (observed Linf order ~1.87) without indicating a discretization
+// defect. The 16->32 orders are still computed and printed as evidence,
+// explicitly labeled non-gating, so the pre-asymptotic behavior remains
+// visible rather than silently dropped.
+[[nodiscard]] CaseResult case_coupled_residual_exact_pair_general() {
+    const std::vector<std::size_t> ns{16, 32, 64, 128};
+    std::vector<double> r_f_values(ns.size()), linf_values(ns.size()), hs(ns.size());
+    for (std::size_t i = 0; i < ns.size(); ++i) {
+        const auto fixture = make_pair_b_fixture(ns[i]);
+        const auto summary = run_production_residual_summary(fixture, 1.0);
+        r_f_values[i] = summary.r_F;
+        linf_values[i] = std::max(summary.linf_f1, summary.linf_f2);
+        hs[i] = 1.0 / static_cast<double>(ns[i]);
+        std::cout << std::setprecision(16) << "coupled_residual_exact_pair_general n=" << ns[i]
+                  << " r_F=" << summary.r_F << " linf_f1=" << summary.linf_f1
+                  << " linf_f2=" << summary.linf_f2 << '\n';
+    }
+    bool pass = true;
+    std::ostringstream orders;
+    for (std::size_t i = 0; i + 1 < ns.size(); ++i) {
+        const auto order_rF = ref::observed_order(r_f_values[i], r_f_values[i + 1], hs[i], hs[i + 1]);
+        const auto order_linf = ref::observed_order(linf_values[i], linf_values[i + 1], hs[i], hs[i + 1]);
+        const bool gated = i >= 1;  // 32->64 and 64->128 only; 16->32 is pre-asymptotic evidence.
+        if (gated) {
+            const bool ok_rF = order_rF.valid() && order_rF.value >= 1.9;
+            const bool ok_linf = order_linf.valid() && order_linf.value >= 1.9;
+            pass = pass && ok_rF && ok_linf;
+            std::cout << std::setprecision(16) << "coupled_residual_exact_pair_general order n=" << ns[i]
+                      << "->" << ns[i + 1] << " order_r_F=" << (order_rF.valid() ? order_rF.value : -1.0)
+                      << " order_linf=" << (order_linf.valid() ? order_linf.value : -1.0) << '\n';
+            orders << 'n' << ns[i] << "->" << ns[i + 1] << ":rF=" << (order_rF.valid() ? order_rF.value : -1.0)
+                   << ",linf=" << (order_linf.valid() ? order_linf.value : -1.0) << ' ';
+        } else {
+            std::cout << std::setprecision(16) << "coupled_residual_exact_pair_general order n=" << ns[i]
+                      << "->" << ns[i + 1] << " order_r_F=" << (order_rF.valid() ? order_rF.value : -1.0)
+                      << " order_linf=" << (order_linf.valid() ? order_linf.value : -1.0)
+                      << " pre-asymptotic (evidence, not gated)" << '\n';
+            orders << 'n' << ns[i] << "->" << ns[i + 1]
+                   << ":rF=" << (order_rF.valid() ? order_rF.value : -1.0)
+                   << ",linf=" << (order_linf.valid() ? order_linf.value : -1.0)
+                   << ",pre-asymptotic(evidence,not-gated) ";
+        }
+    }
+    return {pass, "coupled_residual_exact_pair_general", "gpu-exact-pair-B-general-oh2",
+            "16/32/64/128 isotropic unit cube", r_f_values.front(), r_f_values.back(),
+            "observed order >=1.9 for r_F and Linf(F1,F2) on the 32->64 and 64->128 transitions "
+            "only; 16->32 is printed as pre-asymptotic evidence and is not gated (SF-26 C03 "
+            "amendment: at n=16 the cos(4*pi*x1) mode of k1 has only 8 cells per wavelength)",
+            orders.str(),
+            "pair B (a genuine curl(v)=grad(ln k) x v Darcy flow, the gauge recombination of the "
+            "trivial pair) is a real O(h^2) discretization control: harmonic means, the projection, "
+            "and both nontrivial sources all contribute; the ladder was extended to n=128 (SF-26 "
+            "C03) so the order>=1.9 gate is measured only where the k1(x1) heterogeneity mode is "
+            "already well resolved"};
+}
+
+// Case: crossed pairing evaluated on exact SAME-index Darcy pairs is an O(1)
+// model-error floor that must NOT shrink under refinement (contrast with the
+// genuine O(h^2) discretization errors of the correct pairing above).
+[[nodiscard]] CaseResult case_coupled_residual_pairing_mutant() {
+    const std::vector<std::size_t> ns{16, 32, 64};
+    std::vector<double> r_a(ns.size()), r_b(ns.size());
+    for (std::size_t i = 0; i < ns.size(); ++i) {
+        const auto fixture_a = make_pair_a_fixture(ns[i], /*homogeneous_k=*/false);
+        const auto fixture_b = make_pair_b_fixture(ns[i]);
+        r_a[i] = crossed_r_F(fixture_a, 1.0, kExactPairEpsilon, kExactPairVRms);
+        r_b[i] = crossed_r_F(fixture_b, 1.0, kExactPairEpsilon, kExactPairVRms);
+        std::cout << std::setprecision(16) << "coupled_residual_pairing_mutant n=" << ns[i]
+                  << " r_F_crossed_pairA=" << r_a[i] << " r_F_crossed_pairB=" << r_b[i] << '\n';
+    }
+    bool pass = true;
+    for (std::size_t i = 0; i < ns.size(); ++i) {
+        pass = pass && std::isfinite(r_a[i]) && std::isfinite(r_b[i]) && r_a[i] > 1.0e-2 && r_b[i] > 1.0e-2;
+    }
+    const double ratio_a = r_a.front() > 0.0 ? r_a.back() / r_a.front() : 0.0;
+    const double ratio_b = r_b.front() > 0.0 ? r_b.back() / r_b.front() : 0.0;
+    pass = pass && ratio_a >= 0.5 && ratio_b >= 0.5;
+    std::cout << std::setprecision(16) << "coupled_residual_pairing_mutant ratio64_16_pairA=" << ratio_a
+              << " ratio64_16_pairB=" << ratio_b << '\n';
+    return {pass, "coupled_residual_pairing_mutant", "test-local-crossed-recomposition-vs-oracle-pieces",
+            "16/32/64 isotropic unit cube, pair A (k=k1(x1)) and pair B",
+            std::min({r_a.front(), r_b.front()}), std::min({r_a.back(), r_b.back()}),
+            "r_F_crossed>1e-2 at every grid; ratio(n=64,n=16)>=0.5 (non-decreasing under refinement)",
+            "ratioA=" + std::to_string(ratio_a) + " ratioB=" + std::to_string(ratio_b),
+            "the CROSSED (paper-printed, pre-SF-26) pairing evaluated on exact SAME-index Darcy "
+            "streamfunction pairs is an O(1) model-error floor, not a discretization artifact: it "
+            "must stay large and must NOT shrink under h-refinement"};
+}
+
+// Case: gauge recombination invariance (cheap tier). psi1 -> psi1 +
+// alpha*Phihat(psi2) leaves v unchanged (same streamsurfaces), so the
+// SAME-index residual on the recombined pair must remain a comparable,
+// still-O(h^2) discretization residual.
+//
+// SF-26 C03 amendment (prespecified, orchestrator decision, recorded in the
+// bitácora): the ladder is extended to n=16/32/64/128. The `ratio<=3`
+// same-vs-base-residual gate is kept at every grid (unchanged). The
+// order>=1.9 gate on r_F(recombined) is imposed ONLY on the two finest
+// transitions (32->64, 64->128); the threshold is NOT relaxed. Rationale:
+// at n=16 the cos(4*pi*x1) mode of k1(x1) underlying pair B has only 8
+// cells per wavelength, so the 16->32 transition is pre-asymptotic. The
+// 16->32 order is still computed and printed as non-gating evidence.
+[[nodiscard]] CaseResult case_coupled_residual_gauge_recombination_analytic() {
+    constexpr double kAlpha = 0.05;
+    const std::vector<std::size_t> ns{16, 32, 64, 128};
+    std::vector<double> r_base(ns.size()), r_recombined(ns.size());
+    double worst_ratio = 0.0;
+    for (std::size_t i = 0; i < ns.size(); ++i) {
+        const std::size_t n = ns[i];
+        const auto base = make_pair_b_fixture(n);
+        const auto base_summary = run_production_residual_summary(base, 1.0);
+        r_base[i] = base_summary.r_F;
+
+        AnalyticPairFixture recombined = base;
+        const std::size_t cells = base.grid.cell_count();
+        std::vector<double> u1_raw(cells);
+        for (std::size_t iz = 0; iz < n; ++iz) {
+            for (std::size_t iy = 0; iy < n; ++iy) {
+                for (std::size_t ix = 0; ix < n; ++ix) {
+                    const auto id = base.grid.index(ix, iy, iz);
+                    const auto p = base.grid.cell_center(ix, iy, iz);
+                    const double psi2 = p.z + pair_b_theta(p.y);
+                    u1_raw[id] = base.u1[id] + kAlpha * std::sin(2.0 * kPairPi * psi2);
+                }
+            }
+        }
+        recombined.u1 = ref::mean_zero_projected(u1_raw);
+
+        const auto recombined_summary = run_production_residual_summary(recombined, 1.0);
+        r_recombined[i] = recombined_summary.r_F;
+        const double ratio =
+            r_base[i] > 0.0 ? r_recombined[i] / r_base[i] : std::numeric_limits<double>::infinity();
+        worst_ratio = std::max(worst_ratio, ratio);
+        const double cross_evidence = crossed_r_F(recombined, 1.0, kExactPairEpsilon, kExactPairVRms);
+        std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_analytic n=" << n
+                  << " r_F_base=" << r_base[i] << " r_F_recombined=" << r_recombined[i]
+                  << " ratio=" << ratio << " r_F_crossed_recombined=" << cross_evidence << '\n';
+    }
+    bool pass = true;
+    for (std::size_t i = 0; i < ns.size(); ++i) {
+        pass = pass && std::isfinite(r_recombined[i]) && r_recombined[i] <= 3.0 * r_base[i];
+    }
+    for (std::size_t i = 0; i + 1 < ns.size(); ++i) {
+        const auto order = ref::observed_order(r_recombined[i], r_recombined[i + 1],
+                                               1.0 / static_cast<double>(ns[i]),
+                                               1.0 / static_cast<double>(ns[i + 1]));
+        const bool gated = i >= 1;  // 32->64 and 64->128 only; 16->32 is pre-asymptotic evidence.
+        if (gated) {
+            const bool ok = order.valid() && order.value >= 1.9;
+            pass = pass && ok;
+            std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_analytic order n="
+                      << ns[i] << "->" << ns[i + 1] << " order=" << (order.valid() ? order.value : -1.0)
+                      << '\n';
+        } else {
+            std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_analytic order n="
+                      << ns[i] << "->" << ns[i + 1] << " order=" << (order.valid() ? order.value : -1.0)
+                      << " pre-asymptotic (evidence, not gated)" << '\n';
+        }
+    }
+    return {pass, "coupled_residual_gauge_recombination_analytic", "gpu-gauge-recombination-invariance",
+            "16/32/64/128 isotropic unit cube, pair B recombined psi1->psi1+alpha*sin(2*pi*psi2)",
+            r_base.front(), r_recombined.back(),
+            "r_F(recombined)<=3*r_F(base) at every grid; order>=1.9 on the 32->64 and 64->128 "
+            "transitions only (16->32 is printed as pre-asymptotic evidence and is not gated: "
+            "SF-26 C03 amendment, cos(4*pi*x1) mode of k1 has only 8 cells per wavelength at n=16)",
+            std::to_string(worst_ratio),
+            "recombining psi1 -> psi1 + alpha*Phihat(psi2) (alpha=0.05) preserves v exactly, so the "
+            "SAME-index residual on the recombined pair must remain a comparable, still-O(h^2) "
+            "discretization residual; the ladder was extended to n=128 (SF-26 C03) so the order>=1.9 "
+            "gate is measured only where the k1(x1) heterogeneity mode is already well resolved; the "
+            "test-local crossed recomposition on the same recombined state is printed as additional "
+            "(non-gating) evidence at every grid"};
+}
+
+// ---------------------------------------------------------------------------
+// SF-26 T02 HEAVY case: gauge recombination on a genuinely converged
+// sigma_Y^2=0.25, 32^3 heterogeneous state (VERBATIM fixture parameters of
+// heterogeneity_continuation_gpu_cases.cu::run_heterogeneity_smoke, called
+// here through the same production `run_streamfunction_heterogeneity_
+// continuation` entry point rather than the (private, unexported)
+// `run_heterogeneity_smoke` function itself).
+// ---------------------------------------------------------------------------
+
+[[nodiscard]] CaseResult case_coupled_residual_gauge_recombination_sigma025() {
+    constexpr int n = 32;
+    const Grid3D grid(n, n, n, real{1}, real{1}, real{1});
+    const std::size_t cells = static_cast<std::size_t>(grid.num_cells());
+
+    CudaContext ctx(0);
+
+    // VERBATIM smoke fixture (sigma2=0.25 leg): seed 12345, corr_length 8,
+    // normalize_variance, Anderson depth 5/start 5/limit 1e12, newton
+    // enabled, degenerate epsilon leg (target==start), lambda axis defaults,
+    // default AffinePeriodicFlowConfig (qbar=(1,0,0)).
+    physics::PeriodicGaussianFieldConfig field_config;
+    field_config.sigma2 = real{0.25};
+    field_config.corr_length = real{8};
+    field_config.seed = 12345ULL;
+    field_config.normalize_variance = true;
+
+    DeviceBuffer<real> y(cells);
+    physics::PeriodicGaussianFieldWorkspace field_workspace;
+    const physics::PeriodicGaussianFieldReport field_report =
+        physics::generate_periodic_gaussian_field(ctx, grid, field_config, y.span(), field_workspace);
+    ctx.synchronize();
+
+    StreamfunctionFields fields;
+    StreamfunctionWorkspace workspace;
+    StreamfunctionSolverConfig base_config{}; // full defaults (adaptive Picard, max_iter=500,
+                                              // tolerance=1e-6, linear rtol=1e-10)
+    base_config.anderson.enabled = true;
+    base_config.anderson.depth = 5;
+    base_config.anderson.start_iteration = 5;
+    base_config.anderson.condition_limit = real{1e12};
+    base_config.newton.enabled = true;
+
+    HeterogeneityContinuationConfig continuation_config{}; // lambda axis defaults
+    continuation_config.inner.epsilon_log10.target = continuation_config.inner.epsilon_log10.start;
+    const physics::AffinePeriodicFlowConfig flow_config{}; // qbar=(1,0,0) default
+
+    const HeterogeneityContinuationReport report = run_streamfunction_heterogeneity_continuation(
+        ctx, grid, DeviceSpan<const real>(y.span()), continuation_config, flow_config, base_config, fields,
+        workspace);
+    ctx.synchronize();
+
+    std::cout << std::setprecision(16)
+              << "coupled_residual_gauge_recombination_sigma025 field_raw_mean=" << field_report.raw_mean
+              << " field_final_variance=" << field_report.final_variance
+              << " status=" << static_cast<int>(report.status) << " final_lambda=" << report.final_lambda
+              << " final_eta=" << report.final_eta << " stage_history_size=" << report.stage_history.size()
+              << '\n';
+    for (const auto& record : report.stage_history) {
+        std::cout << "  stage axis=" << static_cast<int>(record.axis) << " lambda=" << record.lambda_value
+                  << " eta=" << record.eta_value << " epsilon=" << record.epsilon_value
+                  << " accepted=" << (record.base.accepted ? "true" : "false") << " r_F=" << record.base.r_F
+                  << '\n';
+    }
+
+    const bool preconditions_ok =
+        report.status == HeterogeneityStatus::reached_target && report.final_lambda == real{1};
+    if (!preconditions_ok) {
+        return {false, "coupled_residual_gauge_recombination_sigma025",
+                "gpu-heavy-gauge-recombination-sigma025", "32^3, sigma_Y^2=0.25, corr_length=8, seed=12345",
+                0.0, 0.0, "status=reached_target, final_lambda=1", "precondition_failed",
+                "the VERBATIM run_heterogeneity_smoke(sigma2=0.25) fixture did not reach the full "
+                "lognormal target; the case fails per the PRESPECIFIED contract rather than adapting "
+                "the fixture (see the printed stage table above)"};
+    }
+
+    std::vector<real> y_host(cells);
+    MACROFLOW3D_CUDA_CHECK(
+        cudaMemcpyAsync(y_host.data(), y.data(), cells * sizeof(real), cudaMemcpyDeviceToHost, ctx.cuda_stream()));
+    ctx.synchronize();
+
+    std::vector<double> q_host(cells);
+    for (std::size_t i = 0; i < cells; ++i) q_host[i] = std::exp(-static_cast<double>(y_host[i]));
+
+    const double v_rms = static_cast<double>(report.final_solve.diagnostics.v_d_rms);
+
+    std::vector<real> u1_host(cells), u2_host(cells);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(u1_host.data(), fields.u1_span().data(), cells * sizeof(real),
+                                           cudaMemcpyDeviceToHost, ctx.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(u2_host.data(), fields.u2_span().data(), cells * sizeof(real),
+                                           cudaMemcpyDeviceToHost, ctx.cuda_stream()));
+    ctx.synchronize();
+
+    std::vector<real> q_real(q_host.begin(), q_host.end());
+    DeviceBuffer<real> q_dev(cells);
+    MACROFLOW3D_CUDA_CHECK(
+        cudaMemcpyAsync(q_dev.data(), q_real.data(), cells * sizeof(real), cudaMemcpyHostToDevice, ctx.cuda_stream()));
+
+    const AffineGauge gauge = AffineGauge::benchmark(real{1});
+    NonlinearSourceConfig source_config{};
+    source_config.epsilon = real{1e-2};
+    source_config.v_rms = static_cast<real>(v_rms);
+    const ResidualHistogramConfig histogram_config{};
+
+    StreamfunctionResidualWorkspace base_residual_workspace;
+    base_residual_workspace.prepare(cells);
+    DeviceBuffer<real> f1_base(cells), f2_base(cells);
+    enqueue_streamfunction_residual(ctx, grid, DeviceSpan<const real>(q_dev.span()),
+                                    {fields.u1_span(), fields.u2_span()}, gauge, real{1}, source_config,
+                                    histogram_config, f1_base.span(), f2_base.span(), base_residual_workspace);
+    const StreamfunctionResidualReport base_report = synchronize_streamfunction_residual_report(
+        ctx, grid, real{1}, source_config, histogram_config, base_residual_workspace);
+    const double r_F_base = static_cast<double>(base_report.r_F);
+    const double l_ref = static_cast<double>(base_report.L_ref);
+
+    // Gauge recombination on the host: u1' = P(u1 + alpha*sin(2*pi*(x3+u2)/L3)),
+    // L3 = nz*dz = 32 (dx=dy=dz=1), alpha = 0.02*L3/(2*pi) ~= 0.1019 (so the
+    // added slope alpha*Phihat'(s)/L3*2*pi <= 0.02).
+    constexpr double kL3 = 32.0;
+    const double alpha = 0.02 * kL3 / (2.0 * kPairPi);
+    const ref::Grid host_grid{static_cast<std::size_t>(n), static_cast<std::size_t>(n),
+                              static_cast<std::size_t>(n), {1.0, 1.0, 1.0}};
+    std::vector<double> u1_double(u1_host.begin(), u1_host.end());
+    std::vector<double> u2_double(u2_host.begin(), u2_host.end());
+    std::vector<double> u1_recombined_raw(cells);
+    for (std::size_t iz = 0; iz < host_grid.nz; ++iz) {
+        for (std::size_t iy = 0; iy < host_grid.ny; ++iy) {
+            for (std::size_t ix = 0; ix < host_grid.nx; ++ix) {
+                const auto id = host_grid.index(ix, iy, iz);
+                const auto p = host_grid.cell_center(ix, iy, iz);
+                const double psi2 = p.z + u2_double[id];
+                u1_recombined_raw[id] = u1_double[id] + alpha * std::sin(2.0 * kPairPi * psi2 / kL3);
+            }
+        }
+    }
+    const auto u1_recombined = ref::mean_zero_projected(u1_recombined_raw);
+
+    std::vector<real> u1_recombined_real(u1_recombined.begin(), u1_recombined.end());
+    DeviceBuffer<real> u1p_dev(cells), u2p_dev(cells);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(u1p_dev.data(), u1_recombined_real.data(), cells * sizeof(real),
+                                           cudaMemcpyHostToDevice, ctx.cuda_stream()));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(u2p_dev.data(), u2_host.data(), cells * sizeof(real),
+                                           cudaMemcpyHostToDevice, ctx.cuda_stream()));
+    ctx.synchronize();
+
+    StreamfunctionResidualWorkspace recombined_residual_workspace;
+    recombined_residual_workspace.prepare(cells);
+    DeviceBuffer<real> f1_same(cells), f2_same(cells);
+    enqueue_streamfunction_residual(ctx, grid, DeviceSpan<const real>(q_dev.span()),
+                                    {u1p_dev.span(), u2p_dev.span()}, gauge, real{1}, source_config,
+                                    histogram_config, f1_same.span(), f2_same.span(),
+                                    recombined_residual_workspace);
+    const StreamfunctionResidualReport same_report = synchronize_streamfunction_residual_report(
+        ctx, grid, real{1}, source_config, histogram_config, recombined_residual_workspace);
+    const double r_F_same = static_cast<double>(same_report.r_F);
+
+    // Test-local crossed recomposition on the SAME recombined state, CPU
+    // oracle pieces only, pipeline's q = exp(-Y), eta=1, epsilon=1e-2, same
+    // v_rms; L_ref taken from the production report (base_report.L_ref) so
+    // r_F_same and r_F_cross share the identical normalization.
+    const ref::NonlinearSourceReferenceConfig cross_config{1.0e-2, v_rms};
+    const auto a_u1 = ref::divergence_form_diffusion(host_grid, q_host, u1_recombined);
+    const auto a_u2 = ref::divergence_form_diffusion(host_grid, q_host, u2_double);
+    const auto affine1 = ref::affine_rhs_discrete(host_grid, q_host, kGbar1);
+    const auto affine2 = ref::affine_rhs_discrete(host_grid, q_host, kGbar2);
+    const auto g1 = ref::centered_total_gradient_oracle(host_grid, u1_recombined, kGbar1);
+    const auto g2 = ref::centered_total_gradient_oracle(host_grid, u2_double, kGbar2);
+    const auto hvb = ref::centered_hessian_vector_b_oracle(host_grid, u1_recombined, u2_double, g1, g2);
+    const auto sources = ref::centered_nonlinear_source_oracle(host_grid, g1, g2, hvb.b, cross_config);
+    std::vector<double> raw1(cells), raw2(cells);
+    for (std::size_t i = 0; i < cells; ++i) {
+        raw1[i] = affine1[i] - 1.0 * q_host[i] * sources.s2[i];
+        raw2[i] = affine2[i] - 1.0 * q_host[i] * sources.s1[i];
+    }
+    const auto proj1 = ref::mean_zero_projected(raw1);
+    const auto proj2 = ref::mean_zero_projected(raw2);
+    std::vector<double> f1_cross(cells), f2_cross(cells);
+    for (std::size_t i = 0; i < cells; ++i) {
+        f1_cross[i] = a_u1[i] - proj1[i];
+        f2_cross[i] = a_u2[i] - proj2[i];
+    }
+    const double rms_f1_cross = ref::rms_norm(f1_cross);
+    const double rms_f2_cross = ref::rms_norm(f2_cross);
+    const double q_rms_host = ref::rms_norm(q_host);
+    const double r_F_cross =
+        ref::residual_normalization_reference(rms_f1_cross, rms_f2_cross, q_rms_host, v_rms, l_ref).r_f;
+
+    std::cout << std::setprecision(16) << "coupled_residual_gauge_recombination_sigma025 v_rms=" << v_rms
+              << " alpha=" << alpha << " r_F_base=" << r_F_base << " r_F_same=" << r_F_same
+              << " r_F_cross=" << r_F_cross << " l_ref=" << l_ref << '\n';
+
+    const bool pass = std::isfinite(r_F_base) && std::isfinite(r_F_same) && std::isfinite(r_F_cross) &&
+                      r_F_base <= 1.0e-6 && r_F_same <= (1.0 / 20.0) * r_F_cross && r_F_same <= 1.0e-1;
+
+    return {pass, "coupled_residual_gauge_recombination_sigma025", "gpu-heavy-gauge-recombination-sigma025",
+            "32^3, sigma_Y^2=0.25, corr_length=8, seed=12345, converged full lognormal K=exp(Y)", r_F_base,
+            r_F_same, "r_F_base<=1e-6; r_F_same<=1e-1; r_F_same<=(1/20)*r_F_cross", std::to_string(r_F_cross),
+            "gauge recombination psi1->psi1+alpha*sin(2*pi*(x3+u2)/L3) (alpha~0.1019) on the converged "
+            "heterogeneous state must keep the SAME-index production residual small while the "
+            "test-local crossed recomposition on the identical recombined state remains at least 20x "
+            "larger, demonstrating the production pairing is the physically consistent one on a real "
+            "converged heterogeneous field, not merely on synthetic exact pairs"};
+}
+
 } // namespace
 
 CaseRegistry coupled_residual_case_registry() {
@@ -1123,7 +1750,18 @@ CaseRegistry coupled_residual_case_registry() {
             {"coupled_residual_homogeneous_zero", case_coupled_residual_homogeneous_zero},
             {"coupled_residual_mean_zero_gauge", case_coupled_residual_mean_zero_gauge},
             {"coupled_residual_error_contract", case_coupled_residual_error_contract},
-            {"coupled_residual_mutation_sensitivity", case_coupled_residual_mutation_sensitivity}};
+            {"coupled_residual_mutation_sensitivity", case_coupled_residual_mutation_sensitivity},
+            {"coupled_residual_exact_pair_k1", case_coupled_residual_exact_pair_k1},
+            {"coupled_residual_exact_pair_kx1", case_coupled_residual_exact_pair_kx1},
+            {"coupled_residual_exact_pair_general", case_coupled_residual_exact_pair_general},
+            {"coupled_residual_pairing_mutant", case_coupled_residual_pairing_mutant},
+            {"coupled_residual_gauge_recombination_analytic",
+             case_coupled_residual_gauge_recombination_analytic}};
+}
+
+CaseRegistry coupled_residual_heavy_case_registry() {
+    return {{"coupled_residual_gauge_recombination_sigma025",
+             case_coupled_residual_gauge_recombination_sigma025}};
 }
 
 } // namespace macroflow3d::streamfunctions::test

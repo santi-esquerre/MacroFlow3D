@@ -1,0 +1,7 @@
+n=24 ell/h=8.0 sigma2=1.0 lambda=0.1125 seed=7 Ystd=1.000 Kmax/Kmin=2.04
+[SAME-INDEX] Picard w=0.25 (tol 1e-6, max 1500): its=1500 r_F @50=2.15e-03 @200=1.28e-03 @500=4.73e-04 final=1.09e-04 (78s)
+[SAME-INDEX] Anderson m=5: its=800 final=1.03e-04 min=9.26e-05 (45s)
+[SAME-INDEX] pseudo-time Euler to tau=1.5: [(0, '5.4e-01'), (0.188, '1.5e-03'), (0.375, '9.5e-04'), (0.562, '5.9e-04'), (0.75, '3.8e-04'), (0.937, '2.6e-04'), (1.125, '2.0e-04'), (1.312, '1.6e-04')] (47s)
+[CROSSED] Picard w=0.25 (tol 1e-6, max 1500): its=1500 r_F @50=1.93e-04 @200=5.32e-05 @500=2.71e-05 final=3.12e-06 (75s)
+[CROSSED] Anderson m=5: its=95 final=9.11e-07 min=9.11e-07 (5s)
+[CROSSED] pseudo-time Euler to tau=1.5: [(0, '5.4e-01'), (0.073, 'nan')] (2s)

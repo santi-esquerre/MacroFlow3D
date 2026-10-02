@@ -313,9 +313,13 @@ struct NonfiniteInjection {
 [[nodiscard]] double dimensionless_length_reference(const Vec3& lengths);
 
 // Composed CPU reference for the coupled fluctuation residual:
-//   F1 = A u1 - P(div_h(q*gbar1) - eta*q.*S2)
-//   F2 = A u2 - P(div_h(q*gbar2) - eta*q.*S1)
-// (pairing: F1<->S2, F2<->S1). A is `divergence_form_diffusion`, div_h(q*g) is
+//   F1 = A u1 - P(div_h(q*gbar1) - eta*q.*S1)
+//   F2 = A u2 - P(div_h(q*gbar2) - eta*q.*S2)
+// (pairing: SAME index, F1<->S1, F2<->S2; derived from
+// grad(psi1) L2 - grad(psi2) L1 = B, see
+// docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md; the paper's
+// printed equation (14) crosses the indices and was implemented through
+// SF-25). A is `divergence_form_diffusion`, div_h(q*g) is
 // `affine_rhs_discrete`, P is `mean_zero_projected`, and S1/S2 come from the
 // SF-09 `centered_nonlinear_source_oracle` chain (built on
 // `centered_total_gradient_oracle` and `centered_hessian_vector_b_oracle`).

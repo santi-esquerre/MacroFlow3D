@@ -1,0 +1,6 @@
+[eps-sweep] n=24 ell/h=8.0 sigma2=1.0 lambda=0.1125 seed=7 (same-index, Anderson m=8 w=0.5, 1500 its)
+[eps-sweep] eps=0.01: its=1500 final r_F=1.366e-04 min=1.041e-04 @200=1.81e-04 @800=1.34e-04 (93s)
+[eps-sweep] eps=0.003: its=1500 final r_F=7.767e-05 min=7.744e-05 @200=1.83e-04 @800=8.02e-05 (100s)
+[eps-sweep] eps=0.001: its=1500 final r_F=7.393e-05 min=7.340e-05 @200=1.19e-04 @800=1.76e-04 (106s)
+[eps-sweep] eps=0: its=1500 final r_F=9.675e-05 min=8.208e-05 @200=1.49e-04 @800=1.24e-04 (102s)
+done

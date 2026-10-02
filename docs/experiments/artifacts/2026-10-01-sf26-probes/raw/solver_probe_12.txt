@@ -1,0 +1,12 @@
+  S1=dot(cross(B,G1),c)/d; S2=dot(cross(B,G2),c)/d
+n=12 same-index r_F(exact pair)=3.795e-02  Linf=2.076e-01
+n=12 crossed    r_F(exact pair)=4.377e+00
+[SAME-INDEX] damped Picard w=0.25: its=1196 r_F: start=1.28e+00 @100=9.11e-04 @500=2.60e-06 final=9.94e-11 (10s)
+[SAME-INDEX] Anderson m=5 on damped Picard: its=89 final r_F=9.16e-11 min=9.16e-11 (1s)
+[SAME-INDEX] Newton (dense, min-norm lstsq, Armijo): its=5 r_F per step: ['1.3e+00', '2.3e-02', '2.7e-04', '2.0e-09', '6.2e-16'] (147s)
+[SAME-INDEX] explicit pseudo-time (Euler, dt=0.9h^2/6) to tau=2: [(0, '1.3e+00'), (0.2, '6.1e-05'), (0.4, '1.3e-06'), (0.6, '2.6e-08'), (0.8, '5.3e-10'), (0.8865, '1.0e-10')] (3s)
+[CROSSED] damped Picard w=0.25: its=159 r_F: start=1.28e+00 @100=3.99e-08 @500=9.22e-11 final=9.22e-11 (2s)
+[CROSSED] Anderson m=5 on damped Picard: its=34 final r_F=8.00e-11 min=8.00e-11 (0s)
+[CROSSED] Newton (dense, min-norm lstsq, Armijo): its=5 r_F per step: ['1.3e+00', '2.2e-02', '1.2e-05', '4.7e-12', '8.1e-16'] (153s)
+[CROSSED] explicit pseudo-time (Euler, dt=0.9h^2/6) to tau=2: [(0, '1.3e+00'), (0.2, '2.9e+09'), (0.4, 'nan'), (0.6, 'nan'), (0.8, 'nan'), (1.0, 'nan'), (1.2, 'nan'), (1.4, 'nan'), (1.6, 'nan'), (1.8, 'nan'), (1.999, 'nan')] (6s)
+done
