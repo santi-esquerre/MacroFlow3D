@@ -1,0 +1,5 @@
+[ellh] n=32 ell/h=8.0 L/ell=4.0 sigma2=1.0 lambda=0.1125 eps=0.0 seed=7: Anderson m=8 w=0.5 (2000 its) final r_F=1.176e-04 min=1.020e-04 @500=1.22e-04 @1000=1.14e-04 (816s)
+[ellh] n=32 ell/h=16.0 L/ell=2.0 sigma2=1.0 lambda=0.1125 eps=0.0 seed=7: Anderson m=8 w=0.5 (2000 its) final r_F=1.038e-04 min=4.660e-05 @500=8.58e-05 @1000=5.79e-05 (744s)
+[ellh] n=48 ell/h=16.0 L/ell=3.0 sigma2=1.0 lambda=0.1125 eps=0.0 seed=7: Anderson m=8 w=0.5 (2000 its) final r_F=4.292e-05 min=3.460e-05 @500=4.60e-05 @1000=7.20e-05 (3536s)
+[ellh] n=32 ell/h=8.0 L/ell=4.0 sigma2=1.0 lambda=0.1125 eps=0.0 seed=11: Anderson m=8 w=0.5 (2000 its) final r_F=8.367e-05 min=8.344e-05 @500=1.05e-04 @1000=1.11e-04 (1027s)
+[ellh] n=32 ell/h=16.0 L/ell=2.0 sigma2=1.0 lambda=0.1125 eps=0.0 seed=11: Anderson m=8 w=0.5 (2000 its) final r_F=8.697e-05 min=6.166e-05 @500=8.07e-05 @1000=9.50e-05 (837s)

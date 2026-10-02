@@ -1,7 +1,7 @@
 # SF-26 — heterogeneity gates on the corrected (same-index) equation (14): outcome and the eta = 1 residual floor
 
 - Date: 2026-10-01
-- Status: complete (increment evidence; scientific interpretation for human review)
+- Status: complete (SF-26 closed by owner directive 2026-10-02; open decisions in the decision record)
 - Theory: `docs/theory/lester-2023-key-claims.md` §3A; decision
   `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`
 
@@ -132,46 +132,172 @@ floors, not converged.
    stiffness) — the SF-27 spec's Gershgorin cap on the LINEAR part is not a
    sufficient stability guarantee.
 
+### Post-publication probes (2026-10-01 / 10-02; CPU jobs on the V100 host, outside the mirror)
+
+8. FD (the code's scheme) vs a pseudo-spectral residual on the same field, same
+   Anderson (m = 8, w = 0.5, Laplacian preconditioner), eps = 0
+   (`probe_spectral.py`, job `sf26-numpy-spectral`). Minimum `r_F` reached:
+
+   | grid, ell/h | lambda*sigma | FD (code) | pseudo-spectral |
+   |---|---|---|---|
+   | 16^3, 4 | 0.11 | 2.8e-4 | 8.0e-7 |
+   | 16^3, 4 | 0.5 | 1.3e-2 | 3.7e-4 |
+   | 32^3, 8 | 0.11 | 1.1e-4 | 4.6e-11 |
+   | 32^3, 8 | 0.5 | 3.6e-3 | 2.5e-5 |
+   | 32^3, 8 | 1.0 | 1.5e-2 (not converging) | diverges from a zero start |
+
+   The FD dense-Newton leg (full rank, min relative singular value 1e-6) again
+   makes no progress (step norm 1.5-30, accepted only at alpha <= 1/64).
+9. Order / resolution / amplitude ladder with lambda-continuation
+   (`probe_order.py`, job `sf26-numpy-order`): one continuum field
+   (sigma^2 = 1, ell = L/4, seed 7) at 32^3 / 64^3 / 96^3; residual schemes
+   `fd2` (the code's: divergence form, harmonic-mean faces), `fd2c` (2nd order,
+   non-divergence form using `grad(lambda Y)`; same sources, same order), `fd4`
+   (4th-order non-divergence), `sp` (pseudo-spectral); lambda = 0.1 .. 1.0 with
+   warm starts; Anderson m = 8, w = 0.5, Laplacian preconditioner, at most 800
+   iterations per stage with a stagnation exit. Minimum `r_F` reached:
+
+   | lambda*sigma | fd2 32^3 | fd2 64^3 | fd2c 32^3 | fd2c 64^3 | fd4 32^3 | fd4 64^3 | fd4 96^3 | sp 32^3 | sp 64^3 | sp 96^3 |
+   |---|---|---|---|---|---|---|---|---|---|---|
+   | 0.1 | 8.4e-5 | 2.6e-5 | 3.6e-5 | 1.0e-5 | 2.8e-6 | 6.6e-6 | 1.4e-6 | 2.1e-11 | 9.7e-13 | 4.3e-12 |
+   | 0.3 | 8.9e-4 | 3.6e-4 | 3.1e-4 | 8.3e-5 | 2.1e-5 | 1.6e-5 | 3.4e-6 | 6.3e-7 | 6.5e-8 | 1.8e-6 |
+   | 0.5 | 3.3e-3 | 7.1e-4 | 5.7e-4 | 1.5e-4 | 9.2e-5 | 2.2e-5 | 5.9e-6 | 3.2e-5 | 2.9e-4 | 2.5e-4 |
+   | 0.8 | 1.0e-2 | 1.9e-3 | 1.4e-5 | 1.6e-4 | 2.1e-4 | 3.9e-5 | 1.4e-5 | 5.0e-3 | 8.9e-3 | 1.9e-2 |
+   | 1.0 | 1.9e-2 | 3.5e-3 | 1.0e-4 | 2.3e-4 | 2.2e-4 | 6.8e-5 | 3.4e-5 | 3.5e-2 | 8.4e-2 | 1.4e-1 |
+
+   `min |grad psi1 x grad psi2|` falls from 0.79 (lambda*sigma = 0.1) to 0.05
+   (1.0) identically for every scheme and grid: physical low-speed zones, no
+   degeneracy. All ten stage tables are in
+   `artifacts/2026-10-01-sf26-probes/raw/order_probe_v100.txt`.
+
+### Audit of the post-publication probes (what the numbers do and do not mean)
+
+- The stagnation exit of `probe_order.py` (no 1 % improvement in 150
+  iterations) was too aggressive: 27 of 100 stages stopped at iteration 201
+  (the minimum was reached in the first ~50 iterations) and 8 exhausted the
+  800-iteration budget while still decreasing. Stopped-at-201 / budget-hit per
+  run: fd2 32^3 5/0, fd2 64^3 3/0, fd2c 32^3 2/2, fd2c 64^3 0/0, fd4 32^3 0/1,
+  fd4 64^3 1/0, fd4 96^3 0/0, sp 32^3 3/1, sp 64^3 6/2, sp 96^3 7/2. Many
+  entries of the table are iteration plateaus or upper bounds, not
+  discretization floors.
+- Signs that several numbers are iteration-limited: fd4 at lambda*sigma = 0.1
+  gives 2.8e-6 / 6.6e-6 / 1.4e-6 at 32^3 / 64^3 / 96^3 (a 4th-order truncation
+  floor would fall 16x per doubling); fd2c at 32^3 gives 3.6e-5 at
+  lambda*sigma = 0.1 but 2.5e-7 at 0.9 (800 iterations, still decreasing).
+- The pseudo-spectral entries at lambda*sigma >= 0.5 are solver failures, not
+  floors: they get WORSE under refinement (3.5e-2 / 8.4e-2 / 1.4e-1 at
+  lambda*sigma = 1) and stop at iteration 201. Unverified reading: the source
+  terms contain second derivatives, so a Laplacian preconditioner does not
+  control the highest modes, which finite differences attenuate and the
+  spectral derivative does not.
+- The dense-Newton leg of `probe_spectral.py` on the pseudo-spectral system is
+  NOT valid evidence: that Jacobian is exactly singular (min relative singular
+  value 1e-13, 125 modes below 1e-5) and was solved with `rcond = 1e-13`.
+- `sigma^2 = 0.25, lambda = 1` and `sigma^2 = 1, lambda = 0.5` are the same
+  problem (lambda*sigma = 0.5), not two independent data points.
+- One realization (seed 7); no probe computes a physics metric (`e_v`,
+  invariance); simple Anderson without the code's safeguards.
+
 ## Result
 
-- The pairing correction is correct and demonstrated (exact pairs at roundoff,
-  general pair second order, crossed mutant O(1), recombination invariance),
-  and it removes the crossed system's pathologies (unstable flow, unsolvable
-  shelf).
-- The prespecified gate prediction is FALSIFIED: the unchanged sigma^2 >= 1
-  gates (and the sigma^2 = 0.25 smoke that passed on the crossed system) fail,
-  and the failure has a new, fully characterized signature: on random Gaussian
-  fields the corrected DISCRETE system has a residual floor at eta = 1
-  (~1e-4 at lambda = 0.11, sigma^2 = 1, ell/h = 8) that is independent of the
-  solver (Picard, Anderson, restarted/full-recurrence Newton, explicit flow)
-  and of epsilon; at fixed realization it decreases ~h^2.5 under refinement
-  (7.6e-5 -> 1.3e-5 for 24^3 -> 48^3), so it is a truncation-type floor. Its origin is the
-  exact gauge invariance of the correct equation: the discrete Jacobian has a
-  large near-null cluster, the discrete equations are effectively inconsistent
-  at the level of that cluster, and the algebraic tolerance 1e-6 is unreachable
-  on these grids. Smooth analytic fields have exact discrete zeros.
-- Gate 3A physics at the floor states is clean and better than on the crossed
-  system (e.g. e_v 1.2e-4 at lambda = 0.0125; 64^3 direct-solve floors 7-13x
-  lower), consistent with "the floor is algebraic, the physics converges".
-- No gate value, fixture, seed, or tolerance was changed.
+### Conclusions that the evidence supports
+
+- **C1 — The pairing correction is right.** Derivation, exact pairs at roundoff
+  (2e-15..9e-15 on 16/32/64), second-order convergence on the non-separable
+  exact pair (1.989 / 1.997 in `r_F`, 1.965 / 1.991 in `Linf` on 32->64->128),
+  crossed mutant O(1) and non-decreasing, recombination ratio 1.70 with order
+  1.988 / 1.997. Default pipelines are byte-identical to the base.
+- **C2 — The prespecified gate prediction is falsified.** With the unchanged
+  stack and fixtures, both 32^3 smokes exhaust the lambda floor (sigma^2 = 0.25
+  at lambda = 0.0125, sigma^2 = 1 at lambda = 0); the sigma^2 = 0.25 smoke had
+  passed on the crossed system. Every eta < 1 stage converges; every eta = 1
+  stage stops at `r_F = 1.50e-6`. Newton (SF-25 E1 wiring) seizes those stages
+  and exhausts its GMRES budget, but Newton is not the root cause: the
+  Newton-disabled continuation fails as well. No gate value, fixture, seed, or
+  tolerance was changed.
+- **C3 — The code's discrete system has a residual floor at eta = 1 on random
+  Gaussian fields.** It is the same for Picard, Anderson, restarted
+  Newton-GMRES, a dense Newton with an exact linear solve, and the explicit
+  flow; it does not depend on epsilon (1.0e-4 at 1e-2, 8.2e-5 at 0); it falls
+  under refinement (x5.8 for the same field 24^3 -> 48^3; x2.5-5 from 32^3 to
+  64^3 along the ladder) and grows with amplitude (about x220 from
+  lambda*sigma = 0.1 to 1.0 at 32^3). At sigma^2 = 1, lambda = 1: 1.9e-2 at
+  32^3 and 3.5e-3 at 64^3 (numpy probe).
+- **C4 — The corrected equation is solvable when discretized accurately.** The
+  pseudo-spectral residual reaches 2e-11 / 1e-12 / 4e-12 at lambda*sigma = 0.1
+  (32^3 / 64^3 / 96^3) and 6.5e-8 at 0.3 (64^3) with a plain Anderson
+  iteration; with the code's scheme a smooth analytic field converges to 6e-16
+  with a full Newton.
+- **C5 — Most of the code scheme's floor comes from how the LINEAR operator is
+  discretized.** `fd2c` keeps the sources and the order of the code's scheme
+  and only replaces the divergence form with harmonic-mean faces of `K` by the
+  non-divergence form with `grad(lambda Y)`; its floor is 2.6x lower at
+  lambda*sigma = 0.1 and 15x lower at lambda*sigma = 1 (64^3). The measured
+  difference is established; why (harmonic means of a lognormal `K` versus the
+  smooth `Y`) is an interpretation.
+- **C6 — The corrected Jacobian has a near-null cluster at eta = 1** (relative
+  singular values 1e-4..1e-6, dozens of modes, sharpening with refinement; the
+  crossed system had none), and restarted GMRES(10) stagnates on it while a
+  full-recurrence GMRES converges (in-repo test `gmres_dense_lu_oracle`).
+- **C7 — The crossed system's explicit flow is unstable** (NaN within
+  tau ~ 0.05-0.2 in every probe), which accounts for the "repelled flow" of the
+  SF-25 campaign; on the corrected system the flow converges on a smooth field.
+- **C8 — No degeneracy.** `|grad psi1 x grad psi2|` stays >= 0.05 up to
+  lambda*sigma = 1 in the probes, and the V100 runs report zero unexplained
+  degenerate cells.
+
+### Not established
+
+- **N1** Whether any discretization reaches `r_F <= 1e-6` at sigma^2 = 1,
+  lambda = 1. The fd4 entries (6.8e-5 at 64^3, 3.4e-5 at 96^3) are upper bounds
+  that mix floor and iteration stagnation; the pseudo-spectral iteration failed
+  at high amplitude.
+- **N2** The physics at the floor. `e_v`, invariance and `e_div` were measured
+  only by the V100 smokes at tiny amplitude (lambda <= 0.025: `e_v` 1.2e-4,
+  invariance 4e-5 / 5e-5, `e_div` 3.4e-6). Nothing was measured at sigma^2 >= 1
+  full amplitude. An earlier statement in this note and in the SF-26 bitácora
+  ("Gate 3A physics at the floor is clean and better than on the crossed
+  system") is restricted to that tiny-amplitude regime; the "7-13x lower"
+  figure refers to `r_F` of the 64^3 direct solves, not to a physics metric.
+- **N3** The mechanism. "The gauge degeneracy makes the discrete equations
+  inconsistent at the level of the near-null cluster" is consistent with every
+  measurement but is not proven; C5 shows that plain truncation of the linear
+  operator carries most of the effect.
+- **N4** Whether a divergence-form variant with log-space (geometric-mean) face
+  coefficients recovers the gain of `fd2c` while keeping `A` symmetric and
+  multigrid-compatible. Not tested.
+- **N5** Whether an error-controlled pseudo-time integrator converges on rough
+  fields. A fixed-step Euler flow decayed to 1.2e-4 at tau = 2.5 and then
+  destabilized (lambda*sigma = 0.11, 24^3).
+- **N6** How the paper reaches a "finite difference residual 1e-16" at 256^3,
+  sigma^2 = 4. Its spatial scheme and residual definition are not specified.
+- **N7** Robustness across realizations: the order and spectral probes use one
+  seed, and the numpy generator is not SF-18.
 
 ## Caveats
 
 - The 64^3 quartet was not run: with the fixed eps = 1e-2 leg and the 1e-6
   stage tolerance it would reproduce the lambda-floor failure (12 h per
-  variance). Deferred to the owner's decision on stopping criteria.
-- numpy fields use a spectral Gaussian generator (not SF-18) and
-  v_rms = 1; statistics, not realizations, match the fixtures.
-- Anderson floors are noisy (non-monotone); the dense-Newton probe is the
-  authoritative "no reachable zero" evidence at 24^3.
+  variance).
+- The spec's `sf26-smoke32` pipeline run was not repeated (the ctest heavy case
+  runs the identical fixture).
+- The V100 suite stays at 17/21 on this branch; the four red entries are the
+  recorded outcome, not regressions to fix silently. `anderson_stall` and
+  `newton_difficult` were NOT re-baselined: their fixtures assume a stall that
+  Anderson/Newton then cure, and on the corrected system both arms stall, so
+  there is no meaningful new baseline until the open decisions are taken.
+- numpy probes: spectral Gaussian generator (not SF-18), `v_rms = 1`, no Darcy
+  solve, simple Anderson; see "Audit" above for the instrument limitations.
+- The dense-Newton probe recorded 4 of its 6 planned steps.
+- `gmres_probe.py` was not preserved (see the artifacts README).
+
+## Artifacts
+
+`docs/experiments/artifacts/2026-10-01-sf26-probes/`: every probe script, every
+raw output, and a grep extract of the V100 full-suite logs.
 
 ## Next step
 
-Owner decision (human review of this PR): (a) truncation-aware acceptance for
-the implicit stack (stop at the measured floor; judge by Gate 3A physics and
-h-convergence), (b) SF-27 as planned but with error-controlled stepping that
-also bounds the nonlinear stiffness, and realistic step counts, (c) a
-gauge-fixing/bordered formulation that removes the manifold (SF-25 H4's
-research direction, now justified), or (d) higher ell/h (the paper's 16) with
-the floor tracked under refinement. See the proposed decision record
-`docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`.
+None inside SF-26: the increment is closed by owner directive (2026-10-02) with
+the gates recorded unmet. The decisions that remain open are listed as D1-D7
+in `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`.

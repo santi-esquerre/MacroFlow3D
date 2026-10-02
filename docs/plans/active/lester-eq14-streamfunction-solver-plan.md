@@ -24,13 +24,13 @@ The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-26`
-- Active runtime goal: `Corregir el emparejamiento de las fuentes S1/S2 en el residuo acoplado al sistema derivado (mismo índice), demostrarlo con un par exacto y re-imponer sin cambios los gates de heterogeneidad sigma_Y^2>=1.`
+- NEXT: `SF-27`
+- Active runtime goal: `none`
 - Increment ordering: strictly sequential
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-25`
+- Last completed increment: `SF-26`
 
 An increment may start only when it is named by `NEXT` and every dependency in
 its specification is `done`. Within that one active increment, the orchestrator
@@ -130,7 +130,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-23 — Restarted GMRES and block preconditioner](lester-eq14/increments/SF-23-gmres-preconditioner.md)
 - [x] [SF-24 — Globalized Newton-Krylov](lester-eq14/increments/SF-24-newton-krylov.md)
 - [x] [SF-25 — Manifold-robust terminal solver](lester-eq14/increments/SF-25-terminal-manifold-solver.md)
-- [ ] [SF-26 — Equation (14) source pairing correction](lester-eq14/increments/SF-26-source-pairing-correction.md)
+- [x] [SF-26 — Equation (14) source pairing correction](lester-eq14/increments/SF-26-source-pairing-correction.md)
 - [ ] [SF-27 — Paper-faithful explicit pseudo-time solver](lester-eq14/increments/SF-27-pseudo-time-solver.md)
 - [ ] [SF-28 — Reference case reproduction (256^3, sigma^2 = 4)](lester-eq14/increments/SF-28-reference-case-reproduction.md)
 - [ ] [SF-29 — Pseudo-symplectic particle tracker (GPU)](lester-eq14/increments/SF-29-pseudo-symplectic-tracker.md)
@@ -141,6 +141,21 @@ finding in `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`.
 The former heterogeneity gates live verbatim inside SF-26; grid continuation
 is absorbed by SF-28; GPU optimization, V100 benchmark, and mixed precision
 are deferred (their specifications remain in git history at `9a71963`).
+
+SF-26 closure 2026-10-02 (owner directive): the same-index pairing and its
+contract tests are accepted; the heterogeneity gates re-imposed in SF-26 are
+recorded UNMET and untuned (both 32^3 smokes exhaust the lambda floor at
+eta = 1; the 64^3 suite was not run). They are not attached to any pending
+increment. Open decisions D1-D7 live in
+`docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: acceptance
+at eta = 1 (D1), the fate of the unmet gates (D2), the residual discretization
+(D3), the SF-27 specification (D4), Newton at eta = 1 (D5), the four red ctest
+entries (D6), reference resolution and paper parity (D7). No locked decision
+below is changed; D1 and D3 put three of them in question (the 1e-6 nonlinear
+tolerance, harmonic-mean face coefficients, not differencing `grad(log K)`).
+`NEXT` names SF-27, but its specification is invalid as written (D4): an
+orchestrator activating SF-27 must stop at UNDERSTAND and report unless the
+owner has resolved D4.
 
 ## Locked mathematical and discrete decisions
 

@@ -1,0 +1,16 @@
+n=12 same-index r_F(exact pair)=3.795e-02  Linf=2.076e-01
+n=12 crossed    r_F(exact pair)=4.377e+00
+[same-index @exact pair] 2N=3456 smax=4.836e+03 smallest 8 rel sv: [1.20e-13 8.26e-13 7.83e-06 7.83e-06 2.67e-05 3.19e-05 3.44e-05 1.12e-04]  count<1e-8:2 <1e-6:2 <1e-4:7 <1e-3:24 <1e-2:140  (33s)
+[same-index @u=0 (non-solution)] 2N=3456 smax=3.730e+03 smallest 8 rel sv: [4.17e-15 4.26e-15 8.77e-13 1.26e-12 4.87e-07 2.30e-06 5.84e-05 5.84e-05]  count<1e-8:4 <1e-6:5 <1e-4:8 <1e-3:10 <1e-2:88  (36s)
+[crossed @exact pair] 2N=3456 smax=7.643e+03 smallest 8 rel sv: [2.71e-14 2.84e-13 6.70e-04 7.03e-04 2.38e-03 2.61e-03 2.81e-03 3.28e-03]  count<1e-8:2 <1e-6:2 <1e-4:2 <1e-3:4 <1e-2:55  (36s)
+gauge tangent step eps=0.001: r_F=4.389e-02 (base 3.795e-02); |J t|/|t| ~ 1.025e+01
+gauge tangent step eps=0.0001: r_F=3.801e-02 (base 3.795e-02); |J t|/|t| ~ 9.795e+00
+random direction: |J r|/|r| ~ 9.955e+02
+n=16 same-index r_F(exact pair)=2.197e-02  Linf=1.245e-01
+n=16 crossed    r_F(exact pair)=4.455e+00
+[same-index @exact pair] 2N=8192 smax=9.674e+03 smallest 8 rel sv: [3.50e-13 6.51e-13 6.01e-08 4.75e-06 5.40e-06 5.40e-06 1.82e-05 2.82e-05]  count<1e-8:2 <1e-6:3 <1e-4:10 <1e-3:44 <1e-2:353  (226s)
+[same-index @u=0 (non-solution)] 2N=8192 smax=7.273e+03 smallest 8 rel sv: [2.93e-15 3.14e-15 5.89e-13 6.55e-13 1.80e-07 3.31e-07 2.48e-05 2.48e-05]  count<1e-8:4 <1e-6:6 <1e-4:10 <1e-3:11 <1e-2:276  (219s)
+[crossed @exact pair] 2N=8192 smax=1.470e+04 smallest 8 rel sv: [7.19e-14 2.72e-13 2.24e-04 2.35e-04 1.22e-03 1.35e-03 1.37e-03 1.56e-03]  count<1e-8:2 <1e-6:2 <1e-4:2 <1e-3:4 <1e-2:150  (270s)
+gauge tangent step eps=0.001: r_F=2.635e-02 (base 2.197e-02); |J t|/|t| ~ 6.759e+00
+gauge tangent step eps=0.0001: r_F=2.201e-02 (base 2.197e-02); |J t|/|t| ~ 5.910e+00
+random direction: |J r|/|r| ~ 1.719e+03

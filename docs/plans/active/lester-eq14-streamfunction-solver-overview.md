@@ -496,6 +496,13 @@ contratos y tests discretos
      emparejaba S1/S2 cruzados (forma impresa del paper); ver
      docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md]
   -> corrección del emparejamiento + gates de heterogeneidad (SF-26)
+  -> [SF-26 cerrado 2026-10-02: emparejamiento corregido y demostrado con
+     pares exactos; los gates de heterogeneidad quedaron SIN cumplir: el
+     sistema discreto corregido tiene un piso de residuo en eta=1 sobre
+     campos gaussianos (cae con el refinamiento, crece con la amplitud).
+     Decisiones abiertas D1-D7 en
+     docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md;
+     los pasos siguientes dependen de ellas]
   -> solver pseudo-tiempo explícito fiel al paper (SF-27, contraste con el
      stack implícito, que se mantiene)
   -> reproducción del caso de referencia 256^3 con iteración anidada (SF-28)
