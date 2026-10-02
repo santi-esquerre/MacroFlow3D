@@ -46,20 +46,86 @@ not representative. Claude Code subagents (`increment-worker`,
 through this mechanism rather than executing them synchronously inside their
 own isolated worktree.
 
-### Concurrency: the remote mirror is shared, single-flight state
+### Concurrency: one increment, one mirror; one job per GPU
 
-`REMOTE_REPO_DIR` (default `~/MacroFlow3D`, see `scripts/remote.env`) is one
-shared execution surface — not one mirror per branch, worktree, or agent. A
-`scripts/remote sync` overwrites the tree in place; running it while another
-job is still executing on V100 corrupts that job's build/source state, and two
-concurrent heavy jobs against the same build directory race each other.
+The V100 host has two GPUs and is shared by every agent. `scripts/remote`
+isolates concurrent work in two ways:
 
-Do not run `scripts/remote sync` or launch a new `scripts/remote run` job
-while another job for the same increment/session is still `RUNNING`
-(`scripts/remote status <job>`). If an orchestrated DAG has two nodes that
-both require remote V100 execution, serialize them even if their local Git
-write scopes would otherwise allow them to run in parallel — remote V100 is
-shared external state under the DAG parallelism rule.
+1. **Per-increment mirrors.** `scripts/remote --increment SF-NN <subcommand>`
+   (or `REMOTE_INCREMENT=SF-NN` in the environment) selects a private mirror
+   `~/MacroFlow3D-SF-NN`, a private state root
+   `~/.macroflow3d-remote/macroflow3d-SF-NN` (logs, status, commands,
+   launchers) and the tmux prefix `macroflow3d-SF-NN`. A `sync` for one
+   increment never touches another increment's tree or build directories.
+   Without an id the legacy shared mirror `~/MacroFlow3D`, state root
+   `~/.macroflow3d-remote/macroflow3d` and prefix `macroflow3d` are used,
+   exactly as before. Explicit `REMOTE_REPO_DIR` / `REMOTE_STATE_ROOT` /
+   `REMOTE_SESSION_PREFIX` overrides still win over the derived paths.
+2. **Host-wide GPU locks.** Every `scripts/remote run` job takes an exclusive
+   `flock` on `~/.macroflow3d-remote/gpu-<n>.lock` (n = 0 or 1) for its whole
+   lifetime and exports `CUDA_VISIBLE_DEVICES=<n>` to the command. The locks are
+   shared by all mirrors (including the legacy one), so two jobs can never
+   share a GPU, and at most two `run` jobs execute on the host at once.
+
+The rule is therefore:
+
+- **one increment, one mirror** — always pass `--increment SF-NN` (or set
+  `REMOTE_INCREMENT=SF-NN`) for increment work; never share a mirror between
+  increments;
+- **one job per GPU at a time** — enforced by the lock;
+- **two jobs maximum across the host** — enforced by the two locks.
+
+Within one increment the mirror is still single-flight: do not
+`scripts/remote --increment SF-NN sync` while a job of that same increment is
+`running` or `waiting_gpu`, because the sync overwrites the tree the job
+executes against. Two DAG nodes of the same increment that both need remote
+execution must still be serialized.
+
+`scripts/remote exec` takes **no** GPU lock; it is only for short, bounded
+configure/compile/smoke steps.
+
+#### GPU selection and waiting
+
+```bash
+scripts/remote --increment SF-NN run <job> -- "<cmd>"            # --gpu auto (default): first free GPU
+scripts/remote --increment SF-NN run <job> --gpu 1 -- "<cmd>"    # pin GPU 1
+REMOTE_GPU_WAIT=1800 scripts/remote --increment SF-NN run <job> -- "<cmd>"
+```
+
+- `REMOTE_GPU_WAIT=<seconds>` (default `0`) is how long a job waits for a free
+  GPU. While waiting, its state is `waiting_gpu` (`status` shows it;
+  `wait` keeps polling through it).
+- With `REMOTE_GPU_WAIT=0`, or when the wait expires, the job does not run:
+  its state becomes `failed` with **exit code 75**, and its log lists the
+  current holders of both GPUs (job, session, increment, start time, whether
+  the session is alive). `scripts/remote wait <job>` returns 75.
+- `status` reports the assigned GPU in the `gpu:` line and the mirror in the
+  `working_dir:` line; the log records `GPU=<n> (CUDA_VISIBLE_DEVICES=<n>, ...)`.
+- `cancel` terminates the job's whole process group (launcher, command and
+  children), so its GPU lock is released immediately. Processes that detach
+  themselves with `setsid`/`nohup &` escape the group and keep the lock until
+  they exit.
+- The holder files `~/.macroflow3d-remote/gpu-<n>.holder` are informational
+  only; the kernel `flock` is the authority. A stale holder file never blocks
+  a new job.
+
+#### Mirror lifecycle
+
+```bash
+scripts/remote list-mirrors           # mirrors, state roots, current GPU holders
+scripts/remote remove-mirror SF-NN    # delete ~/MacroFlow3D-SF-NN and its state root
+```
+
+- `remove-mirror` refuses (exit 1) while any tmux session with prefix
+  `macroflow3d-SF-NN-` is alive. It never removes the shared `~/MacroFlow3D`.
+- Remove an increment's mirror once its PR is merged (copy out any logs or
+  outputs that the increment record cites first).
+- A new per-increment mirror contains only what `sync` copies: it has **no**
+  remote-only PETSc/SLEPc trees (`src/external/petsc`, `src/external/slepc`)
+  and no build directories. `v100-release` builds work after a normal
+  configure/build; `v100-petsc` builds need the shared mirror (no
+  `--increment`) or a manual copy of the PETSc/SLEPc trees into the
+  per-increment mirror.
 
 ---
 
@@ -115,14 +181,23 @@ Recommended build directories:
 Everything goes through one repo-local entry point:
 
 ```bash
-scripts/remote sync
-scripts/remote exec -- "<shell-command>"
-scripts/remote run <job> -- "<shell-command>"
-scripts/remote status <job>
-scripts/remote tail <job>
-scripts/remote wait <job>
-scripts/remote cancel <job>
+scripts/remote [--increment <id>] sync
+scripts/remote [--increment <id>] exec -- "<shell-command>"
+scripts/remote [--increment <id>] run <job> [--gpu auto|0|1] -- "<shell-command>"
+scripts/remote [--increment <id>] status <job>
+scripts/remote [--increment <id>] tail <job> [--lines N] [--no-follow]
+scripts/remote [--increment <id>] wait <job> [--interval SEC]
+scripts/remote [--increment <id>] cancel <job>
+scripts/remote list-mirrors
+scripts/remote remove-mirror <id>
 ```
+
+`--increment <id>` (also `--increment=<id>`, or env `REMOTE_INCREMENT=<id>`)
+is a global option and must come **before** the subcommand. Use the same id
+for every call of one increment (sync, exec, run, status, tail, wait, cancel);
+job names are scoped to that id. Job states are `waiting_gpu`, `running`,
+`succeeded`, `failed` (exit 75 = no GPU available), `cancelled` (130) and
+`unknown`. See Section 0 for GPU locking and mirror lifecycle.
 
 Remote defaults live in:
 
@@ -132,8 +207,9 @@ scripts/remote.env
 
 That file defines:
 - remote host alias
-- remote repo path
-- remote state root
+- remote repo path (derived per increment when an id is given)
+- remote state root (derived per increment when an id is given)
+- GPU lock root (`REMOTE_LOCK_ROOT`, host-wide) and `REMOTE_GPU_WAIT`
 - log / status / command / launcher directories
 - tmux session prefix
 - rsync exclusions
@@ -288,4 +364,11 @@ Avoid:
 - running a long-duration remote command with blocking `scripts/remote exec`
   instead of `scripts/remote run` + `scripts/remote wait`
 - running `scripts/remote sync` or a new `scripts/remote run` job while another
-  job is still `RUNNING` against the same shared remote mirror
+  job is still `running`/`waiting_gpu` against the same mirror
+- sharing one remote mirror between two increments (always use
+  `--increment SF-NN` / `REMOTE_INCREMENT=SF-NN` for increment work)
+- running two heavy jobs on one GPU: do not bypass the GPU lock with
+  `scripts/remote exec`, `CUDA_VISIBLE_DEVICES` overrides inside the command,
+  or detached (`setsid`/`nohup &`) processes that outlive their job
+- leaving per-increment mirrors on the host after the increment's PR is merged
+  (`scripts/remote remove-mirror SF-NN`)

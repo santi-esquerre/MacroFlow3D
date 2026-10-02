@@ -9,6 +9,23 @@ if [[ -z "$repo_root" ]]; then
   exit 1
 fi
 
+# Global option (must come BEFORE the subcommand): --increment <id>
+# Falls back to env REMOTE_INCREMENT, else none (legacy shared mirror).
+if [[ "${1:-}" == "--increment" ]]; then
+  [[ $# -ge 2 ]] || { echo "ERROR: --increment requires <id>" >&2; exit 1; }
+  REMOTE_INCREMENT="$2"
+  shift 2
+elif [[ "${1:-}" == --increment=* ]]; then
+  REMOTE_INCREMENT="${1#--increment=}"
+  shift
+fi
+REMOTE_INCREMENT="${REMOTE_INCREMENT:-}"
+if [[ -n "$REMOTE_INCREMENT" && ! "$REMOTE_INCREMENT" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+  echo "ERROR: increment ids must match ^[A-Za-z0-9][A-Za-z0-9._-]*$" >&2
+  exit 1
+fi
+export REMOTE_INCREMENT
+
 # Centralized remote defaults live here; environment variables can still override
 # them without changing call sites.
 # shellcheck disable=SC1091
@@ -19,13 +36,30 @@ REMOTE_RSYNC_EXCLUDES=("${REMOTE_RSYNC_EXCLUDES[@]:-}")
 usage() {
   cat <<'EOF'
 Usage:
+  scripts/remote [--increment <id>] <subcommand> ...
+
   scripts/remote sync
   scripts/remote exec -- "<shell-command>"
-  scripts/remote run <job> -- "<shell-command>"
+  scripts/remote run <job> [--gpu auto|0|1] -- "<shell-command>"
   scripts/remote status <job>
   scripts/remote tail <job> [--lines N] [--no-follow]
   scripts/remote wait <job> [--interval SEC]
   scripts/remote cancel <job>
+  scripts/remote list-mirrors
+  scripts/remote remove-mirror <id>
+
+Per-increment isolation:
+  --increment <id> (or env REMOTE_INCREMENT) selects mirror ~/MacroFlow3D-<id>,
+  state root ~/.macroflow3d-remote/macroflow3d-<id> and tmux prefix
+  macroflow3d-<id>. Without an id the legacy shared mirror is used.
+  The option goes before the subcommand name.
+
+GPU arbitration:
+  `run` takes an exclusive flock on gpu-<n>.lock (n in {0,1}) for the whole
+  job and exports CUDA_VISIBLE_DEVICES=<n>. REMOTE_GPU_WAIT=<sec> (default 0)
+  controls how long to wait when no GPU is free (state waiting_gpu); if none
+  becomes free the job fails with exit code 75. `cancel` kills the job's whole
+  process group, releasing its lock. `exec` takes no lock.
 
 Canonical examples:
   scripts/remote sync
@@ -40,8 +74,11 @@ Configuration:
   Repo defaults are defined in scripts/remote.env.
   Supported environment overrides include:
     REMOTE_HOST
+    REMOTE_INCREMENT
     REMOTE_REPO_DIR
     REMOTE_STATE_ROOT
+    REMOTE_GPU_WAIT
+    REMOTE_LOCK_ROOT
     REMOTE_WAIT_INTERVAL
     REMOTE_SSH_RETRIES
     REMOTE_SSH_RETRY_DELAY
@@ -158,6 +195,39 @@ write_remote_file() {
   printf '%s\n' "$content" | ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "cat > $path && chmod $mode $path")"
 }
 
+# Remote shell snippet that terminates a job's tmux session AND its whole
+# process group. `tmux kill-session` alone only hangs up the pane: the launcher
+# defers its trap while the job command runs in the foreground, so the command
+# (and the GPU flock it inherits on fd 9) would survive until it finishes on its
+# own. The pane pid is the session/process-group leader created by tmux, so
+# signalling -<pane_pid> reaches the launcher, the job command and its children
+# (anything that calls setsid escapes, as before).
+#
+# The remote tmux (1.8) has no exact-match `-t =name` targets and resolves
+# `-t name` by prefix when no session is named exactly `name`; so sessions are
+# matched exactly via list-sessions/list-panes -a, and kill-session is only
+# issued after an exact match (exact names win over prefixes in tmux lookup).
+kill_session_snippet() {
+  local session_q
+  session_q=$(printf '%q' "$1")
+  cat <<EOF
+if tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- $session_q; then
+  pane_pid=\$(tmux list-panes -a -F '#{session_name} #{pane_pid}' 2>/dev/null | awk -v s=$session_q '\$1==s {print \$2; exit}' || true)
+  if [[ -n "\$pane_pid" ]]; then
+    kill -TERM -- "-\$pane_pid" 2>/dev/null || true
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      kill -0 -- "-\$pane_pid" 2>/dev/null || break
+      sleep 1
+    done
+    kill -KILL -- "-\$pane_pid" 2>/dev/null || true
+  fi
+  if tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- $session_q; then
+    tmux kill-session -t $session_q 2>/dev/null || true
+  fi
+fi
+EOF
+}
+
 status_snapshot() {
   local job="$1"
   local session_name status_path
@@ -180,9 +250,10 @@ status_snapshot() {
       COMMAND_FILE=$(printf '%q' "$(remote_command_path_for "$job")")
       WORKING_DIR=$(printf '%q' "$REMOTE_REPO_DIR")
       UPDATED_AT=
+      GPU=
     fi
 
-    if tmux has-session -t \"\$session_name\" 2>/dev/null; then
+    if tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- \"\$session_name\"; then
       TMUX_ACTIVE=1
     else
       TMUX_ACTIVE=0
@@ -197,6 +268,7 @@ status_snapshot() {
     printf 'COMMAND_FILE=%q\n' \"\$COMMAND_FILE\"
     printf 'WORKING_DIR=%q\n' \"\$WORKING_DIR\"
     printf 'UPDATED_AT=%q\n' \"\${UPDATED_AT-}\"
+    printf 'GPU=%q\n' \"\${GPU-}\"
     printf 'TMUX_ACTIVE=%q\n' \"\$TMUX_ACTIVE\"
   "
 }
@@ -221,10 +293,13 @@ exec_command() {
 
 run_command() {
   local job="$1"
-  local command="$2"
+  local gpu_req="$2"
+  local command="$3"
   local session_name log_path status_path command_path launcher_path launcher_body
 
   validate_job_name "$job"
+  [[ "$gpu_req" =~ ^(auto|0|1)$ ]] || die "--gpu must be auto, 0 or 1"
+  [[ "$REMOTE_GPU_WAIT" =~ ^[0-9]+$ ]] || die "REMOTE_GPU_WAIT must be a non-negative integer (seconds)"
   ensure_remote_repo
   ensure_remote_state_dirs
 
@@ -246,6 +321,11 @@ repo_dir=$REMOTE_REPO_DIR
 command_file=$command_path
 status_file=$status_path
 log_file=$log_path
+gpu_req=$gpu_req
+gpu_wait=$REMOTE_GPU_WAIT
+lock_root=$REMOTE_LOCK_ROOT
+increment=$(printf '%q' "$REMOTE_INCREMENT")
+gpu=
 
 write_status() {
   local state="\$1"
@@ -260,7 +340,75 @@ write_status() {
     printf 'COMMAND_FILE=%q\n' "\$command_file"
     printf 'WORKING_DIR=%q\n' "\$repo_dir"
     printf 'UPDATED_AT=%q\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'GPU=%q\n' "\$gpu"
   } >"\$status_file"
+}
+
+# The flock is the authority on GPU occupancy (the kernel drops it when every
+# process holding the fd dies). The holder file is informational only: each new
+# acquirer overwrites it, so a stale file never blocks anyone.
+cleanup_holder() {
+  local h="\$lock_root/gpu-\$gpu.holder"
+  if [[ -n "\$gpu" && -f "\$h" ]] && grep -qxF "HOLDER_SESSION=\$session_name" "\$h" 2>/dev/null; then
+    rm -f "\$h"
+  fi
+}
+
+describe_holders() {
+  local n h
+  for n in 0 1; do
+    h="\$lock_root/gpu-\$n.holder"
+    if [[ -f "\$h" ]]; then
+      (
+        HOLDER_JOB=; HOLDER_SESSION=; HOLDER_SINCE=; HOLDER_INCREMENT=
+        # shellcheck disable=SC1090
+        source "\$h"
+        if [[ -n "\$HOLDER_SESSION" ]] && tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- "\$HOLDER_SESSION"; then
+          alive=alive
+        else
+          alive="session not alive (stale holder file or surviving child process)"
+        fi
+        printf '  gpu %s: job=%s session=%s increment=%s since=%s [%s]\n' "\$n" "\$HOLDER_JOB" "\$HOLDER_SESSION" "\${HOLDER_INCREMENT:-none}" "\$HOLDER_SINCE" "\$alive"
+      )
+    else
+      printf '  gpu %s: no holder file\n' "\$n"
+    fi
+  done
+}
+
+try_gpu() {
+  local n="\$1"
+  exec 9>"\$lock_root/gpu-\$n.lock"
+  if flock -n 9; then
+    gpu="\$n"
+    return 0
+  fi
+  return 1
+}
+
+acquire_gpu() {
+  local n deadline
+  mkdir -p "\$lock_root"
+  if [[ "\$gpu_req" == auto ]]; then
+    deadline=\$((SECONDS + gpu_wait))
+    while true; do
+      for n in 0 1; do
+        if try_gpu "\$n"; then return 0; fi
+      done
+      if (( SECONDS >= deadline )); then return 1; fi
+      write_status waiting_gpu
+      sleep 2
+    done
+  else
+    exec 9>"\$lock_root/gpu-\$gpu_req.lock"
+    if (( gpu_wait > 0 )); then
+      write_status waiting_gpu
+      if flock -w "\$gpu_wait" 9; then gpu="\$gpu_req"; return 0; fi
+    else
+      if flock -n 9; then gpu="\$gpu_req"; return 0; fi
+    fi
+    return 1
+  fi
 }
 
 handle_cancel() {
@@ -272,12 +420,32 @@ handle_cancel() {
 }
 
 trap handle_cancel INT TERM HUP
+trap cleanup_holder EXIT
 
 : >"\$log_file"
+write_status waiting_gpu
+
+if ! acquire_gpu; then
+  {
+    printf '[%s] job=%s ERROR: no GPU available (request=%s, REMOTE_GPU_WAIT=%s). Current holders:\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name" "\$gpu_req" "\$gpu_wait"
+    describe_holders
+  } >>"\$log_file" 2>&1
+  write_status failed 75
+  exit 75
+fi
+
+{
+  printf 'HOLDER_JOB=%q\n' "\$job_name"
+  printf 'HOLDER_SESSION=%q\n' "\$session_name"
+  printf 'HOLDER_INCREMENT=%q\n' "\$increment"
+  printf 'HOLDER_SINCE=%q\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} >"\$lock_root/gpu-\$gpu.holder"
+export CUDA_VISIBLE_DEVICES="\$gpu"
 write_status running
 
 {
   printf '[%s] job=%s session=%s started\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name" "\$session_name"
+  printf '[%s] GPU=%s (CUDA_VISIBLE_DEVICES=%s, request=%s)\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$gpu" "\$gpu" "\$gpu_req"
   printf '[%s] cwd=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$repo_dir"
   printf '[%s] command=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$(cat "\$command_file")"
 } >>"\$log_file"
@@ -305,8 +473,8 @@ EOF
   write_remote_file "$launcher_path" 700 "$launcher_body"
 
   ssh_run "
-    tmux kill-session -t $(printf '%q' "$session_name") 2>/dev/null || true
-    tmux new-session -d -s $(printf '%q' "$session_name") $launcher_path
+$(kill_session_snippet "$session_name")
+tmux new-session -d -s $(printf '%q' "$session_name") $launcher_path
   "
 
   echo "Launched remote job '$job'"
@@ -328,6 +496,8 @@ session: $SESSION_NAME
 state: $STATE
 exit_code: ${EXIT_CODE:-}
 tmux_active: $TMUX_ACTIVE
+gpu: ${GPU:-}
+working_dir: $WORKING_DIR
 log: $LOG_FILE
 status: $STATUS_FILE
 command: $COMMAND_FILE
@@ -439,13 +609,52 @@ STATUS_FILE=$(printf '%q' "$status_path")
 COMMAND_FILE=$(printf '%q' "$command_path")
 WORKING_DIR=$(printf '%q' "$REMOTE_REPO_DIR")
 UPDATED_AT=$(printf '%q' "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
+GPU=
 EOF
 )
 
-  ssh_run "tmux kill-session -t $(printf '%q' "$session_name") 2>/dev/null || true"
+  ssh_run "$(kill_session_snippet "$session_name")"
   write_remote_file "$status_path" 600 "$cancelled_status"
 
   echo "Cancelled remote job '$job'."
+}
+
+list_mirrors_command() {
+  # shellcheck disable=SC2016
+  ssh_run '
+    shopt -s nullglob
+    echo "Source mirrors (~/MacroFlow3D*):"
+    for d in ~/MacroFlow3D*; do [[ -d "$d" ]] && du -sh "$d"; done
+    echo "State roots (~/.macroflow3d-remote/macroflow3d*):"
+    for d in ~/.macroflow3d-remote/macroflow3d*; do [[ -d "$d" ]] && du -sh "$d"; done
+    echo "GPU holder files (~/.macroflow3d-remote/gpu-*.holder):"
+    for f in ~/.macroflow3d-remote/gpu-*.holder; do echo "$f:"; sed "s/^/  /" "$f"; done
+    true
+  '
+}
+
+remove_mirror_command() {
+  local id="$1"
+  local prefix repo state_dir remote_cmd
+  [[ "$id" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || die "increment ids must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
+  prefix="macroflow3d-${id}-"
+  # Tilde is intentionally left unexpanded: it expands on the remote host.
+  # shellcheck disable=SC2088
+  repo="~/MacroFlow3D-${id}"
+  # shellcheck disable=SC2088
+  state_dir="~/.macroflow3d-remote/macroflow3d-${id}"
+  remote_cmd="
+    live=\$(tmux list-sessions -F '#{session_name}' 2>/dev/null | awk -v p=$(printf '%q' "$prefix") 'index(\$0,p)==1' || true)
+    if [[ -n \"\$live\" ]]; then
+      echo 'ERROR: refusing to remove mirror $id; live tmux sessions with prefix ${prefix}:' >&2
+      echo \"\$live\" >&2
+      exit 1
+    fi
+    echo 'Removing' $repo 'and' $state_dir
+    rm -rf $repo $state_dir
+  "
+  # Single attempt (no ssh_run retry): a refusal must not be repeated.
+  ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$remote_cmd")" || die "remove-mirror $id failed or was refused"
 }
 
 main() {
@@ -462,9 +671,28 @@ main() {
       ;;
     run)
       [[ $# -ge 1 ]] || die "run requires <job>"
-      local job="$1"
+      local job="$1" gpu_req=auto
       shift
-      run_command "$job" "$(require_command_string "$@")"
+      while [[ $# -gt 0 && "$1" != "--" ]]; do
+        case "$1" in
+          --gpu)
+            shift
+            [[ $# -gt 0 ]] || die "--gpu requires a value (auto|0|1)"
+            gpu_req="$1"
+            ;;
+          *) die "unknown run option: $1" ;;
+        esac
+        shift
+      done
+      run_command "$job" "$gpu_req" "$(require_command_string "$@")"
+      ;;
+    list-mirrors|mirrors)
+      [[ $# -eq 0 ]] || die "list-mirrors takes no arguments"
+      list_mirrors_command
+      ;;
+    remove-mirror)
+      [[ $# -eq 1 ]] || die "remove-mirror requires <id>"
+      remove_mirror_command "$1"
       ;;
     status)
       [[ $# -eq 1 ]] || die "status requires <job>"
