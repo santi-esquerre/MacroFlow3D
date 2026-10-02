@@ -27,19 +27,25 @@
 #include <vector>
 
 // SF-21 (first built pre-re-sequencing as SF-20 T02, ported onto the
-// Anderson-bearing solver by SF-21 T02r): `streamfunction_heterogeneity_unit`
-// / `streamfunction_heterogeneity_smoke` acceptance cases for
+// Anderson-bearing solver by SF-21 T02r): acceptance cases for
 // `run_streamfunction_heterogeneity_continuation`
 // (`ContinuationController.hpp/.cu`, the SF-21 CoefficientState extension +
-// lambda/rescue continuation driver). Cases 1-4 (host+small-GPU, cheap tier)
+// lambda/rescue continuation driver). Cases 1-4 and 7 (cheap tier) form the
+// `streamfunction_heterogeneity_unit` ctest entry. Cases 5-6
+// (`heterogeneity_smoke_sigma025`, `heterogeneity_smoke_sigma1`; heavy tier)
+// are NOT a ctest entry since SF-27 (ctest holds fast contract tests only);
+// they are run as a documented experiment listed in
+// `docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md`.
+// Cases 1-4 (host+small-GPU, cheap tier)
 // exercise `CoefficientState` and the exact lambda/eta-rescue ordering/
 // rollback contract via `StageSolveFn` injection, mirrored from
 // `streamfunction_continuation_gpu_cases.cu`'s established injection
 // pattern. Case 7 (cheap tier) is the SF-21 re-activation addition: a
 // deterministic proof that `solve_streamfunctions` clears the Anderson
-// history at solve entry (decision R2a). Cases 5-6 (heavy tier -- see
-// `heterogeneity_continuation_smoke_case_registry()`/
-// `streamfunction_operator_tests.cpp`'s `heavy_cases()`) are the
+// history at solve entry (decision R2a). Cases 5-6 (heavy tier, not a ctest
+// entry -- see `heterogeneity_continuation_smoke_case_registry()`/
+// `streamfunction_operator_tests.cpp`'s `heavy_cases()` and the experiment
+// index above) are the
 // PRESPECIFIED (SF-20 activation bitácora, decision 5(b)) 32^3 physical
 // Gaussian smokes: fixed seed 12345, ell=8, sigma_Y^2 in {0.25, 1.0}, GATING
 // on reached_target/final_lambda==1/every accepted stage r_F<=1e-6, now also
