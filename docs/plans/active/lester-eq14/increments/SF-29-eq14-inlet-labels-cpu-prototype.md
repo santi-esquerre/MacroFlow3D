@@ -1,6 +1,6 @@
 # SF-29 — CPU prototype: equation (14) with `x1` non-periodic and inlet labels
 
-- State: `pending`
+- State: `active`
 - Goal: `Determinar con un prototipo CPU si la ecuación (14) generalizada a x1 no periódica, con etiquetas fijadas en la cara de entrada, reproduce las etiquetas del flujo de Darcy real con e_v convergente bajo refinamiento y sin floor.`
 - Depends on: `SF-26`
 - Unlocks: `none`
@@ -8,8 +8,8 @@
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 2 + Gate 3A (CPU, no production code)`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable 5.1 orchestrator session (2026-10-02, second session, parallel to SF-27)`
+- Started: `2026-10-02T23:55Z on master=81cd612`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -105,3 +105,4 @@ artifacts or experiment notes and link them here.
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
 | 2026-10-02T00:00Z | not started | Specification created by the 2026-10-02 re-sequencing (decision record `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`). | Replaces the cancelled SF-27..SF-30 specifications (git history at `4670fb5`). | Activate only when the checker reports it READY. |
+| 2026-10-02T23:55Z | activation on `master=81cd612` (checker OK ready=SF-29, nonterminal=SF-27 -> now SF-27 SF-29); delivery branch `science/lester-sf29-eq14-inlet-labels-prototype` | UNDERSTAND (scientific-rigor skill invoked). Object: Darcy labels transported from the inlet face (exist for every case with `v1 > 0`; oracle = backward streamline tracing of the spectral Darcy potential, label-independent). Analysis of eq. (14) on the slab, linearized about `k = 1`: principal symbol determinant `xi1^2 |xi|^2` (not elliptic); per transverse mode four `x1`-modes (relabeling gauge, an `x1`-linear shear whose flow is helical and satisfies (14) exactly, two potential modes); inlet Dirichlet fixes two. Pre-registered predictions: P1 the spec-literal candidate (i) (no outlet condition, one-sided (14) rows at the outlet) has a null cluster of ~2(N_perp^2-1) modes and fails criterion (4); P2 constant-head case: (14) + inlet Dirichlet + outlet Neumann `d1 psi_i = 0` is well-posed and its solution is the Darcy labels; P3 periodic-flow case: flow periodicity removes the potential modes but not the shear; the outlet condition `grad psi1 x grad psi2 x e1 = v_D x e1 |_inlet` (uses only inlet-face data + periodicity; reduces to P2's Neumann when `v_perp = 0`) closes it — run as candidate (i-1), spec-literal as control (i-0); P5/P6 candidate (ii) = dissipation energy with Whitney/mimetic discretely solenoidal face fluxes (collocated version excluded), free outlet in the constant-head case, outlet-flux constraint `c1(1,.) = v1(0,.)` in the periodic case (Kelvin principle); its Euler-Lagrange equations are (14) + natural outlet condition. Deviations recorded for the reviewer: D-1 the triangular inlet construction is normalized (`psi2 = int_0^x3 Q`, `psi1 = int_0^x2 v1 / Q(x3)`) so both labels are affine + periodic in (x2, x3) (the spec's literal `psi2 = x3` gives an `x3`-dependent jump of `psi1`); D-2 outlet condition for (i) as above; D-3 outlet flux constraint for (ii) in the periodic case; D-4 constant-head case realized by the mirror trick `k(g(x1), x2, x3)`, `g = (1 - cos pi x1)/2` on a length-2 periodic cell (odd potential -> constant head, `v_perp = 0` on the faces), reusing the closure-probe spectral solver. DAG: N1 reference + inlet labels + oracle + note skeleton (criteria fixed, status planned); N2 candidate (i) || N3 candidate (ii); N4 full sweep as a detached CPU job on the V100 host (`scripts/remote --increment SF-29 run sf29-run-all`, 7 fields x eps {0.25, 0.5, 1} x N {16, 32, 48} x {i-0, i-1, ii}, dense spectra at 12^3/16^3); N5 note + decision record + next-phase specs (if a formulation qualifies). | Criteria (1)-(5) of this spec, unchanged; predictions above fixed before any candidate run. Human-review increment. | Activation commit; launch N1 worker. |
