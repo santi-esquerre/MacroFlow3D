@@ -1,7 +1,7 @@
 # eta = 1 residual floor of the corrected equation (14): findings and open decisions
 
-- Status: open — findings recorded, no option adopted. SF-26 was closed by owner
-  directive on 2026-10-02 with the decisions below deferred.
+- Status: superseded by `2026-10-02-roadmap-audit-and-foundational-redesign.md`
+  (D1–D7 dispositions recorded there)
 - Date: 2026-10-01 (updated 2026-10-02)
 - Deciders: owner (direction), Claude Code orchestrator (analysis)
 - Relates to: `2026-09-30-eq14-source-pairing-root-cause.md` (confirmed),
@@ -79,6 +79,14 @@ the gauge cluster itself is not separated.
 - Robustness across realizations (one seed in the order/spectral probes).
 
 ## Open decisions (owner)
+
+These decisions are closed by `2026-10-02-roadmap-audit-and-foundational-redesign.md`
+(accepted 2026-10-02). Disposition: D1, D3, D5 moot (they tune a system whose
+solution is not the target); D2 retired with that record as the reason; D4 resolved by
+cancelling the pseudo-time increment; D6 resolved by SF-27 (heavy entries leave ctest
+and become documented experiments); D7 resolved by adopting the Lester (2021) field as
+the positive control, the paper's `1e-16` left unreconciled and non-blocking. The text
+below is kept as the historical record.
 
 - **D1 — Acceptance at eta = 1.** Keep the locked algebraic tolerance
   (`r_F <= 1e-6` per accepted stage) or accept at the measured floor on Gate 3A

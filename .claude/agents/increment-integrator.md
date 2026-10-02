@@ -1,7 +1,7 @@
 ---
 name: increment-integrator
 description: Integrates only orchestrator-approved MacroFlow3D increment commits in an isolated worktree, resolves semantic conflicts, and validates the combined increment.
-model: sonnet
+model: opus
 effort: medium
 permissionMode: bypassPermissions
 isolation: worktree

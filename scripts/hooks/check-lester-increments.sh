@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
-# Validate the sequential Lester equation (14) increment harness.
+# Validate the Lester equation (14) increment DAG harness.
+#
+# Semantics:
+#   - Increments SF-NN are dependency-ordered (a DAG), not strictly sequential.
+#     State lives in each spec's `State:` line and in the dashboard master
+#     checklist (checked iff `done`); there is no NEXT pointer.
+#   - READY = `pending` with every dependency `done` (or `Depends on: none`).
+#   - Nonterminal = active|validating|awaiting_review|blocked; at most 2 may
+#     exist at a time (one orchestrator session and one PR each).
+#   - Any non-pending increment requires all its dependencies `done`.
+#   - Dependency ids are validated for every state, including pending.
+#   - Stale `- NEXT:`, `- Active runtime goal:` and `- Last completed
+#     increment:` dashboard lines are rejected.
 # Backticks below are literal Markdown delimiters in sed/grep patterns.
 # shellcheck disable=SC2016
 set -euo pipefail
@@ -11,6 +23,7 @@ fi
 
 dashboard="$repo_root/docs/plans/active/lester-eq14-streamfunction-solver-plan.md"
 increment_dir="$repo_root/docs/plans/active/lester-eq14/increments"
+max_nonterminal=2
 
 failures=0
 fail() {
@@ -26,16 +39,14 @@ if (( failures > 0 )); then
 fi
 
 mapfile -t files < <(find "$increment_dir" -maxdepth 1 -type f -name 'SF-*.md' | sort)
-expected_count=31
+expected_count=33
 [[ ${#files[@]} -eq $expected_count ]] || \
     fail "expected $expected_count increment files, found ${#files[@]}"
 
 declare -A states
-declare -A paths
 declare -A goals
-active_count=0
-first_not_done=""
-seen_not_done=0
+declare -A deps
+nonterminal=()
 
 required_headings=(
     "## Scientific or engineering intent"
@@ -78,7 +89,7 @@ for index in "${!files[@]}"; do
     fi
 
     states["$expected_id"]="$state"
-    paths["$expected_id"]="$file"
+    deps["$expected_id"]="$depends"
 
     for heading in "${required_headings[@]}"; do
         grep -Fqx "$heading" "$file" || fail "$expected_id missing heading: $heading"
@@ -93,15 +104,11 @@ for index in "${!files[@]}"; do
             grep -Eq '^- \[ \]'; then
             fail "$expected_id is done but has unchecked completion items"
         fi
-        (( seen_not_done == 0 )) || fail "$expected_id is done after an unfinished increment"
-    else
-        seen_not_done=1
-        [[ -n "$first_not_done" ]] || first_not_done="$expected_id"
     fi
 
     case "$state" in
         active|validating|awaiting_review|blocked)
-            active_count=$((active_count + 1))
+            nonterminal+=("$expected_id")
             ;;
     esac
 
@@ -118,45 +125,55 @@ for index in "${!files[@]}"; do
     fi
 done
 
-(( active_count <= 1 )) || fail "more than one increment is active/nonterminal"
+(( ${#nonterminal[@]} <= max_nonterminal )) || \
+    fail "more than $max_nonterminal nonterminal increments: ${nonterminal[*]}"
 
-for id in "${!states[@]}"; do
-    state="${states[$id]}"
-    depends="$(sed -n 's/^- Depends on: `\([^`]*\)`$/\1/p' "${paths[$id]}" | head -n1)"
-    if [[ "$state" != "pending" && "$depends" != "none" ]]; then
-        IFS=',' read -ra dep_ids <<< "$depends"
-        for dep in "${dep_ids[@]}"; do
-            dep="${dep// /}"
-            [[ -n "${states[$dep]+set}" ]] || {
-                fail "$id references unknown dependency $dep"
-                continue
-            }
-            [[ "${states[$dep]}" == "done" ]] || \
-                fail "$id is $state but dependency $dep is ${states[$dep]}"
-        done
+# Stale sequential-harness pointers must not survive in the dashboard.
+for stale in '- NEXT:' '- Active runtime goal:' '- Last completed increment:'; do
+    if grep -q -- "^$stale" "$dashboard"; then
+        fail "dashboard still contains obsolete pointer line '$stale'"
     fi
 done
 
-if [[ -n "$first_not_done" ]]; then
-    next_id="$(sed -n 's/^- NEXT: `\([^`]*\)`$/\1/p' "$dashboard" | head -n1)"
-    [[ "$next_id" == "$first_not_done" ]] || \
-        fail "dashboard NEXT is '$next_id'; expected '$first_not_done'"
-    for id in "${!states[@]}"; do
-        case "${states[$id]}" in
-            active|validating|awaiting_review|blocked)
-                [[ "$id" == "$first_not_done" ]] || \
-                    fail "$id is ${states[$id]} but first unfinished is $first_not_done"
-                ;;
-        esac
-    done
-else
-    grep -Fqx -- '- NEXT: `COMPLETE`' "$dashboard" || \
-        fail "all increments are done but NEXT is not COMPLETE"
-fi
+ready=()
+mapfile -t sorted_ids < <(printf '%s\n' "${!states[@]}" | sort)
+for id in "${sorted_ids[@]}"; do
+    state="${states[$id]}"
+    depends="${deps[$id]}"
+    all_done=1
+    if [[ "$depends" != "none" ]]; then
+        IFS=',' read -ra dep_ids <<< "$depends"
+        for dep in "${dep_ids[@]}"; do
+            dep="${dep// /}"
+            if [[ -z "${states[$dep]+set}" ]]; then
+                fail "$id references unknown dependency $dep"
+                all_done=0
+                continue
+            fi
+            if [[ "${states[$dep]}" != "done" ]]; then
+                all_done=0
+                if [[ "$state" != "pending" ]]; then
+                    fail "$id is $state but dependency $dep is ${states[$dep]}"
+                fi
+            fi
+        done
+    fi
+    if [[ "$state" == "pending" && $all_done -eq 1 ]]; then
+        ready+=("$id")
+    fi
+done
 
 if (( failures > 0 )); then
     echo "Lester increment harness: FAILED ($failures problem(s))" >&2
     exit 1
 fi
 
-echo "Lester increment harness: OK (${#files[@]} increments, next=${first_not_done:-COMPLETE})"
+nonterminal_sorted=""
+if (( ${#nonterminal[@]} > 0 )); then
+    nonterminal_sorted="$(printf '%s\n' "${nonterminal[@]}" | sort | paste -sd' ' -)"
+fi
+ready_str=""
+if (( ${#ready[@]} > 0 )); then
+    ready_str="${ready[*]}"
+fi
+echo "Lester increment harness: OK (${#files[@]} increments, ready=${ready_str:-none}, nonterminal=${nonterminal_sorted:-none})"

@@ -176,23 +176,14 @@ A psi2 = -q S2.
 (same-index pairing; the paper's printed equation (14) crosses the indices —
 see `docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md`)
 
-This formulation is now authoritative for new invariant construction because it keeps a variable-coefficient diffusion structure and avoids explicitly differencing `grad(log k)`.
+This formulation keeps a variable-coefficient diffusion structure and avoids explicitly differencing `grad(log k)`. It is the contract of the **periodic-fluctuation stack**, which is frozen (status 2026-10-02):
 
-Current status (2026-10-02):
-- the equation (14) solver stack exists under `src/physics/streamfunctions/`
-  (operators, projected PCG/MG, Picard, Anderson, Newton-Krylov,
-  continuation, diagnostics — SF-02..SF-26);
-- since SF-26 the residual pairs each block with its own source (same index),
-  verified by exact-pair contract tests;
-- on random Gaussian fields the corrected discrete system does not reach the
-  `1e-6` stage tolerance at `eta = 1` (residual floor that falls under
-  refinement and grows with amplitude): both 32^3 Gaussian smokes
-  (`sigma_Y^2 = 0.25` and `1`) fail, so no accepted `psi1`, `psi2` exist yet
-  for heterogeneous Gaussian fields; the open decisions are in
-  `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`;
-- the planned next additions (explicit pseudo-time solver SF-27,
-  pseudo-symplectic tracker SF-29) depend on those decisions;
-- the legacy PSPTA engine is a possible invariant-preserving transport consumer once accepted `psi1`, `psi2` fields exist, but its role must be re-evaluated during the reformulation.
+- the periodic-fluctuation stack (SF-02..SF-26, `src/physics/streamfunctions/`: operators, projected PCG/MG, Picard, Anderson, Newton-Krylov, continuation, diagnostics) is frozen verified infrastructure and the producer of invariants on symmetric controls (the Lester 2021 field);
+- its periodic solution on generic Gaussian fields is not the Darcy flow: streamlines of a generic smooth periodic `k` do not close on the torus, so no nondegenerate affine + periodic pair represents Darcy there, and the periodic solution of (14) is the closed-streamline field nearest to Darcy (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; CPU probes, amplitude <= 1, `L/ell = 4`; production-stack repeat pending in SF-30);
+- the new target is the Darcy labels non-periodic in `x1` with inlet anchoring, prototyped on CPU (SF-29) before any GPU generalization (`docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`);
+- planned consumer modules: `src/numerics/interpolation/` (periodic tricubic B-spline, SF-28) and `src/physics/particles/streamline_tracker/` (SF-31/32);
+- the closure gate (SF-30) is the label-independent oracle;
+- the legacy PSPTA engine is a possible invariant-preserving transport consumer once labels of the Darcy flow exist, but its role must be re-evaluated.
 
 ---
 
@@ -221,9 +212,11 @@ The new architecture separates invariant construction from invariant consumption
 
 For the smooth, locally isotropic Darcy regime, the theory motivating this project says:
 - the flow is helicity-free,
-- two invariant streamfunctions exist,
-- streamlines remain confined to 2D streamsurfaces,
+- two invariant streamfunctions exist locally; a global affine + periodic pair exists only for flows with closed streamlines, which a generic periodic `k` does not give (experiment note of 2026-10-02),
+- streamlines remain confined to 2D streamsurfaces of the labels of the flow actually tracked (for the periodic surrogate, by construction; for Darcy, labels anchored at the inlet),
 - conventional interpolation and tracking can violate those constraints and create spurious transverse dispersion.
+
+The streamline integrator of the closure gate is an oracle independent of the labels.
 
 So the software must not only “move particles”; it must defend those kinematic constraints. The old PSPTA engine may be adapted or replaced, but it should not dictate the new invariant-construction architecture.
 
@@ -247,6 +240,9 @@ A particle tracker can create apparent transverse spreading even when the underl
 
 ### 6.4 Upscaling / discretization effects
 Artifacts introduced by coarse discretization, interpolation, or block-scale reformulation can masquerade as physical transverse macrodispersion.
+
+### 6.5 Existence of the target object
+A solver can converge to a small residual on an object that is not the one wanted. The periodic equation (14) has a solution on generic Gaussian fields, but it is the closed-streamline field nearest to Darcy, not the Darcy flow, because the Darcy streamlines of such fields do not close. The existence of any new target object must be checked independently of the solver (positive controls, streamline-closure oracle) before solver acceptance, and acceptance rests on a physics metric under refinement, never on a residual alone.
 
 ---
 

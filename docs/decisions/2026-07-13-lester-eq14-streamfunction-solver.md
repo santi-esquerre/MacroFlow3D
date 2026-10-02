@@ -1,6 +1,7 @@
 # Lester equation (14) streamfunction solver direction
 
 - Status: proposed
+- Status note (2026-10-02): its target object (an affine + triply periodic invariant pair for Gaussian fields) is refuted by `docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; the solver stack remains frozen verified infrastructure and the producer of invariants on symmetric controls (see `2026-10-02-roadmap-audit-and-foundational-redesign.md`).
 - Date: 2026-07-13
 
 ## Context

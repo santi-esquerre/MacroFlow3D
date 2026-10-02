@@ -98,17 +98,19 @@ A good plan contains:
 - rollback/regression concerns
 - completion criteria
 
-The Lester equation (14) plan additionally uses the sequential increment
-protocol in `docs/runbooks/lester-increment-workflow.md`.  Its dashboard and
+The Lester equation (14) plan additionally uses the dependency-DAG increment
+protocol (at most two nonterminal increments, one session each) in `docs/runbooks/lester-increment-workflow.md`.  Its dashboard and
 individual increment files are versioned execution state.  Preserve their
 exact Goal, dependency, checklist, advancement, and append-only bitácora
 fields; validate them with `scripts/hooks/check-lester-increments.sh`.
 
 
-For Claude Code orchestration, **sequential** means sequential *between
-increments*, not necessarily serial execution of every task inside one
-increment. The active increment may be decomposed into a runtime DAG; only
-independent nodes with compatible write scopes may run concurrently.
+For Claude Code orchestration, increments follow a dependency DAG: an
+increment may start only when it is pending and every dependency is done on the
+default branch, and at most two increments are nonterminal at once. This does
+not imply serial execution of every task inside one increment. Each active
+increment may be decomposed into a runtime DAG; only independent nodes with
+compatible write scopes may run concurrently.
 
 Detailed DAGs, worker reports, and audit scratch records may live under
 `.claude/orchestration/<increment-id>/` and may be gitignored. They are not a
@@ -119,7 +121,7 @@ validation evidence, corrective cycles when material, and the final PR.
 The autonomous implementation run ends when an audited PR has been opened. For
 human-review increments, durable closure is finalized on that same PR only after
 explicit human approval: a metadata-only commit marks the increment `done` and
-advances `NEXT`. No agent merges. Do not document the next increment as
+checks its master-checklist entry. No agent merges. Do not document a dependent increment as
 executable until that closure state is merged and visible on the default branch.
 
 ---

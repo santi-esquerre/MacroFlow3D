@@ -9,8 +9,9 @@ numérica avanza desde Picard hasta Newton–Krylov**.
 Usarlo como mapa conceptual antes de trabajar en cualquier incremento del
 solver. No contiene el estado de ejecución ni habilita trabajo por sí mismo:
 
-- el estado `NEXT`, la checklist y las decisiones operativas bloqueadas viven
-  en el [dashboard](lester-eq14-streamfunction-solver-plan.md);
+- el estado de cada incremento, la checklist maestra y las decisiones operativas
+  bloqueadas viven en el [dashboard](lester-eq14-streamfunction-solver-plan.md)
+  y en cada especificación; el conjunto READY lo calcula el checker;
 - el fundamento científico ampliado vive en la
   [nota de teoría](../../theory/lester-2023-key-claims.md);
 - los criterios de aceptación viven en
@@ -26,25 +27,27 @@ debe corregir este resumen y registrar la decisión.
 
 ### Semántica de ejecución de los incrementos
 
-La secuencia científica `SF-00 -> ... -> SF-30` sigue siendo estrictamente
-secuencial **entre incrementos**. Para el único incremento habilitado por
-`NEXT`, Claude Code puede descomponer el Goal en un DAG de subtareas
-autocontenidas y ejecutar en paralelo solamente nodos independientes y con
-alcances de escritura compatibles.
+Los incrementos forman un **DAG de dependencias** (campo de dependencias de cada
+especificación), no una secuencia lineal. A lo sumo **dos** incrementos pueden
+estar no terminales a la vez, cada uno con una sesión de orchestrator propia. El
+conjunto READY lo calcula `scripts/hooks/check-lester-increments.sh`; ya no existe
+un campo `NEXT`. Dentro de un incremento, Claude Code puede descomponer el Goal en
+un DAG de subtareas autocontenidas y ejecutar en paralelo solamente nodos
+independientes y con alcances de escritura compatibles.
 
 La ejecución autónoma de un incremento termina en una **pull request auditada**:
-workers Sonnet implementan/corrigen en worktrees aislados, un integrador Sonnet
+workers Opus implementan/corrigen en worktrees aislados, un integrador Opus
 combina únicamente commits aprobados y el orchestrator Fable realiza las
-auditorías de aceptación antes de publicar la PR. El siguiente incremento no se
-habilita hasta que esa PR sea mergeada y el nuevo estado sea visible en la rama
-por defecto.
+auditorías de aceptación antes de publicar la PR. Un incremento dependiente no
+entra al conjunto READY hasta que la PR de sus predecesores sea mergeada y el
+nuevo estado sea visible en la rama por defecto.
 
 ## Qué queremos obtener
 
 MacroFlow3D ya genera una conductividad escalar heterogénea, resuelve el flujo
-de Darcy y transporta partículas. El nuevo componente debe construir dos
-campos escalares globales `psi1`, `psi2` para un flujo estacionario, suave,
-localmente isotrópico y libre de puntos de estancamiento:
+de Darcy y transporta partículas. El componente busca construir dos campos
+escalares `psi1`, `psi2` para un flujo estacionario, suave, localmente isotrópico
+y libre de puntos de estancamiento:
 
 ```math
 \mathbf v_D=-K\nabla\phi,
@@ -64,13 +67,27 @@ localmente isotrópico y libre de puntos de estancamiento:
 
 Las superficies de nivel de cada `psi_i` son streamsurfaces. Su intersección
 define una línea de corriente, por lo que ambos campos actúan como invariantes
-lagrangianos. En el régimen cubierto por Lester, esta estructura impide el
-alejamiento transversal ilimitado de líneas de corriente y, en consecuencia,
-la macrodispersión transversal puramente advectiva debe tender a cero.
+lagrangianos. **Lo que afirma el paper:** bajo la hipótesis de fluctuaciones
+acotadas de las etiquetas (§4 del paper), esta estructura impide el alejamiento
+transversal ilimitado de líneas de corriente y la macrodispersión transversal
+puramente advectiva tiende a cero.
 
-El objetivo inmediato no es modificar el transporte ni demostrar por sí solo
-la macrodispersión nula. Primero debemos construir invariantes confiables y
-demostrar simultáneamente que:
+**Verificado / refutado en este proyecto** (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; sondas en CPU,
+amplitud <= 1, `L/ell = 4`, una realización; la repetición en el stack de
+producción está pendiente en SF-30): para un `k` escalar, suave y triplemente
+periódico genérico, las líneas de corriente de Darcy **no se cierran** en el toro
+(el mapa de retorno de la cara `x1 = 0` difiere de la identidad a segundo orden en
+la amplitud, independiente de la resolución). Por tanto no existe un par no
+degenerado afín + triplemente periódico `(psi1, psi2)` para esos flujos; la
+solución periódica de la ecuación (14) existe, pero es el campo de líneas cerradas
+más cercano a Darcy en la energía `1/k` (`e_v ~ amplitud^2`). La hipótesis de
+fluctuaciones acotadas falla en la celda periódica y el proyecto **no usa
+`D_T = 0` como oráculo ni como criterio de aceptación** (decisión O3 de `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`).
+
+El objeto que se busca ahora son las **etiquetas de Darcy ancladas en la cara de
+entrada, no periódicas en `x1`** (decisión O1 = B). El objetivo inmediato no es
+modificar el transporte ni demostrar por sí solo ningún valor de `alpha_T`.
+Primero debemos construir invariantes confiables y demostrar simultáneamente que:
 
 1. satisfacen el sistema elíptico no lineal;
 2. reconstruyen el flujo Darcy;
@@ -206,6 +223,10 @@ lado derecho se proyecta a media cero y el gauge se mantiene proyectando
 estados, iterados PCG, correcciones multigrilla, candidatos Picard/Anderson,
 direcciones Newton y campos transferidos entre mallas.
 
+Este contrato de gauge y periodicidad pertenece al stack congelado
+(SF-02..SF-26); la formulación nueva generaliza las fuentes a `x1` no periódico
+con etiquetas fijadas en la cara de entrada (SF-29).
+
 ### No degeneración y regularización controlada
 
 La cantidad
@@ -248,6 +269,13 @@ final:
 | Partes medias | `bar(psi1)=x2`, `bar(psi2)=x3` |
 | Residuo de diferencias finitas reportado | `1e-16` |
 
+La solución periódica del paper es un sustituto de líneas de corriente cerradas
+(ver `docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`): da `D_T = 0` por construcción y no dice nada sobre el
+flujo de Darcy. Por eso el nivel de “reproducción del problema físico” de abajo
+exige, además de las invariancias, el gate de cierre de líneas de corriente
+(mapa de retorno del flujo de Darcy integrado de forma independiente, SF-30) y la
+convergencia de `e_v(h)` bajo refinamiento sobre el mismo campo continuo.
+
 El paper obtiene una estimación inicial resolviendo la ecuación homogénea
 `S1=S2=0` con un método Krylov y luego avanza el sistema no lineal completo con
 pseudo-tiempo explícito y paso variable. Finalmente usa splines cúbicos
@@ -263,10 +291,12 @@ MacroFlow3D separa tres niveles de reproducción:
    lognormal, media/varianza, `ell`, resolución y flujo medio.
 2. **Reproducción del problema físico:** el flujo reconstruido por las
    streamfunctions debe coincidir con un flujo Darcy independiente, y las
-   invariancias y la no degeneración deben converger con la malla.
+   invariancias y la no degeneración deben converger con la malla; requiere el
+   gate de cierre y `e_v(h)` (ver arriba).
 3. **Reproducción cinemática posterior:** invariantes aceptados deben permitir
-   comprobar confinamiento a streamsurfaces y ausencia de dispersión
-   transversal puramente advectiva espuria.
+   comprobar confinamiento a las superficies de etiqueta y clasificar todo
+   crecimiento transversal observado (físico / numérico / no resuelto), sin
+   presuponer el valor de `alpha_T`.
 
 No se promete igualdad punto a punto con la realización aleatoria publicada:
 el paper no registra en su Tabla 1 una semilla ni todos los detalles necesarios
@@ -463,56 +493,48 @@ básica de la ecuación (14) es correcta.
 
 ## Estado actual y ruta de ejecución
 
-El harness documental está instalado, pero el solver todavía no está
-implementado. El dashboard indica en todo momento el único incremento que puede
-comenzar. La secuencia conceptual es:
+Estado (2026-10-02):
 
-```text
-contratos y tests discretos
-  -> operador proyectado y reutilización PCG/MG
-  -> gradientes, Hessiano-vector, fuentes y residuo
-  -> diagnósticos y API
-  -> control homogéneo
-  -> Picard fijo y adaptativo
-  -> configuración y continuación
-  -> campos Gaussianos y Darcy periódico
-  -> Anderson (re-secuenciado 2026-08-11: el Picard adaptativo puro se
-     estanca asintóticamente en eta=1 sobre campos físicos; ver
-     docs/decisions/2026-08-11-anderson-before-heterogeneity.md)
-  -> continuación de heterogeneidad (cierre parcial 2026-08-11: el mapa
-     Picard/Anderson amortiguado resultó no contractivo exactamente en eta=1
-     para sigma_Y^2>=1 — meseta r_F~1e-3 en lambda~0.5, física limpia; los
-     gates no cumplidos se mueven íntegros a la completación post-Newton;
-     ver docs/decisions/2026-08-11-newton-before-heterogeneity-completion.md)
-  -> Jv matrix-free + GMRES
-  -> Newton-Krylov globalizado
-  -> solver terminal robusto a la variedad de gauge en eta=1
-     (re-secuenciado 2026-08-14: Newton puro se degrada exactamente en
-     eta=1 para sigma_Y^2>=1 — cluster casi-nulo del Jacobiano por la
-     libertad de recombinación de Clebsch; ver
-     docs/decisions/2026-08-14-manifold-robust-terminal-solver.md)
-  -> [SF-25 cerrado 2026-09-30: el método terminal fue falsificado por su
-     D-gate y la campaña quedó explicada por una causa raíz: el residuo
-     emparejaba S1/S2 cruzados (forma impresa del paper); ver
-     docs/decisions/2026-09-30-eq14-source-pairing-root-cause.md]
-  -> corrección del emparejamiento + gates de heterogeneidad (SF-26)
-  -> [SF-26 cerrado 2026-10-02: emparejamiento corregido y demostrado con
-     pares exactos; los gates de heterogeneidad quedaron SIN cumplir: el
-     sistema discreto corregido tiene un piso de residuo en eta=1 sobre
-     campos gaussianos (cae con el refinamiento, crece con la amplitud).
-     Decisiones abiertas D1-D7 en
-     docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md;
-     los pasos siguientes dependen de ellas]
-  -> solver pseudo-tiempo explícito fiel al paper (SF-27, contraste con el
-     stack implícito, que se mantiene)
-  -> reproducción del caso de referencia 256^3 con iteración anidada (SF-28)
-  -> tracker pseudo-simpléctico GPU con Newton 2x2 por partícula (SF-29)
-  -> validación de macrodispersión transversal (SF-30)
-  -> optimización, benchmark V100 y precisión mixta (diferidos)
-```
+- El stack de fluctuaciones periódicas (SF-02..SF-26, `src/physics/streamfunctions/`:
+  operadores, PCG/MG proyectado, Picard, Anderson, Newton-Krylov, continuación,
+  diagnósticos) está implementado, verificado y **congelado**; es el productor de
+  invariantes en controles simétricos (campo de Lester 2021).
+- No existen `psi1`, `psi2` aceptados sobre campos gaussianos heterogéneos: los
+  smokes gaussianos 32^3 (`sigma_Y^2 = 0.25` y `1`) no alcanzan `1e-6` en
+  `eta = 1` (SF-26, ver `docs/experiments/2026-10-01-sf26-pairing-correction-gates.md`).
+- Hallazgo del 2026-10-02 (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`): la solución periódica de (14) no es
+  el flujo de Darcy en campos gaussianos genéricos porque sus líneas de corriente no
+  cierran; el piso de `e_v` es esa distancia. La ruta fue rehecha en `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`
+  (aceptada; O1 = B, O2, O3).
+
+Nueva secuencia (dependencias entre paréntesis; el estado vigente lo gobierna el
+dashboard):
+
+- SF-27: higiene de niveles de validación en `ctest` (←SF-26). Los barridos
+  pesados salen de `ctest` y pasan a ser experimentos documentados.
+- SF-28: spline B cúbico periódico (←SF-27).
+- SF-29: prototipo en CPU de la ecuación (14) con `x1` no periódico y etiquetas
+  de entrada (←SF-26); corre en paralelo con SF-27.
+- SF-30: gate de cierre de líneas de corriente en el stack de producción (←SF-28).
+- SF-31: núcleo del tracker pseudo-simpléctico y referencia RK (←SF-28).
+- SF-32: trackers de referencia por flujo en caras y los escalamientos del paper
+  (←SF-31).
+
+Fases posteriores (en prosa; sus especificaciones se crean cuando cierre SF-29):
+generalización a GPU de `src/physics/streamfunctions/` a `x1` no periódico;
+aceptación en el medio periódico (`e_v(h)`, invariancia y mapa de retorno frente a
+SF-30 en `sigma^2 = 0.25, 1, 2.25`); dominio largo (2048 x 256 x 256,
+`lambda/h = 10`; `alpha_L` debe coincidir con RWPT y `alpha_T` se reporta con
+convergencia de malla y tolerancia sin presuponer su valor); dispersión local y
+`D_T(Pe)`.
+
+Reglas de proceso: verificación independiente de existencia o de control positivo
+antes de cualquier solver para un objeto nuevo; aceptación sobre una métrica
+física bajo refinamiento y nunca sólo sobre un residuo; prototipo en CPU antes de
+un incremento GPU; `ctest` contiene sólo tests de contrato rápidos.
 
 La implementación sólo avanza cuando el incremento actual cumple su Goal,
 checklist, comandos de validación, Gate 3A cuando corresponda y bitácora, pasa la
-auditoría final del orchestrator y se publica como PR. El siguiente incremento
+auditoría final del orchestrator y se publica como PR. Un incremento dependiente
 sólo queda habilitado después del merge de esa PR y cuando el estado actualizado
 es visible en la rama por defecto.

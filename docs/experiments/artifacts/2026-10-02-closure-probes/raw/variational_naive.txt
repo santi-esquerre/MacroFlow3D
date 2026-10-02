@@ -1,0 +1,3 @@
+gauss eps=0.250 N= 16 disc=sp  its= 4000 |gradE|/|gradE0|=1.44e-03 E_min=0.4871738274 E_Darcy=0.4949914456 sqrt((E_min-E_D)/E_D)=0.000e+00 e_v=1.263e-01 min|c|=0.428 t=54s
+gauss eps=0.250 N= 16 disc=fd2 its= 4000 |gradE|/|gradE0|=4.73e-03 E_min=0.4872140851 E_Darcy=0.4949914456 sqrt((E_min-E_D)/E_D)=0.000e+00 e_v=1.256e-01 min|c|=0.427 t=30s
+gauss eps=1.000 N= 16 disc=fd2 its= 4000 |gradE|/|gradE0|=1.65e-02 E_min=0.3430331414 E_Darcy=0.4310628058 sqrt((E_min-E_D)/E_D)=0.000e+00 e_v=4.932e-01 min|c|=0.022 t=30s

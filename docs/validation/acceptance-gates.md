@@ -55,6 +55,14 @@ iteration, and the authoritative full pass runs on V100 as a detached
 `scripts/remote run <job>` job, not locally and not via blocking
 `scripts/remote exec` — see `docs/runbooks/remote-v100.md` Section 0.
 
+#### Validation tiers in ctest
+
+`ctest` holds fast contract tests only. Multi-case solver sweeps and science
+smokes are not registered as `ctest` entries: they are documented experiments
+(`docs/experiments/`) run as detached V100 jobs (`scripts/remote run <job>`),
+consistent with `docs/runbooks/remote-v100.md` Section 0. A heavy entry that
+stays in `ctest` is a defect of the validation tier, not a gate.
+
 ### Gate 2 — Algebra / operator integrity
 
 Use for changes touching:
@@ -156,7 +164,9 @@ Required:
 - minimum and 0.1%, 1%, 5% percentiles of `|grad psi1 x grad psi2|`;
 - denominator regularization value and convergence plan;
 - gauge definition and gauge restoration evidence;
-- grid-convergence plan or result.
+- grid-convergence plan or result;
+- velocity-reconstruction error `e_v` measured under grid refinement on the same continuum field, with the observed order reported; a result is never accepted on `r_F` alone;
+- for any new target object, an independent existence / positive-control check (not using the solver under test) precedes solver acceptance.
 
 Reject if:
 
@@ -179,9 +189,9 @@ The target regime is:
 
 - smooth, locally isotropic Darcy flow,
 - helicity-free (proven for scalar isotropic conductivity — Lester 2023 §1),
-- two invariants / streamfunctions exist (Lester 2023 §2),
-- no intended physical transverse macrodispersion in pure advection (Lester 2023 §4),
-- PSPTA should preserve the relevant kinematic constraints.
+- two invariants / streamfunctions exist locally (Lester 2023 §2); a global affine + periodic pair does not exist for generic periodic `k` (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`),
+- the project does not presuppose the value of `alpha_T`; every observed transverse growth must be classified physical / numerical / unresolved with grid and tolerance refinement evidence, and compared against the streamline-closure oracle (return map of the independently integrated Darcy streamlines),
+- the tracker should preserve the labels of the actual Darcy flow (non-periodic in `x1`, anchored at the inlet).
 
 Required:
 
@@ -201,8 +211,8 @@ Reject if:
 
 Expected qualitative behavior:
 
-- trajectories remain consistent with invariant confinement,
-- purely advective transverse spreading should not be accepted as evidence of physical macrodispersion in this regime.
+- trajectories remain consistent with the invariant labels of the flow being tracked (no leakage across label surfaces beyond the stated tolerance),
+- observed transverse growth is reported with its classification (physical / numerical / unresolved), grid and tolerance refinement evidence, and the closure-oracle comparison; neither positive nor zero transverse spreading is accepted or rejected a priori.
 
 ### Gate 5 — Ensemble / macrodispersion behavior
 
@@ -215,7 +225,7 @@ Use for changes touching:
 
 **Scientific basis:**
 
-- `docs/theory/lester-2023-key-claims.md` — regime where `α_T = 0` is expected
+- `docs/theory/lester-2023-key-claims.md` — the paper's claim `α_T = 0` under bounded label fluctuations; not presupposed by the project
 - `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — classical 3D baseline for `α_L`, `α_T`
 
 When comparing to historical 3D macrodispersion literature (e.g. Beaudoin & de Dreuzy 2013), comparisons must state explicitly: covariance model, `σ_Y²`, boundary conditions, injection protocol, tracking method, and asymptotic-estimation procedure. Without that, agreement or disagreement is scientifically weak.
@@ -338,7 +348,7 @@ The following theory notes underpin the gate definitions:
 
 | Note | Gates it informs | Core claim |
 |------|------------------|------------|
-| `docs/theory/lester-2023-key-claims.md` | Gate 3, 4, 5 | Smooth isotropic Darcy flow is helicity-free; purely advective transverse macrodispersion is zero; methods must preserve invariant geometry |
+| `docs/theory/lester-2023-key-claims.md` | Gate 3, 4, 5 | Smooth isotropic Darcy flow is helicity-free; the paper's zero-transverse claim holds under bounded label fluctuations and is not presupposed here (periodic-cell limits in the experiment note of 2026-10-02); methods must preserve invariant geometry |
 | `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` | Gate 5 | Classical 3D numerical baseline for `α_L`, `α_T`; valuable for domain design, Monte Carlo discipline, and longitudinal validation; must be interpreted with regime awareness after Lester |
 
 Read the relevant note before authoring or reviewing changes that touch Gate 3+.

@@ -3,7 +3,7 @@
 - State: `done`
 - Goal: `Corregir el emparejamiento de las fuentes S1/S2 en el residuo acoplado al sistema derivado (mismo índice), demostrarlo con un par exacto y re-imponer sin cambios los gates de heterogeneidad sigma_Y^2>=1.`
 - Depends on: `SF-25`
-- Unlocks: `SF-27`
+- Unlocks: `SF-27, SF-29`
 - Branch: `science/lester-sf26-source-pairing-correction`
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 2 + Gate 3A`
