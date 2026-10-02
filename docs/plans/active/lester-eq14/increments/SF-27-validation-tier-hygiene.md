@@ -1,6 +1,6 @@
 # SF-27 — Validation-tier hygiene
 
-- State: `pending`
+- State: `active`
 - Goal: `Dejar en ctest solo contratos rápidos, moviendo los barridos multi-caso y smokes científicos a experimentos documentados sin cambiar ningún resultado numérico.`
 - Depends on: `SF-26`
 - Unlocks: `SF-28`
@@ -8,8 +8,8 @@
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 0 + Gate 1`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable 5.1 orchestrator session (2026-10-02)`
+- Started: `2026-10-02T23:10Z on master=81cd612`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -106,3 +106,4 @@ artifacts or experiment notes and link them here.
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
 | 2026-10-02T00:00Z | not started | Specification created by the 2026-10-02 re-sequencing (decision record `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`). | Replaces the cancelled SF-27..SF-30 specifications (git history at `4670fb5`). | Activate only when the checker reports it READY. |
+| 2026-10-02T23:10Z | activation on `master=81cd612` (PR #43 merged; checker OK ready=SF-27 SF-29, nonterminal=none); delivery branch `chore/lester-sf27-validation-tier-hygiene` | UNDERSTAND: SF-27 chosen over the co-READY SF-29 (first in master-checklist order and on the critical path SF-27->SF-28->SF-30/31->SF-32; SF-29 is CPU-only and can run in a second session). Source is byte-identical to the SF-26 audited head `58898bf` (sha256 of `src apps tests CMakeLists.txt CMakePresets.json` equal locally and on the legacy V100 mirror). The six entries sum to 63 979 s of the 66 700 s SF-26 suite (`anderson_stall` 744, `heterogeneity_smoke` 38 056, `newton_difficult` 1 402, `terminal_dgate` 2 538, `terminal_resolution` 1 709, `gauge_recombination_heavy` 19 530); the 15 remaining entries (~2 721 s) were all green. Dispatch mechanism: `heavy_cases()` fallback in `streamfunction_operator_tests.cpp::main()`, untouched by any `add_test` removal. DAG: N1 (CMake registry + comment-only test-source updates) in parallel with N2 (experiment index note + `eval-tiers.md`); one integrator; orchestrator-owned detached V100 jobs on the per-increment mirror (`scripts/remote --increment SF-27`, PR #43): `sf27-base-build-refs` before the change, then `sf27-ctest-full`, `sf27-bytecompare`, `sf27-case-*` after it. | Recorded deviations: (a) the spec's byte-compare names `config_pipeline_par2.yaml`/`config_pipeline_pspta.yaml`, which are 2048x256x256, 409 600-step production runs (multi-day on one V100); the increment uses the SF-25/SF-26 precedent trio `config_pspta_small`, `config_streamfunctions_homogeneous`, `config_streamfunctions_continuation` (the CMake change touches no compiled target, so no config output can change by construction) — for the human reviewer. (b) Comment-only edits in `tests/streamfunctions/*` that name the removed ctest entries are treated as in-scope stale-comment fixes (no test-code semantics change). (c) The scientific-rigor skill is not invoked: no scientific claim or numerical change is involved. Human-review increment (spec). | Launch N1 and N2 workers; run `sf27-base-build-refs` on V100. |
