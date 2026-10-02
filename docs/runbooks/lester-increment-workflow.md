@@ -9,12 +9,15 @@ It keeps the versioned dashboard/specification, Claude runtime orchestration,
 validation evidence, human-review lifecycle, and default-branch advancement
 consistent.
 
-It does **not** authorize working ahead of the dashboard's `NEXT` pointer.
+It does **not** authorize working ahead of the checker's READY set.
 
 The fundamental scheduling rule is:
 
-- increments are strictly sequential;
-- the one active increment may be decomposed into an internal DAG;
+- increments form a dependency DAG: an increment is READY when it is `pending`
+  and every `Depends on` increment is `done` on the default branch;
+- at most two increments may be nonterminal at a time, each in its own
+  orchestrator session on its own delivery branch/PR;
+- each active increment may be decomposed into an internal DAG;
 - independent DAG nodes may execute concurrently in isolated worktrees.
 
 ---
@@ -23,8 +26,9 @@ The fundamental scheduling rule is:
 
 From the up-to-date default branch:
 
-1. read the dashboard and the complete specification linked by `NEXT`;
-2. verify every `Depends on` increment is `done`;
+1. run the checker (below) and select an increment it reports as READY; read the
+   dashboard and the complete specification of that increment;
+2. verify every `Depends on` increment is `done` on the default branch;
 3. read the solver overview, relevant theory note, acceptance gates, and local
    `AGENTS.md` files;
 4. run:
@@ -33,11 +37,18 @@ From the up-to-date default branch:
 bash scripts/hooks/check-lester-increments.sh
 ```
 
-Stop if the checker or dependency test fails.
+Stop if the checker or dependency test fails, or if the increment is not in the
+checker's `ready=` set.
 
-Record the exact default-branch commit as the **increment base**.
+Confirm that activating the increment keeps the number of nonterminal Lester
+increments at most two. Record the exact default-branch commit as the
+**increment base**.
 
-There may be only one nonterminal Lester increment at a time.
+There may be at most two nonterminal Lester increments at a time. Use one
+orchestrator session per increment. Two concurrently active increments use
+**different delivery branches and PRs**, and must not both use the remote V100
+mirror until per-increment remote isolation exists
+(`docs/runbooks/remote-v100.md`): serialize remote work across sessions.
 
 ---
 
@@ -264,16 +275,12 @@ After positive final audit:
 2. set the increment `State` to `done`;
 3. record the final audited commit/PR metadata available at publication time;
 4. append the closure bitacora row;
-5. check its dashboard entry;
-6. set `Last completed increment` to this increment;
-7. set `NEXT` to the first remaining pending increment (or `COMPLETE`);
-8. set `Active runtime goal` to `none` until another increment is actually
-   activated;
-9. run the harness checker;
-10. push and open the PR.
+5. check its master-checklist entry in the dashboard;
+6. run the harness checker;
+7. push and open the PR.
 
-The new `NEXT` exists only on the PR branch until a human merges it, so the
-default branch still prevents premature advancement.
+The `done` state exists only on the PR branch until a human merges it, so the
+default branch still prevents dependents from being enabled prematurely.
 
 ### 9B. Human-review increment
 
@@ -284,7 +291,7 @@ After positive Fable final audit:
 3. record the PR and exact source-bearing audited head;
 4. append review-ready evidence to the bitacora;
 5. **do not** mark the final human-review checklist item complete;
-6. **do not** advance the dashboard `NEXT` yet;
+6. **do not** set `done` or check the master-checklist entry yet;
 7. push/update the PR for human review.
 
 If review requests source/test/config changes, return to corrective DAG -> audit
@@ -306,16 +313,13 @@ The orchestrator may now make **only a closure metadata commit**. It must:
    increment;
 5. append a final bitacora row;
 6. check the increment in the dashboard master checklist;
-7. set `Last completed increment` to the increment;
-8. set `NEXT` to the first remaining pending increment;
-9. set `Active runtime goal` to `none` until the next increment actually starts;
-10. run:
+7. run:
 
 ```bash
 bash scripts/hooks/check-lester-increments.sh
 ```
 
-11. push the closure-only commit to the same PR.
+8. push the closure-only commit to the same PR.
 
 Do not change scientific source, tests, physics configs, or numerical behavior in
 this step. Any such change invalidates the existing human approval and returns
@@ -329,15 +333,16 @@ A human then merges the PR.
 
 The default branch remains authoritative.
 
-Do not start the next increment merely because the delivery branch says `done`.
+Do not start a dependent increment merely because the delivery branch says `done`.
 After human merge:
 
 1. update/fetch the default branch;
 2. verify the closure state is actually visible there;
 3. run the harness checker;
-4. verify the new `NEXT` and predecessor `done` state;
-5. only then complete/clear the previous persistent runtime goal and begin the
-   next increment.
+4. verify the increment is `done` on the default branch and that the checker
+   reports its dependents as ready;
+5. only then complete/clear the previous persistent runtime goal and begin a
+   dependent increment.
 
 ---
 
@@ -346,7 +351,7 @@ After human merge:
 Use this only when an implementation PR was already merged while the increment
 remained nonterminal (`awaiting_review`, `validating`, etc.).
 
-Do **not** infer the next increment is enabled from the source code alone.
+Do **not** infer dependents are enabled from the source code alone.
 Create a metadata-only closure-repair PR:
 
 1. verify on GitHub/default branch that the implementation PR is merged;
@@ -359,11 +364,10 @@ Create a metadata-only closure-repair PR:
 5. set the increment `done`;
 6. complete its checklist;
 7. append a closure-repair bitacora row explaining why repair was necessary;
-8. check its dashboard entry and advance `NEXT`;
-9. update `Last completed increment` and clear the active runtime goal;
-10. run the harness checker;
-11. publish the metadata-only repair PR;
-12. human merges it.
+8. check its master-checklist entry;
+9. run the harness checker;
+10. publish the metadata-only repair PR;
+11. human merges it.
 
 No scientific source changes are allowed in a closure repair.
 

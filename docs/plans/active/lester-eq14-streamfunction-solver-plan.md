@@ -17,26 +17,26 @@ Read, in order:
 3. `docs/theory/lester-2023-key-claims.md`;
 4. `docs/validation/acceptance-gates.md`;
 5. this dashboard;
-6. the specification linked by `NEXT` below;
+6. the specification of the READY increment being activated;
 7. `docs/runbooks/lester-increment-workflow.md`.
 
 The legacy PSPTA invariant-construction route is not part of this plan.
 
 ## Execution state
 
-- NEXT: `SF-27`
-- Active runtime goal: `none`
-- Increment ordering: strictly sequential
+- Increment ordering: dependency DAG; an increment is READY when pending with every dependency done on the default branch
+- Concurrency: at most two nonterminal increments, one orchestrator session and one delivery PR each
 - Intra-increment execution: orchestrated DAG; independent nodes may run in parallel
 - Delivery: final audited GitHub pull request; no automatic merge
 - Canonical state: the state visible on the repository default branch
-- Last completed increment: `SF-26`
 
-An increment may start only when it is named by `NEXT` and every dependency in
-its specification is `done`. Within that one active increment, the orchestrator
-may decompose the Goal into a DAG and execute independent nodes concurrently.
-The next increment is not enabled until the current increment's audited PR has
-been merged and its completion state is visible on the default branch.
+The ready set is computed by `bash scripts/hooks/check-lester-increments.sh`: an
+increment may start only when it is `pending` and every dependency in its
+specification is `done` on the default branch. Within each active increment, the
+orchestrator may decompose the Goal into a DAG and execute independent nodes
+concurrently. A dependent increment is not enabled until the audited PR that
+marks its dependencies `done` has been merged and that state is visible on the
+default branch.
 
 ## Claude Code intra-increment orchestration contract
 
@@ -88,18 +88,18 @@ not relax the sequential ordering of increments.
      original increment Goal, checklist, acceptance gates, and full diff from
      the increment base.
    - Any failure returns to a corrective DAG and fresh integration/audit.
-   - High-autonomy increments may finalize `done`/`NEXT` metadata before opening
-     the PR; the default branch still blocks advancement until human merge.
+   - High-autonomy increments may finalize `done` metadata before opening the
+     PR; the default branch still blocks dependents until human merge.
    - Human-review increments publish the audited source result as
-     `awaiting_review` with `NEXT` unchanged.
+     `awaiting_review` (not `done`).
    - After explicit human approval, resume the **same PR** and add only the
-     closure metadata commit: complete the checklist, set `done`, advance
-     `NEXT`, clear the active goal, and run `check-lester-increments.sh`.
+     closure metadata commit: complete the checklist, set `done`, check the
+     master-checklist entry, and run `check-lester-increments.sh`.
    - No agent merges the PR.
 
 The autonomous implementation run ends when the audited PR is opened. Formal
 closure of a human-review increment adds the closure-only metadata commit after
-human approval and before human merge. Repository advancement remains blocked
+human approval and before human merge. Dependent increments remain blocked
 until that closure state is merged and visible on the default branch.
 
 ## Master checklist

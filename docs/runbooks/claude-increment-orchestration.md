@@ -7,7 +7,7 @@ MacroFlow3D increment as an independently audited GitHub pull request.
 
 It supplements, rather than replaces, the scientific increment workflow. The
 Lester dashboard and increment specification remain authoritative for the Goal,
-dependencies, checklist, acceptance gates, and advancement state.
+dependencies, checklist, acceptance gates, and completion state.
 
 ## Roles
 
@@ -148,12 +148,12 @@ increment deliverable; a human performs merge.
 When `Human review: required`:
 
 1. FINAL_AUDIT freezes the accepted source-bearing commit.
-2. Publish/update the PR with increment state `awaiting_review` and `NEXT`
-   unchanged.
+2. Publish/update the PR with increment state `awaiting_review` (not `done`,
+   master-checklist entry unchecked).
 3. Human approves that exact source-bearing head.
 4. Resume the same PR.
 5. Add only closure metadata: complete checklist, `State: done`, final bitacora,
-   dashboard checkmark/`Last completed`/`NEXT`, active goal cleanup.
+   dashboard master-checklist checkmark.
 6. Run `bash scripts/hooks/check-lester-increments.sh`.
 7. Push the metadata-only commit.
 8. Human merges.

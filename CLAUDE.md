@@ -38,7 +38,9 @@ as an orchestrator merely because it can read this file.
 
 The Lester dashboard remains the authority for **which increment may run**.
 
-- Across increments: strictly sequential.
+- Across increments: dependency-ordered DAG; an increment is READY when pending
+  with all dependencies `done` on the default branch; at most two nonterminal
+  increments, one orchestrator session each.
 - Inside the active increment: the orchestrator may build a DAG and run
   independent nodes concurrently.
 - Every source-writing worker runs in its own native Claude Code worktree.
@@ -52,8 +54,8 @@ The Lester dashboard remains the authority for **which increment may run**.
   never merges it.
 - Human-review increments stay `awaiting_review` until explicit human approval.
   Fable then resumes the same PR and adds only the closure metadata commit that
-  marks `done` and advances `NEXT`.
-- The next increment does not start until that closure state is merged and
+  marks `done` and checks the master-checklist entry.
+- A dependent increment does not start until that closure state is merged and
   visible on the default branch.
 
 Ephemeral orchestration records may live under:
@@ -79,7 +81,7 @@ performance -> development speed.
 | Work area | Read first |
 |---|---|
 | Lester equation (14) / new invariant construction | `docs/plans/active/lester-eq14-streamfunction-solver-overview.md` + `docs/theory/lester-2023-key-claims.md` |
-| Active Lester increment | dashboard `NEXT` spec + `docs/runbooks/lester-increment-workflow.md` |
+| Active Lester increment | the READY increment's spec + `docs/runbooks/lester-increment-workflow.md` |
 | Legacy PSPTA audit / migration / removal | `docs/plans/archive/pspta-execution-plan.md` + `docs/theory/lester-2023-key-claims.md` |
 | Macrodispersion / ensemble statistics | `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` |
 | Numerics / operators / solvers | `src/numerics/AGENTS.md` |

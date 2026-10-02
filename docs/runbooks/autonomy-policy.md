@@ -144,7 +144,7 @@ After approval, the orchestrator may add a **closure-only metadata commit** to
 the same PR branch. That commit may update only:
 
 - increment state/checklist/bitacora;
-- dashboard `NEXT`, active goal, and master checklist;
+- the dashboard master checklist;
 - PR/documentation metadata needed to record closure.
 
 If source, tests, scientific configuration, or numerical behavior changes after
@@ -163,13 +163,15 @@ approval, the prior approval is stale: return to audit and human review.
 4. **High-autonomy increment:** finalize versioned closure metadata, publish the
    PR, and leave merge to a human.
 5. **Human-review increment:** publish the audited source PR as
-   `awaiting_review`; do not advance `NEXT` yet.
+   `awaiting_review`; do not set `done` yet.
 6. **After explicit human approval:** resume the same PR, make only the
-   closure-only metadata update, set the increment `done`, advance `NEXT`, run
-   the harness checker, and push that metadata commit.
+   closure-only metadata update, set the increment `done`, check its
+   master-checklist entry, run the harness checker, and push that metadata
+   commit.
 7. **Merge:** human only.
-8. **After merge:** the default branch is authoritative. The next increment may
-   start only if its predecessor is `done` there and the dashboard points to it.
+8. **After merge:** the default branch is authoritative. A dependent increment may
+   start only if every dependency is `done` there and the checker reports it
+   READY.
 9. **Mixed scope:** if scientific and high-autonomy changes are inseparable
    within one increment, apply human-review policy to the whole PR.
 
@@ -187,8 +189,7 @@ Instead create a **closure-repair PR** containing only durable state repair:
 - record its canonical default-branch commit;
 - record the human approval/merge fact without inventing a GitHub review event;
 - mark the increment `done` and complete its checklist;
-- update the dashboard master checklist, `Last completed increment`, active
-  goal, and `NEXT`;
+- check its dashboard master-checklist entry;
 - append an explanatory bitacora entry;
 - run `bash scripts/hooks/check-lester-increments.sh` plus the documentation
   checks required by the repair;

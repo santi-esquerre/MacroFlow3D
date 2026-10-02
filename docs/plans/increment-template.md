@@ -72,7 +72,7 @@ State the expected change and the quantities that must remain invariant.
 - [ ] Scientific or engineering findings are appended to the bitácora.
 - [ ] Required human review is recorded.
 - [ ] PR and commit identifiers are recorded.
-- [ ] The master checklist and `NEXT` pointer are updated in this branch.
+- [ ] The master checklist entry is checked in this branch and `check-lester-increments.sh` passes.
 <!-- completion-checklist:end -->
 
 ## Advancement rule

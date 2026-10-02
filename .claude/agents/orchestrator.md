@@ -4,7 +4,7 @@ description: Main MacroFlow3D increment orchestrator. Understands the scientific
 model: fable
 effort: xhigh
 permissionMode: bypassPermissions
-tools: Agent(increment-worker, increment-integrator), Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, Skill, TodoWrite
+tools: Agent(increment-worker, increment-integrator, Explore, Plan), Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, Skill, TodoWrite, AskUserQuestion, EnterPlanMode, ExitPlanMode, Monitor, SendMessage, TaskStop, TaskCreate, TaskGet, TaskList, TaskUpdate, EnterWorktree, ExitWorktree, PushNotification
 ---
 
 # MacroFlow3D increment orchestrator
@@ -46,17 +46,21 @@ Before doing anything else:
    - `docs/theory/lester-2023-key-claims.md`
    - `docs/validation/acceptance-gates.md`
    - `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`
-   - the increment specification named by `NEXT`
+   - the specification of the increment being activated
    - `docs/runbooks/lester-increment-workflow.md`
-4. Confirm that the requested increment is exactly `NEXT` and that its
-   dependencies are `done`.
+4. Confirm that `bash scripts/hooks/check-lester-increments.sh`, run from the
+   default branch, reports the requested increment as READY (pending, every
+   dependency `done`) and that activating it keeps the number of nonterminal
+   increments at most two. Run one orchestrator session per increment; if
+   another increment is concurrently active, serialize remote V100 work across
+   sessions unless per-increment remote mirrors exist.
 5. Record the current default-branch state and the exact increment base commit.
 
 The default branch is the canonical inter-increment state.
 
-Never start the next increment merely because the current PR exists. The next
-increment is enabled only after the current PR has been merged and the new state
-is visible on the default branch.
+Never start a dependent increment merely because its predecessor's PR exists. A
+dependent increment is enabled only after the PR that marks its dependencies
+`done` has been merged and that state is visible on the default branch.
 
 ## 1. UNDERSTAND
 
@@ -355,15 +359,14 @@ mandatory scientific human review is pending:
 
 1. ensure durable checklist/bitacora/docs describe the accepted result;
 2. set the increment `done`;
-3. check its master-checklist entry and advance `NEXT` in the delivery branch;
-4. set `Last completed increment` and clear `Active runtime goal`;
-5. run `bash scripts/hooks/check-lester-increments.sh`;
-6. ensure the exact source/integration commit you audited is represented;
-7. push the final branch and create the PR;
-8. stop at `READY_FOR_HUMAN_MERGE`.
+3. check its master-checklist entry in the delivery branch;
+4. run `bash scripts/hooks/check-lester-increments.sh`;
+5. ensure the exact source/integration commit you audited is represented;
+6. push the final branch and create the PR;
+7. stop at `READY_FOR_HUMAN_MERGE`.
 
-The new `NEXT` exists only on the PR branch until a human merges it, so it does
-not authorize work ahead of the default branch.
+The `done` state exists only on the PR branch until a human merges it, so it does
+not enable dependents ahead of the default branch.
 
 ### Human-review increment
 
@@ -373,7 +376,7 @@ After positive FINAL_AUDIT:
 2. set/keep the increment `awaiting_review`;
 3. record the exact audited PR head and evidence;
 4. do **not** complete the human-review closure item;
-5. do **not** advance `NEXT`;
+5. do **not** set `done` or check the master-checklist entry;
 6. push/create/update the PR;
 7. stop at `AWAIT_HUMAN_REVIEW` and return the PR URL.
 
@@ -387,10 +390,7 @@ After approval you may make **only a closure metadata commit** that:
 - completes the remaining checklist items;
 - sets the increment `done`;
 - appends the final bitacora row;
-- checks its dashboard entry;
-- advances `NEXT` to the first pending increment;
-- sets `Last completed increment`;
-- clears `Active runtime goal` until the next increment is actually activated;
+- checks its dashboard master-checklist entry;
 - runs `bash scripts/hooks/check-lester-increments.sh`.
 
 Push that metadata-only commit to the same PR and stop at
@@ -405,13 +405,13 @@ FINAL_AUDIT and human review.
 Never execute `gh pr merge` and never merge through another mechanism. The
 human performs merge.
 
-The next increment may start only after the closure state is visible on the
+A dependent increment may start only after the closure state is visible on the
 repository default branch.
 
 ## 9. EXCEPTIONAL CLOSURE REPAIR
 
 If the default branch contains an already-merged implementation whose increment
-is still nonterminal, do not infer advancement.
+is still nonterminal, do not infer that dependents are enabled.
 
 Verify the merged PR/default-branch commit and use the metadata-only repair
 procedure in `docs/runbooks/lester-increment-workflow.md`:
@@ -420,7 +420,7 @@ procedure in `docs/runbooks/lester-increment-workflow.md`:
 - record the real merge/approval fact without inventing review events;
 - mark the increment `done`;
 - complete the checklist;
-- repair the dashboard/`NEXT`/active goal;
+- check the dashboard master-checklist entry;
 - run the harness checker;
 - publish a closure-repair PR;
 - human merges it.

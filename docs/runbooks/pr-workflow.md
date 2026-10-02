@@ -161,7 +161,7 @@ Workers and the integrator must never push or create a PR.
 ### High-autonomy
 
 After Fable final audit and required automated checks, the delivery branch may
-already contain final closure metadata (`State: done`, dashboard advancement).
+already contain final closure metadata (`State: done`, master-checklist entry checked).
 The orchestrator publishes it as ready to merge. A human still performs merge.
 
 ### Mandatory human review
@@ -169,8 +169,8 @@ The orchestrator publishes it as ready to merge. A human still performs merge.
 For scientific-core increments:
 
 1. Fable final-audits the integrated source result.
-2. The delivery branch records `State: awaiting_review`; `NEXT` remains on the
-   current increment.
+2. The delivery branch records `State: awaiting_review`; the master-checklist
+   entry stays unchecked.
 3. Fable pushes/updates the PR.
 4. A human reviews the exact source-bearing PR head.
 5. If changes are requested, return to corrective DAG -> integration -> final
@@ -182,8 +182,6 @@ For scientific-core increments:
    - record PR/final audited commit and approval evidence;
    - append the bitacora closure entry;
    - check the master checklist entry;
-   - advance `NEXT` to the first remaining pending increment;
-   - clear/change the active runtime goal as required;
    - run `bash scripts/hooks/check-lester-increments.sh`.
 8. Push that metadata-only commit to the same PR branch.
 9. Human merges the PR.
@@ -204,7 +202,7 @@ or, manually:
 gh pr merge --squash --delete-branch
 ```
 
-For Lester increments, the next increment remains blocked until the merged
+For Lester increments, dependent increments remain blocked until the merged
 closure state is visible on the default branch.
 
 ---
@@ -224,9 +222,8 @@ Verify:
 
 - predecessor increment is `done`;
 - its dashboard entry is checked;
-- `Last completed increment` is correct;
-- `NEXT` selects the dependent increment;
-- no other Lester increment is nonterminal.
+- the checker reports the dependent increment as ready;
+- at most one other Lester increment is nonterminal.
 
 Do not infer advancement from the existence of code alone.
 
