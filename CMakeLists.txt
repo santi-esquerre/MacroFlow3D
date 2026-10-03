@@ -455,39 +455,20 @@ if(MACROFLOW3D_BUILD_APPS)
         --case anderson_condition_reset_control
         --case anderson_form_candidate_unit
     )
-    # SF-20 T02: expensive STALL fixtures (a full 500-iteration 32^3 Picard
-    # budget for both a control and a gate run, per fixture). Kept as a
-    # separate ctest entry (not part of the default `streamfunction_anderson`
-    # or bare `streamfunction_operator_tests` runs); see
-    # streamfunction_anderson_gpu_cases.cu / streamfunction_operator_tests.cpp
-    # (heavy_cases()) for the isolation mechanism.
-    add_test(NAME streamfunction_anderson_stall COMMAND streamfunction_operator_tests
-        --case anderson_stall_fixture_a
-        --case anderson_stall_fixture_b
-    )
     # SF-21 (first built pre-re-sequencing as SF-20 T02): CoefficientState +
     # lambda/eta-rescue contract cases, plus the SF-21 re-activation Anderson
     # entry-clear proof (fast, 16^3, host+small-GPU). Kept in a separate
     # ctest entry (rather than extended into streamfunction_continuation or
     # streamfunction_anderson) so the two very different runtime profiles
-    # (fast unit cases vs. the tens-of-minutes 32^3 physical smokes below)
-    # are independently attributable.
+    # (fast unit cases vs. the tens-of-minutes 32^3 physical smokes, which
+    # since SF-27 are a documented experiment, not a ctest entry) are
+    # independently attributable.
     add_test(NAME streamfunction_heterogeneity_unit COMMAND streamfunction_operator_tests
         --case heterogeneity_coefficient_state_contract
         --case heterogeneity_rescue_ordering
         --case heterogeneity_rescue_failure_lambda_halving
         --case heterogeneity_lambda_floor_exhaustion
         --case heterogeneity_anderson_entry_clear
-    )
-    # SF-21 (first built pre-re-sequencing as SF-20 T02, activation bitácora
-    # decision 5(b); SF-21 re-activation decision R5 enables Anderson):
-    # PRESPECIFIED 32^3 physical Gaussian gating smokes. May take tens of
-    # minutes combined; deliberately NOT budget-capped below the solver's
-    # documented defaults. Heavy tier: see streamfunction_operator_tests.cpp
-    # (heavy_cases()) for the isolation mechanism.
-    add_test(NAME streamfunction_heterogeneity_smoke COMMAND streamfunction_operator_tests
-        --case heterogeneity_smoke_sigma025
-        --case heterogeneity_smoke_sigma1
     )
     # SF-22 T02: matrix-free Jacobian-vector product (JvpWorkspace, SF-22 T01)
     # acceptance cases. Cheap tier: see jvp_gpu_cases.cu / streamfunction_
@@ -528,55 +509,23 @@ if(MACROFLOW3D_BUILD_APPS)
         --case newton_memory_accounting
         --case newton_fail_fast
     )
-    # SF-24 T03: globalized Newton-Krylov "difficult case" acceptance control
-    # (G4/G5: two 32^3 solves of the SF-21 heterogeneity-continuation stall
-    # fixture, plus a determinism rerun). Kept as a separate ctest entry (not
-    # part of the default `streamfunction_newton` or bare
-    # `streamfunction_operator_tests` runs); see newton_gpu_cases.cu /
-    # streamfunction_operator_tests.cpp (heavy_cases()) for the isolation
-    # mechanism.
-    add_test(NAME streamfunction_newton_difficult COMMAND streamfunction_operator_tests
-        --case newton_difficult_case
-    )
     # SF-25 T02: ShiftedJacobianOperator (SF-25 T01) cheap enabler unit case.
     # Cheap tier: see terminal_solver_gpu_cases.cu / streamfunction_operator_
     # tests.cpp (cases()) for the exact fixture.
     add_test(NAME streamfunction_terminal_unit COMMAND streamfunction_operator_tests
         --case terminal_shifted_apply_unit
     )
-    # SF-25 T02: the D-gate diagnostic protocol (E2-E5, PRESPECIFIED in the
-    # SF-25 activation bitácora). Kept as a separate ctest entry (not part of
-    # the default `streamfunction_operator_tests` runs); see
-    # terminal_solver_gpu_cases.cu / streamfunction_operator_tests.cpp
-    # (heavy_cases()) for the isolation mechanism.
-    # SF-26 T03 (bitácora 2026-09-30): re-classified as an always-pass
-    # evidence recorder (E2 asserts -> recorded evidence; the frozen plateau
-    # belonged to the crossed-pairing system SF-26 corrects); the entry is
-    # KEPT so the V100 suite log records whether the plateau still exists.
-    add_test(NAME streamfunction_terminal_dgate COMMAND streamfunction_operator_tests
-        --case terminal_dgate_diagnostic
-    )
-    # SF-25 corrective C05: the owner-approved R1a/R1b resolution-
-    # discriminating experiment (`terminal_resolution_probe`, always-pass
-    # print-only evidence recorder, bitácora 2026-08-14T15:20Z). Kept as a
-    # separate ctest entry (not part of the default `streamfunction_
-    # operator_tests` runs); see terminal_solver_gpu_cases.cu /
-    # streamfunction_operator_tests.cpp (heavy_cases()) for the isolation
-    # mechanism.
-    add_test(NAME streamfunction_terminal_resolution COMMAND streamfunction_operator_tests
-        --case terminal_resolution_probe
-    )
-    # SF-26 T02 HEAVY case: gauge recombination on a genuinely converged
-    # sigma_Y^2=0.25, 32^3 heterogeneous state (VERBATIM run_heterogeneity_
-    # smoke fixture parameters), comparing the production SAME-index residual
-    # against a test-local crossed recomposition on the same recombined
-    # state. Kept as a separate ctest entry (not part of the default
-    # `streamfunction_operator_tests` runs); see coupled_residual_gpu_cases.cu
-    # / streamfunction_operator_tests.cpp (heavy_cases()) for the isolation
-    # mechanism. Expected runtime locally: 10-25 minutes.
-    add_test(NAME streamfunction_gauge_recombination_heavy COMMAND streamfunction_operator_tests
-        --case coupled_residual_gauge_recombination_sigma025
-    )
+    # SF-27 (process rule: ctest holds fast contract tests only): the heavy
+    # tier is deliberately NOT registered in ctest. The eight heavy cases
+    #   anderson_stall_fixture_a, anderson_stall_fixture_b,
+    #   heterogeneity_smoke_sigma025, heterogeneity_smoke_sigma1,
+    #   newton_difficult_case, terminal_dgate_diagnostic,
+    #   terminal_resolution_probe,
+    #   coupled_residual_gauge_recombination_sigma025
+    # remain reachable through `streamfunction_operator_tests --case <name>`
+    # (heavy_cases() in tests/streamfunctions/streamfunction_operator_tests.cpp)
+    # and are documented, with their detached-V100 commands and last recorded
+    # outcomes, in docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md.
 
     # SF-18 T02: periodic Gaussian generator acceptance tests + 256^3
     # memory/runtime record. Standalone (mirrors run_operator_tests.cu),

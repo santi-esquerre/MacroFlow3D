@@ -133,8 +133,11 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // `streamfunction_operator_tests.cpp`'s aggregated `cases()` map (the map
 // backing `--list` and the no-argument "run everything" default): reachable
 // only via an explicit `--case anderson_stall_fixture_a` / `--case
-// anderson_stall_fixture_b`, matching the CMakeLists.txt
-// `streamfunction_anderson_stall` ctest entry. See
+// anderson_stall_fixture_b`. Not a ctest entry since SF-27: run as a
+// documented experiment (see
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md) via
+// `scripts/remote --increment <id> run <job> --
+// "./build/v100-release/streamfunction_operator_tests --case <name>"`. See
 // `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
 // `streamfunction_anderson_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry anderson_stall_case_registry();
@@ -158,9 +161,12 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // Deliberately NOT folded into `streamfunction_operator_tests.cpp`'s
 // aggregated `cases()` map (the map backing `--list` and the no-argument
 // "run everything" default): reachable only via an explicit `--case
-// heterogeneity_smoke_sigma025` / `--case heterogeneity_smoke_sigma1`,
-// matching the CMakeLists.txt `streamfunction_heterogeneity_smoke` ctest
-// entry. See `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup
+// heterogeneity_smoke_sigma025` / `--case heterogeneity_smoke_sigma1`.
+// Not a ctest entry since SF-27: run as a documented experiment (see
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md) via
+// `scripts/remote --increment <id> run <job> --
+// "./build/v100-release/streamfunction_operator_tests --case <name>"`.
+// See `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup
 // and `heterogeneity_continuation_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry heterogeneity_continuation_smoke_case_registry();
 
@@ -210,8 +216,11 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // determinism rerun). Deliberately NOT folded into
 // `streamfunction_operator_tests.cpp`'s aggregated `cases()` map (the map
 // backing `--list` and the no-argument "run everything" default): reachable
-// only via an explicit `--case newton_difficult_case`, matching the
-// CMakeLists.txt `streamfunction_newton_difficult` ctest entry. See
+// only via an explicit `--case newton_difficult_case`. Not a ctest entry
+// since SF-27: run as a documented experiment (see
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md) via
+// `scripts/remote --increment <id> run <job> --
+// "./build/v100-release/streamfunction_operator_tests --case <name>"`. See
 // `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
 // `newton_gpu_cases.cu` for the exact fixture.
 [[nodiscard]] CaseRegistry newton_difficult_case_registry();
@@ -240,9 +249,12 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // `streamfunction_operator_tests.cpp`'s aggregated `cases()` map (the map
 // backing `--list` and the no-argument "run everything" default): reachable
 // only via an explicit `--case terminal_dgate_diagnostic` / `--case
-// terminal_resolution_probe`, matching the CMakeLists.txt
-// `streamfunction_terminal_dgate` / `streamfunction_terminal_resolution`
-// ctest entries. See `streamfunction_operator_tests.cpp`'s `heavy_cases()`
+// terminal_resolution_probe`. Not ctest entries since SF-27: run as
+// documented experiments (see
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md) via
+// `scripts/remote --increment <id> run <job> --
+// "./build/v100-release/streamfunction_operator_tests --case <name>"`.
+// See `streamfunction_operator_tests.cpp`'s `heavy_cases()`
 // lookup and `terminal_solver_gpu_cases.cu` for the exact fixtures.
 [[nodiscard]] CaseRegistry terminal_solver_dgate_case_registry();
 
@@ -256,8 +268,11 @@ using CaseRegistry = std::map<std::string, CaseFunction>;
 // folded into `streamfunction_operator_tests.cpp`'s aggregated `cases()` map
 // (the map backing `--list` and the no-argument "run everything" default):
 // reachable only via an explicit `--case
-// coupled_residual_gauge_recombination_sigma025`, matching the
-// CMakeLists.txt `streamfunction_gauge_recombination_heavy` ctest entry. See
+// coupled_residual_gauge_recombination_sigma025`. Not a ctest entry since
+// SF-27: run as a documented experiment (see
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md) via
+// `scripts/remote --increment <id> run <job> --
+// "./build/v100-release/streamfunction_operator_tests --case <name>"`. See
 // `streamfunction_operator_tests.cpp`'s `heavy_cases()` lookup and
 // `coupled_residual_gpu_cases.cu` for the exact fixture.
 [[nodiscard]] CaseRegistry coupled_residual_heavy_case_registry();

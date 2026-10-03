@@ -45,10 +45,13 @@
 // aggregated `cases()` map (the map that backs both `--list` and the
 // no-argument "run everything" default): they are reachable only via an
 // explicit `--case anderson_stall_fixture_a` / `--case
-// anderson_stall_fixture_b`, matching the CMakeLists.txt
-// `streamfunction_anderson_stall` ctest entry, so the existing
+// anderson_stall_fixture_b`, so the existing
 // `streamfunction_operator_tests` full-registry run and the cheap
-// `streamfunction_anderson` ctest entry stay fast. See
+// `streamfunction_anderson` ctest entry stay fast. Not a ctest entry since
+// SF-27: run as a documented experiment (see
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md) via
+// `scripts/remote --increment <id> run <job> --
+// "./build/v100-release/streamfunction_operator_tests --case <name>"`. See
 // `streamfunction_operator_tests.cpp` for the lookup mechanism.
 
 namespace macroflow3d::streamfunctions::test {

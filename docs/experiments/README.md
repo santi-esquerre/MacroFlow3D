@@ -10,3 +10,5 @@ A valid experiment note should contain:
 - outputs
 - conclusion
 - caveats
+
+Heavy streamfunction cases that are not ctest entries (since SF-27) are indexed in `2026-10-02-heavy-streamfunction-cases-index.md`.

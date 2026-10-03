@@ -385,8 +385,12 @@ using CaseFunction = test::CaseFunction;
 // `cases()` above so `--list` and the no-argument "run everything" default
 // stay on the fast tier; reachable only via an explicit `--case
 // anderson_stall_fixture_a`/`anderson_stall_fixture_b`/
-// `heterogeneity_smoke_sigma025`/`heterogeneity_smoke_sigma1`, resolved as a
-// fallback in main() below.
+// `heterogeneity_smoke_sigma025`/`heterogeneity_smoke_sigma1` (and the later
+// heavy registries folded in below), resolved as a fallback in main() below.
+// Since SF-27 the heavy tier is NOT registered in ctest (ctest holds fast
+// contract tests only): these cases are run as documented experiments, as
+// detached V100 jobs, listed in
+// docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md.
 [[nodiscard]] const std::map<std::string, CaseFunction>& heavy_cases() {
     static const std::map<std::string, CaseFunction> registry = [] {
         std::map<std::string, CaseFunction> result;
@@ -446,7 +450,9 @@ int main(int argc, char** argv) {
             auto found = cases().find(name);
             if (found == cases().end()) {
                 // Explicit --case fallback only (never part of the default
-                // "run everything" listing): SF-20 heavy stall fixtures.
+                // "run everything" listing, not registered in ctest since
+                // SF-27): the heavy tier, run as documented experiments
+                // listed in docs/experiments/2026-10-02-heavy-streamfunction-cases-index.md.
                 found = heavy_cases().find(name);
                 if (found == heavy_cases().end()) {
                     std::cerr << "unknown case: " << name << '\n';
