@@ -22,7 +22,7 @@ labels at every vertex of a candidate grid, plus the shared conventions used by 
 | `cases.py` | `load_case(field, eps, N)`, `NPHI` table, face fluxes, cache |
 | `metrics.py` | shared metrics (`fd_metrics`), the one-line `CASE` print format (`case_line`, `print_case`, `parse_case_line`), observed orders |
 | `candidate_i.py` (N2) | candidate (i): non-divergence same-index equation (14) on the slab, inlet Dirichlet labels, analytic `grad ln k`, second-order centered stencils, no `|c|^2` regularization; variants `i0` (spec-literal control: equation rows also on the outlet plane with one-sided `d1`/`d11`/`d1j`, no boundary condition) and `i1` (deviation D-2: outlet rows `c2 = v2_in`, `c3 = v3_in`, i.e. `c x e1 = vperp_in x e1` with the inlet-face tangential Darcy velocity; Neumann `d1 psi_i = 0` for `_ch`). Damped Newton, colored central-FD sparse Jacobian, `splu` (N <= 24) / right-preconditioned GMRES (CGS2, restart 300) with the per-mode inverse of the `k = 1` linearization (N >= 32), amplitude continuation 0.25 -> 0.5 -> 1 with bisection fallback, Levenberg-Marquardt fallback for `i0` (N <= 16). Commands: `python3 candidate_i.py field:eps:N:i0|i1 ...` (CASE line `cand=i0/i1` + `cand=oracle_fd` ceiling, `EXTRA` outlet-row residual and inlet oblique defect, `HISTORY`); `--jactest field:eps:N:var` (Jacobian action vs FD, 3 steps); `--consistency field:eps ...` (residual at the oracle labels on `--grids 16,32,48`, orders); `--spectrum M field:eps:M:var ...` (dense FD Jacobian SVD at the converged state, or at the final iterate and the oracle labels if not converged -> `raw/spectrum_cand_i_<var>_<field>_<eps>_<M>[_state].txt`); `--k1check N` (`k = 1` control: exact nulls of `i0`/`i1`, preconditioner exactness -> `raw/spectrum_cand_i_<var>_uniform_k1_<N>.txt`); options `--maxit --tol --lin-tol --prec lin0|lap --direct-max --restart --no-continuation --bisect --lm --init zero|inlet|oracle (oracle = diagnostic only) --out`. Raw console: `raw/cand_i_smoke_*.txt` |
-| `candidate_ii.py` | N3, candidate (ii): dissipation energy `E_h = 1/2 h^3 sum_f omega_f c_f^2` of the mimetic (Whitney, `c_f = curl_h(avg(psi1) G_h psi2)`, `div_h c_f = 0` exactly) face fluxes; inlet Dirichlet labels; outlet free (`_ch`) or outlet flux constraint `c1[N] = f1_in` (periodic fields, Lagrange multipliers); Newton (colored-FD Hessian) with LM globalization; metrics, `oracle_mim` ceiling, discrete Kelvin (TPFA) reference, `--gradtest`, `--consistency`, `--spectrum`. Section "Candidate (ii) (N3)" below |
+| `candidate_ii.py` | N3 + C-ii, candidate (ii): dissipation energy of the label pair; default (C-ii) `--energy q1` = `1/2 sum_cells q_cell int_cell |grad psi1^h x grad psi2^h|^2` of the trilinear (Q1) label interpolants (pointwise in-cell product, exactly divergence-free, normal-continuous, face averages = the Whitney fluxes; 3x3x3 Gauss, exact); `--energy whitney` = the N3 edge-averaged energy `1/2 h^3 sum_f omega_f c_f^2` of the mimetic face fluxes (`c_f = curl_h(avg(psi1) G_h psi2)`, control with the hourglass kernel); inlet Dirichlet labels; outlet free (`_ch`) or outlet flux constraint `c1[N] = f1_in` plus the two D-3 rows "mean transverse flux = 0" (periodic fields, Lagrange multipliers); Newton (colored-FD Hessian) with LM globalization; metrics, `oracle_mim` ceiling, TPFA reference, `--gradtest`, `--consistency`, `--spectrum`. Section "Candidate (ii) (N3, corrected by C-ii)" below |
 
 ### Reuse of the 2026-10-02 closure probes
 
@@ -185,24 +185,159 @@ CLI summary:
 | `oracle.py --midplane field:eps ... --grids ...` | `MIDPLANE` rows: oracle labels on the planes `0.5 - h, 0.5, 0.5 + h` only, centered FD `e_v_mid`, `e_i_mid`, `max|grad_h psi|`, `min|c|`; `MIDPLANE_ORDER` |
 | options | `--ref-nphi K` (override `N_phi`), `--grids 16,32,48`, `--no-cache` |
 
-## Candidate (ii) (N3): `candidate_ii.py`
+## Candidate (ii) (N3, corrected by C-ii): `candidate_ii.py`
 
-Formulation, stencils, quadrature and solver are documented in the module docstring. Semantics fixed here:
+Formulation, quadrature, constraints and solver are documented in the module docstring. Since C-ii the default
+energy is the Q1 form; the N3 form is the control `--energy whitney`. Semantics fixed here:
 
-- Constraint (periodic fields, deviation D-3): `C = c1[N] - t = 0` on the `N^2` outlet `x1`-faces,
+- Energy (`--energy q1`, default, `cand=ii`): `E_h = 1/2 sum_cells q_cell int_cell |c(x)|^2 dx`,
+  `c(x) = grad psi1^h x grad psi2^h` pointwise inside each cell, `psi_i^h` the trilinear (Q1) interpolants of the
+  8 vertex labels (affine parts exact). `c` is exactly divergence-free in each cell and normal-continuous across
+  faces, and its face averages are exactly the Whitney face fluxes `c_f` (so `vD_faces` comparisons, metrics and the
+  outlet flux constraint are those of N3). It is not the collocated product at the vertices, which is unsound
+  and not used. Quadrature: tensor 3x3x3 Gauss-Legendre per cell. `|c|^2` has degree <= 4 per direction
+  (`c1 ~ (2,1,1)`, `c2 ~ (1,2,1)`, `c3 ~ (1,1,2)`) and the rule is exact to degree 5, so the integral is exact.
+  `q_cell = 1/k` at the cell center (`--q q1`: trilinear `q` from the vertices, `cand=ii_qq1`, also exact).
+  `--energy whitney` (`cand=ii_whitney`) is the N3 edge-averaged form `1/2 h^3 sum_f omega_f c_f^2`. It is kept as
+  the control that has the `2 N^2` hourglass kernel at `k = 1`.
+- Constraints (periodic fields; deviation D-3): `C = c1[N] - t = 0` on the `N^2` outlet `x1`-faces,
   `t = f1_in - mean(f1_in) + 1`, `f1_in = load_case()['vD_faces']['f1'][0]`. `sum c1[N] = N^2` identically, so the
   mean of `f1_in` (`1 - O(1e-10)`, printed as `f1_in mean-1`) is replaced by 1 and the redundant row is absorbed by a
-  bordered KKT system (`sum lam = 0`, scalar `mu`). `c_rel = max|C| / max|t|`. `--free-outlet` drops the constraint
-  (`cand=ii_free`, control). `_ch` fields are always free at the outlet (natural condition `c x e1 = 0`).
-- `r_F := g_rel = |grad_x L| / |grad E_h(x0)|`, `L = E_h + h^2 lam . C`, `x0` = unknowns 0 (inlet labels in place,
-  full amplitude).
+  bordered KKT system (`sum lam = 0`, scalar `mu`). In addition (C-ii, completing D-3), there are two scalar rows for
+  zero mean transverse flux:
+  `Cm = (h^2 sum_{j,m3} c2[j, 0, m3], h^2 sum_{j,m2} c3[j, m2, 0]) = 0` on the plane `m2 = 0` / `m3 = 0` (multipliers
+  `eta` = head jumps across the periodic boundary). The plane fluxes are plane-independent only up to the row sums of
+  `c1[N] - c1[0]` (cell balance identity, verified to 1e-16 in the `MEANFLUX` lines). `c1[0]` is the mimetic flux
+  of the inlet labels and `t` comes from the reference faces, so the spread is `O(h^2)` (5e-5 at 16^3 for
+  `gauss:0.25`). `c_rel = max(max|C| / max|t|, max|Cm|)`. `--no-meanflux` drops the two rows (`cand=..._nomf`, the N3
+  constraint set). `--free-outlet` drops all outlet constraints (`cand=ii_free`, control). `_ch` fields are always
+  free at the outlet (natural condition `c x e1 = 0`).
+- `r_F := g_rel = |grad_x L| / |grad E_h(x0)|`, `L = E_h + h^2 lam . C + eta . Cm`, `x0` = unknowns 0 (inlet labels
+  in place, full amplitude). If `|grad E_h(x0)| = 0` (the `uniform` field), `g_rel` is the absolute norm (printed).
 - `e_v`: RMS over all faces of the three families of `c_f - vD_faces`, over `RMS(vD_faces)`; `e_div` from
   `div_h c_f` (roundoff); `min_c`, percentiles: cell-averaged face fluxes; `e_psi`, `e_i`: `metrics.fd_metrics`.
-  Next to every candidate line: `cand=oracle_mim` = the same mimetic flux of the exact oracle labels (D-5 ceiling).
-- `KELVIN` line: `c_K`, the minimizer of `E_h` over all discretely solenoidal face fluxes with the same inlet
-  (and outlet) flux = two-point-flux Darcy with the harmonic face mean of `k`. Exact identity
-  `E_h(u) = E_K + 1/2 |c(u) - c_K|_W^2` (checked in `--gradtest` to 8e-16): every exact minimizer of candidate (ii)
-  has `c = c_K`.
+  Next to every candidate line: `cand=oracle_mim` = the same face flux of the exact oracle labels (D-5 ceiling).
+- `KELVIN` line: `E(oracle) - E_min` for both forms. It also gives the TPFA Darcy flux `c_K` of the same inlet
+  (and outlet + D-3) data (`kelvin_tpfa`, with the two head jumps when the D-3 rows are active). The identity
+  `E_h(u) = E_K + 1/2 |c(u) - c_K|_W^2` is exact only for the Whitney form (checked in `--gradtest` to 8e-16). The
+  Q1 minimizer is a different, Q1-based Darcy discretization, so for it the TPFA flux is only a reference.
+- `MEANFLUX` lines (periodic fields): plane fluxes of the candidate and of the oracle labels, their spread over
+  planes, the balance-identity defect and the reference face fluxes.
+
+### C-ii commands (local, bounded; outputs in `raw/`)
+
+```bash
+cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts
+python3 candidate_ii.py --gradtest gauss:0.25:12                         > ../raw/cand_ii_q1_gradtest.txt
+<py311>/bin/python candidate_ii.py --gradtest gauss:0.25:12              > ../raw/cand_ii_q1_gradtest_py311.txt
+python3 candidate_ii.py --consistency gauss:0.25 gauss_ch:0.25           > ../raw/cand_ii_q1_consistency.txt
+python3 candidate_ii.py control2d:0.5:16 gauss_ch:0.25:16 gauss:0.25:16  > ../raw/cand_ii_q1_16.txt
+python3 candidate_ii.py --free-outlet gauss:0.25:16                      > ../raw/cand_ii_q1_free_outlet.txt
+python3 candidate_ii.py --spectrum 12 gauss:0.25:12 gauss_ch:0.25:12     > ../raw/cand_ii_q1_spectrum12.txt
+python3 candidate_ii.py --spectrum 12 uniform:0:12                       > ../raw/cand_ii_q1_spectrum12_uniform.txt
+python3 candidate_ii.py --energy whitney --spectrum 12 uniform:0:12      > ../raw/cand_ii_q1_ctl_whitney_spectrum12.txt
+python3 candidate_ii.py --solver gmres gauss_ch:0.25:16                  > ../raw/cand_ii_q1_gmres16.txt
+timeout 900 python3 candidate_ii.py gauss_ch:0.25:32                     > ../raw/cand_ii_q1_32_timing.txt
+timeout 900 python3 candidate_ii.py --solver gmres --start oracle gauss_ch:0.25:32 > ../raw/cand_ii_q1_32_from_oracle_gmres.txt
+<py311>/bin/python candidate_ii.py --solver gmres --maxit 3 --no-continuation gauss:0.25:12 > ../raw/cand_ii_q1_gmres_py311.txt
+```
+
+`<py311>`: a Python 3.11.16 venv with exactly numpy 1.26.4 / scipy 1.11.4 (the V100-host versions).
+
+### Findings of C-ii (reported, not acted on)
+
+- Structure (`cand_ii_q1_gradtest*.txt`, both Python stacks, `ALL PASS`): (a) pointwise `div c` at 6 random
+  points in every cell (central differences, which are exact for the degree-2 dependence of `c_a` on `x_a`)
+  2.1e-15 / 2.4e-15 relative to `max|c|/h`; (b) face averages of `c . n` (3x3 Gauss) vs Whitney `c_f`
+  2.7e-16 / 3.0e-16, normal continuity 4.3e-16 / 4.0e-16; (c) exact gradient vs central FD of `E_h` <= 8.1e-8 over
+  steps 1e-5..1e-7 (free and constrained); D-3 row Jacobian vs FD <= 1.3e-10; colored 27-point FD Hessian vs
+  directional FD 1.2e-8..1.7e-8.
+- Kernel at `k = 1`, `u = 0`, 12^3 (`--gradtest` (d) and the `uniform` spectra): the Q1 Hessian has 0 relative
+  eigenvalues below 1e-10 (smallest 1.32e-3, i.e. the `h^2` elliptic tail; no negative ones). Curvature along the
+  two checkerboard directions `U1 = (-1)^m3 f(j, m2)`, `U2 = (-1)^m2 g(j, m3)` is 7.0e-2 / 7.3e-2 (0.21 / 0.22 of
+  `lambda_max`). The Whitney control has exactly 288 = `2 N^2` null modes and zero curvature on them, with a
+  gap ratio of 1.8e11 in the reduced Hessian / KKT spectra. With the outlet constraints, the constraint Jacobian at
+  the uniform state has rank 144 of 146: the redundant `xi = 0` row and the `(N/2, N/2)` checkerboard outlet row.
+  Both are properties of the Whitney outlet flux, so they appear under both forms.
+- Spectra at the solved states, 12^3 (`spectrum_cand_ii_q1_*`): `gauss:0.25` reduced Hessian smallest relative
+  singular value 1.83e-3, counts `<1e-2`: 44, `<1e-3`: 0, largest gap below 1e-2 ratio 1.34 (no cluster); KKT
+  identical tail (min 1.83e-3, 0 below 1e-3); 0 negative eigenvalues. `gauss_ch:0.25` Hessian min 1.36e-3,
+  `<1e-2`: 56, `<1e-3`: 0, gap 1.32, 0 negative. N3 had 319 / 334 values below 1e-3 and 32 / 24 negative
+  eigenvalues. The tail matches the normal `h^2` elliptic tail of UNDERSTAND §8 (no gap-separated group).
+- Solves at 16^3 (`cand_ii_q1_16.txt`), no plateau, final stage quadratic for `gauss`, `gauss_ch`:
+
+  | case | its | `r_F` | `e_v` | `oracle_mim` `e_v` | TPFA `e_v` | `e_psi` | `E(oracle) - E_min` | t |
+  |---|---|---|---|---|---|---|---|---|
+  | `control2d:0.5` | 24 | 9.1e-14 | 5.23e-3 | 9.8e-8 | 6.70e-3 | 9.4e-3 | 1.4e-5 | 107 s |
+  | `gauss_ch:0.25` | 42 | 1.6e-15 | 1.11e-2 | 6.19e-3 | 5.21e-3 | 0.155 | 1.3e-4 | 160 s |
+  | `gauss:0.25` | 31 | 1.7e-15 | 9.90e-3 | 5.78e-3 | 4.49e-3 (with D-3 jumps) | 0.162 | 1.1e-4 | 139 s |
+
+  `control2d` reaches 9.1e-14 with a linear tail (factor ~0.2-0.5 per iteration below 1e-9). `gauss:0.25`: D-3 rows
+  at roundoff, `eta = (-2.3e-4, +4.5e-3)` (the mean transverse head gradient `(a2, a3)` of the reference, as N3
+  identified). Hourglass content 4e-5 / 3e-6 (oracle 3e-5 / 4e-6): no drift.
+  Ratios to the `oracle_mim` ceiling: `e_v` 1.7-1.9 (`gauss`, `gauss_ch`); `control2d` is not comparable (ceiling at
+  the reference level, 1e-7). From the oracle start (`--start oracle`, 16^3 `gauss_ch`) Newton converges in 5
+  iterations to the same `E_min` (16 digits), so the minimizer is unique locally and `e_psi` is a discretization
+  property, not drift. Its error grows smoothly from the inlet (1e-3 absolute at `j = 1`, 7.5e-3 at the outlet,
+  ~`2 h^2`). The relative `e_psi` is large because the oracle periodic parts are small (RMS 0.037 / 0.032).
+- 32^3 `gauss_ch:0.25` (diagnostic, `--solver gmres --start oracle`, `cand_ii_q1_32_from_oracle_gmres.txt`; the
+  prescribed inlet-start timing run did not complete, see cost below): `r_F` 1.5e-15 in 5 iterations,
+  `E(oracle) - E_min = 1.3e-5`, hourglass content 5e-7 / 3e-8. The minimizer is assumed to be the one the
+  continuation would reach. This was verified at 16^3 (same `E_min` from both starts) and NOT at 32^3. Over 16 -> 32:
+
+  | quantity | 16^3 | 32^3 | observed order |
+  |---|---|---|---|
+  | `e_v` (all faces) | 1.107e-2 | 4.110e-3 | 1.43 |
+  | `e_v` x1-faces / x2-faces / x3-faces | 8.05e-3 / 1.39e-2 / 1.06e-2 | 2.06e-3 / 5.65e-3 / 3.86e-3 | 1.97 / 1.30 / 1.46 |
+  | `e_psi` | 0.155 | 0.0613 | 1.34 |
+  | `e_i` (1, 2) | 9.9e-3, 8.3e-3 | 3.6e-3, 2.6e-3 | 1.45, 1.67 |
+  | `oracle_mim` `e_v` (ceiling) | 6.19e-3 | 1.60e-3 | 1.95 |
+  | TPFA `e_v` | 5.21e-3 | 1.31e-3 | 1.99 |
+  | `e_v / oracle_mim` | 1.79 | 2.56 | - |
+
+  On this pair the Q1 minimizer's transverse face fluxes and labels converge at ~1.3-1.5, below the ceiling's ~2.
+  A third grid (48^3) is needed to tell a pre-asymptotic regime from a reduced order; the N4 sweep (V100 host) has
+  to decide it. Not interpreted further here.
+- Consistency at the oracle labels (`cand_ii_q1_consistency.txt`, 16/32/48):
+
+  | quantity | `gauss:0.25` (constrained + D-3) | orders | `gauss_ch:0.25` (free) | orders |
+  |---|---|---|---|---|
+  | `g_rel` (least-squares multipliers) | 3.39e-2 / 4.37e-3 / 1.13e-3 | 2.96, 3.33 | 3.19e-2 / 3.77e-3 / 9.60e-4 | 3.08, 3.37 |
+  | interior planes | 3.38e-2 / 4.36e-3 / 1.13e-3 | 2.96, 3.33 | 3.16e-2 / 3.75e-3 / 9.57e-4 | 3.07, 3.37 |
+  | outlet plane | 1.35e-3 / 1.95e-4 / 5.94e-5 | 2.79, 2.93 | 4.51e-3 / 3.59e-4 / 7.37e-5 | 3.65, 3.90 |
+  | outlet constraint (rms rel) | 5.17e-3 / 1.32e-3 / 5.89e-4 | 1.97, 1.99 | - | - |
+  | D-3 rows max | 9.17e-6 / 2.26e-6 / 1.00e-6 | 2.02, 2.01 | - | - |
+  | TPFA `e_v` (D-3 jumps for `gauss`) | 4.49e-3 / 1.14e-3 / 5.09e-4 | 1.98, 1.99 | 5.21e-3 / 1.31e-3 / 5.82e-4 | 1.99, 2.00 |
+  | `oracle_mim` `e_v` | 5.78e-3 / 1.50e-3 / 6.74e-4 | 1.94, 1.98 | 6.19e-3 / 1.60e-3 / 7.18e-4 | 1.95, 1.98 |
+
+  The D-3 completion removes the N3 floor of the TPFA flux of `gauss:0.25` (N3 without the rows: 6.3e-3 / 4.7e-3 /
+  4.6e-3, orders 0.42, 0.04). The outlet-plane stationarity orders, 0.67 / 0.89 for the N3 Whitney form, are 2.79 / 2.93 for the Q1 form.
+- `--free-outlet gauss:0.25:16` (`cand_ii_q1_free_outlet.txt`): `e_v = 2.96e-2` (N3: 2.9e-2), outlet `|c_perp|`
+  1.26e-2 vs `|v_D perp|` 0.118. This is a different (constant-head outlet) Darcy flow, as in N3.
+- Solver and cost (local WSL, 16 cores shared): at 16^3, one Newton iteration = 27-point colored FD Hessian
+  2.0-2.5 s (192 gradient evaluations) + `splu` 1.3-1.7 s; the 16^3 solves take 107-181 s (24-45 iterations over
+  the three stages). `--solver gmres` (Fourier-mode preconditioner, no shift needed on hourglass modes now) on
+  `gauss_ch:0.25:16` reaches the same `E_min` with `r_F` 1.6e-15 in 41 iterations, 251 s. GMRES takes 57-250
+  iterations near the solutions, but hits its 2400 cap (linres up to 2.5e-2) in the strongly nonlinear phase of
+  the `s = 1` stage; LM and backtracking absorb this. 32^3 (`cand_ii_q1_32_timing.txt`, prescribed `timeout 900`
+  run): FD Hessian 26-29 s + `splu` 173-195 s per iteration (KKT `n` = 65 536, RSS ~0.3 GB between steps).
+  Killed by the timeout after 3 iterations of the `s = 0.25` stage, so it did not complete. `splu` column
+  orderings make no material difference (16^3: COLAMD 1.8 s / MMD_AT_PLUS_A 1.1 s, same fill).
+  GMRES at 32^3 (from-oracle run) needs 1355-1822 iterations per Newton step near the solution (91-110 s), against
+  57-250 at 16^3: the iteration count grows ~7-10x per refinement, so the constant-coefficient mode preconditioner
+  degrades with N. Estimates at ~40 Newton iterations per inlet-start solve: 32^3 direct ~2.4 h, GMRES ~1.4 h
+  (Hessian 26 s + GMRES ~100 s per iteration, more in the nonlinear phase). 48^3: Hessian ~90 s per iteration, and GMRES
+  would need ~10^4 iterations per Newton step at that growth rate. That exceeds the 2400-iteration cap of
+  `_gmres` (restart 60 x 40), so the 48^3 linear solves would not converge as configured; direct is infeasible.
+  64^3 is worse still. A full inlet-start sweep at 48^3/64^3 is therefore not practical with this solver. The cheaper routes are
+  continuation plus a better preconditioner (e.g. the variable-coefficient Hessian at a coarse level, or ILU) and an
+  exact Gauss-point Hessian in place of the 192 gradient evaluations (not implemented, reported for N4).
+
+### N3 record (Whitney form, before C-ii)
+
+The commands below are the N3 runs. Since C-ii they reproduce N3 only with `--energy whitney --no-meanflux`
+(the CASE name is then `ii_whitney_nomf` instead of `ii`, and spectrum files are written as
+`spectrum_cand_ii_q1_ctl_whitney_nomf_*`); the N3 raw files are kept unchanged.
 
 Commands (local, bounded smokes; outputs in `raw/`):
 
@@ -262,6 +397,8 @@ Findings of N3 (reported, not acted on):
 | `oracle_returnmap.txt` | closure-note return maps at `N_phi` vs the recorded `raw/closure.txt` values |
 | `oracle_midplane.txt` | 3-plane mid-slab FD self-consistency over N = 16..128 (asymptotic-regime probe) |
 | `cand_ii_smoke_*.txt` | N3 candidate (ii) console outputs (commands in "Candidate (ii) (N3)") |
+| `cand_ii_q1_*.txt` | C-ii candidate (ii) console outputs, Q1 energy + D-3 rows (commands in "C-ii commands"); `cand_ii_q1_ctl_whitney_spectrum12.txt` is the Whitney control at `k = 1` |
+| `spectrum_cand_ii_q1_<field>_<eps>_<N>[_kkt|_hL].txt` | C-ii: sorted relative singular values at the solved state (Q1 energy), same layout as the N3 files; `spectrum_cand_ii_q1_ctl_whitney_uniform_0_12*` = Whitney control at `k = 1` (288 null modes) |
 | `spectrum_cand_ii_<field>_<eps>_<N>.txt` | sorted relative singular values at the solved state: Hessian (`_ch`) or reduced Hessian `Z^T H_L Z` (constrained); `_kkt`: KKT matrix with orthonormalized constraint rows; `_hL`: unreduced Lagrangian Hessian |
 | `cache/` | oracle caches (16^3 committed) |
 

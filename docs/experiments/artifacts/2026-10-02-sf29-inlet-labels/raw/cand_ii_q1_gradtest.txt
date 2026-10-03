@@ -1,0 +1,51 @@
+candidate_ii.py python=3.13.13 numpy=2.5.0 scipy=1.18.0 argv=--gradtest gauss:0.25:12
+======== gradtest gauss:0.25:12 energy=q1 q=center meanflux=True
+GRADTEST affine labels: max|c1 - 1|, max|c2|, max|c3|                   0.000e+00  (<= 1e-13) PASS
+GRADTEST random labels amp=0.1: max|div_h c_f| / (max|c_f|/h)           2.233e-16  (<= 1e-14) PASS
+GRADTEST random labels amp=1: max|div_h c_f| / (max|c_f|/h)             2.772e-16  (<= 1e-14) PASS
+GRADTEST Q1 affine labels: max|c - e1| at the 27 Gauss points of every cell 4.441e-16  (<= 1e-13) PASS
+GRADTEST (a) Q1 amp=0.1: pointwise max|div c| / (max|c|/h), 6 random points x 1728 cells 2.093e-15  (<= 1e-13) PASS
+GRADTEST (b) Q1 amp=0.1: max|face average of c.n - Whitney c_f| / max|c_f| (all faces) 2.689e-16  (<= 1e-13) PASS
+GRADTEST (b) Q1 amp=0.1: normal continuity max|c.n(left cell) - c.n(right cell)| / max|c_f| 4.302e-16  (<= 1e-13) PASS
+GRADTEST (a) Q1 amp=1: pointwise max|div c| / (max|c|/h), 6 random points x 1728 cells 2.368e-15  (<= 1e-13) PASS
+GRADTEST (b) Q1 amp=1: max|face average of c.n - Whitney c_f| / max|c_f| (all faces) 2.969e-16  (<= 1e-13) PASS
+GRADTEST (b) Q1 amp=1: normal continuity max|c.n(left cell) - c.n(right cell)| / max|c_f| 3.959e-16  (<= 1e-13) PASS
+GRADTEST flux Jacobian J d vs central FD of c_f                         4.503e-12  (<= 1e-08) PASS
+GRADTEST Whitney Kelvin identity E_h(u) - E_K = 1/2 |c(u) - c_K|_W^2 (random u, free outlet) 8.311e-16  (<= 1e-12) PASS
+GRADTEST TPFA Kelvin flux: max|div_h c_K| h / max|c_K|                  5.754e-14  (<= 1e-12) PASS
+GRADTEST (c) energy=q1 dE/dx . d vs central FD of E_h (step 1e-05)      7.132e-09  (<= 1e-06) PASS
+GRADTEST (c) energy=q1 dE/dx . d vs central FD of E_h (step 1e-06)      7.685e-11  (<= 1e-06) PASS
+GRADTEST (c) energy=q1 dE/dx . d vs central FD of E_h (step 1e-07)      1.667e-10  (<= 1e-06) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=False, 27-pt stencil) 1.702e-08  (<= 1e-06) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=False, 27-pt stencil) 1.692e-08  (<= 1e-06) PASS
+GRADTEST mode preconditioner: |(K0 + shift) P^-1 r - r| / |r| (constrained=False) 1.845e-10  (<= 1e-06) PASS
+GRADTEST flux Jacobian J d vs central FD of c_f                         9.289e-12  (<= 1e-08) PASS
+GRADTEST (c) energy=q1 dE/dx . d vs central FD of E_h (step 1e-05)      8.076e-08  (<= 1e-06) PASS
+GRADTEST (c) energy=q1 dE/dx . d vs central FD of E_h (step 1e-06)      8.724e-10  (<= 1e-06) PASS
+GRADTEST (c) energy=q1 dE/dx . d vs central FD of E_h (step 1e-07)      3.449e-09  (<= 1e-06) PASS
+GRADTEST (dC/dx)^T lam . d vs central FD of lam.C (step 1e-05)          6.524e-12  (<= 1e-06) PASS
+GRADTEST (dC/dx)^T lam . d vs central FD of lam.C (step 1e-06)          3.806e-11  (<= 1e-06) PASS
+GRADTEST (dC/dx)^T lam . d vs central FD of lam.C (step 1e-07)          5.731e-10  (<= 1e-06) PASS
+GRADTEST sparse dC/dx vs adjoint (dC/dx)^T lam                          2.497e-16  (<= 1e-13) PASS
+GRADTEST sum over outlet faces of dC/dx (identically 0)                 2.701e-16  (<= 1e-13) PASS
+GRADTEST D-3 rows: (dCm/dx)^T eta . d vs central FD (step 1e-05)        4.389e-13  (<= 1e-06) PASS
+GRADTEST D-3 rows: (dCm/dx)^T eta . d vs central FD (step 1e-06)        7.550e-12  (<= 1e-06) PASS
+GRADTEST D-3 rows: (dCm/dx)^T eta . d vs central FD (step 1e-07)        1.262e-10  (<= 1e-06) PASS
+GRADTEST D-3 rows: sparse Jacobian vs adjoint                           2.176e-16  (<= 1e-13) PASS
+GRADTEST TPFA flux with D-3 head jumps: max|div_h c| h / max|c|         6.375e-13  (<= 1e-12) PASS
+GRADTEST TPFA flux with D-3 head jumps: |plane-0 fluxes| (x2, x3)       3.315e-16  (<= 1e-12) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=True, 27-pt stencil) 1.232e-08  (<= 1e-06) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=True, 27-pt stencil) 1.192e-08  (<= 1e-06) PASS
+GRADTEST info: linearized outlet-flux rows vanishing at the uniform state (Fourier modes): 2 (xi = 0 and the (N/2, N/2) checkerboard expected: a property of the Whitney outlet flux, independent of the energy form)
+GRADTEST mode preconditioner: |(K0 + shift) P^-1 r - r| / |r| (constrained=True) 1.894e-10  (<= 1e-06) PASS
+GRADTEST info: energy=q1 k=1 u=0 N=12 dense Hessian n=3456 (t=31.3s): eig max=3.3149e-01, relative eigenvalues < 1e-10: 0 (2 N^2 = 288), < 1e-6: 0, < 1e-3: 0, negative: 0, smallest 8: 1.32e-03 1.32e-03 1.50e-03 1.50e-03 1.50e-03 1.50e-03 1.98e-03 1.98e-03
+GRADTEST info: energy=q1 checkerboard curvature t^T H t / |t|^2: t1 (U1 = (-1)^m3 f(j,m2)) = 7.0055e-02 (rel 2.11e-01), t2 (U2 = (-1)^m2 g(j,m3)) = 7.2535e-02 (rel 2.19e-01); smallest eigenvalue = 4.3807e-04
+GRADTEST info: energy=whitney k=1 u=0 N=12 dense Hessian n=3456 (t=6.9s): eig max=6.6121e-01, relative eigenvalues < 1e-10: 288 (2 N^2 = 288), < 1e-6: 288, < 1e-3: 368, negative: 0, smallest 8: 3.18e-19 1.29e-18 1.29e-18 1.67e-18 2.46e-18 3.20e-18 3.53e-18 4.03e-18
+GRADTEST info: energy=whitney checkerboard curvature t^T H t / |t|^2: t1 (U1 = (-1)^m3 f(j,m2)) = 0.0000e+00 (rel 0.00e+00), t2 (U2 = (-1)^m2 g(j,m3)) = 0.0000e+00 (rel 0.00e+00); smallest eigenvalue = -2.4676e-16
+GRADTEST (d) Q1 k=1 Hessian: relative eigenvalues < 1e-10 (expected 0)  0  PASS
+GRADTEST (d) Q1 k=1 Hessian: smallest eigenvalue > 0                    4.381e-04  PASS
+GRADTEST (d) Q1 checkerboard curvature t1 > 0                           7.006e-02  PASS
+GRADTEST (d) Q1 checkerboard curvature t2 > 0                           7.253e-02  PASS
+GRADTEST info: control energy=whitney: 288 null modes (2 N^2 = 288 expected), checkerboard curvature (0.0e+00, 0.0e+00) (0 expected: the hourglass kernel)
+GRADTEST info: e_v(mimetic flux of the oracle labels vs vD_faces) = 9.842e-03 at N=12
+GRADTEST ALL PASS
