@@ -202,6 +202,11 @@ set(OPERATOR_SOURCES
     src/numerics/operators/varcoeff_laplacian.cu
 )
 
+# SF-28: periodic tricubic B-spline interpolation (value + gradient, GPU + CPU mirror)
+set(INTERPOLATION_SOURCES
+    src/numerics/interpolation/PeriodicTricubicBSpline.cu
+)
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -283,6 +288,7 @@ add_library(macroflow3d_lib STATIC
     ${SOLVER_SOURCES}
     ${CONSTRAINT_SOURCES}
     ${OPERATOR_SOURCES}
+    ${INTERPOLATION_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
