@@ -202,6 +202,11 @@ set(OPERATOR_SOURCES
     src/numerics/operators/varcoeff_laplacian.cu
 )
 
+# SF-28: periodic tricubic B-spline interpolation (value + gradient, GPU + CPU mirror)
+set(INTERPOLATION_SOURCES
+    src/numerics/interpolation/PeriodicTricubicBSpline.cu
+)
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -283,6 +288,7 @@ add_library(macroflow3d_lib STATIC
     ${SOLVER_SOURCES}
     ${CONSTRAINT_SOURCES}
     ${OPERATOR_SOURCES}
+    ${INTERPOLATION_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
@@ -547,6 +553,12 @@ if(MACROFLOW3D_BUILD_APPS)
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
     add_test(NAME affine_periodic_flow COMMAND affine_periodic_flow_tests)
+
+    # SF-28 T02: periodic tricubic B-spline contract tests (fast tier)
+    add_executable(interpolation_tests tests/interpolation/periodic_tricubic_bspline_tests.cu)
+    target_link_libraries(interpolation_tests PRIVATE macroflow3d_lib)
+    target_compile_options(interpolation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME interpolation_periodic_tricubic COMMAND interpolation_tests)
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
