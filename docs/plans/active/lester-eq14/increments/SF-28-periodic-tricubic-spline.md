@@ -1,6 +1,6 @@
 # SF-28 — Periodic tricubic B-spline interpolation
 
-- State: `pending`
+- State: `active`
 - Goal: `Implementar interpolación tricúbica B-spline periódica C² de campos triplemente periódicos centrados en celda, con valor y gradiente en doble precisión, en GPU y con espejo CPU.`
 - Depends on: `SF-27`
 - Unlocks: `SF-30, SF-31`
@@ -8,8 +8,8 @@
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 2`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Fable 5.1 orchestrator session (2026-10-03)`
+- Started: `2026-10-03T01:51Z on master=afd9419`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -106,3 +106,4 @@ artifacts or experiment notes and link them here.
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
 | 2026-10-02T00:00Z | not started | Specification created by the 2026-10-02 re-sequencing (decision record `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`). | Replaces the cancelled SF-27..SF-30 specifications (git history at `4670fb5`). | Activate only when the checker reports it READY. |
+| 2026-10-03T01:51Z | activation on `master=afd9419` (PR #44 merged; checker OK ready=SF-28 SF-29, nonterminal=none); delivery branch `feat/lester-sf28-periodic-tricubic-spline` | UNDERSTAND: SF-27 `done` on the default branch; SF-29 runs concurrently in its own session (own delivery branch/PR, mirror `--increment SF-29`), so activating SF-28 gives two nonterminal increments. Human-review increment (interpolation code under `src/numerics`, autonomy policy). Scientific-rigor skill invoked (numerical-method category: approximation-order, exact-periodicity, CPU/GPU-equivalence and memory contracts; no physical claim). Numerical contract fixed before any implementation (orchestration record `understanding.md` §2): cell centres `(i+1/2)h`, origin 0, period `L = N h`; prefilter = division of the cuFFT spectrum by the per-axis symbol `2/3 + (1/3) cos(2 pi m/N)` (min 1/3, well posed) and by `N1 N2 N3`, no half-cell twist; evaluation reduces each coordinate to `[0, L)` FIRST, then `t = x/h - 1/2`, `i0 = floor t`, standard uniform cubic B-spline weights and derivative weights, exact integer wrap, 64 loads, no allocation; CPU mirror = exact cyclic tridiagonal deconvolution per axis sharing the same `__host__ __device__` evaluation. DAG: N1 module (`src/numerics/interpolation/`, CMake lib entry) -> N2 contract tests (`tests/interpolation/`, `add_test interpolation_periodic_tricubic`) -> one integrator; orchestrator-owned detached V100 jobs on `--increment SF-28` (`sf28-base-build` on the base tree now; `sf28-build`, `sf28-ladder`, `sf28-ctest-full`, `sf28-smoke` after integration). | Pre-registered readings for the reviewer: (D-1) the spec's bitwise-wrap sentence cannot hold for every double `x` because `x + L` is itself rounded; the contract enforced is bitwise identity for every `x` such that `x + qL` is exactly representable (reduction-first guarantees it; test on dyadic points `k/2^16`, `L = 1`, `q` in {-2,-1,1,2,3}, grids 16/32/64 and 16x32x24). (D-2) order gate = min of the two consecutive two-level estimates (16->32, 32->64) in BOTH max-norm and RMS over a fixed deterministic 1e4-point off-node set; thresholds 3.8/2.8 verbatim. (D-3) CPU/GPU relative = max-norm difference over the point set divided by the max-norm of the CPU reference (value; gradient magnitude); 1e-13 verbatim. (D-5) test field `sin(2 pi x) cos(4 pi y) sin(2 pi z) + 0.5 cos(2 pi (x+y)) + 0.25 sin(6 pi z)` on `[0,1)^3` (max wavenumber 3, >= 5 cells per wavelength at 16). | Commit activation; start `sf28-base-build` on V100; launch N1 worker. |
