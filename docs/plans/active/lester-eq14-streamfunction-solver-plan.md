@@ -131,7 +131,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-24 — Globalized Newton-Krylov](lester-eq14/increments/SF-24-newton-krylov.md)
 - [x] [SF-25 — Manifold-robust terminal solver](lester-eq14/increments/SF-25-terminal-manifold-solver.md)
 - [x] [SF-26 — Equation (14) source pairing correction](lester-eq14/increments/SF-26-source-pairing-correction.md)
-- [ ] [SF-27 — Validation-tier hygiene](lester-eq14/increments/SF-27-validation-tier-hygiene.md)
+- [x] [SF-27 — Validation-tier hygiene](lester-eq14/increments/SF-27-validation-tier-hygiene.md)
 - [ ] [SF-28 — Periodic tricubic B-spline interpolation](lester-eq14/increments/SF-28-periodic-tricubic-spline.md)
 - [ ] [SF-29 — CPU prototype: equation (14) with `x1` non-periodic and inlet labels](lester-eq14/increments/SF-29-eq14-inlet-labels-cpu-prototype.md)
 - [ ] [SF-30 — Streamline-closure gate on the production stack](lester-eq14/increments/SF-30-streamline-closure-gate.md)
