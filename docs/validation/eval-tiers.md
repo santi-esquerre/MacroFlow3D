@@ -29,7 +29,8 @@ ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
 ### Commands (remote — authoritative full suite, detached)
 
 The full suite is still long-duration computation: the fast contract tests
-together take about 45 min on V100 and far longer under local CPU emulation.
+together take about 45 min on V100 (2 709.82 s measured in SF-27) and far
+longer under local CPU emulation.
 It must not be run locally as acceptance evidence. Run it on V100 as a
 detached job instead:
 

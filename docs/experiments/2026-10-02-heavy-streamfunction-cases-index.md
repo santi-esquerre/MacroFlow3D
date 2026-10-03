@@ -107,6 +107,7 @@ two cases, the time covers both.
   Fixture a: control r_F 2.51e-4, Anderson 2.48e-4. Fixture b: control
   7.51e-4, Anderson 7.41e-4. Not re-baselined: the fixture assumes a stall
   that Anderson cures, and on the corrected system both arms stall.
+- SF-27 re-run (2026-10-03, source head `1446084`, mirror `~/MacroFlow3D-SF-27`, jobs `sf27-case-anderson-stall-a` / `-b`, GPU 0): FAILED, bit-identical to the SF-26 record — a: control r_F 2.5131715e-4 (455 its), Anderson 2.4841275e-4 (175 its); b: control 7.5080154e-4 (370 its), Anderson 7.4111595e-4 (214 its). Wall 273 + 107 s and 222 + 130 s.
 
 ### `heterogeneity_smoke_sigma025`, `heterogeneity_smoke_sigma1`
 
@@ -131,6 +132,7 @@ two cases, the time covers both.
   lambda = 0.0125 for sigma^2 = 0.25 (38/66 stages accepted) and at
   lambda = 0 for sigma^2 = 1 (37/65 accepted). Every eta = 1 stage stops at
   r_F = 1.50e-6, 1.5x the 1e-6 stage tolerance.
+- SF-27 (2026-10-03, head `1446084`, job `sf27-case-dispatch`): dispatch check only — both names accepted by `--case` and still running at 180 s (exit 124; negative control `--case no_such_case` exit 2). The multi-hour outcome was not re-run; the SF-26 record stands (identical test code).
 
 ### `newton_difficult_case`
 
@@ -151,6 +153,7 @@ two cases, the time covers both.
   science gate (D6).** 50 accepted Newton steps, r_F 1.77e-4 -> 1.73e-4,
   5351 Jv, not converged. Not re-baselined, for the same reason as the
   Anderson stall fixtures.
+- SF-27 re-run (2026-10-03, head `1446084`, job `sf27-case-newton-difficult`, GPU 1): FAILED, identical to the SF-26 record — control r_F 2.4841275e-4; Newton 50 accepted steps, r_F 1.7346282e-4, 5351 Jv, 644 s; determinism check PASS.
 
 ### `terminal_dgate_diagnostic`
 
@@ -170,6 +173,7 @@ two cases, the time covers both.
 - Last recorded outcome (SF-26, `58898bf`, 2026-10-01): passed (evidence
   recorder). The Newton-disabled sigma^2 = 1 continuation also dies at
   lambda = 0; the direct lambda = 0.5125 stage stagnates at r_F 5.4e-3.
+- SF-27 re-run (2026-10-03, head `1446084`, job `sf27-case-terminal-dgate`, GPU 0): PASS (always-pass recorder; internal mechanism verdict FAIL as before). E7-LM best r_F 5.628e-3; E8 harmonic-init stagnates at r_F 5.190e-3 after 120 its.
 
 ### `terminal_resolution_probe`
 
@@ -188,6 +192,7 @@ two cases, the time covers both.
 - Last recorded outcome (SF-26, `58898bf`, 2026-10-01): passed (evidence
   recorder). r_F 1.22e-3 at ell/h = 16; the other reported values are 4.69e-3
   and 6.88e-4. Not converged.
+- SF-27 re-run (2026-10-03, head `1446084`, job `sf27-case-terminal-resolution`, GPU 1): PASS (always-pass recorder). R1a (ell/h = 16) r_F 1.2178e-3 (stagnated, 279 its); R1b (ell/h = 8) 4.6934e-3 (234 its); R2a (+Newton) 6.8847e-4 (`omega_floor_rejected`); R2b 2.7216e-3 (`newton_budget_exhausted`). Joint verdicts `HYPOTHESIS_REFUTED_R1A_SHELVED` / `WALL_AT_ELLH16`, as in SF-26 (whose three numbers are R1a, R1b, R2a).
 
 ### `coupled_residual_gauge_recombination_sigma025`
 
@@ -208,20 +213,23 @@ two cases, the time covers both.
 - Last recorded outcome (SF-26, `58898bf`, 2026-10-01): **FAILED — recorded
   science gate (D6).** Precondition not met: the sigma^2 = 0.25 continuation
   no longer reaches lambda = 1, so there is no converged state to recombine.
+- SF-27 (2026-10-03, head `1446084`, job `sf27-case-dispatch`): dispatch check only — name accepted by `--case` and still running at 180 s (exit 124). Not re-run in full; the SF-26 record stands.
 
 ## Summary table (V100, `58898bf`, 2026-10-01)
 
-| former ctest entry | `--case` names | last outcome | wall (s) |
-|---|---|---|---|
-| `streamfunction_anderson_stall` | `anderson_stall_fixture_a`, `anderson_stall_fixture_b` | FAILED (D6 science gate) | 744.13 |
-| `streamfunction_heterogeneity_smoke` | `heterogeneity_smoke_sigma025`, `heterogeneity_smoke_sigma1` | FAILED (D6 science gate) | 38 055.82 |
-| `streamfunction_newton_difficult` | `newton_difficult_case` | FAILED (D6 science gate) | 1 401.58 |
-| `streamfunction_terminal_dgate` | `terminal_dgate_diagnostic` | passed (always-pass recorder) | 2 538.33 |
-| `streamfunction_terminal_resolution` | `terminal_resolution_probe` | passed (always-pass recorder) | 1 708.82 |
-| `streamfunction_gauge_recombination_heavy` | `coupled_residual_gauge_recombination_sigma025` | FAILED (D6 science gate) | 19 530.09 |
+| former ctest entry | `--case` names | last outcome | wall (s) | SF-27 (2026-10-03, head `1446084`) |
+|---|---|---|---|---|
+| `streamfunction_anderson_stall` | `anderson_stall_fixture_a`, `anderson_stall_fixture_b` | FAILED (D6 science gate) | 744.13 | re-run: FAILED, r_F identical |
+| `streamfunction_heterogeneity_smoke` | `heterogeneity_smoke_sigma025`, `heterogeneity_smoke_sigma1` | FAILED (D6 science gate) | 38 055.82 | dispatch verified (exit 124 at 180 s) |
+| `streamfunction_newton_difficult` | `newton_difficult_case` | FAILED (D6 science gate) | 1 401.58 | re-run: FAILED, r_F identical |
+| `streamfunction_terminal_dgate` | `terminal_dgate_diagnostic` | passed (always-pass recorder) | 2 538.33 | re-run: PASS |
+| `streamfunction_terminal_resolution` | `terminal_resolution_probe` | passed (always-pass recorder) | 1 708.82 | re-run: PASS, r_F identical |
+| `streamfunction_gauge_recombination_heavy` | `coupled_residual_gauge_recombination_sigma025` | FAILED (D6 science gate) | 19 530.09 | dispatch verified (exit 124 at 180 s) |
 
 Total for the six: 63 979 s of 66 700 s. The 15 entries that stay in `ctest`
-all passed and took about 2 721 s on V100. That is still long-duration under
+all passed and took about 2 721 s on V100 at `58898bf`; the SF-27 full suite
+after the removal measured 2 709.82 s, 15/15 passed (job `sf27-ctest-full`,
+2026-10-03). That is still long-duration under
 `remote-v100.md` Section 0, so the authoritative full-suite pass stays a
 detached V100 job.
 
