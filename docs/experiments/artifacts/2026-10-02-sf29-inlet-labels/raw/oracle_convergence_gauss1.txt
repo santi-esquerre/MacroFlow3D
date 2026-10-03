@@ -1,0 +1,26 @@
+# oracle.py --convergence gauss:1.0 | python 3.13.13 numpy 2.5.0
+REF field=gauss eps=1 nphi=48 shape=(48, 48, 48) pcg_res=2.0e-13 its=279 max(d1phi)=-0.1831 (v1>0 OK) a=(+0.86212407,+2.98e-03,-4.98e-02) modes=53016 nf=96 Q0-1=-6.7e-14 cont_res=1.4e-10 inlet_min_v1=0.1244 t_ref=61.0s
+ORACLE field=gauss eps=1 N=16 planes=16 roundtrip_max=4.3e-13 nfev_sum=6800 nfev_rt_sum=6680 nfev_max=770 t_oracle=25.1s t_faces=2.1s cache_hit=False
+CHECK field=gauss eps=1 N=16 vertex-plane mean(v1)-1 (N-point rule): max=2.9e-07 | face-flux div_h: rms/v_rms=2.4e-05 max/v_rms=2.5e-04 | f1 mean-1: max=6.6e-09
+CHECK field=gauss eps=1 return map (closure-note points, 16): nonuniform_rms=8.559e-02 max|d|=1.318e-01 mean=(-5.19e-03,+1.79e-02) roundtrip=2.8e-13
+CHECK field=gauss eps=1 N=16 max|psi_or(outlet)-psi0(inlet)|=3.0e-01 max|psi_or-affine|=3.688e-01 min|c|/v_rms=0.043 |vD| p0.1/1/5/50 = 0.0666/0.1258/0.2399/0.8027 min|vD|=0.0460
+CASE field=gauss eps=1 N=16 cand=oracle | r_F=nan its=nan | e_v=2.350e-01 e_psi=0.000e+00 e_i=(8.005e-02,3.545e-02) e_div=9.544e-01 min_c=5.723e-02 p0.1=7.297e-02 p1=1.393e-01 p5=2.616e-01 p50=8.399e-01 | t=90.7
+REF field=gauss eps=1 nphi=48 shape=(48, 48, 48) pcg_res=2.0e-13 its=279 max(d1phi)=-0.1831 (v1>0 OK) a=(+0.86212407,+2.98e-03,-4.98e-02) modes=53016 nf=96 Q0-1=-6.7e-14 cont_res=1.4e-10 inlet_min_v1=0.1244 t_ref=61.2s
+ORACLE field=gauss eps=1 N=32 planes=32 roundtrip_max=4.7e-13 nfev_sum=13012 nfev_rt_sum=12796 nfev_max=746 t_oracle=84.9s t_faces=10.6s cache_hit=False
+CHECK field=gauss eps=1 N=32 vertex-plane mean(v1)-1 (N-point rule): max=9.8e-13 | face-flux div_h: rms/v_rms=4.1e-07 max/v_rms=6.5e-06 | f1 mean-1: max=9.8e-13
+CHECK field=gauss eps=1 return map (closure-note points, 16): nonuniform_rms=8.559e-02 max|d|=1.318e-01 mean=(-5.19e-03,+1.79e-02) roundtrip=2.8e-13
+CHECK field=gauss eps=1 N=32 max|psi_or(outlet)-psi0(inlet)|=3.4e-01 max|psi_or-affine|=3.730e-01 min|c|/v_rms=0.005 |vD| p0.1/1/5/50 = 0.0633/0.1244/0.2379/0.8092 min|vD|=0.0460
+CASE field=gauss eps=1 N=32 cand=oracle | r_F=nan its=nan | e_v=1.254e-01 e_psi=0.000e+00 e_i=(3.240e-02,1.513e-02) e_div=7.695e-01 min_c=6.150e-03 p0.1=6.353e-02 p1=1.269e-01 p5=2.406e-01 p50=8.188e-01 | t=160.0
+REF field=gauss eps=1 nphi=48 shape=(48, 48, 48) pcg_res=2.0e-13 its=279 max(d1phi)=-0.1831 (v1>0 OK) a=(+0.86212407,+2.98e-03,-4.98e-02) modes=53016 nf=96 Q0-1=-6.7e-14 cont_res=1.4e-10 inlet_min_v1=0.1244 t_ref=59.3s
+ORACLE field=gauss eps=1 N=48 planes=48 roundtrip_max=3.2e-13 nfev_sum=19284 nfev_rt_sum=19008 nfev_max=746 t_oracle=234.6s t_faces=28.0s cache_hit=False
+CHECK field=gauss eps=1 N=48 vertex-plane mean(v1)-1 (N-point rule): max=6.9e-14 | face-flux div_h: rms/v_rms=3.6e-08 max/v_rms=5.9e-07 | f1 mean-1: max=6.9e-14
+CHECK field=gauss eps=1 return map (closure-note points, 16): nonuniform_rms=8.559e-02 max|d|=1.318e-01 mean=(-5.19e-03,+1.79e-02) roundtrip=2.8e-13
+CHECK field=gauss eps=1 N=48 max|psi_or(outlet)-psi0(inlet)|=3.4e-01 max|psi_or-affine|=3.735e-01 min|c|/v_rms=0.016 |vD| p0.1/1/5/50 = 0.0626/0.1241/0.2369/0.8102 min|vD|=0.0452
+CASE field=gauss eps=1 N=48 cand=oracle | r_F=nan its=nan | e_v=7.542e-02 e_psi=0.000e+00 e_i=(1.734e-02,8.217e-03) e_div=5.590e-01 min_c=2.045e-02 p0.1=6.374e-02 p1=1.254e-01 p5=2.378e-01 p50=8.137e-01 | t=328.2
+ORDER field=gauss eps=1 e_v: 2.350e-01 1.254e-01 7.542e-02 | orders 0.91 1.25
+ORDER field=gauss eps=1 e_i1: 8.005e-02 3.240e-02 1.734e-02 | orders 1.30 1.54
+ORDER field=gauss eps=1 e_i2: 3.545e-02 1.513e-02 8.217e-03 | orders 1.23 1.51
+ORDER field=gauss eps=1 e_div: 9.544e-01 7.695e-01 5.590e-01 | orders 0.31 0.79
+ORDER field=gauss eps=1 min|c|: 0.0572 0.0062 0.0205
+# total 578.9s
+python3 oracle.py --convergence gauss:1.0  8765,48s user 16,07s system 1515% cpu 9:39,36 total

@@ -1,0 +1,9 @@
+# oracle.py --returnmap control2d:0.5 lester2021:1.0 lester_brk:1.0 gauss:0.25 gauss:0.5 gauss:1.0 | python 3.13.13 numpy 2.5.0
+RETURNMAP field=control2d eps=0.5 nphi=32 nonuniform_rms=9.320e-14 max|d|=2.021e-13 mean=(-7.59e-14,+0.00e+00) roundtrip=1.7e-13 nfev=494 | closure note: 7.123e-13
+RETURNMAP field=lester2021 eps=1 nphi=48 nonuniform_rms=5.440e-15 max|d|=1.495e-14 mean=(-2.18e-16,-8.85e-16) roundtrip=3.6e-14 nfev=710 | closure note: 8.278e-15
+RETURNMAP field=lester_brk eps=1 nphi=64 nonuniform_rms=8.690e-03 max|d|=1.552e-02 mean=(-2.07e-03,-4.17e-04) roundtrip=8.8e-14 nfev=710 | closure note: 8.691e-03
+RETURNMAP field=gauss eps=0.25 nphi=32 nonuniform_rms=4.655e-03 max|d|=6.624e-03 mean=(-2.06e-04,+5.81e-05) roundtrip=7.1e-14 nfev=434 | closure note: 4.655e-03
+RETURNMAP field=gauss eps=0.5 nphi=32 nonuniform_rms=1.989e-02 max|d|=3.114e-02 mean=(-9.15e-04,+1.65e-03) roundtrip=6.3e-14 nfev=554 | closure note: 1.989e-02
+RETURNMAP field=gauss eps=1 nphi=48 nonuniform_rms=8.559e-02 max|d|=1.318e-01 mean=(-5.19e-03,+1.79e-02) roundtrip=2.8e-13 nfev=890 | closure note: 8.559e-02
+# total 105.3s
+python3 oracle.py --returnmap control2d:0.5 lester2021:1.0 lester_brk:1.0     1553,55s user 3,78s system 1469% cpu 1:45,99 total

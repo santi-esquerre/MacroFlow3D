@@ -1,0 +1,4 @@
+# Oracle caches (regenerated deterministically by scripts/cases.py::load_case).
+# Only the 16^3 files (0.28 MB each) are committed; N >= 24 files (2.2 MB at 32^3, 7.2 MB at 48^3) are local/remote only.
+*.npz
+!*_N16_*.npz

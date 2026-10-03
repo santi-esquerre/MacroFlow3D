@@ -1,0 +1,59 @@
+# oracle.py --midplane gauss:0.25 gauss:0.5 gauss:1.0 gauss_ch:0.25 gauss_ch:1.0 lester_brk:1.0 generic3d:1.0 --grids 16,24,32,48,64,96,128 | python 3.13.13 numpy 2.5.0
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=16 e_v_mid=2.140e-02 e_i_mid=4.011e-03 max|grad_h psi|=1.46 min|c|=0.5577 min|vD|=0.5284 roundtrip=1.5e-14 nfev=1428 t=0.9s
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=24 e_v_mid=9.773e-03 e_i_mid=1.846e-03 max|grad_h psi|=1.47 min|c|=0.5435 min|vD|=0.5304 roundtrip=2.0e-14 nfev=1392 t=1.5s
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=32 e_v_mid=5.551e-03 e_i_mid=1.051e-03 max|grad_h psi|=1.49 min|c|=0.5357 min|vD|=0.5284 roundtrip=2.2e-14 nfev=1380 t=2.1s
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=48 e_v_mid=2.485e-03 e_i_mid=4.709e-04 max|grad_h psi|=1.49 min|c|=0.5315 min|vD|=0.5282 roundtrip=3.0e-14 nfev=1380 t=4.1s
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=64 e_v_mid=1.401e-03 e_i_mid=2.657e-04 max|grad_h psi|=1.49 min|c|=0.5288 min|vD|=0.5269 roundtrip=2.8e-14 nfev=1368 t=9.9s
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=96 e_v_mid=6.239e-04 e_i_mid=1.184e-04 max|grad_h psi|=1.50 min|c|=0.5269 min|vD|=0.5260 roundtrip=3.0e-14 nfev=1368 t=31.8s
+MIDPLANE field=gauss eps=0.25 nphi=32 x1=0.500 N=128 e_v_mid=3.512e-04 e_i_mid=6.662e-05 max|grad_h psi|=1.50 min|c|=0.5265 min|vD|=0.5261 roundtrip=3.2e-14 nfev=1368 t=56.8s
+MIDPLANE_ORDER field=gauss eps=0.25 grids=16,24,32,48,64,96,128 e_v_mid orders 1.93 1.97 1.98 1.99 2.00 2.00 | e_i_mid orders 1.91 1.96 1.98 1.99 1.99 2.00
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=16 e_v_mid=5.450e-02 e_i_mid=1.925e-02 max|grad_h psi|=1.99 min|c|=0.2955 min|vD|=0.2661 roundtrip=3.1e-14 nfev=1680 t=2.7s
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=24 e_v_mid=2.710e-02 e_i_mid=8.770e-03 max|grad_h psi|=2.34 min|c|=0.2814 min|vD|=0.2683 roundtrip=3.3e-14 nfev=1680 t=3.8s
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=32 e_v_mid=1.607e-02 e_i_mid=5.119e-03 max|grad_h psi|=2.53 min|c|=0.2732 min|vD|=0.2661 roundtrip=3.4e-14 nfev=1668 t=5.7s
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=48 e_v_mid=7.448e-03 e_i_mid=2.373e-03 max|grad_h psi|=2.73 min|c|=0.2685 min|vD|=0.2653 roundtrip=3.1e-14 nfev=1668 t=8.5s
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=64 e_v_mid=4.255e-03 e_i_mid=1.355e-03 max|grad_h psi|=2.84 min|c|=0.2664 min|vD|=0.2646 roundtrip=3.2e-14 nfev=1656 t=14.8s
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=96 e_v_mid=1.913e-03 e_i_mid=6.086e-04 max|grad_h psi|=2.93 min|c|=0.2645 min|vD|=0.2637 roundtrip=3.2e-14 nfev=1668 t=51.6s
+MIDPLANE field=gauss eps=0.5 nphi=32 x1=0.500 N=128 e_v_mid=1.080e-03 e_i_mid=3.436e-04 max|grad_h psi|=2.95 min|c|=0.2640 min|vD|=0.2636 roundtrip=3.3e-14 nfev=1656 t=68.4s
+MIDPLANE_ORDER field=gauss eps=0.5 grids=16,24,32,48,64,96,128 e_v_mid orders 1.72 1.82 1.90 1.95 1.97 1.99 | e_i_mid orders 1.94 1.87 1.90 1.95 1.97 1.99
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=16 e_v_mid=3.837e-01 e_i_mid=1.682e-01 max|grad_h psi|=3.63 min|c|=0.0765 min|vD|=0.0627 roundtrip=1.1e-13 nfev=2352 t=3.2s
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=24 e_v_mid=2.980e-01 e_i_mid=9.466e-02 max|grad_h psi|=4.92 min|c|=0.0693 min|vD|=0.0631 roundtrip=1.1e-13 nfev=2364 t=6.6s
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=32 e_v_mid=2.104e-01 e_i_mid=5.582e-02 max|grad_h psi|=5.82 min|c|=0.0062 min|vD|=0.0627 roundtrip=4.5e-14 nfev=2364 t=12.7s
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=48 e_v_mid=1.314e-01 e_i_mid=2.998e-02 max|grad_h psi|=7.78 min|c|=0.0634 min|vD|=0.0621 roundtrip=5.1e-14 nfev=2328 t=20.8s
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=64 e_v_mid=8.996e-02 e_i_mid=1.896e-02 max|grad_h psi|=8.88 min|c|=0.0624 min|vD|=0.0616 roundtrip=4.1e-14 nfev=2352 t=28.9s
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=96 e_v_mid=4.642e-02 e_i_mid=8.962e-03 max|grad_h psi|=9.80 min|c|=0.0617 min|vD|=0.0613 roundtrip=4.1e-14 nfev=2352 t=70.3s
+MIDPLANE field=gauss eps=1 nphi=48 x1=0.500 N=128 e_v_mid=2.794e-02 e_i_mid=5.168e-03 max|grad_h psi|=10.33 min|c|=0.0615 min|vD|=0.0613 roundtrip=4.1e-14 nfev=2328 t=133.4s
+MIDPLANE_ORDER field=gauss eps=1 grids=16,24,32,48,64,96,128 e_v_mid orders 0.62 1.21 1.16 1.32 1.63 1.76 | e_i_mid orders 1.42 1.84 1.53 1.59 1.85 1.91
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=16 e_v_mid=2.183e-02 e_i_mid=7.478e-03 max|grad_h psi|=1.49 min|c|=0.5981 min|vD|=0.5706 roundtrip=2.7e-14 nfev=1716 t=3.4s
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=24 e_v_mid=1.005e-02 e_i_mid=3.505e-03 max|grad_h psi|=1.51 min|c|=0.5876 min|vD|=0.5751 roundtrip=4.1e-14 nfev=1704 t=5.5s
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=32 e_v_mid=5.729e-03 e_i_mid=2.011e-03 max|grad_h psi|=1.52 min|c|=0.5775 min|vD|=0.5706 roundtrip=3.7e-14 nfev=1716 t=7.3s
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=48 e_v_mid=2.571e-03 e_i_mid=9.070e-04 max|grad_h psi|=1.52 min|c|=0.5721 min|vD|=0.5689 roundtrip=4.1e-14 nfev=1728 t=13.7s
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=64 e_v_mid=1.451e-03 e_i_mid=5.128e-04 max|grad_h psi|=1.53 min|c|=0.5703 min|vD|=0.5685 roundtrip=2.9e-14 nfev=1704 t=22.2s
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=96 e_v_mid=6.464e-04 e_i_mid=2.287e-04 max|grad_h psi|=1.53 min|c|=0.5694 min|vD|=0.5686 roundtrip=2.9e-14 nfev=1752 t=54.6s
+MIDPLANE field=gauss_ch eps=0.25 nphi=48 x1=0.500 N=128 e_v_mid=3.639e-04 e_i_mid=1.288e-04 max|grad_h psi|=1.53 min|c|=0.5688 min|vD|=0.5683 roundtrip=2.9e-14 nfev=1752 t=112.5s
+MIDPLANE_ORDER field=gauss_ch eps=0.25 grids=16,24,32,48,64,96,128 e_v_mid orders 1.91 1.95 1.98 1.99 1.99 2.00 | e_i_mid orders 1.87 1.93 1.96 1.98 1.99 2.00
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=16 e_v_mid=5.313e-01 e_i_mid=2.006e-01 max|grad_h psi|=4.55 min|c|=0.1044 min|vD|=0.0873 roundtrip=1.5e-13 nfev=2832 t=5.0s
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=24 e_v_mid=3.180e-01 e_i_mid=8.838e-02 max|grad_h psi|=6.52 min|c|=0.0945 min|vD|=0.0870 roundtrip=1.5e-13 nfev=2748 t=7.9s
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=32 e_v_mid=2.980e-01 e_i_mid=7.435e-02 max|grad_h psi|=7.80 min|c|=0.0898 min|vD|=0.0861 roundtrip=1.7e-13 nfev=2748 t=11.9s
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=48 e_v_mid=1.889e-01 e_i_mid=3.898e-02 max|grad_h psi|=9.84 min|c|=0.0720 min|vD|=0.0848 roundtrip=1.6e-13 nfev=2748 t=29.6s
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=64 e_v_mid=1.328e-01 e_i_mid=2.384e-02 max|grad_h psi|=10.97 min|c|=0.0802 min|vD|=0.0842 roundtrip=1.7e-13 nfev=2748 t=56.4s
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=96 e_v_mid=7.484e-02 e_i_mid=1.150e-02 max|grad_h psi|=12.49 min|c|=0.0844 min|vD|=0.0840 roundtrip=1.7e-13 nfev=2748 t=114.3s
+MIDPLANE field=gauss_ch eps=1 nphi=64 x1=0.500 N=128 e_v_mid=4.697e-02 e_i_mid=6.682e-03 max|grad_h psi|=13.02 min|c|=0.0844 min|vD|=0.0841 roundtrip=1.8e-13 nfev=2736 t=219.4s
+MIDPLANE_ORDER field=gauss_ch eps=1 grids=16,24,32,48,64,96,128 e_v_mid orders 1.27 0.23 1.12 1.22 1.41 1.62 | e_i_mid orders 2.02 0.60 1.59 1.71 1.80 1.89
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=16 e_v_mid=7.741e-02 e_i_mid=1.162e-02 max|grad_h psi|=1.22 min|c|=0.7977 min|vD|=0.7133 roundtrip=1.4e-13 nfev=1920 t=2.7s
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=24 e_v_mid=3.674e-02 e_i_mid=5.059e-03 max|grad_h psi|=1.27 min|c|=0.7734 min|vD|=0.7350 roundtrip=1.6e-13 nfev=1848 t=6.0s
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=32 e_v_mid=2.146e-02 e_i_mid=3.827e-03 max|grad_h psi|=1.33 min|c|=0.7349 min|vD|=0.7133 roundtrip=1.8e-13 nfev=1740 t=9.0s
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=48 e_v_mid=9.823e-03 e_i_mid=1.841e-03 max|grad_h psi|=1.35 min|c|=0.7229 min|vD|=0.7133 roundtrip=1.0e-13 nfev=1704 t=15.2s
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=64 e_v_mid=5.590e-03 e_i_mid=1.087e-03 max|grad_h psi|=1.37 min|c|=0.7187 min|vD|=0.7133 roundtrip=1.0e-13 nfev=1668 t=34.3s
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=96 e_v_mid=2.506e-03 e_i_mid=5.020e-04 max|grad_h psi|=1.37 min|c|=0.7157 min|vD|=0.7133 roundtrip=1.4e-13 nfev=1716 t=68.7s
+MIDPLANE field=lester_brk eps=1 nphi=64 x1=0.500 N=128 e_v_mid=1.414e-03 e_i_mid=2.863e-04 max|grad_h psi|=1.38 min|c|=0.7146 min|vD|=0.7133 roundtrip=1.1e-13 nfev=1752 t=131.5s
+MIDPLANE_ORDER field=lester_brk eps=1 grids=16,24,32,48,64,96,128 e_v_mid orders 1.84 1.87 1.93 1.96 1.98 1.99 | e_i_mid orders 2.05 0.97 1.81 1.83 1.91 1.95
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=16 e_v_mid=1.211e-01 e_i_mid=4.050e-02 max|grad_h psi|=3.00 min|c|=0.2355 min|vD|=0.2267 roundtrip=3.8e-14 nfev=2640 t=2.1s
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=24 e_v_mid=7.482e-02 e_i_mid=2.221e-02 max|grad_h psi|=3.18 min|c|=0.2312 min|vD|=0.2270 roundtrip=3.0e-14 nfev=2664 t=4.1s
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=32 e_v_mid=5.071e-02 e_i_mid=1.383e-02 max|grad_h psi|=3.23 min|c|=0.2289 min|vD|=0.2267 roundtrip=3.2e-14 nfev=2664 t=7.3s
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=48 e_v_mid=2.746e-02 e_i_mid=6.949e-03 max|grad_h psi|=3.25 min|c|=0.2277 min|vD|=0.2267 roundtrip=2.8e-14 nfev=2664 t=13.7s
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=64 e_v_mid=1.682e-02 e_i_mid=4.112e-03 max|grad_h psi|=3.27 min|c|=0.2267 min|vD|=0.2261 roundtrip=3.2e-14 nfev=2676 t=21.5s
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=96 e_v_mid=8.031e-03 e_i_mid=1.912e-03 max|grad_h psi|=3.33 min|c|=0.2262 min|vD|=0.2259 roundtrip=3.0e-14 nfev=2664 t=52.4s
+MIDPLANE field=generic3d eps=1 nphi=32 x1=0.500 N=128 e_v_mid=4.644e-03 e_i_mid=1.094e-03 max|grad_h psi|=3.40 min|c|=0.2261 min|vD|=0.2259 roundtrip=3.0e-14 nfev=2676 t=96.1s
+MIDPLANE_ORDER field=generic3d eps=1 grids=16,24,32,48,64,96,128 e_v_mid orders 1.19 1.35 1.51 1.70 1.82 1.90 | e_i_mid orders 1.48 1.65 1.70 1.82 1.89 1.94
+# total 1847.9s
+python3 oracle.py --midplane gauss:0.25 gauss:0.5 gauss:1.0 gauss_ch:0.25      27099,92s user 57,65s system 1469% cpu 30:48,37 total

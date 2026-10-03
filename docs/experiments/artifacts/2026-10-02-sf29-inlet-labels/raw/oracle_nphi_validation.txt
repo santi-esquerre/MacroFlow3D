@@ -1,0 +1,13 @@
+# oracle.py --nphi gauss:1.0 gauss_ch:0.25 | python 3.13.13 numpy 2.5.0
+NPHI field=gauss eps=1 nphi=16 vs 24 | inlet_rel=6.31e-04 outlet_rel=5.17e-03 | cont_res=5.8e-03/1.3e-04 Q0-1=+8.0e-05/+2.0e-06 | pcg_its=161/217 max(d1phi)=-0.1838 modes=1800 t_ref=0.4/5.1s t_trace=0.3/0.5s nfev=770 | fail
+NPHI field=gauss eps=1 nphi=24 vs 36 | inlet_rel=9.91e-06 outlet_rel=6.56e-05 | cont_res=1.3e-04/2.0e-07 Q0-1=+2.0e-06/+9.2e-10 | pcg_its=217/259 max(d1phi)=-0.1828 modes=6348 t_ref=5.1/26.1s t_trace=0.5/1.8s nfev=770 | fail
+NPHI field=gauss eps=1 nphi=32 vs 48 | inlet_rel=5.59e-08 outlet_rel=9.03e-07 | cont_res=2.0e-06/1.4e-10 Q0-1=-6.0e-09/-6.7e-14 | pcg_its=248/279 max(d1phi)=-0.1831 modes=15376 t_ref=16.9/67.6s t_trace=1.0/0.7s nfev=770 | fail
+NPHI field=gauss eps=1 nphi=48 vs 72 | inlet_rel=1.87e-12 outlet_rel=3.79e-11 | cont_res=1.4e-10/2.6e-13 Q0-1=-6.7e-14/+1.3e-15 | pcg_its=279/295 max(d1phi)=-0.1825 modes=53016 t_ref=67.6/146.4s t_trace=0.7/1.3s nfev=770 | PASS
+NPHI_TABLE field=gauss eps=1 N_phi=48 (tol 1e-08, 16^2 outlet test points)
+NPHI field=gauss_ch eps=0.25 nphi=16 vs 24 | inlet_rel=2.53e-03 outlet_rel=2.56e-03 | cont_res=9.2e-03/2.7e-04 Q0-1=-1.5e-04/-7.2e-07 | pcg_its=25/28 max(d1phi)=-0.6551 modes=3720 t_ref=0.1/0.5s t_trace=1.0/0.8s nfev=698 | fail
+NPHI field=gauss_ch eps=0.25 nphi=24 vs 36 | inlet_rel=4.84e-05 outlet_rel=4.65e-05 | cont_res=2.7e-04/1.1e-06 Q0-1=-7.2e-07/-4.1e-09 | pcg_its=28/29 max(d1phi)=-0.6577 modes=12972 t_ref=0.5/2.3s t_trace=0.8/1.7s nfev=578 | fail
+NPHI field=gauss_ch eps=0.25 nphi=32 vs 48 | inlet_rel=4.36e-07 outlet_rel=4.24e-07 | cont_res=6.2e-06/2.9e-09 Q0-1=+2.6e-08/+8.1e-12 | pcg_its=29/30 max(d1phi)=-0.6545 modes=31248 t_ref=1.3/4.1s t_trace=0.8/0.7s nfev=578 | fail
+NPHI field=gauss_ch eps=0.25 nphi=48 vs 72 | inlet_rel=2.19e-10 outlet_rel=2.08e-10 | cont_res=2.9e-09/9.5e-14 Q0-1=+8.1e-12/-2.2e-16 | pcg_its=30/31 max(d1phi)=-0.6543 modes=107160 t_ref=4.1/11.1s t_trace=0.7/1.5s nfev=578 | PASS
+NPHI_TABLE field=gauss_ch eps=0.25 N_phi=48 (tol 1e-08, 16^2 outlet test points)
+# total 302.8s
+python3 oracle.py --nphi gauss:1.0 gauss_ch:0.25  3957,48s user 20,91s system 1310% cpu 5:03,50 total
