@@ -22,6 +22,7 @@ labels at every vertex of a candidate grid, plus the shared conventions used by 
 | `cases.py` | `load_case(field, eps, N)`, `NPHI` table, face fluxes, cache |
 | `metrics.py` | shared metrics (`fd_metrics`), the one-line `CASE` print format (`case_line`, `print_case`, `parse_case_line`), observed orders |
 | `candidate_i.py` (N2) | candidate (i): non-divergence same-index equation (14) on the slab, inlet Dirichlet labels, analytic `grad ln k`, second-order centered stencils, no `|c|^2` regularization; variants `i0` (spec-literal control: equation rows also on the outlet plane with one-sided `d1`/`d11`/`d1j`, no boundary condition) and `i1` (deviation D-2: outlet rows `c2 = v2_in`, `c3 = v3_in`, i.e. `c x e1 = vperp_in x e1` with the inlet-face tangential Darcy velocity; Neumann `d1 psi_i = 0` for `_ch`). Damped Newton, colored central-FD sparse Jacobian, `splu` (N <= 24) / right-preconditioned GMRES (CGS2, restart 300) with the per-mode inverse of the `k = 1` linearization (N >= 32), amplitude continuation 0.25 -> 0.5 -> 1 with bisection fallback, Levenberg-Marquardt fallback for `i0` (N <= 16). Commands: `python3 candidate_i.py field:eps:N:i0|i1 ...` (CASE line `cand=i0/i1` + `cand=oracle_fd` ceiling, `EXTRA` outlet-row residual and inlet oblique defect, `HISTORY`); `--jactest field:eps:N:var` (Jacobian action vs FD, 3 steps); `--consistency field:eps ...` (residual at the oracle labels on `--grids 16,32,48`, orders); `--spectrum M field:eps:M:var ...` (dense FD Jacobian SVD at the converged state, or at the final iterate and the oracle labels if not converged -> `raw/spectrum_cand_i_<var>_<field>_<eps>_<M>[_state].txt`); `--k1check N` (`k = 1` control: exact nulls of `i0`/`i1`, preconditioner exactness -> `raw/spectrum_cand_i_<var>_uniform_k1_<N>.txt`); options `--maxit --tol --lin-tol --prec lin0|lap --direct-max --restart --no-continuation --bisect --lm --init zero|inlet|oracle (oracle = diagnostic only) --out`. Raw console: `raw/cand_i_smoke_*.txt` |
+| `candidate_ii.py` | N3, candidate (ii): dissipation energy `E_h = 1/2 h^3 sum_f omega_f c_f^2` of the mimetic (Whitney, `c_f = curl_h(avg(psi1) G_h psi2)`, `div_h c_f = 0` exactly) face fluxes; inlet Dirichlet labels; outlet free (`_ch`) or outlet flux constraint `c1[N] = f1_in` (periodic fields, Lagrange multipliers); Newton (colored-FD Hessian) with LM globalization; metrics, `oracle_mim` ceiling, discrete Kelvin (TPFA) reference, `--gradtest`, `--consistency`, `--spectrum`. Section "Candidate (ii) (N3)" below |
 
 ### Reuse of the 2026-10-02 closure probes
 
@@ -184,6 +185,69 @@ CLI summary:
 | `oracle.py --midplane field:eps ... --grids ...` | `MIDPLANE` rows: oracle labels on the planes `0.5 - h, 0.5, 0.5 + h` only, centered FD `e_v_mid`, `e_i_mid`, `max|grad_h psi|`, `min|c|`; `MIDPLANE_ORDER` |
 | options | `--ref-nphi K` (override `N_phi`), `--grids 16,32,48`, `--no-cache` |
 
+## Candidate (ii) (N3): `candidate_ii.py`
+
+Formulation, stencils, quadrature and solver are documented in the module docstring. Semantics fixed here:
+
+- Constraint (periodic fields, deviation D-3): `C = c1[N] - t = 0` on the `N^2` outlet `x1`-faces,
+  `t = f1_in - mean(f1_in) + 1`, `f1_in = load_case()['vD_faces']['f1'][0]`. `sum c1[N] = N^2` identically, so the
+  mean of `f1_in` (`1 - O(1e-10)`, printed as `f1_in mean-1`) is replaced by 1 and the redundant row is absorbed by a
+  bordered KKT system (`sum lam = 0`, scalar `mu`). `c_rel = max|C| / max|t|`. `--free-outlet` drops the constraint
+  (`cand=ii_free`, control). `_ch` fields are always free at the outlet (natural condition `c x e1 = 0`).
+- `r_F := g_rel = |grad_x L| / |grad E_h(x0)|`, `L = E_h + h^2 lam . C`, `x0` = unknowns 0 (inlet labels in place,
+  full amplitude).
+- `e_v`: RMS over all faces of the three families of `c_f - vD_faces`, over `RMS(vD_faces)`; `e_div` from
+  `div_h c_f` (roundoff); `min_c`, percentiles: cell-averaged face fluxes; `e_psi`, `e_i`: `metrics.fd_metrics`.
+  Next to every candidate line: `cand=oracle_mim` = the same mimetic flux of the exact oracle labels (D-5 ceiling).
+- `KELVIN` line: `c_K`, the minimizer of `E_h` over all discretely solenoidal face fluxes with the same inlet
+  (and outlet) flux = two-point-flux Darcy with the harmonic face mean of `k`. Exact identity
+  `E_h(u) = E_K + 1/2 |c(u) - c_K|_W^2` (checked in `--gradtest` to 8e-16): every exact minimizer of candidate (ii)
+  has `c = c_K`.
+
+Commands (local, bounded smokes; outputs in `raw/`):
+
+```bash
+cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts
+python3 candidate_ii.py --gradtest gauss:0.25:12                         > ../raw/cand_ii_smoke_gradtest.txt
+<py311>/bin/python candidate_ii.py --gradtest gauss:0.25:12              > ../raw/cand_ii_smoke_gradtest_py311.txt
+python3 candidate_ii.py --consistency gauss:0.25 gauss_ch:0.25           > ../raw/cand_ii_smoke_consistency.txt
+python3 candidate_ii.py control2d:0.5:16 gauss_ch:0.25:16 gauss:0.25:16  > ../raw/cand_ii_smoke_16.txt
+python3 candidate_ii.py --free-outlet gauss:0.25:16                      > ../raw/cand_ii_smoke_free_outlet.txt
+python3 candidate_ii.py --spectrum 12 gauss:0.25:12 gauss_ch:0.25:12     > ../raw/cand_ii_smoke_spectrum12.txt
+python3 candidate_ii.py --hessian gn gauss_ch:0.25:16 gauss:0.25:16      > ../raw/cand_ii_smoke_gn16.txt
+timeout 600 python3 candidate_ii.py gauss:0.25:32                        > ../raw/cand_ii_smoke_32_timing.txt
+<py311>/bin/python candidate_ii.py --solver gmres --maxit 3 --no-continuation gauss:0.25:12 > ../raw/cand_ii_smoke_gmres_py311.txt
+```
+
+Findings of N3 (reported, not acted on):
+
+- Hourglass deficiency of the prescribed mimetic flux: at the uniform state the Hessian of `E_h` has exactly
+  `2 N^2` null modes (`U1 = (-1)^m3 f(j, m2)`, `U2 = (-1)^m2 g(j, m3)`; 288 at 12^3), and the linearized outlet-flux
+  row of the `(N/2, N/2)` checkerboard vanishes. At the solved states the dense spectra (12^3) have no exact null
+  cluster and no gap, but 319 (`gauss`, reduced Hessian) / 334 (`gauss_ch`) relative singular values below 1e-3
+  (~`2 N^2` + the ~30 of a well-posed elliptic tail), 21/27 below 1e-6 (min 5e-8 / 5e-9) and 32/24 negative
+  eigenvalues.
+- Newton does not reach `r_F <= 1e-12` at 16^3: plateau (linear crawl) at `r_F` = 1.9e-10 (`control2d:0.5`),
+  1.6e-3 (`gauss_ch:0.25`), 8.2e-6 (`gauss:0.25`); Gauss-Newton (`--hessian gn`) also plateaus. The flux still
+  converges to the discrete Kelvin flux (`E_min - E_K` = -8e-15 / +6.6e-7 / +3.6e-8; `|c - c_K|` = 1e-7 / 1e-3 /
+  3e-4) while the labels drift along the hourglass modes (hourglass RMS 2e-3..7e-3 vs oracle 3e-5;
+  `e_psi` = 0.41 / 0.29 / 0.16).
+- `e_v` of candidate (ii) is therefore that of `c_K`: `gauss_ch:0.25` 5.2e-3 / 1.3e-3 / 5.8e-4 over 16/32/48
+  (order 1.99, 2.00, below the `oracle_mim` ceiling); `control2d:0.5` 3.0e-2 at 16^3 (oracle_mim 1e-7).
+- Periodic fields (D-3): the outlet flux constraint does not fix the mean transverse flux. `c_K` (constrained) has
+  `e_v` 6.3e-3 / 4.7e-3 / 4.6e-3 over 16/32/48 (orders 0.42, 0.04: floor) with a mean transverse flux ~ (2e-4,
+  4.5e-3) ~ the transverse mean head gradient `(a2, a3)` of the reference: the energy minimizer has zero mean
+  transverse head gradient, the reference has zero mean transverse flux. Imposing zero mean transverse flux
+  (scratch check, pressure jumps across the periodic boundaries) gives `e_v` 4.2e-3 -> 1.1e-3 (16 -> 32, order 1.96).
+- `--free-outlet` control on `gauss:0.25:16`: `e_v = 2.9e-2` (vs 6.3e-3 constrained), outlet `|c_perp|` 1.2e-2 vs
+  `|v_D perp|` 0.118: a different (constant-head outlet) Darcy flow, as expected.
+- Consistency at the oracle labels (16/32/48): `gauss_ch:0.25` `g_rel` orders 3.07, 3.37; `gauss:0.25` interior
+  2.95, 3.33, outlet plane 0.67, 0.89, constraint residual 1.97, 1.99.
+- Cost: 16^3 Newton iteration 2-10 s (FD Hessian 0.3-1.4 s + splu 1-10 s); 16^3 runs 7-15 min (plateau stop).
+  32^3 (GMRES + Fourier-mode preconditioner, which is exact for the constant-coefficient operator but
+  shifted on the hourglass modes): GMRES does not converge (2400 its, linres 2e-2..3e-1), ~230 s per Newton
+  iteration; the run was stopped at 600 s. Extrapolated per Newton iteration: ~800 s at 48^3, ~1900 s at 64^3.
+
 ## Raw outputs (`raw/`)
 
 | file | content |
@@ -197,6 +261,8 @@ CLI summary:
 | `oracle_convergence_gauss1.txt` | oracle self-consistency `gauss:1.0` over 16/32/48 |
 | `oracle_returnmap.txt` | closure-note return maps at `N_phi` vs the recorded `raw/closure.txt` values |
 | `oracle_midplane.txt` | 3-plane mid-slab FD self-consistency over N = 16..128 (asymptotic-regime probe) |
+| `cand_ii_smoke_*.txt` | N3 candidate (ii) console outputs (commands in "Candidate (ii) (N3)") |
+| `spectrum_cand_ii_<field>_<eps>_<N>.txt` | sorted relative singular values at the solved state: Hessian (`_ch`) or reduced Hessian `Z^T H_L Z` (constrained); `_kkt`: KKT matrix with orthonormalized constraint rows; `_hL`: unreduced Lagrangian Hessian |
 | `cache/` | oracle caches (16^3 committed) |
 
 ## Timings and cost model (local WSL, 16 cores shared, numpy multithreaded, one process)

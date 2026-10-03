@@ -1,0 +1,453 @@
+candidate_ii.py python=3.13.13 numpy=2.5.0 scipy=1.18.0 argv=--spectrum 12 gauss:0.25:12 gauss_ch:0.25:12
+======== candidate (ii) gauss:0.25:12  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=1.905e-01 c_rel=1.020e-02 E=5.010812794702760e-01 |F|=1.425e-02 nu=1.0e-04
+    step alpha=0.5 |d|=8.24e-01 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=104448)=0.44s solve[splu]=3.37s
+  NEWTON s=0.25 it= 1 g_rel=1.496e-01 c_rel=5.237e-02 E=5.002563851668560e-01 |F|=1.123e-02 nu=1.0e-03
+    step alpha=0.25 |d|=8.57e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.72s solve[splu]=2.28s
+  NEWTON s=0.25 it= 2 g_rel=1.108e-01 c_rel=3.589e-02 E=5.000465644396874e-01 |F|=8.318e-03 nu=1.0e-02
+    step alpha=0.5 |d|=3.85e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.70s solve[splu]=1.16s
+  NEWTON s=0.25 it= 3 g_rel=6.306e-02 c_rel=1.791e-02 E=4.998508743819087e-01 |F|=4.728e-03 nu=1.0e-02
+    step alpha=0.25 |d|=4.70e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.61s solve[splu]=1.52s
+  NEWTON s=0.25 it= 4 g_rel=4.675e-02 c_rel=1.336e-02 E=4.998122295567242e-01 |F|=3.505e-03 nu=1.0e-02
+    step alpha=0.5 |d|=1.88e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.64s solve[splu]=1.36s
+  NEWTON s=0.25 it= 5 g_rel=2.608e-02 c_rel=6.580e-03 E=4.997728103347129e-01 |F|=1.954e-03 nu=1.0e-02
+    step alpha=1 |d|=8.67e-02 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.98s solve[splu]=1.01s
+  NEWTON s=0.25 it= 6 g_rel=1.855e-02 c_rel=1.168e-03 E=4.997552906708727e-01 |F|=1.388e-03 nu=1.0e-03
+    step alpha=1 |d|=3.89e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=1.00s solve[splu]=2.31s
+  NEWTON s=0.25 it= 7 g_rel=1.821e-03 c_rel=3.896e-04 E=4.997489722082750e-01 |F|=1.364e-04 nu=1.0e-03
+    step alpha=1 |d|=2.63e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.55s solve[splu]=2.35s
+  NEWTON s=0.25 it= 8 g_rel=7.849e-04 c_rel=1.843e-04 E=4.997475232332023e-01 |F|=5.886e-05 nu=1.0e-03
+    step alpha=1 |d|=1.99e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.36s solve[splu]=2.25s
+  NEWTON s=0.25 it= 9 g_rel=5.280e-04 c_rel=1.232e-04 E=4.997467647161027e-01 |F|=3.959e-05 nu=1.0e-03
+    step alpha=0.125 |d|=8.07e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.62s solve[splu]=1.06s
+  NEWTON s=0.25 it=10 g_rel=4.985e-04 c_rel=1.423e-04 E=4.997465035264901e-01 |F|=3.742e-05 nu=1.0e-03
+    step alpha=0.125 |d|=7.32e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=1.05s
+  NEWTON s=0.25 it=11 g_rel=4.708e-04 c_rel=1.513e-04 E=4.997462796951744e-01 |F|=3.537e-05 nu=1.0e-03
+    step alpha=0.25 |d|=6.74e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.69s solve[splu]=1.16s
+  NEWTON s=0.25 it=12 g_rel=4.669e-04 c_rel=2.052e-04 E=4.997459079325396e-01 |F|=3.525e-05 nu=1.0e-03
+    step alpha=0.25 |d|=5.73e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.55s solve[splu]=1.32s
+  NEWTON s=0.25 it=13 g_rel=4.439e-04 c_rel=2.211e-04 E=4.997456354141918e-01 |F|=3.360e-05 nu=1.0e-03
+    step alpha=0.25 |d|=5.00e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.40s solve[splu]=1.27s
+  NEWTON s=0.25 it=14 g_rel=4.081e-04 c_rel=2.169e-04 E=4.997454313908775e-01 |F|=3.093e-05 nu=1.0e-03
+    step alpha=0.25 |d|=4.42e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.43s solve[splu]=1.16s
+  NEWTON s=0.25 it=15 g_rel=3.666e-04 c_rel=2.024e-04 E=4.997452763484971e-01 |F|=2.781e-05 nu=1.0e-03
+    step alpha=0.25 |d|=3.94e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.70s solve[splu]=1.02s
+  NEWTON s=0.25 it=16 g_rel=3.242e-04 c_rel=1.830e-04 E=4.997451570405510e-01 |F|=2.461e-05 nu=1.0e-03
+    step alpha=0.5 |d|=3.53e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.74s solve[splu]=1.08s
+  NEWTON s=0.25 it=17 g_rel=3.135e-04 c_rel=1.894e-04 E=4.997449832968798e-01 |F|=2.384e-05 nu=1.0e-03
+    step alpha=0.5 |d|=2.82e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.55s solve[splu]=1.33s
+  NEWTON s=0.25 it=18 g_rel=2.571e-04 c_rel=1.497e-04 E=4.997448783749974e-01 |F|=1.953e-05 nu=1.0e-03
+    step alpha=0.5 |d|=2.33e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.38s solve[splu]=1.32s
+  NEWTON s=0.25 it=19 g_rel=1.997e-04 c_rel=1.068e-04 E=4.997448108586548e-01 |F|=1.515e-05 nu=1.0e-03
+    step alpha=0.5 |d|=1.97e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.49s solve[splu]=1.08s
+  NEWTON s=0.25 it=20 g_rel=1.529e-04 c_rel=7.174e-05 E=4.997447652096709e-01 |F|=1.158e-05 nu=1.0e-03
+    step alpha=0.5 |d|=1.70e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.91s solve[splu]=1.22s
+  NEWTON s=0.25 it=21 g_rel=1.176e-04 c_rel=4.624e-05 E=4.997447330010248e-01 |F|=8.896e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.49e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.52s solve[splu]=1.25s
+  NEWTON s=0.25 it=22 g_rel=9.183e-05 c_rel=3.461e-05 E=4.997447094114204e-01 |F|=6.934e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.31e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.76s solve[splu]=0.90s
+  NEWTON s=0.25 it=23 g_rel=7.305e-05 c_rel=2.719e-05 E=4.997446915657154e-01 |F|=5.509e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.18e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.87s solve[splu]=0.96s
+  NEWTON s=0.25 it=24 g_rel=5.928e-05 c_rel=2.133e-05 E=4.997446776845773e-01 |F|=4.466e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.06e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.56s solve[splu]=1.28s
+  NEWTON s=0.25 it=25 g_rel=4.906e-05 c_rel=1.672e-05 E=4.997446666278597e-01 |F|=3.694e-06 nu=1.0e-03
+    step alpha=0.5 |d|=9.66e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.34s solve[splu]=1.40s
+  NEWTON s=0.25 it=26 g_rel=4.135e-05 c_rel=1.310e-05 E=4.997446576406942e-01 |F|=3.111e-06 nu=1.0e-03
+    step alpha=0.5 |d|=8.85e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.69s solve[splu]=1.32s
+  NEWTON s=0.25 it=27 g_rel=3.543e-05 c_rel=1.029e-05 E=4.997446502078983e-01 |F|=2.665e-06 nu=1.0e-03
+    step alpha=0.5 |d|=8.17e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.37s solve[splu]=1.31s
+  NEWTON s=0.25 it=28 g_rel=3.081e-05 c_rel=8.111e-06 E=4.997446439680026e-01 |F|=2.316e-06 nu=1.0e-03
+    step alpha=0.5 |d|=7.57e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.47s solve[splu]=1.05s
+  NEWTON s=0.25 it=29 g_rel=2.714e-05 c_rel=6.943e-06 E=4.997446386610010e-01 |F|=2.039e-06 nu=1.0e-03
+    step alpha=0.5 |d|=7.06e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.73s solve[splu]=1.02s
+  NEWTON s=0.25 it=30 g_rel=2.417e-05 c_rel=6.377e-06 E=4.997446340956885e-01 |F|=1.815e-06 nu=1.0e-03
+  NEWTON s=0.50 it= 0 g_rel=2.376e-01 c_rel=1.115e-01 E=5.006664384834808e-01 |F|=1.817e-02 nu=1.0e-04
+    step alpha=0.125 |d|=2.86e+00 nu=1.0e-02 trials=3 hess(ngrad=108 nnz=125568)=0.74s solve[splu]=4.07s
+  NEWTON s=0.50 it= 1 g_rel=2.148e-01 c_rel=8.004e-02 E=5.002983219232989e-01 |F|=1.640e-02 nu=1.0e-02
+    step alpha=1 |d|=1.52e-01 nu=1.0e-01 trials=2 hess(ngrad=108 nnz=125568)=0.50s solve[splu]=2.44s
+  NEWTON s=0.50 it= 2 g_rel=3.426e-02 c_rel=2.680e-03 E=4.991225357897662e-01 |F|=2.563e-03 nu=1.0e-02
+    step alpha=1 |d|=1.73e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.42s solve[splu]=1.49s
+  NEWTON s=0.50 it= 3 g_rel=1.259e-02 c_rel=2.581e-02 E=4.990164959420593e-01 |F|=1.032e-03 nu=1.0e-03
+    step alpha=1 |d|=9.61e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=2.30s
+  NEWTON s=0.50 it= 4 g_rel=1.047e-02 c_rel=1.681e-02 E=4.990000163964322e-01 |F|=8.051e-04 nu=1.0e-03
+    step alpha=0.25 |d|=3.95e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.43s solve[splu]=0.75s
+  NEWTON s=0.50 it= 5 g_rel=1.022e-02 c_rel=1.259e-02 E=4.989957995422712e-01 |F|=7.789e-04 nu=1.0e-03
+    step alpha=0.125 |d|=4.93e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.38s solve[splu]=1.34s
+  NEWTON s=0.50 it= 6 g_rel=8.844e-03 c_rel=1.133e-02 E=4.989941690664264e-01 |F|=6.749e-04 nu=1.0e-03
+    step alpha=0.5 |d|=2.27e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.54s solve[splu]=1.17s
+  NEWTON s=0.50 it= 7 g_rel=8.886e-03 c_rel=5.084e-03 E=4.989910381329117e-01 |F|=6.696e-04 nu=1.0e-03
+    step alpha=0.5 |d|=1.26e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.90s solve[splu]=0.96s
+  NEWTON s=0.50 it= 8 g_rel=4.902e-03 c_rel=2.685e-03 E=4.989891598252957e-01 |F|=3.689e-04 nu=1.0e-03
+    step alpha=0.5 |d|=8.37e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.70s solve[splu]=1.06s
+  NEWTON s=0.50 it= 9 g_rel=2.526e-03 c_rel=6.256e-04 E=4.989883850163364e-01 |F|=1.898e-04 nu=1.0e-03
+    step alpha=1 |d|=3.42e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.54s solve[splu]=1.30s
+  NEWTON s=0.50 it=10 g_rel=7.282e-04 c_rel=3.448e-04 E=4.989879629535073e-01 |F|=5.493e-05 nu=1.0e-04
+    step alpha=1 |d|=2.01e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.45s solve[splu]=2.67s
+  NEWTON s=0.50 it=11 g_rel=2.359e-04 c_rel=1.564e-04 E=4.989878635001677e-01 |F|=1.789e-05 nu=1.0e-04
+    step alpha=1 |d|=1.64e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.62s solve[splu]=2.70s
+  NEWTON s=0.50 it=12 g_rel=1.619e-04 c_rel=9.829e-05 E=4.989878097463438e-01 |F|=1.224e-05 nu=1.0e-04
+    step alpha=1 |d|=1.38e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.67s solve[splu]=2.41s
+  NEWTON s=0.50 it=13 g_rel=1.172e-04 c_rel=6.293e-05 E=4.989877736883555e-01 |F|=8.848e-06 nu=1.0e-04
+    step alpha=1 |d|=1.20e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.67s solve[splu]=2.22s
+  NEWTON s=0.50 it=14 g_rel=8.920e-05 c_rel=4.220e-05 E=4.989877474519132e-01 |F|=6.729e-06 nu=1.0e-04
+    step alpha=1 |d|=1.06e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.63s solve[splu]=1.59s
+  NEWTON s=0.50 it=15 g_rel=7.001e-05 c_rel=2.958e-05 E=4.989877275063411e-01 |F|=5.280e-06 nu=1.0e-04
+    step alpha=1 |d|=9.39e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=1.03s
+  NEWTON s=0.50 it=16 g_rel=5.630e-05 c_rel=2.170e-05 E=4.989877119129102e-01 |F|=4.246e-06 nu=1.0e-04
+    step alpha=1 |d|=8.42e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.26s solve[splu]=1.03s
+  NEWTON s=0.50 it=17 g_rel=4.619e-05 c_rel=1.658e-05 E=4.989876994744540e-01 |F|=3.483e-06 nu=1.0e-04
+    step alpha=1 |d|=7.60e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.25s solve[splu]=1.00s
+  NEWTON s=0.50 it=18 g_rel=3.852e-05 c_rel=1.307e-05 E=4.989876893947907e-01 |F|=2.905e-06 nu=1.0e-04
+    step alpha=1 |d|=6.90e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.89s
+  NEWTON s=0.50 it=19 g_rel=3.257e-05 c_rel=1.050e-05 E=4.989876811190962e-01 |F|=2.456e-06 nu=1.0e-04
+    step alpha=1 |d|=6.30e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.22s solve[splu]=0.82s
+  NEWTON s=0.50 it=20 g_rel=2.784e-05 c_rel=9.120e-06 E=4.989876742480966e-01 |F|=2.099e-06 nu=1.0e-04
+    step alpha=1 |d|=5.78e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.21s solve[splu]=1.64s
+  NEWTON s=0.50 it=21 g_rel=2.403e-05 c_rel=8.009e-06 E=4.989876684872145e-01 |F|=1.812e-06 nu=1.0e-04
+    step alpha=1 |d|=5.32e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=1.12s solve[splu]=5.74s
+  NEWTON s=0.50 it=22 g_rel=2.092e-05 c_rel=6.994e-06 E=4.989876636145129e-01 |F|=1.577e-06 nu=1.0e-04
+    step alpha=1 |d|=4.92e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=1.20s solve[splu]=4.01s
+  NEWTON s=0.50 it=23 g_rel=1.836e-05 c_rel=6.078e-06 E=4.989876594597316e-01 |F|=1.383e-06 nu=1.0e-04
+    step alpha=1 |d|=4.56e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.79s solve[splu]=2.40s
+  NEWTON s=0.50 it=24 g_rel=1.624e-05 c_rel=5.259e-06 E=4.989876558902328e-01 |F|=1.223e-06 nu=1.0e-04
+    step alpha=1 |d|=4.25e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.70s solve[splu]=2.64s
+  NEWTON s=0.50 it=25 g_rel=1.447e-05 c_rel=4.536e-06 E=4.989876528013726e-01 |F|=1.089e-06 nu=1.0e-04
+    step alpha=1 |d|=3.97e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.29s solve[splu]=0.84s
+  NEWTON s=0.50 it=26 g_rel=1.298e-05 c_rel=3.902e-06 E=4.989876501097518e-01 |F|=9.765e-07 nu=1.0e-04
+    step alpha=1 |d|=3.72e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.21s solve[splu]=0.82s
+  NEWTON s=0.50 it=27 g_rel=1.172e-05 c_rel=3.349e-06 E=4.989876477483669e-01 |F|=8.819e-07 nu=1.0e-04
+    step alpha=1 |d|=3.50e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.21s solve[splu]=0.86s
+  NEWTON s=0.50 it=28 g_rel=1.066e-05 c_rel=2.869e-06 E=4.989876456630379e-01 |F|=8.018e-07 nu=1.0e-04
+    step alpha=1 |d|=3.30e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.20s solve[splu]=0.83s
+  NEWTON s=0.50 it=29 g_rel=9.762e-06 c_rel=2.455e-06 E=4.989876438097184e-01 |F|=7.338e-07 nu=1.0e-04
+    step alpha=1 |d|=3.12e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.21s solve[splu]=0.84s
+  NEWTON s=0.50 it=30 g_rel=8.992e-06 c_rel=2.182e-06 E=4.989876421524325e-01 |F|=6.757e-07 nu=1.0e-04
+  NEWTON s=1.00 it= 0 g_rel=4.928e-01 c_rel=1.824e-01 E=5.028669794849845e-01 |F|=3.764e-02 nu=1.0e-04
+    step alpha=0.125 |d|=4.53e+00 nu=1.0e-02 trials=3 hess(ngrad=108 nnz=125568)=0.22s solve[splu]=1.60s
+  NEWTON s=1.00 it= 1 g_rel=4.608e-01 c_rel=1.735e-01 E=5.015907340936281e-01 |F|=3.512e-02 nu=1.0e-02
+    step alpha=0.5 |d|=3.89e-01 nu=1.0e-01 trials=2 hess(ngrad=108 nnz=125568)=0.21s solve[splu]=2.47s
+  NEWTON s=1.00 it= 2 g_rel=2.748e-01 c_rel=8.454e-02 E=4.982472588085304e-01 |F|=2.082e-02 nu=1.0e-01
+    step alpha=1 |d|=1.94e-01 nu=1.0e-01 trials=1 hess(ngrad=108 nnz=125568)=1.22s solve[splu]=2.22s
+  NEWTON s=1.00 it= 3 g_rel=4.802e-02 c_rel=2.542e-03 E=4.964664992610111e-01 |F|=3.593e-03 nu=1.0e-02
+    step alpha=1 |d|=7.55e-02 nu=1.0e-01 trials=2 hess(ngrad=108 nnz=125568)=1.33s solve[splu]=3.85s
+  NEWTON s=1.00 it= 4 g_rel=1.751e-02 c_rel=4.924e-04 E=4.963172563381104e-01 |F|=1.309e-03 nu=1.0e-02
+    step alpha=0.5 |d|=2.82e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=1.01s solve[splu]=2.30s
+  NEWTON s=1.00 it= 5 g_rel=1.234e-02 c_rel=2.554e-03 E=4.961982150737760e-01 |F|=9.252e-04 nu=1.0e-02
+    step alpha=1 |d|=2.06e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=1.29s solve[splu]=2.35s
+  NEWTON s=1.00 it= 6 g_rel=8.834e-03 c_rel=3.848e-03 E=4.960906586550110e-01 |F|=6.701e-04 nu=1.0e-03
+    step alpha=1 |d|=1.15e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=1.33s solve[splu]=1.71s
+  NEWTON s=1.00 it= 7 g_rel=3.541e-03 c_rel=1.003e-03 E=4.960584842868790e-01 |F|=2.674e-04 nu=1.0e-03
+    step alpha=1 |d|=7.19e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=1.68s
+  NEWTON s=1.00 it= 8 g_rel=2.062e-03 c_rel=6.144e-04 E=4.960467337761109e-01 |F|=1.553e-04 nu=1.0e-03
+    step alpha=1 |d|=4.71e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.66s solve[splu]=1.60s
+  NEWTON s=1.00 it= 9 g_rel=1.275e-03 c_rel=3.671e-04 E=4.960419119286907e-01 |F|=9.583e-05 nu=1.0e-03
+    step alpha=1 |d|=3.29e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.30s solve[splu]=1.20s
+  NEWTON s=1.00 it=10 g_rel=8.622e-04 c_rel=2.128e-04 E=4.960396561222142e-01 |F|=6.470e-05 nu=1.0e-03
+    step alpha=0.125 |d|=1.39e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.30s solve[splu]=0.61s
+  NEWTON s=1.00 it=11 g_rel=8.394e-04 c_rel=2.058e-04 E=4.960389833518360e-01 |F|=6.300e-05 nu=1.0e-03
+    step alpha=0.125 |d|=1.17e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.30s solve[splu]=0.52s
+  NEWTON s=1.00 it=12 g_rel=8.120e-04 c_rel=1.998e-04 E=4.960384284972769e-01 |F|=6.096e-05 nu=1.0e-03
+    step alpha=0.125 |d|=1.04e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.32s solve[splu]=0.73s
+  NEWTON s=1.00 it=13 g_rel=7.790e-04 c_rel=1.926e-04 E=4.960379632097046e-01 |F|=5.850e-05 nu=1.0e-03
+    step alpha=0.125 |d|=9.44e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.29s solve[splu]=0.57s
+  NEWTON s=1.00 it=14 g_rel=7.418e-04 c_rel=1.842e-04 E=4.960375701063889e-01 |F|=5.572e-05 nu=1.0e-03
+    step alpha=0.125 |d|=8.65e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.51s
+  NEWTON s=1.00 it=15 g_rel=7.020e-04 c_rel=1.747e-04 E=4.960372361547485e-01 |F|=5.274e-05 nu=1.0e-03
+    step alpha=0.25 |d|=8.00e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.50s
+  NEWTON s=1.00 it=16 g_rel=6.987e-04 c_rel=1.778e-04 E=4.960366858959813e-01 |F|=5.253e-05 nu=1.0e-03
+    step alpha=0.25 |d|=6.81e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.49s
+  NEWTON s=1.00 it=17 g_rel=6.581e-04 c_rel=1.670e-04 E=4.960362889686271e-01 |F|=4.951e-05 nu=1.0e-03
+    step alpha=0.25 |d|=5.96e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125566)=0.27s solve[splu]=0.49s
+  NEWTON s=1.00 it=18 g_rel=6.009e-04 c_rel=1.494e-04 E=4.960359947253581e-01 |F|=4.522e-05 nu=1.0e-03
+    step alpha=0.25 |d|=5.30e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.26s solve[splu]=0.51s
+  NEWTON s=1.00 it=19 g_rel=5.385e-04 c_rel=1.297e-04 E=4.960357716558735e-01 |F|=4.053e-05 nu=1.0e-03
+    step alpha=0.25 |d|=4.78e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.26s solve[splu]=0.51s
+  NEWTON s=1.00 it=20 g_rel=4.774e-04 c_rel=1.101e-04 E=4.960355990647207e-01 |F|=3.593e-05 nu=1.0e-03
+    step alpha=0.25 |d|=4.35e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.48s
+  NEWTON s=1.00 it=21 g_rel=4.206e-04 c_rel=9.429e-05 E=4.960354629676786e-01 |F|=3.165e-05 nu=1.0e-03
+    step alpha=0.5 |d|=3.99e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.48s
+  NEWTON s=1.00 it=22 g_rel=4.202e-04 c_rel=1.056e-04 E=4.960352537607496e-01 |F|=3.164e-05 nu=1.0e-03
+    step alpha=0.5 |d|=3.33e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.25s solve[splu]=0.43s
+  NEWTON s=1.00 it=23 g_rel=3.639e-04 c_rel=9.528e-05 E=4.960351176196109e-01 |F|=2.739e-05 nu=1.0e-03
+    step alpha=0.5 |d|=2.89e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.31s solve[splu]=1.84s
+  NEWTON s=1.00 it=24 g_rel=3.017e-04 c_rel=7.497e-05 E=4.960350215426502e-01 |F|=2.270e-05 nu=1.0e-03
+    step alpha=0.5 |d|=2.55e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=1.20s solve[splu]=2.02s
+  NEWTON s=1.00 it=25 g_rel=2.474e-04 c_rel=5.430e-05 E=4.960349500042549e-01 |F|=1.861e-05 nu=1.0e-03
+    step alpha=0.5 |d|=2.29e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=1.14s solve[splu]=2.62s
+  NEWTON s=1.00 it=26 g_rel=2.033e-04 c_rel=4.564e-05 E=4.960348947283186e-01 |F|=1.529e-05 nu=1.0e-03
+    step alpha=0.5 |d|=2.07e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=1.02s solve[splu]=1.99s
+  NEWTON s=1.00 it=27 g_rel=1.682e-04 c_rel=4.180e-05 E=4.960348508601747e-01 |F|=1.264e-05 nu=1.0e-03
+    step alpha=0.5 |d|=1.88e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.82s solve[splu]=1.72s
+  NEWTON s=1.00 it=28 g_rel=1.404e-04 c_rel=3.828e-05 E=4.960348153208795e-01 |F|=1.055e-05 nu=1.0e-03
+    step alpha=0.5 |d|=1.72e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.90s solve[splu]=1.52s
+  NEWTON s=1.00 it=29 g_rel=1.183e-04 c_rel=3.507e-05 E=4.960347860347200e-01 |F|=8.889e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.59e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.67s solve[splu]=1.21s
+  NEWTON s=1.00 it=30 g_rel=1.007e-04 c_rel=3.215e-05 E=4.960347615378493e-01 |F|=7.567e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.47e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.69s solve[splu]=0.82s
+  NEWTON s=1.00 it=31 g_rel=8.662e-05 c_rel=2.947e-05 E=4.960347407645841e-01 |F|=6.510e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.37e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.44s
+  NEWTON s=1.00 it=32 g_rel=7.533e-05 c_rel=2.701e-05 E=4.960347229218420e-01 |F|=5.663e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.28e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.22s solve[splu]=0.46s
+  NEWTON s=1.00 it=33 g_rel=6.624e-05 c_rel=2.475e-05 E=4.960347074102560e-01 |F|=4.980e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.21e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.24s solve[splu]=0.57s
+  NEWTON s=1.00 it=34 g_rel=5.890e-05 c_rel=2.266e-05 E=4.960346937717702e-01 |F|=4.428e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.14e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.45s solve[splu]=0.98s
+  NEWTON s=1.00 it=35 g_rel=5.293e-05 c_rel=2.073e-05 E=4.960346816533021e-01 |F|=3.980e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.09e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.43s solve[splu]=0.82s
+  NEWTON s=1.00 it=36 g_rel=4.805e-05 c_rel=1.894e-05 E=4.960346707807565e-01 |F|=3.613e-06 nu=1.0e-03
+    step alpha=0.5 |d|=1.04e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.43s solve[splu]=0.83s
+  NEWTON s=1.00 it=37 g_rel=4.403e-05 c_rel=1.730e-05 E=4.960346609400398e-01 |F|=3.311e-06 nu=1.0e-03
+    step alpha=0.5 |d|=9.91e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=0.80s
+  NEWTON s=1.00 it=38 g_rel=4.069e-05 c_rel=1.578e-05 E=4.960346519629777e-01 |F|=3.060e-06 nu=1.0e-03
+    step alpha=0.5 |d|=9.52e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.49s solve[splu]=0.98s
+  NEWTON s=1.00 it=39 g_rel=3.788e-05 c_rel=1.439e-05 E=4.960346437167530e-01 |F|=2.848e-06 nu=1.0e-03
+    step alpha=0.5 |d|=9.17e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.72s solve[splu]=0.86s
+  NEWTON s=1.00 it=40 g_rel=3.550e-05 c_rel=1.312e-05 E=4.960346360959152e-01 |F|=2.669e-06 nu=1.0e-03
+    step alpha=0.5 |d|=8.85e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.82s solve[splu]=1.20s
+  NEWTON s=1.00 it=41 g_rel=3.344e-05 c_rel=1.195e-05 E=4.960346290162884e-01 |F|=2.514e-06 nu=1.0e-03
+    step alpha=0.5 |d|=8.56e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.75s solve[splu]=1.67s
+  NEWTON s=1.00 it=42 g_rel=3.165e-05 c_rel=1.089e-05 E=4.960346224102933e-01 |F|=2.379e-06 nu=1.0e-03
+    step alpha=0.5 |d|=8.29e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=1.36s solve[splu]=2.46s
+  NEWTON s=1.00 it=43 g_rel=3.007e-05 c_rel=9.915e-06 E=4.960346162233333e-01 |F|=2.259e-06 nu=1.0e-03
+    step alpha=0.5 |d|=8.04e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=1.00s solve[splu]=2.17s
+  NEWTON s=1.00 it=44 g_rel=2.866e-05 c_rel=9.032e-06 E=4.960346104109843e-01 |F|=2.153e-06 nu=1.0e-03
+    step alpha=0.5 |d|=7.81e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=1.04s solve[splu]=2.52s
+  NEWTON s=1.00 it=45 g_rel=2.738e-05 c_rel=8.229e-06 E=4.960346049368019e-01 |F|=2.056e-06 nu=1.0e-03
+    step alpha=0.5 |d|=7.59e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.59s solve[splu]=1.13s
+  NEWTON s=1.00 it=46 g_rel=2.621e-05 c_rel=7.500e-06 E=4.960345997706027e-01 |F|=1.968e-06 nu=1.0e-03
+    step alpha=0.5 |d|=7.38e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.64s solve[splu]=1.07s
+  NEWTON s=1.00 it=47 g_rel=2.514e-05 c_rel=6.839e-06 E=4.960345948871146e-01 |F|=1.887e-06 nu=1.0e-03
+    step alpha=0.5 |d|=7.18e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.79s solve[splu]=1.14s
+  NEWTON s=1.00 it=48 g_rel=2.414e-05 c_rel=6.241e-06 E=4.960345902649201e-01 |F|=1.812e-06 nu=1.0e-03
+    step alpha=0.5 |d|=6.99e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.69s solve[splu]=1.22s
+  NEWTON s=1.00 it=49 g_rel=2.321e-05 c_rel=5.698e-06 E=4.960345858856262e-01 |F|=1.741e-06 nu=1.0e-03
+    step alpha=0.5 |d|=6.81e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.56s solve[splu]=1.40s
+  NEWTON s=1.00 it=50 g_rel=2.233e-05 c_rel=5.207e-06 E=4.960345817332164e-01 |F|=1.675e-06 nu=1.0e-03
+    step alpha=0.5 |d|=6.64e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.60s solve[splu]=1.23s
+  NEWTON s=1.00 it=51 g_rel=2.151e-05 c_rel=4.763e-06 E=4.960345777935472e-01 |F|=1.613e-06 nu=1.0e-03
+    step alpha=0.5 |d|=6.47e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.58s solve[splu]=1.15s
+  NEWTON s=1.00 it=52 g_rel=2.073e-05 c_rel=4.360e-06 E=4.960345740539583e-01 |F|=1.554e-06 nu=1.0e-03
+    step alpha=0.5 |d|=6.30e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.65s solve[splu]=1.00s
+  NEWTON s=1.00 it=53 g_rel=1.999e-05 c_rel=3.995e-06 E=4.960345705029714e-01 |F|=1.498e-06 nu=1.0e-03
+    step alpha=0.5 |d|=6.14e-03 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.59s solve[splu]=1.20s
+  NEWTON s=1.00 it=54 g_rel=1.928e-05 c_rel=3.664e-06 E=4.960345671300602e-01 |F|=1.445e-06 nu=1.0e-03
+SOLVE field=gauss eps=0.25 N=12 cand=ii constrained=True solver=direct status=stagnation(plateau: < 2x reduction of g_rel in 15 iterations) its=114 g_rel=1.928e-05 c_rel(max)=3.664e-06 f1_in mean-1=+6.4e-10 mu=2.3e-19 |lam|=1.265e-01 E_min=4.960345671300602e-01 E(oracle)=4.961300587243009e-01 E_min-E(oracle)=-9.549e-05 t_load=5.7s t_solve=230.6s
+HISTORY field=gauss eps=0.25 N=12 cand=ii g_rel: 1.9e-01 1.5e-01 1.1e-01 6.3e-02 4.7e-02 2.6e-02 1.9e-02 1.8e-03 7.8e-04 5.3e-04 5.0e-04 4.7e-04 4.7e-04 4.4e-04 4.1e-04 3.7e-04 3.2e-04 3.1e-04 2.6e-04 2.0e-04 1.5e-04 1.2e-04 9.2e-05 7.3e-05 5.9e-05 4.9e-05 4.1e-05 3.5e-05 3.1e-05 2.7e-05 2.4e-05 2.4e-01 2.1e-01 3.4e-02 1.3e-02 1.0e-02 1.0e-02 8.8e-03 8.9e-03 4.9e-03 2.5e-03 7.3e-04 2.4e-04 1.6e-04 1.2e-04 8.9e-05 7.0e-05 5.6e-05 4.6e-05 3.9e-05 3.3e-05 2.8e-05 2.4e-05 2.1e-05 1.8e-05 1.6e-05 1.4e-05 1.3e-05 1.2e-05 1.1e-05 9.8e-06 9.0e-06 4.9e-01 4.6e-01 2.7e-01 4.8e-02 1.8e-02 1.2e-02 8.8e-03 3.5e-03 2.1e-03 1.3e-03 8.6e-04 8.4e-04 8.1e-04 7.8e-04 7.4e-04 7.0e-04 7.0e-04 6.6e-04 6.0e-04 5.4e-04 4.8e-04 4.2e-04 4.2e-04 3.6e-04 3.0e-04 2.5e-04 2.0e-04 1.7e-04 1.4e-04 1.2e-04 1.0e-04 8.7e-05 7.5e-05 6.6e-05 5.9e-05 5.3e-05 4.8e-05 4.4e-05 4.1e-05 3.8e-05 3.5e-05 3.3e-05 3.2e-05 3.0e-05 2.9e-05 2.7e-05 2.6e-05 2.5e-05 2.4e-05 2.3e-05 2.2e-05 2.2e-05 2.1e-05 2.0e-05 1.9e-05
+DIAG field=gauss eps=0.25 N=12 e_v(f1,f2,f3)=(1.113e-02,5.350e-03,9.154e-03) max|div_h c|=6.0e-15 nat_defect|c_perp(out)|=1.201e-01 (vD: 1.225e-01) |c_perp(out)-vD_perp(out)|=1.304e-02 |c1(out)-f1_in|=1.109e-06 |c1(out)-vD_f1(out)|=1.109e-06
+VDREF field=gauss eps=0.25 N=12 |vD| p0.1/1/5/50=0.5367/0.6339/0.7269/0.9796 min|vD|=0.5118
+CASE field=gauss eps=0.25 N=12 cand=ii | r_F=1.928e-05 its=114 | e_v=8.943e-03 e_psi=3.687e-01 e_i=(1.049e-01,1.150e-01) e_div=2.757e-15 min_c=5.401e-01 p0.1=5.668e-01 p1=6.357e-01 p5=7.418e-01 p50=9.850e-01 | t=230.6
+DIAG_ORACLE field=gauss eps=0.25 N=12 e_v(f1,f2,f3)=(1.520e-02,6.545e-03,2.371e-03) max|div_h c|=5.5e-15 nat_defect|c_perp(out)|=1.217e-01 (vD: 1.225e-01) |c_perp(out)-vD_perp(out)|=5.257e-03 |c1(out)-f1_in|=8.981e-03 |c1(out)-vD_f1(out)|=8.981e-03
+CASE field=gauss eps=0.25 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=9.842e-03 e_psi=0.000e+00 e_i=(7.210e-03,6.120e-03) e_div=2.418e-15 min_c=5.516e-01 p0.1=5.762e-01 p1=6.424e-01 p5=7.502e-01 p50=9.870e-01 | t=0.0
+KELVIN field=gauss eps=0.25 N=12 cand=ii E_kelvin=4.960344548814140e-01 E_min-E_kelvin=+1.122e-07 E(oracle)-E_kelvin=+9.560e-05 e_v(kelvin flux vs vD_faces)=8.930e-03 |c_min - c_kelvin|/rms(vD)=4.511e-04 |c_oracle - c_kelvin|/rms(vD)=1.400e-02 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(7.53e-03,7.05e-03) oracle=(2.26e-04,2.18e-05)
+SPECTRUM field=gauss eps=0.25 N=12 dense Hessian of the Lagrangian n=3456: eig min=-8.268e-06 max=9.517e-01 negative=32 (t=25.1s)
+SPECTRUM field=gauss eps=0.25 N=12 constraint Jacobian 144x3456 rank=143 (sigma: max=2.033e-01 min_kept=3.053e-02 dropped=8.0e-17)
+SPECTRUM field=gauss eps=0.25 N=12 reduced Hessian Z^T H_L Z n=3313: eig min=-8.265e-06 max=9.517e-01 negative=32
+SPECTRUM reduced_hessian field=gauss eps=0.25 N=12 n=3313 smallest12: 5.35e-08 6.32e-08 8.58e-08 1.64e-07 1.78e-07 2.25e-07 2.73e-07 3.24e-07 3.40e-07 3.93e-07 4.54e-07 5.13e-07
+SPECTRUM reduced_hessian field=gauss eps=0.25 N=12 counts <1e-2:658 <1e-3:319 <1e-4:152 <1e-6:21 <1e-10:0 | largest gap below 1e-2: ratio=1.92 after 3 values (r=8.58e-08 -> 1.64e-07)
+SPECTRUM reduced_hessian saved ../raw/spectrum_cand_ii_gauss_0.25_12.txt
+SPECTRUM kkt field=gauss eps=0.25 N=12 n=3599 smallest12: 5.35e-08 6.32e-08 8.58e-08 1.64e-07 1.78e-07 2.25e-07 2.73e-07 3.24e-07 3.40e-07 3.93e-07 4.54e-07 5.13e-07
+SPECTRUM kkt field=gauss eps=0.25 N=12 counts <1e-2:658 <1e-3:319 <1e-4:152 <1e-6:21 <1e-10:0 | largest gap below 1e-2: ratio=1.92 after 3 values (r=8.58e-08 -> 1.64e-07)
+SPECTRUM kkt saved ../raw/spectrum_cand_ii_gauss_0.25_12_kkt.txt
+SPECTRUM hessian_L_full field=gauss eps=0.25 N=12 n=3456 smallest12: 5.20e-08 6.35e-08 8.63e-08 1.65e-07 1.78e-07 2.24e-07 2.72e-07 3.24e-07 3.39e-07 3.94e-07 4.55e-07 5.13e-07
+SPECTRUM hessian_L_full field=gauss eps=0.25 N=12 counts <1e-2:660 <1e-3:319 <1e-4:152 <1e-6:21 <1e-10:0 | largest gap below 1e-2: ratio=1.91 after 3 values (r=8.63e-08 -> 1.65e-07)
+SPECTRUM hessian_L_full saved ../raw/spectrum_cand_ii_gauss_0.25_12_hL.txt
+======== candidate (ii) gauss_ch:0.25:12  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=1.568e-01 c_rel=0.000e+00 E=5.037308963718485e-01 |F|=1.296e-02 nu=1.0e-04
+    step alpha=1 |d|=2.63e-01 nu=1.0e-02 trials=3 hess(ngrad=108 nnz=104448)=0.41s solve[splu]=2.27s
+  NEWTON s=0.25 it= 1 g_rel=2.034e-02 c_rel=0.000e+00 E=5.026332276106417e-01 |F|=1.681e-03 nu=1.0e-03
+    step alpha=1 |d|=3.73e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.42s solve[splu]=1.26s
+  NEWTON s=0.25 it= 2 g_rel=1.087e-03 c_rel=0.000e+00 E=5.026205378224562e-01 |F|=8.984e-05 nu=1.0e-03
+    step alpha=1 |d|=4.92e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.48s solve[splu]=0.68s
+  NEWTON s=0.25 it= 3 g_rel=1.055e-03 c_rel=0.000e+00 E=5.026193573255893e-01 |F|=8.714e-05 nu=1.0e-04
+    step alpha=1 |d|=1.34e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.55s solve[splu]=1.31s
+  NEWTON s=0.25 it= 4 g_rel=7.479e-05 c_rel=0.000e+00 E=5.026192798084789e-01 |F|=6.180e-06 nu=1.0e-04
+    step alpha=0.25 |d|=7.94e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.49s solve[splu]=0.75s
+  NEWTON s=0.25 it= 5 g_rel=2.571e-04 c_rel=0.000e+00 E=5.026192691208392e-01 |F|=2.124e-05 nu=1.0e-04
+    step alpha=0.25 |d|=5.91e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.35s solve[splu]=0.53s
+  NEWTON s=0.25 it= 6 g_rel=2.420e-04 c_rel=0.000e+00 E=5.026192611718217e-01 |F|=2.000e-05 nu=1.0e-04
+    step alpha=0.5 |d|=3.90e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.51s solve[splu]=0.71s
+  NEWTON s=0.25 it= 7 g_rel=3.166e-04 c_rel=0.000e+00 E=5.026192550807552e-01 |F|=2.616e-05 nu=1.0e-04
+    step alpha=1 |d|=2.22e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.42s solve[splu]=0.89s
+  NEWTON s=0.25 it= 8 g_rel=3.827e-04 c_rel=0.000e+00 E=5.026192476107528e-01 |F|=3.162e-05 nu=1.0e-05
+    step alpha=1 |d|=1.33e-02 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.50s solve[splu]=2.51s
+  NEWTON s=0.25 it= 9 g_rel=1.561e-04 c_rel=0.000e+00 E=5.026192431968330e-01 |F|=1.290e-05 nu=1.0e-05
+    step alpha=1 |d|=1.24e-02 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=2.35s
+  NEWTON s=0.25 it=10 g_rel=1.814e-04 c_rel=0.000e+00 E=5.026192423666288e-01 |F|=1.499e-05 nu=1.0e-05
+    step alpha=0.125 |d|=1.20e-01 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.40s solve[splu]=1.82s
+  NEWTON s=0.25 it=11 g_rel=1.985e-04 c_rel=0.000e+00 E=5.026192421696821e-01 |F|=1.640e-05 nu=1.0e-05
+    step alpha=0.125 |d|=1.16e-01 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.47s solve[splu]=1.59s
+  NEWTON s=0.25 it=12 g_rel=2.269e-04 c_rel=0.000e+00 E=5.026192421097777e-01 |F|=1.875e-05 nu=1.0e-05
+    step alpha=0.5 |d|=2.37e-02 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.54s solve[splu]=3.09s
+  NEWTON s=0.25 it=13 g_rel=2.434e-04 c_rel=0.000e+00 E=5.026192419560963e-01 |F|=2.011e-05 nu=1.0e-04
+    step alpha=1 |d|=4.73e-03 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=0.88s
+  NEWTON s=0.25 it=14 g_rel=1.447e-05 c_rel=0.000e+00 E=5.026192403266344e-01 |F|=1.196e-06 nu=1.0e-05
+    step alpha=0.5 |d|=2.99e-02 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.41s solve[splu]=2.08s
+  NEWTON s=0.25 it=15 g_rel=1.456e-04 c_rel=0.000e+00 E=5.026192403138551e-01 |F|=1.203e-05 nu=1.0e-05
+    step alpha=0.25 |d|=3.25e-02 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.93s solve[splu]=1.90s
+  NEWTON s=0.25 it=16 g_rel=1.185e-04 c_rel=0.000e+00 E=5.026192400321037e-01 |F|=9.793e-06 nu=1.0e-05
+    step alpha=0.25 |d|=3.07e-02 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.40s solve[splu]=1.78s
+  NEWTON s=0.25 it=17 g_rel=9.430e-05 c_rel=0.000e+00 E=5.026192397846696e-01 |F|=7.793e-06 nu=1.0e-05
+    step alpha=0.5 |d|=1.76e-02 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.47s solve[splu]=1.53s
+  NEWTON s=0.25 it=18 g_rel=7.263e-05 c_rel=0.000e+00 E=5.026192395731990e-01 |F|=6.002e-06 nu=1.0e-05
+    step alpha=1 |d|=1.65e-03 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.53s solve[splu]=3.63s
+  NEWTON s=0.25 it=19 g_rel=1.864e-06 c_rel=0.000e+00 E=5.026192394108860e-01 |F|=1.540e-07 nu=1.0e-05
+    step alpha=1 |d|=8.30e-03 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.73s solve[splu]=1.42s
+  NEWTON s=0.25 it=20 g_rel=4.255e-05 c_rel=0.000e+00 E=5.026192392934453e-01 |F|=3.516e-06 nu=1.0e-06
+    step alpha=0.125 |d|=4.91e-02 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=125568)=0.41s solve[splu]=1.33s
+  NEWTON s=0.25 it=21 g_rel=4.303e-05 c_rel=0.000e+00 E=5.026192392805848e-01 |F|=3.556e-06 nu=1.0e-06
+    step alpha=1 |d|=4.42e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.44s solve[splu]=3.29s
+  NEWTON s=0.25 it=22 g_rel=8.799e-06 c_rel=0.000e+00 E=5.026192392031040e-01 |F|=7.271e-07 nu=1.0e-06
+    step alpha=1 |d|=4.62e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.76s solve[splu]=3.55s
+  NEWTON s=0.25 it=23 g_rel=1.463e-05 c_rel=0.000e+00 E=5.026192391640381e-01 |F|=1.209e-06 nu=1.0e-06
+    step alpha=1 |d|=3.40e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.55s solve[splu]=3.83s
+  NEWTON s=0.25 it=24 g_rel=5.783e-06 c_rel=0.000e+00 E=5.026192391367739e-01 |F|=4.779e-07 nu=1.0e-06
+    step alpha=1 |d|=3.29e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.80s solve[splu]=5.44s
+  NEWTON s=0.25 it=25 g_rel=6.358e-06 c_rel=0.000e+00 E=5.026192391158836e-01 |F|=5.254e-07 nu=1.0e-06
+    step alpha=0.125 |d|=4.42e-02 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=125568)=0.65s solve[splu]=2.02s
+  NEWTON s=0.25 it=26 g_rel=1.895e-05 c_rel=0.000e+00 E=5.026192391132348e-01 |F|=1.566e-06 nu=1.0e-06
+    step alpha=1 |d|=3.15e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.61s solve[splu]=4.59s
+  NEWTON s=0.25 it=27 g_rel=6.218e-06 c_rel=0.000e+00 E=5.026192390896036e-01 |F|=5.138e-07 nu=1.0e-06
+    step alpha=0.25 |d|=2.26e-02 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=125568)=0.57s solve[splu]=1.66s
+  NEWTON s=0.25 it=28 g_rel=1.978e-05 c_rel=0.000e+00 E=5.026192390800699e-01 |F|=1.635e-06 nu=1.0e-06
+    step alpha=1 |d|=2.79e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.27s solve[splu]=1.48s
+  NEWTON s=0.25 it=29 g_rel=6.329e-06 c_rel=0.000e+00 E=5.026192390619068e-01 |F|=5.230e-07 nu=1.0e-06
+    step alpha=1 |d|=2.32e-03 nu=1.0e-05 trials=2 hess(ngrad=108 nnz=125568)=0.20s solve[splu]=1.64s
+  NEWTON s=0.25 it=30 g_rel=2.952e-06 c_rel=0.000e+00 E=5.026192390516225e-01 |F|=2.440e-07 nu=1.0e-06
+  NEWTON s=0.50 it= 0 g_rel=2.388e-01 c_rel=0.000e+00 E=5.067749901349308e-01 |F|=1.973e-02 nu=1.0e-04
+    step alpha=1 |d|=5.87e-01 nu=1.0e-02 trials=3 hess(ngrad=108 nnz=125568)=0.57s solve[splu]=3.72s
+  NEWTON s=0.50 it= 1 g_rel=1.360e-01 c_rel=0.000e+00 E=5.050554400187365e-01 |F|=1.124e-02 nu=1.0e-03
+    step alpha=0.5 |d|=5.24e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.67s solve[splu]=1.93s
+  NEWTON s=0.50 it= 2 g_rel=8.508e-02 c_rel=0.000e+00 E=5.048605816071566e-01 |F|=7.030e-03 nu=1.0e-02
+    step alpha=0.25 |d|=6.92e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.40s solve[splu]=0.76s
+  NEWTON s=0.50 it= 3 g_rel=5.974e-02 c_rel=0.000e+00 E=5.048013614971653e-01 |F|=4.937e-03 nu=1.0e-02
+    step alpha=1 |d|=2.35e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.39s solve[splu]=0.80s
+  NEWTON s=0.50 it= 4 g_rel=7.397e-02 c_rel=0.000e+00 E=5.047833447395665e-01 |F|=6.112e-03 nu=1.0e-03
+    step alpha=0.5 |d|=3.93e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.39s solve[splu]=1.62s
+  NEWTON s=0.50 it= 5 g_rel=6.629e-02 c_rel=0.000e+00 E=5.047694288611988e-01 |F|=5.478e-03 nu=1.0e-02
+    step alpha=0.125 |d|=1.08e+00 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.56s solve[splu]=0.84s
+  NEWTON s=0.50 it= 6 g_rel=6.096e-02 c_rel=0.000e+00 E=5.047632808032831e-01 |F|=5.037e-03 nu=1.0e-02
+    step alpha=0.25 |d|=6.01e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.54s solve[splu]=0.97s
+  NEWTON s=0.50 it= 7 g_rel=6.313e-02 c_rel=0.000e+00 E=5.047621759379984e-01 |F|=5.217e-03 nu=1.0e-02
+    step alpha=0.5 |d|=1.89e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.74s solve[splu]=1.02s
+  NEWTON s=0.50 it= 8 g_rel=3.451e-02 c_rel=0.000e+00 E=5.047178169604740e-01 |F|=2.852e-03 nu=1.0e-02
+    step alpha=0.5 |d|=1.81e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.45s solve[splu]=1.15s
+  NEWTON s=0.50 it= 9 g_rel=1.676e-02 c_rel=0.000e+00 E=5.047021937156042e-01 |F|=1.385e-03 nu=1.0e-02
+    step alpha=1 |d|=7.12e-02 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.49s solve[splu]=0.83s
+  NEWTON s=0.50 it=10 g_rel=6.678e-03 c_rel=0.000e+00 E=5.046890181163465e-01 |F|=5.519e-04 nu=1.0e-03
+    step alpha=1 |d|=3.80e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.69s solve[splu]=1.87s
+  NEWTON s=0.50 it=11 g_rel=1.288e-03 c_rel=0.000e+00 E=5.046853479386753e-01 |F|=1.064e-04 nu=1.0e-03
+    step alpha=0.25 |d|=3.16e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.56s solve[splu]=0.89s
+  NEWTON s=0.50 it=12 g_rel=4.981e-03 c_rel=0.000e+00 E=5.046839225448059e-01 |F|=4.116e-04 nu=1.0e-03
+    step alpha=0.5 |d|=1.78e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.43s solve[splu]=1.00s
+  NEWTON s=0.50 it=13 g_rel=7.047e-03 c_rel=0.000e+00 E=5.046824096535419e-01 |F|=5.823e-04 nu=1.0e-03
+    step alpha=0.125 |d|=4.74e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.69s solve[splu]=0.88s
+  NEWTON s=0.50 it=14 g_rel=7.222e-03 c_rel=0.000e+00 E=5.046821217234468e-01 |F|=5.967e-04 nu=1.0e-03
+    step alpha=1 |d|=8.54e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=1.19s
+  NEWTON s=0.50 it=15 g_rel=4.965e-03 c_rel=0.000e+00 E=5.046803650729731e-01 |F|=4.103e-04 nu=1.0e-04
+    step alpha=0.125 |d|=6.05e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.73s solve[splu]=1.31s
+  NEWTON s=0.50 it=16 g_rel=5.171e-03 c_rel=0.000e+00 E=5.046802869596165e-01 |F|=4.273e-04 nu=1.0e-04
+    step alpha=1 |d|=5.09e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.65s solve[splu]=2.62s
+  NEWTON s=0.50 it=17 g_rel=3.008e-03 c_rel=0.000e+00 E=5.046795827027873e-01 |F|=2.485e-04 nu=1.0e-04
+    step alpha=1 |d|=3.14e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.51s solve[splu]=2.88s
+  NEWTON s=0.50 it=18 g_rel=6.313e-04 c_rel=0.000e+00 E=5.046792744449908e-01 |F|=5.217e-05 nu=1.0e-04
+    step alpha=1 |d|=2.34e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.88s solve[splu]=1.19s
+  NEWTON s=0.50 it=19 g_rel=2.979e-04 c_rel=0.000e+00 E=5.046791532957299e-01 |F|=2.461e-05 nu=1.0e-04
+    step alpha=0.125 |d|=2.86e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.44s solve[splu]=0.68s
+  NEWTON s=0.50 it=20 g_rel=8.049e-04 c_rel=0.000e+00 E=5.046791110281761e-01 |F|=6.651e-05 nu=1.0e-04
+    step alpha=0.25 |d|=2.37e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.28s solve[splu]=0.60s
+  NEWTON s=0.50 it=21 g_rel=2.148e-03 c_rel=0.000e+00 E=5.046791057949140e-01 |F|=1.775e-04 nu=1.0e-04
+    step alpha=0.125 |d|=2.95e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.27s solve[splu]=0.60s
+  NEWTON s=0.50 it=22 g_rel=1.933e-03 c_rel=0.000e+00 E=5.046790560715201e-01 |F|=1.597e-04 nu=1.0e-04
+    step alpha=1 |d|=1.45e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.26s solve[splu]=1.37s
+  NEWTON s=0.50 it=23 g_rel=1.202e-04 c_rel=0.000e+00 E=5.046789502594604e-01 |F|=9.930e-06 nu=1.0e-04
+    step alpha=0.125 |d|=2.03e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.47s solve[splu]=1.25s
+  NEWTON s=0.50 it=24 g_rel=4.582e-04 c_rel=0.000e+00 E=5.046789274735460e-01 |F|=3.787e-05 nu=1.0e-04
+    step alpha=0.5 |d|=1.03e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.85s solve[splu]=1.95s
+  NEWTON s=0.50 it=25 g_rel=1.451e-03 c_rel=0.000e+00 E=5.046788886848930e-01 |F|=1.199e-04 nu=1.0e-04
+    step alpha=0.25 |d|=1.74e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.47s solve[splu]=1.07s
+  NEWTON s=0.50 it=26 g_rel=1.445e-03 c_rel=0.000e+00 E=5.046788771600426e-01 |F|=1.194e-04 nu=1.0e-04
+  NEWTON s=1.00 it= 0 g_rel=5.068e-01 c_rel=0.000e+00 E=5.157498326469335e-01 |F|=4.188e-02 nu=1.0e-04
+    step alpha=0.5 |d|=5.36e-01 nu=1.0e-01 trials=4 hess(ngrad=108 nnz=125568)=0.68s solve[splu]=4.36s
+  NEWTON s=1.00 it= 1 g_rel=4.074e-01 c_rel=0.000e+00 E=5.110214491846244e-01 |F|=3.367e-02 nu=1.0e-01
+    step alpha=1 |d|=8.50e-02 nu=1.0e+00 trials=2 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=1.95s
+  NEWTON s=1.00 it= 2 g_rel=1.880e-01 c_rel=0.000e+00 E=5.091595922783073e-01 |F|=1.554e-02 nu=1.0e-01
+    step alpha=1 |d|=2.05e-01 nu=1.0e-01 trials=1 hess(ngrad=108 nnz=125568)=0.46s solve[splu]=1.28s
+  NEWTON s=1.00 it= 3 g_rel=5.083e-02 c_rel=0.000e+00 E=5.076302565262018e-01 |F|=4.200e-03 nu=1.0e-02
+    step alpha=0.5 |d|=5.15e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.90s solve[splu]=2.45s
+  NEWTON s=1.00 it= 4 g_rel=6.310e-02 c_rel=0.000e+00 E=5.073452937221117e-01 |F|=5.214e-03 nu=1.0e-02
+    step alpha=0.25 |d|=7.67e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.73s solve[splu]=1.24s
+  NEWTON s=1.00 it= 5 g_rel=8.135e-02 c_rel=0.000e+00 E=5.073156005252319e-01 |F|=6.722e-03 nu=1.0e-02
+    step alpha=1 |d|=3.51e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.52s solve[splu]=0.99s
+  NEWTON s=1.00 it= 6 g_rel=1.473e-01 c_rel=0.000e+00 E=5.073007932936201e-01 |F|=1.217e-02 nu=1.0e-03
+    step alpha=0.25 |d|=6.20e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.50s solve[splu]=1.77s
+  NEWTON s=1.00 it= 7 g_rel=1.172e-01 c_rel=0.000e+00 E=5.072163782095803e-01 |F|=9.685e-03 nu=1.0e-02
+    step alpha=1 |d|=4.38e-02 nu=1.0e-01 trials=2 hess(ngrad=108 nnz=125568)=0.26s solve[splu]=1.08s
+  NEWTON s=1.00 it= 8 g_rel=1.359e-02 c_rel=0.000e+00 E=5.070755339961128e-01 |F|=1.123e-03 nu=1.0e-02
+    step alpha=0.5 |d|=2.11e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.27s solve[splu]=0.54s
+  NEWTON s=1.00 it= 9 g_rel=3.128e-02 c_rel=0.000e+00 E=5.070586782017857e-01 |F|=2.585e-03 nu=1.0e-02
+    step alpha=1 |d|=1.51e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.27s solve[splu]=0.53s
+  NEWTON s=1.00 it=10 g_rel=6.992e-02 c_rel=0.000e+00 E=5.070581481478700e-01 |F|=5.778e-03 nu=1.0e-03
+    step alpha=0.25 |d|=2.37e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.38s solve[splu]=2.06s
+  NEWTON s=1.00 it=11 g_rel=5.253e-02 c_rel=0.000e+00 E=5.070418801178446e-01 |F|=4.341e-03 nu=1.0e-02
+    step alpha=1 |d|=1.10e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=125568)=0.63s solve[splu]=1.10s
+  NEWTON s=1.00 it=12 g_rel=3.529e-02 c_rel=0.000e+00 E=5.070230041447000e-01 |F|=2.916e-03 nu=1.0e-03
+    step alpha=1 |d|=5.83e-02 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=125568)=0.45s solve[splu]=2.17s
+  NEWTON s=1.00 it=13 g_rel=8.351e-03 c_rel=0.000e+00 E=5.070092495729116e-01 |F|=6.901e-04 nu=1.0e-03
+    step alpha=0.25 |d|=4.34e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.81s solve[splu]=1.25s
+  NEWTON s=1.00 it=14 g_rel=1.311e-02 c_rel=0.000e+00 E=5.070091180581849e-01 |F|=1.083e-03 nu=1.0e-03
+    step alpha=0.5 |d|=2.00e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.52s solve[splu]=1.11s
+  NEWTON s=1.00 it=15 g_rel=9.259e-03 c_rel=0.000e+00 E=5.070059165492112e-01 |F|=7.651e-04 nu=1.0e-03
+    step alpha=0.125 |d|=4.06e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.49s solve[splu]=0.96s
+  NEWTON s=1.00 it=16 g_rel=7.946e-03 c_rel=0.000e+00 E=5.070051220616153e-01 |F|=6.566e-04 nu=1.0e-03
+    step alpha=0.125 |d|=3.46e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.52s solve[splu]=1.21s
+  NEWTON s=1.00 it=17 g_rel=6.685e-03 c_rel=0.000e+00 E=5.070045265831957e-01 |F|=5.524e-04 nu=1.0e-03
+    step alpha=0.5 |d|=9.81e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.52s solve[splu]=1.02s
+  NEWTON s=1.00 it=18 g_rel=4.042e-03 c_rel=0.000e+00 E=5.070030022146658e-01 |F|=3.340e-04 nu=1.0e-03
+    step alpha=1 |d|=6.18e-02 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=125568)=0.43s solve[splu]=1.15s
+  NEWTON s=1.00 it=19 g_rel=3.532e-03 c_rel=0.000e+00 E=5.070020941676948e-01 |F|=2.918e-04 nu=1.0e-04
+    step alpha=1 |d|=3.93e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.55s solve[splu]=2.06s
+  NEWTON s=1.00 it=20 g_rel=1.876e-03 c_rel=0.000e+00 E=5.070017441300607e-01 |F|=1.550e-04 nu=1.0e-04
+    step alpha=1 |d|=2.85e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.48s solve[splu]=1.98s
+  NEWTON s=1.00 it=21 g_rel=6.469e-04 c_rel=0.000e+00 E=5.070015191081199e-01 |F|=5.346e-05 nu=1.0e-04
+    step alpha=1 |d|=2.33e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.44s solve[splu]=1.77s
+  NEWTON s=1.00 it=22 g_rel=4.006e-04 c_rel=0.000e+00 E=5.070013984612627e-01 |F|=3.310e-05 nu=1.0e-04
+    step alpha=0.25 |d|=2.50e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.70s solve[splu]=0.97s
+  NEWTON s=1.00 it=23 g_rel=2.510e-03 c_rel=0.000e+00 E=5.070013860599124e-01 |F|=2.074e-04 nu=1.0e-04
+    step alpha=1 |d|=1.61e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.61s solve[splu]=1.51s
+  NEWTON s=1.00 it=24 g_rel=1.585e-04 c_rel=0.000e+00 E=5.070012291284910e-01 |F|=1.310e-05 nu=1.0e-04
+    step alpha=1 |d|=1.40e-02 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.22s solve[splu]=1.00s
+  NEWTON s=1.00 it=25 g_rel=1.137e-04 c_rel=0.000e+00 E=5.070011895687508e-01 |F|=9.396e-06 nu=1.0e-04
+    step alpha=0.125 |d|=2.52e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.25s solve[splu]=0.50s
+  NEWTON s=1.00 it=26 g_rel=6.780e-04 c_rel=0.000e+00 E=5.070011629792037e-01 |F|=5.603e-05 nu=1.0e-04
+    step alpha=0.5 |d|=1.14e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.25s solve[splu]=0.84s
+  NEWTON s=1.00 it=27 g_rel=2.030e-03 c_rel=0.000e+00 E=5.070011235436610e-01 |F|=1.677e-04 nu=1.0e-04
+    step alpha=0.125 |d|=1.93e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.42s solve[splu]=0.99s
+  NEWTON s=1.00 it=28 g_rel=1.768e-03 c_rel=0.000e+00 E=5.070011010675874e-01 |F|=1.461e-04 nu=1.0e-04
+    step alpha=0.5 |d|=1.07e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.51s solve[splu]=0.96s
+  NEWTON s=1.00 it=29 g_rel=1.986e-03 c_rel=0.000e+00 E=5.070010894776300e-01 |F|=1.641e-04 nu=1.0e-04
+    step alpha=0.125 |d|=2.23e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.48s solve[splu]=0.94s
+  NEWTON s=1.00 it=30 g_rel=1.720e-03 c_rel=0.000e+00 E=5.070010624336836e-01 |F|=1.422e-04 nu=1.0e-04
+    step alpha=1 |d|=9.32e-03 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=125568)=0.47s solve[splu]=2.53s
+  NEWTON s=1.00 it=31 g_rel=5.384e-05 c_rel=0.000e+00 E=5.070009963124859e-01 |F|=4.449e-06 nu=1.0e-04
+    step alpha=0.5 |d|=7.50e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.52s solve[splu]=0.89s
+  NEWTON s=1.00 it=32 g_rel=8.961e-04 c_rel=0.000e+00 E=5.070009566565067e-01 |F|=7.405e-05 nu=1.0e-04
+    step alpha=1 |d|=3.32e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=125568)=0.59s solve[splu]=1.13s
+  NEWTON s=1.00 it=33 g_rel=4.512e-04 c_rel=0.000e+00 E=5.070009119012576e-01 |F|=3.729e-05 nu=1.0e-05
+    step alpha=1 |d|=4.44e-02 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.63s solve[splu]=2.93s
+  NEWTON s=1.00 it=34 g_rel=1.405e-03 c_rel=0.000e+00 E=5.070008998938836e-01 |F|=1.161e-04 nu=1.0e-05
+    step alpha=1 |d|=3.03e-02 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.99s solve[splu]=4.73s
+  NEWTON s=1.00 it=35 g_rel=5.895e-04 c_rel=0.000e+00 E=5.070008590534764e-01 |F|=4.871e-05 nu=1.0e-05
+    step alpha=0.5 |d|=5.59e-02 nu=1.0e-04 trials=2 hess(ngrad=108 nnz=125568)=0.49s solve[splu]=2.09s
+  NEWTON s=1.00 it=36 g_rel=6.242e-04 c_rel=0.000e+00 E=5.070008400402225e-01 |F|=5.158e-05 nu=1.0e-04
+SOLVE field=gauss_ch eps=0.25 N=12 cand=ii constrained=False solver=direct status=stagnation(plateau: < 2x reduction of g_rel in 15 iterations) its=92 g_rel=6.242e-04 c_rel(max)=nan f1_in mean-1=+9.0e-10 mu=0.0e+00 |lam|=0.000e+00 E_min=5.070008400402225e-01 E(oracle)=5.071128342939301e-01 E_min-E(oracle)=-1.120e-04 t_load=7.1s t_solve=200.4s
+HISTORY field=gauss_ch eps=0.25 N=12 cand=ii g_rel: 1.6e-01 2.0e-02 1.1e-03 1.1e-03 7.5e-05 2.6e-04 2.4e-04 3.2e-04 3.8e-04 1.6e-04 1.8e-04 2.0e-04 2.3e-04 2.4e-04 1.4e-05 1.5e-04 1.2e-04 9.4e-05 7.3e-05 1.9e-06 4.3e-05 4.3e-05 8.8e-06 1.5e-05 5.8e-06 6.4e-06 1.9e-05 6.2e-06 2.0e-05 6.3e-06 3.0e-06 2.4e-01 1.4e-01 8.5e-02 6.0e-02 7.4e-02 6.6e-02 6.1e-02 6.3e-02 3.5e-02 1.7e-02 6.7e-03 1.3e-03 5.0e-03 7.0e-03 7.2e-03 5.0e-03 5.2e-03 3.0e-03 6.3e-04 3.0e-04 8.0e-04 2.1e-03 1.9e-03 1.2e-04 4.6e-04 1.5e-03 1.4e-03 5.1e-01 4.1e-01 1.9e-01 5.1e-02 6.3e-02 8.1e-02 1.5e-01 1.2e-01 1.4e-02 3.1e-02 7.0e-02 5.3e-02 3.5e-02 8.4e-03 1.3e-02 9.3e-03 7.9e-03 6.7e-03 4.0e-03 3.5e-03 1.9e-03 6.5e-04 4.0e-04 2.5e-03 1.6e-04 1.1e-04 6.8e-04 2.0e-03 1.8e-03 2.0e-03 1.7e-03 5.4e-05 9.0e-04 4.5e-04 1.4e-03 5.9e-04 6.2e-04
+DIAG field=gauss_ch eps=0.25 N=12 e_v(f1,f2,f3)=(1.273e-02,6.261e-03,6.856e-03) max|div_h c|=7.0e-15 nat_defect|c_perp(out)|=8.393e-03 (vD: 9.065e-03) |c_perp(out)-vD_perp(out)|=1.101e-03 |c1(out)-f1_in|=7.065e-02 |c1(out)-vD_f1(out)|=7.791e-03
+VDREF field=gauss_ch eps=0.25 N=12 |vD| p0.1/1/5/50=0.5984/0.6536/0.7281/0.9752 min|vD|=0.5741
+CASE field=gauss_ch eps=0.25 N=12 cand=ii | r_F=6.242e-04 its=92 | e_v=9.215e-03 e_psi=3.244e-01 e_i=(1.414e-01,1.087e-01) e_div=2.921e-15 min_c=5.913e-01 p0.1=6.083e-01 p1=6.763e-01 p5=7.426e-01 p50=9.750e-01 | t=200.4
+DIAG_ORACLE field=gauss_ch eps=0.25 N=12 e_v(f1,f2,f3)=(1.627e-02,6.771e-03,2.392e-03) max|div_h c|=5.6e-15 nat_defect|c_perp(out)|=8.993e-03 (vD: 9.065e-03) |c_perp(out)-vD_perp(out)|=4.454e-04 |c1(out)-f1_in|=6.998e-02 |c1(out)-vD_f1(out)|=9.678e-03
+CASE field=gauss_ch eps=0.25 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=1.047e-02 e_psi=0.000e+00 e_i=(7.879e-03,7.364e-03) e_div=2.408e-15 min_c=5.973e-01 p0.1=6.224e-01 p1=6.843e-01 p5=7.501e-01 p50=9.791e-01 | t=0.0
+KELVIN field=gauss_ch eps=0.25 N=12 cand=ii E_kelvin=5.070006588479518e-01 E_min-E_kelvin=+1.812e-07 E(oracle)-E_kelvin=+1.122e-04 e_v(kelvin flux vs vD_faces)=9.198e-03 |c_min - c_kelvin|/rms(vD)=5.519e-04 |c_oracle - c_kelvin|/rms(vD)=1.480e-02 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(1.01e-02,9.03e-03) oracle=(2.35e-04,2.21e-05)
+SPECTRUM field=gauss_ch eps=0.25 N=12 dense Hessian n=3456: eig min=-7.943e-06 max=1.248e+00 negative=24 (t=27.9s)
+SPECTRUM hessian field=gauss_ch eps=0.25 N=12 n=3456 smallest12: 4.61e-09 4.53e-08 9.98e-08 1.26e-07 1.58e-07 2.38e-07 2.39e-07 2.88e-07 3.12e-07 3.13e-07 3.55e-07 3.81e-07
+SPECTRUM hessian field=gauss_ch eps=0.25 N=12 counts <1e-2:728 <1e-3:334 <1e-4:151 <1e-6:27 <1e-10:0 | largest gap below 1e-2: ratio=9.81 after 1 values (r=4.61e-09 -> 4.53e-08)
+SPECTRUM hessian saved ../raw/spectrum_cand_ii_gauss_ch_0.25_12.txt
