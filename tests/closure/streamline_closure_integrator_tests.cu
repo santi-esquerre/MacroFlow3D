@@ -447,7 +447,7 @@ void case_uniform_tilt(TestReport& rep) {
 // ============================================================================
 
 void case_shear_closed_form(TestReport& rep) {
-    const ShearField f;
+    const ShearField f{};
     const double seeds[5] = {-0.2, -0.1, 0.0, 0.05, 0.15};
     const double tols[4] = {1e-4, 1e-6, 1e-8, 1e-10};
     double errs[4];
@@ -499,7 +499,7 @@ void case_shear_closed_form(TestReport& rep) {
 // ============================================================================
 
 void case_shear_tolerance_controlled(TestReport& rep) {
-    const ShearField f; // b = 0.35, k = 1
+    const ShearField f{}; // b = 0.35, k = 1
     const double seeds[5] = {-0.2, -0.1, 0.0, 0.05, 0.15};
     constexpr int kNT = 9;
     const double tols[kNT] = {1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12};
@@ -585,7 +585,7 @@ struct C1KnotField {
 };
 
 void case_c1_field_tolerance_ladder(TestReport& rep) {
-    const C1KnotField f;
+    const C1KnotField f{};
     const std::array<double, 3> seeds[2] = {{0.0, 0.1, 0.2}, {0.03, 0.4, 0.7}};
     const double hmaxs[2] = {1.0 / 16, 0.5};
     const char* hnames[2] = {"1/16", "0.5"};

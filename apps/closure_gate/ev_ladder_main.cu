@@ -55,7 +55,6 @@
 #include "src/core/DeviceSpan.cuh"
 #include "src/core/Grid3D.hpp"
 #include "src/core/Scalar.hpp"
-#include "src/external/nlohmann/json.hpp"
 #include "src/physics/flow/AffinePeriodicFlowSolver.cuh"
 #include "src/physics/stochastic/PeriodicGaussianField.cuh"
 #include "src/physics/streamfunctions/Diagnostics.cuh"
@@ -69,20 +68,23 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <exception>
 #include <fstream>
+#include <initializer_list>
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace {
 
 using namespace macroflow3d;
-using json = nlohmann::ordered_json;
 namespace sf = macroflow3d::streamfunctions;
 
 // ---------------------------------------------------------------------------
@@ -301,10 +303,223 @@ const char* pcg_label(solvers::ProjectedPCGStatus s) {
 }
 
 // ---------------------------------------------------------------------------
-// JSON helpers (nlohmann serializes doubles with the shortest round-trip
-// representation, i.e. lossless; NaN/inf become null and are flagged by the
-// corresponding *_finite booleans where they matter).
+// Minimal ordered JSON value. No third-party JSON header: the vendored one
+// previously used here triggers an nvcc 11.4 internal compiler error inside a
+// CUDA translation unit. Objects keep insertion order; assigning an existing key
+// replaces its value in place. Doubles are written with "%.17g" (lossless
+// round-trip) and keep a ".0" when integral so they stay JSON floats; NaN/inf
+// become null. Integers are written exactly. Output layout matches a 2-space
+// indented pretty print.
 // ---------------------------------------------------------------------------
+
+class JVal {
+  public:
+    enum class Kind {
+        null_value,
+        boolean,
+        signed_int,
+        unsigned_int,
+        number,
+        string,
+        array,
+        object
+    };
+
+    JVal() = default;
+    JVal(std::nullptr_t) {}
+    JVal(bool b) : kind_(Kind::boolean), b_(b) {}
+    JVal(const char* s) : kind_(Kind::string), s_(s) {}
+    JVal(const std::string& s) : kind_(Kind::string), s_(s) {}
+    template <class T,
+              typename std::enable_if<std::is_arithmetic<T>::value && !std::is_same<T, bool>::value,
+                                      int>::type = 0>
+    JVal(T v) {
+        if (std::is_floating_point<T>::value) {
+            kind_ = Kind::number;
+            d_ = static_cast<double>(v);
+        } else if (std::is_signed<T>::value) {
+            kind_ = Kind::signed_int;
+            i_ = static_cast<long long>(v);
+        } else {
+            kind_ = Kind::unsigned_int;
+            u_ = static_cast<unsigned long long>(v);
+        }
+    }
+
+    static JVal array() {
+        JVal j;
+        j.kind_ = Kind::array;
+        return j;
+    }
+    static JVal array(std::initializer_list<JVal> items) {
+        JVal j = array();
+        for (const JVal& v : items)
+            j.items_.push_back(v);
+        return j;
+    }
+    static JVal object() {
+        JVal j;
+        j.kind_ = Kind::object;
+        return j;
+    }
+
+    // Object member access: inserts a null member at the end if absent.
+    JVal& operator[](const std::string& key) {
+        if (kind_ == Kind::null_value)
+            kind_ = Kind::object;
+        if (kind_ != Kind::object)
+            throw std::logic_error("JVal: operator[] on a non-object");
+        for (std::size_t i = 0; i < keys_.size(); ++i) {
+            if (keys_[i] == key)
+                return items_[i];
+        }
+        keys_.push_back(key);
+        items_.push_back(JVal());
+        return items_.back();
+    }
+
+    void push_back(const JVal& v) {
+        if (kind_ == Kind::null_value)
+            kind_ = Kind::array;
+        if (kind_ != Kind::array)
+            throw std::logic_error("JVal: push_back on a non-array");
+        items_.push_back(v);
+    }
+
+    std::string dump(int indent) const {
+        std::string out;
+        write(out, indent, 0);
+        return out;
+    }
+
+  private:
+    static void write_string(std::string& out, const std::string& s) {
+        out += '"';
+        for (char ch : s) {
+            const unsigned char c = static_cast<unsigned char>(ch);
+            switch (c) {
+            case '"':
+                out += "\\\"";
+                break;
+            case '\\':
+                out += "\\\\";
+                break;
+            case '\b':
+                out += "\\b";
+                break;
+            case '\f':
+                out += "\\f";
+                break;
+            case '\n':
+                out += "\\n";
+                break;
+            case '\r':
+                out += "\\r";
+                break;
+            case '\t':
+                out += "\\t";
+                break;
+            default:
+                if (c < 0x20) {
+                    char buf[8];
+                    std::snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned>(c));
+                    out += buf;
+                } else {
+                    out += ch;
+                }
+            }
+        }
+        out += '"';
+    }
+
+    static void write_double(std::string& out, double d) {
+        if (!std::isfinite(d)) {
+            out += "null";
+            return;
+        }
+        char buf[40];
+        std::snprintf(buf, sizeof(buf), "%.17g", d);
+        std::string s(buf);
+        if (s.find_first_of(".eE") == std::string::npos)
+            s += ".0";
+        out += s;
+    }
+
+    void write(std::string& out, int indent, int depth) const {
+        char buf[32];
+        switch (kind_) {
+        case Kind::null_value:
+            out += "null";
+            return;
+        case Kind::boolean:
+            out += b_ ? "true" : "false";
+            return;
+        case Kind::signed_int:
+            std::snprintf(buf, sizeof(buf), "%lld", i_);
+            out += buf;
+            return;
+        case Kind::unsigned_int:
+            std::snprintf(buf, sizeof(buf), "%llu", u_);
+            out += buf;
+            return;
+        case Kind::number:
+            write_double(out, d_);
+            return;
+        case Kind::string:
+            write_string(out, s_);
+            return;
+        case Kind::array:
+        case Kind::object:
+            break;
+        }
+        const bool is_object = (kind_ == Kind::object);
+        if (items_.empty()) {
+            out += is_object ? "{}" : "[]";
+            return;
+        }
+        const std::string inner(static_cast<std::size_t>(indent * (depth + 1)), ' ');
+        const std::string outer(static_cast<std::size_t>(indent * depth), ' ');
+        out += is_object ? "{\n" : "[\n";
+        for (std::size_t i = 0; i < items_.size(); ++i) {
+            out += inner;
+            if (is_object) {
+                write_string(out, keys_[i]);
+                out += ": ";
+            }
+            items_[i].write(out, indent, depth + 1);
+            if (i + 1 < items_.size())
+                out += ',';
+            out += '\n';
+        }
+        out += outer;
+        out += is_object ? '}' : ']';
+    }
+
+    Kind kind_ = Kind::null_value;
+    bool b_ = false;
+    long long i_ = 0;
+    unsigned long long u_ = 0;
+    double d_ = 0.0;
+    std::string s_;
+    std::vector<std::string> keys_; // object only, parallel to items_
+    std::vector<JVal> items_;       // array elements or object values
+};
+
+// Object literal helper: jobj({{"key", value}, ...}) preserves the order given.
+struct JMember {
+    JMember(const char* k, const JVal& v) : key(k), value(v) {}
+    std::string key;
+    JVal value;
+};
+
+JVal jobj(std::initializer_list<JMember> members) {
+    JVal j = JVal::object();
+    for (const JMember& m : members)
+        j[m.key] = m.value;
+    return j;
+}
+
+using json = JVal;
 
 json j_pcg(const solvers::ProjectedPCGResult& r) {
     json j;
@@ -342,8 +557,8 @@ json j_linear(const solvers::ProjectedPCGConfig& l) {
 
 json j_flow_config(const physics::AffinePeriodicFlowConfig& c) {
     json j;
-    j["qbar"] = {static_cast<double>(c.qbar[0]), static_cast<double>(c.qbar[1]),
-                 static_cast<double>(c.qbar[2])};
+    j["qbar"] = json::array({static_cast<double>(c.qbar[0]), static_cast<double>(c.qbar[1]),
+                             static_cast<double>(c.qbar[2])});
     j["linear"] = j_linear(c.linear);
     j["mg"] = j_mg(c.mg);
     return j;
@@ -353,91 +568,95 @@ json j_flow_report(const physics::AffinePeriodicFlowReport& f) {
     json j;
     json keff = json::array();
     for (int i = 0; i < 3; ++i) {
-        keff.push_back({static_cast<double>(f.K_eff[i][0]), static_cast<double>(f.K_eff[i][1]),
-                        static_cast<double>(f.K_eff[i][2])});
+        keff.push_back(
+            json::array({static_cast<double>(f.K_eff[i][0]), static_cast<double>(f.K_eff[i][1]),
+                         static_cast<double>(f.K_eff[i][2])}));
     }
     j["K_eff"] = keff;
     j["symmetry_defect_rel"] = static_cast<double>(f.symmetry_defect_rel);
-    j["eigenvalues_symmetric_part"] = {static_cast<double>(f.eigenvalues_symmetric_part[0]),
-                                       static_cast<double>(f.eigenvalues_symmetric_part[1]),
-                                       static_cast<double>(f.eigenvalues_symmetric_part[2])};
-    j["G"] = {static_cast<double>(f.G[0]), static_cast<double>(f.G[1]), static_cast<double>(f.G[2])};
-    j["achieved_mean_flux"] = {static_cast<double>(f.achieved_mean_flux[0]),
-                               static_cast<double>(f.achieved_mean_flux[1]),
-                               static_cast<double>(f.achieved_mean_flux[2])};
+    j["eigenvalues_symmetric_part"] =
+        json::array({static_cast<double>(f.eigenvalues_symmetric_part[0]),
+                     static_cast<double>(f.eigenvalues_symmetric_part[1]),
+                     static_cast<double>(f.eigenvalues_symmetric_part[2])});
+    j["G"] = json::array(
+        {static_cast<double>(f.G[0]), static_cast<double>(f.G[1]), static_cast<double>(f.G[2])});
+    j["achieved_mean_flux"] = json::array({static_cast<double>(f.achieved_mean_flux[0]),
+                                           static_cast<double>(f.achieved_mean_flux[1]),
+                                           static_cast<double>(f.achieved_mean_flux[2])});
     j["div_max_abs"] = static_cast<double>(f.div_max_abs);
     j["div_rms"] = static_cast<double>(f.div_rms);
-    j["corrector_results"] = {j_pcg(f.corrector_results[0]), j_pcg(f.corrector_results[1]),
-                              j_pcg(f.corrector_results[2])};
+    j["corrector_results"] =
+        json::array({j_pcg(f.corrector_results[0]), j_pcg(f.corrector_results[1]),
+                     j_pcg(f.corrector_results[2])});
     j["memory_total_bytes"] = f.memory.total_bytes;
     return j;
 }
 
 json j_solver_config(const sf::StreamfunctionSolverConfig& c) {
     json j;
-    j["picard"] = {{"max_iter", c.picard.max_iter},
-                   {"tolerance", static_cast<double>(c.picard.tolerance)},
-                   {"omega", static_cast<double>(c.picard.omega)}};
+    j["picard"] = jobj({{"max_iter", c.picard.max_iter},
+                        {"tolerance", static_cast<double>(c.picard.tolerance)},
+                        {"omega", static_cast<double>(c.picard.omega)}});
     const auto& a = c.adaptive;
-    j["adaptive"] = {{"enabled", a.enabled},
-                     {"omega_min", static_cast<double>(a.omega_min)},
-                     {"backtrack_factor", static_cast<double>(a.backtrack_factor)},
-                     {"growth_factor", static_cast<double>(a.growth_factor)},
-                     {"omega_max", static_cast<double>(a.omega_max)},
-                     {"easy_streak", a.easy_streak},
-                     {"armijo_c", static_cast<double>(a.armijo_c)},
-                     {"stagnation_window", a.stagnation_window},
-                     {"stagnation_min_reduction", static_cast<double>(a.stagnation_min_reduction)},
-                     {"max_unexplained_fraction", static_cast<double>(a.max_unexplained_fraction)},
-                     {"unexplained_growth_factor", static_cast<double>(a.unexplained_growth_factor)},
-                     {"unexplained_growth_offset", static_cast<double>(a.unexplained_growth_offset)},
-                     {"percentile_collapse_factor", static_cast<double>(a.percentile_collapse_factor)},
-                     {"floor_guard",
-                      {{"enabled", a.floor_guard.enabled},
-                       {"window", a.floor_guard.window},
-                       {"drop_factor", static_cast<double>(a.floor_guard.drop_factor)},
-                       {"max_resets", a.floor_guard.max_resets}}}};
+    j["adaptive"] =
+        jobj({{"enabled", a.enabled},
+              {"omega_min", static_cast<double>(a.omega_min)},
+              {"backtrack_factor", static_cast<double>(a.backtrack_factor)},
+              {"growth_factor", static_cast<double>(a.growth_factor)},
+              {"omega_max", static_cast<double>(a.omega_max)},
+              {"easy_streak", a.easy_streak},
+              {"armijo_c", static_cast<double>(a.armijo_c)},
+              {"stagnation_window", a.stagnation_window},
+              {"stagnation_min_reduction", static_cast<double>(a.stagnation_min_reduction)},
+              {"max_unexplained_fraction", static_cast<double>(a.max_unexplained_fraction)},
+              {"unexplained_growth_factor", static_cast<double>(a.unexplained_growth_factor)},
+              {"unexplained_growth_offset", static_cast<double>(a.unexplained_growth_offset)},
+              {"percentile_collapse_factor", static_cast<double>(a.percentile_collapse_factor)},
+              {"floor_guard", jobj({{"enabled", a.floor_guard.enabled},
+                                    {"window", a.floor_guard.window},
+                                    {"drop_factor", static_cast<double>(a.floor_guard.drop_factor)},
+                                    {"max_resets", a.floor_guard.max_resets}})}});
     const auto& an = c.anderson;
-    j["anderson"] = {{"enabled", an.enabled},
-                     {"depth", an.depth},
-                     {"start_iteration", an.start_iteration},
-                     {"condition_limit", static_cast<double>(an.condition_limit)},
-                     {"restart_on_stagnation", an.restart_on_stagnation},
-                     {"max_restarts", an.max_restarts}};
+    j["anderson"] = jobj({{"enabled", an.enabled},
+                          {"depth", an.depth},
+                          {"start_iteration", an.start_iteration},
+                          {"condition_limit", static_cast<double>(an.condition_limit)},
+                          {"restart_on_stagnation", an.restart_on_stagnation},
+                          {"max_restarts", an.max_restarts}});
     const auto& nw = c.newton;
-    j["newton"] = {{"enabled", nw.enabled},
-                   {"activation_r_F", static_cast<double>(nw.activation_r_F)},
-                   {"stagnation_activation_r_F", static_cast<double>(nw.stagnation_activation_r_F)},
-                   {"forcing_coefficient", static_cast<double>(nw.forcing_coefficient)},
-                   {"forcing_min", static_cast<double>(nw.forcing_min)},
-                   {"forcing_max", static_cast<double>(nw.forcing_max)},
-                   {"armijo_c", static_cast<double>(nw.armijo_c)},
-                   {"alpha_min", static_cast<double>(nw.alpha_min)},
-                   {"backtrack_factor", static_cast<double>(nw.backtrack_factor)},
-                   {"max_newton_iterations", nw.max_newton_iterations},
-                   {"rescue_picard_steps", nw.rescue_picard_steps},
-                   {"gmres",
-                    {{"restart", nw.gmres.restart},
-                     {"max_iterations", nw.gmres.max_iterations},
-                     {"rel_tol", static_cast<double>(nw.gmres.rel_tol)}}},
-                   {"delta",
-                    {{"delta_min", static_cast<double>(nw.delta.delta_min)},
-                     {"delta_max", static_cast<double>(nw.delta.delta_max)}}},
-                   {"rescue_resets_omega", nw.rescue_resets_omega}};
+    j["newton"] =
+        jobj({{"enabled", nw.enabled},
+              {"activation_r_F", static_cast<double>(nw.activation_r_F)},
+              {"stagnation_activation_r_F", static_cast<double>(nw.stagnation_activation_r_F)},
+              {"forcing_coefficient", static_cast<double>(nw.forcing_coefficient)},
+              {"forcing_min", static_cast<double>(nw.forcing_min)},
+              {"forcing_max", static_cast<double>(nw.forcing_max)},
+              {"armijo_c", static_cast<double>(nw.armijo_c)},
+              {"alpha_min", static_cast<double>(nw.alpha_min)},
+              {"backtrack_factor", static_cast<double>(nw.backtrack_factor)},
+              {"max_newton_iterations", nw.max_newton_iterations},
+              {"rescue_picard_steps", nw.rescue_picard_steps},
+              {"gmres", jobj({{"restart", nw.gmres.restart},
+                              {"max_iterations", nw.gmres.max_iterations},
+                              {"rel_tol", static_cast<double>(nw.gmres.rel_tol)}})},
+              {"delta", jobj({{"delta_min", static_cast<double>(nw.delta.delta_min)},
+                              {"delta_max", static_cast<double>(nw.delta.delta_max)}})},
+              {"rescue_resets_omega", nw.rescue_resets_omega}});
     j["eta"] = static_cast<double>(c.eta);
     j["epsilon"] = static_cast<double>(c.epsilon);
     j["linear"] = j_linear(c.linear);
     j["mg"] = j_mg(c.mg);
-    j["histogram"] = {{"c_min_rel", static_cast<double>(c.histogram.c_min_rel)},
-                      {"c_max_rel", static_cast<double>(c.histogram.c_max_rel)}};
+    j["histogram"] = jobj({{"c_min_rel", static_cast<double>(c.histogram.c_min_rel)},
+                           {"c_max_rel", static_cast<double>(c.histogram.c_max_rel)}});
     json thr = json::array();
     for (int t = 0; t < c.diagnostics.num_degeneracy_thresholds; ++t) {
         thr.push_back(static_cast<double>(c.diagnostics.degeneracy_thresholds[t]));
     }
-    j["diagnostics"] = {{"angle_exclusion_rel", static_cast<double>(c.diagnostics.angle_exclusion_rel)},
-                        {"low_speed_rel", static_cast<double>(c.diagnostics.low_speed_rel)},
-                        {"num_degeneracy_thresholds", c.diagnostics.num_degeneracy_thresholds},
-                        {"degeneracy_thresholds", thr}};
+    j["diagnostics"] =
+        jobj({{"angle_exclusion_rel", static_cast<double>(c.diagnostics.angle_exclusion_rel)},
+              {"low_speed_rel", static_cast<double>(c.diagnostics.low_speed_rel)},
+              {"num_degeneracy_thresholds", c.diagnostics.num_degeneracy_thresholds},
+              {"degeneracy_thresholds", thr}});
     json sthr = json::array();
     for (int t = 0; t < c.num_degeneracy_thresholds; ++t) {
         sthr.push_back(static_cast<double>(c.degeneracy_thresholds[t]));
@@ -641,20 +860,21 @@ json j_stage_full(const StageResult& s) {
     j["psi2_result"] = j_pcg(r.psi2_result);
     j["residual_final"] = j_residual(r.residual);
     j["c_percentiles_source"] = "residual_histogram_percentile(report.residual, p)";
-    j["c_percentiles_abs"] = {{"p0.001", s.c_percentiles[0]},
-                              {"p0.01", s.c_percentiles[1]},
-                              {"p0.05", s.c_percentiles[2]},
-                              {"p0.5", s.c_percentiles[3]}};
+    j["c_percentiles_abs"] = jobj({{"p0.001", s.c_percentiles[0]},
+                                   {"p0.01", s.c_percentiles[1]},
+                                   {"p0.05", s.c_percentiles[2]},
+                                   {"p0.5", s.c_percentiles[3]}});
     j["diagnostics_source"] = "StreamfunctionSolveReport::diagnostics (final state)";
     j["diagnostics"] = j_diagnostics(r.diagnostics);
     j["post_diagnostics_source"] =
         "separate enqueue_streamfunction_physical_diagnostics on the final state with degeneracy "
         "thresholds (post-solve only)";
     j["post_diagnostics"] = j_diagnostics(s.post_diag);
-    j["memory"] = {{"streamfunction_total_bytes", r.memory.total_bytes},
-                   {"streamfunction_fine_grid_equivalent_fields", r.memory.fine_grid_equivalent_fields},
-                   {"anderson_history_bytes", r.memory.anderson_history_bytes},
-                   {"darcy_workspace_total_bytes", s.flow.memory.total_bytes}};
+    j["memory"] =
+        jobj({{"streamfunction_total_bytes", r.memory.total_bytes},
+              {"streamfunction_fine_grid_equivalent_fields", r.memory.fine_grid_equivalent_fields},
+              {"anderson_history_bytes", r.memory.anderson_history_bytes},
+              {"darcy_workspace_total_bytes", s.flow.memory.total_bytes}});
     return j;
 }
 
@@ -756,15 +976,15 @@ int run(const Options& o) {
         y_host.resize(n);
         MACROFLOW3D_CUDA_CHECK(
             cudaMemcpy(y_host.data(), y_dev.data(), n * sizeof(real), cudaMemcpyDeviceToHost));
-        field_json["sf18"] = {{"sigma2", o.sigma2},
-                              {"corr_length", o.ell},
-                              {"seed", o.seed},
-                              {"normalize_variance", true},
-                              {"raw_mean", static_cast<double>(grep.raw_mean)},
-                              {"raw_variance", static_cast<double>(grep.raw_variance)},
-                              {"applied_scale", static_cast<double>(grep.applied_scale)},
-                              {"final_variance", static_cast<double>(grep.final_variance)},
-                              {"active_mode_count", grep.active_mode_count}};
+        field_json["sf18"] = jobj({{"sigma2", o.sigma2},
+                                   {"corr_length", o.ell},
+                                   {"seed", o.seed},
+                                   {"normalize_variance", true},
+                                   {"raw_mean", static_cast<double>(grep.raw_mean)},
+                                   {"raw_variance", static_cast<double>(grep.raw_variance)},
+                                   {"applied_scale", static_cast<double>(grep.applied_scale)},
+                                   {"final_variance", static_cast<double>(grep.final_variance)},
+                                   {"active_mode_count", grep.active_mode_count}});
     } else {
         const closure_gate::AnalyticField af = closure_gate::analytic_field_from_name(o.field);
         closure_gate::fill_analytic_log_conductivity(grid, af, o.eps, y_host);
@@ -952,26 +1172,27 @@ int run(const Options& o) {
         json rec;
         rec["tool"] = "streamfunction_ev_ladder";
         rec["increment"] = "SF-30 N3";
-        rec["options"] = {{"field", o.field},
-                          {"n", o.n},
-                          {"h", static_cast<double>(h)},
-                          {"eps", o.eps},
-                          {"sigma2", o.field == "gaussian" ? json(o.sigma2) : json(nullptr)},
-                          {"ell", o.field == "gaussian" ? json(o.ell) : json(nullptr)},
-                          {"seed", o.field == "gaussian" ? json(o.seed) : json(nullptr)},
-                          {"epsilon", o.epsilon},
-                          {"tolerance", o.tolerance},
-                          {"max_iter", o.max_iter},
-                          {"anderson", o.anderson},
-                          {"newton", o.newton},
-                          {"lambda_steps", o.lambda_steps},
-                          {"pcg_rtol", o.pcg_rtol},
-                          {"mg_levels", mg_levels},
-                          {"mg_levels_mode", o.mg_levels_auto ? "auto" : "explicit"},
-                          {"out", o.out}};
+        rec["options"] = jobj({{"field", o.field},
+                               {"n", o.n},
+                               {"h", static_cast<double>(h)},
+                               {"eps", o.eps},
+                               {"sigma2", o.field == "gaussian" ? json(o.sigma2) : json(nullptr)},
+                               {"ell", o.field == "gaussian" ? json(o.ell) : json(nullptr)},
+                               {"seed", o.field == "gaussian" ? json(o.seed) : json(nullptr)},
+                               {"epsilon", o.epsilon},
+                               {"tolerance", o.tolerance},
+                               {"max_iter", o.max_iter},
+                               {"anderson", o.anderson},
+                               {"newton", o.newton},
+                               {"lambda_steps", o.lambda_steps},
+                               {"pcg_rtol", o.pcg_rtol},
+                               {"mg_levels", mg_levels},
+                               {"mg_levels_mode", o.mg_levels_auto ? "auto" : "explicit"},
+                               {"out", o.out}});
         rec["field"] = field_json;
-        rec["gauge"] = {{"psi1_gradient", {0.0, 1.0, 0.0}}, {"psi2_gradient", {0.0, 0.0, 1.0}},
-                        {"rule", "AffineGauge::benchmark(1)"}};
+        rec["gauge"] = jobj({{"psi1_gradient", json::array({0.0, 1.0, 0.0})},
+                             {"psi2_gradient", json::array({0.0, 0.0, 1.0})},
+                             {"rule", "AffineGauge::benchmark(1)"}});
         rec["conductivity_representation"] = "log_conductivity_y";
         rec["darcy_config"] = j_flow_config(flow_cfg);
         rec["solver_config"] = j_solver_config(stages.back().solved ? stages.back().config : cfg);
@@ -982,7 +1203,7 @@ int run(const Options& o) {
         rec["tolerance_met"] = tolerance_met(fin);
         rec["darcy_failed"] = darcy_failed;
         rec["wall_seconds_total"] = wall_total;
-        rec["device_memory"] = {{"cuda_free_bytes", free_b}, {"cuda_total_bytes", total_b}};
+        rec["device_memory"] = jobj({{"cuda_free_bytes", free_b}, {"cuda_total_bytes", total_b}});
         std::ofstream os(o.out);
         if (!os) throw std::runtime_error("cannot open --out file '" + o.out + "'");
         os << rec.dump(2) << '\n';
