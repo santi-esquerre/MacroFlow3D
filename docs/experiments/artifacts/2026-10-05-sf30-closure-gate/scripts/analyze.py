@@ -932,8 +932,8 @@ def _json_safe(x):
 # Self-test
 # -------------------------------------------------------------------------------------
 
-SAMPLE = ("/home/sesquerre/Projects/MacroFlow3D/.claude/orchestration/SF-30-streamline-closure-gate/"
-          "sample_summary_gaussian64.json")
+# Versioned schema fixture (a real closure_gate output; see README.md), resolved relative to this file.
+SAMPLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "sample_summary_gaussian64.json")
 
 
 def synth_summary(field, n, sigma2=None, ell=None, seed=None, eps=None, seeds="1024", periods=1, R=1e-2,

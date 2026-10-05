@@ -20,6 +20,8 @@ thresholds in one block marked "pre-registered ... do not edit".
 | `scripts/run_matrix.sh` | launcher: the 103 pre-registered runs in five groups |
 | `scripts/analyze.py` | analysis and classification (Python 3 standard library only) |
 | `scripts/probe_seeds16.csv` | the 16 seed points `(y0, z0)` of the 2026-10-02 probes (numpy `default_rng(3)`, `y0 = random(16)`, `z0 = random(16)`) |
+| `scripts/fixtures/sample_summary_gaussian64.json` | a real `summary.json` written by `closure_gate` at commit `f9ca080` (local debug build) for `--field gaussian --sigma2 1 --ell 0.125 --seed 3001 --n 64` with the executable's default three-tolerance ladder (1e-6, 1e-8, 1e-10) |
+| | used only as a schema fixture by `analyze.py --self-test`; not part of the experiment's raw data (under the pre-registered four-tolerance ladder that run is invalid for classification, which is what self-test check 12 reports) |
 | `raw/` | raw outputs, added by the orchestrator after the V100 jobs (see below) |
 
 ## Run matrix
