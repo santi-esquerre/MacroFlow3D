@@ -253,8 +253,15 @@ void case_gaussian_smoke(TestReport& rep, CudaContext& ctx) {
     double l1 = NAN, l2 = NAN;
     for (const auto& e : t8.ladder) (e.n == 1 ? l1 : l2) = e.max_dist;
     std::printf("  ladder 1e-8 vs 1e-10: max dist n=1 %.3e, n=2 %.3e\n", l1, l2);
-    rep.check(t8.has_ladder && t8.ladder_reference_tol == 1e-10 && l1 <= 1e-6, "gaussian_smoke_ladder_1e-8_vs_1e-10",
-              fmt("max dist n=1 =%.3e (gate <= 1e-6)", l1));
+    // C^1 right-hand side (spline gradient): global integrator error is up to a few hundred x tol,
+    // so the ladder gate is the derived 1e3 x tol of N1 contract test 5c (C1), not a guess (audit N2/F1).
+    constexpr double kC1ErrorFactor = 1e3;
+    constexpr double kLadderTol = 1e-8;
+    const double ladder_gate = kC1ErrorFactor * kLadderTol;
+    rep.check(t8.has_ladder && t8.ladder_reference_tol == 1e-10 && l1 <= ladder_gate,
+              "gaussian_smoke_ladder_1e-8_vs_1e-10", fmt("max dist n=1 =%.3e (gate <= 1e-5 = 1e3 x tol)", l1));
+    rep.check(t8.has_ladder && t8.ladder_reference_tol == 1e-10 && l2 <= ladder_gate,
+              "gaussian_smoke_ladder_1e-8_vs_1e-10_period2", fmt("max dist n=2 =%.3e (gate <= 1e-5 = 1e3 x tol)", l2));
     const PeriodStatistics& p2 = t10.periods.size() >= 2 ? t10.periods[1] : t10.periods[0];
     rep.check(p2.n == 2 && p2.unweighted.valid && p2.count == 64, "gaussian_smoke_period2_recorded",
               fmt2("n=2 R=%.4e max|d|=%.4e", p2.unweighted.s.R, p2.unweighted.s.max_abs));
