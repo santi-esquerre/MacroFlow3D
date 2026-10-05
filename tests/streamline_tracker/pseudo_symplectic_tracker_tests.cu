@@ -1041,6 +1041,29 @@ void case_gpu_order_ladder(const CudaContext& ctx, const SplineCache& C, TestRep
 // Case 9: gpu_uniform_exact (T3)
 // ============================================================================
 
+/// Engine-contract compute_unwrapped into test-owned device buffers, compared
+/// bitwise with the host formula fma(wrap, L, x) on the snapshot (F3).
+bool engine_unwrapped_bitwise(PseudoSymplecticTracker& e, cudaStream_t stream, const Snap& s,
+                              const real L[3]) {
+    const size_t n = s.x.size();
+    DeviceBuffer<real> ux(n), uy(n), uz(n);
+    UnwrappedSoA<real> uw;
+    uw.x_u = ux.data();
+    uw.y_u = uy.data();
+    uw.z_u = uz.data();
+    uw.capacity = static_cast<int>(n);
+    e.compute_unwrapped(uw, stream);
+    MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(stream));
+    const std::vector<real> hx = d2h(ux.data(), n), hy = d2h(uy.data(), n), hz = d2h(uz.data(), n);
+    bool ok = true;
+    for (size_t i = 0; i < n; ++i) {
+        double xu[3];
+        snap_unwrapped(s, i, L, xu);
+        ok = ok && same_bits(hx[i], xu[0]) && same_bits(hy[i], xu[1]) && same_bits(hz[i], xu[2]);
+    }
+    return ok;
+}
+
 void case_gpu_uniform_exact(const CudaContext& ctx, const SplineCache& C, TestReport& rep) {
     std::printf("\n=== gpu_uniform_exact (T3) ===\n");
     const SplineSet& S = C.get(kPairU);
@@ -1074,6 +1097,8 @@ void case_gpu_uniform_exact(const CudaContext& ctx, const SplineCache& C, TestRe
         rep.check(bx, "gpu_uniform_exact/i_x_unwrapped_bitwise");
         rep.check(byz, "gpu_uniform_exact/i_y_z_bitwise_unchanged");
         rep.check(bw, "gpu_uniform_exact/i_wrapX_expected");
+        rep.check(engine_unwrapped_bitwise(eng, ctx.cuda_stream(), s, S.dev.L),
+                  "gpu_uniform_exact/i_engine_compute_unwrapped_bitwise", "vs host fma(wrap, L, x)");
     }
     {
         DevParticles P(8);
@@ -1095,6 +1120,8 @@ void case_gpu_uniform_exact(const CudaContext& ctx, const SplineCache& C, TestRe
         rep.check(act, "gpu_uniform_exact/ii_all_active");
         rep.check(bt, "gpu_uniform_exact/ii_clock_eq_target_time_bitwise", strf("expect %.17g", T2));
         rep.check(bx, "gpu_uniform_exact/ii_x_unwrapped_bitwise");
+        rep.check(engine_unwrapped_bitwise(eng, ctx.cuda_stream(), s, S.dev.L),
+                  "gpu_uniform_exact/ii_engine_compute_unwrapped_bitwise", "vs host fma(wrap, L, x)");
     }
     {
         const std::vector<P3> nd = {{{0.3, 0.7, 0.1}},   {{0.1, 0.2, 0.3}},   {{0.35, 0.6, 0.85}},
@@ -1224,19 +1251,34 @@ void case_gpu_no_allocation(const CudaContext& ctx, const SplineCache& C, TestRe
     DevParticles P(1024);
     PseudoSymplecticTracker eng(ctx.cuda_stream(), kSeed);
     setup_engine(eng, make_cfg(1.0 / 64, 1e-13), S, P, true);
-    eng.step_arclength(1.0 / 64);
+    // step() first, so that the measured step block does real work (F2): the
+    // clocks are still near the target time when each step() is issued.
     eng.step(0.01);
+    eng.step_arclength(1.0 / 64);
     eng.synchronize();
     const size_t f0 = free_bytes();
     for (int i = 0; i < 100; ++i)
-        eng.step_arclength(1.0 / 64);
-    for (int i = 0; i < 100; ++i)
         eng.step(0.01);
+    for (int i = 0; i < 100; ++i)
+        eng.step_arclength(1.0 / 64);
     eng.synchronize();
     const size_t f1 = free_bytes();
     std::printf("  free before = %zu, after = %zu, delta = %lld\n", f0, f1,
                 static_cast<long long>(f0) - static_cast<long long>(f1));
-    rep.check(f0 == f1, "gpu_no_allocation/cudaMemGetInfo_unchanged", "100 step_arclength + 100 step");
+    rep.check(f0 == f1, "gpu_no_allocation/cudaMemGetInfo_unchanged", "100 step + 100 step_arclength");
+    // Downloaded only after the second measurement. The later arclength panels
+    // only move clocks forward, so min clock >= 1.0 proves the step block reached
+    // its target time 1.01.
+    const Snap s = snap(eng, P);
+    double cmin = 1e300, cmax = -1e300;
+    for (double t : s.clock) {
+        cmin = std::min(cmin, t);
+        cmax = std::max(cmax, t);
+    }
+    const double tt = eng.target_time();
+    std::printf("  final: target %.17g, clock [%.6f, %.6f]\n", tt, cmin, cmax);
+    rep.check(std::fabs(tt - 1.01) <= 1e-12 && cmin >= 1.0, "gpu_no_allocation/step_block_did_real_work",
+              strf("|target - 1.01| = %.3e (gate 1e-12), min clock %.6f (gate >= 1.0)", std::fabs(tt - 1.01), cmin));
 }
 
 // ============================================================================
@@ -1250,30 +1292,53 @@ template <class T> bool vec_eq(const std::vector<T>& a, const std::vector<T>& b)
 void case_gpu_determinism(const CudaContext& ctx, const SplineCache& C, TestReport& rep) {
     std::printf("\n=== gpu_determinism (T6) ===\n");
     const SplineSet& S = C.get(kPairG);
-    Snap r[2];
+    const double ds_max = 1.0 / 64;
+    const double bound = 2.5 * ds_max * ds_max;
+    Snap r[2], rs[2];
     for (int run = 0; run < 2; ++run) {
         DevParticles P(1024);
         PseudoSymplecticTracker eng(ctx.cuda_stream(), kSeed);
-        setup_engine(eng, make_cfg(1.0 / 64, 1e-12), S, P, true);
+        setup_engine(eng, make_cfg(ds_max, 1e-12), S, P, true);
+        // step() first (target time 1.0), so the engine-mode path does real
+        // work (F2); then the arclength block.
+        for (int i = 0; i < 20; ++i)
+            eng.step(0.05);
+        rs[run] = snap(eng, P);
+        {
+            const double tt = eng.target_time();
+            double mis = 0.0, cmin = 1e300, cmax = -1e300;
+            for (double t : rs[run].clock) {
+                mis = std::max(mis, std::fabs(t - tt));
+                cmin = std::min(cmin, t);
+                cmax = std::max(cmax, t);
+            }
+            std::printf("  run %d after step block: target %.4f, clock [%.6f, %.6f], max|t_p - target| = %.4e\n",
+                        run + 1, tt, cmin, cmax, mis);
+            rep.check(all_status(rs[run], kStatusActive) && mis <= bound,
+                      strf("gpu_determinism/run%d_step_block_did_real_work", run + 1),
+                      strf("all active %s, max|t_p - target| = %.4e (gate 2.5 ds_max^2 = %.4e)",
+                           all_status(rs[run], kStatusActive) ? "yes" : "no", mis, bound));
+        }
         for (int i = 0; i < 64; ++i)
             eng.step_arclength(1.0 / 64);
-        for (int i = 0; i < 20; ++i)
-            eng.step(0.01);
         r[run] = snap(eng, P);
         const PseudoSymplecticStats st = eng.compute_stats();
         std::printf("  run %d: n_active %d, target %.4f, clock [%.6f, %.6f], max Newton %u, clamps %llu\n", run + 1,
                     st.n_active, eng.target_time(), st.min_clock, st.max_clock, st.max_newton_iter,
                     static_cast<unsigned long long>(st.total_clamps));
     }
-    const Snap& a = r[0];
-    const Snap& b = r[1];
-    rep.check(vec_eq(a.x, b.x) && vec_eq(a.y, b.y) && vec_eq(a.z, b.z), "gpu_determinism/positions_memcmp");
-    rep.check(vec_eq(a.wx, b.wx) && vec_eq(a.wy, b.wy) && vec_eq(a.wz, b.wz), "gpu_determinism/wraps_memcmp");
-    rep.check(vec_eq(a.st, b.st), "gpu_determinism/status_memcmp");
-    rep.check(vec_eq(a.clock, b.clock), "gpu_determinism/clocks_memcmp");
-    rep.check(vec_eq(a.p1, b.p1) && vec_eq(a.p2, b.p2), "gpu_determinism/psi_targets_memcmp");
-    rep.check(vec_eq(a.fail, b.fail) && vec_eq(a.clamp, b.clamp) && vec_eq(a.nmax, b.nmax),
-              "gpu_determinism/counters_memcmp");
+    for (int k = 0; k < 2; ++k) {
+        const Snap& a = k == 0 ? rs[0] : r[0];
+        const Snap& b = k == 0 ? rs[1] : r[1];
+        const std::string sfx = k == 0 ? "_after_step" : "";
+        rep.check(vec_eq(a.x, b.x) && vec_eq(a.y, b.y) && vec_eq(a.z, b.z), "gpu_determinism/positions_memcmp" + sfx);
+        rep.check(vec_eq(a.wx, b.wx) && vec_eq(a.wy, b.wy) && vec_eq(a.wz, b.wz), "gpu_determinism/wraps_memcmp" + sfx);
+        rep.check(vec_eq(a.st, b.st), "gpu_determinism/status_memcmp" + sfx);
+        rep.check(vec_eq(a.clock, b.clock), "gpu_determinism/clocks_memcmp" + sfx);
+        rep.check(vec_eq(a.p1, b.p1) && vec_eq(a.p2, b.p2), "gpu_determinism/psi_targets_memcmp" + sfx);
+        rep.check(vec_eq(a.fail, b.fail) && vec_eq(a.clamp, b.clamp) && vec_eq(a.nmax, b.nmax),
+                  "gpu_determinism/counters_memcmp" + sfx);
+    }
     {
         DevParticles P1(1024), P2(1024);
         PseudoSymplecticTracker e1(ctx.cuda_stream(), kSeed), e2(ctx.cuda_stream(), 54321ULL);
