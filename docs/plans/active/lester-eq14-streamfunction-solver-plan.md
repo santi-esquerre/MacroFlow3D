@@ -134,7 +134,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-27 — Validation-tier hygiene](lester-eq14/increments/SF-27-validation-tier-hygiene.md)
 - [x] [SF-28 — Periodic tricubic B-spline interpolation](lester-eq14/increments/SF-28-periodic-tricubic-spline.md)
 - [ ] [SF-29 — CPU prototype: equation (14) with `x1` non-periodic and inlet labels](lester-eq14/increments/SF-29-eq14-inlet-labels-cpu-prototype.md)
-- [ ] [SF-30 — Streamline-closure gate on the production stack](lester-eq14/increments/SF-30-streamline-closure-gate.md)
+- [x] [SF-30 — Streamline-closure gate on the production stack](lester-eq14/increments/SF-30-streamline-closure-gate.md)
 - [ ] [SF-31 — Pseudo-symplectic tracker core and RK reference](lester-eq14/increments/SF-31-pseudo-symplectic-tracker-core.md)
 - [ ] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
 
