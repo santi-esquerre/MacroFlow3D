@@ -332,6 +332,50 @@ def selftest():
                        r_F=None, its=3, t=1.0)
     pp = M.parse_case_line(line)
     check("CASE line round trip", 0.0 if (pp["e_v"] == 1.0 and pp["e_i"] == (2.0, 3.0) and pp["N"] == 16) else 1.0, 0.0)
+    # C-i4: CASE line with the per-label suffix round trips, and a pre-C-i4 line (no suffix) still parses
+    line = M.case_line("gauss", 0.5, 16, "i1", {"e_v": 1.0, "e_psi": 0.5, "e_psi1": 0.5, "e_psi2": 0.25}, its=3, t=1.0)
+    pp = M.parse_case_line(line)
+    old = ("CASE field=control2d eps=0.25 N=16 cand=i1 | r_F=1.296e-14 its=6 | e_v=2.047e-03 e_psi=4.668e-01 "
+           "e_i=(1.585e-03,1.311e-03) e_div=1.204e-03 min_c=9.008e-01 p0.1=9.024e-01 p1=9.082e-01 p5=9.230e-01 "
+           "p50=1.008e+00 | t=6.3")
+    po = M.parse_case_line(old)
+    check("CASE line with e_psi1/e_psi2 suffix round trip; old line parses",
+          0.0 if (pp["e_psi1"] == 0.5 and pp["e_psi2"] == 0.25 and pp["t"] == 1.0 and po["e_psi"] == 0.4668
+                  and po["t"] == 6.3 and "e_psi1" not in po) else 1.0, 0.0)
+    # C-i4 metric fix: control2d psi2 = Q0 x3 has a periodic part at roundoff; per-label e_psi must be sane for
+    # oracle-vs-perturbed-oracle (the pre-C-i4 1e-12 threshold divided roundoff-level differences by ~1e-13)
+    case = C.load_case("control2d", 0.25, 16, verbose=False)
+    po1, po2 = case["psi_or"]
+    a2, a3 = M.affine(16)
+    den = (M.rms(po1 - a2), M.rms(po2 - a3))
+    print("SELFTEST   control2d:0.25 N=16 oracle periodic parts: den1=%.3e den2=%.3e ratio den2/den1=%.1e"
+          % (den[0], den[1], den[1] / den[0]), flush=True)
+    rng2 = np.random.default_rng(4)
+    n1 = rng2.standard_normal(po1.shape); n2 = rng2.standard_normal(po2.shape)
+    delta = 1e-3 * max(den)
+    mp = M.fd_metrics(po1 + delta * n1, po2 + delta * n2, case["vD"], case["psi_or"])
+    exp1 = M.rms(delta * n1) / den[0]; exp2 = M.rms(delta * n2) / max(den)
+    print("SELFTEST   control2d:0.25 perturbed oracle (delta = 1e-3 max den): e_psi1=%.3e (expected %.3e) e_psi2=%.3e "
+          "(expected %.3e, normalized by den1) a_psi1=%.3e a_psi2=%.3e | the pre-C-i4 normalization would give "
+          "e_psi2=%.3e" % (mp["e_psi1"], exp1, mp["e_psi2"], exp2, mp["a_psi1"], mp["a_psi2"],
+                            M.rms(delta * n2) / den[1]), flush=True)
+    check("control2d:0.25 per-label e_psi of a 1e-3 perturbation, rel. dev.",
+          max(abs(mp["e_psi1"] / exp1 - 1), abs(mp["e_psi2"] / exp2 - 1)), 1e-10)
+    mo = M.fd_metrics(po1, po2, case["vD"], case["psi_or"])
+    check("control2d:0.25 oracle vs itself: e_psi1, e_psi2", max(mo["e_psi1"], mo["e_psi2"]), 0.0)
+    # C-i4: 4th-order reconstruction of the oracle labels, observed order of e_v on 16/24/32 (gauss:0.25)
+    grids4 = (16, 24, 32)
+    ev4 = []; ev2 = []
+    for nn in grids4:
+        cs = C.load_case("gauss", 0.25, nn, verbose=False)
+        p = cs["psi_or"]
+        ev4.append(M.fd_metrics(p[0], p[1], cs["vD"], order=4)["e_v"])
+        ev2.append(M.fd_metrics(p[0], p[1], cs["vD"], order=2)["e_v"])
+    o4 = M.orders(ev4, list(grids4)); o2 = M.orders(ev2, list(grids4))
+    print("SELFTEST   gauss:0.25 oracle e_v over N=16/24/32: order-4 FD %s (orders %s) | order-2 FD %s (orders %s)"
+          % (" ".join("%.3e" % x for x in ev4), " ".join("%.2f" % x for x in o4), " ".join("%.3e" % x for x in ev2),
+             " ".join("%.2f" % x for x in o2)), flush=True)
+    check("gauss:0.25 oracle e_v order-4 FD: observed order (24->32) >= 3.5", max(0.0, 3.5 - o4[-1]), 0.0)
     print("SELFTEST %s" % ("ALL PASS" if ok else "FAILURES"), flush=True)
     return ok
 

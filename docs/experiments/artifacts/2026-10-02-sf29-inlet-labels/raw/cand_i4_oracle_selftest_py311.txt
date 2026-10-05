@@ -1,0 +1,46 @@
+# oracle.py --selftest | python 3.11.16 numpy 1.26.4
+SELFTEST darcy_spectral_box == closure_probe (bitwise) gauss:0.5    0.00e+00 <= 0e+00  PASS
+SELFTEST darcy_spectral_box == closure_probe (bitwise) generic3d:0.25 0.00e+00 <= 0e+00  PASS
+SELFTEST SepTrigField vs closure_probe.TrigField (max abs)          4.44e-16 <= 1e-13  PASS
+SELFTEST grad ln k complex step vs Richardson central FD gauss      9.70e-12 <= 1e-08  PASS
+SELFTEST grad ln k complex step vs Richardson central FD gauss_ch   1.52e-11 <= 1e-08  PASS
+SELFTEST grad ln k complex step vs Richardson central FD lester2021 7.34e-12 <= 1e-08  PASS
+SELFTEST k=1: max|psi_or - (x2,x3)| (all vertices)                  0.00e+00 <= 1e-14  PASS
+SELFTEST k=1: e_v of FD-reconstructed oracle flow                   0.00e+00 <= 1e-14  PASS
+SELFTEST gauss:0.5 face Jacobian - V (representation), rel          1.28e-15 <= 1e-13  PASS
+SELFTEST gauss:0.5 V vs true v1 at random face points, rel, nphi=32 2.75e-15 <= 1e-09  PASS
+SELFTEST gauss:0.5 FFT-differentiated labels Jacobian vs true v1, rel 2.25e-14 <= 1e-09  PASS
+SELFTEST gauss:0.5 max|d2 psi2^0| (psi2 independent of x2)          0.00e+00 <= 1e-12  PASS
+SELFTEST gauss:0.5 psi1 jump 1 in x2, 0 in x3; psi2 jump Q0 in x3   5.55e-16 <= 1e-13  PASS
+SELFTEST gauss:0.5 |Q0 - 1| (face flux) at nphi=32                  2.10e-10 <= 1e-09  PASS
+SELFTEST generic3d:0.5 face Jacobian - V (representation), rel      1.25e-15 <= 1e-13  PASS
+SELFTEST generic3d:0.5 V vs true v1 at random face points, rel, nphi=24 1.45e-15 <= 1e-09  PASS
+SELFTEST generic3d:0.5 FFT-differentiated labels Jacobian vs true v1, rel 1.70e-14 <= 1e-09  PASS
+SELFTEST generic3d:0.5 max|d2 psi2^0| (psi2 independent of x2)      0.00e+00 <= 1e-12  PASS
+SELFTEST generic3d:0.5 psi1 jump 1 in x2, 0 in x3; psi2 jump Q0 in x3 4.44e-16 <= 1e-13  PASS
+SELFTEST generic3d:0.5 |Q0 - 1| (face flux) at nphi=24              1.20e-12 <= 1e-09  PASS
+SELFTEST gauss_ch:0.25 face Jacobian - V (representation), rel      1.92e-15 <= 1e-13  PASS
+SELFTEST gauss_ch:0.25 V vs true v1 at random face points, rel, nphi=48 1.79e-15 <= 1e-09  PASS
+SELFTEST gauss_ch:0.25 FFT-differentiated labels Jacobian vs true v1, rel 4.47e-14 <= 1e-09  PASS
+SELFTEST gauss_ch:0.25 max|d2 psi2^0| (psi2 independent of x2)      0.00e+00 <= 1e-12  PASS
+SELFTEST gauss_ch:0.25 psi1 jump 1 in x2, 0 in x3; psi2 jump Q0 in x3 4.44e-16 <= 1e-13  PASS
+SELFTEST gauss_ch:0.25 |Q0 - 1| (face flux) at nphi=48              8.08e-12 <= 1e-09  PASS
+SELFTEST tracer round trip gauss:1 x1 1->0->1 (64 pts)              2.55e-13 <= 1e-11  PASS
+SELFTEST gauss_ch:0.25 nphi=16 max|v_perp| on x1=0 and x1=1         2.28e-16 <= 1e-14  PASS
+SELFTEST gauss_ch:0.25 nphi=16 transverse mean flux                 7.59e-19 <= 1e-14  PASS
+SELFTEST gauss_ch:0.25 nphi=16 oddness of u about x1=0 (rel)        1.45e-15 <= 1e-12  PASS
+SELFTEST gauss_ch:0.25 nphi=24 max|v_perp| on x1=0 and x1=1         2.59e-16 <= 1e-14  PASS
+SELFTEST gauss_ch:0.25 nphi=24 transverse mean flux                 2.25e-19 <= 1e-14  PASS
+SELFTEST gauss_ch:0.25 nphi=24 oddness of u about x1=0 (rel)        1.22e-15 <= 1e-12  PASS
+SELFTEST gauss:0.5 nphi=32 face-flux div_h (N=8, GL3) max / mean f1 9.25e-04 <= 1e-02  PASS
+SELFTEST gauss:0.5 nphi=32 face-flux div_h (N=16, GL3) max / mean f1 3.10e-05 <= 1e-04  PASS
+SELFTEST CASE line round trip                                       0.00e+00 <= 0e+00  PASS
+SELFTEST CASE line with e_psi1/e_psi2 suffix round trip; old line parses 0.00e+00 <= 0e+00  PASS
+SELFTEST   control2d:0.25 N=16 oracle periodic parts: den1=2.175e-02 den2=2.404e-13 ratio den2/den1=1.1e-11
+SELFTEST   control2d:0.25 perturbed oracle (delta = 1e-3 max den): e_psi1=9.935e-04 (expected 9.935e-04) e_psi2=9.936e-04 (expected 9.936e-04, normalized by den1) a_psi1=2.161e-05 a_psi2=2.162e-05 | the pre-C-i4 normalization would give e_psi2=8.990e+07
+SELFTEST control2d:0.25 per-label e_psi of a 1e-3 perturbation, rel. dev. 1.40e-14 <= 1e-10  PASS
+SELFTEST control2d:0.25 oracle vs itself: e_psi1, e_psi2            0.00e+00 <= 0e+00  PASS
+SELFTEST   gauss:0.25 oracle e_v over N=16/24/32: order-4 FD 3.291e-03 7.699e-04 2.620e-04 (orders 3.58 3.75) | order-2 FD 1.673e-02 7.624e-03 4.328e-03 (orders 1.94 1.97)
+SELFTEST gauss:0.25 oracle e_v order-4 FD: observed order (24->32) >= 3.5 0.00e+00 <= 0e+00  PASS
+SELFTEST ALL PASS
+# total 37.3s
