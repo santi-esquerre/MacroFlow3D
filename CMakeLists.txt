@@ -211,6 +211,7 @@ set(INTERPOLATION_SOURCES
 set(STREAMLINE_TRACKER_SOURCES
     src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu
     src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu
+    src/physics/particles/streamline_tracker/ReferenceRkTracker.cu
 )
 
 set(MULTIGRID_SOURCES
