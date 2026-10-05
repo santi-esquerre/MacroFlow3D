@@ -15,14 +15,26 @@ thresholds in one block marked "pre-registered ... do not edit".
 
 ## Layout
 
+Experiment note: `docs/experiments/2026-10-05-sf30-streamline-closure-gate.md`.
+
 | path | content |
 |---|---|
 | `scripts/run_matrix.sh` | launcher: the 103 pre-registered runs in five groups |
-| `scripts/analyze.py` | analysis and classification (Python 3 standard library only) |
+| `scripts/analyze.py` | analysis and classification under the pre-registered rule (Python 3 standard library only) |
+| `scripts/followup_checks.py` | follow-up checks cited by the experiment note, tables F1-F4 (Python 3 standard library only; not part of the decision rule) |
 | `scripts/probe_seeds16.csv` | the 16 seed points `(y0, z0)` of the 2026-10-02 probes (numpy `default_rng(3)`, `y0 = random(16)`, `z0 = random(16)`) |
 | `scripts/fixtures/sample_summary_gaussian64.json` | a real `summary.json` written by `closure_gate` at commit `f9ca080` (local debug build) for `--field gaussian --sigma2 1 --ell 0.125 --seed 3001 --n 64` with the executable's default three-tolerance ladder (1e-6, 1e-8, 1e-10) |
 | | used only as a schema fixture by `analyze.py --self-test`; not part of the experiment's raw data (under the pre-registered four-tolerance ladder that run is invalid for classification, which is what self-test check 12 reports) |
-| `raw/` | raw outputs, added by the orchestrator after the V100 jobs (see below) |
+| `raw/<group>/<run-id>/` | the 103 pre-registered runs of job `sf30-matrix` (groups `controls`, `matched`, `matrix128`, `ladder`, `manyperiod`): `summary.json` (schema `sf30-closure-gate-1`), `streamlines.csv.gz` (per-seed return points at the working tolerance, gzip-compressed) and `timing.json` |
+| `raw/<group>/status.tsv` | one line per run: `<run-id> <exit code> <wall seconds>` |
+| `raw_followup/sensitivity/<run-id>/` | the 18 exploratory runs of job `sf30-post` (NOT pre-registered): `gaussian` seed 3001, `(sigma2, ell)` in {(0.25, 0.0625), (1, 0.0625), (4, 0.0625)} at 128^3 with 2, 4, 8, 16, 32 periods, and `(4, 0.0625)` at 256^3 with 2, 4, 8 periods; `summary.json` and `timing.json` only |
+| `analysis/tables.md` | the twelve tables of `analyze.py` |
+| `analysis/classification.json` | the per-run quantities and the per-case classification of `analyze.py` |
+| `analysis/followup_tables.md` | tables F1-F4 of `followup_checks.py` |
+| `logs/sf30-q1-controls.log` | instrument qualification job (30 analytic-control runs on the N2 candidate `f9ca080`) |
+| `logs/sf30-matrix.log` | the matrix job (103 runs) |
+| `logs/sf30-post.log` | the follow-up job (smoke + 18 exploratory runs) |
+| `logs/sf30-smoke.log` | output of the `config_pspta_small` smoke run of job `sf30-post` |
 
 ## Run matrix
 
@@ -81,11 +93,22 @@ Launcher behaviour:
 
 ## How to analyse
 
+From the repository root (the committed `analysis/tables.md` was produced with exactly this
+`raw` path; the path appears in the first line of the tables, so another invocation path
+changes that line only):
+
 ```bash
-cd docs/experiments/artifacts/2026-10-05-sf30-closure-gate
-python3 scripts/analyze.py --self-test
-python3 scripts/analyze.py raw --tables raw/analysis_tables.md --json raw/analysis.json
+A=docs/experiments/artifacts/2026-10-05-sf30-closure-gate
+python3 $A/scripts/analyze.py --self-test
+python3 $A/scripts/analyze.py $A/raw --tables $A/analysis/tables.md --json $A/analysis/classification.json
+python3 $A/scripts/followup_checks.py $A --out $A/analysis/followup_tables.md
 ```
+
+`followup_checks.py` output does not depend on the invocation path. Its tables: F1 recomputes
+the period-1 `R` of every run from its `streamlines.csv.gz` and compares it with the summary;
+F2 gives the pointwise grid convergence of the return map over the paired seeds; F3 the
+distance between the 1e-8 and 1e-12 return points versus the number of periods (many-period
+and follow-up runs); F4 the many-period `R`, `var(d2)`, `var(d3)` at the four tolerances.
 
 `analyze.py` reads every `summary.json` under the given directory (recursively) and identifies
 each run from the file's content (field, `sigma2`, `ell`, `seed`, `eps`, `n`, periods, seed set),
@@ -104,13 +127,9 @@ or present but lacking a quantity the rule needs (no 1e-8 entry, no `R`, tightes
 parse of a real `closure_gate` output (`R` at the working tolerance), and that the analysis'
 expected run list equals `run_matrix.sh all --list` (103 runs, 30/22/30/14/7).
 
-## What `raw/` will contain
+## Provenance of `raw/` and `raw_followup/`
 
-Added by the orchestrator after the V100 jobs; nothing in `raw/` is written by these scripts
-except the analysis outputs named above:
-
-- `<group>/<run-id>/summary.json`, `timing.json` and `streamlines.csv` of every run cited by the
-  experiment note (schema `sf30-closure-gate-1`);
-- `<group>/status.tsv` of each group;
-- the job logs of the detached V100 jobs;
-- `analysis_tables.md` and `analysis.json` produced by `analyze.py` from that tree.
+Copied by the orchestrator from the SF-30 V100 mirror after the jobs `sf30-matrix` and
+`sf30-post` (output directories `output_sf30/<group>/` and `output_sf30/sensitivity/`),
+with each `streamlines.csv` gzip-compressed; nothing in `raw/` or `raw_followup/` is
+written by the scripts of this directory. The analysis outputs live in `analysis/`.
