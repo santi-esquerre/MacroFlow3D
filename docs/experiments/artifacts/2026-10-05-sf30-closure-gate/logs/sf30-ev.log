@@ -1,0 +1,41 @@
+[2026-10-05T12:51:30Z] job=sf30-ev session=macroflow3d-SF-30-sf30-ev started
+[2026-10-05T12:51:30Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-05T12:51:30Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T12:51:30Z] command=E=./build/v100-release/streamfunction_ev_ladder; O=output_sf30/ev; mkdir -p $O; for N in 32 64 128; do echo "### lester2021 eps=0.25 N=$N"; $E --field lester2021 --eps 0.25 --n $N --max-iter 2000 --out $O/lester2021_e025_n$N.json; echo "exit=$?"; done; for S in 0.0625 0.25; do for N in 32 64 128; do echo "### gaussian sigma2=$S ell=0.25 seed=3001 N=$N"; $E --field gaussian --sigma2 $S --ell 0.25 --seed 3001 --n $N --max-iter 2000 --out $O/gaussian_s${S}_l025_r3001_n$N.json; echo "exit=$?"; done; done
+### lester2021 eps=0.25 N=32
+==== streamfunction_ev_ladder (SF-30 N3; frozen periodic stack) ====
+field = lester2021  N = 32  h = 0.03125  lambda_steps = 1
+  analytic: Y = eps * f, eps = 0.25
+  Y: mean = -2.3383403300139029e-19  var = 0.010312499999999863  min = -0.32887974640933881  max = 0.32887974640933881
+config: eta = 1  epsilon = 1e-06  tolerance = 1e-08  max_iter = 2000  omega0 = 0.25  adaptive = 1  anderson = 1 (depth 5, start 5, cond 1e+12)  newton = 0
+  streamfunction linear rtol = 1e-10 max_iter = 1000 check_every = 10; mg levels = 4 (auto) pre/post = 2/2 coarse_iters = 50
+  darcy: qbar = (1,0,0)  pcg rtol = 1e-10 max_iter = 1000  mg levels = 4; gauge = AffineGauge::benchmark(1)
+---- stage 1/1  lambda = 1 ----
+darcy (SF-19, qbar=e1): G = (0.99768494082858561, -3.311277733841955e-20, 9.4001511922228241e-21)
+  K_eff diag = (1.0023204311067297, 1.0024977604199623, 1.0001356344390344)  offdiag max|.| = 3.981e-20  sym_defect_rel = 5.666e-20
+  achieved mean flux = (1.0000000000000004, -1.6411263353052069e-21, 5.0451399920834264e-20)  div_max_abs = 7.494e-14  div_rms = 1.073e-14
+  corrector x: converged iters=10 rel_res=1.578e-14
+  corrector y: converged iters=10 rel_res=1.610e-14
+  corrector z: converged iters=10 rel_res=1.471e-14
+  darcy wall = 0.924 s
+solve: status = converged  exit = converged  picard_iterations = 1158  final_omega = 1  initial_state = zero_source
+  anderson acc/rej/cond_resets = 40/11/546  newton activations = 0  wall = 700.870 s
+  r_F initial = 0.017224005051248433
+  r_F final   = 9.9988177704274764e-09  (r1 = 1.4002665962310773e-08, r2 = 1.9692789442777938e-09)
+  tolerance = 1e-08  tolerance_met = true
+  e_v         = 0.0041213045257142292   (post-call e_v = 0.0041213045257142292)
+  rms_rel u/v/w = 6.908805e-03 2.676420e-04 1.775452e-03  linf_rel u/v/w = 1.792626e-02 9.814686e-04 4.389985e-03
+  corr u/v/w = 0.997225358 0.999958077 0.998761281  magnitude rms_rel/linf_rel = 6.876628e-03 1.771732e-02
+  angle rms/max = 1.660054e-03 3.818788e-03 rad (included 32768, excluded 0)
+  invariance e_psi1 = 3.568880e-04  e_psi2 = 1.642520e-04
+  reconstructed divergence e_div = 3.007728e-04  (rms 3.018813e-04, linf 1.031026e-03)
+  |c| min = 7.882044e-01  mean = 1.000917e+00  max = 1.250757e+00  v_d_rms = 1.0036854183492046
+  |c| percentiles (histogram upper edges) 0.1% = 8.460166e-01  1% = 8.460166e-01  5% = 9.009955e-01  50% = 1.021904e+00
+  degeneracy |c| < 1e-03 v_rms: total 0  low_speed 0  unexplained 0
+  degeneracy |c| < 1e-02 v_rms: total 0  low_speed 0  unexplained 0
+  degeneracy |c| < 1e-01 v_rms: total 0  low_speed 0  unexplained 0
+==== final: lambda = 1  status = converged  r_F = 9.9988177704274764e-09  tolerance_met = true  e_v = 0.0041213045257142292  wall_total = 701.802 s ====
+record written to output_sf30/ev/lester2021_e025_n32.json
+exit=0
+### lester2021 eps=0.25 N=64
+[2026-10-05T13:05:15Z] job=sf30-ev cancelled

@@ -654,6 +654,7 @@ void AffinePeriodicFlowWorkspace::prepare(const Grid3D& grid,
                                     grids_equal(prepared_grid_, grid) &&
                                     mg_config_equal(prepared_mg_config_, config.mg);
     if (!mg_already_current) {
+        solved_ = false;
         mg_preconditioner_.reset();
         mg_hierarchy_ = std::make_unique<multigrid::MGHierarchy>(grid, config.mg.num_levels);
         mg_preconditioner_.emplace(*mg_hierarchy_, config.mg);
@@ -662,6 +663,15 @@ void AffinePeriodicFlowWorkspace::prepare(const Grid3D& grid,
     prepared_grid_ = grid;
     prepared_mg_config_ = config.mg;
     prepared_ = true;
+}
+
+DeviceSpan<const real> AffinePeriodicFlowWorkspace::potential_fluctuation() const {
+    if (!prepared_ || !solved_) {
+        throw std::logic_error(
+            "AffinePeriodicFlowWorkspace::potential_fluctuation requires a successfully completed "
+            "solve_affine_periodic_flow on this workspace for its currently prepared grid");
+    }
+    return DeviceSpan<const real>(h_tilde_.data(), prepared_grid_.num_cells());
 }
 
 bool AffinePeriodicFlowWorkspace::prepared_for(const Grid3D& grid,
@@ -734,6 +744,7 @@ AffinePeriodicFlowReport solve_affine_periodic_flow(CudaContext& context, const 
                                                     const AffinePeriodicFlowConfig& config,
                                                     AffinePeriodicVelocityView velocity,
                                                     AffinePeriodicFlowWorkspace& workspace) {
+    workspace.solved_ = false;
     require_valid_problem(grid, K, config, velocity);
 
     workspace.prepare(grid, config);
@@ -864,6 +875,7 @@ AffinePeriodicFlowReport solve_affine_periodic_flow(CudaContext& context, const 
 
     report.memory = workspace.memory_report();
 
+    workspace.solved_ = true;
     return report;
 }
 

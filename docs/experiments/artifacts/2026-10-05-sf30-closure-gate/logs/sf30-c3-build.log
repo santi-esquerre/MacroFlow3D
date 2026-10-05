@@ -1,0 +1,24 @@
+[2026-10-05T12:50:05Z] job=sf30-c3-build session=macroflow3d-SF-30-sf30-c3-build started
+[2026-10-05T12:50:05Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-05T12:50:05Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T12:50:05Z] command=set -o pipefail; cmake --build build/v100-release -j 32 2>&1 | grep -E 'warning|error|FAILED|ninja: build stopped|Linking CXX executable (streamfunction_ev_ladder|streamline_closure_integrator_tests)' ; cmake --build build/v100-release -j 32 > /dev/null 2>&1; echo BUILD_EXIT=$?; ctest --test-dir build/v100-release -N | tail -1; ./build/v100-release/streamfunction_ev_ladder --field homogeneous --n 16 --out output_sf30/ev_h16.json | tail -3; python3 -c "import json;d=json.load(open('output_sf30/ev_h16.json'));print('json ok', len(d))"; ./build/v100-release/streamline_closure_integrator_tests | tail -1; ./build/v100-release/streamline_closure_controls_tests | tail -1
+/home/sesquerre/MacroFlow3D-SF-30/src/multigrid/transfer/prolong_3d.cu(107): warning: variable "NZ" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/src/physics/streamfunctions/Diagnostics.cu(300): warning: parameter "nz" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/projected_pcg_gpu_cases.cu(92): warning: 'long double' is treated as 'double' in device code
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/projected_pcg_gpu_cases.cu(31): warning: 'long double' is treated as 'double' in device code
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/physical_diagnostics_gpu_cases.cu(260): warning: function "macroflow3d::streamfunctions::test::<unnamed>::PhysicalDiagnosticsGpuFixture::n" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/jvp_gpu_cases.cu(139): warning: 'long double' is treated as 'double' in device code
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/coupled_residual_gpu_cases.cu(473): warning: variable "grads" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/terminal_solver_gpu_cases.cu(2615): warning: variable "check" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/terminal_solver_gpu_cases.cu(3505): warning: variable "check" was declared but never referenced
+[144/152] Linking CXX executable streamline_closure_integrator_tests
+[150/152] Linking CXX executable streamfunction_ev_ladder
+BUILD_EXIT=0
+Total Tests: 18
+  degeneracy |c| < 1e-01 v_rms: total 0  low_speed 0  unexplained 0
+==== final: lambda = 1  status = converged  r_F = 0  tolerance_met = true  e_v = 0  wall_total = 0.005 s ====
+record written to output_sf30/ev_h16.json
+json ok 14
+=== streamline_closure_integrator: 78 checks, PASS ===
+=== streamline_closure_controls16: 31 checks, PASS ===
+[2026-10-05T12:50:50Z] job=sf30-c3-build finished exit=0

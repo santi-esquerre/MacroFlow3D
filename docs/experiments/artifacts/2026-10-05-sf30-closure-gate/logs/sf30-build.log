@@ -1,0 +1,28 @@
+[2026-10-05T12:31:36Z] job=sf30-build session=macroflow3d-SF-30-sf30-build started
+[2026-10-05T12:31:36Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-05T12:31:36Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T12:31:36Z] command=cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 32 2>&1 | grep -E 'warning|error|Linking CXX executable (closure_gate|streamfunction_ev_ladder|streamline)' | head -20; cmake --build build/v100-release -j 32 2>&1 | tail -1; ctest --test-dir build/v100-release -N | tail -1; ls output_sf30 | head
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+/home/sesquerre/MacroFlow3D-SF-30/src/external/nlohmann/json.hpp(19746): error: Internal Compiler Error (codegen): "internal error during structure layout!"
+/home/sesquerre/MacroFlow3D-SF-30/tests/closure/streamline_closure_integrator_tests.cu(450): warning: const variable "f" requires an initializer -- class "<unnamed>::ShearField" has no user-provided default constructor
+/home/sesquerre/MacroFlow3D-SF-30/tests/closure/streamline_closure_integrator_tests.cu(502): warning: const variable "f" requires an initializer -- class "<unnamed>::ShearField" has no user-provided default constructor
+/home/sesquerre/MacroFlow3D-SF-30/tests/closure/streamline_closure_integrator_tests.cu(588): warning: const variable "f" requires an initializer -- class "<unnamed>::C1KnotField" has no user-provided default constructor
+/home/sesquerre/MacroFlow3D-SF-30/tests/closure/streamline_closure_integrator_tests.cu(450): warning: const variable "f" requires an initializer -- class "<unnamed>::ShearField" has no user-provided default constructor
+/home/sesquerre/MacroFlow3D-SF-30/tests/closure/streamline_closure_integrator_tests.cu(502): warning: const variable "f" requires an initializer -- class "<unnamed>::ShearField" has no user-provided default constructor
+/home/sesquerre/MacroFlow3D-SF-30/tests/closure/streamline_closure_integrator_tests.cu(588): warning: const variable "f" requires an initializer -- class "<unnamed>::C1KnotField" has no user-provided default constructor
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/coupled_residual_gpu_cases.cu(473): warning: variable "grads" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/terminal_solver_gpu_cases.cu(2615): warning: variable "check" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-30/tests/streamfunctions/terminal_solver_gpu_cases.cu(3505): warning: variable "check" was declared but never referenced
+ninja: build stopped: subcommand failed.
+Total Tests: 18
+probe_seeds16.csv
+q1
+[2026-10-05T12:31:59Z] job=sf30-build finished exit=0

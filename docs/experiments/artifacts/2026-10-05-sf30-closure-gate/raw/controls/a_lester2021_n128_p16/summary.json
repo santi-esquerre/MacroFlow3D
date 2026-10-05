@@ -1,0 +1,538 @@
+{
+  "schema_version": "sf30-closure-gate-1",
+  "configuration": {
+    "field": "lester2021",
+    "n": 128,
+    "grid": [
+      128,
+      128,
+      128
+    ],
+    "h": 0.0078125,
+    "L": 1,
+    "sigma2": null,
+    "ell": null,
+    "seed": null,
+    "eps": 1,
+    "seeds_source": "file",
+    "n_seeds": 16,
+    "seed_rng": null,
+    "seeds_file": "docs/experiments/artifacts/2026-10-05-sf30-closure-gate/scripts/probe_seeds16.csv",
+    "tols": [
+      9.9999999999999995e-07,
+      1e-08,
+      1e-10,
+      9.9999999999999998e-13
+    ],
+    "working_tol": 1e-10,
+    "periods": 1,
+    "pcg_rtol": 9.9999999999999998e-13,
+    "pcg_max_iter": 1000,
+    "pcg_max_iter_is_library_default": true,
+    "pcg_check_every": 10,
+    "mg_levels_requested": "auto",
+    "mg_levels": 6,
+    "mg_coarsest_extent": 4,
+    "qbar": [
+      1,
+      0,
+      0
+    ],
+    "device": 0,
+    "integrator": {
+      "h_max": 0.0078125,
+      "min_step": 1e-13,
+      "max_arclength_per_period": 100,
+      "method": "DP5(4) arclength, Henon landing on x1 = x1_0 + n"
+    },
+    "direction_field": "g = G + grad s_h, k = exp(s_Y)"
+  },
+  "field": {
+    "kind": "lester2021",
+    "Y_mean": -1.9478345666822127e-20,
+    "Y_variance": 0.16499999999999188,
+    "Y_min": -1.3316171557317584,
+    "Y_max": 1.3316171557317584,
+    "K": "exp(Y)",
+    "sf18_report": null,
+    "x3_averaged_control": null
+  },
+  "darcy_converged": true,
+  "darcy": {
+    "converged": true,
+    "K_eff": [
+      [
+        1.0371384063543925,
+        -1.0504249931454042e-20,
+        4.5848621221340474e-20
+      ],
+      [
+        -5.4941336285772098e-21,
+        1.039712970846697,
+        5.6655299549473329e-21
+      ],
+      [
+        1.2087005448694924e-20,
+        -1.9028857014430518e-20,
+        1.0035846961431041
+      ]
+    ],
+    "symmetry_defect_rel": 3.2472054037328741e-20,
+    "eigenvalues_symmetric_part": [
+      1.0035846961431041,
+      1.0371384063543925,
+      1.039712970846697
+    ],
+    "G": [
+      0.96419146554900392,
+      5.0950569087793121e-21,
+      -1.1612559998637275e-20
+    ],
+    "achieved_mean_flux": [
+      1.0000000000000016,
+      -6.5299291916161111e-20,
+      2.6051956457129573e-20
+    ],
+    "div_max_abs": 1.8324008976833284e-11,
+    "div_rms": 1.8476198354071628e-12,
+    "corrector_results": [
+      {
+        "converged": true,
+        "status": "converged",
+        "iterations": 10,
+        "raw_rhs_mean": 9.0124305587857556e-19,
+        "raw_rhs_l2_norm": 4516.9561660830022,
+        "raw_rhs_compatibility_defect": 2.8894222310168537e-19,
+        "initial_projected_residual": 4516.9561660830022,
+        "final_projected_residual": 2.7696075310522671e-09,
+        "relative_projected_residual": 6.131579384915761e-13,
+        "final_field_mean": 2.2834320809526329e-20
+      },
+      {
+        "converged": true,
+        "status": "converged",
+        "iterations": 10,
+        "raw_rhs_mean": 2.6020852139652106e-18,
+        "raw_rhs_l2_norm": 3916.9038741362006,
+        "raw_rhs_compatibility_defect": 9.6204094405356608e-19,
+        "initial_projected_residual": 3916.9038741362006,
+        "final_projected_residual": 3.4158703597806012e-09,
+        "relative_projected_residual": 8.7208429656290887e-13,
+        "final_field_mean": -1.6940658945086007e-21
+      },
+      {
+        "converged": true,
+        "status": "converged",
+        "iterations": 10,
+        "raw_rhs_mean": -4.163336342344337e-17,
+        "raw_rhs_l2_norm": 9762.119411405316,
+        "raw_rhs_compatibility_defect": 6.1760718008649755e-18,
+        "initial_projected_residual": 9762.119411405316,
+        "final_projected_residual": 7.6891273396620078e-09,
+        "relative_projected_residual": 7.8764938387033231e-13,
+        "final_field_mean": 2.7105054312137611e-20
+      }
+    ]
+  },
+  "splines": {
+    "potential_prefilter": {
+      "coefficient_bytes": 16777216,
+      "spectrum_bytes": 17039360,
+      "cufft_work_area_bytes": 34078720,
+      "total_device_bytes": 67895296
+    },
+    "log_conductivity_prefilter": {
+      "coefficient_bytes": 16777216,
+      "spectrum_bytes": 17039360,
+      "cufft_work_area_bytes": 34078720,
+      "total_device_bytes": 67895296
+    },
+    "potential_gpu_vs_host_prefilter_rel": 4.6023118128039131e-15
+  },
+  "direction_field_diagnostics": {
+    "cells": 2097152,
+    "min_g1": 0.64132408838910493,
+    "min_abs_g": 0.64132411142880019,
+    "max_abs_g": 1.293621196307672,
+    "backflow_cells": 0,
+    "backflow_volume_fraction": 0,
+    "v_rms_spline": 1.0582003293600766
+  },
+  "tolerances": [
+    {
+      "tol": 9.9999999999999995e-07,
+      "integrator_totals": {
+        "integrated_streamlines": 16,
+        "accepted_steps": 2093,
+        "rejected_steps": 0,
+        "landing_steps": 16,
+        "landing_rejected": 0,
+        "landings_discarded": 0,
+        "field_evaluations": 12798,
+        "field_evaluations_per_streamline_period": 799.875,
+        "min_g1_hat": 0.94396764010627998,
+        "backflow_arclength": 0
+      },
+      "periods": [
+        {
+          "n": 1,
+          "counts": {
+            "seeds": 16,
+            "ok": 16,
+            "seed_backflow": 0,
+            "cap_exceeded": 0,
+            "stagnation": 0,
+            "step_underflow": 0,
+            "landing_failed": 0,
+            "invalid_conductivity": 0,
+            "ok_with_backflow_encounter": 0,
+            "domain": 16,
+            "non_ok_fraction": 0
+          },
+          "count": 16,
+          "unweighted": {
+            "count": 16,
+            "weight_sum": 16,
+            "mean": [
+              -1.4715259046005347e-10,
+              -6.0665935518395067e-11
+            ],
+            "R": 3.3014933454568643e-10,
+            "rms_abs_d": 3.6651442497176809e-10,
+            "max_abs_d": 6.2671004484374806e-10,
+            "var_d2": 5.5079363192270946e-20,
+            "var_d3": 5.3919219908688628e-20,
+            "max_abs_d2": 6.2655640398201484e-10,
+            "max_abs_d3": 4.45566028517419e-10
+          },
+          "flux_weighted": {
+            "count": 16,
+            "weight_sum": 15.969952018540015,
+            "mean": [
+              -1.4770398584073144e-10,
+              -6.2574039927779639e-11
+            ],
+            "R": 3.2994006703134215e-10,
+            "rms_abs_d": 3.6686840384362469e-10,
+            "max_abs_d": 6.2671004484374806e-10,
+            "var_d2": 5.4799277772936337e-20,
+            "var_d3": 5.4061170059710199e-20,
+            "max_abs_d2": 6.2655640398201484e-10,
+            "max_abs_d3": 4.45566028517419e-10
+          },
+          "count_no_backflow": 16,
+          "R_no_backflow": 3.3014933454568643e-10,
+          "mean_arclength": 1.0142638448632113,
+          "mean_tau": 1.0115784922853468,
+          "mean_tau_flux_weighted": 1.0094789764153069,
+          "reinjection_D22": 2.7224463357181639e-20,
+          "reinjection_D33": 2.6651031195253536e-20,
+          "reinjection_D22_flux_weighted": 2.7142357123439252e-20,
+          "reinjection_D33_flux_weighted": 2.6776768671143202e-20
+        }
+      ],
+      "ladder_vs_tightest": {
+        "tightest_tol": 9.9999999999999998e-13,
+        "periods": [
+          {
+            "n": 1,
+            "both_ok": 16,
+            "status_differs": 0,
+            "max_distance": 1.0120311371093055e-09,
+            "rms_distance": 5.2909594279765364e-10
+          }
+        ]
+      }
+    },
+    {
+      "tol": 1e-08,
+      "integrator_totals": {
+        "integrated_streamlines": 16,
+        "accepted_steps": 2093,
+        "rejected_steps": 0,
+        "landing_steps": 16,
+        "landing_rejected": 0,
+        "landings_discarded": 0,
+        "field_evaluations": 12798,
+        "field_evaluations_per_streamline_period": 799.875,
+        "min_g1_hat": 0.94396764010627998,
+        "backflow_arclength": 0
+      },
+      "periods": [
+        {
+          "n": 1,
+          "counts": {
+            "seeds": 16,
+            "ok": 16,
+            "seed_backflow": 0,
+            "cap_exceeded": 0,
+            "stagnation": 0,
+            "step_underflow": 0,
+            "landing_failed": 0,
+            "invalid_conductivity": 0,
+            "ok_with_backflow_encounter": 0,
+            "domain": 16,
+            "non_ok_fraction": 0
+          },
+          "count": 16,
+          "unweighted": {
+            "count": 16,
+            "weight_sum": 16,
+            "mean": [
+              -1.4715259046005347e-10,
+              -6.0665935518395067e-11
+            ],
+            "R": 3.3014933454568643e-10,
+            "rms_abs_d": 3.6651442497176809e-10,
+            "max_abs_d": 6.2671004484374806e-10,
+            "var_d2": 5.5079363192270946e-20,
+            "var_d3": 5.3919219908688628e-20,
+            "max_abs_d2": 6.2655640398201484e-10,
+            "max_abs_d3": 4.45566028517419e-10
+          },
+          "flux_weighted": {
+            "count": 16,
+            "weight_sum": 15.969952018540015,
+            "mean": [
+              -1.4770398584073144e-10,
+              -6.2574039927779639e-11
+            ],
+            "R": 3.2994006703134215e-10,
+            "rms_abs_d": 3.6686840384362469e-10,
+            "max_abs_d": 6.2671004484374806e-10,
+            "var_d2": 5.4799277772936337e-20,
+            "var_d3": 5.4061170059710199e-20,
+            "max_abs_d2": 6.2655640398201484e-10,
+            "max_abs_d3": 4.45566028517419e-10
+          },
+          "count_no_backflow": 16,
+          "R_no_backflow": 3.3014933454568643e-10,
+          "mean_arclength": 1.0142638448632113,
+          "mean_tau": 1.0115784922853468,
+          "mean_tau_flux_weighted": 1.0094789764153069,
+          "reinjection_D22": 2.7224463357181639e-20,
+          "reinjection_D33": 2.6651031195253536e-20,
+          "reinjection_D22_flux_weighted": 2.7142357123439252e-20,
+          "reinjection_D33_flux_weighted": 2.6776768671143202e-20
+        }
+      ],
+      "ladder_vs_tightest": {
+        "tightest_tol": 9.9999999999999998e-13,
+        "periods": [
+          {
+            "n": 1,
+            "both_ok": 16,
+            "status_differs": 0,
+            "max_distance": 1.0120311371093055e-09,
+            "rms_distance": 5.2909594279765364e-10
+          }
+        ]
+      }
+    },
+    {
+      "tol": 1e-10,
+      "integrator_totals": {
+        "integrated_streamlines": 16,
+        "accepted_steps": 2093,
+        "rejected_steps": 0,
+        "landing_steps": 16,
+        "landing_rejected": 0,
+        "landings_discarded": 0,
+        "field_evaluations": 12798,
+        "field_evaluations_per_streamline_period": 799.875,
+        "min_g1_hat": 0.94396764010627998,
+        "backflow_arclength": 0
+      },
+      "periods": [
+        {
+          "n": 1,
+          "counts": {
+            "seeds": 16,
+            "ok": 16,
+            "seed_backflow": 0,
+            "cap_exceeded": 0,
+            "stagnation": 0,
+            "step_underflow": 0,
+            "landing_failed": 0,
+            "invalid_conductivity": 0,
+            "ok_with_backflow_encounter": 0,
+            "domain": 16,
+            "non_ok_fraction": 0
+          },
+          "count": 16,
+          "unweighted": {
+            "count": 16,
+            "weight_sum": 16,
+            "mean": [
+              -1.4761490467474214e-10,
+              -5.9480751622926001e-11
+            ],
+            "R": 3.3053566171122656e-10,
+            "rms_abs_d": 3.6685411754352678e-10,
+            "max_abs_d": 6.2671004484374806e-10,
+            "var_d2": 5.4953777979797438e-20,
+            "var_d3": 5.4300045683080944e-20,
+            "max_abs_d2": 6.2655640398201484e-10,
+            "max_abs_d3": 4.45566028517419e-10
+          },
+          "flux_weighted": {
+            "count": 16,
+            "weight_sum": 15.969952018540015,
+            "mean": [
+              -1.4816499805389633e-10,
+              -6.1392193829827565e-11
+            ],
+            "R": 3.303316150246492e-10,
+            "rms_abs_d": 3.6720681365729489e-10,
+            "max_abs_d": 6.2671004484374806e-10,
+            "var_d2": 5.4673538442523013e-20,
+            "var_d3": 5.4445437442270036e-20,
+            "max_abs_d2": 6.2655640398201484e-10,
+            "max_abs_d3": 4.45566028517419e-10
+          },
+          "count_no_backflow": 16,
+          "R_no_backflow": 3.3053566171122656e-10,
+          "mean_arclength": 1.014263844865309,
+          "mean_tau": 1.011578492311866,
+          "mean_tau_flux_weighted": 1.0094789764417516,
+          "reinjection_D22": 2.7162389472222677e-20,
+          "reinjection_D33": 2.683926462245326e-20,
+          "reinjection_D22_flux_weighted": 2.7080077801738033e-20,
+          "reinjection_D33_flux_weighted": 2.6967098232288754e-20
+        }
+      ],
+      "ladder_vs_tightest": {
+        "tightest_tol": 9.9999999999999998e-13,
+        "periods": [
+          {
+            "n": 1,
+            "both_ok": 16,
+            "status_differs": 0,
+            "max_distance": 1.0120311371093055e-09,
+            "rms_distance": 5.2957134850852488e-10
+          }
+        ]
+      }
+    },
+    {
+      "tol": 9.9999999999999998e-13,
+      "integrator_totals": {
+        "integrated_streamlines": 16,
+        "accepted_steps": 2517,
+        "rejected_steps": 927,
+        "landing_steps": 16,
+        "landing_rejected": 0,
+        "landings_discarded": 0,
+        "field_evaluations": 20904,
+        "field_evaluations_per_streamline_period": 1306.5,
+        "min_g1_hat": 0.94397098299746007,
+        "backflow_arclength": 0
+      },
+      "periods": [
+        {
+          "n": 1,
+          "counts": {
+            "seeds": 16,
+            "ok": 16,
+            "seed_backflow": 0,
+            "cap_exceeded": 0,
+            "stagnation": 0,
+            "step_underflow": 0,
+            "landing_failed": 0,
+            "invalid_conductivity": 0,
+            "ok_with_backflow_encounter": 0,
+            "domain": 16,
+            "non_ok_fraction": 0
+          },
+          "count": 16,
+          "unweighted": {
+            "count": 16,
+            "weight_sum": 16,
+            "mean": [
+              -6.4704087573974611e-11,
+              2.7161718241328764e-12
+            ],
+            "R": 3.4541266763159052e-10,
+            "rms_abs_d": 3.5143122726720003e-10,
+            "max_abs_d": 6.5932110513390194e-10,
+            "var_d2": 6.8778627524657131e-20,
+            "var_d3": 5.0531283435714483e-20,
+            "max_abs_d2": 6.5831594342480315e-10,
+            "max_abs_d3": 5.2651610848997166e-10
+          },
+          "flux_weighted": {
+            "count": 16,
+            "weight_sum": 15.969952018540015,
+            "mean": [
+              -6.1642759968451406e-11,
+              2.0802596613954761e-12
+            ],
+            "R": 3.4213057843585883e-10,
+            "rms_abs_d": 3.4764563860005828e-10,
+            "max_abs_d": 6.5932110513390194e-10,
+            "var_d2": 6.77890634640227e-20,
+            "var_d3": 4.9264269236832651e-20,
+            "max_abs_d2": 6.5831594342480315e-10,
+            "max_abs_d3": 5.2651610848997166e-10
+          },
+          "count_no_backflow": 16,
+          "R_no_backflow": 3.4541266763159052e-10,
+          "mean_arclength": 1.0142638448399377,
+          "mean_tau": 1.0115784923686146,
+          "mean_tau_flux_weighted": 1.0094789765170298,
+          "reinjection_D22": 3.3995694868725276e-20,
+          "reinjection_D33": 2.4976452058305087e-20,
+          "reinjection_D22_flux_weighted": 3.3576263122345029e-20,
+          "reinjection_D33_flux_weighted": 2.4400839632543636e-20
+        }
+      ],
+      "ladder_vs_tightest": null
+    }
+  ],
+  "round_trip": {
+    "tol": 1e-10,
+    "eligibility": "status ok and no backflow encounter in period 1",
+    "eligible": 16,
+    "backward_ok": 16,
+    "backward_status": {
+      "ok": 16,
+      "seed_backflow": 0,
+      "cap_exceeded": 0,
+      "stagnation": 0,
+      "step_underflow": 0,
+      "landing_failed": 0,
+      "invalid_conductivity": 0
+    },
+    "max_distance": 1.7221987908345085e-09,
+    "rms_distance": 6.8299226286095839e-10,
+    "period1_rerun_used": false,
+    "period1_rerun_bitwise_identical": true
+  },
+  "first_seeds": [
+    [
+      0,
+      0.085649167143624361,
+      0.28420116374879145
+    ],
+    [
+      0,
+      0.2368105065960997,
+      0.64854720707982505
+    ],
+    [
+      0,
+      0.80127446520639689,
+      0.69621599667015543
+    ],
+    [
+      0,
+      0.58216203606436778,
+      0.29272074901248712
+    ],
+    [
+      0,
+      0.094128642240399185,
+      0.0014900835088361708
+    ]
+  ]
+}

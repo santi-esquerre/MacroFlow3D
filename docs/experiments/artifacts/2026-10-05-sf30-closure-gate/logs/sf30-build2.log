@@ -1,0 +1,13 @@
+[2026-10-05T12:32:44Z] job=sf30-build2 session=macroflow3d-SF-30-sf30-build2 started
+[2026-10-05T12:32:44Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-05T12:32:44Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T12:32:44Z] command=cmake --build build/v100-release -j 32 2>&1 | grep -B2 -A12 -E 'FAILED|error' | head -60; cmake --build build/v100-release -j 32 > /dev/null 2>&1; echo BUILD_EXIT=$?
+[0/2] Re-checking globbed directories...
+[1/3] Building CUDA object CMakeFiles/streamfunction_ev_ladder.dir/apps/closure_gate/ev_ladder_main.cu.o
+FAILED: CMakeFiles/streamfunction_ev_ladder.dir/apps/closure_gate/ev_ladder_main.cu.o 
+/usr/local/cuda-11.4/bin/nvcc -forward-unknown-to-host-compiler -DMACROFLOW3D_BUILD_TYPE=\"Release\" -DMACROFLOW3D_CUDA_ARCHITECTURES=\"70\" -DMACROFLOW3D_ENABLE_DIAGNOSTICS=0 -DMACROFLOW3D_ENABLE_NVTX=1 -DMACROFLOW3D_ENABLE_PROFILING=1 -DMACROFLOW3D_GIT_HASH=\"unknown\" -DUSE_NVTX=1 -DYAML_CPP_STATIC_DEFINE -I/home/sesquerre/MacroFlow3D-SF-30 -I/home/sesquerre/MacroFlow3D-SF-30/src/external/yaml-cpp-0.8.0/include -I/home/sesquerre/MacroFlow3D-SF-30/src/external/Par2_Core/include -isystem /usr/local/cuda-11.4/targets/x86_64-linux/include -O3 -DNDEBUG -std=c++17 "--generate-code=arch=compute_70,code=[compute_70,sm_70]" --expt-relaxed-constexpr --extended-lambda -MD -MT CMakeFiles/streamfunction_ev_ladder.dir/apps/closure_gate/ev_ladder_main.cu.o -MF CMakeFiles/streamfunction_ev_ladder.dir/apps/closure_gate/ev_ladder_main.cu.o.d -x cu -c /home/sesquerre/MacroFlow3D-SF-30/apps/closure_gate/ev_ladder_main.cu -o CMakeFiles/streamfunction_ev_ladder.dir/apps/closure_gate/ev_ladder_main.cu.o
+/home/sesquerre/MacroFlow3D-SF-30/src/external/nlohmann/json.hpp(19746): error: Internal Compiler Error (codegen): "internal error during structure layout!"
+
+ninja: build stopped: subcommand failed.
+BUILD_EXIT=1
+[2026-10-05T12:32:53Z] job=sf30-build2 finished exit=0

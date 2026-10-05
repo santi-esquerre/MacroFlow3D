@@ -375,6 +375,11 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME operator_tests COMMAND run_operator_tests)
 
+    # SF-30 N3: e_v(h) driver on the frozen periodic streamfunction stack (documented experiment tool; not a ctest entry)
+    add_executable(streamfunction_ev_ladder apps/closure_gate/ev_ladder_main.cu)
+    target_link_libraries(streamfunction_ev_ladder PRIVATE macroflow3d_lib)
+    target_compile_options(streamfunction_ev_ladder PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
     add_executable(streamfunction_operator_tests
         tests/streamfunctions/reference_operators.cpp
         tests/streamfunctions/streamfunction_operator_tests.cpp
@@ -559,6 +564,23 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(interpolation_tests PRIVATE macroflow3d_lib)
     target_compile_options(interpolation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME interpolation_periodic_tricubic COMMAND interpolation_tests)
+
+    # SF-30 N1: SF-19 potential accessor + oracle streamline integrator contracts (fast tier)
+    add_executable(streamline_closure_integrator_tests tests/closure/streamline_closure_integrator_tests.cu)
+    target_link_libraries(streamline_closure_integrator_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_closure_integrator_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_closure_integrator COMMAND streamline_closure_integrator_tests)
+
+    # SF-30 N2: streamline-closure gate executable (documented-experiment instrument)
+    add_executable(closure_gate apps/closure_gate/closure_gate_main.cu)
+    target_link_libraries(closure_gate PRIVATE macroflow3d_lib)
+    target_compile_options(closure_gate PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
+    # SF-30 N2: 16^3 controls of the closure gate (fast tier)
+    add_executable(streamline_closure_controls_tests tests/closure/streamline_closure_controls_tests.cu)
+    target_link_libraries(streamline_closure_controls_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_closure_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_closure_controls16 COMMAND streamline_closure_controls_tests)
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)

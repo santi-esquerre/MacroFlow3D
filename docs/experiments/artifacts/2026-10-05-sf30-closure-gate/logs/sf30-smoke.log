@@ -1,0 +1,74 @@
+[1] Loading config: apps/config_pspta_small.yaml
+[2] Initializing CUDA context
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        64 × 32 × 32  (dx=5.000000)
+  Domain:      [0, 320.0000] × [0, 160.0000] × [0, 160.0000]
+  Stochastic:  σ²=1.00  λ=50.0000  modes=1000  seed=42
+  Solver:      mg_cg  rtol=1.0e-06
+  Transport:   N=500  dt=1.0000e+00  steps=500  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    macrodispersion OFF (single realization)
+  Snapshots:   every=100  stride=1  unwrapped=no
+  Output:      ./output_pspta_small
+  Diagnostics: velocity_field ON (div/|ω|/helicity per realization)
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+[3] Allocating fields and workspaces
+       Fields: K=65536  head=65536  vel=3×70785  particles=500
+  [4] K generation (seed=42)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=10  res=1.02e+01 → 1.77e-13
+  [6] Computing velocity (compact)
+       [diag] r=0  div:  min=-8.1175e-14  max=8.2979e-14  mean=-3.6024e-18
+       [diag] r=0  |w|:  min=0.0000e+00  max=3.2063e-01  mean=2.4402e-02  (incl. border=0)
+       [diag] r=0  h:    min=-3.2826e-02  max=5.0244e-02  mean=-1.2686e-06  (incl. border=0)
+  [7] Transport (PSPTA)
+       [psi_refine] seed  rms_r1=7.350e-01 rms_r2=9.448e-01 combo=8.464e-01
+       [psi_refine] iter 1/4 omega_init=5.000e-01 omega_acc=1.562e-02 bt=5 rms_r1 7.350e-01->7.339e-01 rms_r2 9.448e-01->9.455e-01 gain=0.000 clamp=0.000e+00 status=accepted_backtrack
+       [psi_refine] iter 2/4 omega_init=5.000e-01 omega_acc=7.812e-03 bt=6 rms_r1 7.339e-01->7.345e-01 rms_r2 9.455e-01->9.393e-01 gain=0.004 clamp=0.000e+00 status=accepted_backtrack
+       [psi_refine] iter 3/4 omega_init=5.000e-01 omega_acc=1.953e-03 bt=8 rms_r1 7.345e-01->7.345e-01 rms_r2 9.393e-01->9.393e-01 gain=0.000 clamp=0.000e+00 status=accepted_backtrack
+       [psi_refine] iter 4/4 omega_init=5.000e-01 omega_acc=9.766e-04 bt=9 rms_r1 7.345e-01->7.345e-01 rms_r2 9.393e-01->9.393e-01 gain=0.000 clamp=0.000e+00 status=accepted_backtrack
+       [psi_refine] final rms_r1=7.345e-01 rms_r2=9.393e-01 stop=max_iters
+       Stepping 500 × 500 (dt=1.0000e+00) ...
+           step    25/500  t=2.500e+01
+           step    50/500  t=5.000e+01
+           step    75/500  t=7.500e+01
+           step   100/500  t=1.000e+02
+           step   125/500  t=1.250e+02
+           step   150/500  t=1.500e+02
+           step   175/500  t=1.750e+02
+           step   200/500  t=2.000e+02
+           step   225/500  t=2.250e+02
+           step   250/500  t=2.500e+02
+           step   275/500  t=2.750e+02
+           step   300/500  t=3.000e+02
+           step   325/500  t=3.250e+02
+           step   350/500  t=3.500e+02
+           step   375/500  t=3.750e+02
+           step   400/500  t=4.000e+02
+           step   425/500  t=4.250e+02
+           step   450/500  t=4.500e+02
+           step   475/500  t=4.750e+02
+           step   500/500  t=5.000e+02
+       Transport complete (r=0).
+       [pspta] active=387  exited=113  newton_stalls=0  nonzero_fail=0  max_fail=0  (NP=500)
+────────────────────────────────────────────────────────
+
+╔═══════════════════════════════════════════════════════════════╗
+║                   STAGE PROFILING REPORT                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Stage                     │ Total(ms) │ Count │  Avg(ms) │     % ║
+╠═══════════════════════════════════════════════════════════════╣
+║ K_generation              │     1.45 │     1 │     1.45 │   0.3 ║
+║ solve_head                │   225.22 │     1 │   225.22 │  54.0 ║
+║ velocity                  │     0.09 │     1 │     0.09 │   0.0 ║
+║ transport                 │   190.14 │     1 │   190.14 │  45.6 ║
+╠═══════════════════════════════════════════════════════════════╣
+║ TOTAL                     │   416.91 │     - │        - │  100% ║
+╠═══════════════════════════════════════════════════════════════╣
+║ GPU Memory: 493.0 MB used / 32510.5 MB total (1.5% used)      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.
