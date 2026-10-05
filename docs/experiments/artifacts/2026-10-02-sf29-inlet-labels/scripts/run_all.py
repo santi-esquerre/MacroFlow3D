@@ -33,6 +33,29 @@ Matrix (N4 prompt section 3.1):
   spec_i1  candidate_i.py --spectrum M field:eps:M:i1, M in {12, 16}
   spec_i0  candidate_i.py --spectrum M field:eps:M:i0 --bisect 2 --lm 10, M = 12 (+16 for gauss, gauss_ch)
   spec_ii  candidate_ii.py --spectrum M field:eps:M, M = 12 (+16 for gauss, gauss_ch, control2d at eps 0.25, 1)
+
+Corrective matrix (N4c, `--matrix corrective`; the N4 matrix above stays the default, `--matrix n4`):
+  python3 run_all.py --matrix corrective --plan                      cells, counts, GB-hours at the caps, order
+  python3 run_all.py --matrix corrective --workers 26 --mem-budget 100 --threads 3 --out ../raw/sweep2
+  python3 run_all.py --matrix corrective --summarize --out ../raw/sweep2
+  fields gauss, gauss_ch, control2d, generic3d x eps 0.25/0.5/1; G = 16/20/24/28
+  orc    run_all.py --oracle-cell field:eps --fd4 --grids <every N used by the (field, eps) cells, incl. 12 for
+         spec4 and 32 where a solver uses it>: oracle caches + ceilings oracle_fd, oracle_fd4, oracle_mim
+  i1o4   candidate_i.py field:eps:N:i1 --order 4 --direct-max 32 --reuse-lu 0 --save <out>/solutions, N in G
+         (+32 for gauss:0.25, gauss_ch:0.25)
+  i1     same without --order 4: gauss, gauss_ch, control2d x N in G + 32; generic3d x N in 20, 28
+  ii     candidate_ii.py field:eps:N: gauss, gauss_ch, control2d at N = 20; control2d at 16, 24; N = 32 for
+         gauss:0.25, gauss_ch:0.25 (lowest priority)
+  spec4  candidate_i.py --spectrum M --order 4 field:eps:M:i1 --out <out>/spectra, M = 12, 16
+  cons4  candidate_i.py --consistency --order 4 --grids 16,24,28 field:eps
+  Scheduler: sum(mem_gb of running) <= --mem-budget, running <= --workers, OMP/OPENBLAS/MKL threads = --threads
+  per cell, priority orc > i1o4 > i1 > spec4/cons4 > ii > ii N=32 (larger mem_gb first in a class; the first
+  blocked ready cell reserves its memory), wall cap per cell -> `timeout`, non-zero exit -> `failed` + log tail,
+  peak RSS per cell (os.wait4), resumable (`done` skipped; --retry default failed,running,pending,interrupted).
+  Filters: --only field:eps,...  --grids N,... (REPLACES the solver ladders)  --types orc,i1o4,i1,ii,spec4,cons4
+  Launcher tests: --dry-run (every cell runs `true`, or `sleep S` with --dry-sleep S) and --dry-faults (adds a
+  fake cell that sleeps past a 2 s cap and one that exits 1).  --merge-sweep DIR (default <out>/../sweep): source
+  of the generic3d i1 rows at N = 16, 24 in the summary.
 """
 import functools
 import json
@@ -174,7 +197,8 @@ def build_matrix(spectra_dir, only=None, grids=None, spectra=None, kinds=None):
 # ------------------------------------------------------------------------------------------------
 # oracle-ceiling cell (internal mode)
 # ------------------------------------------------------------------------------------------------
-def oracle_cell(spec, grids):
+def oracle_cell(spec, grids, fd4=False):
+    """fd4=True (corrective matrix, `--fd4`): also print the 4th-order ceiling line cand=oracle_fd4."""
     import cases as C
     import candidate_ii as CII
     field, eps, _ = C.parse_spec(spec)
@@ -191,6 +215,9 @@ def oracle_cell(spec, grids):
         psi_or = case["psi_or"]
         mo = M.fd_metrics(psi_or[0], psi_or[1], case["vD"], psi_or)
         M.print_case(field, eps, N, "oracle_fd", mo, t=tl)
+        if fd4:
+            mo4 = M.fd_metrics(psi_or[0], psi_or[1], case["vD"], psi_or, order=4)
+            M.print_case(field, eps, N, "oracle_fd4", mo4, t=tl)
         a2, a3 = M.affine(N)
         U1, U2 = psi_or[0] - a2, psi_or[1] - a3
         fl = CII.mimetic_fluxes(U1, U2, 1.0 / N)
@@ -816,7 +843,768 @@ def summarize(out):
 
 
 # ------------------------------------------------------------------------------------------------
+# corrective matrix (N4c, `--matrix corrective`): cells, memory-budget scheduler, summary
+# ------------------------------------------------------------------------------------------------
+CFIELDS = ("gauss", "gauss_ch", "control2d", "generic3d")
+CGRIDS = (16, 20, 24, 28)
+CTYPES = ("orc", "i1o4", "i1", "ii", "spec4", "cons4")
+C_I1_FIELDS = ("gauss", "gauss_ch", "control2d")
+C_I1_GENERIC = (20, 28)                       # generic3d i1: the other grids exist in raw/sweep/
+C_II_FIELDS = ("gauss", "gauss_ch", "control2d")
+C_EXT32 = (("gauss", 0.25), ("gauss_ch", 0.25))
+C_CONS_GRIDS = (16, 24, 28)
+C_SPEC = (12, 16)
+# (mem_gb, cap_s) per type and N (task N4c section 3.B.2); N absent from a table -> nearest smaller key, else the
+# smallest key (used only by filtered smoke runs, e.g. --grids 12)
+C_EST = {
+    "i1o4": {16: (1.5, 3600), 20: (3, 7200), 24: (7, 10800), 28: (14, 21600), 32: (28, 36000)},
+    "i1": {16: (1, 3600), 20: (1.5, 3600), 24: (2.5, 7200), 28: (5, 14400), 32: (9, 21600)},
+    "ii": {16: (1, 7200), 20: (2, 14400), 24: (3, 14400), 32: (4, 36000)},
+    "spec4": {12: (1, 1800), 16: (4, 3600)},
+    "orc": {None: (2, 7200)},
+    "cons4": {None: (2, 7200)},
+}
+# launch priority class (lower first); within a class larger mem_gb first
+C_PRIO = {"orc": 0, "i1o4": 1, "i1": 2, "spec4": 3, "cons4": 3, "ii": 4}
+C_PRIO_II32 = 5                                 # ii at N = 32: lowest priority
+
+
+def c_est(typ, N):
+    tab = C_EST[typ]
+    if None in tab:
+        return tab[None]
+    if N in tab:
+        return tab[N]
+    lower = [k for k in tab if k < N]
+    return tab[max(lower)] if lower else tab[min(tab)]
+
+
+def c_cell_id(typ, field, eps, N=None):
+    base = "%s-%s-%g" % (typ, field, eps)
+    if N is None:
+        return base
+    return base + ("-M%d" % N if typ == "spec4" else "-N%d" % N)
+
+
+def build_corrective(out, only=None, grids=None, types=None, dry_run=False, dry_sleep=0.0, dry_faults=False):
+    """Corrective matrix (task N4c 3.B.1).  `grids` (from --grids) REPLACES the solver ladders (i1o4, i1, ii; the
+    N = 32 extras are kept only if listed); spec4 and cons4 keep their own grids.  The orc cell of a (field, eps)
+    loads every N used by the selected cells of that (field, eps) (solver N, spectrum M, consistency grids), so the
+    oracle caches exist before any dependent cell starts (no concurrent cache writes).  dry_run: every cell runs
+    `sleep dry_sleep` (`true` if 0) instead of its command; dry_faults adds two fake cells (one sleeps past a 2 s
+    cap, one exits 1) to exercise timeout / failure recording."""
+    py = sys.executable or "python3"
+
+    def rel(x):                                   # cells run with cwd = this directory
+        r = os.path.relpath(x, _HERE)
+        return x if r.startswith(os.path.join("..", "..", "..")) else r
+    sol = rel(os.path.join(out, "solutions"))
+    spd = rel(os.path.join(out, "spectra"))
+    cells = []
+
+    def lad(base, extra=()):
+        if grids is None:
+            return sorted(set(base) | set(extra))
+        return sorted(grids)
+
+    def add(typ, field, eps, N, argv, needs, prio=None):
+        if types is not None and typ not in types:
+            return
+        mem, cap = c_est(typ, N)
+        cells.append({"id": c_cell_id(typ, field, eps, N), "kind": typ, "field": field, "eps": eps, "N": N,
+                      "argv": [py, "-u"] + argv, "needs": sorted(set(needs)), "cap": cap, "mem_gb": float(mem),
+                      "prio": C_PRIO[typ] if prio is None else prio})
+
+    for field in CFIELDS:
+        for eps in EPSS:
+            spec = fe(field, eps)
+            if only is not None and spec not in only:
+                continue
+            ext = (32,) if (field, eps) in C_EXT32 else ()
+            n0 = len(cells)
+            for N in lad(CGRIDS, ext):
+                add("i1o4", field, eps, N, ["candidate_i.py", "%s:%d:i1" % (spec, N), "--order", "4",
+                                            "--direct-max", "32", "--reuse-lu", "0", "--save", sol], [N])
+            if field in C_I1_FIELDS:
+                i1g = lad(CGRIDS, (32,))
+            else:
+                i1g = lad(C_I1_GENERIC)
+            for N in i1g:
+                add("i1", field, eps, N, ["candidate_i.py", "%s:%d:i1" % (spec, N), "--direct-max", "32",
+                                          "--reuse-lu", "0", "--save", sol], [N])
+            if field in C_II_FIELDS:
+                iig = [20] + ([16, 24] if field == "control2d" else [])
+                for N in lad(iig, ext):
+                    add("ii", field, eps, N, ["candidate_ii.py", "%s:%d" % (spec, N)], [N],
+                        C_PRIO_II32 if N >= 32 else None)
+            for Msp in C_SPEC:
+                add("spec4", field, eps, Msp, ["candidate_i.py", "--spectrum", str(Msp), "--order", "4",
+                                               "%s:%d:i1" % (spec, Msp), "--out", spd], [Msp])
+            add("cons4", field, eps, None, ["candidate_i.py", "--consistency", "--order", "4", "--grids",
+                                            ",".join(map(str, C_CONS_GRIDS)), spec], list(C_CONS_GRIDS))
+            og = sorted(set(n for c in cells[n0:] for n in c["needs"]))
+            if types is None or "orc" in types:
+                if not og:
+                    og = lad(CGRIDS, ext)
+                mem, cap = c_est("orc", None)
+                cells.insert(n0, {"id": c_cell_id("orc", field, eps), "kind": "orc", "field": field, "eps": eps,
+                                  "N": None, "argv": [py, "-u", "run_all.py", "--oracle-cell", spec, "--fd4",
+                                                      "--grids", ",".join(map(str, og))],
+                                  "needs": [], "cap": cap, "mem_gb": float(mem), "prio": C_PRIO["orc"]})
+    for c in cells:
+        c["unsupported"] = None
+    if dry_run:
+        for c in cells:
+            c["real_cmd"] = " ".join(c["argv"][2:])
+            c["argv"] = ["sleep", "%g" % dry_sleep] if dry_sleep > 0 else ["true"]
+        if dry_faults:
+            cells.append({"id": "dryfault-sleep-cap2", "kind": "dryfault", "field": "dry", "eps": 0.0, "N": None,
+                          "argv": ["sleep", "30"], "needs": [], "cap": 2, "mem_gb": 1.0, "prio": 9,
+                          "unsupported": None, "real_cmd": "(fake: sleeps 30 s, cap 2 s)"})
+            cells.append({"id": "dryfault-exit1", "kind": "dryfault", "field": "dry", "eps": 0.0, "N": None,
+                          "argv": ["sh", "-c", "echo fake failure; exit 1"], "needs": [], "cap": 60, "mem_gb": 1.0,
+                          "prio": 9, "unsupported": None, "real_cmd": "(fake: exits 1)"})
+    return cells
+
+
+def c_check_supported(cells):
+    """Check every cell command line against the actual argument parsers (flags present in the scripts' option
+    loops).  Returns {type: reason} for unsupported types."""
+    flags = {}
+    for script in ("candidate_i.py", "candidate_ii.py", "run_all.py"):
+        with open(os.path.join(_HERE, script)) as f:
+            src = f.read()
+        flags[script] = set(re.findall(r'a == "(--[a-z0-9-]+)"', src))
+    bad = {}
+    for c in cells:
+        argv = c["argv"][2:] if c["argv"][:1] != ["sleep"] and c["argv"][:1] != ["true"] else \
+            c.get("real_cmd", "").split()
+        if not argv or argv[0] not in flags:
+            continue
+        miss = [a for a in argv[1:] if a.startswith("--") and a not in flags[argv[0]]]
+        if miss:
+            c["unsupported"] = "flag(s) %s not in %s argument parser" % (",".join(miss), argv[0])
+            bad.setdefault(c["kind"], c["unsupported"])
+    return bad
+
+
+def c_order(cells):
+    return sorted(cells, key=lambda c: (c["prio"], -c["mem_gb"], c["id"]))
+
+
+def plan_corrective(cells, workers, budget, threads):
+    import platform
+    print("run_all --matrix corrective --plan  python=%s numpy=%s host=%s cpus=%s" % (
+        platform.python_version(), np.__version__, socket.gethostname(), os.cpu_count()))
+    bad = c_check_supported(cells)
+    print("workers=%d mem-budget=%g GB threads/cell=%d" % (workers, budget, threads))
+    by = {}
+    for c in cells:
+        by.setdefault(c["kind"], []).append(c)
+    print("%-9s %6s %14s %14s %10s" % ("type", "cells", "sum mem GB", "GB-h at cap", "max cap h"))
+    tot_cells = 0; tot_gbh = 0.0
+    for k in list(CTYPES) + ["dryfault"]:
+        if k not in by:
+            continue
+        cs = by[k]
+        gbh = sum(c["mem_gb"] * c["cap"] / 3600.0 for c in cs)
+        tot_cells += len(cs); tot_gbh += gbh
+        print("%-9s %6d %14.1f %14.1f %10.2f%s" % (k, len(cs), sum(c["mem_gb"] for c in cs), gbh,
+                                                   max(c["cap"] for c in cs) / 3600.0,
+                                                   "  UNSUPPORTED: " + bad[k] if k in bad else ""))
+    print("total cells=%d  estimated memory-hours at the wall caps (upper bound) = %.1f GB-h  -> wall lower bound "
+          "at budget %g GB if every cell ran to its cap = %.1f h" % (tot_cells, tot_gbh, budget, tot_gbh / budget))
+    big = [c for c in cells if c["mem_gb"] > budget]
+    if big:
+        print("WARNING: %d cell(s) exceed the memory budget and will run alone: %s" % (
+            len(big), ", ".join(c["id"] for c in big)))
+    print("unsupported types: %s" % (", ".join("%s (%s)" % kv for kv in sorted(bad.items())) if bad else "none"))
+    print("dependency order: orc-<field>-<eps> (oracle caches + ceilings oracle_fd/oracle_fd4/oracle_mim) -> every "
+          "i1o4 / i1 / ii / spec4 / cons4 cell of the same (field, eps) (started when the orc cell is done or has "
+          "written ORACLE_READY for every N the cell uses)")
+    print("launch priority: orc(0) > i1o4(1) > i1(2) > spec4, cons4(3) > ii(4) > ii N=32(5); larger mem_gb first "
+          "within a class; a blocked cell reserves its memory (later cells start only if they fit beside it)")
+    for c in c_order(cells):
+        print("  p%d %-30s mem %5.1f GB cap %6ds needs %-14s %s" % (
+            c["prio"], c["id"], c["mem_gb"], c["cap"], c["needs"], c.get("real_cmd") or " ".join(c["argv"][2:])))
+    return bad
+
+
+def utc():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def run_corrective(cells, out, workers, budget, threads, retry, poll=2.0):
+    """Memory-budget scheduler: sum(mem_gb of running) <= budget and running <= workers; priority order with
+    memory reservation for the first blocked ready cell (no starvation of large cells); per-cell wall cap (process
+    group killed -> `timeout`); non-zero exit -> `failed` with log tail; peak RSS per cell from os.wait4; resumable
+    (cells `done` in the manifest are skipped, statuses in `retry` rerun)."""
+    os.makedirs(out, exist_ok=True)
+    os.makedirs(os.path.join(out, "spectra"), exist_ok=True)
+    os.makedirs(os.path.join(out, "solutions"), exist_ok=True)
+    gi = os.path.join(out, "solutions", ".gitignore")
+    if not os.path.exists(gi):                    # same rule as raw/solutions/: only the 16^3 npz are committed
+        with open(gi, "w") as f:
+            f.write("# written by run_all.py --matrix corrective: only the 16^3 solutions are committed\n"
+                    "*.npz\n!*_16_*.npz\n")
+    mpath = os.path.join(out, "manifest.json")
+    man = load_manifest(mpath)
+    host = socket.gethostname()
+    env = dict(os.environ)
+    for k in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+        env[k] = str(threads)
+    env["PYTHONUNBUFFERED"] = "1"
+    bad = c_check_supported(cells)
+    todo = []
+    skipped = 0
+    for c in cells:
+        rec = man["cells"].get(c["id"])
+        if rec is not None and (rec["status"] == "done" or rec["status"] not in retry):
+            skipped += 1
+            continue
+        rec = {"status": "pending", "kind": c["kind"], "field": c["field"], "eps": c["eps"], "N": c["N"],
+               "cmd": c.get("real_cmd") or " ".join(c["argv"][2:]), "log": c["id"] + ".txt", "cap_s": c["cap"],
+               "mem_gb": c["mem_gb"], "prio": c["prio"]}
+        if c["argv"][:1] in (["true"], ["sleep"], ["sh"]):
+            rec["dry_run_cmd"] = " ".join(c["argv"])
+        man["cells"][c["id"]] = rec
+        if c.get("unsupported"):
+            rec.update({"status": "unsupported", "reason": c["unsupported"]})
+            continue
+        todo.append(c)
+    man.update({"matrix": "corrective", "host": host, "workers": workers, "mem_budget_gb": budget,
+                "threads_per_worker": threads, "python": sys.version.split()[0], "numpy": np.__version__})
+    man.setdefault("runs", []).append({"start": utc(), "cells_to_run": len(todo), "skipped_done": skipped})
+    save_manifest(man, mpath)
+    print("run_all corrective: %d cells to run, %d skipped (done / kept), %d in matrix; workers=%d mem-budget=%g GB "
+          "threads/cell=%d host=%s%s" % (len(todo), skipped, len(cells), workers, budget, threads, host,
+                                         ("; unsupported: %s" % bad) if bad else ""), flush=True)
+    orc_ids = {(c["field"], c["eps"]): c["id"] for c in cells if c["kind"] == "orc"}
+    todo = c_order(todo)
+    running = {}
+    t_start = time.time()
+    mem_used = [0.0]
+    max_seen = {"running": 0, "mem": 0.0}
+
+    def finish(cid, status, code, maxrss_kb=None, extra=None):
+        rec = man["cells"][cid]
+        rec["status"] = status
+        rec["exit"] = code
+        rec["end_utc"] = utc()
+        if "t0" in rec:
+            rec["elapsed_s"] = round(time.time() - rec.pop("t0"), 1)
+        if maxrss_kb is not None:
+            rec["peak_rss_gb"] = round(maxrss_kb / 1048576.0, 3)
+        if status != "done":
+            rec["tail"] = tail(os.path.join(out, rec["log"]))
+        if extra:
+            rec.update(extra)
+        save_manifest(man, mpath)
+        print("[%7.0fs] %-8s %s (exit %s, %ss, peak RSS %s GB) running %d/%d mem %.1f/%g GB" % (
+            time.time() - t_start, status, cid, code, rec.get("elapsed_s"), rec.get("peak_rss_gb", "-"),
+            len(running), workers, mem_used[0], budget), flush=True)
+
+    def stop(signum, frame):  # noqa: ARG001
+        for cid, (p, fh, c) in list(running.items()):
+            try:
+                os.killpg(p.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                os.wait4(p.pid, 0)
+            except ChildProcessError:
+                pass
+            fh.write("\nRUN_ALL INTERRUPTED (driver received signal %d); process group killed\n" % signum)
+            fh.close()
+            del running[cid]
+            mem_used[0] -= c["need_gb"]
+            finish(cid, "interrupted", None)
+        man["runs"][-1]["end"] = utc(); man["runs"][-1]["interrupted"] = signum
+        save_manifest(man, mpath)
+        sys.exit(130)
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+
+    def deps_ok(c):
+        if c["kind"] in ("orc", "dryfault"):
+            return True
+        oid = orc_ids.get((c["field"], c["eps"]))
+        if oid is None:
+            return True
+        st = man["cells"].get(oid, {}).get("status")
+        if st == "done":
+            return True
+        return set(c["needs"]) <= c_oracle_ready(out, c["field"], c["eps"])
+
+    while todo or running:
+        # reap (os.wait4 gives the per-child peak RSS)
+        for cid in list(running):
+            p, fh, c = running[cid]
+            rec = man["cells"][cid]
+            try:
+                pid, wst, ru = os.wait4(p.pid, os.WNOHANG)
+            except ChildProcessError:
+                pid, wst, ru = p.pid, None, None     # reaped elsewhere: exit status from Popen
+            if pid == 0:
+                if time.time() - rec["t0"] > c["cap"]:
+                    try:
+                        os.killpg(p.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    try:
+                        _, _, ru = os.wait4(p.pid, 0)
+                    except ChildProcessError:
+                        ru = None
+                    p.returncode = -9
+                    fh.write("\nRUN_ALL TIMEOUT after %d s (cell wall cap); process group killed\n" % c["cap"])
+                    fh.close()
+                    del running[cid]
+                    mem_used[0] -= c["need_gb"]
+                    finish(cid, "timeout", None, ru.ru_maxrss if ru else None)
+                continue
+            code = os.waitstatus_to_exitcode(wst) if wst is not None else p.returncode
+            p.returncode = code
+            fh.close()
+            del running[cid]
+            mem_used[0] -= c["need_gb"]
+            finish(cid, "done" if code == 0 else "failed", code, ru.ru_maxrss if ru else None)
+        # failed / timed-out orc -> dependents that cannot get their caches fail explicitly
+        for c in list(todo):
+            if c["kind"] in ("orc", "dryfault"):
+                continue
+            oid = orc_ids.get((c["field"], c["eps"]))
+            orec = man["cells"].get(oid) if oid else None
+            if orec is not None and orec["status"] in ("failed", "timeout", "unsupported", "interrupted"):
+                rdy = c_oracle_ready(out, c["field"], c["eps"])
+                if not set(c["needs"]) <= rdy:
+                    todo.remove(c)
+                    with open(os.path.join(out, c["id"] + ".txt"), "w") as fh:
+                        fh.write("RUN_ALL NOT STARTED: orc cell %s ended %s before the cache of N=%s existed\n"
+                                 % (oid, orec["status"], sorted(set(c["needs"]) - rdy)))
+                    finish(c["id"], "failed", None, extra={"reason": "orc dependency %s" % orec["status"]})
+        # launch in priority order; the first ready cell that does not fit reserves its memory
+        reserved = 0.0
+        for c in list(todo):
+            if len(running) >= workers:
+                break
+            if not deps_ok(c):
+                continue
+            need = min(c["mem_gb"], budget)            # a cell above the budget runs alone
+            if mem_used[0] + reserved + need > budget + 1e-9:
+                if reserved == 0.0:
+                    reserved = need
+                continue
+            todo.remove(c)
+            log = os.path.join(out, c["id"] + ".txt")
+            fh = open(log, "w")
+            fh.write("RUN_ALL cell=%s host=%s cwd=%s mem_gb=%g cap_s=%d threads=%d cmd=%s\n" % (
+                c["id"], host, _HERE, c["mem_gb"], c["cap"], threads, " ".join(c["argv"])))
+            fh.flush()
+            p = subprocess.Popen(c["argv"], cwd=_HERE, stdout=fh, stderr=subprocess.STDOUT, env=env,
+                                 start_new_session=True)
+            rec = man["cells"][c["id"]]
+            rec.update({"status": "running", "host": host, "t0": time.time(), "start_utc": utc(), "pid": p.pid})
+            running[c["id"]] = (p, fh, c)
+            c["need_gb"] = need
+            mem_used[0] += need
+            max_seen["running"] = max(max_seen["running"], len(running))
+            max_seen["mem"] = max(max_seen["mem"], mem_used[0])
+            save_manifest(man, mpath)
+            print("[%7.0fs] start    %s (mem %g GB, cap %d s) running %d/%d mem %.1f/%g GB" % (
+                time.time() - t_start, c["id"], c["mem_gb"], c["cap"], len(running), workers, mem_used[0], budget),
+                flush=True)
+        if running or todo:
+            if not running and todo and not any(deps_ok(c) for c in todo):
+                for c in list(todo):                  # unreachable: dependency never satisfiable
+                    todo.remove(c)
+                    finish(c["id"], "failed", None, extra={"reason": "dependency not satisfiable"})
+                continue
+            time.sleep(poll)
+    man["runs"][-1].update({"end": utc(), "wall_s": round(time.time() - t_start, 1),
+                            "max_running": max_seen["running"], "max_mem_gb": max_seen["mem"]})
+    save_manifest(man, mpath)
+    counts = {}
+    for c in cells:
+        st = man["cells"].get(c["id"], {}).get("status", "missing")
+        counts[st] = counts.get(st, 0) + 1
+    print("run_all corrective: finished in %.0f s; max running %d (cap %d), max mem %.1f GB (budget %g); statuses %s"
+          % (time.time() - t_start, max_seen["running"], workers, max_seen["mem"], budget, counts), flush=True)
+    return counts
+
+
+def c_oracle_ready(out, field, eps):
+    s = set()
+    for ln in read(os.path.join(out, c_cell_id("orc", field, eps) + ".txt")):
+        if ln.startswith("ORACLE_READY "):
+            m = re.search(r" N=(\d+) ", ln)
+            if m:
+                s.add(int(m.group(1)))
+    return s
+
+
+def lsq_slope(Ns, vals):
+    """Least-squares slope of log(e) vs log(h), h = 1/N, over the grids with a positive finite value."""
+    pts = [(math.log(1.0 / n), math.log(v)) for n, v in zip(Ns, vals)
+           if v is not None and math.isfinite(v) and v > 0]
+    if len(pts) < 2:
+        return None
+    x = np.array([p[0] for p in pts]); y = np.array([p[1] for p in pts])
+    return float(np.polyfit(x, y, 1)[0])
+
+
+def gap_eval(path):
+    """Spectrum statistics for the corrective summary; criterion (4): FAIL iff a consecutive pair of sorted
+    relative singular values with r_i < 1e-2 has r_{i+1}/r_i >= 100 (r_i = 0 counts as an infinite gap)."""
+    ev = spec_eval(path)
+    if ev is None:
+        return None
+    r = np.sort(np.abs(np.loadtxt(path, comments="#").ravel()))
+    r = r / r.max()
+    gap4 = None
+    for i in range(r.size - 1):
+        if r[i] < 1e-2:
+            g = r[i + 1] / r[i] if r[i] > 0 else float("inf")
+            if g >= 100 and gap4 is None:
+                gap4 = (i + 1, g)
+    ev["gap4"] = gap4
+    ev["verdict4"] = "PASS" if gap4 is None else "FAIL"
+    return ev
+
+
+def c_collect(out, man, merge_dir=None):
+    data = {}
+
+    def blk(field, eps):
+        return data.setdefault((field, eps), {"ceil": {"oracle_fd": {}, "oracle_fd4": {}, "oracle_mim": {}},
+                                              "cand": {}, "cons": None, "spec": [], "status": {}})
+    for cid, rec in man.get("cells", {}).items():
+        kind, field, eps, N = rec["kind"], rec["field"], rec["eps"], rec["N"]
+        if kind == "dryfault":
+            continue
+        d = blk(field, eps)
+        d["status"][cid] = rec["status"]
+        lines = read(os.path.join(out, rec["log"]))
+        cls = case_lines(lines)
+        for c in cls:                                     # ceilings: orc cell first, candidate logs as fallback
+            if c["cand"] in d["ceil"]:
+                n = int(c["N"])
+                if kind == "orc" or n not in d["ceil"][c["cand"]]:
+                    d["ceil"][c["cand"]][n] = c
+        if kind in ("i1o4", "i1", "ii"):
+            names = {"i1o4": ("i1o4", "i1o4_fd2"), "i1": ("i1",), "ii": ("ii",)}[kind]
+            for name in names:
+                cl = [c for c in cls if c["cand"] == name]
+                ent = {"status": rec["status"], "cid": cid, "src": "sweep2", "elapsed": rec.get("elapsed_s")}
+                if cl:
+                    ent.update(cl[-1])
+                    if kind == "ii":
+                        m = [ln for ln in lines if ln.startswith("SOLVE ")]
+                    else:
+                        m = [ln for ln in lines if ln.startswith("EXTRA ")]
+                    ent["solver_status"] = (re.search(r"status=(\S+)", m[-1]).group(1) if m else "?")
+                    pl = [ln for ln in lines if ln.startswith("PATH ")]
+                    ent["path"] = pl[-1].split("path:", 1)[1].strip() if pl else ""
+                d["cand"].setdefault(name, {})[N] = ent
+        elif kind == "cons4":
+            d["cons"] = {"status": rec["status"],
+                         "rows": [ln.split(" ", 3)[3] for ln in lines if ln.startswith("CONSISTENCY_ORDER ")]}
+        elif kind == "spec4":
+            sd = os.path.join(out, "spectra")
+            files = []
+            for st in ("", "_final_iterate", "_oracle"):
+                p = os.path.join(sd, "spectrum_cand_i_i1o4_%s_%g_%d%s.txt" % (field, eps, N, st))
+                if os.path.exists(p):
+                    files.append((st.strip("_") or "converged", p))
+            for st, p in files:
+                d["spec"].append({"M": N, "state": st, "file": os.path.relpath(p, out), "ev": gap_eval(p),
+                                  "status": rec["status"]})
+            if not files:
+                d["spec"].append({"M": N, "state": "-", "file": None, "ev": None, "status": rec["status"]})
+    # generic3d i1: the grids of G = 16/20/24/28 not run here (16, 24) are read from the N4 sweep (raw/sweep/),
+    # marked src=sweep (same discretization; pre-C-i4 e_psi normalization, no e_psi1/e_psi2)
+    if merge_dir and os.path.exists(os.path.join(merge_dir, "manifest.json")):
+        mm = load_manifest(os.path.join(merge_dir, "manifest.json"))
+        for cid, rec in mm.get("cells", {}).items():
+            if rec.get("kind") != "i1" or rec.get("field") != "generic3d" or rec.get("N") not in CGRIDS:
+                continue
+            d = data.get((rec["field"], rec["eps"]))
+            if d is None:
+                continue
+            rows = d["cand"].setdefault("i1", {})
+            if rec["N"] in rows:
+                continue
+            lines = read(os.path.join(merge_dir, rec["log"]))
+            cl = [c for c in case_lines(lines) if c["cand"] == "i1"]
+            ent = {"status": rec["status"], "cid": cid, "src": "sweep", "elapsed": rec.get("elapsed_s")}
+            if cl:
+                ent.update(cl[-1])
+                m = [ln for ln in lines if ln.startswith("EXTRA ")]
+                ent["solver_status"] = re.search(r"status=(\S+)", m[-1]).group(1) if m else "?"
+                pl = [ln for ln in lines if ln.startswith("PATH ")]
+                ent["path"] = pl[-1].split("path:", 1)[1].strip() if pl else ""
+            rows[rec["N"]] = ent
+            for c in case_lines(lines):
+                if c["cand"] == "oracle_fd" and int(c["N"]) not in d["ceil"]["oracle_fd"]:
+                    d["ceil"]["oracle_fd"][int(c["N"])] = c
+    return data
+
+
+C_CEIL = {"i1o4": "oracle_fd4", "i1o4_fd2": "oracle_fd", "i1": "oracle_fd", "ii": "oracle_mim"}
+
+
+def c_completed(r):
+    return r.get("status") == "done" and r.get("e_v") is not None and math.isfinite(r["e_v"])
+
+
+def c_classify(Ns, e, ec=None):
+    """Criteria (1) (with ceiling ec) / (2) (ec None) on the three finest completed grids."""
+    if len(Ns) < 3:
+        return "INCOMPLETE", "%d completed grid(s)" % len(Ns)
+    Ns, e = Ns[-3:], e[-3:]
+    o = safe_orders(e, Ns)
+    if any(v is None for v in o):
+        return "INCOMPLETE", "non-positive value"
+    fmt = lambda xs: " ".join("%.2f" % v if v is not None else "-" for v in xs)  # noqa: E731
+    if all(v >= 1.8 for v in o):
+        return "PASS", "N=%s orders %s" % ("/".join(map(str, Ns)), fmt(o))
+    if ec is None:
+        return "FAIL", "N=%s orders %s" % ("/".join(map(str, Ns)), fmt(o))
+    ec = ec[-3:]
+    if any(v is None for v in ec):
+        return "INCOMPLETE", "ceiling missing on N=%s" % "/".join(map(str, Ns))
+    oc = safe_orders(ec, Ns)
+    ratios = [a / b for a, b in zip(e, ec)]
+    if all(r <= 1.5 for r in ratios) and all(oc[i] is not None and abs(o[i] - oc[i]) <= 0.15 for i in range(2)):
+        return "ceiling-limited", "N=%s orders %s vs ceiling %s, max ratio %.2f" % (
+            "/".join(map(str, Ns)), fmt(o), fmt(oc), max(ratios))
+    return "FAIL", "N=%s orders %s vs ceiling %s, max ratio %.2f" % ("/".join(map(str, Ns)), fmt(o), fmt(oc),
+                                                                     max(ratios))
+
+
+def summarize_corrective(out, merge_dir=None):
+    man = load_manifest(os.path.join(out, "manifest.json"))
+    data = c_collect(out, man, merge_dir)
+    L = []
+    L.append("# SF-29 N4c corrective sweep summary (machine-generated by `scripts/run_all.py --matrix corrective "
+             "--summarize`; do not edit)")
+    L.append("")
+    L.append("Source: cell logs `<cell>.txt` and `manifest.json` in this directory, spectra in `spectra/`%s. Numbers are "
+             "copied from the CASE / PATH / EXTRA / SOLVE / CONSISTENCY_ORDER lines (`metrics.parse_case_line`); "
+             "orders are `metrics.orders` over consecutive completed grids; slope = least-squares slope of log(e) vs "
+             "log(h). No interpretation." % (
+                 ("; generic3d `i1` rows marked `sweep` are read from `%s`" % os.path.relpath(merge_dir, out))
+                 if merge_dir and os.path.exists(os.path.join(merge_dir, "manifest.json")) else ""))
+    L.append("")
+    counts = {}
+    for rec in man.get("cells", {}).values():
+        counts[rec["status"]] = counts.get(rec["status"], 0) + 1
+    L.append("Host `%s`; workers %s, mem budget %s GB, %s threads/cell; python %s, numpy %s. Cell statuses: %s." % (
+        man.get("host"), man.get("workers"), man.get("mem_budget_gb"), man.get("threads_per_worker"),
+        man.get("python"), man.get("numpy"), ", ".join("%s %d" % kv for kv in sorted(counts.items()))))
+    for r in man.get("runs", []):
+        L.append("Run: start %s, end %s, wall %s s, cells run %s, skipped %s, max running %s, max mem %s GB." % (
+            r.get("start"), r.get("end", "-"), r.get("wall_s", "-"), r.get("cells_to_run"), r.get("skipped_done"),
+            r.get("max_running", "-"), r.get("max_mem_gb", "-")))
+    L.append("")
+    L.append("## Reading rules applied (D-5, task N4c 3.B.3), on the three finest COMPLETED grids of each ladder")
+    L.append("")
+    L.append("- completed grid: cell status `done` and a CASE line with finite `e_v`.")
+    L.append("- (1) `e_v`: PASS iff order >= 1.8 on both pairs; else `ceiling-limited` iff `e_v <= 1.5 ceiling` on "
+             "the three grids and `|order - ceiling order| <= 0.15` on both pairs; else FAIL. Ceiling: `oracle_fd4` "
+             "(`i1o4`), `oracle_fd` (`i1`, `i1o4_fd2`), `oracle_mim` (`ii`).")
+    L.append("- (2) `e_psi`: PASS iff order >= 1.8 on both pairs; else FAIL (no ceiling clause).")
+    L.append("- (3) PASS iff final `r_F <= 1e-10` and solver status `converged` on every completed grid.")
+    L.append("- (4) PASS iff no consecutive pair of sorted relative singular values with `r_i < 1e-2` has ratio "
+             ">= 100, on every converged-state `spec4` spectrum (12^3, 16^3) of the (field, eps); `i1o4` and "
+             "`i1o4_fd2` (same solves) only; `i1`/`ii`: no spectrum cell in this matrix (`n/a`).")
+    L.append("- `INCOMPLETE`: fewer than three completed grids ((1), (2)), no completed grid ((3)), no converged "
+             "spectrum ((4)).")
+    L.append("")
+    fmt = lambda xs: " ".join("%.2f" % v if v is not None else "-" for v in xs)  # noqa: E731
+    classes = []
+    for field in CFIELDS:
+        for eps in EPSS:
+            d = data.get((field, eps))
+            if d is None:
+                continue
+            L.append("## %s, eps = %g" % (field, eps))
+            L.append("")
+            bad = ["%s: %s" % kv for kv in sorted(d["status"].items()) if kv[1] != "done"]
+            L.append("Cells not `done`: %s" % (", ".join("`%s`" % b for b in bad) if bad else "none"))
+            L.append("")
+            spec_conv = [s for s in d["spec"] if s["ev"] is not None and s["state"] == "converged"]
+            for cand in ("i1o4", "i1o4_fd2", "i1", "ii"):
+                rows = d["cand"].get(cand)
+                if not rows:
+                    continue
+                ck = C_CEIL[cand]
+                ceil = d["ceil"][ck]
+                Ns = sorted(rows)
+                L.append("### candidate `%s` (ceiling `%s`)" % (cand, ck))
+                L.append("")
+                L.append("| N | src | status | solver status | r_F | its | e_v | ceiling | e_v/ceiling | e_psi | e_psi1 "
+                         "| e_psi2 | min_c | t [s] |")
+                L.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+                for N in Ns:
+                    r = rows[N]; ce = ceil.get(N, {}).get("e_v")
+                    ev = r.get("e_v")
+                    L.append("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+                        N, r["src"], r["status"], r.get("solver_status", "-"), fnum(r.get("r_F")),
+                        fnum(r.get("its"), "%.0f"), fnum(ev), fnum(ce),
+                        fnum(ev / ce if ev is not None and ce else None, "%.2f"), fnum(r.get("e_psi")),
+                        fnum(r.get("e_psi1")), fnum(r.get("e_psi2")), fnum(r.get("min_c")), fnum(r.get("t"), "%.0f")))
+                L.append("")
+                comp = [N for N in Ns if c_completed(rows[N])]
+                ev = [rows[N]["e_v"] for N in comp]
+                ep = [rows[N].get("e_psi") for N in comp]
+                ec = [ceil.get(N, {}).get("e_v") for N in comp]
+                if len(comp) >= 2:
+                    L.append("Orders over completed N = %s: e_v %s; e_psi %s; ceiling %s. LSQ slope log(e) vs log(h): "
+                             "e_v %s; e_psi %s; ceiling %s." % (
+                                 "/".join(map(str, comp)), fmt(safe_orders(ev, comp)), fmt(safe_orders(ep, comp)),
+                                 fmt(safe_orders(ec, comp)), fnum(lsq_slope(comp, ev), "%.2f"),
+                                 fnum(lsq_slope(comp, ep), "%.2f"), fnum(lsq_slope(comp, ec), "%.2f")))
+                else:
+                    L.append("Orders: fewer than two completed grids (%s)." % ("/".join(map(str, comp)) or "none"))
+                L.append("")
+                for N in Ns:
+                    if rows[N].get("path"):
+                        L.append("- PATH N=%d: `%s`" % (N, rows[N]["path"]))
+                if any(r.get("path") for r in rows.values()):
+                    L.append("")
+                c1 = c_classify(comp, ev, ec)
+                c2 = c_classify(comp, ep)
+                done_rows = [rows[N] for N in Ns if rows[N].get("status") == "done" and "r_F" in rows[N]]
+                if not done_rows:
+                    c3 = ("INCOMPLETE", "no completed grid")
+                else:
+                    okc = all(r.get("r_F") is not None and math.isfinite(r["r_F"]) and r["r_F"] <= 1e-10
+                              and str(r.get("solver_status", "")).startswith("converged") for r in done_rows)
+                    c3 = ("PASS" if okc else "FAIL", "r_F %s; status %s" % (
+                        " ".join(fnum(r.get("r_F"), "%.1e") for r in done_rows),
+                        " ".join(str(r.get("solver_status")) for r in done_rows)))
+                if cand in ("i1o4", "i1o4_fd2"):
+                    if not spec_conv:
+                        c4 = ("INCOMPLETE", "no converged-state spec4 spectrum")
+                    else:
+                        f4 = [s for s in spec_conv if s["ev"]["verdict4"] == "FAIL"]
+                        c4 = ("FAIL" if f4 else "PASS", "M=%s%s" % (
+                            ",".join(str(s["M"]) for s in spec_conv),
+                            ("; gap >= 100 at M=%s" % ",".join("%d(after %d, ratio %.3g)" % (
+                                s["M"], s["ev"]["gap4"][0], s["ev"]["gap4"][1]) for s in f4)) if f4 else ""))
+                else:
+                    c4 = ("n/a", "no spectrum cell in this matrix")
+                classes.append((field, eps, cand, c1, c2, c3, c4))
+            if d["cons"] is not None:
+                L.append("### cons4: `i1o4` residual at the oracle labels (status %s)" % d["cons"]["status"])
+                L.append("")
+                for row in d["cons"]["rows"]:
+                    L.append("- `%s`" % row)
+                if not d["cons"]["rows"]:
+                    L.append("- (no order lines)")
+                L.append("")
+            if d["spec"]:
+                L.append("### spec4: dense spectra of `i1o4` (sorted relative singular values)")
+                L.append("")
+                L.append("| M | state | n | smallest 3 | <1e-3 | <1e-6 | <1e-10 | largest gap below 1e-2 (ratio @ position: "
+                         "r -> r') | first gap >= 100 below 1e-2 | file |")
+                L.append("|---|---|---|---|---|---|---|---|---|---|")
+                for s in sorted(d["spec"], key=lambda s: (s["M"], s["state"])):
+                    ev = s["ev"]
+                    if ev is None:
+                        L.append("| %d | - | - | - | - | - | - | - | - | (no file; cell %s) |" % (s["M"], s["status"]))
+                        continue
+                    g = ev["gap"]
+                    L.append("| %d | %s | %d | %s | %d | %d | %d | %s @ %d: %s -> %s | %s | `%s` |" % (
+                        s["M"], s["state"], ev["n"], " ".join("%.2e" % v for v in ev["small3"]), ev["cnt"][1e-3],
+                        ev["cnt"][1e-6], ev["cnt"][1e-10], "%.3g" % g[0], g[1], fnum(g[2], "%.2e"),
+                        fnum(g[3], "%.2e"), ("after %d (ratio %.3g)" % ev["gap4"]) if ev["gap4"] else "none",
+                        s["file"]))
+                L.append("")
+    L.append("## D-5 classification per criterion")
+    L.append("")
+    L.append("| field | eps | candidate | (1) e_v | (2) e_psi | (3) r_F | (4) spectrum |")
+    L.append("|---|---|---|---|---|---|---|")
+    for field, eps, cand, c1, c2, c3, c4 in classes:
+        L.append("| %s | %g | %s | %s | %s | %s | %s |" % (field, eps, cand,
+                                                          *("**%s** (%s)" % c for c in (c1, c2, c3, c4))))
+    L.append("")
+    path = os.path.join(out, "summary.md")
+    with open(path, "w") as f:
+        f.write("\n".join(L) + "\n")
+    print("run_all: wrote %s (%d (field, eps) blocks, %d classification rows)" % (path, len(data), len(classes)),
+          flush=True)
+    return path
+
+
+# ------------------------------------------------------------------------------------------------
+def main_corrective(argv):
+    opts = {"workers": 26, "budget": 100.0, "threads": 3, "out": os.path.normpath(os.path.join(_HERE, "..", "raw",
+                                                                                                "sweep2")),
+            "only": None, "grids": None, "types": None, "retry": ("failed", "running", "pending", "interrupted"),
+            "mode": "run", "dry": False, "dry_sleep": 0.0, "dry_faults": False, "merge": None}
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a == "--matrix":
+            i += 2
+        elif a == "--plan":
+            opts["mode"] = "plan"; i += 1
+        elif a == "--summarize":
+            opts["mode"] = "summarize"; i += 1
+        elif a == "--workers":
+            opts["workers"] = int(argv[i + 1]); i += 2
+        elif a == "--mem-budget":
+            opts["budget"] = float(argv[i + 1]); i += 2
+        elif a == "--threads":
+            opts["threads"] = int(argv[i + 1]); i += 2
+        elif a == "--out":
+            opts["out"] = os.path.abspath(argv[i + 1]); i += 2
+        elif a == "--only":
+            opts["only"] = set(fe(s.split(":")[0], float(s.split(":")[1])) for s in argv[i + 1].split(",")); i += 2
+        elif a == "--grids":
+            opts["grids"] = set(int(x) for x in argv[i + 1].split(",")); i += 2
+        elif a == "--types":
+            opts["types"] = set(argv[i + 1].split(",")); i += 2
+            unk = opts["types"] - set(CTYPES)
+            if unk:
+                print("unknown --types %s (known: %s)" % (",".join(sorted(unk)), ",".join(CTYPES))); return 2
+        elif a == "--retry":
+            opts["retry"] = tuple(argv[i + 1].split(",")); i += 2
+        elif a == "--dry-run":
+            opts["dry"] = True; i += 1
+        elif a == "--dry-sleep":
+            opts["dry_sleep"] = float(argv[i + 1]); i += 2
+        elif a == "--dry-faults":
+            opts["dry_faults"] = True; i += 1
+        elif a == "--merge-sweep":
+            opts["merge"] = os.path.abspath(argv[i + 1]); i += 2
+        else:
+            print(__doc__); return 2
+    out = opts["out"]
+    merge = opts["merge"] or os.path.normpath(os.path.join(out, "..", "sweep"))
+    if opts["mode"] == "summarize":
+        summarize_corrective(out, merge)
+        return 0
+    cells = build_corrective(out, opts["only"], opts["grids"], opts["types"], opts["dry"], opts["dry_sleep"],
+                             opts["dry_faults"])
+    if opts["mode"] == "plan":
+        plan_corrective(cells, opts["workers"], opts["budget"], opts["threads"])
+        return 0
+    counts = run_corrective(cells, out, opts["workers"], opts["budget"], opts["threads"], opts["retry"])
+    summarize_corrective(out, merge)
+    return 0 if set(counts) <= {"done", "timeout", "unsupported"} else 1
+
+
+# ------------------------------------------------------------------------------------------------
 def main(argv):
+    if "--matrix" in argv:
+        mx = argv[argv.index("--matrix") + 1] if argv.index("--matrix") + 1 < len(argv) else ""
+        if mx == "corrective":
+            return main_corrective(argv)
+        if mx != "n4":
+            print("--matrix must be n4 (default) or corrective"); return 2
+        argv = [a for j, a in enumerate(argv) if not (a == "--matrix" or (j > 0 and argv[j - 1] == "--matrix"))]
     opts = {"workers": 22, "out": os.path.normpath(os.path.join(_HERE, "..", "raw", "sweep")), "only": None,
             "grids": None, "spectra": None, "kinds": None, "retry": ("failed", "running", "pending"), "mode": "run"}
     i = 0
@@ -843,11 +1631,13 @@ def main(argv):
             opts["kinds"] = set(argv[i + 1].split(",")); i += 2
         elif a == "--retry":
             opts["retry"] = tuple(argv[i + 1].split(",")); i += 2
+        elif a == "--fd4":
+            opts["fd4"] = True; i += 1
         else:
             print(__doc__); return 2
     if opts["mode"] == "oracle":
         grids = sorted(opts["grids"]) if opts["grids"] else list(ORACLE_GRIDS)
-        return oracle_cell(ocell, grids)
+        return oracle_cell(ocell, grids, fd4=opts.get("fd4", False))
     out = opts["out"]
     if opts["mode"] == "summarize":
         summarize(out)

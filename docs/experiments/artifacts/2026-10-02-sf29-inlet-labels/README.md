@@ -23,7 +23,7 @@ labels at every vertex of a candidate grid, plus the shared conventions used by 
 | `metrics.py` | shared metrics (`fd_metrics`), the one-line `CASE` print format (`case_line`, `print_case`, `parse_case_line`), observed orders |
 | `candidate_i.py` (N2) | candidate (i): non-divergence same-index equation (14) on the slab, inlet Dirichlet labels, analytic `grad ln k`, second-order centered stencils, no `|c|^2` regularization; variants `i0` (spec-literal control: equation rows also on the outlet plane with one-sided `d1`/`d11`/`d1j`, no boundary condition) and `i1` (deviation D-2: outlet rows `c2 = v2_in`, `c3 = v3_in`, i.e. `c x e1 = vperp_in x e1` with the inlet-face tangential Darcy velocity; Neumann `d1 psi_i = 0` for `_ch`). Damped Newton, colored central-FD sparse Jacobian, `splu` (N <= 24) / right-preconditioned GMRES (CGS2, restart 300) with the per-mode inverse of the `k = 1` linearization (N >= 32), amplitude continuation 0.25 -> 0.5 -> 1 with bisection fallback, Levenberg-Marquardt fallback for `i0` (N <= 16). Commands: `python3 candidate_i.py field:eps:N:i0|i1 ...` (CASE line `cand=i0/i1` + `cand=oracle_fd` ceiling, `EXTRA` outlet-row residual and inlet oblique defect, `HISTORY`); `--jactest field:eps:N:var` (Jacobian action vs FD, 3 steps); `--consistency field:eps ...` (residual at the oracle labels on `--grids 16,32,48`, orders); `--spectrum M field:eps:M:var ...` (dense FD Jacobian SVD at the converged state, or at the final iterate and the oracle labels if not converged -> `raw/spectrum_cand_i_<var>_<field>_<eps>_<M>[_state].txt`); `--k1check N` (`k = 1` control: exact nulls of `i0`/`i1`, preconditioner exactness -> `raw/spectrum_cand_i_<var>_uniform_k1_<N>.txt`); options `--maxit --tol --lin-tol --prec lin0|lap --direct-max --restart --no-continuation --bisect --lm --init zero|inlet|oracle (oracle = diagnostic only) --out`. Raw console: `raw/cand_i_smoke_*.txt`. C-i4 additions (section "Candidate (i): 4th-order variant `i1o4`, saved solutions and linear solves (C-i4)"): `--order 4` (`cand=i1o4`), `--save DIR`, `--remetric FILE...`, `--reuse-lu K`, `--selfcheck`; default `--direct-max` is now 32 |
 | `candidate_ii.py` | N3 + C-ii, candidate (ii): dissipation energy of the label pair; default (C-ii) `--energy q1` = `1/2 sum_cells q_cell int_cell |grad psi1^h x grad psi2^h|^2` of the trilinear (Q1) label interpolants (pointwise in-cell product, exactly divergence-free, normal-continuous, face averages = the Whitney fluxes; 3x3x3 Gauss, exact); `--energy whitney` = the N3 edge-averaged energy `1/2 h^3 sum_f omega_f c_f^2` of the mimetic face fluxes (`c_f = curl_h(avg(psi1) G_h psi2)`, control with the hourglass kernel); inlet Dirichlet labels; outlet free (`_ch`) or outlet flux constraint `c1[N] = f1_in` plus the two D-3 rows "mean transverse flux = 0" (periodic fields, Lagrange multipliers); Newton (colored-FD Hessian) with LM globalization; metrics, `oracle_mim` ceiling, TPFA reference, `--gradtest`, `--consistency`, `--spectrum`. Section "Candidate (ii) (N3, corrected by C-ii)" below |
-| `run_all.py` (N4) | resumable sweep driver: the N4 matrix (oracle ladder with `oracle_fd`/`oracle_mim` ceiling lines, `i1` on 16/24/32/48 (+64 for `gauss`, `gauss_ch`, `control2d`), `i0` at 16^3, (ii)-Q1 on 16/24/32 (4 h cap), `ii_from_oracle` at 48^3 for `gauss:0.25`/`gauss_ch:0.25`, consistency ladders, dense spectra 12^3/16^3) as one subprocess per cell in a pool (`--workers`), one log per cell `raw/sweep/<cell>.txt`, `raw/sweep/manifest.json` (status `done`/`failed`/`timeout`/`unsupported`, elapsed, exit, host, log tail on failure), spectra in `raw/sweep/spectra/`; non-oracle cells start only after the oracle cache of every grid they use exists; `--plan` (matrix, cost estimates, host check), `--summarize` (rebuilds `raw/sweep/summary.md`: per-(field, eps) tables, orders, ceiling ratios, consistency orders, spectrum statistics, D-5 classification per criterion), filters `--only --grids --spectra --kinds`, `--retry` |
+| `run_all.py` (N4) | resumable sweep driver: the N4 matrix (oracle ladder with `oracle_fd`/`oracle_mim` ceiling lines, `i1` on 16/24/32/48 (+64 for `gauss`, `gauss_ch`, `control2d`), `i0` at 16^3, (ii)-Q1 on 16/24/32 (4 h cap), `ii_from_oracle` at 48^3 for `gauss:0.25`/`gauss_ch:0.25`, consistency ladders, dense spectra 12^3/16^3) as one subprocess per cell in a pool (`--workers`), one log per cell `raw/sweep/<cell>.txt`, `raw/sweep/manifest.json` (status `done`/`failed`/`timeout`/`unsupported`, elapsed, exit, host, log tail on failure), spectra in `raw/sweep/spectra/`; non-oracle cells start only after the oracle cache of every grid they use exists; `--plan` (matrix, cost estimates, host check), `--summarize` (rebuilds `raw/sweep/summary.md`: per-(field, eps) tables, orders, ceiling ratios, consistency orders, spectrum statistics, D-5 classification per criterion), filters `--only --grids --spectra --kinds`, `--retry`. N4c: `--matrix corrective` (section "Corrective sweep (`raw/sweep2/`)": `i1o4`/`i1` direct solves on 16/20/24/28 (+32), memory-budget scheduler, `raw/sweep2/`) |
 | `sweep_digest.py` (N4) | parses `raw/sweep/manifest.json`, the cell logs and the job log only (no computation) and writes `raw/sweep/timeouts.md`: `python3 sweep_digest.py --out ../raw/sweep [--slow 3600]` |
 
 ### Reuse of the 2026-10-02 closure probes
@@ -608,6 +608,65 @@ rsync -a v100:/home/sesquerre/.macroflow3d-remote/macroflow3d-SF-29/logs/sf29-ru
 | `raw/sweep/summary.md` | `run_all.py --summarize` output (tables, orders, ceiling ratios, D-5 classification per criterion). Regenerated locally from the pulled logs with `python3 run_all.py --summarize --out ../raw/sweep`: byte-identical to the remote file |
 | `raw/sweep/timeouts.md` | `sweep_digest.py --out ../raw/sweep`: the 33 timed-out cells and the 52 `done` cells with elapsed > 3600 s (continuation path, last Newton iterate, GMRES / direct-solve iteration and time statistics, bisections), the elapsed table of `i1` on `gauss`/`gauss_ch`, and the concurrency actually used |
 | `raw/sweep/sf29-run-all.joblog.txt` | the remote job log (cell start/done/timeout events with elapsed) |
+
+## Corrective sweep (`raw/sweep2/`)
+
+Node N4c (driver only; the job is run by the orchestrator as a detached remote job). `run_all.py --matrix
+corrective` adds a second matrix next to the N4 one (`--matrix n4`, still the default and unchanged). It replaces
+the GMRES + `k = 1` preconditioner path that degraded with amplitude in `raw/sweep/` (33 timeouts) by pure direct
+`splu` solves (`--direct-max 32 --reuse-lu 0`; frozen-LU GMRES missed `--lin-tol` in 2 of 3 uses at 24^3, see
+"Measured cost"), and adds the 4th-order variant `i1o4` and the intermediate grids 20, 28.
+
+Matrix (fields `gauss`, `gauss_ch`, `control2d`, `generic3d` x `eps` 0.25 / 0.5 / 1; `G = 16, 20, 24, 28`):
+
+| type | command (run from `scripts/`) | selection | cells |
+|---|---|---|---|
+| `orc` | `run_all.py --oracle-cell field:eps --fd4 --grids <every N used by the cells of that (field, eps)>` (oracle caches; CASE lines `oracle_fd`, `oracle_fd4`, `oracle_mim`); every other cell of the (field, eps) depends on it | all 12 (field, eps); grids `12` (spec4), `G`, `32` (gauss/gauss_ch 0.25 `i1o4`/`ii`, and the `i1` ladders of gauss, gauss_ch, control2d) | 12 |
+| `i1o4` | `candidate_i.py field:eps:N:i1 --order 4 --direct-max 32 --reuse-lu 0 --save ../raw/sweep2/solutions` | 12 (field, eps) x `G`, + N = 32 for `gauss:0.25`, `gauss_ch:0.25` | 50 |
+| `i1` | `candidate_i.py field:eps:N:i1 --direct-max 32 --reuse-lu 0 --save ../raw/sweep2/solutions` | gauss, gauss_ch, control2d x 3 eps x `G` + 32; generic3d x 3 eps x N = 20, 28 (16, 24 are read from `raw/sweep/` by the summary, marked `sweep`) | 51 |
+| `ii` | `candidate_ii.py field:eps:N` (Q1) | gauss, gauss_ch, control2d x 3 eps at N = 20; control2d x 3 eps at 16, 24 (corrected per-label `e_psi`); N = 32 for `gauss:0.25`, `gauss_ch:0.25` (lowest priority) | 17 |
+| `spec4` | `candidate_i.py --spectrum M --order 4 field:eps:M:i1 --out ../raw/sweep2/spectra` | 12 (field, eps) x M = 12, 16 | 24 |
+| `cons4` | `candidate_i.py --consistency --order 4 --grids 16,24,28 field:eps` | 12 (field, eps) | 12 |
+
+166 cells; `--plan` checks every flag against the scripts' argument parsers (no `unsupported` type) and prints
+the cells, the counts, 3052 GB-h of memory at the wall caps (upper bound) and the launch order.
+
+Scheduler (replaces the fixed-size pool for this matrix):
+
+- estimated peak memory `mem_gb` / wall cap `cap_s` per cell: `i1o4` N16 1.5/3600, N20 3/7200, N24 7/10800, N28
+  14/21600, N32 28/36000; `i1` N16 1/3600, N20 1.5/3600, N24 2.5/7200, N28 5/14400, N32 9/21600; `ii` N16 1/7200,
+  N20 2/14400, N24 3/14400, N32 4/36000; `orc` 2/7200; `spec4` 12^3 1/1800, 16^3 4/3600; `cons4` 2/7200.
+- `sum(mem_gb of running cells) <= --mem-budget` (default 100) and `running <= --workers` (default 26); every cell
+  gets `OMP_NUM_THREADS = OPENBLAS_NUM_THREADS = MKL_NUM_THREADS = --threads` (default 3).
+- priority `orc` > `i1o4` > `i1` > `spec4`, `cons4` > `ii` > `ii` at N = 32; larger `mem_gb` first within a class;
+  a cell starts only when its `orc` cell is `done` (or has printed `ORACLE_READY` for every N it uses); the first
+  ready cell that does not fit reserves its memory, so later (smaller) cells start only if they fit beside it (no
+  starvation of the large cells). A cell above the budget runs alone.
+- a cell past its cap is killed (process group) and recorded `timeout`; a non-zero exit is `failed` with the log
+  tail; a failed / timed-out `orc` fails its dependents explicitly; SIGTERM / SIGINT of the driver kills the running
+  cells and records them `interrupted`.
+- `manifest.json` per cell: status, exit, elapsed, `start_utc` / `end_utc`, `mem_gb`, `cap_s`, `peak_rss_gb`
+  (`ru_maxrss` from `os.wait4` of the cell process), command, log. Resumable: `done` cells are skipped;
+  `--retry` (default `failed,running,pending,interrupted`) selects what is rerun.
+- `<out>/solutions/.gitignore` is written on the first run (only the 16^3 npz are committed).
+- launcher tests without computation: `--dry-run` (each cell runs `true`, or `sleep S` with `--dry-sleep S`) and
+  `--dry-faults` (a fake cell that sleeps past a 2 s cap and one that exits 1).
+
+`--summarize` (also run at the end of the job) writes `raw/sweep2/summary.md`: per (field, eps) and candidate
+(`i1o4`, `i1o4_fd2`, `i1`, `ii`) a table over N (status, solver status, `r_F`, its, `e_v`, ceiling, `e_v`/ceiling,
+`e_psi`, `e_psi1`, `e_psi2`, `min|c|`), the observed orders over consecutive completed grids of `e_v`, `e_psi` and
+the ceiling and the least-squares slope of log(e) vs log(h), the continuation PATH, the `spec4` statistics, the
+`cons4` orders, and the D-5 classification per criterion on the three finest completed grids (rules printed in
+the file). Ceilings: `oracle_fd4` for `i1o4`, `oracle_fd` for `i1` and `i1o4_fd2`, `oracle_mim` for `ii`.
+
+Job command (orchestrator, detached on the host):
+
+```bash
+cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts && python3 run_all.py --matrix corrective --workers 26 --mem-budget 100 --threads 3 --out ../raw/sweep2
+```
+
+The oracle caches in `raw/cache/` (`cases.CACHE_DIR`, keyed by field, eps, N, `N_phi`) are reused when present
+(e.g. those left on the host mirror by `raw/sweep/`); the `orc` cells build the missing ones (20^3, 28^3 are new).
 
 ## Raw outputs (`raw/`)
 
