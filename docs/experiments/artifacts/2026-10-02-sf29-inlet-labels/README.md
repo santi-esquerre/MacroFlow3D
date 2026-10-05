@@ -21,7 +21,7 @@ labels at every vertex of a candidate grid, plus the shared conventions used by 
 | `tracing.py` | DOP853 streamline tracing parametrized by `x1` (backward to the inlet, round trip, closure-note return map) |
 | `cases.py` | `load_case(field, eps, N)`, `NPHI` table, face fluxes, cache |
 | `metrics.py` | shared metrics (`fd_metrics`), the one-line `CASE` print format (`case_line`, `print_case`, `parse_case_line`), observed orders |
-| `candidate_i.py` (N2) | candidate (i): non-divergence same-index equation (14) on the slab, inlet Dirichlet labels, analytic `grad ln k`, second-order centered stencils, no `|c|^2` regularization; variants `i0` (spec-literal control: equation rows also on the outlet plane with one-sided `d1`/`d11`/`d1j`, no boundary condition) and `i1` (deviation D-2: outlet rows `c2 = v2_in`, `c3 = v3_in`, i.e. `c x e1 = vperp_in x e1` with the inlet-face tangential Darcy velocity; Neumann `d1 psi_i = 0` for `_ch`). Damped Newton, colored central-FD sparse Jacobian, `splu` (N <= 24) / right-preconditioned GMRES (CGS2, restart 300) with the per-mode inverse of the `k = 1` linearization (N >= 32), amplitude continuation 0.25 -> 0.5 -> 1 with bisection fallback, Levenberg-Marquardt fallback for `i0` (N <= 16). Commands: `python3 candidate_i.py field:eps:N:i0|i1 ...` (CASE line `cand=i0/i1` + `cand=oracle_fd` ceiling, `EXTRA` outlet-row residual and inlet oblique defect, `HISTORY`); `--jactest field:eps:N:var` (Jacobian action vs FD, 3 steps); `--consistency field:eps ...` (residual at the oracle labels on `--grids 16,32,48`, orders); `--spectrum M field:eps:M:var ...` (dense FD Jacobian SVD at the converged state, or at the final iterate and the oracle labels if not converged -> `raw/spectrum_cand_i_<var>_<field>_<eps>_<M>[_state].txt`); `--k1check N` (`k = 1` control: exact nulls of `i0`/`i1`, preconditioner exactness -> `raw/spectrum_cand_i_<var>_uniform_k1_<N>.txt`); options `--maxit --tol --lin-tol --prec lin0|lap --direct-max --restart --no-continuation --bisect --lm --init zero|inlet|oracle (oracle = diagnostic only) --out`. Raw console: `raw/cand_i_smoke_*.txt` |
+| `candidate_i.py` (N2) | candidate (i): non-divergence same-index equation (14) on the slab, inlet Dirichlet labels, analytic `grad ln k`, second-order centered stencils, no `|c|^2` regularization; variants `i0` (spec-literal control: equation rows also on the outlet plane with one-sided `d1`/`d11`/`d1j`, no boundary condition) and `i1` (deviation D-2: outlet rows `c2 = v2_in`, `c3 = v3_in`, i.e. `c x e1 = vperp_in x e1` with the inlet-face tangential Darcy velocity; Neumann `d1 psi_i = 0` for `_ch`). Damped Newton, colored central-FD sparse Jacobian, `splu` (N <= 24) / right-preconditioned GMRES (CGS2, restart 300) with the per-mode inverse of the `k = 1` linearization (N >= 32), amplitude continuation 0.25 -> 0.5 -> 1 with bisection fallback, Levenberg-Marquardt fallback for `i0` (N <= 16). Commands: `python3 candidate_i.py field:eps:N:i0|i1 ...` (CASE line `cand=i0/i1` + `cand=oracle_fd` ceiling, `EXTRA` outlet-row residual and inlet oblique defect, `HISTORY`); `--jactest field:eps:N:var` (Jacobian action vs FD, 3 steps); `--consistency field:eps ...` (residual at the oracle labels on `--grids 16,32,48`, orders); `--spectrum M field:eps:M:var ...` (dense FD Jacobian SVD at the converged state, or at the final iterate and the oracle labels if not converged -> `raw/spectrum_cand_i_<var>_<field>_<eps>_<M>[_state].txt`); `--k1check N` (`k = 1` control: exact nulls of `i0`/`i1`, preconditioner exactness -> `raw/spectrum_cand_i_<var>_uniform_k1_<N>.txt`); options `--maxit --tol --lin-tol --prec lin0|lap --direct-max --restart --no-continuation --bisect --lm --init zero|inlet|oracle (oracle = diagnostic only) --out`. Raw console: `raw/cand_i_smoke_*.txt`. C-i4 additions (section "Candidate (i): 4th-order variant `i1o4`, saved solutions and linear solves (C-i4)"): `--order 4` (`cand=i1o4`), `--save DIR`, `--remetric FILE...`, `--reuse-lu K`, `--selfcheck`; default `--direct-max` is now 32 |
 | `candidate_ii.py` | N3 + C-ii, candidate (ii): dissipation energy of the label pair; default (C-ii) `--energy q1` = `1/2 sum_cells q_cell int_cell |grad psi1^h x grad psi2^h|^2` of the trilinear (Q1) label interpolants (pointwise in-cell product, exactly divergence-free, normal-continuous, face averages = the Whitney fluxes; 3x3x3 Gauss, exact); `--energy whitney` = the N3 edge-averaged energy `1/2 h^3 sum_f omega_f c_f^2` of the mimetic face fluxes (`c_f = curl_h(avg(psi1) G_h psi2)`, control with the hourglass kernel); inlet Dirichlet labels; outlet free (`_ch`) or outlet flux constraint `c1[N] = f1_in` plus the two D-3 rows "mean transverse flux = 0" (periodic fields, Lagrange multipliers); Newton (colored-FD Hessian) with LM globalization; metrics, `oracle_mim` ceiling, TPFA reference, `--gradtest`, `--consistency`, `--spectrum`. Section "Candidate (ii) (N3, corrected by C-ii)" below |
 | `run_all.py` (N4) | resumable sweep driver: the N4 matrix (oracle ladder with `oracle_fd`/`oracle_mim` ceiling lines, `i1` on 16/24/32/48 (+64 for `gauss`, `gauss_ch`, `control2d`), `i0` at 16^3, (ii)-Q1 on 16/24/32 (4 h cap), `ii_from_oracle` at 48^3 for `gauss:0.25`/`gauss_ch:0.25`, consistency ladders, dense spectra 12^3/16^3) as one subprocess per cell in a pool (`--workers`), one log per cell `raw/sweep/<cell>.txt`, `raw/sweep/manifest.json` (status `done`/`failed`/`timeout`/`unsupported`, elapsed, exit, host, log tail on failure), spectra in `raw/sweep/spectra/`; non-oracle cells start only after the oracle cache of every grid they use exists; `--plan` (matrix, cost estimates, host check), `--summarize` (rebuilds `raw/sweep/summary.md`: per-(field, eps) tables, orders, ceiling ratios, consistency orders, spectrum statistics, D-5 classification per criterion), filters `--only --grids --spectra --kinds`, `--retry` |
 | `sweep_digest.py` (N4) | parses `raw/sweep/manifest.json`, the cell logs and the job log only (no computation) and writes `raw/sweep/timeouts.md`: `python3 sweep_digest.py --out ../raw/sweep [--slow 3600]` |
@@ -137,18 +137,32 @@ re-integrated forward to report a per-plane round trip (`max` norm) and `nfev`. 
   - `ref`, `inlet`: the live `DarcyReference` / `InletLabels` (e.g. `ref.velocity(x1, y, z)`,
     `ref.lk.k/lnk/grad_lnk(X1, X2, X3)` at arbitrary points, `inlet.labels(y, z)`).
 - Label unknowns: `psi1 = x2 + u1`, `psi2 = x3 + u2`, `u_i` periodic in `(x2, x3)`.
-- Metrics: `metrics.fd_metrics(psi1, psi2, vD, psi_or)` (second-order centered FD in `x2, x3`; in `x1` centered on
-  interior planes and second-order one-sided on the inlet and outlet planes) returns `e_v`, `e_psi`, `e_i1`,
-  `e_i2`, `e_div`, `min_c`, percentiles `p0.1/p1/p5/p50` of `|c|`, and the same percentiles of `|v_D|`
+- Metrics: `metrics.fd_metrics(psi1, psi2, vD, psi_or, order=2)` (second-order centered FD in `x2, x3`; in `x1`
+  centered on interior planes and second-order one-sided on the inlet and outlet planes) returns `e_v`, `e_psi`,
+  `e_i1`, `e_i2`, `e_div`, `min_c`, percentiles `p0.1/p1/p5/p50` of `|c|`, and the same percentiles of `|v_D|`
   (`vD_p`). Candidates with their own `c` (e.g. face fluxes) compute `e_v` against `vD_faces` and pass it in the
   metrics dict.
+  - C-i4, `order=4`: the reconstruction `c = grad_h psi1 x grad_h psi2`, `e_i` and `div_h` use centered 4th-order
+    FD in `x2, x3` and in `x1` centered 4th order on planes `2..N-2` and 5-point 4th-order skewed / one-sided
+    stencils on planes `1, N-1` / `0, N` (Fornberg weights, `metrics.fd_weights`). The ceiling of a 4th-order
+    candidate is `fd_metrics(psi_or, ..., order=4)`, printed as `cand=oracle_fd4`. On the oracle labels of
+    `gauss:0.25` (16/24/32) the 4th-order `e_v` is 3.29e-3 / 7.70e-4 / 2.62e-4 (orders 3.58, 3.75) against the
+    2nd-order 1.67e-2 / 7.62e-3 / 4.33e-3 (orders 1.94, 1.97) (`oracle.py --selftest`).
+  - C-i4 `e_psi` normalization (corrects a metric artifact present in every earlier output): with
+    `den_i = RMS(psi_i^or - affine_i)` and `den_ref = max(den_1, den_2)`, label `i` is normalized by `den_i` if
+    `den_i > 1e-6 den_ref`, else by `den_ref`. The previous threshold was `1e-12 den_ref`; `control2d` has
+    `den_2 / den_1 = 1.1e-11` (`psi2 = Q0 x3`, periodic part `(Q0 - 1) x3`, roundoff), which passed it, so the
+    old `e_psi` of `control2d` was a roundoff difference divided by roundoff (e.g. 0.467 at `eps = 0.25`). The
+    dict now also has `e_psi1`, `e_psi2` (`e_psi = max`) and the absolute `a_psi1`, `a_psi2` (RMS of the label
+    differences); `e_psi` values of `control2d` in outputs before C-i4 (N2 smoke, N4 sweep) are not comparable.
 - One-line parseable format (`metrics.case_line` / `print_case`; `parse_case_line` inverts it):
 
   ```text
   CASE field=<f> eps=<e> N=<N> cand=<name> | r_F=<..> its=<..> | e_v=<..> e_psi=<..> e_i=(<..>,<..>) e_div=<..> min_c=<..> p0.1=<..> p1=<..> p5=<..> p50=<..> | t=<s>
   ```
 
-  Missing values print as `nan` (the oracle prints `r_F=nan its=nan`, `e_psi=0`).
+  Missing values print as `nan` (the oracle prints `r_F=nan its=nan`, `e_psi=0`). Since C-i4 the line ends with
+  ` | e_psi1=<..> e_psi2=<..>` when the per-label values exist; lines without the suffix still parse.
 - No regularization of `|c|^2` anywhere.
 
 ## Cache
@@ -179,13 +193,187 @@ CLI summary:
 
 | invocation | output |
 |---|---|
-| `oracle.py --selftest` | `SELFTEST` rows (bit-identity with the closure probe, trig evaluation, complex-step `grad ln k`, `k = 1` affine labels, face-Jacobian identity, label jumps, `Q0`, tracer round trip, constant-head faces, face-flux balance, CASE-line round trip); exit 1 on any failure |
+| `oracle.py --selftest` | `SELFTEST` rows (bit-identity with the closure probe, trig evaluation, complex-step `grad ln k`, `k = 1` affine labels, face-Jacobian identity, label jumps, `Q0`, tracer round trip, constant-head faces, face-flux balance, CASE-line round trip; C-i4: CASE line with the `e_psi1`/`e_psi2` suffix and an old line, per-label `e_psi` of a perturbed `control2d:0.25` oracle, observed order of the 4th-order `e_v` of the `gauss:0.25` oracle on 16/24/32 -- uses the 24^3/32^3 oracle caches, about 2 min if absent); exit 1 on any failure |
 | `oracle.py field:eps:N ...` | per case: `REF`, `ORACLE` (round trip, `nfev`, timings), `CHECK` (plane fluxes, face-flux balance, constant-head faces or closure-note return map, outlet-vs-inlet labels, `|c|` and `|v_D|` percentiles), `CASE ... cand=oracle` |
 | `oracle.py --convergence field:eps ...` | the above for `N` in `--grids` (default 16,32,48) and `ORDER` rows (observed orders of `e_v`, `e_i1`, `e_i2`, `e_div`; `min|c|`) |
 | `oracle.py --nphi field:eps ...` | `NPHI` ladder rows and the chosen `NPHI_TABLE` row |
 | `oracle.py --returnmap field:eps ...` | `RETURNMAP` row: closure-note return map (16 points, seed 3) at `N_phi`, next to the value recorded in the 2026-10-02 probes |
 | `oracle.py --midplane field:eps ... --grids ...` | `MIDPLANE` rows: oracle labels on the planes `0.5 - h, 0.5, 0.5 + h` only, centered FD `e_v_mid`, `e_i_mid`, `max|grad_h psi|`, `min|c|`; `MIDPLANE_ORDER` |
 | options | `--ref-nphi K` (override `N_phi`), `--grids 16,32,48`, `--no-cache` |
+
+## Candidate (i): 4th-order variant `i1o4`, saved solutions and linear solves (C-i4)
+
+Corrective node C-i4 (owner directive 2026-10-05, deviation D-7). Same continuous problem and unknowns as `i1`
+(non-divergence same-index equation (14), analytic `grad ln k`, inlet Dirichlet labels, outlet rows
+`c2 = v2_in`, `c3 = v3_in` with row scale `2q/h`, no regularization of `|c|^2`), discretized at 4th order
+(`candidate_i.py --order 4`, `cand=i1o4`; a spec suffix `:i1o4` is equivalent):
+
+- `x2, x3` (periodic): `d_j = (-u_{+2} + 8u_{+1} - 8u_{-1} + u_{-2})/(12h)`,
+  `d_jj = (-u_{+2} + 16u_{+1} - 30u_0 + 16u_{-1} - u_{-2})/(12h^2)`, `d23 = d3(d2 u)`.
+- `x1` (plane 0 = inlet data, unknown planes 1..N; class `Stencils4`): centered (same weights) on planes `2..N-2`;
+  planes 1 and N-1 skewed 4th order, `d1` on 5 planes (`0..4` / `N-4..N`), `d11` on 6 planes (`0..5` / `N-5..N`);
+  plane N one-sided `d1 = (25u_N - 48u_{N-1} + 36u_{N-2} - 16u_{N-3} + 3u_{N-4})/(12h)` (outlet rows). Mixed
+  `d1j` = the `x1` stencil applied to the 4th-order `d_j`. Weights from the Fornberg routine `metrics.fd_weights`,
+  checked on polynomials by `--selfcheck --order 4`.
+- Residual norms as `i1`: `r_F` over the equation rows (planes 1..N-1), `r_out` over the outlet rows.
+- Colored central-FD Jacobian (`Pattern4`): an equation row at plane `jr` depends on both fields on the union of
+  the `d1`/`d11` stencil planes, with the 5x5 in-plane box on plane `jr` and the radius-2 in-plane cross on the
+  other planes; outlet rows depend on the cross at plane N and the vertex on planes N-4..N-1. Colors
+  `(field, (j-1) mod 6, m2 mod p, m3 mod p)`, `p` = smallest divisor >= 5 of N (432 colors at 12^3 and 24^3, 768
+  at 16^3 and 32^3); the per-color row-collision check of `Pattern` is kept.
+- Per-mode `k = 1` preconditioner (`ModePrec`, only used above `--direct-max`): the same construction with the
+  4th-order symbols and `x1` rows (`--k1check 12 --order 4`: `|P^-1 J x - x|/|x| = 1.4e-14`).
+- Metrics: `cand=i1o4` uses `fd_metrics(..., order=4)` with the ceiling `cand=oracle_fd4`; the same labels with the
+  2nd-order reconstruction are printed as `cand=i1o4_fd2` with the ceiling `cand=oracle_fd`.
+- A 4th-order variant of `i0` is not implemented (`--order 4` with `i0` is refused).
+
+Linear solves (both orders):
+
+- default `--direct-max 32` (was 24): sparse direct `splu` (SuperLU, scipy default COLAMD ordering) up to 32^3.
+  Every factorization prints a `LINEAR splu` line (`t_fact`, `t_solve`, `nnz(L+U)`, fill, `mem(L+U)` estimated as
+  12 bytes per factor nonzero, process peak RSS `maxrss`, step residual). Above `--direct-max`: GMRES + per-mode
+  preconditioner, unchanged.
+- `--reuse-lu K` (default 0 = off): the last LU is the right preconditioner of GMRES (`restart` = `maxiter` =
+  `--restart`) for up to K subsequent Newton steps of the same stage; a frozen-LU solve that misses `--lin-tol`
+  triggers a refactorization (`LINEAR frozen-LU GMRES ... -> missed lin-tol, refactor`). Every accepted Newton
+  step is solved to `--lin-tol` (default 1e-13) either way, so the iterates do not depend on K beyond roundoff.
+- `NEWTON` lines now end with `|dx|2=` and `t_fact=`; the earlier fields are unchanged, so `sweep_digest.py` still
+  parses them.
+
+Saved solutions: `--save DIR` writes `DIR/<field>_<eps>_<N>_<cand>.npz` after every solve (converged or not):
+`u1`, `u2` on planes 0..N, status, its, `r_F`, `r_out`, continuation path, residual history, the metrics dicts of
+the CASE lines (JSON), options, versions. `--remetric FILE...` reloads the case (oracle cache) and reprints the
+CASE lines with the current `metrics.py`, without re-solving.
+
+### C-i4 commands (local, bounded; outputs in `raw/`)
+
+```bash
+cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts
+export OMP_NUM_THREADS=8
+python3 oracle.py --selftest                                       > ../raw/cand_i4_oracle_selftest.txt
+python3 candidate_ii.py --gradtest gauss:0.25:12                   > ../raw/cand_i4_candii_gradtest.txt
+python3 candidate_i.py --selfcheck --order 4                       > ../raw/cand_i4_selfcheck.txt
+python3 candidate_i.py --jactest gauss:0.25:12:i1 --order 4        > ../raw/cand_i4_jactest.txt
+python3 candidate_i.py --consistency gauss:0.25 gauss_ch:0.25 control2d:0.5 --order 4 --grids 16,24,32 \
+                                                                   > ../raw/cand_i4_consistency.txt
+python3 candidate_i.py control2d:0.5:16:i1 control2d:0.5:24:i1 gauss:0.25:16:i1 gauss:0.25:24:i1 \
+        gauss_ch:0.25:16:i1 gauss_ch:0.25:24:i1 --order 4 --save ../raw/solutions \
+                                                                   > ../raw/cand_i4_solve_control2d_16_24.txt
+        # stopped after the two control2d cases (note at the end of the file); the rest split as follows
+python3 candidate_i.py gauss:0.25:16:i1 gauss_ch:0.25:16:i1 --order 4 --save ../raw/solutions \
+                                                                   > ../raw/cand_i4_solve_gauss_16.txt
+python3 candidate_i.py gauss:0.25:24:i1 --order 4 --reuse-lu 4 --save ../raw/solutions \
+                                                                   > ../raw/cand_i4_solve_gauss_0.25_24.txt
+python3 candidate_i.py gauss_ch:0.25:24:i1 --order 4 --reuse-lu 4 --save ../raw/solutions \
+                                                   > ../raw/cand_i4_solve_gauss_ch_0.25_24_INTERRUPTED.txt
+        # interrupted (session stop); not evidence
+python3 candidate_i.py control2d:0.25:16:i1 control2d:1.0:16:i1 --save ../raw/solutions \
+                                                                   > ../raw/cand_i4_metricfix_control2d_16.txt
+python3 candidate_i.py gauss:0.5:24:i1 --save ../raw/solutions     > ../raw/cand_i4_gauss0.5_24_direct_INTERRUPTED.txt
+        # interrupted (session stop) in the first continuation stage (eps = 0.25); not evidence
+# planned 32^3 timing runs (gauss:0.25:32 i1o4, gauss:0.5:32 i1) were NOT run locally; see "Measured cost"
+OMP_NUM_THREADS=4 python3 candidate_i.py --spectrum 12 gauss:0.25:12:i1 gauss_ch:0.25:12:i1 --order 4 \
+                                                                   > ../raw/cand_i4_spectrum12.txt
+OMP_NUM_THREADS=4 python3 candidate_i.py --k1check 12 --order 4    > ../raw/cand_i4_k1check.txt
+python3 candidate_i.py --remetric ../raw/solutions/<file>.npz ...  # metrics only, no solve
+# *_py311.txt: the same selfcheck / jactest / oracle selftest under Python 3.11.16, numpy 1.26.4, scipy 1.11.4
+```
+
+### C-i4 results (local WSL, 16 cores shared with other work: load average 4-16 during the runs, so timings are
+indicative)
+
+Stencils and Jacobian (`cand_i4_selfcheck*.txt`, `cand_i4_jactest*.txt`, `cand_i4_k1check.txt`):
+
+- every 4th-order `x1` stencil is exact on polynomials up to degree 4 (`d1`, 5 points: centered, skewed planes
+  1/N-1, one-sided planes 0/N) or 5 (`d11` skewed/one-sided, 6 points), errors <= 4.6e-13; `derivs4` on
+  `sin(2 pi x1) cos(2 pi x2) sin(2 pi x3)`: observed orders 3.93-4.96 on 32 -> 64 for `d1, d2, d11, d33, d12, d23`.
+  The skewed weights (times 12) are `(-3, -10, 18, -6, 1)` (`d1`, plane 1) and `(10, -15, -4, 14, -6, 1)`
+  (`d11`, plane 1); plane N `d1`: `(3, -16, 36, -48, 25)`.
+- colored Jacobian vs directional FD at `gauss:0.25:12` (oracle + 1e-2 noise): 2.6e-7 / 2.6e-9 / 2.8e-11 for steps
+  1e-3 / 1e-4 / 1e-5 (full, outlet-plane and inlet-plane directions); 432 colors, nnz 393 984. Identical on
+  Python 3.11 / numpy 1.26.4 / scipy 1.11.4.
+- `k = 1` control at 12^3: no exact nulls; smallest relative singular value 8.31e-4 (24-fold), 28 values < 1e-3,
+  92 < 1e-2 (the `i1` control: 1.81e-3, 0 < 1e-3, 36 < 1e-2); the per-mode `lin0` inverse is exact
+  (`|P^-1 J x - x|/|x| = 1.4e-14`); colored = dense Jacobian bitwise.
+
+Consistency at the oracle labels (`cand_i4_consistency.txt`; `r_F` normalized as for `i1`, rows split into the
+centered planes 2..N-2 and the skewed planes 1 and N-1):
+
+| case | rows | 16 | 24 | 32 | orders 16->24, 24->32 |
+|---|---|---|---|---|---|
+| `gauss:0.25` | all equation rows | 4.20e-2 | 1.17e-2 | 4.28e-3 | 3.16, 3.49 |
+| | centered | 4.36e-2 | 1.21e-2 | 4.39e-3 | 3.17, 3.51 |
+| | plane 1 / plane N-1 | 2.89e-2 / 3.04e-2 | 5.68e-3 / 6.62e-3 | 1.76e-3 / 2.13e-3 | 4.01, 4.07 / 3.76, 3.93 |
+| | outlet rows `r_out` | 3.05e-3 | 6.81e-4 | 2.18e-4 | 3.70, 3.96 |
+| `gauss_ch:0.25` | all equation rows | 4.43e-2 | 1.24e-2 | 4.59e-3 | 3.13, 3.46 |
+| | centered | 4.64e-2 | 1.29e-2 | 4.72e-3 | 3.16, 3.49 |
+| | plane 1 / plane N-1 | 2.62e-2 / 2.72e-2 | 5.70e-3 / 6.15e-3 | 1.86e-3 / 2.08e-3 | 3.76, 3.89 / 3.67, 3.77 |
+| | outlet rows `r_out` | 2.41e-3 | 3.00e-4 | 7.07e-5 | 5.14, 5.03 |
+| `control2d:0.5` | all equation rows | 2.21e-2 | 4.47e-3 | 1.29e-3 | 3.94, 4.32 |
+| | centered | 9.58e-3 | 2.14e-3 | 7.08e-4 | 3.69, 3.85 |
+| | plane 1 / plane N-1 | 4.76e-2 / 6.21e-2 | 1.01e-2 / 1.62e-2 | 3.30e-3 / 5.13e-3 | 3.82, 3.88 / 3.31, 4.00 |
+| | outlet rows `r_out` | 9.49e-3 | 2.43e-3 | 8.79e-4 | 3.36, 3.54 |
+
+The truncation error is 4th order in the limit; on 16-32 the `gauss` interior rows are pre-asymptotic (3.2 -> 3.5,
+rising), like the 4th-order reconstruction of the oracle labels themselves (`e_v` orders 3.58, 3.75).
+
+Dense spectra at the converged state, 12^3 (`cand_i4_spectrum12.txt`, `spectrum_cand_i_i1o4_*_12.txt`; outlet row
+scale `2q/h` as `i1`):
+
+| case | smallest relative singular values | < 1e-2 | < 1e-3 | < 1e-4 | largest consecutive gap among < 1e-2 |
+|---|---|---|---|---|---|
+| `gauss:0.25` | 4.36e-4 4.42e-4 4.46e-4 4.68e-4 ... | 128 | 32 | 0 | 1.66 (after 48: 2.37e-3 -> 3.93e-3) |
+| `gauss_ch:0.25` | 4.30e-4 4.45e-4 4.69e-4 4.72e-4 ... | 128 | 32 | 0 | 1.62 (after 48: 2.51e-3 -> 4.06e-3) |
+| `k = 1` control | 8.31e-4 (x24) 8.84e-4 (x4) 1.48e-3 ... | 92 | 28 | 0 | - |
+
+No gap-separated cluster: the small values form a continuum starting at about half the `k = 1` floor of `i1o4`.
+The 4th-order operator has a larger `smax` (3.09e3 at `gauss:0.25`, 2.00e3 at `k = 1`; `i1`: 1.92e3 and 1.21e3),
+so its relative floor is lower than that of `i1` (1.03e-3 at `gauss:0.25`).
+
+Solves of `i1o4` (`cand_i4_solve_*.txt`, saved in `raw/solutions/`): every case converged to
+`r_F <= 1e-13` (`r_out` <= 4e-16), no plateau; Newton converges quadratically once inside the basin. From `u = 0`
+the first stage at `eps = 0.25` fails for `gauss:0.25:24` (5 steps, `r_F` 3.57 -> 0.40, line-search factors
+1/64-1/4, `|dx|max` up to 1.96) and `gauss_ch:0.25:16` (stagnation at `r_F = 0.44`) with exact linear solves
+(`splu`, step residuals <= 1.6e-12): a nonlinear (globalization) failure, not a linear one. The bisection to
+`eps = 0.125` and the warm start back to 0.25 then converge (paths printed in the `PATH` lines; the same
+`0.25(fail)->0.125->0.25` path the 2nd-order `i1` takes at `gauss:0.25:32` in the sweep).
+
+### C-i4 completed local evidence (`raw/`)
+
+- `cand_i4_selfcheck.txt`, `cand_i4_selfcheck_py311.txt`: `--selfcheck --order 4` (polynomials; derivs4 on
+  16/32/64), no solve.
+- `cand_i4_jactest.txt`, `cand_i4_jactest_py311.txt`: colored Jacobian vs FD, 12^3.
+- `cand_i4_k1check.txt`, `spectrum_cand_i_i1o4_uniform_k1_12.txt`: `k = 1` control, 12^3.
+- `cand_i4_spectrum12.txt`, `spectrum_cand_i_i1o4_gauss_0.25_12.txt`, `spectrum_cand_i_i1o4_gauss_ch_0.25_12.txt`:
+  dense spectra at the converged state, 12^3.
+- `cand_i4_consistency.txt`: residual at the oracle labels, 16^3/24^3/32^3 (no solve).
+- `cand_i4_oracle_selftest.txt`, `cand_i4_oracle_selftest_py311.txt`: `oracle.py --selftest` (oracle labels on
+  16^3/24^3/32^3).
+- `cand_i4_candii_gradtest.txt`: candidate (ii) gradient test, 12^3.
+- `cand_i4_solve_gauss_16.txt`: `i1o4` solves `gauss:0.25` and `gauss_ch:0.25`, 16^3.
+- `cand_i4_solve_gauss_0.25_24.txt`: `i1o4` solve `gauss:0.25`, 24^3 (`--reuse-lu 4`; 1411 s).
+- `cand_i4_solve_control2d_16_24.txt`: `i1o4` solve `control2d:0.5`, 16^3 (counted); the file also holds a
+  24^3 CASE line, but the run was cut afterwards and only the 16^3 part is counted (header of the file).
+- `cand_i4_metricfix_control2d_16.txt`: 2nd-order `i1` re-solves `control2d:0.25` and `control2d:1`, 16^3, with
+  the corrected per-label `e_psi`.
+- `solutions/*_16_*.npz`: the saved 16^3 solutions of the solves above (`--remetric` input).
+- Not evidence: `cand_i4_solve_gauss_ch_0.25_24_INTERRUPTED.txt`, `cand_i4_gauss0.5_24_direct_INTERRUPTED.txt`
+  (session stop; first line of each file).
+
+### Measured cost (from the logs above)
+
+| solve | N | n | nnz(J) | nnz(L+U) | fill | t_fact | maxrss |
+|---|---|---|---|---|---|---|---|
+| order 4 (`i1o4`) `splu` | 16^3 | 8192 | 9.5e5 | 1.75e7 | 18 | ~5 s | ~0.95 GB |
+| order 4 (`i1o4`) `splu` | 24^3 | 27648 | 3.26e6 | 1.27e8 | 39 | 70-170 s | 5.2-5.8 GB |
+| order 2 (`i1`) `splu` | 24^3 | 27648 | 1.49e6 | 5.7e7 | 38 | 37 s | 1.56 GB |
+
+- `gauss:0.25:24:i1o4` took 1411 s in total (path `0.25(fail)->0.125->0.25`, 7 final Newton iterations).
+- The frozen-LU GMRES (`--reuse-lu`) missed the linear tolerance in 2 of 3 uses at 24^3 (each miss triggers a
+  refactorization), so the corrective sweep uses pure direct solves (`--reuse-lu 0`).
+
+No 32^3 or larger case was run locally. All ladder evidence (16/20/24/28 and 32 where planned) comes from the
+remote corrective sweep (`raw/sweep2/`).
 
 ## Candidate (ii) (N3, corrected by C-ii): `candidate_ii.py`
 
@@ -439,6 +627,10 @@ rsync -a v100:/home/sesquerre/.macroflow3d-remote/macroflow3d-SF-29/logs/sf29-ru
 | `spectrum_cand_ii_q1_<field>_<eps>_<N>[_kkt|_hL].txt` | C-ii: sorted relative singular values at the solved state (Q1 energy), same layout as the N3 files; `spectrum_cand_ii_q1_ctl_whitney_uniform_0_12*` = Whitney control at `k = 1` (288 null modes) |
 | `spectrum_cand_ii_<field>_<eps>_<N>.txt` | sorted relative singular values at the solved state: Hessian (`_ch`) or reduced Hessian `Z^T H_L Z` (constrained); `_kkt`: KKT matrix with orthonormalized constraint rows; `_hL`: unreduced Lagrangian Hessian |
 | `cache/` | oracle caches (16^3 committed) |
+| `cand_i4_oracle_selftest.txt`, `cand_i4_oracle_selftest_py311.txt` | C-i4 `oracle.py --selftest` (local stack / Python 3.11.16, numpy 1.26.4, scipy 1.11.4) |
+| `cand_i4_*.txt` | C-i4 candidate (i) consoles (commands in "C-i4 commands") |
+| `spectrum_cand_i_i1o4_<field>_<eps>_12.txt`, `spectrum_cand_i_i1o4_uniform_k1_12.txt` | C-i4 dense spectra of `i1o4` at 12^3 (converged state) and the `k = 1` control |
+| `solutions/` | C-i4 saved solutions `<field>_<eps>_<N>_<cand>.npz` (`candidate_i.py --save`); 16^3 files committed, larger ones gitignored (`solutions/.gitignore`) |
 
 ## Timings and cost model (local WSL, 16 cores shared, numpy multithreaded, one process)
 

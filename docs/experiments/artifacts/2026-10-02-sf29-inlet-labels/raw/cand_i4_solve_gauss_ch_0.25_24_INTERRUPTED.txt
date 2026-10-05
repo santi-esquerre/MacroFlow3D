@@ -1,0 +1,4 @@
+# interrupted run (session stop); not evidence
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a21135e97ac44f5f3/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 4, 'save': '/home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a21135e97ac44f5f3/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/solutions'} numpy=2.5.0 scipy=1.18.0 python=3.13.13
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss_ch:0.25:24:i1o4 it= 0 r_F=4.128e+00 r_out=4.806e-17
