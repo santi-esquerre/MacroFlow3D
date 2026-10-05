@@ -1,0 +1,169 @@
+[2026-10-05T13:06:02Z] job=sf30-post session=macroflow3d-SF-30-sf30-post started
+[2026-10-05T13:06:02Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=1)
+[2026-10-05T13:06:02Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T13:06:02Z] command=echo "### smoke config_pspta_small"; ./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml > output_sf30/smoke.log 2>&1; echo "smoke_exit=$?"; tail -3 output_sf30/smoke.log; G=./build/v100-release/closure_gate; O=output_sf30/sensitivity; for C in "s025_l16 0.25 0.0625" "s1_l16 1 0.0625" "s4_l16 4 0.0625"; do set -- $C; for P in 2 4 8 16 32; do echo "### sensitivity $1 N=128 periods=$P"; $G --field gaussian --sigma2 $2 --ell $3 --seed 3001 --n 128 --periods $P --tols 1e-6,1e-8,1e-10,1e-12 --working-tol 1e-8 --out $O/g_$1_r3001_n128_p$P | grep -E "ladder vs 1e-12 at n=$P|n=$P: R"; echo "exit=$?"; done; done; for P in 2 4 8; do echo "### sensitivity s4_l16 N=256 periods=$P"; $G --field gaussian --sigma2 4 --ell 0.0625 --seed 3001 --n 256 --periods $P --tols 1e-6,1e-8,1e-10,1e-12 --working-tol 1e-8 --out $O/g_s4_l16_r3001_n256_p$P | grep -E "ladder vs 1e-12 at n=$P|n=$P: R"; done
+### smoke config_pspta_small
+smoke_exit=0
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.
+### sensitivity s025_l16 N=128 periods=2
+    n=2: R=2.2909e-02 mean=(3.5493e-04, 4.3291e-04) max|d|=6.9960e-02 rms|d|=2.2916e-02 | flux-weighted: R=2.2037e-02 mean=(-1.1025e-04, 5.0986e-04) <tau>_w=2.0006189110
+    ladder vs 1e-12 at n=2: max=8.975e-07 rms=2.338e-07 (both_ok=1024, status_differs=0)
+    n=2: R=2.2909e-02 mean=(3.5493e-04, 4.3291e-04) max|d|=6.9960e-02 rms|d|=2.2916e-02 | flux-weighted: R=2.2037e-02 mean=(-1.1025e-04, 5.0986e-04) <tau>_w=2.0006189260
+    ladder vs 1e-12 at n=2: max=8.975e-07 rms=2.320e-07 (both_ok=1024, status_differs=0)
+    n=2: R=2.2909e-02 mean=(3.5493e-04, 4.3291e-04) max|d|=6.9960e-02 rms|d|=2.2916e-02 | flux-weighted: R=2.2037e-02 mean=(-1.1026e-04, 5.0985e-04) <tau>_w=2.0006188873
+    ladder vs 1e-12 at n=2: max=1.184e-07 rms=3.090e-08 (both_ok=1024, status_differs=0)
+    n=2: R=2.2909e-02 mean=(3.5493e-04, 4.3291e-04) max|d|=6.9960e-02 rms|d|=2.2916e-02 | flux-weighted: R=2.2037e-02 mean=(-1.1026e-04, 5.0985e-04) <tau>_w=2.0006189085
+exit=0
+### sensitivity s025_l16 N=128 periods=4
+    n=4: R=4.3826e-02 mean=(5.5030e-04, 8.3529e-04) max|d|=1.1845e-01 rms|d|=4.3838e-02 | flux-weighted: R=4.2864e-02 mean=(-3.3266e-04, 1.1921e-03) <tau>_w=4.0006235513
+    ladder vs 1e-12 at n=4: max=1.946e-06 rms=4.319e-07 (both_ok=1024, status_differs=0)
+    n=4: R=4.3826e-02 mean=(5.5030e-04, 8.3529e-04) max|d|=1.1845e-01 rms|d|=4.3838e-02 | flux-weighted: R=4.2864e-02 mean=(-3.3267e-04, 1.1921e-03) <tau>_w=4.0006236044
+    ladder vs 1e-12 at n=4: max=1.778e-06 rms=4.237e-07 (both_ok=1024, status_differs=0)
+    n=4: R=4.3826e-02 mean=(5.5029e-04, 8.3529e-04) max|d|=1.1845e-01 rms|d|=4.3838e-02 | flux-weighted: R=4.2864e-02 mean=(-3.3268e-04, 1.1921e-03) <tau>_w=4.0006234250
+    ladder vs 1e-12 at n=4: max=1.733e-07 rms=5.108e-08 (both_ok=1024, status_differs=0)
+    n=4: R=4.3826e-02 mean=(5.5029e-04, 8.3529e-04) max|d|=1.1845e-01 rms|d|=4.3838e-02 | flux-weighted: R=4.2864e-02 mean=(-3.3268e-04, 1.1921e-03) <tau>_w=4.0006234814
+exit=0
+### sensitivity s025_l16 N=128 periods=8
+    n=8: R=7.9592e-02 mean=(-1.7198e-04, 1.5138e-03) max|d|=1.7395e-01 rms|d|=7.9607e-02 | flux-weighted: R=7.8926e-02 mean=(-1.4936e-03, 2.5422e-03) <tau>_w=8.0193187666
+    ladder vs 1e-12 at n=8: max=4.404e-06 rms=8.369e-07 (both_ok=1024, status_differs=0)
+    n=8: R=7.9592e-02 mean=(-1.7198e-04, 1.5138e-03) max|d|=1.7395e-01 rms|d|=7.9607e-02 | flux-weighted: R=7.8926e-02 mean=(-1.4936e-03, 2.5422e-03) <tau>_w=8.0193187426
+    ladder vs 1e-12 at n=8: max=4.404e-06 rms=8.245e-07 (both_ok=1024, status_differs=0)
+    n=8: R=7.9592e-02 mean=(-1.7202e-04, 1.5138e-03) max|d|=1.7395e-01 rms|d|=7.9607e-02 | flux-weighted: R=7.8926e-02 mean=(-1.4936e-03, 2.5422e-03) <tau>_w=8.0193185673
+    ladder vs 1e-12 at n=8: max=6.496e-07 rms=9.856e-08 (both_ok=1024, status_differs=0)
+    n=8: R=7.9592e-02 mean=(-1.7202e-04, 1.5138e-03) max|d|=1.7395e-01 rms|d|=7.9607e-02 | flux-weighted: R=7.8926e-02 mean=(-1.4936e-03, 2.5422e-03) <tau>_w=8.0193186660
+exit=0
+### sensitivity s025_l16 N=128 periods=16
+    n=16: R=1.3494e-01 mean=(-5.3503e-03, 1.8093e-03) max|d|=2.7717e-01 rms|d|=1.3505e-01 | flux-weighted: R=1.3589e-01 mean=(-4.3190e-03, 2.7450e-03) <tau>_w=16.0039681249
+    ladder vs 1e-12 at n=16: max=3.356e-05 rms=2.338e-06 (both_ok=1024, status_differs=0)
+    n=16: R=1.3494e-01 mean=(-5.3503e-03, 1.8093e-03) max|d|=2.7717e-01 rms|d|=1.3505e-01 | flux-weighted: R=1.3589e-01 mean=(-4.3190e-03, 2.7451e-03) <tau>_w=16.0039678837
+    ladder vs 1e-12 at n=16: max=3.356e-05 rms=2.238e-06 (both_ok=1024, status_differs=0)
+    n=16: R=1.3494e-01 mean=(-5.3504e-03, 1.8094e-03) max|d|=2.7717e-01 rms|d|=1.3506e-01 | flux-weighted: R=1.3589e-01 mean=(-4.3191e-03, 2.7451e-03) <tau>_w=16.0039696990
+    ladder vs 1e-12 at n=16: max=2.458e-06 rms=2.478e-07 (both_ok=1024, status_differs=0)
+    n=16: R=1.3494e-01 mean=(-5.3504e-03, 1.8094e-03) max|d|=2.7717e-01 rms|d|=1.3506e-01 | flux-weighted: R=1.3589e-01 mean=(-4.3191e-03, 2.7451e-03) <tau>_w=16.0039699791
+exit=0
+### sensitivity s025_l16 N=128 periods=32
+    n=32: R=2.1434e-01 mean=(-1.0483e-02, -1.0972e-03) max|d|=4.3215e-01 rms|d|=2.1460e-01 | flux-weighted: R=2.1817e-01 mean=(-8.7474e-03, -3.6581e-04) <tau>_w=31.8496188685
+    ladder vs 1e-12 at n=32: max=8.851e-05 rms=7.903e-06 (both_ok=1024, status_differs=0)
+    n=32: R=2.1434e-01 mean=(-1.0483e-02, -1.0971e-03) max|d|=4.3215e-01 rms|d|=2.1460e-01 | flux-weighted: R=2.1817e-01 mean=(-8.7474e-03, -3.6573e-04) <tau>_w=31.8496175283
+    ladder vs 1e-12 at n=32: max=8.851e-05 rms=7.480e-06 (both_ok=1024, status_differs=0)
+    n=32: R=2.1434e-01 mean=(-1.0483e-02, -1.0969e-03) max|d|=4.3215e-01 rms|d|=2.1460e-01 | flux-weighted: R=2.1817e-01 mean=(-8.7473e-03, -3.6544e-04) <tau>_w=31.8496231913
+    ladder vs 1e-12 at n=32: max=2.008e-05 rms=1.195e-06 (both_ok=1024, status_differs=0)
+    n=32: R=2.1434e-01 mean=(-1.0483e-02, -1.0969e-03) max|d|=4.3215e-01 rms|d|=2.1460e-01 | flux-weighted: R=2.1817e-01 mean=(-8.7473e-03, -3.6540e-04) <tau>_w=31.8496238169
+exit=0
+### sensitivity s1_l16 N=128 periods=2
+    n=2: R=8.4711e-02 mean=(-7.6286e-04, 8.4354e-04) max|d|=1.9588e-01 rms|d|=8.4718e-02 | flux-weighted: R=8.1939e-02 mean=(-2.4083e-03, 2.0675e-03) <tau>_w=2.0136799685
+    ladder vs 1e-12 at n=2: max=9.540e-06 rms=1.139e-06 (both_ok=1024, status_differs=0)
+    n=2: R=8.4711e-02 mean=(-7.6284e-04, 8.4361e-04) max|d|=1.9588e-01 rms|d|=8.4718e-02 | flux-weighted: R=8.1939e-02 mean=(-2.4083e-03, 2.0676e-03) <tau>_w=2.0136804700
+    ladder vs 1e-12 at n=2: max=1.036e-05 rms=1.149e-06 (both_ok=1024, status_differs=0)
+    n=2: R=8.4711e-02 mean=(-7.6284e-04, 8.4358e-04) max|d|=1.9588e-01 rms|d|=8.4718e-02 | flux-weighted: R=8.1939e-02 mean=(-2.4083e-03, 2.0675e-03) <tau>_w=2.0136795933
+    ladder vs 1e-12 at n=2: max=5.420e-07 rms=8.462e-08 (both_ok=1024, status_differs=0)
+    n=2: R=8.4711e-02 mean=(-7.6284e-04, 8.4358e-04) max|d|=1.9588e-01 rms|d|=8.4718e-02 | flux-weighted: R=8.1939e-02 mean=(-2.4083e-03, 2.0675e-03) <tau>_w=2.0136795842
+exit=0
+### sensitivity s1_l16 N=128 periods=4
+    n=4: R=1.3692e-01 mean=(-3.9017e-03, 2.4024e-03) max|d|=2.9247e-01 rms|d|=1.3700e-01 | flux-weighted: R=1.3715e-01 mean=(-3.0066e-03, 2.1891e-03) <tau>_w=4.0125038209
+    ladder vs 1e-12 at n=4: max=1.682e-05 rms=2.461e-06 (both_ok=1024, status_differs=0)
+    n=4: R=1.3692e-01 mean=(-3.9017e-03, 2.4025e-03) max|d|=2.9247e-01 rms|d|=1.3700e-01 | flux-weighted: R=1.3715e-01 mean=(-3.0065e-03, 2.1893e-03) <tau>_w=4.0125027836
+    ladder vs 1e-12 at n=4: max=1.716e-05 rms=2.651e-06 (both_ok=1024, status_differs=0)
+    n=4: R=1.3692e-01 mean=(-3.9017e-03, 2.4024e-03) max|d|=2.9247e-01 rms|d|=1.3700e-01 | flux-weighted: R=1.3715e-01 mean=(-3.0066e-03, 2.1893e-03) <tau>_w=4.0125044349
+    ladder vs 1e-12 at n=4: max=2.420e-06 rms=2.060e-07 (both_ok=1024, status_differs=0)
+    n=4: R=1.3692e-01 mean=(-3.9017e-03, 2.4024e-03) max|d|=2.9247e-01 rms|d|=1.3700e-01 | flux-weighted: R=1.3715e-01 mean=(-3.0066e-03, 2.1893e-03) <tau>_w=4.0125044947
+exit=0
+### sensitivity s1_l16 N=128 periods=8
+    n=8: R=2.0994e-01 mean=(-1.0052e-02, 3.4513e-03) max|d|=4.5527e-01 rms|d|=2.1021e-01 | flux-weighted: R=2.1640e-01 mean=(-8.1528e-03, -4.7047e-03) <tau>_w=7.9132464569
+    ladder vs 1e-12 at n=8: max=2.264e-04 rms=1.567e-05 (both_ok=1024, status_differs=0)
+    n=8: R=2.0994e-01 mean=(-1.0052e-02, 3.4518e-03) max|d|=4.5527e-01 rms|d|=2.1021e-01 | flux-weighted: R=2.1640e-01 mean=(-8.1533e-03, -4.7046e-03) <tau>_w=7.9132474228
+    ladder vs 1e-12 at n=8: max=1.834e-04 rms=1.593e-05 (both_ok=1024, status_differs=0)
+    n=8: R=2.0994e-01 mean=(-1.0052e-02, 3.4517e-03) max|d|=4.5527e-01 rms|d|=2.1021e-01 | flux-weighted: R=2.1639e-01 mean=(-8.1525e-03, -4.7048e-03) <tau>_w=7.9132514220
+    ladder vs 1e-12 at n=8: max=1.441e-05 rms=1.080e-06 (both_ok=1024, status_differs=0)
+    n=8: R=2.0994e-01 mean=(-1.0052e-02, 3.4517e-03) max|d|=4.5527e-01 rms|d|=2.1021e-01 | flux-weighted: R=2.1639e-01 mean=(-8.1525e-03, -4.7048e-03) <tau>_w=7.9132509736
+exit=0
+### sensitivity s1_l16 N=128 periods=16
+    n=16: R=3.2514e-01 mean=(-7.4799e-03, 1.2900e-02) max|d|=7.1665e-01 rms|d|=3.2548e-01 | flux-weighted: R=3.3050e-01 mean=(-8.3110e-03, -4.1975e-03) <tau>_w=15.7965537947
+    ladder vs 1e-12 at n=16: max=2.015e-02 rms=1.108e-03 (both_ok=1024, status_differs=0)
+    n=16: R=3.2515e-01 mean=(-7.6231e-03, 1.2836e-02) max|d|=7.1665e-01 rms|d|=3.2550e-01 | flux-weighted: R=3.3053e-01 mean=(-8.4674e-03, -4.2807e-03) <tau>_w=15.7965216586
+    ladder vs 1e-12 at n=16: max=7.054e-02 rms=2.602e-03 (both_ok=1024, status_differs=0)
+    n=16: R=3.2514e-01 mean=(-7.5228e-03, 1.2897e-02) max|d|=7.1664e-01 rms|d|=3.2548e-01 | flux-weighted: R=3.3051e-01 mean=(-8.3653e-03, -4.2030e-03) <tau>_w=15.7967484557
+    ladder vs 1e-12 at n=16: max=1.375e-02 rms=4.415e-04 (both_ok=1024, status_differs=0)
+    n=16: R=3.2514e-01 mean=(-7.5160e-03, 1.2886e-02) max|d|=7.1664e-01 rms|d|=3.2549e-01 | flux-weighted: R=3.3051e-01 mean=(-8.3615e-03, -4.2115e-03) <tau>_w=15.7966575230
+exit=0
+### sensitivity s1_l16 N=128 periods=32
+    n=32: R=4.7153e-01 mean=(8.1066e-03, -2.6444e-03) max|d|=1.1797e+00 rms|d|=4.7161e-01 | flux-weighted: R=4.6857e-01 mean=(-3.8015e-03, -1.2089e-02) <tau>_w=31.7308310047
+    ladder vs 1e-12 at n=32: max=2.989e-01 rms=2.979e-02 (both_ok=1024, status_differs=0)
+    n=32: R=4.7099e-01 mean=(8.4559e-03, -3.1010e-03) max|d|=1.1796e+00 rms|d|=4.7107e-01 | flux-weighted: R=4.6799e-01 mean=(-3.4342e-03, -1.2351e-02) <tau>_w=31.7397414815
+    ladder vs 1e-12 at n=32: max=4.645e-01 rms=3.472e-02 (both_ok=1024, status_differs=0)
+    n=32: R=4.7139e-01 mean=(8.9127e-03, -3.4006e-03) max|d|=1.1796e+00 rms|d|=4.7148e-01 | flux-weighted: R=4.6823e-01 mean=(-2.9545e-03, -1.1763e-02) <tau>_w=31.7369182142
+    ladder vs 1e-12 at n=32: max=2.278e-01 rms=1.734e-02 (both_ok=1024, status_differs=0)
+    n=32: R=4.7127e-01 mean=(8.9123e-03, -3.0052e-03) max|d|=1.1796e+00 rms|d|=4.7137e-01 | flux-weighted: R=4.6817e-01 mean=(-3.2638e-03, -1.1802e-02) <tau>_w=31.7406623394
+exit=0
+### sensitivity s4_l16 N=128 periods=2
+    n=2: R=1.9581e-01 mean=(1.7763e-03, 1.4422e-02) max|d|=4.4070e-01 rms|d|=1.9635e-01 | flux-weighted: R=1.9743e-01 mean=(-1.4766e-03, 1.1884e-02) <tau>_w=1.9033030060
+    ladder vs 1e-12 at n=2: max=3.059e-03 rms=1.559e-04 (both_ok=1024, status_differs=0)
+    n=2: R=1.9581e-01 mean=(1.7748e-03, 1.4421e-02) max|d|=4.4070e-01 rms|d|=1.9635e-01 | flux-weighted: R=1.9743e-01 mean=(-1.4809e-03, 1.1883e-02) <tau>_w=1.9027002084
+    ladder vs 1e-12 at n=2: max=9.767e-04 rms=6.099e-05 (both_ok=1024, status_differs=0)
+    n=2: R=1.9581e-01 mean=(1.7765e-03, 1.4421e-02) max|d|=4.4070e-01 rms|d|=1.9635e-01 | flux-weighted: R=1.9743e-01 mean=(-1.4791e-03, 1.1883e-02) <tau>_w=1.9028828493
+    ladder vs 1e-12 at n=2: max=4.655e-05 rms=2.929e-06 (both_ok=1024, status_differs=0)
+    n=2: R=1.9581e-01 mean=(1.7765e-03, 1.4421e-02) max|d|=4.4070e-01 rms|d|=1.9635e-01 | flux-weighted: R=1.9743e-01 mean=(-1.4791e-03, 1.1883e-02) <tau>_w=1.9028970756
+exit=0
+### sensitivity s4_l16 N=128 periods=4
+    n=4: R=2.8823e-01 mean=(7.2571e-03, 1.4937e-02) max|d|=6.4263e-01 rms|d|=2.8871e-01 | flux-weighted: R=2.8123e-01 mean=(7.3538e-03, 1.0176e-02) <tau>_w=3.9681278843
+    ladder vs 1e-12 at n=4: max=9.648e-02 rms=4.611e-03 (both_ok=1024, status_differs=0)
+    n=4: R=2.8808e-01 mean=(7.1877e-03, 1.4902e-02) max|d|=6.3963e-01 rms|d|=2.8856e-01 | flux-weighted: R=2.8105e-01 mean=(7.3156e-03, 1.0158e-02) <tau>_w=3.9690977465
+    ladder vs 1e-12 at n=4: max=1.124e-01 rms=4.626e-03 (both_ok=1024, status_differs=0)
+    n=4: R=2.8813e-01 mean=(7.3136e-03, 1.4826e-02) max|d|=6.6929e-01 rms|d|=2.8860e-01 | flux-weighted: R=2.8116e-01 mean=(7.4882e-03, 9.8984e-03) <tau>_w=3.9805240893
+    ladder vs 1e-12 at n=4: max=5.172e-03 rms=2.216e-04 (both_ok=1024, status_differs=0)
+    n=4: R=2.8812e-01 mean=(7.3156e-03, 1.4820e-02) max|d|=6.6738e-01 rms|d|=2.8859e-01 | flux-weighted: R=2.8114e-01 mean=(7.4865e-03, 9.8873e-03) <tau>_w=3.9772735155
+exit=0
+### sensitivity s4_l16 N=128 periods=8
+    n=8: R=4.2294e-01 mean=(2.5810e-02, 2.4826e-02) max|d|=8.9271e-01 rms|d|=4.2445e-01 | flux-weighted: R=4.1536e-01 mean=(2.1272e-02, 1.1103e-02) <tau>_w=8.0534818473
+    ladder vs 1e-12 at n=8: max=7.084e-01 rms=8.406e-02 (both_ok=1024, status_differs=0)
+    n=8: R=4.2254e-01 mean=(2.4280e-02, 2.5110e-02) max|d|=8.9269e-01 rms|d|=4.2398e-01 | flux-weighted: R=4.1351e-01 mean=(2.0206e-02, 1.1053e-02) <tau>_w=8.0505278469
+    ladder vs 1e-12 at n=8: max=4.896e-01 rms=6.955e-02 (both_ok=1024, status_differs=0)
+    n=8: R=4.2507e-01 mean=(2.4242e-02, 2.5268e-02) max|d|=8.9267e-01 rms|d|=4.2651e-01 | flux-weighted: R=4.1727e-01 mean=(1.8461e-02, 1.0650e-02) <tau>_w=8.0223002242
+    ladder vs 1e-12 at n=8: max=6.490e-01 rms=3.394e-02 (both_ok=1024, status_differs=0)
+    n=8: R=4.2475e-01 mean=(2.5322e-02, 2.5805e-02) max|d|=8.9267e-01 rms|d|=4.2629e-01 | flux-weighted: R=4.1717e-01 mean=(1.9866e-02, 1.1926e-02) <tau>_w=8.0210246558
+exit=0
+### sensitivity s4_l16 N=128 periods=16
+    n=16: R=5.8741e-01 mean=(2.4559e-02, 2.1819e-02) max|d|=1.5629e+00 rms|d|=5.8833e-01 | flux-weighted: R=5.7696e-01 mean=(2.2641e-02, 1.3698e-03) <tau>_w=15.8772472828
+    ladder vs 1e-12 at n=16: max=1.342e+00 rms=4.026e-01 (both_ok=1024, status_differs=0)
+    n=16: R=5.8594e-01 mean=(4.0343e-02, 1.4951e-02) max|d|=1.5581e+00 rms|d|=5.8752e-01 | flux-weighted: R=5.9097e-01 mean=(2.8153e-02, -3.0636e-02) <tau>_w=16.0786193464
+    ladder vs 1e-12 at n=16: max=1.294e+00 rms=3.665e-01 (both_ok=1024, status_differs=0)
+    n=16: R=5.9685e-01 mean=(1.6764e-02, 2.0536e-02) max|d|=1.5566e+00 rms|d|=5.9744e-01 | flux-weighted: R=5.8337e-01 mean=(1.2075e-02, -2.6261e-02) <tau>_w=15.9861026149
+    ladder vs 1e-12 at n=16: max=1.477e+00 rms=2.543e-01 (both_ok=1024, status_differs=0)
+    n=16: R=5.8247e-01 mean=(2.2441e-02, 1.5249e-02) max|d|=1.5584e+00 rms|d|=5.8310e-01 | flux-weighted: R=5.7116e-01 mean=(2.3697e-02, -1.3217e-02) <tau>_w=16.1967223054
+exit=0
+### sensitivity s4_l16 N=128 periods=32
+    n=32: R=7.8399e-01 mean=(3.5068e-02, 1.9281e-02) max|d|=2.3238e+00 rms|d|=7.8501e-01 | flux-weighted: R=7.8213e-01 mean=(3.7434e-02, 2.5633e-02) <tau>_w=32.0201393797
+    ladder vs 1e-12 at n=32: max=2.687e+00 rms=8.385e-01 (both_ok=1024, status_differs=0)
+    n=32: R=7.9436e-01 mean=(4.9900e-02, 3.8951e-02) max|d|=2.3885e+00 rms|d|=7.9688e-01 | flux-weighted: R=7.8928e-01 mean=(1.8822e-02, -2.3948e-02) <tau>_w=31.8136236908
+    ladder vs 1e-12 at n=32: max=2.476e+00 rms=8.315e-01 (both_ok=1024, status_differs=0)
+    n=32: R=8.2279e-01 mean=(2.5457e-02, 3.2585e-02) max|d|=2.7642e+00 rms|d|=8.2383e-01 | flux-weighted: R=8.5406e-01 mean=(5.0871e-02, -1.2256e-03) <tau>_w=32.4543901732
+    ladder vs 1e-12 at n=32: max=2.474e+00 rms=7.751e-01 (both_ok=1024, status_differs=0)
+    n=32: R=7.9609e-01 mean=(1.7233e-02, 1.4200e-02) max|d|=2.1906e+00 rms|d|=7.9640e-01 | flux-weighted: R=8.3492e-01 mean=(6.1247e-02, 2.2748e-02) <tau>_w=33.0868106081
+exit=0
+### sensitivity s4_l16 N=256 periods=2
+    n=2: R=1.9737e-01 mean=(1.7931e-03, 1.1659e-02) max|d|=4.3960e-01 rms|d|=1.9772e-01 | flux-weighted: R=2.0038e-01 mean=(1.6469e-03, 6.4093e-03) <tau>_w=1.8875084799
+    ladder vs 1e-12 at n=2: max=1.209e-04 rms=7.567e-06 (both_ok=1024, status_differs=0)
+    n=2: R=1.9737e-01 mean=(1.7931e-03, 1.1659e-02) max|d|=4.3960e-01 rms|d|=1.9772e-01 | flux-weighted: R=2.0038e-01 mean=(1.6469e-03, 6.4093e-03) <tau>_w=1.8875075760
+    ladder vs 1e-12 at n=2: max=1.209e-04 rms=7.643e-06 (both_ok=1024, status_differs=0)
+    n=2: R=1.9737e-01 mean=(1.7933e-03, 1.1659e-02) max|d|=4.3960e-01 rms|d|=1.9772e-01 | flux-weighted: R=2.0038e-01 mean=(1.6467e-03, 6.4095e-03) <tau>_w=1.8874890109
+    ladder vs 1e-12 at n=2: max=6.755e-05 rms=3.076e-06 (both_ok=1024, status_differs=0)
+    n=2: R=1.9737e-01 mean=(1.7934e-03, 1.1659e-02) max|d|=4.3960e-01 rms|d|=1.9772e-01 | flux-weighted: R=2.0038e-01 mean=(1.6469e-03, 6.4095e-03) <tau>_w=1.8874918407
+### sensitivity s4_l16 N=256 periods=4
+    n=4: R=2.8932e-01 mean=(4.5985e-03, 5.4185e-03) max|d|=6.2218e-01 rms|d|=2.8941e-01 | flux-weighted: R=2.8993e-01 mean=(1.5149e-02, -5.6260e-03) <tau>_w=3.8417677838
+    ladder vs 1e-12 at n=4: max=9.094e-03 rms=3.802e-04 (both_ok=1024, status_differs=0)
+    n=4: R=2.8933e-01 mean=(4.5982e-03, 5.4146e-03) max|d|=6.2218e-01 rms|d|=2.8941e-01 | flux-weighted: R=2.8993e-01 mean=(1.5141e-02, -5.6388e-03) <tau>_w=3.8418179546
+    ladder vs 1e-12 at n=4: max=9.094e-03 rms=3.732e-04 (both_ok=1024, status_differs=0)
+    n=4: R=2.8932e-01 mean=(4.5973e-03, 5.4012e-03) max|d|=6.2224e-01 rms|d|=2.8940e-01 | flux-weighted: R=2.8992e-01 mean=(1.5150e-02, -5.6300e-03) <tau>_w=3.8404136965
+    ladder vs 1e-12 at n=4: max=4.421e-03 rms=1.883e-04 (both_ok=1024, status_differs=0)
+    n=4: R=2.8932e-01 mean=(4.5973e-03, 5.4035e-03) max|d|=6.2224e-01 rms|d|=2.8940e-01 | flux-weighted: R=2.8993e-01 mean=(1.5136e-02, -5.6365e-03) <tau>_w=3.8411426796
+### sensitivity s4_l16 N=256 periods=8
+    n=8: R=4.2812e-01 mean=(2.1166e-02, 1.8323e-02) max|d|=1.0117e+00 rms|d|=4.2903e-01 | flux-weighted: R=4.2814e-01 mean=(1.9048e-02, -1.2851e-02) <tau>_w=7.9041140547
+    ladder vs 1e-12 at n=8: max=5.033e-01 rms=3.848e-02 (both_ok=1024, status_differs=0)
+    n=8: R=4.2829e-01 mean=(2.0583e-02, 1.8513e-02) max|d|=1.0117e+00 rms|d|=4.2918e-01 | flux-weighted: R=4.2875e-01 mean=(1.7108e-02, -1.2334e-02) <tau>_w=7.9088099341
+    ladder vs 1e-12 at n=8: max=5.033e-01 rms=3.906e-02 (both_ok=1024, status_differs=0)
+    n=8: R=4.2774e-01 mean=(2.2027e-02, 1.7712e-02) max|d|=1.0098e+00 rms|d|=4.2867e-01 | flux-weighted: R=4.2912e-01 mean=(1.9656e-02, -1.2420e-02) <tau>_w=7.9001103626
+    ladder vs 1e-12 at n=8: max=3.376e-01 rms=2.229e-02 (both_ok=1024, status_differs=0)
+    n=8: R=4.2745e-01 mean=(2.1991e-02, 1.7237e-02) max|d|=1.0099e+00 rms|d|=4.2836e-01 | flux-weighted: R=4.2899e-01 mean=(1.7017e-02, -1.3292e-02) <tau>_w=7.9105212417
+[2026-10-05T13:09:01Z] job=sf30-post finished exit=0

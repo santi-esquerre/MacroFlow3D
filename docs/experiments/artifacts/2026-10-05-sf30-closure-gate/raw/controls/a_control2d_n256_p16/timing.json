@@ -1,0 +1,29 @@
+{
+  "schema_version": "sf30-closure-gate-timing-1",
+  "threads": 32,
+  "host": "localhost.localdomain",
+  "field_s": 2.0591621560000002,
+  "darcy_s": 2.8933923209999999,
+  "splines_s": 1.2362696689999999,
+  "diagnostics_s": 0.40545864599999998,
+  "tolerances": [
+    {
+      "tol": 9.9999999999999995e-07,
+      "seconds": 0.0031444730000000001
+    },
+    {
+      "tol": 1e-08,
+      "seconds": 0.0030593840000000001
+    },
+    {
+      "tol": 1e-10,
+      "seconds": 0.002993852
+    },
+    {
+      "tol": 9.9999999999999998e-13,
+      "seconds": 0.0050828210000000004
+    }
+  ],
+  "round_trip_s": 0.0034831720000000001,
+  "total_s": 6.612315272
+}
