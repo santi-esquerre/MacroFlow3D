@@ -1,0 +1,52 @@
+RUN_ALL cell=ii-two_mode-0.5-N32 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py two_mode:0.5:32
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=two_mode:0.5:32
+======== candidate (ii) energy=q1 q=center two_mode:0.5:32  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=9.462e-02 c_rel=1.154e-02 E=5.058429015274065e-01 |F|=4.911e-03 nu=1.0e-04
+    step alpha=1 |d|=3.41e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465216)=133.63s solve[splu]=531.64s
+  NEWTON s=0.25 it= 1 g_rel=3.191e-02 c_rel=1.355e-01 E=5.003703881032442e-01 |F|=1.785e-03 nu=1.0e-05
+    step alpha=0.125 |d|=4.98e+00 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465216)=106.77s solve[splu]=574.22s
+  NEWTON s=0.25 it= 2 g_rel=2.757e-02 c_rel=1.060e-01 E=5.002930028076980e-01 |F|=1.540e-03 nu=1.0e-05
+    step alpha=0.25 |d|=2.04e+00 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465216)=72.99s solve[splu]=448.36s
+  NEWTON s=0.25 it= 3 g_rel=2.082e-02 c_rel=7.876e-02 E=5.001817047345454e-01 |F|=1.163e-03 nu=1.0e-05
+    step alpha=0.25 |d|=1.51e+00 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465216)=81.14s solve[splu]=545.96s
+  NEWTON s=0.25 it= 4 g_rel=1.596e-02 c_rel=5.896e-02 E=5.001183630772251e-01 |F|=8.922e-04 nu=1.0e-05
+    step alpha=0.125 |d|=1.79e+00 nu=1.0e-04 trials=2 hess(ngrad=192 nnz=3465216)=86.46s solve[splu]=897.79s
+  NEWTON s=0.25 it= 5 g_rel=1.309e-02 c_rel=4.870e-02 E=5.000962468414898e-01 |F|=7.359e-04 nu=1.0e-04
+    step alpha=1 |d|=8.01e-01 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465216)=71.49s solve[splu]=587.31s
+  NEWTON s=0.25 it= 6 g_rel=7.529e-03 c_rel=3.055e-02 E=5.000279940331621e-01 |F|=4.174e-04 nu=1.0e-05
+    step alpha=1 |d|=3.41e-01 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465216)=62.82s solve[splu]=498.65s
+  NEWTON s=0.25 it= 7 g_rel=5.204e-03 c_rel=2.332e-02 E=5.000213105730298e-01 |F|=2.827e-04 nu=1.0e-06
+    step alpha=1 |d|=1.26e-01 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3465216)=60.55s solve[splu]=452.68s
+  NEWTON s=0.25 it= 8 g_rel=2.139e-03 c_rel=9.395e-03 E=5.000204139982237e-01 |F|=1.149e-04 nu=1.0e-07
+    step alpha=1 |d|=2.20e-02 nu=1.0e-07 trials=1 hess(ngrad=192 nnz=3465216)=78.24s solve[splu]=361.25s
+  NEWTON s=0.25 it= 9 g_rel=1.237e-04 c_rel=6.942e-04 E=5.000204060032319e-01 |F|=6.712e-06 nu=1.0e-08
+    step alpha=1 |d|=3.72e-03 nu=1.0e-08 trials=1 hess(ngrad=192 nnz=3465216)=89.85s solve[splu]=361.27s
+  NEWTON s=0.25 it=10 g_rel=3.483e-06 c_rel=1.743e-05 E=5.000204089912879e-01 |F|=1.877e-07 nu=1.0e-09
+    step alpha=1 |d|=3.63e-05 nu=1.0e-09 trials=1 hess(ngrad=192 nnz=3465216)=63.42s solve[splu]=440.71s
+  NEWTON s=0.25 it=11 g_rel=1.266e-08 c_rel=5.693e-09 E=5.000204091005536e-01 |F|=6.567e-10 nu=1.0e-10
+    step alpha=1 |d|=6.44e-07 nu=1.0e-10 trials=1 hess(ngrad=192 nnz=3465216)=55.58s solve[splu]=413.20s
+  NEWTON s=0.25 it=12 g_rel=6.987e-12 c_rel=2.677e-12 E=5.000204091005634e-01 |F|=3.626e-13 nu=1.0e-11
+  NEWTON s=0.50 it= 0 g_rel=2.206e-01 c_rel=1.159e-01 E=5.054501316468885e-01 |F|=1.161e-02 nu=1.0e-04
+    step alpha=1 |d|=2.06e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465216)=78.55s solve[splu]=545.24s
+  NEWTON s=0.50 it= 1 g_rel=1.620e-02 c_rel=5.170e-03 E=5.001630460159529e-01 |F|=8.885e-04 nu=1.0e-05
+    step alpha=1 |d|=6.17e-01 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465216)=74.22s solve[splu]=372.52s
+  NEWTON s=0.50 it= 2 g_rel=7.504e-04 c_rel=2.453e-03 E=5.000927515745561e-01 |F|=8.818e-05 nu=1.0e-06
+    step alpha=1 |d|=2.64e-02 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3465216)=73.76s solve[splu]=407.10s
+  NEWTON s=0.50 it= 3 g_rel=7.358e-06 c_rel=3.759e-05 E=5.000989660585831e-01 |F|=4.166e-07 nu=1.0e-07
+    step alpha=1 |d|=4.67e-04 nu=1.0e-07 trials=1 hess(ngrad=192 nnz=3465216)=80.40s solve[splu]=444.78s
+  NEWTON s=0.50 it= 4 g_rel=1.113e-08 c_rel=4.515e-08 E=5.000989664439871e-01 |F|=6.093e-10 nu=1.0e-08
+    step alpha=1 |d|=2.31e-07 nu=1.0e-08 trials=1 hess(ngrad=192 nnz=3465216)=58.05s solve[splu]=623.06s
+  NEWTON s=0.50 it= 5 g_rel=7.430e-15 c_rel=3.872e-14 E=5.000989664484680e-01 |F|=4.038e-16 nu=1.0e-09
+  NEWTON s=1.00 it= 0 g_rel=4.601e-01 c_rel=1.882e-01 E=5.221013227861199e-01 |F|=2.418e-02 nu=1.0e-04
+    step alpha=0.5 |d|=9.39e+00 nu=1.0e-03 trials=2 hess(ngrad=192 nnz=3465216)=86.70s solve[splu]=1025.71s
+  NEWTON s=1.00 it= 1 g_rel=4.363e-01 c_rel=6.279e-01 E=5.109157265928829e-01 |F|=2.337e-02 nu=1.0e-03
+    step alpha=1 |d|=8.58e-01 nu=1.0e-01 trials=3 hess(ngrad=192 nnz=3465216)=88.09s solve[splu]=1623.63s
+  NEWTON s=1.00 it= 2 g_rel=1.317e-01 c_rel=9.147e-02 E=5.044131776571212e-01 |F|=6.861e-03 nu=1.0e-02
+    step alpha=0.5 |d|=1.34e+00 nu=1.0e-02 trials=1 hess(ngrad=192 nnz=3465216)=46.93s solve[splu]=407.94s
+  NEWTON s=1.00 it= 3 g_rel=7.392e-02 c_rel=6.248e-02 E=5.025915198216185e-01 |F|=3.853e-03 nu=1.0e-02
+    step alpha=1 |d|=9.04e-01 nu=1.0e-02 trials=1 hess(ngrad=192 nnz=3465216)=35.11s solve[splu]=413.55s
+  NEWTON s=1.00 it= 4 g_rel=2.391e-02 c_rel=4.481e-02 E=5.014710710713289e-01 |F|=1.258e-03 nu=1.0e-03
+    step alpha=0.25 |d|=2.30e+00 nu=1.0e-03 trials=1 hess(ngrad=192 nnz=3465216)=43.69s solve[splu]=403.64s
+  NEWTON s=1.00 it= 5 g_rel=1.832e-02 c_rel=3.956e-02 E=5.012500788578040e-01 |F|=9.671e-04 nu=1.0e-03
+
+RUN_ALL TIMEOUT after 14400 s (cell wall cap); process group killed

@@ -1,0 +1,20 @@
+RUN_ALL cell=oracle-gauss-1 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell gauss:1 --grids 12,16,24,32,48,64
+run_all.py --oracle-cell gauss:1 grids=[12, 16, 24, 32, 48, 64] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=gauss eps=1 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=2.807e-01 e_psi=0.000e+00 e_i=(1.157e-01,4.941e-02) e_div=9.087e-01 min_c=7.190e-02 p0.1=8.119e-02 p1=1.507e-01 p5=2.675e-01 p50=8.615e-01 | t=114.0
+CASE field=gauss eps=1 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=2.346e-01 e_psi=0.000e+00 e_i=(1.157e-01,4.941e-02) e_div=3.192e-15 min_c=5.271e-02 p0.1=6.066e-02 p1=1.302e-01 p5=2.693e-01 p50=8.443e-01 | t=114.0
+ORACLE_READY field=gauss eps=1 N=12 cache_hit=False nphi=48 max_roundtrip=3.71e-13 t_oracle=8.6s t_faces=1.4s t_cell=114.0s cache=../raw/cache/gauss_eps1_N12_nphi48_v1.npz
+CASE field=gauss eps=1 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=2.350e-01 e_psi=0.000e+00 e_i=(8.005e-02,3.545e-02) e_div=9.544e-01 min_c=5.723e-02 p0.1=7.297e-02 p1=1.393e-01 p5=2.616e-01 p50=8.399e-01 | t=0.5
+CASE field=gauss eps=1 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=2.258e-01 e_psi=0.000e+00 e_i=(8.005e-02,3.545e-02) e_div=3.517e-15 min_c=5.723e-02 p0.1=6.334e-02 p1=1.306e-01 p5=2.541e-01 p50=8.315e-01 | t=0.5
+ORACLE_READY field=gauss eps=1 N=16 cache_hit=True nphi=48 max_roundtrip=4.30e-13 t_oracle=25.1s t_faces=2.1s t_cell=0.5s cache=../raw/cache/gauss_eps1_N16_nphi48_v1.npz
+CASE field=gauss eps=1 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=1.725e-01 e_psi=0.000e+00 e_i=(5.217e-02,2.167e-02) e_div=8.561e-01 min_c=4.367e-02 p0.1=7.083e-02 p1=1.314e-01 p5=2.424e-01 p50=8.218e-01 | t=56.1
+CASE field=gauss eps=1 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=1.234e-01 e_psi=0.000e+00 e_i=(5.217e-02,2.167e-02) e_div=6.603e-15 min_c=4.722e-02 p0.1=6.465e-02 p1=1.263e-01 p5=2.423e-01 p50=8.192e-01 | t=56.1
+ORACLE_READY field=gauss eps=1 N=24 cache_hit=False nphi=48 max_roundtrip=3.89e-13 t_oracle=46.3s t_faces=7.3s t_cell=56.2s cache=../raw/cache/gauss_eps1_N24_nphi48_v1.npz
+CASE field=gauss eps=1 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=1.254e-01 e_psi=0.000e+00 e_i=(3.240e-02,1.513e-02) e_div=7.695e-01 min_c=6.150e-03 p0.1=6.353e-02 p1=1.269e-01 p5=2.406e-01 p50=8.188e-01 | t=151.3
+CASE field=gauss eps=1 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=8.686e-02 e_psi=0.000e+00 e_i=(3.240e-02,1.513e-02) e_div=6.999e-15 min_c=4.674e-02 p0.1=6.340e-02 p1=1.252e-01 p5=2.405e-01 p50=8.175e-01 | t=151.3
+ORACLE_READY field=gauss eps=1 N=32 cache_hit=False nphi=48 max_roundtrip=4.73e-13 t_oracle=128.5s t_faces=17.7s t_cell=151.3s cache=../raw/cache/gauss_eps1_N32_nphi48_v1.npz
+CASE field=gauss eps=1 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=7.542e-02 e_psi=0.000e+00 e_i=(1.734e-02,8.217e-03) e_div=5.590e-01 min_c=2.045e-02 p0.1=6.374e-02 p1=1.254e-01 p5=2.378e-01 p50=8.137e-01 | t=540.0
+CASE field=gauss eps=1 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=4.497e-02 e_psi=0.000e+00 e_i=(1.734e-02,8.217e-03) e_div=1.274e-14 min_c=4.554e-02 p0.1=6.244e-02 p1=1.247e-01 p5=2.383e-01 p50=8.138e-01 | t=540.0
+ORACLE_READY field=gauss eps=1 N=48 cache_hit=False nphi=48 max_roundtrip=3.21e-13 t_oracle=469.2s t_faces=54.6s t_cell=540.2s cache=../raw/cache/gauss_eps1_N48_nphi48_v1.npz
+CASE field=gauss eps=1 N=64 cand=oracle_fd | r_F=nan its=nan | e_v=5.020e-02 e_psi=0.000e+00 e_i=(1.059e-02,5.001e-03) e_div=4.193e-01 min_c=4.568e-02 p0.1=6.343e-02 p1=1.258e-01 p5=2.379e-01 p50=8.131e-01 | t=1201.3
+CASE field=gauss eps=1 N=64 cand=oracle_mim | r_F=nan its=nan | e_v=2.731e-02 e_psi=0.000e+00 e_i=(1.059e-02,5.001e-03) e_div=1.444e-14 min_c=4.531e-02 p0.1=6.201e-02 p1=1.243e-01 p5=2.376e-01 p50=8.140e-01 | t=1201.3
+ORACLE_READY field=gauss eps=1 N=64 cache_hit=False nphi=48 max_roundtrip=2.14e-13 t_oracle=1046.6s t_faces=113.9s t_cell=1201.7s cache=../raw/cache/gauss_eps1_N64_nphi48_v1.npz

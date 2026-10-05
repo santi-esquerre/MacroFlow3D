@@ -1,0 +1,21 @@
+RUN_ALL cell=spec_i1-lester2021-0.25-M16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 16 lester2021:0.25:16:i1 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=lester2021 eps=0.25 N=16 cand=i1 (from eps=0, u=0)
+  NEWTON lester2021:0.25:16:i1 it= 0 r_F=1.083e+00 r_out=6.089e-02
+  NEWTON lester2021:0.25:16:i1 it= 1 r_F=4.538e-02 r_out=1.812e-03 lambda=1 |dx|max=1.90e-02 lin=splu rel=4.9e-15 lits=0 t_jac=0.5s t_lin=3.8s
+  NEWTON lester2021:0.25:16:i1 it= 2 r_F=6.605e-03 r_out=7.306e-06 lambda=1 |dx|max=7.67e-03 lin=splu rel=3.1e-14 lits=0 t_jac=0.6s t_lin=4.1s
+  NEWTON lester2021:0.25:16:i1 it= 3 r_F=5.907e-06 r_out=3.643e-08 lambda=1 |dx|max=2.14e-04 lin=splu rel=6.0e-15 lits=0 t_jac=0.6s t_lin=4.6s
+  NEWTON lester2021:0.25:16:i1 it= 4 r_F=4.341e-10 r_out=2.089e-12 lambda=1 |dx|max=1.39e-06 lin=splu rel=5.6e-14 lits=0 t_jac=0.7s t_lin=5.0s
+  NEWTON lester2021:0.25:16:i1 it= 5 r_F=3.632e-16 r_out=1.252e-17 lambda=1 |dx|max=1.52e-11 lin=splu rel=5.7e-15 lits=0 t_jac=0.4s t_lin=3.7s
+  STAGE_END field=lester2021 eps=0.25 N=16 cand=i1 status=converged its=5 r_F=3.632e-16 r_out=1.252e-17 -> accepted
+PATH field=lester2021 eps=0.25 N=16 cand=i1 continuation path: 0.25
+CASE field=lester2021 eps=0.25 N=16 cand=i1 | r_F=3.632e-16 its=5 | e_v=1.074e-02 e_psi=9.648e-02 e_i=(1.085e-03,2.388e-03) e_div=1.973e-03 min_c=7.902e-01 p0.1=7.996e-01 p1=8.336e-01 p5=8.856e-01 p50=1.000e+00 | t=34.6
+CASE field=lester2021 eps=0.25 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=1.677e-02 e_psi=0.000e+00 e_i=(9.703e-04,1.095e-03) e_div=1.651e-03 min_c=8.059e-01 p0.1=8.152e-01 p1=8.448e-01 p5=8.936e-01 p50=1.001e+00 | t=0.0
+EXTRA field=lester2021 eps=0.25 N=16 cand=i1 status=converged r_F=3.632e-16 r_out=1.252e-17 | outlet c_perp-vperp_in: cand=1.385e-15 oracle_fd=2.976e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=6.529e-03 oracle_fd=2.976e-03; j=1 cand=5.068e-03 oracle_fd=6.294e-03; j=1 vs vD(j=1) cand=3.069e-03 oracle_fd=1.485e-03 | min|c|/v_rms=0.7873 min|vD|/v_rms=0.7726 e_i1=1.085e-03 e_i2=2.388e-03 | t=34.6s
+HISTORY field=lester2021 eps=0.25 N=16 cand=i1 r_F: 1.08e+00 4.54e-02 6.61e-03 5.91e-06 4.34e-10 3.63e-16
+HISTORY field=lester2021 eps=0.25 N=16 cand=i1 r_out: 6.09e-02 1.81e-03 7.31e-06 3.64e-08 2.09e-12 1.25e-17
+SPECTRUM field=lester2021 eps=0.25 N=16 cand=i1 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=8192 smax=2.610e+03 t_jac=56.3s t_svd=127.3s
+SPECTRUM field=lester2021 eps=0.25 N=16 cand=i1 state=converged smallest12 rel sv: 8.11e-04 8.44e-04 8.48e-04 8.56e-04 8.57e-04 8.58e-04 8.60e-04 8.65e-04 8.69e-04 8.79e-04 8.81e-04 8.86e-04
+SPECTRUM field=lester2021 eps=0.25 N=16 cand=i1 state=converged counts <1e-2:106 <1e-3:20 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.922e+00 after the 36 smallest (1.40e-03 -> 2.69e-03) | 2N=32
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i1_lester2021_0.25_16.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

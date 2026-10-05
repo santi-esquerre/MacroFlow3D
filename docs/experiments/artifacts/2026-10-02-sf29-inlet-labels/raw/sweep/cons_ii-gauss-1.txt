@@ -1,0 +1,16 @@
+RUN_ALL cell=cons_ii-gauss-1 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py --consistency gauss:1 --grids 16,32,48
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=--consistency gauss:1 --grids 16,32,48
+======== consistency at the oracle labels gauss:1 grids=(16, 32, 48) energy=q1 q=center meanflux=True
+CONSIST field=gauss eps=1 N=16 energy=q1 constrained=True meanflux_rows=2 g_rel(oracle)=2.407e-01 interior(planes 1..N-1)=2.396e-01 outlet=2.291e-02 constraint rms rel=8.494e-02 (vs raw f1_in: 8.494e-02) D-3 rows (S2,S3)=(+1.289e-04,+2.054e-03) |grad E(0)|=5.884e-01 | e_v(TPFA flux)=2.503e-02 e_v(oracle_mim)=2.258e-01
+MEANFLUX oracle field=gauss eps=1 N=16 active=True plane=0 S2=+1.289e-04 S3=+2.054e-03 | spread over planes max|S-S[plane]|=(4.06e-03,4.31e-03) mean over planes=(+1.429e-03,+1.821e-04) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(2.24e-03,2.65e-03) balance identity defect=7.4e-17 | vD_faces: S2=-2.46e-10 S3=+3.62e-10 spread=(2.0e-09,3.6e-09)
+CONSIST field=gauss eps=1 N=32 energy=q1 constrained=True meanflux_rows=2 g_rel(oracle)=1.268e-01 interior(planes 1..N-1)=1.263e-01 outlet=1.064e-02 constraint rms rel=5.054e-02 (vs raw f1_in: 5.054e-02) D-3 rows (S2,S3)=(+2.227e-05,+5.862e-04) |grad E(0)|=5.268e-01 | e_v(TPFA flux)=6.493e-03 e_v(oracle_mim)=8.686e-02
+MEANFLUX oracle field=gauss eps=1 N=32 active=True plane=0 S2=+2.227e-05 S3=+5.862e-04 | spread over planes max|S-S[plane]|=(1.04e-03,1.65e-03) mean over planes=(+2.934e-04,+3.178e-05) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(7.37e-04,6.67e-04) balance identity defect=3.4e-16 | vD_faces: S2=-8.98e-15 S3=-3.38e-13 spread=(2.9e-12,9.8e-13)
+CONSIST field=gauss eps=1 N=48 energy=q1 constrained=True meanflux_rows=2 g_rel(oracle)=7.179e-02 interior(planes 1..N-1)=7.159e-02 outlet=5.338e-03 constraint rms rel=3.697e-02 (vs raw f1_in: 3.697e-02) D-3 rows (S2,S3)=(+1.129e-05,+2.548e-04) |grad E(0)|=5.169e-01 | e_v(TPFA flux)=2.910e-03 e_v(oracle_mim)=4.497e-02
+MEANFLUX oracle field=gauss eps=1 N=48 active=True plane=0 S2=+1.129e-05 S3=+2.548e-04 | spread over planes max|S-S[plane]|=(5.45e-04,8.94e-04) mean over planes=(+1.384e-04,+2.809e-06) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(3.36e-04,4.39e-04) balance identity defect=4.7e-16 | vD_faces: S2=-8.99e-15 S3=-3.38e-13 spread=(1.9e-14,6.8e-13)
+CONSIST_ORDER field=gauss eps=1 g_rel: 2.407e-01 1.268e-01 7.179e-02 orders 0.92 1.40
+CONSIST_ORDER field=gauss eps=1 g_interior: 2.396e-01 1.263e-01 7.159e-02 orders 0.92 1.40
+CONSIST_ORDER field=gauss eps=1 g_outlet: 2.291e-02 1.064e-02 5.338e-03 orders 1.11 1.70
+CONSIST_ORDER field=gauss eps=1 constraint: 8.494e-02 5.054e-02 3.697e-02 orders 0.75 0.77
+CONSIST_ORDER field=gauss eps=1 meanflux_rows: 2.054e-03 5.862e-04 2.548e-04 orders 1.81 2.05
+CONSIST_ORDER field=gauss eps=1 e_v_tpfa: 2.503e-02 6.493e-03 2.910e-03 orders 1.95 1.98
+CONSIST_ORDER field=gauss eps=1 e_v_oracle_mim: 2.258e-01 8.686e-02 4.497e-02 orders 1.38 1.62

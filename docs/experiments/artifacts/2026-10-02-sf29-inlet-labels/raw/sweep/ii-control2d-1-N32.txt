@@ -1,0 +1,53 @@
+RUN_ALL cell=ii-control2d-1-N32 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py control2d:1:32
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=control2d:1:32
+======== candidate (ii) energy=q1 q=center control2d:1:32  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=3.671e-02 c_rel=1.462e-09 E=5.147449376365850e-01 |F|=8.835e-03 nu=1.0e-04
+    step alpha=1 |d|=3.60e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3394366)=127.21s solve[splu]=798.25s
+  NEWTON s=0.25 it= 1 g_rel=8.427e-05 c_rel=4.189e-14 E=5.012915982936620e-01 |F|=2.028e-05 nu=1.0e-05
+    step alpha=1 |d|=1.19e-02 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465160)=37.17s solve[splu]=393.14s
+  NEWTON s=0.25 it= 2 g_rel=2.761e-08 c_rel=1.442e-14 E=5.012914818006062e-01 |F|=6.645e-09 nu=1.0e-06
+    step alpha=1 |d|=4.34e-06 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3465120)=30.99s solve[splu]=451.25s
+  NEWTON s=0.25 it= 3 g_rel=6.605e-10 c_rel=5.428e-15 E=5.012914818005924e-01 |F|=1.590e-10 nu=1.0e-07
+  NEWTON s=0.50 it= 0 g_rel=1.416e-01 c_rel=1.910e-01 E=5.278947292329189e-01 |F|=3.449e-02 nu=1.0e-04
+    step alpha=1 |d|=3.50e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465204)=37.09s solve[splu]=399.87s
+  NEWTON s=0.50 it= 1 g_rel=9.305e-04 c_rel=2.396e-08 E=5.046326416077072e-01 |F|=2.239e-04 nu=1.0e-05
+    step alpha=1 |d|=1.35e-02 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465202)=64.34s solve[splu]=471.61s
+  NEWTON s=0.50 it= 2 g_rel=3.276e-08 c_rel=1.427e-14 E=5.046325520968031e-01 |F|=7.884e-09 nu=1.0e-06
+    step alpha=1 |d|=2.02e-05 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3465126)=34.58s solve[splu]=512.55s
+  NEWTON s=0.50 it= 3 g_rel=1.318e-10 c_rel=3.842e-15 E=5.046325520967347e-01 |F|=3.172e-11 nu=1.0e-07
+  NEWTON s=1.00 it= 0 g_rel=4.829e-01 c_rel=2.764e-01 E=6.224687744856935e-01 |F|=1.167e-01 nu=1.0e-04
+    step alpha=1 |d|=7.10e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3464848)=61.25s solve[splu]=421.92s
+  NEWTON s=1.00 it= 1 g_rel=1.023e-03 c_rel=8.442e-08 E=5.132612159466199e-01 |F|=2.461e-04 nu=1.0e-05
+    step alpha=1 |d|=3.85e-02 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465210)=58.44s solve[splu]=616.94s
+  NEWTON s=1.00 it= 2 g_rel=1.141e-07 c_rel=1.681e-12 E=5.132605024979044e-01 |F|=2.745e-08 nu=1.0e-06
+    step alpha=1 |d|=6.03e-05 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3465210)=98.08s solve[splu]=703.43s
+  NEWTON s=1.00 it= 3 g_rel=1.250e-09 c_rel=5.824e-13 E=5.132605024972114e-01 |F|=3.009e-10 nu=1.0e-07
+    step alpha=0.25 |d|=3.90e-06 nu=1.0e-07 trials=1 hess(ngrad=192 nnz=3465214)=86.56s solve[splu]=614.77s
+  NEWTON s=1.00 it= 4 g_rel=9.116e-10 c_rel=1.510e-12 E=5.132605024972119e-01 |F|=2.194e-10 nu=1.0e-07
+    step alpha=1 |d|=5.75e-07 nu=1.0e-07 trials=1 hess(ngrad=192 nnz=3465194)=73.69s solve[splu]=566.27s
+  NEWTON s=1.00 it= 5 g_rel=2.505e-10 c_rel=9.231e-13 E=5.132605024972112e-01 |F|=6.028e-11 nu=1.0e-08
+    step alpha=1 |d|=3.34e-07 nu=1.0e-08 trials=1 hess(ngrad=192 nnz=3465180)=77.72s solve[splu]=692.95s
+  NEWTON s=1.00 it= 6 g_rel=3.992e-11 c_rel=3.292e-13 E=5.132605024972107e-01 |F|=9.607e-12 nu=1.0e-09
+    step alpha=1 |d|=1.86e-07 nu=1.0e-09 trials=1 hess(ngrad=192 nnz=3465160)=86.03s solve[splu]=388.53s
+  NEWTON s=1.00 it= 7 g_rel=6.972e-12 c_rel=5.083e-14 E=5.132605024972106e-01 |F|=1.678e-12 nu=1.0e-10
+    step alpha=1 |d|=9.33e-08 nu=1.0e-10 trials=1 hess(ngrad=192 nnz=3465142)=69.31s solve[splu]=492.92s
+  NEWTON s=1.00 it= 8 g_rel=1.714e-12 c_rel=1.023e-14 E=5.132605024972106e-01 |F|=4.126e-13 nu=1.0e-11
+    step alpha=1 |d|=4.67e-08 nu=1.0e-11 trials=1 hess(ngrad=192 nnz=3465032)=70.97s solve[splu]=608.43s
+  NEWTON s=1.00 it= 9 g_rel=4.278e-13 c_rel=2.581e-15 E=5.132605024972106e-01 |F|=1.030e-13 nu=0.0e+00
+    step alpha=1 |d|=2.33e-08 nu=0.0e+00 trials=1 hess(ngrad=192 nnz=3464978)=68.74s solve[splu]=461.29s
+  NEWTON s=1.00 it=10 g_rel=1.069e-13 c_rel=7.943e-16 E=5.132605024972106e-01 |F|=2.573e-14 nu=0.0e+00
+    step alpha=1 |d|=1.15e-08 nu=0.0e+00 trials=1 hess(ngrad=192 nnz=3464712)=87.98s solve[splu]=630.57s
+  NEWTON s=1.00 it=11 g_rel=2.670e-14 c_rel=3.971e-16 E=5.132605024972106e-01 |F|=6.426e-15 nu=0.0e+00
+SOLVE field=control2d eps=1 N=32 cand=ii energy=q1 q=center constrained=True meanflux_rows=2 solver=direct status=converged its=17 g_rel=2.670e-14 c_rel(max)=3.971e-16 f1_in mean-1=+7.2e-11 mu=1.2e-20 |lam|=2.298e+00 eta=(-1.006e-01,-2.226e-11) E_min=5.132605024972106e-01 E(oracle)=5.132703250422802e-01 E(oracle)-E_min=+9.823e-06 t_load=10.1s t_solve=10396.7s
+HISTORY field=control2d eps=1 N=32 cand=ii g_rel: 3.7e-02 8.4e-05 2.8e-08 6.6e-10 1.4e-01 9.3e-04 3.3e-08 1.3e-10 4.8e-01 1.0e-03 1.1e-07 1.3e-09 9.1e-10 2.5e-10 4.0e-11 7.0e-12 1.7e-12 4.3e-13 1.1e-13 2.7e-14
+HISTORY_STAGE field=control2d eps=1 N=32 cand=ii s=0.25 its=3 status=converged g_rel: 3.7e-02 8.4e-05 2.8e-08 6.6e-10
+HISTORY_STAGE field=control2d eps=1 N=32 cand=ii s=0.50 its=3 status=converged g_rel: 1.4e-01 9.3e-04 3.3e-08 1.3e-10
+HISTORY_STAGE field=control2d eps=1 N=32 cand=ii s=1.00 its=11 status=converged g_rel: 4.8e-01 1.0e-03 1.1e-07 1.3e-09 9.1e-10 2.5e-10 4.0e-11 7.0e-12 1.7e-12 4.3e-13 1.1e-13 2.7e-14
+DIAG field=control2d eps=1 N=32 e_v(f1,f2,f3)=(4.480e-03,5.290e-03,5.258e-10) max|div_h c|=3.1e-14 nat_defect|c_perp(out)|=5.568e-01 (vD: 5.515e-01) |c_perp(out)-vD_perp(out)|=9.864e-03 |c1(out)-f1_in|=5.947e-11 |c1(out)-vD_f1(out)|=5.947e-11
+VDREF field=control2d eps=1 N=32 |vD| p0.1/1/5/50=0.2413/0.2610/0.3463/0.9675 min|vD|=0.2394
+MEANFLUX candidate field=control2d eps=1 N=32 active=True plane=0 S2=-6.592e-17 S3=-2.223e-19 | spread over planes max|S-S[plane]|=(2.80e-10,6.98e-11) mean over planes=(-8.573e-11,+3.488e-11) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(1.48e-10,6.98e-11) balance identity defect=6.3e-17 | vD_faces: S2=-8.00e-15 S3=+0.00e+00 spread=(1.6e-14,0.0e+00)
+MEANFLUX oracle field=control2d eps=1 N=32 active=True plane=0 S2=+2.582e-13 S3=+0.000e+00 | spread over planes max|S-S[plane]|=(2.83e-12,0.00e+00) mean over planes=(-3.465e-14,+0.000e+00) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(2.92e-12,4.34e-19) balance identity defect=1.4e-17 | vD_faces: S2=-8.00e-15 S3=+0.00e+00 spread=(1.6e-14,0.0e+00)
+CASE field=control2d eps=1 N=32 cand=ii | r_F=2.670e-14 its=17 | e_v=4.008e-03 e_psi=9.036e-01 e_i=(8.255e-03,8.773e-10) e_div=6.199e-15 min_c=2.425e-01 p0.1=2.427e-01 p1=2.586e-01 p5=3.613e-01 p50=9.732e-01 | t=10396.7
+DIAG_ORACLE field=control2d eps=1 N=32 e_v(f1,f2,f3)=(3.694e-08,2.223e-08,0.000e+00) max|div_h c|=2.1e-14 nat_defect|c_perp(out)|=5.515e-01 (vD: 5.515e-01) |c_perp(out)-vD_perp(out)|=3.312e-08 |c1(out)-f1_in|=1.390e-09 |c1(out)-vD_f1(out)|=1.390e-09
+CASE field=control2d eps=1 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=2.505e-08 e_psi=0.000e+00 e_i=(7.771e-03,0.000e+00) e_div=3.823e-15 min_c=2.425e-01 p0.1=2.425e-01 p1=2.585e-01 p5=3.618e-01 p50=9.753e-01 | t=0.0
+KELVIN field=control2d eps=1 N=32 cand=ii E(oracle)-E_min=+9.823e-06 (Q1 energy: the TPFA Kelvin identity does not apply; TPFA flux shown for reference) e_v(TPFA kelvin flux vs vD_faces)=4.295e-03 |c_min - c_tpfa|/rms(vD)=3.943e-03 |c_oracle - c_tpfa|/rms(vD)=4.295e-03 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(6.80e-14,1.68e-12) oracle=(0.00e+00,0.00e+00)

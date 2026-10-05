@@ -1,0 +1,27 @@
+RUN_ALL cell=i1-lester2021-0.5-N32 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py lester2021:0.5:32:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=lester2021 eps=0.25 N=32 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=32 modes=544 setup 0.1s
+  NEWTON lester2021:0.25:32:i1 it= 0 r_F=1.068e+00 r_out=6.088e-02
+  NEWTON lester2021:0.25:32:i1 it= 1 r_F=6.366e-02 r_out=2.535e-03 lambda=1 |dx|max=1.83e-02 lin=gmres+lin0 rel=1.4e-14 lits=82 t_jac=5.9s t_lin=4.3s
+  NEWTON lester2021:0.25:32:i1 it= 2 r_F=2.421e-02 r_out=1.092e-05 lambda=1 |dx|max=9.58e-03 lin=gmres+lin0 rel=3.9e-14 lits=50 t_jac=5.4s t_lin=2.5s
+  NEWTON lester2021:0.25:32:i1 it= 3 r_F=5.603e-04 r_out=1.490e-06 lambda=1 |dx|max=1.14e-03 lin=gmres+lin0 rel=1.3e-14 lits=38 t_jac=4.4s t_lin=1.6s
+  NEWTON lester2021:0.25:32:i1 it= 4 r_F=2.373e-06 r_out=8.060e-09 lambda=1 |dx|max=1.05e-04 lin=gmres+lin0 rel=3.6e-14 lits=40 t_jac=6.9s t_lin=2.2s
+  NEWTON lester2021:0.25:32:i1 it= 5 r_F=3.741e-12 r_out=1.253e-14 lambda=1 |dx|max=9.00e-08 lin=gmres+lin0 rel=9.9e-15 lits=40 t_jac=6.4s t_lin=2.1s
+  NEWTON lester2021:0.25:32:i1 it= 6 r_F=1.160e-15 r_out=1.336e-17 lambda=1 |dx|max=6.80e-13 lin=gmres+lin0 rel=3.5e-14 lits=45 t_jac=6.3s t_lin=2.2s
+  STAGE_END field=lester2021 eps=0.25 N=32 cand=i1 status=converged its=6 r_F=1.160e-15 r_out=1.336e-17 -> accepted
+STAGE field=lester2021 eps=0.5 N=32 cand=i1 (from eps=0.25, warm start)
+  NEWTON lester2021:0.5:32:i1 it= 0 r_F=1.059e+00 r_out=5.951e-02
+  NEWTON lester2021:0.5:32:i1 it= 1 r_F=5.580e-02 r_out=2.551e-03 lambda=1 |dx|max=1.81e-02 lin=gmres+lin0 rel=1.4e-14 lits=103 t_jac=5.7s t_lin=5.4s
+  NEWTON lester2021:0.5:32:i1 it= 2 r_F=2.171e-02 r_out=6.281e-05 lambda=1 |dx|max=9.25e-03 lin=gmres+lin0 rel=5.6e-14 lits=103 t_jac=5.7s t_lin=6.1s
+  NEWTON lester2021:0.5:32:i1 it= 3 r_F=3.434e-04 r_out=1.926e-06 lambda=1 |dx|max=1.00e-03 lin=gmres+lin0 rel=1.5e-14 lits=94 t_jac=6.6s t_lin=6.1s
+  NEWTON lester2021:0.5:32:i1 it= 4 r_F=1.457e-06 r_out=1.091e-08 lambda=1 |dx|max=9.04e-05 lin=gmres+lin0 rel=4.8e-14 lits=97 t_jac=5.6s t_lin=6.1s
+  NEWTON lester2021:0.5:32:i1 it= 5 r_F=1.089e-12 r_out=6.712e-15 lambda=1 |dx|max=4.68e-08 lin=gmres+lin0 rel=1.1e-14 lits=96 t_jac=5.9s t_lin=5.4s
+  NEWTON lester2021:0.5:32:i1 it= 6 r_F=2.306e-15 r_out=2.577e-17 lambda=1 |dx|max=1.95e-13 lin=gmres+lin0 rel=3.5e-14 lits=108 t_jac=7.7s t_lin=7.9s
+  STAGE_END field=lester2021 eps=0.5 N=32 cand=i1 status=converged its=6 r_F=2.306e-15 r_out=2.577e-17 -> accepted
+PATH field=lester2021 eps=0.5 N=32 cand=i1 continuation path: 0.25->0.5
+CASE field=lester2021 eps=0.5 N=32 cand=i1 | r_F=2.306e-15 its=6 | e_v=5.366e-03 e_psi=6.575e-02 e_i=(1.106e-03,1.181e-03) e_div=1.992e-03 min_c=5.992e-01 p0.1=6.093e-01 p1=6.623e-01 p5=7.645e-01 p50=1.002e+00 | t=148.1
+CASE field=lester2021 eps=0.5 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=9.374e-03 e_psi=0.000e+00 e_i=(4.358e-04,5.947e-04) e_div=1.838e-03 min_c=6.066e-01 p0.1=6.162e-01 p1=6.695e-01 p5=7.710e-01 p50=1.002e+00 | t=0.0
+EXTRA field=lester2021 eps=0.5 N=32 cand=i1 status=converged r_F=2.306e-15 r_out=2.577e-17 | outlet c_perp-vperp_in: cand=2.698e-15 oracle_fd=1.546e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=3.809e-03 oracle_fd=1.546e-03; j=1 cand=4.621e-03 oracle_fd=5.043e-03; j=1 vs vD(j=1) cand=2.536e-03 oracle_fd=7.814e-04 | min|c|/v_rms=0.5905 min|vD|/v_rms=0.5855 e_i1=1.106e-03 e_i2=1.181e-03 | t=148.1s
+HISTORY field=lester2021 eps=0.5 N=32 cand=i1 r_F: 1.06e+00 5.58e-02 2.17e-02 3.43e-04 1.46e-06 1.09e-12 2.31e-15
+HISTORY field=lester2021 eps=0.5 N=32 cand=i1 r_out: 5.95e-02 2.55e-03 6.28e-05 1.93e-06 1.09e-08 6.71e-15 2.58e-17

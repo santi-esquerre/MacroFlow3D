@@ -1,0 +1,17 @@
+RUN_ALL cell=oracle-generic3d-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell generic3d:0.5 --grids 12,16,24,32,48
+run_all.py --oracle-cell generic3d:0.5 grids=[12, 16, 24, 32, 48] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=generic3d eps=0.5 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=3.558e-02 e_psi=0.000e+00 e_i=(2.360e-02,1.964e-02) e_div=9.429e-02 min_c=4.046e-01 p0.1=4.234e-01 p1=4.816e-01 p5=5.800e-01 p50=9.947e-01 | t=11.1
+CASE field=generic3d eps=0.5 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=1.271e-02 e_psi=0.000e+00 e_i=(2.360e-02,1.964e-02) e_div=2.493e-15 min_c=4.133e-01 p0.1=4.322e-01 p1=4.904e-01 p5=5.834e-01 p50=1.002e+00 | t=11.1
+ORACLE_READY field=generic3d eps=0.5 N=12 cache_hit=False nphi=32 max_roundtrip=7.69e-14 t_oracle=4.8s t_faces=0.2s t_cell=11.1s cache=../raw/cache/generic3d_eps0.5_N12_nphi32_v1.npz
+CASE field=generic3d eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=2.028e-02 e_psi=0.000e+00 e_i=(1.294e-02,1.074e-02) e_div=6.406e-02 min_c=3.994e-01 p0.1=4.140e-01 p1=4.733e-01 p5=5.697e-01 p50=9.941e-01 | t=7.7
+CASE field=generic3d eps=0.5 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=7.558e-03 e_psi=0.000e+00 e_i=(1.294e-02,1.074e-02) e_div=2.626e-15 min_c=4.001e-01 p0.1=4.193e-01 p1=4.763e-01 p5=5.720e-01 p50=9.949e-01 | t=7.7
+ORACLE_READY field=generic3d eps=0.5 N=16 cache_hit=False nphi=32 max_roundtrip=9.86e-14 t_oracle=7.4s t_faces=0.3s t_cell=7.7s cache=../raw/cache/generic3d_eps0.5_N16_nphi32_v1.npz
+CASE field=generic3d eps=0.5 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=9.124e-03 e_psi=0.000e+00 e_i=(5.516e-03,4.626e-03) e_div=3.362e-02 min_c=3.930e-01 p0.1=4.086e-01 p1=4.687e-01 p5=5.663e-01 p50=9.942e-01 | t=20.7
+CASE field=generic3d eps=0.5 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=3.509e-03 e_psi=0.000e+00 e_i=(5.516e-03,4.626e-03) e_div=4.857e-15 min_c=3.928e-01 p0.1=4.083e-01 p1=4.683e-01 p5=5.675e-01 p50=9.961e-01 | t=20.7
+ORACLE_READY field=generic3d eps=0.5 N=24 cache_hit=False nphi=32 max_roundtrip=1.11e-13 t_oracle=19.4s t_faces=1.2s t_cell=20.7s cache=../raw/cache/generic3d_eps0.5_N24_nphi32_v1.npz
+CASE field=generic3d eps=0.5 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=5.153e-03 e_psi=0.000e+00 e_i=(3.017e-03,2.559e-03) e_div=2.023e-02 min_c=3.881e-01 p0.1=4.060e-01 p1=4.660e-01 p5=5.645e-01 p50=9.933e-01 | t=53.2
+CASE field=generic3d eps=0.5 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=2.008e-03 e_psi=0.000e+00 e_i=(3.017e-03,2.559e-03) e_div=5.067e-15 min_c=3.899e-01 p0.1=4.051e-01 p1=4.658e-01 p5=5.640e-01 p50=9.963e-01 | t=53.2
+ORACLE_READY field=generic3d eps=0.5 N=32 cache_hit=False nphi=32 max_roundtrip=1.39e-13 t_oracle=49.6s t_faces=3.4s t_cell=53.2s cache=../raw/cache/generic3d_eps0.5_N32_nphi32_v1.npz
+CASE field=generic3d eps=0.5 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=2.294e-03 e_psi=0.000e+00 e_i=(1.297e-03,1.117e-03) e_div=9.455e-03 min_c=3.868e-01 p0.1=4.032e-01 p1=4.642e-01 p5=5.628e-01 p50=9.943e-01 | t=249.1
+CASE field=generic3d eps=0.5 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=9.048e-04 e_psi=0.000e+00 e_i=(1.297e-03,1.117e-03) e_div=9.535e-15 min_c=3.873e-01 p0.1=4.035e-01 p1=4.640e-01 p5=5.626e-01 p50=9.958e-01 | t=249.1
+ORACLE_READY field=generic3d eps=0.5 N=48 cache_hit=False nphi=32 max_roundtrip=1.52e-13 t_oracle=232.8s t_faces=15.7s t_cell=249.4s cache=../raw/cache/generic3d_eps0.5_N48_nphi32_v1.npz

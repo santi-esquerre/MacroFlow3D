@@ -1,0 +1,20 @@
+RUN_ALL cell=oracle-control2d-1 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell control2d:1 --grids 12,16,24,32,48,64
+run_all.py --oracle-cell control2d:1 grids=[12, 16, 24, 32, 48, 64] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=control2d eps=1 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=5.615e-02 e_psi=0.000e+00 e_i=(5.076e-02,0.000e+00) e_div=1.034e-15 min_c=2.652e-01 p0.1=2.652e-01 p1=2.727e-01 p5=3.591e-01 p50=9.776e-01 | t=12.0
+CASE field=control2d eps=1 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=2.899e-06 e_psi=0.000e+00 e_i=(5.076e-02,0.000e+00) e_div=2.192e-15 min_c=2.565e-01 p0.1=2.565e-01 p1=2.826e-01 p5=3.721e-01 p50=9.685e-01 | t=12.0
+ORACLE_READY field=control2d eps=1 N=12 cache_hit=False nphi=32 max_roundtrip=2.62e-13 t_oracle=6.2s t_faces=0.1s t_cell=12.0s cache=../raw/cache/control2d_eps1_N12_nphi32_v1.npz
+CASE field=control2d eps=1 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=3.285e-02 e_psi=0.000e+00 e_i=(3.006e-02,0.000e+00) e_div=1.125e-15 min_c=2.501e-01 p0.1=2.501e-01 p1=2.694e-01 p5=3.611e-01 p50=9.760e-01 | t=11.5
+CASE field=control2d eps=1 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=5.363e-07 e_psi=0.000e+00 e_i=(3.006e-02,0.000e+00) e_div=1.844e-15 min_c=2.524e-01 p0.1=2.524e-01 p1=2.649e-01 p5=3.734e-01 p50=9.862e-01 | t=11.5
+ORACLE_READY field=control2d eps=1 N=16 cache_hit=False nphi=32 max_roundtrip=1.97e-13 t_oracle=11.1s t_faces=0.4s t_cell=11.5s cache=../raw/cache/control2d_eps1_N16_nphi32_v1.npz
+CASE field=control2d eps=1 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=1.504e-02 e_psi=0.000e+00 e_i=(1.387e-02,0.000e+00) e_div=1.825e-15 min_c=2.451e-01 p0.1=2.451e-01 p1=2.690e-01 p5=3.477e-01 p50=9.652e-01 | t=28.3
+CASE field=control2d eps=1 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=5.668e-08 e_psi=0.000e+00 e_i=(1.387e-02,0.000e+00) e_div=4.305e-15 min_c=2.446e-01 p0.1=2.446e-01 p1=2.620e-01 p5=3.631e-01 p50=9.774e-01 | t=28.3
+ORACLE_READY field=control2d eps=1 N=24 cache_hit=False nphi=32 max_roundtrip=1.96e-13 t_oracle=27.2s t_faces=1.0s t_cell=28.3s cache=../raw/cache/control2d_eps1_N24_nphi32_v1.npz
+CASE field=control2d eps=1 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=8.512e-03 e_psi=0.000e+00 e_i=(7.771e-03,0.000e+00) e_div=1.675e-15 min_c=2.415e-01 p0.1=2.435e-01 p1=2.636e-01 p5=3.504e-01 p50=9.705e-01 | t=73.2
+CASE field=control2d eps=1 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=2.505e-08 e_psi=0.000e+00 e_i=(7.771e-03,0.000e+00) e_div=3.823e-15 min_c=2.425e-01 p0.1=2.425e-01 p1=2.585e-01 p5=3.618e-01 p50=9.753e-01 | t=73.2
+ORACLE_READY field=control2d eps=1 N=32 cache_hit=False nphi=32 max_roundtrip=2.21e-13 t_oracle=69.6s t_faces=3.4s t_cell=73.3s cache=../raw/cache/control2d_eps1_N32_nphi32_v1.npz
+CASE field=control2d eps=1 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=3.776e-03 e_psi=0.000e+00 e_i=(3.371e-03,0.000e+00) e_div=3.036e-15 min_c=2.397e-01 p0.1=2.422e-01 p1=2.615e-01 p5=3.494e-01 p50=9.694e-01 | t=331.1
+CASE field=control2d eps=1 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=3.324e-08 e_psi=0.000e+00 e_i=(3.371e-03,0.000e+00) e_div=8.320e-15 min_c=2.404e-01 p0.1=2.412e-01 p1=2.579e-01 p5=3.608e-01 p50=9.726e-01 | t=331.1
+ORACLE_READY field=control2d eps=1 N=48 cache_hit=False nphi=32 max_roundtrip=2.63e-13 t_oracle=313.1s t_faces=17.1s t_cell=331.4s cache=../raw/cache/control2d_eps1_N48_nphi32_v1.npz
+CASE field=control2d eps=1 N=64 cand=oracle_fd | r_F=nan its=nan | e_v=2.116e-03 e_psi=0.000e+00 e_i=(1.857e-03,0.000e+00) e_div=2.888e-15 min_c=2.395e-01 p0.1=2.411e-01 p1=2.585e-01 p5=3.527e-01 p50=9.711e-01 | t=721.9
+CASE field=control2d eps=1 N=64 cand=oracle_mim | r_F=nan its=nan | e_v=3.410e-08 e_psi=0.000e+00 e_i=(1.857e-03,0.000e+00) e_div=7.449e-15 min_c=2.395e-01 p0.1=2.409e-01 p1=2.591e-01 p5=3.619e-01 p50=9.723e-01 | t=721.9
+ORACLE_READY field=control2d eps=1 N=64 cache_hit=False nphi=32 max_roundtrip=2.28e-13 t_oracle=686.7s t_faces=33.7s t_cell=722.6s cache=../raw/cache/control2d_eps1_N64_nphi32_v1.npz

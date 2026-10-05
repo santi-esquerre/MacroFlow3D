@@ -24,6 +24,7 @@ labels at every vertex of a candidate grid, plus the shared conventions used by 
 | `candidate_i.py` (N2) | candidate (i): non-divergence same-index equation (14) on the slab, inlet Dirichlet labels, analytic `grad ln k`, second-order centered stencils, no `|c|^2` regularization; variants `i0` (spec-literal control: equation rows also on the outlet plane with one-sided `d1`/`d11`/`d1j`, no boundary condition) and `i1` (deviation D-2: outlet rows `c2 = v2_in`, `c3 = v3_in`, i.e. `c x e1 = vperp_in x e1` with the inlet-face tangential Darcy velocity; Neumann `d1 psi_i = 0` for `_ch`). Damped Newton, colored central-FD sparse Jacobian, `splu` (N <= 24) / right-preconditioned GMRES (CGS2, restart 300) with the per-mode inverse of the `k = 1` linearization (N >= 32), amplitude continuation 0.25 -> 0.5 -> 1 with bisection fallback, Levenberg-Marquardt fallback for `i0` (N <= 16). Commands: `python3 candidate_i.py field:eps:N:i0|i1 ...` (CASE line `cand=i0/i1` + `cand=oracle_fd` ceiling, `EXTRA` outlet-row residual and inlet oblique defect, `HISTORY`); `--jactest field:eps:N:var` (Jacobian action vs FD, 3 steps); `--consistency field:eps ...` (residual at the oracle labels on `--grids 16,32,48`, orders); `--spectrum M field:eps:M:var ...` (dense FD Jacobian SVD at the converged state, or at the final iterate and the oracle labels if not converged -> `raw/spectrum_cand_i_<var>_<field>_<eps>_<M>[_state].txt`); `--k1check N` (`k = 1` control: exact nulls of `i0`/`i1`, preconditioner exactness -> `raw/spectrum_cand_i_<var>_uniform_k1_<N>.txt`); options `--maxit --tol --lin-tol --prec lin0|lap --direct-max --restart --no-continuation --bisect --lm --init zero|inlet|oracle (oracle = diagnostic only) --out`. Raw console: `raw/cand_i_smoke_*.txt` |
 | `candidate_ii.py` | N3 + C-ii, candidate (ii): dissipation energy of the label pair; default (C-ii) `--energy q1` = `1/2 sum_cells q_cell int_cell |grad psi1^h x grad psi2^h|^2` of the trilinear (Q1) label interpolants (pointwise in-cell product, exactly divergence-free, normal-continuous, face averages = the Whitney fluxes; 3x3x3 Gauss, exact); `--energy whitney` = the N3 edge-averaged energy `1/2 h^3 sum_f omega_f c_f^2` of the mimetic face fluxes (`c_f = curl_h(avg(psi1) G_h psi2)`, control with the hourglass kernel); inlet Dirichlet labels; outlet free (`_ch`) or outlet flux constraint `c1[N] = f1_in` plus the two D-3 rows "mean transverse flux = 0" (periodic fields, Lagrange multipliers); Newton (colored-FD Hessian) with LM globalization; metrics, `oracle_mim` ceiling, TPFA reference, `--gradtest`, `--consistency`, `--spectrum`. Section "Candidate (ii) (N3, corrected by C-ii)" below |
 | `run_all.py` (N4) | resumable sweep driver: the N4 matrix (oracle ladder with `oracle_fd`/`oracle_mim` ceiling lines, `i1` on 16/24/32/48 (+64 for `gauss`, `gauss_ch`, `control2d`), `i0` at 16^3, (ii)-Q1 on 16/24/32 (4 h cap), `ii_from_oracle` at 48^3 for `gauss:0.25`/`gauss_ch:0.25`, consistency ladders, dense spectra 12^3/16^3) as one subprocess per cell in a pool (`--workers`), one log per cell `raw/sweep/<cell>.txt`, `raw/sweep/manifest.json` (status `done`/`failed`/`timeout`/`unsupported`, elapsed, exit, host, log tail on failure), spectra in `raw/sweep/spectra/`; non-oracle cells start only after the oracle cache of every grid they use exists; `--plan` (matrix, cost estimates, host check), `--summarize` (rebuilds `raw/sweep/summary.md`: per-(field, eps) tables, orders, ceiling ratios, consistency orders, spectrum statistics, D-5 classification per criterion), filters `--only --grids --spectra --kinds`, `--retry` |
+| `sweep_digest.py` (N4) | parses `raw/sweep/manifest.json`, the cell logs and the job log only (no computation) and writes `raw/sweep/timeouts.md`: `python3 sweep_digest.py --out ../raw/sweep [--slow 3600]` |
 
 ### Reuse of the 2026-10-02 closure probes
 
@@ -383,6 +384,42 @@ Findings of N3 (reported, not acted on):
   32^3 (GMRES + Fourier-mode preconditioner, which is exact for the constant-coefficient operator but
   shifted on the hourglass modes): GMRES does not converge (2400 its, linres 2e-2..3e-1), ~230 s per Newton
   iteration; the run was stopped at 600 s. Extrapolated per Newton iteration: ~800 s at 48^3, ~1900 s at 64^3.
+
+## N4 sweep (`raw/sweep/`)
+
+Remote detached job (no GPU work; CPU-only Python process pool):
+
+| item | value |
+|---|---|
+| job | `sf29-run-all` (`scripts/remote --increment SF-29 ...`; mirror `~/MacroFlow3D-SF-29`, per-increment state root `~/.macroflow3d-remote/macroflow3d-SF-29/`) |
+| command | `cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts && OMP_NUM_THREADS=3 OPENBLAS_NUM_THREADS=3 MKL_NUM_THREADS=3 python3 run_all.py --workers 22 --out ../raw/sweep` |
+| remote log | `~/.macroflow3d-remote/macroflow3d-SF-29/logs/sf29-run-all.log` (copied verbatim to `raw/sweep/sf29-run-all.joblog.txt`) |
+| start / end (UTC) | 2026-10-03T06:19:33Z / 2026-10-03T20:59:57Z |
+| wall time | 52 822 s (driver `run_all: finished in 52822 s`) |
+| exit code | 0 (`scripts/remote status`: `succeeded`) |
+| GPU lock | GPU 0 lock held for the whole job by this CPU-only job (`GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)` in the job log); no CUDA code ran |
+| host stack | `localhost.localdomain`, python 3.11.7, numpy 1.26.4, scipy 1.11.4; 22 worker processes x 3 BLAS threads |
+| cells | 338 in the matrix: 305 `done`, 33 `timeout` (cell wall caps: 6 h default, 8 h `i1` at 64^3, 4 h `ii`/`iiorc`), 0 `failed` |
+
+Retrieval (2026-10-05, after the job had finished; no `scripts/remote sync` in between, so the mirror still held the
+outputs):
+
+```bash
+rsync -av --exclude 'cache/' v100:~/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/ docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/
+rsync -a v100:/home/sesquerre/.macroflow3d-remote/macroflow3d-SF-29/logs/sf29-run-all.log docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/sf29-run-all.joblog.txt
+```
+
+505 files pulled (= the remote file count of `raw/sweep/`; 503 cell/spectrum `.txt`, `manifest.json`,
+`summary.md`), 16.6 MB, largest file < 0.5 MB; the oracle caches (`raw/cache/*.npz`) are not pulled or committed.
+
+| file | content |
+|---|---|
+| `raw/sweep/<cell>.txt` | console log of one matrix cell (first line `RUN_ALL cell=... cmd=...`; timed-out cells end with `RUN_ALL TIMEOUT ...`) |
+| `raw/sweep/spectra/` | dense spectra written by the `spec_*` cells |
+| `raw/sweep/manifest.json` | per-cell status, elapsed, cap, exit, command, start/end; run record (workers, threads, host, wall) |
+| `raw/sweep/summary.md` | `run_all.py --summarize` output (tables, orders, ceiling ratios, D-5 classification per criterion). Regenerated locally from the pulled logs with `python3 run_all.py --summarize --out ../raw/sweep`: byte-identical to the remote file |
+| `raw/sweep/timeouts.md` | `sweep_digest.py --out ../raw/sweep`: the 33 timed-out cells and the 52 `done` cells with elapsed > 3600 s (continuation path, last Newton iterate, GMRES / direct-solve iteration and time statistics, bisections), the elapsed table of `i1` on `gauss`/`gauss_ch`, and the concurrency actually used |
+| `raw/sweep/sf29-run-all.joblog.txt` | the remote job log (cell start/done/timeout events with elapsed) |
 
 ## Raw outputs (`raw/`)
 

@@ -1,0 +1,42 @@
+RUN_ALL cell=i1-gauss_ch-0.5-N64 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py gauss_ch:0.5:64:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=gauss_ch eps=0.25 N=64 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=64 modes=2112 setup 1.6s
+  NEWTON gauss_ch:0.25:64:i1 it= 0 r_F=1.849e+01 r_out=1.419e-16
+  NEWTON gauss_ch:0.25:64:i1 it= 1 r_F=1.133e+00 r_out=8.088e-16 lambda=1 |dx|max=1.15e-01 lin=gmres+lin0 rel=9.9e-15 lits=470 t_jac=98.0s t_lin=356.4s
+  NEWTON gauss_ch:0.25:64:i1 it= 2 r_F=1.046e+00 r_out=4.172e-13 lambda=0.25 |dx|max=7.72e-02 lin=gmres+lin0 rel=3.8e-01 lits=900 t_jac=74.4s t_lin=691.7s
+  NEWTON gauss_ch:0.25:64:i1 it= 3 r_F=7.542e-01 r_out=5.157e-13 lambda=0.5 |dx|max=4.21e-02 lin=gmres+lin0 rel=4.9e-01 lits=900 t_jac=77.1s t_lin=707.1s
+  NEWTON gauss_ch:0.25:64:i1 it= 4 r_F=5.749e-01 r_out=5.915e-13 lambda=0.5 |dx|max=3.56e-02 lin=gmres+lin0 rel=5.7e-01 lits=900 t_jac=84.1s t_lin=727.0s
+  NEWTON gauss_ch:0.25:64:i1 it= 5 r_F=4.932e-01 r_out=4.977e-13 lambda=1 |dx|max=9.96e-03 lin=gmres+lin0 rel=8.1e-01 lits=900 t_jac=96.9s t_lin=827.9s
+  NEWTON gauss_ch:0.25:64:i1 it= 6 r_F=4.458e-01 r_out=4.340e-13 lambda=1 |dx|max=7.64e-03 lin=gmres+lin0 rel=8.8e-01 lits=900 t_jac=107.1s t_lin=848.5s
+  NEWTON gauss_ch:0.25:64:i1 it= 7 r_F=4.176e-01 r_out=4.078e-13 lambda=1 |dx|max=6.41e-03 lin=gmres+lin0 rel=9.3e-01 lits=900 t_jac=85.0s t_lin=886.6s
+  STAGE_END field=gauss_ch eps=0.25 N=64 cand=i1 status=stagnation its=7 r_F=4.176e-01 r_out=4.078e-13 -> FAILED
+  CONTINUATION bisection 1/4: retry from eps=0 at eps=0.125
+STAGE field=gauss_ch eps=0.125 N=64 cand=i1 (from eps=0, u=0)
+  NEWTON gauss_ch:0.125:64:i1 it= 0 r_F=9.184e+00 r_out=7.392e-17
+  NEWTON gauss_ch:0.125:64:i1 it= 1 r_F=2.879e-01 r_out=2.364e-15 lambda=1 |dx|max=5.78e-02 lin=gmres+lin0 rel=1.6e-14 lits=228 t_jac=106.4s t_lin=209.1s
+  NEWTON gauss_ch:0.125:64:i1 it= 2 r_F=1.012e-01 r_out=3.388e-13 lambda=1 |dx|max=3.39e-02 lin=gmres+lin0 rel=4.7e-14 lits=381 t_jac=121.5s t_lin=328.8s
+  NEWTON gauss_ch:0.125:64:i1 it= 3 r_F=3.389e-02 r_out=2.025e-13 lambda=1 |dx|max=7.40e-03 lin=gmres+lin0 rel=2.0e-14 lits=783 t_jac=99.4s t_lin=745.3s
+  NEWTON gauss_ch:0.125:64:i1 it= 4 r_F=1.402e-02 r_out=1.088e-13 lambda=1 |dx|max=5.19e-03 lin=gmres+lin0 rel=3.0e-14 lits=575 t_jac=102.9s t_lin=484.5s
+  NEWTON gauss_ch:0.125:64:i1 it= 5 r_F=1.335e-03 r_out=4.363e-15 lambda=1 |dx|max=9.30e-04 lin=gmres+lin0 rel=1.6e-14 lits=503 t_jac=71.3s t_lin=295.7s
+  NEWTON gauss_ch:0.125:64:i1 it= 6 r_F=7.609e-06 r_out=1.116e-15 lambda=1 |dx|max=1.07e-04 lin=gmres+lin0 rel=1.3e-14 lits=497 t_jac=70.0s t_lin=395.4s
+  NEWTON gauss_ch:0.125:64:i1 it= 7 r_F=4.785e-10 r_out=2.630e-16 lambda=1 |dx|max=6.40e-07 lin=gmres+lin0 rel=1.6e-14 lits=497 t_jac=83.1s t_lin=487.4s
+  NEWTON gauss_ch:0.125:64:i1 it= 8 r_F=1.449e-14 r_out=2.684e-16 lambda=1 |dx|max=4.12e-11 lin=gmres+lin0 rel=1.7e-14 lits=494 t_jac=117.0s t_lin=536.9s
+  STAGE_END field=gauss_ch eps=0.125 N=64 cand=i1 status=converged its=8 r_F=1.449e-14 r_out=2.684e-16 -> accepted
+STAGE field=gauss_ch eps=0.25 N=64 cand=i1 (from eps=0.125, warm start)
+  NEWTON gauss_ch:0.25:64:i1 it= 0 r_F=9.315e+00 r_out=3.072e-16
+  NEWTON gauss_ch:0.25:64:i1 it= 1 r_F=2.947e-01 r_out=1.811e-12 lambda=1 |dx|max=5.87e-02 lin=gmres+lin0 rel=2.2e-14 lits=600 t_jac=94.7s t_lin=590.1s
+  NEWTON gauss_ch:0.25:64:i1 it= 2 r_F=9.418e-02 r_out=1.795e-12 lambda=1 |dx|max=3.47e-02 lin=gmres+lin0 rel=4.3e-02 lits=2400 t_jac=86.4s t_lin=2325.5s
+  NEWTON gauss_ch:0.25:64:i1 it= 3 r_F=4.338e-02 r_out=7.764e-13 lambda=1 |dx|max=7.43e-03 lin=gmres+lin0 rel=4.4e-01 lits=900 t_jac=114.9s t_lin=938.2s
+  NEWTON gauss_ch:0.25:64:i1 it= 4 r_F=4.016e-02 r_out=7.345e-13 lambda=1 |dx|max=1.80e-03 lin=gmres+lin0 rel=9.3e-01 lits=900 t_jac=116.1s t_lin=895.8s
+  NEWTON gauss_ch:0.25:64:i1 it= 5 r_F=3.933e-02 r_out=7.164e-13 lambda=1 |dx|max=8.30e-04 lin=gmres+lin0 rel=9.8e-01 lits=900 t_jac=114.5s t_lin=877.9s
+  NEWTON gauss_ch:0.25:64:i1 it= 6 r_F=3.909e-02 r_out=7.125e-13 lambda=1 |dx|max=4.17e-04 lin=gmres+lin0 rel=9.9e-01 lits=900 t_jac=120.4s t_lin=856.6s
+  NEWTON gauss_ch:0.25:64:i1 it= 7 r_F=3.881e-02 r_out=7.110e-13 lambda=1 |dx|max=8.72e-04 lin=gmres+lin0 rel=9.9e-01 lits=900 t_jac=91.9s t_lin=867.3s
+  STAGE_END field=gauss_ch eps=0.25 N=64 cand=i1 status=stagnation its=7 r_F=3.881e-02 r_out=7.110e-13 -> FAILED
+  CONTINUATION bisection 2/4: retry from eps=0.125 at eps=0.1875
+STAGE field=gauss_ch eps=0.1875 N=64 cand=i1 (from eps=0.125, warm start)
+  NEWTON gauss_ch:0.1875:64:i1 it= 0 r_F=4.646e+00 r_out=2.930e-16
+  NEWTON gauss_ch:0.1875:64:i1 it= 1 r_F=8.751e-02 r_out=8.790e-13 lambda=1 |dx|max=2.96e-02 lin=gmres+lin0 rel=1.0e-14 lits=503 t_jac=97.2s t_lin=409.4s
+  NEWTON gauss_ch:0.1875:64:i1 it= 2 r_F=1.291e-02 r_out=8.540e-13 lambda=1 |dx|max=1.31e-02 lin=gmres+lin0 rel=1.5e-07 lits=6000 t_jac=89.7s t_lin=6543.6s
+
+RUN_ALL TIMEOUT after 28800 s (cell wall cap); process group killed

@@ -1,0 +1,59 @@
+RUN_ALL cell=spec_i0-gauss-1-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 gauss:1:12:i0 --bisect 2 --lm 10 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 2, 'lm': 10, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=gauss eps=0.25 N=12 cand=i0 (from eps=0, u=0)
+  NEWTON gauss:0.25:12:i0 it= 0 r_F=2.317e+00 r_out=0.000e+00
+  NEWTON gauss:0.25:12:i0 it= 1 r_F=2.261e+00 r_out=0.000e+00 lambda=0.125 |dx|max=7.97e-01 lin=splu rel=2.7e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON gauss:0.25:12:i0 it= 2 r_F=2.136e+00 r_out=0.000e+00 lambda=0.01562 |dx|max=6.11e+00 lin=splu rel=1.6e-13 lits=0 t_jac=0.3s t_lin=0.7s
+  NEWTON gauss:0.25:12:i0 it= 3 r_F=1.877e+00 r_out=0.000e+00 lambda=0.125 |dx|max=1.02e+00 lin=splu rel=2.0e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON gauss:0.25:12:i0 it= 4 r_F=1.812e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=1.15e+00 lin=splu rel=4.6e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  STAGE_END field=gauss eps=0.25 N=12 cand=i0 status=stagnation its=4 r_F=1.812e+00 r_out=0.000e+00 -> FAILED
+  CONTINUATION bisection 1/2: retry from eps=0 at eps=0.125
+STAGE field=gauss eps=0.125 N=12 cand=i0 (from eps=0, u=0)
+  NEWTON gauss:0.125:12:i0 it= 0 r_F=1.150e+00 r_out=0.000e+00
+  NEWTON gauss:0.125:12:i0 it= 1 r_F=1.102e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=1.52e+00 lin=splu rel=9.3e-14 lits=0 t_jac=0.3s t_lin=0.6s
+  NEWTON gauss:0.125:12:i0 it= 2 r_F=8.924e-01 r_out=0.000e+00 lambda=0.25 |dx|max=3.63e-01 lin=splu rel=2.6e-14 lits=0 t_jac=0.2s t_lin=0.7s
+  NEWTON gauss:0.125:12:i0 it= 3 r_F=8.605e-01 r_out=0.000e+00 lambda=0.0625 |dx|max=2.14e+00 lin=splu rel=1.4e-13 lits=0 t_jac=0.3s t_lin=0.7s
+  NEWTON gauss:0.125:12:i0 it= 4 r_F=8.448e-01 r_out=0.000e+00 lambda=0.0625 |dx|max=1.13e+00 lin=splu rel=1.0e-13 lits=0 t_jac=0.3s t_lin=0.7s
+  STAGE_END field=gauss eps=0.125 N=12 cand=i0 status=stagnation its=4 r_F=8.448e-01 r_out=0.000e+00 -> FAILED
+  CONTINUATION bisection 2/2: retry from eps=0 at eps=0.0625
+STAGE field=gauss eps=0.0625 N=12 cand=i0 (from eps=0, u=0)
+  NEWTON gauss:0.0625:12:i0 it= 0 r_F=5.721e-01 r_out=0.000e+00
+  NEWTON gauss:0.0625:12:i0 it= 1 r_F=5.423e-01 r_out=0.000e+00 lambda=0.125 |dx|max=5.35e-01 lin=splu rel=8.1e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON gauss:0.0625:12:i0 it= 2 r_F=4.494e-01 r_out=0.000e+00 lambda=0.125 |dx|max=4.77e-01 lin=splu rel=8.6e-14 lits=0 t_jac=0.2s t_lin=0.8s
+  NEWTON gauss:0.0625:12:i0 it= 3 r_F=3.458e-01 r_out=0.000e+00 lambda=0.5 |dx|max=1.09e-01 lin=splu rel=2.1e-14 lits=0 t_jac=0.3s t_lin=0.7s
+  NEWTON gauss:0.0625:12:i0 it= 4 r_F=2.944e-01 r_out=0.000e+00 lambda=0.25 |dx|max=1.38e-01 lin=splu rel=3.9e-14 lits=0 t_jac=0.3s t_lin=0.6s
+  STAGE_END field=gauss eps=0.0625 N=12 cand=i0 status=stagnation its=4 r_F=2.944e-01 r_out=0.000e+00 -> FAILED
+  CONTINUATION gave up after 2 bisections; reporting the failed state at eps=0.0625
+STAGE field=gauss eps=1 N=12 cand=i0 (final attempt from eps=0)
+  NEWTON gauss:1:12:i0 it= 0 r_F=8.815e+00 r_out=0.000e+00
+  NEWTON gauss:1:12:i0 it= 1 r_F=8.579e+00 r_out=0.000e+00 lambda=0.03125 |dx|max=3.73e+00 lin=splu rel=2.6e-14 lits=0 t_jac=0.2s t_lin=0.7s
+  NEWTON gauss:1:12:i0 it= 2 r_F=8.480e+00 r_out=0.000e+00 lambda=0.01562 |dx|max=8.19e+00 lin=splu rel=3.9e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON gauss:1:12:i0 it= 3 r_F=8.340e+00 r_out=0.000e+00 lambda=0.03125 |dx|max=4.80e+00 lin=splu rel=6.3e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON gauss:1:12:i0 it= 4 r_F=7.492e+00 r_out=0.000e+00 lambda=0.125 |dx|max=2.22e+00 lin=splu rel=1.6e-14 lits=0 t_jac=0.3s t_lin=0.7s
+FALLBACK field=gauss eps=1 N=12 cand=i0 Newton status=stagnation -> Levenberg-Marquardt (10 its max) from the final Newton state
+  LM gauss:1:12:i0 it= 1 r_F=2.700e+00 r_out=0.000e+00 mu=1.0e-04 |dx|max=2.11e-01 t=2.9s
+  LM gauss:1:12:i0 it= 2 r_F=1.613e+00 r_out=0.000e+00 mu=1.0e-04 |dx|max=4.59e-02 t=4.6s
+  LM gauss:1:12:i0 it= 3 r_F=1.258e+00 r_out=0.000e+00 mu=1.0e-05 |dx|max=9.40e-02 t=3.5s
+  LM gauss:1:12:i0 it= 4 r_F=8.454e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=3.57e-02 t=6.0s
+  LM gauss:1:12:i0 it= 5 r_F=3.645e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=1.89e-02 t=5.0s
+  LM gauss:1:12:i0 it= 6 r_F=1.954e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=1.08e-02 t=4.6s
+  LM gauss:1:12:i0 it= 7 r_F=1.421e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=4.70e-03 t=4.6s
+  LM gauss:1:12:i0 it= 8 r_F=1.405e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=3.60e-03 t=4.6s
+  LM gauss:1:12:i0 it= 9 r_F=1.383e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=3.10e-03 t=4.5s
+  LM gauss:1:12:i0 it=10 r_F=1.368e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=2.78e-03 t=4.8s
+PATH field=gauss eps=1 N=12 cand=i0 continuation path: 0.25(fail)->0.125(fail)->0.0625(fail)->1(final)->LM
+CASE field=gauss eps=1 N=12 cand=i0 | r_F=1.368e-01 its=14 | e_v=3.956e-01 e_psi=8.345e-01 e_i=(3.583e-01,2.993e-01) e_div=1.829e+00 min_c=4.219e-02 p0.1=7.171e-02 p1=1.386e-01 p5=2.709e-01 p50=9.043e-01 | t=208.1
+CASE field=gauss eps=1 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=2.807e-01 e_psi=0.000e+00 e_i=(1.157e-01,4.941e-02) e_div=9.087e-01 min_c=7.190e-02 p0.1=8.119e-02 p1=1.507e-01 p5=2.675e-01 p50=8.615e-01 | t=0.0
+EXTRA field=gauss eps=1 N=12 cand=i0 status=newton:stagnation/lm-maxit r_F=1.368e-01 r_out=0.000e+00 | outlet c_perp-vperp_in: cand=7.208e-01 oracle_fd=1.980e-01 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=4.460e-01 oracle_fd=9.349e-02; j=1 cand=4.169e-01 oracle_fd=2.084e-01; j=1 vs vD(j=1) cand=3.437e-01 oracle_fd=6.817e-02 | min|c|/v_rms=0.0319 min|vD|/v_rms=0.0374 e_i1=3.583e-01 e_i2=2.993e-01 | t=208.1s
+HISTORY field=gauss eps=1 N=12 cand=i0 r_F: 8.81e+00 8.58e+00 8.48e+00 8.34e+00 7.49e+00 2.70e+00 1.61e+00 1.26e+00 8.45e-01 3.64e-01 1.95e-01 1.42e-01 1.40e-01 1.38e-01 1.37e-01
+SPECTRUM NOTE field=gauss eps=1 N=12 cand=i0: no converged state (status newton:stagnation/lm-maxit); the spectrum is computed at the final iterate AND at the oracle labels (both labelled)
+SPECTRUM field=gauss eps=1 N=12 cand=i0 state=final_iterate rows: F_i=-q(L_i-S_i) | size=3456 smax=2.537e+05 t_jac=10.8s t_svd=9.4s
+SPECTRUM field=gauss eps=1 N=12 cand=i0 state=final_iterate smallest12 rel sv: 1.92e-08 1.79e-07 4.75e-07 6.14e-07 1.16e-06 1.91e-06 2.31e-06 2.99e-06 3.18e-06 3.72e-06 4.35e-06 4.86e-06
+SPECTRUM field=gauss eps=1 N=12 cand=i0 state=final_iterate counts <1e-2:3107 <1e-3:1113 <1e-4:136 <1e-6:4 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 9.326e+00 after the 1 smallest (1.92e-08 -> 1.79e-07) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i0_gauss_1_12_final_iterate.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00
+SPECTRUM field=gauss eps=1 N=12 cand=i0 state=oracle rows: F_i=-q(L_i-S_i) | size=3456 smax=1.163e+05 t_jac=10.9s t_svd=9.1s
+SPECTRUM field=gauss eps=1 N=12 cand=i0 state=oracle smallest12 rel sv: 5.92e-07 6.04e-07 9.99e-07 1.39e-06 2.41e-06 2.59e-06 3.10e-06 4.45e-06 5.04e-06 5.72e-06 6.83e-06 7.88e-06
+SPECTRUM field=gauss eps=1 N=12 cand=i0 state=oracle counts <1e-2:2479 <1e-3:605 <1e-4:83 <1e-6:3 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.735e+00 after the 4 smallest (1.39e-06 -> 2.41e-06) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i0_gauss_1_12_oracle.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

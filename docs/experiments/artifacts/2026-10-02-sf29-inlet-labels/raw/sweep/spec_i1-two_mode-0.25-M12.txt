@@ -1,0 +1,21 @@
+RUN_ALL cell=spec_i1-two_mode-0.25-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 two_mode:0.25:12:i1 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=two_mode eps=0.25 N=12 cand=i1 (from eps=0, u=0)
+  NEWTON two_mode:0.25:12:i1 it= 0 r_F=1.376e+00 r_out=1.240e-01
+  NEWTON two_mode:0.25:12:i1 it= 1 r_F=4.479e-02 r_out=1.081e-02 lambda=1 |dx|max=3.56e-02 lin=splu rel=3.9e-15 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.25:12:i1 it= 2 r_F=1.669e-03 r_out=1.740e-04 lambda=1 |dx|max=1.02e-02 lin=splu rel=1.9e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.25:12:i1 it= 3 r_F=8.534e-06 r_out=3.159e-07 lambda=1 |dx|max=5.12e-04 lin=splu rel=1.9e-14 lits=0 t_jac=0.3s t_lin=0.6s
+  NEWTON two_mode:0.25:12:i1 it= 4 r_F=7.746e-11 r_out=1.065e-12 lambda=1 |dx|max=1.10e-06 lin=splu rel=7.2e-15 lits=0 t_jac=0.3s t_lin=0.6s
+  NEWTON two_mode:0.25:12:i1 it= 5 r_F=5.389e-16 r_out=4.477e-17 lambda=1 |dx|max=2.07e-11 lin=splu rel=1.2e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  STAGE_END field=two_mode eps=0.25 N=12 cand=i1 status=converged its=5 r_F=5.389e-16 r_out=4.477e-17 -> accepted
+PATH field=two_mode eps=0.25 N=12 cand=i1 continuation path: 0.25
+CASE field=two_mode eps=0.25 N=12 cand=i1 | r_F=5.389e-16 its=5 | e_v=9.527e-03 e_psi=1.319e-01 e_i=(5.308e-03,5.307e-03) e_div=1.030e-02 min_c=7.835e-01 p0.1=7.846e-01 p1=7.959e-01 p5=8.109e-01 p50=1.003e+00 | t=4.4
+CASE field=two_mode eps=0.25 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=8.984e-03 e_psi=0.000e+00 e_i=(4.944e-03,4.934e-03) e_div=1.037e-02 min_c=7.932e-01 p0.1=7.932e-01 p1=8.041e-01 p5=8.176e-01 p50=1.003e+00 | t=0.0
+EXTRA field=two_mode eps=0.25 N=12 cand=i1 status=converged r_F=5.389e-16 r_out=4.477e-17 | outlet c_perp-vperp_in: cand=1.048e-15 oracle_fd=1.131e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.476e-02 oracle_fd=1.125e-02; j=1 cand=6.239e-02 oracle_fd=6.333e-02; j=1 vs vD(j=1) cand=6.775e-03 oracle_fd=5.800e-03 | min|c|/v_rms=0.7714 min|vD|/v_rms=0.7740 e_i1=5.308e-03 e_i2=5.307e-03 | t=4.4s
+HISTORY field=two_mode eps=0.25 N=12 cand=i1 r_F: 1.38e+00 4.48e-02 1.67e-03 8.53e-06 7.75e-11 5.39e-16
+HISTORY field=two_mode eps=0.25 N=12 cand=i1 r_out: 1.24e-01 1.08e-02 1.74e-04 3.16e-07 1.06e-12 4.48e-17
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i1 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=3456 smax=1.786e+03 t_jac=9.7s t_svd=6.9s
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i1 state=converged smallest12 rel sv: 1.16e-03 1.18e-03 1.19e-03 1.19e-03 1.21e-03 1.22e-03 1.36e-03 1.36e-03 1.36e-03 1.36e-03 1.75e-03 1.76e-03
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i1 state=converged counts <1e-2:36 <1e-3:0 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.692e+00 after the 36 smallest (5.94e-03 -> 1.00e-02) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i1_two_mode_0.25_12.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

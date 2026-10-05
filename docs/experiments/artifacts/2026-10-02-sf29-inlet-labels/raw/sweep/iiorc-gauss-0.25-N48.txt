@@ -1,0 +1,27 @@
+RUN_ALL cell=iiorc-gauss-0.25-N48 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py --start oracle --maxit 6 gauss:0.25:48
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=--start oracle --maxit 6 gauss:0.25:48
+======== candidate (ii) energy=q1 q=center gauss:0.25:48  start=oracle
+  NEWTON s=1.00 it= 0 g_rel=3.162e-02 c_rel=1.281e-03 E=4.950455267995282e-01 |F|=1.428e-03 nu=1.0e-04
+    step alpha=1 |d|=3.72e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=11778048)=319.28s solve[gmres its=2400 info=40 linres=1.5e-06]=1203.71s
+  NEWTON s=1.00 it= 1 g_rel=6.132e-04 c_rel=1.179e-03 E=4.950431712191952e-01 |F|=2.846e-05 nu=1.0e-05
+    step alpha=1 |d|=1.07e-01 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=11778048)=230.81s solve[gmres its=2400 info=40 linres=2.9e-05]=1157.28s
+  NEWTON s=1.00 it= 2 g_rel=5.403e-05 c_rel=4.727e-04 E=4.950431421543948e-01 |F|=2.830e-06 nu=1.0e-06
+    step alpha=1 |d|=3.59e-03 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=11778048)=204.60s solve[gmres its=2400 info=40 linres=4.3e-05]=1060.80s
+  NEWTON s=1.00 it= 3 g_rel=2.994e-07 c_rel=2.505e-06 E=4.950431905487451e-01 |F|=1.436e-08 nu=1.0e-07
+    step alpha=1 |d|=4.70e-05 nu=1.0e-07 trials=1 hess(ngrad=108 nnz=11778048)=232.69s solve[gmres its=2400 info=40 linres=2.2e-04]=1052.33s
+  NEWTON s=1.00 it= 4 g_rel=1.405e-10 c_rel=1.015e-09 E=4.950431906142067e-01 |F|=6.638e-12 nu=1.0e-08
+    step alpha=1 |d|=3.31e-08 nu=1.0e-08 trials=1 hess(ngrad=108 nnz=11778048)=204.88s solve[gmres its=2400 info=40 linres=1.1e-02]=1028.28s
+  NEWTON s=1.00 it= 5 g_rel=1.601e-12 c_rel=4.598e-12 E=4.950431906142292e-01 |F|=7.345e-14 nu=1.0e-09
+    step alpha=1 |d|=5.72e-10 nu=1.0e-09 trials=1 hess(ngrad=108 nnz=11778048)=217.02s solve[gmres its=2400 info=40 linres=3.9e-02]=1048.21s
+  NEWTON s=1.00 it= 6 g_rel=6.293e-14 c_rel=1.669e-13 E=4.950431906142293e-01 |F|=2.897e-15 nu=1.0e-10
+SOLVE field=gauss eps=0.25 N=48 cand=ii_from_oracle energy=q1 q=center constrained=True meanflux_rows=2 solver=gmres status=converged its=6 g_rel=6.293e-14 c_rel(max)=1.669e-13 f1_in mean-1=-3.6e-12 mu=1.3e-20 |lam|=4.513e-01 eta=(-2.923e-04,+4.547e-03) E_min=4.950431906142293e-01 E(oracle)=4.950455267995282e-01 E(oracle)-E_min=+2.336e-06 t_load=23.8s t_solve=7965.6s
+HISTORY field=gauss eps=0.25 N=48 cand=ii_from_oracle g_rel: 3.2e-02 6.1e-04 5.4e-05 3.0e-07 1.4e-10 1.6e-12 6.3e-14
+HISTORY_STAGE field=gauss eps=0.25 N=48 cand=ii_from_oracle s=1.00 its=6 status=converged g_rel: 3.2e-02 6.1e-04 5.4e-05 3.0e-07 1.4e-10 1.6e-12 6.3e-14
+DIAG field=gauss eps=0.25 N=48 e_v(f1,f2,f3)=(8.963e-04,2.743e-03,1.797e-03) max|div_h c|=3.6e-14 nat_defect|c_perp(out)|=1.134e-01 (vD: 1.133e-01) |c_perp(out)-vD_perp(out)|=1.002e-03 |c1(out)-f1_in|=3.497e-12 |c1(out)-vD_f1(out)|=3.497e-12
+VDREF field=gauss eps=0.25 N=48 |vD| p0.1/1/5/50=0.5392/0.6246/0.7290/0.9831 min|vD|=0.5030
+MEANFLUX candidate field=gauss eps=0.25 N=48 active=True plane=0 S2=-3.951e-18 S3=-6.962e-17 | spread over planes max|S-S[plane]|=(6.12e-06,7.63e-12) mean over planes=(+2.950e-06,+4.188e-12) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(5.00e-07,3.55e-12) balance identity defect=1.3e-16 | vD_faces: S2=+2.56e-13 S3=-5.53e-14 spread=(7.3e-13,2.0e-13)
+MEANFLUX oracle field=gauss eps=0.25 N=48 active=True plane=0 S2=-8.914e-09 S3=+1.002e-06 | spread over planes max|S-S[plane]|=(2.58e-06,4.14e-06) mean over planes=(+5.155e-07,-6.927e-07) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(6.09e-07,6.44e-07) balance identity defect=1.9e-16 | vD_faces: S2=+2.56e-13 S3=-5.53e-14 spread=(7.3e-13,2.0e-13)
+CASE field=gauss eps=0.25 N=48 cand=ii_from_oracle | r_F=6.293e-14 its=6 | e_v=1.957e-03 e_psi=3.397e-02 e_i=(1.639e-03,1.143e-03) e_div=1.073e-14 min_c=5.016e-01 p0.1=5.389e-01 p1=6.247e-01 p5=7.292e-01 p50=9.839e-01 | t=7965.6
+DIAG_ORACLE field=gauss eps=0.25 N=48 e_v(f1,f2,f3)=(1.041e-03,4.893e-04,1.581e-04) max|div_h c|=2.8e-14 nat_defect|c_perp(out)|=1.132e-01 (vD: 1.133e-01) |c_perp(out)-vD_perp(out)|=3.270e-04 |c1(out)-f1_in|=5.892e-04 |c1(out)-vD_f1(out)|=5.892e-04
+CASE field=gauss eps=0.25 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=6.736e-04 e_psi=0.000e+00 e_i=(4.434e-04,3.643e-04) e_div=9.479e-15 min_c=5.029e-01 p0.1=5.401e-01 p1=6.257e-01 p5=7.300e-01 p50=9.840e-01 | t=0.0
+KELVIN field=gauss eps=0.25 N=48 cand=ii_from_oracle E(oracle)-E_min=+2.336e-06 (Q1 energy: the TPFA Kelvin identity does not apply; TPFA flux shown for reference) e_v(TPFA kelvin flux vs vD_faces)=5.090e-04 |c_min - c_tpfa|/rms(vD)=1.937e-03 |c_oracle - c_tpfa|/rms(vD)=9.126e-04 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(9.88e-09,7.56e-10) oracle=(2.03e-10,2.50e-10)

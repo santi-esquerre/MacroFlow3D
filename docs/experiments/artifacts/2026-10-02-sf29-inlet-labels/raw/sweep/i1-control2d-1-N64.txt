@@ -1,0 +1,28 @@
+RUN_ALL cell=i1-control2d-1-N64 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py control2d:1:64:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=64 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=64 modes=2112 setup 1.8s
+  NEWTON control2d:0.25:64:i1 it= 0 r_F=1.101e+01 r_out=8.377e-02
+  NEWTON control2d:0.25:64:i1 it= 1 r_F=7.142e-11 r_out=2.405e-13 lambda=1 |dx|max=4.99e-02 lin=gmres+lin0 rel=1.2e-14 lits=90 t_jac=98.8s t_lin=39.9s
+  NEWTON control2d:0.25:64:i1 it= 2 r_F=1.345e-14 r_out=3.127e-16 lambda=1 |dx|max=9.29e-13 lin=gmres+lin0 rel=3.0e-14 lits=156 t_jac=82.5s t_lin=99.2s
+  STAGE_END field=control2d eps=0.25 N=64 cand=i1 status=converged its=2 r_F=1.345e-14 r_out=3.127e-16 -> accepted
+STAGE field=control2d eps=0.5 N=64 cand=i1 (from eps=0.25, warm start)
+  NEWTON control2d:0.5:64:i1 it= 0 r_F=9.856e+00 r_out=8.548e-02
+  NEWTON control2d:0.5:64:i1 it= 1 r_F=1.245e-10 r_out=2.410e-12 lambda=1 |dx|max=4.55e-02 lin=gmres+lin0 rel=1.2e-14 lits=109 t_jac=70.8s t_lin=39.0s
+  NEWTON control2d:0.5:64:i1 it= 2 r_F=2.533e-14 r_out=5.925e-16 lambda=1 |dx|max=2.62e-12 lin=gmres+lin0 rel=1.1e-14 lits=484 t_jac=52.3s t_lin=269.4s
+  STAGE_END field=control2d eps=0.5 N=64 cand=i1 status=converged its=2 r_F=2.533e-14 r_out=5.925e-16 -> accepted
+STAGE field=control2d eps=1 N=64 cand=i1 (from eps=0.5, warm start)
+  NEWTON control2d:1:64:i1 it= 0 r_F=1.498e+01 r_out=1.750e-01
+  NEWTON control2d:1:64:i1 it= 1 r_F=2.354e-09 r_out=1.232e-11 lambda=1 |dx|max=8.55e-02 lin=gmres+lin0 rel=1.6e-14 lits=275 t_jac=53.6s t_lin=147.7s
+  NEWTON control2d:1:64:i1 it= 2 r_F=9.650e-11 r_out=6.693e-12 lambda=1 |dx|max=1.89e-11 lin=gmres+lin0 rel=4.2e-02 lits=1800 t_jac=47.9s t_lin=1121.9s
+  NEWTON control2d:1:64:i1 it= 3 r_F=9.532e-11 r_out=6.261e-12 lambda=1 |dx|max=1.14e-12 lin=gmres+lin0 rel=9.9e-01 lits=900 t_jac=54.9s t_lin=552.6s
+  NEWTON control2d:1:64:i1 it= 4 r_F=9.414e-11 r_out=6.477e-12 lambda=1 |dx|max=6.03e-13 lin=gmres+lin0 rel=9.9e-01 lits=900 t_jac=48.5s t_lin=536.8s
+  NEWTON control2d:1:64:i1 it= 5 r_F=8.938e-11 r_out=7.219e-12 lambda=1 |dx|max=9.23e-13 lin=gmres+lin0 rel=9.5e-01 lits=900 t_jac=49.5s t_lin=539.0s
+  NEWTON control2d:1:64:i1 it= 6 r_F=8.791e-11 r_out=7.146e-12 lambda=1 |dx|max=1.34e-12 lin=gmres+lin0 rel=9.8e-01 lits=900 t_jac=51.1s t_lin=535.0s
+  STAGE_END field=control2d eps=1 N=64 cand=i1 status=stagnation its=6 r_F=8.791e-11 r_out=7.146e-12 -> accepted
+PATH field=control2d eps=1 N=64 cand=i1 continuation path: 0.25->0.5->1
+CASE field=control2d eps=1 N=64 cand=i1 | r_F=8.791e-11 its=6 | e_v=3.321e-03 e_psi=4.581e-01 e_i=(2.816e-03,7.529e-11) e_div=5.098e-11 min_c=2.394e-01 p0.1=2.411e-01 p1=2.586e-01 p5=3.522e-01 p50=9.711e-01 | t=4541.0
+CASE field=control2d eps=1 N=64 cand=oracle_fd | r_F=nan its=nan | e_v=2.116e-03 e_psi=0.000e+00 e_i=(1.857e-03,0.000e+00) e_div=2.888e-15 min_c=2.395e-01 p0.1=2.411e-01 p1=2.585e-01 p5=3.527e-01 p50=9.711e-01 | t=0.0
+EXTRA field=control2d eps=1 N=64 cand=i1 status=stagnation r_F=8.791e-11 r_out=7.146e-12 | outlet c_perp-vperp_in: cand=7.145e-12 oracle_fd=3.355e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=4.635e-03 oracle_fd=2.931e-03; j=1 cand=5.159e-02 oracle_fd=5.269e-02; j=1 vs vD(j=1) cand=2.114e-03 oracle_fd=1.408e-03 | min|c|/v_rms=0.2011 min|vD|/v_rms=0.2008 e_i1=2.816e-03 e_i2=7.529e-11 | t=4541.0s
+HISTORY field=control2d eps=1 N=64 cand=i1 r_F: 1.50e+01 2.35e-09 9.65e-11 9.53e-11 9.41e-11 8.94e-11 8.79e-11
+HISTORY field=control2d eps=1 N=64 cand=i1 r_out: 1.75e-01 1.23e-11 6.69e-12 6.26e-12 6.48e-12 7.22e-12 7.15e-12

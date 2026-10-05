@@ -1,0 +1,38 @@
+RUN_ALL cell=i1-generic3d-0.5-N32 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py generic3d:0.5:32:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=generic3d eps=0.25 N=32 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=32 modes=544 setup 0.1s
+  NEWTON generic3d:0.25:32:i1 it= 0 r_F=5.091e+00 r_out=1.339e-01
+  NEWTON generic3d:0.25:32:i1 it= 1 r_F=2.346e-01 r_out=2.141e-02 lambda=1 |dx|max=6.73e-02 lin=gmres+lin0 rel=1.1e-14 lits=147 t_jac=7.4s t_lin=10.9s
+  NEWTON generic3d:0.25:32:i1 it= 2 r_F=4.816e-02 r_out=1.518e-03 lambda=1 |dx|max=3.36e-02 lin=gmres+lin0 rel=5.9e-14 lits=160 t_jac=9.6s t_lin=14.5s
+  NEWTON generic3d:0.25:32:i1 it= 3 r_F=3.896e-03 r_out=7.317e-05 lambda=1 |dx|max=6.50e-03 lin=gmres+lin0 rel=5.5e-14 lits=211 t_jac=8.7s t_lin=23.5s
+  NEWTON generic3d:0.25:32:i1 it= 4 r_F=2.481e-04 r_out=1.933e-06 lambda=1 |dx|max=1.29e-03 lin=gmres+lin0 rel=3.0e-14 lits=231 t_jac=10.9s t_lin=24.9s
+  NEWTON generic3d:0.25:32:i1 it= 5 r_F=8.954e-08 r_out=6.754e-10 lambda=1 |dx|max=2.92e-05 lin=gmres+lin0 rel=3.0e-14 lits=198 t_jac=11.1s t_lin=20.2s
+  NEWTON generic3d:0.25:32:i1 it= 6 r_F=1.741e-13 r_out=9.749e-16 lambda=1 |dx|max=3.55e-08 lin=gmres+lin0 rel=1.9e-14 lits=225 t_jac=9.6s t_lin=22.2s
+  NEWTON generic3d:0.25:32:i1 it= 7 r_F=5.685e-15 r_out=1.959e-16 lambda=1 |dx|max=3.03e-14 lin=gmres+lin0 rel=3.6e-14 lits=196 t_jac=11.3s t_lin=20.8s
+  STAGE_END field=generic3d eps=0.25 N=32 cand=i1 status=converged its=7 r_F=5.685e-15 r_out=1.959e-16 -> accepted
+STAGE field=generic3d eps=0.5 N=32 cand=i1 (from eps=0.25, warm start)
+  NEWTON generic3d:0.5:32:i1 it= 0 r_F=4.863e+00 r_out=1.734e-01
+  NEWTON generic3d:0.5:32:i1 it= 1 r_F=2.314e-01 r_out=3.180e-02 lambda=1 |dx|max=8.11e-02 lin=gmres+lin0 rel=1.5e-14 lits=243 t_jac=10.3s t_lin=29.3s
+  NEWTON generic3d:0.5:32:i1 it= 2 r_F=8.198e-02 r_out=4.784e-03 lambda=1 |dx|max=4.84e-02 lin=gmres+lin0 rel=4.6e-14 lits=4200 t_jac=9.5s t_lin=574.1s
+  NEWTON generic3d:0.5:32:i1 it= 3 r_F=8.393e-03 r_out=2.269e-04 lambda=1 |dx|max=1.17e-02 lin=gmres+lin0 rel=4.9e-03 lits=6000 t_jac=11.9s t_lin=730.8s
+  NEWTON generic3d:0.5:32:i1 it= 4 r_F=4.547e-03 r_out=3.438e-04 lambda=1 |dx|max=3.91e-03 lin=gmres+lin0 rel=6.1e-01 lits=900 t_jac=6.6s t_lin=89.3s
+  NEWTON generic3d:0.5:32:i1 it= 5 r_F=8.653e-04 r_out=1.734e-05 lambda=1 |dx|max=2.09e-03 lin=gmres+lin0 rel=3.9e-02 lits=6000 t_jac=5.2s t_lin=671.0s
+  NEWTON generic3d:0.5:32:i1 it= 6 r_F=2.055e-05 r_out=1.425e-06 lambda=1 |dx|max=1.36e-04 lin=gmres+lin0 rel=2.4e-02 lits=6000 t_jac=8.5s t_lin=709.3s
+  NEWTON generic3d:0.5:32:i1 it= 7 r_F=2.492e-06 r_out=1.295e-07 lambda=1 |dx|max=1.18e-05 lin=gmres+lin0 rel=1.2e-01 lits=6000 t_jac=8.8s t_lin=774.5s
+  NEWTON generic3d:0.5:32:i1 it= 8 r_F=3.145e-07 r_out=1.692e-08 lambda=1 |dx|max=1.43e-06 lin=gmres+lin0 rel=1.3e-01 lits=6000 t_jac=11.7s t_lin=815.8s
+  NEWTON generic3d:0.5:32:i1 it= 9 r_F=4.139e-08 r_out=2.082e-09 lambda=1 |dx|max=1.94e-07 lin=gmres+lin0 rel=1.3e-01 lits=6000 t_jac=12.1s t_lin=767.4s
+  NEWTON generic3d:0.5:32:i1 it=10 r_F=6.213e-09 r_out=3.333e-10 lambda=1 |dx|max=2.51e-08 lin=gmres+lin0 rel=1.5e-01 lits=6000 t_jac=8.3s t_lin=631.8s
+  NEWTON generic3d:0.5:32:i1 it=11 r_F=7.334e-10 r_out=3.693e-11 lambda=1 |dx|max=3.49e-09 lin=gmres+lin0 rel=1.2e-01 lits=6000 t_jac=7.8s t_lin=653.2s
+  NEWTON generic3d:0.5:32:i1 it=12 r_F=9.800e-11 r_out=6.064e-12 lambda=1 |dx|max=4.38e-10 lin=gmres+lin0 rel=1.3e-01 lits=6000 t_jac=7.0s t_lin=546.0s
+  NEWTON generic3d:0.5:32:i1 it=13 r_F=1.142e-11 r_out=6.567e-13 lambda=1 |dx|max=6.66e-11 lin=gmres+lin0 rel=1.2e-01 lits=6000 t_jac=5.9s t_lin=526.6s
+  NEWTON generic3d:0.5:32:i1 it=14 r_F=1.340e-12 r_out=7.197e-14 lambda=1 |dx|max=7.68e-12 lin=gmres+lin0 rel=1.2e-01 lits=6000 t_jac=5.3s t_lin=682.1s
+  NEWTON generic3d:0.5:32:i1 it=15 r_F=2.411e-13 r_out=1.298e-14 lambda=1 |dx|max=8.15e-13 lin=gmres+lin0 rel=1.8e-01 lits=6000 t_jac=7.2s t_lin=588.5s
+  NEWTON generic3d:0.5:32:i1 it=16 r_F=4.194e-14 r_out=2.029e-15 lambda=1 |dx|max=1.54e-13 lin=gmres+lin0 rel=1.7e-01 lits=6000 t_jac=8.0s t_lin=579.2s
+  STAGE_END field=generic3d eps=0.5 N=32 cand=i1 status=converged its=16 r_F=4.194e-14 r_out=2.029e-15 -> accepted
+PATH field=generic3d eps=0.5 N=32 cand=i1 continuation path: 0.25->0.5
+CASE field=generic3d eps=0.5 N=32 cand=i1 | r_F=4.194e-14 its=16 | e_v=1.167e-02 e_psi=9.091e-02 e_i=(8.649e-03,7.980e-03) e_div=1.353e-02 min_c=3.863e-01 p0.1=4.039e-01 p1=4.638e-01 p5=5.622e-01 p50=9.934e-01 | t=9726.6
+CASE field=generic3d eps=0.5 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=5.153e-03 e_psi=0.000e+00 e_i=(3.017e-03,2.559e-03) e_div=2.023e-02 min_c=3.881e-01 p0.1=4.060e-01 p1=4.660e-01 p5=5.645e-01 p50=9.933e-01 | t=0.0
+EXTRA field=generic3d eps=0.5 N=32 cand=i1 status=converged r_F=4.194e-14 r_out=2.029e-15 | outlet c_perp-vperp_in: cand=3.369e-15 oracle_fd=6.798e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.591e-02 oracle_fd=5.820e-03; j=1 cand=8.468e-02 oracle_fd=8.478e-02; j=1 vs vD(j=1) cand=1.434e-02 oracle_fd=3.411e-03 | min|c|/v_rms=0.3511 min|vD|/v_rms=0.3508 e_i1=8.649e-03 e_i2=7.980e-03 | t=9726.6s
+HISTORY field=generic3d eps=0.5 N=32 cand=i1 r_F: 4.86e+00 2.31e-01 8.20e-02 8.39e-03 4.55e-03 8.65e-04 2.05e-05 2.49e-06 3.15e-07 4.14e-08 6.21e-09 7.33e-10 9.80e-11 1.14e-11 1.34e-12 2.41e-13 4.19e-14
+HISTORY field=generic3d eps=0.5 N=32 cand=i1 r_out: 1.73e-01 3.18e-02 4.78e-03 2.27e-04 3.44e-04 1.73e-05 1.43e-06 1.30e-07 1.69e-08 2.08e-09 3.33e-10 3.69e-11 6.06e-12 6.57e-13 7.20e-14 1.30e-14 2.03e-15

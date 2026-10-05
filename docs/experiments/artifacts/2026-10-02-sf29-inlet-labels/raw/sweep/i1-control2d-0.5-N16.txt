@@ -1,0 +1,18 @@
+RUN_ALL cell=i1-control2d-0.5-N16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py control2d:0.5:16:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=16 cand=i1 (from eps=0, u=0)
+  NEWTON control2d:0.25:16:i1 it= 0 r_F=2.082e+00 r_out=8.375e-02
+  NEWTON control2d:0.25:16:i1 it= 1 r_F=1.166e-11 r_out=3.287e-13 lambda=1 |dx|max=4.98e-02 lin=splu rel=5.5e-15 lits=0 t_jac=0.6s t_lin=3.6s
+  NEWTON control2d:0.25:16:i1 it= 2 r_F=8.669e-16 r_out=7.455e-17 lambda=1 |dx|max=3.12e-13 lin=splu rel=5.7e-15 lits=0 t_jac=0.5s t_lin=3.4s
+  STAGE_END field=control2d eps=0.25 N=16 cand=i1 status=converged its=2 r_F=8.669e-16 r_out=7.455e-17 -> accepted
+STAGE field=control2d eps=0.5 N=16 cand=i1 (from eps=0.25, warm start)
+  NEWTON control2d:0.5:16:i1 it= 0 r_F=1.937e+00 r_out=8.539e-02
+  NEWTON control2d:0.5:16:i1 it= 1 r_F=7.839e-12 r_out=1.042e-12 lambda=1 |dx|max=4.60e-02 lin=splu rel=6.6e-15 lits=0 t_jac=0.5s t_lin=3.4s
+  NEWTON control2d:0.5:16:i1 it= 2 r_F=1.640e-15 r_out=1.350e-16 lambda=1 |dx|max=8.79e-13 lin=splu rel=1.3e-14 lits=0 t_jac=0.5s t_lin=4.0s
+  STAGE_END field=control2d eps=0.5 N=16 cand=i1 status=converged its=2 r_F=1.640e-15 r_out=1.350e-16 -> accepted
+PATH field=control2d eps=0.5 N=16 cand=i1 continuation path: 0.25->0.5
+CASE field=control2d eps=0.5 N=16 cand=i1 | r_F=1.640e-15 its=2 | e_v=1.794e-02 e_psi=5.802e-02 e_i=(1.334e-02,3.340e-14) e_div=1.687e-14 min_c=5.330e-01 p0.1=5.330e-01 p1=5.574e-01 p5=6.198e-01 p50=1.009e+00 | t=20.4
+CASE field=control2d eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=1.570e-02 e_psi=0.000e+00 e_i=(1.413e-02,0.000e+00) e_div=1.102e-15 min_c=5.353e-01 p0.1=5.353e-01 p1=5.576e-01 p5=6.244e-01 p50=1.010e+00 | t=0.0
+EXTRA field=control2d eps=0.5 N=16 cand=i1 status=converged r_F=1.640e-15 r_out=1.350e-16 | outlet c_perp-vperp_in: cand=1.358e-15 oracle_fd=2.709e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=2.257e-02 oracle_fd=1.289e-02; j=1 cand=1.356e-01 oracle_fd=1.396e-01; j=1 vs vD(j=1) cand=5.986e-03 oracle_fd=6.092e-03 | min|c|/v_rms=0.5056 min|vD|/v_rms=0.4997 e_i1=1.334e-02 e_i2=3.340e-14 | t=20.4s
+HISTORY field=control2d eps=0.5 N=16 cand=i1 r_F: 1.94e+00 7.84e-12 1.64e-15
+HISTORY field=control2d eps=0.5 N=16 cand=i1 r_out: 8.54e-02 1.04e-12 1.35e-16

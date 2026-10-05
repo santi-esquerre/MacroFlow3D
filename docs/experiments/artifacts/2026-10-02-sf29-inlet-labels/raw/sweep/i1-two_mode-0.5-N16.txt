@@ -1,0 +1,24 @@
+RUN_ALL cell=i1-two_mode-0.5-N16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py two_mode:0.5:16:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=two_mode eps=0.25 N=16 cand=i1 (from eps=0, u=0)
+  NEWTON two_mode:0.25:16:i1 it= 0 r_F=1.579e+00 r_out=1.240e-01
+  NEWTON two_mode:0.25:16:i1 it= 1 r_F=5.032e-02 r_out=1.095e-02 lambda=1 |dx|max=3.46e-02 lin=splu rel=7.9e-15 lits=0 t_jac=0.8s t_lin=3.8s
+  NEWTON two_mode:0.25:16:i1 it= 2 r_F=2.167e-03 r_out=2.072e-04 lambda=1 |dx|max=1.00e-02 lin=splu rel=4.1e-14 lits=0 t_jac=0.4s t_lin=3.4s
+  NEWTON two_mode:0.25:16:i1 it= 3 r_F=1.851e-05 r_out=6.103e-07 lambda=1 |dx|max=6.80e-04 lin=splu rel=4.2e-14 lits=0 t_jac=0.5s t_lin=4.0s
+  NEWTON two_mode:0.25:16:i1 it= 4 r_F=5.164e-10 r_out=6.054e-12 lambda=1 |dx|max=2.81e-06 lin=splu rel=1.9e-14 lits=0 t_jac=0.7s t_lin=3.5s
+  NEWTON two_mode:0.25:16:i1 it= 5 r_F=8.860e-16 r_out=5.782e-17 lambda=1 |dx|max=9.81e-11 lin=splu rel=2.3e-14 lits=0 t_jac=0.5s t_lin=3.2s
+  STAGE_END field=two_mode eps=0.25 N=16 cand=i1 status=converged its=5 r_F=8.860e-16 r_out=5.782e-17 -> accepted
+STAGE field=two_mode eps=0.5 N=16 cand=i1 (from eps=0.25, warm start)
+  NEWTON two_mode:0.5:16:i1 it= 0 r_F=1.461e+00 r_out=1.261e-01
+  NEWTON two_mode:0.5:16:i1 it= 1 r_F=5.315e-02 r_out=1.258e-02 lambda=1 |dx|max=5.66e-02 lin=splu rel=1.1e-14 lits=0 t_jac=0.5s t_lin=4.4s
+  NEWTON two_mode:0.5:16:i1 it= 2 r_F=6.121e-03 r_out=6.423e-04 lambda=1 |dx|max=2.38e-02 lin=splu rel=1.0e-13 lits=0 t_jac=0.7s t_lin=4.3s
+  NEWTON two_mode:0.5:16:i1 it= 3 r_F=1.710e-04 r_out=9.728e-06 lambda=1 |dx|max=2.13e-03 lin=splu rel=6.8e-14 lits=0 t_jac=0.5s t_lin=3.4s
+  NEWTON two_mode:0.5:16:i1 it= 4 r_F=6.890e-08 r_out=2.356e-09 lambda=1 |dx|max=4.77e-05 lin=splu rel=3.1e-14 lits=0 t_jac=0.5s t_lin=3.9s
+  NEWTON two_mode:0.5:16:i1 it= 5 r_F=7.320e-15 r_out=3.258e-16 lambda=1 |dx|max=2.05e-08 lin=splu rel=2.8e-14 lits=0 t_jac=0.4s t_lin=3.6s
+  STAGE_END field=two_mode eps=0.5 N=16 cand=i1 status=converged its=5 r_F=7.320e-15 r_out=3.258e-16 -> accepted
+PATH field=two_mode eps=0.5 N=16 cand=i1 continuation path: 0.25->0.5
+CASE field=two_mode eps=0.5 N=16 cand=i1 | r_F=7.320e-15 its=5 | e_v=1.528e-02 e_psi=1.767e-01 e_i=(1.005e-02,9.943e-03) e_div=2.619e-02 min_c=6.204e-01 p0.1=6.228e-01 p1=6.325e-01 p5=6.615e-01 p50=1.007e+00 | t=45.6
+CASE field=two_mode eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=1.062e-02 e_psi=0.000e+00 e_i=(5.721e-03,5.684e-03) e_div=2.798e-02 min_c=6.292e-01 p0.1=6.292e-01 p1=6.383e-01 p5=6.667e-01 p50=1.010e+00 | t=0.0
+EXTRA field=two_mode eps=0.5 N=16 cand=i1 status=converged r_F=7.320e-15 r_out=3.258e-16 | outlet c_perp-vperp_in: cand=1.395e-15 oracle_fd=1.336e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=2.254e-02 oracle_fd=1.295e-02; j=1 cand=9.491e-02 oracle_fd=9.583e-02; j=1 vs vD(j=1) cand=1.653e-02 oracle_fd=7.102e-03 | min|c|/v_rms=0.5842 min|vD|/v_rms=0.5875 e_i1=1.005e-02 e_i2=9.943e-03 | t=45.6s
+HISTORY field=two_mode eps=0.5 N=16 cand=i1 r_F: 1.46e+00 5.32e-02 6.12e-03 1.71e-04 6.89e-08 7.32e-15
+HISTORY field=two_mode eps=0.5 N=16 cand=i1 r_out: 1.26e-01 1.26e-02 6.42e-04 9.73e-06 2.36e-09 3.26e-16

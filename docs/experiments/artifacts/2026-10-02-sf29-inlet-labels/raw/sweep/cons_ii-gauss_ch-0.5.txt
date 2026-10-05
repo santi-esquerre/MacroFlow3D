@@ -1,0 +1,11 @@
+RUN_ALL cell=cons_ii-gauss_ch-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py --consistency gauss_ch:0.5 --grids 16,32,48
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=--consistency gauss_ch:0.5 --grids 16,32,48
+======== consistency at the oracle labels gauss_ch:0.5 grids=(16, 32, 48) energy=q1 q=center meanflux=True
+CONSIST field=gauss_ch eps=0.5 N=16 energy=q1 constrained=False meanflux_rows=0 g_rel(oracle)=4.654e-02 interior(planes 1..N-1)=4.627e-02 outlet=4.957e-03 constraint rms rel=nan (vs raw f1_in: nan) D-3 rows (S2,S3)=(+nan,+nan) |grad E(0)|=1.739e-01 | e_v(TPFA flux)=1.173e-02 e_v(oracle_mim)=2.261e-02
+CONSIST field=gauss_ch eps=0.5 N=32 energy=q1 constrained=False meanflux_rows=0 g_rel(oracle)=6.725e-03 interior(planes 1..N-1)=6.712e-03 outlet=4.097e-04 constraint rms rel=nan (vs raw f1_in: nan) D-3 rows (S2,S3)=(+nan,+nan) |grad E(0)|=1.530e-01 | e_v(TPFA flux)=2.972e-03 e_v(oracle_mim)=6.410e-03
+CONSIST field=gauss_ch eps=0.5 N=48 energy=q1 constrained=False meanflux_rows=0 g_rel(oracle)=1.844e-03 interior(planes 1..N-1)=1.842e-03 outlet=8.569e-05 constraint rms rel=nan (vs raw f1_in: nan) D-3 rows (S2,S3)=(+nan,+nan) |grad E(0)|=1.504e-01 | e_v(TPFA flux)=1.324e-03 e_v(oracle_mim)=2.932e-03
+CONSIST_ORDER field=gauss_ch eps=0.5 g_rel: 4.654e-02 6.725e-03 1.844e-03 orders 2.79 3.19
+CONSIST_ORDER field=gauss_ch eps=0.5 g_interior: 4.627e-02 6.712e-03 1.842e-03 orders 2.79 3.19
+CONSIST_ORDER field=gauss_ch eps=0.5 g_outlet: 4.957e-03 4.097e-04 8.569e-05 orders 3.60 3.86
+CONSIST_ORDER field=gauss_ch eps=0.5 e_v_tpfa: 1.173e-02 2.972e-03 1.324e-03 orders 1.98 1.99
+CONSIST_ORDER field=gauss_ch eps=0.5 e_v_oracle_mim: 2.261e-02 6.410e-03 2.932e-03 orders 1.82 1.93

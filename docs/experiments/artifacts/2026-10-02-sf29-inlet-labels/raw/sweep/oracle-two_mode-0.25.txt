@@ -1,0 +1,17 @@
+RUN_ALL cell=oracle-two_mode-0.25 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell two_mode:0.25 --grids 12,16,24,32,48
+run_all.py --oracle-cell two_mode:0.25 grids=[12, 16, 24, 32, 48] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=two_mode eps=0.25 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=8.984e-03 e_psi=0.000e+00 e_i=(4.944e-03,4.934e-03) e_div=1.037e-02 min_c=7.932e-01 p0.1=7.932e-01 p1=8.041e-01 p5=8.176e-01 p50=1.003e+00 | t=1.9
+CASE field=two_mode eps=0.25 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=5.659e-04 e_psi=0.000e+00 e_i=(4.944e-03,4.934e-03) e_div=2.330e-15 min_c=7.930e-01 p0.1=7.930e-01 p1=8.041e-01 p5=8.172e-01 p50=1.002e+00 | t=1.9
+ORACLE_READY field=two_mode eps=0.25 N=12 cache_hit=False nphi=16 max_roundtrip=2.01e-14 t_oracle=1.5s t_faces=0.1s t_cell=1.9s cache=../raw/cache/two_mode_eps0.25_N12_nphi16_v1.npz
+CASE field=two_mode eps=0.25 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=4.985e-03 e_psi=0.000e+00 e_i=(2.691e-03,2.686e-03) e_div=6.046e-03 min_c=7.901e-01 p0.1=7.901e-01 p1=7.963e-01 p5=8.163e-01 p50=1.008e+00 | t=3.0
+CASE field=two_mode eps=0.25 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=3.244e-04 e_psi=0.000e+00 e_i=(2.691e-03,2.686e-03) e_div=2.746e-15 min_c=7.900e-01 p0.1=7.900e-01 p1=7.962e-01 p5=8.150e-01 p50=1.008e+00 | t=3.0
+ORACLE_READY field=two_mode eps=0.25 N=16 cache_hit=False nphi=16 max_roundtrip=2.96e-14 t_oracle=2.8s t_faces=0.2s t_cell=3.1s cache=../raw/cache/two_mode_eps0.25_N16_nphi16_v1.npz
+CASE field=two_mode eps=0.25 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=2.176e-03 e_psi=0.000e+00 e_i=(1.146e-03,1.144e-03) e_div=2.717e-03 min_c=7.879e-01 p0.1=7.879e-01 p1=7.928e-01 p5=8.134e-01 p50=1.008e+00 | t=7.9
+CASE field=two_mode eps=0.25 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=1.465e-04 e_psi=0.000e+00 e_i=(1.146e-03,1.144e-03) e_div=4.694e-15 min_c=7.878e-01 p0.1=7.878e-01 p1=7.928e-01 p5=8.129e-01 p50=1.008e+00 | t=7.9
+ORACLE_READY field=two_mode eps=0.25 N=24 cache_hit=False nphi=16 max_roundtrip=2.68e-14 t_oracle=7.3s t_faces=0.5s t_cell=7.9s cache=../raw/cache/two_mode_eps0.25_N24_nphi16_v1.npz
+CASE field=two_mode eps=0.25 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=1.211e-03 e_psi=0.000e+00 e_i=(6.284e-04,6.276e-04) e_div=1.522e-03 min_c=7.871e-01 p0.1=7.886e-01 p1=7.933e-01 p5=8.124e-01 p50=1.007e+00 | t=15.5
+CASE field=two_mode eps=0.25 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=8.301e-05 e_psi=0.000e+00 e_i=(6.284e-04,6.276e-04) e_div=5.532e-15 min_c=7.871e-01 p0.1=7.886e-01 p1=7.933e-01 p5=8.124e-01 p50=1.007e+00 | t=15.5
+ORACLE_READY field=two_mode eps=0.25 N=32 cache_hit=False nphi=16 max_roundtrip=2.74e-14 t_oracle=14.1s t_faces=1.2s t_cell=15.5s cache=../raw/cache/two_mode_eps0.25_N32_nphi16_v1.npz
+CASE field=two_mode eps=0.25 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=5.320e-04 e_psi=0.000e+00 e_i=(2.715e-04,2.712e-04) e_div=6.689e-04 min_c=7.865e-01 p0.1=7.872e-01 p1=7.927e-01 p5=8.122e-01 p50=1.009e+00 | t=46.8
+CASE field=two_mode eps=0.25 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=3.713e-05 e_psi=0.000e+00 e_i=(2.715e-04,2.712e-04) e_div=9.406e-15 min_c=7.865e-01 p0.1=7.872e-01 p1=7.927e-01 p5=8.122e-01 p50=1.009e+00 | t=46.8
+ORACLE_READY field=two_mode eps=0.25 N=48 cache_hit=False nphi=16 max_roundtrip=4.83e-14 t_oracle=42.4s t_faces=4.0s t_cell=46.9s cache=../raw/cache/two_mode_eps0.25_N48_nphi16_v1.npz

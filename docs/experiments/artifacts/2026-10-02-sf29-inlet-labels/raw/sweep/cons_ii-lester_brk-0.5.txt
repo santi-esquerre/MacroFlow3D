@@ -1,0 +1,16 @@
+RUN_ALL cell=cons_ii-lester_brk-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py --consistency lester_brk:0.5 --grids 16,32,48
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=--consistency lester_brk:0.5 --grids 16,32,48
+======== consistency at the oracle labels lester_brk:0.5 grids=(16, 32, 48) energy=q1 q=center meanflux=True
+CONSIST field=lester_brk eps=0.5 N=16 energy=q1 constrained=True meanflux_rows=2 g_rel(oracle)=9.044e-02 interior(planes 1..N-1)=9.043e-02 outlet=9.612e-04 constraint rms rel=2.641e-03 (vs raw f1_in: 2.641e-03) D-3 rows (S2,S3)=(-2.146e-18,+1.295e-07) |grad E(0)|=4.319e-02 | e_v(TPFA flux)=6.126e-03 e_v(oracle_mim)=2.739e-03
+MEANFLUX oracle field=lester_brk eps=0.5 N=16 active=True plane=0 S2=-2.146e-18 S3=+1.295e-07 | spread over planes max|S-S[plane]|=(1.34e-05,5.08e-07) mean over planes=(-3.752e-18,-1.901e-13) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(1.01e-05,5.34e-07) balance identity defect=1.1e-17 | vD_faces: S2=+1.21e-17 S3=-1.13e-17 spread=(4.1e-10,3.8e-17)
+CONSIST field=lester_brk eps=0.5 N=32 energy=q1 constrained=True meanflux_rows=2 g_rel(oracle)=2.219e-02 interior(planes 1..N-1)=2.219e-02 outlet=3.751e-04 constraint rms rel=6.644e-04 (vs raw f1_in: 6.644e-04) D-3 rows (S2,S3)=(+8.792e-18,+3.257e-08) |grad E(0)|=1.832e-02 | e_v(TPFA flux)=1.676e-03 e_v(oracle_mim)=7.142e-04
+MEANFLUX oracle field=lester_brk eps=0.5 N=32 active=True plane=0 S2=+8.792e-18 S3=+3.257e-08 | spread over planes max|S-S[plane]|=(3.02e-06,1.46e-07) mean over planes=(-5.779e-18,-1.556e-11) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(1.24e-06,1.46e-07) balance identity defect=3.9e-17 | vD_faces: S2=+1.16e-17 S3=-6.59e-18 spread=(5.8e-17,6.7e-12)
+CONSIST field=lester_brk eps=0.5 N=48 energy=q1 constrained=True meanflux_rows=2 g_rel(oracle)=8.537e-03 interior(planes 1..N-1)=8.535e-03 outlet=1.867e-04 constraint rms rel=2.991e-04 (vs raw f1_in: 2.991e-04) D-3 rows (S2,S3)=(+8.736e-18,+1.448e-08) |grad E(0)|=1.193e-02 | e_v(TPFA flux)=7.564e-04 e_v(oracle_mim)=3.219e-04
+MEANFLUX oracle field=lester_brk eps=0.5 N=48 active=True plane=0 S2=+8.736e-18 S3=+1.448e-08 | spread over planes max|S-S[plane]|=(1.36e-06,6.69e-08) mean over planes=(+7.907e-19,-7.049e-12) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(3.80e-07,4.94e-08) balance identity defect=4.8e-17 | vD_faces: S2=+1.14e-17 S3=+1.32e-17 spread=(3.9e-17,4.6e-17)
+CONSIST_ORDER field=lester_brk eps=0.5 g_rel: 9.044e-02 2.219e-02 8.537e-03 orders 2.03 2.36
+CONSIST_ORDER field=lester_brk eps=0.5 g_interior: 9.043e-02 2.219e-02 8.535e-03 orders 2.03 2.36
+CONSIST_ORDER field=lester_brk eps=0.5 g_outlet: 9.612e-04 3.751e-04 1.867e-04 orders 1.36 1.72
+CONSIST_ORDER field=lester_brk eps=0.5 constraint: 2.641e-03 6.644e-04 2.991e-04 orders 1.99 1.97
+CONSIST_ORDER field=lester_brk eps=0.5 meanflux_rows: 1.295e-07 3.257e-08 1.448e-08 orders 1.99 2.00
+CONSIST_ORDER field=lester_brk eps=0.5 e_v_tpfa: 6.126e-03 1.676e-03 7.564e-04 orders 1.87 1.96
+CONSIST_ORDER field=lester_brk eps=0.5 e_v_oracle_mim: 2.739e-03 7.142e-04 3.219e-04 orders 1.94 1.97
