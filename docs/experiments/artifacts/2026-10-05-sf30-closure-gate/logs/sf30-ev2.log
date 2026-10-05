@@ -1,0 +1,61 @@
+[2026-10-05T13:56:00Z] job=sf30-ev2 session=macroflow3d-SF-30-sf30-ev2 started
+[2026-10-05T13:56:00Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=1)
+[2026-10-05T13:56:00Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T13:56:00Z] command=E=./build/v100-release/streamfunction_ev_ladder; O=output_sf30/ev; mkdir -p $O; for N in 64 128; do echo "### lester2021 eps=0.25 N=$N"; $E --field lester2021 --eps 0.25 --n $N --max-iter 1000 --out $O/lester2021_e025_n$N.json | grep -E "solve: status|==== final|r_F initial|invariance|e_div"; echo "exit=$?"; done; for S in 0.0625 0.25; do for N in 32 64 128; do echo "### gaussian sigma2=$S ell=0.25 seed=3001 N=$N"; $E --field gaussian --sigma2 $S --ell 0.25 --seed 3001 --n $N --max-iter 1000 --out $O/gaussian_s${S}_l025_r3001_n$N.json | grep -E "solve: status|==== final|r_F initial|invariance|e_div"; echo "exit=$?"; done; done
+### lester2021 eps=0.25 N=64
+solve: status = not_converged  exit = budget_exhausted  picard_iterations = 1000  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.01888610080116284
+  invariance e_psi1 = 9.708836e-05  e_psi2 = 4.461913e-05
+  reconstructed divergence e_div = 7.995945e-05  (rms 8.025925e-05, linf 3.102232e-04)
+==== final: lambda = 1  status = not_converged  r_F = 2.8803730552873051e-07  tolerance_met = false  e_v = 0.0010763125411824795  wall_total = 666.449 s ====
+exit=0
+### lester2021 eps=0.25 N=128
+solve: status = not_converged  exit = stagnated  picard_iterations = 176  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.01937073846121605
+  invariance e_psi1 = 2.517295e-05  e_psi2 = 1.148843e-05
+  reconstructed divergence e_div = 2.022573e-05  (rms 2.030189e-05, linf 8.037538e-05)
+==== final: lambda = 1  status = not_converged  r_F = 1.0879139470530402e-06  tolerance_met = false  e_v = 0.00027203613813590356  wall_total = 145.771 s ====
+exit=0
+### gaussian sigma2=0.0625 ell=0.25 seed=3001 N=32
+solve: status = not_converged  exit = stagnated  picard_iterations = 165  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.09089346546095739
+  invariance e_psi1 = 3.128546e-03  e_psi2 = 3.061824e-03
+  reconstructed divergence e_div = 1.983730e-03  (rms 2.023356e-03, linf 1.024831e-02)
+==== final: lambda = 1  status = not_converged  r_F = 0.0017508303911832348  tolerance_met = false  e_v = 0.0037752188093948332  wall_total = 101.762 s ====
+exit=0
+### gaussian sigma2=0.0625 ell=0.25 seed=3001 N=64
+solve: status = not_converged  exit = stagnated  picard_iterations = 359  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.093939767164966367
+  invariance e_psi1 = 2.664093e-03  e_psi2 = 2.635245e-03
+  reconstructed divergence e_div = 5.011224e-04  (rms 5.112288e-04, linf 2.598456e-03)
+==== final: lambda = 1  status = not_converged  r_F = 0.00050387097073805213  tolerance_met = false  e_v = 0.0022944433435152962  wall_total = 239.846 s ====
+exit=0
+### gaussian sigma2=0.0625 ell=0.25 seed=3001 N=128
+solve: status = not_converged  exit = stagnated  picard_iterations = 203  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.09501221514508873
+  invariance e_psi1 = 2.628396e-03  e_psi2 = 2.622666e-03
+  reconstructed divergence e_div = 1.164249e-04  (rms 1.187786e-04, linf 6.085798e-04)
+==== final: lambda = 1  status = not_converged  r_F = 0.00020628303741623491  tolerance_met = false  e_v = 0.0021495681941324641  wall_total = 168.227 s ====
+exit=0
+### gaussian sigma2=0.25 ell=0.25 seed=3001 N=32
+solve: status = not_converged  exit = stagnated  picard_iterations = 102  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.31505776058703122
+  invariance e_psi1 = 1.052775e-02  e_psi2 = 1.138765e-02
+  reconstructed divergence e_div = 7.223401e-03  (rms 7.786730e-03, linf 4.772871e-02)
+==== final: lambda = 1  status = not_converged  r_F = 0.0079786292607860708  tolerance_met = false  e_v = 0.011033848192079624  wall_total = 63.433 s ====
+exit=0
+### gaussian sigma2=0.25 ell=0.25 seed=3001 N=64
+solve: status = not_converged  exit = stagnated  picard_iterations = 234  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.3289718782468356
+  invariance e_psi1 = 9.792025e-03  e_psi2 = 1.088810e-02
+  reconstructed divergence e_div = 1.826674e-03  (rms 1.970552e-03, linf 1.255666e-02)
+==== final: lambda = 1  status = not_converged  r_F = 0.0018371572473186272  tolerance_met = false  e_v = 0.008463933790183167  wall_total = 157.023 s ====
+exit=0
+### gaussian sigma2=0.25 ell=0.25 seed=3001 N=128
+solve: status = not_converged  exit = stagnated  picard_iterations = 90  final_omega = 1  initial_state = zero_source
+  r_F initial = 0.33276300133519526
+  invariance e_psi1 = 9.690857e-03  e_psi2 = 1.105317e-02
+  reconstructed divergence e_div = 3.933684e-04  (rms 4.244295e-04, linf 2.715807e-03)
+==== final: lambda = 1  status = not_converged  r_F = 0.00077844197736033822  tolerance_met = false  e_v = 0.0082286655043908117  wall_total = 75.775 s ====
+exit=0
+[2026-10-05T14:23:28Z] job=sf30-ev2 finished exit=0

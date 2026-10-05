@@ -1,7 +1,7 @@
 # Streamline closure of the production Darcy flow (SF-30 closure gate)
 
 - Date: 2026-10-05
-- Status: complete (human review pending); section "e_v(h)" completed separately — see below
+- Status: complete (human review pending)
 - Theory: [`docs/theory/lester-2023-key-claims.md`](../theory/lester-2023-key-claims.md) §2-§4
   (the claims whose project-verified limits this note extends)
 - Predecessor: [`2026-10-02-streamline-closure-and-eq14-vs-darcy.md`](2026-10-02-streamline-closure-and-eq14-vs-darcy.md)
@@ -122,7 +122,8 @@ The only numerical thresholds are 10 % and 10x (plus the two validity fractions,
   "parametrized by `x1`" was not used for the whole streamline because that ODE is
   singular at `v1 = 0` and would discard exactly the streamlines with backflow whose
   count the spec asks for; statuses (`ok`, `seed_backflow`, `cap_exceeded`,
-  `stagnation`, `step_underflow`, `landing_failed`) and backflow encounters are counted,
+  `stagnation`, `step_underflow`, `landing_failed`, `invalid_conductivity`) and backflow
+  encounters are counted,
   nothing is clamped.
 - Statistic: `R` = sqrt of the population variance about the mean of the displacement
   `d = (x2, x3)(x1 + 1) - (x2, x3)(x1)` over `ok` streamlines (the probes'
@@ -149,10 +150,16 @@ From the repository root (detached V100 jobs; nothing ran locally except the ana
 
 ```bash
 scripts/remote --increment SF-30 sync
-scripts/remote --increment SF-30 exec -- "cmake --preset v100-release && cmake --build build/v100-release -j --target closure_gate"
+scripts/remote --increment SF-30 run sf30-build2 -- "cmake --build build/v100-release -j 32 ..."   # configure + build as detached jobs (sf30-build, sf30-build2)
 scripts/remote --increment SF-30 run sf30-matrix -- "bash docs/experiments/artifacts/2026-10-05-sf30-closure-gate/scripts/run_matrix.sh all"
 scripts/remote --increment SF-30 wait sf30-matrix
 ```
+
+(The build jobs `sf30-build` / `sf30-build2` on the tree of `531c73e` built `closure_gate`
+and both closure test executables and failed on one other target, `streamfunction_ev_ladder`
+— an nvcc 11.4 internal compiler error on the vendored nlohmann header, fixed by corrective
+C3 = `947a523` and verified by job `sf30-c3-build`. The matrix used the `closure_gate`
+binary of the first build; its sources are unchanged in `947a523`.)
 
 One underlying command per group (from `run_matrix.sh all --list`):
 
@@ -331,6 +338,12 @@ From `tables.md` table 3 (and `summary.json` `direction_field_diagnostics`, `cou
 - Many periods at `(4, 1/16)`: after 64 periods at 128^3, 906 of 1024 streamlines have
   met backflow at least once; after 16 periods at 256^3, 403 (table 10).
 
+The matched 2-D controls at `sigma^2 = 4` contain more backflow than the 3-D fields
+(volume fraction 2.6e-3 to 6.5e-3; 17 to 134 of 1024 streamlines with a backflow encounter
+per period; Appendix A) and still close at the instrument level with the observed orders
+of section 2: the first-return construction with backflow is exercised by cases whose
+answer is known.
+
 Consequence flagged for the owner (not decided here): a construction that assumes
 `v1 > 0` everywhere, such as labels carried from the inlet face along `x1`, does not
 hold for 1.8-4.6 % of the streamlines per period at `sigma^2 = 4`, `ell = 1/16`, and
@@ -468,24 +481,62 @@ reported next to every `e_v`. Fixtures and predictions:
   Gaussian states are not converged solutions of the discrete system; "plateau" requires
   `e_v` to stay while `r_F` falls.
 
-| field | parameter | N | Picard iterations | `r_F` | `e_v` | wall (s) | status |
-|---|---|---|---|---|---|---|---|
-| `lester2021` | eps 0.25 | 32 | 1158 | 9.999e-9 | 4.121e-3 | 702 | converged (job `sf30-ev`) |
-| `lester2021` | eps 0.25 | 64 | | | | | pending (job `sf30-ev2`) |
-| `lester2021` | eps 0.25 | 128 | | | | | pending (job `sf30-ev2`) |
-| `gaussian` | sigma^2 0.0625 | 32 | | | | | pending (job `sf30-ev2`) |
-| `gaussian` | sigma^2 0.0625 | 64 | | | | | pending (job `sf30-ev2`) |
-| `gaussian` | sigma^2 0.0625 | 128 | | | | | pending (job `sf30-ev2`) |
-| `gaussian` | sigma^2 0.25 | 32 | | | | | pending (job `sf30-ev2`) |
-| `gaussian` | sigma^2 0.25 | 64 | | | | | pending (job `sf30-ev2`) |
-| `gaussian` | sigma^2 0.25 | 128 | | | | | pending (job `sf30-ev2`) |
+Records: `raw/ev/*.json` (one per run, written by the driver) and `logs/sf30-ev.log`,
+`logs/sf30-ev2.log`. Commands (V100, detached; the first job ran the 32^3 Lester case with
+an iteration budget of 2000 and was cancelled after it to free the GPU queue for the gate
+jobs; the second ran the other eight with a budget of 1000):
 
-The completed row ran on V100 as job `sf30-ev`, which was cancelled after this run to
-free the GPU queue; the remaining eight runs are job `sf30-ev2` with an iteration budget
-of 1000. Source of the completed row: the orchestrator's record of job `sf30-ev`; its
-JSON record and log are to be committed with those of `sf30-ev2`. The rows, the exact
-command lines and the reading against the predictions are filled in by the orchestrator
-from the job records.
+```bash
+E=./build/v100-release/streamfunction_ev_ladder; O=output_sf30/ev
+$E --field lester2021 --eps 0.25 --n 32 --max-iter 2000 --out $O/lester2021_e025_n32.json          # job sf30-ev
+for N in 64 128; do $E --field lester2021 --eps 0.25 --n $N --max-iter 1000 --out $O/lester2021_e025_n$N.json; done   # job sf30-ev2
+for S in 0.0625 0.25; do for N in 32 64 128; do
+  $E --field gaussian --sigma2 $S --ell 0.25 --seed 3001 --n $N --max-iter 1000 --out $O/gaussian_s${S}_l025_r3001_n$N.json
+done; done
+```
+
+| field | N | iterations | exit | `r_F` initial | `r_F` final | `e_v` | invariance `e_psi1` / `e_psi2` | `e_div` | min `abs(c)` | wall (s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `lester2021`, eps 0.25 | 32 | 1158 | converged | 1.722e-2 | 9.999e-9 | 4.121e-3 | 3.59e-4 / 1.65e-4 | 3.01e-4 | 0.788 | 702 |
+| `lester2021`, eps 0.25 | 64 | 1000 | budget exhausted | 1.889e-2 | 2.880e-7 | 1.076e-3 | 9.76e-5 / 4.49e-5 | 8.00e-5 | 0.778 | 666 |
+| `lester2021`, eps 0.25 | 128 | 176 | stagnated | 1.937e-2 | 1.088e-6 | 2.720e-4 | 2.53e-5 / 1.16e-5 | 2.02e-5 | 0.775 | 146 |
+| `gaussian`, sigma^2 0.0625 | 32 | 165 | stagnated | 9.089e-2 | 1.751e-3 | 3.775e-3 | 3.23e-3 / 3.17e-3 | 1.98e-3 | 0.500 | 102 |
+| `gaussian`, sigma^2 0.0625 | 64 | 359 | stagnated | 9.394e-2 | 5.039e-4 | 2.294e-3 | 2.75e-3 / 2.73e-3 | 5.01e-4 | 0.495 | 240 |
+| `gaussian`, sigma^2 0.0625 | 128 | 203 | stagnated | 9.501e-2 | 2.063e-4 | 2.150e-3 | 2.71e-3 / 2.71e-3 | 1.16e-4 | 0.495 | 168 |
+| `gaussian`, sigma^2 0.25 | 32 | 102 | stagnated | 0.3151 | 7.979e-3 | 1.103e-2 | 1.18e-2 / 1.29e-2 | 7.22e-3 | 0.236 | 63 |
+| `gaussian`, sigma^2 0.25 | 64 | 234 | stagnated | 0.3290 | 1.837e-3 | 8.464e-3 | 1.10e-2 / 1.23e-2 | 1.83e-3 | 0.230 | 157 |
+| `gaussian`, sigma^2 0.25 | 128 | 90 | stagnated | 0.3328 | 7.784e-4 | 8.229e-3 | 1.09e-2 / 1.24e-2 | 3.93e-4 | 0.229 | 76 |
+
+(`exit` is the solver's own exit reason; the tolerance 1e-8 was met only by the first
+row. Gaussian fixture: SF-18 seed 3001, `ell = 0.25`, same continuum field on the three
+grids. Every Darcy corrector PCG converged.)
+
+Reading against the pre-registered predictions:
+
+- **Lester (2021) field: `e_v` converges.** `e_v` falls by 3.83 and 3.96 per grid
+  doubling (observed orders 1.94 and 1.98), and the two Darcy-invariance errors and
+  `e_div` fall with it at about the same order. The predicted "while `r_F` reaches the
+  tolerance" holds only at 32^3: at 64^3 the budget of 1000 iterations ended at
+  `r_F` = 2.9e-7 and at 128^3 the solver's stagnation exit fired at `r_F` = 1.1e-6
+  (still decreasing by less than 1 % per ten iterations). `e_v` is truncation dominated
+  at those residuals (at 32^3 it is 4.101e-3 after 15 iterations at `r_F` = 1.1e-3 and
+  4.121e-3 at `r_F` = 1e-8; N3 worker's local runs), so the order is read from `e_v`,
+  with that qualification.
+- **Gaussian fixture: `e_v` plateaus and scales as amplitude squared.** From 64^3 to
+  128^3 `e_v` changes by -6.3 % (`sigma^2` 0.0625) and -2.8 % (`sigma^2` 0.25), inside
+  the pre-registered 20 %, while `r_F` falls by 2.4x; the ratio of the two plateaus is
+  3.83 at 128^3 (3.69 at 64^3; amplitude ratio squared = 4). The Darcy-invariance errors
+  plateau as well (2.7e-3 and 1.1e-2 / 1.2e-2, ratio about 4), whereas `e_div` keeps
+  converging. As fixed in advance, these Gaussian states are not converged solutions of
+  the discrete system (the solver stagnates at a residual floor that falls with `h`:
+  1.8e-3, 5.0e-4, 2.1e-4 and 8.0e-3, 1.8e-3, 7.8e-4); the reading "plateau" rests on
+  `e_v` staying while `r_F` falls. The plateau values (2.15e-3, 8.23e-3) are lower than
+  those of the 2026-10-02 probe field at the same amplitudes (4.9e-3, 2.0e-2): a
+  different realization; only the scaling and the plateau were predicted.
+- Both outcomes are what the 2026-10-02 note's R3 and R6 state for the frozen periodic
+  stack: on a symmetric field with closed streamlines its flow converges to the Darcy
+  flow; on a Gaussian field it converges to a different, closed-streamline flow whose
+  distance to Darcy does not shrink with the grid.
 
 ## Result
 
@@ -504,7 +555,14 @@ from the job records.
 - **R3 — Hence no nondegenerate affine + triply periodic invariant pair represents
   those Darcy flows.** The 2026-10-02 R1/R2 extend from the CPU probes (amplitude <= 1,
   `L/ell = 4`) to the production stack (SF-18, SF-19, SF-28) and to `sigma^2 = 4`,
-  `ell = 1/16`.
+  `ell = 1/16`. Scope of the inference (derivation, not a measurement): the argument of
+  the 2026-10-02 note (a nondegenerate pair makes the face map injective, so the first
+  return must be the identity) uses `v1 > 0`. That holds everywhere at `sigma^2 <= 1`
+  (section 6). At `sigma^2 = 4` it fails on a volume fraction <= 1.2e-3; there the
+  argument still applies to the streamlines that never meet backflow, whose `R` equals
+  the `R` of all streamlines to within 0.8 % (`R no backflow` column of `tables.md`
+  table 3: 0.1354 / 0.1623 / 0.1549 against 0.1354 / 0.1611 / 0.1553 at 256^3), so the
+  conclusion does not rest on the streamlines with backflow.
 - **R4 — Amplitude law.** `R(1)/R(0.25)` = 3.84-4.35 (means 4.16 and 4.15 for `ell` 1/8
   and 1/16): second order in the amplitude, as in the probes. From `sigma^2` = 1 to 4,
   `R` grows by 2.69-3.38 (means 3.01, 2.85), less than the factor 4 of the
@@ -524,6 +582,11 @@ from the job records.
   numbers of the periodic cell, from 3.0e-5 (`(0.25, 1/16)`) to 9.0e-3
   (`(4, 1/8)`, flux-weighted) in units `qbar L`; nothing in this note accepts them as
   macrodispersion coefficients.
+- **R8 — `e_v(h)` of the frozen periodic stack** (section 10). On the Lester (2021)
+  field `e_v` = 4.12e-3, 1.08e-3, 2.72e-4 at 32^3, 64^3, 128^3 (orders 1.94, 1.98); on the
+  Gaussian fixture `e_v` plateaus at 2.15e-3 (`sigma^2` 0.0625) and 8.23e-3 (0.25) while
+  `r_F` keeps falling, ratio 3.83. The tolerance 1e-8 was met only at 32^3 on the Lester
+  field.
 
 Scorecard of the pre-registered predictions:
 
@@ -537,6 +600,8 @@ Scorecard of the pre-registered predictions:
 | class at `(4, 1/16)` | not predicted | `does_not_close` on 3001, 3002, 3003 |
 | backflow at `sigma^2 = 4` | not predicted | volume fraction <= 1.24e-3, 18-47 streamlines per period at `ell = 1/16` |
 | many-period growth law | not predicted | section 9; open question |
+| `e_v(h)` converges on the Lester (2021) field | confirmed for `e_v` (orders 1.94, 1.98); `r_F` reached 1e-8 only at 32^3 | 4.12e-3, 1.08e-3, 2.72e-4 |
+| `e_v(h)` plateaus on the Gaussian fixture, ratio about 4 | confirmed | changes -6.3 %, -2.8 % from 64^3 to 128^3; ratio 3.83 |
 
 ## Caveats
 
@@ -571,9 +636,11 @@ Scorecard of the pre-registered predictions:
   pre-registered.
 - The flux-weighted travel-time balance at `sigma^2 = 4` (0.966 and 0.986, five
   realizations) is not resolved from 1 and not explained (section 7).
-- The `e_v(h)` section is incomplete at the time of writing (one of nine rows); the
-  completed row's numbers come from the orchestrator's job record, not yet from a
-  committed file.
+- `e_v(h)` (section 10): only one of nine runs met the nonlinear tolerance; the Gaussian
+  states sit at the discrete residual floor by construction of the experiment; one
+  Gaussian realization, `L/ell = 4`; the iteration budget (2000, then 1000) is a run
+  parameter chosen for wall time, and the 128^3 Lester run ended by the solver's own
+  stagnation rule.
 
 ## Next step
 
@@ -600,4 +667,87 @@ Inputs to owner decisions, not decisions:
    pending in SF-30" qualifiers of theory note §2 and §4 and of `ARCHITECTURE.md` §4.3 /
    `AGENTS.md` can point to this note, with its limits (periodic cell, `L/ell` 8 and 16,
    five realizations).
-6. Complete section 10 from the `sf30-ev2` records.
+
+## Appendix A — full matrix
+
+Every one-period run, period 1 at the working tolerance 1e-8 (the same values as
+`analysis/tables.md` tables 3 and 4, which hold more columns; generated from the
+`raw/*/*/summary.json` files). `R` = non-uniform RMS displacement; `mean d` = mean
+displacement `(d2, d3)`; `e_int` = max distance between the 1e-8 and 1e-12 return points.
+All 1024 seeds in the domain of the map returned in every run (`non_ok_fraction = 0`).
+
+`gaussian` (44 runs):
+
+| case | seed | N | R | mean d | max abs d | min g1 | backflow vol. frac. | seeds on backflow | ok with backflow | e_int |
+|---|---|---|---|---|---|---|---|---|---|---|
+| (0.25, 1/8) | 3001 | 64 | 0.0128 | -0.000195, -9.16e-05 | 0.03911 | 0.4425 | 0 | 0 | 0 | 7.82e-07 |
+| (0.25, 1/8) | 3001 | 128 | 0.01277 | -0.000189, -2.66e-05 | 0.03917 | 0.4401 | 0 | 0 | 0 | 7.55e-08 |
+| (0.25, 1/8) | 3001 | 256 | 0.01276 | -0.000188, -1.02e-05 | 0.03919 | 0.4396 | 0 | 0 | 0 | 8.63e-09 |
+| (0.25, 1/8) | 3002 | 128 | 0.01938 | 0.00119, 0.000476 | 0.04762 | 0.4436 | 0 | 0 | 0 | 7.25e-08 |
+| (0.25, 1/8) | 3003 | 128 | 0.01589 | -0.000992, 0.000368 | 0.04303 | 0.3581 | 0 | 0 | 0 | 8.41e-08 |
+| (0.25, 1/8) | 3004 | 128 | 0.01659 | -0.00065, -1.89e-05 | 0.04711 | 0.3903 | 0 | 0 | 0 | 1.12e-07 |
+| (0.25, 1/8) | 3005 | 128 | 0.01757 | -5.48e-05, 0.000957 | 0.04106 | 0.4126 | 0 | 0 | 0 | 1.09e-07 |
+| (0.25, 1/16) | 3001 | 64 | 0.0116 | 0.000211, 0.000191 | 0.03673 | 0.3447 | 0 | 0 | 0 | 2.03e-06 |
+| (0.25, 1/16) | 3001 | 128 | 0.01154 | 0.000177, 0.000249 | 0.03549 | 0.338 | 0 | 0 | 0 | 6.72e-07 |
+| (0.25, 1/16) | 3001 | 256 | 0.01153 | 0.000168, 0.000265 | 0.03518 | 0.3353 | 0 | 0 | 0 | 7.04e-08 |
+| (0.25, 1/16) | 3002 | 128 | 0.01312 | 0.000307, 0.000292 | 0.03672 | 0.3768 | 0 | 0 | 0 | 5.37e-07 |
+| (0.25, 1/16) | 3003 | 128 | 0.0126 | -2.31e-05, 0.000242 | 0.03644 | 0.3793 | 0 | 0 | 0 | 5.03e-07 |
+| (0.25, 1/16) | 3004 | 128 | 0.01331 | -0.000351, 0.000287 | 0.04335 | 0.3331 | 0 | 0 | 0 | 5.79e-07 |
+| (0.25, 1/16) | 3005 | 128 | 0.01266 | 0.000391, 6.32e-05 | 0.04535 | 0.3746 | 0 | 0 | 0 | 7.53e-07 |
+| (1, 1/8) | 3001 | 64 | 0.05325 | -0.00417, -0.000811 | 0.1532 | 0.1444 | 0 | 0 | 0 | 2.44e-06 |
+| (1, 1/8) | 3001 | 128 | 0.05314 | -0.00414, -0.000477 | 0.1525 | 0.143 | 0 | 0 | 0 | 4.79e-07 |
+| (1, 1/8) | 3001 | 256 | 0.05312 | -0.00413, -0.000394 | 0.1523 | 0.1429 | 0 | 0 | 0 | 4.88e-08 |
+| (1, 1/8) | 3002 | 128 | 0.08194 | 0.0109, 0.00275 | 0.2163 | 0.1533 | 0 | 0 | 0 | 4.28e-07 |
+| (1, 1/8) | 3003 | 128 | 0.06604 | -0.0037, -0.00229 | 0.1946 | 0.08983 | 0 | 0 | 0 | 9.35e-07 |
+| (1, 1/8) | 3004 | 128 | 0.06866 | -0.00534, -0.00137 | 0.1958 | 0.1116 | 0 | 0 | 0 | 8.15e-07 |
+| (1, 1/8) | 3005 | 128 | 0.0722 | 0.00289, 0.00666 | 0.1853 | 0.1387 | 0 | 0 | 0 | 3e-07 |
+| (1, 1/16) | 3001 | 64 | 0.05092 | 2.85e-05, -0.000399 | 0.1588 | 0.07016 | 0 | 0 | 0 | 1.06e-05 |
+| (1, 1/16) | 3001 | 128 | 0.05019 | 0.000108, -0.000239 | 0.1602 | 0.06728 | 0 | 0 | 0 | 4.33e-06 |
+| (1, 1/16) | 3001 | 256 | 0.05008 | 0.000131, -0.000201 | 0.1606 | 0.06646 | 0 | 0 | 0 | 6.36e-07 |
+| (1, 1/16) | 3002 | 128 | 0.05463 | 0.00316, 0.00135 | 0.1535 | 0.1108 | 0 | 0 | 0 | 4.34e-06 |
+| (1, 1/16) | 3003 | 128 | 0.0523 | -0.000799, -2.28e-05 | 0.1385 | 0.1056 | 0 | 0 | 0 | 3.38e-06 |
+| (1, 1/16) | 3004 | 128 | 0.05629 | -0.00239, 0.00052 | 0.1909 | 0.08988 | 0 | 0 | 0 | 4.28e-06 |
+| (1, 1/16) | 3005 | 128 | 0.04865 | 0.00233, 0.000207 | 0.1316 | 0.09865 | 0 | 0 | 0 | 2.63e-06 |
+| (4, 1/8) | 3001 | 64 | 0.1605 | -0.0053, -0.00209 | 0.4305 | 0.008367 | 0 | 0 | 0 | 0.000261 |
+| (4, 1/8) | 3001 | 128 | 0.1615 | -0.0056, -0.000355 | 0.431 | 0.007766 | 0 | 0 | 0 | 1.7e-05 |
+| (4, 1/8) | 3001 | 256 | 0.1618 | -0.00557, 8.73e-05 | 0.4314 | 0.007509 | 0 | 0 | 0 | 5.39e-07 |
+| (4, 1/8) | 3002 | 128 | 0.2372 | 0.0269, 0.00237 | 0.5551 | 0.0008402 | 0 | 0 | 0 | 5.05e-06 |
+| (4, 1/8) | 3003 | 128 | 0.1876 | -0.0105, -0.00969 | 0.4142 | -0.005445 | 4.63e-05 | 0 | 2 | 5.5e-06 |
+| (4, 1/8) | 3004 | 128 | 0.2318 | -0.012, -0.00834 | 0.5125 | -0.03093 | 0.000378 | 0 | 1 | 2.02e-05 |
+| (4, 1/8) | 3005 | 128 | 0.2104 | 0.0204, 0.0205 | 0.5219 | -0.09558 | 0.000587 | 14 | 11 | 8.08e-06 |
+| (4, 1/16) | 3001 | 64 | 0.1396 | 0.00153, 0.0122 | 0.3893 | -0.1966 | 0.000839 | 0 | 21 | 0.000123 |
+| (4, 1/16) | 3001 | 128 | 0.1352 | 0.00272, 0.00874 | 0.368 | -0.2063 | 0.000976 | 0 | 28 | 9.32e-05 |
+| (4, 1/16) | 3001 | 256 | 0.1354 | 0.00319, 0.00782 | 0.3553 | -0.2084 | 0.00102 | 0 | 26 | 2.26e-05 |
+| (4, 1/16) | 3002 | 128 | 0.1608 | 0.0203, 0.00595 | 0.3531 | -0.1292 | 0.000575 | 0 | 20 | 0.00011 |
+| (4, 1/16) | 3002 | 256 | 0.1611 | 0.0207, 0.00575 | 0.3546 | -0.1322 | 0.000614 | 0 | 18 | 1.79e-05 |
+| (4, 1/16) | 3003 | 128 | 0.1548 | -0.0108, -0.008 | 0.4369 | -0.2046 | 0.000702 | 2 | 45 | 0.000176 |
+| (4, 1/16) | 3003 | 256 | 0.1553 | -0.0114, -0.00696 | 0.4445 | -0.2134 | 0.00073 | 2 | 47 | 3.08e-05 |
+| (4, 1/16) | 3004 | 128 | 0.1521 | 0.00723, -0.011 | 0.3613 | -0.1533 | 0.00124 | 3 | 19 | 0.000258 |
+| (4, 1/16) | 3005 | 128 | 0.1446 | 0.0116, -0.00413 | 0.3462 | -0.08036 | 0.000227 | 0 | 29 | 9.57e-05 |
+
+Matched 2-D controls `gaussian2d` (22 runs; `R` is the instrument level `E_ctrl`):
+
+| case | seed | N | R | mean d | max abs d | min g1 | backflow vol. frac. | seeds on backflow | ok with backflow | e_int |
+|---|---|---|---|---|---|---|---|---|---|---|
+| (0.25, 1/8) | 3001 | 64 | 0.0003194 | 6.97e-05, -1.09e-15 | 0.0006772 | 0.5213 | 0 | 0 | 0 | 8.79e-07 |
+| (0.25, 1/8) | 3001 | 128 | 7.964e-05 | 1.74e-05, -5.01e-18 | 0.0001685 | 0.5171 | 0 | 0 | 0 | 7.49e-08 |
+| (0.25, 1/8) | 3001 | 256 | 1.99e-05 | 4.33e-06, -1.44e-17 | 4.202e-05 | 0.5162 | 0 | 0 | 0 | 7.73e-09 |
+| (0.25, 1/16) | 3001 | 64 | 0.0008416 | 0.000139, -1.89e-18 | 0.002495 | 0.4558 | 0 | 0 | 0 | 2.75e-06 |
+| (0.25, 1/16) | 3001 | 128 | 0.0002087 | 3.44e-05, 1.47e-18 | 0.0006165 | 0.4403 | 0 | 0 | 0 | 5.45e-07 |
+| (0.25, 1/16) | 3001 | 256 | 5.213e-05 | 8.53e-06, -2.52e-19 | 0.0001537 | 0.4379 | 0 | 0 | 0 | 6.59e-08 |
+| (1, 1/8) | 3001 | 64 | 0.000971 | 0.000695, -7.08e-18 | 0.002205 | 0.2373 | 0 | 0 | 0 | 3.17e-06 |
+| (1, 1/8) | 3001 | 128 | 0.0002409 | 0.000173, 1.89e-18 | 0.000547 | 0.2343 | 0 | 0 | 0 | 3.9e-07 |
+| (1, 1/8) | 3001 | 256 | 6.012e-05 | 4.32e-05, 7.51e-17 | 0.0001367 | 0.2338 | 0 | 0 | 0 | 3.54e-08 |
+| (1, 1/16) | 3001 | 64 | 0.005286 | 0.000594, 1.44e-18 | 0.01624 | 0.1669 | 0 | 0 | 0 | 7.65e-06 |
+| (1, 1/16) | 3001 | 128 | 0.00132 | 0.000144, 1.2e-17 | 0.00403 | 0.1519 | 0 | 0 | 0 | 2.99e-06 |
+| (1, 1/16) | 3001 | 256 | 0.0003301 | 3.61e-05, 8.67e-18 | 0.0009983 | 0.1486 | 0 | 0 | 0 | 3.06e-07 |
+| (4, 1/8) | 3001 | 64 | 0.003179 | 0.00282, 1.62e-16 | 0.01024 | -0.2086 | 0.00586 | 0 | 19 | 3.86e-05 |
+| (4, 1/8) | 3001 | 128 | 0.0008054 | 0.000689, -1.84e-16 | 0.002551 | -0.2296 | 0.00647 | 0 | 18 | 6.11e-06 |
+| (4, 1/8) | 3001 | 256 | 0.0002023 | 0.000171, 1.06e-16 | 0.0006381 | -0.2334 | 0.00647 | 0 | 17 | 7.81e-07 |
+| (4, 1/16) | 3001 | 64 | 0.03125 | 0.00666, 6.74e-17 | 0.09216 | -0.09824 | 0.00415 | 0 | 61 | 4.62e-05 |
+| (4, 1/16) | 3001 | 128 | 0.01178 | 0.00227, -4.49e-17 | 0.0422 | -0.1741 | 0.00513 | 0 | 48 | 3.19e-05 |
+| (4, 1/16) | 3001 | 256 | 0.00335 | 0.000616, 2.22e-16 | 0.01277 | -0.1868 | 0.00522 | 0 | 47 | 5.1e-06 |
+| (4, 1/16) | 3002 | 128 | 0.01634 | -0.00393, -2.31e-15 | 0.0494 | -0.1542 | 0.00519 | 0 | 128 | 0.000264 |
+| (4, 1/16) | 3002 | 256 | 0.004722 | -0.00118, 4.89e-15 | 0.01567 | -0.1628 | 0.00545 | 0 | 134 | 1.48e-05 |
+| (4, 1/16) | 3003 | 128 | 0.004761 | 0.00102, -4.64e-16 | 0.02074 | -0.0546 | 0.00262 | 0 | 103 | 3.65e-05 |
+| (4, 1/16) | 3003 | 256 | 0.001285 | 0.000276, -5.68e-16 | 0.005888 | -0.05429 | 0.00262 | 0 | 102 | 3.68e-06 |

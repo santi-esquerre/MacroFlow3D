@@ -1,0 +1,46 @@
+[2026-10-05T13:10:31Z] job=sf30-ctest-full session=macroflow3d-SF-30-sf30-ctest-full started
+[2026-10-05T13:10:31Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=1)
+[2026-10-05T13:10:31Z] cwd=/home/sesquerre/MacroFlow3D-SF-30
+[2026-10-05T13:10:31Z] command=ctest --test-dir build/v100-release --output-on-failure
+Test project /home/sesquerre/MacroFlow3D-SF-30/build/v100-release
+      Start  1: operator_tests
+ 1/18 Test  #1: operator_tests ......................   Passed    3.55 sec
+      Start  2: streamfunction_operator_tests
+ 2/18 Test  #2: streamfunction_operator_tests .......   Passed  1342.75 sec
+      Start  3: streamfunction_exact_pair
+ 3/18 Test  #3: streamfunction_exact_pair ...........   Passed   12.34 sec
+      Start  4: streamfunction_homogeneous
+ 4/18 Test  #4: streamfunction_homogeneous ..........   Passed    3.46 sec
+      Start  5: streamfunction_picard_fixed
+ 5/18 Test  #5: streamfunction_picard_fixed .........   Passed  423.94 sec
+      Start  6: streamfunction_picard_adaptive
+ 6/18 Test  #6: streamfunction_picard_adaptive ......   Passed  118.90 sec
+      Start  7: streamfunction_continuation
+ 7/18 Test  #7: streamfunction_continuation .........   Passed  161.27 sec
+      Start  8: streamfunction_anderson
+ 8/18 Test  #8: streamfunction_anderson .............   Passed  142.80 sec
+      Start  9: streamfunction_heterogeneity_unit
+ 9/18 Test  #9: streamfunction_heterogeneity_unit ...   Passed   20.18 sec
+      Start 10: streamfunction_jvp
+10/18 Test #10: streamfunction_jvp ..................   Passed   35.40 sec
+      Start 11: streamfunction_gmres
+11/18 Test #11: streamfunction_gmres ................   Passed  263.50 sec
+      Start 12: streamfunction_newton
+12/18 Test #12: streamfunction_newton ...............   Passed  140.39 sec
+      Start 13: streamfunction_terminal_unit
+13/18 Test #13: streamfunction_terminal_unit ........   Passed   25.29 sec
+      Start 14: periodic_gaussian
+14/18 Test #14: periodic_gaussian ...................   Passed    3.84 sec
+      Start 15: affine_periodic_flow
+15/18 Test #15: affine_periodic_flow ................   Passed    8.37 sec
+      Start 16: interpolation_periodic_tricubic
+16/18 Test #16: interpolation_periodic_tricubic .....   Passed    4.20 sec
+      Start 17: streamline_closure_integrator
+17/18 Test #17: streamline_closure_integrator .......   Passed    5.73 sec
+      Start 18: streamline_closure_controls16
+18/18 Test #18: streamline_closure_controls16 .......   Passed   12.34 sec
+
+100% tests passed, 0 tests failed out of 18
+
+Total Test time (real) = 2728.30 sec
+[2026-10-05T13:56:00Z] job=sf30-ctest-full finished exit=0

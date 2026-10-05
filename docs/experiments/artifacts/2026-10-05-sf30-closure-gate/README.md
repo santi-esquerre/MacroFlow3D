@@ -27,6 +27,7 @@ Experiment note: `docs/experiments/2026-10-05-sf30-streamline-closure-gate.md`.
 | | used only as a schema fixture by `analyze.py --self-test`; not part of the experiment's raw data (under the pre-registered four-tolerance ladder that run is invalid for classification, which is what self-test check 12 reports) |
 | `raw/<group>/<run-id>/` | the 103 pre-registered runs of job `sf30-matrix` (groups `controls`, `matched`, `matrix128`, `ladder`, `manyperiod`): `summary.json` (schema `sf30-closure-gate-1`), `streamlines.csv.gz` (per-seed return points at the working tolerance, gzip-compressed) and `timing.json` |
 | `raw/<group>/status.tsv` | one line per run: `<run-id> <exit code> <wall seconds>` |
+| `raw/ev/*.json` | the nine `e_v(h)` records of the frozen periodic stack written by `streamfunction_ev_ladder` (jobs `sf30-ev`, `sf30-ev2`; pre-registered design D-7, non-gating); not read by `analyze.py` |
 | `raw_followup/sensitivity/<run-id>/` | the 18 exploratory runs of job `sf30-post` (NOT pre-registered): `gaussian` seed 3001, `(sigma2, ell)` in {(0.25, 0.0625), (1, 0.0625), (4, 0.0625)} at 128^3 with 2, 4, 8, 16, 32 periods, and `(4, 0.0625)` at 256^3 with 2, 4, 8 periods; `summary.json` and `timing.json` only |
 | `analysis/tables.md` | the twelve tables of `analyze.py` |
 | `analysis/classification.json` | the per-run quantities and the per-case classification of `analyze.py` |
@@ -35,6 +36,10 @@ Experiment note: `docs/experiments/2026-10-05-sf30-streamline-closure-gate.md`.
 | `logs/sf30-matrix.log` | the matrix job (103 runs) |
 | `logs/sf30-post.log` | the follow-up job (smoke + 18 exploratory runs) |
 | `logs/sf30-smoke.log` | output of the `config_pspta_small` smoke run of job `sf30-post` |
+| `logs/sf30-build.log`, `logs/sf30-build2.log` | V100 build of the tree of `531c73e`: every target except `streamfunction_ev_ladder` (nvcc 11.4 internal compiler error on the vendored nlohmann header; `sf30-build` reported exit 0 although the target failed, `sf30-build2` prints `BUILD_EXIT=1`) |
+| `logs/sf30-c3-build.log` | V100 build of the final source head `947a523` (after corrective C3): `BUILD_EXIT=0`, 18 tests listed, both closure test executables pass |
+| `logs/sf30-ctest-full.log` | full `ctest` suite on the final source head: 18/18 passed, 2728.30 s |
+| `logs/sf30-ev.log`, `logs/sf30-ev2.log` | the `e_v(h)` ladder jobs |
 
 ## Run matrix
 
