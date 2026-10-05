@@ -9,7 +9,8 @@
  * loosened to make a case pass.
  *
  * Cases: accessor_contract (GPU, 16^3), fields_reference_values, seed_points,
- * uniform_tilt, shear_closed_form, round_trip, backflow_first_return,
+ * uniform_tilt, shear_closed_form, shear_tolerance_controlled (5b, C1),
+ * c1_field_tolerance_ladder (5c, C1), round_trip, backflow_first_return,
  * thread_independence, statistics_helper, timing_record.
  */
 
@@ -489,6 +490,145 @@ void case_shear_closed_form(TestReport& rep) {
 }
 
 // ============================================================================
+// 5b. shear_tolerance_controlled (SF-30 C1, audit finding F1)
+//
+// Case 5 is step-capped (h_max = 1/32): no rejected steps and identical steps
+// at every tol. Here h_max = 0.5 so the DP5(4) controller, not the cap, sets
+// the steps; the error must follow the tolerance and the rejection path must
+// be exercised. Gates fixed in the C1 task specification.
+// ============================================================================
+
+void case_shear_tolerance_controlled(TestReport& rep) {
+    const ShearField f; // b = 0.35, k = 1
+    const double seeds[5] = {-0.2, -0.1, 0.0, 0.05, 0.15};
+    constexpr int kNT = 9;
+    const double tols[kNT] = {1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, 1e-12};
+    double errs[kNT];
+    long long accs[kNT], rejs[kNT];
+    bool all_ok = true, landed_exact = true;
+    double tau_err = 0.0; // |tau(plane 1) - 1| at tol = 1e-10
+    std::printf("  %-7s %-11s %-8s %-9s %-9s\n", "tol", "E", "E/tol", "accepted", "rejected");
+    for (int t = 0; t < kNT; ++t) {
+        double e = 0.0;
+        long long acc = 0, rej = 0;
+        for (double z0 : seeds) {
+            const double x1_0 = 0.0;
+            const StreamlineResult r = integrate_streamline(f, {x1_0, 0.3, z0}, opts(tols[t], 0.5, 3));
+            all_ok = all_ok && r.status == StreamlineStatus::ok && r.periods_completed == 3;
+            for (int n = 1; n <= r.periods_completed; ++n) {
+                const PlaneRecord& rc = r.records[static_cast<std::size_t>(n - 1)];
+                e = std::max(e, std::abs(rc.x3 - shear_exact_x3(f.b, z0, static_cast<double>(n))));
+                const double expect = x1_0 + static_cast<double>(n);
+                landed_exact = landed_exact && std::memcmp(&rc.x1, &expect, sizeof(double)) == 0;
+            }
+            if (tols[t] == 1e-10 && r.periods_completed >= 1) {
+                tau_err = std::max(tau_err, std::abs(r.records[0].tau - 1.0));
+            }
+            acc += r.accepted_steps;
+            rej += r.rejected_steps;
+        }
+        errs[t] = e;
+        accs[t] = acc;
+        rejs[t] = rej;
+        std::printf("  %-7.0e %-11.3e %-8.3f %-9lld %-9lld\n", tols[t], e, e / tols[t], acc, rej);
+    }
+    rep.check(all_ok, "shear_tol_all_ok_3_periods");
+    bool bound = true;
+    for (int t = 0; t < kNT; ++t) bound = bound && errs[t] <= 10.0 * tols[t];
+    rep.check(bound, "shear_tol_error_le_10_tol_every_tol");
+    bool follows = true;
+    double worst_ratio = 0.0;
+    for (int t = 2; t < kNT; ++t) { // pairs (1e-5, 1e-6) ... (1e-11, 1e-12)
+        follows = follows && errs[t] <= errs[t - 1] / 5.0;
+        worst_ratio = std::max(worst_ratio, errs[t] / errs[t - 1]);
+    }
+    rep.check(follows, "shear_tol_error_follows_tolerance_1e-5_to_1e-12",
+              fmt("max E(tol/10)/E(tol)=%.3f (gate <= 0.2)", worst_ratio));
+    // tols index: 1e-6 -> 2, 1e-8 -> 4, 1e-10 -> 6, 1e-12 -> 8
+    rep.check(rejs[4] > 0, "shear_tol_rejected_steps_at_1e-8",
+              "rejected=" + std::to_string(rejs[4]));
+    rep.check(accs[2] < accs[4] && accs[4] < accs[6] && accs[6] < accs[8],
+              "shear_tol_accepted_strictly_increasing_1e-6_1e-8_1e-10_1e-12",
+              "accepted=" + std::to_string(accs[2]) + "," + std::to_string(accs[4]) + "," +
+                  std::to_string(accs[6]) + "," + std::to_string(accs[8]));
+    rep.check(tau_err <= 1e-12, "shear_tol_travel_time_plane1_equals_1_at_1e-10",
+              fmt("max|tau-1|=%.3e (gate <= 1e-12)", tau_err));
+    rep.check(landed_exact, "shear_tol_landed_x1_bitwise_0_plus_n");
+}
+
+// ============================================================================
+// 5c. c1_field_tolerance_ladder (SF-30 C1, audit finding F1)
+//
+// g = (1, 0, b q(x1)), q only C^1 in x1 (second derivative jumps at 16 knots
+// per period: the smoothness class of a tricubic-spline gradient). The
+// integral of q over one period is 0, so the exact one-period displacement
+// is (0, 0) for any seed.
+// ============================================================================
+
+struct C1KnotField {
+    double b = 0.3;
+    static double q(double x1) {
+        const double t = 16.0 * x1;
+        const double c = std::floor(t);
+        const double fr = t - c;
+        // parity of c, robust for negative c: c - 2 floor(c/2) is 0 or 1
+        const double par = c - 2.0 * std::floor(0.5 * c);
+        const double sgn = (par == 0.0) ? 1.0 : -1.0;
+        return sgn * 16.0 * fr * fr * (1.0 - fr) * (1.0 - fr);
+    }
+    void operator()(const double x[3], double g[3], double& k) const {
+        g[0] = 1.0;
+        g[1] = 0.0;
+        g[2] = b * q(x[0]);
+        k = 1.0;
+    }
+};
+
+void case_c1_field_tolerance_ladder(TestReport& rep) {
+    const C1KnotField f;
+    const std::array<double, 3> seeds[2] = {{0.0, 0.1, 0.2}, {0.03, 0.4, 0.7}};
+    const double hmaxs[2] = {1.0 / 16, 0.5};
+    const char* hnames[2] = {"1/16", "0.5"};
+    constexpr int kNT = 4;
+    const double tols[kNT] = {1e-6, 1e-8, 1e-10, 1e-12};
+    bool all_ok = true, bound = true, conv = true, rej_ok = true;
+    double d2max = 0.0;
+    std::printf("  %-18s %-6s %-7s %-11s %-9s %-9s %-9s\n", "seed", "h_max", "tol", "|d3|",
+                "|d3|/tol", "accepted", "rejected");
+    for (int si = 0; si < 2; ++si) {
+        for (int hi = 0; hi < 2; ++hi) {
+            double d3s[kNT];
+            for (int t = 0; t < kNT; ++t) {
+                const StreamlineResult r = integrate_streamline(f, seeds[si], opts(tols[t], hmaxs[hi], 1));
+                const bool ok = r.status == StreamlineStatus::ok && r.periods_completed == 1;
+                all_ok = all_ok && ok;
+                double d3 = std::nan(""), d2 = std::nan("");
+                if (ok) {
+                    d3 = std::abs(r.records[0].x3 - seeds[si][2]);
+                    d2 = std::abs(r.records[0].x2 - seeds[si][1]);
+                    d2max = std::max(d2max, d2);
+                } else {
+                    d2max = std::nan("");
+                }
+                d3s[t] = d3;
+                bound = bound && d3 <= 1e3 * tols[t];
+                if (hi == 0 && tols[t] == 1e-8) rej_ok = rej_ok && r.rejected_steps > 0;
+                std::printf("  (%.2f,%.1f,%.1f)%4s %-6s %-7.0e %-11.3e %-9.3f %-9lld %-9lld\n",
+                            seeds[si][0], seeds[si][1], seeds[si][2], "", hnames[hi], tols[t], d3,
+                            d3 / tols[t], r.accepted_steps, r.rejected_steps);
+            }
+            conv = conv && (d3s[3] <= 1e-3 * d3s[0] || d3s[3] <= 1e-9);
+        }
+    }
+    rep.check(all_ok, "c1_ladder_all_ok");
+    rep.check(bound, "c1_ladder_d3_le_1e3_tol_every_combination");
+    rep.check(conv, "c1_ladder_converges_1e-6_to_1e-12_each_seed_hmax",
+              "gate |d3|(1e-12) <= 1e-3 |d3|(1e-6) or <= 1e-9");
+    rep.check(d2max <= 1e-15, "c1_ladder_d2_zero", fmt("max|d2|=%.3e (gate <= 1e-15)", d2max));
+    rep.check(rej_ok, "c1_ladder_rejected_steps_at_1e-8_hmax_1_16");
+}
+
+// ============================================================================
 // 7. backflow_first_return (independent quadrature reference)
 // ============================================================================
 
@@ -783,6 +923,10 @@ int main() {
         case_uniform_tilt(rep);
         std::printf("=== SF-30 N1: 5 shear_closed_form ===\n");
         case_shear_closed_form(rep);
+        std::printf("=== SF-30 N1: 5b shear_tolerance_controlled (h_max = 0.5) ===\n");
+        case_shear_tolerance_controlled(rep);
+        std::printf("=== SF-30 N1: 5c c1_field_tolerance_ladder ===\n");
+        case_c1_field_tolerance_ladder(rep);
         std::printf("=== SF-30 N1: 6 round_trip ===\n");
         case_round_trip(rep);
         std::printf("=== SF-30 N1: 7 backflow_first_return ===\n");
