@@ -1251,34 +1251,46 @@ void case_gpu_no_allocation(const CudaContext& ctx, const SplineCache& C, TestRe
     DevParticles P(1024);
     PseudoSymplecticTracker eng(ctx.cuda_stream(), kSeed);
     setup_engine(eng, make_cfg(1.0 / 64, 1e-13), S, P, true);
-    // step() first, so that the measured step block does real work (F2): the
-    // clocks are still near the target time when each step() is issued.
+    // Warm-up: step() first, then one arclength panel.
     eng.step(0.01);
     eng.step_arclength(1.0 / 64);
     eng.synchronize();
+    // Block 1: engine-mode step(), measured on its own (F2).
     const size_t f0 = free_bytes();
     for (int i = 0; i < 100; ++i)
         eng.step(0.01);
+    eng.synchronize();
+    const size_t f1 = free_bytes();
+    rep.check(f0 == f1, "gpu_no_allocation/cudaMemGetInfo_unchanged_step", "100 step");
+    // Downloaded after f1 and before f2, so outside both measured blocks.
+    {
+        const double ds_max = 1.0 / 64;
+        const double bound = 2.5 * ds_max * ds_max;
+        const Snap s = snap(eng, P);
+        const double tt = eng.target_time();
+        double mis = 0.0, cmin = 1e300, cmax = -1e300;
+        for (double t : s.clock) {
+            mis = std::max(mis, std::fabs(t - tt));
+            cmin = std::min(cmin, t);
+            cmax = std::max(cmax, t);
+        }
+        const bool act = all_status(s, kStatusActive);
+        std::printf("  after step block: target %.17g, clock [%.6f, %.6f], max|t_p - target| = %.4e\n", tt, cmin,
+                    cmax, mis);
+        rep.check(std::fabs(tt - 1.01) <= 1e-12 && act && mis <= bound, "gpu_no_allocation/step_block_did_real_work",
+                  strf("|target - 1.01| = %.3e (gate 1e-12), all active %s, max|t_p - target| = %.4e "
+                       "(gate 2.5 ds_max^2 = %.4e)",
+                       std::fabs(tt - 1.01), act ? "yes" : "no", mis, bound));
+    }
+    // Block 2: step_arclength, measured on its own.
+    const size_t f2 = free_bytes();
     for (int i = 0; i < 100; ++i)
         eng.step_arclength(1.0 / 64);
     eng.synchronize();
-    const size_t f1 = free_bytes();
-    std::printf("  free before = %zu, after = %zu, delta = %lld\n", f0, f1,
-                static_cast<long long>(f0) - static_cast<long long>(f1));
-    rep.check(f0 == f1, "gpu_no_allocation/cudaMemGetInfo_unchanged", "100 step + 100 step_arclength");
-    // Downloaded only after the second measurement. The later arclength panels
-    // only move clocks forward, so min clock >= 1.0 proves the step block reached
-    // its target time 1.01.
-    const Snap s = snap(eng, P);
-    double cmin = 1e300, cmax = -1e300;
-    for (double t : s.clock) {
-        cmin = std::min(cmin, t);
-        cmax = std::max(cmax, t);
-    }
-    const double tt = eng.target_time();
-    std::printf("  final: target %.17g, clock [%.6f, %.6f]\n", tt, cmin, cmax);
-    rep.check(std::fabs(tt - 1.01) <= 1e-12 && cmin >= 1.0, "gpu_no_allocation/step_block_did_real_work",
-              strf("|target - 1.01| = %.3e (gate 1e-12), min clock %.6f (gate >= 1.0)", std::fabs(tt - 1.01), cmin));
+    const size_t f3 = free_bytes();
+    std::printf("  free: step block before = %zu, after = %zu; step_arclength block before = %zu, after = %zu\n", f0,
+                f1, f2, f3);
+    rep.check(f2 == f3, "gpu_no_allocation/cudaMemGetInfo_unchanged_step_arclength", "100 step_arclength");
 }
 
 // ============================================================================
