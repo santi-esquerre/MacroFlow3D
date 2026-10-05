@@ -375,6 +375,11 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME operator_tests COMMAND run_operator_tests)
 
+    # SF-30 N3: e_v(h) driver on the frozen periodic streamfunction stack (documented experiment tool; not a ctest entry)
+    add_executable(streamfunction_ev_ladder apps/closure_gate/ev_ladder_main.cu)
+    target_link_libraries(streamfunction_ev_ladder PRIVATE macroflow3d_lib)
+    target_compile_options(streamfunction_ev_ladder PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
     add_executable(streamfunction_operator_tests
         tests/streamfunctions/reference_operators.cpp
         tests/streamfunctions/streamfunction_operator_tests.cpp
