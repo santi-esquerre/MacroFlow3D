@@ -207,6 +207,11 @@ set(INTERPOLATION_SOURCES
     src/numerics/interpolation/PeriodicTricubicBSpline.cu
 )
 
+# SF-31: streamline-tracker shared label evaluator and particle bookkeeping
+set(STREAMLINE_TRACKER_SOURCES
+    src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu
+)
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -289,6 +294,7 @@ add_library(macroflow3d_lib STATIC
     ${CONSTRAINT_SOURCES}
     ${OPERATOR_SOURCES}
     ${INTERPOLATION_SOURCES}
+    ${STREAMLINE_TRACKER_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
