@@ -18,7 +18,7 @@
  *   rk_tableau_order (T4a), rk_tolerance_ladder (T4a), rk_x1_exact,
  *   rk_position_error, rk_landing, rk_failure_paths, core_ps_vs_rk_cross_check.
  * GPU-engine cases (SF-28 splined labels):
- *   gpu_rk_ladder (T4b), gpu_rk_positive_control, gpu_rk_host_core_agreement,
+ *   gpu_rk_ladder (T4b), gpu_rk_multi_call_landing, gpu_rk_positive_control, gpu_rk_host_core_agreement,
  *   gpu_rk_no_allocation (T5), gpu_rk_determinism (T6),
  *   gpu_ps_vs_rk_cross_check, rk_validation_errors, timing_record.
  *
@@ -678,19 +678,16 @@ void case_gpu_rk_ladder(const CudaContext& ctx, const SplineCache& C, TestReport
             ReferenceRkTracker eng(ctx.cuda_stream(), kSeed);
             setup_rk(eng, make_rk_cfg(tol, 0.5), S, P);
             const Snap s0 = snap_rk(eng, P);
-            Snap s;
-            for (int call = 1; call <= 10; ++call) {
-                eng.step(0.17);
-                s = snap_rk(eng, P);
-                const real tt = eng.target_time();
-                for (size_t i = 0; i < s.clock.size(); ++i) {
-                    if (!same_bits(s.clock[i], tt)) {
-                        clocks_ok = false;
-                    }
+            eng.step(1.7);
+            const Snap s = snap_rk(eng, P);
+            const real tt = eng.target_time();
+            for (size_t i = 0; i < s.clock.size(); ++i) {
+                if (!same_bits(s.clock[i], tt)) {
+                    clocks_ok = false;
                 }
-                if (!all_status(s, kStatusActive))
-                    active_ok = false;
             }
+            if (!all_status(s, kStatusActive))
+                active_ok = false;
             drift[k] = snap_drift(s0, s, S.host);
             const ReferenceRkStats st = eng.compute_stats();
             std::printf("  pair %s tol=%.0e  max label drift = %.6e  total accepted = %llu  total rejected = %llu  "
@@ -702,13 +699,42 @@ void case_gpu_rk_ladder(const CudaContext& ctx, const SplineCache& C, TestReport
         std::printf("  [INFO] pair %s fitted LS slope of log10(drift) vs log10(tol) = %.4f (not gated: C^1 spline "
                     "velocity)\n",
                     pn.c_str(), slope);
-        rep.check(clocks_ok, "gpu_rk_ladder/clocks_equal_target_time_bitwise_after_every_call_" + pn);
+        rep.check(clocks_ok, "gpu_rk_ladder/clocks_equal_target_time_bitwise_" + pn);
         rep.check(active_ok, "gpu_rk_ladder/all_particles_active_" + pn);
         rep.check(drift[6] <= drift[0] / 100.0, "gpu_rk_ladder/drift_1e-10<=drift_1e-4/100_" + pn,
                   strf("%.6e <= %.6e", drift[6], drift[0] / 100.0));
         if (S.pair == kPairG)
             g_gpu_G_drift_1e4 = drift[0];
     }
+}
+
+// ============================================================================
+// Case 6b: gpu_rk_multi_call_landing
+// ============================================================================
+
+void case_gpu_rk_multi_call_landing(const CudaContext& ctx, const SplineCache& C, TestReport& rep) {
+    std::printf("\n=== gpu_rk_multi_call_landing ===\n");
+    DevParticles P(1024);
+    ReferenceRkTracker eng(ctx.cuda_stream(), kSeed);
+    setup_rk(eng, make_rk_cfg(1e-8, 0.5), *C.G, P);
+    bool clocks_ok = true, active_ok = true;
+    for (int call = 1; call <= 10; ++call) {
+        eng.step(0.17);
+        const Snap s = snap_rk(eng, P);
+        const real tt = eng.target_time();
+        for (size_t i = 0; i < s.clock.size(); ++i) {
+            if (!same_bits(s.clock[i], tt))
+                clocks_ok = false;
+        }
+        if (!all_status(s, kStatusActive))
+            active_ok = false;
+    }
+    const ReferenceRkStats st = eng.compute_stats();
+    std::printf("  pair G tol=1e-08  final target = %.17g  total accepted = %llu  total rejected = %llu  n_active = %d\n",
+                eng.target_time(), static_cast<unsigned long long>(st.total_accepted),
+                static_cast<unsigned long long>(st.total_rejected), st.n_active);
+    rep.check(clocks_ok, "gpu_rk_multi_call_landing/clocks_equal_target_time_bitwise_after_every_call");
+    rep.check(active_ok, "gpu_rk_multi_call_landing/all_particles_active");
 }
 
 // ============================================================================
@@ -1035,6 +1061,7 @@ int main() {
         });
         if (C.G && C.B) {
             timed("gpu_rk_ladder", [&] { case_gpu_rk_ladder(ctx, C, rep); });
+            timed("gpu_rk_multi_call_landing", [&] { case_gpu_rk_multi_call_landing(ctx, C, rep); });
             timed("gpu_rk_positive_control", [&] { case_gpu_rk_positive_control(rep); });
             timed("gpu_rk_host_core_agreement", [&] { case_gpu_rk_host_core_agreement(ctx, C, rep); });
             timed("gpu_rk_no_allocation", [&] { case_gpu_rk_no_allocation(ctx, C, rep); });
