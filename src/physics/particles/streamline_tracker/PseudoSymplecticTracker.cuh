@@ -39,7 +39,7 @@
  *        s = labels(xi, w);  r1 = s.psi1 - psi1_0;  r2 = s.psi2 - psi2_0
  *        a11 = g1.g1; a12 = g1.g2; a22 = g2.g2; det = a11 a22 - a12^2   (= |g1 x g2|^2)
  *        r1, r2 or det not finite              -> kStatusNonFinite
- *        not (det > min_cross_norm^2)          -> kStatusDegenerate
+ *        is_degenerate_gram(a11, a22, det)     -> kStatusDegenerate   (see below)
  *        max(|r1|, |r2|) <= tol_psi            -> at = s; newton_iter_max = max(., it); active
  *        it == max_newton_iter                 -> kStatusNewtonFailed
  *        lam1 = (-r1 a22 + r2 a12) / det;  lam2 = (r1 a12 - r2 a11) / det
@@ -48,10 +48,37 @@
  *        xi += delta
  *
  *  det(J J^T) = |c|^2 is NEVER floored, regularized or offset: nothing is
- *  added to it and no epsilon appears (AGENTS.md hard rule on
- *  |grad psi1 x grad psi2| denominators). min_cross_norm (default 0) is a
- *  FAILURE threshold, not a regularization. The degeneracy test runs on every
- *  evaluation, including the converged one.
+ *  added to it and no epsilon appears in any division (AGENTS.md hard rule on
+ *  |grad psi1 x grad psi2| denominators). The degeneracy test runs on every
+ *  evaluation, including the converged one, through ONE shared predicate
+ *  (is_degenerate_gram, used by evaluate_label_state and
+ *  project_to_label_curve on the same a11, a22, det the Newton solve uses):
+ *
+ *    degenerate  iff  not (det > min_cross_norm^2)
+ *                 or  not (det > min_cross_sin2 * (a11 * a22))
+ *
+ *  Both are FAILURE thresholds (they decide when the particle is declared
+ *  degenerate), not regularizations:
+ *
+ *   - min_cross_norm: ABSOLUTE, on |c| = |g1 x g2|, label-gradient units
+ *     squared; default 0.
+ *   - min_cross_sin2: RELATIVE, on sin^2(theta) with theta the angle between
+ *     g1 and g2, since det = a11 a22 sin^2(theta); default
+ *     kDefaultMinCrossSin2 = 16 DBL_EPSILON (about 3.55e-15). 0 reproduces the
+ *     raw "det > min_cross_norm^2" test.
+ *
+ *  Why the relative test (audit finding F1, decision D-11): det is computed
+ *  with cancellation. a11, a12, a22 are 3-term dot products (relative rounding
+ *  error a few eps each), the two products add about one eps each, and
+ *  a12^2 <= a11 a22 (Cauchy-Schwarz), so
+ *  |det_computed - det_exact| <= ~10 eps a11 a22, with or without FMA
+ *  contraction. A computed det below that bound carries no correct digit, so
+ *  "det > 0" certifies nothing there. Observed on the GPU: for an exactly
+ *  degenerate pair (psi2 = psi1) the device contracts a11 a22 - a12^2 into an
+ *  FMA and det becomes a rounding residual of either sign (|det| <= ~1e-16)
+ *  instead of exactly 0, so the raw test let particles through with clocks of
+ *  order 1e31. With the threshold 16 eps a11 a22, a det that passes is
+ *  certified strictly positive (gradients not parallel within rounding).
  *
  *  tol_psi is ABSOLUTE, in label units, applied to each label separately
  *  (max-norm of r). No per-label scaling (decision D-2).
@@ -111,7 +138,9 @@
  *  advanced again). Codes this module can set (StreamlineTrackerCommon.cuh):
  *
  *    kStatusNewtonFailed (10)  projection did not reach tol_psi in max_newton_iter updates
- *    kStatusDegenerate   (11)  det = |c|^2 not > min_cross_norm^2 (incl. |c| = 0)
+ *    kStatusDegenerate   (11)  det = |c|^2 not > min_cross_norm^2 (incl. |c| = 0), or
+ *                              det not > min_cross_sin2 a11 a22 (gradients parallel
+ *                              within rounding; section 1)
  *    kStatusSubstepLimit (12)  step(dt) needed more than max_panels_per_step panels
  *    kStatusNonFinite    (14)  a label residual or det is not finite
  *
@@ -141,6 +170,7 @@
 #include "../par2_adapter/par2_views.hpp"
 #include "StreamlineTrackerCommon.cuh"
 
+#include <cfloat>
 #include <cmath>
 #include <cstdint>
 #include <cuda_runtime.h>
@@ -154,13 +184,43 @@ namespace streamline_tracker {
 // Integrator core (host + device, templated on the label evaluator)
 // ============================================================================
 
-/// Integrator parameters (POD, passed by value into kernels).
+/**
+ * Default relative degeneracy threshold on sin^2 of the angle between the two
+ * label gradients (file header section 1; finding F1, decision D-11).
+ *
+ * Derivation: a11, a12, a22 are 3-term dot products (relative rounding error a
+ * few eps each), the two products of a11 a22 - a12^2 add about one eps each,
+ * and a12^2 <= a11 a22, so |det_computed - det_exact| <= ~10 eps a11 a22 with
+ * or without FMA. A det > 16 eps a11 a22 is therefore certified strictly
+ * positive. 16 * DBL_EPSILON = 3.552713678800501e-15.
+ */
+inline constexpr real kDefaultMinCrossSin2 = static_cast<real>(16.0) * DBL_EPSILON;
+
+/// Integrator parameters (POD, trivially copyable, passed by value into kernels).
 struct PseudoSymplecticParams {
     real tol_psi;        ///< absolute tolerance, label units, on max(|r1|, |r2|)
     int max_newton_iter; ///< maximum number of Newton updates in one projection
     real trust_factor;   ///< each update is clamped to |delta| <= trust_factor * (predictor length)
-    real min_cross_norm; ///< FAILURE threshold on |c| (default 0); not a regularization
+    real min_cross_norm; ///< ABSOLUTE failure threshold on |c| (default 0); not a regularization
+    /// RELATIVE failure threshold on sin^2(angle(g1, g2)): degenerate if
+    /// not (det > min_cross_sin2 a11 a22). Not a regularization. Last member
+    /// with a default so a 4-field aggregate initialization keeps the default.
+    real min_cross_sin2 = kDefaultMinCrossSin2;
 };
+
+/**
+ * @brief The single degeneracy predicate of the integrator core (file header
+ *        section 1): true iff not (det > min_cross_norm^2) or
+ *        not (det > min_cross_sin2 * (a11 * a22)).
+ *
+ * Evaluated on the same a11, a22, det the Newton solve uses; det is only
+ * compared, never modified. The caller tests non-finiteness first.
+ */
+__host__ __device__ inline bool is_degenerate_gram(real a11, real a22, real det,
+                                                   const PseudoSymplecticParams& prm) {
+    return !(det > prm.min_cross_norm * prm.min_cross_norm) ||
+           !(det > prm.min_cross_sin2 * (a11 * a22));
+}
 
 /// Counters accumulated by projections (caller initializes to zero).
 struct ProjectionCounters {
@@ -181,8 +241,8 @@ struct PanelState {
  *        degeneracy tests of the projection (no residual test, no update).
  *
  * Returns kStatusNonFinite if psi1, psi2 or det is not finite,
- * kStatusDegenerate if not (det > min_cross_norm^2), else kStatusActive with
- * `at` written. On failure `at` is still written (diagnostic only).
+ * kStatusDegenerate if is_degenerate_gram(a11, a22, det), else kStatusActive
+ * with `at` written. On failure `at` is still written (diagnostic only).
  */
 template <class E>
 __host__ __device__ inline uint8_t evaluate_label_state(const E& labels, const real xi[3],
@@ -197,7 +257,7 @@ __host__ __device__ inline uint8_t evaluate_label_state(const E& labels, const r
     if (!isfinite(at.psi1) || !isfinite(at.psi2) || !isfinite(det)) {
         return kStatusNonFinite;
     }
-    if (!(det > prm.min_cross_norm * prm.min_cross_norm)) {
+    if (is_degenerate_gram(a11, a22, det, prm)) {
         return kStatusDegenerate;
     }
     return kStatusActive;
@@ -216,7 +276,6 @@ __host__ __device__ inline uint8_t
 project_to_label_curve(const E& labels, real xi[3], const int32_t w[3], real psi1_0, real psi2_0,
                        real trust_radius, const PseudoSymplecticParams& prm, LabelSample& at,
                        ProjectionCounters& cnt) {
-    const real thr = prm.min_cross_norm * prm.min_cross_norm;
     for (int it = 0;; ++it) {
         LabelSample s;
         labels(xi, w, s);
@@ -229,7 +288,7 @@ project_to_label_curve(const E& labels, real xi[3], const int32_t w[3], real psi
         if (!isfinite(r1) || !isfinite(r2) || !isfinite(det)) {
             return kStatusNonFinite;
         }
-        if (!(det > thr)) {
+        if (is_degenerate_gram(a11, a22, det, prm)) {
             return kStatusDegenerate;
         }
         if (fmax(fabs(r1), fabs(r2)) <= prm.tol_psi) {
@@ -370,8 +429,11 @@ struct PseudoSymplecticConfig {
     real tol_psi = 0.0; ///< REQUIRED (> 0): absolute, label units, max-norm
     int max_newton_iter = 8;
     real trust_factor = 1.0;
-    real min_cross_norm = 0.0; ///< failure threshold on |c|, not a regularization
+    real min_cross_norm = 0.0; ///< absolute failure threshold on |c|, not a regularization
     int max_panels_per_step = 100000;
+    /// Relative failure threshold on sin^2(angle(g1, g2)) (finite, >= 0; 0 =
+    /// raw test). Not a regularization. Header section 1.
+    real min_cross_sin2 = kDefaultMinCrossSin2;
 };
 
 /// Aggregate report (integer aggregates only, plus min/max clock over all particles).

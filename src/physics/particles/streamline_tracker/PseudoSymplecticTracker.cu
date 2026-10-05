@@ -146,6 +146,10 @@ void PseudoSymplecticTracker::configure(const PseudoSymplecticConfig& cfg) {
         throw std::invalid_argument(
             "PseudoSymplecticTracker::configure: min_cross_norm must be finite and >= 0");
     }
+    if (!std::isfinite(cfg.min_cross_sin2) || cfg.min_cross_sin2 < 0.0) {
+        throw std::invalid_argument(
+            "PseudoSymplecticTracker::configure: min_cross_sin2 must be finite and >= 0");
+    }
     if (cfg.max_panels_per_step < 1) {
         throw std::invalid_argument(
             "PseudoSymplecticTracker::configure: max_panels_per_step must be >= 1");
@@ -254,6 +258,7 @@ PseudoSymplecticParams PseudoSymplecticTracker::params() const {
     prm.max_newton_iter = cfg_.max_newton_iter;
     prm.trust_factor = cfg_.trust_factor;
     prm.min_cross_norm = cfg_.min_cross_norm;
+    prm.min_cross_sin2 = cfg_.min_cross_sin2;
     return prm;
 }
 
