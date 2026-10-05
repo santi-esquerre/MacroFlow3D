@@ -207,6 +207,13 @@ set(INTERPOLATION_SOURCES
     src/numerics/interpolation/PeriodicTricubicBSpline.cu
 )
 
+# SF-31: streamline-tracker shared label evaluator and particle bookkeeping
+set(STREAMLINE_TRACKER_SOURCES
+    src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu
+    src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu
+    src/physics/particles/streamline_tracker/ReferenceRkTracker.cu
+)
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -289,6 +296,7 @@ add_library(macroflow3d_lib STATIC
     ${CONSTRAINT_SOURCES}
     ${OPERATOR_SOURCES}
     ${INTERPOLATION_SOURCES}
+    ${STREAMLINE_TRACKER_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
@@ -564,6 +572,18 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(interpolation_tests PRIVATE macroflow3d_lib)
     target_compile_options(interpolation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME interpolation_periodic_tricubic COMMAND interpolation_tests)
+
+    # SF-31 N3: pseudo-symplectic streamline tracker contract tests (fast tier)
+    add_executable(streamline_tracker_ps_tests tests/streamline_tracker/pseudo_symplectic_tracker_tests.cu)
+    target_link_libraries(streamline_tracker_ps_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_tracker_ps_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_tracker_pseudo_symplectic COMMAND streamline_tracker_ps_tests)
+
+    # SF-31 N4: adaptive RK reference tracker contract tests + PS/RK cross-check (fast tier)
+    add_executable(streamline_tracker_rk_tests tests/streamline_tracker/reference_rk_tracker_tests.cu)
+    target_link_libraries(streamline_tracker_rk_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_tracker_rk_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_tracker_reference_rk COMMAND streamline_tracker_rk_tests)
 
     # SF-30 N1: SF-19 potential accessor + oracle streamline integrator contracts (fast tier)
     add_executable(streamline_closure_integrator_tests tests/closure/streamline_closure_integrator_tests.cu)
