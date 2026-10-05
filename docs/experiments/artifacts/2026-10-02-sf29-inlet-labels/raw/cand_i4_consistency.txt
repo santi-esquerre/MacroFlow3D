@@ -1,0 +1,25 @@
+candidate_i.py mode=consistency opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a21135e97ac44f5f3/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': None} numpy=2.5.0 scipy=1.18.0 python=3.13.13
+CONSISTENCY4 field=gauss eps=0.25 N=16 at the oracle labels (i1o4): r_F(planes 1..N-1)=4.203e-02 r_out(outlet c_perp rows)=3.054e-03 | centered rows (planes 2..N-2)=4.363e-02 | skewed rows plane 1=2.887e-02 plane N-1=3.039e-02 | t=0.9s
+CONSISTENCY4 field=gauss eps=0.25 N=24 at the oracle labels (i1o4): r_F(planes 1..N-1)=1.167e-02 r_out(outlet c_perp rows)=6.805e-04 | centered rows (planes 2..N-2)=1.206e-02 | skewed rows plane 1=5.680e-03 plane N-1=6.616e-03 | t=14.8s
+CONSISTENCY4 field=gauss eps=0.25 N=32 at the oracle labels (i1o4): r_F(planes 1..N-1)=4.278e-03 r_out(outlet c_perp rows)=2.175e-04 | centered rows (planes 2..N-2)=4.393e-03 | skewed rows plane 1=1.759e-03 plane N-1=2.134e-03 | t=32.0s
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 r_F: 4.203e-02 1.167e-02 4.278e-03 | orders 3.16 3.49
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 r_out: 3.054e-03 6.805e-04 2.175e-04 | orders 3.70 3.96
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 centered rows: 4.363e-02 1.206e-02 4.393e-03 | orders 3.17 3.51
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 plane-1 rows: 2.887e-02 5.680e-03 1.759e-03 | orders 4.01 4.07
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 plane-(N-1) rows: 3.039e-02 6.616e-03 2.134e-03 | orders 3.76 3.93
+CONSISTENCY4 field=gauss_ch eps=0.25 N=16 at the oracle labels (i1o4): r_F(planes 1..N-1)=4.425e-02 r_out(outlet c_perp rows)=2.410e-03 | centered rows (planes 2..N-2)=4.636e-02 | skewed rows plane 1=2.621e-02 plane N-1=2.720e-02 | t=3.8s
+CONSISTENCY4 field=gauss_ch eps=0.25 N=24 at the oracle labels (i1o4): r_F(planes 1..N-1)=1.241e-02 r_out(outlet c_perp rows)=3.001e-04 | centered rows (planes 2..N-2)=1.286e-02 | skewed rows plane 1=5.703e-03 plane N-1=6.150e-03 | t=24.9s
+CONSISTENCY4 field=gauss_ch eps=0.25 N=32 at the oracle labels (i1o4): r_F(planes 1..N-1)=4.591e-03 r_out(outlet c_perp rows)=7.068e-05 | centered rows (planes 2..N-2)=4.718e-03 | skewed rows plane 1=1.862e-03 plane N-1=2.080e-03 | t=52.6s
+CONSISTENCY_ORDER field=gauss_ch eps=0.25 i1o4 r_F: 4.425e-02 1.241e-02 4.591e-03 | orders 3.13 3.46
+CONSISTENCY_ORDER field=gauss_ch eps=0.25 i1o4 r_out: 2.410e-03 3.001e-04 7.068e-05 | orders 5.14 5.03
+CONSISTENCY_ORDER field=gauss_ch eps=0.25 i1o4 centered rows: 4.636e-02 1.286e-02 4.718e-03 | orders 3.16 3.49
+CONSISTENCY_ORDER field=gauss_ch eps=0.25 i1o4 plane-1 rows: 2.621e-02 5.703e-03 1.862e-03 | orders 3.76 3.89
+CONSISTENCY_ORDER field=gauss_ch eps=0.25 i1o4 plane-(N-1) rows: 2.720e-02 6.150e-03 2.080e-03 | orders 3.67 3.77
+CONSISTENCY4 field=control2d eps=0.5 N=16 at the oracle labels (i1o4): r_F(planes 1..N-1)=2.208e-02 r_out(outlet c_perp rows)=9.488e-03 | centered rows (planes 2..N-2)=9.583e-03 | skewed rows plane 1=4.761e-02 plane N-1=6.206e-02 | t=1.2s
+CONSISTENCY4 field=control2d eps=0.5 N=24 at the oracle labels (i1o4): r_F(planes 1..N-1)=4.474e-03 r_out(outlet c_perp rows)=2.433e-03 | centered rows (planes 2..N-2)=2.144e-03 | skewed rows plane 1=1.010e-02 plane N-1=1.618e-02 | t=16.2s
+CONSISTENCY4 field=control2d eps=0.5 N=32 at the oracle labels (i1o4): r_F(planes 1..N-1)=1.292e-03 r_out(outlet c_perp rows)=8.790e-04 | centered rows (planes 2..N-2)=7.081e-04 | skewed rows plane 1=3.304e-03 plane N-1=5.127e-03 | t=28.5s
+CONSISTENCY_ORDER field=control2d eps=0.5 i1o4 r_F: 2.208e-02 4.474e-03 1.292e-03 | orders 3.94 4.32
+CONSISTENCY_ORDER field=control2d eps=0.5 i1o4 r_out: 9.488e-03 2.433e-03 8.790e-04 | orders 3.36 3.54
+CONSISTENCY_ORDER field=control2d eps=0.5 i1o4 centered rows: 9.583e-03 2.144e-03 7.081e-04 | orders 3.69 3.85
+CONSISTENCY_ORDER field=control2d eps=0.5 i1o4 plane-1 rows: 4.761e-02 1.010e-02 3.304e-03 | orders 3.82 3.88
+CONSISTENCY_ORDER field=control2d eps=0.5 i1o4 plane-(N-1) rows: 6.206e-02 1.618e-02 5.127e-03 | orders 3.31 4.00
