@@ -560,6 +560,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(interpolation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME interpolation_periodic_tricubic COMMAND interpolation_tests)
 
+    # SF-30 N1: SF-19 potential accessor + oracle streamline integrator contracts (fast tier)
+    add_executable(streamline_closure_integrator_tests tests/closure/streamline_closure_integrator_tests.cu)
+    target_link_libraries(streamline_closure_integrator_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_closure_integrator_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_closure_integrator COMMAND streamline_closure_integrator_tests)
+
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
         # Minimal smoke test — verifies init, VECCUDA creation, link

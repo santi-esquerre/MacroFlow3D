@@ -15,8 +15,12 @@
  *
  * ## Mathematical construction (homogenization cell problems)
  *
- * Head is decomposed as `h(x) = -G.x + h_tilde(x)` with `h_tilde` triply
- * periodic. For each unit mean pressure-gradient direction `e_d`
+ * With `v = -K grad(phi)`, the Darcy potential is decomposed as
+ * `phi(x) = -(G.x + h_tilde(x))` with `h_tilde` triply periodic, so that
+ * `v = K (G + grad h_tilde)` (the convention the face-flux kernels below
+ * implement). [Sentence corrected in SF-30: it previously read
+ * `h(x) = -G.x + h_tilde(x)`, which contradicted the code's sign.]
+ * For each unit mean pressure-gradient direction `e_d`
  * (`d = x, y, z`) this module solves the zero-mean periodic corrector cell
  * problem
  *
@@ -254,6 +258,19 @@ class AffinePeriodicFlowWorkspace {
     // Categorized report built from this workspace's ACTUAL capacities.
     [[nodiscard]] AffinePeriodicFlowMemoryReport memory_report() const;
 
+    // Periodic potential fluctuation of the LAST successful
+    // solve_affine_periodic_flow on this workspace (SF-30):
+    // h_tilde = sum_d G_d w_d, cell-centred, layout i + nx*(j + ny*k), zero
+    // mean, grid.num_cells() elements. Convention of the code: the face flux
+    // is F_f = K_f (G.n + (h_tilde[b] - h_tilde[a]) / h), i.e.
+    // v = K (G + grad h_tilde) and, with v = -K grad(phi), the Darcy
+    // potential is phi = -(G.x + h_tilde). The direction field of the
+    // streamlines is therefore `G + grad h_tilde` (K > 0 cancels); `G` is
+    // AffinePeriodicFlowReport::G. Throws std::logic_error if no solve has
+    // completed successfully on this workspace for its currently prepared
+    // grid/config. The span is invalidated by the next prepare()/solve.
+    [[nodiscard]] DeviceSpan<const real> potential_fluctuation() const;
+
   private:
     void ensure_prepared() const;
 
@@ -295,6 +312,9 @@ class AffinePeriodicFlowWorkspace {
     Grid3D prepared_grid_{};
     multigrid::MGConfig prepared_mg_config_{};
     bool prepared_{false};
+    // True only after solve_affine_periodic_flow returned successfully for
+    // the currently prepared grid/config (SF-30 accessor contract).
+    bool solved_{false};
 };
 
 /**
