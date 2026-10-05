@@ -210,6 +210,7 @@ set(INTERPOLATION_SOURCES
 # SF-31: streamline-tracker shared label evaluator and particle bookkeeping
 set(STREAMLINE_TRACKER_SOURCES
     src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu
+    src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu
 )
 
 set(MULTIGRID_SOURCES
