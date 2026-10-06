@@ -1,0 +1,12 @@
+== gauss_0.25_16_fixed.json  status=converged path=0.25
+  stage 0.25            from 0        converged       newton_its=10 gmres_total=  1290  etas=[1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12]
+  TOTAL newton steps (linear solves) 10, GMRES its 1290
+== gauss_ch_0.25_16_fixed.json  status=converged path=0.25(fail)->0.125->0.25
+  stage 0.25            from 0        stagnation      newton_its= 5 gmres_total=  1447  etas=[1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12]
+  stage 0.125           from 0        converged       newton_its= 7 gmres_total=   384  etas=[1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12]
+  stage 0.25            from 0.125    converged       newton_its= 7 gmres_total=   772  etas=[1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12,1.0e-12]
+  TOTAL newton steps (linear solves) 19, GMRES its 2603
+== control2d_0.5_16_fixed.json  status=converged path=0.25->0.5
+  stage 0.25            from 0        converged       newton_its= 2 gmres_total=    76  etas=[1.0e-12,1.0e-12]
+  stage 0.5             from 0.25     converged       newton_its= 2 gmres_total=   116  etas=[1.0e-12,1.0e-12]
+  TOTAL newton steps (linear solves) 4, GMRES its 192

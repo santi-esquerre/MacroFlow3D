@@ -1,0 +1,98 @@
+== gauss_0.25_16_ew.json  status=converged path=0.25(fail)->0.125->0.25
+  stage 0.25            from 0        stagnation      newton_its= 5 gmres_total=   246  etas=[1.0e-01,1.5e-02,1.0e-01,1.0e-01,1.0e-01]
+  stage 0.125           from 0        converged       newton_its= 7 gmres_total=   108  etas=[1.0e-01,7.9e-03,1.0e-01,1.0e-01,3.0e-04,1.7e-04,2.8e-04]
+  stage 0.25            from 0.125    converged       newton_its= 7 gmres_total=   233  etas=[1.0e-01,3.4e-03,1.0e-01,1.0e-01,2.9e-04,9.1e-05,1.7e-03]
+  TOTAL newton steps (linear solves) 19, GMRES its 587
+== gauss_ch_0.25_16_ew.json  status=converged path=0.25
+  stage 0.25            from 0        converged       newton_its=13 gmres_total=   537  etas=[1.0e-01,3.1e-02,1.0e-01,1.0e-01,1.0e-01,1.0e-01,1.0e-01,1.0e-01,1.0e-01,5.7e-02,6.3e-02,6.7e-05,6.1e-06]
+  TOTAL newton steps (linear solves) 13, GMRES its 537
+== control2d_0.5_16_ew.json  status=converged path=0.25->0.5
+  stage 0.25            from 0        converged       newton_its= 3 gmres_total=    18  etas=[1.0e-01,1.3e-06,7.1e-04]
+  stage 0.5             from 0.25     converged       newton_its= 3 gmres_total=    27  etas=[1.0e-01,8.7e-05,3.6e-07]
+  TOTAL newton steps (linear solves) 6, GMRES its 45
+== gauss_0.5_24_ew.json  status=continuation_floor path=0.25->0.5(fail)->0.375->0.5(fail)->0.4375->0.5(fail)->0.46875(fail)->0.453125(fail)->0.5(final)
+  stage 0.25            from 0        converged       newton_its=12 gmres_total=  1025  etas=[1.0e-01,4.2e-02,1.0e-01,1.0e-01,1.0e-01,1.0e-01,1.0e-01,8.2e-02,3.7e-02,3.3e-03,9.5e-06,2.5e-03]
+  stage 0.5             from 0.25     linear_failure  newton_its= 2 gmres_total=  1465  etas=[1.0e-01,8.2e-03]
+     FAILED linear solve step 2: status=stagnation its=1400 cycles=14 eta=8.15e-03 rel=6.08e-02; per-restart true rel: 2.92e-01 2.47e-01 2.01e-01 1.77e-01 1.62e-01 1.46e-01 1.17e-01 9.46e-02 8.71e-02 8.07e-02 7.22e-02 6.49e-02 6.27e-02 6.08e-02
+  stage 0.375           from 0.25     converged       newton_its= 8 gmres_total=  1802  etas=[1.0e-01,1.6e-03,1.0e-01,1.0e-01,3.7e-02,7.1e-04,2.8e-03,5.8e-06]
+  stage 0.5             from 0.375    linear_failure  newton_its= 3 gmres_total=  3793  etas=[1.0e-01,1.9e-03,1.0e-01]
+     FAILED linear solve step 3: status=stagnation its=500 cycles=5 eta=1.00e-01 rel=3.76e-01; per-restart true rel: 5.12e-01 4.45e-01 3.96e-01 3.83e-01 3.76e-01
+  stage 0.4375          from 0.375    converged       newton_its= 9 gmres_total= 14777  etas=[1.0e-01,8.1e-04,1.0e-01,1.0e-01,1.4e-02,1.0e-01,2.0e-03,9.3e-05,5.7e-03]
+  stage 0.5             from 0.4375   linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,1.7e-03]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=1.72e-03 rel=6.44e-01; per-restart true rel: 6.58e-01 6.46e-01 6.44e-01
+  stage 0.46875         from 0.4375   linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,8.1e-04]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=8.05e-04 rel=7.14e-01; per-restart true rel: 7.32e-01 7.26e-01 7.14e-01
+  stage 0.453125        from 0.4375   linear_failure  newton_its= 2 gmres_total=   500  etas=[1.0e-01,5.1e-04]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=5.09e-04 rel=7.13e-01; per-restart true rel: 8.19e-01 7.58e-01 7.29e-01 7.13e-01
+  stage 0.5     (final) from 0.4375   linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,1.7e-03]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=1.72e-03 rel=6.44e-01; per-restart true rel: 6.58e-01 6.46e-01 6.44e-01
+  TOTAL newton steps (linear solves) 42, GMRES its 24562
+== gauss_ch_0.5_24_ew.json  status=continuation_floor path=0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5(fail)->0.4375(fail)->0.40625(fail)->0.5(final)
+  stage 0.25            from 0        linear_failure  newton_its= 2 gmres_total=   437  etas=[1.0e-01,2.5e-02]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=2.53e-02 rel=9.03e-02; per-restart true rel: 1.40e-01 9.72e-02 9.08e-02 9.03e-02
+  stage 0.125           from 0        converged       newton_its= 8 gmres_total=   195  etas=[1.0e-01,3.2e-03,1.0e-01,1.0e-01,1.6e-02,6.3e-03,1.0e-06,2.0e-03]
+  stage 0.25            from 0.125    converged       newton_its= 7 gmres_total=   500  etas=[1.0e-01,1.7e-03,1.0e-01,1.0e-01,8.8e-03,5.9e-04,1.3e-06]
+  stage 0.5             from 0.25     linear_failure  newton_its= 2 gmres_total=   351  etas=[1.0e-01,7.2e-03]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=7.16e-03 rel=5.36e-01; per-restart true rel: 5.53e-01 5.51e-01 5.36e-01
+  stage 0.375           from 0.25     converged       newton_its=10 gmres_total=  5233  etas=[1.0e-01,1.8e-03,1.0e-01,1.0e-01,2.3e-02,8.3e-02,1.5e-03,5.0e-03,6.5e-06,3.4e-01]
+  stage 0.5             from 0.375    linear_failure  newton_its= 2 gmres_total=   600  etas=[1.0e-01,2.2e-03]
+     FAILED linear solve step 2: status=stagnation its=500 cycles=5 eta=2.22e-03 rel=3.94e-01; per-restart true rel: 5.45e-01 4.66e-01 4.31e-01 4.06e-01 3.94e-01
+  stage 0.4375          from 0.375    linear_failure  newton_its= 2 gmres_total=   496  etas=[1.0e-01,8.8e-04]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=8.78e-04 rel=3.94e-01; per-restart true rel: 4.62e-01 4.07e-01 3.96e-01 3.94e-01
+  stage 0.40625         from 0.375    linear_failure  newton_its= 2 gmres_total=   384  etas=[1.0e-01,3.9e-04]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=3.93e-04 rel=5.07e-01; per-restart true rel: 5.42e-01 5.23e-01 5.07e-01
+  stage 0.5     (final) from 0.375    linear_failure  newton_its= 2 gmres_total=   600  etas=[1.0e-01,2.2e-03]
+     FAILED linear solve step 2: status=stagnation its=500 cycles=5 eta=2.22e-03 rel=3.94e-01; per-restart true rel: 5.45e-01 4.66e-01 4.31e-01 4.06e-01 3.94e-01
+  TOTAL newton steps (linear solves) 37, GMRES its 8796
+== generic3d_1_16_ew.json  status=continuation_floor path=0.25->0.5->1(fail)->0.75(fail)->0.625->0.75(fail)->0.6875(fail)->0.65625(fail)->1(final)
+  stage 0.25            from 0        converged       newton_its= 7 gmres_total=   166  etas=[1.0e-01,3.5e-03,1.0e-01,1.2e-02,5.0e-03,9.3e-07,6.3e-03]
+  stage 0.5             from 0.25     converged       newton_its= 7 gmres_total=   858  etas=[1.0e-01,4.1e-03,1.0e-01,1.6e-02,2.2e-02,7.7e-06,1.4e-05]
+  stage 1               from 0.5      linear_failure  newton_its= 2 gmres_total=   381  etas=[1.0e-01,3.1e-02]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=3.10e-02 rel=4.85e-01; per-restart true rel: 4.95e-01 4.86e-01 4.85e-01
+  stage 0.75            from 0.5      linear_failure  newton_its= 4 gmres_total=  1058  etas=[1.0e-01,8.9e-03,1.0e-01,1.0e-01]
+     FAILED linear solve step 4: status=stagnation its=300 cycles=3 eta=1.00e-01 rel=3.84e-01; per-restart true rel: 4.07e-01 3.87e-01 3.84e-01
+  stage 0.625           from 0.5      converged       newton_its= 8 gmres_total=  6557  etas=[1.0e-01,3.7e-03,1.0e-01,3.4e-02,4.7e-02,9.5e-04,1.4e-04,1.1e-03]
+  stage 0.75            from 0.625    linear_failure  newton_its= 2 gmres_total=   500  etas=[1.0e-01,1.0e-02]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=1.02e-02 rel=3.03e-01; per-restart true rel: 3.70e-01 3.08e-01 3.04e-01 3.03e-01
+  stage 0.6875          from 0.625    linear_failure  newton_its= 2 gmres_total=   500  etas=[1.0e-01,2.6e-03]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=2.58e-03 rel=3.75e-01; per-restart true rel: 4.56e-01 4.01e-01 3.80e-01 3.75e-01
+  stage 0.65625         from 0.625    linear_failure  newton_its= 2 gmres_total=   500  etas=[1.0e-01,9.5e-04]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=9.54e-04 rel=4.90e-01; per-restart true rel: 5.97e-01 5.27e-01 5.00e-01 4.90e-01
+  stage 1       (final) from 0.625    linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,2.3e-02]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=2.29e-02 rel=5.93e-01; per-restart true rel: 5.96e-01 5.93e-01 5.93e-01
+  TOTAL newton steps (linear solves) 36, GMRES its 10920
+== generic3d_1_20_ew.json  status=continuation_floor path=0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625(fail)->0.53125->0.5625(fail)->1(final)
+  stage 0.25            from 0        converged       newton_its= 7 gmres_total=   220  etas=[1.0e-01,2.6e-03,1.0e-01,1.5e-02,7.1e-03,1.3e-06,2.7e-03]
+  stage 0.5             from 0.25     converged       newton_its= 8 gmres_total=  2011  etas=[1.0e-01,3.1e-03,1.0e-01,2.2e-02,1.0e-01,7.2e-04,3.3e-04,1.6e-04]
+  stage 1               from 0.5      linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,2.3e-02]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=2.31e-02 rel=5.00e-01; per-restart true rel: 5.11e-01 5.02e-01 5.00e-01
+  stage 0.75            from 0.5      linear_failure  newton_its= 2 gmres_total=  1085  etas=[1.0e-01,6.5e-03]
+     FAILED linear solve step 2: status=stagnation its=1000 cycles=10 eta=6.50e-03 rel=1.46e-01; per-restart true rel: 3.46e-01 2.94e-01 2.75e-01 2.41e-01 2.04e-01 1.84e-01 1.68e-01 1.55e-01 1.51e-01 1.46e-01
+  stage 0.625           from 0.5      linear_failure  newton_its= 3 gmres_total=  1782  etas=[1.0e-01,2.5e-03,1.0e-01]
+     FAILED linear solve step 3: status=stagnation its=300 cycles=3 eta=1.00e-01 rel=2.64e-01; per-restart true rel: 2.71e-01 2.66e-01 2.64e-01
+  stage 0.5625          from 0.5      linear_failure  newton_its= 4 gmres_total=  1981  etas=[1.0e-01,8.1e-04,1.0e-01,4.8e-03]
+     FAILED linear solve step 4: status=stagnation its=500 cycles=5 eta=4.82e-03 rel=4.50e-01; per-restart true rel: 5.70e-01 5.31e-01 4.97e-01 4.62e-01 4.50e-01
+  stage 0.53125         from 0.5      converged       newton_its= 5 gmres_total=  3276  etas=[1.0e-01,2.8e-04,2.2e-02,1.5e-04,3.6e-06]
+  stage 0.5625          from 0.53125  linear_failure  newton_its= 3 gmres_total=  3800  etas=[1.0e-01,3.1e-04,2.9e-02]
+     FAILED linear solve step 3: status=stagnation its=600 cycles=6 eta=2.92e-02 rel=4.19e-02; per-restart true rel: 9.18e-02 5.48e-02 4.89e-02 4.64e-02 4.37e-02 4.19e-02
+  stage 1       (final) from 0.53125  linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,1.9e-02]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=1.95e-02 rel=5.29e-01; per-restart true rel: 5.39e-01 5.30e-01 5.29e-01
+  TOTAL newton steps (linear solves) 36, GMRES its 14955
+== generic3d_1_24_ew.json  status=continuation_floor path=0.25->0.5(fail)->0.375->0.5(fail)->0.4375->0.5->1(fail)->0.75(fail)->0.625(fail)->1(final)
+  stage 0.25            from 0        converged       newton_its= 7 gmres_total=   272  etas=[1.0e-01,2.0e-03,1.0e-01,2.5e-02,2.8e-02,3.6e-05,1.0e-05]
+  stage 0.5             from 0.25     linear_failure  newton_its= 3 gmres_total=   421  etas=[1.0e-01,2.3e-03,1.0e-01]
+     FAILED linear solve step 3: status=stagnation its=300 cycles=3 eta=1.00e-01 rel=1.25e-01; per-restart true rel: 1.27e-01 1.25e-01 1.25e-01
+  stage 0.375           from 0.25     converged       newton_its= 6 gmres_total=   684  etas=[1.0e-01,9.3e-04,1.0e-01,9.6e-04,2.1e-04,2.2e-04]
+  stage 0.5             from 0.375    linear_failure  newton_its= 4 gmres_total=   829  etas=[1.0e-01,1.3e-03,1.0e-01,7.4e-03]
+     FAILED linear solve step 4: status=stagnation its=400 cycles=4 eta=7.41e-03 rel=5.42e-01; per-restart true rel: 6.95e-01 5.99e-01 5.62e-01 5.42e-01
+  stage 0.4375          from 0.375    converged       newton_its= 6 gmres_total=  1420  etas=[1.0e-01,4.9e-04,6.6e-02,2.3e-04,1.1e-04,1.1e-03]
+  stage 0.5             from 0.4375   converged       newton_its= 7 gmres_total=  9859  etas=[1.0e-01,5.8e-04,8.6e-02,4.9e-03,6.8e-03,1.7e-05,3.9e-03]
+  stage 1               from 0.5      linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,1.6e-02]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=1.59e-02 rel=6.54e-01; per-restart true rel: 6.74e-01 6.57e-01 6.54e-01
+  stage 0.75            from 0.5      linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,5.3e-03]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=5.27e-03 rel=5.50e-01; per-restart true rel: 5.64e-01 5.52e-01 5.50e-01
+  stage 0.625           from 0.5      linear_failure  newton_its= 2 gmres_total=   500  etas=[1.0e-01,3.0e-03]
+     FAILED linear solve step 2: status=stagnation its=400 cycles=4 eta=2.99e-03 rel=3.74e-01; per-restart true rel: 5.21e-01 3.95e-01 3.78e-01 3.74e-01
+  stage 1       (final) from 0.5      linear_failure  newton_its= 2 gmres_total=   400  etas=[1.0e-01,1.6e-02]
+     FAILED linear solve step 2: status=stagnation its=300 cycles=3 eta=1.59e-02 rel=6.54e-01; per-restart true rel: 6.74e-01 6.57e-01 6.54e-01
+  TOTAL newton steps (linear solves) 41, GMRES its 15185

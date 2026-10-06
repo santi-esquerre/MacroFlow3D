@@ -1,0 +1,9 @@
+gauss_0.25_16 pre rc=0 STATUS converged
+  pre vs post-fixed: 0 differing lines; compared lines: 10
+  iterate lines (NEWTON/LINEAR/STAGE, timings and eta stripped): 0 differing
+gauss_ch_0.25_16 pre rc=0 STATUS converged
+  pre vs post-fixed: 0 differing lines; compared lines: 10
+  iterate lines (NEWTON/LINEAR/STAGE, timings and eta stripped): 0 differing
+control2d_0.5_16 pre rc=0 STATUS converged
+  pre vs post-fixed: 0 differing lines; compared lines: 10
+  iterate lines (NEWTON/LINEAR/STAGE, timings and eta stripped): 0 differing
