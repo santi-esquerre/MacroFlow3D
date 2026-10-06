@@ -604,6 +604,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(closure_gate PRIVATE macroflow3d_lib)
     target_compile_options(closure_gate PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
 
+    # SF-32 N2a: spurious-spreading return-map instrument (documented-experiment instrument; not a ctest entry)
+    add_executable(spurious_spreading
+        apps/spurious_spreading/spurious_spreading_main.cu
+        apps/spurious_spreading/label_routes.cu)
+    target_link_libraries(spurious_spreading PRIVATE macroflow3d_lib)
+    target_compile_options(spurious_spreading PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
     # SF-30 N2: 16^3 controls of the closure gate (fast tier)
     add_executable(streamline_closure_controls_tests tests/closure/streamline_closure_controls_tests.cu)
     target_link_libraries(streamline_closure_controls_tests PRIVATE macroflow3d_lib)
