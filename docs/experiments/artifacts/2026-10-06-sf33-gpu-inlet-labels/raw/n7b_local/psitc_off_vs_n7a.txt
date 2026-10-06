@@ -1,0 +1,10 @@
+# SF-33 N7b: --psitc off vs the N7a evidence logs (logs/n7a_local/ew, same machine, sm_86)
+# compared: NEWTON / LINEAR / STAGE / PATH / CASE / FIELDDIFF / EXTRA / HISTORY lines, timings stripped
+gauss_0.25_16: differing lines 0 of 56 compared
+gauss_ch_0.25_16: differing lines 0 of 38 compared
+control2d_0.5_16: differing lines 0 of 27 compared
+gauss_0.5_24: differing lines 0 of 120 compared
+gauss_ch_0.5_24: differing lines 0 of 110 compared
+generic3d_1_16: differing lines 0 of 108 compared
+generic3d_1_20: differing lines 0 of 107 compared
+generic3d_1_24: differing lines 0 of 120 compared
