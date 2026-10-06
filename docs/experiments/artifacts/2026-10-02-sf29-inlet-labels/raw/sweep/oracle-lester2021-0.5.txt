@@ -1,0 +1,17 @@
+RUN_ALL cell=oracle-lester2021-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell lester2021:0.5 --grids 12,16,24,32,48
+run_all.py --oracle-cell lester2021:0.5 grids=[12, 16, 24, 32, 48] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=lester2021 eps=0.5 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=5.344e-02 e_psi=0.000e+00 e_i=(3.539e-03,4.314e-03) e_div=1.081e-02 min_c=6.975e-01 p0.1=6.975e-01 p1=7.341e-01 p5=8.021e-01 p50=1.003e+00 | t=14.1
+CASE field=lester2021 eps=0.5 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=3.426e-03 e_psi=0.000e+00 e_i=(3.539e-03,4.314e-03) e_div=2.414e-15 min_c=6.557e-01 p0.1=6.557e-01 p1=7.074e-01 p5=8.052e-01 p50=1.008e+00 | t=14.1
+ORACLE_READY field=lester2021 eps=0.5 N=12 cache_hit=False nphi=48 max_roundtrip=1.00e-13 t_oracle=4.9s t_faces=0.2s t_cell=14.1s cache=../raw/cache/lester2021_eps0.5_N12_nphi48_v1.npz
+CASE field=lester2021 eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=3.385e-02 e_psi=0.000e+00 e_i=(1.929e-03,2.438e-03) e_div=6.517e-03 min_c=6.422e-01 p0.1=6.572e-01 p1=7.078e-01 p5=7.921e-01 p50=1.001e+00 | t=9.6
+CASE field=lester2021 eps=0.5 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=1.991e-03 e_psi=0.000e+00 e_i=(1.929e-03,2.438e-03) e_div=2.748e-15 min_c=6.467e-01 p0.1=6.467e-01 p1=6.773e-01 p5=7.769e-01 p50=1.004e+00 | t=9.6
+ORACLE_READY field=lester2021 eps=0.5 N=16 cache_hit=False nphi=48 max_roundtrip=1.02e-13 t_oracle=9.0s t_faces=0.5s t_cell=9.6s cache=../raw/cache/lester2021_eps0.5_N16_nphi48_v1.npz
+CASE field=lester2021 eps=0.5 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=1.616e-02 e_psi=0.000e+00 e_i=(8.067e-04,1.072e-03) e_div=3.148e-03 min_c=6.218e-01 p0.1=6.321e-01 p1=6.825e-01 p5=7.831e-01 p50=1.003e+00 | t=26.8
+CASE field=lester2021 eps=0.5 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=8.998e-04 e_psi=0.000e+00 e_i=(8.067e-04,1.072e-03) e_div=4.659e-15 min_c=6.083e-01 p0.1=6.083e-01 p1=6.716e-01 p5=7.613e-01 p50=1.003e+00 | t=26.8
+ORACLE_READY field=lester2021 eps=0.5 N=24 cache_hit=False nphi=48 max_roundtrip=1.57e-13 t_oracle=25.1s t_faces=1.6s t_cell=26.9s cache=../raw/cache/lester2021_eps0.5_N24_nphi48_v1.npz
+CASE field=lester2021 eps=0.5 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=9.374e-03 e_psi=0.000e+00 e_i=(4.358e-04,5.947e-04) e_div=1.838e-03 min_c=6.066e-01 p0.1=6.162e-01 p1=6.695e-01 p5=7.710e-01 p50=1.002e+00 | t=69.9
+CASE field=lester2021 eps=0.5 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=5.114e-04 e_psi=0.000e+00 e_i=(4.358e-04,5.947e-04) e_div=5.504e-15 min_c=6.046e-01 p0.1=6.166e-01 p1=6.622e-01 p5=7.602e-01 p50=1.004e+00 | t=69.9
+ORACLE_READY field=lester2021 eps=0.5 N=32 cache_hit=False nphi=48 max_roundtrip=1.59e-13 t_oracle=64.2s t_faces=5.3s t_cell=70.0s cache=../raw/cache/lester2021_eps0.5_N32_nphi48_v1.npz
+CASE field=lester2021 eps=0.5 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=4.264e-03 e_psi=0.000e+00 e_i=(1.846e-04,2.594e-04) e_div=8.427e-04 min_c=5.997e-01 p0.1=6.122e-01 p1=6.667e-01 p5=7.640e-01 p50=1.003e+00 | t=178.3
+CASE field=lester2021 eps=0.5 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=2.293e-04 e_psi=0.000e+00 e_i=(1.846e-04,2.594e-04) e_div=9.256e-15 min_c=5.973e-01 p0.1=6.095e-01 p1=6.616e-01 p5=7.595e-01 p50=1.005e+00 | t=178.3
+ORACLE_READY field=lester2021 eps=0.5 N=48 cache_hit=False nphi=48 max_roundtrip=1.25e-13 t_oracle=163.6s t_faces=13.8s t_cell=178.4s cache=../raw/cache/lester2021_eps0.5_N48_nphi48_v1.npz

@@ -1,0 +1,73 @@
+RUN_ALL cell=ii-lester_brk-0.5-N24 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py lester_brk:0.5:24
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=lester_brk:0.5:24
+======== candidate (ii) energy=q1 q=center lester_brk:0.5:24  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=3.027e-01 c_rel=2.076e-04 E=5.009530019675250e-01 |F|=7.898e-03 nu=1.0e-04
+    step alpha=1 |d|=1.30e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1450118)=32.43s solve[splu]=116.60s
+  NEWTON s=0.25 it= 1 g_rel=7.846e-02 c_rel=5.201e-02 E=4.999378094569160e-01 |F|=2.289e-03 nu=1.0e-05
+    step alpha=1 |d|=8.93e-01 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=1451520)=26.56s solve[splu]=120.49s
+  NEWTON s=0.25 it= 2 g_rel=4.912e-02 c_rel=1.980e-02 E=4.997429859322658e-01 |F|=1.360e-03 nu=1.0e-06
+    step alpha=0.25 |d|=8.48e-01 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=1451518)=30.88s solve[splu]=169.88s
+  NEWTON s=0.25 it= 3 g_rel=3.083e-02 c_rel=1.223e-02 E=4.997240085254417e-01 |F|=8.703e-04 nu=1.0e-06
+    step alpha=1 |d|=2.61e-01 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=1451518)=35.13s solve[splu]=164.81s
+  NEWTON s=0.25 it= 4 g_rel=7.568e-03 c_rel=7.712e-03 E=4.997068410482542e-01 |F|=2.051e-04 nu=1.0e-07
+    step alpha=1 |d|=4.89e-02 nu=1.0e-07 trials=1 hess(ngrad=108 nnz=1451516)=36.81s solve[splu]=160.25s
+  NEWTON s=0.25 it= 5 g_rel=8.666e-04 c_rel=6.865e-04 E=4.997062879156788e-01 |F|=2.325e-05 nu=1.0e-08
+    step alpha=1 |d|=4.56e-03 nu=1.0e-08 trials=1 hess(ngrad=108 nnz=1451460)=32.21s solve[splu]=124.83s
+  NEWTON s=0.25 it= 6 g_rel=1.338e-05 c_rel=1.706e-05 E=4.997062833535769e-01 |F|=3.633e-07 nu=1.0e-09
+    step alpha=1 |d|=1.18e-04 nu=1.0e-09 trials=1 hess(ngrad=108 nnz=1450978)=26.80s solve[splu]=156.65s
+  NEWTON s=0.25 it= 7 g_rel=8.425e-09 c_rel=9.620e-09 E=4.997062833432976e-01 |F|=2.275e-10 nu=1.0e-10
+  NEWTON s=0.50 it= 0 g_rel=2.421e-01 c_rel=3.488e-02 E=4.997845021173354e-01 |F|=6.400e-03 nu=1.0e-04
+    step alpha=1 |d|=4.83e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1450566)=25.73s solve[splu]=181.17s
+  NEWTON s=0.50 it= 1 g_rel=1.137e-02 c_rel=1.668e-03 E=4.988349669134203e-01 |F|=2.973e-04 nu=1.0e-05
+    step alpha=1 |d|=1.68e-01 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=1451296)=31.98s solve[splu]=150.15s
+  NEWTON s=0.50 it= 2 g_rel=1.366e-03 c_rel=6.722e-04 E=4.988279036747008e-01 |F|=3.786e-05 nu=1.0e-06
+    step alpha=1 |d|=4.26e-03 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=1450820)=30.83s solve[splu]=137.36s
+  NEWTON s=0.50 it= 3 g_rel=2.131e-06 c_rel=9.686e-07 E=4.988280470247067e-01 |F|=5.664e-08 nu=1.0e-07
+    step alpha=1 |d|=3.12e-05 nu=1.0e-07 trials=1 hess(ngrad=108 nnz=1450672)=32.88s solve[splu]=116.32s
+  NEWTON s=0.50 it= 4 g_rel=1.380e-10 c_rel=1.626e-10 E=4.988280469470255e-01 |F|=3.862e-12 nu=1.0e-08
+  NEWTON s=1.00 it= 0 g_rel=4.867e-01 c_rel=6.521e-02 E=4.991434446976403e-01 |F|=1.287e-02 nu=1.0e-04
+    step alpha=0.25 |d|=4.50e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1450294)=29.30s solve[splu]=143.33s
+  NEWTON s=1.00 it= 1 g_rel=3.858e-01 c_rel=1.232e-01 E=4.977184629424993e-01 |F|=1.025e-02 nu=1.0e-04
+    step alpha=0.25 |d|=3.94e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1451510)=29.89s solve[splu]=172.60s
+  NEWTON s=1.00 it= 2 g_rel=3.541e-01 c_rel=1.041e-01 E=4.969808774591102e-01 |F|=9.434e-03 nu=1.0e-04
+    step alpha=0.5 |d|=1.76e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1451520)=26.77s solve[splu]=136.95s
+  NEWTON s=1.00 it= 3 g_rel=2.657e-01 c_rel=2.688e-01 E=4.961298666868989e-01 |F|=7.173e-03 nu=1.0e-04
+    step alpha=0.25 |d|=1.85e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1451520)=27.97s solve[splu]=148.79s
+  NEWTON s=1.00 it= 4 g_rel=2.003e-01 c_rel=1.846e-01 E=4.958599875372682e-01 |F|=5.394e-03 nu=1.0e-04
+    step alpha=0.125 |d|=2.05e+00 nu=1.0e-03 trials=2 hess(ngrad=108 nnz=1451520)=29.08s solve[splu]=308.57s
+  NEWTON s=1.00 it= 5 g_rel=1.538e-01 c_rel=1.168e-01 E=4.957903375910975e-01 |F|=4.131e-03 nu=1.0e-03
+    step alpha=0.25 |d|=1.22e+00 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=1451520)=20.87s solve[splu]=126.82s
+  NEWTON s=1.00 it= 6 g_rel=1.493e-01 c_rel=1.416e-01 E=4.956931818733921e-01 |F|=4.038e-03 nu=1.0e-03
+    step alpha=0.5 |d|=6.74e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=1451520)=21.30s solve[splu]=127.72s
+  NEWTON s=1.00 it= 7 g_rel=1.119e-01 c_rel=1.019e-01 E=4.955839182648784e-01 |F|=3.011e-03 nu=1.0e-03
+    step alpha=0.5 |d|=4.60e-01 nu=1.0e-02 trials=2 hess(ngrad=108 nnz=1451520)=19.68s solve[splu]=306.02s
+  NEWTON s=1.00 it= 8 g_rel=4.936e-02 c_rel=6.097e-02 E=4.954660516318862e-01 |F|=1.351e-03 nu=1.0e-02
+    step alpha=1 |d|=2.10e-01 nu=1.0e-02 trials=1 hess(ngrad=108 nnz=1451520)=31.16s solve[splu]=146.48s
+  NEWTON s=1.00 it= 9 g_rel=2.195e-02 c_rel=1.841e-02 E=4.953962229037034e-01 |F|=6.064e-04 nu=1.0e-03
+    step alpha=0.5 |d|=4.00e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=1451520)=28.39s solve[splu]=143.82s
+  NEWTON s=1.00 it=10 g_rel=1.137e-02 c_rel=7.665e-03 E=4.953743249399028e-01 |F|=3.084e-04 nu=1.0e-03
+    step alpha=0.5 |d|=2.26e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=1451520)=22.50s solve[splu]=126.58s
+  NEWTON s=1.00 it=11 g_rel=7.345e-03 c_rel=4.411e-03 E=4.953657342011426e-01 |F|=1.995e-04 nu=1.0e-03
+    step alpha=1 |d|=1.51e-01 nu=1.0e-03 trials=1 hess(ngrad=108 nnz=1451520)=24.99s solve[splu]=164.83s
+  NEWTON s=1.00 it=12 g_rel=5.503e-03 c_rel=7.129e-03 E=4.953603308677754e-01 |F|=1.525e-04 nu=1.0e-04
+    step alpha=1 |d|=6.59e-02 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=1451520)=26.21s solve[splu]=137.65s
+  NEWTON s=1.00 it=13 g_rel=6.857e-04 c_rel=1.043e-03 E=4.953596189463789e-01 |F|=1.911e-05 nu=1.0e-05
+    step alpha=1 |d|=5.87e-03 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=1451520)=27.93s solve[splu]=156.04s
+  NEWTON s=1.00 it=14 g_rel=1.656e-05 c_rel=2.348e-05 E=4.953595921458800e-01 |F|=4.601e-07 nu=1.0e-06
+    step alpha=1 |d|=1.02e-04 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=1451520)=25.35s solve[splu]=142.14s
+  NEWTON s=1.00 it=15 g_rel=4.109e-09 c_rel=4.153e-09 E=4.953595923304203e-01 |F|=1.126e-10 nu=1.0e-07
+    step alpha=1 |d|=6.89e-08 nu=1.0e-07 trials=1 hess(ngrad=108 nnz=1451510)=23.74s solve[splu]=135.71s
+  NEWTON s=1.00 it=16 g_rel=1.969e-14 c_rel=2.027e-15 E=4.953595923304852e-01 |F|=5.142e-16 nu=1.0e-08
+SOLVE field=lester_brk eps=0.5 N=24 cand=ii energy=q1 q=center constrained=True meanflux_rows=2 solver=direct status=converged its=27 g_rel=1.969e-14 c_rel(max)=2.027e-15 f1_in mean-1=+1.2e-11 mu=2.4e-19 |lam|=3.212e-01 eta=(+6.496e-18,-3.826e-07) E_min=4.953595923304852e-01 E(oracle)=4.953742686181172e-01 E(oracle)-E_min=+1.468e-05 t_load=15.3s t_solve=4981.3s
+HISTORY field=lester_brk eps=0.5 N=24 cand=ii g_rel: 3.0e-01 7.8e-02 4.9e-02 3.1e-02 7.6e-03 8.7e-04 1.3e-05 8.4e-09 2.4e-01 1.1e-02 1.4e-03 2.1e-06 1.4e-10 4.9e-01 3.9e-01 3.5e-01 2.7e-01 2.0e-01 1.5e-01 1.5e-01 1.1e-01 4.9e-02 2.2e-02 1.1e-02 7.3e-03 5.5e-03 6.9e-04 1.7e-05 4.1e-09 2.0e-14
+HISTORY_STAGE field=lester_brk eps=0.5 N=24 cand=ii s=0.25 its=7 status=converged g_rel: 3.0e-01 7.8e-02 4.9e-02 3.1e-02 7.6e-03 8.7e-04 1.3e-05 8.4e-09
+HISTORY_STAGE field=lester_brk eps=0.5 N=24 cand=ii s=0.50 its=4 status=converged g_rel: 2.4e-01 1.1e-02 1.4e-03 2.1e-06 1.4e-10
+HISTORY_STAGE field=lester_brk eps=0.5 N=24 cand=ii s=1.00 its=16 status=converged g_rel: 4.9e-01 3.9e-01 3.5e-01 2.7e-01 2.0e-01 1.5e-01 1.5e-01 1.1e-01 4.9e-02 2.2e-02 1.1e-02 7.3e-03 5.5e-03 6.9e-04 1.7e-05 4.1e-09 2.0e-14
+DIAG field=lester_brk eps=0.5 N=24 e_v(f1,f2,f3)=(7.850e-03,2.146e-03,2.909e-03) max|div_h c|=1.5e-14 nat_defect|c_perp(out)|=2.047e-01 (vD: 2.048e-01) |c_perp(out)-vD_perp(out)|=6.736e-03 |c1(out)-f1_in|=1.179e-11 |c1(out)-vD_f1(out)|=1.179e-11
+VDREF field=lester_brk eps=0.5 N=24 |vD| p0.1/1/5/50=0.6373/0.6854/0.7811/0.9943 min|vD|=0.6305
+MEANFLUX candidate field=lester_brk eps=0.5 N=24 active=True plane=0 S2=-6.182e-20 S3=-7.276e-18 | spread over planes max|S-S[plane]|=(1.15e-07,1.08e-08) mean over planes=(-2.046e-18,-2.744e-09) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(5.75e-08,1.60e-08) balance identity defect=2.1e-17 | vD_faces: S2=+1.15e-17 S3=-1.31e-17 spread=(1.3e-13,2.9e-17)
+MEANFLUX oracle field=lester_brk eps=0.5 N=24 active=True plane=0 S2=+1.678e-17 S3=+5.782e-08 | spread over planes max|S-S[plane]|=(5.12e-06,2.67e-07) mean over planes=(+1.851e-18,-2.920e-11) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(2.72e-06,3.38e-07) balance identity defect=1.6e-17 | vD_faces: S2=+1.15e-17 S3=-1.31e-17 spread=(1.3e-13,2.9e-17)
+CASE field=lester_brk eps=0.5 N=24 cand=ii | r_F=1.969e-14 its=27 | e_v=5.040e-03 e_psi=8.003e-02 e_i=(1.415e-03,2.114e-03) e_div=5.510e-15 min_c=6.284e-01 p0.1=6.347e-01 p1=6.871e-01 p5=7.698e-01 p50=9.936e-01 | t=4981.3
+DIAG_ORACLE field=lester_brk eps=0.5 N=24 e_v(f1,f2,f3)=(1.859e-03,8.723e-04,5.668e-04) max|div_h c|=1.3e-14 nat_defect|c_perp(out)|=2.036e-01 (vD: 2.048e-01) |c_perp(out)-vD_perp(out)|=1.616e-03 |c1(out)-f1_in|=1.147e-03 |c1(out)-vD_f1(out)|=1.147e-03
+CASE field=lester_brk eps=0.5 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=1.241e-03 e_psi=0.000e+00 e_i=(8.748e-04,1.310e-03) e_div=4.696e-15 min_c=6.358e-01 p0.1=6.414e-01 p1=6.955e-01 p5=7.750e-01 p50=9.945e-01 | t=0.0
+KELVIN field=lester_brk eps=0.5 N=24 cand=ii E(oracle)-E_min=+1.468e-05 (Q1 energy: the TPFA Kelvin identity does not apply; TPFA flux shown for reference) e_v(TPFA kelvin flux vs vD_faces)=2.924e-03 |c_min - c_tpfa|/rms(vD)=2.533e-03 |c_oracle - c_tpfa|/rms(vD)=3.054e-03 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(3.90e-07,1.77e-08) oracle=(2.03e-06,3.65e-11)

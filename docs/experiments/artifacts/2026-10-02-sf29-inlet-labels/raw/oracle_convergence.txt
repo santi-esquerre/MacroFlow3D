@@ -1,0 +1,49 @@
+# oracle.py --convergence gauss:0.25 gauss_ch:0.25 | python 3.13.13 numpy 2.5.0
+REF field=gauss eps=0.25 nphi=32 shape=(32, 32, 32) pcg_res=1.0e-13 its=29 max(d1phi)=-0.7059 (v1>0 OK) a=(+0.98998289,+3.01e-04,-4.56e-03) modes=15376 nf=64 Q0-1=-3.6e-12 cont_res=8.5e-10 inlet_min_v1=0.6327 t_ref=2.4s
+ORACLE field=gauss eps=0.25 N=16 planes=16 roundtrip_max=1.6e-14 nfev_sum=4040 nfev_rt_sum=3980 nfev_max=458 t_oracle=6.7s t_faces=1.8s cache_hit=True
+CHECK field=gauss eps=0.25 N=16 vertex-plane mean(v1)-1 (N-point rule): max=3.2e-11 | face-flux div_h: rms/v_rms=6.9e-07 max/v_rms=4.2e-06 | f1 mean-1: max=4.3e-12
+CHECK field=gauss eps=0.25 return map (closure-note points, 16): nonuniform_rms=4.655e-03 max|d|=6.624e-03 mean=(-2.06e-04,+5.81e-05) roundtrip=7.1e-14
+CHECK field=gauss eps=0.25 N=16 max|psi_or(outlet)-psi0(inlet)|=8.9e-03 max|psi_or-affine|=9.305e-02 min|c|/v_rms=0.524 |vD| p0.1/1/5/50 = 0.5459/0.6343/0.7293/0.9820 min|vD|=0.5051
+CASE field=gauss eps=0.25 N=16 cand=oracle | r_F=nan its=nan | e_v=1.673e-02 e_psi=0.000e+00 e_i=(4.035e-03,3.422e-03) e_div=2.007e-02 min_c=5.347e-01 p0.1=5.757e-01 p1=6.543e-01 p5=7.457e-01 p50=9.829e-01 | t=3.9
+REF field=gauss eps=0.25 nphi=32 shape=(32, 32, 32) pcg_res=1.0e-13 its=29 max(d1phi)=-0.7059 (v1>0 OK) a=(+0.98998289,+3.01e-04,-4.56e-03) modes=15376 nf=64 Q0-1=-3.6e-12 cont_res=8.5e-10 inlet_min_v1=0.6327 t_ref=2.2s
+ORACLE field=gauss eps=0.25 N=32 planes=32 roundtrip_max=2.5e-14 nfev_sum=7648 nfev_rt_sum=7588 nfev_max=446 t_oracle=40.8s t_faces=10.2s cache_hit=False
+CHECK field=gauss eps=0.25 N=32 vertex-plane mean(v1)-1 (N-point rule): max=3.6e-12 | face-flux div_h: rms/v_rms=1.1e-08 max/v_rms=9.3e-08 | f1 mean-1: max=3.6e-12
+CHECK field=gauss eps=0.25 return map (closure-note points, 16): nonuniform_rms=4.655e-03 max|d|=6.624e-03 mean=(-2.06e-04,+5.81e-05) roundtrip=7.1e-14
+CHECK field=gauss eps=0.25 N=32 max|psi_or(outlet)-psi0(inlet)|=9.0e-03 max|psi_or-affine|=9.584e-02 min|c|/v_rms=0.502 |vD| p0.1/1/5/50 = 0.5387/0.6258/0.7290/0.9833 min|vD|=0.5051
+CASE field=gauss eps=0.25 N=32 cand=oracle | r_F=nan its=nan | e_v=4.328e-03 e_psi=0.000e+00 e_i=(1.006e-03,8.323e-04) e_div=5.986e-03 min_c=5.125e-01 p0.1=5.466e-01 p1=6.321e-01 p5=7.334e-01 p50=9.836e-01 | t=56.5
+REF field=gauss eps=0.25 nphi=32 shape=(32, 32, 32) pcg_res=1.0e-13 its=29 max(d1phi)=-0.7059 (v1>0 OK) a=(+0.98998289,+3.01e-04,-4.56e-03) modes=15376 nf=64 Q0-1=-3.6e-12 cont_res=8.5e-10 inlet_min_v1=0.6327 t_ref=2.4s
+ORACLE field=gauss eps=0.25 N=48 planes=48 roundtrip_max=3.0e-14 nfev_sum=11292 nfev_rt_sum=11208 nfev_max=446 t_oracle=95.9s t_faces=24.5s cache_hit=False
+CHECK field=gauss eps=0.25 N=48 vertex-plane mean(v1)-1 (N-point rule): max=3.6e-12 | face-flux div_h: rms/v_rms=2.3e-09 max/v_rms=2.6e-08 | f1 mean-1: max=3.6e-12
+CHECK field=gauss eps=0.25 return map (closure-note points, 16): nonuniform_rms=4.655e-03 max|d|=6.624e-03 mean=(-2.06e-04,+5.81e-05) roundtrip=7.1e-14
+CHECK field=gauss eps=0.25 N=48 max|psi_or(outlet)-psi0(inlet)|=9.0e-03 max|psi_or-affine|=9.614e-02 min|c|/v_rms=0.496 |vD| p0.1/1/5/50 = 0.5392/0.6246/0.7290/0.9831 min|vD|=0.5030
+CASE field=gauss eps=0.25 N=48 cand=oracle | r_F=nan its=nan | e_v=1.936e-03 e_psi=0.000e+00 e_i=(4.434e-04,3.643e-04) e_div=2.756e-03 min_c=5.063e-01 p0.1=5.425e-01 p1=6.273e-01 p5=7.311e-01 p50=9.832e-01 | t=128.4
+ORDER field=gauss eps=0.25 e_v: 1.673e-02 4.328e-03 1.936e-03 | orders 1.95 1.98
+ORDER field=gauss eps=0.25 e_i1: 4.035e-03 1.006e-03 4.434e-04 | orders 2.00 2.02
+ORDER field=gauss eps=0.25 e_i2: 3.422e-03 8.323e-04 3.643e-04 | orders 2.04 2.04
+ORDER field=gauss eps=0.25 e_div: 2.007e-02 5.986e-03 2.756e-03 | orders 1.75 1.91
+ORDER field=gauss eps=0.25 min|c|: 0.5347 0.5125 0.5063
+REF field=gauss_ch eps=0.25 nphi=48 shape=(96, 48, 48) pcg_res=8.8e-14 its=30 max(d1phi)=-0.6545 (v1>0 OK) a=(+1.01193444,+0.00e+00,+0.00e+00) modes=107160 nf=96 Q0-1=+8.1e-12 cont_res=2.9e-09 inlet_min_v1=0.5832 t_ref=3.9s
+ORACLE field=gauss_ch eps=0.25 N=16 planes=16 roundtrip_max=4.5e-14 nfev_sum=4880 nfev_rt_sum=4892 nfev_max=578 t_oracle=11.6s t_faces=2.1s cache_hit=True
+CHECK field=gauss_ch eps=0.25 N=16 vertex-plane mean(v1)-1 (N-point rule): max=5.0e-11 | face-flux div_h: rms/v_rms=2.1e-06 max/v_rms=2.2e-05 | f1 mean-1: max=9.0e-12
+CHECK field=gauss_ch eps=0.25 constant-head faces: max|v_perp| inlet=1.5e-16 outlet=1.6e-16 (v_rms=1.022) transverse_flux=(1.3e-19,-2.6e-19)
+CHECK field=gauss_ch eps=0.25 N=16 max|psi_or(outlet)-psi0(inlet)|=2.1e-02 max|psi_or-affine|=1.170e-01 min|c|/v_rms=0.572 |vD| p0.1/1/5/50 = 0.5880/0.6563/0.7271/0.9722 min|vD|=0.5559
+CASE field=gauss_ch eps=0.25 N=16 cand=oracle | r_F=nan its=nan | e_v=1.657e-02 e_psi=0.000e+00 e_i=(4.603e-03,4.309e-03) e_div=1.993e-02 min_c=5.843e-01 p0.1=6.098e-01 p1=6.771e-01 p5=7.431e-01 p50=9.746e-01 | t=4.6
+REF field=gauss_ch eps=0.25 nphi=48 shape=(96, 48, 48) pcg_res=8.8e-14 its=30 max(d1phi)=-0.6545 (v1>0 OK) a=(+1.01193444,+0.00e+00,+0.00e+00) modes=107160 nf=96 Q0-1=+8.1e-12 cont_res=2.9e-09 inlet_min_v1=0.5832 t_ref=4.1s
+ORACLE field=gauss_ch eps=0.25 N=32 planes=32 roundtrip_max=4.0e-14 nfev_sum=9280 nfev_rt_sum=9484 nfev_max=578 t_oracle=70.0s t_faces=9.6s cache_hit=False
+CHECK field=gauss_ch eps=0.25 N=32 vertex-plane mean(v1)-1 (N-point rule): max=8.1e-12 | face-flux div_h: rms/v_rms=3.6e-08 max/v_rms=4.6e-07 | f1 mean-1: max=8.1e-12
+CHECK field=gauss_ch eps=0.25 constant-head faces: max|v_perp| inlet=1.8e-16 outlet=2.4e-16 (v_rms=1.022) transverse_flux=(1.3e-19,-2.6e-19)
+CHECK field=gauss_ch eps=0.25 N=32 max|psi_or(outlet)-psi0(inlet)|=2.1e-02 max|psi_or-affine|=1.186e-01 min|c|/v_rms=0.549 |vD| p0.1/1/5/50 = 0.5916/0.6553/0.7306/0.9727 min|vD|=0.5539
+CASE field=gauss_ch eps=0.25 N=32 cand=oracle | r_F=nan its=nan | e_v=4.303e-03 e_psi=0.000e+00 e_i=(1.220e-03,1.133e-03) e_div=6.262e-03 min_c=5.610e-01 p0.1=5.973e-01 p1=6.611e-01 p5=7.352e-01 p50=9.731e-01 | t=86.0
+REF field=gauss_ch eps=0.25 nphi=48 shape=(96, 48, 48) pcg_res=8.8e-14 its=30 max(d1phi)=-0.6545 (v1>0 OK) a=(+1.01193444,+0.00e+00,+0.00e+00) modes=107160 nf=96 Q0-1=+8.1e-12 cont_res=2.9e-09 inlet_min_v1=0.5832 t_ref=4.2s
+ORACLE field=gauss_ch eps=0.25 N=48 planes=48 roundtrip_max=5.1e-14 nfev_sum=13704 nfev_rt_sum=14256 nfev_max=578 t_oracle=186.2s t_faces=27.7s cache_hit=False
+CHECK field=gauss_ch eps=0.25 N=48 vertex-plane mean(v1)-1 (N-point rule): max=8.1e-12 | face-flux div_h: rms/v_rms=6.9e-09 max/v_rms=9.1e-08 | f1 mean-1: max=8.1e-12
+CHECK field=gauss_ch eps=0.25 constant-head faces: max|v_perp| inlet=2.2e-16 outlet=2.3e-16 (v_rms=1.022) transverse_flux=(1.3e-19,-2.6e-19)
+CHECK field=gauss_ch eps=0.25 N=48 max|psi_or(outlet)-psi0(inlet)|=2.1e-02 max|psi_or-affine|=1.193e-01 min|c|/v_rms=0.542 |vD| p0.1/1/5/50 = 0.5899/0.6556/0.7309/0.9733 min|vD|=0.5503
+CASE field=gauss_ch eps=0.25 N=48 cand=oracle | r_F=nan its=nan | e_v=1.927e-03 e_psi=0.000e+00 e_i=(5.499e-04,5.103e-04) e_div=2.922e-03 min_c=5.535e-01 p0.1=5.927e-01 p1=6.581e-01 p5=7.329e-01 p50=9.735e-01 | t=222.7
+ORDER field=gauss_ch eps=0.25 e_v: 1.657e-02 4.303e-03 1.927e-03 | orders 1.95 1.98
+ORDER field=gauss_ch eps=0.25 e_i1: 4.603e-03 1.220e-03 5.499e-04 | orders 1.91 1.97
+ORDER field=gauss_ch eps=0.25 e_i2: 4.309e-03 1.133e-03 5.103e-04 | orders 1.93 1.97
+ORDER field=gauss_ch eps=0.25 e_div: 1.993e-02 6.262e-03 2.922e-03 | orders 1.67 1.88
+ORDER field=gauss_ch eps=0.25 min|c|: 0.5843 0.5610 0.5535
+# total 502.0s
+python3 oracle.py --convergence gauss:0.25 gauss_ch:0.25  7481,19s user 4,55s system 1488% cpu 8:22,81 total

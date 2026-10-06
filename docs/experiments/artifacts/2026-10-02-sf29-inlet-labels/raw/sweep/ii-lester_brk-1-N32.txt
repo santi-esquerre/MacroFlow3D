@@ -1,0 +1,40 @@
+RUN_ALL cell=ii-lester_brk-1-N32 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py lester_brk:1:32
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=lester_brk:1:32
+======== candidate (ii) energy=q1 q=center lester_brk:1:32  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=2.636e-01 c_rel=1.542e-03 E=5.038482083264884e-01 |F|=1.064e-02 nu=1.0e-04
+    step alpha=1 |d|=1.63e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3462070)=140.03s solve[splu]=559.07s
+  NEWTON s=0.25 it= 1 g_rel=3.119e-02 c_rel=1.973e-02 E=4.989292868126193e-01 |F|=1.267e-03 nu=1.0e-05
+    step alpha=1 |d|=9.95e-01 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3465054)=44.03s solve[splu]=388.73s
+  NEWTON s=0.25 it= 2 g_rel=1.120e-02 c_rel=1.655e-02 E=4.988218303131463e-01 |F|=4.737e-04 nu=1.0e-06
+    step alpha=1 |d|=1.40e-01 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3465176)=33.09s solve[splu]=361.92s
+  NEWTON s=0.25 it= 3 g_rel=5.502e-04 c_rel=6.362e-04 E=4.988172361558640e-01 |F|=2.297e-05 nu=1.0e-07
+    step alpha=1 |d|=1.44e-02 nu=1.0e-07 trials=1 hess(ngrad=192 nnz=3464910)=59.74s solve[splu]=549.20s
+  NEWTON s=0.25 it= 4 g_rel=1.277e-05 c_rel=2.503e-05 E=4.988172041617149e-01 |F|=5.306e-07 nu=1.0e-08
+    step alpha=1 |d|=1.27e-04 nu=1.0e-08 trials=1 hess(ngrad=192 nnz=3462916)=66.93s solve[splu]=663.48s
+  NEWTON s=0.25 it= 5 g_rel=1.261e-09 c_rel=2.514e-09 E=4.988172035297753e-01 |F|=5.251e-11 nu=1.0e-09
+  NEWTON s=0.50 it= 0 g_rel=2.215e-01 c_rel=6.557e-02 E=4.991747758105584e-01 |F|=9.074e-03 nu=1.0e-04
+    step alpha=0.25 |d|=6.25e+00 nu=1.0e-03 trials=2 hess(ngrad=192 nnz=3462660)=54.00s solve[splu]=1603.93s
+  NEWTON s=0.50 it= 1 g_rel=1.776e-01 c_rel=9.591e-02 E=4.977097229117582e-01 |F|=7.304e-03 nu=1.0e-03
+    step alpha=0.25 |d|=3.18e+00 nu=1.0e-03 trials=1 hess(ngrad=192 nnz=3464980)=59.05s solve[splu]=466.26s
+  NEWTON s=0.50 it= 2 g_rel=1.368e-01 c_rel=7.242e-02 E=4.967263346263278e-01 |F|=5.629e-03 nu=1.0e-03
+    step alpha=1 |d|=7.44e-01 nu=1.0e-02 trials=2 hess(ngrad=192 nnz=3465160)=41.83s solve[splu]=1350.59s
+  NEWTON s=0.50 it= 3 g_rel=1.951e-02 c_rel=8.889e-03 E=4.954395113312829e-01 |F|=7.887e-04 nu=1.0e-03
+    step alpha=0.5 |d|=7.32e-01 nu=1.0e-03 trials=1 hess(ngrad=192 nnz=3465162)=46.08s solve[splu]=497.74s
+  NEWTON s=0.50 it= 4 g_rel=1.212e-02 c_rel=6.228e-03 E=4.953637190651284e-01 |F|=4.923e-04 nu=1.0e-03
+    step alpha=1 |d|=4.58e-01 nu=1.0e-03 trials=1 hess(ngrad=192 nnz=3465170)=57.12s solve[splu]=408.74s
+  NEWTON s=0.50 it= 5 g_rel=9.812e-03 c_rel=9.490e-03 E=4.953201145039000e-01 |F|=4.061e-04 nu=1.0e-04
+    step alpha=1 |d|=2.38e-01 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465114)=42.47s solve[splu]=459.38s
+  NEWTON s=0.50 it= 6 g_rel=2.501e-03 c_rel=2.992e-03 E=4.953151969302785e-01 |F|=1.040e-04 nu=1.0e-05
+    step alpha=1 |d|=6.11e-02 nu=1.0e-05 trials=1 hess(ngrad=192 nnz=3464284)=50.09s solve[splu]=649.90s
+  NEWTON s=0.50 it= 7 g_rel=5.572e-04 c_rel=7.283e-04 E=4.953150320877318e-01 |F|=2.301e-05 nu=1.0e-06
+    step alpha=1 |d|=9.10e-03 nu=1.0e-06 trials=1 hess(ngrad=192 nnz=3463282)=46.36s solve[splu]=609.27s
+  NEWTON s=0.50 it= 8 g_rel=9.965e-06 c_rel=1.634e-05 E=4.953150338012848e-01 |F|=4.124e-07 nu=1.0e-07
+    step alpha=1 |d|=2.41e-04 nu=1.0e-07 trials=1 hess(ngrad=192 nnz=3463020)=51.24s solve[splu]=641.81s
+  NEWTON s=0.50 it= 9 g_rel=1.412e-08 c_rel=2.264e-08 E=4.953150336432620e-01 |F|=5.847e-10 nu=1.0e-08
+    step alpha=1 |d|=2.16e-07 nu=1.0e-08 trials=1 hess(ngrad=192 nnz=3462618)=79.33s solve[splu]=1153.23s
+  NEWTON s=0.50 it=10 g_rel=8.247e-15 c_rel=1.235e-14 E=4.953150336431645e-01 |F|=3.403e-16 nu=1.0e-09
+  NEWTON s=1.00 it= 0 g_rel=4.529e-01 c_rel=1.159e-01 E=4.967871158380117e-01 |F|=1.855e-02 nu=1.0e-04
+    step alpha=0.125 |d|=9.70e+00 nu=1.0e-03 trials=2 hess(ngrad=192 nnz=3462546)=88.44s solve[splu]=1886.34s
+  NEWTON s=1.00 it= 1 g_rel=4.232e-01 c_rel=1.252e-01 E=4.937108699971732e-01 |F|=1.728e-02 nu=1.0e-03
+
+RUN_ALL TIMEOUT after 14400 s (cell wall cap); process group killed

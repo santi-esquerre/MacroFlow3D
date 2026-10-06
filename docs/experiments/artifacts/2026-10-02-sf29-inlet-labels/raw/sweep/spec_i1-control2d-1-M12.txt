@@ -1,0 +1,28 @@
+RUN_ALL cell=spec_i1-control2d-1-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 control2d:1:12:i1 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=12 cand=i1 (from eps=0, u=0)
+  NEWTON control2d:0.25:12:i1 it= 0 r_F=1.703e+00 r_out=8.374e-02
+  NEWTON control2d:0.25:12:i1 it= 1 r_F=1.644e-11 r_out=3.086e-13 lambda=1 |dx|max=4.93e-02 lin=splu rel=2.8e-15 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON control2d:0.25:12:i1 it= 2 r_F=5.019e-16 r_out=5.182e-17 lambda=1 |dx|max=4.05e-13 lin=splu rel=2.7e-15 lits=0 t_jac=0.2s t_lin=0.4s
+  STAGE_END field=control2d eps=0.25 N=12 cand=i1 status=converged its=2 r_F=5.019e-16 r_out=5.182e-17 -> accepted
+STAGE field=control2d eps=0.5 N=12 cand=i1 (from eps=0.25, warm start)
+  NEWTON control2d:0.5:12:i1 it= 0 r_F=1.600e+00 r_out=8.535e-02
+  NEWTON control2d:0.5:12:i1 it= 1 r_F=1.401e-11 r_out=1.002e-12 lambda=1 |dx|max=4.56e-02 lin=splu rel=3.1e-15 lits=0 t_jac=0.2s t_lin=0.6s
+  NEWTON control2d:0.5:12:i1 it= 2 r_F=1.046e-15 r_out=1.066e-16 lambda=1 |dx|max=1.37e-12 lin=splu rel=7.2e-15 lits=0 t_jac=0.2s t_lin=0.5s
+  STAGE_END field=control2d eps=0.5 N=12 cand=i1 status=converged its=2 r_F=1.046e-15 r_out=1.066e-16 -> accepted
+STAGE field=control2d eps=1 N=12 cand=i1 (from eps=0.5, warm start)
+  NEWTON control2d:1:12:i1 it= 0 r_F=2.696e+00 r_out=1.743e-01
+  NEWTON control2d:1:12:i1 it= 1 r_F=1.155e-10 r_out=5.634e-12 lambda=1 |dx|max=1.36e-01 lin=splu rel=5.5e-15 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON control2d:1:12:i1 it= 2 r_F=2.293e-15 r_out=2.085e-16 lambda=1 |dx|max=3.95e-11 lin=splu rel=2.2e-14 lits=0 t_jac=0.3s t_lin=0.8s
+  STAGE_END field=control2d eps=1 N=12 cand=i1 status=converged its=2 r_F=2.293e-15 r_out=2.085e-16 -> accepted
+PATH field=control2d eps=1 N=12 cand=i1 continuation path: 0.25->0.5->1
+CASE field=control2d eps=1 N=12 cand=i1 | r_F=2.293e-15 its=2 | e_v=8.924e-02 e_psi=5.368e-01 e_i=(7.253e-02,6.508e-11) e_div=7.324e-11 min_c=2.573e-01 p0.1=2.573e-01 p1=2.687e-01 p5=3.575e-01 p50=9.785e-01 | t=16.5
+CASE field=control2d eps=1 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=5.615e-02 e_psi=0.000e+00 e_i=(5.076e-02,0.000e+00) e_div=1.034e-15 min_c=2.652e-01 p0.1=2.652e-01 p1=2.727e-01 p5=3.591e-01 p50=9.776e-01 | t=0.0
+EXTRA field=control2d eps=1 N=12 cand=i1 status=converged r_F=2.293e-15 r_out=2.085e-16 | outlet c_perp-vperp_in: cand=9.859e-16 oracle_fd=7.896e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=7.553e-02 oracle_fd=2.715e-02; j=1 cand=3.186e-01 oracle_fd=3.107e-01; j=1 vs vD(j=1) cand=5.159e-02 oracle_fd=2.332e-02 | min|c|/v_rms=0.2152 min|vD|/v_rms=0.2080 e_i1=7.253e-02 e_i2=6.508e-11 | t=16.5s
+HISTORY field=control2d eps=1 N=12 cand=i1 r_F: 2.70e+00 1.16e-10 2.29e-15
+HISTORY field=control2d eps=1 N=12 cand=i1 r_out: 1.74e-01 5.63e-12 2.08e-16
+SPECTRUM field=control2d eps=1 N=12 cand=i1 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=3456 smax=7.894e+03 t_jac=10.3s t_svd=9.8s
+SPECTRUM field=control2d eps=1 N=12 cand=i1 state=converged smallest12 rel sv: 1.09e-04 1.09e-04 1.13e-04 1.27e-04 1.27e-04 1.33e-04 1.33e-04 1.64e-04 1.64e-04 1.86e-04 1.86e-04 1.94e-04
+SPECTRUM field=control2d eps=1 N=12 cand=i1 state=converged counts <1e-2:316 <1e-3:26 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.577e+00 after the 17 smallest (2.47e-04 -> 3.90e-04) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i1_control2d_1_12.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

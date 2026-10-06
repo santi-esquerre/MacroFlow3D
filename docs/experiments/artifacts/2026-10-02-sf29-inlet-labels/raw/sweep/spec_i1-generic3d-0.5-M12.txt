@@ -1,0 +1,31 @@
+RUN_ALL cell=spec_i1-generic3d-0.5-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 generic3d:0.5:12:i1 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=generic3d eps=0.25 N=12 cand=i1 (from eps=0, u=0)
+  NEWTON generic3d:0.25:12:i1 it= 0 r_F=2.022e+00 r_out=1.339e-01
+  NEWTON generic3d:0.25:12:i1 it= 1 r_F=1.256e-01 r_out=1.908e-02 lambda=1 |dx|max=6.58e-02 lin=splu rel=3.9e-15 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON generic3d:0.25:12:i1 it= 2 r_F=3.851e-02 r_out=1.292e-03 lambda=1 |dx|max=2.44e-02 lin=splu rel=2.4e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON generic3d:0.25:12:i1 it= 3 r_F=9.844e-04 r_out=1.715e-05 lambda=1 |dx|max=4.48e-03 lin=splu rel=7.9e-15 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON generic3d:0.25:12:i1 it= 4 r_F=2.749e-06 r_out=4.242e-08 lambda=1 |dx|max=4.21e-04 lin=splu rel=1.8e-14 lits=0 t_jac=0.2s t_lin=0.6s
+  NEWTON generic3d:0.25:12:i1 it= 5 r_F=9.401e-12 r_out=1.446e-13 lambda=1 |dx|max=3.71e-07 lin=splu rel=1.1e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON generic3d:0.25:12:i1 it= 6 r_F=8.735e-16 r_out=7.013e-17 lambda=1 |dx|max=1.37e-12 lin=splu rel=1.2e-14 lits=0 t_jac=0.3s t_lin=0.4s
+  STAGE_END field=generic3d eps=0.25 N=12 cand=i1 status=converged its=6 r_F=8.735e-16 r_out=7.013e-17 -> accepted
+STAGE field=generic3d eps=0.5 N=12 cand=i1 (from eps=0.25, warm start)
+  NEWTON generic3d:0.5:12:i1 it= 0 r_F=1.837e+00 r_out=1.733e-01
+  NEWTON generic3d:0.5:12:i1 it= 1 r_F=1.411e-01 r_out=3.179e-02 lambda=1 |dx|max=8.10e-02 lin=splu rel=5.6e-15 lits=0 t_jac=0.2s t_lin=0.6s
+  NEWTON generic3d:0.5:12:i1 it= 2 r_F=4.842e-02 r_out=2.643e-03 lambda=1 |dx|max=5.04e-02 lin=splu rel=3.8e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON generic3d:0.5:12:i1 it= 3 r_F=1.149e-03 r_out=3.671e-05 lambda=1 |dx|max=8.09e-03 lin=splu rel=1.4e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON generic3d:0.5:12:i1 it= 4 r_F=4.446e-06 r_out=2.155e-07 lambda=1 |dx|max=5.31e-04 lin=splu rel=3.1e-14 lits=0 t_jac=0.3s t_lin=0.5s
+  NEWTON generic3d:0.5:12:i1 it= 5 r_F=2.417e-11 r_out=5.857e-13 lambda=1 |dx|max=5.90e-07 lin=splu rel=9.6e-15 lits=0 t_jac=0.2s t_lin=0.7s
+  NEWTON generic3d:0.5:12:i1 it= 6 r_F=1.758e-15 r_out=1.558e-16 lambda=1 |dx|max=5.69e-12 lin=splu rel=1.6e-14 lits=0 t_jac=0.3s t_lin=0.7s
+  STAGE_END field=generic3d eps=0.5 N=12 cand=i1 status=converged its=6 r_F=1.758e-15 r_out=1.558e-16 -> accepted
+PATH field=generic3d eps=0.5 N=12 cand=i1 continuation path: 0.25->0.5
+CASE field=generic3d eps=0.5 N=12 cand=i1 | r_F=1.758e-15 its=6 | e_v=4.414e-02 e_psi=2.959e-01 e_i=(3.120e-02,2.722e-02) e_div=7.639e-02 min_c=3.903e-01 p0.1=4.061e-01 p1=4.638e-01 p5=5.656e-01 p50=9.927e-01 | t=17.1
+CASE field=generic3d eps=0.5 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=3.558e-02 e_psi=0.000e+00 e_i=(2.360e-02,1.964e-02) e_div=9.429e-02 min_c=4.046e-01 p0.1=4.234e-01 p1=4.816e-01 p5=5.800e-01 p50=9.947e-01 | t=0.0
+EXTRA field=generic3d eps=0.5 N=12 cand=i1 status=converged r_F=1.758e-15 r_out=1.558e-16 | outlet c_perp-vperp_in: cand=1.017e-15 oracle_fd=5.001e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=6.632e-02 oracle_fd=4.273e-02; j=1 cand=2.089e-01 oracle_fd=2.045e-01; j=1 vs vD(j=1) cand=4.197e-02 oracle_fd=2.471e-02 | min|c|/v_rms=0.3546 min|vD|/v_rms=0.3535 e_i1=3.120e-02 e_i2=2.722e-02 | t=17.1s
+HISTORY field=generic3d eps=0.5 N=12 cand=i1 r_F: 1.84e+00 1.41e-01 4.84e-02 1.15e-03 4.45e-06 2.42e-11 1.76e-15
+HISTORY field=generic3d eps=0.5 N=12 cand=i1 r_out: 1.73e-01 3.18e-02 2.64e-03 3.67e-05 2.15e-07 5.86e-13 1.56e-16
+SPECTRUM field=generic3d eps=0.5 N=12 cand=i1 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=3456 smax=4.740e+03 t_jac=9.0s t_svd=6.1s
+SPECTRUM field=generic3d eps=0.5 N=12 cand=i1 state=converged smallest12 rel sv: 3.29e-04 3.66e-04 3.97e-04 4.17e-04 4.26e-04 4.37e-04 6.60e-04 6.69e-04 6.90e-04 7.13e-04 8.24e-04 8.38e-04
+SPECTRUM field=generic3d eps=0.5 N=12 cand=i1 state=converged counts <1e-2:135 <1e-3:14 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.523e+00 after the 14 smallest (8.55e-04 -> 1.30e-03) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i1_generic3d_0.5_12.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

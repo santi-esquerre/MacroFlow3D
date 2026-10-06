@@ -1,0 +1,31 @@
+candidate_ii.py python=3.13.13 numpy=2.5.0 scipy=1.18.0 argv=--energy whitney --spectrum 12 uniform:0:12
+======== candidate (ii) energy=whitney q=center uniform:0:12  start=inlet
+note: |grad E_h(x0)| = 0 exactly (uniform state); g_rel reported as the absolute |grad L|
+  NEWTON s=0.25 it= 0 g_rel=0.000e+00 c_rel=0.000e+00 E=4.999999999999999e-01 |F|=0.000e+00 nu=1.0e-04
+  NEWTON s=0.50 it= 0 g_rel=0.000e+00 c_rel=0.000e+00 E=4.999999999999999e-01 |F|=0.000e+00 nu=1.0e-04
+  NEWTON s=1.00 it= 0 g_rel=0.000e+00 c_rel=0.000e+00 E=4.999999999999999e-01 |F|=0.000e+00 nu=1.0e-04
+SOLVE field=uniform eps=0 N=12 cand=ii_whitney energy=whitney q=center constrained=True meanflux_rows=2 solver=direct status=converged its=0 g_rel=0.000e+00 c_rel(max)=0.000e+00 f1_in mean-1=+2.2e-16 mu=0.0e+00 |lam|=0.000e+00 eta=(+0.000e+00,+0.000e+00) E_min=4.999999999999999e-01 E(oracle)=4.999999999999999e-01 E(oracle)-E_min=+0.000e+00 t_load=0.0s t_solve=0.0s
+HISTORY field=uniform eps=0 N=12 cand=ii_whitney g_rel: 0.0e+00 0.0e+00 0.0e+00
+HISTORY_STAGE field=uniform eps=0 N=12 cand=ii_whitney s=0.25 its=0 status=converged g_rel: 0.0e+00
+HISTORY_STAGE field=uniform eps=0 N=12 cand=ii_whitney s=0.50 its=0 status=converged g_rel: 0.0e+00
+HISTORY_STAGE field=uniform eps=0 N=12 cand=ii_whitney s=1.00 its=0 status=converged g_rel: 0.0e+00
+DIAG field=uniform eps=0 N=12 e_v(f1,f2,f3)=(3.746e-16,0.000e+00,0.000e+00) max|div_h c|=0.0e+00 nat_defect|c_perp(out)|=0.000e+00 (vD: 0.000e+00) |c_perp(out)-vD_perp(out)|=0.000e+00 |c1(out)-f1_in|=2.220e-16 |c1(out)-vD_f1(out)|=2.220e-16
+VDREF field=uniform eps=0 N=12 |vD| p0.1/1/5/50=1.0000/1.0000/1.0000/1.0000 min|vD|=1.0000
+MEANFLUX candidate field=uniform eps=0 N=12 active=True plane=0 S2=+0.000e+00 S3=+0.000e+00 | spread over planes max|S-S[plane]|=(0.00e+00,0.00e+00) mean over planes=(+0.000e+00,+0.000e+00) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(0.00e+00,0.00e+00) balance identity defect=0.0e+00 | vD_faces: S2=+0.00e+00 S3=+0.00e+00 spread=(0.0e+00,0.0e+00)
+MEANFLUX oracle field=uniform eps=0 N=12 active=True plane=0 S2=+0.000e+00 S3=+0.000e+00 | spread over planes max|S-S[plane]|=(0.00e+00,0.00e+00) mean over planes=(+0.000e+00,+0.000e+00) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(0.00e+00,0.00e+00) balance identity defect=0.0e+00 | vD_faces: S2=+0.00e+00 S3=+0.00e+00 spread=(0.0e+00,0.0e+00)
+CASE field=uniform eps=0 N=12 cand=ii_whitney | r_F=0.000e+00 its=0 | e_v=2.220e-16 e_psi=0.000e+00 e_i=(0.000e+00,0.000e+00) e_div=0.000e+00 min_c=1.000e+00 p0.1=1.000e+00 p1=1.000e+00 p5=1.000e+00 p50=1.000e+00 | t=0.0
+DIAG_ORACLE field=uniform eps=0 N=12 e_v(f1,f2,f3)=(3.746e-16,0.000e+00,0.000e+00) max|div_h c|=0.0e+00 nat_defect|c_perp(out)|=0.000e+00 (vD: 0.000e+00) |c_perp(out)-vD_perp(out)|=0.000e+00 |c1(out)-f1_in|=2.220e-16 |c1(out)-vD_f1(out)|=2.220e-16
+CASE field=uniform eps=0 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=2.220e-16 e_psi=0.000e+00 e_i=(0.000e+00,0.000e+00) e_div=0.000e+00 min_c=1.000e+00 p0.1=1.000e+00 p1=1.000e+00 p5=1.000e+00 p50=1.000e+00 | t=0.0
+KELVIN field=uniform eps=0 N=12 cand=ii_whitney E_kelvin=4.999999999999932e-01 E_min-E_kelvin=+6.661e-15 E(oracle)-E_kelvin=+6.661e-15 e_v(TPFA kelvin flux vs vD_faces)=1.623e-14 |c_min - c_tpfa|/rms(vD)=1.614e-14 |c_oracle - c_tpfa|/rms(vD)=1.614e-14 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(0.00e+00,0.00e+00) oracle=(0.00e+00,0.00e+00)
+SPECTRUM field=uniform eps=0 N=12 dense Hessian of the Lagrangian n=3456: eig min=-2.468e-16 max=6.612e-01 negative=145 (t=6.8s)
+SPECTRUM field=uniform eps=0 N=12 constraint Jacobian 146x3456 rank=144 (sigma: max=3.136e-01 min_kept=2.118e-02 dropped=3.2e-17 1.8e-17)
+SPECTRUM field=uniform eps=0 N=12 reduced Hessian Z^T H_L Z n=3312: eig min=-2.373e-16 max=6.610e-01 negative=143
+SPECTRUM reduced_hessian field=uniform eps=0 N=12 n=3312 smallest12: 3.62e-19 7.16e-19 8.44e-19 1.33e-18 2.38e-18 2.59e-18 3.13e-18 4.09e-18 4.60e-18 5.10e-18 5.63e-18 6.31e-18
+SPECTRUM reduced_hessian field=uniform eps=0 N=12 counts <1e-2:594 <1e-3:368 <1e-4:288 <1e-6:288 <1e-10:288 | largest gap below 1e-2: ratio=175310613919.01 after 288 values (r=7.60e-16 -> 1.33e-04)
+SPECTRUM reduced_hessian saved ../raw/spectrum_cand_ii_q1_ctl_whitney_uniform_0_12.txt
+SPECTRUM kkt field=uniform eps=0 N=12 n=3600 smallest12: 7.28e-19 1.03e-18 2.45e-18 2.97e-18 3.76e-18 4.07e-18 5.11e-18 5.45e-18 5.72e-18 6.55e-18 7.33e-18 7.48e-18
+SPECTRUM kkt field=uniform eps=0 N=12 counts <1e-2:594 <1e-3:368 <1e-4:288 <1e-6:288 <1e-10:288 | largest gap below 1e-2: ratio=192565924287.32 after 288 values (r=6.91e-16 -> 1.33e-04)
+SPECTRUM kkt saved ../raw/spectrum_cand_ii_q1_ctl_whitney_uniform_0_12_kkt.txt
+SPECTRUM hessian_L_full field=uniform eps=0 N=12 n=3456 smallest12: 3.68e-19 1.62e-18 2.05e-18 2.21e-18 3.10e-18 3.83e-18 4.40e-18 5.08e-18 5.73e-18 6.23e-18 7.05e-18 7.23e-18
+SPECTRUM hessian_L_full field=uniform eps=0 N=12 counts <1e-2:594 <1e-3:368 <1e-4:288 <1e-6:288 <1e-10:288 | largest gap below 1e-2: ratio=217160685810.65 after 288 values (r=6.13e-16 -> 1.33e-04)
+SPECTRUM hessian_L_full saved ../raw/spectrum_cand_ii_q1_ctl_whitney_uniform_0_12_hL.txt

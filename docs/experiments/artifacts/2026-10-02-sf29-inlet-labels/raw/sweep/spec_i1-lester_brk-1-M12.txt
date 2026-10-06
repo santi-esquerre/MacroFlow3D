@@ -1,0 +1,35 @@
+RUN_ALL cell=spec_i1-lester_brk-1-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 lester_brk:1:12:i1 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=lester_brk eps=0.25 N=12 cand=i1 (from eps=0, u=0)
+  NEWTON lester_brk:0.25:12:i1 it= 0 r_F=1.080e+00 r_out=5.955e-02
+  NEWTON lester_brk:0.25:12:i1 it= 1 r_F=2.844e-02 r_out=1.153e-03 lambda=1 |dx|max=2.03e-02 lin=splu rel=2.4e-15 lits=0 t_jac=0.3s t_lin=0.9s
+  NEWTON lester_brk:0.25:12:i1 it= 2 r_F=6.039e-04 r_out=3.163e-06 lambda=1 |dx|max=3.14e-03 lin=splu rel=8.9e-15 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON lester_brk:0.25:12:i1 it= 3 r_F=6.246e-08 r_out=3.877e-10 lambda=1 |dx|max=2.34e-05 lin=splu rel=4.1e-15 lits=0 t_jac=0.2s t_lin=0.6s
+  NEWTON lester_brk:0.25:12:i1 it= 4 r_F=1.732e-14 r_out=7.173e-17 lambda=1 |dx|max=9.84e-09 lin=splu rel=1.5e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  STAGE_END field=lester_brk eps=0.25 N=12 cand=i1 status=converged its=4 r_F=1.732e-14 r_out=7.173e-17 -> accepted
+STAGE field=lester_brk eps=0.5 N=12 cand=i1 (from eps=0.25, warm start)
+  NEWTON lester_brk:0.5:12:i1 it= 0 r_F=1.066e+00 r_out=5.870e-02
+  NEWTON lester_brk:0.5:12:i1 it= 1 r_F=2.711e-02 r_out=1.132e-03 lambda=1 |dx|max=2.19e-02 lin=splu rel=2.5e-15 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON lester_brk:0.5:12:i1 it= 2 r_F=6.316e-04 r_out=4.318e-06 lambda=1 |dx|max=2.94e-03 lin=splu rel=8.9e-15 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON lester_brk:0.5:12:i1 it= 3 r_F=6.939e-08 r_out=7.945e-10 lambda=1 |dx|max=2.50e-05 lin=splu rel=4.1e-15 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON lester_brk:0.5:12:i1 it= 4 r_F=2.191e-14 r_out=1.996e-16 lambda=1 |dx|max=1.30e-08 lin=splu rel=1.5e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  STAGE_END field=lester_brk eps=0.5 N=12 cand=i1 status=converged its=4 r_F=2.191e-14 r_out=1.996e-16 -> accepted
+STAGE field=lester_brk eps=1 N=12 cand=i1 (from eps=0.5, warm start)
+  NEWTON lester_brk:1:12:i1 it= 0 r_F=2.041e+00 r_out=1.114e-01
+  NEWTON lester_brk:1:12:i1 it= 1 r_F=1.293e-01 r_out=4.695e-03 lambda=1 |dx|max=6.03e-02 lin=splu rel=3.5e-15 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON lester_brk:1:12:i1 it= 2 r_F=2.175e-02 r_out=1.713e-04 lambda=1 |dx|max=1.66e-02 lin=splu rel=1.3e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON lester_brk:1:12:i1 it= 3 r_F=1.687e-04 r_out=2.570e-06 lambda=1 |dx|max=1.66e-03 lin=splu rel=5.7e-15 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON lester_brk:1:12:i1 it= 4 r_F=4.528e-08 r_out=7.802e-10 lambda=1 |dx|max=2.12e-05 lin=splu rel=1.1e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON lester_brk:1:12:i1 it= 5 r_F=1.356e-15 r_out=7.336e-17 lambda=1 |dx|max=4.82e-09 lin=splu rel=1.1e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  STAGE_END field=lester_brk eps=1 N=12 cand=i1 status=converged its=5 r_F=1.356e-15 r_out=7.336e-17 -> accepted
+PATH field=lester_brk eps=1 N=12 cand=i1 continuation path: 0.25->0.5->1
+CASE field=lester_brk eps=1 N=12 cand=i1 | r_F=1.356e-15 its=5 | e_v=9.071e-02 e_psi=5.352e-01 e_i=(1.496e-02,3.447e-02) e_div=7.419e-02 min_c=4.583e-01 p0.1=4.617e-01 p1=4.973e-01 p5=6.054e-01 p50=9.990e-01 | t=99.7
+CASE field=lester_brk eps=1 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=1.112e-01 e_psi=0.000e+00 e_i=(1.104e-02,1.480e-02) e_div=6.979e-02 min_c=5.013e-01 p0.1=5.014e-01 p1=5.420e-01 p5=6.400e-01 p50=9.958e-01 | t=0.0
+EXTRA field=lester_brk eps=1 N=12 cand=i1 status=converged r_F=1.356e-15 r_out=7.336e-17 | outlet c_perp-vperp_in: cand=9.834e-16 oracle_fd=3.039e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=8.479e-02 oracle_fd=2.528e-02; j=1 cand=4.874e-02 oracle_fd=5.616e-02; j=1 vs vD(j=1) cand=4.124e-02 oracle_fd=2.391e-02 | min|c|/v_rms=0.4334 min|vD|/v_rms=0.3892 e_i1=1.496e-02 e_i2=3.447e-02 | t=99.7s
+HISTORY field=lester_brk eps=1 N=12 cand=i1 r_F: 2.04e+00 1.29e-01 2.17e-02 1.69e-04 4.53e-08 1.36e-15
+HISTORY field=lester_brk eps=1 N=12 cand=i1 r_out: 1.11e-01 4.69e-03 1.71e-04 2.57e-06 7.80e-10 7.34e-17
+SPECTRUM field=lester_brk eps=1 N=12 cand=i1 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=3456 smax=2.805e+03 t_jac=9.8s t_svd=6.3s
+SPECTRUM field=lester_brk eps=1 N=12 cand=i1 state=converged smallest12 rel sv: 6.12e-04 6.88e-04 6.99e-04 7.02e-04 7.87e-04 7.88e-04 8.37e-04 8.62e-04 9.54e-04 9.95e-04 1.20e-03 1.30e-03
+SPECTRUM field=lester_brk eps=1 N=12 cand=i1 state=converged counts <1e-2:82 <1e-3:10 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.205e+00 after the 10 smallest (9.95e-04 -> 1.20e-03) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i1_lester_brk_1_12.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

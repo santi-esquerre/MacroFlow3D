@@ -1,0 +1,71 @@
+RUN_ALL cell=i1-lester2021-1-N48 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py lester2021:1:48:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=lester2021 eps=0.25 N=48 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=48 modes=1200 setup 0.4s
+  NEWTON lester2021:0.25:48:i1 it= 0 r_F=1.062e+00 r_out=6.088e-02
+  NEWTON lester2021:0.25:48:i1 it= 1 r_F=8.600e-02 r_out=2.973e-03 lambda=1 |dx|max=1.82e-02 lin=gmres+lin0 rel=2.6e-14 lits=130 t_jac=25.6s t_lin=47.3s
+  NEWTON lester2021:0.25:48:i1 it= 2 r_F=7.673e-02 r_out=7.301e-05 lambda=1 |dx|max=1.47e-02 lin=gmres+lin0 rel=9.1e-14 lits=111 t_jac=27.1s t_lin=37.7s
+  NEWTON lester2021:0.25:48:i1 it= 3 r_F=9.680e-03 r_out=2.135e-05 lambda=1 |dx|max=6.55e-03 lin=gmres+lin0 rel=2.6e-14 lits=101 t_jac=22.9s t_lin=31.7s
+  NEWTON lester2021:0.25:48:i1 it= 4 r_F=1.829e-03 r_out=8.187e-06 lambda=1 |dx|max=3.60e-03 lin=gmres+lin0 rel=4.0e-14 lits=84 t_jac=16.4s t_lin=18.3s
+  NEWTON lester2021:0.25:48:i1 it= 5 r_F=5.785e-06 r_out=1.917e-08 lambda=1 |dx|max=1.37e-04 lin=gmres+lin0 rel=3.0e-14 lits=65 t_jac=18.2s t_lin=16.6s
+  NEWTON lester2021:0.25:48:i1 it= 6 r_F=5.662e-10 r_out=1.157e-12 lambda=1 |dx|max=9.77e-07 lin=gmres+lin0 rel=8.1e-14 lits=67 t_jac=24.1s t_lin=22.5s
+  NEWTON lester2021:0.25:48:i1 it= 7 r_F=2.526e-15 r_out=1.298e-17 lambda=1 |dx|max=3.64e-11 lin=gmres+lin0 rel=2.3e-14 lits=69 t_jac=22.3s t_lin=14.3s
+  STAGE_END field=lester2021 eps=0.25 N=48 cand=i1 status=converged its=7 r_F=2.526e-15 r_out=1.298e-17 -> accepted
+STAGE field=lester2021 eps=0.5 N=48 cand=i1 (from eps=0.25, warm start)
+  NEWTON lester2021:0.5:48:i1 it= 0 r_F=1.056e+00 r_out=5.951e-02
+  NEWTON lester2021:0.5:48:i1 it= 1 r_F=7.263e-02 r_out=2.957e-03 lambda=1 |dx|max=1.79e-02 lin=gmres+lin0 rel=2.7e-14 lits=158 t_jac=19.3s t_lin=45.9s
+  NEWTON lester2021:0.5:48:i1 it= 2 r_F=5.863e-02 r_out=1.379e-04 lambda=1 |dx|max=1.34e-02 lin=gmres+lin0 rel=3.5e-14 lits=348 t_jac=22.6s t_lin=126.5s
+  NEWTON lester2021:0.5:48:i1 it= 3 r_F=4.053e-03 r_out=1.649e-05 lambda=1 |dx|max=4.22e-03 lin=gmres+lin0 rel=3.1e-14 lits=282 t_jac=25.3s t_lin=122.3s
+  NEWTON lester2021:0.5:48:i1 it= 4 r_F=5.056e-04 r_out=3.917e-06 lambda=1 |dx|max=1.93e-03 lin=gmres+lin0 rel=5.0e-14 lits=318 t_jac=25.5s t_lin=109.8s
+  NEWTON lester2021:0.5:48:i1 it= 5 r_F=2.179e-07 r_out=1.994e-09 lambda=1 |dx|max=3.75e-05 lin=gmres+lin0 rel=3.3e-14 lits=243 t_jac=20.5s t_lin=89.8s
+  NEWTON lester2021:0.5:48:i1 it= 6 r_F=1.066e-12 r_out=8.745e-15 lambda=1 |dx|max=9.24e-08 lin=gmres+lin0 rel=4.4e-14 lits=296 t_jac=17.7s t_lin=102.3s
+  NEWTON lester2021:0.5:48:i1 it= 7 r_F=5.048e-15 r_out=2.632e-17 lambda=1 |dx|max=4.14e-14 lin=gmres+lin0 rel=2.9e-14 lits=260 t_jac=21.3s t_lin=92.4s
+  STAGE_END field=lester2021 eps=0.5 N=48 cand=i1 status=converged its=7 r_F=5.048e-15 r_out=2.632e-17 -> accepted
+STAGE field=lester2021 eps=1 N=48 cand=i1 (from eps=0.5, warm start)
+  NEWTON lester2021:1:48:i1 it= 0 r_F=2.070e+00 r_out=1.097e-01
+  NEWTON lester2021:1:48:i1 it= 1 r_F=3.928e-01 r_out=1.253e-02 lambda=1 |dx|max=3.67e-02 lin=gmres+lin0 rel=1.1e-14 lits=542 t_jac=16.5s t_lin=172.9s
+  NEWTON lester2021:1:48:i1 it= 2 r_F=1.249e-01 r_out=2.713e-03 lambda=1 |dx|max=1.09e-02 lin=gmres+lin0 rel=2.6e-01 lits=900 t_jac=15.3s t_lin=296.3s
+  NEWTON lester2021:1:48:i1 it= 3 r_F=1.074e-01 r_out=2.622e-03 lambda=1 |dx|max=3.73e-03 lin=gmres+lin0 rel=8.6e-01 lits=900 t_jac=14.1s t_lin=280.0s
+  NEWTON lester2021:1:48:i1 it= 4 r_F=1.062e-01 r_out=2.600e-03 lambda=1 |dx|max=7.22e-04 lin=gmres+lin0 rel=9.9e-01 lits=900 t_jac=18.2s t_lin=297.9s
+  NEWTON lester2021:1:48:i1 it= 5 r_F=1.059e-01 r_out=2.584e-03 lambda=1 |dx|max=4.44e-04 lin=gmres+lin0 rel=1.0e+00 lits=900 t_jac=15.7s t_lin=375.7s
+  NEWTON lester2021:1:48:i1 it= 6 r_F=1.058e-01 r_out=2.587e-03 lambda=1 |dx|max=1.68e-04 lin=gmres+lin0 rel=1.0e+00 lits=900 t_jac=23.2s t_lin=387.4s
+  STAGE_END field=lester2021 eps=1 N=48 cand=i1 status=stagnation its=6 r_F=1.058e-01 r_out=2.587e-03 -> FAILED
+  CONTINUATION bisection 1/4: retry from eps=0.5 at eps=0.75
+STAGE field=lester2021 eps=0.75 N=48 cand=i1 (from eps=0.5, warm start)
+  NEWTON lester2021:0.75:48:i1 it= 0 r_F=1.038e+00 r_out=5.711e-02
+  NEWTON lester2021:0.75:48:i1 it= 1 r_F=5.784e-02 r_out=2.808e-03 lambda=1 |dx|max=1.73e-02 lin=gmres+lin0 rel=3.6e-14 lits=281 t_jac=19.6s t_lin=118.1s
+  NEWTON lester2021:0.75:48:i1 it= 2 r_F=4.136e-02 r_out=1.808e-04 lambda=1 |dx|max=1.13e-02 lin=gmres+lin0 rel=1.3e-02 lits=1800 t_jac=26.6s t_lin=752.6s
+  NEWTON lester2021:0.75:48:i1 it= 3 r_F=8.176e-03 r_out=2.547e-04 lambda=1 |dx|max=3.25e-03 lin=gmres+lin0 rel=1.9e-01 lits=900 t_jac=20.1s t_lin=422.5s
+  NEWTON lester2021:0.75:48:i1 it= 4 r_F=6.801e-03 r_out=1.777e-04 lambda=1 |dx|max=6.67e-04 lin=gmres+lin0 rel=8.2e-01 lits=900 t_jac=23.7s t_lin=406.7s
+  NEWTON lester2021:0.75:48:i1 it= 5 r_F=6.545e-03 r_out=1.696e-04 lambda=1 |dx|max=2.10e-04 lin=gmres+lin0 rel=9.6e-01 lits=900 t_jac=23.9s t_lin=433.2s
+  NEWTON lester2021:0.75:48:i1 it= 6 r_F=6.490e-03 r_out=1.701e-04 lambda=1 |dx|max=7.29e-05 lin=gmres+lin0 rel=9.9e-01 lits=900 t_jac=28.7s t_lin=453.7s
+  NEWTON lester2021:0.75:48:i1 it= 7 r_F=6.313e-03 r_out=1.682e-04 lambda=1 |dx|max=2.67e-04 lin=gmres+lin0 rel=9.7e-01 lits=900 t_jac=25.9s t_lin=429.5s
+  STAGE_END field=lester2021 eps=0.75 N=48 cand=i1 status=stagnation its=7 r_F=6.313e-03 r_out=1.682e-04 -> FAILED
+  CONTINUATION bisection 2/4: retry from eps=0.5 at eps=0.625
+STAGE field=lester2021 eps=0.625 N=48 cand=i1 (from eps=0.5, warm start)
+  NEWTON lester2021:0.625:48:i1 it= 0 r_F=5.201e-01 r_out=2.904e-02
+  NEWTON lester2021:0.625:48:i1 it= 1 r_F=1.031e-02 r_out=5.686e-04 lambda=1 |dx|max=8.50e-03 lin=gmres+lin0 rel=3.2e-14 lits=247 t_jac=24.9s t_lin=104.8s
+  NEWTON lester2021:0.625:48:i1 it= 2 r_F=3.361e-03 r_out=1.899e-05 lambda=1 |dx|max=3.09e-03 lin=gmres+lin0 rel=7.7e-14 lits=1172 t_jac=18.9s t_lin=576.5s
+  NEWTON lester2021:0.625:48:i1 it= 3 r_F=7.936e-06 r_out=3.674e-08 lambda=1 |dx|max=1.40e-04 lin=gmres+lin0 rel=2.2e-14 lits=1200 t_jac=31.8s t_lin=608.0s
+  NEWTON lester2021:0.625:48:i1 it= 4 r_F=1.534e-09 r_out=1.474e-11 lambda=1 |dx|max=3.12e-06 lin=gmres+lin0 rel=8.3e-14 lits=1200 t_jac=22.5s t_lin=582.7s
+  NEWTON lester2021:0.625:48:i1 it= 5 r_F=6.232e-15 r_out=3.338e-17 lambda=1 |dx|max=7.15e-11 lin=gmres+lin0 rel=1.1e-14 lits=1453 t_jac=29.8s t_lin=670.6s
+  STAGE_END field=lester2021 eps=0.625 N=48 cand=i1 status=converged its=5 r_F=6.232e-15 r_out=3.338e-17 -> accepted
+STAGE field=lester2021 eps=0.75 N=48 cand=i1 (from eps=0.625, warm start)
+  NEWTON lester2021:0.75:48:i1 it= 0 r_F=5.143e-01 r_out=2.835e-02
+  NEWTON lester2021:0.75:48:i1 it= 1 r_F=9.706e-03 r_out=5.492e-04 lambda=1 |dx|max=8.30e-03 lin=gmres+lin0 rel=1.1e-14 lits=1178 t_jac=23.8s t_lin=486.0s
+  NEWTON lester2021:0.75:48:i1 it= 2 r_F=3.019e-03 r_out=2.255e-05 lambda=1 |dx|max=2.94e-03 lin=gmres+lin0 rel=8.0e-03 lits=2400 t_jac=14.2s t_lin=865.8s
+  NEWTON lester2021:0.75:48:i1 it= 3 r_F=3.857e-04 r_out=1.256e-05 lambda=1 |dx|max=1.24e-04 lin=gmres+lin0 rel=1.3e-01 lits=1500 t_jac=20.2s t_lin=632.6s
+  NEWTON lester2021:0.75:48:i1 it= 4 r_F=3.514e-04 r_out=1.199e-05 lambda=1 |dx|max=3.30e-05 lin=gmres+lin0 rel=9.1e-01 lits=900 t_jac=24.9s t_lin=345.0s
+  NEWTON lester2021:0.75:48:i1 it= 5 r_F=3.346e-04 r_out=1.142e-05 lambda=1 |dx|max=1.04e-05 lin=gmres+lin0 rel=9.5e-01 lits=900 t_jac=15.6s t_lin=342.1s
+  NEWTON lester2021:0.75:48:i1 it= 6 r_F=3.285e-04 r_out=1.059e-05 lambda=1 |dx|max=1.31e-05 lin=gmres+lin0 rel=9.8e-01 lits=900 t_jac=19.6s t_lin=346.2s
+  NEWTON lester2021:0.75:48:i1 it= 7 r_F=3.234e-04 r_out=1.044e-05 lambda=1 |dx|max=6.19e-06 lin=gmres+lin0 rel=9.8e-01 lits=900 t_jac=22.7s t_lin=339.9s
+  STAGE_END field=lester2021 eps=0.75 N=48 cand=i1 status=stagnation its=7 r_F=3.234e-04 r_out=1.044e-05 -> FAILED
+  CONTINUATION bisection 3/4: retry from eps=0.625 at eps=0.6875
+STAGE field=lester2021 eps=0.6875 N=48 cand=i1 (from eps=0.625, warm start)
+  NEWTON lester2021:0.6875:48:i1 it= 0 r_F=2.577e-01 r_out=1.430e-02
+  NEWTON lester2021:0.6875:48:i1 it= 1 r_F=2.225e-03 r_out=9.783e-05 lambda=1 |dx|max=4.16e-03 lin=gmres+lin0 rel=1.1e-14 lits=1200 t_jac=18.0s t_lin=479.5s
+  NEWTON lester2021:0.6875:48:i1 it= 2 r_F=2.719e-04 r_out=2.525e-06 lambda=1 |dx|max=1.02e-03 lin=gmres+lin0 rel=2.3e-11 lits=6000 t_jac=22.7s t_lin=2593.9s
+  NEWTON lester2021:0.6875:48:i1 it= 3 r_F=1.605e-08 r_out=1.156e-10 lambda=1 |dx|max=6.06e-06 lin=gmres+lin0 rel=5.7e-08 lits=6000 t_jac=22.3s t_lin=2969.6s
+  NEWTON lester2021:0.6875:48:i1 it= 4 r_F=2.059e-13 r_out=8.006e-15 lambda=1 |dx|max=5.09e-09 lin=gmres+lin0 rel=1.4e-05 lits=6000 t_jac=23.9s t_lin=2547.1s
+
+RUN_ALL TIMEOUT after 21600 s (cell wall cap); process group killed

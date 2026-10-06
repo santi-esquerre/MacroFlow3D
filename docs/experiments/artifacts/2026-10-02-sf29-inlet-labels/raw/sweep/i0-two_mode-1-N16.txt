@@ -1,0 +1,48 @@
+RUN_ALL cell=i0-two_mode-1-N16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py two_mode:1:16:i0 --bisect 2 --lm 10
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 2, 'lm': 10, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=two_mode eps=0.25 N=16 cand=i0 (from eps=0, u=0)
+  NEWTON two_mode:0.25:16:i0 it= 0 r_F=1.553e+00 r_out=0.000e+00
+  NEWTON two_mode:0.25:16:i0 it= 1 r_F=1.479e+00 r_out=0.000e+00 lambda=0.125 |dx|max=2.74e-01 lin=splu rel=6.7e-14 lits=0 t_jac=0.6s t_lin=4.5s
+  NEWTON two_mode:0.25:16:i0 it= 2 r_F=1.428e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=1.04e+00 lin=splu rel=1.8e-13 lits=0 t_jac=0.5s t_lin=4.9s
+  NEWTON two_mode:0.25:16:i0 it= 3 r_F=1.409e+00 r_out=0.000e+00 lambda=0.001953 |dx|max=2.77e+01 lin=splu rel=5.8e-12 lits=0 t_jac=0.7s t_lin=3.5s
+  NEWTON two_mode:0.25:16:i0 it= 4 line search failed (min lambda 1/1024): merit 1.409e+00 -> 1.088e+01  [splu rel=5.4e-11 lits=0]
+  STAGE_END field=two_mode eps=0.25 N=16 cand=i0 status=linesearch-fail its=4 r_F=1.409e+00 r_out=0.000e+00 -> FAILED
+  CONTINUATION bisection 1/2: retry from eps=0 at eps=0.125
+STAGE field=two_mode eps=0.125 N=16 cand=i0 (from eps=0, u=0)
+  NEWTON two_mode:0.125:16:i0 it= 0 r_F=7.876e-01 r_out=0.000e+00
+  NEWTON two_mode:0.125:16:i0 it= 1 r_F=6.478e-01 r_out=0.000e+00 lambda=0.25 |dx|max=1.42e-01 lin=splu rel=5.5e-14 lits=0 t_jac=0.6s t_lin=5.2s
+  NEWTON two_mode:0.125:16:i0 it= 2 r_F=5.277e-01 r_out=0.000e+00 lambda=0.125 |dx|max=3.23e-01 lin=splu rel=1.4e-13 lits=0 t_jac=0.8s t_lin=4.8s
+  NEWTON two_mode:0.125:16:i0 it= 3 r_F=5.195e-01 r_out=0.000e+00 lambda=0.03125 |dx|max=4.82e-01 lin=splu rel=1.7e-13 lits=0 t_jac=0.7s t_lin=4.2s
+  NEWTON two_mode:0.125:16:i0 it= 4 r_F=4.975e-01 r_out=0.000e+00 lambda=0.0625 |dx|max=5.23e-01 lin=splu rel=1.8e-13 lits=0 t_jac=0.8s t_lin=4.8s
+  STAGE_END field=two_mode eps=0.125 N=16 cand=i0 status=stagnation its=4 r_F=4.975e-01 r_out=0.000e+00 -> FAILED
+  CONTINUATION bisection 2/2: retry from eps=0 at eps=0.0625
+STAGE field=two_mode eps=0.0625 N=16 cand=i0 (from eps=0, u=0)
+  NEWTON two_mode:0.0625:16:i0 it= 0 r_F=3.953e-01 r_out=0.000e+00
+  NEWTON two_mode:0.0625:16:i0 it= 1 r_F=3.830e-01 r_out=0.000e+00 lambda=0.0625 |dx|max=4.18e-01 lin=splu rel=3.6e-13 lits=0 t_jac=0.5s t_lin=5.0s
+  NEWTON two_mode:0.0625:16:i0 it= 2 r_F=3.410e-01 r_out=0.000e+00 lambda=0.125 |dx|max=1.14e-01 lin=splu rel=8.6e-14 lits=0 t_jac=0.9s t_lin=5.5s
+  NEWTON two_mode:0.0625:16:i0 it= 3 r_F=3.135e-01 r_out=0.000e+00 lambda=0.125 |dx|max=1.42e-01 lin=splu rel=1.1e-13 lits=0 t_jac=0.6s t_lin=3.9s
+  NEWTON two_mode:0.0625:16:i0 it= 4 r_F=2.982e-01 r_out=0.000e+00 lambda=0.0625 |dx|max=2.18e-01 lin=splu rel=1.4e-13 lits=0 t_jac=0.5s t_lin=3.6s
+  STAGE_END field=two_mode eps=0.0625 N=16 cand=i0 status=stagnation its=4 r_F=2.982e-01 r_out=0.000e+00 -> FAILED
+  CONTINUATION gave up after 2 bisections; reporting the failed state at eps=0.0625
+STAGE field=two_mode eps=1 N=16 cand=i0 (final attempt from eps=0)
+  NEWTON two_mode:1:16:i0 it= 0 r_F=5.124e+00 r_out=0.000e+00
+  NEWTON two_mode:1:16:i0 it= 1 r_F=5.085e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=4.39e+00 lin=splu rel=1.1e-13 lits=0 t_jac=0.6s t_lin=4.1s
+  NEWTON two_mode:1:16:i0 it= 2 r_F=4.896e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=2.95e+00 lin=splu rel=3.8e-14 lits=0 t_jac=0.7s t_lin=4.5s
+  NEWTON two_mode:1:16:i0 it= 3 r_F=4.735e+00 r_out=0.000e+00 lambda=0.03125 |dx|max=2.53e+00 lin=splu rel=7.2e-14 lits=0 t_jac=0.8s t_lin=4.9s
+  NEWTON two_mode:1:16:i0 it= 4 r_F=4.621e+00 r_out=0.000e+00 lambda=0.01562 |dx|max=4.25e+00 lin=splu rel=3.5e-13 lits=0 t_jac=0.6s t_lin=5.1s
+FALLBACK field=two_mode eps=1 N=16 cand=i0 Newton status=stagnation -> Levenberg-Marquardt (10 its max) from the final Newton state
+  LM two_mode:1:16:i0 it= 1 r_F=2.036e+00 r_out=0.000e+00 mu=1.0e-04 |dx|max=8.08e-02 t=37.1s
+  LM two_mode:1:16:i0 it= 2 r_F=9.391e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=3.28e-02 t=81.0s
+  LM two_mode:1:16:i0 it= 3 r_F=6.984e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=1.96e-02 t=59.2s
+  LM two_mode:1:16:i0 it= 4 r_F=6.364e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=1.47e-02 t=59.0s
+  LM two_mode:1:16:i0 it= 5 r_F=5.816e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=8.13e-03 t=56.7s
+  LM two_mode:1:16:i0 it= 6 r_F=5.552e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=3.23e-03 t=61.3s
+  LM two_mode:1:16:i0 it= 7 r_F=5.387e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=2.16e-03 t=62.5s
+  LM two_mode:1:16:i0 it= 8 r_F=5.284e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=1.46e-03 t=66.4s
+  LM two_mode:1:16:i0 it= 9 r_F=5.215e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=1.05e-03 t=62.9s
+  LM two_mode:1:16:i0 it=10 r_F=5.167e-01 r_out=0.000e+00 mu=1.0e-03 |dx|max=7.83e-04 t=59.9s
+PATH field=two_mode eps=1 N=16 cand=i0 continuation path: 0.25(fail)->0.125(fail)->0.0625(fail)->1(final)->LM
+CASE field=two_mode eps=1 N=16 cand=i0 | r_F=5.167e-01 its=14 | e_v=5.767e-01 e_psi=1.209e+00 e_i=(3.463e-01,3.563e-01) e_div=3.054e+00 min_c=6.014e-02 p0.1=2.656e-01 p1=4.375e-01 p5=5.084e-01 p50=1.110e+00 | t=696.9
+CASE field=two_mode eps=1 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=2.888e-02 e_psi=0.000e+00 e_i=(1.487e-02,1.356e-02) e_div=1.596e-01 min_c=3.840e-01 p0.1=3.843e-01 p1=3.948e-01 p5=4.260e-01 p50=1.064e+00 | t=0.0
+EXTRA field=two_mode eps=1 N=16 cand=i0 status=newton:stagnation/lm-maxit r_F=5.167e-01 r_out=0.000e+00 | outlet c_perp-vperp_in: cand=1.339e+00 oracle_fd=4.048e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=3.912e-01 oracle_fd=2.666e-02; j=1 cand=3.680e-01 oracle_fd=1.839e-01; j=1 vs vD(j=1) cand=2.809e-01 oracle_fd=1.707e-02 | min|c|/v_rms=0.0486 min|vD|/v_rms=0.3066 e_i1=3.463e-01 e_i2=3.563e-01 | t=696.9s
+HISTORY field=two_mode eps=1 N=16 cand=i0 r_F: 5.12e+00 5.09e+00 4.90e+00 4.74e+00 4.62e+00 2.04e+00 9.39e-01 6.98e-01 6.36e-01 5.82e-01 5.55e-01 5.39e-01 5.28e-01 5.22e-01 5.17e-01

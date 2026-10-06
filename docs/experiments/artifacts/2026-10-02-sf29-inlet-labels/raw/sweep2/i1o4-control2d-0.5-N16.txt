@@ -1,0 +1,25 @@
+RUN_ALL cell=i1o4-control2d-0.5-N16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts mem_gb=1.5 cap_s=3600 threads=3 cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py control2d:0.5:16:i1 --order 4 --direct-max 32 --reuse-lu 0 --save ../raw/sweep2/solutions
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/solutions'} numpy=1.26.4 scipy=1.11.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=16 cand=i1o4 (from eps=0, u=0)
+  NEWTON control2d:0.25:16:i1o4 it= 0 r_F=1.855e+00 r_out=8.375e-02
+    LINEAR splu n=8192 nnz(J)=950272 t_fact=13.10s t_solve=0.074s nnz(L+U)=15080000 fill=15.9 mem(L+U)~173MB maxrss=481MB res=9.8e-15
+  NEWTON control2d:0.25:16:i1o4 it= 1 r_F=1.736e-11 r_out=2.483e-13 lambda=1 |dx|max=4.95e-02 lin=splu rel=9.8e-15 lits=0 t_jac=6.7s t_lin=13.6s |dx|2=1.37e+00 t_fact=13.10s
+    LINEAR splu n=8192 nnz(J)=950272 t_fact=12.64s t_solve=0.052s nnz(L+U)=17443997 fill=18.4 mem(L+U)~200MB maxrss=882MB res=1.3e-14
+  NEWTON control2d:0.25:16:i1o4 it= 2 r_F=1.532e-15 r_out=1.729e-16 lambda=1 |dx|max=5.41e-13 lin=splu rel=1.3e-14 lits=0 t_jac=5.3s t_lin=13.2s |dx|2=1.32e-11 t_fact=12.64s
+  STAGE_END field=control2d eps=0.25 N=16 cand=i1o4 status=converged its=2 r_F=1.532e-15 r_out=1.729e-16 -> accepted
+STAGE field=control2d eps=0.5 N=16 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON control2d:0.5:16:i1o4 it= 0 r_F=1.724e+00 r_out=8.539e-02
+    LINEAR splu n=8192 nnz(J)=950272 t_fact=10.64s t_solve=0.051s nnz(L+U)=17452441 fill=18.4 mem(L+U)~200MB maxrss=882MB res=1.3e-14
+  NEWTON control2d:0.5:16:i1o4 it= 1 r_F=2.286e-11 r_out=1.604e-12 lambda=1 |dx|max=4.56e-02 lin=splu rel=1.3e-14 lits=0 t_jac=5.0s t_lin=11.0s |dx|2=1.32e+00 t_fact=10.64s
+    LINEAR splu n=8192 nnz(J)=950272 t_fact=8.41s t_solve=0.033s nnz(L+U)=17569821 fill=18.5 mem(L+U)~201MB maxrss=912MB res=9.2e-14
+  NEWTON control2d:0.5:16:i1o4 it= 2 r_F=2.980e-15 r_out=3.208e-16 lambda=1 |dx|max=6.28e-12 lin=splu rel=9.2e-14 lits=0 t_jac=4.0s t_lin=8.8s |dx|2=8.80e-11 t_fact=8.41s
+  STAGE_END field=control2d eps=0.5 N=16 cand=i1o4 status=converged its=2 r_F=2.980e-15 r_out=3.208e-16 -> accepted
+PATH field=control2d eps=0.5 N=16 cand=i1o4 continuation path: 0.25->0.5
+CASE field=control2d eps=0.5 N=16 cand=i1o4 | r_F=2.980e-15 its=2 | e_v=7.687e-03 e_psi=3.183e-02 e_i=(5.893e-03,3.767e-14) e_div=1.667e-14 min_c=5.266e-01 p0.1=5.266e-01 p1=5.284e-01 p5=6.071e-01 p50=1.011e+00 | t=71.4 | e_psi1=3.183e-02 e_psi2=2.334e-13
+CASE field=control2d eps=0.5 N=16 cand=oracle_fd4 | r_F=nan its=nan | e_v=4.310e-03 e_psi=0.000e+00 e_i=(4.664e-03,3.454e-29) e_div=3.090e-15 min_c=5.265e-01 p0.1=5.265e-01 p1=5.508e-01 p5=6.156e-01 p50=1.009e+00 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+CASE field=control2d eps=0.5 N=16 cand=i1o4_fd2 | r_F=2.980e-15 its=2 | e_v=1.633e-02 e_psi=3.183e-02 e_i=(1.409e-02,3.449e-14) e_div=1.661e-14 min_c=5.356e-01 p0.1=5.356e-01 p1=5.383e-01 p5=6.160e-01 p50=1.011e+00 | t=71.4 | e_psi1=3.183e-02 e_psi2=2.334e-13
+CASE field=control2d eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=1.570e-02 e_psi=0.000e+00 e_i=(1.413e-02,0.000e+00) e_div=1.102e-15 min_c=5.353e-01 p0.1=5.353e-01 p1=5.576e-01 p5=6.244e-01 p50=1.010e+00 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+EXTRA field=control2d eps=0.5 N=16 cand=i1o4 status=converged r_F=2.980e-15 r_out=3.208e-16 | outlet c_perp-vperp_in: cand=2.740e-15 oracle_fd=9.488e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.626e-02 oracle_fd=1.184e-02; j=1 cand=1.423e-01 oracle_fd=1.422e-01; j=1 vs vD(j=1) cand=4.451e-03 oracle_fd=3.353e-03 | min|c|/v_rms=0.4996 min|vD|/v_rms=0.4997 e_i1=5.893e-03 e_i2=3.767e-14 | t=71.4s | a_psi1=1.356e-03 a_psi2=9.940e-15 (FD order 4)
+HISTORY field=control2d eps=0.5 N=16 cand=i1o4 r_F: 1.72e+00 2.29e-11 2.98e-15
+HISTORY field=control2d eps=0.5 N=16 cand=i1o4 r_out: 8.54e-02 1.60e-12 3.21e-16
+SAVED ../raw/sweep2/solutions/control2d_0.5_16_i1o4.npz status=converged (84 kB)

@@ -1,0 +1,19 @@
+RUN_ALL cell=i1-generic3d-0.25-N32 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py generic3d:0.25:32:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=generic3d eps=0.25 N=32 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=32 modes=544 setup 0.1s
+  NEWTON generic3d:0.25:32:i1 it= 0 r_F=5.091e+00 r_out=1.339e-01
+  NEWTON generic3d:0.25:32:i1 it= 1 r_F=2.346e-01 r_out=2.141e-02 lambda=1 |dx|max=6.73e-02 lin=gmres+lin0 rel=1.1e-14 lits=147 t_jac=8.6s t_lin=11.8s
+  NEWTON generic3d:0.25:32:i1 it= 2 r_F=4.816e-02 r_out=1.518e-03 lambda=1 |dx|max=3.36e-02 lin=gmres+lin0 rel=5.9e-14 lits=160 t_jac=7.2s t_lin=15.7s
+  NEWTON generic3d:0.25:32:i1 it= 3 r_F=3.896e-03 r_out=7.317e-05 lambda=1 |dx|max=6.50e-03 lin=gmres+lin0 rel=5.5e-14 lits=211 t_jac=7.9s t_lin=22.8s
+  NEWTON generic3d:0.25:32:i1 it= 4 r_F=2.481e-04 r_out=1.933e-06 lambda=1 |dx|max=1.29e-03 lin=gmres+lin0 rel=3.0e-14 lits=231 t_jac=10.3s t_lin=21.0s
+  NEWTON generic3d:0.25:32:i1 it= 5 r_F=8.954e-08 r_out=6.754e-10 lambda=1 |dx|max=2.92e-05 lin=gmres+lin0 rel=3.0e-14 lits=198 t_jac=8.1s t_lin=19.6s
+  NEWTON generic3d:0.25:32:i1 it= 6 r_F=1.741e-13 r_out=9.749e-16 lambda=1 |dx|max=3.55e-08 lin=gmres+lin0 rel=1.9e-14 lits=225 t_jac=7.6s t_lin=20.2s
+  NEWTON generic3d:0.25:32:i1 it= 7 r_F=5.685e-15 r_out=1.959e-16 lambda=1 |dx|max=3.03e-14 lin=gmres+lin0 rel=3.6e-14 lits=196 t_jac=9.1s t_lin=18.9s
+  STAGE_END field=generic3d eps=0.25 N=32 cand=i1 status=converged its=7 r_F=5.685e-15 r_out=1.959e-16 -> accepted
+PATH field=generic3d eps=0.25 N=32 cand=i1 continuation path: 0.25
+CASE field=generic3d eps=0.25 N=32 cand=i1 | r_F=5.685e-15 its=7 | e_v=3.525e-03 e_psi=5.318e-02 e_i=(2.289e-03,2.499e-03) e_div=2.790e-03 min_c=6.391e-01 p0.1=6.530e-01 p1=6.966e-01 p5=7.591e-01 p50=9.971e-01 | t=193.6
+CASE field=generic3d eps=0.25 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=2.029e-03 e_psi=0.000e+00 e_i=(1.247e-03,1.170e-03) e_div=3.042e-03 min_c=6.408e-01 p0.1=6.545e-01 p1=6.981e-01 p5=7.601e-01 p50=9.971e-01 | t=0.0
+EXTRA field=generic3d eps=0.25 N=32 cand=i1 status=converged r_F=5.685e-15 r_out=1.959e-16 | outlet c_perp-vperp_in: cand=2.731e-15 oracle_fd=2.747e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=5.727e-03 oracle_fd=2.486e-03; j=1 cand=4.123e-02 oracle_fd=4.162e-02; j=1 vs vD(j=1) cand=4.824e-03 oracle_fd=1.327e-03 | min|c|/v_rms=0.6239 min|vD|/v_rms=0.6238 e_i1=2.289e-03 e_i2=2.499e-03 | t=193.6s
+HISTORY field=generic3d eps=0.25 N=32 cand=i1 r_F: 5.09e+00 2.35e-01 4.82e-02 3.90e-03 2.48e-04 8.95e-08 1.74e-13 5.69e-15
+HISTORY field=generic3d eps=0.25 N=32 cand=i1 r_out: 1.34e-01 2.14e-02 1.52e-03 7.32e-05 1.93e-06 6.75e-10 9.75e-16 1.96e-16

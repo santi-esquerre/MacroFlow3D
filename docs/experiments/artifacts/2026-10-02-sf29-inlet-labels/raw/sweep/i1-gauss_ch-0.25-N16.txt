@@ -1,0 +1,20 @@
+RUN_ALL cell=i1-gauss_ch-0.25-N16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py gauss_ch:0.25:16:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=gauss_ch eps=0.25 N=16 cand=i1 (from eps=0, u=0)
+  NEWTON gauss_ch:0.25:16:i1 it= 0 r_F=3.123e+00 r_out=5.478e-17
+  NEWTON gauss_ch:0.25:16:i1 it= 1 r_F=5.196e-01 r_out=2.856e-16 lambda=1 |dx|max=1.01e-01 lin=splu rel=7.5e-15 lits=0 t_jac=0.4s t_lin=2.8s
+  NEWTON gauss_ch:0.25:16:i1 it= 2 r_F=5.000e-01 r_out=6.449e-13 lambda=1 |dx|max=4.69e-02 lin=splu rel=1.7e-14 lits=0 t_jac=0.5s t_lin=2.8s
+  NEWTON gauss_ch:0.25:16:i1 it= 3 r_F=8.904e-02 r_out=4.526e-14 lambda=1 |dx|max=1.79e-02 lin=splu rel=5.8e-15 lits=0 t_jac=0.4s t_lin=3.4s
+  NEWTON gauss_ch:0.25:16:i1 it= 4 r_F=5.001e-02 r_out=2.595e-13 lambda=0.5 |dx|max=2.44e-02 lin=splu rel=3.9e-14 lits=0 t_jac=0.4s t_lin=2.7s
+  NEWTON gauss_ch:0.25:16:i1 it= 5 r_F=2.114e-02 r_out=1.205e-13 lambda=1 |dx|max=9.71e-03 lin=splu rel=2.8e-14 lits=0 t_jac=0.4s t_lin=3.0s
+  NEWTON gauss_ch:0.25:16:i1 it= 6 r_F=1.366e-03 r_out=4.872e-15 lambda=1 |dx|max=2.96e-03 lin=splu rel=1.7e-14 lits=0 t_jac=0.5s t_lin=2.9s
+  NEWTON gauss_ch:0.25:16:i1 it= 7 r_F=4.714e-06 r_out=4.701e-16 lambda=1 |dx|max=2.64e-04 lin=splu rel=2.5e-14 lits=0 t_jac=0.4s t_lin=2.7s
+  NEWTON gauss_ch:0.25:16:i1 it= 8 r_F=8.397e-11 r_out=1.326e-16 lambda=1 |dx|max=5.26e-07 lin=splu rel=1.3e-14 lits=0 t_jac=0.4s t_lin=2.8s
+  NEWTON gauss_ch:0.25:16:i1 it= 9 r_F=1.918e-15 r_out=1.404e-16 lambda=1 |dx|max=2.76e-11 lin=splu rel=3.7e-14 lits=0 t_jac=0.5s t_lin=2.7s
+  STAGE_END field=gauss_ch eps=0.25 N=16 cand=i1 status=converged its=9 r_F=1.918e-15 r_out=1.404e-16 -> accepted
+PATH field=gauss_ch eps=0.25 N=16 cand=i1 continuation path: 0.25
+CASE field=gauss_ch eps=0.25 N=16 cand=i1 | r_F=1.918e-15 its=9 | e_v=1.852e-02 e_psi=2.052e-01 e_i=(1.253e-02,1.108e-02) e_div=1.354e-02 min_c=5.657e-01 p0.1=6.018e-01 p1=6.655e-01 p5=7.331e-01 p50=9.735e-01 | t=42.2
+CASE field=gauss_ch eps=0.25 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=1.657e-02 e_psi=0.000e+00 e_i=(4.603e-03,4.309e-03) e_div=1.993e-02 min_c=5.843e-01 p0.1=6.098e-01 p1=6.771e-01 p5=7.431e-01 p50=9.746e-01 | t=0.0
+EXTRA field=gauss_ch eps=0.25 N=16 cand=i1 status=converged r_F=1.918e-15 r_out=1.404e-16 | outlet c_perp-vperp_in: cand=1.334e-15 oracle_fd=2.417e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=3.355e-02 oracle_fd=2.379e-03; j=1 cand=3.600e-02 oracle_fd=2.536e-02; j=1 vs vD(j=1) cand=2.787e-02 oracle_fd=1.664e-03 | min|c|/v_rms=0.5536 min|vD|/v_rms=0.5440 e_i1=1.253e-02 e_i2=1.108e-02 | t=42.2s
+HISTORY field=gauss_ch eps=0.25 N=16 cand=i1 r_F: 3.12e+00 5.20e-01 5.00e-01 8.90e-02 5.00e-02 2.11e-02 1.37e-03 4.71e-06 8.40e-11 1.92e-15
+HISTORY field=gauss_ch eps=0.25 N=16 cand=i1 r_out: 5.48e-17 2.86e-16 6.45e-13 4.53e-14 2.59e-13 1.20e-13 4.87e-15 4.70e-16 1.33e-16 1.40e-16

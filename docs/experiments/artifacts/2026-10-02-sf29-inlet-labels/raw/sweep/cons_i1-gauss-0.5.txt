@@ -1,0 +1,9 @@
+RUN_ALL cell=cons_i1-gauss-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --consistency gauss:0.5 --grids 16,32,48
+candidate_i.py mode=consistency opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+CONSISTENCY field=gauss eps=0.5 N=16 at the oracle labels: i1 r_F(planes 1..N-1)=4.746e-01 r_out(outlet c_perp rows)=1.562e-02 | i0 r_F(planes 1..N incl. one-sided outlet rows)=4.796e-01 (outlet-plane rows alone 6.188e-01) | t=5.8s
+CONSISTENCY field=gauss eps=0.5 N=32 at the oracle labels: i1 r_F(planes 1..N-1)=1.590e-01 r_out(outlet c_perp rows)=3.902e-03 | i0 r_F(planes 1..N incl. one-sided outlet rows)=1.576e-01 (outlet-plane rows alone 1.384e-01) | t=8.6s
+CONSISTENCY field=gauss eps=0.5 N=48 at the oracle labels: i1 r_F(planes 1..N-1)=7.668e-02 r_out(outlet c_perp rows)=1.733e-03 | i0 r_F(planes 1..N incl. one-sided outlet rows)=7.615e-02 (outlet-plane rows alone 6.249e-02) | t=17.8s
+CONSISTENCY_ORDER field=gauss eps=0.5 i1 r_F: 4.746e-01 1.590e-01 7.668e-02 | orders 1.58 1.80
+CONSISTENCY_ORDER field=gauss eps=0.5 i1 r_out: 1.562e-02 3.902e-03 1.733e-03 | orders 2.00 2.00
+CONSISTENCY_ORDER field=gauss eps=0.5 i0 r_F: 4.796e-01 1.576e-01 7.615e-02 | orders 1.61 1.79
+CONSISTENCY_ORDER field=gauss eps=0.5 i0 outlet rows: 6.188e-01 1.384e-01 6.249e-02 | orders 2.16 1.96

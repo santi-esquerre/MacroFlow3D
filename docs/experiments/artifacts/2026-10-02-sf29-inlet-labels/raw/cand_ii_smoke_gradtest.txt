@@ -1,0 +1,33 @@
+candidate_ii.py python=3.13.13 numpy=2.5.0 scipy=1.18.0 argv=--gradtest gauss:0.25:12
+======== gradtest gauss:0.25:12
+GRADTEST affine labels: max|c1 - 1|, max|c2|, max|c3|                   0.000e+00  (<= 1e-13) PASS
+GRADTEST random labels amp=0.1: max|div_h c_f| / (max|c_f|/h)           2.233e-16  (<= 1e-14) PASS
+GRADTEST random labels amp=1: max|div_h c_f| / (max|c_f|/h)             2.772e-16  (<= 1e-14) PASS
+GRADTEST grad E_h vs J^T (w c) with the exact sparse flux Jacobian      2.510e-16  (<= 1e-12) PASS
+GRADTEST flux Jacobian J d vs central FD of c_f                         9.992e-12  (<= 1e-08) PASS
+GRADTEST Kelvin identity E_h(u) - E_K = 1/2 |c(u) - c_K|_W^2 (random u, free outlet) 8.071e-16  (<= 1e-12) PASS
+GRADTEST TPFA Kelvin flux: max|div_h c_K| h / max|c_K|                  5.754e-14  (<= 1e-12) PASS
+GRADTEST dE/dx . d vs central FD of E_h (step 1e-05)                    1.592e-07  (<= 1e-06) PASS
+GRADTEST dE/dx . d vs central FD of E_h (step 1e-06)                    1.329e-09  (<= 1e-06) PASS
+GRADTEST dE/dx . d vs central FD of E_h (step 1e-07)                    3.881e-09  (<= 1e-06) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=False)   1.574e-08  (<= 1e-06) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=False)   1.634e-08  (<= 1e-06) PASS
+GRADTEST info: uniform-state Hessian (q = mean q, affine labels) n=3456: 288 relative eigenvalues < 1e-10 (2 N^2 = 288 hourglass modes), next = 1.33e-04, negative = 0
+GRADTEST mode preconditioner: |(K0 + shift) P^-1 r - r| / |r| (constrained=False) 1.947e-07  (<= 1e-06) PASS
+GRADTEST grad E_h vs J^T (w c) with the exact sparse flux Jacobian      1.804e-16  (<= 1e-12) PASS
+GRADTEST flux Jacobian J d vs central FD of c_f                         8.335e-12  (<= 1e-08) PASS
+GRADTEST dE/dx . d vs central FD of E_h (step 1e-05)                    7.909e-09  (<= 1e-06) PASS
+GRADTEST dE/dx . d vs central FD of E_h (step 1e-06)                    8.498e-11  (<= 1e-06) PASS
+GRADTEST dE/dx . d vs central FD of E_h (step 1e-07)                    4.077e-10  (<= 1e-06) PASS
+GRADTEST (dC/dx)^T lam . d vs central FD of lam.C (step 1e-05)          3.110e-13  (<= 1e-06) PASS
+GRADTEST (dC/dx)^T lam . d vs central FD of lam.C (step 1e-06)          4.040e-12  (<= 1e-06) PASS
+GRADTEST (dC/dx)^T lam . d vs central FD of lam.C (step 1e-07)          1.855e-11  (<= 1e-06) PASS
+GRADTEST sparse dC/dx vs adjoint (dC/dx)^T lam                          1.122e-16  (<= 1e-13) PASS
+GRADTEST sum over outlet faces of dC/dx (identically 0)                 2.491e-16  (<= 1e-13) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=True)    1.361e-08  (<= 1e-06) PASS
+GRADTEST colored FD Hessian . v vs directional FD (constrained=True)    1.420e-08  (<= 1e-06) PASS
+GRADTEST info: uniform-state Hessian (q = mean q, affine labels) n=3456: 288 relative eigenvalues < 1e-10 (2 N^2 = 288 hourglass modes), next = 1.33e-04, negative = 0
+GRADTEST info: linearized outlet-flux rows vanishing at the uniform state (Fourier modes): 2 (xi = 0 and the (N/2, N/2) checkerboard expected)
+GRADTEST mode preconditioner: |(K0 + shift) P^-1 r - r| / |r| (constrained=True) 1.758e-07  (<= 1e-06) PASS
+GRADTEST info: e_v(mimetic flux of the oracle labels vs vD_faces) = 9.842e-03 at N=12
+GRADTEST ALL PASS

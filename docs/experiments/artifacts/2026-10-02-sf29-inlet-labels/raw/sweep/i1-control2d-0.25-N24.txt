@@ -1,0 +1,14 @@
+RUN_ALL cell=i1-control2d-0.25-N24 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py control2d:0.25:24:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=24 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=24 modes=312 setup 0.0s
+  NEWTON control2d:0.25:24:i1 it= 0 r_F=3.053e+00 r_out=8.376e-02
+  NEWTON control2d:0.25:24:i1 it= 1 r_F=3.849e-11 r_out=3.542e-13 lambda=1 |dx|max=4.95e-02 lin=gmres+lin0 rel=5.7e-15 lits=36 t_jac=1.4s t_lin=0.7s
+  NEWTON control2d:0.25:24:i1 it= 2 r_F=1.948e-15 r_out=1.142e-16 lambda=1 |dx|max=6.71e-13 lin=gmres+lin0 rel=9.1e-15 lits=52 t_jac=1.4s t_lin=1.0s
+  STAGE_END field=control2d eps=0.25 N=24 cand=i1 status=converged its=2 r_F=1.948e-15 r_out=1.142e-16 -> accepted
+PATH field=control2d eps=0.25 N=24 cand=i1 continuation path: 0.25
+CASE field=control2d eps=0.25 N=24 cand=i1 | r_F=1.948e-15 its=2 | e_v=3.971e-03 e_psi=4.634e-01 e_i=(2.937e-03,3.888e-13) e_div=8.361e-14 min_c=7.410e-01 p0.1=7.410e-01 p1=7.553e-01 p5=7.981e-01 p50=1.000e+00 | t=6.3
+CASE field=control2d eps=0.25 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=3.369e-03 e_psi=0.000e+00 e_i=(3.011e-03,0.000e+00) e_div=1.461e-15 min_c=7.415e-01 p0.1=7.415e-01 p1=7.553e-01 p5=7.948e-01 p50=1.000e+00 | t=0.0
+EXTRA field=control2d eps=0.25 N=24 cand=i1 status=converged r_F=1.948e-15 r_out=1.142e-16 | outlet c_perp-vperp_in: cand=2.087e-15 oracle_fd=5.858e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=5.693e-03 oracle_fd=3.587e-03; j=1 cand=4.695e-02 oracle_fd=4.822e-02; j=1 vs vD(j=1) cand=1.121e-03 oracle_fd=1.646e-03 | min|c|/v_rms=0.7309 min|vD|/v_rms=0.7289 e_i1=2.937e-03 e_i2=3.888e-13 | t=6.3s
+HISTORY field=control2d eps=0.25 N=24 cand=i1 r_F: 3.05e+00 3.85e-11 1.95e-15
+HISTORY field=control2d eps=0.25 N=24 cand=i1 r_out: 8.38e-02 3.54e-13 1.14e-16

@@ -1,0 +1,53 @@
+RUN_ALL cell=i1o4-generic3d-0.5-N28 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts mem_gb=14 cap_s=21600 threads=3 cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py generic3d:0.5:28:i1 --order 4 --direct-max 32 --reuse-lu 0 --save ../raw/sweep2/solutions
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/solutions'} numpy=1.26.4 scipy=1.11.4 python=3.11.7
+STAGE field=generic3d eps=0.25 N=28 cand=i1o4 (from eps=0, u=0)
+  NEWTON generic3d:0.25:28:i1o4 it= 0 r_F=3.709e+00 r_out=1.339e-01
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=442.71s t_solve=1.333s nnz(L+U)=330020152 fill=63.4 mem(L+U)~3777MB maxrss=8036MB res=4.4e-14
+  NEWTON generic3d:0.25:28:i1o4 it= 1 r_F=1.456e-01 r_out=2.167e-02 lambda=1 |dx|max=6.68e-02 lin=splu rel=4.4e-14 lits=0 t_jac=11.6s t_lin=448.1s |dx|2=4.61e+00 t_fact=442.71s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=399.51s t_solve=1.275s nnz(L+U)=374179549 fill=71.9 mem(L+U)~4282MB maxrss=16269MB res=4.8e-13
+  NEWTON generic3d:0.25:28:i1o4 it= 2 r_F=7.124e-02 r_out=1.636e-03 lambda=1 |dx|max=3.52e-02 lin=splu rel=4.8e-13 lits=0 t_jac=6.5s t_lin=405.8s |dx|2=2.46e+00 t_fact=399.51s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=408.82s t_solve=1.323s nnz(L+U)=374176447 fill=71.9 mem(L+U)~4282MB maxrss=16795MB res=2.8e-13
+  NEWTON generic3d:0.25:28:i1o4 it= 3 r_F=9.823e-03 r_out=1.378e-04 lambda=1 |dx|max=1.01e-02 lin=splu rel=2.8e-13 lits=0 t_jac=6.4s t_lin=415.1s |dx|2=5.33e-01 t_fact=408.82s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=428.79s t_solve=2.063s nnz(L+U)=374358273 fill=71.9 mem(L+U)~4284MB maxrss=16800MB res=5.4e-13
+  NEWTON generic3d:0.25:28:i1o4 it= 4 r_F=1.961e-03 r_out=1.778e-05 lambda=1 |dx|max=4.41e-03 lin=splu rel=5.4e-13 lits=0 t_jac=6.6s t_lin=437.3s |dx|2=1.47e-01 t_fact=428.79s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=446.52s t_solve=1.363s nnz(L+U)=374329451 fill=71.9 mem(L+U)~4284MB maxrss=16804MB res=1.4e-13
+  NEWTON generic3d:0.25:28:i1o4 it= 5 r_F=1.210e-05 r_out=8.043e-08 lambda=1 |dx|max=2.03e-04 lin=splu rel=1.4e-13 lits=0 t_jac=7.1s t_lin=453.3s |dx|2=7.35e-03 t_fact=446.52s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=423.82s t_solve=1.392s nnz(L+U)=374329449 fill=71.9 mem(L+U)~4284MB maxrss=16804MB res=1.7e-13
+  NEWTON generic3d:0.25:28:i1o4 it= 6 r_F=1.952e-09 r_out=1.495e-11 lambda=1 |dx|max=2.37e-06 lin=splu rel=1.7e-13 lits=0 t_jac=6.6s t_lin=431.1s |dx|2=6.09e-05 t_fact=423.82s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=477.34s t_solve=1.490s nnz(L+U)=374329449 fill=71.9 mem(L+U)~4284MB maxrss=16804MB res=8.7e-14
+  NEWTON generic3d:0.25:28:i1o4 it= 7 r_F=8.134e-15 r_out=4.488e-16 lambda=1 |dx|max=2.35e-10 lin=splu rel=8.7e-14 lits=0 t_jac=6.7s t_lin=484.2s |dx|2=4.45e-09 t_fact=477.34s
+  STAGE_END field=generic3d eps=0.25 N=28 cand=i1o4 status=converged its=7 r_F=8.134e-15 r_out=4.488e-16 -> accepted
+STAGE field=generic3d eps=0.5 N=28 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON generic3d:0.5:28:i1o4 it= 0 r_F=3.518e+00 r_out=1.734e-01
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=484.88s t_solve=1.401s nnz(L+U)=374321421 fill=71.9 mem(L+U)~4284MB maxrss=16804MB res=5.5e-14
+  NEWTON generic3d:0.5:28:i1o4 it= 1 r_F=1.535e-01 r_out=3.198e-02 lambda=1 |dx|max=8.10e-02 lin=splu rel=5.5e-14 lits=0 t_jac=7.0s t_lin=490.8s |dx|2=5.05e+00 t_fact=484.88s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=473.34s t_solve=1.507s nnz(L+U)=374280615 fill=71.9 mem(L+U)~4283MB maxrss=16804MB res=8.1e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 2 r_F=1.453e-01 r_out=6.830e-03 lambda=1 |dx|max=5.16e-02 lin=splu rel=8.1e-13 lits=0 t_jac=6.7s t_lin=480.3s |dx|2=3.85e+00 t_fact=473.34s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=421.09s t_solve=1.334s nnz(L+U)=374289195 fill=71.9 mem(L+U)~4283MB maxrss=16804MB res=3.3e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 3 r_F=4.988e-02 r_out=1.065e-03 lambda=1 |dx|max=1.75e-02 lin=splu rel=3.3e-13 lits=0 t_jac=6.7s t_lin=427.4s |dx|2=1.13e+00 t_fact=421.09s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=398.32s t_solve=1.380s nnz(L+U)=374505205 fill=71.9 mem(L+U)~4286MB maxrss=16804MB res=8.4e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 4 r_F=3.798e-02 r_out=8.486e-04 lambda=0.5 |dx|max=3.51e-02 lin=splu rel=8.4e-13 lits=0 t_jac=6.5s t_lin=404.7s |dx|2=9.79e-01 t_fact=398.32s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=407.70s t_solve=1.485s nnz(L+U)=374656509 fill=72.0 mem(L+U)~4288MB maxrss=16813MB res=3.6e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 5 r_F=3.032e-02 r_out=5.511e-04 lambda=1 |dx|max=1.00e-02 lin=splu rel=3.6e-13 lits=0 t_jac=6.7s t_lin=414.3s |dx|2=3.66e-01 t_fact=407.70s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=399.75s t_solve=1.363s nnz(L+U)=374500177 fill=71.9 mem(L+U)~4286MB maxrss=16814MB res=2.0e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 6 r_F=1.285e-02 r_out=1.432e-04 lambda=1 |dx|max=9.82e-03 lin=splu rel=2.0e-13 lits=0 t_jac=6.6s t_lin=406.2s |dx|2=1.42e-01 t_fact=399.75s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=402.27s t_solve=1.351s nnz(L+U)=374489883 fill=71.9 mem(L+U)~4286MB maxrss=16814MB res=2.8e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 7 r_F=2.991e-03 r_out=6.928e-05 lambda=1 |dx|max=6.84e-03 lin=splu rel=2.8e-13 lits=0 t_jac=6.8s t_lin=408.7s |dx|2=8.91e-02 t_fact=402.27s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=400.04s t_solve=1.482s nnz(L+U)=374335741 fill=71.9 mem(L+U)~4284MB maxrss=16814MB res=2.3e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 8 r_F=1.900e-04 r_out=3.153e-06 lambda=1 |dx|max=1.08e-03 lin=splu rel=2.3e-13 lits=0 t_jac=6.5s t_lin=407.4s |dx|2=1.68e-02 t_fact=400.04s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=409.11s t_solve=1.375s nnz(L+U)=374333887 fill=71.9 mem(L+U)~4284MB maxrss=16814MB res=2.1e-13
+  NEWTON generic3d:0.5:28:i1o4 it= 9 r_F=5.762e-07 r_out=9.275e-09 lambda=1 |dx|max=7.20e-05 lin=splu rel=2.1e-13 lits=0 t_jac=6.6s t_lin=415.6s |dx|2=1.02e-03 t_fact=409.11s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=395.77s t_solve=1.379s nnz(L+U)=374333887 fill=71.9 mem(L+U)~4284MB maxrss=16814MB res=2.3e-13
+  NEWTON generic3d:0.5:28:i1o4 it=10 r_F=9.916e-12 r_out=1.296e-13 lambda=1 |dx|max=1.95e-07 lin=splu rel=2.3e-13 lits=0 t_jac=6.4s t_lin=402.4s |dx|2=3.50e-06 t_fact=395.77s
+    LINEAR splu n=43904 nnz(J)=5205760 t_fact=412.90s t_solve=1.476s nnz(L+U)=374333887 fill=71.9 mem(L+U)~4284MB maxrss=16814MB res=6.3e-14
+  NEWTON generic3d:0.5:28:i1o4 it=11 r_F=1.698e-14 r_out=9.327e-16 lambda=1 |dx|max=1.16e-12 lin=splu rel=6.3e-14 lits=0 t_jac=7.2s t_lin=419.7s |dx|2=1.70e-11 t_fact=412.90s
+  STAGE_END field=generic3d eps=0.5 N=28 cand=i1o4 status=converged its=11 r_F=1.698e-14 r_out=9.327e-16 -> accepted
+PATH field=generic3d eps=0.5 N=28 cand=i1o4 continuation path: 0.25->0.5
+CASE field=generic3d eps=0.5 N=28 cand=i1o4 | r_F=1.698e-14 its=11 | e_v=3.322e-03 e_psi=2.403e-02 e_i=(2.395e-03,2.323e-03) e_div=4.972e-03 min_c=3.870e-01 p0.1=4.030e-01 p1=4.643e-01 p5=5.624e-01 p50=9.935e-01 | t=7890.8 | e_psi1=2.361e-02 e_psi2=2.403e-02
+CASE field=generic3d eps=0.5 N=28 cand=oracle_fd4 | r_F=nan its=nan | e_v=1.164e-03 e_psi=0.000e+00 e_i=(5.326e-04,4.140e-04) e_div=9.202e-03 min_c=3.869e-01 p0.1=4.030e-01 p1=4.643e-01 p5=5.624e-01 p50=9.936e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+CASE field=generic3d eps=0.5 N=28 cand=i1o4_fd2 | r_F=1.698e-14 its=11 | e_v=6.722e-03 e_psi=2.403e-02 e_i=(4.572e-03,3.921e-03) e_div=2.047e-02 min_c=3.898e-01 p0.1=4.060e-01 p1=4.674e-01 p5=5.655e-01 p50=9.938e-01 | t=7890.8 | e_psi1=2.361e-02 e_psi2=2.403e-02
+CASE field=generic3d eps=0.5 N=28 cand=oracle_fd | r_F=nan its=nan | e_v=6.720e-03 e_psi=0.000e+00 e_i=(3.991e-03,3.367e-03) e_div=2.571e-02 min_c=3.898e-01 p0.1=4.060e-01 p1=4.675e-01 p5=5.652e-01 p50=9.939e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+EXTRA field=generic3d eps=0.5 N=28 cand=i1o4 status=converged r_F=1.698e-14 r_out=9.327e-16 | outlet c_perp-vperp_in: cand=5.314e-15 oracle_fd=1.654e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=3.931e-03 oracle_fd=1.650e-03; j=1 cand=9.743e-02 oracle_fd=9.754e-02; j=1 vs vD(j=1) cand=3.318e-03 oracle_fd=4.233e-04 | min|c|/v_rms=0.3517 min|vD|/v_rms=0.3517 e_i1=2.395e-03 e_i2=2.323e-03 | t=7890.8s | a_psi1=1.322e-03 a_psi2=1.347e-03 (FD order 4)
+HISTORY field=generic3d eps=0.5 N=28 cand=i1o4 r_F: 3.52e+00 1.53e-01 1.45e-01 4.99e-02 3.80e-02 3.03e-02 1.28e-02 2.99e-03 1.90e-04 5.76e-07 9.92e-12 1.70e-14
+HISTORY field=generic3d eps=0.5 N=28 cand=i1o4 r_out: 1.73e-01 3.20e-02 6.83e-03 1.06e-03 8.49e-04 5.51e-04 1.43e-04 6.93e-05 3.15e-06 9.27e-09 1.30e-13 9.33e-16
+SAVED ../raw/sweep2/solutions/generic3d_0.5_28_i1o4.npz status=converged (371 kB)

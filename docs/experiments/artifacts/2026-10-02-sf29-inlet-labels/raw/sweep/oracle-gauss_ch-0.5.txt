@@ -1,0 +1,20 @@
+RUN_ALL cell=oracle-gauss_ch-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell gauss_ch:0.5 --grids 12,16,24,32,48,64
+run_all.py --oracle-cell gauss_ch:0.5 grids=[12, 16, 24, 32, 48, 64] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=gauss_ch eps=0.5 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=6.689e-02 e_psi=0.000e+00 e_i=(1.999e-02,1.605e-02) e_div=1.520e-01 min_c=3.712e-01 p0.1=3.923e-01 p1=4.636e-01 p5=5.635e-01 p50=9.308e-01 | t=30.6
+CASE field=gauss_ch eps=0.5 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=3.567e-02 e_psi=0.000e+00 e_i=(1.999e-02,1.605e-02) e_div=2.719e-15 min_c=3.361e-01 p0.1=3.726e-01 p1=4.450e-01 p5=5.418e-01 p50=9.335e-01 | t=30.6
+ORACLE_READY field=gauss_ch eps=0.5 N=12 cache_hit=False nphi=48 max_roundtrip=5.51e-14 t_oracle=9.3s t_faces=1.0s t_cell=30.6s cache=../raw/cache/gauss_ch_eps0.5_N12_nphi48_v1.npz
+CASE field=gauss_ch eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=4.123e-02 e_psi=0.000e+00 e_i=(1.371e-02,9.519e-03) e_div=1.082e-01 min_c=3.222e-01 p0.1=3.554e-01 p1=4.408e-01 p5=5.364e-01 p50=9.263e-01 | t=20.9
+CASE field=gauss_ch eps=0.5 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=2.261e-02 e_psi=0.000e+00 e_i=(1.371e-02,9.519e-03) e_div=2.694e-15 min_c=3.231e-01 p0.1=3.562e-01 p1=4.318e-01 p5=5.324e-01 p50=9.302e-01 | t=20.9
+ORACLE_READY field=gauss_ch eps=0.5 N=16 cache_hit=False nphi=48 max_roundtrip=8.06e-14 t_oracle=17.2s t_faces=3.0s t_cell=20.9s cache=../raw/cache/gauss_ch_eps0.5_N16_nphi48_v1.npz
+CASE field=gauss_ch eps=0.5 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=2.011e-02 e_psi=0.000e+00 e_i=(6.507e-03,4.470e-03) e_div=6.928e-02 min_c=3.056e-01 p0.1=3.431e-01 p1=4.275e-01 p5=5.255e-01 p50=9.239e-01 | t=56.3
+CASE field=gauss_ch eps=0.5 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=1.093e-02 e_psi=0.000e+00 e_i=(6.507e-03,4.470e-03) e_div=5.076e-15 min_c=2.984e-01 p0.1=3.401e-01 p1=4.245e-01 p5=5.230e-01 p50=9.259e-01 | t=56.3
+ORACLE_READY field=gauss_ch eps=0.5 N=24 cache_hit=False nphi=48 max_roundtrip=7.67e-14 t_oracle=48.8s t_faces=5.6s t_cell=56.4s cache=../raw/cache/gauss_ch_eps0.5_N24_nphi48_v1.npz
+CASE field=gauss_ch eps=0.5 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=1.179e-02 e_psi=0.000e+00 e_i=(3.787e-03,2.573e-03) e_div=4.577e-02 min_c=2.978e-01 p0.1=3.392e-01 p1=4.189e-01 p5=5.206e-01 p50=9.234e-01 | t=161.5
+CASE field=gauss_ch eps=0.5 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=6.410e-03 e_psi=0.000e+00 e_i=(3.787e-03,2.573e-03) e_div=5.477e-15 min_c=2.920e-01 p0.1=3.387e-01 p1=4.186e-01 p5=5.190e-01 p50=9.246e-01 | t=161.5
+ORACLE_READY field=gauss_ch eps=0.5 N=32 cache_hit=False nphi=48 max_roundtrip=8.27e-14 t_oracle=140.3s t_faces=17.0s t_cell=161.6s cache=../raw/cache/gauss_ch_eps0.5_N32_nphi48_v1.npz
+CASE field=gauss_ch eps=0.5 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=5.415e-03 e_psi=0.000e+00 e_i=(1.737e-03,1.166e-03) e_div=2.294e-02 min_c=2.891e-01 p0.1=3.339e-01 p1=4.164e-01 p5=5.175e-01 p50=9.228e-01 | t=504.6
+CASE field=gauss_ch eps=0.5 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=2.932e-03 e_psi=0.000e+00 e_i=(1.737e-03,1.166e-03) e_div=1.001e-14 min_c=2.885e-01 p0.1=3.334e-01 p1=4.154e-01 p5=5.173e-01 p50=9.248e-01 | t=504.6
+ORACLE_READY field=gauss_ch eps=0.5 N=48 cache_hit=False nphi=48 max_roundtrip=9.72e-14 t_oracle=436.0s t_faces=51.5s t_cell=504.8s cache=../raw/cache/gauss_ch_eps0.5_N48_nphi48_v1.npz
+CASE field=gauss_ch eps=0.5 N=64 cand=oracle_fd | r_F=nan its=nan | e_v=3.084e-03 e_psi=0.000e+00 e_i=(9.894e-04,6.607e-04) e_div=1.349e-02 min_c=2.873e-01 p0.1=3.334e-01 p1=4.152e-01 p5=5.165e-01 p50=9.232e-01 | t=1123.5
+CASE field=gauss_ch eps=0.5 N=64 cand=oracle_mim | r_F=nan its=nan | e_v=1.667e-03 e_psi=0.000e+00 e_i=(9.894e-04,6.607e-04) e_div=1.101e-14 min_c=2.874e-01 p0.1=3.317e-01 p1=4.144e-01 p5=5.167e-01 p50=9.247e-01 | t=1123.5
+ORACLE_READY field=gauss_ch eps=0.5 N=64 cache_hit=False nphi=48 max_roundtrip=9.16e-14 t_oracle=960.5s t_faces=122.9s t_cell=1124.0s cache=../raw/cache/gauss_ch_eps0.5_N64_nphi48_v1.npz

@@ -1,0 +1,23 @@
+candidate_i.py mode=jactest opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-aa2954f5e94f5c4c5/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=2.5.0 python=3.13.13
+JACTEST field=gauss eps=0.25 N=12 cand=i1 state = oracle + 1e-2 rms noise: r_F=3.005e-01 r_out=1.710e-02
+JACTEST colored Jacobian: nnz=186624 colors=72 (p=3) delta=1.09e-06 t=0.37s
+JACTEST field=gauss eps=0.25 N=12 cand=i1 step=1e-03  ||Jv - FD||/||FD|| = 8.521e-08
+JACTEST field=gauss eps=0.25 N=12 cand=i1 step=1e-04  ||Jv - FD||/||FD|| = 8.522e-10
+JACTEST field=gauss eps=0.25 N=12 cand=i1 step=1e-05  ||Jv - FD||/||FD|| = 1.061e-11
+JACTEST field=gauss eps=0.25 N=12 cand=i1 step=1e-03 outlet-planes direction ||Jv - FD||/||FD|| = 5.405e-08
+JACTEST field=gauss eps=0.25 N=12 cand=i1 step=1e-04 outlet-planes direction ||Jv - FD||/||FD|| = 5.405e-10
+JACTEST field=gauss eps=0.25 N=12 cand=i1 step=1e-05 outlet-planes direction ||Jv - FD||/||FD|| = 7.893e-12
+JACTEST field=gauss eps=0.25 N=12 cand=i1 worst relative error 8.521e-08 -> PASS (threshold 1e-6)
+JACTEST field=gauss eps=0.25 N=12 cand=i0 state = oracle + 1e-2 rms noise: r_F=3.234e-01 r_out=0.000e+00
+JACTEST colored Jacobian: nnz=186624 colors=72 (p=3) delta=1.09e-06 t=0.36s
+JACTEST field=gauss eps=0.25 N=12 cand=i0 step=1e-03  ||Jv - FD||/||FD|| = 3.725e-07
+JACTEST field=gauss eps=0.25 N=12 cand=i0 step=1e-04  ||Jv - FD||/||FD|| = 3.723e-09
+JACTEST field=gauss eps=0.25 N=12 cand=i0 step=1e-05  ||Jv - FD||/||FD|| = 3.664e-11
+JACTEST field=gauss eps=0.25 N=12 cand=i0 step=1e-03 outlet-planes direction ||Jv - FD||/||FD|| = 5.796e-07
+JACTEST field=gauss eps=0.25 N=12 cand=i0 step=1e-04 outlet-planes direction ||Jv - FD||/||FD|| = 5.794e-09
+JACTEST field=gauss eps=0.25 N=12 cand=i0 step=1e-05 outlet-planes direction ||Jv - FD||/||FD|| = 5.639e-11
+JACTEST field=gauss eps=0.25 N=12 cand=i0 worst relative error 5.796e-07 -> PASS (threshold 1e-6)
+
+real	0m10,661s
+user	1m49,860s
+sys	0m0,738s

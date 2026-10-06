@@ -1,0 +1,29 @@
+RUN_ALL cell=spec4-control2d-0.5-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts mem_gb=1 cap_s=1800 threads=3 cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 --order 4 control2d:0.5:12:i1 --out ../raw/sweep2/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': None} numpy=1.26.4 scipy=1.11.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=12 cand=i1o4 (from eps=0, u=0)
+  NEWTON control2d:0.25:12:i1o4 it= 0 r_F=1.556e+00 r_out=8.374e-02
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.80s t_solve=0.028s nnz(L+U)=3939274 fill=10.0 mem(L+U)~45MB maxrss=194MB res=6.2e-15
+  NEWTON control2d:0.25:12:i1o4 it= 1 r_F=1.658e-11 r_out=3.225e-13 lambda=1 |dx|max=5.62e-02 lin=splu rel=6.2e-15 lits=0 t_jac=3.0s t_lin=1.9s |dx|2=9.61e-01 t_fact=1.80s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.96s t_solve=0.013s nnz(L+U)=4481989 fill=11.4 mem(L+U)~51MB maxrss=294MB res=3.7e-14
+  NEWTON control2d:0.25:12:i1o4 it= 2 r_F=1.001e-15 r_out=1.372e-16 lambda=1 |dx|max=1.85e-12 lin=splu rel=3.7e-14 lits=0 t_jac=2.6s t_lin=2.1s |dx|2=5.01e-11 t_fact=1.96s
+  STAGE_END field=control2d eps=0.25 N=12 cand=i1o4 status=converged its=2 r_F=1.001e-15 r_out=1.372e-16 -> accepted
+STAGE field=control2d eps=0.5 N=12 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON control2d:0.5:12:i1o4 it= 0 r_F=1.457e+00 r_out=8.535e-02
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.97s t_solve=0.021s nnz(L+U)=4476983 fill=11.4 mem(L+U)~51MB maxrss=294MB res=8.5e-15
+  NEWTON control2d:0.5:12:i1o4 it= 1 r_F=2.618e-11 r_out=4.016e-12 lambda=1 |dx|max=6.73e-02 lin=splu rel=8.5e-15 lits=0 t_jac=2.5s t_lin=2.1s |dx|2=1.21e+00 t_fact=1.97s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.11s t_solve=0.019s nnz(L+U)=4495868 fill=11.4 mem(L+U)~51MB maxrss=301MB res=2.1e-14
+  NEWTON control2d:0.5:12:i1o4 it= 2 r_F=1.991e-15 r_out=3.218e-16 lambda=1 |dx|max=4.27e-12 lin=splu rel=2.1e-14 lits=0 t_jac=3.1s t_lin=2.3s |dx|2=5.67e-11 t_fact=2.11s
+  STAGE_END field=control2d eps=0.5 N=12 cand=i1o4 status=converged its=2 r_F=1.991e-15 r_out=3.218e-16 -> accepted
+PATH field=control2d eps=0.5 N=12 cand=i1o4 continuation path: 0.25->0.5
+CASE field=control2d eps=0.5 N=12 cand=i1o4 | r_F=1.991e-15 its=2 | e_v=4.111e-02 e_psi=4.665e-01 e_i=(3.439e-02,3.606e-14) e_div=2.638e-14 min_c=4.528e-01 p0.1=4.528e-01 p1=4.928e-01 p5=6.043e-01 p50=9.985e-01 | t=22.8 | e_psi1=4.665e-01 e_psi2=2.269e-13
+CASE field=control2d eps=0.5 N=12 cand=oracle_fd4 | r_F=nan its=nan | e_v=1.357e-02 e_psi=0.000e+00 e_i=(1.463e-02,3.051e-29) e_div=3.070e-15 min_c=5.340e-01 p0.1=5.340e-01 p1=5.381e-01 p5=6.183e-01 p50=1.004e+00 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+CASE field=control2d eps=0.5 N=12 cand=i1o4_fd2 | r_F=1.991e-15 its=2 | e_v=4.480e-02 e_psi=4.665e-01 e_i=(3.724e-02,3.284e-14) e_div=1.708e-14 min_c=4.799e-01 p0.1=4.799e-01 p1=5.364e-01 p5=6.211e-01 p50=9.978e-01 | t=22.8 | e_psi1=4.665e-01 e_psi2=2.269e-13
+CASE field=control2d eps=0.5 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=2.784e-02 e_psi=0.000e+00 e_i=(2.515e-02,0.000e+00) e_div=1.092e-15 min_c=5.498e-01 p0.1=5.498e-01 p1=5.549e-01 p5=6.336e-01 p50=1.004e+00 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+EXTRA field=control2d eps=0.5 N=12 cand=i1o4 status=converged r_F=1.991e-15 r_out=3.218e-16 | outlet c_perp-vperp_in: cand=2.218e-15 oracle_fd=2.642e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=6.215e-02 oracle_fd=3.453e-02; j=1 cand=2.064e-01 oracle_fd=1.968e-01; j=1 vs vD(j=1) cand=3.861e-02 oracle_fd=9.529e-03 | min|c|/v_rms=0.4293 min|vD|/v_rms=0.5069 e_i1=3.439e-02 e_i2=3.606e-14 | t=22.8s | a_psi1=2.004e-02 a_psi2=9.747e-15 (FD order 4)
+HISTORY field=control2d eps=0.5 N=12 cand=i1o4 r_F: 1.46e+00 2.62e-11 1.99e-15
+HISTORY field=control2d eps=0.5 N=12 cand=i1o4 r_out: 8.53e-02 4.02e-12 3.22e-16
+SPECTRUM field=control2d eps=0.5 N=12 cand=i1o4 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=3456 smax=4.320e+03 t_jac=22.1s t_svd=6.4s
+SPECTRUM field=control2d eps=0.5 N=12 cand=i1o4 state=converged smallest12 rel sv: 2.15e-04 2.31e-04 2.48e-04 2.48e-04 2.69e-04 2.69e-04 2.76e-04 2.76e-04 2.77e-04 2.77e-04 2.85e-04 2.85e-04
+SPECTRUM field=control2d eps=0.5 N=12 cand=i1o4 state=converged counts <1e-2:157 <1e-3:30 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.441e+00 after the 20 smallest (3.48e-04 -> 5.01e-04) | 2N=24
+SPECTRUM saved ../raw/sweep2/spectra/spectrum_cand_i_i1o4_control2d_0.5_12.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

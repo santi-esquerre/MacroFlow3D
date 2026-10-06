@@ -1,0 +1,20 @@
+RUN_ALL cell=oracle-gauss-0.25 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u run_all.py --oracle-cell gauss:0.25 --grids 12,16,24,32,48,64
+run_all.py --oracle-cell gauss:0.25 grids=[12, 16, 24, 32, 48, 64] python=3.11.7 numpy=1.26.4 host=localhost.localdomain
+CASE field=gauss eps=0.25 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=2.883e-02 e_psi=0.000e+00 e_i=(7.210e-03,6.120e-03) e_div=2.962e-02 min_c=5.663e-01 p0.1=5.915e-01 p1=6.815e-01 p5=7.589e-01 p50=9.819e-01 | t=7.5
+CASE field=gauss eps=0.25 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=9.842e-03 e_psi=0.000e+00 e_i=(7.210e-03,6.120e-03) e_div=2.406e-15 min_c=5.516e-01 p0.1=5.762e-01 p1=6.424e-01 p5=7.502e-01 p50=9.870e-01 | t=7.5
+ORACLE_READY field=gauss eps=0.25 N=12 cache_hit=False nphi=32 max_roundtrip=1.35e-14 t_oracle=3.5s t_faces=1.2s t_cell=7.5s cache=../raw/cache/gauss_eps0.25_N12_nphi32_v1.npz
+CASE field=gauss eps=0.25 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=1.673e-02 e_psi=0.000e+00 e_i=(4.035e-03,3.422e-03) e_div=2.007e-02 min_c=5.347e-01 p0.1=5.757e-01 p1=6.543e-01 p5=7.457e-01 p50=9.829e-01 | t=0.4
+CASE field=gauss eps=0.25 N=16 cand=oracle_mim | r_F=nan its=nan | e_v=5.784e-03 e_psi=0.000e+00 e_i=(4.035e-03,3.422e-03) e_div=2.642e-15 min_c=5.292e-01 p0.1=5.570e-01 p1=6.394e-01 p5=7.390e-01 p50=9.851e-01 | t=0.4
+ORACLE_READY field=gauss eps=0.25 N=16 cache_hit=True nphi=32 max_roundtrip=1.58e-14 t_oracle=6.7s t_faces=1.8s t_cell=0.4s cache=../raw/cache/gauss_eps0.25_N16_nphi32_v1.npz
+CASE field=gauss eps=0.25 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=7.624e-03 e_psi=0.000e+00 e_i=(1.796e-03,1.498e-03) e_div=1.014e-02 min_c=5.179e-01 p0.1=5.526e-01 p1=6.376e-01 p5=7.376e-01 p50=9.829e-01 | t=24.6
+CASE field=gauss eps=0.25 N=24 cand=oracle_mim | r_F=nan its=nan | e_v=2.644e-03 e_psi=0.000e+00 e_i=(1.796e-03,1.498e-03) e_div=4.787e-15 min_c=5.114e-01 p0.1=5.458e-01 p1=6.270e-01 p5=7.329e-01 p50=9.843e-01 | t=24.6
+ORACLE_READY field=gauss eps=0.25 N=24 cache_hit=False nphi=32 max_roundtrip=2.12e-14 t_oracle=16.2s t_faces=6.4s t_cell=24.6s cache=../raw/cache/gauss_eps0.25_N24_nphi32_v1.npz
+CASE field=gauss eps=0.25 N=32 cand=oracle_fd | r_F=nan its=nan | e_v=4.328e-03 e_psi=0.000e+00 e_i=(1.006e-03,8.323e-04) e_div=5.986e-03 min_c=5.125e-01 p0.1=5.466e-01 p1=6.321e-01 p5=7.334e-01 p50=9.836e-01 | t=59.0
+CASE field=gauss eps=0.25 N=32 cand=oracle_mim | r_F=nan its=nan | e_v=1.503e-03 e_psi=0.000e+00 e_i=(1.006e-03,8.323e-04) e_div=5.208e-15 min_c=5.056e-01 p0.1=5.429e-01 p1=6.277e-01 p5=7.317e-01 p50=9.838e-01 | t=59.0
+ORACLE_READY field=gauss eps=0.25 N=32 cache_hit=False nphi=32 max_roundtrip=2.49e-14 t_oracle=41.4s t_faces=12.8s t_cell=59.0s cache=../raw/cache/gauss_eps0.25_N32_nphi32_v1.npz
+CASE field=gauss eps=0.25 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=1.936e-03 e_psi=0.000e+00 e_i=(4.434e-04,3.643e-04) e_div=2.756e-03 min_c=5.063e-01 p0.1=5.425e-01 p1=6.273e-01 p5=7.311e-01 p50=9.832e-01 | t=245.4
+CASE field=gauss eps=0.25 N=48 cand=oracle_mim | r_F=nan its=nan | e_v=6.736e-04 e_psi=0.000e+00 e_i=(4.434e-04,3.643e-04) e_div=9.479e-15 min_c=5.029e-01 p0.1=5.401e-01 p1=6.257e-01 p5=7.300e-01 p50=9.840e-01 | t=245.4
+ORACLE_READY field=gauss eps=0.25 N=48 cache_hit=False nphi=32 max_roundtrip=3.03e-14 t_oracle=181.3s t_faces=48.0s t_cell=245.6s cache=../raw/cache/gauss_eps0.25_N48_nphi32_v1.npz
+CASE field=gauss eps=0.25 N=64 cand=oracle_fd | r_F=nan its=nan | e_v=1.092e-03 e_psi=0.000e+00 e_i=(2.482e-04,2.031e-04) e_div=1.569e-03 min_c=5.032e-01 p0.1=5.416e-01 p1=6.268e-01 p5=7.303e-01 p50=9.835e-01 | t=593.3
+CASE field=gauss eps=0.25 N=64 cand=oracle_mim | r_F=nan its=nan | e_v=3.801e-04 e_psi=0.000e+00 e_i=(2.482e-04,2.031e-04) e_div=1.040e-14 min_c=5.025e-01 p0.1=5.393e-01 p1=6.252e-01 p5=7.295e-01 p50=9.838e-01 | t=593.3
+ORACLE_READY field=gauss eps=0.25 N=64 cache_hit=False nphi=32 max_roundtrip=3.36e-14 t_oracle=447.5s t_faces=99.1s t_cell=593.8s cache=../raw/cache/gauss_eps0.25_N64_nphi32_v1.npz

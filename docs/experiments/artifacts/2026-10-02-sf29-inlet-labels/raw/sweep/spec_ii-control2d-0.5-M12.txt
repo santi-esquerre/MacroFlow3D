@@ -1,0 +1,31 @@
+RUN_ALL cell=spec_ii-control2d-0.5-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_ii.py --spectrum 12 control2d:0.5:12 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_ii.py python=3.11.7 numpy=1.26.4 scipy=1.11.4 argv=--spectrum 12 control2d:0.5:12 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+======== candidate (ii) energy=q1 q=center control2d:0.5:12  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=1.414e-01 c_rel=3.367e-08 E=5.038664317430902e-01 |F|=1.723e-02 nu=1.0e-04
+  NEWTON s=0.50 it= 0 g_rel=3.174e-01 c_rel=1.099e-01 E=5.112809325376465e-01 |F|=3.941e-02 nu=1.0e-04
+  NEWTON s=1.00 it= 0 g_rel=8.367e-01 c_rel=2.703e-01 E=5.538591824748158e-01 |F|=1.044e-01 nu=1.0e-04
+SOLVE field=control2d eps=0.5 N=12 cand=ii energy=q1 q=center constrained=True meanflux_rows=2 solver=direct status=linesearch_failed its=0 g_rel=8.367e-01 c_rel(max)=2.703e-01 f1_in mean-1=+3.7e-14 mu=0.0e+00 |lam|=0.000e+00 eta=(+0.000e+00,+0.000e+00) E_min=5.538591824748158e-01 E(oracle)=5.057762607841816e-01 E(oracle)-E_min=-4.808e-02 t_load=3.6s t_solve=38.4s
+HISTORY field=control2d eps=0.5 N=12 cand=ii g_rel: 1.4e-01 3.2e-01 8.4e-01
+HISTORY_STAGE field=control2d eps=0.5 N=12 cand=ii s=0.25 its=0 status=linesearch_failed g_rel: 1.4e-01
+HISTORY_STAGE field=control2d eps=0.5 N=12 cand=ii s=0.50 its=0 status=linesearch_failed g_rel: 3.2e-01
+HISTORY_STAGE field=control2d eps=0.5 N=12 cand=ii s=1.00 its=0 status=linesearch_failed g_rel: 8.4e-01
+DIAG field=control2d eps=0.5 N=12 e_v(f1,f2,f3)=(3.084e-01,4.166e-01,8.831e-14) max|div_h c|=5.0e-15 nat_defect|c_perp(out)|=0.000e+00 (vD: 3.540e-01) |c_perp(out)-vD_perp(out)|=3.540e-01 |c1(out)-f1_in|=2.564e-01 |c1(out)-vD_f1(out)|=2.564e-01
+VDREF field=control2d eps=0.5 N=12 |vD| p0.1/1/5/50=0.5345/0.5391/0.6179/1.0034 min|vD|=0.5345
+MEANFLUX candidate field=control2d eps=0.5 N=12 active=True plane=0 S2=+0.000e+00 S3=+0.000e+00 | spread over planes max|S-S[plane]|=(6.77e-02,2.62e-14) mean over planes=(-7.394e-03,+1.313e-14) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(3.52e-02,2.62e-14) balance identity defect=1.4e-17 | vD_faces: S2=-1.18e-09 S3=+0.00e+00 spread=(2.5e-09,0.0e+00)
+MEANFLUX oracle field=control2d eps=0.5 N=12 active=True plane=0 S2=-6.123e-14 S3=+0.000e+00 | spread over planes max|S-S[plane]|=(1.56e-13,0.00e+00) mean over planes=(-1.965e-14,+0.000e+00) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(1.77e-13,5.40e-18) balance identity defect=3.3e-17 | vD_faces: S2=-1.18e-09 S3=+0.00e+00 spread=(2.5e-09,0.0e+00)
+CASE field=control2d eps=0.5 N=12 cand=ii | r_F=8.367e-01 its=0 | e_v=2.995e-01 e_psi=7.386e-01 e_i=(3.094e-01,8.248e-14) e_div=6.978e-16 min_c=7.168e-01 p0.1=7.168e-01 p1=8.075e-01 p5=8.867e-01 p50=1.001e+00 | t=38.4
+DIAG_ORACLE field=control2d eps=0.5 N=12 e_v(f1,f2,f3)=(7.802e-08,9.345e-07,0.000e+00) max|div_h c|=4.2e-15 nat_defect|c_perp(out)|=3.540e-01 (vD: 3.540e-01) |c_perp(out)-vD_perp(out)|=1.535e-06 |c1(out)-f1_in|=6.077e-08 |c1(out)-vD_f1(out)|=6.077e-08
+CASE field=control2d eps=0.5 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=5.342e-07 e_psi=0.000e+00 e_i=(2.515e-02,0.000e+00) e_div=2.129e-15 min_c=5.401e-01 p0.1=5.401e-01 p1=5.636e-01 p5=6.531e-01 p50=9.985e-01 | t=0.0
+KELVIN field=control2d eps=0.5 N=12 cand=ii E(oracle)-E_min=-4.808e-02 (Q1 energy: the TPFA Kelvin identity does not apply; TPFA flux shown for reference) e_v(TPFA kelvin flux vs vD_faces)=1.172e-02 |c_min - c_tpfa|/rms(vD)=2.941e-01 |c_oracle - c_tpfa|/rms(vD)=1.172e-02 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(0.00e+00,0.00e+00) oracle=(0.00e+00,0.00e+00)
+SPECTRUM field=control2d eps=0.5 N=12 dense Hessian of the Lagrangian n=3456: eig min=-3.731e-03 max=7.091e-01 negative=16 (t=131.7s)
+SPECTRUM field=control2d eps=0.5 N=12 constraint Jacobian 146x3456 rank=144 (sigma: max=3.159e-01 min_kept=2.118e-02 dropped=1.4e-16 3.1e-17)
+SPECTRUM field=control2d eps=0.5 N=12 reduced Hessian Z^T H_L Z n=3312: eig min=-3.721e-03 max=7.091e-01 negative=16
+SPECTRUM reduced_hessian field=control2d eps=0.5 N=12 n=3312 smallest12: 3.23e-04 3.23e-04 5.95e-04 6.24e-04 6.57e-04 7.11e-04 7.69e-04 7.69e-04 8.75e-04 8.75e-04 8.75e-04 8.79e-04
+SPECTRUM reduced_hessian field=control2d eps=0.5 N=12 counts <1e-2:86 <1e-3:14 <1e-4:0 <1e-6:0 <1e-10:0 | largest gap below 1e-2: ratio=1.84 after 2 values (r=3.23e-04 -> 5.95e-04)
+SPECTRUM reduced_hessian saved ../raw/sweep/spectra/spectrum_cand_ii_q1_control2d_0.5_12.txt
+SPECTRUM kkt field=control2d eps=0.5 N=12 n=3600 smallest12: 3.23e-04 3.23e-04 5.95e-04 6.24e-04 6.57e-04 7.11e-04 7.67e-04 7.67e-04 8.74e-04 8.74e-04 8.75e-04 8.79e-04
+SPECTRUM kkt field=control2d eps=0.5 N=12 counts <1e-2:86 <1e-3:14 <1e-4:0 <1e-6:0 <1e-10:0 | largest gap below 1e-2: ratio=1.84 after 2 values (r=3.23e-04 -> 5.95e-04)
+SPECTRUM kkt saved ../raw/sweep/spectra/spectrum_cand_ii_q1_control2d_0.5_12_kkt.txt
+SPECTRUM hessian_L_full field=control2d eps=0.5 N=12 n=3456 smallest12: 2.90e-04 2.90e-04 5.95e-04 6.24e-04 6.57e-04 7.11e-04 7.73e-04 7.73e-04 8.75e-04 8.79e-04 9.40e-04 9.40e-04
+SPECTRUM hessian_L_full field=control2d eps=0.5 N=12 counts <1e-2:86 <1e-3:12 <1e-4:0 <1e-6:0 <1e-10:0 | largest gap below 1e-2: ratio=2.05 after 2 values (r=2.90e-04 -> 5.95e-04)
+SPECTRUM hessian_L_full saved ../raw/sweep/spectra/spectrum_cand_ii_q1_control2d_0.5_12_hL.txt

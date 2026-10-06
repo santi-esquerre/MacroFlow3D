@@ -1,0 +1,9 @@
+candidate_ii.py python=3.13.13 numpy=2.5.0 scipy=1.18.0 argv=gauss_ch:0.25:32
+======== candidate (ii) energy=q1 q=center gauss_ch:0.25:32  start=inlet
+  NEWTON s=0.25 it= 0 g_rel=5.718e-02 c_rel=0.000e+00 E=5.038021589328970e-01 |F|=3.369e-03 nu=1.0e-04
+    step alpha=0.5 |d|=2.51e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465216)=29.16s solve[splu]=185.41s
+  NEWTON s=0.25 it= 1 g_rel=4.668e-02 c_rel=0.000e+00 E=5.030047370712789e-01 |F|=2.750e-03 nu=1.0e-04
+    step alpha=0.125 |d|=4.65e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465216)=28.00s solve[splu]=195.07s
+  NEWTON s=0.25 it= 2 g_rel=5.824e-02 c_rel=0.000e+00 E=5.029824686314250e-01 |F|=3.431e-03 nu=1.0e-04
+    step alpha=0.25 |d|=2.69e+00 nu=1.0e-04 trials=1 hess(ngrad=192 nnz=3465216)=26.49s solve[splu]=173.23s
+  NEWTON s=0.25 it= 3 g_rel=7.436e-02 c_rel=0.000e+00 E=5.029236865657292e-01 |F|=4.380e-03 nu=1.0e-04

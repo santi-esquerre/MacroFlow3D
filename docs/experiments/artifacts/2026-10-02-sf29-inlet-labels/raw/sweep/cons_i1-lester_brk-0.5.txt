@@ -1,0 +1,9 @@
+RUN_ALL cell=cons_i1-lester_brk-0.5 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --consistency lester_brk:0.5 --grids 16,32,48
+candidate_i.py mode=consistency opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+CONSISTENCY field=lester_brk eps=0.5 N=16 at the oracle labels: i1 r_F(planes 1..N-1)=3.184e-01 r_out(outlet c_perp rows)=6.701e-03 | i0 r_F(planes 1..N incl. one-sided outlet rows)=3.201e-01 (outlet-plane rows alone 3.366e-01) | t=14.5s
+CONSISTENCY field=lester_brk eps=0.5 N=32 at the oracle labels: i1 r_F(planes 1..N-1)=8.514e-02 r_out(outlet c_perp rows)=1.730e-03 | i0 r_F(planes 1..N incl. one-sided outlet rows)=8.533e-02 (outlet-plane rows alone 8.856e-02) | t=11.5s
+CONSISTENCY field=lester_brk eps=0.5 N=48 at the oracle labels: i1 r_F(planes 1..N-1)=3.843e-02 r_out(outlet c_perp rows)=7.741e-04 | i0 r_F(planes 1..N incl. one-sided outlet rows)=3.848e-02 (outlet-plane rows alone 3.979e-02) | t=12.8s
+CONSISTENCY_ORDER field=lester_brk eps=0.5 i1 r_F: 3.184e-01 8.514e-02 3.843e-02 | orders 1.90 1.96
+CONSISTENCY_ORDER field=lester_brk eps=0.5 i1 r_out: 6.701e-03 1.730e-03 7.741e-04 | orders 1.95 1.98
+CONSISTENCY_ORDER field=lester_brk eps=0.5 i0 r_F: 3.201e-01 8.533e-02 3.848e-02 | orders 1.91 1.96
+CONSISTENCY_ORDER field=lester_brk eps=0.5 i0 outlet rows: 3.366e-01 8.856e-02 3.979e-02 | orders 1.93 1.97

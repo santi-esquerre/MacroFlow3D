@@ -1,0 +1,20 @@
+candidate_ii.py python=3.11.16 numpy=1.26.4 scipy=1.11.4 argv=--solver gmres --maxit 3 --no-continuation gauss:0.25:12
+======== candidate (ii) energy=q1 q=center gauss:0.25:12  start=inlet
+  NEWTON s=1.00 it= 0 g_rel=8.330e-01 c_rel=1.753e-02 E=5.173429758388993e-01 |F|=6.141e-02 nu=1.0e-04
+    step alpha=0.25 |d|=4.23e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=176256)=1.01s solve[gmres its=2400 info=40 linres=4.4e-04]=1.73s
+  NEWTON s=1.00 it= 1 g_rel=8.213e-01 c_rel=2.981e-01 E=5.121344267047794e-01 |F|=6.126e-02 nu=1.0e-04
+    step alpha=0.5 |d|=1.51e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=176256)=0.74s solve[gmres its=2400 info=40 linres=3.3e-02]=1.80s
+  NEWTON s=1.00 it= 2 g_rel=4.200e-01 c_rel=1.196e-01 E=5.017248344712965e-01 |F|=3.130e-02 nu=1.0e-04
+    step alpha=0.5 |d|=1.67e+00 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=176256)=0.76s solve[gmres its=2400 info=40 linres=8.6e-02]=3.68s
+  NEWTON s=1.00 it= 3 g_rel=3.746e-01 c_rel=2.622e-01 E=4.997234559319879e-01 |F|=2.821e-02 nu=1.0e-04
+SOLVE field=gauss eps=0.25 N=12 cand=ii energy=q1 q=center constrained=True meanflux_rows=2 solver=gmres status=maxit its=3 g_rel=3.746e-01 c_rel(max)=2.622e-01 f1_in mean-1=+6.4e-10 mu=8.7e-19 |lam|=1.046e-01 eta=(+3.938e-05,+2.134e-03) E_min=4.997234559319879e-01 E(oracle)=4.959319518147520e-01 E(oracle)-E_min=-3.792e-03 t_load=1.1s t_solve=9.7s
+HISTORY field=gauss eps=0.25 N=12 cand=ii g_rel: 8.3e-01 8.2e-01 4.2e-01 3.7e-01
+HISTORY_STAGE field=gauss eps=0.25 N=12 cand=ii s=1.00 its=3 status=maxit g_rel: 8.3e-01 8.2e-01 4.2e-01 3.7e-01
+DIAG field=gauss eps=0.25 N=12 e_v(f1,f2,f3)=(9.376e-02,5.476e-02,4.673e-02) max|div_h c|=7.0e-15 nat_defect|c_perp(out)|=1.088e-01 (vD: 1.225e-01) |c_perp(out)-vD_perp(out)|=4.540e-02 |c1(out)-f1_in|=6.783e-02 |c1(out)-vD_f1(out)|=6.783e-02
+VDREF field=gauss eps=0.25 N=12 |vD| p0.1/1/5/50=0.5367/0.6339/0.7269/0.9796 min|vD|=0.5118
+MEANFLUX candidate field=gauss eps=0.25 N=12 active=True plane=0 S2=-3.820e-04 S3=+2.831e-04 | spread over planes max|S-S[plane]|=(1.91e-03,3.46e-03) mean over planes=(-9.640e-05,-1.345e-04) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(1.87e-03,5.05e-03) balance identity defect=2.3e-17 | vD_faces: S2=+8.82e-11 S3=-6.68e-12 spread=(1.6e-10,8.2e-11)
+MEANFLUX oracle field=gauss eps=0.25 N=12 active=True plane=0 S2=-3.757e-07 S3=+1.660e-05 | spread over planes max|S-S[plane]|=(3.73e-05,6.51e-05) mean over planes=(+7.643e-06,-1.026e-05) | row x1-flux mismatch max|h^2 sum(c1_out - c1_in)|=(3.07e-05,3.76e-05) balance identity defect=1.7e-17 | vD_faces: S2=+8.82e-11 S3=-6.68e-12 spread=(1.6e-10,8.2e-11)
+CASE field=gauss eps=0.25 N=12 cand=ii | r_F=3.746e-01 its=3 | e_v=6.906e-02 e_psi=6.846e-01 e_i=(5.411e-02,3.451e-02) e_div=3.013e-15 min_c=4.311e-01 p0.1=5.513e-01 p1=6.575e-01 p5=7.548e-01 p50=9.827e-01 | t=9.7
+DIAG_ORACLE field=gauss eps=0.25 N=12 e_v(f1,f2,f3)=(1.520e-02,6.545e-03,2.371e-03) max|div_h c|=6.8e-15 nat_defect|c_perp(out)|=1.217e-01 (vD: 1.225e-01) |c_perp(out)-vD_perp(out)|=5.257e-03 |c1(out)-f1_in|=8.981e-03 |c1(out)-vD_f1(out)|=8.981e-03
+CASE field=gauss eps=0.25 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=9.842e-03 e_psi=0.000e+00 e_i=(7.210e-03,6.120e-03) e_div=2.414e-15 min_c=5.516e-01 p0.1=5.762e-01 p1=6.424e-01 p5=7.502e-01 p50=9.870e-01 | t=0.0
+KELVIN field=gauss eps=0.25 N=12 cand=ii E(oracle)-E_min=-3.792e-03 (Q1 energy: the TPFA Kelvin identity does not apply; TPFA flux shown for reference) e_v(TPFA kelvin flux vs vD_faces)=7.870e-03 |c_min - c_tpfa|/rms(vD)=6.833e-02 |c_oracle - c_tpfa|/rms(vD)=1.333e-02 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(6.82e-03,1.42e-03) oracle=(2.26e-04,2.18e-05)

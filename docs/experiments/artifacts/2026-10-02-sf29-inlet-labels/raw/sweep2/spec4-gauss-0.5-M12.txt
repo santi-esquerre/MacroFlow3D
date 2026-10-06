@@ -1,0 +1,51 @@
+RUN_ALL cell=spec4-gauss-0.5-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts mem_gb=1 cap_s=1800 threads=3 cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 --order 4 gauss:0.5:12:i1 --out ../raw/sweep2/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': None} numpy=1.26.4 scipy=1.11.4 python=3.11.7
+STAGE field=gauss eps=0.25 N=12 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss:0.25:12:i1o4 it= 0 r_F=2.231e+00 r_out=6.530e-02
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.44s t_solve=0.038s nnz(L+U)=3950440 fill=10.0 mem(L+U)~45MB maxrss=195MB res=5.9e-15
+  NEWTON gauss:0.25:12:i1o4 it= 1 r_F=2.507e-01 r_out=1.122e-02 lambda=1 |dx|max=7.82e-02 lin=splu rel=5.9e-15 lits=0 t_jac=2.0s t_lin=2.6s |dx|2=1.24e+00 t_fact=2.44s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.08s t_solve=0.019s nnz(L+U)=4465419 fill=11.3 mem(L+U)~51MB maxrss=297MB res=4.0e-14
+  NEWTON gauss:0.25:12:i1o4 it= 2 r_F=1.420e-01 r_out=5.491e-03 lambda=0.5 |dx|max=6.08e-02 lin=splu rel=4.0e-14 lits=0 t_jac=3.2s t_lin=2.2s |dx|2=7.97e-01 t_fact=2.08s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.85s t_solve=0.015s nnz(L+U)=4475831 fill=11.4 mem(L+U)~51MB maxrss=299MB res=3.2e-14
+  NEWTON gauss:0.25:12:i1o4 it= 3 r_F=7.714e-02 r_out=5.198e-04 lambda=1 |dx|max=2.55e-02 lin=splu rel=3.2e-14 lits=0 t_jac=2.4s t_lin=2.0s |dx|2=4.01e-01 t_fact=1.85s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.94s t_solve=0.015s nnz(L+U)=4489403 fill=11.4 mem(L+U)~51MB maxrss=302MB res=1.2e-14
+  NEWTON gauss:0.25:12:i1o4 it= 4 r_F=4.771e-03 r_out=3.541e-05 lambda=1 |dx|max=8.97e-03 lin=splu rel=1.2e-14 lits=0 t_jac=1.9s t_lin=2.1s |dx|2=8.53e-02 t_fact=1.94s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.54s t_solve=0.012s nnz(L+U)=4489733 fill=11.4 mem(L+U)~51MB maxrss=337MB res=4.1e-14
+  NEWTON gauss:0.25:12:i1o4 it= 5 r_F=2.132e-04 r_out=1.325e-06 lambda=1 |dx|max=2.27e-03 lin=splu rel=4.1e-14 lits=0 t_jac=2.1s t_lin=1.6s |dx|2=1.92e-02 t_fact=1.54s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.81s t_solve=0.012s nnz(L+U)=4489732 fill=11.4 mem(L+U)~51MB maxrss=347MB res=1.5e-14
+  NEWTON gauss:0.25:12:i1o4 it= 6 r_F=6.913e-08 r_out=3.151e-10 lambda=1 |dx|max=2.84e-05 lin=splu rel=1.5e-14 lits=0 t_jac=2.0s t_lin=1.9s |dx|2=2.51e-04 t_fact=1.81s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.81s t_solve=0.014s nnz(L+U)=4489733 fill=11.4 mem(L+U)~51MB maxrss=352MB res=3.3e-14
+  NEWTON gauss:0.25:12:i1o4 it= 7 r_F=3.901e-14 r_out=2.856e-16 lambda=1 |dx|max=4.04e-08 lin=splu rel=3.3e-14 lits=0 t_jac=2.6s t_lin=1.9s |dx|2=2.47e-07 t_fact=1.81s
+  STAGE_END field=gauss eps=0.25 N=12 cand=i1o4 status=converged its=7 r_F=3.901e-14 r_out=2.856e-16 -> accepted
+STAGE field=gauss eps=0.5 N=12 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON gauss:0.5:12:i1o4 it= 0 r_F=2.146e+00 r_out=7.204e-02
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.31s t_solve=0.021s nnz(L+U)=4498482 fill=11.4 mem(L+U)~51MB maxrss=352MB res=8.7e-15
+  NEWTON gauss:0.5:12:i1o4 it= 1 r_F=2.849e-01 r_out=1.303e-02 lambda=1 |dx|max=8.83e-02 lin=splu rel=8.7e-15 lits=0 t_jac=2.8s t_lin=2.5s |dx|2=1.62e+00 t_fact=2.31s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.11s t_solve=0.015s nnz(L+U)=4507811 fill=11.4 mem(L+U)~52MB maxrss=352MB res=4.0e-14
+  NEWTON gauss:0.5:12:i1o4 it= 2 r_F=1.708e-01 r_out=6.330e-03 lambda=0.5 |dx|max=6.61e-02 lin=splu rel=4.0e-14 lits=0 t_jac=2.4s t_lin=2.2s |dx|2=1.00e+00 t_fact=2.11s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.18s t_solve=0.016s nnz(L+U)=4507734 fill=11.4 mem(L+U)~52MB maxrss=352MB res=3.6e-14
+  NEWTON gauss:0.5:12:i1o4 it= 3 r_F=1.256e-01 r_out=1.671e-03 lambda=1 |dx|max=4.60e-02 lin=splu rel=3.6e-14 lits=0 t_jac=2.4s t_lin=2.3s |dx|2=5.98e-01 t_fact=2.18s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=2.15s t_solve=0.022s nnz(L+U)=4506162 fill=11.4 mem(L+U)~52MB maxrss=352MB res=2.0e-14
+  NEWTON gauss:0.5:12:i1o4 it= 4 r_F=2.254e-02 r_out=1.925e-04 lambda=1 |dx|max=1.86e-02 lin=splu rel=2.0e-14 lits=0 t_jac=2.7s t_lin=2.3s |dx|2=2.09e-01 t_fact=2.15s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.71s t_solve=0.012s nnz(L+U)=4506321 fill=11.4 mem(L+U)~52MB maxrss=352MB res=3.9e-14
+  NEWTON gauss:0.5:12:i1o4 it= 5 r_F=1.606e-03 r_out=2.555e-05 lambda=1 |dx|max=8.66e-03 lin=splu rel=3.9e-14 lits=0 t_jac=2.5s t_lin=1.8s |dx|2=7.22e-02 t_fact=1.71s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.91s t_solve=0.020s nnz(L+U)=4502743 fill=11.4 mem(L+U)~52MB maxrss=352MB res=2.8e-14
+  NEWTON gauss:0.5:12:i1o4 it= 6 r_F=2.528e-05 r_out=3.099e-07 lambda=1 |dx|max=5.72e-04 lin=splu rel=2.8e-14 lits=0 t_jac=2.6s t_lin=2.0s |dx|2=3.84e-03 t_fact=1.91s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.86s t_solve=0.012s nnz(L+U)=4504182 fill=11.4 mem(L+U)~52MB maxrss=353MB res=1.4e-14
+  NEWTON gauss:0.5:12:i1o4 it= 7 r_F=9.266e-10 r_out=1.516e-11 lambda=1 |dx|max=3.31e-06 lin=splu rel=1.4e-14 lits=0 t_jac=2.1s t_lin=2.0s |dx|2=2.94e-05 t_fact=1.86s
+    LINEAR splu n=3456 nnz(J)=393984 t_fact=1.82s t_solve=0.017s nnz(L+U)=4504182 fill=11.4 mem(L+U)~52MB maxrss=353MB res=3.3e-14
+  NEWTON gauss:0.5:12:i1o4 it= 8 r_F=3.410e-15 r_out=4.127e-16 lambda=1 |dx|max=2.81e-10 lin=splu rel=3.3e-14 lits=0 t_jac=2.0s t_lin=1.9s |dx|2=2.18e-09 t_fact=1.82s
+  STAGE_END field=gauss eps=0.5 N=12 cand=i1o4 status=converged its=8 r_F=3.410e-15 r_out=4.127e-16 -> accepted
+PATH field=gauss eps=0.5 N=12 cand=i1o4 continuation path: 0.25->0.5
+CASE field=gauss eps=0.5 N=12 cand=i1o4 | r_F=3.410e-15 its=8 | e_v=3.955e-02 e_psi=2.405e-01 e_i=(2.552e-02,2.043e-02) e_div=1.013e-01 min_c=2.412e-01 p0.1=2.738e-01 p1=3.862e-01 p5=5.218e-01 p50=9.421e-01 | t=75.6 | e_psi1=2.405e-01 e_psi2=1.963e-01
+CASE field=gauss eps=0.5 N=12 cand=oracle_fd4 | r_F=nan its=nan | e_v=3.639e-02 e_psi=0.000e+00 e_i=(1.246e-02,7.928e-03) e_div=1.779e-01 min_c=2.397e-01 p0.1=2.717e-01 p1=3.926e-01 p5=5.245e-01 p50=9.443e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+CASE field=gauss eps=0.5 N=12 cand=i1o4_fd2 | r_F=3.410e-15 its=8 | e_v=6.247e-02 e_psi=2.405e-01 e_i=(2.758e-02,2.264e-02) e_div=9.881e-02 min_c=3.016e-01 p0.1=3.382e-01 p1=4.405e-01 p5=5.589e-01 p50=9.510e-01 | t=75.6 | e_psi1=2.405e-01 e_psi2=1.963e-01
+CASE field=gauss eps=0.5 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=6.579e-02 e_psi=0.000e+00 e_i=(1.920e-02,1.340e-02) e_div=1.495e-01 min_c=2.992e-01 p0.1=3.316e-01 p1=4.510e-01 p5=5.648e-01 p50=9.513e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+EXTRA field=gauss eps=0.5 N=12 cand=i1o4 status=converged r_F=3.410e-15 r_out=4.127e-16 | outlet c_perp-vperp_in: cand=2.091e-15 oracle_fd=2.612e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=5.573e-02 oracle_fd=2.115e-02; j=1 cand=1.225e-01 oracle_fd=1.168e-01; j=1 vs vD(j=1) cand=4.097e-02 oracle_fd=8.980e-03 | min|c|/v_rms=0.2231 min|vD|/v_rms=0.2271 e_i1=2.552e-02 e_i2=2.043e-02 | t=75.6s | a_psi1=1.520e-02 a_psi2=9.359e-03 (FD order 4)
+HISTORY field=gauss eps=0.5 N=12 cand=i1o4 r_F: 2.15e+00 2.85e-01 1.71e-01 1.26e-01 2.25e-02 1.61e-03 2.53e-05 9.27e-10 3.41e-15
+HISTORY field=gauss eps=0.5 N=12 cand=i1o4 r_out: 7.20e-02 1.30e-02 6.33e-03 1.67e-03 1.92e-04 2.55e-05 3.10e-07 1.52e-11 4.13e-16
+SPECTRUM field=gauss eps=0.5 N=12 cand=i1o4 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=3456 smax=5.191e+03 t_jac=20.1s t_svd=5.4s
+SPECTRUM field=gauss eps=0.5 N=12 cand=i1o4 state=converged smallest12 rel sv: 1.63e-04 1.76e-04 1.86e-04 2.08e-04 2.16e-04 2.23e-04 2.30e-04 2.51e-04 2.65e-04 2.75e-04 2.89e-04 3.00e-04
+SPECTRUM field=gauss eps=0.5 N=12 cand=i1o4 state=converged counts <1e-2:207 <1e-3:36 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.171e+00 after the 31 smallest (6.96e-04 -> 8.14e-04) | 2N=24
+SPECTRUM saved ../raw/sweep2/spectra/spectrum_cand_i_i1o4_gauss_0.5_12.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

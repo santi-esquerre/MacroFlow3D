@@ -1,0 +1,17 @@
+candidate_ii.py python=3.11.16 numpy=1.26.4 scipy=1.11.4 argv=--solver gmres --maxit 3 --no-continuation gauss:0.25:12
+======== candidate (ii) gauss:0.25:12  start=inlet
+  NEWTON s=1.00 it= 0 g_rel=8.177e-01 c_rel=1.753e-02 E=5.169035072369789e-01 |F|=6.117e-02 nu=1.0e-04
+    step alpha=1 |d|=6.88e-01 nu=1.0e-04 trials=1 hess(ngrad=108 nnz=104448)=0.57s solve[gmres its=2400 info=40 linres=6.4e-01]=8.77s
+  NEWTON s=1.00 it= 1 g_rel=5.868e-01 c_rel=1.294e-01 E=5.081976298569522e-01 |F|=4.406e-02 nu=1.0e-05
+    step alpha=1 |d|=3.17e-01 nu=1.0e-05 trials=1 hess(ngrad=108 nnz=125568)=0.67s solve[gmres its=2400 info=40 linres=9.3e-01]=8.93s
+  NEWTON s=1.00 it= 2 g_rel=5.479e-01 c_rel=7.384e-02 E=5.076987780138235e-01 |F|=4.106e-02 nu=1.0e-06
+    step alpha=1 |d|=3.82e-01 nu=1.0e-06 trials=1 hess(ngrad=108 nnz=125568)=0.50s solve[gmres its=2400 info=40 linres=1.0e+00]=9.11s
+  NEWTON s=1.00 it= 3 g_rel=5.454e-01 c_rel=7.396e-02 E=5.076601516876336e-01 |F|=4.086e-02 nu=1.0e-07
+SOLVE field=gauss eps=0.25 N=12 cand=ii constrained=True solver=gmres status=maxit its=3 g_rel=5.454e-01 c_rel(max)=7.396e-02 f1_in mean-1=+6.4e-10 mu=7.6e-20 |lam|=2.869e-02 E_min=5.076601516876336e-01 E(oracle)=4.961300587243009e-01 E_min-E(oracle)=+1.153e-02 t_load=4.3s t_solve=28.6s
+HISTORY field=gauss eps=0.25 N=12 cand=ii g_rel: 8.2e-01 5.9e-01 5.5e-01 5.5e-01
+DIAG field=gauss eps=0.25 N=12 e_v(f1,f2,f3)=(2.276e-01,7.479e-02,9.283e-02) max|div_h c|=6.2e-15 nat_defect|c_perp(out)|=2.961e-02 (vD: 1.225e-01) |c_perp(out)-vD_perp(out)|=9.754e-02 |c1(out)-f1_in|=2.670e-02 |c1(out)-vD_f1(out)|=2.670e-02
+VDREF field=gauss eps=0.25 N=12 |vD| p0.1/1/5/50=0.5367/0.6339/0.7269/0.9796 min|vD|=0.5118
+CASE field=gauss eps=0.25 N=12 cand=ii | r_F=5.454e-01 its=3 | e_v=1.510e-01 e_psi=7.190e-01 e_i=(1.153e-01,8.262e-02) e_div=2.807e-15 min_c=6.570e-01 p0.1=6.664e-01 p1=7.334e-01 p5=7.986e-01 p50=9.711e-01 | t=28.6
+DIAG_ORACLE field=gauss eps=0.25 N=12 e_v(f1,f2,f3)=(1.520e-02,6.545e-03,2.371e-03) max|div_h c|=5.5e-15 nat_defect|c_perp(out)|=1.217e-01 (vD: 1.225e-01) |c_perp(out)-vD_perp(out)|=5.257e-03 |c1(out)-f1_in|=8.981e-03 |c1(out)-vD_f1(out)|=8.981e-03
+CASE field=gauss eps=0.25 N=12 cand=oracle_mim | r_F=nan its=nan | e_v=9.842e-03 e_psi=0.000e+00 e_i=(7.210e-03,6.120e-03) e_div=2.418e-15 min_c=5.516e-01 p0.1=5.762e-01 p1=6.424e-01 p5=7.502e-01 p50=9.870e-01 | t=0.0
+KELVIN field=gauss eps=0.25 N=12 cand=ii E_kelvin=4.960344548814088e-01 E_min-E_kelvin=+1.163e-02 E(oracle)-E_kelvin=+9.560e-05 e_v(kelvin flux vs vD_faces)=8.930e-03 |c_min - c_kelvin|/rms(vD)=1.506e-01 |c_oracle - c_kelvin|/rms(vD)=1.400e-02 hourglass rms (U1 x3-Nyq, U2 x2-Nyq): candidate=(9.07e-03,4.58e-03) oracle=(2.26e-04,2.18e-05)

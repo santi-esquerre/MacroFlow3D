@@ -1,0 +1,18 @@
+RUN_ALL cell=i1-lester_brk-0.25-N48 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py lester_brk:0.25:48:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=lester_brk eps=0.25 N=48 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=48 modes=1200 setup 0.4s
+  NEWTON lester_brk:0.25:48:i1 it= 0 r_F=1.403e+00 r_out=5.955e-02
+  NEWTON lester_brk:0.25:48:i1 it= 1 r_F=4.580e-02 r_out=2.463e-03 lambda=1 |dx|max=1.87e-02 lin=gmres+lin0 rel=1.6e-14 lits=107 t_jac=21.3s t_lin=28.7s
+  NEWTON lester_brk:0.25:48:i1 it= 2 r_F=1.197e-02 r_out=2.304e-05 lambda=1 |dx|max=6.05e-03 lin=gmres+lin0 rel=7.1e-14 lits=75 t_jac=20.0s t_lin=20.6s
+  NEWTON lester_brk:0.25:48:i1 it= 3 r_F=5.958e-04 r_out=8.941e-07 lambda=1 |dx|max=1.14e-03 lin=gmres+lin0 rel=3.6e-14 lits=65 t_jac=23.7s t_lin=18.7s
+  NEWTON lester_brk:0.25:48:i1 it= 4 r_F=1.827e-06 r_out=3.566e-09 lambda=1 |dx|max=7.21e-05 lin=gmres+lin0 rel=4.7e-14 lits=65 t_jac=20.9s t_lin=16.2s
+  NEWTON lester_brk:0.25:48:i1 it= 5 r_F=1.020e-11 r_out=2.210e-14 lambda=1 |dx|max=1.23e-07 lin=gmres+lin0 rel=2.5e-14 lits=65 t_jac=20.9s t_lin=17.5s
+  NEWTON lester_brk:0.25:48:i1 it= 6 r_F=2.690e-15 r_out=3.200e-17 lambda=1 |dx|max=9.81e-13 lin=gmres+lin0 rel=3.4e-14 lits=73 t_jac=21.3s t_lin=21.0s
+  STAGE_END field=lester_brk eps=0.25 N=48 cand=i1 status=converged its=6 r_F=2.690e-15 r_out=3.200e-17 -> accepted
+PATH field=lester_brk eps=0.25 N=48 cand=i1 continuation path: 0.25
+CASE field=lester_brk eps=0.25 N=48 cand=i1 | r_F=2.690e-15 its=6 | e_v=1.334e-03 e_psi=4.276e-02 e_i=(3.275e-04,3.403e-04) e_div=3.298e-04 min_c=7.961e-01 p0.1=8.033e-01 p1=8.332e-01 p5=8.839e-01 p50=9.986e-01 | t=274.3
+CASE field=lester_brk eps=0.25 N=48 cand=oracle_fd | r_F=nan its=nan | e_v=2.142e-03 e_psi=0.000e+00 e_i=(9.421e-05,1.191e-04) e_div=3.389e-04 min_c=7.979e-01 p0.1=8.048e-01 p1=8.350e-01 p5=8.848e-01 p50=9.986e-01 | t=0.0
+EXTRA field=lester_brk eps=0.25 N=48 cand=i1 status=converged r_F=2.690e-15 r_out=3.200e-17 | outlet c_perp-vperp_in: cand=4.073e-15 oracle_fd=3.508e-04 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.517e-03 oracle_fd=3.464e-04; j=1 cand=1.279e-03 oracle_fd=2.008e-03; j=1 vs vD(j=1) cand=1.014e-03 oracle_fd=2.026e-04 | min|c|/v_rms=0.7931 min|vD|/v_rms=0.7916 e_i1=3.275e-04 e_i2=3.403e-04 | t=274.3s
+HISTORY field=lester_brk eps=0.25 N=48 cand=i1 r_F: 1.40e+00 4.58e-02 1.20e-02 5.96e-04 1.83e-06 1.02e-11 2.69e-15
+HISTORY field=lester_brk eps=0.25 N=48 cand=i1 r_out: 5.95e-02 2.46e-03 2.30e-05 8.94e-07 3.57e-09 2.21e-14 3.20e-17

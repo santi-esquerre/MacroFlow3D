@@ -1,0 +1,10 @@
+RUN_ALL cell=cons4-gauss-0.25 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts mem_gb=2 cap_s=7200 threads=3 cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --consistency --order 4 --grids 16,24,28 gauss:0.25
+candidate_i.py mode=consistency opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': None} numpy=1.26.4 scipy=1.11.4 python=3.11.7
+CONSISTENCY4 field=gauss eps=0.25 N=16 at the oracle labels (i1o4): r_F(planes 1..N-1)=4.203e-02 r_out(outlet c_perp rows)=3.054e-03 | centered rows (planes 2..N-2)=4.363e-02 | skewed rows plane 1=2.887e-02 plane N-1=3.039e-02 | t=2.5s
+CONSISTENCY4 field=gauss eps=0.25 N=24 at the oracle labels (i1o4): r_F(planes 1..N-1)=1.167e-02 r_out(outlet c_perp rows)=6.805e-04 | centered rows (planes 2..N-2)=1.206e-02 | skewed rows plane 1=5.680e-03 plane N-1=6.616e-03 | t=3.1s
+CONSISTENCY4 field=gauss eps=0.25 N=28 at the oracle labels (i1o4): r_F(planes 1..N-1)=6.872e-03 r_out(outlet c_perp rows)=3.723e-04 | centered rows (planes 2..N-2)=7.080e-03 | skewed rows plane 1=3.022e-03 plane N-1=3.593e-03 | t=3.4s
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 r_F: 4.203e-02 1.167e-02 6.872e-03 | orders 3.16 3.44
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 r_out: 3.054e-03 6.805e-04 3.723e-04 | orders 3.70 3.91
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 centered rows: 4.363e-02 1.206e-02 7.080e-03 | orders 3.17 3.46
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 plane-1 rows: 2.887e-02 5.680e-03 3.022e-03 | orders 4.01 4.09
+CONSISTENCY_ORDER field=gauss eps=0.25 i1o4 plane-(N-1) rows: 3.039e-02 6.616e-03 3.593e-03 | orders 3.76 3.96

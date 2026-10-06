@@ -1,0 +1,55 @@
+candidate_i.py mode=selfcheck opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a21135e97ac44f5f3/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': None} numpy=1.26.4 scipy=1.11.4 python=3.11.16
+SELFCHECK stencil plane  1 d1: planes 0..4 weights*12 = -3 -10 +18 -6 +1
+SELFCHECK plane 1 d1 exact on degree 0..4                                          2.44e-15 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 9.16e-05; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane  1 d11: planes 0..5 weights*12 = +10 -15 -4 +14 -6 +1
+SELFCHECK plane 1 d11 exact on degree 0..5                                         3.91e-14 <= 1e-09  PASS
+SELFCHECK   (informative: degree 6 error 7.93e-04; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane  2 d1: planes 0..4 weights*12 = +1 -8 +0 +8 -1
+SELFCHECK plane 2 d1 exact on degree 0..4                                          6.66e-16 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 6.10e-05; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane  2 d11: planes 0..4 weights*12 = -1 +16 -30 +16 -1
+SELFCHECK plane 2 d11 exact on degree 0..4                                         1.78e-14 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 0.00e+00; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane 14 d1: planes 12..16 weights*12 = +1 -8 +0 +8 -1
+SELFCHECK plane 14 d1 exact on degree 0..4                                         6.66e-16 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 6.10e-05; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane 14 d11: planes 12..16 weights*12 = -1 +16 -30 +16 -1
+SELFCHECK plane 14 d11 exact on degree 0..4                                        1.78e-14 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 1.78e-14; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane 15 d1: planes 12..16 weights*12 = -1 +6 -18 +10 +3
+SELFCHECK plane 15 d1 exact on degree 0..4                                         1.78e-15 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 9.16e-05; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane 15 d11: planes 11..16 weights*12 = +1 -6 +14 -4 -15 +10
+SELFCHECK plane 15 d11 exact on degree 0..5                                        1.71e-13 <= 1e-09  PASS
+SELFCHECK   (informative: degree 6 error 7.93e-04; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane 16 d1: planes 12..16 weights*12 = +3 -16 +36 -48 +25
+SELFCHECK plane 16 d1 exact on degree 0..4                                         1.78e-15 <= 1e-09  PASS
+SELFCHECK   (informative: degree 5 error 3.66e-04; nonzero unless the stencil is symmetric)
+SELFCHECK stencil plane 16 d11: planes 11..16 weights*12 = -10 +61 -156 +214 -154 +45
+SELFCHECK plane 16 d11 exact on degree 0..5                                        4.55e-13 <= 1e-09  PASS
+SELFCHECK   (informative: degree 6 error 8.36e-03; nonzero unless the stencil is symmetric)
+SELFCHECK derivs4: d1, d11 of x1^0 on planes 1..N (max abs err)                    4.55e-13 <= 1e-08  PASS
+SELFCHECK derivs4: d1, d11 of x1^1 on planes 1..N (max abs err)                    1.42e-13 <= 1e-08  PASS
+SELFCHECK derivs4: d1, d11 of x1^2 on planes 1..N (max abs err)                    4.55e-13 <= 1e-08  PASS
+SELFCHECK derivs4: d1, d11 of x1^3 on planes 1..N (max abs err)                    1.71e-13 <= 1e-08  PASS
+SELFCHECK derivs4: d1, d11 of x1^4 on planes 1..N (max abs err)                    2.27e-13 <= 1e-08  PASS
+SELFCHECK derivs4 d1 on sin(2pi x1)cos(2pi x2)sin(2pi x3): max err 2.31e-02 1.76e-03 1.15e-04 | orders 3.72 3.93
+SELFCHECK derivs4 d1 observed order (last pair) >= 3.8                             0.00e+00 <= 0e+00  PASS
+SELFCHECK derivs4 d2 on sin(2pi x1)cos(2pi x2)sin(2pi x3): max err 4.89e-03 3.10e-04 1.94e-05 | orders 3.98 4.00
+SELFCHECK derivs4 d2 observed order (last pair) >= 3.8                             0.00e+00 <= 0e+00  PASS
+SELFCHECK derivs4 d23 on sin(2pi x1)cos(2pi x2)sin(2pi x3): max err 6.14e-02 3.89e-03 2.44e-04 | orders 3.98 4.00
+SELFCHECK derivs4 d23 observed order (last pair) >= 3.8                            0.00e+00 <= 0e+00  PASS
+SELFCHECK derivs4 d12 on sin(2pi x1)cos(2pi x2)sin(2pi x3): max err 1.76e-01 1.30e-02 8.45e-04 | orders 3.76 3.94
+SELFCHECK derivs4 d12 observed order (last pair) >= 3.8                            0.00e+00 <= 0e+00  PASS
+SELFCHECK derivs4 d11 on sin(2pi x1)cos(2pi x2)sin(2pi x3): max err 5.03e-01 1.76e-02 5.65e-04 | orders 4.84 4.96
+SELFCHECK derivs4 d11 observed order (last pair) >= 3.8                            0.00e+00 <= 0e+00  PASS
+SELFCHECK derivs4 d33 on sin(2pi x1)cos(2pi x2)sin(2pi x3): max err 1.03e-02 6.50e-04 4.07e-05 | orders 3.99 4.00
+SELFCHECK derivs4 d33 observed order (last pair) >= 3.8                            0.00e+00 <= 0e+00  PASS
+SELFCHECK metrics stencil plane  0 d1: planes 0..4 weights*12 = -25 +48 -36 +16 -3
+SELFCHECK metrics.d1_fd4 exact on x1^0 (all planes 0..N)                           3.55e-15 <= 1e-09  PASS
+SELFCHECK metrics.d1_fd4 exact on x1^1 (all planes 0..N)                           1.78e-15 <= 1e-09  PASS
+SELFCHECK metrics.d1_fd4 exact on x1^2 (all planes 0..N)                           3.55e-15 <= 1e-09  PASS
+SELFCHECK metrics.d1_fd4 exact on x1^3 (all planes 0..N)                           3.55e-15 <= 1e-09  PASS
+SELFCHECK metrics.d1_fd4 exact on x1^4 (all planes 0..N)                           3.55e-15 <= 1e-09  PASS
+SELFCHECK ALL PASS

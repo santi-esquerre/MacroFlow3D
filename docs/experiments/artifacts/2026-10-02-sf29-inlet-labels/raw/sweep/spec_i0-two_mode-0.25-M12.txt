@@ -1,0 +1,61 @@
+RUN_ALL cell=spec_i0-two_mode-0.25-M12 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 12 two_mode:0.25:12:i0 --bisect 2 --lm 10 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 2, 'lm': 10, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=two_mode eps=0.25 N=12 cand=i0 (from eps=0, u=0)
+  NEWTON two_mode:0.25:12:i0 it= 0 r_F=1.355e+00 r_out=0.000e+00
+  NEWTON two_mode:0.25:12:i0 it= 1 r_F=1.216e+00 r_out=0.000e+00 lambda=0.125 |dx|max=3.97e-01 lin=splu rel=4.4e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.25:12:i0 it= 2 r_F=1.204e+00 r_out=0.000e+00 lambda=0.01562 |dx|max=4.87e+00 lin=splu rel=6.3e-13 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.25:12:i0 it= 3 r_F=1.138e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=8.40e-01 lin=splu rel=4.1e-14 lits=0 t_jac=0.3s t_lin=0.6s
+  NEWTON two_mode:0.25:12:i0 it= 4 r_F=1.100e+00 r_out=0.000e+00 lambda=0.03125 |dx|max=1.41e+00 lin=splu rel=9.4e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  STAGE_END field=two_mode eps=0.25 N=12 cand=i0 status=stagnation its=4 r_F=1.100e+00 r_out=0.000e+00 -> FAILED
+  CONTINUATION bisection 1/2: retry from eps=0 at eps=0.125
+STAGE field=two_mode eps=0.125 N=12 cand=i0 (from eps=0, u=0)
+  NEWTON two_mode:0.125:12:i0 it= 0 r_F=6.862e-01 r_out=0.000e+00
+  NEWTON two_mode:0.125:12:i0 it= 1 r_F=6.125e-01 r_out=0.000e+00 lambda=0.125 |dx|max=2.91e-01 lin=splu rel=6.9e-14 lits=0 t_jac=0.2s t_lin=0.4s
+  NEWTON two_mode:0.125:12:i0 it= 2 r_F=4.772e-01 r_out=0.000e+00 lambda=0.25 |dx|max=1.49e-01 lin=splu rel=3.1e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.125:12:i0 it= 3 r_F=3.724e-01 r_out=0.000e+00 lambda=0.25 |dx|max=1.48e-01 lin=splu rel=2.6e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.125:12:i0 it= 4 r_F=3.722e-01 r_out=0.000e+00 lambda=0.007812 |dx|max=1.32e+00 lin=splu rel=4.1e-13 lits=0 t_jac=0.3s t_lin=0.7s
+  STAGE_END field=two_mode eps=0.125 N=12 cand=i0 status=stagnation its=4 r_F=3.722e-01 r_out=0.000e+00 -> FAILED
+  CONTINUATION bisection 2/2: retry from eps=0 at eps=0.0625
+STAGE field=two_mode eps=0.0625 N=12 cand=i0 (from eps=0, u=0)
+  NEWTON two_mode:0.0625:12:i0 it= 0 r_F=3.442e-01 r_out=0.000e+00
+  NEWTON two_mode:0.0625:12:i0 it= 1 r_F=1.638e-01 r_out=0.000e+00 lambda=1 |dx|max=3.37e-02 lin=splu rel=1.4e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.0625:12:i0 it= 2 r_F=1.131e-01 r_out=0.000e+00 lambda=0.5 |dx|max=4.66e-02 lin=splu rel=3.6e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.0625:12:i0 it= 3 r_F=1.037e-01 r_out=0.000e+00 lambda=0.125 |dx|max=1.05e-01 lin=splu rel=1.2e-13 lits=0 t_jac=0.2s t_lin=0.6s
+  NEWTON two_mode:0.0625:12:i0 it= 4 r_F=9.826e-02 r_out=0.000e+00 lambda=0.125 |dx|max=8.08e-02 lin=splu rel=7.6e-14 lits=0 t_jac=0.2s t_lin=0.5s
+  NEWTON two_mode:0.0625:12:i0 it= 5 r_F=6.404e-02 r_out=0.000e+00 lambda=1 |dx|max=2.15e-02 lin=splu rel=2.5e-14 lits=0 t_jac=0.2s t_lin=0.6s
+  NEWTON two_mode:0.0625:12:i0 it= 6 r_F=6.342e-02 r_out=0.000e+00 lambda=0.01562 |dx|max=2.76e-01 lin=splu rel=5.6e-13 lits=0 t_jac=0.3s t_lin=0.7s
+  STAGE_END field=two_mode eps=0.0625 N=12 cand=i0 status=stagnation its=6 r_F=6.342e-02 r_out=0.000e+00 -> FAILED
+  CONTINUATION gave up after 2 bisections; reporting the failed state at eps=0.0625
+STAGE field=two_mode eps=0.25 N=12 cand=i0 (final attempt from eps=0)
+  NEWTON two_mode:0.25:12:i0 it= 0 r_F=1.355e+00 r_out=0.000e+00
+  NEWTON two_mode:0.25:12:i0 it= 1 r_F=1.216e+00 r_out=0.000e+00 lambda=0.125 |dx|max=3.97e-01 lin=splu rel=4.4e-14 lits=0 t_jac=0.3s t_lin=0.9s
+  NEWTON two_mode:0.25:12:i0 it= 2 r_F=1.204e+00 r_out=0.000e+00 lambda=0.01562 |dx|max=4.87e+00 lin=splu rel=6.3e-13 lits=0 t_jac=0.3s t_lin=0.8s
+  NEWTON two_mode:0.25:12:i0 it= 3 r_F=1.138e+00 r_out=0.000e+00 lambda=0.0625 |dx|max=8.40e-01 lin=splu rel=4.1e-14 lits=0 t_jac=0.4s t_lin=0.7s
+  NEWTON two_mode:0.25:12:i0 it= 4 r_F=1.100e+00 r_out=0.000e+00 lambda=0.03125 |dx|max=1.41e+00 lin=splu rel=9.4e-14 lits=0 t_jac=0.2s t_lin=0.4s
+FALLBACK field=two_mode eps=0.25 N=12 cand=i0 Newton status=stagnation -> Levenberg-Marquardt (10 its max) from the final Newton state
+  LM two_mode:0.25:12:i0 it= 1 r_F=1.492e-01 r_out=0.000e+00 mu=1.0e-04 |dx|max=1.84e-02 t=2.5s
+  LM two_mode:0.25:12:i0 it= 2 r_F=2.850e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=1.29e-02 t=3.1s
+  LM two_mode:0.25:12:i0 it= 3 r_F=2.140e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=8.03e-03 t=5.5s
+  LM two_mode:0.25:12:i0 it= 4 r_F=1.949e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=6.32e-03 t=5.1s
+  LM two_mode:0.25:12:i0 it= 5 r_F=1.835e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=5.21e-03 t=4.7s
+  LM two_mode:0.25:12:i0 it= 6 r_F=1.756e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=4.38e-03 t=5.4s
+  LM two_mode:0.25:12:i0 it= 7 r_F=1.697e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=3.76e-03 t=5.0s
+  LM two_mode:0.25:12:i0 it= 8 r_F=1.649e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=3.29e-03 t=5.3s
+  LM two_mode:0.25:12:i0 it= 9 r_F=1.609e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=2.92e-03 t=5.1s
+  LM two_mode:0.25:12:i0 it=10 r_F=1.573e-02 r_out=0.000e+00 mu=1.0e-05 |dx|max=2.62e-03 t=5.0s
+PATH field=two_mode eps=0.25 N=12 cand=i0 continuation path: 0.25(fail)->0.125(fail)->0.0625(fail)->0.25(final)->LM
+CASE field=two_mode eps=0.25 N=12 cand=i0 | r_F=1.573e-02 its=14 | e_v=1.142e-01 e_psi=2.989e+00 e_i=(8.310e-02,7.025e-02) e_div=4.870e-02 min_c=7.653e-01 p0.1=8.039e-01 p1=8.191e-01 p5=8.399e-01 p50=1.016e+00 | t=62.6
+CASE field=two_mode eps=0.25 N=12 cand=oracle_fd | r_F=nan its=nan | e_v=8.984e-03 e_psi=0.000e+00 e_i=(4.944e-03,4.934e-03) e_div=1.037e-02 min_c=7.932e-01 p0.1=7.932e-01 p1=8.041e-01 p5=8.176e-01 p50=1.003e+00 | t=0.0
+EXTRA field=two_mode eps=0.25 N=12 cand=i0 status=newton:stagnation/lm-maxit r_F=1.573e-02 r_out=0.000e+00 | outlet c_perp-vperp_in: cand=1.752e-01 oracle_fd=1.131e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=9.119e-02 oracle_fd=1.125e-02; j=1 cand=1.129e-01 oracle_fd=6.333e-02; j=1 vs vD(j=1) cand=9.239e-02 oracle_fd=5.800e-03 | min|c|/v_rms=0.7535 min|vD|/v_rms=0.7740 e_i1=8.310e-02 e_i2=7.025e-02 | t=62.6s
+HISTORY field=two_mode eps=0.25 N=12 cand=i0 r_F: 1.35e+00 1.22e+00 1.20e+00 1.14e+00 1.10e+00 1.49e-01 2.85e-02 2.14e-02 1.95e-02 1.83e-02 1.76e-02 1.70e-02 1.65e-02 1.61e-02 1.57e-02
+SPECTRUM NOTE field=two_mode eps=0.25 N=12 cand=i0: no converged state (status newton:stagnation/lm-maxit); the spectrum is computed at the final iterate AND at the oracle labels (both labelled)
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i0 state=final_iterate rows: F_i=-q(L_i-S_i) | size=3456 smax=2.157e+03 t_jac=12.1s t_svd=10.0s
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i0 state=final_iterate smallest12 rel sv: 6.84e-06 1.04e-05 6.14e-05 7.57e-05 8.86e-05 9.20e-05 1.12e-04 1.22e-04 1.45e-04 1.94e-04 2.07e-04 2.49e-04
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i0 state=final_iterate counts <1e-2:107 <1e-3:30 <1e-4:6 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 5.923e+00 after the 2 smallest (1.04e-05 -> 6.14e-05) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i0_two_mode_0.25_12_final_iterate.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i0 state=oracle rows: F_i=-q(L_i-S_i) | size=3456 smax=2.090e+03 t_jac=12.0s t_svd=11.2s
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i0 state=oracle smallest12 rel sv: 3.32e-07 2.29e-06 9.30e-06 1.11e-05 1.53e-05 2.06e-05 2.77e-05 3.42e-05 3.56e-05 3.79e-05 5.91e-05 6.59e-05
+SPECTRUM field=two_mode eps=0.25 N=12 cand=i0 state=oracle counts <1e-2:120 <1e-3:52 <1e-4:17 <1e-6:1 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 6.907e+00 after the 1 smallest (3.32e-07 -> 2.29e-06) | 2N=24
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i0_two_mode_0.25_12_oracle.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

@@ -1,0 +1,46 @@
+RUN_ALL cell=i1-gauss_ch-0.5-N24 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py gauss_ch:0.5:24:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=24 modes=312 setup 0.0s
+  NEWTON gauss_ch:0.25:24:i1 it= 0 r_F=4.785e+00 r_out=1.326e-16
+  NEWTON gauss_ch:0.25:24:i1 it= 1 r_F=7.173e-01 r_out=1.892e-15 lambda=1 |dx|max=1.10e-01 lin=gmres+lin0 rel=1.1e-14 lits=131 t_jac=1.3s t_lin=3.5s
+  NEWTON gauss_ch:0.25:24:i1 it= 2 r_F=6.186e-01 r_out=4.005e-13 lambda=0.0625 |dx|max=4.05e-01 lin=gmres+lin0 rel=2.3e-14 lits=276 t_jac=1.5s t_lin=7.5s
+  NEWTON gauss_ch:0.25:24:i1 it= 3 r_F=3.888e-01 r_out=8.079e-13 lambda=0.5 |dx|max=9.69e-02 lin=gmres+lin0 rel=4.6e-14 lits=182 t_jac=1.5s t_lin=5.7s
+  NEWTON gauss_ch:0.25:24:i1 it= 4 line search failed (min lambda 1/1024): merit 3.888e-01 -> 1.683e+02  [gmres+lin0 rel=8.4e-11 lits=665]
+  STAGE_END field=gauss_ch eps=0.25 N=24 cand=i1 status=linesearch-fail its=4 r_F=3.888e-01 r_out=8.079e-13 -> FAILED
+  CONTINUATION bisection 1/4: retry from eps=0 at eps=0.125
+STAGE field=gauss_ch eps=0.125 N=24 cand=i1 (from eps=0, u=0)
+  NEWTON gauss_ch:0.125:24:i1 it= 0 r_F=2.380e+00 r_out=6.715e-17
+  NEWTON gauss_ch:0.125:24:i1 it= 1 r_F=1.169e-01 r_out=5.488e-16 lambda=1 |dx|max=5.62e-02 lin=gmres+lin0 rel=1.1e-14 lits=84 t_jac=1.6s t_lin=1.9s
+  NEWTON gauss_ch:0.125:24:i1 it= 2 r_F=4.656e-02 r_out=2.758e-13 lambda=1 |dx|max=2.42e-02 lin=gmres+lin0 rel=3.6e-14 lits=56 t_jac=1.7s t_lin=1.1s
+  NEWTON gauss_ch:0.125:24:i1 it= 3 r_F=1.086e-03 r_out=4.122e-15 lambda=1 |dx|max=2.50e-03 lin=gmres+lin0 rel=1.3e-14 lits=62 t_jac=1.7s t_lin=1.3s
+  NEWTON gauss_ch:0.125:24:i1 it= 4 r_F=2.409e-05 r_out=2.993e-15 lambda=1 |dx|max=2.66e-04 lin=gmres+lin0 rel=2.8e-14 lits=62 t_jac=1.3s t_lin=1.2s
+  NEWTON gauss_ch:0.125:24:i1 it= 5 r_F=1.241e-09 r_out=9.328e-17 lambda=1 |dx|max=3.21e-06 lin=gmres+lin0 rel=2.0e-14 lits=60 t_jac=1.6s t_lin=1.4s
+  NEWTON gauss_ch:0.125:24:i1 it= 6 r_F=2.074e-15 r_out=9.294e-17 lambda=1 |dx|max=1.48e-10 lin=gmres+lin0 rel=2.3e-14 lits=60 t_jac=2.2s t_lin=1.2s
+  STAGE_END field=gauss_ch eps=0.125 N=24 cand=i1 status=converged its=6 r_F=2.074e-15 r_out=9.294e-17 -> accepted
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1 (from eps=0.125, warm start)
+  NEWTON gauss_ch:0.25:24:i1 it= 0 r_F=2.400e+00 r_out=1.743e-16
+  NEWTON gauss_ch:0.25:24:i1 it= 1 r_F=1.078e-01 r_out=6.984e-13 lambda=1 |dx|max=5.69e-02 lin=gmres+lin0 rel=1.1e-14 lits=99 t_jac=1.6s t_lin=2.0s
+  NEWTON gauss_ch:0.25:24:i1 it= 2 r_F=4.688e-02 r_out=2.139e-13 lambda=1 |dx|max=2.51e-02 lin=gmres+lin0 rel=4.7e-14 lits=125 t_jac=1.3s t_lin=3.5s
+  NEWTON gauss_ch:0.25:24:i1 it= 3 r_F=5.976e-04 r_out=1.286e-14 lambda=1 |dx|max=2.53e-03 lin=gmres+lin0 rel=2.6e-14 lits=148 t_jac=1.7s t_lin=4.6s
+  NEWTON gauss_ch:0.25:24:i1 it= 4 r_F=1.492e-05 r_out=3.449e-15 lambda=1 |dx|max=2.52e-04 lin=gmres+lin0 rel=9.4e-14 lits=151 t_jac=1.4s t_lin=3.8s
+  NEWTON gauss_ch:0.25:24:i1 it= 5 r_F=4.251e-10 r_out=2.067e-16 lambda=1 |dx|max=1.83e-06 lin=gmres+lin0 rel=3.6e-14 lits=145 t_jac=1.2s t_lin=3.9s
+  NEWTON gauss_ch:0.25:24:i1 it= 6 r_F=4.142e-15 r_out=1.926e-16 lambda=1 |dx|max=6.80e-11 lin=gmres+lin0 rel=2.6e-14 lits=145 t_jac=1.4s t_lin=3.7s
+  STAGE_END field=gauss_ch eps=0.25 N=24 cand=i1 status=converged its=6 r_F=4.142e-15 r_out=1.926e-16 -> accepted
+STAGE field=gauss_ch eps=0.5 N=24 cand=i1 (from eps=0.25, warm start)
+  NEWTON gauss_ch:0.5:24:i1 it= 0 r_F=4.763e+00 r_out=4.320e-16
+  NEWTON gauss_ch:0.5:24:i1 it= 1 r_F=4.622e-01 r_out=3.315e-12 lambda=1 |dx|max=1.06e-01 lin=gmres+lin0 rel=1.1e-14 lits=204 t_jac=1.6s t_lin=5.8s
+  NEWTON gauss_ch:0.5:24:i1 it= 2 r_F=2.510e-01 r_out=2.581e-12 lambda=0.5 |dx|max=8.09e-02 lin=gmres+lin0 rel=1.3e-14 lits=564 t_jac=1.3s t_lin=20.8s
+  NEWTON gauss_ch:0.5:24:i1 it= 3 r_F=8.292e-02 r_out=1.483e-12 lambda=1 |dx|max=2.88e-02 lin=gmres+lin0 rel=1.2e-14 lits=872 t_jac=1.7s t_lin=31.4s
+  NEWTON gauss_ch:0.5:24:i1 it= 4 r_F=2.197e-02 r_out=4.189e-13 lambda=1 |dx|max=1.14e-02 lin=gmres+lin0 rel=1.8e-14 lits=3600 t_jac=1.2s t_lin=124.5s
+  NEWTON gauss_ch:0.5:24:i1 it= 5 r_F=1.740e-03 r_out=1.382e-13 lambda=1 |dx|max=3.90e-03 lin=gmres+lin0 rel=2.4e-14 lits=3300 t_jac=1.3s t_lin=112.7s
+  NEWTON gauss_ch:0.5:24:i1 it= 6 r_F=1.473e-05 r_out=4.222e-15 lambda=1 |dx|max=3.49e-04 lin=gmres+lin0 rel=1.0e-14 lits=2689 t_jac=1.9s t_lin=94.3s
+  NEWTON gauss_ch:0.5:24:i1 it= 7 r_F=6.635e-10 r_out=4.678e-16 lambda=1 |dx|max=3.02e-06 lin=gmres+lin0 rel=2.4e-14 lits=2700 t_jac=1.6s t_lin=97.0s
+  NEWTON gauss_ch:0.5:24:i1 it= 8 r_F=8.456e-15 r_out=4.296e-16 lambda=1 |dx|max=2.26e-10 lin=gmres+lin0 rel=2.6e-14 lits=2700 t_jac=1.3s t_lin=86.7s
+  STAGE_END field=gauss_ch eps=0.5 N=24 cand=i1 status=converged its=8 r_F=8.456e-15 r_out=4.296e-16 -> accepted
+PATH field=gauss_ch eps=0.5 N=24 cand=i1 continuation path: 0.25(fail)->0.125->0.25->0.5
+CASE field=gauss_ch eps=0.5 N=24 cand=i1 | r_F=8.456e-15 its=8 | e_v=2.690e-02 e_psi=1.974e-01 e_i=(2.141e-02,1.544e-02) e_div=3.332e-02 min_c=2.958e-01 p0.1=3.361e-01 p1=4.176e-01 p5=5.179e-01 p50=9.224e-01 | t=759.0
+CASE field=gauss_ch eps=0.5 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=2.011e-02 e_psi=0.000e+00 e_i=(6.507e-03,4.470e-03) e_div=6.928e-02 min_c=3.056e-01 p0.1=3.431e-01 p1=4.275e-01 p5=5.255e-01 p50=9.239e-01 | t=0.0
+EXTRA field=gauss_ch eps=0.5 N=24 cand=i1 status=converged r_F=8.456e-15 r_out=4.296e-16 | outlet c_perp-vperp_in: cand=2.046e-15 oracle_fd=1.464e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=4.447e-02 oracle_fd=1.459e-03; j=1 cand=5.063e-02 oracle_fd=3.433e-02; j=1 vs vD(j=1) cand=4.067e-02 oracle_fd=1.318e-03 | min|c|/v_rms=0.2712 min|vD|/v_rms=0.2679 e_i1=2.141e-02 e_i2=1.544e-02 | t=759.0s
+HISTORY field=gauss_ch eps=0.5 N=24 cand=i1 r_F: 4.76e+00 4.62e-01 2.51e-01 8.29e-02 2.20e-02 1.74e-03 1.47e-05 6.64e-10 8.46e-15
+HISTORY field=gauss_ch eps=0.5 N=24 cand=i1 r_out: 4.32e-16 3.32e-12 2.58e-12 1.48e-12 4.19e-13 1.38e-13 4.22e-15 4.68e-16 4.30e-16

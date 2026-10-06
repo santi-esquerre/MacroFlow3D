@@ -1,0 +1,39 @@
+RUN_ALL cell=spec_i1-gauss_ch-0.5-M16 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py --spectrum 16 gauss_ch:0.5:16:i1 --out /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra
+candidate_i.py mode=spectrum opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep/spectra', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 24, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=gauss_ch eps=0.25 N=16 cand=i1 (from eps=0, u=0)
+  NEWTON gauss_ch:0.25:16:i1 it= 0 r_F=3.123e+00 r_out=1.563e-16
+  NEWTON gauss_ch:0.25:16:i1 it= 1 r_F=5.196e-01 r_out=2.384e-16 lambda=1 |dx|max=1.01e-01 lin=splu rel=7.5e-15 lits=0 t_jac=1.0s t_lin=5.3s
+  NEWTON gauss_ch:0.25:16:i1 it= 2 r_F=5.000e-01 r_out=5.618e-13 lambda=1 |dx|max=4.69e-02 lin=splu rel=1.8e-14 lits=0 t_jac=0.9s t_lin=6.0s
+  NEWTON gauss_ch:0.25:16:i1 it= 3 r_F=8.904e-02 r_out=5.039e-14 lambda=1 |dx|max=1.79e-02 lin=splu rel=5.9e-15 lits=0 t_jac=1.3s t_lin=4.2s
+  NEWTON gauss_ch:0.25:16:i1 it= 4 r_F=5.001e-02 r_out=2.096e-13 lambda=0.5 |dx|max=2.44e-02 lin=splu rel=4.1e-14 lits=0 t_jac=0.7s t_lin=4.9s
+  NEWTON gauss_ch:0.25:16:i1 it= 5 r_F=2.114e-02 r_out=1.884e-13 lambda=1 |dx|max=9.71e-03 lin=splu rel=2.8e-14 lits=0 t_jac=0.7s t_lin=6.3s
+  NEWTON gauss_ch:0.25:16:i1 it= 6 r_F=1.366e-03 r_out=1.279e-14 lambda=1 |dx|max=2.96e-03 lin=splu rel=1.7e-14 lits=0 t_jac=0.6s t_lin=4.4s
+  NEWTON gauss_ch:0.25:16:i1 it= 7 r_F=4.714e-06 r_out=4.723e-16 lambda=1 |dx|max=2.64e-04 lin=splu rel=2.5e-14 lits=0 t_jac=0.6s t_lin=3.6s
+  NEWTON gauss_ch:0.25:16:i1 it= 8 r_F=8.397e-11 r_out=1.270e-16 lambda=1 |dx|max=5.26e-07 lin=splu rel=1.3e-14 lits=0 t_jac=0.5s t_lin=3.9s
+  NEWTON gauss_ch:0.25:16:i1 it= 9 r_F=1.902e-15 r_out=1.221e-16 lambda=1 |dx|max=2.76e-11 lin=splu rel=3.8e-14 lits=0 t_jac=0.9s t_lin=3.5s
+  STAGE_END field=gauss_ch eps=0.25 N=16 cand=i1 status=converged its=9 r_F=1.902e-15 r_out=1.221e-16 -> accepted
+STAGE field=gauss_ch eps=0.5 N=16 cand=i1 (from eps=0.25, warm start)
+  NEWTON gauss_ch:0.5:16:i1 it= 0 r_F=3.051e+00 r_out=3.373e-16
+  NEWTON gauss_ch:0.5:16:i1 it= 1 r_F=3.866e-01 r_out=2.914e-12 lambda=1 |dx|max=1.09e-01 lin=splu rel=9.6e-15 lits=0 t_jac=0.7s t_lin=3.5s
+  NEWTON gauss_ch:0.5:16:i1 it= 2 r_F=2.969e-01 r_out=2.414e-12 lambda=0.25 |dx|max=1.65e-01 lin=splu rel=4.5e-14 lits=0 t_jac=0.5s t_lin=3.8s
+  NEWTON gauss_ch:0.5:16:i1 it= 3 r_F=2.543e-01 r_out=2.512e-13 lambda=1 |dx|max=5.08e-02 lin=splu rel=2.5e-14 lits=0 t_jac=0.6s t_lin=3.5s
+  NEWTON gauss_ch:0.5:16:i1 it= 4 r_F=1.990e-01 r_out=7.208e-13 lambda=0.5 |dx|max=9.50e-02 lin=splu rel=3.1e-14 lits=0 t_jac=0.6s t_lin=4.8s
+  NEWTON gauss_ch:0.5:16:i1 it= 5 r_F=1.469e-01 r_out=7.115e-13 lambda=0.5 |dx|max=6.86e-02 lin=splu rel=3.2e-14 lits=0 t_jac=0.5s t_lin=3.4s
+  NEWTON gauss_ch:0.5:16:i1 it= 6 r_F=5.819e-02 r_out=3.765e-13 lambda=1 |dx|max=2.98e-02 lin=splu rel=1.1e-14 lits=0 t_jac=0.7s t_lin=4.4s
+  NEWTON gauss_ch:0.5:16:i1 it= 7 r_F=1.440e-02 r_out=4.583e-13 lambda=1 |dx|max=1.76e-02 lin=splu rel=2.4e-14 lits=0 t_jac=1.2s t_lin=4.3s
+  NEWTON gauss_ch:0.5:16:i1 it= 8 r_F=2.578e-04 r_out=1.707e-14 lambda=1 |dx|max=2.11e-03 lin=splu rel=1.0e-14 lits=0 t_jac=0.7s t_lin=3.6s
+  NEWTON gauss_ch:0.5:16:i1 it= 9 r_F=8.602e-07 r_out=1.270e-15 lambda=1 |dx|max=8.99e-05 lin=splu rel=2.9e-14 lits=0 t_jac=0.7s t_lin=5.0s
+  NEWTON gauss_ch:0.5:16:i1 it=10 r_F=2.827e-12 r_out=2.741e-16 lambda=1 |dx|max=1.89e-07 lin=splu rel=1.7e-14 lits=0 t_jac=0.9s t_lin=5.0s
+  NEWTON gauss_ch:0.5:16:i1 it=11 r_F=3.901e-15 r_out=2.962e-16 lambda=1 |dx|max=2.01e-13 lin=splu rel=5.4e-15 lits=0 t_jac=0.9s t_lin=5.5s
+  STAGE_END field=gauss_ch eps=0.5 N=16 cand=i1 status=converged its=11 r_F=3.901e-15 r_out=2.962e-16 -> accepted
+PATH field=gauss_ch eps=0.5 N=16 cand=i1 continuation path: 0.25->0.5
+CASE field=gauss_ch eps=0.5 N=16 cand=i1 | r_F=3.901e-15 its=11 | e_v=4.119e-02 e_psi=2.617e-01 e_i=(3.034e-02,2.517e-02) e_div=5.708e-02 min_c=2.986e-01 p0.1=3.466e-01 p1=4.235e-01 p5=5.197e-01 p50=9.255e-01 | t=175.4
+CASE field=gauss_ch eps=0.5 N=16 cand=oracle_fd | r_F=nan its=nan | e_v=4.123e-02 e_psi=0.000e+00 e_i=(1.371e-02,9.519e-03) e_div=1.082e-01 min_c=3.222e-01 p0.1=3.554e-01 p1=4.408e-01 p5=5.364e-01 p50=9.263e-01 | t=0.0
+EXTRA field=gauss_ch eps=0.5 N=16 cand=i1 status=converged r_F=3.901e-15 r_out=2.962e-16 | outlet c_perp-vperp_in: cand=1.311e-15 oracle_fd=4.788e-03 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=6.951e-02 oracle_fd=4.760e-03; j=1 cand=7.339e-02 oracle_fd=5.111e-02; j=1 vs vD(j=1) cand=5.829e-02 oracle_fd=4.250e-03 | min|c|/v_rms=0.2737 min|vD|/v_rms=0.2674 e_i1=3.034e-02 e_i2=2.517e-02 | t=175.4s
+HISTORY field=gauss_ch eps=0.5 N=16 cand=i1 r_F: 3.05e+00 3.87e-01 2.97e-01 2.54e-01 1.99e-01 1.47e-01 5.82e-02 1.44e-02 2.58e-04 8.60e-07 2.83e-12 3.90e-15
+HISTORY field=gauss_ch eps=0.5 N=16 cand=i1 r_out: 3.37e-16 2.91e-12 2.41e-12 2.51e-13 7.21e-13 7.12e-13 3.76e-13 4.58e-13 1.71e-14 1.27e-15 2.74e-16 2.96e-16
+SPECTRUM field=gauss_ch eps=0.5 N=16 cand=i1 state=converged rows: F_i=-q(L_i-S_i); outlet (2q/h)(vperp_in-c_perp) | size=8192 smax=6.420e+03 t_jac=56.5s t_svd=121.5s
+SPECTRUM field=gauss_ch eps=0.5 N=16 cand=i1 state=converged smallest12 rel sv: 2.69e-04 2.82e-04 3.04e-04 3.25e-04 3.35e-04 3.67e-04 3.81e-04 3.97e-04 4.03e-04 4.63e-04 4.78e-04 4.95e-04
+SPECTRUM field=gauss_ch eps=0.5 N=16 cand=i1 state=converged counts <1e-2:242 <1e-3:26 <1e-4:0 <1e-6:0 <1e-10:0 | largest consecutive gap ratio among values <1e-2 (incl. the next value): 1.150e+00 after the 9 smallest (4.03e-04 -> 4.63e-04) | 2N=32
+SPECTRUM saved ../raw/sweep/spectra/spectrum_cand_i_i1_gauss_ch_0.5_16.txt
+SPECTRUM cross-check colored-sparse vs dense FD Jacobian: max|diff|/max|J| = 0.00e+00

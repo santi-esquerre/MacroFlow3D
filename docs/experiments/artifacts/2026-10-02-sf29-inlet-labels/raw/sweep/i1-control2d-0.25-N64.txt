@@ -1,0 +1,14 @@
+RUN_ALL cell=i1-control2d-0.25-N64 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py control2d:0.25:64:i1 --direct-max 16
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 16, 'restart': 300} numpy=1.26.4 python=3.11.7
+STAGE field=control2d eps=0.25 N=64 cand=i1 (from eps=0, u=0)
+  preconditioner lin0/i1 N=64 modes=2112 setup 1.7s
+  NEWTON control2d:0.25:64:i1 it= 0 r_F=1.101e+01 r_out=8.377e-02
+  NEWTON control2d:0.25:64:i1 it= 1 r_F=7.142e-11 r_out=2.405e-13 lambda=1 |dx|max=4.99e-02 lin=gmres+lin0 rel=1.2e-14 lits=90 t_jac=106.6s t_lin=53.0s
+  NEWTON control2d:0.25:64:i1 it= 2 r_F=1.345e-14 r_out=3.127e-16 lambda=1 |dx|max=9.29e-13 lin=gmres+lin0 rel=3.0e-14 lits=156 t_jac=124.7s t_lin=125.3s
+  STAGE_END field=control2d eps=0.25 N=64 cand=i1 status=converged its=2 r_F=1.345e-14 r_out=3.127e-16 -> accepted
+PATH field=control2d eps=0.25 N=64 cand=i1 continuation path: 0.25
+CASE field=control2d eps=0.25 N=64 cand=i1 | r_F=1.345e-14 its=2 | e_v=5.258e-04 e_psi=4.579e-01 e_i=(4.024e-04,4.324e-13) e_div=7.354e-14 min_c=7.378e-01 p0.1=7.391e-01 p1=7.511e-01 p5=7.999e-01 p50=9.990e-01 | t=450.9
+CASE field=control2d eps=0.25 N=64 cand=oracle_fd | r_F=nan its=nan | e_v=4.593e-04 e_psi=0.000e+00 e_i=(4.062e-04,0.000e+00) e_div=2.914e-15 min_c=7.379e-01 p0.1=7.392e-01 p1=7.512e-01 p5=7.996e-01 p50=9.991e-01 | t=0.0
+EXTRA field=control2d eps=0.25 N=64 cand=i1 status=converged r_F=1.345e-14 r_out=3.127e-16 | outlet c_perp-vperp_in: cand=5.248e-15 oracle_fd=7.487e-04 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=9.432e-04 oracle_fd=6.214e-04; j=1 cand=1.686e-02 oracle_fd=1.712e-02; j=1 vs vD(j=1) cand=1.527e-04 oracle_fd=3.000e-04 | min|c|/v_rms=0.7278 min|vD|/v_rms=0.7276 e_i1=4.024e-04 e_i2=4.324e-13 | t=450.9s
+HISTORY field=control2d eps=0.25 N=64 cand=i1 r_F: 1.10e+01 7.14e-11 1.35e-14
+HISTORY field=control2d eps=0.25 N=64 cand=i1 r_out: 8.38e-02 2.41e-13 3.13e-16
