@@ -39,6 +39,72 @@ C++ consumers: `src/physics/streamfunctions/inlet_slab/NpyIo.hpp` (reader/writer
 `ProtoCase.cuh` (`load_proto_case`, `ProtoStageProvider`, `load_solution`), and the executable
 `inlet_slab_proto_check` (`--metrics-of-oracle`, `--residual-of-solution`, `--metrics-of-solution`, `--stages`).
 
+## Driver `inlet_slab` and campaign scripts (SF-33 N5)
+
+The executable `inlet_slab` (`apps/inlet_slab/`, built with the other targets; documented-experiment instrument,
+not a ctest entry) consumes these exports. Run from the repository root:
+
+```bash
+# claim (a): prototype reproduction (step 9a); --solution adds the field-wise FIELDDIFF vs the saved 16^3 solution
+./build/wsl-debug/inlet_slab --proto <exports>/gauss_0.25_16 --solution <exports>/solutions/gauss_0.25_16_i1o4 \
+        --summary /tmp/gauss16.json
+# claim (b): production stack (SF-18 field or --analytic <closure field>), N3 stages, continuation, oracle
+./build/wsl-debug/inlet_slab --production --n 32 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder
+./build/wsl-debug/inlet_slab --production --n 16 --eps 0.25 --analytic generic3d --oracle-ladder
+# step 8: SF-19 inlet-face v1 / spline-flow v_perp vs the spectral reference of the gauss field
+./build/wsl-debug/inlet_slab --sf19-crosscheck <exports>/crosscheck_gauss_0.25_16
+```
+
+Solver options (all modes that solve): `--lin-tol 1e-12 --restart 100 --max-inner 6000 --newton-tol 1e-13
+--max-newton 40 --bisect 4 --prec pa` (P-A is the only preconditioner); `--save-solution <dir>` writes `u1.npy`,
+`u2.npy`, `solution.json` in the `--solutions` layout above; `--summary <json>` writes every reported number at full
+precision. Production oracle: `--oracle-hmax-div 8` (`h_max = h/8`, orchestrator decision: the SF-30 default `h`
+gives step-limited round trips ~1e-6 at 16^3), `--oracle-tol 1e-8`, `--oracle-max-roundtrip 1e-8` (acceptance (d):
+a plane above it, or any non-ok streamline, is `oracle_roundtrip_fail`), `--oracle-ladder` (adds `(h/16, tol)` and
+`(h/16, 1e-10)` runs, per-plane `ORACLE` tables, `ORACLE_LABELDIFF` vs the primary run), `--threads T`
+(default min(cores, 32)), `--no-oracle`.
+
+Output lines (prototype formats where the prototype has one): `STAGE` / `NEWTON` / `LINEAR` / `STAGE_END` /
+`CONTINUATION` / `PATH` (N2), `GMRES_STATS` (per stage), `CASE ... cand=i1o4` and the ceiling `cand=oracle_fd4`,
+`EXTRA`, `HISTORY` (`%.2e`) and `HISTORY_FULL` (`%.17e`), `FIELDDIFF` (per-field and joint max relative
+difference, absolute differences), production `SETUP` (SF-18 / SF-19 / inlet report of every stage), `ORACLE*`,
+`TIMING`, `MEMORY` (`cudaMemGetInfo` polls around every phase, device-wide, plus the workspaces' bytes),
+`STATUS <name>`. Exit codes (distinct, nothing clamped): 0 converged (crosscheck: ok), 1 exception, 2 usage,
+10 linesearch-fail, 11 stagnation, 12 maxit, 13 linear_failure, 14 nan_inf, 15 continuation_floor,
+16 missing_stage_input, 17 inlet_backflow, 18 darcy_failed, 19 oracle_roundtrip_fail (production: reported only
+when the solver converged; `STATUS_DETAIL` gives both).
+
+Campaign scripts (plain bash, parameterised by the build dir, print every command; detached V100 jobs):
+
+```bash
+scripts/remote --increment SF-33 run sf33-proto -- \
+  "bash docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_proto.sh build/v100-release"
+scripts/remote --increment SF-33 run sf33-crosscheck -- \
+  "bash docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_crosscheck.sh build/v100-release"
+scripts/remote --increment SF-33 run sf33-ladder-0.5 -- \
+  "bash docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_ladder.sh build/v100-release 0.5"
+```
+
+- `run_proto.sh <build_dir> [<out_root>]`: the step-9a matrix (`gauss`, `gauss_ch`, `control2d` x eps 0.25, 0.5 x
+  N 16, 24; N 32 for `gauss:0.25`, `gauss_ch:0.25`; `generic3d` eps 1 at N 16, 20, 24 and eps 0.25 / 0.5 at 16);
+  exports when absent, `--solution` for every case with a saved 16^3 prototype solution; logs
+  `<out_root>/logs/proto/<case>.log`, JSON `<out_root>/raw/proto/<case>.json`, table
+  `<out_root>/raw/proto/compare_proto.md`. `CASES="field:eps:N ..."` overrides the matrix.
+- `run_crosscheck.sh <build_dir> [<out_root>]`: `--crosscheck gauss:0.25:{16,24,32}` + `--sf19-crosscheck`; logs
+  `logs/crosscheck/N<N>.log`, table with observed orders `raw/crosscheck/crosscheck.md`.
+- `run_ladder.sh <build_dir> <eps> [<out_root>]`: production `N = 32, 64, 128` (`NS` overrides), `--sigma2 1
+  --ell 0.25 --seed 3001 --oracle-ladder --threads 32`; logs `logs/ladder_<eps>/N<N>.log`, JSON
+  `raw/ladder_<eps>/`, table `raw/ladder_<eps>/ladder_orders.md`.
+- `compare_proto.py LOG... [--summary <SF-29 sweep2 summary.md>] [--exports ../exports] [--out md]`: GPU vs
+  prototype per case (full precision from `solution.json` / `ref_metrics.json` gated at 1e-6 relative; 4-digit
+  prototype values gated at their rounding bound and labelled `PASS(4dig)`), r_F gate, PATH equality, FIELDDIFF,
+  r_F history agreement, GMRES statistics per stage. `--crosscheck LOG...`: the step-8 table and orders.
+- `ladder_orders.py LOG...`: per-grid table (status, r_F, PATH, metrics, ceiling, oracle round trips, GMRES,
+  timing, memory), observed orders, the acceptance-(b) reading, SF-18 applied-scale consistency.
+
+Default `<out_root>` is this artifact directory (`exports/` is gitignored; `logs/` and `raw/` are the outputs to
+inspect and, after review, commit as small text).
+
 ## Output layout
 
 All arrays are float64, C order, NumPy `.npy` (version 1.0 header).

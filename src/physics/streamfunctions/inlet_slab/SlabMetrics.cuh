@@ -70,6 +70,9 @@ class SlabMetricsWorkspace {
     const DeviceBuffer<real>& sorted_vD() const { return vn_sorted_; }
     /// Unsorted |c| at the vertices (full-array layout) of the last evaluation.
     const DeviceBuffer<real>& norm_c() const { return cn_; }
+    /// Component d (0..2) of c = g1 x g2 at the vertices (full-array layout) of the last
+    /// evaluation (SF-33 N5: driver EXTRA line, outlet / inlet oblique defects).
+    const DeviceBuffer<real>& cross_component(int d) const { return c_[d]; }
     /// Data pointers of every owned device buffer, for allocation-stability tests.
     std::vector<const void*> storage_pointers() const;
 

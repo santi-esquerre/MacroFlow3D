@@ -652,6 +652,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_proto_check PRIVATE macroflow3d_lib)
     # --- SF-33 inlet slab tests: end ---
 
+    # SF-33 N5: inlet-slab experiment driver (documented-experiment instrument, NOT a ctest entry):
+    # --proto (SF-29 prototype reproduction), --production (SF-18/SF-19 ladder + oracle),
+    # --sf19-crosscheck (step 8). See docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/.
+    add_executable(inlet_slab apps/inlet_slab/inlet_slab_main.cu)
+    target_link_libraries(inlet_slab PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
         # Minimal smoke test — verifies init, VECCUDA creation, link
