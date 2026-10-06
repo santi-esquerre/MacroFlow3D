@@ -402,6 +402,8 @@ inline DeviceSpan<real> mspan(DeviceBuffer<real>& b) {
 }
 
 inline std::vector<real> download(const real* d, std::size_t n) {
+    // SF-33 C2: ctx-stream work must land before a legacy-stream D2H copy
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
     std::vector<real> h(n);
     if (n > 0)
         MACROFLOW3D_CUDA_CHECK(cudaMemcpy(h.data(), d, n * sizeof(real), cudaMemcpyDeviceToHost));
