@@ -11,7 +11,7 @@
 - Owner: `Claude Fable 5.1 orchestrator session (2026-10-02, second session, parallel to SF-27)`
 - Started: `2026-10-02T23:55Z on master=81cd612`
 - Completed: `not completed`
-- PR: `not opened`
+- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/48` (awaiting review; audited source head `3fb6326`, metadata commits on top)
 - Commit: `3fb6326` (audited source-bearing head, integrated on `master=b943f8d`; this metadata commit follows it)
 
 ## Scientific or engineering intent
