@@ -1029,19 +1029,12 @@ const char* pair_formula(AnalyticPair p) {
 
 } // namespace
 
-int run_analytic_labels(int argc, char** argv) {
-    const AnalyticOptions o = parse_analytic_options(argc, argv);
-    const AnalyticPair p = analytic_pair_from_name(o.pair);
-    const AnalyticPairParams prm{p, o.amplitude, o.amplitude_b};
-    const int N = o.n;
+void sample_analytic_pair(const AnalyticPairParams& prm, int N, std::vector<double>& u1,
+                          std::vector<double>& u2, double& min_abs_c_exact) {
     const double h = 1.0 / static_cast<double>(N);
     const std::size_t cells = static_cast<std::size_t>(N) * N * N;
-    const real gbar1[3] = {0.0, 1.0, 0.0};
-    const real gbar2[3] = {0.0, 0.0, 1.0};
-
-    CudaContext ctx(0);
-    const auto t0 = std::chrono::steady_clock::now();
-    std::vector<double> u1(cells), u2(cells);
+    u1.assign(cells, 0.0);
+    u2.assign(cells, 0.0);
     double min_c_exact = std::numeric_limits<double>::infinity();
     for (int k = 0; k < N; ++k) {
         const double z = (static_cast<double>(k) + 0.5) * h;
@@ -1061,6 +1054,23 @@ int run_analytic_labels(int argc, char** argv) {
             }
         }
     }
+    min_abs_c_exact = min_c_exact;
+}
+
+int run_analytic_labels(int argc, char** argv) {
+    const AnalyticOptions o = parse_analytic_options(argc, argv);
+    const AnalyticPair p = analytic_pair_from_name(o.pair);
+    const AnalyticPairParams prm{p, o.amplitude, o.amplitude_b};
+    const int N = o.n;
+    const double h = 1.0 / static_cast<double>(N);
+    const real gbar1[3] = {0.0, 1.0, 0.0};
+    const real gbar2[3] = {0.0, 0.0, 1.0};
+
+    CudaContext ctx(0);
+    const auto t0 = std::chrono::steady_clock::now();
+    std::vector<double> u1, u2;
+    double min_c_exact = 0.0;
+    sample_analytic_pair(prm, N, u1, u2, min_c_exact);
     SplineLabels sl;
     sl.build(ctx, N, u1, u2, gbar1, gbar2);
     const double min_c_grid = sl.min_abs_c_grid(ctx);

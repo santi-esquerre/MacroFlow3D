@@ -2,10 +2,10 @@
 
 /**
  * @file return_map.cuh
- * @brief SF-32 N2a: one-period return map of the `spurious_spreading`
+ * @brief SF-32 N2a/N2b: one-period return map of the `spurious_spreading`
  *        instrument -- per-particle cores (host + device) and GPU kernels for
- *        the SF-31 pseudo-symplectic tracker and the SF-31 DP5(4) RK
- *        reference.
+ *        the SF-31 pseudo-symplectic tracker, the SF-31 DP5(4) RK reference
+ *        and the SF-32 Pollock (RT0) tracker on the Stokes face fluxes.
  *
  * ---------------------------------------------------------------------------
  * 1) Observable (Lester et al. 2023, eqs. 34-36; understanding.md 3.4)
@@ -26,7 +26,7 @@
  *  The exact answer of delta_x and delta_psi is 0: everything measured is a
  *  NUMERICAL error of the tracker on this surrogate (understanding.md 8).
  *  delta_psi_i is evaluated with SplineLabelPair at the final (xi, w) for
- *  both trackers (for the pseudo-symplectic tracker it is its own residual,
+ *  every tracker (for the pseudo-symplectic tracker it is its own residual,
  *  <= tol_psi by construction of a committed state).
  *
  * ---------------------------------------------------------------------------
@@ -45,9 +45,12 @@
  *  Simpson clock of a panel of length sigma (second order in sigma, SF-31).
  *
  *  rk (SF-31 DP5(4) core rk_advance_to_time, unmodified; LabelVelocity of the
- *  spline pair; ReferenceRkParams{tol, dt_max = dt_max_ratio h,
- *  min_step = 1e-14, max_steps_per_call = 1e6}; first proposal 0.1 dt_max):
- *  chunks of duration dt_max (rk_advance_to_time to st.t + dt_max) until
+ *  spline pair; ReferenceRkParams{tol, dt_max (ABSOLUTE, default 0.25;
+ *  decision D-2 of the SF-32 orchestration record: a cap h/2 left the DP5(4)
+ *  controller inactive over the whole tolerance ladder), min_step = 1e-14,
+ *  max_steps_per_call = 1e6}; first proposal 0.1 dt_max):
+ *  chunks of duration EQUAL to dt_max (a shorter chunk would re-cap the step
+ *  at every chunk end; rk_advance_to_time to st.t + dt_max) until
  *  x1_u >= 1; `saved` is the state before the crossing chunk. Landing:
  *  bisection on the chunk's target time t* in (saved.t, saved.t + dt_max];
  *  each trial re-integrates the chunk from `saved` with
@@ -58,6 +61,20 @@
  *  the controller's accepted local error (tol); the SF-31 core has no dense
  *  output and is reused unmodified (no Henon device either).
  *
+ *  pollock (SF-32 N1 core pollock_init_state + pollock_advance_to_x1,
+ *  unmodified; face fluxes of StokesFaceVelocity on the Pollock grid
+ *  Delta = m h, n = N / m cells per axis): the seed (0, x2_0, x3_0), w = 0,
+ *  is converted to a cell state (face ownership of the core), then
+ *  pollock_advance_to_x1(1) crosses cells semi-analytically; the target
+ *  x1 = 1 is an x-face of the grid (n Delta = 1 exactly), so the core lands
+ *  ON it exactly: no bisection (land_iters = 0, land_err = |x1_u - 1| as
+ *  computed, expected 0). The unwrapped position is the core's
+ *  pollock_unwrapped_position; the labels are evaluated at
+ *  xi = cell Delta + r (reduced to [0, L) with the wrap moved into w).
+ *  tau = the Pollock clock; count = cells crossed. Status codes: 0, 12
+ *  (max_cells_per_call), 14 (non-finite), 15 (stagnation, no fallback); on a
+ *  non-zero status the state is the last committed exit.
+ *
  *  The landing tolerance 1e-12 is on x1 only; land_err = |x1_u - 1| of the
  *  final state is always written and the maximum over seeds and the maximum
  *  number of bisection trials are reported in summary.json, so a seed that
@@ -67,7 +84,7 @@
  *  count: pseudo_symplectic = panels of the main loop up to and including
  *  the crossing panel (landing trials excluded); rk = accepted DP5(4) steps of
  *  the main loop up to and including the crossing chunk (landing trials
- *  excluded).
+ *  excluded); pollock = cells crossed (committed full cell steps).
  *
  *  Failures (no fallback, no retry, no epsilon): a failing advance_panel /
  *  rk_advance_to_time (main loop or landing trial) writes its SF-31 status
@@ -98,6 +115,7 @@
  */
 
 #include "src/core/Scalar.hpp"
+#include "src/physics/particles/streamline_tracker/PollockTracker.cuh"
 #include "src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cuh"
 #include "src/physics/particles/streamline_tracker/ReferenceRkTracker.cuh"
 #include "src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cuh"
@@ -315,6 +333,56 @@ rk_return_map_one(const E& labels, real x2_0, real x3_0, const stt::ReferenceRkP
 }
 
 // ===========================================================================
+// Pollock return map (section 2)
+// ===========================================================================
+
+template <class E>
+__host__ __device__ inline void
+pollock_return_map_one(const E& labels, const stt::PeriodicFaceFluxView& f, real x2_0, real x3_0,
+                       const stt::PollockParams& prm, real target, ReturnMapResult& r) {
+    r.status = stt::kStatusActive;
+    r.count = 0ULL;
+    r.land_iters = 0;
+    const real xi0[3] = {static_cast<real>(0.0), x2_0, x3_0};
+    const int32_t w0[3] = {0, 0, 0};
+    {
+        stt::LabelSample s0;
+        labels(xi0, w0, s0);
+        r.psi_seed[0] = s0.psi1;
+        r.psi_seed[1] = s0.psi2;
+    }
+    stt::PollockState st{};
+    uint8_t code = stt::pollock_init_state(f, xi0, w0, st);
+    if (code != stt::kStatusActive) {
+        r.status = code;
+        finalize_result(labels, xi0, w0, static_cast<real>(0.0), r);
+        return;
+    }
+    stt::PollockCounters cnt{0u};
+    code = stt::pollock_advance_to_x1(f, st, target, prm, cnt);
+    r.status = code;
+    r.count = static_cast<unsigned long long>(cnt.cells);
+    // Wrapped label coordinates of the final (or last committed) state:
+    // xi = cell D + r in [0, L] (cell in [0, n), r in [0, D]); the image
+    // xi == L is moved to 0 with the period carried by w (same point).
+    real xi[3];
+    int32_t w[3];
+    for (int a = 0; a < 3; ++a) {
+        const real D = a == 0 ? f.dx : (a == 1 ? f.dy : f.dz);
+        const real L = a == 0 ? f.Lx : (a == 1 ? f.Ly : f.Lz);
+        xi[a] = fma(static_cast<real>(st.cell[a]), D, st.r[a]);
+        w[a] = st.w[a];
+        if (xi[a] >= L) {
+            xi[a] -= L;
+            w[a] += 1;
+        }
+    }
+    finalize_result(labels, xi, w, st.t, r);
+    // The unwrapped position is the core's own (fma(cell + w n, D, r)).
+    stt::pollock_unwrapped_position(f, st, r.x_u);
+}
+
+// ===========================================================================
 // Kernels (one thread per particle; deterministic)
 // ===========================================================================
 
@@ -351,6 +419,18 @@ __global__ void rk_return_map_kernel(E labels, stt::ReferenceRkParams prm, real 
         return;
     ReturnMapResult r;
     rk_return_map_one(labels, x2_0[p], x3_0[p], prm, chunk, max_chunks, target, r);
+    store_result(r, p, out);
+}
+
+template <class E>
+__global__ void pollock_return_map_kernel(E labels, stt::PeriodicFaceFluxView fluxes,
+                                          stt::PollockParams prm, real target, const real* x2_0,
+                                          const real* x3_0, int n, ReturnMapOut out) {
+    const int p = static_cast<int>(blockIdx.x * blockDim.x + threadIdx.x);
+    if (p >= n)
+        return;
+    ReturnMapResult r;
+    pollock_return_map_one(labels, fluxes, x2_0[p], x3_0[p], prm, target, r);
     store_result(r, p, out);
 }
 

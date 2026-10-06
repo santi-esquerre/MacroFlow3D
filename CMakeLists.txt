@@ -604,12 +604,25 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(closure_gate PRIVATE macroflow3d_lib)
     target_compile_options(closure_gate PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
 
-    # SF-32 N2a: spurious-spreading return-map instrument (documented-experiment instrument; not a ctest entry)
-    add_executable(spurious_spreading
-        apps/spurious_spreading/spurious_spreading_main.cu
-        apps/spurious_spreading/label_routes.cu)
-    target_link_libraries(spurious_spreading PRIVATE macroflow3d_lib)
+    # SF-32 N2a/N2b: spurious-spreading return-map instrument (documented-experiment instrument; not a ctest entry).
+    # The non-main translation units form a small static library shared with the controls ctest below,
+    # so the test drives exactly the instrument's code (in memory, no subprocess).
+    add_library(spurious_spreading_core STATIC
+        apps/spurious_spreading/label_routes.cu
+        apps/spurious_spreading/return_map_run.cu)
+    target_link_libraries(spurious_spreading_core PUBLIC macroflow3d_lib)
+    # Same device-code model as macroflow3d_lib (relocatable device code, resolved at the executables' device link).
+    set_target_properties(spurious_spreading_core PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_options(spurious_spreading_core PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_executable(spurious_spreading apps/spurious_spreading/spurious_spreading_main.cu)
+    target_link_libraries(spurious_spreading PRIVATE spurious_spreading_core)
     target_compile_options(spurious_spreading PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
+    # SF-32 N2b: 16^3 controls of the spurious-spreading instrument (fast tier)
+    add_executable(spurious_spreading_controls_tests tests/spurious_spreading/spurious_spreading_controls_tests.cu)
+    target_link_libraries(spurious_spreading_controls_tests PRIVATE spurious_spreading_core)
+    target_compile_options(spurious_spreading_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME spurious_spreading_controls16 COMMAND spurious_spreading_controls_tests)
 
     # SF-30 N2: 16^3 controls of the closure gate (fast tier)
     add_executable(streamline_closure_controls_tests tests/closure/streamline_closure_controls_tests.cu)

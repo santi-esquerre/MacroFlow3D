@@ -42,6 +42,7 @@
  * then exactly one period).
  */
 
+#include "apps/spurious_spreading/analytic_pair_g.hpp"
 #include "apps/spurious_spreading/json_writer.hpp"
 #include "src/core/Scalar.hpp"
 #include "src/numerics/interpolation/PeriodicTricubicBSpline.cuh"
@@ -132,6 +133,15 @@ class SplineLabels {
 /// `spurious_spreading solve-labels ...` (argv[0] is the subcommand name).
 /// Exit codes: 0 ok (any solver status), 2 usage, 4 Darcy PCG did not converge.
 int run_solve_labels(int argc, char** argv);
+
+/**
+ * Sample the closed-form pair at the N^3 cell centres ((i + 1/2) h, h = 1/N):
+ * u1, u2 (resized to N^3, layout i + N (j + N k)) and the exact
+ * min |grad psi1 x grad psi2| over the cell centres. Used by
+ * analytic-labels and by the controls ctest (in-memory labels).
+ */
+void sample_analytic_pair(const AnalyticPairParams& prm, int N, std::vector<double>& u1,
+                          std::vector<double>& u2, double& min_abs_c_exact);
 
 /// `spurious_spreading analytic-labels ...`. Exit codes: 0 ok, 2 usage.
 int run_analytic_labels(int argc, char** argv);
