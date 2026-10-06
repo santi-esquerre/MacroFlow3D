@@ -1,0 +1,182 @@
+RUN_ALL cell=i1o4-gauss_ch-1-N24 host=localhost.localdomain cwd=/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts mem_gb=7 cap_s=10800 threads=3 cmd=/home/sesquerre/anaconda3/bin/python3 -u candidate_i.py gauss_ch:1:24:i1 --order 4 --direct-max 32 --reuse-lu 0 --save ../raw/sweep2/solutions
+candidate_i.py mode=solve opts={'maxit': 40, 'tol': 1e-13, 'continuation': True, 'out': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw', 'prec': 'lin0', 'lin_tol': 1e-13, 'init': 'zero', 'bisect': 4, 'lm': 30, 'direct_max': 32, 'restart': 300, 'order': 4, 'reuse_lu': 0, 'save': '/home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/solutions'} numpy=1.26.4 scipy=1.11.4 python=3.11.7
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss_ch:0.25:24:i1o4 it= 0 r_F=4.128e+00 r_out=1.326e-16
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=106.89s t_solve=0.721s nnz(L+U)=115478051 fill=35.4 mem(L+U)~1322MB maxrss=3029MB res=3.1e-14
+  NEWTON gauss_ch:0.25:24:i1o4 it= 1 r_F=7.863e-01 r_out=6.633e-16 lambda=1 |dx|max=1.11e-01 lin=splu rel=3.1e-14 lits=0 t_jac=3.7s t_lin=109.2s |dx|2=4.79e+00 t_fact=106.89s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=107.53s t_solve=0.623s nnz(L+U)=127567156 fill=39.1 mem(L+U)~1460MB maxrss=5916MB res=6.8e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 2 r_F=7.121e-01 r_out=8.095e-13 lambda=0.03125 |dx|max=7.30e-01 lin=splu rel=6.8e-13 lits=0 t_jac=3.8s t_lin=110.2s |dx|2=1.73e+01 t_fact=107.53s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=108.02s t_solve=0.648s nnz(L+U)=127618261 fill=39.1 mem(L+U)~1460MB maxrss=6058MB res=1.4e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 3 r_F=5.557e-01 r_out=1.649e-12 lambda=0.25 |dx|max=1.08e-01 lin=splu rel=1.4e-13 lits=0 t_jac=4.0s t_lin=110.7s |dx|2=3.42e+00 t_fact=108.02s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=107.92s t_solve=0.600s nnz(L+U)=127662489 fill=39.1 mem(L+U)~1461MB maxrss=6059MB res=4.0e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 4 r_F=5.265e-01 r_out=1.818e-12 lambda=0.0625 |dx|max=3.36e-01 lin=splu rel=4.0e-13 lits=0 t_jac=4.0s t_lin=110.5s |dx|2=7.65e+00 t_fact=107.92s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=107.12s t_solve=0.660s nnz(L+U)=127636829 fill=39.1 mem(L+U)~1461MB maxrss=6059MB res=2.4e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 5 r_F=4.347e-01 r_out=1.750e-12 lambda=0.125 |dx|max=1.91e-01 lin=splu rel=2.4e-13 lits=0 t_jac=4.0s t_lin=109.9s |dx|2=4.81e+00 t_fact=107.12s
+  STAGE_END field=gauss_ch eps=0.25 N=24 cand=i1o4 status=stagnation its=5 r_F=4.347e-01 r_out=1.750e-12 -> FAILED
+  CONTINUATION bisection 1/4: retry from eps=0 at eps=0.125
+STAGE field=gauss_ch eps=0.125 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss_ch:0.125:24:i1o4 it= 0 r_F=2.055e+00 r_out=6.715e-17
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=103.29s t_solve=0.566s nnz(L+U)=115506871 fill=35.4 mem(L+U)~1322MB maxrss=6059MB res=3.0e-14
+  NEWTON gauss_ch:0.125:24:i1o4 it= 1 r_F=1.013e-01 r_out=2.981e-16 lambda=1 |dx|max=5.70e-02 lin=splu rel=3.0e-14 lits=0 t_jac=3.8s t_lin=105.5s |dx|2=2.33e+00 t_fact=103.29s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=110.36s t_solve=0.595s nnz(L+U)=127478600 fill=39.1 mem(L+U)~1459MB maxrss=6059MB res=3.4e-13
+  NEWTON gauss_ch:0.125:24:i1o4 it= 2 r_F=5.707e-02 r_out=4.348e-13 lambda=0.5 |dx|max=3.63e-02 lin=splu rel=3.4e-13 lits=0 t_jac=4.0s t_lin=113.0s |dx|2=1.22e+00 t_fact=110.36s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.28s t_solve=0.591s nnz(L+U)=127692639 fill=39.1 mem(L+U)~1461MB maxrss=6059MB res=2.7e-13
+  NEWTON gauss_ch:0.125:24:i1o4 it= 3 r_F=2.432e-02 r_out=6.599e-13 lambda=1 |dx|max=1.71e-02 lin=splu rel=2.7e-13 lits=0 t_jac=4.1s t_lin=111.9s |dx|2=5.63e-01 t_fact=109.28s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.00s t_solve=0.646s nnz(L+U)=127722106 fill=39.1 mem(L+U)~1462MB maxrss=6062MB res=6.1e-14
+  NEWTON gauss_ch:0.125:24:i1o4 it= 4 r_F=2.297e-03 r_out=5.513e-14 lambda=1 |dx|max=2.04e-03 lin=splu rel=6.1e-14 lits=0 t_jac=4.1s t_lin=111.7s |dx|2=5.55e-02 t_fact=109.00s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=107.05s t_solve=0.616s nnz(L+U)=127704854 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=1.2e-13
+  NEWTON gauss_ch:0.125:24:i1o4 it= 5 r_F=9.559e-05 r_out=5.852e-15 lambda=1 |dx|max=6.03e-04 lin=splu rel=1.2e-13 lits=0 t_jac=4.1s t_lin=109.6s |dx|2=9.75e-03 t_fact=107.05s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.09s t_solve=0.622s nnz(L+U)=127679855 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=4.3e-14
+  NEWTON gauss_ch:0.125:24:i1o4 it= 6 r_F=1.528e-08 r_out=3.004e-16 lambda=1 |dx|max=8.59e-06 lin=splu rel=4.3e-14 lits=0 t_jac=3.8s t_lin=111.7s |dx|2=1.52e-04 t_fact=109.09s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.69s t_solve=0.589s nnz(L+U)=127554551 fill=39.1 mem(L+U)~1460MB maxrss=6063MB res=8.0e-14
+  NEWTON gauss_ch:0.125:24:i1o4 it= 7 r_F=5.235e-15 r_out=2.643e-16 lambda=1 |dx|max=2.59e-09 lin=splu rel=8.0e-14 lits=0 t_jac=4.0s t_lin=112.3s |dx|2=4.49e-08 t_fact=109.69s
+  STAGE_END field=gauss_ch eps=0.125 N=24 cand=i1o4 status=converged its=7 r_F=5.235e-15 r_out=2.643e-16 -> accepted
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1o4 (from eps=0.125, warm start)
+  NEWTON gauss_ch:0.25:24:i1o4 it= 0 r_F=2.067e+00 r_out=3.016e-16
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.93s t_solve=0.540s nnz(L+U)=127547906 fill=39.1 mem(L+U)~1460MB maxrss=6063MB res=3.3e-14
+  NEWTON gauss_ch:0.25:24:i1o4 it= 1 r_F=8.963e-02 r_out=2.394e-12 lambda=1 |dx|max=5.77e-02 lin=splu rel=3.3e-14 lits=0 t_jac=4.1s t_lin=112.2s |dx|2=2.49e+00 t_fact=109.93s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.58s t_solve=0.312s nnz(L+U)=127704109 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=4.0e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 2 r_F=5.215e-02 r_out=2.164e-12 lambda=0.5 |dx|max=3.79e-02 lin=splu rel=4.0e-13 lits=0 t_jac=4.0s t_lin=112.0s |dx|2=1.33e+00 t_fact=109.58s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.34s t_solve=0.675s nnz(L+U)=127681989 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=3.2e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 3 r_F=2.231e-02 r_out=1.540e-12 lambda=1 |dx|max=1.78e-02 lin=splu rel=3.2e-13 lits=0 t_jac=4.1s t_lin=112.0s |dx|2=6.00e-01 t_fact=109.34s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.88s t_solve=0.619s nnz(L+U)=127691612 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=8.1e-14
+  NEWTON gauss_ch:0.25:24:i1o4 it= 4 r_F=2.034e-03 r_out=1.619e-13 lambda=1 |dx|max=3.22e-03 lin=splu rel=8.1e-14 lits=0 t_jac=4.0s t_lin=112.6s |dx|2=6.28e-02 t_fact=109.88s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=112.78s t_solve=0.583s nnz(L+U)=127677634 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=1.1e-13
+  NEWTON gauss_ch:0.25:24:i1o4 it= 5 r_F=4.880e-05 r_out=2.225e-14 lambda=1 |dx|max=4.37e-04 lin=splu rel=1.1e-13 lits=0 t_jac=4.0s t_lin=115.6s |dx|2=8.92e-03 t_fact=112.78s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.32s t_solve=0.631s nnz(L+U)=127634950 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=9.6e-14
+  NEWTON gauss_ch:0.25:24:i1o4 it= 6 r_F=2.681e-08 r_out=5.146e-16 lambda=1 |dx|max=1.51e-05 lin=splu rel=9.6e-14 lits=0 t_jac=4.2s t_lin=116.0s |dx|2=1.64e-04 t_fact=113.32s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.03s t_solve=0.596s nnz(L+U)=127454182 fill=39.1 mem(L+U)~1459MB maxrss=6063MB res=9.2e-14
+  NEWTON gauss_ch:0.25:24:i1o4 it= 7 r_F=8.914e-15 r_out=5.296e-16 lambda=1 |dx|max=7.24e-09 lin=splu rel=9.2e-14 lits=0 t_jac=4.0s t_lin=115.7s |dx|2=9.06e-08 t_fact=113.03s
+  STAGE_END field=gauss_ch eps=0.25 N=24 cand=i1o4 status=converged its=7 r_F=8.914e-15 r_out=5.296e-16 -> accepted
+STAGE field=gauss_ch eps=0.5 N=24 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON gauss_ch:0.5:24:i1o4 it= 0 r_F=4.104e+00 r_out=6.276e-16
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=114.39s t_solve=0.494s nnz(L+U)=127403552 fill=39.1 mem(L+U)~1458MB maxrss=6063MB res=3.8e-14
+  NEWTON gauss_ch:0.5:24:i1o4 it= 1 r_F=3.755e-01 r_out=8.526e-12 lambda=1 |dx|max=1.08e-01 lin=splu rel=3.8e-14 lits=0 t_jac=4.1s t_lin=116.7s |dx|2=5.59e+00 t_fact=114.39s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.08s t_solve=0.553s nnz(L+U)=127679195 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=2.8e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 2 r_F=2.945e-01 r_out=7.000e-12 lambda=0.25 |dx|max=1.34e-01 lin=splu rel=2.8e-13 lits=0 t_jac=4.4s t_lin=115.8s |dx|2=4.12e+00 t_fact=113.08s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.10s t_solve=0.597s nnz(L+U)=127738404 fill=39.2 mem(L+U)~1462MB maxrss=6063MB res=1.1e-12
+  NEWTON gauss_ch:0.5:24:i1o4 it= 3 r_F=2.896e-01 r_out=6.909e-12 lambda=0.01562 |dx|max=6.63e-01 lin=splu rel=1.1e-12 lits=0 t_jac=4.5s t_lin=115.7s |dx|2=1.24e+01 t_fact=113.10s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=111.91s t_solve=0.687s nnz(L+U)=127731244 fill=39.2 mem(L+U)~1462MB maxrss=6063MB res=3.1e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 4 r_F=2.715e-01 r_out=6.055e-12 lambda=0.125 |dx|max=8.26e-02 lin=splu rel=3.1e-13 lits=0 t_jac=4.1s t_lin=114.7s |dx|2=3.37e+00 t_fact=111.91s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.43s t_solve=0.684s nnz(L+U)=127746658 fill=39.2 mem(L+U)~1462MB maxrss=6063MB res=1.9e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 5 r_F=1.891e-01 r_out=4.800e-12 lambda=0.5 |dx|max=5.12e-02 lin=splu rel=1.9e-13 lits=0 t_jac=4.2s t_lin=116.3s |dx|2=1.99e+00 t_fact=113.43s
+  STAGE_END field=gauss_ch eps=0.5 N=24 cand=i1o4 status=stagnation its=5 r_F=1.891e-01 r_out=4.800e-12 -> FAILED
+  CONTINUATION bisection 2/4: retry from eps=0.25 at eps=0.375
+STAGE field=gauss_ch eps=0.375 N=24 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON gauss_ch:0.375:24:i1o4 it= 0 r_F=2.064e+00 r_out=5.615e-16
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.66s t_solve=0.495s nnz(L+U)=127430711 fill=39.1 mem(L+U)~1458MB maxrss=6063MB res=3.5e-14
+  NEWTON gauss_ch:0.375:24:i1o4 it= 1 r_F=8.876e-02 r_out=4.334e-12 lambda=1 |dx|max=5.69e-02 lin=splu rel=3.5e-14 lits=0 t_jac=4.4s t_lin=115.9s |dx|2=2.67e+00 t_fact=113.66s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=114.14s t_solve=0.569s nnz(L+U)=127610706 fill=39.1 mem(L+U)~1460MB maxrss=6063MB res=4.2e-13
+  NEWTON gauss_ch:0.375:24:i1o4 it= 2 r_F=5.185e-02 r_out=3.225e-12 lambda=0.5 |dx|max=3.92e-02 lin=splu rel=4.2e-13 lits=0 t_jac=4.1s t_lin=116.9s |dx|2=1.46e+00 t_fact=114.14s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=115.19s t_solve=0.617s nnz(L+U)=127622437 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=3.2e-13
+  NEWTON gauss_ch:0.375:24:i1o4 it= 3 r_F=2.347e-02 r_out=2.276e-12 lambda=1 |dx|max=1.71e-02 lin=splu rel=3.2e-13 lits=0 t_jac=4.2s t_lin=117.9s |dx|2=6.27e-01 t_fact=115.19s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=115.87s t_solve=0.693s nnz(L+U)=127644977 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=1.0e-13
+  NEWTON gauss_ch:0.375:24:i1o4 it= 4 r_F=4.689e-03 r_out=3.139e-13 lambda=1 |dx|max=4.64e-03 lin=splu rel=1.0e-13 lits=0 t_jac=4.4s t_lin=118.7s |dx|2=8.26e-02 t_fact=115.87s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=115.54s t_solve=0.683s nnz(L+U)=127647724 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=7.5e-14
+  NEWTON gauss_ch:0.375:24:i1o4 it= 5 r_F=4.706e-05 r_out=7.471e-14 lambda=1 |dx|max=5.02e-04 lin=splu rel=7.5e-14 lits=0 t_jac=4.3s t_lin=118.5s |dx|2=1.26e-02 t_fact=115.54s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=115.20s t_solve=0.527s nnz(L+U)=127634190 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=2.6e-13
+  NEWTON gauss_ch:0.375:24:i1o4 it= 6 r_F=2.503e-07 r_out=1.179e-15 lambda=1 |dx|max=3.33e-05 lin=splu rel=2.6e-13 lits=0 t_jac=4.6s t_lin=117.9s |dx|2=4.07e-04 t_fact=115.20s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=121.47s t_solve=0.833s nnz(L+U)=127544707 fill=39.1 mem(L+U)~1460MB maxrss=6063MB res=4.8e-14
+  NEWTON gauss_ch:0.375:24:i1o4 it= 7 r_F=1.270e-13 r_out=8.199e-16 lambda=1 |dx|max=2.98e-08 lin=splu rel=4.8e-14 lits=0 t_jac=4.5s t_lin=124.7s |dx|2=3.83e-07 t_fact=121.47s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=125.50s t_solve=0.746s nnz(L+U)=127442381 fill=39.1 mem(L+U)~1458MB maxrss=6063MB res=1.6e-13
+  NEWTON gauss_ch:0.375:24:i1o4 it= 8 r_F=1.202e-14 r_out=8.232e-16 lambda=1 |dx|max=3.53e-14 lin=splu rel=1.6e-13 lits=0 t_jac=4.7s t_lin=128.5s |dx|2=6.99e-13 t_fact=125.50s
+  STAGE_END field=gauss_ch eps=0.375 N=24 cand=i1o4 status=converged its=8 r_F=1.202e-14 r_out=8.232e-16 -> accepted
+STAGE field=gauss_ch eps=0.5 N=24 cand=i1o4 (from eps=0.375, warm start)
+  NEWTON gauss_ch:0.5:24:i1o4 it= 0 r_F=2.052e+00 r_out=8.719e-16
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=125.27s t_solve=0.739s nnz(L+U)=127426543 fill=39.1 mem(L+U)~1458MB maxrss=6063MB res=3.8e-14
+  NEWTON gauss_ch:0.5:24:i1o4 it= 1 r_F=1.008e-01 r_out=5.732e-12 lambda=1 |dx|max=5.47e-02 lin=splu rel=3.8e-14 lits=0 t_jac=4.8s t_lin=127.9s |dx|2=2.87e+00 t_fact=125.27s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=123.27s t_solve=0.708s nnz(L+U)=127672814 fill=39.1 mem(L+U)~1461MB maxrss=6063MB res=4.2e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 2 r_F=5.823e-02 r_out=4.406e-12 lambda=0.5 |dx|max=4.00e-02 lin=splu rel=4.2e-13 lits=0 t_jac=4.6s t_lin=126.2s |dx|2=1.58e+00 t_fact=123.27s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=117.48s t_solve=0.710s nnz(L+U)=127786679 fill=39.2 mem(L+U)~1462MB maxrss=6063MB res=3.1e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 3 r_F=2.777e-02 r_out=2.838e-12 lambda=1 |dx|max=1.58e-02 lin=splu rel=3.1e-13 lits=0 t_jac=4.8s t_lin=120.4s |dx|2=6.57e-01 t_fact=117.48s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=115.26s t_solve=0.640s nnz(L+U)=127851143 fill=39.2 mem(L+U)~1463MB maxrss=6067MB res=1.0e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 4 r_F=5.870e-03 r_out=6.189e-13 lambda=1 |dx|max=5.86e-03 lin=splu rel=1.0e-13 lits=0 t_jac=4.3s t_lin=118.0s |dx|2=9.44e-02 t_fact=115.26s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=116.34s t_solve=0.687s nnz(L+U)=127771449 fill=39.2 mem(L+U)~1462MB maxrss=6067MB res=7.0e-14
+  NEWTON gauss_ch:0.5:24:i1o4 it= 5 r_F=4.511e-05 r_out=4.870e-14 lambda=1 |dx|max=5.52e-04 lin=splu rel=7.0e-14 lits=0 t_jac=4.4s t_lin=119.5s |dx|2=1.36e-02 t_fact=116.34s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=117.49s t_solve=0.866s nnz(L+U)=127786218 fill=39.2 mem(L+U)~1462MB maxrss=6067MB res=3.1e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 6 r_F=2.662e-07 r_out=1.646e-15 lambda=1 |dx|max=2.73e-05 lin=splu rel=3.1e-13 lits=0 t_jac=4.9s t_lin=121.0s |dx|2=4.28e-04 t_fact=117.49s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=117.46s t_solve=0.753s nnz(L+U)=127670200 fill=39.1 mem(L+U)~1461MB maxrss=6067MB res=5.5e-14
+  NEWTON gauss_ch:0.5:24:i1o4 it= 7 r_F=1.141e-13 r_out=1.218e-15 lambda=1 |dx|max=4.38e-08 lin=splu rel=5.5e-14 lits=0 t_jac=4.2s t_lin=120.5s |dx|2=4.38e-07 t_fact=117.46s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=115.30s t_solve=0.614s nnz(L+U)=127608169 fill=39.1 mem(L+U)~1460MB maxrss=6067MB res=1.3e-13
+  NEWTON gauss_ch:0.5:24:i1o4 it= 8 r_F=1.613e-14 r_out=1.179e-15 lambda=1 |dx|max=2.54e-14 lin=splu rel=1.3e-13 lits=0 t_jac=4.3s t_lin=118.1s |dx|2=4.60e-13 t_fact=115.30s
+  STAGE_END field=gauss_ch eps=0.5 N=24 cand=i1o4 status=converged its=8 r_F=1.613e-14 r_out=1.179e-15 -> accepted
+STAGE field=gauss_ch eps=1 N=24 cand=i1o4 (from eps=0.5, warm start)
+  NEWTON gauss_ch:1:24:i1o4 it= 0 r_F=7.798e+00 r_out=1.486e-15
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=114.49s t_solve=0.541s nnz(L+U)=127681179 fill=39.1 mem(L+U)~1461MB maxrss=6067MB res=4.6e-14
+  NEWTON gauss_ch:1:24:i1o4 it= 1 r_F=5.864e+00 r_out=3.879e-11 lambda=1 |dx|max=2.48e-01 lin=splu rel=4.6e-14 lits=0 t_jac=4.1s t_lin=116.8s |dx|2=1.24e+01 t_fact=114.49s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=118.10s t_solve=0.714s nnz(L+U)=131853869 fill=40.4 mem(L+U)~1509MB maxrss=6155MB res=5.3e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 2 r_F=5.834e+00 r_out=3.860e-11 lambda=0.003906 |dx|max=8.39e+00 lin=splu rel=5.3e-13 lits=0 t_jac=3.9s t_lin=121.0s |dx|2=6.27e+01 t_fact=118.10s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=120.85s t_solve=0.745s nnz(L+U)=131971512 fill=40.5 mem(L+U)~1510MB maxrss=6249MB res=3.3e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 3 r_F=5.736e+00 r_out=3.812e-11 lambda=0.007812 |dx|max=2.65e+00 lin=splu rel=3.3e-13 lits=0 t_jac=4.1s t_lin=124.0s |dx|2=3.85e+01 t_fact=120.85s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=119.88s t_solve=0.802s nnz(L+U)=131808249 fill=40.4 mem(L+U)~1508MB maxrss=6249MB res=9.5e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 4 r_F=5.704e+00 r_out=3.782e-11 lambda=0.007812 |dx|max=7.68e+00 lin=splu rel=9.5e-13 lits=0 t_jac=4.1s t_lin=122.8s |dx|2=1.14e+02 t_fact=119.88s
+  STAGE_END field=gauss_ch eps=1 N=24 cand=i1o4 status=stagnation its=4 r_F=5.704e+00 r_out=3.782e-11 -> FAILED
+  CONTINUATION bisection 3/4: retry from eps=0.5 at eps=0.75
+STAGE field=gauss_ch eps=0.75 N=24 cand=i1o4 (from eps=0.5, warm start)
+  NEWTON gauss_ch:0.75:24:i1o4 it= 0 r_F=4.042e+00 r_out=1.367e-15
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=108.39s t_solve=0.664s nnz(L+U)=127648116 fill=39.1 mem(L+U)~1461MB maxrss=6249MB res=4.5e-14
+  NEWTON gauss_ch:0.75:24:i1o4 it= 1 r_F=6.110e-01 r_out=2.232e-11 lambda=1 |dx|max=1.12e-01 lin=splu rel=4.5e-14 lits=0 t_jac=4.0s t_lin=110.9s |dx|2=6.28e+00 t_fact=108.39s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=111.33s t_solve=0.623s nnz(L+U)=128155498 fill=39.3 mem(L+U)~1467MB maxrss=6249MB res=1.6e-10
+  NEWTON gauss_ch:0.75:24:i1o4 it= 2 line search failed (min lambda 1/1024): merit 6.110e-01 -> 6.141e+00  [splu rel=1.6e-10 lits=0 |dx|max=1.76e+02 |dx|2=3.24e+03]
+  STAGE_END field=gauss_ch eps=0.75 N=24 cand=i1o4 status=linesearch-fail its=2 r_F=6.110e-01 r_out=2.232e-11 -> FAILED
+  CONTINUATION bisection 4/4: retry from eps=0.5 at eps=0.625
+STAGE field=gauss_ch eps=0.625 N=24 cand=i1o4 (from eps=0.5, warm start)
+  NEWTON gauss_ch:0.625:24:i1o4 it= 0 r_F=2.039e+00 r_out=1.246e-15
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.24s t_solve=0.705s nnz(L+U)=127610275 fill=39.1 mem(L+U)~1460MB maxrss=6249MB res=4.5e-14
+  NEWTON gauss_ch:0.625:24:i1o4 it= 1 r_F=1.346e-01 r_out=1.138e-11 lambda=1 |dx|max=5.64e-02 lin=splu rel=4.5e-14 lits=0 t_jac=4.1s t_lin=115.7s |dx|2=3.08e+00 t_fact=113.24s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=112.48s t_solve=0.612s nnz(L+U)=127986520 fill=39.2 mem(L+U)~1465MB maxrss=6249MB res=3.6e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it= 2 r_F=7.637e-02 r_out=6.727e-12 lambda=0.5 |dx|max=4.07e-02 lin=splu rel=3.6e-13 lits=0 t_jac=4.1s t_lin=115.1s |dx|2=1.69e+00 t_fact=112.48s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.81s t_solve=0.663s nnz(L+U)=128047920 fill=39.2 mem(L+U)~1465MB maxrss=6249MB res=2.8e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it= 3 r_F=4.986e-02 r_out=3.944e-12 lambda=1 |dx|max=1.71e-02 lin=splu rel=2.8e-13 lits=0 t_jac=4.0s t_lin=112.6s |dx|2=7.07e-01 t_fact=109.81s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=112.27s t_solve=0.642s nnz(L+U)=128215102 fill=39.3 mem(L+U)~1467MB maxrss=6249MB res=9.7e-14
+  NEWTON gauss_ch:0.625:24:i1o4 it= 4 r_F=1.295e-02 r_out=5.672e-13 lambda=1 |dx|max=7.71e-03 lin=splu rel=9.7e-14 lits=0 t_jac=4.1s t_lin=115.1s |dx|2=1.49e-01 t_fact=112.27s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.25s t_solve=0.673s nnz(L+U)=128263753 fill=39.3 mem(L+U)~1468MB maxrss=6249MB res=2.6e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it= 5 r_F=7.797e-03 r_out=3.358e-13 lambda=0.5 |dx|max=6.04e-03 lin=splu rel=2.6e-13 lits=0 t_jac=4.1s t_lin=111.9s |dx|2=8.73e-02 t_fact=109.25s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=107.31s t_solve=0.586s nnz(L+U)=128231320 fill=39.3 mem(L+U)~1467MB maxrss=6249MB res=1.7e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it= 6 r_F=2.703e-03 r_out=1.744e-13 lambda=1 |dx|max=3.66e-03 lin=splu rel=1.7e-13 lits=0 t_jac=4.0s t_lin=110.0s |dx|2=3.70e-02 t_fact=107.31s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=106.03s t_solve=0.584s nnz(L+U)=128251285 fill=39.3 mem(L+U)~1468MB maxrss=6249MB res=1.0e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it= 7 r_F=5.722e-05 r_out=2.085e-14 lambda=1 |dx|max=6.63e-04 lin=splu rel=1.0e-13 lits=0 t_jac=4.0s t_lin=108.7s |dx|2=6.38e-03 t_fact=106.03s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=111.29s t_solve=0.637s nnz(L+U)=128211870 fill=39.3 mem(L+U)~1467MB maxrss=6249MB res=2.2e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it= 8 r_F=4.389e-07 r_out=2.232e-15 lambda=1 |dx|max=3.31e-05 lin=splu rel=2.2e-13 lits=0 t_jac=4.1s t_lin=114.0s |dx|2=3.36e-04 t_fact=111.29s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=108.39s t_solve=0.645s nnz(L+U)=128127589 fill=39.3 mem(L+U)~1466MB maxrss=6249MB res=5.3e-14
+  NEWTON gauss_ch:0.625:24:i1o4 it= 9 r_F=4.645e-13 r_out=1.663e-15 lambda=1 |dx|max=5.05e-08 lin=splu rel=5.3e-14 lits=0 t_jac=4.2s t_lin=111.0s |dx|2=5.45e-07 t_fact=108.39s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=111.30s t_solve=0.669s nnz(L+U)=128070731 fill=39.3 mem(L+U)~1466MB maxrss=6249MB res=1.8e-13
+  NEWTON gauss_ch:0.625:24:i1o4 it=10 r_F=2.061e-14 r_out=1.540e-15 lambda=1 |dx|max=1.63e-13 lin=splu rel=1.8e-13 lits=0 t_jac=4.1s t_lin=114.0s |dx|2=2.26e-12 t_fact=111.30s
+  STAGE_END field=gauss_ch eps=0.625 N=24 cand=i1o4 status=converged its=10 r_F=2.061e-14 r_out=1.540e-15 -> accepted
+STAGE field=gauss_ch eps=0.75 N=24 cand=i1o4 (from eps=0.625, warm start)
+  NEWTON gauss_ch:0.75:24:i1o4 it= 0 r_F=2.030e+00 r_out=1.759e-15
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=108.12s t_solve=0.572s nnz(L+U)=128005429 fill=39.2 mem(L+U)~1465MB maxrss=6249MB res=4.9e-14
+  NEWTON gauss_ch:0.75:24:i1o4 it= 1 r_F=2.029e-01 r_out=1.614e-11 lambda=1 |dx|max=6.04e-02 lin=splu rel=4.9e-14 lits=0 t_jac=3.8s t_lin=110.5s |dx|2=3.19e+00 t_fact=108.12s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.09s t_solve=0.518s nnz(L+U)=128544965 fill=39.4 mem(L+U)~1471MB maxrss=6249MB res=2.7e-13
+  NEWTON gauss_ch:0.75:24:i1o4 it= 2 r_F=1.157e-01 r_out=9.234e-12 lambda=0.5 |dx|max=4.22e-02 lin=splu rel=2.7e-13 lits=0 t_jac=4.0s t_lin=111.6s |dx|2=1.85e+00 t_fact=109.09s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=111.02s t_solve=0.700s nnz(L+U)=128802755 fill=39.5 mem(L+U)~1474MB maxrss=6249MB res=6.0e-13
+  NEWTON gauss_ch:0.75:24:i1o4 it= 3 r_F=1.087e-01 r_out=8.707e-12 lambda=0.0625 |dx|max=2.15e-01 lin=splu rel=6.0e-13 lits=0 t_jac=3.9s t_lin=113.7s |dx|2=2.31e+00 t_fact=111.02s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=107.58s t_solve=0.618s nnz(L+U)=128907334 fill=39.5 mem(L+U)~1475MB maxrss=6249MB res=4.8e-13
+  NEWTON gauss_ch:0.75:24:i1o4 it= 4 r_F=9.554e-02 r_out=7.748e-12 lambda=0.125 |dx|max=6.52e-02 lin=splu rel=4.8e-13 lits=0 t_jac=3.9s t_lin=110.2s |dx|2=1.21e+00 t_fact=107.58s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=110.53s t_solve=0.593s nnz(L+U)=128811591 fill=39.5 mem(L+U)~1474MB maxrss=6249MB res=3.8e-13
+  NEWTON gauss_ch:0.75:24:i1o4 it= 5 r_F=7.852e-02 r_out=5.910e-12 lambda=0.25 |dx|max=4.92e-02 lin=splu rel=3.8e-13 lits=0 t_jac=3.8s t_lin=113.2s |dx|2=8.07e-01 t_fact=110.53s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=111.33s t_solve=0.723s nnz(L+U)=128922829 fill=39.5 mem(L+U)~1475MB maxrss=6249MB res=2.2e-13
+  NEWTON gauss_ch:0.75:24:i1o4 it= 6 r_F=7.468e-02 r_out=2.482e-12 lambda=1 |dx|max=1.90e-02 lin=splu rel=2.2e-13 lits=0 t_jac=3.9s t_lin=113.9s |dx|2=4.88e-01 t_fact=111.33s
+  STAGE_END field=gauss_ch eps=0.75 N=24 cand=i1o4 status=stagnation its=6 r_F=7.468e-02 r_out=2.482e-12 -> FAILED
+  CONTINUATION gave up after 4 bisections; reporting the failed state at eps=0.75
+STAGE field=gauss_ch eps=1 N=24 cand=i1o4 (final attempt from eps=0.625)
+  NEWTON gauss_ch:1:24:i1o4 it= 0 r_F=5.906e+00 r_out=1.741e-15
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=109.77s t_solve=0.654s nnz(L+U)=127922486 fill=39.2 mem(L+U)~1464MB maxrss=6249MB res=5.4e-14
+  NEWTON gauss_ch:1:24:i1o4 it= 1 r_F=2.800e+00 r_out=4.391e-11 lambda=1 |dx|max=1.72e-01 lin=splu rel=5.4e-14 lits=0 t_jac=3.9s t_lin=112.2s |dx|2=1.00e+01 t_fact=109.77s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=110.33s t_solve=0.613s nnz(L+U)=130863742 fill=40.1 mem(L+U)~1498MB maxrss=6249MB res=3.9e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 2 r_F=2.742e+00 r_out=4.294e-11 lambda=0.01562 |dx|max=1.73e+00 lin=splu rel=3.9e-13 lits=0 t_jac=4.1s t_lin=112.9s |dx|2=2.84e+01 t_fact=110.33s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=112.68s t_solve=0.610s nnz(L+U)=130781037 fill=40.1 mem(L+U)~1497MB maxrss=6249MB res=1.6e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 3 r_F=2.584e+00 r_out=4.028e-11 lambda=0.0625 |dx|max=4.60e-01 lin=splu rel=1.6e-13 lits=0 t_jac=3.8s t_lin=115.4s |dx|2=1.12e+01 t_fact=112.68s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=113.28s t_solve=0.756s nnz(L+U)=130921003 fill=40.1 mem(L+U)~1498MB maxrss=6249MB res=2.3e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 4 r_F=2.428e+00 r_out=3.826e-11 lambda=0.0625 |dx|max=6.78e-01 lin=splu rel=2.3e-13 lits=0 t_jac=4.0s t_lin=116.5s |dx|2=1.57e+01 t_fact=113.28s
+    LINEAR splu n=27648 nnz(J)=3262464 t_fact=114.75s t_solve=0.620s nnz(L+U)=131004801 fill=40.2 mem(L+U)~1499MB maxrss=6249MB res=1.3e-13
+  NEWTON gauss_ch:1:24:i1o4 it= 5 r_F=2.289e+00 r_out=3.643e-11 lambda=0.0625 |dx|max=4.11e-01 lin=splu rel=1.3e-13 lits=0 t_jac=4.1s t_lin=117.6s |dx|2=6.76e+00 t_fact=114.75s
+PATH field=gauss_ch eps=1 N=24 cand=i1o4 continuation path: 0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5->1(fail)->0.75(fail)->0.625->0.75(fail)->1(final)
+CASE field=gauss_ch eps=1 N=24 cand=i1o4 | r_F=2.289e+00 its=5 | e_v=1.258e-01 e_psi=4.356e-01 e_i=(8.797e-02,7.481e-02) e_div=3.512e-01 min_c=7.711e-02 p0.1=9.569e-02 p1=1.442e-01 p5=2.279e-01 p50=7.844e-01 | t=8280.5 | e_psi1=4.356e-01 e_psi2=2.824e-01
+CASE field=gauss_ch eps=1 N=24 cand=oracle_fd4 | r_F=nan its=nan | e_v=1.974e-01 e_psi=0.000e+00 e_i=(5.228e-02,2.412e-02) e_div=1.875e+00 min_c=2.137e-02 p0.1=7.479e-02 p1=1.305e-01 p5=2.135e-01 p50=7.700e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+CASE field=gauss_ch eps=1 N=24 cand=i1o4_fd2 | r_F=2.289e+00 its=5 | e_v=1.219e-01 e_psi=4.356e-01 e_i=(8.341e-02,7.271e-02) e_div=2.773e-01 min_c=8.608e-02 p0.1=1.031e-01 p1=1.553e-01 p5=2.417e-01 p50=7.972e-01 | t=8280.5 | e_psi1=4.356e-01 e_psi2=2.824e-01
+CASE field=gauss_ch eps=1 N=24 cand=oracle_fd | r_F=nan its=nan | e_v=1.883e-01 e_psi=0.000e+00 e_i=(5.873e-02,2.726e-02) e_div=1.168e+00 min_c=3.066e-02 p0.1=7.909e-02 p1=1.414e-01 p5=2.274e-01 p50=7.768e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00
+EXTRA field=gauss_ch eps=1 N=24 cand=i1o4 status=stagnation r_F=2.289e+00 r_out=3.643e-11 | outlet c_perp-vperp_in: cand=3.643e-11 oracle_fd=4.970e-02 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=3.644e-01 oracle_fd=2.647e-03; j=1 cand=1.628e-01 oracle_fd=6.460e-02; j=1 vs vD(j=1) cand=1.535e-01 oracle_fd=1.555e-03 | min|c|/v_rms=0.0559 min|vD|/v_rms=0.0511 e_i1=8.797e-02 e_i2=7.481e-02 | t=8280.5s | a_psi1=6.080e-02 a_psi2=4.686e-02 (FD order 4)
+HISTORY field=gauss_ch eps=1 N=24 cand=i1o4 r_F: 5.91e+00 2.80e+00 2.74e+00 2.58e+00 2.43e+00 2.29e+00
+HISTORY field=gauss_ch eps=1 N=24 cand=i1o4 r_out: 1.74e-15 4.39e-11 4.29e-11 4.03e-11 3.83e-11 3.64e-11
+SAVED ../raw/sweep2/solutions/gauss_ch_1_24_i1o4.npz status=stagnation (241 kB)

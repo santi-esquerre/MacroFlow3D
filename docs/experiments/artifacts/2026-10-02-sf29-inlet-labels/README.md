@@ -668,6 +668,47 @@ cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts && python3 ru
 The oracle caches in `raw/cache/` (`cases.CACHE_DIR`, keyed by field, eps, N, `N_phi`) are reused when present
 (e.g. those left on the host mirror by `raw/sweep/`); the `orc` cells build the missing ones (20^3, 28^3 are new).
 
+### Corrective job record and retrieval (N4c)
+
+Remote detached job (no GPU work; CPU-only Python processes under the memory-budget scheduler):
+
+| item | value |
+|---|---|
+| job | `sf29-corrective` (`scripts/remote --increment SF-29 ...`; mirror `~/MacroFlow3D-SF-29`, per-increment state root `~/.macroflow3d-remote/macroflow3d-SF-29/`) |
+| command | `cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts && python3 run_all.py --matrix corrective --workers 26 --mem-budget 100 --threads 3 --out ../raw/sweep2` |
+| remote log | `~/.macroflow3d-remote/macroflow3d-SF-29/logs/sf29-corrective.log` (copied verbatim to `raw/sweep2/sf29-corrective.joblog.txt`) |
+| start / end (UTC) | 2026-10-05T12:11:48Z / 2026-10-06T04:13:35Z |
+| wall time | 57 705 s (driver `run_all corrective: finished in 57705 s`) |
+| exit code | 0 (`scripts/remote --increment SF-29 status sf29-corrective`: `succeeded`) |
+| GPU lock | GPU 0 lock held for the whole job by this CPU-only job (`GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)` in the job log); no CUDA code ran |
+| host stack | `localhost.localdomain`, python 3.11.7, numpy 1.26.4; up to 26 cell processes x 3 BLAS threads; job-wide max running 26, max reserved memory 100.0 GB (budget 100 GB) |
+| cells | 166 in the matrix: 163 `done`, 3 `timeout`, 0 `failed` |
+| timeouts | `i1o4-gauss-1-N28`, `i1o4-gauss_ch-1-N28`, `i1o4-generic3d-1-N28` (each killed at the 21 600 s cap of `i1o4` at 28^3) |
+
+Retrieval (2026-10-06, after the job had finished; no `scripts/remote sync` in between):
+
+```bash
+rsync -av --exclude 'solutions/' v100:~/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/ docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/
+rsync -av --include '*/' --include '*_16_*.npz' --include '.gitignore' --exclude '*' v100:~/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/solutions/ docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/solutions/
+rsync -av v100:/home/sesquerre/.macroflow3d-remote/macroflow3d-SF-29/logs/sf29-corrective.log docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/sf29-corrective.joblog.txt
+```
+
+Remote `raw/sweep2/` held 296 files (28 MB): 197 outside `solutions/` (166 cell logs, 29 spectra in `spectra/`,
+`manifest.json`, `summary.md`), all pulled (4.1 MB), and 99 `solutions/*.npz` (24 MB, largest 0.56 MB), of which
+only the 21 `*_16_*` files (1.8 MB) are pulled and committed. The remote `solutions/` had no `.gitignore`; the
+committed `raw/sweep2/solutions/.gitignore` is a copy of `raw/solutions/.gitignore` (ignore `*.npz` except
+`*_16_*.npz`). No committed file exceeds 1 MB.
+
+| file | content |
+|---|---|
+| `raw/sweep2/<cell>.txt` | console log of one matrix cell (first line `RUN_ALL cell=... cmd=...`; timed-out cells end with `RUN_ALL TIMEOUT ...`) |
+| `raw/sweep2/spectra/` | dense spectra written by the `spec4` cells |
+| `raw/sweep2/solutions/` | saved candidate (i) solutions; only the 16^3 files are committed |
+| `raw/sweep2/manifest.json` | per-cell status, elapsed, cap, exit, `mem_gb`, `peak_rss_gb`, command, start/end; run record (workers, threads, mem budget, max running, max mem, wall) |
+| `raw/sweep2/summary.md` | `run_all.py --matrix corrective --summarize` output (12 (field, eps) blocks, 45 D-5 classification rows). Regenerated locally from the pulled logs with `python3 run_all.py --matrix corrective --summarize --out ../raw/sweep2`: byte-identical to the remote file |
+| `raw/sweep2/timeouts.md` | `sweep_digest.py --out ../raw/sweep2 --joblog sf29-corrective.joblog.txt`: the 3 timed-out cells and the 25 `done` cells with elapsed > 3600 s (continuation path, last Newton iterate, splu factorization times, stage statistics), the elapsed table of `i1` on `gauss`/`gauss_ch`, elapsed and peak RSS medians per (kind, N), and the job-wide concurrency and reserved memory |
+| `raw/sweep2/sf29-corrective.joblog.txt` | the remote job log (cell start/done/timeout events with elapsed, peak RSS, running count and reserved memory) |
+
 ## Raw outputs (`raw/`)
 
 | file | content |

@@ -1,0 +1,340 @@
+[2026-10-05T12:11:48Z] job=sf29-corrective session=macroflow3d-SF-29-sf29-corrective started
+[2026-10-05T12:11:48Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-05T12:11:48Z] cwd=/home/sesquerre/MacroFlow3D-SF-29
+[2026-10-05T12:11:48Z] command=cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts && python3 run_all.py --matrix corrective --workers 26 --mem-budget 100 --threads 3 --out ../raw/sweep2
+run_all corrective: 166 cells to run, 0 skipped (done / kept), 166 in matrix; workers=26 mem-budget=100 GB threads/cell=3 host=localhost.localdomain
+[      0s] start    orc-control2d-0.25 (mem 2 GB, cap 7200 s) running 1/26 mem 2.0/100 GB
+[      0s] start    orc-control2d-0.5 (mem 2 GB, cap 7200 s) running 2/26 mem 4.0/100 GB
+[      0s] start    orc-control2d-1 (mem 2 GB, cap 7200 s) running 3/26 mem 6.0/100 GB
+[      0s] start    orc-gauss-0.25 (mem 2 GB, cap 7200 s) running 4/26 mem 8.0/100 GB
+[      0s] start    orc-gauss-0.5 (mem 2 GB, cap 7200 s) running 5/26 mem 10.0/100 GB
+[      0s] start    orc-gauss-1 (mem 2 GB, cap 7200 s) running 6/26 mem 12.0/100 GB
+[      0s] start    orc-gauss_ch-0.25 (mem 2 GB, cap 7200 s) running 7/26 mem 14.0/100 GB
+[      0s] start    orc-gauss_ch-0.5 (mem 2 GB, cap 7200 s) running 8/26 mem 16.0/100 GB
+[      0s] start    orc-gauss_ch-1 (mem 2 GB, cap 7200 s) running 9/26 mem 18.0/100 GB
+[      0s] start    orc-generic3d-0.25 (mem 2 GB, cap 7200 s) running 10/26 mem 20.0/100 GB
+[      0s] start    orc-generic3d-0.5 (mem 2 GB, cap 7200 s) running 11/26 mem 22.0/100 GB
+[      0s] start    orc-generic3d-1 (mem 2 GB, cap 7200 s) running 12/26 mem 24.0/100 GB
+[      2s] start    i1o4-control2d-0.25-N16 (mem 1.5 GB, cap 3600 s) running 13/26 mem 25.5/100 GB
+[      2s] start    i1o4-control2d-0.5-N16 (mem 1.5 GB, cap 3600 s) running 14/26 mem 27.0/100 GB
+[      2s] start    i1o4-generic3d-0.25-N16 (mem 1.5 GB, cap 3600 s) running 15/26 mem 28.5/100 GB
+[      2s] start    i1-control2d-0.25-N16 (mem 1 GB, cap 3600 s) running 16/26 mem 29.5/100 GB
+[      2s] start    i1-control2d-0.5-N16 (mem 1 GB, cap 3600 s) running 17/26 mem 30.5/100 GB
+[      2s] start    spec4-control2d-0.25-M16 (mem 4 GB, cap 3600 s) running 18/26 mem 34.5/100 GB
+[      2s] start    spec4-control2d-0.5-M16 (mem 4 GB, cap 3600 s) running 19/26 mem 38.5/100 GB
+[      2s] start    spec4-generic3d-0.25-M16 (mem 4 GB, cap 3600 s) running 20/26 mem 42.5/100 GB
+[      2s] start    spec4-control2d-0.25-M12 (mem 1 GB, cap 1800 s) running 21/26 mem 43.5/100 GB
+[      2s] start    spec4-control2d-0.5-M12 (mem 1 GB, cap 1800 s) running 22/26 mem 44.5/100 GB
+[      2s] start    spec4-generic3d-0.25-M12 (mem 1 GB, cap 1800 s) running 23/26 mem 45.5/100 GB
+[      2s] start    ii-control2d-0.25-N16 (mem 1 GB, cap 7200 s) running 24/26 mem 46.5/100 GB
+[      2s] start    ii-control2d-0.5-N16 (mem 1 GB, cap 7200 s) running 25/26 mem 47.5/100 GB
+[      4s] start    i1o4-gauss-0.25-N16 (mem 1.5 GB, cap 3600 s) running 26/26 mem 49.0/100 GB
+[     12s] done     i1-control2d-0.25-N16 (exit 0, 10.1s, peak RSS 0.466 GB) running 25/26 mem 48.0/100 GB
+[     12s] start    i1o4-control2d-0.25-N24 (mem 7 GB, cap 10800 s) running 26/26 mem 55.0/100 GB
+[     24s] done     i1-control2d-0.5-N16 (exit 0, 22.1s, peak RSS 0.473 GB) running 25/26 mem 54.0/100 GB
+[     24s] start    i1o4-control2d-0.5-N24 (mem 7 GB, cap 10800 s) running 26/26 mem 61.0/100 GB
+[     28s] done     orc-generic3d-0.25 (exit 0, 28.3s, peak RSS 0.107 GB) running 25/26 mem 59.0/100 GB
+[     28s] start    i1o4-generic3d-0.25-N28 (mem 14 GB, cap 21600 s) running 26/26 mem 73.0/100 GB
+[     32s] done     orc-control2d-0.25 (exit 0, 32.4s, peak RSS 0.105 GB) running 25/26 mem 71.0/100 GB
+[     32s] start    i1o4-control2d-0.25-N28 (mem 14 GB, cap 21600 s) running 26/26 mem 85.0/100 GB
+[     44s] done     orc-generic3d-0.5 (exit 0, 44.3s, peak RSS 0.103 GB) running 25/26 mem 83.0/100 GB
+[     44s] done     i1o4-control2d-0.25-N16 (exit 0, 42.3s, peak RSS 0.86 GB) running 24/26 mem 81.5/100 GB
+[     44s] done     spec4-control2d-0.25-M12 (exit 0, 42.2s, peak RSS 0.444 GB) running 23/26 mem 80.5/100 GB
+[     44s] start    i1o4-generic3d-0.5-N28 (mem 14 GB, cap 21600 s) running 24/26 mem 94.5/100 GB
+[     48s] done     orc-control2d-0.5 (exit 0, 48.5s, peak RSS 0.108 GB) running 23/26 mem 92.5/100 GB
+[     55s] done     orc-gauss-0.25 (exit 0, 54.5s, peak RSS 0.103 GB) running 22/26 mem 90.5/100 GB
+[     59s] done     spec4-control2d-0.5-M12 (exit 0, 56.2s, peak RSS 0.451 GB) running 21/26 mem 89.5/100 GB
+[     63s] done     orc-control2d-1 (exit 0, 62.5s, peak RSS 0.102 GB) running 20/26 mem 87.5/100 GB
+[     65s] done     orc-gauss-0.5 (exit 0, 64.5s, peak RSS 0.102 GB) running 19/26 mem 85.5/100 GB
+[     65s] done     spec4-generic3d-0.25-M12 (exit 0, 62.3s, peak RSS 0.438 GB) running 18/26 mem 84.5/100 GB
+[     75s] done     i1o4-control2d-0.5-N16 (exit 0, 72.4s, peak RSS 0.891 GB) running 17/26 mem 83.0/100 GB
+[     83s] done     orc-generic3d-1 (exit 0, 82.5s, peak RSS 0.103 GB) running 16/26 mem 81.0/100 GB
+[     87s] done     orc-gauss_ch-0.25 (exit 0, 86.6s, peak RSS 0.127 GB) running 15/26 mem 79.0/100 GB
+[    103s] done     orc-gauss_ch-0.5 (exit 0, 102.6s, peak RSS 0.127 GB) running 14/26 mem 77.0/100 GB
+[    111s] done     i1o4-generic3d-0.25-N16 (exit 0, 108.5s, peak RSS 0.892 GB) running 13/26 mem 75.5/100 GB
+[    133s] done     orc-gauss-1 (exit 0, 132.7s, peak RSS 0.114 GB) running 12/26 mem 73.5/100 GB
+[    143s] done     spec4-control2d-0.25-M16 (exit 0, 140.6s, peak RSS 1.858 GB) running 11/26 mem 69.5/100 GB
+[    143s] start    i1o4-gauss-0.25-N32 (mem 28 GB, cap 36000 s) running 12/26 mem 97.5/100 GB
+[    149s] done     i1o4-gauss-0.25-N16 (exit 0, 144.5s, peak RSS 0.89 GB) running 11/26 mem 96.0/100 GB
+[    151s] done     ii-control2d-0.5-N16 (exit 0, 148.5s, peak RSS 0.254 GB) running 10/26 mem 95.0/100 GB
+[    177s] done     spec4-control2d-0.5-M16 (exit 0, 174.7s, peak RSS 1.859 GB) running 9/26 mem 91.0/100 GB
+[    197s] done     spec4-generic3d-0.25-M16 (exit 0, 194.7s, peak RSS 1.87 GB) running 8/26 mem 87.0/100 GB
+[    201s] done     ii-control2d-0.25-N16 (exit 0, 198.6s, peak RSS 0.256 GB) running 7/26 mem 86.0/100 GB
+[    245s] done     orc-gauss_ch-1 (exit 0, 244.9s, peak RSS 0.206 GB) running 6/26 mem 84.0/100 GB
+[    263s] done     i1o4-control2d-0.25-N24 (exit 0, 250.7s, peak RSS 5.704 GB) running 5/26 mem 77.0/100 GB
+[    459s] done     i1o4-control2d-0.5-N24 (exit 0, 435.0s, peak RSS 5.845 GB) running 4/26 mem 70.0/100 GB
+[    459s] start    i1o4-gauss_ch-0.25-N32 (mem 28 GB, cap 36000 s) running 5/26 mem 98.0/100 GB
+[   1008s] done     i1o4-control2d-0.25-N28 (exit 0, 976.0s, peak RSS 15.857 GB) running 4/26 mem 84.0/100 GB
+[   1008s] start    i1o4-control2d-0.5-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 98.0/100 GB
+[   2971s] done     i1o4-control2d-0.5-N28 (exit 0, 1962.6s, peak RSS 16.317 GB) running 4/26 mem 84.0/100 GB
+[   2971s] start    i1o4-control2d-1-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 98.0/100 GB
+[   3029s] done     i1o4-generic3d-0.25-N28 (exit 0, 3000.8s, peak RSS 16.409 GB) running 4/26 mem 84.0/100 GB
+[   3029s] start    i1o4-gauss-0.25-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 98.0/100 GB
+[   5489s] done     i1o4-control2d-1-N28 (exit 0, 2517.8s, peak RSS 16.348 GB) running 4/26 mem 84.0/100 GB
+[   5489s] start    i1o4-gauss-0.5-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 98.0/100 GB
+[   7937s] done     i1o4-generic3d-0.5-N28 (exit 0, 7893.0s, peak RSS 16.419 GB) running 4/26 mem 84.0/100 GB
+[   7937s] start    i1o4-gauss-1-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 98.0/100 GB
+[  12369s] done     i1o4-gauss-0.25-N28 (exit 0, 9340.3s, peak RSS 16.481 GB) running 4/26 mem 84.0/100 GB
+[  12370s] start    i1o4-gauss_ch-0.25-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 98.0/100 GB
+[  16162s] done     i1o4-gauss-0.25-N32 (exit 0, 16019.3s, peak RSS 25.979 GB) running 4/26 mem 70.0/100 GB
+[  16162s] start    i1o4-gauss_ch-0.5-N28 (mem 14 GB, cap 21600 s) running 5/26 mem 84.0/100 GB
+[  16162s] start    i1o4-gauss_ch-1-N28 (mem 14 GB, cap 21600 s) running 6/26 mem 98.0/100 GB
+[  17767s] done     i1o4-gauss_ch-0.25-N32 (exit 0, 17307.4s, peak RSS 25.944 GB) running 5/26 mem 70.0/100 GB
+[  17767s] start    i1o4-generic3d-1-N28 (mem 14 GB, cap 21600 s) running 6/26 mem 84.0/100 GB
+[  17767s] start    i1o4-control2d-1-N24 (mem 7 GB, cap 10800 s) running 7/26 mem 91.0/100 GB
+[  17767s] start    i1o4-gauss-0.25-N24 (mem 7 GB, cap 10800 s) running 8/26 mem 98.0/100 GB
+[  18430s] done     i1o4-control2d-1-N24 (exit 0, 662.7s, peak RSS 5.858 GB) running 7/26 mem 91.0/100 GB
+[  18430s] start    i1o4-gauss-0.5-N24 (mem 7 GB, cap 10800 s) running 8/26 mem 98.0/100 GB
+[  19876s] done     i1o4-gauss-0.25-N24 (exit 0, 2109.2s, peak RSS 5.858 GB) running 7/26 mem 91.0/100 GB
+[  19876s] start    i1o4-gauss-1-N24 (mem 7 GB, cap 10800 s) running 8/26 mem 98.0/100 GB
+[  21793s] done     i1o4-gauss_ch-0.25-N28 (exit 0, 9423.9s, peak RSS 16.481 GB) running 7/26 mem 84.0/100 GB
+[  21793s] start    i1o4-gauss_ch-0.25-N24 (mem 7 GB, cap 10800 s) running 8/26 mem 91.0/100 GB
+[  21793s] start    i1o4-gauss_ch-0.5-N24 (mem 7 GB, cap 10800 s) running 9/26 mem 98.0/100 GB
+[  22855s] done     i1o4-gauss-0.5-N24 (exit 0, 4425.3s, peak RSS 5.859 GB) running 8/26 mem 91.0/100 GB
+[  22855s] start    i1o4-gauss_ch-1-N24 (mem 7 GB, cap 10800 s) running 9/26 mem 98.0/100 GB
+[  24041s] done     i1o4-gauss-0.5-N28 (exit 0, 18551.6s, peak RSS 16.478 GB) running 8/26 mem 84.0/100 GB
+[  24041s] start    i1o4-generic3d-0.25-N24 (mem 7 GB, cap 10800 s) running 9/26 mem 91.0/100 GB
+[  24041s] start    i1o4-generic3d-0.5-N24 (mem 7 GB, cap 10800 s) running 10/26 mem 98.0/100 GB
+[  24083s] done     i1o4-gauss_ch-0.25-N24 (exit 0, 2289.2s, peak RSS 5.866 GB) running 9/26 mem 91.0/100 GB
+[  24083s] start    i1o4-generic3d-1-N24 (mem 7 GB, cap 10800 s) running 10/26 mem 98.0/100 GB
+[  24854s] done     i1o4-generic3d-0.25-N24 (exit 0, 812.9s, peak RSS 5.84 GB) running 9/26 mem 91.0/100 GB
+[  24854s] start    i1o4-control2d-0.25-N20 (mem 3 GB, cap 7200 s) running 10/26 mem 94.0/100 GB
+[  24854s] start    i1o4-control2d-0.5-N20 (mem 3 GB, cap 7200 s) running 11/26 mem 97.0/100 GB
+[  24854s] start    i1o4-control2d-1-N20 (mem 3 GB, cap 7200 s) running 12/26 mem 100.0/100 GB
+[  24934s] done     i1o4-control2d-0.25-N20 (exit 0, 80.1s, peak RSS 2.401 GB) running 11/26 mem 97.0/100 GB
+[  24934s] start    i1o4-gauss-0.25-N20 (mem 3 GB, cap 7200 s) running 12/26 mem 100.0/100 GB
+[  25012s] done     i1o4-control2d-0.5-N20 (exit 0, 158.2s, peak RSS 2.471 GB) running 11/26 mem 97.0/100 GB
+[  25012s] start    i1o4-gauss-0.5-N20 (mem 3 GB, cap 7200 s) running 12/26 mem 100.0/100 GB
+[  25098s] done     i1o4-control2d-1-N20 (exit 0, 244.4s, peak RSS 2.498 GB) running 11/26 mem 97.0/100 GB
+[  25098s] start    i1o4-gauss-1-N20 (mem 3 GB, cap 7200 s) running 12/26 mem 100.0/100 GB
+[  25436s] done     i1o4-gauss-0.25-N20 (exit 0, 502.7s, peak RSS 2.472 GB) running 11/26 mem 97.0/100 GB
+[  25436s] start    i1o4-gauss_ch-0.25-N20 (mem 3 GB, cap 7200 s) running 12/26 mem 100.0/100 GB
+[  25955s] done     i1o4-generic3d-0.5-N24 (exit 0, 1914.3s, peak RSS 5.859 GB) running 11/26 mem 93.0/100 GB
+[  25955s] start    i1o4-gauss_ch-0.5-N20 (mem 3 GB, cap 7200 s) running 12/26 mem 96.0/100 GB
+[  25955s] start    i1o4-gauss_ch-1-N20 (mem 3 GB, cap 7200 s) running 13/26 mem 99.0/100 GB
+[  26177s] done     i1o4-gauss_ch-0.25-N20 (exit 0, 740.8s, peak RSS 2.51 GB) running 12/26 mem 96.0/100 GB
+[  26177s] start    i1o4-generic3d-0.25-N20 (mem 3 GB, cap 7200 s) running 13/26 mem 99.0/100 GB
+[  26365s] done     i1o4-gauss-0.5-N20 (exit 0, 1353.6s, peak RSS 2.479 GB) running 12/26 mem 96.0/100 GB
+[  26365s] start    i1o4-generic3d-0.5-N20 (mem 3 GB, cap 7200 s) running 13/26 mem 99.0/100 GB
+[  26453s] done     i1o4-generic3d-0.25-N20 (exit 0, 276.2s, peak RSS 2.47 GB) running 12/26 mem 96.0/100 GB
+[  26453s] start    i1o4-generic3d-1-N20 (mem 3 GB, cap 7200 s) running 13/26 mem 99.0/100 GB
+[  26610s] done     i1o4-gauss_ch-0.5-N24 (exit 0, 4816.2s, peak RSS 5.891 GB) running 12/26 mem 92.0/100 GB
+[  26610s] start    i1o4-control2d-1-N16 (mem 1.5 GB, cap 3600 s) running 13/26 mem 93.5/100 GB
+[  26610s] start    i1o4-gauss-0.5-N16 (mem 1.5 GB, cap 3600 s) running 14/26 mem 95.0/100 GB
+[  26610s] start    i1o4-gauss-1-N16 (mem 1.5 GB, cap 3600 s) running 15/26 mem 96.5/100 GB
+[  26610s] start    i1o4-gauss_ch-0.25-N16 (mem 1.5 GB, cap 3600 s) running 16/26 mem 98.0/100 GB
+[  26610s] start    i1o4-gauss_ch-0.5-N16 (mem 1.5 GB, cap 3600 s) running 17/26 mem 99.5/100 GB
+[  26700s] done     i1o4-control2d-1-N16 (exit 0, 90.1s, peak RSS 0.911 GB) running 16/26 mem 98.0/100 GB
+[  26700s] start    i1o4-gauss_ch-1-N16 (mem 1.5 GB, cap 3600 s) running 17/26 mem 99.5/100 GB
+[  26868s] done     i1o4-gauss_ch-0.25-N16 (exit 0, 258.1s, peak RSS 0.914 GB) running 16/26 mem 98.0/100 GB
+[  26868s] start    i1o4-generic3d-0.5-N16 (mem 1.5 GB, cap 3600 s) running 17/26 mem 99.5/100 GB
+[  26940s] done     i1o4-generic3d-0.5-N20 (exit 0, 574.5s, peak RSS 2.474 GB) running 16/26 mem 96.5/100 GB
+[  26940s] start    i1o4-generic3d-1-N16 (mem 1.5 GB, cap 3600 s) running 17/26 mem 98.0/100 GB
+[  27006s] done     i1o4-gauss-0.5-N16 (exit 0, 396.2s, peak RSS 0.913 GB) running 16/26 mem 96.5/100 GB
+[  27060s] done     i1o4-generic3d-0.5-N16 (exit 0, 192.1s, peak RSS 0.891 GB) running 15/26 mem 95.0/100 GB
+[  27186s] done     i1o4-gauss_ch-0.5-N16 (exit 0, 576.4s, peak RSS 0.954 GB) running 14/26 mem 93.5/100 GB
+[  27511s] done     i1o4-gauss_ch-0.5-N20 (exit 0, 1555.7s, peak RSS 2.514 GB) running 13/26 mem 90.5/100 GB
+[  27511s] start    i1-control2d-0.25-N32 (mem 9 GB, cap 21600 s) running 14/26 mem 99.5/100 GB
+[  27793s] done     i1o4-gauss-1-N16 (exit 0, 1183.3s, peak RSS 0.975 GB) running 13/26 mem 98.0/100 GB
+[  27797s] done     i1o4-generic3d-1-N16 (exit 0, 857.1s, peak RSS 0.917 GB) running 12/26 mem 96.5/100 GB
+[  27925s] done     i1o4-gauss_ch-1-N16 (exit 0, 1225.4s, peak RSS 0.99 GB) running 11/26 mem 95.0/100 GB
+[  27999s] done     i1-control2d-0.25-N32 (exit 0, 488.7s, peak RSS 12.808 GB) running 10/26 mem 86.0/100 GB
+[  27999s] start    i1-control2d-0.5-N32 (mem 9 GB, cap 21600 s) running 11/26 mem 95.0/100 GB
+[  28332s] done     i1o4-gauss-1-N20 (exit 0, 3233.9s, peak RSS 2.564 GB) running 10/26 mem 92.0/100 GB
+[  28438s] done     i1o4-gauss-1-N24 (exit 0, 8562.0s, peak RSS 6.006 GB) running 9/26 mem 85.0/100 GB
+[  28438s] start    i1-control2d-1-N32 (mem 9 GB, cap 21600 s) running 10/26 mem 94.0/100 GB
+[  28915s] done     i1o4-gauss_ch-1-N20 (exit 0, 2959.7s, peak RSS 2.652 GB) running 9/26 mem 91.0/100 GB
+[  28915s] start    i1-gauss-0.25-N32 (mem 9 GB, cap 21600 s) running 10/26 mem 100.0/100 GB
+[  28931s] done     i1-control2d-0.5-N32 (exit 0, 931.4s, peak RSS 13.181 GB) running 9/26 mem 91.0/100 GB
+[  28931s] start    i1-gauss-0.5-N32 (mem 9 GB, cap 21600 s) running 10/26 mem 100.0/100 GB
+[  29061s] done     i1o4-generic3d-1-N20 (exit 0, 2607.4s, peak RSS 2.525 GB) running 9/26 mem 97.0/100 GB
+[  29538s] timeout  i1o4-gauss-1-N28 (exit None, 21600.3s, peak RSS 16.581 GB) running 8/26 mem 83.0/100 GB
+[  29538s] start    i1-gauss-1-N32 (mem 9 GB, cap 21600 s) running 9/26 mem 92.0/100 GB
+[  29818s] done     i1-control2d-1-N32 (exit 0, 1380.0s, peak RSS 13.182 GB) running 8/26 mem 83.0/100 GB
+[  29818s] start    i1-gauss_ch-0.25-N32 (mem 9 GB, cap 21600 s) running 9/26 mem 92.0/100 GB
+[  31136s] done     i1o4-gauss_ch-1-N24 (exit 0, 8281.5s, peak RSS 6.102 GB) running 8/26 mem 85.0/100 GB
+[  31136s] start    i1-gauss_ch-0.5-N32 (mem 9 GB, cap 21600 s) running 9/26 mem 94.0/100 GB
+[  33929s] done     i1o4-generic3d-1-N24 (exit 0, 9846.8s, peak RSS 5.924 GB) running 8/26 mem 87.0/100 GB
+[  33929s] start    i1-gauss_ch-1-N32 (mem 9 GB, cap 21600 s) running 9/26 mem 96.0/100 GB
+[  33970s] done     i1-gauss-0.25-N32 (exit 0, 5054.9s, peak RSS 13.24 GB) running 8/26 mem 87.0/100 GB
+[  33970s] start    i1-control2d-0.25-N28 (mem 5 GB, cap 14400 s) running 9/26 mem 92.0/100 GB
+[  33970s] start    i1-control2d-0.5-N28 (mem 5 GB, cap 14400 s) running 10/26 mem 97.0/100 GB
+[  34138s] done     i1-control2d-0.25-N28 (exit 0, 168.2s, peak RSS 6.375 GB) running 9/26 mem 92.0/100 GB
+[  34138s] start    i1-control2d-1-N28 (mem 5 GB, cap 14400 s) running 10/26 mem 97.0/100 GB
+[  34306s] done     i1-control2d-0.5-N28 (exit 0, 336.4s, peak RSS 6.544 GB) running 9/26 mem 92.0/100 GB
+[  34306s] start    i1-gauss-0.25-N28 (mem 5 GB, cap 14400 s) running 10/26 mem 97.0/100 GB
+[  34621s] done     i1-control2d-1-N28 (exit 0, 482.9s, peak RSS 6.554 GB) running 9/26 mem 92.0/100 GB
+[  34621s] start    i1-gauss-0.5-N28 (mem 5 GB, cap 14400 s) running 10/26 mem 97.0/100 GB
+[  34957s] done     i1-gauss_ch-0.25-N32 (exit 0, 5139.2s, peak RSS 13.254 GB) running 9/26 mem 88.0/100 GB
+[  34957s] start    i1-gauss-1-N28 (mem 5 GB, cap 14400 s) running 10/26 mem 93.0/100 GB
+[  34957s] start    i1-gauss_ch-0.25-N28 (mem 5 GB, cap 14400 s) running 11/26 mem 98.0/100 GB
+[  35811s] done     i1-gauss-0.25-N28 (exit 0, 1505.0s, peak RSS 6.58 GB) running 10/26 mem 93.0/100 GB
+[  35811s] start    i1-gauss_ch-0.5-N28 (mem 5 GB, cap 14400 s) running 11/26 mem 98.0/100 GB
+[  36354s] done     i1-gauss_ch-0.25-N28 (exit 0, 1396.6s, peak RSS 6.588 GB) running 10/26 mem 93.0/100 GB
+[  36354s] start    i1-gauss_ch-1-N28 (mem 5 GB, cap 14400 s) running 11/26 mem 98.0/100 GB
+[  37216s] done     i1o4-gauss_ch-0.5-N28 (exit 0, 21053.4s, peak RSS 16.494 GB) running 10/26 mem 84.0/100 GB
+[  37216s] start    i1-generic3d-0.25-N28 (mem 5 GB, cap 14400 s) running 11/26 mem 89.0/100 GB
+[  37216s] start    i1-generic3d-0.5-N28 (mem 5 GB, cap 14400 s) running 12/26 mem 94.0/100 GB
+[  37216s] start    i1-generic3d-1-N28 (mem 5 GB, cap 14400 s) running 13/26 mem 99.0/100 GB
+[  37296s] done     i1-gauss-0.5-N28 (exit 0, 2674.9s, peak RSS 6.586 GB) running 12/26 mem 94.0/100 GB
+[  37296s] start    i1-control2d-0.25-N24 (mem 2.5 GB, cap 7200 s) running 13/26 mem 96.5/100 GB
+[  37296s] start    i1-control2d-0.5-N24 (mem 2.5 GB, cap 7200 s) running 14/26 mem 99.0/100 GB
+[  37368s] done     i1-control2d-0.25-N24 (exit 0, 72.1s, peak RSS 2.896 GB) running 13/26 mem 96.5/100 GB
+[  37368s] start    i1-control2d-1-N24 (mem 2.5 GB, cap 7200 s) running 14/26 mem 99.0/100 GB
+[  37434s] done     i1-control2d-0.5-N24 (exit 0, 138.2s, peak RSS 2.975 GB) running 13/26 mem 96.5/100 GB
+[  37434s] start    i1-gauss-0.25-N24 (mem 2.5 GB, cap 7200 s) running 14/26 mem 99.0/100 GB
+[  37580s] done     i1-control2d-1-N24 (exit 0, 212.3s, peak RSS 2.983 GB) running 13/26 mem 96.5/100 GB
+[  37580s] start    i1-gauss-0.5-N24 (mem 2.5 GB, cap 7200 s) running 14/26 mem 99.0/100 GB
+[  37712s] done     i1-gauss-0.25-N24 (exit 0, 278.4s, peak RSS 2.987 GB) running 13/26 mem 96.5/100 GB
+[  37712s] start    i1-gauss-1-N24 (mem 2.5 GB, cap 7200 s) running 14/26 mem 99.0/100 GB
+[  37732s] done     i1-generic3d-0.25-N28 (exit 0, 516.8s, peak RSS 6.57 GB) running 13/26 mem 94.0/100 GB
+[  37732s] start    i1-gauss_ch-0.25-N24 (mem 2.5 GB, cap 7200 s) running 14/26 mem 96.5/100 GB
+[  37732s] start    i1-gauss_ch-0.5-N24 (mem 2.5 GB, cap 7200 s) running 15/26 mem 99.0/100 GB
+[  37764s] timeout  i1o4-gauss_ch-1-N28 (exit None, 21601.4s, peak RSS 16.561 GB) running 14/26 mem 85.0/100 GB
+[  37764s] start    i1-gauss_ch-1-N24 (mem 2.5 GB, cap 7200 s) running 15/26 mem 87.5/100 GB
+[  37764s] start    i1-control2d-0.25-N20 (mem 1.5 GB, cap 3600 s) running 16/26 mem 89.0/100 GB
+[  37764s] start    i1-control2d-0.5-N20 (mem 1.5 GB, cap 3600 s) running 17/26 mem 90.5/100 GB
+[  37764s] start    i1-control2d-1-N20 (mem 1.5 GB, cap 3600 s) running 18/26 mem 92.0/100 GB
+[  37764s] start    i1-gauss-0.25-N20 (mem 1.5 GB, cap 3600 s) running 19/26 mem 93.5/100 GB
+[  37764s] start    i1-gauss-0.5-N20 (mem 1.5 GB, cap 3600 s) running 20/26 mem 95.0/100 GB
+[  37764s] start    i1-gauss-1-N20 (mem 1.5 GB, cap 3600 s) running 21/26 mem 96.5/100 GB
+[  37764s] start    i1-gauss_ch-0.25-N20 (mem 1.5 GB, cap 3600 s) running 22/26 mem 98.0/100 GB
+[  37764s] start    i1-gauss_ch-0.5-N20 (mem 1.5 GB, cap 3600 s) running 23/26 mem 99.5/100 GB
+[  37796s] done     i1-control2d-0.25-N20 (exit 0, 32.1s, peak RSS 1.229 GB) running 22/26 mem 98.0/100 GB
+[  37796s] start    i1-gauss_ch-1-N20 (mem 1.5 GB, cap 3600 s) running 23/26 mem 99.5/100 GB
+[  37830s] done     i1-control2d-0.5-N20 (exit 0, 66.1s, peak RSS 1.258 GB) running 22/26 mem 98.0/100 GB
+[  37830s] start    i1-generic3d-0.25-N20 (mem 1.5 GB, cap 3600 s) running 23/26 mem 99.5/100 GB
+[  37862s] done     i1-control2d-1-N20 (exit 0, 98.1s, peak RSS 1.265 GB) running 22/26 mem 98.0/100 GB
+[  37862s] start    i1-generic3d-0.5-N20 (mem 1.5 GB, cap 3600 s) running 23/26 mem 99.5/100 GB
+[  37874s] done     i1-gauss-0.25-N20 (exit 0, 110.2s, peak RSS 1.261 GB) running 22/26 mem 98.0/100 GB
+[  37874s] start    i1-generic3d-1-N20 (mem 1.5 GB, cap 3600 s) running 23/26 mem 99.5/100 GB
+[  37924s] done     i1-generic3d-0.25-N20 (exit 0, 94.1s, peak RSS 1.263 GB) running 22/26 mem 98.0/100 GB
+[  37924s] start    i1-control2d-1-N16 (mem 1 GB, cap 3600 s) running 23/26 mem 99.0/100 GB
+[  37924s] start    i1-gauss-0.25-N16 (mem 1 GB, cap 3600 s) running 24/26 mem 100.0/100 GB
+[  37956s] done     i1-gauss_ch-0.25-N20 (exit 0, 192.2s, peak RSS 1.284 GB) running 23/26 mem 98.5/100 GB
+[  37956s] start    i1-gauss-0.5-N16 (mem 1 GB, cap 3600 s) running 24/26 mem 99.5/100 GB
+[  37958s] done     i1-control2d-1-N16 (exit 0, 34.0s, peak RSS 0.48 GB) running 23/26 mem 98.5/100 GB
+[  37958s] done     i1-gauss-0.25-N16 (exit 0, 34.0s, peak RSS 0.473 GB) running 22/26 mem 97.5/100 GB
+[  37958s] start    i1-gauss-1-N16 (mem 1 GB, cap 3600 s) running 23/26 mem 98.5/100 GB
+[  37958s] start    i1-gauss_ch-0.25-N16 (mem 1 GB, cap 3600 s) running 24/26 mem 99.5/100 GB
+[  38010s] done     i1-gauss_ch-0.25-N16 (exit 0, 52.0s, peak RSS 0.495 GB) running 23/26 mem 98.5/100 GB
+[  38010s] start    i1-gauss_ch-0.5-N16 (mem 1 GB, cap 3600 s) running 24/26 mem 99.5/100 GB
+[  38034s] done     i1-gauss-0.5-N16 (exit 0, 78.1s, peak RSS 0.481 GB) running 23/26 mem 98.5/100 GB
+[  38034s] start    i1-gauss_ch-1-N16 (mem 1 GB, cap 3600 s) running 24/26 mem 99.5/100 GB
+[  38048s] done     i1-gauss-0.5-N20 (exit 0, 284.3s, peak RSS 1.267 GB) running 23/26 mem 98.0/100 GB
+[  38050s] done     i1-generic3d-0.5-N20 (exit 0, 188.2s, peak RSS 1.262 GB) running 22/26 mem 96.5/100 GB
+[  38092s] done     i1-gauss_ch-0.5-N20 (exit 0, 328.3s, peak RSS 1.297 GB) running 21/26 mem 95.0/100 GB
+[  38092s] start    spec4-control2d-1-M16 (mem 4 GB, cap 3600 s) running 22/26 mem 99.0/100 GB
+[  38116s] done     i1-gauss_ch-0.5-N16 (exit 0, 106.1s, peak RSS 0.515 GB) running 21/26 mem 98.0/100 GB
+[  38272s] done     i1-gauss-0.5-N32 (exit 0, 9341.4s, peak RSS 13.247 GB) running 20/26 mem 89.0/100 GB
+[  38272s] start    spec4-gauss-0.25-M16 (mem 4 GB, cap 3600 s) running 21/26 mem 93.0/100 GB
+[  38272s] start    spec4-gauss-0.5-M16 (mem 4 GB, cap 3600 s) running 22/26 mem 97.0/100 GB
+[  38298s] done     i1-gauss-1-N16 (exit 0, 340.2s, peak RSS 0.505 GB) running 21/26 mem 96.0/100 GB
+[  38298s] start    spec4-gauss-1-M16 (mem 4 GB, cap 3600 s) running 22/26 mem 100.0/100 GB
+[  38310s] done     i1-gauss-0.5-N24 (exit 0, 730.1s, peak RSS 2.987 GB) running 21/26 mem 97.5/100 GB
+[  38344s] done     spec4-control2d-1-M16 (exit 0, 252.2s, peak RSS 1.86 GB) running 20/26 mem 93.5/100 GB
+[  38344s] start    spec4-gauss_ch-0.25-M16 (mem 4 GB, cap 3600 s) running 21/26 mem 97.5/100 GB
+[  38364s] done     i1-generic3d-1-N20 (exit 0, 490.4s, peak RSS 1.28 GB) running 20/26 mem 96.0/100 GB
+[  38364s] start    spec4-gauss_ch-0.5-M16 (mem 4 GB, cap 3600 s) running 21/26 mem 100.0/100 GB
+[  38458s] done     i1-gauss_ch-0.25-N24 (exit 0, 725.9s, peak RSS 3.015 GB) running 20/26 mem 97.5/100 GB
+[  38524s] done     i1-gauss-1-N20 (exit 0, 760.6s, peak RSS 1.299 GB) running 19/26 mem 96.0/100 GB
+[  38524s] start    spec4-gauss_ch-1-M16 (mem 4 GB, cap 3600 s) running 20/26 mem 100.0/100 GB
+[  38562s] done     spec4-gauss-0.25-M16 (exit 0, 290.2s, peak RSS 1.858 GB) running 19/26 mem 96.0/100 GB
+[  38562s] start    spec4-generic3d-0.5-M16 (mem 4 GB, cap 3600 s) running 20/26 mem 100.0/100 GB
+[  38612s] done     i1-generic3d-0.5-N28 (exit 0, 1396.8s, peak RSS 6.59 GB) running 19/26 mem 95.0/100 GB
+[  38612s] start    spec4-generic3d-1-M16 (mem 4 GB, cap 3600 s) running 20/26 mem 99.0/100 GB
+[  38756s] done     spec4-gauss_ch-0.25-M16 (exit 0, 412.2s, peak RSS 1.901 GB) running 19/26 mem 95.0/100 GB
+[  38756s] start    cons4-control2d-0.25 (mem 2 GB, cap 7200 s) running 20/26 mem 97.0/100 GB
+[  38756s] start    cons4-control2d-0.5 (mem 2 GB, cap 7200 s) running 21/26 mem 99.0/100 GB
+[  38760s] done     cons4-control2d-0.25 (exit 0, 4.0s, peak RSS 0.08 GB) running 20/26 mem 97.0/100 GB
+[  38760s] start    cons4-control2d-1 (mem 2 GB, cap 7200 s) running 21/26 mem 99.0/100 GB
+[  38764s] done     cons4-control2d-0.5 (exit 0, 8.0s, peak RSS 0.086 GB) running 20/26 mem 97.0/100 GB
+[  38764s] start    cons4-gauss-0.25 (mem 2 GB, cap 7200 s) running 21/26 mem 99.0/100 GB
+[  38774s] done     cons4-gauss-0.25 (exit 0, 10.0s, peak RSS 0.085 GB) running 20/26 mem 97.0/100 GB
+[  38775s] start    cons4-gauss-0.5 (mem 2 GB, cap 7200 s) running 21/26 mem 99.0/100 GB
+[  38777s] done     cons4-control2d-1 (exit 0, 16.1s, peak RSS 0.085 GB) running 20/26 mem 97.0/100 GB
+[  38777s] start    cons4-gauss-1 (mem 2 GB, cap 7200 s) running 21/26 mem 99.0/100 GB
+[  38793s] done     cons4-gauss-0.5 (exit 0, 18.0s, peak RSS 0.085 GB) running 20/26 mem 97.0/100 GB
+[  38793s] start    cons4-gauss_ch-0.25 (mem 2 GB, cap 7200 s) running 21/26 mem 99.0/100 GB
+[  38795s] done     i1-gauss_ch-0.5-N24 (exit 0, 1062.2s, peak RSS 3.009 GB) running 20/26 mem 96.5/100 GB
+[  38795s] start    cons4-gauss_ch-0.5 (mem 2 GB, cap 7200 s) running 21/26 mem 98.5/100 GB
+[  38831s] done     cons4-gauss_ch-0.25 (exit 0, 38.0s, peak RSS 0.15 GB) running 20/26 mem 96.5/100 GB
+[  38831s] start    cons4-gauss_ch-1 (mem 2 GB, cap 7200 s) running 21/26 mem 98.5/100 GB
+[  38855s] done     cons4-gauss_ch-0.5 (exit 0, 60.1s, peak RSS 0.15 GB) running 20/26 mem 96.5/100 GB
+[  38855s] start    cons4-generic3d-0.25 (mem 2 GB, cap 7200 s) running 21/26 mem 98.5/100 GB
+[  38861s] done     cons4-generic3d-0.25 (exit 0, 6.0s, peak RSS 0.08 GB) running 20/26 mem 96.5/100 GB
+[  38861s] start    cons4-generic3d-0.5 (mem 2 GB, cap 7200 s) running 21/26 mem 98.5/100 GB
+[  38877s] done     cons4-generic3d-0.5 (exit 0, 16.0s, peak RSS 0.085 GB) running 20/26 mem 96.5/100 GB
+[  38877s] start    cons4-generic3d-1 (mem 2 GB, cap 7200 s) running 21/26 mem 98.5/100 GB
+[  38877s] start    spec4-control2d-1-M12 (mem 1 GB, cap 1800 s) running 22/26 mem 99.5/100 GB
+[  38883s] done     spec4-gauss-0.5-M16 (exit 0, 610.6s, peak RSS 1.864 GB) running 21/26 mem 95.5/100 GB
+[  38883s] start    spec4-gauss-0.25-M12 (mem 1 GB, cap 1800 s) running 22/26 mem 96.5/100 GB
+[  38883s] start    spec4-gauss-0.5-M12 (mem 1 GB, cap 1800 s) running 23/26 mem 97.5/100 GB
+[  38883s] start    spec4-gauss-1-M12 (mem 1 GB, cap 1800 s) running 24/26 mem 98.5/100 GB
+[  38883s] start    spec4-gauss_ch-0.25-M12 (mem 1 GB, cap 1800 s) running 25/26 mem 99.5/100 GB
+[  38901s] done     i1-gauss_ch-1-N16 (exit 0, 866.8s, peak RSS 0.567 GB) running 24/26 mem 98.5/100 GB
+[  38901s] start    spec4-gauss_ch-0.5-M12 (mem 1 GB, cap 1800 s) running 25/26 mem 99.5/100 GB
+[  38923s] done     spec4-generic3d-0.5-M16 (exit 0, 360.5s, peak RSS 1.879 GB) running 24/26 mem 95.5/100 GB
+[  38923s] start    spec4-gauss_ch-1-M12 (mem 1 GB, cap 1800 s) running 25/26 mem 96.5/100 GB
+[  38923s] start    spec4-generic3d-0.5-M12 (mem 1 GB, cap 1800 s) running 26/26 mem 97.5/100 GB
+[  38947s] done     cons4-generic3d-1 (exit 0, 70.2s, peak RSS 0.085 GB) running 25/26 mem 95.5/100 GB
+[  38947s] start    spec4-generic3d-1-M12 (mem 1 GB, cap 1800 s) running 26/26 mem 96.5/100 GB
+[  38949s] done     spec4-control2d-1-M12 (exit 0, 72.2s, peak RSS 0.442 GB) running 25/26 mem 95.5/100 GB
+[  38949s] done     spec4-gauss-0.25-M12 (exit 0, 66.2s, peak RSS 0.451 GB) running 24/26 mem 94.5/100 GB
+[  38949s] start    ii-control2d-0.25-N24 (mem 3 GB, cap 14400 s) running 25/26 mem 97.5/100 GB
+[  38959s] done     cons4-gauss-1 (exit 0, 182.4s, peak RSS 0.119 GB) running 24/26 mem 95.5/100 GB
+[  38959s] start    ii-control2d-0.5-N24 (mem 3 GB, cap 14400 s) running 25/26 mem 98.5/100 GB
+[  38971s] done     spec4-gauss_ch-0.25-M12 (exit 0, 88.2s, peak RSS 0.46 GB) running 24/26 mem 97.5/100 GB
+[  38989s] done     spec4-gauss-0.5-M12 (exit 0, 106.2s, peak RSS 0.455 GB) running 23/26 mem 96.5/100 GB
+[  38989s] start    ii-control2d-1-N24 (mem 3 GB, cap 14400 s) running 24/26 mem 99.5/100 GB
+[  39023s] done     spec4-generic3d-0.5-M12 (exit 0, 100.1s, peak RSS 0.451 GB) running 23/26 mem 98.5/100 GB
+[  39109s] done     spec4-gauss_ch-0.5-M12 (exit 0, 208.2s, peak RSS 0.46 GB) running 22/26 mem 97.5/100 GB
+[  39109s] start    ii-control2d-0.25-N20 (mem 2 GB, cap 14400 s) running 23/26 mem 99.5/100 GB
+[  39243s] done     spec4-gauss_ch-0.5-M16 (exit 0, 878.8s, peak RSS 1.906 GB) running 22/26 mem 95.5/100 GB
+[  39243s] start    ii-control2d-0.5-N20 (mem 2 GB, cap 14400 s) running 23/26 mem 97.5/100 GB
+[  39243s] start    ii-control2d-1-N20 (mem 2 GB, cap 14400 s) running 24/26 mem 99.5/100 GB
+[  39369s] timeout  i1o4-generic3d-1-N28 (exit None, 21602.6s, peak RSS 16.46 GB) running 23/26 mem 85.5/100 GB
+[  39369s] start    ii-gauss-0.25-N20 (mem 2 GB, cap 14400 s) running 24/26 mem 87.5/100 GB
+[  39369s] start    ii-gauss-0.5-N20 (mem 2 GB, cap 14400 s) running 25/26 mem 89.5/100 GB
+[  39369s] start    ii-gauss-1-N20 (mem 2 GB, cap 14400 s) running 26/26 mem 91.5/100 GB
+[  39398s] done     spec4-generic3d-1-M12 (exit 0, 450.7s, peak RSS 0.446 GB) running 25/26 mem 90.5/100 GB
+[  39398s] start    ii-gauss_ch-0.25-N20 (mem 2 GB, cap 14400 s) running 26/26 mem 92.5/100 GB
+[  39422s] done     spec4-gauss-1-M12 (exit 0, 538.8s, peak RSS 0.46 GB) running 25/26 mem 91.5/100 GB
+[  39422s] start    ii-gauss_ch-0.5-N20 (mem 2 GB, cap 14400 s) running 26/26 mem 93.5/100 GB
+[  39450s] done     i1-gauss_ch-1-N20 (exit 0, 1653.9s, peak RSS 1.336 GB) running 25/26 mem 92.0/100 GB
+[  39450s] done     cons4-gauss_ch-1 (exit 0, 619.0s, peak RSS 0.245 GB) running 24/26 mem 90.0/100 GB
+[  39450s] start    ii-gauss_ch-1-N20 (mem 2 GB, cap 14400 s) running 25/26 mem 92.0/100 GB
+[  39450s] start    ii-control2d-1-N16 (mem 1 GB, cap 7200 s) running 26/26 mem 93.0/100 GB
+[  39520s] done     i1-gauss_ch-0.5-N28 (exit 0, 3708.6s, peak RSS 6.595 GB) running 25/26 mem 88.0/100 GB
+[  39520s] start    ii-gauss-0.25-N32 (mem 4 GB, cap 36000 s) running 26/26 mem 92.0/100 GB
+[  39696s] done     ii-control2d-1-N16 (exit 0, 246.1s, peak RSS 0.254 GB) running 25/26 mem 91.0/100 GB
+[  39696s] start    ii-gauss_ch-0.25-N32 (mem 4 GB, cap 36000 s) running 26/26 mem 95.0/100 GB
+[  39778s] done     ii-control2d-0.5-N20 (exit 0, 534.7s, peak RSS 0.564 GB) running 25/26 mem 93.0/100 GB
+[  39952s] done     ii-control2d-0.25-N20 (exit 0, 842.8s, peak RSS 0.568 GB) running 24/26 mem 91.0/100 GB
+[  39974s] done     ii-control2d-0.5-N24 (exit 0, 1014.9s, peak RSS 1.438 GB) running 23/26 mem 88.0/100 GB
+[  40080s] done     spec4-generic3d-1-M16 (exit 0, 1467.5s, peak RSS 1.86 GB) running 22/26 mem 84.0/100 GB
+[  40198s] done     spec4-gauss_ch-1-M12 (exit 0, 1275.0s, peak RSS 0.492 GB) running 21/26 mem 83.0/100 GB
+[  40284s] done     spec4-gauss-1-M16 (exit 0, 1985.7s, peak RSS 1.904 GB) running 20/26 mem 79.0/100 GB
+[  40432s] done     i1-gauss_ch-0.5-N32 (exit 0, 9295.5s, peak RSS 13.264 GB) running 19/26 mem 70.0/100 GB
+[  40446s] done     ii-control2d-0.25-N24 (exit 0, 1497.1s, peak RSS 1.487 GB) running 18/26 mem 67.0/100 GB
+[  40582s] done     spec4-gauss_ch-1-M16 (exit 0, 2057.7s, peak RSS 1.913 GB) running 17/26 mem 63.0/100 GB
+[  40652s] done     ii-control2d-1-N24 (exit 0, 1663.1s, peak RSS 1.466 GB) running 16/26 mem 60.0/100 GB
+[  40664s] done     i1-gauss-1-N24 (exit 0, 2951.7s, peak RSS 3.031 GB) running 15/26 mem 57.5/100 GB
+[  40718s] done     ii-control2d-1-N20 (exit 0, 1475.0s, peak RSS 0.561 GB) running 14/26 mem 55.5/100 GB
+[  40810s] done     ii-gauss-0.5-N20 (exit 0, 1440.7s, peak RSS 0.564 GB) running 13/26 mem 53.5/100 GB
+[  40862s] done     ii-gauss_ch-0.25-N20 (exit 0, 1464.7s, peak RSS 0.464 GB) running 12/26 mem 51.5/100 GB
+[  40866s] done     ii-gauss-0.25-N20 (exit 0, 1496.8s, peak RSS 0.56 GB) running 11/26 mem 49.5/100 GB
+[  40884s] done     ii-gauss-1-N20 (exit 0, 1514.8s, peak RSS 0.579 GB) running 10/26 mem 47.5/100 GB
+[  41180s] done     ii-gauss_ch-0.5-N20 (exit 0, 1758.9s, peak RSS 0.467 GB) running 9/26 mem 45.5/100 GB
+[  41533s] done     ii-gauss_ch-1-N20 (exit 0, 2083.3s, peak RSS 0.488 GB) running 8/26 mem 43.5/100 GB
+[  41625s] done     i1-gauss-1-N28 (exit 0, 6667.7s, peak RSS 6.62 GB) running 7/26 mem 38.5/100 GB
+[  41631s] done     i1-gauss_ch-1-N24 (exit 0, 3867.5s, peak RSS 3.146 GB) running 6/26 mem 36.0/100 GB
+[  41865s] done     i1-generic3d-1-N28 (exit 0, 4649.9s, peak RSS 6.59 GB) running 5/26 mem 31.0/100 GB
+[  42298s] done     i1-gauss_ch-1-N28 (exit 0, 5944.0s, peak RSS 6.738 GB) running 4/26 mem 26.0/100 GB
+[  45537s] done     i1-gauss-1-N32 (exit 0, 15998.8s, peak RSS 13.36 GB) running 3/26 mem 17.0/100 GB
+[  50693s] done     i1-gauss_ch-1-N32 (exit 0, 16763.6s, peak RSS 13.455 GB) running 2/26 mem 8.0/100 GB
+[  52708s] done     ii-gauss-0.25-N32 (exit 0, 13188.2s, peak RSS 4.843 GB) running 1/26 mem 4.0/100 GB
+[  57705s] done     ii-gauss_ch-0.25-N32 (exit 0, 18009.5s, peak RSS 4.681 GB) running 0/26 mem 0.0/100 GB
+run_all corrective: finished in 57705 s; max running 26 (cap 26), max mem 100.0 GB (budget 100); statuses {'done': 163, 'timeout': 3}
+run_all: wrote /home/sesquerre/MacroFlow3D-SF-29/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/summary.md (12 (field, eps) blocks, 45 classification rows)
+[2026-10-06T04:13:35Z] job=sf29-corrective finished exit=0
