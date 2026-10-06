@@ -80,6 +80,7 @@
 #include "SlabStencils4.cuh"
 
 #include <cstddef>
+#include <vector>
 
 namespace macroflow3d {
 namespace streamfunctions {
@@ -183,6 +184,11 @@ class SlabJvpWorkspace {
 
     std::size_t allocated_bytes() const;
     const SlabStencilTable& stencils() const { return table_; }
+    /// Data pointers of every owned device buffer, for allocation-stability tests (SF-33 C1).
+    std::vector<const void*> storage_pointers() const {
+        return {base_U_[0].data(), base_U_[1].data(), dir_U_[0].data(), dir_U_[1].data(),
+                table_.device_view().d1};
+    }
 
   private:
     int n_ = 0;

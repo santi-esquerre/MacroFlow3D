@@ -77,6 +77,12 @@ void upload(DeviceBuffer<real>& b, const std::vector<real>& h) {
     b.resize(h.size());
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(b.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // A pageable cudaMemcpy H2D runs on the legacy default stream and may return before the DMA has
+    // landed; CudaContext's stream is non-blocking (no implicit ordering with the legacy stream), so
+    // a kernel enqueued next on ctx.cuda_stream() could read stale data when the GPU is shared with
+    // another process (observed: inlet_slab_jvp failed 11/15 runs under a concurrent GPU process).
+    // Test helper: complete the copy device-wide before any stream-ordered work uses the buffer.
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 bool read_json(const std::string& path, json& j) {

@@ -132,6 +132,10 @@ class InletLabels {
     bool device_prepared() const { return chunk_ > 0; }
     int chunk_points() const { return chunk_; }
     std::size_t device_bytes() const;
+    /// Data pointers of every owned device buffer, for allocation-stability tests (SF-33 C1).
+    std::vector<const void*> device_storage_pointers() const {
+        return {d_kk_.data(), d_A_.data(), d_Qh_.data(), d_B_.data(), d_E2m1_.data(), d_T_.data()};
+    }
     /// psi1, psi2 at the points (py[p], pz[p]); all four spans of equal length. Enqueue only.
     void evaluate_labels(CudaContext& ctx, DeviceSpan<const real> py, DeviceSpan<const real> pz,
                          DeviceSpan<real> psi1, DeviceSpan<real> psi2) const;

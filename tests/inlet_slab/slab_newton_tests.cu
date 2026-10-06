@@ -32,7 +32,7 @@
  *      1), linesearch-fail (lambda_min > 1, no trial allowed), stagnation (factor 0, window 2),
  *      maxit (1 iteration); one LINEAR line per Newton step that ran a linear solve.
  *   6  No allocation after prepare: workspace bytes and buffer pointers unchanged across a
- *      Newton solve and a continuation; cudaMemGetInfo free memory unchanged (after a warm-up).
+ *      Newton solve and a continuation (cudaMemGetInfo delta printed as [INFO] only: device-wide).
  */
 
 #include "apps/closure_gate/closure_fields.hpp"
@@ -89,6 +89,12 @@ void upload(DeviceBuffer<real>& b, const std::vector<real>& h) {
     b.resize(h.size());
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(b.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // A pageable cudaMemcpy H2D runs on the legacy default stream and may return before the DMA has
+    // landed; CudaContext's stream is non-blocking (no implicit ordering with the legacy stream), so
+    // a kernel enqueued next on ctx.cuda_stream() could read stale data when the GPU is shared with
+    // another process (observed: inlet_slab_jvp failed 11/15 runs under a concurrent GPU process).
+    // Test helper: complete the copy device-wide before any stream-ordered work uses the buffer.
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 std::vector<real> download(const real* d, std::size_t n) {
@@ -804,12 +810,10 @@ void case_no_allocation(TestReport& rep, CudaContext& ctx) {
     ctx.synchronize();
     const std::size_t bytes0 = nk.allocated_bytes();
     const auto ptr0 = nk.buffer_pointers();
-    // cudaMemGetInfo is device-wide: other processes sharing the GPU can change it. Up to three
-    // measurement windows are taken; the secondary check passes if one window shows no change
-    // (the primary check is the workspace bytes / buffer pointers, which no other process affects).
-    bool free_same = false;
+    // cudaMemGetInfo is device-wide: other processes sharing the GPU change it, so it is printed
+    // as [INFO] only; the gate is the workspace bytes / buffer pointers (unaffected by others).
     std::string attempts;
-    for (int attempt = 0; attempt < 3 && !free_same; ++attempt) {
+    {
         std::size_t free0 = 0, free1 = 0, total = 0;
         ctx.synchronize();
         MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free0, &total));
@@ -818,9 +822,10 @@ void case_no_allocation(TestReport& rep, CudaContext& ctx) {
         const auto r2 = nk.solve(ctx, prov(0.25), mspan(x), "alloc", ncfg, quiet);
         ctx.synchronize();
         MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free1, &total));
-        free_same = free0 == free1;
-        attempts += " [" + std::to_string(free0) + " -> " + std::to_string(free1) + ", " +
-                    sl::to_string(r.status) + "/" + sl::to_string(r2.status) + "]";
+        attempts += " [" + std::to_string(free0) + " -> " + std::to_string(free1) + " (delta " +
+                    std::to_string(static_cast<long long>(free0) - static_cast<long long>(free1)) +
+                    ", device-wide), " + sl::to_string(r.status) + "/" + sl::to_string(r2.status) +
+                    "]";
     }
     const std::size_t bytes1 = nk.allocated_bytes();
     const auto ptr1 = nk.buffer_pointers();
@@ -831,10 +836,6 @@ void case_no_allocation(TestReport& rep, CudaContext& ctx) {
     rep.check(bytes0 == bytes1 && ptr0 == ptr1,
               "no allocation after prepare: workspace bytes and every buffer pointer unchanged "
               "across a continuation and a Newton solve");
-    rep.check(free_same,
-              "no allocation after prepare: cudaMemGetInfo free memory unchanged "
-              "(secondary; device-wide)",
-              attempts);
 }
 
 } // namespace

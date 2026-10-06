@@ -79,6 +79,12 @@ void upload(DeviceBuffer<real>& b, const std::vector<real>& h) {
     b.resize(h.size());
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(b.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // A pageable cudaMemcpy H2D runs on the legacy default stream and may return before the DMA has
+    // landed; CudaContext's stream is non-blocking (no implicit ordering with the legacy stream), so
+    // a kernel enqueued next on ctx.cuda_stream() could read stale data when the GPU is shared with
+    // another process (observed: inlet_slab_jvp failed 11/15 runs under a concurrent GPU process).
+    // Test helper: complete the copy device-wide before any stream-ordered work uses the buffer.
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 std::vector<real> download(const real* d, std::size_t n) {
@@ -153,6 +159,7 @@ void case_inlet_labels(TestReport& rep, CudaContext& ctx) {
         upload(dy, py);
         upload(dz, pz);
         const std::size_t bytes0 = L.device_bytes();
+        const auto ptr0 = L.device_storage_pointers();
         const std::size_t free0 = free_device_bytes();
         L.evaluate_labels(ctx, cspan(dy), cspan(dz), mspan(o1), mspan(o2));
         ctx.synchronize();
@@ -167,10 +174,14 @@ void case_inlet_labels(TestReport& rep, CudaContext& ctx) {
         }
         rep.check(eg1 <= 1e-13 && eg2 <= 1e-13, "labels " + tag + ": GPU batched = host mirror",
                   fmt("max |dpsi1| %.3e", eg1) + fmt(" max |dpsi2| %.3e", eg2));
-        rep.check(free0 == free1 && bytes0 == L.device_bytes(),
-                  "labels " + tag + ": no device allocation in evaluate_labels after prepare",
-                  fmt("free before-after = %.0f bytes",
-                      static_cast<double>(free0) - static_cast<double>(free1)));
+        rep.check(bytes0 == L.device_bytes() && ptr0 == L.device_storage_pointers(),
+                  "labels " + tag +
+                      ": no device allocation in evaluate_labels after prepare (device bytes and "
+                      "buffer pointers unchanged)");
+        // cudaMemGetInfo is device-wide (other processes change it): informational only.
+        std::printf("[INFO] labels %s: device free memory before-after 2 evaluations = %.0f bytes "
+                    "(device-wide)\n",
+                    tag.c_str(), static_cast<double>(free0) - static_cast<double>(free1));
     }
     // inlet_backflow
     {
@@ -194,7 +205,7 @@ void case_inlet_labels(TestReport& rep, CudaContext& ctx) {
         thrown = false;
         try {
             (void)sl::InletLabels::build(s, nf, 0.5, 0.5);
-        } catch (const sl::InletBackflowError& e) {
+        } catch (const sl::InletBackflowError&) {
             thrown = true;
         }
         rep.check(thrown, "labels: min v1 = 0 -> inlet_backflow");

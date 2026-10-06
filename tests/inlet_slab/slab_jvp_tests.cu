@@ -20,7 +20,7 @@
  *      except that the base residual is pure roundoff (~6e-13) and the t = 1e-5 FD reaches its
  *      roundoff floor (~2e-10 relative): the last ratio is gated against the measured floor
  *      (fd_ladder doc); the literal strict verdict is printed.
- *   5  Contracts: no allocation in apply (cudaMemGetInfo + buffer bytes), direction not mutated,
+ *   5  Contracts: no allocation in apply (buffer bytes + pointers; cudaMemGetInfo [INFO]), direction not mutated,
  *      bitwise-repeatable apply, std::logic_error before prepare_base / after re-prepare.
  */
 
@@ -66,6 +66,12 @@ void upload(DeviceBuffer<real>& b, const std::vector<real>& h) {
     b.resize(h.size());
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(b.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // A pageable cudaMemcpy H2D runs on the legacy default stream and may return before the DMA has
+    // landed; CudaContext's stream is non-blocking (no implicit ordering with the legacy stream), so
+    // a kernel enqueued next on ctx.cuda_stream() could read stale data when the GPU is shared with
+    // another process (observed: inlet_slab_jvp failed 11/15 runs under a concurrent GPU process).
+    // Test helper: complete the copy device-wide before any stream-ordered work uses the buffer.
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 std::vector<real> download(const real* d, std::size_t n) {
@@ -480,6 +486,7 @@ void case_contracts(TestReport& rep, CudaContext& ctx) {
     hs.freeze(ctx, u);
     upload(hs.dvec, v);
     const std::size_t bytes0 = hs.jws.allocated_bytes();
+    const auto ptr0 = hs.jws.storage_pointers();
     std::size_t free0 = 0, free1 = 0, total = 0;
     MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free0, &total));
     hs.jws.apply(ctx, hs.g, cspan(hs.dvec), mspan(hs.Jv));
@@ -491,11 +498,12 @@ void case_contracts(TestReport& rep, CudaContext& ctx) {
     MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free1, &total));
     const auto J2 = download(hs.Jv.data(), hs.Jv.size());
     const auto vback = download(hs.dvec.data(), hs.dvec.size());
+    // cudaMemGetInfo is device-wide (other processes change it): informational only.
     std::printf("[INFO] contracts: JVP workspace %zu bytes at N = %d (4 (N+1) N^2 doubles + table); "
-                "device free before/after 4 applies: %zu / %zu\n",
-                bytes0, kN, free0, free1);
-    rep.check(free0 == free1 && bytes0 == hs.jws.allocated_bytes(),
-              "contracts: no allocation in apply (cudaMemGetInfo unchanged, workspace bytes "
+                "device free before/after 4 applies: %zu / %zu (delta %.0f, device-wide)\n",
+                bytes0, kN, free0, free1, static_cast<double>(free0) - static_cast<double>(free1));
+    rep.check(bytes0 == hs.jws.allocated_bytes() && ptr0 == hs.jws.storage_pointers(),
+              "contracts: no allocation in apply (workspace bytes and buffer pointers "
               "unchanged)");
     rep.check(vback == v, "contracts: the direction is not mutated by apply (bitwise)");
     rep.check(J1 == J2, "contracts: repeated apply is bitwise reproducible");

@@ -67,6 +67,12 @@ void upload(DeviceBuffer<real>& b, const std::vector<real>& h) {
     b.resize(h.size());
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(b.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // A pageable cudaMemcpy H2D runs on the legacy default stream and may return before the DMA has
+    // landed; CudaContext's stream is non-blocking (no implicit ordering with the legacy stream), so
+    // a kernel enqueued next on ctx.cuda_stream() could read stale data when the GPU is shared with
+    // another process (observed: inlet_slab_jvp failed 11/15 runs under a concurrent GPU process).
+    // Test helper: complete the copy device-wide before any stream-ordered work uses the buffer.
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 std::vector<real> download(const real* d, std::size_t n) {
@@ -881,9 +887,10 @@ void case_contracts(TestReport& rep, CudaContext& ctx) {
                   b_met == mws.allocated_bytes(),
               "contracts: no (re)allocation in evaluate_residual / evaluate_metrics after prepare "
               "(pointers, bytes)");
-    std::printf(
-        "[INFO] contracts: device free memory before/after repeated evaluations: %zu / %zu bytes\n",
-        free0, free1);
+    // cudaMemGetInfo is device-wide (other processes change it): informational only.
+    std::printf("[INFO] contracts: device free memory before/after repeated evaluations: %zu / %zu "
+                "bytes (delta %.0f, device-wide)\n",
+                free0, free1, static_cast<double>(free0) - static_cast<double>(free1));
     rep.check(n1.r_F == n2.r_F && n1.r_out == n2.r_out && E1 == E2 && m1.e_v == m2.e_v &&
                   m1.e_div == m2.e_div && m1.e_psi == m2.e_psi && m1.p0_1 == m2.p0_1,
               "contracts: repeated evaluation is bitwise reproducible (E, norms, metrics)");
