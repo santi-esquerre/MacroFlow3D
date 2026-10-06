@@ -538,7 +538,7 @@ dashboard):
 - SF-34: aceptación en el medio periódico frente al gate de cierre de SF-30 en
   `sigma^2` en {0.25, 1, 2.25}, `(4, 1/16, 256^3)` no bloqueante (←SF-33).
 
-Fases posteriores (en prosa; sus especificaciones se crean cuando cierre SF-29):
+Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29; el resto en prosa):
 generalización a GPU de `src/physics/streamfunctions/` a `x1` no periódico;
 aceptación en el medio periódico (`e_v(h)`, invariancia y mapa de retorno frente a
 SF-30 en `sigma^2 = 0.25, 1, 2.25`); dominio largo (2048 x 256 x 256,
