@@ -1,0 +1,360 @@
+/**
+ * @file SlabNewtonKrylov.cu
+ * @brief SF-33 N2: Newton-Krylov with line search and amplitude continuation on the inlet slab
+ *        (see SlabNewtonKrylov.cuh for the contract and the prototype correspondence).
+ */
+
+#include "SlabNewtonKrylov.cuh"
+
+#include "../../../runtime/cuda_check.cuh"
+
+#include <chrono>
+#include <cmath>
+#include <cstdarg>
+#include <cstdio>
+#include <deque>
+#include <stdexcept>
+
+namespace macroflow3d {
+namespace streamfunctions {
+namespace inlet_slab {
+
+namespace {
+
+std::string fmt(const char* f, ...) __attribute__((format(printf, 1, 2)));
+std::string fmt(const char* f, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap, f);
+    std::vsnprintf(buf, sizeof(buf), f, ap);
+    va_end(ap);
+    return std::string(buf);
+}
+
+double seconds_since(std::chrono::steady_clock::time_point t0) {
+    return std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+}
+
+real merit_of(real r_F, real r_out) {
+    return std::sqrt(r_F * r_F + r_out * r_out);
+}
+
+} // namespace
+
+void slab_stdout_logger(const std::string& line) {
+    std::fputs(line.c_str(), stdout);
+    std::fputc('\n', stdout);
+    std::fflush(stdout);
+}
+
+void SlabNewtonKrylov::prepare(CudaContext& ctx, const InletSlabGrid& grid, int restart,
+                               int max_newton, int max_gmres_iterations) {
+    require_valid_grid(grid, "SlabNewtonKrylov::prepare");
+    if (max_newton < 1)
+        throw std::invalid_argument("SlabNewtonKrylov::prepare: max_newton must be >= 1");
+    grid_ = grid;
+    rws_.prepare(grid);
+    jws_.prepare(grid);
+    prec_.prepare(ctx, grid);
+    gmres_.prepare(grid, restart, max_gmres_iterations);
+    U1_.resize(grid.full_size());
+    U2_.resize(grid.full_size());
+    for (DeviceBuffer<real>* b : {&E_, &Et_, &xt_, &dx_, &rhs_, &xconv_})
+        b->resize(grid.unknown_size());
+    max_newton_reserved_ = max_newton;
+    ctx.synchronize();
+}
+
+std::size_t SlabNewtonKrylov::allocated_bytes() const {
+    std::size_t b = rws_.allocated_bytes() + jws_.allocated_bytes() + prec_.allocated_bytes() +
+                    gmres_.allocated_bytes();
+    for (const DeviceBuffer<real>* v : {&U1_, &U2_, &E_, &Et_, &xt_, &dx_, &rhs_, &xconv_})
+        b += v->capacity() * sizeof(real);
+    return b;
+}
+
+std::vector<const void*> SlabNewtonKrylov::buffer_pointers() const {
+    std::vector<const void*> p = {U1_.data(),           U2_.data(),      E_.data(),   Et_.data(),
+                                  xt_.data(),           dx_.data(),      rhs_.data(), xconv_.data(),
+                                  rws_.partials_data(), rws_.sums_data()};
+    for (const auto& v : {prec_.buffer_pointers(), gmres_.buffer_pointers()})
+        p.insert(p.end(), v.begin(), v.end());
+    return p;
+}
+
+SlabResidualNorms SlabNewtonKrylov::residual_norms(CudaContext& ctx, const SlabStageInputs& inputs,
+                                                   DeviceSpan<const real> x) {
+    if (!prepared())
+        throw std::logic_error("SlabNewtonKrylov: not prepared");
+    assemble_full_planes(ctx, grid_, x, inputs, span(U1_), span(U2_));
+    SlabResidualNorms nr;
+    evaluate_residual(ctx, grid_, inputs, cspan(U1_), cspan(U2_), span(E_), rws_, &nr);
+    return nr;
+}
+
+SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs& inputs,
+                                         DeviceSpan<real> x, const std::string& label,
+                                         const SlabNewtonConfig& cfg, const SlabLogger& log) {
+    const auto t0 = std::chrono::steady_clock::now();
+    if (!prepared())
+        throw std::logic_error("SlabNewtonKrylov::solve: not prepared");
+    if (x.size() != grid_.unknown_size())
+        throw std::invalid_argument("SlabNewtonKrylov::solve: x has the wrong size");
+    if (cfg.max_iterations > max_newton_reserved_)
+        throw std::invalid_argument("SlabNewtonKrylov::solve: max_iterations exceeds the prepared "
+                                    "reservation");
+    if (!gmres_.prepared_for(grid_, cfg.gmres.restart))
+        throw std::invalid_argument("SlabNewtonKrylov::solve: GMRES restart exceeds the prepared "
+                                    "basis");
+    inputs.check(grid_);
+
+    SlabNewtonReport rep;
+    rep.hist_r_F.reserve(static_cast<std::size_t>(max_newton_reserved_) + 1);
+    rep.hist_r_out.reserve(static_cast<std::size_t>(max_newton_reserved_) + 1);
+    rep.steps.reserve(static_cast<std::size_t>(max_newton_reserved_));
+    SlabReduction& red = gmres_.reduction();
+    const char* lab = label.c_str();
+
+    const DeviceSpan<const real> xc(x.data(), x.size());
+    SlabResidualNorms nr = residual_norms(ctx, inputs, xc);
+    real r_F = nr.r_F, r_out = nr.r_out;
+    real m = merit_of(r_F, r_out);
+    rep.hist_r_F.push_back(r_F);
+    rep.hist_r_out.push_back(r_out);
+    log(fmt("  NEWTON %s it=%2d r_F=%.3e r_out=%.3e", lab, 0, r_F, r_out));
+    auto done = [&](SlabSolveStatus st) {
+        // Documented sync: x (and every pending copy) is complete when solve() returns.
+        MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(ctx.cuda_stream()));
+        rep.status = st;
+        rep.r_F = r_F;
+        rep.r_out = r_out;
+        rep.seconds = seconds_since(t0);
+        return rep;
+    };
+    if (!std::isfinite(m))
+        return done(SlabSolveStatus::nan_inf);
+    auto converged = [&]() { return r_F <= cfg.tol && r_out <= cfg.tol; };
+
+    const SlabGmres::Operator opA = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
+        jws_.apply(ctx, grid_, in, out);
+    };
+    const SlabGmres::Operator opM = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
+        prec_.apply(ctx, grid_, in, out);
+    };
+
+    SlabSolveStatus status = SlabSolveStatus::maxit;
+    for (int it = 1; it <= cfg.max_iterations; ++it) {
+        if (converged()) {
+            status = SlabSolveStatus::converged;
+            break;
+        }
+        // base state of this step (U1_, U2_ = full arrays of x)
+        assemble_full_planes(ctx, grid_, xc, inputs, span(U1_), span(U2_));
+        jws_.prepare_base(ctx, grid_, inputs, cspan(U1_), cspan(U2_));
+        const SlabPrecFactorReport fr = prec_.factor(ctx, grid_, inputs, cspan(U1_), cspan(U2_));
+        slab_scale_copy(ctx, -1.0, cspan(E_), span(rhs_));
+        SlabNewtonStepRecord step;
+        step.t_fact = fr.seconds;
+        step.prec_singular_modes = fr.singular_modes;
+        const auto tl0 = std::chrono::steady_clock::now();
+        if (fr.singular_modes == 0) {
+            step.linear = gmres_.solve(ctx, opA, opM, cspan(rhs_), span(dx_), cfg.gmres);
+        } else {
+            step.linear.status = SlabLinearStatus::not_run;
+        }
+        step.t_lin = seconds_since(tl0);
+        const SlabGmresReport& L = step.linear;
+        rep.linear_iterations_total += L.iterations;
+        if (L.iterations > rep.linear_iterations_max)
+            rep.linear_iterations_max = L.iterations;
+        rep.last_linear_status = L.status;
+        rep.its = it;
+        log(fmt("    LINEAR gmres+%s its=%d rel=%.1e t=%.2fs cycles=%d reorth=%d rec=%.1e "
+                "status=%s t_fact=%.2fs singular_modes=%d",
+                cfg.prec_name.c_str(), L.iterations, L.rel_residual, step.t_lin, L.cycles,
+                L.reorthogonalizations, L.rel_recurrence, to_string(L.status), step.t_fact,
+                fr.singular_modes));
+        if (L.status != SlabLinearStatus::converged) {
+            rep.steps.push_back(step);
+            log(fmt("  NEWTON %s it=%2d linear_failure: GMRES status=%s rel=%.1e lits=%d "
+                    "prec singular modes=%d (step not taken)",
+                    lab, it, to_string(L.status), L.rel_residual, L.iterations, fr.singular_modes));
+            status = SlabSolveStatus::linear_failure;
+            break;
+        }
+        step.dx_max = red.maxabs_host(ctx, cspan(dx_));
+        step.dx_l2 = red.nrm2_host(ctx, cspan(dx_));
+
+        real lam = 1.0;
+        bool accepted = false;
+        real rFn = 0.0, ron = 0.0, mn = 0.0;
+        while (lam >= cfg.lambda_min) {
+            slab_axpby(ctx, 1.0, xc, lam, cspan(dx_), span(xt_));
+            assemble_full_planes(ctx, grid_, cspan(xt_), inputs, span(U1_), span(U2_));
+            SlabResidualNorms tn;
+            evaluate_residual(ctx, grid_, inputs, cspan(U1_), cspan(U2_), span(Et_), rws_, &tn);
+            rFn = tn.r_F;
+            ron = tn.r_out;
+            mn = merit_of(rFn, ron);
+            if (std::isfinite(mn) && mn < (1.0 - cfg.armijo * lam) * m) {
+                accepted = true;
+                break;
+            }
+            lam *= 0.5;
+        }
+        if (!accepted) {
+            rep.steps.push_back(step);
+            log(fmt("  NEWTON %s it=%2d line search failed (min lambda 1/1024): merit %.3e -> "
+                    "%.3e  [gmres+%s rel=%.1e lits=%d |dx|max=%.2e |dx|2=%.2e]",
+                    lab, it, m, mn, cfg.prec_name.c_str(), L.rel_residual, L.iterations,
+                    step.dx_max, step.dx_l2));
+            status = SlabSolveStatus::linesearch_fail;
+            break;
+        }
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(x.data(), xt_.data(), x.size() * sizeof(real),
+                                               cudaMemcpyDeviceToDevice, ctx.cuda_stream()));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(E_.data(), Et_.data(), E_.size() * sizeof(real),
+                                               cudaMemcpyDeviceToDevice, ctx.cuda_stream()));
+        r_F = rFn;
+        r_out = ron;
+        m = mn;
+        step.r_F = r_F;
+        step.r_out = r_out;
+        step.lambda = lam;
+        rep.steps.push_back(step);
+        rep.hist_r_F.push_back(r_F);
+        rep.hist_r_out.push_back(r_out);
+        log(fmt("  NEWTON %s it=%2d r_F=%.3e r_out=%.3e lambda=%.4g |dx|max=%.2e lin=gmres+%s "
+                "rel=%.1e lits=%d t_lin=%.1fs |dx|2=%.2e t_fact=%.2fs",
+                lab, it, r_F, r_out, lam, step.dx_max, cfg.prec_name.c_str(), L.rel_residual,
+                L.iterations, step.t_lin, step.dx_l2, step.t_fact));
+        const std::size_t nh = rep.hist_r_F.size();
+        const std::size_t w = static_cast<std::size_t>(cfg.stagnation_window);
+        if (w >= 2 && nh >= w) {
+            const real m_first = merit_of(rep.hist_r_F[nh - w], rep.hist_r_out[nh - w]);
+            if (m > cfg.stagnation_factor * m_first && !converged()) {
+                status = SlabSolveStatus::stagnation;
+                break;
+            }
+        }
+    }
+    if (converged())
+        status = SlabSolveStatus::converged;
+    return done(status);
+}
+
+SlabContinuationReport SlabNewtonKrylov::solve_with_continuation(
+    CudaContext& ctx, real eps, const StageInputProvider& provider, DeviceSpan<real> x,
+    const SlabContinuationConfig& ccfg, const SlabNewtonConfig& ncfg, const SlabLogger& log) {
+    const auto t0 = std::chrono::steady_clock::now();
+    if (!prepared())
+        throw std::logic_error("SlabNewtonKrylov::solve_with_continuation: not prepared");
+    if (x.size() != grid_.unknown_size())
+        throw std::invalid_argument("SlabNewtonKrylov::solve_with_continuation: x has the wrong "
+                                    "size");
+    if (!(eps > 0.0) || !std::isfinite(eps))
+        throw std::invalid_argument("SlabNewtonKrylov::solve_with_continuation: eps must be > 0");
+    const int N = grid_.n;
+    const char* field = ccfg.field.c_str();
+    const char* cand = ccfg.cand.c_str();
+
+    std::deque<real> todo;
+    for (real e : ccfg.ladder)
+        if (e < eps - 1e-12)
+            todo.push_back(e);
+    todo.push_back(eps);
+
+    SlabContinuationReport rep;
+    real e_conv = 0.0;
+    bool have_conv = false;
+    std::vector<std::string> taken;
+    const DeviceSpan<real> xconv = span(xconv_);
+    auto copy_vec = [&](DeviceSpan<real> dst, DeviceSpan<const real> src) {
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(dst.data(), src.data(), dst.size() * sizeof(real),
+                                               cudaMemcpyDeviceToDevice, ctx.cuda_stream()));
+    };
+    auto label_of = [&](real e) { return fmt("%s:%g:%d:%s", field, e, N, cand); };
+
+    while (!todo.empty()) {
+        const real e = todo.front();
+        const SlabStageInputs& in = provider(e);
+        if (have_conv)
+            copy_vec(x, xconv);
+        else
+            slab_fill(ctx, 0.0, x);
+        log(fmt("STAGE field=%s eps=%g N=%d cand=%s (from eps=%g, %s)", field, e, N, cand, e_conv,
+                have_conv ? "warm start" : "u=0"));
+        SlabStageRecord st;
+        st.eps = e;
+        st.from_eps = e_conv;
+        st.warm_start = have_conv;
+        st.newton = solve(ctx, in, x, label_of(e), ncfg, log);
+        const real mrt = st.newton.merit();
+        st.accepted = st.newton.status == SlabSolveStatus::converged ||
+                      (std::isfinite(mrt) && mrt <= ccfg.stage_ok);
+        log(fmt("  STAGE_END field=%s eps=%g N=%d cand=%s status=%s its=%d r_F=%.3e r_out=%.3e "
+                "-> %s",
+                field, e, N, cand, to_string(st.newton.status), st.newton.its, st.newton.r_F,
+                st.newton.r_out, st.accepted ? "accepted" : "FAILED"));
+        taken.push_back(fmt("%g%s", e, st.accepted ? "" : "(fail)"));
+        rep.final_newton = st.newton;
+        const bool ok = st.accepted;
+        rep.stages.push_back(std::move(st));
+        if (ok) {
+            e_conv = e;
+            have_conv = true;
+            copy_vec(xconv, DeviceSpan<const real>(x.data(), x.size()));
+            todo.pop_front();
+        } else if (rep.bisections < ccfg.max_bisections) {
+            ++rep.bisections;
+            todo.push_front(0.5 * (e_conv + e));
+            log(fmt("  CONTINUATION bisection %d/%d: retry from eps=%g at eps=%g", rep.bisections,
+                    ccfg.max_bisections, e_conv, todo.front()));
+        } else {
+            rep.floor_reached = true;
+            log(fmt("  CONTINUATION gave up after %d bisections; reporting the failed state at "
+                    "eps=%g",
+                    rep.bisections, e));
+            if (std::fabs(e - eps) > 1e-12) {
+                const SlabStageInputs& tin = provider(eps);
+                if (have_conv)
+                    copy_vec(x, xconv);
+                else
+                    slab_fill(ctx, 0.0, x);
+                log(fmt("STAGE field=%s eps=%g N=%d cand=%s (final attempt from eps=%g)", field,
+                        eps, N, cand, e_conv));
+                SlabStageRecord fs;
+                fs.eps = eps;
+                fs.from_eps = e_conv;
+                fs.warm_start = have_conv;
+                fs.final_attempt = true;
+                fs.newton = solve(ctx, tin, x, label_of(eps), ncfg, log);
+                const real fm = fs.newton.merit();
+                fs.accepted = fs.newton.status == SlabSolveStatus::converged ||
+                              (std::isfinite(fm) && fm <= ccfg.stage_ok);
+                rep.final_newton = fs.newton;
+                rep.stages.push_back(std::move(fs));
+                taken.push_back(fmt("%g(final)", eps));
+            }
+            break;
+        }
+    }
+    rep.eps_accepted = have_conv ? e_conv : 0.0;
+    std::string path;
+    for (std::size_t i = 0; i < taken.size(); ++i) {
+        if (i > 0)
+            path += "->";
+        path += taken[i];
+    }
+    rep.path = path;
+    log(fmt("PATH field=%s eps=%g N=%d cand=%s continuation path: %s", field, eps, N, cand,
+            path.c_str()));
+    rep.status = rep.floor_reached ? SlabSolveStatus::continuation_floor : rep.final_newton.status;
+    MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(ctx.cuda_stream())); // documented: x complete
+    rep.seconds = seconds_since(t0);
+    return rep;
+}
+
+} // namespace inlet_slab
+} // namespace streamfunctions
+} // namespace macroflow3d

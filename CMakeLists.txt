@@ -220,6 +220,9 @@ set(INLET_SLAB_SOURCES
     src/physics/streamfunctions/inlet_slab/SlabResidual.cu
     src/physics/streamfunctions/inlet_slab/SlabMetrics.cu
     src/physics/streamfunctions/inlet_slab/SlabJacobianVectorProduct.cu
+    src/physics/streamfunctions/inlet_slab/SlabGmres.cu
+    src/physics/streamfunctions/inlet_slab/SlabModePreconditioner.cu
+    src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cu
 )
 
 set(MULTIGRID_SOURCES
@@ -622,6 +625,11 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_jvp_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_jvp_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_jvp COMMAND inlet_slab_jvp_tests)
+    # SF-33 N2: slab GMRES, per-mode preconditioner P-A, Newton line search, continuation (fast tier; N <= 16)
+    add_executable(inlet_slab_newton_tests tests/inlet_slab/slab_newton_tests.cu)
+    target_link_libraries(inlet_slab_newton_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_newton_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_newton COMMAND inlet_slab_newton_tests)
     # --- SF-33 inlet slab tests: end ---
 
     # PETSc/SLEPc apps (only when backend is enabled)
