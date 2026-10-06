@@ -219,6 +219,7 @@ set(INLET_SLAB_SOURCES
     src/physics/streamfunctions/inlet_slab/SlabStencils4.cu
     src/physics/streamfunctions/inlet_slab/SlabResidual.cu
     src/physics/streamfunctions/inlet_slab/SlabMetrics.cu
+    src/physics/streamfunctions/inlet_slab/SlabJacobianVectorProduct.cu
 )
 
 set(MULTIGRID_SOURCES
@@ -616,6 +617,11 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_contract_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_contract_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_contracts COMMAND inlet_slab_contract_tests)
+    # SF-33 N1: analytic slab Jacobian-vector product vs central FD ladder, k = 1 symbol (fast tier; N = 12)
+    add_executable(inlet_slab_jvp_tests tests/inlet_slab/slab_jvp_tests.cu)
+    target_link_libraries(inlet_slab_jvp_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_jvp_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_jvp COMMAND inlet_slab_jvp_tests)
     # --- SF-33 inlet slab tests: end ---
 
     # PETSc/SLEPc apps (only when backend is enabled)
