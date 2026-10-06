@@ -137,6 +137,8 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-30 — Streamline-closure gate on the production stack](lester-eq14/increments/SF-30-streamline-closure-gate.md)
 - [x] [SF-31 — Pseudo-symplectic tracker core and RK reference](lester-eq14/increments/SF-31-pseudo-symplectic-tracker-core.md)
 - [ ] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
+- [ ] [SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
+- [ ] [SF-34 — Acceptance of the inlet labels in the periodic medium against the closure gate](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -147,7 +149,7 @@ for them and the periodic solution of eq. (14) is a different flow (see
 former SF-27..SF-30 are cancelled (their specifications remain in git history at
 `4670fb5`) and replaced by SF-27..SF-32 above. Dependency graph: SF-27 and SF-29
 start in parallel; SF-28 follows SF-27; SF-30 and SF-31 follow SF-28 (in
-parallel); SF-32 follows SF-31. Disposition of the open decisions D1-D7 of
+parallel); SF-32 follows SF-31; SF-33 follows SF-29; SF-34 follows SF-33. Disposition of the open decisions D1-D7 of
 `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
 D5 are moot (they tune a system whose solution is not the target); D2 is retired
 with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
@@ -219,6 +221,29 @@ Locked discretization rules:
   source construction used by the solver;
 - retain double precision through the accepted Picard and V100 benchmark
   phases.
+
+## Locked decisions of the inlet-label formulation (SF-29, decision 2026-10-06)
+
+*Govern SF-33 and later work on the `x1`-non-periodic slab. Authority:
+`docs/decisions/2026-10-06-eq14-inlet-label-formulation.md` (items 1-7); evidence:
+`docs/experiments/2026-10-02-sf29-inlet-labels.md`.*
+
+1. Same-index equation (14) in non-divergence form
+   `lap psi_i - grad(ln k) . grad psi_i = S_i`, exact `grad ln k` where available, on the slab
+   `0 <= x1 <= 1`, periodic in `x2`, `x3`; unknowns `psi1 = x2 + u1`, `psi2 = x3 + u2`; no regularization of
+   `|c|^2`.
+2. Inlet Dirichlet labels in flow coordinates by the normalized triangular construction (D-1) from the face
+   velocity of the independent Darcy solve; requires `v1 > 0` on the inlet face.
+3. Outlet condition `(grad psi1 x grad psi2) x e1 = v_perp,in x e1` (D-2); Neumann `d1 psi_i = 0` for
+   constant-head faces; nothing imposed on `d1 psi_i` at the inlet (diagnostic only).
+4. 4th-order stencils (centered; Fornberg-skewed on the planes adjacent to the faces; one-sided at the outlet)
+   recommended; 2nd order admissible only with the resolution of item 6.
+5. Newton with exact or robustly preconditioned linear solves; amplitude continuation `0.25 -> 0.5 -> 1` with
+   bisection; the `k = 1` Fourier preconditioner alone is not sufficient beyond `eps = 0.25` at `N >= 32`.
+6. Validated at `sigma_Y <= 0.5`, `L/ell = 4`, 16^3-32^3; `sigma_Y = 1` needs `ell/h >= 24-32` and is settled in
+   SF-33; the paper's parameters are an open question.
+7. Acceptance metrics unchanged: `e_v`, per-label `e_psi` against a solver-independent oracle, `r_F`, dense
+   spectrum at small `N`, consistency at the oracle labels; the D-5 ceiling comparison is a reading aid only.
 
 ## Locked nonlinear and continuation policy
 
@@ -346,13 +371,14 @@ macrodispersion production are outside this execution sequence.
 4. `ctest` holds fast contract tests only; science runs are experiment notes run
    as detached V100 jobs.
 
-## Later phases (prose; specifications are created by the SF-29 closure PR)
+## Later phases (items 1-2 specified by the SF-29 closure PR; items 3-4 prose)
 
 1. GPU generalization of `src/physics/streamfunctions/` to `x1` non-periodic per
-   the SF-29 choice, reusing PCG/MG, SF-18, SF-19, and `Diagnostics.cuh`.
+   the SF-29 choice: [SF-33](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md).
 2. Acceptance in the periodic medium: `e_v(h)` and invariance convergent and the
    labels' return map agreeing with SF-30 at `sigma^2 = 0.25, 1, 2.25`;
-   `(4, 1/16, 256^3)` is non-blocking.
+   `(4, 1/16, 256^3)` is non-blocking:
+   [SF-34](lester-eq14/increments/SF-34-periodic-medium-acceptance.md).
 3. Long domain (Dirichlet in `x`, periodic in `y`, `z`; 2048x256x256,
    `lambda/h = 10`): runner wiring and the study. `alpha_L` must match RWPT;
    `alpha_T` is reported with grid and tolerance convergence without

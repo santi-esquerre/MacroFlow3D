@@ -507,6 +507,20 @@ Estado (2026-10-02):
   cierran; el piso de `e_v` es esa distancia. La ruta fue rehecha en `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`
   (aceptada; O1 = B, O2, O3).
 
+Estado (2026-10-06): SF-29 decidió la formulación de etiquetas de entrada
+(`docs/decisions/2026-10-06-eq14-inlet-label-formulation.md`, evidencia en
+`docs/experiments/2026-10-02-sf29-inlet-labels.md`): ecuación (14) del mismo índice
+en forma no divergente sobre el slab no periódico en `x1`, etiquetas de entrada
+normalizadas, condición de salida `c x e1 = v_perp,in x e1`, esténciles de cuarto
+orden, Newton con continuación y bisección. El prototipo CPU reproduce las
+etiquetas de Darcy con `e_v` y `e_psi` convergentes y sin floor en
+`sigma_Y = 0.25` (los cuatro campos, incluido el caso de carga constante) y en
+`sigma_Y = 0.5` para `gauss_ch` y `generic3d`; `sigma_Y = 1` queda abierto por
+resolución (`ell/h >= 24-32`). La variante literal sin condición de salida no tiene
+solución y la energía de disipación (candidato (ii)) no es competitiva. SF-30
+(PR #46) confirmó en el stack de producción que las líneas de corriente de Darcy no
+cierran.
+
 Nueva secuencia (dependencias entre paréntesis; el estado vigente lo gobierna el
 dashboard):
 
@@ -519,6 +533,10 @@ dashboard):
 - SF-31: núcleo del tracker pseudo-simpléctico y referencia RK (←SF-28).
 - SF-32: trackers de referencia por flujo en caras y los escalamientos del paper
   (←SF-31).
+- SF-33: implementación GPU de la formulación de etiquetas de entrada en
+  `src/physics/streamfunctions/` (←SF-29).
+- SF-34: aceptación en el medio periódico frente al gate de cierre de SF-30 en
+  `sigma^2` en {0.25, 1, 2.25}, `(4, 1/16, 256^3)` no bloqueante (←SF-33).
 
 Fases posteriores (en prosa; sus especificaciones se crean cuando cierre SF-29):
 generalización a GPU de `src/physics/streamfunctions/` a `x1` no periódico;
