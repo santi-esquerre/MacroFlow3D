@@ -1,0 +1,54 @@
+[2026-10-06T19:18:56Z] job=sf33-n0-build session=macroflow3d-SF-33-sf33-n0-build started
+[2026-10-06T19:18:56Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T19:18:56Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T19:18:56Z] command=cmake --preset v100-release && cmake --build build/v100-release -j 2>&1 | grep -i 'error\|warning' | head -40; echo BUILD_EXIT=${PIPESTATUS[0]}; ctest --test-dir build/v100-release --output-on-failure -R inlet_slab_contracts 2>&1 | tail -8; ./build/v100-release/inlet_slab_contract_tests --with-64 2>&1 | grep -c PASS; ./build/v100-release/inlet_slab_contract_tests --with-64 2>&1 | grep 'FAIL\|order' | head -30
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (0.3s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release
+BUILD_EXIT=0
+Test project /home/sesquerre/MacroFlow3D-SF-33/build/v100-release
+    Start 21: inlet_slab_contracts
+1/1 Test #21: inlet_slab_contracts .............   Passed    3.45 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   3.46 sec
+66
+=== SF-33 N0: (2) derivs4 observed orders, 16 -> 32 -> 64 ===
+[PASS] orders: derivs4 d1 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 2.3141e-02  32: 1.7579e-03  order 3.719 | prototype rel diff 1.5e-11
+[INFO] orders: derivs4 d1 observed order 16 -> 32 = 3.719 < 3.8, as in the prototype (one-sided plane-N rows pre-asymptotic at 16); gated on 32 -> 64 with --with-64
+[PASS] orders (--with-64): derivs4 d1 observed order 32 -> 64 >= 3.8  max err 64: 1.1500e-04  order 3.934
+[PASS] orders: derivs4 d2 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 4.8902e-03  32: 3.0987e-04  order 3.980 | prototype rel diff 1.4e-11
+[PASS] orders: derivs4 d2 observed order 16 -> 32 >= 3.8  order 3.980
+[PASS] orders (--with-64): derivs4 d2 observed order 32 -> 64 >= 3.8  max err 64: 1.9434e-05  order 3.995
+[PASS] orders: derivs4 d3 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 4.8902e-03  32: 3.0987e-04  order 3.980 | prototype rel diff 6.4e-12
+[PASS] orders: derivs4 d3 observed order 16 -> 32 >= 3.8  order 3.980
+[PASS] orders (--with-64): derivs4 d3 observed order 32 -> 64 >= 3.8  max err 64: 1.9434e-05  order 3.995
+[PASS] orders: derivs4 d11 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 5.0347e-01  32: 1.7588e-02  order 4.839 | prototype rel diff 7.7e-11
+[PASS] orders: derivs4 d11 observed order 16 -> 32 >= 3.8  order 4.839
+[PASS] orders (--with-64): derivs4 d11 observed order 32 -> 64 >= 3.8  max err 64: 5.6491e-04  order 4.960
+[PASS] orders: derivs4 d22 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 1.0289e-02  32: 6.4974e-04  order 3.985 | prototype rel diff 1.5e-11
+[PASS] orders: derivs4 d22 observed order 16 -> 32 >= 3.8  order 3.985
+[PASS] orders (--with-64): derivs4 d22 observed order 32 -> 64 >= 3.8  max err 64: 4.0714e-05  order 3.996
+[PASS] orders: derivs4 d33 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 1.0289e-02  32: 6.4974e-04  order 3.985 | prototype rel diff 1.8e-11
+[PASS] orders: derivs4 d33 observed order 16 -> 32 >= 3.8  order 3.985
+[PASS] orders (--with-64): derivs4 d33 observed order 32 -> 64 >= 3.8  max err 64: 4.0714e-05  order 3.996
+[PASS] orders: derivs4 d12 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 1.7601e-01  32: 1.2992e-02  order 3.760 | prototype rel diff 3.2e-11
+[INFO] orders: derivs4 d12 observed order 16 -> 32 = 3.760 < 3.8, as in the prototype (one-sided plane-N rows pre-asymptotic at 16); gated on 32 -> 64 with --with-64
+[PASS] orders (--with-64): derivs4 d12 observed order 32 -> 64 >= 3.8  max err 64: 8.4468e-04  order 3.943
+[PASS] orders: derivs4 d13 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 1.7601e-01  32: 1.2992e-02  order 3.760 | prototype rel diff 3.0e-11
+[INFO] orders: derivs4 d13 observed order 16 -> 32 = 3.760 < 3.8, as in the prototype (one-sided plane-N rows pre-asymptotic at 16); gated on 32 -> 64 with --with-64
+[PASS] orders (--with-64): derivs4 d13 observed order 32 -> 64 >= 3.8  max err 64: 8.4468e-04  order 3.943
+[PASS] orders: derivs4 d23 max errors at 16, 32 = prototype derivs4 (rel <= 1e-6)  max err 16: 6.1428e-02  32: 3.8939e-03  order 3.980 | prototype rel diff 3.6e-12
+[PASS] orders: derivs4 d23 observed order 16 -> 32 >= 3.8  order 3.980
+[PASS] orders (--with-64): derivs4 d23 observed order 32 -> 64 >= 3.8  max err 64: 2.4421e-04  order 3.995
+[2026-10-06T19:19:18Z] job=sf33-n0-build finished exit=0

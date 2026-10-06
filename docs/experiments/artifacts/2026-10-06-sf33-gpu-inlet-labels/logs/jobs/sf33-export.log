@@ -1,0 +1,570 @@
+[2026-10-06T21:02:57Z] job=sf33-export session=macroflow3d-SF-33-sf33-export started
+[2026-10-06T21:02:57Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-06T21:02:57Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T21:02:57Z] command=cd docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts && OMP_NUM_THREADS=8 python3 export_proto.py gauss:0.25:16 gauss:0.25:24 gauss:0.25:32 gauss:0.5:16 gauss:0.5:24 gauss_ch:0.25:16 gauss_ch:0.25:24 gauss_ch:0.25:32 gauss_ch:0.5:16 gauss_ch:0.5:24 control2d:0.25:16 control2d:0.25:24 control2d:0.5:16 control2d:0.5:24 generic3d:1:16 generic3d:1:20 generic3d:1:24 generic3d:0.25:16 generic3d:0.5:16 --out ../exports && python3 export_proto.py --solutions ../../2026-10-02-sf29-inlet-labels/raw/sweep2/solutions/*_16_i1o4.npz --out ../exports/solutions && python3 export_proto.py --crosscheck gauss:0.25:16 gauss:0.25:24 gauss:0.25:32 --out ../exports
+  STAGE_EXPORT gauss_0.25_16 amp=0.015625 nphi=32 t=0.9s
+  STAGE_EXPORT gauss_0.25_16 amp=0.03125 nphi=32 t=0.9s
+  STAGE_EXPORT gauss_0.25_16 amp=0.046875 nphi=32 t=1.0s
+  STAGE_EXPORT gauss_0.25_16 amp=0.0625 nphi=32 t=1.0s
+  STAGE_EXPORT gauss_0.25_16 amp=0.078125 nphi=32 t=1.1s
+  STAGE_EXPORT gauss_0.25_16 amp=0.09375 nphi=32 t=1.1s
+  STAGE_EXPORT gauss_0.25_16 amp=0.109375 nphi=32 t=1.1s
+  STAGE_EXPORT gauss_0.25_16 amp=0.125 nphi=32 t=1.2s
+  STAGE_EXPORT gauss_0.25_16 amp=0.140625 nphi=32 t=1.2s
+  STAGE_EXPORT gauss_0.25_16 amp=0.15625 nphi=32 t=1.3s
+  STAGE_EXPORT gauss_0.25_16 amp=0.171875 nphi=32 t=1.3s
+  STAGE_EXPORT gauss_0.25_16 amp=0.1875 nphi=32 t=1.4s
+  STAGE_EXPORT gauss_0.25_16 amp=0.203125 nphi=32 t=1.4s
+  STAGE_EXPORT gauss_0.25_16 amp=0.21875 nphi=32 t=1.4s
+  STAGE_EXPORT gauss_0.25_16 amp=0.234375 nphi=32 t=1.5s
+  STAGE_EXPORT gauss_0.25_16 amp=0.25 nphi=32 t=0.0s
+EXPORT gauss_0.25_16 nphi=32 cache_hit=True cache_written=False stages=16 t_case=1.8s t_export=19.7s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 ok
+  STAGE_EXPORT gauss_0.25_24 amp=0.015625 nphi=32 t=1.5s
+  STAGE_EXPORT gauss_0.25_24 amp=0.03125 nphi=32 t=1.7s
+  STAGE_EXPORT gauss_0.25_24 amp=0.046875 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.25_24 amp=0.0625 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.25_24 amp=0.078125 nphi=32 t=1.7s
+  STAGE_EXPORT gauss_0.25_24 amp=0.09375 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.25_24 amp=0.109375 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.25_24 amp=0.125 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.25_24 amp=0.140625 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.25_24 amp=0.15625 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.25_24 amp=0.171875 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.25_24 amp=0.1875 nphi=32 t=2.0s
+  STAGE_EXPORT gauss_0.25_24 amp=0.203125 nphi=32 t=2.0s
+  STAGE_EXPORT gauss_0.25_24 amp=0.21875 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.25_24 amp=0.234375 nphi=32 t=2.2s
+  STAGE_EXPORT gauss_0.25_24 amp=0.25 nphi=32 t=0.0s
+EXPORT gauss_0.25_24 nphi=32 cache_hit=True cache_written=False stages=16 t_case=2.1s t_export=30.2s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24 ok
+  STAGE_EXPORT gauss_0.25_32 amp=0.015625 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.25_32 amp=0.03125 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.25_32 amp=0.046875 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.25_32 amp=0.0625 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.25_32 amp=0.078125 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.25_32 amp=0.09375 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.25_32 amp=0.109375 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.25_32 amp=0.125 nphi=32 t=2.9s
+  STAGE_EXPORT gauss_0.25_32 amp=0.140625 nphi=32 t=2.9s
+  STAGE_EXPORT gauss_0.25_32 amp=0.15625 nphi=32 t=3.0s
+  STAGE_EXPORT gauss_0.25_32 amp=0.171875 nphi=32 t=3.0s
+  STAGE_EXPORT gauss_0.25_32 amp=0.1875 nphi=32 t=3.2s
+  STAGE_EXPORT gauss_0.25_32 amp=0.203125 nphi=32 t=3.1s
+  STAGE_EXPORT gauss_0.25_32 amp=0.21875 nphi=32 t=3.1s
+  STAGE_EXPORT gauss_0.25_32 amp=0.234375 nphi=32 t=3.2s
+  STAGE_EXPORT gauss_0.25_32 amp=0.25 nphi=32 t=0.0s
+EXPORT gauss_0.25_32 nphi=32 cache_hit=False cache_written=True stages=16 t_case=28.2s t_export=71.3s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32 ok
+  STAGE_EXPORT gauss_0.5_16 amp=0.015625 nphi=32 t=0.9s
+  STAGE_EXPORT gauss_0.5_16 amp=0.03125 nphi=32 t=0.9s
+  STAGE_EXPORT gauss_0.5_16 amp=0.046875 nphi=32 t=1.0s
+  STAGE_EXPORT gauss_0.5_16 amp=0.0625 nphi=32 t=1.0s
+  STAGE_EXPORT gauss_0.5_16 amp=0.078125 nphi=32 t=1.1s
+  STAGE_EXPORT gauss_0.5_16 amp=0.09375 nphi=32 t=1.2s
+  STAGE_EXPORT gauss_0.5_16 amp=0.109375 nphi=32 t=1.1s
+  STAGE_EXPORT gauss_0.5_16 amp=0.125 nphi=32 t=1.2s
+  STAGE_EXPORT gauss_0.5_16 amp=0.140625 nphi=32 t=1.3s
+  STAGE_EXPORT gauss_0.5_16 amp=0.15625 nphi=32 t=1.2s
+  STAGE_EXPORT gauss_0.5_16 amp=0.171875 nphi=32 t=1.3s
+  STAGE_EXPORT gauss_0.5_16 amp=0.1875 nphi=32 t=1.4s
+  STAGE_EXPORT gauss_0.5_16 amp=0.203125 nphi=32 t=1.4s
+  STAGE_EXPORT gauss_0.5_16 amp=0.21875 nphi=32 t=1.4s
+  STAGE_EXPORT gauss_0.5_16 amp=0.234375 nphi=32 t=1.5s
+  STAGE_EXPORT gauss_0.5_16 amp=0.25 nphi=32 t=1.6s
+  STAGE_EXPORT gauss_0.5_16 amp=0.265625 nphi=32 t=1.6s
+  STAGE_EXPORT gauss_0.5_16 amp=0.28125 nphi=32 t=1.6s
+  STAGE_EXPORT gauss_0.5_16 amp=0.296875 nphi=32 t=1.7s
+  STAGE_EXPORT gauss_0.5_16 amp=0.3125 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.5_16 amp=0.328125 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.5_16 amp=0.34375 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.5_16 amp=0.359375 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.5_16 amp=0.375 nphi=32 t=2.1s
+  STAGE_EXPORT gauss_0.5_16 amp=0.390625 nphi=32 t=2.1s
+  STAGE_EXPORT gauss_0.5_16 amp=0.40625 nphi=32 t=2.1s
+  STAGE_EXPORT gauss_0.5_16 amp=0.421875 nphi=32 t=2.2s
+  STAGE_EXPORT gauss_0.5_16 amp=0.4375 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_16 amp=0.453125 nphi=32 t=2.4s
+  STAGE_EXPORT gauss_0.5_16 amp=0.46875 nphi=32 t=2.4s
+  STAGE_EXPORT gauss_0.5_16 amp=0.484375 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.5_16 amp=0.5 nphi=32 t=0.0s
+EXPORT gauss_0.5_16 nphi=32 cache_hit=False cache_written=False stages=32 t_case=8.4s t_export=58.3s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_16 ok
+  STAGE_EXPORT gauss_0.5_24 amp=0.015625 nphi=32 t=1.5s
+  STAGE_EXPORT gauss_0.5_24 amp=0.03125 nphi=32 t=1.5s
+  STAGE_EXPORT gauss_0.5_24 amp=0.046875 nphi=32 t=1.6s
+  STAGE_EXPORT gauss_0.5_24 amp=0.0625 nphi=32 t=1.6s
+  STAGE_EXPORT gauss_0.5_24 amp=0.078125 nphi=32 t=1.7s
+  STAGE_EXPORT gauss_0.5_24 amp=0.09375 nphi=32 t=1.7s
+  STAGE_EXPORT gauss_0.5_24 amp=0.109375 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.5_24 amp=0.125 nphi=32 t=1.8s
+  STAGE_EXPORT gauss_0.5_24 amp=0.140625 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.5_24 amp=0.15625 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.5_24 amp=0.171875 nphi=32 t=1.9s
+  STAGE_EXPORT gauss_0.5_24 amp=0.1875 nphi=32 t=2.0s
+  STAGE_EXPORT gauss_0.5_24 amp=0.203125 nphi=32 t=2.0s
+  STAGE_EXPORT gauss_0.5_24 amp=0.21875 nphi=32 t=2.1s
+  STAGE_EXPORT gauss_0.5_24 amp=0.234375 nphi=32 t=2.1s
+  STAGE_EXPORT gauss_0.5_24 amp=0.25 nphi=32 t=2.2s
+  STAGE_EXPORT gauss_0.5_24 amp=0.265625 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_24 amp=0.28125 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_24 amp=0.296875 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_24 amp=0.3125 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_24 amp=0.328125 nphi=32 t=2.4s
+  STAGE_EXPORT gauss_0.5_24 amp=0.34375 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.5_24 amp=0.359375 nphi=32 t=2.6s
+  STAGE_EXPORT gauss_0.5_24 amp=0.375 nphi=32 t=2.6s
+  STAGE_EXPORT gauss_0.5_24 amp=0.390625 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.5_24 amp=0.40625 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.5_24 amp=0.421875 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.5_24 amp=0.4375 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.5_24 amp=0.453125 nphi=32 t=2.9s
+  STAGE_EXPORT gauss_0.5_24 amp=0.46875 nphi=32 t=3.0s
+  STAGE_EXPORT gauss_0.5_24 amp=0.484375 nphi=32 t=3.2s
+  STAGE_EXPORT gauss_0.5_24 amp=0.5 nphi=32 t=0.0s
+EXPORT gauss_0.5_24 nphi=32 cache_hit=True cache_written=False stages=32 t_case=3.0s t_export=71.8s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_24 ok
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.015625 nphi=48 t=2.6s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.03125 nphi=48 t=2.6s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.046875 nphi=48 t=2.8s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.0625 nphi=48 t=2.8s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.078125 nphi=48 t=3.0s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.09375 nphi=48 t=3.1s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.109375 nphi=48 t=3.2s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.125 nphi=48 t=3.4s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.140625 nphi=48 t=3.4s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.15625 nphi=48 t=3.6s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.171875 nphi=48 t=3.7s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.1875 nphi=48 t=3.8s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.203125 nphi=48 t=3.9s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.21875 nphi=48 t=4.1s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.234375 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.25_16 amp=0.25 nphi=48 t=0.0s
+EXPORT gauss_ch_0.25_16 nphi=48 cache_hit=True cache_written=False stages=16 t_case=4.2s t_export=54.5s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_16 ok
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.015625 nphi=48 t=3.3s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.03125 nphi=48 t=3.2s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.046875 nphi=48 t=3.4s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.0625 nphi=48 t=3.5s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.078125 nphi=48 t=3.7s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.09375 nphi=48 t=3.9s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.109375 nphi=48 t=3.9s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.125 nphi=48 t=4.0s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.140625 nphi=48 t=4.1s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.15625 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.171875 nphi=48 t=4.5s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.1875 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.203125 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.21875 nphi=48 t=4.9s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.234375 nphi=48 t=4.9s
+  STAGE_EXPORT gauss_ch_0.25_24 amp=0.25 nphi=48 t=0.0s
+EXPORT gauss_ch_0.25_24 nphi=48 cache_hit=True cache_written=False stages=16 t_case=4.7s t_export=65.8s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_24 ok
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.015625 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.03125 nphi=48 t=4.3s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.046875 nphi=48 t=4.5s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.0625 nphi=48 t=4.6s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.078125 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.09375 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.109375 nphi=48 t=4.9s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.125 nphi=48 t=5.2s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.140625 nphi=48 t=5.2s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.15625 nphi=48 t=5.4s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.171875 nphi=48 t=5.4s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.1875 nphi=48 t=5.5s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.203125 nphi=48 t=5.7s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.21875 nphi=48 t=5.8s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.234375 nphi=48 t=5.8s
+  STAGE_EXPORT gauss_ch_0.25_32 amp=0.25 nphi=48 t=0.0s
+EXPORT gauss_ch_0.25_32 nphi=48 cache_hit=False cache_written=True stages=16 t_case=43.2s t_export=119.2s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_32
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_32 ok
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.015625 nphi=48 t=2.5s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.03125 nphi=48 t=2.7s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.046875 nphi=48 t=3.0s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.0625 nphi=48 t=3.0s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.078125 nphi=48 t=3.1s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.09375 nphi=48 t=3.2s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.109375 nphi=48 t=3.3s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.125 nphi=48 t=3.6s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.140625 nphi=48 t=3.8s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.15625 nphi=48 t=3.5s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.171875 nphi=48 t=3.6s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.1875 nphi=48 t=3.9s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.203125 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.21875 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.234375 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.25 nphi=48 t=4.5s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.265625 nphi=48 t=4.8s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.28125 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.296875 nphi=48 t=4.9s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.3125 nphi=48 t=5.1s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.328125 nphi=48 t=5.2s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.34375 nphi=48 t=5.2s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.359375 nphi=48 t=5.7s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.375 nphi=48 t=5.9s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.390625 nphi=48 t=6.3s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.40625 nphi=48 t=6.3s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.421875 nphi=48 t=6.5s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.4375 nphi=48 t=6.7s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.453125 nphi=48 t=7.0s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.46875 nphi=48 t=7.1s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.484375 nphi=48 t=7.5s
+  STAGE_EXPORT gauss_ch_0.5_16 amp=0.5 nphi=48 t=0.0s
+EXPORT gauss_ch_0.5_16 nphi=48 cache_hit=False cache_written=False stages=32 t_case=15.7s t_export=160.8s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_16 ok
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.015625 nphi=48 t=3.2s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.03125 nphi=48 t=3.3s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.046875 nphi=48 t=3.5s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.0625 nphi=48 t=3.6s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.078125 nphi=48 t=3.7s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.09375 nphi=48 t=3.8s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.109375 nphi=48 t=4.1s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.125 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.140625 nphi=48 t=4.0s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.15625 nphi=48 t=4.2s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.171875 nphi=48 t=4.5s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.1875 nphi=48 t=4.5s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.203125 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.21875 nphi=48 t=4.9s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.234375 nphi=48 t=5.0s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.25 nphi=48 t=5.1s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.265625 nphi=48 t=5.3s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.28125 nphi=48 t=5.4s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.296875 nphi=48 t=5.4s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.3125 nphi=48 t=5.9s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.328125 nphi=48 t=6.1s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.34375 nphi=48 t=6.2s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.359375 nphi=48 t=6.4s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.375 nphi=48 t=6.7s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.390625 nphi=48 t=6.7s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.40625 nphi=48 t=6.9s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.421875 nphi=48 t=7.1s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.4375 nphi=48 t=7.3s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.453125 nphi=48 t=7.6s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.46875 nphi=48 t=7.9s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.484375 nphi=48 t=8.0s
+  STAGE_EXPORT gauss_ch_0.5_24 amp=0.5 nphi=48 t=0.0s
+EXPORT gauss_ch_0.5_24 nphi=48 cache_hit=True cache_written=False stages=32 t_case=8.0s t_export=172.9s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_24 ok
+  STAGE_EXPORT control2d_0.25_16 amp=0.015625 nphi=24 t=0.1s
+  STAGE_EXPORT control2d_0.25_16 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.0625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.078125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.09375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.109375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.140625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.15625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.171875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.1875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_16 amp=0.203125 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_16 amp=0.21875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_16 amp=0.234375 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_16 amp=0.25 nphi=24 t=0.0s
+EXPORT control2d_0.25_16 nphi=24 cache_hit=False cache_written=False stages=16 t_case=3.6s t_export=6.9s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_16 ok
+  STAGE_EXPORT control2d_0.25_24 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.0625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.078125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.09375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.109375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.25_24 amp=0.125 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.140625 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.15625 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.171875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.1875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.203125 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.21875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.234375 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.25_24 amp=0.25 nphi=24 t=0.0s
+EXPORT control2d_0.25_24 nphi=24 cache_hit=False cache_written=True stages=16 t_case=8.4s t_export=12.1s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24 ok
+  STAGE_EXPORT control2d_0.5_16 amp=0.015625 nphi=24 t=0.1s
+  STAGE_EXPORT control2d_0.5_16 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.0625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.078125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.09375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.109375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.140625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.15625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.171875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.1875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_16 amp=0.203125 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_16 amp=0.21875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_16 amp=0.234375 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_16 amp=0.25 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_16 amp=0.265625 nphi=32 t=0.6s
+  STAGE_EXPORT control2d_0.5_16 amp=0.28125 nphi=32 t=0.6s
+  STAGE_EXPORT control2d_0.5_16 amp=0.296875 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_16 amp=0.3125 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_16 amp=0.328125 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_16 amp=0.34375 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_16 amp=0.359375 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_16 amp=0.375 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_16 amp=0.390625 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_16 amp=0.40625 nphi=32 t=0.9s
+  STAGE_EXPORT control2d_0.5_16 amp=0.421875 nphi=32 t=0.9s
+  STAGE_EXPORT control2d_0.5_16 amp=0.4375 nphi=32 t=0.9s
+  STAGE_EXPORT control2d_0.5_16 amp=0.453125 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_16 amp=0.46875 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_16 amp=0.484375 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_16 amp=0.5 nphi=32 t=0.0s
+EXPORT control2d_0.5_16 nphi=32 cache_hit=True cache_written=False stages=32 t_case=1.0s t_export=16.8s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_16 ok
+  STAGE_EXPORT control2d_0.5_24 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.0625 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.078125 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.09375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.109375 nphi=24 t=0.2s
+  STAGE_EXPORT control2d_0.5_24 amp=0.125 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.140625 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.15625 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.171875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.1875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.203125 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.21875 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.234375 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.25 nphi=24 t=0.3s
+  STAGE_EXPORT control2d_0.5_24 amp=0.265625 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_24 amp=0.28125 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_24 amp=0.296875 nphi=32 t=0.7s
+  STAGE_EXPORT control2d_0.5_24 amp=0.3125 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_24 amp=0.328125 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_24 amp=0.34375 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_24 amp=0.359375 nphi=32 t=0.8s
+  STAGE_EXPORT control2d_0.5_24 amp=0.375 nphi=32 t=0.9s
+  STAGE_EXPORT control2d_0.5_24 amp=0.390625 nphi=32 t=0.9s
+  STAGE_EXPORT control2d_0.5_24 amp=0.40625 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_24 amp=0.421875 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_24 amp=0.4375 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_24 amp=0.453125 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_24 amp=0.46875 nphi=32 t=1.0s
+  STAGE_EXPORT control2d_0.5_24 amp=0.484375 nphi=32 t=1.1s
+  STAGE_EXPORT control2d_0.5_24 amp=0.5 nphi=32 t=0.0s
+EXPORT control2d_0.5_24 nphi=32 cache_hit=True cache_written=False stages=32 t_case=1.0s t_export=18.1s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_24 ok
+  STAGE_EXPORT generic3d_1_16 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_1_16 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_1_16 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_1_16 amp=0.0625 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.078125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.09375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.109375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.140625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.15625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.171875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.1875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.203125 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.21875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_16 amp=0.234375 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_16 amp=0.25 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_16 amp=0.265625 nphi=32 t=1.2s
+  STAGE_EXPORT generic3d_1_16 amp=0.28125 nphi=32 t=1.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.296875 nphi=32 t=1.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.3125 nphi=32 t=1.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.328125 nphi=32 t=1.5s
+  STAGE_EXPORT generic3d_1_16 amp=0.34375 nphi=32 t=1.6s
+  STAGE_EXPORT generic3d_1_16 amp=0.359375 nphi=32 t=1.6s
+  STAGE_EXPORT generic3d_1_16 amp=0.375 nphi=32 t=1.7s
+  STAGE_EXPORT generic3d_1_16 amp=0.390625 nphi=32 t=1.8s
+  STAGE_EXPORT generic3d_1_16 amp=0.40625 nphi=32 t=1.9s
+  STAGE_EXPORT generic3d_1_16 amp=0.421875 nphi=32 t=2.0s
+  STAGE_EXPORT generic3d_1_16 amp=0.4375 nphi=32 t=2.1s
+  STAGE_EXPORT generic3d_1_16 amp=0.453125 nphi=32 t=2.2s
+  STAGE_EXPORT generic3d_1_16 amp=0.46875 nphi=32 t=2.3s
+  STAGE_EXPORT generic3d_1_16 amp=0.484375 nphi=32 t=2.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.5 nphi=32 t=2.5s
+  STAGE_EXPORT generic3d_1_16 amp=0.53125 nphi=32 t=2.8s
+  STAGE_EXPORT generic3d_1_16 amp=0.5625 nphi=32 t=3.0s
+  STAGE_EXPORT generic3d_1_16 amp=0.59375 nphi=32 t=3.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.625 nphi=32 t=3.7s
+  STAGE_EXPORT generic3d_1_16 amp=0.65625 nphi=32 t=4.0s
+  STAGE_EXPORT generic3d_1_16 amp=0.6875 nphi=32 t=4.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.71875 nphi=32 t=4.9s
+  STAGE_EXPORT generic3d_1_16 amp=0.75 nphi=32 t=5.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.78125 nphi=32 t=5.9s
+  STAGE_EXPORT generic3d_1_16 amp=0.8125 nphi=32 t=6.4s
+  STAGE_EXPORT generic3d_1_16 amp=0.84375 nphi=32 t=7.1s
+  STAGE_EXPORT generic3d_1_16 amp=0.875 nphi=32 t=7.8s
+  STAGE_EXPORT generic3d_1_16 amp=0.90625 nphi=32 t=8.7s
+  STAGE_EXPORT generic3d_1_16 amp=0.9375 nphi=32 t=9.5s
+  STAGE_EXPORT generic3d_1_16 amp=0.96875 nphi=32 t=10.5s
+  STAGE_EXPORT generic3d_1_16 amp=1 nphi=32 t=0.0s
+EXPORT generic3d_1_16 nphi=32 cache_hit=False cache_written=False stages=48 t_case=18.6s t_export=140.5s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_16 ok
+  STAGE_EXPORT generic3d_1_20 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_1_20 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_1_20 amp=0.046875 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.0625 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.078125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.09375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.109375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.125 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_20 amp=0.140625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_20 amp=0.15625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_20 amp=0.171875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_20 amp=0.1875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.203125 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.21875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.234375 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.25 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.265625 nphi=32 t=1.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.28125 nphi=32 t=1.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.296875 nphi=32 t=1.4s
+  STAGE_EXPORT generic3d_1_20 amp=0.3125 nphi=32 t=1.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.328125 nphi=32 t=1.6s
+  STAGE_EXPORT generic3d_1_20 amp=0.34375 nphi=32 t=1.7s
+  STAGE_EXPORT generic3d_1_20 amp=0.359375 nphi=32 t=1.7s
+  STAGE_EXPORT generic3d_1_20 amp=0.375 nphi=32 t=1.8s
+  STAGE_EXPORT generic3d_1_20 amp=0.390625 nphi=32 t=1.9s
+  STAGE_EXPORT generic3d_1_20 amp=0.40625 nphi=32 t=2.0s
+  STAGE_EXPORT generic3d_1_20 amp=0.421875 nphi=32 t=2.1s
+  STAGE_EXPORT generic3d_1_20 amp=0.4375 nphi=32 t=2.2s
+  STAGE_EXPORT generic3d_1_20 amp=0.453125 nphi=32 t=2.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.46875 nphi=32 t=2.4s
+  STAGE_EXPORT generic3d_1_20 amp=0.484375 nphi=32 t=2.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.5 nphi=32 t=2.6s
+  STAGE_EXPORT generic3d_1_20 amp=0.53125 nphi=32 t=3.0s
+  STAGE_EXPORT generic3d_1_20 amp=0.5625 nphi=32 t=3.2s
+  STAGE_EXPORT generic3d_1_20 amp=0.59375 nphi=32 t=3.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.625 nphi=32 t=3.9s
+  STAGE_EXPORT generic3d_1_20 amp=0.65625 nphi=32 t=4.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.6875 nphi=32 t=4.7s
+  STAGE_EXPORT generic3d_1_20 amp=0.71875 nphi=32 t=5.1s
+  STAGE_EXPORT generic3d_1_20 amp=0.75 nphi=32 t=5.9s
+  STAGE_EXPORT generic3d_1_20 amp=0.78125 nphi=32 t=6.3s
+  STAGE_EXPORT generic3d_1_20 amp=0.8125 nphi=32 t=6.8s
+  STAGE_EXPORT generic3d_1_20 amp=0.84375 nphi=32 t=7.5s
+  STAGE_EXPORT generic3d_1_20 amp=0.875 nphi=32 t=8.2s
+  STAGE_EXPORT generic3d_1_20 amp=0.90625 nphi=32 t=9.0s
+  STAGE_EXPORT generic3d_1_20 amp=0.9375 nphi=32 t=9.9s
+  STAGE_EXPORT generic3d_1_20 amp=0.96875 nphi=32 t=10.9s
+  STAGE_EXPORT generic3d_1_20 amp=1 nphi=32 t=0.0s
+EXPORT generic3d_1_20 nphi=32 cache_hit=False cache_written=True stages=48 t_case=22.5s t_export=151.0s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_20
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_20 ok
+  STAGE_EXPORT generic3d_1_24 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_1_24 amp=0.03125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_24 amp=0.046875 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_24 amp=0.0625 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_24 amp=0.078125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_1_24 amp=0.09375 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.109375 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.125 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.140625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.15625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.171875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.1875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.203125 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.21875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.234375 nphi=24 t=0.6s
+  STAGE_EXPORT generic3d_1_24 amp=0.25 nphi=24 t=0.6s
+  STAGE_EXPORT generic3d_1_24 amp=0.265625 nphi=32 t=1.1s
+  STAGE_EXPORT generic3d_1_24 amp=0.28125 nphi=32 t=1.2s
+  STAGE_EXPORT generic3d_1_24 amp=0.296875 nphi=32 t=1.2s
+  STAGE_EXPORT generic3d_1_24 amp=0.3125 nphi=32 t=1.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.328125 nphi=32 t=1.6s
+  STAGE_EXPORT generic3d_1_24 amp=0.34375 nphi=32 t=1.7s
+  STAGE_EXPORT generic3d_1_24 amp=0.359375 nphi=32 t=1.7s
+  STAGE_EXPORT generic3d_1_24 amp=0.375 nphi=32 t=1.8s
+  STAGE_EXPORT generic3d_1_24 amp=0.390625 nphi=32 t=1.9s
+  STAGE_EXPORT generic3d_1_24 amp=0.40625 nphi=32 t=2.0s
+  STAGE_EXPORT generic3d_1_24 amp=0.421875 nphi=32 t=2.1s
+  STAGE_EXPORT generic3d_1_24 amp=0.4375 nphi=32 t=2.2s
+  STAGE_EXPORT generic3d_1_24 amp=0.453125 nphi=32 t=2.3s
+  STAGE_EXPORT generic3d_1_24 amp=0.46875 nphi=32 t=2.4s
+  STAGE_EXPORT generic3d_1_24 amp=0.484375 nphi=32 t=2.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.5 nphi=32 t=2.6s
+  STAGE_EXPORT generic3d_1_24 amp=0.53125 nphi=32 t=2.9s
+  STAGE_EXPORT generic3d_1_24 amp=0.5625 nphi=32 t=3.2s
+  STAGE_EXPORT generic3d_1_24 amp=0.59375 nphi=32 t=3.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.625 nphi=32 t=3.8s
+  STAGE_EXPORT generic3d_1_24 amp=0.65625 nphi=32 t=4.2s
+  STAGE_EXPORT generic3d_1_24 amp=0.6875 nphi=32 t=4.7s
+  STAGE_EXPORT generic3d_1_24 amp=0.71875 nphi=32 t=5.1s
+  STAGE_EXPORT generic3d_1_24 amp=0.75 nphi=32 t=5.5s
+  STAGE_EXPORT generic3d_1_24 amp=0.78125 nphi=32 t=6.1s
+  STAGE_EXPORT generic3d_1_24 amp=0.8125 nphi=32 t=6.6s
+  STAGE_EXPORT generic3d_1_24 amp=0.84375 nphi=32 t=7.3s
+  STAGE_EXPORT generic3d_1_24 amp=0.875 nphi=32 t=8.1s
+  STAGE_EXPORT generic3d_1_24 amp=0.90625 nphi=32 t=8.9s
+  STAGE_EXPORT generic3d_1_24 amp=0.9375 nphi=32 t=9.0s
+  STAGE_EXPORT generic3d_1_24 amp=0.96875 nphi=32 t=10.7s
+  STAGE_EXPORT generic3d_1_24 amp=1 nphi=32 t=0.0s
+EXPORT generic3d_1_24 nphi=32 cache_hit=False cache_written=True stages=48 t_case=28.5s t_export=154.5s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_24
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_24 ok
+  STAGE_EXPORT generic3d_0.25_16 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.0625 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.078125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.09375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.109375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.125 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.140625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.15625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.171875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.1875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.203125 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.21875 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.234375 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_0.25_16 amp=0.25 nphi=24 t=0.0s
+EXPORT generic3d_0.25_16 nphi=24 cache_hit=False cache_written=False stages=16 t_case=3.6s t_export=9.0s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.25_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.25_16 ok
+  STAGE_EXPORT generic3d_0.5_16 amp=0.015625 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.03125 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.046875 nphi=24 t=0.2s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.0625 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.078125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.09375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.109375 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.125 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.140625 nphi=24 t=0.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.15625 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.171875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.1875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.203125 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.21875 nphi=24 t=0.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.234375 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.25 nphi=24 t=0.5s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.265625 nphi=32 t=1.2s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.28125 nphi=32 t=1.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.296875 nphi=32 t=1.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.3125 nphi=32 t=1.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.328125 nphi=32 t=1.5s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.34375 nphi=32 t=1.6s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.359375 nphi=32 t=1.6s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.375 nphi=32 t=1.7s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.390625 nphi=32 t=1.9s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.40625 nphi=32 t=1.9s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.421875 nphi=32 t=2.0s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.4375 nphi=32 t=2.1s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.453125 nphi=32 t=2.2s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.46875 nphi=32 t=2.3s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.484375 nphi=32 t=2.4s
+  STAGE_EXPORT generic3d_0.5_16 amp=0.5 nphi=32 t=0.0s
+EXPORT generic3d_0.5_16 nphi=32 cache_hit=False cache_written=False stages=32 t_case=7.0s t_export=38.6s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.5_16
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.5_16 ok
+SOLUTION control2d_0.25_16_i1o4 status=converged its=2 r_F=1.532e-15 r_out=1.729e-16 path=0.25 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.25_16_i1o4
+SOLUTION control2d_0.5_16_i1o4 status=converged its=2 r_F=2.980e-15 r_out=3.208e-16 path=0.25->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.5_16_i1o4
+SOLUTION control2d_1_16_i1o4 status=converged its=2 r_F=5.430e-15 r_out=5.602e-16 path=0.25->0.5->1 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_1_16_i1o4
+SOLUTION gauss_0.25_16_i1o4 status=converged its=10 r_F=8.631e-14 r_out=4.300e-16 path=0.25 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.25_16_i1o4
+SOLUTION gauss_0.5_16_i1o4 status=converged its=7 r_F=5.431e-15 r_out=4.700e-16 path=0.25->0.5(fail)->0.375->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.5_16_i1o4
+SOLUTION gauss_1_16_i1o4 status=stagnation its=5 r_F=5.800e-01 r_out=4.513e-03 path=0.25->0.5(fail)->0.375->0.5->1(fail)->0.75->1(fail)->0.875(fail)->0.8125->0.875(fail)->1(final) -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_1_16_i1o4
+SOLUTION gauss_ch_0.25_16_i1o4 status=converged its=7 r_F=3.407e-15 r_out=3.391e-16 path=0.25(fail)->0.125->0.25 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_0.25_16_i1o4
+SOLUTION gauss_ch_0.5_16_i1o4 status=converged its=7 r_F=7.014e-15 r_out=7.410e-16 path=0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_0.5_16_i1o4
+SOLUTION gauss_ch_1_16_i1o4 status=stagnation its=4 r_F=1.409e+00 r_out=1.626e-11 path=0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5->1(fail)->0.75(fail)->0.625->0.75->1(fail) -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_1_16_i1o4
+SOLUTION generic3d_0.25_16_i1o4 status=converged its=7 r_F=2.688e-15 r_out=2.259e-16 path=0.25 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_0.25_16_i1o4
+SOLUTION generic3d_0.5_16_i1o4 status=converged its=7 r_F=5.521e-15 r_out=5.350e-16 path=0.25->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_0.5_16_i1o4
+SOLUTION generic3d_1_16_i1o4 status=converged its=9 r_F=1.580e-14 r_out=1.286e-15 path=0.25->0.5->1(fail)->0.75->1(fail)->0.875->1(fail)->0.9375->1 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_1_16_i1o4
+CROSSCHECK gauss_0.25_16 nphi=32 mean(v1_faceavg)=0.999999999997086 t=1.8s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_16
+CROSSCHECK gauss_0.25_24 nphi=32 mean(v1_faceavg)=0.999999999996440 t=1.7s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_24
+CROSSCHECK gauss_0.25_32 nphi=32 mean(v1_faceavg)=0.999999999996440 t=1.8s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_32
+[2026-10-06T21:25:57Z] job=sf33-export finished exit=0

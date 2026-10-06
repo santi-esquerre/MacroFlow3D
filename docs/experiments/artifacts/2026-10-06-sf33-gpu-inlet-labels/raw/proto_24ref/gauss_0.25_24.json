@@ -1,0 +1,549 @@
+{
+ "N": 24,
+ "case_dir": "/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24",
+ "case_line": "CASE field=gauss eps=0.25 N=24 cand=i1o4 | r_F=5.147e-15 its=7 | e_v=1.808e-03 e_psi=2.886e-02 e_i=(1.479e-03,8.368e-04) e_div=2.689e-03 min_c=5.050e-01 p0.1=5.400e-01 p1=6.267e-01 p5=7.301e-01 p50=9.821e-01 | t=20.3 | e_psi1=2.886e-02 e_psi2=2.106e-02",
+ "ceiling_line": "CASE field=gauss eps=0.25 N=24 cand=oracle_fd4 | r_F=nan its=nan | e_v=7.699e-04 e_psi=9.791e-18 e_i=(2.450e-04,1.520e-04) e_div=3.344e-03 min_c=5.052e-01 p0.1=5.402e-01 p1=6.268e-01 p5=7.301e-01 p50=9.822e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=9.791e-18",
+ "command": "/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.25_24_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto_24ref/gauss_0.25_24.json",
+ "continuation": {
+  "bisections": 1,
+  "eps_accepted": 0.25,
+  "floor_reached": false,
+  "path": "0.25(fail)->0.125->0.25",
+  "seconds": 20.330346138,
+  "stages": [
+   {
+    "accepted": false,
+    "eps": 0.25,
+    "final_attempt": false,
+    "from_eps": 0.0,
+    "newton": {
+     "gmres": {
+      "failures": 1,
+      "its_max": 6000,
+      "its_median": 2700.0,
+      "its_total": 11787,
+      "rel_max": 1.3053683252518274e-07,
+      "steps": 4
+     },
+     "hist_r_F": [
+      3.5705785851969827,
+      0.5360213275997737,
+      0.5127978714639313,
+      0.4548236602546489
+     ],
+     "hist_r_out": [
+      0.065297154864423,
+      0.0109856941762664,
+      0.010741734566281821,
+      0.010090513188180567
+     ],
+     "its": 4,
+     "linear_iterations_max": 6000,
+     "linear_iterations_total": 11787,
+     "r_F": 0.4548236602546489,
+     "r_out": 0.010090513188180567,
+     "seconds": 17.056202257,
+     "status": "linear_failure",
+     "steps": [
+      {
+       "dx_l2": 3.3117076789090767,
+       "dx_max": 0.0898925984913324,
+       "lambda": 1.0,
+       "lin_cycles": 4,
+       "lin_its": 387,
+       "lin_rec": 8.728988304751807e-14,
+       "lin_rel": 8.730233114140436e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.5360213275997737,
+       "r_out": 0.0109856941762664,
+       "t_fact": 0.001473981,
+       "t_lin": 0.552847857
+      },
+      {
+       "dx_l2": 29.687153171205303,
+       "dx_max": 1.955573079541947,
+       "lambda": 0.015625,
+       "lin_cycles": 30,
+       "lin_its": 3000,
+       "lin_rec": 6.537437788201507e-13,
+       "lin_rel": 6.623297136496842e-13,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.5127978714639313,
+       "r_out": 0.010741734566281821,
+       "t_fact": 0.001250589,
+       "t_lin": 4.350689442
+      },
+      {
+       "dx_l2": 9.071701028730324,
+       "dx_max": 0.3540393278549999,
+       "lambda": 0.0625,
+       "lin_cycles": 24,
+       "lin_its": 2400,
+       "lin_rec": 4.8672799480678e-13,
+       "lin_rel": 4.876929475305362e-13,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.4548236602546489,
+       "r_out": 0.010090513188180567,
+       "t_fact": 0.00132817,
+       "t_lin": 3.468824269
+      },
+      {
+       "dx_l2": 0.0,
+       "dx_max": 0.0,
+       "lambda": 0.0,
+       "lin_cycles": 60,
+       "lin_its": 6000,
+       "lin_rec": 1.3053683227066895e-07,
+       "lin_rel": 1.3053683252518274e-07,
+       "lin_status": "max_iterations",
+       "prec_singular_modes": 0,
+       "r_F": 0.0,
+       "r_out": 0.0,
+       "t_fact": 0.001276451,
+       "t_lin": 8.677357373
+      }
+     ]
+    },
+    "warm_start": false
+   },
+   {
+    "accepted": true,
+    "eps": 0.125,
+    "final_attempt": false,
+    "from_eps": 0.0,
+    "newton": {
+     "gmres": {
+      "failures": 0,
+      "its_max": 161,
+      "its_median": 82.0,
+      "its_total": 608,
+      "rel_max": 8.990230754914699e-14,
+      "steps": 7
+     },
+     "hist_r_F": [
+      1.7450058549098653,
+      0.10338032595916365,
+      0.058974838850347044,
+      0.028996997509292303,
+      0.0011379185500531796,
+      1.714838193870328e-05,
+      4.894810920393153e-10,
+      2.496743566419083e-15
+     ],
+     "hist_r_out": [
+      0.03286334358593014,
+      0.0032510891452633695,
+      0.0016211212263663,
+      7.82957597544179e-05,
+      7.921226006753245e-07,
+      1.549036404278761e-08,
+      2.3838582449385974e-13,
+      1.6016855071350237e-16
+     ],
+     "its": 7,
+     "linear_iterations_max": 161,
+     "linear_iterations_total": 608,
+     "r_F": 2.496743566419083e-15,
+     "r_out": 1.6016855071350237e-16,
+     "seconds": 0.779307527,
+     "status": "converged",
+     "steps": [
+      {
+       "dx_l2": 1.7586814703364229,
+       "dx_max": 0.04565087562765657,
+       "lambda": 1.0,
+       "lin_cycles": 2,
+       "lin_its": 161,
+       "lin_rec": 8.989049706369105e-14,
+       "lin_rel": 8.990230754914699e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.10338032595916365,
+       "r_out": 0.0032510891452633695,
+       "t_fact": 0.001334721,
+       "t_lin": 0.210207307
+      },
+      {
+       "dx_l2": 1.0028963796892139,
+       "dx_max": 0.03107959848475736,
+       "lambda": 0.5,
+       "lin_cycles": 1,
+       "lin_its": 59,
+       "lin_rec": 6.20185101433955e-14,
+       "lin_rel": 7.446166007733646e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.058974838850347044,
+       "r_out": 0.0016211212263663,
+       "t_fact": 0.001256987,
+       "t_lin": 0.065623233
+      },
+      {
+       "dx_l2": 0.4850679808515773,
+       "dx_max": 0.016141382358518173,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 59,
+       "lin_rec": 6.952794370616496e-14,
+       "lin_rel": 7.82392106930837e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.028996997509292303,
+       "r_out": 7.82957597544179e-05,
+       "t_fact": 0.001277241,
+       "t_lin": 0.0657345
+      },
+      {
+       "dx_l2": 0.03468194370780885,
+       "dx_max": 0.0014185261112773498,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 82,
+       "lin_rec": 7.093743350130279e-14,
+       "lin_rel": 7.282509422894834e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.0011379185500531796,
+       "r_out": 7.921226006753245e-07,
+       "t_fact": 0.001268476,
+       "t_lin": 0.10658145
+      },
+      {
+       "dx_l2": 0.004734600620863799,
+       "dx_max": 0.00024491488961010915,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 83,
+       "lin_rec": 8.404840450918504e-14,
+       "lin_rel": 8.793390321475237e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 1.714838193870328e-05,
+       "r_out": 1.549036404278761e-08,
+       "t_fact": 0.001279832,
+       "t_lin": 0.108290572
+      },
+      {
+       "dx_l2": 1.584977965203811e-05,
+       "dx_max": 1.0860414297365967e-06,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 82,
+       "lin_rec": 8.672660591578435e-14,
+       "lin_rel": 8.83987738170134e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 4.894810920393153e-10,
+       "r_out": 2.3838582449385974e-13,
+       "t_fact": 0.001265358,
+       "t_lin": 0.106394798
+      },
+      {
+       "dx_l2": 1.6959797120274618e-09,
+       "dx_max": 1.462394186918786e-10,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 82,
+       "lin_rec": 8.47167434880336e-14,
+       "lin_rel": 8.989689683113851e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 2.496743566419083e-15,
+       "r_out": 1.6016855071350237e-16,
+       "t_fact": 0.001268895,
+       "t_lin": 0.106340033
+      }
+     ]
+    },
+    "warm_start": false
+   },
+   {
+    "accepted": true,
+    "eps": 0.25,
+    "final_attempt": false,
+    "from_eps": 0.125,
+    "newton": {
+     "gmres": {
+      "failures": 0,
+      "its_max": 300,
+      "its_median": 286.0,
+      "its_total": 1742,
+      "rel_max": 1.492933718261534e-13,
+      "steps": 7
+     },
+     "hist_r_F": [
+      1.7845242729351576,
+      0.07863377729994381,
+      0.04874512578446448,
+      0.020678062713005218,
+      0.0018016960608524158,
+      2.797932947345011e-05,
+      2.0217440740984872e-08,
+      5.147444916820904e-15
+     ],
+     "hist_r_out": [
+      0.03334357603629346,
+      0.0031544334102656846,
+      0.00155233624839571,
+      9.738884782817869e-05,
+      2.2004754967634164e-06,
+      8.32572188722637e-08,
+      2.046948250219645e-11,
+      2.8379228724946715e-16
+     ],
+     "its": 7,
+     "linear_iterations_max": 300,
+     "linear_iterations_total": 1742,
+     "r_F": 5.147444916820904e-15,
+     "r_out": 2.8379228724946715e-16,
+     "seconds": 2.488525516,
+     "status": "converged",
+     "steps": [
+      {
+       "dx_l2": 1.8292847139584787,
+       "dx_max": 0.04620186376725104,
+       "lambda": 1.0,
+       "lin_cycles": 2,
+       "lin_its": 199,
+       "lin_rec": 9.553649998870296e-14,
+       "lin_rel": 9.55381113250466e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.07863377729994381,
+       "r_out": 0.0031544334102656846,
+       "t_fact": 0.001303429,
+       "t_lin": 0.283760158
+      },
+      {
+       "dx_l2": 1.1949035722380184,
+       "dx_max": 0.03488024454775411,
+       "lambda": 0.5,
+       "lin_cycles": 2,
+       "lin_its": 161,
+       "lin_rec": 9.785236000686136e-14,
+       "lin_rel": 9.946297964874247e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.04874512578446448,
+       "r_out": 0.00155233624839571,
+       "t_fact": 0.001260759,
+       "t_lin": 0.213118645
+      },
+      {
+       "dx_l2": 0.5185169374095862,
+       "dx_max": 0.015567997822252025,
+       "lambda": 1.0,
+       "lin_cycles": 2,
+       "lin_its": 197,
+       "lin_rec": 9.555697090536303e-14,
+       "lin_rel": 9.640529884152679e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.020678062713005218,
+       "r_out": 9.738884782817869e-05,
+       "t_fact": 0.001275799,
+       "t_lin": 0.281694903
+      },
+      {
+       "dx_l2": 0.05482172239277124,
+       "dx_max": 0.003022423171542957,
+       "lambda": 1.0,
+       "lin_cycles": 3,
+       "lin_its": 286,
+       "lin_rec": 9.487313201890046e-14,
+       "lin_rel": 9.493991613589464e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.0018016960608524158,
+       "r_out": 2.2004754967634164e-06,
+       "t_fact": 0.001277221,
+       "t_lin": 0.403507581
+      },
+      {
+       "dx_l2": 0.008797290018270114,
+       "dx_max": 0.0004231147047451227,
+       "lambda": 1.0,
+       "lin_cycles": 3,
+       "lin_its": 300,
+       "lin_rec": 1.439613935530705e-13,
+       "lin_rel": 1.4414292973313761e-13,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 2.797932947345011e-05,
+       "r_out": 8.32572188722637e-08,
+       "t_fact": 0.00128374,
+       "t_lin": 0.432582363
+      },
+      {
+       "dx_l2": 0.00012876248856272127,
+       "dx_max": 1.0354074626090487e-05,
+       "lambda": 1.0,
+       "lin_cycles": 3,
+       "lin_its": 300,
+       "lin_rec": 1.4902108053900206e-13,
+       "lin_rel": 1.492933718261534e-13,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 2.0217440740984872e-08,
+       "r_out": 2.046948250219645e-11,
+       "t_fact": 0.001283562,
+       "t_lin": 0.433262364
+      },
+      {
+       "dx_l2": 5.638667516670691e-08,
+       "dx_max": 3.6283989522441754e-09,
+       "lambda": 1.0,
+       "lin_cycles": 3,
+       "lin_its": 299,
+       "lin_rec": 9.417650320276159e-14,
+       "lin_rel": 9.427718752752651e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 5.147444916820904e-15,
+       "r_out": 2.8379228724946715e-16,
+       "t_fact": 0.001286931,
+       "t_lin": 0.430478992
+      }
+     ]
+    },
+    "warm_start": true
+   }
+  ],
+  "status": "converged"
+ },
+ "eps": 0.25,
+ "exit_code": 0,
+ "extra": {
+  "inlet_j0_cand": 0.002626140958267464,
+  "inlet_j0_oracle": 0.0005595317412965269,
+  "inlet_j1_cand": 0.02955285761067493,
+  "inlet_j1_oracle": 0.029552691845785187,
+  "inlet_j1_vD_cand": 0.0024387143574697533,
+  "inlet_j1_vD_oracle": 0.0001667616903876646,
+  "min_c_over_vrms": 0.49491082047369217,
+  "min_vD_over_vrms": 0.4948168317450996,
+  "outlet_cand": 2.8379228724946715e-16,
+  "outlet_oracle": 0.0006805287028921215
+ },
+ "field": "gauss",
+ "fielddiff": {
+  "max_abs_diff_u1": 4.996003610813204e-16,
+  "max_abs_diff_u2": 3.469446951953614e-16,
+  "max_abs_u_proto": [
+   0.09580524906076454,
+   0.06857167333641455
+  ],
+  "max_rel_diff_joint": 5.214749358507993e-15,
+  "max_rel_diff_u1": 5.214749358507993e-15,
+  "max_rel_diff_u2": 5.0595920781055035e-15,
+  "proto_its": 7,
+  "proto_path": "0.25(fail)->0.125->0.25",
+  "proto_r_F": 6.363046618084612e-15,
+  "proto_status": "converged",
+  "solution_dir": "/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.25_24_i1o4"
+ },
+ "memory": {
+  "free_min": 33539227648,
+  "peak_device_bytes": 550502400,
+  "total_device": 34089730048,
+  "workspaces_bytes": 33454751
+ },
+ "metrics": {
+  "i1o4": {
+   "a_psi1": 0.0009041473679729033,
+   "a_psi2": 0.00046962370743017104,
+   "den_psi": [
+    0.03132810841741334,
+    0.022299363496594338
+   ],
+   "e_div": 0.0026893602778596468,
+   "e_i1": 0.0014786898460458977,
+   "e_i2": 0.0008368034213197792,
+   "e_psi": 0.028860579640689197,
+   "e_psi1": 0.028860579640689197,
+   "e_psi2": 0.021059960186840945,
+   "e_v": 0.0018080867183720315,
+   "min_c": 0.5050497887910281,
+   "nonfinite": 0,
+   "p0.1": 0.5399739107817642,
+   "p1": 0.6267144324097634,
+   "p5": 0.7300744036796007,
+   "p50": 0.9821088365027221,
+   "vD_min": 0.5049538745665645,
+   "vD_p": [
+    0.5398317929179325,
+    0.6264368527683655,
+    0.7298655549305331,
+    0.9823373053019386
+   ],
+   "v_rms": 1.0204864551307076
+  },
+  "oracle_fd4": {
+   "a_psi1": 0.0,
+   "a_psi2": 2.1833509767807143e-19,
+   "den_psi": [
+    0.03132810841741334,
+    0.022299363496594338
+   ],
+   "e_div": 0.0033442780269803854,
+   "e_i1": 0.0002449545966865064,
+   "e_i2": 0.00015200250431324734,
+   "e_psi": 9.791091019769088e-18,
+   "e_psi1": 0.0,
+   "e_psi2": 9.791091019769088e-18,
+   "e_v": 0.0007698514967569057,
+   "min_c": 0.5051551442625463,
+   "nonfinite": 0,
+   "p0.1": 0.5401579095164458,
+   "p1": 0.6268185332782673,
+   "p5": 0.7300684699035083,
+   "p50": 0.9822159137147971,
+   "vD_min": 0.5049538745665645,
+   "vD_p": [
+    0.5398317929179325,
+    0.6264368527683655,
+    0.7298655549305331,
+    0.9823373053019386
+   ],
+   "v_rms": 1.0204864551307076
+  }
+ },
+ "mode": "proto",
+ "phases": [
+  {
+   "free_after": 33585364992,
+   "free_before": 33585364992,
+   "phase": "load",
+   "seconds": 0.006502234
+  },
+  {
+   "free_after": 33539227648,
+   "free_before": 33585364992,
+   "phase": "prepare",
+   "seconds": 0.046091975
+  },
+  {
+   "free_after": 33539227648,
+   "free_before": 33539227648,
+   "phase": "solve",
+   "seconds": 20.331166776
+  },
+  {
+   "free_after": 33539227648,
+   "free_before": 33539227648,
+   "phase": "metrics",
+   "seconds": 0.003784932
+  }
+ ],
+ "status": "converged",
+ "timing": {
+  "load": 0.006502234,
+  "metrics": 0.003784932,
+  "prepare": 0.046091975,
+  "solve": 20.331166776,
+  "total": 20.393506378
+ }
+}

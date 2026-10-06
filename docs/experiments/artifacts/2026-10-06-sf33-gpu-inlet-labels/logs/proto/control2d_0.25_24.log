@@ -1,0 +1,24 @@
+command: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.25_24.json
+CASE_DIR /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24 field=control2d eps=0.25 N=24 nphi=24 Q0=1.00000000000044 inlet_vmin=7.509402e-01 v_rms=1.0138590990782 cache_hit=0 stage_amplitudes=16 target_eps=0.25
+SETUP grad_lnk=analytic (prototype export: complex-step gradient of the analytic ln k at the vertices)
+SOLVER N=24 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=40 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09
+STAGE field=control2d eps=0.25 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON control2d:0.25:24:i1o4 it= 0 r_F=2.642e+00 r_out=8.376e-02
+    LINEAR gmres+P-A its=39 rel=7.9e-14 t=0.04s cycles=1 reorth=28 rec=7.9e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON control2d:0.25:24:i1o4 it= 1 r_F=4.939e-13 r_out=2.400e-14 lambda=1 |dx|max=4.94e-02 lin=gmres+P-A rel=7.9e-14 lits=39 t_lin=0.0s |dx|2=2.48e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=62 rel=7.7e-14 t=0.08s cycles=1 reorth=62 rec=7.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON control2d:0.25:24:i1o4 it= 2 r_F=2.790e-15 r_out=2.085e-16 lambda=1 |dx|max=4.47e-14 lin=gmres+P-A rel=7.7e-14 lits=62 t_lin=0.1s |dx|2=1.53e-12 t_fact=0.00s
+  STAGE_END field=control2d eps=0.25 N=24 cand=i1o4 status=converged its=2 r_F=2.790e-15 r_out=2.085e-16 -> accepted
+PATH field=control2d eps=0.25 N=24 cand=i1o4 continuation path: 0.25
+GMRES_STATS field=control2d eps=0.25 N=24 stage_eps=0.25 status=converged newton_its=2 steps=2 its_max=62 its_median=50.5 its_total=101 rel_max=7.9e-14 linear_failures=0
+CASE field=control2d eps=0.25 N=24 cand=i1o4 | r_F=2.790e-15 its=2 | e_v=5.247e-04 e_psi=2.667e-03 e_i=(4.026e-04,4.380e-13) e_div=6.894e-14 min_c=7.390e-01 p0.1=7.390e-01 p1=7.521e-01 p5=7.926e-01 p50=1.001e+00 | t=0.1 | e_psi1=2.667e-03 e_psi2=5.261e-12
+CASE field=control2d eps=0.25 N=24 cand=oracle_fd4 | r_F=nan its=nan | e_v=3.153e-04 e_psi=3.287e-18 e_i=(3.208e-04,4.371e-28) e_div=3.344e-15 min_c=7.390e-01 p0.1=7.390e-01 p1=7.532e-01 p5=7.927e-01 p50=1.001e+00 | t=0.0 | e_psi1=3.287e-18 e_psi2=0.000e+00
+EXTRA field=control2d eps=0.25 N=24 cand=i1o4 status=converged r_F=2.790e-15 r_out=2.085e-16 | outlet c_perp-vperp_in: cand=2.085e-16 oracle_fd=9.935e-04 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.085e-03 oracle_fd=8.643e-04; j=1 cand=4.770e-02 oracle_fd=4.772e-02; j=1 vs vD(j=1) cand=2.504e-04 oracle_fd=2.233e-04 | min|c|/v_rms=0.7289 min|vD|/v_rms=0.7289 e_i1=4.026e-04 e_i2=4.380e-13 | t=0.1s | a_psi1=5.746e-05 a_psi2=1.134e-13 (FD order 4)
+HISTORY field=control2d eps=0.25 N=24 cand=i1o4 r_F: 2.64e+00 4.94e-13 2.79e-15
+HISTORY field=control2d eps=0.25 N=24 cand=i1o4 r_out: 8.38e-02 2.40e-14 2.09e-16
+HISTORY_FULL field=control2d eps=0.25 N=24 cand=i1o4 r_F: 2.64168570596633900e+00 4.93930166207641599e-13 2.78972034955523809e-15
+HISTORY_FULL field=control2d eps=0.25 N=24 cand=i1o4 r_out: 8.37590718534578643e-02 2.40000353451307563e-14 2.08526115857383402e-16
+TIMING load=0.007s metrics=0.001s prepare=0.051s solve=0.122s total=0.181s
+MEMORY peak_device_bytes=550502400 free_min=33539227648 total_device=34089730048 workspaces_bytes=33454751 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.25_24.json
+STATUS converged

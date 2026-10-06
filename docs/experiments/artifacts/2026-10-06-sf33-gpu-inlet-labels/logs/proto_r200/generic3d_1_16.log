@@ -1,0 +1,165 @@
+command: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_1_16_i1o4 --restart 200 --max-inner 12000 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto_r200/generic3d_1_16.json
+CASE_DIR /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_16 field=generic3d eps=1 N=16 nphi=32 Q0=1.00000000000136 inlet_vmin=2.341302e-01 v_rms=1.44911633371529 cache_hit=0 stage_amplitudes=48 target_eps=1
+SETUP grad_lnk=analytic (prototype export: complex-step gradient of the analytic ln k at the vertices)
+SOLVER N=16 eps=1 cand=i1o4 newton_tol=1.0e-13 max_newton=40 lin_tol=1.0e-12 restart=200 max_inner=12000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09
+STAGE field=generic3d eps=0.25 N=16 cand=i1o4 (from eps=0, u=0)
+  NEWTON generic3d:0.25:16:i1o4 it= 0 r_F=2.213e+00 r_out=1.339e-01
+    LINEAR gmres+P-A its=99 rel=9.8e-14 t=0.14s cycles=1 reorth=91 rec=9.7e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 1 r_F=1.294e-01 r_out=2.169e-02 lambda=1 |dx|max=6.67e-02 lin=gmres+P-A rel=9.8e-14 lits=99 t_lin=0.1s |dx|2=1.98e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=69 rel=7.0e-14 t=0.06s cycles=1 reorth=69 rec=6.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 2 r_F=5.421e-02 r_out=1.604e-03 lambda=1 |dx|max=3.54e-02 lin=gmres+P-A rel=7.0e-14 lits=69 t_lin=0.1s |dx|2=1.08e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=84 rel=8.6e-14 t=0.08s cycles=1 reorth=82 rec=8.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 3 r_F=5.271e-03 r_out=9.585e-05 lambda=1 |dx|max=7.81e-03 lin=gmres+P-A rel=8.6e-14 lits=84 t_lin=0.1s |dx|2=1.99e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=85 rel=8.2e-14 t=0.08s cycles=1 reorth=84 rec=7.6e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 4 r_F=2.618e-04 r_out=3.155e-06 lambda=1 |dx|max=1.52e-03 lin=gmres+P-A rel=8.2e-14 lits=85 t_lin=0.1s |dx|2=3.24e-02 t_fact=0.00s
+    LINEAR gmres+P-A its=83 rel=7.7e-14 t=0.08s cycles=1 reorth=83 rec=7.7e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 5 r_F=7.638e-08 r_out=8.942e-10 lambda=1 |dx|max=2.99e-05 lin=gmres+P-A rel=7.7e-14 lits=83 t_lin=0.1s |dx|2=4.77e-04 t_fact=0.00s
+    LINEAR gmres+P-A its=84 rel=9.6e-14 t=0.08s cycles=1 reorth=83 rec=8.9e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 6 r_F=1.510e-13 r_out=1.621e-15 lambda=1 |dx|max=5.31e-08 lin=gmres+P-A rel=9.6e-14 lits=84 t_lin=0.1s |dx|2=7.11e-07 t_fact=0.00s
+    LINEAR gmres+P-A its=81 rel=7.9e-14 t=0.07s cycles=1 reorth=81 rec=7.8e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.25:16:i1o4 it= 7 r_F=2.142e-15 r_out=1.872e-16 lambda=1 |dx|max=1.15e-14 lin=gmres+P-A rel=7.9e-14 lits=81 t_lin=0.1s |dx|2=1.59e-13 t_fact=0.00s
+  STAGE_END field=generic3d eps=0.25 N=16 cand=i1o4 status=converged its=7 r_F=2.142e-15 r_out=1.872e-16 -> accepted
+STAGE field=generic3d eps=0.5 N=16 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON generic3d:0.5:16:i1o4 it= 0 r_F=2.016e+00 r_out=1.734e-01
+    LINEAR gmres+P-A its=131 rel=9.3e-14 t=0.17s cycles=1 reorth=115 rec=9.3e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 1 r_F=1.345e-01 r_out=3.111e-02 lambda=1 |dx|max=7.75e-02 lin=gmres+P-A rel=9.3e-14 lits=131 t_lin=0.2s |dx|2=2.17e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=179 rel=1.0e-13 t=0.31s cycles=1 reorth=178 rec=9.3e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 2 r_F=1.046e-01 r_out=6.462e-03 lambda=1 |dx|max=5.06e-02 lin=gmres+P-A rel=1.0e-13 lits=179 t_lin=0.3s |dx|2=1.70e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=356 rel=9.1e-14 t=0.62s cycles=2 reorth=347 rec=9.1e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 3 r_F=1.514e-02 r_out=4.175e-04 lambda=1 |dx|max=1.34e-02 lin=gmres+P-A rel=9.1e-14 lits=356 t_lin=0.6s |dx|2=3.48e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=355 rel=9.0e-14 t=0.62s cycles=2 reorth=350 rec=8.9e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 4 r_F=2.438e-03 r_out=6.564e-05 lambda=1 |dx|max=8.42e-03 lin=gmres+P-A rel=9.0e-14 lits=355 t_lin=0.6s |dx|2=1.29e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=346 rel=9.4e-14 t=0.59s cycles=2 reorth=338 rec=9.4e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 5 r_F=7.287e-06 r_out=1.768e-07 lambda=1 |dx|max=2.31e-04 lin=gmres+P-A rel=9.4e-14 lits=346 t_lin=0.6s |dx|2=5.35e-03 t_fact=0.00s
+    LINEAR gmres+P-A its=354 rel=8.8e-14 t=0.62s cycles=2 reorth=348 rec=8.7e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 6 r_F=2.280e-09 r_out=6.862e-11 lambda=1 |dx|max=7.98e-06 lin=gmres+P-A rel=8.8e-14 lits=354 t_lin=0.6s |dx|2=7.78e-05 t_fact=0.00s
+    LINEAR gmres+P-A its=350 rel=9.8e-14 t=0.60s cycles=2 reorth=342 rec=9.8e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.5:16:i1o4 it= 7 r_F=4.436e-15 r_out=3.977e-16 lambda=1 |dx|max=1.35e-09 lin=gmres+P-A rel=9.8e-14 lits=350 t_lin=0.6s |dx|2=1.13e-08 t_fact=0.00s
+  STAGE_END field=generic3d eps=0.5 N=16 cand=i1o4 status=converged its=7 r_F=4.436e-15 r_out=3.977e-16 -> accepted
+STAGE field=generic3d eps=1 N=16 cand=i1o4 (from eps=0.5, warm start)
+  NEWTON generic3d:1:16:i1o4 it= 0 r_F=3.178e+00 r_out=4.879e-01
+    LINEAR gmres+P-A its=573 rel=9.0e-14 t=1.08s cycles=3 reorth=501 rec=9.0e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:1:16:i1o4 it= 1 r_F=5.561e-01 r_out=2.278e-01 lambda=1 |dx|max=1.84e-01 lin=gmres+P-A rel=9.0e-14 lits=573 t_lin=1.1s |dx|2=5.40e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=1000 rel=1.4e-01 t=1.92s cycles=5 reorth=916 rec=1.4e-01 status=stagnation t_fact=0.00s singular_modes=0
+  NEWTON generic3d:1:16:i1o4 it= 2 linear_failure: GMRES status=stagnation rel=1.4e-01 lits=1000 prec singular modes=0 (step not taken)
+  STAGE_END field=generic3d eps=1 N=16 cand=i1o4 status=linear_failure its=2 r_F=5.561e-01 r_out=2.278e-01 -> FAILED
+  CONTINUATION bisection 1/4: retry from eps=0.5 at eps=0.75
+STAGE field=generic3d eps=0.75 N=16 cand=i1o4 (from eps=0.5, warm start)
+  NEWTON generic3d:0.75:16:i1o4 it= 0 r_F=1.783e+00 r_out=2.331e-01
+    LINEAR gmres+P-A its=400 rel=9.2e-14 t=0.75s cycles=2 reorth=368 rec=9.2e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 1 r_F=1.823e-01 r_out=4.610e-02 lambda=1 |dx|max=9.21e-02 lin=gmres+P-A rel=9.2e-14 lits=400 t_lin=0.8s |dx|2=2.50e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=1400 rel=3.5e-13 t=2.69s cycles=7 reorth=1337 rec=3.5e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 2 r_F=1.420e-01 r_out=3.499e-02 lambda=0.25 |dx|max=1.14e-01 lin=gmres+P-A rel=3.5e-13 lits=1400 t_lin=2.7s |dx|2=2.61e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=2400 rel=3.4e-13 t=4.65s cycles=12 reorth=2261 rec=3.4e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 3 r_F=1.004e-01 r_out=1.782e-02 lambda=0.5 |dx|max=6.60e-02 lin=gmres+P-A rel=3.4e-13 lits=2400 t_lin=4.6s |dx|2=1.65e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=3400 rel=1.5e-13 t=6.53s cycles=17 reorth=3100 rec=1.5e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 4 r_F=7.001e-02 r_out=9.107e-03 lambda=0.5 |dx|max=5.22e-02 lin=gmres+P-A rel=1.5e-13 lits=3400 t_lin=6.5s |dx|2=1.09e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=9000 rel=8.0e-13 t=17.32s cycles=45 reorth=8165 rec=8.1e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 5 r_F=6.189e-02 r_out=5.304e-03 lambda=0.5 |dx|max=7.26e-02 lin=gmres+P-A rel=8.0e-13 lits=9000 t_lin=17.3s |dx|2=8.95e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=9000 rel=8.2e-13 t=17.26s cycles=45 reorth=8069 rec=8.2e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 6 r_F=1.365e-02 r_out=5.391e-04 lambda=1 |dx|max=1.34e-02 lin=gmres+P-A rel=8.2e-13 lits=9000 t_lin=17.3s |dx|2=2.81e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=3000 rel=2.1e-02 t=5.73s cycles=15 reorth=2695 rec=2.1e-02 status=stagnation t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 7 linear_failure: GMRES status=stagnation rel=2.1e-02 lits=3000 prec singular modes=0 (step not taken)
+  STAGE_END field=generic3d eps=0.75 N=16 cand=i1o4 status=linear_failure its=7 r_F=1.365e-02 r_out=5.391e-04 -> FAILED
+  CONTINUATION bisection 2/4: retry from eps=0.5 at eps=0.625
+STAGE field=generic3d eps=0.625 N=16 cand=i1o4 (from eps=0.5, warm start)
+  NEWTON generic3d:0.625:16:i1o4 it= 0 r_F=9.392e-01 r_out=1.118e-01
+    LINEAR gmres+P-A its=386 rel=9.4e-14 t=0.71s cycles=2 reorth=375 rec=9.4e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 1 r_F=6.147e-02 r_out=1.012e-02 lambda=1 |dx|max=4.80e-02 lin=gmres+P-A rel=9.4e-14 lits=386 t_lin=0.7s |dx|2=1.36e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=600 rel=3.2e-13 t=1.17s cycles=3 reorth=586 rec=3.2e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 2 r_F=3.776e-02 r_out=2.070e-03 lambda=1 |dx|max=2.86e-02 lin=gmres+P-A rel=3.2e-13 lits=600 t_lin=1.2s |dx|2=7.65e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=1000 rel=2.3e-13 t=1.91s cycles=5 reorth=943 rec=2.3e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 3 r_F=5.129e-03 r_out=2.248e-04 lambda=1 |dx|max=1.02e-02 lin=gmres+P-A rel=2.3e-13 lits=1000 t_lin=1.9s |dx|2=1.37e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=1169 rel=9.9e-14 t=2.23s cycles=6 reorth=1115 rec=9.8e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 4 r_F=2.350e-04 r_out=7.390e-06 lambda=1 |dx|max=2.67e-03 lin=gmres+P-A rel=9.9e-14 lits=1169 t_lin=2.2s |dx|2=2.74e-02 t_fact=0.00s
+    LINEAR gmres+P-A its=1000 rel=6.3e-13 t=1.90s cycles=5 reorth=960 rec=6.3e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 5 r_F=1.258e-06 r_out=4.093e-08 lambda=1 |dx|max=1.21e-04 lin=gmres+P-A rel=6.3e-13 lits=1000 t_lin=1.9s |dx|2=1.63e-03 t_fact=0.00s
+    LINEAR gmres+P-A its=1161 rel=9.8e-14 t=2.22s cycles=6 reorth=1111 rec=9.8e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 6 r_F=1.046e-11 r_out=2.179e-13 lambda=1 |dx|max=4.66e-07 lin=gmres+P-A rel=9.8e-14 lits=1161 t_lin=2.2s |dx|2=4.37e-06 t_fact=0.00s
+    LINEAR gmres+P-A its=1000 rel=8.6e-13 t=1.90s cycles=5 reorth=961 rec=8.6e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.625:16:i1o4 it= 7 r_F=5.995e-15 r_out=6.105e-16 lambda=1 |dx|max=1.03e-11 lin=gmres+P-A rel=8.6e-13 lits=1000 t_lin=1.9s |dx|2=1.07e-10 t_fact=0.00s
+  STAGE_END field=generic3d eps=0.625 N=16 cand=i1o4 status=converged its=7 r_F=5.995e-15 r_out=6.105e-16 -> accepted
+STAGE field=generic3d eps=0.75 N=16 cand=i1o4 (from eps=0.625, warm start)
+  NEWTON generic3d:0.75:16:i1o4 it= 0 r_F=8.851e-01 r_out=1.286e-01
+    LINEAR gmres+P-A its=1193 rel=9.8e-14 t=2.30s cycles=6 reorth=1105 rec=9.8e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 1 r_F=8.231e-02 r_out=1.285e-02 lambda=1 |dx|max=5.16e-02 lin=gmres+P-A rel=9.8e-14 lits=1193 t_lin=2.3s |dx|2=1.45e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=3400 rel=2.9e-13 t=6.53s cycles=17 reorth=3111 rec=2.9e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 2 r_F=5.285e-02 r_out=6.628e-03 lambda=0.5 |dx|max=5.19e-02 lin=gmres+P-A rel=2.9e-13 lits=3400 t_lin=6.5s |dx|2=9.31e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=5600 rel=7.0e-13 t=10.76s cycles=28 reorth=5065 rec=7.0e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 3 r_F=3.056e-02 r_out=3.490e-03 lambda=0.5 |dx|max=4.27e-02 lin=gmres+P-A rel=7.0e-13 lits=5600 t_lin=10.8s |dx|2=6.35e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=12000 rel=2.0e-12 t=23.01s cycles=60 reorth=10841 rec=2.0e-12 status=max_iterations t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 4 linear_failure: GMRES status=max_iterations rel=2.0e-12 lits=12000 prec singular modes=0 (step not taken)
+  STAGE_END field=generic3d eps=0.75 N=16 cand=i1o4 status=linear_failure its=4 r_F=3.056e-02 r_out=3.490e-03 -> FAILED
+  CONTINUATION bisection 3/4: retry from eps=0.625 at eps=0.6875
+STAGE field=generic3d eps=0.6875 N=16 cand=i1o4 (from eps=0.625, warm start)
+  NEWTON generic3d:0.6875:16:i1o4 it= 0 r_F=4.555e-01 r_out=6.323e-02
+    LINEAR gmres+P-A its=1155 rel=9.6e-14 t=2.13s cycles=6 reorth=1096 rec=9.6e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.6875:16:i1o4 it= 1 r_F=2.525e-02 r_out=3.248e-03 lambda=1 |dx|max=2.84e-02 lin=gmres+P-A rel=9.6e-14 lits=1155 t_lin=2.1s |dx|2=7.84e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=2200 rel=9.2e-13 t=4.24s cycles=11 reorth=2072 rec=9.2e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.6875:16:i1o4 it= 2 r_F=1.295e-02 r_out=5.188e-04 lambda=1 |dx|max=1.22e-02 lin=gmres+P-A rel=9.2e-13 lits=2200 t_lin=4.2s |dx|2=3.09e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=2800 rel=3.8e-13 t=5.30s cycles=14 reorth=2584 rec=3.8e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.6875:16:i1o4 it= 3 r_F=3.975e-04 r_out=1.106e-05 lambda=1 |dx|max=2.27e-03 lin=gmres+P-A rel=3.8e-13 lits=2800 t_lin=5.3s |dx|2=2.82e-02 t_fact=0.00s
+    LINEAR gmres+P-A its=3200 rel=4.2e-13 t=6.20s cycles=16 reorth=2961 rec=4.2e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.6875:16:i1o4 it= 4 r_F=1.068e-05 r_out=2.085e-07 lambda=1 |dx|max=4.89e-04 lin=gmres+P-A rel=4.2e-13 lits=3200 t_lin=6.2s |dx|2=4.21e-03 t_fact=0.00s
+    LINEAR gmres+P-A its=3000 rel=1.0e-12 t=5.81s cycles=15 reorth=2779 rec=1.0e-12 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.6875:16:i1o4 it= 5 r_F=3.387e-10 r_out=1.084e-11 lambda=1 |dx|max=2.66e-06 lin=gmres+P-A rel=1.0e-12 lits=3000 t_lin=5.8s |dx|2=2.71e-05 t_fact=0.00s
+    LINEAR gmres+P-A its=3200 rel=2.3e-13 t=6.11s cycles=16 reorth=2958 rec=2.3e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.6875:16:i1o4 it= 6 r_F=6.646e-15 r_out=6.678e-16 lambda=1 |dx|max=3.19e-10 lin=gmres+P-A rel=2.3e-13 lits=3200 t_lin=6.1s |dx|2=3.72e-09 t_fact=0.00s
+  STAGE_END field=generic3d eps=0.6875 N=16 cand=i1o4 status=converged its=6 r_F=6.646e-15 r_out=6.678e-16 -> accepted
+STAGE field=generic3d eps=0.75 N=16 cand=i1o4 (from eps=0.6875, warm start)
+  NEWTON generic3d:0.75:16:i1o4 it= 0 r_F=4.429e-01 r_out=6.754e-02
+    LINEAR gmres+P-A its=2600 rel=9.0e-13 t=5.02s cycles=13 reorth=2373 rec=9.0e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 1 r_F=3.172e-02 r_out=3.721e-03 lambda=1 |dx|max=3.09e-02 lin=gmres+P-A rel=9.0e-13 lits=2600 t_lin=5.0s |dx|2=8.10e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=1400 rel=1.2e-02 t=2.68s cycles=7 reorth=1254 rec=1.2e-02 status=stagnation t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 2 linear_failure: GMRES status=stagnation rel=1.2e-02 lits=1400 prec singular modes=0 (step not taken)
+  STAGE_END field=generic3d eps=0.75 N=16 cand=i1o4 status=linear_failure its=2 r_F=3.172e-02 r_out=3.721e-03 -> FAILED
+  CONTINUATION bisection 4/4: retry from eps=0.6875 at eps=0.71875
+STAGE field=generic3d eps=0.71875 N=16 cand=i1o4 (from eps=0.6875, warm start)
+  NEWTON generic3d:0.71875:16:i1o4 it= 0 r_F=2.248e-01 r_out=3.351e-02
+    LINEAR gmres+P-A its=2600 rel=3.0e-13 t=4.98s cycles=13 reorth=2375 rec=3.0e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.71875:16:i1o4 it= 1 r_F=8.415e-03 r_out=9.854e-04 lambda=1 |dx|max=1.75e-02 lin=gmres+P-A rel=3.0e-13 lits=2600 t_lin=5.0s |dx|2=4.31e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=6800 rel=7.0e-13 t=13.11s cycles=34 reorth=6171 rec=7.0e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.71875:16:i1o4 it= 2 r_F=2.334e-03 r_out=7.062e-05 lambda=1 |dx|max=3.86e-03 lin=gmres+P-A rel=7.0e-13 lits=6800 t_lin=13.1s |dx|2=1.13e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=8800 rel=6.4e-13 t=16.88s cycles=44 reorth=7953 rec=6.4e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.71875:16:i1o4 it= 3 r_F=8.252e-06 r_out=1.279e-07 lambda=1 |dx|max=2.70e-04 lin=gmres+P-A rel=6.4e-13 lits=8800 t_lin=16.9s |dx|2=3.42e-03 t_fact=0.00s
+    LINEAR gmres+P-A its=10000 rel=9.4e-13 t=18.97s cycles=50 reorth=9048 rec=9.4e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.71875:16:i1o4 it= 4 r_F=1.486e-09 r_out=2.542e-11 lambda=1 |dx|max=4.23e-06 lin=gmres+P-A rel=9.4e-13 lits=10000 t_lin=19.0s |dx|2=4.05e-05 t_fact=0.00s
+    LINEAR gmres+P-A its=9400 rel=6.9e-13 t=18.09s cycles=47 reorth=8499 rec=6.9e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.71875:16:i1o4 it= 5 r_F=6.950e-15 r_out=6.920e-16 lambda=1 |dx|max=3.80e-10 lin=gmres+P-A rel=6.9e-13 lits=9400 t_lin=18.1s |dx|2=4.25e-09 t_fact=0.00s
+  STAGE_END field=generic3d eps=0.71875 N=16 cand=i1o4 status=converged its=5 r_F=6.950e-15 r_out=6.920e-16 -> accepted
+STAGE field=generic3d eps=0.75 N=16 cand=i1o4 (from eps=0.71875, warm start)
+  NEWTON generic3d:0.75:16:i1o4 it= 0 r_F=2.218e-01 r_out=3.460e-02
+    LINEAR gmres+P-A its=7000 rel=9.9e-13 t=13.43s cycles=35 reorth=6301 rec=9.9e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 1 r_F=9.663e-03 r_out=1.069e-03 lambda=1 |dx|max=1.82e-02 lin=gmres+P-A rel=9.9e-13 lits=7000 t_lin=13.4s |dx|2=4.40e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=1800 rel=3.6e-03 t=3.47s cycles=9 reorth=1626 rec=3.6e-03 status=stagnation t_fact=0.00s singular_modes=0
+  NEWTON generic3d:0.75:16:i1o4 it= 2 linear_failure: GMRES status=stagnation rel=3.6e-03 lits=1800 prec singular modes=0 (step not taken)
+  STAGE_END field=generic3d eps=0.75 N=16 cand=i1o4 status=linear_failure its=2 r_F=9.663e-03 r_out=1.069e-03 -> FAILED
+  CONTINUATION gave up after 4 bisections; reporting the failed state at eps=0.75
+STAGE field=generic3d eps=1 N=16 cand=i1o4 (final attempt from eps=0.71875)
+  NEWTON generic3d:1:16:i1o4 it= 0 r_F=1.746e+00 r_out=3.203e-01
+    LINEAR gmres+P-A its=5800 rel=1.5e-07 t=11.10s cycles=29 reorth=5076 rec=1.5e-07 status=stagnation t_fact=0.00s singular_modes=0
+  NEWTON generic3d:1:16:i1o4 it= 1 linear_failure: GMRES status=stagnation rel=1.5e-07 lits=5800 prec singular modes=0 (step not taken)
+PATH field=generic3d eps=1 N=16 cand=i1o4 continuation path: 0.25->0.5->1(fail)->0.75(fail)->0.625->0.75(fail)->0.6875->0.75(fail)->0.71875->0.75(fail)->1(final)
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.25 status=converged newton_its=7 steps=7 its_max=99 its_median=84.0 its_total=585 rel_max=9.8e-14 linear_failures=0
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.5 status=converged newton_its=7 steps=7 its_max=356 its_median=350.0 its_total=2071 rel_max=1.0e-13 linear_failures=0
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=1 status=linear_failure newton_its=2 steps=2 its_max=1000 its_median=786.5 its_total=1573 rel_max=1.4e-01 linear_failures=1
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.75 status=linear_failure newton_its=7 steps=7 its_max=9000 its_median=3000.0 its_total=28600 rel_max=2.1e-02 linear_failures=1
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.625 status=converged newton_its=7 steps=7 its_max=1169 its_median=1000.0 its_total=6316 rel_max=8.6e-13 linear_failures=0
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.75 status=linear_failure newton_its=4 steps=4 its_max=12000 its_median=4500.0 its_total=22193 rel_max=2.0e-12 linear_failures=1
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.6875 status=converged newton_its=6 steps=6 its_max=3200 its_median=2900.0 its_total=15555 rel_max=1.0e-12 linear_failures=0
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.75 status=linear_failure newton_its=2 steps=2 its_max=2600 its_median=2000.0 its_total=4000 rel_max=1.2e-02 linear_failures=1
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.71875 status=converged newton_its=5 steps=5 its_max=10000 its_median=8800.0 its_total=37600 rel_max=9.4e-13 linear_failures=0
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=0.75 status=linear_failure newton_its=2 steps=2 its_max=7000 its_median=4400.0 its_total=8800 rel_max=3.6e-03 linear_failures=1
+GMRES_STATS field=generic3d eps=1 N=16 stage_eps=1(final) status=linear_failure newton_its=1 steps=1 its_max=5800 its_median=5800.0 its_total=5800 rel_max=1.5e-07 linear_failures=1
+CASE field=generic3d eps=1 N=16 cand=i1o4 | r_F=1.746e+00 its=1 | e_v=4.098e-01 e_psi=4.584e-01 e_i=(2.566e-01,2.054e-01) e_div=1.556e-01 min_c=2.378e-01 p0.1=2.518e-01 p1=3.085e-01 p5=4.206e-01 p50=1.007e+00 | t=254.3 | e_psi1=4.482e-01 e_psi2=4.584e-01
+CASE field=generic3d eps=1 N=16 cand=oracle_fd4 | r_F=nan its=nan | e_v=1.634e-01 e_psi=2.271e-17 e_i=(4.951e-02,4.292e-02) e_div=1.258e+00 min_c=2.615e-02 p0.1=1.234e-01 p1=1.714e-01 p5=2.709e-01 p50=9.452e-01 | t=0.0 | e_psi1=1.253e-17 e_psi2=2.271e-17
+EXTRA field=generic3d eps=1 N=16 cand=i1o4 status=linear_failure r_F=1.746e+00 r_out=3.203e-01 | outlet c_perp-vperp_in: cand=3.203e-01 oracle_fd=2.423e-01 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.335e+00 oracle_fd=5.965e-02; j=1 cand=4.814e-01 oracle_fd=3.617e-01; j=1 vs vD(j=1) cand=2.875e-01 oracle_fd=1.643e-02 | min|c|/v_rms=0.1641 min|vD|/v_rms=0.0813 e_i1=2.566e-01 e_i2=2.054e-01 | t=254.3s | a_psi1=5.478e-02 a_psi2=6.999e-02 (FD order 4)
+HISTORY field=generic3d eps=1 N=16 cand=i1o4 r_F: 1.75e+00
+HISTORY field=generic3d eps=1 N=16 cand=i1o4 r_out: 3.20e-01
+HISTORY_FULL field=generic3d eps=1 N=16 cand=i1o4 r_F: 1.74570232485833410e+00
+HISTORY_FULL field=generic3d eps=1 N=16 cand=i1o4 r_out: 3.20322494706400784e-01
+FIELDDIFF max_rel_diff_u1=4.911e-01 max_rel_diff_u2=4.582e-01 max_rel_diff_joint=4.582e-01 max_abs_diff_u1=1.375e-01 max_abs_diff_u2=1.645e-01 max_abs_u_proto=(2.800e-01,3.590e-01) (rel: max|u_gpu - u_proto| / max|u_proto| over planes 0..N; joint: max abs diff / max over both fields; prototype /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_1_16_i1o4 status=converged its=9 path=0.25->0.5->1(fail)->0.75->1(fail)->0.875->1(fail)->0.9375->1 r_F=1.580e-14)
+TIMING load=0.003s metrics=0.002s prepare=0.036s solve=254.279s total=254.321s
+MEMORY peak_device_bytes=529530880 free_min=33560199168 total_device=34089730048 workspaces_bytes=16573087 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto_r200/generic3d_1_16.json
+STATUS continuation_floor

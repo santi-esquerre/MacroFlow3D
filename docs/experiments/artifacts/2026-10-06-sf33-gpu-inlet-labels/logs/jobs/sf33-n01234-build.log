@@ -1,0 +1,29 @@
+[2026-10-06T20:03:27Z] job=sf33-n01234-build session=macroflow3d-SF-33-sf33-n01234-build started
+[2026-10-06T20:03:27Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T20:03:27Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T20:03:27Z] command=cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | grep -iE 'error|warning: ' | grep -v 'CMake' | grep -i 'inlet_slab' | head -20; echo BUILD_EXIT=${PIPESTATUS[0]}; ctest --test-dir build/v100-release --output-on-failure -R inlet_slab_ 2>&1 | tail -14
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+BUILD_EXIT=0
+    Start 21: inlet_slab_contracts
+1/5 Test #21: inlet_slab_contracts .............   Passed    3.40 sec
+    Start 22: inlet_slab_jvp
+2/5 Test #22: inlet_slab_jvp ...................   Passed    3.38 sec
+    Start 23: inlet_slab_production16
+3/5 Test #23: inlet_slab_production16 ..........   Passed   11.61 sec
+    Start 24: inlet_slab_npy
+4/5 Test #24: inlet_slab_npy ...................   Passed    3.56 sec
+    Start 25: inlet_slab_newton
+5/5 Test #25: inlet_slab_newton ................   Passed   16.75 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =  38.72 sec
+[2026-10-06T20:04:14Z] job=sf33-n01234-build finished exit=0

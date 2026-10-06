@@ -1,0 +1,61 @@
+command: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_24 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.25_24.json
+CASE_DIR /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_24 field=gauss_ch eps=0.25 N=24 nphi=48 Q0=1.00000000000808 inlet_vmin=5.832088e-01 v_rms=1.02185172031718 cache_hit=1 stage_amplitudes=16 target_eps=0.25
+SETUP grad_lnk=analytic (prototype export: complex-step gradient of the analytic ln k at the vertices)
+SOLVER N=24 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=40 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss_ch:0.25:24:i1o4 it= 0 r_F=4.128e+00 r_out=1.326e-16
+    LINEAR gmres+P-A its=363 rel=9.9e-14 t=0.52s cycles=4 reorth=301 rec=9.9e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 1 r_F=7.863e-01 r_out=3.079e-16 lambda=1 |dx|max=1.11e-01 lin=gmres+P-A rel=9.9e-14 lits=363 t_lin=0.5s |dx|2=4.79e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=400 rel=1.4e-01 t=0.60s cycles=4 reorth=383 rec=1.4e-01 status=stagnation t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 2 linear_failure: GMRES status=stagnation rel=1.4e-01 lits=400 prec singular modes=0 (step not taken)
+  STAGE_END field=gauss_ch eps=0.25 N=24 cand=i1o4 status=linear_failure its=2 r_F=7.863e-01 r_out=3.079e-16 -> FAILED
+  CONTINUATION bisection 1/4: retry from eps=0 at eps=0.125
+STAGE field=gauss_ch eps=0.125 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss_ch:0.125:24:i1o4 it= 0 r_F=2.055e+00 r_out=7.457e-17
+    LINEAR gmres+P-A its=153 rel=8.5e-14 t=0.20s cycles=2 reorth=130 rec=8.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 1 r_F=1.013e-01 r_out=1.456e-16 lambda=1 |dx|max=5.70e-02 lin=gmres+P-A rel=8.5e-14 lits=153 t_lin=0.2s |dx|2=2.33e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=69 rel=9.0e-14 t=0.09s cycles=1 reorth=68 rec=7.2e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 2 r_F=5.707e-02 r_out=2.614e-16 lambda=0.5 |dx|max=3.63e-02 lin=gmres+P-A rel=9.0e-14 lits=69 t_lin=0.1s |dx|2=1.22e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=65 rel=9.8e-14 t=0.08s cycles=1 reorth=65 rec=8.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 3 r_F=2.432e-02 r_out=2.746e-16 lambda=1 |dx|max=1.71e-02 lin=gmres+P-A rel=9.8e-14 lits=65 t_lin=0.1s |dx|2=5.63e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=85 rel=9.7e-14 t=0.11s cycles=1 reorth=85 rec=9.4e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 4 r_F=2.297e-03 r_out=1.941e-16 lambda=1 |dx|max=2.04e-03 lin=gmres+P-A rel=9.7e-14 lits=85 t_lin=0.1s |dx|2=5.55e-02 t_fact=0.00s
+    LINEAR gmres+P-A its=86 rel=8.4e-14 t=0.11s cycles=1 reorth=85 rec=7.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 5 r_F=9.559e-05 r_out=1.827e-16 lambda=1 |dx|max=6.03e-04 lin=gmres+P-A rel=8.4e-14 lits=86 t_lin=0.1s |dx|2=9.75e-03 t_fact=0.00s
+    LINEAR gmres+P-A its=83 rel=8.3e-14 t=0.11s cycles=1 reorth=83 rec=8.2e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 6 r_F=1.528e-08 r_out=1.912e-16 lambda=1 |dx|max=8.59e-06 lin=gmres+P-A rel=8.3e-14 lits=83 t_lin=0.1s |dx|2=1.52e-04 t_fact=0.00s
+    LINEAR gmres+P-A its=86 rel=1.0e-13 t=0.11s cycles=1 reorth=85 rec=9.4e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.125:24:i1o4 it= 7 r_F=4.665e-15 r_out=1.923e-16 lambda=1 |dx|max=2.59e-09 lin=gmres+P-A rel=1.0e-13 lits=86 t_lin=0.1s |dx|2=4.49e-08 t_fact=0.00s
+  STAGE_END field=gauss_ch eps=0.125 N=24 cand=i1o4 status=converged its=7 r_F=4.665e-15 r_out=1.923e-16 -> accepted
+STAGE field=gauss_ch eps=0.25 N=24 cand=i1o4 (from eps=0.125, warm start)
+  NEWTON gauss_ch:0.25:24:i1o4 it= 0 r_F=2.067e+00 r_out=2.443e-16
+    LINEAR gmres+P-A its=199 rel=9.5e-14 t=0.28s cycles=2 reorth=171 rec=9.5e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 1 r_F=8.963e-02 r_out=3.934e-16 lambda=1 |dx|max=5.77e-02 lin=gmres+P-A rel=9.5e-14 lits=199 t_lin=0.3s |dx|2=2.49e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=239 rel=8.9e-14 t=0.32s cycles=3 reorth=231 rec=8.7e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 2 r_F=5.215e-02 r_out=4.283e-16 lambda=0.5 |dx|max=3.79e-02 lin=gmres+P-A rel=8.9e-14 lits=239 t_lin=0.3s |dx|2=1.33e+00 t_fact=0.00s
+    LINEAR gmres+P-A its=230 rel=9.1e-14 t=0.31s cycles=3 reorth=227 rec=9.0e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 3 r_F=2.231e-02 r_out=4.324e-16 lambda=1 |dx|max=1.78e-02 lin=gmres+P-A rel=9.1e-14 lits=230 t_lin=0.3s |dx|2=6.00e-01 t_fact=0.00s
+    LINEAR gmres+P-A its=295 rel=9.2e-14 t=0.42s cycles=3 reorth=293 rec=9.2e-14 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 4 r_F=2.034e-03 r_out=4.063e-16 lambda=1 |dx|max=3.22e-03 lin=gmres+P-A rel=9.2e-14 lits=295 t_lin=0.4s |dx|2=6.28e-02 t_fact=0.00s
+    LINEAR gmres+P-A its=300 rel=2.3e-13 t=0.43s cycles=3 reorth=298 rec=2.3e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 5 r_F=4.880e-05 r_out=4.014e-16 lambda=1 |dx|max=4.37e-04 lin=gmres+P-A rel=2.3e-13 lits=300 t_lin=0.4s |dx|2=8.92e-03 t_fact=0.00s
+    LINEAR gmres+P-A its=300 rel=1.0e-13 t=0.43s cycles=3 reorth=298 rec=1.0e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 6 r_F=2.681e-08 r_out=3.720e-16 lambda=1 |dx|max=1.51e-05 lin=gmres+P-A rel=1.0e-13 lits=300 t_lin=0.4s |dx|2=1.64e-04 t_fact=0.00s
+    LINEAR gmres+P-A its=300 rel=1.1e-13 t=0.43s cycles=3 reorth=298 rec=1.1e-13 status=converged t_fact=0.00s singular_modes=0
+  NEWTON gauss_ch:0.25:24:i1o4 it= 7 r_F=7.617e-15 r_out=4.177e-16 lambda=1 |dx|max=7.24e-09 lin=gmres+P-A rel=1.1e-13 lits=300 t_lin=0.4s |dx|2=9.06e-08 t_fact=0.00s
+  STAGE_END field=gauss_ch eps=0.25 N=24 cand=i1o4 status=converged its=7 r_F=7.617e-15 r_out=4.177e-16 -> accepted
+PATH field=gauss_ch eps=0.25 N=24 cand=i1o4 continuation path: 0.25(fail)->0.125->0.25
+GMRES_STATS field=gauss_ch eps=0.25 N=24 stage_eps=0.25 status=linear_failure newton_its=2 steps=2 its_max=400 its_median=381.5 its_total=763 rel_max=1.4e-01 linear_failures=1
+GMRES_STATS field=gauss_ch eps=0.25 N=24 stage_eps=0.125 status=converged newton_its=7 steps=7 its_max=153 its_median=85.0 its_total=627 rel_max=1.0e-13 linear_failures=0
+GMRES_STATS field=gauss_ch eps=0.25 N=24 stage_eps=0.25 status=converged newton_its=7 steps=7 its_max=300 its_median=295.0 its_total=1863 rel_max=2.3e-13 linear_failures=0
+CASE field=gauss_ch eps=0.25 N=24 cand=i1o4 | r_F=7.617e-15 its=7 | e_v=1.783e-03 e_psi=2.483e-02 e_i=(1.448e-03,8.505e-04) e_div=2.901e-03 min_c=5.556e-01 p0.1=5.881e-01 p1=6.566e-01 p5=7.302e-01 p50=9.729e-01 | t=4.6 | e_psi1=2.483e-02 e_psi2=1.503e-02
+CASE field=gauss_ch eps=0.25 N=24 cand=oracle_fd4 | r_F=nan its=nan | e_v=8.060e-04 e_psi=7.758e-18 e_i=(3.327e-04,2.617e-04) e_div=3.645e-03 min_c=5.557e-01 p0.1=5.882e-01 p1=6.567e-01 p5=7.303e-01 p50=9.732e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=7.758e-18
+EXTRA field=gauss_ch eps=0.25 N=24 cand=i1o4 status=converged r_F=7.617e-15 r_out=4.177e-16 | outlet c_perp-vperp_in: cand=4.177e-16 oracle_fd=3.001e-04 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=2.579e-03 oracle_fd=2.785e-04; j=1 cand=1.720e-02 oracle_fd=1.710e-02; j=1 vs vD(j=1) cand=2.481e-03 oracle_fd=7.961e-05 | min|c|/v_rms=0.5437 min|vD|/v_rms=0.5436 e_i1=1.448e-03 e_i2=8.505e-04 | t=4.6s | a_psi1=9.183e-04 a_psi2=4.837e-04 (FD order 4)
+HISTORY field=gauss_ch eps=0.25 N=24 cand=i1o4 r_F: 2.07e+00 8.96e-02 5.21e-02 2.23e-02 2.03e-03 4.88e-05 2.68e-08 7.62e-15
+HISTORY field=gauss_ch eps=0.25 N=24 cand=i1o4 r_out: 2.44e-16 3.93e-16 4.28e-16 4.32e-16 4.06e-16 4.01e-16 3.72e-16 4.18e-16
+HISTORY_FULL field=gauss_ch eps=0.25 N=24 cand=i1o4 r_F: 2.06690235477462192e+00 8.96302227761872350e-02 5.21497287075655749e-02 2.23135563983351860e-02 2.03423727606076186e-03 4.88046672592966940e-05 2.68094136935190828e-08 7.61738148881373431e-15
+HISTORY_FULL field=gauss_ch eps=0.25 N=24 cand=i1o4 r_out: 2.44349370520783075e-16 3.93385148104039625e-16 4.28308426850257170e-16 4.32371400633490961e-16 4.06268726857814789e-16 4.01367025413969645e-16 3.72001357566443912e-16 4.17685007874241925e-16
+TIMING load=0.009s metrics=0.003s prepare=0.057s solve=4.587s total=4.657s
+MEMORY peak_device_bytes=550502400 free_min=33539227648 total_device=34089730048 workspaces_bytes=33454751 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.25_24.json
+STATUS converged
