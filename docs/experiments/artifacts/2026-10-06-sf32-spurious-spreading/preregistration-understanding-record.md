@@ -443,3 +443,28 @@ eq. (36) numbers are properties of the protocol applied to tracker errors (O3).
   `x1 -> 1/2 - x1` (hence `c1` even, `c2`, `c3` odd). Pair G: `u1` even to 4.9e-17 but `u2` has no parity
   (`cos 2 pi (x1 - x3)` term), so G has no mirror symmetry and its Pollock errors are genuine. Pollock m1 on the 256^3
   stack pair: rms `delta_x2` = 5.6e-16.
+
+## 11. Erratum on the clock labels of this record (orchestrator, written 2026-10-06T18:5xZ real UTC)
+
+The time labels written in sections 3.2, 3.3, 3.4, 4, 6 and 10 after about 15:00Z (`15:10Z`, `15:25Z`, `16:05Z`,
+`16:40Z`, `17:30Z`, `19:10Z`, `19:12Z`, `19:15Z`) were the orchestrator's estimates, not `date -u` readings, and run
+ahead of the real UTC by up to three hours (found by the N5 worker). The authoritative sequence, from git commit
+times and the V100 job logs (all UTC):
+
+| event | authoritative time | source |
+|---|---|---|
+| activation commit `9db86f0` | 14:59Z (`date -u` was read) | git |
+| N0 prompt corrected (periodic decomposition), N0 launched | between 15:05Z and 15:1xZ (prototype rerun), before the N0 commit `d1bafa9` | prototype log / git |
+| Pollock well-conditioned forms fixed in the contract, N1 prompt written | before the N1 launch; N1 commit `5a4db8f` 15:3xZ | git |
+| D-2 (`dt_max` absolute) recorded and routed to N2b | before the N2b commit `ac602f3`/`952a03a` (15:51:54Z) and before the first ladder run (16:08:34Z) | git, `failures.txt` headers |
+| P3 restated (pair B exact at x1 = 1/2) | before the N3b commit `0bcbafd` (15:45:55Z) | git |
+| controls pair-B check restated (C1) | before the C1 commit `cb445fb` (15:57:10Z) | git |
+| integration `0f5b916`, `sf32-int-build` | 16:0xZ-16:06Z | git, log |
+| first analysis (`sf32-ladders`) finished | 16:10:45Z | log |
+| F-SYM read from the first analysis; `lester_brk` field + prediction appended to section 10; `sf32-brk` launched | between 16:10:45Z and 16:14:44Z (the section-10 text was appended in the same orchestrator turn as the job launch, seconds after it; no `lester_brk` result existed before 16:16Z) | log; this record |
+| F-SYM numeric confirmation appended | ~16:15Z | this record |
+| `sf32-brk` finished (analysis of five fields) | 16:21:04Z | log |
+| `sf32-ctest-full` finished | 16:54:03Z | log |
+| `sf32-labels-equiv` finished | 18:39:03Z | log |
+
+The scientific content of those sections is unchanged by this erratum; only the clock labels were wrong.
