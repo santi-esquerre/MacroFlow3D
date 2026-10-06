@@ -3,7 +3,8 @@
 
 For every GPU log (one case each) it prints, next to the prototype's values:
   e_v, e_psi, e_psi1, e_psi2, e_i1, e_i2, e_div, min_c, p0.1, p1, p5, p50 of cand=i1o4 and of the ceiling
-  cand=oracle_fd4, r_F, its, the continuation PATH (equality), relative differences and PASS/FAIL at 1e-6,
+  cand=oracle_fd4, r_F, its, the continuation PATH (equality; INFORMATIONAL since SF-33 N7b: the linear solver
+  changes the stage acceptance, never the converged state), relative differences and PASS/FAIL at 1e-6,
   the FIELDDIFF values (field-wise comparison with the saved 16^3 prototype solution), the r_F history agreement
   (correct digits while r_F > 1e-10) and the GMRES statistics per Newton stage (max / median iterations: the
   preconditioner gate report).  A Markdown table is written with --out.
@@ -22,6 +23,8 @@ PASS rule (threshold 1e-6 relative, SF-33 acceptance (a)):
   4-significant-digit reference (printed %.3e): the pass band is the rounding bound of the printed value,
   |gpu - proto| <= 0.5e-3 * 10**floor(log10|proto|) (+ the same bound of the GPU value when it is itself a
   printed %.3e value); a 1e-6 relative agreement cannot be resolved from 4 digits and is NOT claimed then.
+OVERALL verdict (SF-33 N7b): GPU STATUS converged, r_F <= 1e-10, every gated metric PASS and FIELDDIFF <= 1e-8;
+the PATH comparison is printed but never part of the verdict.
 Values that are roundoff-sized on both sides (oracle e_psi*, control2d e_i2 / e_psi2 / e_div below 1e-10) are
 reported as `roundoff` (not gated).
 
@@ -298,8 +301,11 @@ def compare_case(g, summary_rows, summary_paths, exports, sweep_dir):
     p_path = summary_paths.get(key) or (cl["path"] if cl else None)
     same = p_path is not None and g["path"] == p_path
     res["path"] = (g["path"], p_path, same)
-    print("  PATH gpu=`%s` prototype=`%s` -> %s" % (g["path"], p_path, "EQUAL" if same else
-                                                  ("DIFFERENT" if p_path else "no prototype PATH")))
+    print("  PATH gpu=`%s` prototype=`%s` -> %s (informational, not gated)" % (
+        g["path"], p_path, "EQUAL" if same else ("DIFFERENT" if p_path else "no prototype PATH")))
+    status_ok = g["status"] == "converged"
+    res["verdicts"].append(status_ok)
+    print("  STATUS gpu=%s (gate converged: %s)" % (g["status"], "PASS" if status_ok else "FAIL"))
     # FIELDDIFF
     fd = g["fielddiff"]
     if fd:
@@ -347,14 +353,14 @@ def compare_case(g, summary_rows, summary_paths, exports, sweep_dir):
         res["gmres"].append((st["eps"], st.get("status"), len(its), mx, med, nfail))
         print("  GMRES stage eps=%g%s status=%s newton_steps=%d its_max=%d its_median=%.1f linear_failures=%d"
               % (st["eps"], "(final)" if st["final"] else "", st.get("status"), len(its), mx, med, nfail))
-    res["pass"] = all(res["verdicts"]) and (same or p_path is None) and \
-        (res["fielddiff"] is None or res["fielddiff"] <= 1e-8)
+    # SF-33 N7b: PATH equality is informational (never gated); STATUS is gated above
+    res["pass"] = all(res["verdicts"]) and (res["fielddiff"] is None or res["fielddiff"] <= 1e-8)
     print("  OVERALL %s" % ("PASS" if res["pass"] else "FAIL"))
     return res
 
 
 def markdown(results):
-    out = ["| case | status | r_F | PATH equal | e_v gpu | e_v proto | e_v verdict | e_psi gpu | e_psi proto | "
+    out = ["| case | status | r_F | PATH equal (info) | e_v gpu | e_v proto | e_v verdict | e_psi gpu | e_psi proto | "
            "e_psi verdict | ceiling e_v verdict | FIELDDIFF joint | r_F hist digits | GMRES max / median (target) "
            "| overall |", "|" + "---|" * 15]
     for r in results:
@@ -378,7 +384,8 @@ def markdown(results):
     out.append("Pass rule: full-precision prototype values (solution.json / ref_metrics.json) gated at 1e-6 relative; "
                "4-significant-digit prototype values (cell logs / summary.md) gated at the rounding bound of the "
                "printed value (`PASS(4dig)`), which cannot resolve 1e-6.  r_F gate <= 1e-10; FIELDDIFF expected "
-               "<= 1e-8 (joint normalization).")
+               "<= 1e-8 (joint normalization); STATUS must be converged.  PATH equality is informational (not part "
+               "of the overall verdict, SF-33 N7b).")
     return "\n".join(out) + "\n"
 
 

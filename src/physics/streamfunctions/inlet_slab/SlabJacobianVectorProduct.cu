@@ -17,6 +17,21 @@ namespace inlet_slab {
 
 namespace {
 
+/// out[i] += mu * q_v / h^2 * in[i] on the equation rows (unknown plane index < N - 1).
+__global__ void pseudo_time_shift_kernel(InletSlabGrid g, real mu, const real* __restrict__ q,
+                                         const real* __restrict__ in, real* __restrict__ out) {
+    const std::size_t nf = g.field_size();
+    const std::size_t np = g.plane_size();
+    const std::size_t neq = nf - np; // planes 1..N-1 of one field
+    const real inv_h2 = 1.0 / (g.h * g.h);
+    for (std::size_t i = static_cast<std::size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+         i < 2 * nf; i += static_cast<std::size_t>(gridDim.x) * blockDim.x) {
+        const std::size_t u = i < nf ? i : i - nf;
+        if (u < neq)
+            out[i] += mu * (q[np + u] * inv_h2) * in[i];
+    }
+}
+
 __global__ void slab_jvp_kernel(InletSlabGrid g, SlabStencilView st, const real* __restrict__ U1,
                                 const real* __restrict__ U2, const real* __restrict__ dU1,
                                 const real* __restrict__ dU2, const real* __restrict__ q,
@@ -146,6 +161,22 @@ void SlabJvpWorkspace::apply(CudaContext& ctx, const InletSlabGrid& grid,
         in.grad_lnk[2].data(), out.data());
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     // No host synchronization: the result is stream-ordered on ctx.cuda_stream().
+}
+
+void slab_add_pseudo_time_shift(CudaContext& ctx, const InletSlabGrid& grid,
+                                const SlabStageInputs& inputs, real mu, DeviceSpan<const real> in,
+                                DeviceSpan<real> out) {
+    require_valid_grid(grid, "slab_add_pseudo_time_shift");
+    require_size(in.size(), grid.unknown_size(), "in");
+    require_size(out.size(), grid.unknown_size(), "out");
+    require_size(inputs.q.size(), grid.full_size(), "inputs.q");
+    if (overlaps(in.data(), in.size() * sizeof(real), out.data(), out.size() * sizeof(real)))
+        throw std::invalid_argument("slab_add_pseudo_time_shift: in and out overlap");
+    const std::size_t n = grid.unknown_size();
+    pseudo_time_shift_kernel<<<detail::slab_reduce_blocks(n), detail::kSlabBlock, 0,
+                               ctx.cuda_stream()>>>(grid, mu, inputs.q.data(), in.data(),
+                                                    out.data());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
 }
 
 std::size_t SlabJvpWorkspace::allocated_bytes() const {

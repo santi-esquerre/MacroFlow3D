@@ -11,6 +11,7 @@
 #include "SlabResidual.cuh"
 
 #include <chrono>
+#include <cmath>
 #include <stdexcept>
 #include <string>
 
@@ -156,9 +157,9 @@ __device__ inline void band_add(const BandView& B, int i, int c, cufftDoubleComp
     e.y += v.y;
 }
 
-__global__ void assemble_factor_kernel(int N, real h, int nmh, int nm, SlabStencilView st,
-                                       const real* __restrict__ coef, cufftDoubleComplex* band,
-                                       int* ipiv, int* counters) {
+__global__ void assemble_factor_kernel(int N, real h, real shift, int nmh, int nm,
+                                       SlabStencilView st, const real* __restrict__ coef,
+                                       cufftDoubleComplex* band, int* ipiv, int* counters) {
     const int md = static_cast<int>(blockIdx.x) * blockDim.x + threadIdx.x;
     if (md >= nm)
         return;
@@ -211,6 +212,16 @@ __global__ void assemble_factor_kernel(int N, real h, int nmh, int nm, SlabStenc
                     }
                 }
             }
+        }
+    }
+
+    // SF-33 N7b pseudo-time shift of the ROW-SCALED operator: + mu / h^2 on the diagonal of the
+    // equation rows (planes 1..N-1); outlet rows (plane N) unshifted. Skipped when mu = 0 (bitwise
+    // N7a band).
+    if (shift != 0.0) {
+        for (int r = 0; r < 2 * (N - 1); ++r) {
+            cufftDoubleComplex& e = B.el(r, r);
+            e.x += shift;
         }
     }
 
@@ -388,8 +399,10 @@ void SlabModePreconditioner::prepare(CudaContext& ctx, const InletSlabGrid& g) {
 SlabPrecFactorReport SlabModePreconditioner::factor(CudaContext& ctx, const InletSlabGrid& grid,
                                                     const SlabStageInputs& inputs,
                                                     DeviceSpan<const real> U1,
-                                                    DeviceSpan<const real> U2) {
+                                                    DeviceSpan<const real> U2, real mu) {
     const auto t0 = std::chrono::steady_clock::now();
+    if (!(mu >= 0.0) || !std::isfinite(mu))
+        throw std::invalid_argument("SlabModePreconditioner::factor: mu must be finite and >= 0");
     require_valid_grid(grid, "SlabModePreconditioner::factor");
     if (!prepared_for(grid))
         throw std::logic_error("SlabModePreconditioner::factor: not prepared for this grid");
@@ -405,8 +418,9 @@ SlabPrecFactorReport SlabModePreconditioner::factor(CudaContext& ctx, const Inle
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     const int threads = 64;
     const int blocks = (n_modes_ + threads - 1) / threads;
-    assemble_factor_kernel<<<blocks, threads, 0, s>>>(grid.n, grid.h, grid.n / 2 + 1, n_modes_,
-                                                      table_.device_view(), coef_.data(),
+    const real shift = mu / (grid.h * grid.h);
+    assemble_factor_kernel<<<blocks, threads, 0, s>>>(grid.n, grid.h, shift, grid.n / 2 + 1,
+                                                      n_modes_, table_.device_view(), coef_.data(),
                                                       band_.data(), ipiv_.data(), singular_.data());
     MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     int host[2] = {0, 0};

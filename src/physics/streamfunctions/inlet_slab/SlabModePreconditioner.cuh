@@ -34,6 +34,19 @@
  * (the prototype's `--k1check`, `lin0`): this is acceptance item 1 of the node. For u != 0 or
  * k = k(x1, x2, x3), P-A is an approximation (its quality is an N6 gate item, not asserted here).
  *
+ * Pseudo-time shift (SF-33 N7b): factor(..., mu) assembles P-A for the SHIFTED operator
+ * J + mu D, D = diag(q_v / h^2) on the equation rows (planes 1..N-1), 0 on the outlet rows. In the
+ * row-scaled frame of P (E / q) the shift is D / q = 1 / h^2 on every equation row, a constant
+ * whose plane average is itself; P gains + mu / h^2 on the diagonal of the equation rows of every
+ * mode and M = diag(q) P carries exactly the pointwise shift mu q_v / h^2. Hence M is exact for the
+ * shifted operator wherever it is exact for J (k = 1, u = 0; x1-only states): ||M^-1 (J + mu D) x -
+ * x|| /
+ * ||x|| = roundoff for every mu (test inlet_slab_newton case 1s). (This is the "mu qbar_j / h^2"
+ * of the N7b specification written in P's row-scaled frame: q / q = 1 has plane average 1; adding
+ * qbar_j / h^2 to the row-scaled diagonal instead would give diag(q) qbar_j / h^2, i.e. a q^2
+ * weighting, which is not the averaged shifted operator.) mu = 0 skips the addition: bitwise the
+ * N7a band.
+ *
  * Banded LU (custom batched kernel, one thread per mode)
  * -----------------------------------------------------
  * Unknown ordering inside a mode: row = 2 (j - 1) + field (fields interleaved per plane). The x1
@@ -97,11 +110,12 @@ class SlabModePreconditioner {
     /**
      * Plane-averaged frozen linearization at the base state (U1, U2: full periodic-part arrays,
      * planes 0..N, as evaluate_residual takes them; inputs: q, grad ln k), assembled per mode and
-     * LU-factored. One documented host sync (singular-mode count).
+     * LU-factored. One documented host sync (singular-mode count). mu >= 0: pseudo-time shift
+     * (SF-33 N7b; see the header), 0 = unshifted.
      */
     SlabPrecFactorReport factor(CudaContext& ctx, const InletSlabGrid& grid,
                                 const SlabStageInputs& inputs, DeviceSpan<const real> U1,
-                                DeviceSpan<const real> U2);
+                                DeviceSpan<const real> U2, real mu = 0.0);
     bool factored() const { return inputs_ != nullptr; }
 
     /// out = M^-1 in (2 N^3 each, field-major). Enqueue only. in and out must not overlap.

@@ -48,6 +48,23 @@
  *     `CONTINUATION reporting the state of the final attempt` line;
  *   - 5e: `ew` with an unreachable eta (eta0 = eta_max = 1e-6, GMRES cap 1): linear_failure, step
  *     not taken, eta printed on the NEWTON line.
+ *
+ * SF-33 N7b (pseudo-transient continuation, cfg.psitc; library default off):
+ *   - the pre-N7a literal histories (cases 3, 4) are compared with a 1e-10 RELATIVE tolerance
+ *     (absolute floor 1e-14 for the roundoff-level entries below the Newton tolerance 1e-13): the
+ *     literals were recorded on sm_86 and other platforms (V100 / CUDA 11.4) differ at roundoff;
+ *     strict bitwise checks are kept only between runs inside this process;
+ *   1s P-A for the SHIFTED operator: ||P_mu^-1 (J + mu D) x - x|| / ||x|| <= 1e-12 for mu in
+ *      {0, 1, 100} at k = 1, u = 0 (N = 12, 16) and at the x1-only state of 1b (N = 12); the shift
+ *      kernel itself against a host evaluation of mu q_v / h^2 x (equation rows) and 0 (outlet);
+ *   3p `psitc off` vs `psitc on` with mu0 = 0 (both forcing fixed, exact pair N = 12): the two code
+ *      paths give the same history to 1e-14 relative (bitwise expected, printed);
+ *      Psi-tc on (ew) on the exact pair from x = 0, N = 12 and 16: converged, r_F, r_out <= 1e-13,
+ *      max |u - u_exact| <= 1e-11; its and the mu sequence printed; mu_k = mu0 m_k / m_0
+ *      recomputed from the merit history (1e-14 relative); `mu=` on every LINEAR / NEWTON line;
+ *   4p Psi-tc on (ew) on the generic3d ladder to 0.5: converged (r_F, r_out <= 1e-13);
+ *   5p forced line-search failure with Psi-tc (lambda_min = 2): 4 retries with mu = 4, 16, 64,
+ *      100 (x4, clamped to mu_max), 5 LINEAR lines, then linesearch-fail.
  */
 
 #include "apps/closure_gate/closure_fields.hpp"
@@ -238,13 +255,13 @@ struct OpHarness {
         ctx.synchronize();
     }
     /// Freeze JVP + factor P-A at u; returns E(u).
-    std::vector<real> freeze(CudaContext& ctx, const std::vector<real>& u,
-                             int* singular = nullptr) {
+    std::vector<real> freeze(CudaContext& ctx, const std::vector<real>& u, int* singular = nullptr,
+                             real mu = 0.0) {
         upload(uvec, u);
         sl::assemble_full_planes(ctx, g, cspan(uvec), in, mspan(U1), mspan(U2));
         sl::evaluate_residual(ctx, g, in, cspan(U1), cspan(U2), mspan(E), rws, nullptr);
         jws.prepare_base(ctx, g, in, cspan(U1), cspan(U2));
-        const auto fr = prec.factor(ctx, g, in, cspan(U1), cspan(U2));
+        const auto fr = prec.factor(ctx, g, in, cspan(U1), cspan(U2), mu);
         if (singular)
             *singular = fr.singular_modes;
         ctx.synchronize();
@@ -284,7 +301,7 @@ void case_pa_k1(TestReport& rep, CudaContext& ctx) {
 /// only, with nonzero B and S-linearization terms), so the plane average is exact and
 /// M^-1 J = I to roundoff. This checks the FULL plane-averaged assembly (grad ln k, S-terms,
 /// first-derivative x1 coefficients, outlet coefficients at a non-affine state).
-void case_pa_x1_state(TestReport& rep, CudaContext& ctx) {
+CaseSpec x1_state_spec() {
     CaseSpec s;
     s.lnk = [](real x1, real, real) {
         return 0.5 * std::sin(kTwoPi * x1) + 0.2 * std::cos(2.0 * kTwoPi * x1);
@@ -296,6 +313,11 @@ void case_pa_x1_state(TestReport& rep, CudaContext& ctx) {
     s.gl2 = [](real, real, real) { return 0.0; };
     s.u1 = [](real x1, real, real) { return 0.05 + 0.1 * std::sin(kPi * x1); };
     s.u2 = [](real x1, real, real) { return 0.08 * x1 * x1 - 0.03 * x1; };
+    return s;
+}
+
+void case_pa_x1_state(TestReport& rep, CudaContext& ctx) {
+    const CaseSpec s = x1_state_spec();
     for (int N : {12, 16}) {
         OpHarness hs;
         hs.build(ctx, N, s);
@@ -320,6 +342,77 @@ void case_pa_x1_state(TestReport& rep, CudaContext& ctx) {
                   "P-A exact for an x1-only state (k(x1), u(x1)), N = " + std::to_string(N) +
                       ": ||P^-1 (J x) - x|| / ||x|| <= 1e-12",
                   fmtd("%.3e", err));
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+// 1s. SF-33 N7b: P-A for the shifted operator J + mu D
+// ------------------------------------------------------------------------------------------------
+void case_pa_shift(TestReport& rep, CudaContext& ctx) {
+    struct Setup {
+        const char* name;
+        CaseSpec spec;
+        int N;
+    };
+    const Setup setups[] = {{"k = 1, u = 0", k1_spec(), 12},
+                            {"k = 1, u = 0", k1_spec(), 16},
+                            {"x1-only state", x1_state_spec(), 12}};
+    for (const Setup& su : setups) {
+        for (real mu : {0.0, 1.0, 100.0}) {
+            OpHarness hs;
+            hs.build(ctx, su.N, su.spec);
+            int singular = -1;
+            hs.freeze(ctx, hs.u_spec, &singular, mu);
+            std::mt19937_64 rng(4480 + su.N);
+            const auto x = gaussian(rng, hs.g.unknown_size());
+            upload(hs.a, x);
+            hs.jws.apply(ctx, hs.g, cspan(hs.a), mspan(hs.b));
+            if (mu != 0.0)
+                sl::slab_add_pseudo_time_shift(ctx, hs.g, hs.in, mu, cspan(hs.a), mspan(hs.b));
+            hs.prec.apply(ctx, hs.g, cspan(hs.b), mspan(hs.c));
+            ctx.synchronize();
+            const real err = rel_diff(download(hs.c.data(), hs.c.size()), x);
+            std::printf("[INFO] PA_SHIFT %s N=%d mu=%g |P_mu^-1 (J + mu D) x - x|/|x| = %.3e "
+                        "(singular modes %d)\n",
+                        su.name, su.N, mu, err, singular);
+            rep.check(err <= 1e-12 && singular == 0,
+                      std::string("P-A shifted, ") + su.name + ", N = " + std::to_string(su.N) +
+                          ", mu = " + fmtd("%g", mu) +
+                          ": ||P_mu^-1 ((J + mu D) x) - x|| / ||x|| <= 1e-12",
+                      fmtd("%.3e", err));
+        }
+    }
+    {
+        // the shift kernel against a host evaluation (q varies with x1 in this state)
+        OpHarness hs;
+        hs.build(ctx, 12, x1_state_spec());
+        const auto& g = hs.g;
+        std::mt19937_64 rng(4490);
+        const auto x = gaussian(rng, g.unknown_size());
+        const auto y0 = gaussian(rng, g.unknown_size());
+        upload(hs.a, x);
+        upload(hs.b, y0);
+        const real mu = 2.5;
+        sl::slab_add_pseudo_time_shift(ctx, g, hs.in, mu, cspan(hs.a), mspan(hs.b));
+        ctx.synchronize();
+        const auto y = download(hs.b.data(), hs.b.size());
+        const auto q = download(hs.in.q.data(), hs.in.q.size());
+        const std::size_t nf = g.field_size(), np = g.plane_size();
+        real worst = 0.0;
+        bool outlet_untouched = true;
+        for (std::size_t i = 0; i < 2 * nf; ++i) {
+            const std::size_t u = i < nf ? i : i - nf;
+            if (u >= nf - np) {
+                outlet_untouched = outlet_untouched && y[i] == y0[i];
+                continue;
+            }
+            const real want = y0[i] + mu * q[np + u] / (g.h * g.h) * x[i];
+            worst = std::fmax(worst, std::fabs(y[i] - want) / std::fmax(std::fabs(want), 1e-300));
+        }
+        rep.check(worst <= 1e-14 && outlet_untouched,
+                  "Psi-tc shift kernel: y += mu q_v / h^2 x on the equation rows (1e-14 "
+                  "relative), outlet rows untouched",
+                  fmtd("max rel %.2e", worst));
     }
 }
 
@@ -483,9 +576,11 @@ RefHistory pre_n7a_generic3d_stage(int stage) {
              0x1.10b597794f8eep-51, 0x1.17aee9b91746ap-51}};
 }
 
-/// Bitwise comparison of a report's histories with a reference; det: sizes, first mismatch and
-/// max relative difference.
-bool history_bitwise(const sl::SlabNewtonReport& r, const RefHistory& ref, std::string& det) {
+/// Comparison of a report's histories with a reference: equal lengths and every entry within
+/// |a - b| <= rel_tol |b| + abs_floor (rel_tol = 0, abs_floor = 0: bitwise); det: sizes, first
+/// mismatch beyond the tolerance and max relative difference.
+bool history_close(const sl::SlabNewtonReport& r, const RefHistory& ref, real rel_tol,
+                   real abs_floor, std::string& det) {
     bool same = r.hist_r_F.size() == ref.r_F.size() && r.hist_r_out.size() == ref.r_out.size();
     real maxrel = 0.0;
     int first = -1;
@@ -494,7 +589,7 @@ bool history_bitwise(const sl::SlabNewtonReport& r, const RefHistory& ref, std::
         const real a[2] = {r.hist_r_F[i], i < r.hist_r_out.size() ? r.hist_r_out[i] : -1.0};
         const real b[2] = {ref.r_F[i], i < ref.r_out.size() ? ref.r_out[i] : -1.0};
         for (int q = 0; q < 2; ++q) {
-            if (a[q] != b[q]) {
+            if (!(std::fabs(a[q] - b[q]) <= rel_tol * std::fabs(b[q]) + abs_floor)) {
                 same = false;
                 if (first < 0)
                     first = static_cast<int>(i);
@@ -504,9 +599,11 @@ bool history_bitwise(const sl::SlabNewtonReport& r, const RefHistory& ref, std::
         }
     }
     char buf[200];
-    std::snprintf(
-        buf, sizeof(buf), "entries %zu/%zu (ref %zu/%zu), first mismatch %d, max rel %.2e",
-        r.hist_r_F.size(), r.hist_r_out.size(), ref.r_F.size(), ref.r_out.size(), first, maxrel);
+    std::snprintf(buf, sizeof(buf),
+                  "entries %zu/%zu (ref %zu/%zu), first mismatch %d, max rel %.2e (tol rel %.0e "
+                  "abs %.0e)",
+                  r.hist_r_F.size(), r.hist_r_out.size(), ref.r_F.size(), ref.r_out.size(), first,
+                  maxrel, rel_tol, abs_floor);
     det = buf;
     return same;
 }
@@ -548,6 +645,49 @@ bool check_ew_etas(const sl::SlabNewtonReport& r, const sl::SlabNewtonConfig& cf
     return ok;
 }
 
+/// Literal (sm_86) histories vs this platform: 1e-10 relative, 1e-14 absolute floor (SF-33 N7b).
+constexpr real kLitRel = 1e-10;
+constexpr real kLitAbs = 1e-14;
+
+RefHistory history_of(const sl::SlabNewtonReport& r) {
+    return {r.hist_r_F, r.hist_r_out};
+}
+
+/// Prints the mu sequence of a Psi-tc report (`^` = line-search retry) and checks the SER values
+/// mu_k = clamp(mu0 m_k / m_0, 0, mu_max) against the merit history (1e-14 relative).
+bool check_ser_mus(const sl::SlabNewtonReport& r, const sl::SlabNewtonConfig& cfg,
+                   const std::string& name, std::string& det) {
+    bool ok = r.psitc && !r.steps.empty();
+    std::string seq;
+    auto merit = [&](std::size_t k) {
+        return std::sqrt(r.hist_r_F[k] * r.hist_r_F[k] + r.hist_r_out[k] * r.hist_r_out[k]);
+    };
+    for (std::size_t k = 0; k < r.steps.size() && k < r.hist_r_F.size(); ++k) {
+        const real want =
+            std::fmin(std::fmax(cfg.psitc.mu0 * (merit(k) / merit(0)), 0.0), cfg.psitc.mu_max);
+        const real got = r.steps[k].mu_ser;
+        if (!(std::fabs(got - want) <= 1e-14 * std::fmax(want, 1e-300)))
+            ok = false;
+        char b[64];
+        std::snprintf(b, sizeof(b), "%s%.2e", k ? "," : "", got);
+        seq += b;
+        for (real mr : r.steps[k].mu_retries) {
+            std::snprintf(b, sizeof(b), "^%.2e", mr);
+            seq += b;
+        }
+    }
+    std::printf("[INFO] %s: mu sequence (Psi-tc SER) %s\n", name.c_str(), seq.c_str());
+    det = "mus " + seq;
+    return ok;
+}
+
+int total_solves(const sl::SlabNewtonReport& r) {
+    int n = 0;
+    for (const auto& st : r.steps)
+        n += static_cast<int>(st.linear_its_solves.size());
+    return n;
+}
+
 int total_gmres(const sl::SlabContinuationReport& r) {
     int t = 0;
     for (const auto& s : r.stages)
@@ -574,10 +714,11 @@ void case_newton_exact_pair(TestReport& rep, CudaContext& ctx) {
             nk.solve(ctx, in, mspan(x), "exact_pair:0.7:" + std::to_string(N), cfg, cap.logger());
         {
             std::string hd;
-            const bool same = history_bitwise(r, pre_n7a_exact_pair(N), hd);
+            const bool same = history_close(r, pre_n7a_exact_pair(N), kLitRel, kLitAbs, hd);
             rep.check(same,
                       "forcing = fixed, exact pair N = " + std::to_string(N) +
-                          ": r_F / r_out history bitwise equal to the pre-N7a code",
+                          ": r_F / r_out history equal to the pre-N7a record (sm_86 literals) "
+                          "within 1e-10 relative",
                       hd);
         }
         {
@@ -617,6 +758,80 @@ void case_newton_exact_pair(TestReport& rep, CudaContext& ctx) {
             std::printf("[INFO] exact pair N = %d: GMRES total fixed %d, ew %d; Newton its fixed "
                         "%d, ew %d\n",
                         N, r.linear_iterations_total, re.linear_iterations_total, r.its, re.its);
+        }
+        if (N == 12) {
+            // 3p (SF-33 N7b): psitc off vs psitc on with mu0 = 0 (both fixed forcing): the two
+            // code paths with mu = 0 give the same history (in-process: bitwise expected)
+            sl::SlabNewtonConfig c0 = cfg; // fixed, psitc off (library default)
+            sl::SlabNewtonConfig c1 = cfg;
+            c1.psitc.enabled = true;
+            c1.psitc.mu0 = 0.0;
+            const sl::SlabLogger quiet = [](const std::string&) {};
+            upload(x, std::vector<real>(g.unknown_size(), 0.0));
+            const auto r0 = nk.solve(ctx, in, mspan(x), "psitc_off", c0, quiet);
+            upload(x, std::vector<real>(g.unknown_size(), 0.0));
+            Capture capm;
+            const auto r1 = nk.solve(ctx, in, mspan(x), "psitc_mu0_0", c1, capm.logger());
+            std::string d14, dbit;
+            const bool close = history_close(r1, history_of(r0), 1e-14, 0.0, d14);
+            const bool bitwise = history_close(r1, history_of(r0), 0.0, 0.0, dbit);
+            bool mus_zero = r1.psitc && !r1.steps.empty();
+            for (const auto& st : r1.steps)
+                mus_zero = mus_zero && st.mu == 0.0 && st.mu_retries.empty();
+            std::printf("[INFO] exact pair N = 12: psitc off vs psitc on (mu0 = 0), forcing fixed: "
+                        "bitwise %s (%s)\n",
+                        bitwise ? "yes" : "no", dbit.c_str());
+            rep.check(close && mus_zero && r0.status == r1.status && r0.its == r1.its &&
+                          r0.linear_iterations_total == r1.linear_iterations_total,
+                      "psitc off vs psitc on with mu0 = 0 (forcing fixed, exact pair N = 12): "
+                      "same history to 1e-14 relative, same its / GMRES total, every mu = 0",
+                      d14);
+            // in-process bitwise reproducibility of the psitc-off fixed run (strict check)
+            std::string drep;
+            rep.check(history_close(r0, history_of(r), 0.0, 0.0, drep),
+                      "forcing fixed, psitc off: in-process rerun bitwise equal", drep);
+        }
+        {
+            // 3p (SF-33 N7b): Psi-tc on (ew forcing, SER mu0 = 1) on the exact pair from x = 0
+            sl::SlabNewtonKrylov nkp;
+            nkp.prepare(ctx, g, 50, 120);
+            upload(x, std::vector<real>(g.unknown_size(), 0.0));
+            sl::SlabNewtonConfig pcfg;
+            pcfg.forcing = sl::SlabForcing::ew;
+            pcfg.psitc.enabled = true;
+            pcfg.max_iterations = 120;
+            Capture capp;
+            const auto rp =
+                nkp.solve(ctx, in, mspan(x), "exact_pair_psitc:0.7:" + std::to_string(N), pcfg,
+                          capp.logger());
+            const auto xp = download(x.data(), x.size());
+            real maxerr_p = 0.0;
+            for (std::size_t i = 0; i < xp.size(); ++i)
+                maxerr_p = std::fmax(maxerr_p, std::fabs(xp[i] - u_ex[i]));
+            std::string md;
+            const bool mok =
+                check_ser_mus(rp, pcfg, "exact pair Psi-tc N = " + std::to_string(N), md);
+            char dp[300];
+            std::snprintf(dp, sizeof(dp),
+                          "status %s its %d r_F %.3e r_out %.3e max|u-u_ex| %.3e GMRES total %d "
+                          "retries %d",
+                          sl::to_string(rp.status), rp.its, rp.r_F, rp.r_out, maxerr_p,
+                          rp.linear_iterations_total, rp.linesearch_retries);
+            std::printf("[INFO] exact pair Psi-tc N = %d: %s\n", N, dp);
+            rep.check(rp.status == sl::SlabSolveStatus::converged && rp.r_F <= 1e-13 &&
+                          rp.r_out <= 1e-13 && maxerr_p <= 1e-11,
+                      "Psi-tc on (ew), exact pair N = " + std::to_string(N) +
+                          " from x = 0: converged, r_F, r_out <= 1e-13, max |u - u_exact| <= "
+                          "1e-11",
+                      dp);
+            rep.check(mok && capp.count("LINEAR gmres+P-A") == total_solves(rp) &&
+                          capp.count(" mu=") == total_solves(rp) +
+                                                    static_cast<int>(rp.hist_r_F.size()) - 1 +
+                                                    rp.linesearch_retries,
+                      "Psi-tc on, exact pair N = " + std::to_string(N) +
+                          ": mu_k = mu0 m_k / m_0 (SER, merit norm) on every step, mu= on every "
+                          "LINEAR / NEWTON line",
+                      md);
         }
         const auto xh = download(x.data(), x.size());
         real maxerr = 0.0;
@@ -832,10 +1047,12 @@ void case_continuation(TestReport& rep, CudaContext& ctx) {
         for (int st = 0; st < 2; ++st) {
             std::string hd = "stage missing";
             const bool same = r.stages.size() == 2 &&
-                              history_bitwise(r.stages[st].newton, pre_n7a_generic3d_stage(st), hd);
+                              history_close(r.stages[st].newton, pre_n7a_generic3d_stage(st),
+                                            kLitRel, kLitAbs, hd);
             rep.check(same,
                       "forcing = fixed, generic3d ladder stage " + std::to_string(st) +
-                          ": r_F / r_out history bitwise equal to the pre-N7a code",
+                          ": r_F / r_out history equal to the pre-N7a record (sm_86 literals) "
+                          "within 1e-10 relative",
                       hd);
         }
         std::printf("[INFO] continuation generic3d N=12 eps=0.5: status=%s path=%s bisections=%d "
@@ -886,6 +1103,36 @@ void case_continuation(TestReport& rep, CudaContext& ctx) {
                   "ew " + std::to_string(ew_total) + " fixed " + std::to_string(fixed_total));
         rep.check(eok, "forcing = ew, continuation generic3d: eta_k recomputed and bounded",
                   ed_all);
+    }
+    {
+        // 4p (SF-33 N7b): the same ladder with Psi-tc on (ew forcing)
+        sl::SlabNewtonKrylov nkp;
+        nkp.prepare(ctx, g, 50, 120);
+        sl::SlabNewtonConfig pcfg;
+        pcfg.forcing = sl::SlabForcing::ew;
+        pcfg.psitc.enabled = true;
+        pcfg.max_iterations = 120;
+        Capture cap;
+        const auto r =
+            nkp.solve_with_continuation(ctx, 0.5, provider, mspan(x), ccfg, pcfg, cap.logger());
+        std::string its, md_all;
+        bool mok = !r.stages.empty();
+        for (const auto& st : r.stages) {
+            its += " " + std::to_string(st.newton.its);
+            std::string md;
+            mok = check_ser_mus(st.newton, pcfg, "generic3d Psi-tc stage eps=" + fmtd("%g", st.eps),
+                                md) &&
+                  mok;
+            md_all += " [" + md + "]";
+        }
+        std::printf("[INFO] generic3d 12^3 ladder to 0.5, Psi-tc: status %s path %s, total GMRES "
+                    "%d, Newton its per stage:%s\n",
+                    sl::to_string(r.status), r.path.c_str(), total_gmres(r), its.c_str());
+        rep.check(r.status == sl::SlabSolveStatus::converged && r.final_newton.r_F <= 1e-13 &&
+                      r.final_newton.r_out <= 1e-13 && mok,
+                  "Psi-tc on (ew), continuation generic3d 12^3 to eps = 0.5: converged, r_F, "
+                  "r_out <= 1e-13, SER mu sequence verified",
+                  "path " + r.path + md_all);
     }
     {
         Capture cap;
@@ -1010,6 +1257,28 @@ void case_statuses(TestReport& rep, CudaContext& ctx) {
                   sl::to_string(r.status));
     }
     {
+        // 5p (SF-33 N7b): Psi-tc retries on line-search failure: mu x4 (clamped to mu_max = 100)
+        // at most 4 times, then linesearch-fail
+        sl::SlabNewtonConfig cfg;
+        cfg.lambda_min = 2.0;
+        cfg.psitc.enabled = true;
+        Capture cap;
+        const auto r = run(cfg, "ls_psitc", cap);
+        const std::vector<real> want = {4.0, 16.0, 64.0, 100.0};
+        const bool seq_ok = r.steps.size() == 1 && r.steps[0].mu_ser == 1.0 &&
+                            r.steps[0].mu_retries == want && r.steps[0].mu == 100.0 &&
+                            r.steps[0].linear_its_solves.size() == 5;
+        rep.check(r.status == sl::SlabSolveStatus::linesearch_fail && seq_ok &&
+                      r.linesearch_retries == 4 && cap.count("Psi-tc retry") == 4 &&
+                      cap.count("Psi-tc retry 4/4 with mu=1.000e+02") == 1 &&
+                      cap.count("LINEAR gmres+P-A") == 5 &&
+                      cap.count("line search failed (min lambda 1/1024): merit") == 5 &&
+                      r.hist_r_F.size() == 1,
+                  "forced linesearch-fail with Psi-tc (lambda_min = 2): 4 retries mu = 4, 16, 64, "
+                  "100 (clamped), 5 LINEAR lines, then linesearch-fail",
+                  sl::to_string(r.status));
+    }
+    {
         sl::SlabNewtonConfig cfg;
         cfg.stagnation_window = 2;
         cfg.stagnation_factor = 0.0;
@@ -1062,6 +1331,10 @@ void case_no_allocation(TestReport& rep, CudaContext& ctx) {
         const auto r = nk.solve_with_continuation(ctx, 0.5, provider, mspan(x), ccfg, ncfg, quiet);
         upload(x, std::vector<real>(g.unknown_size(), 0.0));
         const auto r2 = nk.solve(ctx, prov(0.25), mspan(x), "alloc", ncfg, quiet);
+        sl::SlabNewtonConfig pcfg = ncfg; // SF-33 N7b: the Psi-tc path allocates nothing either
+        pcfg.psitc.enabled = true;
+        upload(x, std::vector<real>(g.unknown_size(), 0.0));
+        nk.solve(ctx, prov(0.25), mspan(x), "alloc_psitc", pcfg, quiet);
         ctx.synchronize();
         MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free1, &total));
         attempts += " [" + std::to_string(free0) + " -> " + std::to_string(free1) + " (delta " +
@@ -1091,6 +1364,8 @@ int main() {
         case_pa_k1(rep, ctx);
         std::printf("=== SF-33 N2: (1b) P-A exact for an x1-only state ===\n");
         case_pa_x1_state(rep, ctx);
+        std::printf("=== SF-33 N7b: (1s) P-A for the shifted operator J + mu D ===\n");
+        case_pa_shift(rep, ctx);
         std::printf("=== SF-33 N2: (2) GMRES ===\n");
         case_gmres(rep, ctx);
         std::printf("=== SF-33 N2: (3) Newton on the exact pair ===\n");

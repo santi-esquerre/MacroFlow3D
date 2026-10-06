@@ -168,12 +168,16 @@ struct DriverConfig {
     int restart = 100;
     int max_inner = 6000;
     real newton_tol = 1e-13;
-    int max_newton = 40;
+    int max_newton = 40; ///< effective value after parse_args (default 120 with --psitc on)
+    bool max_newton_given = false;
     int bisect = 4;
     std::string prec = "pa";
     std::string forcing = "ew"; ///< SF-33 N7a: fixed | ew (Eisenstat-Walker choice 2)
     real ew_eta_max = 0.1;
     real ew_eta0 = 0.1;
+    std::string psitc = "on"; ///< SF-33 N7b: pseudo-transient continuation (SER shift) on | off
+    real psitc_mu0 = 1.0;
+    real psitc_mu_max = 100.0;
     // outputs
     std::string save_solution_dir;
     std::string summary_path;
@@ -193,8 +197,9 @@ inline const char* usage_text() {
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
            "solver options: [--lin-tol 1e-12] [--restart 100] [--max-inner 6000] [--newton-tol "
            "1e-13]\n"
-           "                [--max-newton 40] [--bisect 4] [--prec pa] [--device 0]\n"
-           "                [--forcing ew|fixed] [--ew-eta-max 0.1] [--ew-eta0 0.1]\n"
+           "                [--max-newton 120 (psitc on) | 40 (psitc off)] [--bisect 4]\n"
+           "                [--prec pa] [--device 0] [--forcing ew|fixed] [--ew-eta-max 0.1]\n"
+           "                [--ew-eta0 0.1] [--psitc on|off] [--psitc-mu0 1] [--psitc-mu-max 100]\n"
            "exit codes: 0 converged; 1 exception; 2 usage; 10 linesearch-fail; 11 stagnation; 12 "
            "maxit;\n"
            "            13 linear_failure; 14 nan_inf; 15 continuation_floor; 16 "
@@ -320,6 +325,7 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.newton_tol = parse_double(opt, val);
         } else if (opt == "--max-newton") {
             c.max_newton = parse_int(opt, val);
+            c.max_newton_given = true;
         } else if (opt == "--bisect") {
             c.bisect = parse_int(opt, val);
         } else if (opt == "--prec") {
@@ -330,6 +336,12 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.ew_eta_max = parse_double(opt, val);
         } else if (opt == "--ew-eta0") {
             c.ew_eta0 = parse_double(opt, val);
+        } else if (opt == "--psitc") {
+            c.psitc = val;
+        } else if (opt == "--psitc-mu0") {
+            c.psitc_mu0 = parse_double(opt, val);
+        } else if (opt == "--psitc-mu-max") {
+            c.psitc_mu_max = parse_double(opt, val);
         } else if (opt == "--device") {
             c.device = parse_int(opt, val);
         } else {
@@ -346,6 +358,13 @@ inline DriverConfig parse_args(int argc, char** argv) {
         throw UsageError("--ew-eta-max / --ew-eta0 must lie in (0, 1)");
     if (c.forcing == "ew" && c.lin_tol > c.ew_eta_max)
         throw UsageError("--forcing ew requires --lin-tol (eta_min) <= --ew-eta-max");
+    if (c.psitc != "on" && c.psitc != "off")
+        throw UsageError("--psitc: 'on' (pseudo-transient continuation, default) or 'off'");
+    if (!(c.psitc_mu0 >= 0.0) || !(c.psitc_mu_max >= c.psitc_mu0))
+        throw UsageError("--psitc-mu0 / --psitc-mu-max: 0 <= mu0 <= mu_max");
+    // SF-33 N7b: SER-damped steps converge linearly while mu is large; Psi-tc default 120.
+    if (!c.max_newton_given)
+        c.max_newton = c.psitc == "on" ? 120 : 40;
     if (c.lin_tol <= 0.0 || c.newton_tol <= 0.0 || c.restart < 1 || c.max_inner < 1 ||
         c.max_newton < 1 || c.bisect < 0)
         throw UsageError("solver options must be positive (bisect >= 0)");
@@ -554,9 +573,17 @@ inline LinearStats linear_stats(const sl::SlabNewtonReport& r) {
     std::vector<int> its;
     for (const auto& st : r.steps) {
         ++s.steps;
-        its.push_back(st.linear.iterations);
-        s.its_total += st.linear.iterations;
-        s.its_max = std::max(s.its_max, st.linear.iterations);
+        // per linear SOLVE (SF-33 N7b: a Psi-tc line-search retry is an extra solve of the step;
+        // without retries this is one entry per step, as before)
+        for (int li : st.linear_its_solves) {
+            its.push_back(li);
+            s.its_max = std::max(s.its_max, li);
+        }
+        if (st.linear_its_solves.empty()) { // defensive: reports built without the per-solve list
+            its.push_back(st.linear.iterations);
+            s.its_max = std::max(s.its_max, st.linear.iterations);
+        }
+        s.its_total += std::max(st.linear_iterations_all, st.linear.iterations);
         if (std::isfinite(st.linear.rel_residual))
             s.rel_max = std::max(s.rel_max, st.linear.rel_residual);
         if (st.linear.status != sl::SlabLinearStatus::converged)
@@ -570,6 +597,8 @@ inline json newton_json(const sl::SlabNewtonReport& r) {
     json j;
     j["status"] = sl::to_string(r.status);
     j["forcing"] = sl::to_string(r.forcing);
+    j["psitc"] = r.psitc;
+    j["linesearch_retries"] = r.linesearch_retries;
     j["its"] = r.its;
     j["r_F"] = jnum(r.r_F);
     j["r_out"] = jnum(r.r_out);
@@ -585,6 +614,11 @@ inline json newton_json(const sl::SlabNewtonReport& r) {
         s["r_out"] = jnum(st.r_out);
         s["lambda"] = jnum(st.lambda);
         s["eta"] = jnum(st.eta);
+        s["mu"] = jnum(st.mu);
+        s["mu_ser"] = jnum(st.mu_ser);
+        s["mu_retries"] = jvec(st.mu_retries);
+        s["lin_its_all"] = st.linear_iterations_all;
+        s["lin_its_solves"] = st.linear_its_solves;
         s["dx_max"] = jnum(st.dx_max);
         s["dx_l2"] = jnum(st.dx_l2);
         s["lin_status"] = sl::to_string(st.linear.status);
@@ -638,18 +672,25 @@ inline void print_gmres_stats(const std::string& field, real eps, int N,
                               const sl::SlabContinuationReport& r) {
     for (const auto& s : r.stages) {
         const LinearStats ls = linear_stats(s.newton);
-        std::string etas;
-        for (const auto& st : s.newton.steps)
+        std::string etas, mus;
+        for (const auto& st : s.newton.steps) {
             etas += (etas.empty() ? "" : ",") + fmt("%.2e", st.eta);
+            mus += (mus.empty() ? "" : ",") + fmt("%.2e", st.mu_ser);
+            for (real mr : st.mu_retries)
+                mus += fmt("^%.2e", mr); // ^ = line-search retry of the same step
+        }
         if (etas.empty())
             etas = "-";
+        if (mus.empty())
+            mus = "-";
         out_line(fmt("GMRES_STATS field=%s eps=%g N=%d stage_eps=%g%s status=%s newton_its=%d "
                      "steps=%d its_max=%d its_median=%.1f its_total=%d rel_max=%.1e "
-                     "linear_failures=%d forcing=%s etas=%s",
+                     "linear_failures=%d forcing=%s etas=%s psitc=%s mus=%s",
                      field.c_str(), eps, N, s.eps, s.final_attempt ? "(final)" : "",
                      sl::to_string(s.newton.status), s.newton.its, ls.steps, ls.its_max,
                      ls.its_median, ls.its_total, ls.rel_max, ls.failures,
-                     sl::to_string(s.newton.forcing), etas.c_str()));
+                     sl::to_string(s.newton.forcing), etas.c_str(),
+                     s.newton.psitc ? "on" : "off", mus.c_str()));
     }
 }
 
@@ -728,6 +769,9 @@ inline sl::SlabNewtonConfig newton_config(const DriverConfig& c) {
     n.forcing = c.forcing == "fixed" ? sl::SlabForcing::fixed : sl::SlabForcing::ew;
     n.ew.eta_max = c.ew_eta_max;
     n.ew.eta0 = c.ew_eta0;
+    n.psitc.enabled = c.psitc == "on";
+    n.psitc.mu0 = c.psitc_mu0;
+    n.psitc.mu_max = c.psitc_mu_max;
     return n;
 }
 
@@ -743,11 +787,15 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
     out.x.resize(sc.grid.unknown_size());
     out_line(fmt("SOLVER N=%d eps=%g cand=i1o4 newton_tol=%.1e max_newton=%d lin_tol=%.1e "
                  "restart=%d max_inner=%d bisect=%d prec=P-A ladder=(0.25,0.5,1) stage_ok=%.0e "
-                 "forcing=%s ew_gamma=%g ew_alpha=%g ew_eta0=%g ew_eta_max=%g ew_eta_min=%.1e",
+                 "forcing=%s ew_gamma=%g ew_alpha=%g ew_eta0=%g ew_eta_max=%g ew_eta_min=%.1e "
+                 "psitc=%s psitc_mu0=%g psitc_mu_max=%g psitc_norm=merit psitc_retries=%d "
+                 "psitc_retry_factor=%g stagnation_window=%d stagnation_factor=%g",
                  sc.grid.n, sc.eps, ncfg.tol, ncfg.max_iterations, ncfg.gmres.tol,
                  ncfg.gmres.restart, ncfg.gmres.max_iterations, ccfg.max_bisections,
                  ccfg.stage_ok, sl::to_string(ncfg.forcing), ncfg.ew.gamma, ncfg.ew.alpha,
-                 ncfg.ew.eta0, ncfg.ew.eta_max, ncfg.gmres.tol));
+                 ncfg.ew.eta0, ncfg.ew.eta_max, ncfg.gmres.tol, ncfg.psitc.enabled ? "on" : "off",
+                 ncfg.psitc.mu0, ncfg.psitc.mu_max, ncfg.psitc.max_retries,
+                 ncfg.psitc.retry_factor, ncfg.stagnation_window, ncfg.stagnation_factor));
     J["solver_config"] = {{"forcing", sl::to_string(ncfg.forcing)},
                           {"ew_gamma", ncfg.ew.gamma},
                           {"ew_alpha", ncfg.ew.alpha},
@@ -759,6 +807,14 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                           {"max_inner", ncfg.gmres.max_iterations},
                           {"newton_tol", ncfg.tol},
                           {"max_newton", ncfg.max_iterations},
+                          {"psitc", ncfg.psitc.enabled ? "on" : "off"},
+                          {"psitc_mu0", ncfg.psitc.mu0},
+                          {"psitc_mu_max", ncfg.psitc.mu_max},
+                          {"psitc_norm", "merit"},
+                          {"psitc_max_retries", ncfg.psitc.max_retries},
+                          {"psitc_retry_factor", ncfg.psitc.retry_factor},
+                          {"stagnation_window", ncfg.stagnation_window},
+                          {"stagnation_factor", ncfg.stagnation_factor},
                           {"bisect", ccfg.max_bisections}};
     const auto t0 = std::chrono::steady_clock::now();
     try {

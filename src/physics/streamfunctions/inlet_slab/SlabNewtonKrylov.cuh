@@ -45,6 +45,28 @@
  *   The converged discrete state (r_F, r_out <= tol) does not depend on the policy; the iterate
  *   history does.
  *
+ * Pseudo-transient continuation (SF-33 N7b; cfg.psitc, library default OFF)
+ * -------------------------------------------------------------------------
+ * Enabled: Newton step k solves the SHIFTED system (J(x_k) + mu_k D) p = -E(x_k) with
+ *   D = diag(q_v / h^2) on the equation rows (planes 1..N-1, both fields), D = 0 on the outlet
+ *       rows (plane N: exact linear constraints of the oblique condition, never relaxed);
+ *   mu_k = clamp(mu0 * m_k / m_0, 0, mu_max)  (switched evolution relaxation, SER), with the
+ *       MERIT norm m = sqrt(r_F^2 + r_out^2) (the line-search / Eisenstat-Walker norm) and m_0 the
+ *       merit of the START state of this solve() call (i.e. of the stage's start state);
+ *   the operator applied matrix-free as J p + mu (D .* p) (N1 JVP + one kernel,
+ *       slab_add_pseudo_time_shift; no allocation) and P-A factored for the shifted operator
+ *       (SlabModePreconditioner::factor(..., mu): exact for the shifted plane-averaged operator);
+ *   Armijo backtracking on the merit unchanged; on line-search failure mu <- min(retry_factor mu,
+ *       mu_max) and the step is re-solved (P-A re-factored at the same base), at most max_retries
+ *       times (and only while mu actually grows); then `linesearch-fail`. Each retry prints a
+ *       `NEWTON ... Psi-tc retry r/R with mu=..` line; every LINEAR / NEWTON line carries `mu=`.
+ *   Eisenstat-Walker forcing (if on) applies to the shifted solves with the same eta_k (the merit
+ *   history is that of the nonlinear iterates); stage acceptance, r_F, r_out <= tol, stagnation /
+ *   maxit rules unchanged. The converged discrete state does not depend on mu (the shift only
+ *   changes the step; acceptance is on the unshifted residual; mu_k -> 0 with SER as E -> 0).
+ * Disabled: mu = 0 exactly, no shift kernel, no preconditioner shift, log lines unchanged: the N7a
+ * iteration bitwise.
+ *
  * Continuation (solve_with_continuation)
  * --------------------------------------
  * Target eps; stages [e in ladder if e < eps - 1e-12] + [eps]; first start x = 0, later stages warm

@@ -144,9 +144,17 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
                                     "basis");
     inputs.check(grid_);
     check_forcing_config(cfg);
+    if (cfg.psitc.enabled &&
+        (!(cfg.psitc.mu0 >= 0.0) || !(cfg.psitc.mu_max >= cfg.psitc.mu0) ||
+         !std::isfinite(cfg.psitc.mu_max) || cfg.psitc.max_retries < 0 ||
+         !(cfg.psitc.retry_factor > 1.0) || !std::isfinite(cfg.psitc.retry_factor)))
+        throw std::invalid_argument("SlabNewtonKrylov::solve: Psi-tc parameters out of range "
+                                    "(0 <= mu0 <= mu_max < inf, max_retries >= 0, "
+                                    "retry_factor > 1)");
 
     SlabNewtonReport rep;
     rep.forcing = cfg.forcing;
+    rep.psitc = cfg.psitc.enabled;
     rep.hist_r_F.reserve(static_cast<std::size_t>(max_newton_reserved_) + 1);
     rep.hist_r_out.reserve(static_cast<std::size_t>(max_newton_reserved_) + 1);
     rep.steps.reserve(static_cast<std::size_t>(max_newton_reserved_));
@@ -173,8 +181,12 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         return done(SlabSolveStatus::nan_inf);
     auto converged = [&]() { return r_F <= cfg.tol && r_out <= cfg.tol; };
 
+    const bool psitc = cfg.psitc.enabled;
+    real cur_mu = 0.0; // shift of the operator currently handed to GMRES (0: plain J, bitwise N7a)
     const SlabGmres::Operator opA = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
         jws_.apply(ctx, grid_, in, out);
+        if (cur_mu != 0.0)
+            slab_add_pseudo_time_shift(ctx, grid_, inputs, cur_mu, in, out);
     };
     const SlabGmres::Operator opM = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
         prec_.apply(ctx, grid_, in, out);
@@ -182,6 +194,7 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
 
     SlabSolveStatus status = SlabSolveStatus::maxit;
     real m_prev = 0.0, eta_prev = 0.0;
+    const real m_start = m; // SER reference: merit of the start state of this solve() call
     SlabGmresConfig gcfg = cfg.gmres; // tol overwritten per step with the forcing term
     for (int it = 1; it <= cfg.max_iterations; ++it) {
         if (converged()) {
@@ -191,67 +204,105 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         // base state of this step (U1_, U2_ = full arrays of x)
         assemble_full_planes(ctx, grid_, xc, inputs, span(U1_), span(U2_));
         jws_.prepare_base(ctx, grid_, inputs, cspan(U1_), cspan(U2_));
-        const SlabPrecFactorReport fr = prec_.factor(ctx, grid_, inputs, cspan(U1_), cspan(U2_));
         slab_scale_copy(ctx, -1.0, cspan(E_), span(rhs_));
         const real eta = forcing_term(cfg, it - 1, m, m_prev, eta_prev);
         gcfg.tol = eta;
+        real mu = 0.0;
+        if (psitc) // switched evolution relaxation, clamped to [0, mu_max]
+            mu = std::fmin(std::fmax(cfg.psitc.mu0 * (m / m_start), 0.0), cfg.psitc.mu_max);
         SlabNewtonStepRecord step;
         step.eta = eta;
-        step.t_fact = fr.seconds;
-        step.prec_singular_modes = fr.singular_modes;
-        const auto tl0 = std::chrono::steady_clock::now();
-        if (fr.singular_modes == 0) {
-            step.linear = gmres_.solve(ctx, opA, opM, cspan(rhs_), span(dx_), gcfg);
-        } else {
-            step.linear.status = SlabLinearStatus::not_run;
-        }
-        step.t_lin = seconds_since(tl0);
-        const SlabGmresReport& L = step.linear;
-        rep.linear_iterations_total += L.iterations;
-        if (L.iterations > rep.linear_iterations_max)
-            rep.linear_iterations_max = L.iterations;
-        rep.last_linear_status = L.status;
+        step.mu_ser = mu;
         rep.its = it;
-        log(fmt("    LINEAR gmres+%s its=%d rel=%.1e t=%.2fs cycles=%d reorth=%d rec=%.1e "
-                "status=%s t_fact=%.2fs singular_modes=%d",
-                cfg.prec_name.c_str(), L.iterations, L.rel_residual, step.t_lin, L.cycles,
-                L.reorthogonalizations, L.rel_recurrence, to_string(L.status), step.t_fact,
-                fr.singular_modes));
-        if (L.status != SlabLinearStatus::converged) {
-            rep.steps.push_back(step);
-            log(fmt("  NEWTON %s it=%2d linear_failure: GMRES status=%s rel=%.1e lits=%d "
-                    "prec singular modes=%d (step not taken) eta=%.2e",
-                    lab, it, to_string(L.status), L.rel_residual, L.iterations, fr.singular_modes,
-                    eta));
-            status = SlabSolveStatus::linear_failure;
-            break;
-        }
-        step.dx_max = red.maxabs_host(ctx, cspan(dx_));
-        step.dx_l2 = red.nrm2_host(ctx, cspan(dx_));
 
         real lam = 1.0;
-        bool accepted = false;
+        bool accepted = false, lin_failed = false;
         real rFn = 0.0, ron = 0.0, mn = 0.0;
-        while (lam >= cfg.lambda_min) {
-            slab_axpby(ctx, 1.0, xc, lam, cspan(dx_), span(xt_));
-            assemble_full_planes(ctx, grid_, cspan(xt_), inputs, span(U1_), span(U2_));
-            SlabResidualNorms tn;
-            evaluate_residual(ctx, grid_, inputs, cspan(U1_), cspan(U2_), span(Et_), rws_, &tn);
-            rFn = tn.r_F;
-            ron = tn.r_out;
-            mn = merit_of(rFn, ron);
-            if (std::isfinite(mn) && mn < (1.0 - cfg.armijo * lam) * m) {
-                accepted = true;
+        for (int attempt = 0;; ++attempt) {
+            if (attempt > 0) // the line search overwrote U1_, U2_ with trial states
+                assemble_full_planes(ctx, grid_, xc, inputs, span(U1_), span(U2_));
+            const SlabPrecFactorReport fr =
+                prec_.factor(ctx, grid_, inputs, cspan(U1_), cspan(U2_), mu);
+            cur_mu = mu;
+            step.mu = mu;
+            step.t_fact += fr.seconds;
+            step.prec_singular_modes = fr.singular_modes;
+            const auto tl0 = std::chrono::steady_clock::now();
+            if (fr.singular_modes == 0) {
+                step.linear = gmres_.solve(ctx, opA, opM, cspan(rhs_), span(dx_), gcfg);
+            } else {
+                step.linear = SlabGmresReport();
+                step.linear.status = SlabLinearStatus::not_run;
+            }
+            const double t_lin = seconds_since(tl0);
+            step.t_lin += t_lin;
+            const SlabGmresReport& L = step.linear;
+            step.linear_iterations_all += L.iterations;
+            step.linear_its_solves.push_back(L.iterations);
+            rep.linear_iterations_total += L.iterations;
+            if (L.iterations > rep.linear_iterations_max)
+                rep.linear_iterations_max = L.iterations;
+            rep.last_linear_status = L.status;
+            log(fmt("    LINEAR gmres+%s its=%d rel=%.1e t=%.2fs cycles=%d reorth=%d rec=%.1e "
+                    "status=%s t_fact=%.2fs singular_modes=%d%s",
+                    cfg.prec_name.c_str(), L.iterations, L.rel_residual, t_lin, L.cycles,
+                    L.reorthogonalizations, L.rel_recurrence, to_string(L.status), fr.seconds,
+                    fr.singular_modes, psitc ? fmt(" mu=%.3e", mu).c_str() : ""));
+            if (L.status != SlabLinearStatus::converged) {
+                log(fmt("  NEWTON %s it=%2d linear_failure: GMRES status=%s rel=%.1e lits=%d "
+                        "prec singular modes=%d (step not taken) eta=%.2e%s",
+                        lab, it, to_string(L.status), L.rel_residual, L.iterations,
+                        fr.singular_modes, eta, psitc ? fmt(" mu=%.3e", mu).c_str() : ""));
+                lin_failed = true;
                 break;
             }
-            lam *= 0.5;
+            step.dx_max = red.maxabs_host(ctx, cspan(dx_));
+            step.dx_l2 = red.nrm2_host(ctx, cspan(dx_));
+
+            lam = 1.0;
+            while (lam >= cfg.lambda_min) {
+                slab_axpby(ctx, 1.0, xc, lam, cspan(dx_), span(xt_));
+                assemble_full_planes(ctx, grid_, cspan(xt_), inputs, span(U1_), span(U2_));
+                SlabResidualNorms tn;
+                evaluate_residual(ctx, grid_, inputs, cspan(U1_), cspan(U2_), span(Et_), rws_, &tn);
+                rFn = tn.r_F;
+                ron = tn.r_out;
+                mn = merit_of(rFn, ron);
+                if (std::isfinite(mn) && mn < (1.0 - cfg.armijo * lam) * m) {
+                    accepted = true;
+                    break;
+                }
+                lam *= 0.5;
+            }
+            if (accepted)
+                break;
+            // Psi-tc: on line-search failure raise mu (x retry_factor, clamped to mu_max) and
+            // re-solve the step, at most max_retries times, before declaring linesearch-fail.
+            const real mu_next =
+                psitc ? std::fmin(mu * cfg.psitc.retry_factor, cfg.psitc.mu_max) : mu;
+            if (!psitc || attempt >= cfg.psitc.max_retries || !(mu_next > mu))
+                break;
+            log(fmt("  NEWTON %s it=%2d line search failed (min lambda 1/1024): merit %.3e -> "
+                    "%.3e at mu=%.3e; Psi-tc retry %d/%d with mu=%.3e",
+                    lab, it, m, mn, mu, attempt + 1, cfg.psitc.max_retries, mu_next));
+            mu = mu_next;
+            step.mu_retries.push_back(mu);
+            ++rep.linesearch_retries;
+        }
+        cur_mu = 0.0;
+        const SlabGmresReport& L = step.linear;
+        if (lin_failed) {
+            rep.steps.push_back(step);
+            status = SlabSolveStatus::linear_failure;
+            break;
         }
         if (!accepted) {
             rep.steps.push_back(step);
             log(fmt("  NEWTON %s it=%2d line search failed (min lambda 1/1024): merit %.3e -> "
-                    "%.3e  [gmres+%s rel=%.1e lits=%d |dx|max=%.2e |dx|2=%.2e] eta=%.2e",
+                    "%.3e  [gmres+%s rel=%.1e lits=%d |dx|max=%.2e |dx|2=%.2e] eta=%.2e%s",
                     lab, it, m, mn, cfg.prec_name.c_str(), L.rel_residual, L.iterations,
-                    step.dx_max, step.dx_l2, eta));
+                    step.dx_max, step.dx_l2, eta,
+                    psitc ? fmt(" mu=%.3e retries=%zu", mu, step.mu_retries.size()).c_str() : ""));
             status = SlabSolveStatus::linesearch_fail;
             break;
         }
@@ -271,9 +322,10 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         rep.hist_r_F.push_back(r_F);
         rep.hist_r_out.push_back(r_out);
         log(fmt("  NEWTON %s it=%2d r_F=%.3e r_out=%.3e lambda=%.4g |dx|max=%.2e lin=gmres+%s "
-                "rel=%.1e lits=%d t_lin=%.1fs |dx|2=%.2e t_fact=%.2fs eta=%.2e",
+                "rel=%.1e lits=%d t_lin=%.1fs |dx|2=%.2e t_fact=%.2fs eta=%.2e%s",
                 lab, it, r_F, r_out, lam, step.dx_max, cfg.prec_name.c_str(), L.rel_residual,
-                L.iterations, step.t_lin, step.dx_l2, step.t_fact, eta));
+                L.iterations, step.t_lin, step.dx_l2, step.t_fact, eta,
+                psitc ? fmt(" mu=%.3e retries=%zu", step.mu, step.mu_retries.size()).c_str() : ""));
         const std::size_t nh = rep.hist_r_F.size();
         const std::size_t w = static_cast<std::size_t>(cfg.stagnation_window);
         if (w >= 2 && nh >= w) {

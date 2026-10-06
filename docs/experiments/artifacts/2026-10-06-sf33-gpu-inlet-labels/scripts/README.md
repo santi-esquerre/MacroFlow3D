@@ -56,11 +56,17 @@ not a ctest entry) consumes these exports. Run from the repository root:
 ```
 
 Solver options (all modes that solve): `--lin-tol 1e-12 --restart 100 --max-inner 6000 --newton-tol 1e-13
---max-newton 40 --bisect 4 --prec pa` (P-A is the only preconditioner); linear forcing (SF-33 N7a) `--forcing ew`
+--max-newton 120 (40 with --psitc off) --bisect 4 --prec pa` (P-A is the only preconditioner); linear forcing (SF-33 N7a) `--forcing ew`
 (default: inexact Newton, Eisenstat-Walker choice 2, gamma 0.9, alpha 2, `--ew-eta0 0.1`, `--ew-eta-max 0.1`,
 eta_min = `--lin-tol`, oversolving guard 0.5 newton_tol / merit; every NEWTON line prints `eta=`, the SOLVER line and
 `GMRES_STATS` record the policy and the per-stage eta sequence) or `--forcing fixed` (every Newton system to
-`--lin-tol`: the N2-N6 behaviour, bitwise; use it for iterate-history reproduction checks); `--save-solution <dir>` writes `u1.npy`,
+`--lin-tol`: the N2-N6 behaviour, bitwise; use it for iterate-history reproduction checks); pseudo-transient
+continuation (SF-33 N7b) `--psitc on` (default: every Newton system shifted, `(J + mu_k D) p = -E`, `D = q_v / h^2`
+on the equation rows, 0 on the outlet rows, SER `mu_k = clamp(mu0 m_k / m_0, 0, mu_max)` on the merit norm of the
+stage's start state, `--psitc-mu0 1`, `--psitc-mu-max 100`; P-A factored for the shifted operator; line-search
+failure -> mu x4 (clamped) and re-solve, at most 4 times; every LINEAR / NEWTON line prints `mu=`, the SOLVER line,
+`solver_config` and `GMRES_STATS` (`mus=`, `^` = retry) record it) or `--psitc off` (mu = 0: the N7a iteration
+bitwise); `--save-solution <dir>` writes `u1.npy`,
 `u2.npy`, `solution.json` in the `--solutions` layout above; `--summary <json>` writes every reported number at full
 precision. Production oracle: `--oracle-hmax-div 8` (`h_max = h/8`, orchestrator decision: the SF-30 default `h`
 gives step-limited round trips ~1e-6 at 16^3), `--oracle-tol 1e-8`, `--oracle-max-roundtrip 1e-8` (acceptance (d):
@@ -103,8 +109,12 @@ scripts/remote --increment SF-33 run sf33-ladder-0.5 -- \
   `raw/ladder_<eps>/`, table `raw/ladder_<eps>/ladder_orders.md`.
 - `compare_proto.py LOG... [--summary <SF-29 sweep2 summary.md>] [--exports ../exports] [--out md]`: GPU vs
   prototype per case (full precision from `solution.json` / `ref_metrics.json` gated at 1e-6 relative; 4-digit
-  prototype values gated at their rounding bound and labelled `PASS(4dig)`), r_F gate, PATH equality, FIELDDIFF,
-  r_F history agreement, GMRES statistics per stage. `--crosscheck LOG...`: the step-8 table and orders.
+  prototype values gated at their rounding bound and labelled `PASS(4dig)`), STATUS (converged) and r_F gates,
+  PATH equality (informational since SF-33 N7b: never part of the verdict), FIELDDIFF, r_F history agreement,
+  GMRES statistics per stage.
+- `digest_newton.py JSON...` (SF-33 N7b): per-stage Newton / GMRES digest of the driver's `--summary` JSON
+  (status, steps, r_F history, eta and mu sequences, GMRES total / max / median per solve, per-restart curves of
+  every failed linear solve). `--crosscheck LOG...`: the step-8 table and orders.
 - `ladder_orders.py LOG...`: per-grid table (status, r_F, PATH, metrics, ceiling, oracle round trips, GMRES,
   timing, memory), observed orders, the acceptance-(b) reading, SF-18 applied-scale consistency.
 

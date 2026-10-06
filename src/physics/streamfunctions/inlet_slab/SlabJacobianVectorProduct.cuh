@@ -153,6 +153,22 @@ __host__ __device__ inline void slab_outlet_point_jvp(const real g1[3], const re
 }
 
 // ------------------------------------------------------------------------------------------------
+// Pseudo-transient shift (SF-33 N7b)
+// ------------------------------------------------------------------------------------------------
+
+/**
+ * out += mu * (D .* in) with the pseudo-time mass matrix D = diag(q_v / h^2) on the EQUATION rows
+ * (planes 1..N-1, both fields; q_v = inputs.q at the row's vertex, h = grid.h: the dimension of the
+ * diagonal of -q L) and D = 0 on the OUTLET rows (plane N: exact linear constraints of the oblique
+ * condition, never relaxed). in, out: 2 N^3, field-major, planes 1..N; must not overlap. One kernel
+ * on ctx.cuda_stream(); no allocation, no host sync. mu = 0 is NOT special-cased here (callers
+ * skip the call when the shift is off, so the unshifted path stays bitwise unchanged).
+ */
+void slab_add_pseudo_time_shift(CudaContext& ctx, const InletSlabGrid& grid,
+                                const SlabStageInputs& inputs, real mu, DeviceSpan<const real> in,
+                                DeviceSpan<real> out);
+
+// ------------------------------------------------------------------------------------------------
 // Workspace
 // ------------------------------------------------------------------------------------------------
 

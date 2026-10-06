@@ -18,6 +18,11 @@
  * choice 2 forcing terms eta_k (the GMRES relative tolerance of Newton step k, see
  * SlabNewtonKrylov.cuh); `forcing = fixed` solves every Newton system to gmres.tol (lin_tol), the
  * N2-N6 behaviour, bitwise.
+ *
+ * Pseudo-transient continuation (SF-33 N7b): `psitc.enabled` solves every Newton system shifted,
+ * (J + mu_k D) p = -E, with switched evolution relaxation (SER) for mu_k; see SlabNewtonKrylov.cuh.
+ * The LIBRARY default is `enabled = false` (mu = 0: the N7a behaviour, bitwise); the production
+ * policy (Psi-tc on, max_newton 120) is set by the driver (apps/inlet_slab).
  */
 
 #include "../../../core/Scalar.hpp"
@@ -126,6 +131,17 @@ struct SlabEwConfig {
     real eta_max = 0.1; ///< cap (applied before the floor and the oversolving guard)
 };
 
+/// Pseudo-transient continuation with switched evolution relaxation (SF-33 N7b; see
+/// SlabNewtonKrylov.cuh for the formulas). Disabled: mu = 0 exactly (no shift kernel, no
+/// preconditioner shift, unchanged log lines).
+struct SlabPsitcConfig {
+    bool enabled = false;
+    real mu0 = 1.0;      ///< mu of the first Newton step of every solve() call
+    real mu_max = 100.0; ///< clamp of every mu (SER value and line-search retries)
+    int max_retries = 4; ///< line-search failure: mu *= retry_factor, re-solve, at most this often
+    real retry_factor = 4.0;
+};
+
 struct SlabGmresConfig {
     real tol = 1e-12;          ///< stop when the TRUE relative residual ||b - A x|| / ||b|| <= tol
     int restart = 50;          ///< Krylov basis size m (must be <= the prepared restart)
@@ -152,6 +168,7 @@ struct SlabNewtonConfig {
     std::string prec_name = "P-A";         ///< printed in the LINEAR line as `gmres+<prec_name>`
     SlabForcing forcing = SlabForcing::ew; ///< linear forcing policy (SF-33 N7a)
     SlabEwConfig ew;                       ///< used only when forcing == ew
+    SlabPsitcConfig psitc;                 ///< pseudo-transient continuation (SF-33 N7b)
 };
 
 struct SlabContinuationConfig {
@@ -187,7 +204,12 @@ struct SlabPrecFactorReport {
 struct SlabNewtonStepRecord {
     real r_F = 0.0, r_out = 0.0, lambda = 0.0, dx_max = 0.0, dx_l2 = 0.0;
     real eta = 0.0; ///< GMRES relative tolerance used by this step (forcing term)
-    SlabGmresReport linear;
+    real mu = 0.0;  ///< pseudo-time shift of the solve whose direction was used (or the last tried)
+    real mu_ser = 0.0;             ///< SER value of this step (before any line-search retry)
+    std::vector<real> mu_retries;  ///< mu of every line-search retry (empty: none)
+    int linear_iterations_all = 0; ///< GMRES iterations of every solve of this step (retries incl.)
+    std::vector<int> linear_its_solves; ///< GMRES iterations per linear solve of this step
+    SlabGmresReport linear;             ///< the last linear solve of this step
     double t_lin = 0.0, t_fact = 0.0;
     int prec_singular_modes = 0;
 };
@@ -195,6 +217,8 @@ struct SlabNewtonStepRecord {
 struct SlabNewtonReport {
     SlabSolveStatus status = SlabSolveStatus::not_run;
     SlabForcing forcing = SlabForcing::fixed; ///< forcing policy of this solve() call
+    bool psitc = false;                       ///< pseudo-transient continuation on (SF-33 N7b)
+    int linesearch_retries = 0;               ///< total Psi-tc line-search retries (all steps)
     int its = 0;
     real r_F = 0.0, r_out = 0.0;
     std::vector<real> hist_r_F; ///< entry 0 = start state, then one per accepted step
