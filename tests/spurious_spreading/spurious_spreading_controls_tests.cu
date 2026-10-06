@@ -22,9 +22,19 @@
  *    max |delta_psi_i| <= 1e-10 + 1e-14 and |delta_x2| <= 1e-6; RK (tol 1e-8,
  *    dt_max 0.25) |delta_x2| <= 1e-6; Pollock (m = 1) |delta_x2|, |delta_x3|,
  *    |tau - 1| <= 1e-13; all statuses 0.
- *  - pair_B (a = 0.1, b = 0.08): Pollock var(delta_x3) at n = 32 (N = 32,
- *    m = 1) < at n = 16 (N = 16, m = 1), both printed; divergence_max_rel
- *    <= 1e-13.
+ *  - pair_B (a = 0.1, b = 0.08; Pollock m = 1 at N = 16 and N = 32): every
+ *    seed status 0 and divergence_max_rel <= 1e-13. The originally
+ *    pre-registered gate "var(delta_x3) decreases from n = 16 to 32" is
+ *    DEGENERATE on pair B and is no longer a check (SF-32 corrective node C1,
+ *    orchestrator decision disclosed in the orchestration record): pair B's
+ *    velocity is separable (c2 depends on x1 only, c3 = A(x1) B(x2)), so in
+ *    every RT0 cell dx3/dx2 depends only on the x2 cell, Pollock's x3 is a
+ *    function of x2, and x3 returns exactly after one period; both variances
+ *    are roundoff (~1e-34). They are still printed as an INFO line.
+ *  - pair_G_pollock_refinement (restated control, C1): pair G (e = 0.03),
+ *    Pollock m = 1 at N = 16 and N = 32, 256 seeds:
+ *    var(delta_x3)(N = 32) <= var(delta_x3)(N = 16) / 2, both variances and
+ *    the ratio printed; var(delta_x2) and its ratio printed (not gated).
  *  - pair_G (e = 0.03, N = 16): the three trackers finish with every seed
  *    status 0; pseudo-symplectic max |delta_psi_i| <= 1e-10 + 1e-14; RK and
  *    Pollock rms(delta_x) printed (measured quantities, no gate); summary
@@ -279,8 +289,39 @@ void case_pair_B(const CudaContext& ctx, TestReport& rep) {
         rep.check(e.n_ok == e.n, tag + "/all_status_0");
         rep.check(div <= 1e-13, tag + "/divergence_max_rel_le_1e-13", fmt("%.3e", div));
     }
-    rep.check(var3[1] < var3[0], "pair_B/pollock_var_delta_x3_decreases_16_to_32",
-              fmt2("var16 %.6e  var32 %.6e", var3[0], var3[1]));
+    // INFORMATIONAL (not a check): degenerate on pair B, see the file header (C1).
+    std::printf("[INFO] pair_B/pollock_var_delta_x3_16_vs_32 (degenerate: separable velocity, "
+                "x3 returns exactly; not gated)  var16 %.6e  var32 %.6e\n",
+                var3[0], var3[1]);
+}
+
+// ---------------------------------------------------------------------------
+// pair G: Pollock refinement control (restated pair-B control, SF-32 C1)
+// ---------------------------------------------------------------------------
+
+void case_pair_G_pollock_refinement(const CudaContext& ctx, TestReport& rep) {
+    std::printf("\n=== pair_G_pollock_refinement (e = 0.03; Pollock m = 1 at N = 16 and "
+                "N = 32, 256 seeds) ===\n");
+    double var2[2] = {0, 0};
+    double var3[2] = {0, 0};
+    const int Ns[2] = {16, 32};
+    for (int q = 0; q < 2; ++q) {
+        const LoadedLabels L = make_labels(AnalyticPair::G, 0.03, 0.0, Ns[q]);
+        const ReturnMapRun r = run(ctx, L, opts(TrackerKind::pollock));
+        const Extremes e = extremes(r);
+        const JVal& st = *r.summary.find("stats");
+        var2[q] = num(*st.find("delta_x2"), "var");
+        var3[q] = num(*st.find("delta_x3"), "var");
+        std::printf("  N = %d: n_ok %lld/%lld  var(dx2) %.6e  var(dx3) %.6e  "
+                    "divergence_max_rel %.3e\n",
+                    Ns[q], e.n_ok, e.n, var2[q], var3[q], num(r.summary, "divergence_max_rel"));
+    }
+    std::printf("  ratio var16/var32: dx2 %.4f (not gated)  dx3 %.4f\n", var2[0] / var2[1],
+                var3[0] / var3[1]);
+    char detail[256];
+    std::snprintf(detail, sizeof(detail), "var16 %.6e  var32 %.6e  ratio %.4f", var3[0], var3[1],
+                  var3[0] / var3[1]);
+    rep.check(var3[1] <= var3[0] / 2.0, "pair_G/pollock_var_delta_x3_halves_16_to_32", detail);
 }
 
 // ---------------------------------------------------------------------------
@@ -517,6 +558,8 @@ int main() {
         guarded("pair_A", [&] { case_pair_A(ctx, rep); });
         guarded("pair_B", [&] { case_pair_B(ctx, rep); });
         guarded("pair_G", [&] { case_pair_G(ctx, rep); });
+        guarded("pair_G_pollock_refinement",
+                [&] { case_pair_G_pollock_refinement(ctx, rep); });
         guarded("byte_reproducibility", [&] { case_byte_reproducibility(ctx, rep); });
         guarded("delta_ratio_must_divide_N", [&] { case_delta_ratio_must_divide(ctx, rep); });
     } catch (const std::exception& e) {

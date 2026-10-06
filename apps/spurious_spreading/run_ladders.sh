@@ -15,7 +15,8 @@
 # Each run is
 #   <binary> return-map --labels <prefix> --tracker <t> <level option> <value> --seeds N --seed S --out <run_dir>
 # with <run_dir> = <out-root>/<field_name>/<tracker>_<level_tag>; its stdout/stderr go to
-# <run_dir>/run.log. --dt-max-ratio and --ds-ratio are NOT passed (instrument defaults 0.5).
+# <run_dir>/run.log. --dt-max (absolute, default 0.25; D-2) and --ds-ratio (default 0.5) are NOT
+# passed: instrument defaults.
 #
 # A failed run never aborts the launcher (the experiment is a measurement: a failed level is
 # reported, not hidden). It is appended to <out-root>/<field_name>/failures.txt and the launcher
