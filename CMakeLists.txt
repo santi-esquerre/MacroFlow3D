@@ -223,6 +223,7 @@ set(INLET_SLAB_SOURCES
     src/physics/streamfunctions/inlet_slab/SlabGmres.cu
     src/physics/streamfunctions/inlet_slab/SlabModePreconditioner.cu
     src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cu
+    src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cu
     # SF-33 N3: D-1 inlet labels, production inputs (SF-18/SF-19/SF-28), production oracle
     src/physics/streamfunctions/inlet_slab/InletLabels.cu
     src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
@@ -635,6 +636,11 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_newton_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_newton_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_newton COMMAND inlet_slab_newton_tests)
+    # SF-33 N7c (probe): Galerkin coarse-space correction (N = 12 contract checks)
+    add_executable(inlet_slab_coarse_tests tests/inlet_slab/slab_coarse_tests.cu)
+    target_link_libraries(inlet_slab_coarse_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_coarse_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_coarse COMMAND inlet_slab_coarse_tests)
     # SF-33 N3: inlet labels, production inputs and production oracle (fast tier; grids <= 16^3)
     add_executable(inlet_slab_production_tests tests/inlet_slab/slab_production_tests.cu)
     target_link_libraries(inlet_slab_production_tests PRIVATE macroflow3d_lib)

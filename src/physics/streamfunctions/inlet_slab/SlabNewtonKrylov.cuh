@@ -67,6 +67,15 @@
  * Disabled: mu = 0 exactly, no shift kernel, no preconditioner shift, log lines unchanged: the N7a
  * iteration bitwise.
  *
+ * Coarse-space correction (SF-33 N7c PROBE; cfg.coarse, default off)
+ * -------------------------------------------------------------------
+ * cfg.coarse = add | mult: after every P-A factor() (same base, same mu) the Galerkin coarse
+ * matrix E = V^T (J + mu D) V of SlabCoarseCorrection is rebuilt (K operator applications + host
+ * LU; one `COARSE build` log line with K, times, rcond estimate, min/max |U_kk|) and GMRES uses
+ * the combined preconditioner (SlabCoarseCorrection::apply); after each linear solve one
+ * `COARSE apply` line gives the application count and times. A singular E (zero pivot) is treated
+ * like a singular P-A mode (linear solve not run, linear_failure). off: P-A alone, bitwise N7b.
+ *
  * Continuation (solve_with_continuation)
  * --------------------------------------
  * Target eps; stages [e in ladder if e < eps - 1e-12] + [eps]; first start x = 0, later stages warm
@@ -99,6 +108,7 @@
 #include "../../../core/Scalar.hpp"
 #include "../../../runtime/CudaContext.cuh"
 #include "InletSlabGrid.cuh"
+#include "SlabCoarseCorrection.cuh"
 #include "SlabGmres.cuh"
 #include "SlabJacobianVectorProduct.cuh"
 #include "SlabModePreconditioner.cuh"
@@ -125,6 +135,10 @@ class SlabNewtonKrylov {
     bool prepared() const { return grid_.n > 0; }
     const InletSlabGrid& grid() const { return grid_; }
 
+    /// SF-33 N7c (probe): allocates the coarse correction (SlabCoarseCorrection, `profiles` 1 or
+    /// 2) used when SlabNewtonConfig::coarse != off. Optional; allocating; call after prepare().
+    void prepare_coarse(CudaContext& ctx, int profiles);
+
     /// Newton from the start vector x (in/out, 2 N^3). See the header comment.
     SlabNewtonReport solve(CudaContext& ctx, const SlabStageInputs& inputs, DeviceSpan<real> x,
                            const std::string& label, const SlabNewtonConfig& cfg,
@@ -149,6 +163,7 @@ class SlabNewtonKrylov {
     SlabGmres& gmres() { return gmres_; }
     SlabModePreconditioner& preconditioner() { return prec_; }
     SlabJvpWorkspace& jvp() { return jws_; }
+    SlabCoarseCorrection& coarse() { return coarse_; }
 
   private:
     DeviceSpan<real> span(DeviceBuffer<real>& b) { return DeviceSpan<real>(b.data(), b.size()); }
@@ -161,6 +176,7 @@ class SlabNewtonKrylov {
     SlabJvpWorkspace jws_;
     SlabModePreconditioner prec_;
     SlabGmres gmres_;
+    SlabCoarseCorrection coarse_; ///< SF-33 N7c probe (prepared only by prepare_coarse)
     DeviceBuffer<real> U1_, U2_, E_, Et_, xt_, dx_, rhs_, xconv_;
 };
 

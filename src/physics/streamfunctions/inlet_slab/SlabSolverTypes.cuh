@@ -142,6 +142,23 @@ struct SlabPsitcConfig {
     real retry_factor = 4.0;
 };
 
+/// SF-33 N7c (probe): Galerkin coarse-space correction on the x1-constant / x1-linear column
+/// subspace combined with P-A (SlabCoarseCorrection.cuh). off = P-A alone (the N7b behaviour,
+/// bitwise); add = P_A^-1 + V E^-1 V^T; mult = multiplicative (one extra operator application).
+enum class SlabCoarseMode { off, add, mult };
+
+inline const char* to_string(SlabCoarseMode m) {
+    switch (m) {
+    case SlabCoarseMode::off:
+        return "off";
+    case SlabCoarseMode::add:
+        return "add";
+    case SlabCoarseMode::mult:
+        return "mult";
+    }
+    return "unknown";
+}
+
 struct SlabGmresConfig {
     real tol = 1e-12;          ///< stop when the TRUE relative residual ||b - A x|| / ||b|| <= tol
     int restart = 50;          ///< Krylov basis size m (must be <= the prepared restart)
@@ -169,6 +186,9 @@ struct SlabNewtonConfig {
     SlabForcing forcing = SlabForcing::ew; ///< linear forcing policy (SF-33 N7a)
     SlabEwConfig ew;                       ///< used only when forcing == ew
     SlabPsitcConfig psitc;                 ///< pseudo-transient continuation (SF-33 N7b)
+    /// SF-33 N7c (probe): coarse correction on top of P-A; rebuilt with P-A at every factor()
+    /// (same base, same mu). Requires SlabNewtonKrylov::prepare_coarse. Default off (bitwise N7b).
+    SlabCoarseMode coarse = SlabCoarseMode::off;
 };
 
 struct SlabContinuationConfig {

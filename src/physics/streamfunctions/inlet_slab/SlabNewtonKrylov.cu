@@ -101,9 +101,15 @@ void SlabNewtonKrylov::prepare(CudaContext& ctx, const InletSlabGrid& grid, int 
     ctx.synchronize();
 }
 
+void SlabNewtonKrylov::prepare_coarse(CudaContext& ctx, int profiles) {
+    if (!prepared())
+        throw std::logic_error("SlabNewtonKrylov::prepare_coarse: call prepare() first");
+    coarse_.prepare(ctx, grid_, profiles);
+}
+
 std::size_t SlabNewtonKrylov::allocated_bytes() const {
     std::size_t b = rws_.allocated_bytes() + jws_.allocated_bytes() + prec_.allocated_bytes() +
-                    gmres_.allocated_bytes();
+                    gmres_.allocated_bytes() + coarse_.allocated_bytes();
     for (const DeviceBuffer<real>* v : {&U1_, &U2_, &E_, &Et_, &xt_, &dx_, &rhs_, &xconv_})
         b += v->capacity() * sizeof(real);
     return b;
@@ -113,7 +119,8 @@ std::vector<const void*> SlabNewtonKrylov::buffer_pointers() const {
     std::vector<const void*> p = {U1_.data(),           U2_.data(),      E_.data(),   Et_.data(),
                                   xt_.data(),           dx_.data(),      rhs_.data(), xconv_.data(),
                                   rws_.partials_data(), rws_.sums_data()};
-    for (const auto& v : {prec_.buffer_pointers(), gmres_.buffer_pointers()})
+    for (const auto& v :
+         {prec_.buffer_pointers(), gmres_.buffer_pointers(), coarse_.buffer_pointers()})
         p.insert(p.end(), v.begin(), v.end());
     return p;
 }
@@ -144,6 +151,9 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
                                     "basis");
     inputs.check(grid_);
     check_forcing_config(cfg);
+    if (cfg.coarse != SlabCoarseMode::off && !coarse_.prepared_for(grid_))
+        throw std::invalid_argument("SlabNewtonKrylov::solve: coarse correction requested but "
+                                    "prepare_coarse() was not called");
     if (cfg.psitc.enabled &&
         (!(cfg.psitc.mu0 >= 0.0) || !(cfg.psitc.mu_max >= cfg.psitc.mu0) ||
          !std::isfinite(cfg.psitc.mu_max) || cfg.psitc.max_retries < 0 ||
@@ -188,8 +198,15 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         if (cur_mu != 0.0)
             slab_add_pseudo_time_shift(ctx, grid_, inputs, cur_mu, in, out);
     };
-    const SlabGmres::Operator opM = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
+    const SlabGmres::Operator opPA = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
         prec_.apply(ctx, grid_, in, out);
+    };
+    const bool use_coarse = cfg.coarse != SlabCoarseMode::off;
+    const SlabGmres::Operator opM = [&](DeviceSpan<const real> in, DeviceSpan<real> out) {
+        if (use_coarse)
+            coarse_.apply(ctx, grid_, cfg.coarse, opA, opPA, in, out);
+        else
+            prec_.apply(ctx, grid_, in, out);
     };
 
     SlabSolveStatus status = SlabSolveStatus::maxit;
@@ -227,8 +244,21 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
             step.mu = mu;
             step.t_fact += fr.seconds;
             step.prec_singular_modes = fr.singular_modes;
+            bool coarse_ok = true;
+            if (use_coarse && fr.singular_modes == 0) {
+                // SF-33 N7c probe: Galerkin coarse matrix of the SAME shifted operator
+                const SlabCoarseBuildReport cr = coarse_.build(ctx, grid_, opA);
+                coarse_ok = cr.zero_pivots == 0;
+                step.t_fact += cr.t_assembly + cr.t_lu + cr.t_cond;
+                log(fmt("    COARSE build mode=%s profiles=%d K=%d t_assembly=%.3fs t_lu=%.3fs "
+                        "t_cond=%.3fs norm1=%.3e inv_norm1_est=%.3e rcond_est=%.3e "
+                        "min|U_kk|=%.3e max|U_kk|=%.3e zero_pivots=%d mu=%.3e",
+                        to_string(cfg.coarse), cr.profiles, cr.K, cr.t_assembly, cr.t_lu,
+                        cr.t_cond, cr.norm1, cr.inv_norm1_est, cr.rcond_est, cr.min_abs_u,
+                        cr.max_abs_u, cr.zero_pivots, mu));
+            }
             const auto tl0 = std::chrono::steady_clock::now();
-            if (fr.singular_modes == 0) {
+            if (fr.singular_modes == 0 && coarse_ok) {
                 step.linear = gmres_.solve(ctx, opA, opM, cspan(rhs_), span(dx_), gcfg);
             } else {
                 step.linear = SlabGmresReport();
@@ -236,6 +266,12 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
             }
             const double t_lin = seconds_since(tl0);
             step.t_lin += t_lin;
+            if (use_coarse && coarse_.applications() > 0)
+                log(fmt("    COARSE apply applications=%d t_apply_avg=%.3fms "
+                        "t_host_solve_avg=%.3fms",
+                        coarse_.applications(),
+                        1e3 * coarse_.apply_seconds() / coarse_.applications(),
+                        1e3 * coarse_.host_solve_seconds() / coarse_.applications()));
             const SlabGmresReport& L = step.linear;
             step.linear_iterations_all += L.iterations;
             step.linear_its_solves.push_back(L.iterations);

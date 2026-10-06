@@ -17,6 +17,17 @@
  *                             integrator) at the target amplitude, the same report lines.
  *   --sf19-crosscheck <dir>   step 8: SF-19 inlet-face v1 and spline-flow v_perp of the exported
  *                             SF-29 `gauss` field vs the prototype's spectral reference.
+ *   --linear-probe <case_dir> SF-33 N7c (discriminating experiment): continuation to --eps-from
+ *                             (exactly as the solver: ladder entries below it, or --probe-ladder),
+ *                             k = --newton-steps Newton steps of the stage --eps-stage with the
+ *                             driver policy (Psi-tc / forcing options; P-A only), then the Jacobian
+ *                             is FROZEN at that iterate and (J + mu D) p = -E is solved with GMRES
+ *                             (--restart, --max-inner, tol --probe-tol) for every preconditioner of
+ *                             --probe-precs (pa | multP | addP, P = coarse profiles) and mu in
+ *                             {mu_SER of that iterate, 0} (--probe-mu). PROBE / PROBE_CURVE lines.
+ *
+ * SF-33 N7c also adds `--coarse off|add|mult --coarse-profiles 1|2` (Galerkin coarse correction
+ * on top of P-A in the Newton solves; SlabCoarseCorrection.cuh); default off (N7b behaviour).
  *
  * Nothing is clamped or regularized here: the driver only orchestrates N0-N4 and reports. Every
  * terminal status is printed as `STATUS <name>` and mapped to a distinct exit code (ExitCode).
@@ -33,6 +44,7 @@
 #include "src/physics/streamfunctions/inlet_slab/InletLabels.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletSlabGrid.cuh"
 #include "src/physics/streamfunctions/inlet_slab/NpyIo.hpp"
+#include "src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cuh"
 #include "src/physics/streamfunctions/inlet_slab/ProtoCase.cuh"
 #include "src/physics/streamfunctions/inlet_slab/SlabMetrics.cuh"
 #include "src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cuh"
@@ -137,7 +149,7 @@ class StageBuildFailure : public std::runtime_error {
 // Configuration
 // ================================================================================================
 
-enum class Mode { none, proto, production, crosscheck };
+enum class Mode { none, proto, production, crosscheck, linear_probe };
 
 struct DriverConfig {
     Mode mode = Mode::none;
@@ -178,6 +190,19 @@ struct DriverConfig {
     std::string psitc = "on"; ///< SF-33 N7b: pseudo-transient continuation (SER shift) on | off
     real psitc_mu0 = 1.0;
     real psitc_mu_max = 100.0;
+    std::string coarse = "off"; ///< SF-33 N7c probe: off | add | mult (Galerkin coarse correction)
+    int coarse_profiles = 1;    ///< 1 (x1-constant) | 2 (+ x1-linear)
+    // linear probe (SF-33 N7c)
+    bool has_eps_from = false;
+    real eps_from = 0.0;
+    bool has_eps_stage = false;
+    real eps_stage = 0.0;
+    int newton_steps = -1;
+    std::string probe_precs = "pa,mult1,mult2,add1";
+    real probe_tol = 1e-8;
+    std::string probe_mu = "both"; ///< ser | zero | both
+    real probe_stagnation = 1.0;   ///< GMRES restart-stagnation factor in the probe (1: cap only)
+    std::string probe_ladder;      ///< empty: the prototype ladder (0.25, 0.5, 1)
     // outputs
     std::string save_solution_dir;
     std::string summary_path;
@@ -195,11 +220,16 @@ inline const char* usage_text() {
            "             [--oracle-ladder] [--no-oracle] [--threads T] [--pcg-rtol 1e-10]\n"
            "             [--save-solution <dir>] [--summary <json>] [solver options]\n"
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
+           "  inlet_slab --linear-probe <case_dir> --eps-stage E --newton-steps k [--eps-from A]\n"
+           "             [--probe-ladder 0.25,0.375] [--probe-precs pa,mult1,mult2,add1]\n"
+           "             [--probe-tol 1e-8] [--probe-mu both|ser|zero] [--probe-stagnation 1]\n"
+           "             [--summary <json>] [solver options]\n"
            "solver options: [--lin-tol 1e-12] [--restart 100] [--max-inner 6000] [--newton-tol "
            "1e-13]\n"
            "                [--max-newton 120 (psitc on) | 40 (psitc off)] [--bisect 4]\n"
            "                [--prec pa] [--device 0] [--forcing ew|fixed] [--ew-eta-max 0.1]\n"
            "                [--ew-eta0 0.1] [--psitc on|off] [--psitc-mu0 1] [--psitc-mu-max 100]\n"
+           "                [--coarse off|add|mult] [--coarse-profiles 1|2]\n"
            "exit codes: 0 converged; 1 exception; 2 usage; 10 linesearch-fail; 11 stagnation; 12 "
            "maxit;\n"
            "            13 linear_failure; 14 nan_inf; 15 continuation_floor; 16 "
@@ -251,7 +281,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
     std::vector<std::string> seen;
     auto set_mode = [&](Mode m) {
         if (c.mode != Mode::none)
-            throw UsageError("exactly one of --proto, --production, --sf19-crosscheck");
+            throw UsageError("exactly one of --proto, --production, --sf19-crosscheck, "
+                             "--linear-probe");
         c.mode = m;
     };
     for (int i = 1; i < argc; ++i) {
@@ -283,6 +314,31 @@ inline DriverConfig parse_args(int argc, char** argv) {
         } else if (opt == "--sf19-crosscheck") {
             set_mode(Mode::crosscheck);
             c.crosscheck_dir = val;
+        } else if (opt == "--linear-probe") {
+            set_mode(Mode::linear_probe);
+            c.case_dir = val;
+        } else if (opt == "--eps-from") {
+            c.eps_from = parse_double(opt, val);
+            c.has_eps_from = true;
+        } else if (opt == "--eps-stage") {
+            c.eps_stage = parse_double(opt, val);
+            c.has_eps_stage = true;
+        } else if (opt == "--newton-steps") {
+            c.newton_steps = parse_int(opt, val);
+        } else if (opt == "--probe-precs") {
+            c.probe_precs = val;
+        } else if (opt == "--probe-tol") {
+            c.probe_tol = parse_double(opt, val);
+        } else if (opt == "--probe-mu") {
+            c.probe_mu = val;
+        } else if (opt == "--probe-stagnation") {
+            c.probe_stagnation = parse_double(opt, val);
+        } else if (opt == "--probe-ladder") {
+            c.probe_ladder = val;
+        } else if (opt == "--coarse") {
+            c.coarse = val;
+        } else if (opt == "--coarse-profiles") {
+            c.coarse_profiles = parse_int(opt, val);
         } else if (opt == "--eps-target") {
             c.eps_target = parse_double(opt, val);
             c.has_eps_target = true;
@@ -349,7 +405,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
         }
     }
     if (c.mode == Mode::none)
-        throw UsageError("one of --proto, --production, --sf19-crosscheck is required");
+        throw UsageError("one of --proto, --production, --sf19-crosscheck, --linear-probe is "
+                         "required");
     if (c.prec != "pa")
         throw UsageError("--prec: only 'pa' (per-mode plane-averaged preconditioner P-A) exists");
     if (c.forcing != "ew" && c.forcing != "fixed")
@@ -362,6 +419,25 @@ inline DriverConfig parse_args(int argc, char** argv) {
         throw UsageError("--psitc: 'on' (pseudo-transient continuation, default) or 'off'");
     if (!(c.psitc_mu0 >= 0.0) || !(c.psitc_mu_max >= c.psitc_mu0))
         throw UsageError("--psitc-mu0 / --psitc-mu-max: 0 <= mu0 <= mu_max");
+    if (c.coarse != "off" && c.coarse != "add" && c.coarse != "mult")
+        throw UsageError("--coarse: off (default) | add | mult");
+    if (c.coarse_profiles != 1 && c.coarse_profiles != 2)
+        throw UsageError("--coarse-profiles: 1 | 2");
+    if (c.mode == Mode::linear_probe) {
+        if (!c.has_eps_stage || !(c.eps_stage > 0.0))
+            throw UsageError("--linear-probe requires --eps-stage E > 0");
+        if (c.newton_steps < 0)
+            throw UsageError("--linear-probe requires --newton-steps k >= 0");
+        if (c.has_eps_from && !(c.eps_from >= 0.0 && c.eps_from < c.eps_stage))
+            throw UsageError("--eps-from must satisfy 0 <= A < --eps-stage");
+        if (c.probe_mu != "both" && c.probe_mu != "ser" && c.probe_mu != "zero")
+            throw UsageError("--probe-mu: both | ser | zero");
+        if (!(c.probe_tol > 0.0) || !(c.probe_stagnation > 0.0))
+            throw UsageError("--probe-tol / --probe-stagnation must be > 0");
+        if (c.coarse != "off")
+            throw UsageError("--linear-probe: the Newton steps use P-A only; the preconditioners "
+                             "compared are given by --probe-precs (do not pass --coarse)");
+    }
     // SF-33 N7b: SER-damped steps converge linearly while mu is large; Psi-tc default 120.
     if (!c.max_newton_given)
         c.max_newton = c.psitc == "on" ? 120 : 40;
@@ -772,6 +848,10 @@ inline sl::SlabNewtonConfig newton_config(const DriverConfig& c) {
     n.psitc.enabled = c.psitc == "on";
     n.psitc.mu0 = c.psitc_mu0;
     n.psitc.mu_max = c.psitc_mu_max;
+    if (c.coarse != "off") {
+        n.coarse = c.coarse == "add" ? sl::SlabCoarseMode::add : sl::SlabCoarseMode::mult;
+        n.prec_name = fmt("P-A+CC(%s,%d)", c.coarse.c_str(), c.coarse_profiles);
+    }
     return n;
 }
 
@@ -796,6 +876,15 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                  ncfg.ew.eta0, ncfg.ew.eta_max, ncfg.gmres.tol, ncfg.psitc.enabled ? "on" : "off",
                  ncfg.psitc.mu0, ncfg.psitc.mu_max, ncfg.psitc.max_retries,
                  ncfg.psitc.retry_factor, ncfg.stagnation_window, ncfg.stagnation_factor));
+    if (ncfg.coarse != sl::SlabCoarseMode::off)
+        out_line(fmt("SOLVER_COARSE mode=%s profiles=%d K=%d (SF-33 N7c probe: Galerkin "
+                     "coarse correction on the x1-constant%s column subspace, rebuilt with P-A at "
+                     "every factor)",
+                     sl::to_string(ncfg.coarse), c.coarse_profiles,
+                     2 * c.coarse_profiles * sc.grid.n * sc.grid.n,
+                     c.coarse_profiles == 2 ? " + x1-linear" : ""));
+    J["solver_config_coarse"] = {{"coarse", sl::to_string(ncfg.coarse)},
+                                 {"coarse_profiles", c.coarse_profiles}};
     J["solver_config"] = {{"forcing", sl::to_string(ncfg.forcing)},
                           {"ew_gamma", ncfg.ew.gamma},
                           {"ew_alpha", ncfg.ew.alpha},
@@ -1051,6 +1140,8 @@ inline int run_proto(CudaContext& ctx, const DriverConfig& c) {
     sl::SlabNewtonKrylov nk;
     pl.begin("prepare");
     nk.prepare(ctx, grid, c.restart, c.max_newton, c.max_inner);
+    if (c.coarse != "off")
+        nk.prepare_coarse(ctx, c.coarse_profiles);
     pl.end();
     SolveOutcome so;
     pl.begin("solve");
@@ -1341,6 +1432,8 @@ inline int run_production(CudaContext& ctx, const DriverConfig& c) {
     sl::SlabNewtonKrylov nk;
     pl.begin("prepare");
     nk.prepare(ctx, grid, c.restart, c.max_newton, c.max_inner);
+    if (c.coarse != "off")
+        nk.prepare_coarse(ctx, c.coarse_profiles);
     pl.end();
     SolveOutcome so;
     pl.begin("solve");
@@ -1500,6 +1593,270 @@ inline int run_crosscheck(CudaContext& ctx, const DriverConfig& c) {
 }
 
 // ================================================================================================
+// --linear-probe (SF-33 N7c: discriminating linear-solve experiment)
+// ================================================================================================
+
+inline std::vector<std::string> split_csv(const std::string& s) {
+    std::vector<std::string> out;
+    std::string cur;
+    for (char ch : s) {
+        if (ch == ',') {
+            if (!cur.empty())
+                out.push_back(cur);
+            cur.clear();
+        } else {
+            cur += ch;
+        }
+    }
+    if (!cur.empty())
+        out.push_back(cur);
+    return out;
+}
+
+struct ProbePrec {
+    std::string name;
+    sl::SlabCoarseMode mode = sl::SlabCoarseMode::off;
+    int profiles = 0;
+};
+
+inline ProbePrec parse_probe_prec(const std::string& s) {
+    ProbePrec p;
+    p.name = s;
+    if (s == "pa")
+        return p;
+    if ((s.rfind("mult", 0) == 0 && s.size() == 5) || (s.rfind("add", 0) == 0 && s.size() == 4)) {
+        const char d = s.back();
+        if (d == '1' || d == '2') {
+            p.mode = s[0] == 'm' ? sl::SlabCoarseMode::mult : sl::SlabCoarseMode::add;
+            p.profiles = d - '0';
+            return p;
+        }
+    }
+    throw UsageError("--probe-precs: entries pa | mult1 | mult2 | add1 | add2 (got '" + s + "')");
+}
+
+inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
+    const auto t_all = std::chrono::steady_clock::now();
+    json J;
+    J["mode"] = "linear_probe";
+    J["command"] = c.command_line;
+    J["case_dir"] = c.case_dir;
+    std::vector<ProbePrec> precs;
+    for (const std::string& s : split_csv(c.probe_precs))
+        precs.push_back(parse_probe_prec(s));
+    if (precs.empty())
+        throw UsageError("--probe-precs: empty list");
+
+    const sl::ProtoCaseMeta meta = sl::read_proto_case_meta(c.case_dir);
+    const sl::InletSlabGrid grid = sl::InletSlabGrid::make(meta.N);
+    sl::ProtoStageProvider prov(ctx, c.case_dir, grid, meta.field);
+    const real eps_from = c.has_eps_from ? c.eps_from : 0.0;
+    const std::string cname = fmt("%s_%g_%d", meta.field.c_str(), meta.eps, meta.N);
+    out_line(fmt("PROBE_SETUP case=%s field=%s N=%d stage=%g from=%g k=%d precs=%s tol=%.1e "
+                 "restart=%d cap=%d stagnation_factor=%g mu=%s",
+                 cname.c_str(), meta.field.c_str(), grid.n, c.eps_stage, eps_from,
+                 c.newton_steps, c.probe_precs.c_str(), c.probe_tol, c.restart, c.max_inner,
+                 c.probe_stagnation, c.probe_mu.c_str()));
+    J["case"] = cname;
+    J["stage"] = c.eps_stage;
+    J["from"] = eps_from;
+    J["k"] = c.newton_steps;
+
+    sl::SlabNewtonKrylov nk;
+    nk.prepare(ctx, grid, c.restart, std::max(c.max_newton, std::max(1, c.newton_steps)),
+               c.max_inner);
+    const sl::SlabNewtonConfig ncfg = newton_config(c); // coarse off (checked in parse_args)
+    DeviceBuffer<real> x(grid.unknown_size());
+    const sl::StageInputProvider provider = prov.callback();
+
+    // 1. warm start exactly as the solver: continuation to eps_from
+    if (eps_from > 0.0) {
+        sl::SlabContinuationConfig ccfg;
+        ccfg.max_bisections = c.bisect;
+        ccfg.field = meta.field;
+        if (!c.probe_ladder.empty()) {
+            ccfg.ladder.clear();
+            for (const std::string& e : split_csv(c.probe_ladder))
+                ccfg.ladder.push_back(detail::parse_double("--probe-ladder", e));
+        }
+        const sl::SlabContinuationReport cr = nk.solve_with_continuation(
+            ctx, eps_from, provider, mspan(x), ccfg, ncfg, sl::slab_stdout_logger);
+        out_line(fmt("PROBE_WARM status=%s path=%s r_F=%.3e r_out=%.3e t=%.1fs",
+                     sl::to_string(cr.status), cr.path.c_str(), cr.final_newton.r_F,
+                     cr.final_newton.r_out, cr.seconds));
+        J["warm"] = continuation_json(cr);
+        if (cr.status != sl::SlabSolveStatus::converged) {
+            J["probe_abort"] = "warm start not converged";
+            return finish(sl::to_string(cr.status), J, c);
+        }
+    } else {
+        sl::slab_fill(ctx, 0.0, mspan(x));
+    }
+
+    // 2. k Newton steps of the stage with the driver policy (P-A only)
+    const sl::SlabStageInputs& in = prov(c.eps_stage);
+    const sl::SlabResidualNorms n0 = nk.residual_norms(ctx, in, cspan(x));
+    const real m0 = n0.merit();
+    out_line(fmt("PROBE_STAGE_START r_F=%.6e r_out=%.6e merit=%.6e", n0.r_F, n0.r_out, m0));
+    if (c.newton_steps > 0) {
+        sl::SlabNewtonConfig kcfg = ncfg;
+        kcfg.max_iterations = c.newton_steps;
+        const sl::SlabNewtonReport nr =
+            nk.solve(ctx, in, mspan(x), fmt("%s:%g:%d:probe", meta.field.c_str(), c.eps_stage,
+                                            grid.n),
+                     kcfg, sl::slab_stdout_logger);
+        J["steps"] = newton_json(nr);
+        const int taken = static_cast<int>(nr.hist_r_F.size()) - 1;
+        if (taken != c.newton_steps && nr.status != sl::SlabSolveStatus::converged) {
+            out_line(fmt("PROBE_ABORT only %d of %d Newton steps taken (status %s)", taken,
+                         c.newton_steps, sl::to_string(nr.status)));
+            J["probe_abort"] = "newton steps not taken";
+            return finish(sl::to_string(nr.status), J, c);
+        }
+    }
+    const sl::SlabResidualNorms nk_n = nk.residual_norms(ctx, in, cspan(x));
+    const real mk = nk_n.merit();
+    const bool psitc = ncfg.psitc.enabled;
+    const real mu_ser =
+        psitc ? std::fmin(std::fmax(ncfg.psitc.mu0 * (mk / m0), 0.0), ncfg.psitc.mu_max) : 0.0;
+    out_line(fmt("PROBE_ITERATE k=%d r_F=%.6e r_out=%.6e merit=%.6e mu_SER=%.6e (psitc %s, "
+                 "mu0 %g, m0 %.6e)",
+                 c.newton_steps, nk_n.r_F, nk_n.r_out, mk, mu_ser, psitc ? "on" : "off",
+                 ncfg.psitc.mu0, m0));
+    J["iterate"] = {{"r_F", jnum(nk_n.r_F)},   {"r_out", jnum(nk_n.r_out)},
+                    {"merit", jnum(mk)},        {"merit_stage_start", jnum(m0)},
+                    {"mu_ser", jnum(mu_ser)}};
+
+    // 3. freeze the Jacobian at x
+    sl::SlabResidualWorkspace rws;
+    rws.prepare(grid);
+    DeviceBuffer<real> U1(grid.full_size()), U2(grid.full_size());
+    DeviceBuffer<real> E(grid.unknown_size()), rhs(grid.unknown_size()), dx(grid.unknown_size());
+    sl::assemble_full_planes(ctx, grid, cspan(x), in, mspan(U1), mspan(U2));
+    sl::evaluate_residual(ctx, grid, in, cspan(U1), cspan(U2), mspan(E), rws, nullptr);
+    sl::slab_scale_copy(ctx, -1.0, cspan(E), mspan(rhs));
+    sl::SlabJvpWorkspace& jws = nk.jvp();
+    jws.prepare_base(ctx, grid, in, cspan(U1), cspan(U2));
+    sl::SlabModePreconditioner& pa = nk.preconditioner();
+    sl::SlabGmres& gm = nk.gmres();
+    sl::SlabCoarseCorrection cc1, cc2;
+    bool need1 = false, need2 = false;
+    for (const auto& p : precs) {
+        need1 = need1 || p.profiles == 1;
+        need2 = need2 || p.profiles == 2;
+    }
+    if (need1)
+        cc1.prepare(ctx, grid, 1);
+    if (need2)
+        cc2.prepare(ctx, grid, 2);
+
+    std::vector<std::pair<std::string, real>> mus;
+    if (c.probe_mu != "zero")
+        mus.push_back({"ser", mu_ser});
+    if (c.probe_mu != "ser" && !(c.probe_mu == "both" && mu_ser == 0.0))
+        mus.push_back({"zero", 0.0});
+
+    sl::SlabGmresConfig gcfg;
+    gcfg.tol = c.probe_tol;
+    gcfg.restart = c.restart;
+    gcfg.max_iterations = c.max_inner;
+    gcfg.stagnation_factor = c.probe_stagnation;
+    json results = json::array();
+    for (const auto& mpair : mus) {
+        const real mu = mpair.second;
+        const sl::SlabPrecFactorReport fr = pa.factor(ctx, grid, in, cspan(U1), cspan(U2), mu);
+        const sl::SlabCoarseCorrection::Operator opA = [&](DeviceSpan<const real> a,
+                                                           DeviceSpan<real> b) {
+            jws.apply(ctx, grid, a, b);
+            if (mu != 0.0)
+                sl::slab_add_pseudo_time_shift(ctx, grid, in, mu, a, b);
+        };
+        const sl::SlabCoarseCorrection::Operator opPA = [&](DeviceSpan<const real> a,
+                                                            DeviceSpan<real> b) {
+            pa.apply(ctx, grid, a, b);
+        };
+        for (const ProbePrec& p : precs) {
+            json r;
+            r["prec"] = p.name;
+            r["mu_kind"] = mpair.first;
+            r["mu"] = jnum(mu);
+            r["pa_singular_modes"] = fr.singular_modes;
+            sl::SlabCoarseCorrection* cc =
+                p.profiles == 1 ? &cc1 : (p.profiles == 2 ? &cc2 : nullptr);
+            std::string cinfo;
+            bool usable = fr.singular_modes == 0;
+            if (cc != nullptr && usable) {
+                const sl::SlabCoarseBuildReport br = cc->build(ctx, grid, opA);
+                usable = br.zero_pivots == 0;
+                cinfo = fmt(" K=%d t_assembly=%.3fs t_lu=%.3fs t_cond=%.3fs norm1=%.3e "
+                            "inv_norm1_est=%.3e rcond_est=%.3e min|U_kk|=%.3e max|U_kk|=%.3e "
+                            "zero_pivots=%d",
+                            br.K, br.t_assembly, br.t_lu, br.t_cond, br.norm1, br.inv_norm1_est,
+                            br.rcond_est, br.min_abs_u, br.max_abs_u, br.zero_pivots);
+                r["coarse"] = {{"K", br.K},
+                               {"profiles", br.profiles},
+                               {"t_assembly", br.t_assembly},
+                               {"t_lu", br.t_lu},
+                               {"t_cond", br.t_cond},
+                               {"norm1", jnum(br.norm1)},
+                               {"inv_norm1_est", jnum(br.inv_norm1_est)},
+                               {"rcond_est", jnum(br.rcond_est)},
+                               {"min_abs_u", jnum(br.min_abs_u)},
+                               {"max_abs_u", jnum(br.max_abs_u)},
+                               {"zero_pivots", br.zero_pivots}};
+            }
+            sl::SlabGmresReport gr;
+            if (usable) {
+                const sl::SlabGmres::Operator opM = [&](DeviceSpan<const real> a,
+                                                        DeviceSpan<real> b) {
+                    if (cc != nullptr)
+                        cc->apply(ctx, grid, p.mode, opA, opPA, a, b);
+                    else
+                        pa.apply(ctx, grid, a, b);
+                };
+                gr = gm.solve(ctx, opA, opM, cspan(rhs), mspan(dx), gcfg);
+            }
+            std::string apinfo;
+            if (cc != nullptr && cc->applications() > 0)
+                apinfo = fmt(" applications=%d t_apply_avg=%.3fms t_host_solve_avg=%.3fms",
+                             cc->applications(), 1e3 * cc->apply_seconds() / cc->applications(),
+                             1e3 * cc->host_solve_seconds() / cc->applications());
+            out_line(fmt("PROBE case=%s stage=%g from=%g k=%d mu_kind=%s mu=%.3e prec=%s its=%d "
+                         "cycles=%d status=%s rel=%.3e t=%.2fs pa_singular=%d%s%s",
+                         cname.c_str(), c.eps_stage, eps_from, c.newton_steps,
+                         mpair.first.c_str(), mu, p.name.c_str(), gr.iterations, gr.cycles,
+                         sl::to_string(gr.status), gr.rel_residual, gr.seconds, fr.singular_modes,
+                         cinfo.c_str(), apinfo.c_str()));
+            std::string curve;
+            for (real v : gr.cycle_true)
+                curve += fmt(" %.3e", v);
+            out_line(fmt("PROBE_CURVE case=%s stage=%g k=%d mu_kind=%s prec=%s true:%s",
+                         cname.c_str(), c.eps_stage, c.newton_steps, mpair.first.c_str(),
+                         p.name.c_str(), curve.c_str()));
+            r["its"] = gr.iterations;
+            r["cycles"] = gr.cycles;
+            r["status"] = sl::to_string(gr.status);
+            r["rel"] = jnum(gr.rel_residual);
+            r["seconds"] = gr.seconds;
+            r["cycle_true"] = jvec(gr.cycle_true);
+            r["cycle_rec"] = jvec(gr.cycle_recurrence);
+            if (cc != nullptr) {
+                r["applications"] = cc->applications();
+                r["t_apply_avg"] =
+                    cc->applications() > 0 ? cc->apply_seconds() / cc->applications() : 0.0;
+            }
+            results.push_back(r);
+        }
+    }
+    J["results"] = results;
+    J["timing_total"] = seconds_since(t_all);
+    out_line(fmt("PROBE_DONE case=%s stage=%g k=%d t=%.1fs", cname.c_str(), c.eps_stage,
+                 c.newton_steps, seconds_since(t_all)));
+    // the GMRES outcomes are the measurement: the probe itself reports "ok" (exit 0)
+    return finish("ok", J, c);
+}
+
+// ================================================================================================
 // entry
 // ================================================================================================
 
@@ -1525,6 +1882,8 @@ inline int run(int argc, char** argv) {
             return run_production(ctx, c);
         case Mode::crosscheck:
             return run_crosscheck(ctx, c);
+        case Mode::linear_probe:
+            return run_linear_probe(ctx, c);
         case Mode::none:
             break;
         }
