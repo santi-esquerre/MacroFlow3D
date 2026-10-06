@@ -587,6 +587,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(streamline_tracker_rk_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME streamline_tracker_reference_rk COMMAND streamline_tracker_rk_tests)
 
+    # SF-32 N3a: Stokes face-flux (StokesFaceVelocity) contract tests S1-S7 (fast tier)
+    add_executable(streamline_tracker_face_flux_tests tests/streamline_tracker/face_flux_tests.cu)
+    target_link_libraries(streamline_tracker_face_flux_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_tracker_face_flux_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_tracker_face_flux COMMAND streamline_tracker_face_flux_tests)
+
     # SF-30 N1: SF-19 potential accessor + oracle streamline integrator contracts (fast tier)
     add_executable(streamline_closure_integrator_tests tests/closure/streamline_closure_integrator_tests.cu)
     target_link_libraries(streamline_closure_integrator_tests PRIVATE macroflow3d_lib)
