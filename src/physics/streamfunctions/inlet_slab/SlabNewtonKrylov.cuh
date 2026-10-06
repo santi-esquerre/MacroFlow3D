@@ -13,7 +13,8 @@
  * merit m = sqrt(r_F^2 + r_out^2). Iteration it = 1..max_iterations: if r_F <= tol and r_out <=
  * tol: converged (checked before every step and after the loop); freeze the base (N1
  * `prepare_base`), factor P-A (SlabModePreconditioner), solve J dx = -E with GMRES (true relative
- * residual <= gmres.tol); one `LINEAR` line per solve; if GMRES is not `converged` (or P-A has
+ * residual <= eta_k, the forcing term below); one `LINEAR` line per solve; if GMRES is not
+ * `converged` (i.e. eta_k not reached within the restart / inner caps) (or P-A has
  * singular modes): STOP with `linear_failure` (the step is never taken; the linear status is
  * recorded in the report); backtracking lambda = 1, 1/2, ..., lambda_min (1/1024): accept iff the
  * trial merit is finite and m_new < (1 - 1e-4 lambda) m; none accepted: `linesearch-fail` (state
@@ -23,6 +24,26 @@
  * After the loop: `maxit` unless converged. A non-finite merit of the START state gives `nan_inf`
  * (no step is attempted). GMRES non-finite results are reported as `linear_failure` with the linear
  * status `nonfinite`.
+ *
+ * Linear forcing (SF-33 N7a; cfg.forcing, every NEWTON line after it=0 prints `eta=`)
+ * -----------------------------------------------------------------------------------
+ *   fixed: eta_k = gmres.tol (lin_tol) for every step: the N2-N6 behaviour, bitwise (same code
+ *          path, the GMRES config is a copy whose tol is that same value).
+ *   ew (default): inexact Newton, Eisenstat-Walker (1996) choice 2. The norm is the MERIT
+ *          ||F_k|| = m_k = sqrt(r_F^2 + r_out^2) at the start of step k (the line-search merit; k
+ *          is 0-based per solve() call, i.e. it restarts at every continuation stage):
+ *            eta_0 = ew.eta0;  k >= 1: eta_k = gamma (m_k / m_{k-1})^alpha, and if
+ *            gamma eta_{k-1}^alpha > 0.1 then eta_k = max(eta_k, gamma eta_{k-1}^alpha);
+ *            then eta_k = min(eta_k, ew.eta_max); eta_k = max(eta_k, gmres.tol) (eta_min =
+ *            lin_tol); oversolving guard eta_k = max(eta_k, 0.5 tol / m_k) (tol = Newton tol: the
+ *            last solves are not tighter than needed to bring r_F, r_out <= tol).
+ *          Defaults gamma 0.9, alpha 2, eta0 = eta_max = 0.1. The GMRES stop is still the TRUE
+ *          relative residual ||J dx + E||_2 / ||E||_2 <= eta_k (raw Euclidean norm of the residual
+ *          vector; the merit ratio is used only to choose eta_k). Not reaching eta_k is
+ *          `linear_failure`, exactly as in the fixed mode: an unconverged step is never taken.
+ *          The Armijo line search and the stagnation / maxit / nan_inf rules are unchanged.
+ *   The converged discrete state (r_F, r_out <= tol) does not depend on the policy; the iterate
+ *   history does.
  *
  * Continuation (solve_with_continuation)
  * --------------------------------------
@@ -35,7 +56,10 @@
  * was not the target) one final attempt at the target from the last accepted state is made and
  * logged
  * `(final)` in the PATH (its Newton report is `final_newton`). Lines: STAGE, STAGE_END,
- * CONTINUATION bisection k/K, CONTINUATION gave up, PATH, in the prototype's formats.
+ * CONTINUATION bisection k/K, CONTINUATION gave up, PATH, in the prototype's formats; since SF-33
+ * N7a the final attempt prints its own `STAGE_END ... (final attempt) -> accepted|FAILED` line and
+ * a `CONTINUATION reporting ...` line names the state actually reported (the final attempt's, or
+ * the failed target stage's when the target itself failed).
  *
  * Memory (device): N0 residual workspace + N1 JVP workspace (4 (N+1) N^2 doubles) + P-A (see
  * SlabModePreconditioner.cuh) + GMRES (2 (m+1) N^3 * 8 + 3 vectors) + Newton vectors: U1, U2 full

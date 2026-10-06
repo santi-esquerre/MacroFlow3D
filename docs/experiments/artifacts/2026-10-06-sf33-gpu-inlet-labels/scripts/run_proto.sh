@@ -14,13 +14,32 @@
 # `inlet_slab --proto ... [--solution ...]`.  Logs: <out_root>/logs/proto/<case>.log; JSON summaries:
 # <out_root>/raw/proto/<case>.json; finally compare_proto.py over all logs -> <out_root>/raw/proto/compare_proto.md.
 # A non-zero driver exit (distinct per status) is recorded and the matrix continues.
-# Env: PYTHON (python3), CASES (override the matrix: space-separated field:eps:N).
+# Env: PYTHON (python3), CASES (override the matrix: space-separated field:eps:N), EXTRA_ARGS (extra
+# driver options, word-split, e.g. EXTRA_ARGS="--forcing fixed"). Extra driver options may also follow a
+# literal `--` after the positional arguments:
+#   run_proto.sh <build_dir> [<out_root>] [-- <driver options>...]   (SF-33 N7a)
+# Both are appended to every `inlet_slab --proto` call (EXTRA_ARGS first) and printed in the header line.
 set -euo pipefail
 
-BUILD_DIR=${1:?usage: run_proto.sh <build_dir> [<out_root>]}
+USAGE="usage: run_proto.sh <build_dir> [<out_root>] [-- <driver options>...]"
+POS=()
+while [ $# -gt 0 ]; do
+    if [ "$1" = "--" ]; then
+        shift
+        break
+    fi
+    POS+=("$1")
+    shift
+done
+DRIVER_EXTRA=()
+if [ -n "${EXTRA_ARGS:-}" ]; then
+    read -r -a DRIVER_EXTRA <<< "$EXTRA_ARGS"
+fi
+DRIVER_EXTRA+=("$@")
+BUILD_DIR=${POS[0]:?$USAGE}
 SCRIPTS=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ART=$(dirname "$SCRIPTS")
-OUT=${2:-$ART}
+OUT=${POS[1]:-$ART}
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
 BIN=$(cd "$BUILD_DIR" && pwd)/inlet_slab
@@ -46,7 +65,8 @@ run() {
     "$@"
 }
 
-echo "run_proto.sh: build=$BUILD_DIR bin=$BIN out=$OUT host=$(hostname) start=$(date -u +%FT%TZ)"
+echo "run_proto.sh: build=$BUILD_DIR bin=$BIN out=$OUT host=$(hostname) start=$(date -u +%FT%TZ)" \
+    "extra_args=[${DRIVER_EXTRA[*]:-}]"
 "$PY" -c 'import sys, numpy; print("run_proto.sh: python", sys.version.split()[0], "numpy", numpy.__version__)'
 summary=()
 for spec in $CASES; do
@@ -67,9 +87,10 @@ for spec in $CASES; do
         sol_args=(--solution "$EXPORTS/solutions/${name}_i1o4")
     fi
     set +e
-    echo "+ $BIN --proto $EXPORTS/$name ${sol_args[*]:-} --summary $RAW/$name.json > $LOGS/$name.log 2>&1"
+    echo "+ $BIN --proto $EXPORTS/$name ${sol_args[*]:-} --summary $RAW/$name.json ${DRIVER_EXTRA[*]:-}" \
+        "> $LOGS/$name.log 2>&1"
     "$BIN" --proto "$EXPORTS/$name" ${sol_args[@]+"${sol_args[@]}"} --summary "$RAW/$name.json" \
-        > "$LOGS/$name.log" 2>&1
+        ${DRIVER_EXTRA[@]+"${DRIVER_EXTRA[@]}"} > "$LOGS/$name.log" 2>&1
     rc=$?
     set -e
     st=$(grep '^STATUS ' "$LOGS/$name.log" | tail -1 || true)

@@ -39,6 +39,42 @@ real merit_of(real r_F, real r_out) {
     return std::sqrt(r_F * r_F + r_out * r_out);
 }
 
+void check_forcing_config(const SlabNewtonConfig& cfg) {
+    if (cfg.forcing == SlabForcing::fixed)
+        return;
+    if (cfg.forcing != SlabForcing::ew)
+        throw std::invalid_argument("SlabNewtonKrylov::solve: unknown forcing policy");
+    const SlabEwConfig& e = cfg.ew;
+    if (!(e.gamma > 0.0 && e.gamma <= 1.0) || !(e.alpha > 1.0 && e.alpha <= 2.0) ||
+        !(e.eta0 > 0.0 && e.eta0 < 1.0) || !(e.eta_max > 0.0 && e.eta_max < 1.0) ||
+        !(cfg.gmres.tol > 0.0) || cfg.gmres.tol > e.eta_max)
+        throw std::invalid_argument("SlabNewtonKrylov::solve: Eisenstat-Walker parameters out of "
+                                    "range (0 < gamma <= 1, 1 < alpha <= 2, 0 < eta0, eta_max < 1, "
+                                    "0 < gmres.tol <= eta_max)");
+}
+
+/// Forcing term of Newton step k (0-based within one solve() call); see SlabNewtonKrylov.cuh.
+/// m = merit at the start of step k, m_prev / eta_prev = merit at the start of / forcing term of
+/// step k - 1 (unused for k = 0).
+real forcing_term(const SlabNewtonConfig& cfg, int k, real m, real m_prev, real eta_prev) {
+    if (cfg.forcing == SlabForcing::fixed)
+        return cfg.gmres.tol;
+    const SlabEwConfig& e = cfg.ew;
+    real eta = e.eta0;
+    if (k >= 1) {
+        const real ratio = m / m_prev;
+        eta = e.gamma * std::pow(ratio, e.alpha);
+        const real safeguard = e.gamma * std::pow(eta_prev, e.alpha);
+        if (safeguard > 0.1)
+            eta = std::fmax(eta, safeguard);
+    }
+    eta = std::fmin(eta, e.eta_max);
+    eta = std::fmax(eta, cfg.gmres.tol); // eta_min = lin_tol
+    // oversolving guard: no tighter than needed to bring the merit to the Newton tolerance
+    eta = std::fmax(eta, 0.5 * cfg.tol / m);
+    return eta;
+}
+
 } // namespace
 
 void slab_stdout_logger(const std::string& line) {
@@ -107,8 +143,10 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         throw std::invalid_argument("SlabNewtonKrylov::solve: GMRES restart exceeds the prepared "
                                     "basis");
     inputs.check(grid_);
+    check_forcing_config(cfg);
 
     SlabNewtonReport rep;
+    rep.forcing = cfg.forcing;
     rep.hist_r_F.reserve(static_cast<std::size_t>(max_newton_reserved_) + 1);
     rep.hist_r_out.reserve(static_cast<std::size_t>(max_newton_reserved_) + 1);
     rep.steps.reserve(static_cast<std::size_t>(max_newton_reserved_));
@@ -143,6 +181,8 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
     };
 
     SlabSolveStatus status = SlabSolveStatus::maxit;
+    real m_prev = 0.0, eta_prev = 0.0;
+    SlabGmresConfig gcfg = cfg.gmres; // tol overwritten per step with the forcing term
     for (int it = 1; it <= cfg.max_iterations; ++it) {
         if (converged()) {
             status = SlabSolveStatus::converged;
@@ -153,12 +193,15 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         jws_.prepare_base(ctx, grid_, inputs, cspan(U1_), cspan(U2_));
         const SlabPrecFactorReport fr = prec_.factor(ctx, grid_, inputs, cspan(U1_), cspan(U2_));
         slab_scale_copy(ctx, -1.0, cspan(E_), span(rhs_));
+        const real eta = forcing_term(cfg, it - 1, m, m_prev, eta_prev);
+        gcfg.tol = eta;
         SlabNewtonStepRecord step;
+        step.eta = eta;
         step.t_fact = fr.seconds;
         step.prec_singular_modes = fr.singular_modes;
         const auto tl0 = std::chrono::steady_clock::now();
         if (fr.singular_modes == 0) {
-            step.linear = gmres_.solve(ctx, opA, opM, cspan(rhs_), span(dx_), cfg.gmres);
+            step.linear = gmres_.solve(ctx, opA, opM, cspan(rhs_), span(dx_), gcfg);
         } else {
             step.linear.status = SlabLinearStatus::not_run;
         }
@@ -177,8 +220,9 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         if (L.status != SlabLinearStatus::converged) {
             rep.steps.push_back(step);
             log(fmt("  NEWTON %s it=%2d linear_failure: GMRES status=%s rel=%.1e lits=%d "
-                    "prec singular modes=%d (step not taken)",
-                    lab, it, to_string(L.status), L.rel_residual, L.iterations, fr.singular_modes));
+                    "prec singular modes=%d (step not taken) eta=%.2e",
+                    lab, it, to_string(L.status), L.rel_residual, L.iterations, fr.singular_modes,
+                    eta));
             status = SlabSolveStatus::linear_failure;
             break;
         }
@@ -205,9 +249,9 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         if (!accepted) {
             rep.steps.push_back(step);
             log(fmt("  NEWTON %s it=%2d line search failed (min lambda 1/1024): merit %.3e -> "
-                    "%.3e  [gmres+%s rel=%.1e lits=%d |dx|max=%.2e |dx|2=%.2e]",
+                    "%.3e  [gmres+%s rel=%.1e lits=%d |dx|max=%.2e |dx|2=%.2e] eta=%.2e",
                     lab, it, m, mn, cfg.prec_name.c_str(), L.rel_residual, L.iterations,
-                    step.dx_max, step.dx_l2));
+                    step.dx_max, step.dx_l2, eta));
             status = SlabSolveStatus::linesearch_fail;
             break;
         }
@@ -217,6 +261,8 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
                                                cudaMemcpyDeviceToDevice, ctx.cuda_stream()));
         r_F = rFn;
         r_out = ron;
+        m_prev = m;
+        eta_prev = eta;
         m = mn;
         step.r_F = r_F;
         step.r_out = r_out;
@@ -225,9 +271,9 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         rep.hist_r_F.push_back(r_F);
         rep.hist_r_out.push_back(r_out);
         log(fmt("  NEWTON %s it=%2d r_F=%.3e r_out=%.3e lambda=%.4g |dx|max=%.2e lin=gmres+%s "
-                "rel=%.1e lits=%d t_lin=%.1fs |dx|2=%.2e t_fact=%.2fs",
+                "rel=%.1e lits=%d t_lin=%.1fs |dx|2=%.2e t_fact=%.2fs eta=%.2e",
                 lab, it, r_F, r_out, lam, step.dx_max, cfg.prec_name.c_str(), L.rel_residual,
-                L.iterations, step.t_lin, step.dx_l2, step.t_fact));
+                L.iterations, step.t_lin, step.dx_l2, step.t_fact, eta));
         const std::size_t nh = rep.hist_r_F.size();
         const std::size_t w = static_cast<std::size_t>(cfg.stagnation_window);
         if (w >= 2 && nh >= w) {
@@ -312,10 +358,14 @@ SlabContinuationReport SlabNewtonKrylov::solve_with_continuation(
                     ccfg.max_bisections, e_conv, todo.front()));
         } else {
             rep.floor_reached = true;
-            log(fmt("  CONTINUATION gave up after %d bisections; reporting the failed state at "
-                    "eps=%g",
+            // SF-33 N7a log fix: the message names the stage that failed; the state actually
+            // reported is announced after the final attempt (which has its own STAGE_END).
+            log(fmt("  CONTINUATION gave up after %d bisections at the failed stage eps=%g",
                     rep.bisections, e));
-            if (std::fabs(e - eps) > 1e-12) {
+            if (std::fabs(e - eps) <= 1e-12) {
+                log(fmt("  CONTINUATION reporting the failed state at eps=%g (status=%s)", e,
+                        to_string(rep.final_newton.status)));
+            } else {
                 const SlabStageInputs& tin = provider(eps);
                 if (have_conv)
                     copy_vec(x, xconv);
@@ -332,6 +382,13 @@ SlabContinuationReport SlabNewtonKrylov::solve_with_continuation(
                 const real fm = fs.newton.merit();
                 fs.accepted = fs.newton.status == SlabSolveStatus::converged ||
                               (std::isfinite(fm) && fm <= ccfg.stage_ok);
+                log(fmt("  STAGE_END field=%s eps=%g N=%d cand=%s status=%s its=%d r_F=%.3e "
+                        "r_out=%.3e (final attempt) -> %s",
+                        field, eps, N, cand, to_string(fs.newton.status), fs.newton.its,
+                        fs.newton.r_F, fs.newton.r_out, fs.accepted ? "accepted" : "FAILED"));
+                log(fmt("  CONTINUATION reporting the state of the final attempt at eps=%g "
+                        "(status=%s)",
+                        eps, to_string(fs.newton.status)));
                 rep.final_newton = fs.newton;
                 rep.stages.push_back(std::move(fs));
                 taken.push_back(fmt("%g(final)", eps));

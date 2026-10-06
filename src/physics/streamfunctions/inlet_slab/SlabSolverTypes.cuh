@@ -13,6 +13,11 @@
  * iterations earlier; continuation ladder (0.25, 0.5, 1.0), STAGE_OK = 1e-9, at most 4 bisections.
  * GMRES defaults of the SF-33 N2 task: lin_tol 1e-12 (true relative residual), restart 50, inner
  * cap 6000.
+ *
+ * Linear forcing (SF-33 N7a): `forcing = ew` (default) is inexact Newton with Eisenstat-Walker
+ * choice 2 forcing terms eta_k (the GMRES relative tolerance of Newton step k, see
+ * SlabNewtonKrylov.cuh); `forcing = fixed` solves every Newton system to gmres.tol (lin_tol), the
+ * N2-N6 behaviour, bitwise.
  */
 
 #include "../../../core/Scalar.hpp"
@@ -96,6 +101,31 @@ inline const char* to_string(SlabSolveStatus s) {
 // Configurations
 // ------------------------------------------------------------------------------------------------
 
+/// Linear forcing policy of the Newton iteration (SF-33 N7a).
+enum class SlabForcing {
+    fixed, ///< every Newton system solved to gmres.tol (lin_tol): exact-Newton surrogate (N2-N6)
+    ew     ///< inexact Newton, Eisenstat-Walker choice 2 forcing terms (default)
+};
+
+inline const char* to_string(SlabForcing f) {
+    switch (f) {
+    case SlabForcing::fixed:
+        return "fixed";
+    case SlabForcing::ew:
+        return "ew";
+    }
+    return "unknown";
+}
+
+/// Eisenstat-Walker (1996) choice 2 parameters. The floor eta_min is the GMRES tolerance of the
+/// Newton config (gmres.tol = lin_tol, 1e-12): no forcing term is ever tighter than the fixed mode.
+struct SlabEwConfig {
+    real gamma = 0.9;
+    real alpha = 2.0;
+    real eta0 = 0.1;    ///< forcing term of the first Newton step of every solve() call
+    real eta_max = 0.1; ///< cap (applied before the floor and the oversolving guard)
+};
+
 struct SlabGmresConfig {
     real tol = 1e-12;          ///< stop when the TRUE relative residual ||b - A x|| / ||b|| <= tol
     int restart = 50;          ///< Krylov basis size m (must be <= the prepared restart)
@@ -119,7 +149,9 @@ struct SlabNewtonConfig {
     int stagnation_window = 5;    ///< history entries compared (prototype: last 5 iterates)
     real stagnation_factor = 0.5; ///< stagnation iff merit_last > factor * merit_{last-4}
     SlabGmresConfig gmres;
-    std::string prec_name = "P-A"; ///< printed in the LINEAR line as `gmres+<prec_name>`
+    std::string prec_name = "P-A";         ///< printed in the LINEAR line as `gmres+<prec_name>`
+    SlabForcing forcing = SlabForcing::ew; ///< linear forcing policy (SF-33 N7a)
+    SlabEwConfig ew;                       ///< used only when forcing == ew
 };
 
 struct SlabContinuationConfig {
@@ -154,6 +186,7 @@ struct SlabPrecFactorReport {
 
 struct SlabNewtonStepRecord {
     real r_F = 0.0, r_out = 0.0, lambda = 0.0, dx_max = 0.0, dx_l2 = 0.0;
+    real eta = 0.0; ///< GMRES relative tolerance used by this step (forcing term)
     SlabGmresReport linear;
     double t_lin = 0.0, t_fact = 0.0;
     int prec_singular_modes = 0;
@@ -161,6 +194,7 @@ struct SlabNewtonStepRecord {
 
 struct SlabNewtonReport {
     SlabSolveStatus status = SlabSolveStatus::not_run;
+    SlabForcing forcing = SlabForcing::fixed; ///< forcing policy of this solve() call
     int its = 0;
     real r_F = 0.0, r_out = 0.0;
     std::vector<real> hist_r_F; ///< entry 0 = start state, then one per accepted step

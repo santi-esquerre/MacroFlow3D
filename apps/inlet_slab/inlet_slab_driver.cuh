@@ -171,6 +171,9 @@ struct DriverConfig {
     int max_newton = 40;
     int bisect = 4;
     std::string prec = "pa";
+    std::string forcing = "ew"; ///< SF-33 N7a: fixed | ew (Eisenstat-Walker choice 2)
+    real ew_eta_max = 0.1;
+    real ew_eta0 = 0.1;
     // outputs
     std::string save_solution_dir;
     std::string summary_path;
@@ -191,6 +194,7 @@ inline const char* usage_text() {
            "solver options: [--lin-tol 1e-12] [--restart 100] [--max-inner 6000] [--newton-tol "
            "1e-13]\n"
            "                [--max-newton 40] [--bisect 4] [--prec pa] [--device 0]\n"
+           "                [--forcing ew|fixed] [--ew-eta-max 0.1] [--ew-eta0 0.1]\n"
            "exit codes: 0 converged; 1 exception; 2 usage; 10 linesearch-fail; 11 stagnation; 12 "
            "maxit;\n"
            "            13 linear_failure; 14 nan_inf; 15 continuation_floor; 16 "
@@ -320,6 +324,12 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.bisect = parse_int(opt, val);
         } else if (opt == "--prec") {
             c.prec = val;
+        } else if (opt == "--forcing") {
+            c.forcing = val;
+        } else if (opt == "--ew-eta-max") {
+            c.ew_eta_max = parse_double(opt, val);
+        } else if (opt == "--ew-eta0") {
+            c.ew_eta0 = parse_double(opt, val);
         } else if (opt == "--device") {
             c.device = parse_int(opt, val);
         } else {
@@ -330,6 +340,12 @@ inline DriverConfig parse_args(int argc, char** argv) {
         throw UsageError("one of --proto, --production, --sf19-crosscheck is required");
     if (c.prec != "pa")
         throw UsageError("--prec: only 'pa' (per-mode plane-averaged preconditioner P-A) exists");
+    if (c.forcing != "ew" && c.forcing != "fixed")
+        throw UsageError("--forcing: 'ew' (Eisenstat-Walker, default) or 'fixed' (lin_tol)");
+    if (!(c.ew_eta_max > 0.0 && c.ew_eta_max < 1.0) || !(c.ew_eta0 > 0.0 && c.ew_eta0 < 1.0))
+        throw UsageError("--ew-eta-max / --ew-eta0 must lie in (0, 1)");
+    if (c.forcing == "ew" && c.lin_tol > c.ew_eta_max)
+        throw UsageError("--forcing ew requires --lin-tol (eta_min) <= --ew-eta-max");
     if (c.lin_tol <= 0.0 || c.newton_tol <= 0.0 || c.restart < 1 || c.max_inner < 1 ||
         c.max_newton < 1 || c.bisect < 0)
         throw UsageError("solver options must be positive (bisect >= 0)");
@@ -553,6 +569,7 @@ inline LinearStats linear_stats(const sl::SlabNewtonReport& r) {
 inline json newton_json(const sl::SlabNewtonReport& r) {
     json j;
     j["status"] = sl::to_string(r.status);
+    j["forcing"] = sl::to_string(r.forcing);
     j["its"] = r.its;
     j["r_F"] = jnum(r.r_F);
     j["r_out"] = jnum(r.r_out);
@@ -567,6 +584,7 @@ inline json newton_json(const sl::SlabNewtonReport& r) {
         s["r_F"] = jnum(st.r_F);
         s["r_out"] = jnum(st.r_out);
         s["lambda"] = jnum(st.lambda);
+        s["eta"] = jnum(st.eta);
         s["dx_max"] = jnum(st.dx_max);
         s["dx_l2"] = jnum(st.dx_l2);
         s["lin_status"] = sl::to_string(st.linear.status);
@@ -574,6 +592,8 @@ inline json newton_json(const sl::SlabNewtonReport& r) {
         s["lin_cycles"] = st.linear.cycles;
         s["lin_rel"] = jnum(st.linear.rel_residual);
         s["lin_rec"] = jnum(st.linear.rel_recurrence);
+        s["lin_cycle_true"] = jvec(st.linear.cycle_true);      // per restart cycle (N7a)
+        s["lin_cycle_rec"] = jvec(st.linear.cycle_recurrence); // per restart cycle (N7a)
         s["t_lin"] = st.t_lin;
         s["t_fact"] = st.t_fact;
         s["prec_singular_modes"] = st.prec_singular_modes;
@@ -618,13 +638,18 @@ inline void print_gmres_stats(const std::string& field, real eps, int N,
                               const sl::SlabContinuationReport& r) {
     for (const auto& s : r.stages) {
         const LinearStats ls = linear_stats(s.newton);
+        std::string etas;
+        for (const auto& st : s.newton.steps)
+            etas += (etas.empty() ? "" : ",") + fmt("%.2e", st.eta);
+        if (etas.empty())
+            etas = "-";
         out_line(fmt("GMRES_STATS field=%s eps=%g N=%d stage_eps=%g%s status=%s newton_its=%d "
                      "steps=%d its_max=%d its_median=%.1f its_total=%d rel_max=%.1e "
-                     "linear_failures=%d",
-                     field.c_str(), eps, N, s.eps,
-                     s.final_attempt ? "(final)" : "", sl::to_string(s.newton.status),
-                     s.newton.its, ls.steps, ls.its_max, ls.its_median, ls.its_total, ls.rel_max,
-                     ls.failures));
+                     "linear_failures=%d forcing=%s etas=%s",
+                     field.c_str(), eps, N, s.eps, s.final_attempt ? "(final)" : "",
+                     sl::to_string(s.newton.status), s.newton.its, ls.steps, ls.its_max,
+                     ls.its_median, ls.its_total, ls.rel_max, ls.failures,
+                     sl::to_string(s.newton.forcing), etas.c_str()));
     }
 }
 
@@ -700,6 +725,9 @@ inline sl::SlabNewtonConfig newton_config(const DriverConfig& c) {
     n.gmres.restart = c.restart;
     n.gmres.max_iterations = c.max_inner;
     n.prec_name = "P-A";
+    n.forcing = c.forcing == "fixed" ? sl::SlabForcing::fixed : sl::SlabForcing::ew;
+    n.ew.eta_max = c.ew_eta_max;
+    n.ew.eta0 = c.ew_eta0;
     return n;
 }
 
@@ -714,10 +742,24 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
     ccfg.cand = "i1o4";
     out.x.resize(sc.grid.unknown_size());
     out_line(fmt("SOLVER N=%d eps=%g cand=i1o4 newton_tol=%.1e max_newton=%d lin_tol=%.1e "
-                 "restart=%d max_inner=%d bisect=%d prec=P-A ladder=(0.25,0.5,1) stage_ok=%.0e",
+                 "restart=%d max_inner=%d bisect=%d prec=P-A ladder=(0.25,0.5,1) stage_ok=%.0e "
+                 "forcing=%s ew_gamma=%g ew_alpha=%g ew_eta0=%g ew_eta_max=%g ew_eta_min=%.1e",
                  sc.grid.n, sc.eps, ncfg.tol, ncfg.max_iterations, ncfg.gmres.tol,
                  ncfg.gmres.restart, ncfg.gmres.max_iterations, ccfg.max_bisections,
-                 ccfg.stage_ok));
+                 ccfg.stage_ok, sl::to_string(ncfg.forcing), ncfg.ew.gamma, ncfg.ew.alpha,
+                 ncfg.ew.eta0, ncfg.ew.eta_max, ncfg.gmres.tol));
+    J["solver_config"] = {{"forcing", sl::to_string(ncfg.forcing)},
+                          {"ew_gamma", ncfg.ew.gamma},
+                          {"ew_alpha", ncfg.ew.alpha},
+                          {"ew_eta0", ncfg.ew.eta0},
+                          {"ew_eta_max", ncfg.ew.eta_max},
+                          {"ew_eta_min", ncfg.gmres.tol},
+                          {"lin_tol", ncfg.gmres.tol},
+                          {"restart", ncfg.gmres.restart},
+                          {"max_inner", ncfg.gmres.max_iterations},
+                          {"newton_tol", ncfg.tol},
+                          {"max_newton", ncfg.max_iterations},
+                          {"bisect", ccfg.max_bisections}};
     const auto t0 = std::chrono::steady_clock::now();
     try {
         out.rep = nk.solve_with_continuation(ctx, sc.eps, sc.provider, mspan(out.x), ccfg, ncfg,

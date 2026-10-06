@@ -56,7 +56,11 @@ not a ctest entry) consumes these exports. Run from the repository root:
 ```
 
 Solver options (all modes that solve): `--lin-tol 1e-12 --restart 100 --max-inner 6000 --newton-tol 1e-13
---max-newton 40 --bisect 4 --prec pa` (P-A is the only preconditioner); `--save-solution <dir>` writes `u1.npy`,
+--max-newton 40 --bisect 4 --prec pa` (P-A is the only preconditioner); linear forcing (SF-33 N7a) `--forcing ew`
+(default: inexact Newton, Eisenstat-Walker choice 2, gamma 0.9, alpha 2, `--ew-eta0 0.1`, `--ew-eta-max 0.1`,
+eta_min = `--lin-tol`, oversolving guard 0.5 newton_tol / merit; every NEWTON line prints `eta=`, the SOLVER line and
+`GMRES_STATS` record the policy and the per-stage eta sequence) or `--forcing fixed` (every Newton system to
+`--lin-tol`: the N2-N6 behaviour, bitwise; use it for iterate-history reproduction checks); `--save-solution <dir>` writes `u1.npy`,
 `u2.npy`, `solution.json` in the `--solutions` layout above; `--summary <json>` writes every reported number at full
 precision. Production oracle: `--oracle-hmax-div 8` (`h_max = h/8`, orchestrator decision: the SF-30 default `h`
 gives step-limited round trips ~1e-6 at 16^3), `--oracle-tol 1e-8`, `--oracle-max-roundtrip 1e-8` (acceptance (d):
@@ -89,7 +93,9 @@ scripts/remote --increment SF-33 run sf33-ladder-0.5 -- \
   N 16, 24; N 32 for `gauss:0.25`, `gauss_ch:0.25`; `generic3d` eps 1 at N 16, 20, 24 and eps 0.25 / 0.5 at 16);
   exports when absent, `--solution` for every case with a saved 16^3 prototype solution; logs
   `<out_root>/logs/proto/<case>.log`, JSON `<out_root>/raw/proto/<case>.json`, table
-  `<out_root>/raw/proto/compare_proto.md`. `CASES="field:eps:N ..."` overrides the matrix.
+  `<out_root>/raw/proto/compare_proto.md`. `CASES="field:eps:N ..."` overrides the matrix. Extra driver options
+  (e.g. `--forcing fixed`) via `EXTRA_ARGS="..."` or after a literal `--`: `run_proto.sh <build> <out> -- --forcing
+  fixed` (appended to every driver call; use a distinct `<out_root>` per policy, the log names do not include it).
 - `run_crosscheck.sh <build_dir> [<out_root>]`: `--crosscheck gauss:0.25:{16,24,32}` + `--sf19-crosscheck`; logs
   `logs/crosscheck/N<N>.log`, table with observed orders `raw/crosscheck/crosscheck.md`.
 - `run_ladder.sh <build_dir> <eps> [<out_root>]`: production `N = 32, 64, 128` (`NS` overrides), `--sigma2 1
