@@ -103,9 +103,12 @@ std::vector<real> download(const real* d, std::size_t n) {
 
 void upload(DeviceBuffer<real>& d, const std::vector<real>& h) {
     d.resize(h.size());
-    if (!h.empty())
+    if (!h.empty()) {
         MACROFLOW3D_CUDA_CHECK(
             cudaMemcpy(d.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+        // SF-33 C2: legacy-stream copy must land before ctx-stream work
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+    }
 }
 
 DeviceSpan<const real> cspan(const DeviceBuffer<real>& b) {
@@ -219,6 +222,8 @@ void spectral_periodic_evaluate(const CudaContext& ctx, int N, const std::vector
                  DeviceBuffer<cufftDoubleComplex>(n3)};
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(in.data(), h.data(), n3 * sizeof(cufftDoubleComplex), cudaMemcpyHostToDevice));
+    // SF-33 C2: legacy-stream copy must land before ctx-stream work
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
     cufftHandle plan;
     cufft_check(cufftPlan3d(&plan, N, N, N, CUFFT_Z2Z), "cufftPlan3d");
     try {
@@ -616,6 +621,8 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
         auto put = [](DeviceBuffer<real>& d, const std::vector<real>& hv) {
             MACROFLOW3D_CUDA_CHECK(
                 cudaMemcpy(d.data(), hv.data(), hv.size() * sizeof(real), cudaMemcpyHostToDevice));
+            // SF-33 C2: legacy-stream copy must land before ctx-stream work
+            MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
         };
         put(S.inputs.lnk, lnk);
         for (int d = 0; d < 3; ++d)

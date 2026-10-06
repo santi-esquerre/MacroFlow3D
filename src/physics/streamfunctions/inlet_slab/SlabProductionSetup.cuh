@@ -46,7 +46,9 @@
  * Y) from the source's face values): rms_rel = RMS(d) / RMS(U), max_rel = max |d_i| / |U_i|
  * (expected O(h^2)). The SlabStageInputs and SlabReferenceData (vD only; psi_or is filled by the
  * oracle) are filled. Setup cost is one-time per stage: host <-> device copies and synchronizations
- * are explicit here (this is not a hot path).
+ * are explicit here (this is not a hot path). Every legacy-stream host-to-device cudaMemcpy is
+ * followed by cudaDeviceSynchronize before ctx.cuda_stream() work (SF-33 C2: the ctx stream is
+ * non-blocking and not ordered after the legacy default stream).
  */
 
 #include "../../../core/DeviceBuffer.cuh"

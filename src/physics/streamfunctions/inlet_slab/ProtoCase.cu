@@ -63,6 +63,8 @@ void upload(DeviceBuffer<real>& b, const std::vector<real>& h) {
         throw std::logic_error("ProtoCase: upload size mismatch");
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(b.data(), h.data(), h.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // SF-33 C2: legacy-stream copy must land before ctx-stream work
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 }
 
 std::vector<real> load(const std::string& dir, const std::string& name,

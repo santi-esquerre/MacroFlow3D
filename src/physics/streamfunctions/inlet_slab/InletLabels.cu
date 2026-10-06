@@ -78,6 +78,8 @@ template <class T> void upload(DeviceBuffer<T>& d, const T* h, std::size_t n) {
     d.resize(n);
     if (n > 0) {
         MACROFLOW3D_CUDA_CHECK(cudaMemcpy(d.data(), h, n * sizeof(T), cudaMemcpyHostToDevice));
+        // SF-33 C2: legacy-stream copy must land before ctx-stream work
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
     }
 }
 

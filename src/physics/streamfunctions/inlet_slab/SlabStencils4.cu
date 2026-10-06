@@ -116,6 +116,8 @@ void SlabStencilTable::build(const InletSlabGrid& g) {
     // Preparation step: synchronous upload (not part of any hot loop).
     MACROFLOW3D_CUDA_CHECK(cudaMemcpy(dev_.data(), packed.data(), packed.size() * sizeof(X1Stencil),
                                       cudaMemcpyHostToDevice));
+    // SF-33 C2: legacy-stream copy must land before ctx-stream work
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
     n_ = g.n;
 }
 

@@ -61,6 +61,8 @@
  * -------------------------------------
  *   - prepare(grid): the only allocating call (grow-only); builds the stencil table (synchronous
  *     upload) and zeroes plane 0 of the direction arrays (synchronous memset). Invalidates the base.
+ *     Both are legacy-stream operations followed by cudaDeviceSynchronize (SF-33 C2: the
+ *     non-blocking ctx.cuda_stream() is not ordered after the legacy default stream).
  *   - prepare_base(...): host-side checks + 2 device-to-device copies enqueued on ctx.cuda_stream();
  *     no allocation, no synchronization.
  *   - apply(...): 2 device-to-device copies (direction planes 1..N -> internal arrays whose plane 0

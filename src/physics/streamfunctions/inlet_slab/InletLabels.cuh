@@ -47,7 +47,8 @@
  * V100 at 3-6 TFLOP/s FP64) + 1.1e9 sincos (~0.05 s); at nf = 128 a quarter of that. Device memory:
  * 2 P_c M complex doubles (E2m1, T) + the tables (M^2 + 3 M complex doubles + M doubles); the
  * default P_c = 16384 gives 134 MB at M = 255.
- * Contract: prepare_device is the only allocating call; evaluate_labels allocates nothing, performs
+ * Contract: prepare_device is the only allocating call (its table uploads are legacy-stream copies
+ * each followed by cudaDeviceSynchronize, SF-33 C2); evaluate_labels allocates nothing, performs
  * no host synchronization (stream-ordered on ctx.cuda_stream(), the caller synchronizes) and throws
  * std::logic_error if the device tables were not prepared. ZGEMM is deterministic for a fixed
  * device / build / chunk geometry; the summation order of the GPU path differs from the host mirror

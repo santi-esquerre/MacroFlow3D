@@ -87,6 +87,8 @@ void SlabJvpWorkspace::prepare(const InletSlabGrid& g) {
         // writes it afterwards (apply copies planes 1..N only). Preparation step: synchronous.
         MACROFLOW3D_CUDA_CHECK(cudaMemset(dir_U_[f].data(), 0, g.plane_size() * sizeof(real)));
     }
+    // SF-33 C2: legacy-stream memset must land before ctx-stream work
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
     base_inputs_ = nullptr;
     n_ = g.n;
 }

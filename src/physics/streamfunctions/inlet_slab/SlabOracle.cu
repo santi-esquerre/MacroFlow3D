@@ -72,6 +72,8 @@ void oracle_evaluate_labels(CudaContext& ctx, const InletSlabGrid& grid, const I
         cudaMemcpy(dy.data(), hy.data(), hy.size() * sizeof(real), cudaMemcpyHostToDevice));
     MACROFLOW3D_CUDA_CHECK(
         cudaMemcpy(dz.data(), hz.data(), hz.size() * sizeof(real), cudaMemcpyHostToDevice));
+    // SF-33 C2: legacy-stream copy must land before ctx-stream work
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
     labels.evaluate_labels(ctx, DeviceSpan<const real>(dy.data(), dy.size()),
                            DeviceSpan<const real>(dz.data(), dz.size()), psi1, psi2);
     ctx.synchronize();

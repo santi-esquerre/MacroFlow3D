@@ -23,7 +23,9 @@
  * x = np.arange(N) / float(N), i.e. InletSlabGrid::coord), vperp_in, v_rms read as exported.
  *
  * Synchronization / allocation: these are LOAD-time functions (file I/O, device allocation,
- * synchronous host-to-device copies, one explicit ctx.synchronize() per loaded input set). They
+ * synchronous host-to-device copies, each followed by cudaDeviceSynchronize so it has landed before
+ * any work on the non-blocking ctx.cuda_stream() (SF-33 C2), one explicit ctx.synchronize() per
+ * loaded input set). They
  * are not hot-path code and must not be called inside a Newton / Krylov iteration except through
  * ProtoStageProvider, which loads each amplitude once and caches it in memory.
  */

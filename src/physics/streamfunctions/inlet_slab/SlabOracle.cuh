@@ -295,7 +295,8 @@ template <class Body> void oracle_parallel_for(std::size_t n, int threads, const
 }
 
 /// GPU part: labels at the inlet vertices (plane 0) and at the feet (planes 1..N) into psi1/psi2
-/// (full arrays). Allocates the device foot arrays once; one synchronization at the end.
+/// (full arrays). Allocates the device foot arrays once; one device synchronization after the
+/// legacy-stream uploads (SF-33 C2) and one synchronization at the end.
 void oracle_evaluate_labels(CudaContext& ctx, const InletSlabGrid& grid, const InletLabels& labels,
                             const std::vector<double>& foot_y, const std::vector<double>& foot_z,
                             DeviceSpan<real> psi1, DeviceSpan<real> psi2);

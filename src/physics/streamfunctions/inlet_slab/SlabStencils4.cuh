@@ -73,6 +73,7 @@ struct SlabStencilView {
 
 /// Device-resident x1 stencil table for one grid. build() allocates (grow-only) and uploads
 /// synchronously; call it once per grid (it is a preparation step, never part of a hot loop).
+/// The upload is followed by cudaDeviceSynchronize (SF-33 C2: later ctx-stream kernels read it).
 class SlabStencilTable {
   public:
     void build(const InletSlabGrid& g);
