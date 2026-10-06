@@ -593,6 +593,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(streamline_tracker_face_flux_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME streamline_tracker_face_flux COMMAND streamline_tracker_face_flux_tests)
 
+    # SF-32 N3b: Pollock-type (RT0) tracker contract tests P1-P6 (fast tier)
+    add_executable(streamline_tracker_pollock_tests tests/streamline_tracker/pollock_tracker_tests.cu)
+    target_link_libraries(streamline_tracker_pollock_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_tracker_pollock_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_tracker_pollock COMMAND streamline_tracker_pollock_tests)
+
     # SF-30 N1: SF-19 potential accessor + oracle streamline integrator contracts (fast tier)
     add_executable(streamline_closure_integrator_tests tests/closure/streamline_closure_integrator_tests.cu)
     target_link_libraries(streamline_closure_integrator_tests PRIVATE macroflow3d_lib)
