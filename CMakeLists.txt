@@ -213,6 +213,7 @@ set(STREAMLINE_TRACKER_SOURCES
     src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu
     src/physics/particles/streamline_tracker/ReferenceRkTracker.cu
     src/physics/particles/streamline_tracker/StokesFaceVelocity.cu
+    src/physics/particles/streamline_tracker/PollockTracker.cu
 )
 
 set(MULTIGRID_SOURCES
