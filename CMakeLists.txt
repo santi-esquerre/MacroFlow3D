@@ -227,6 +227,7 @@ set(INLET_SLAB_SOURCES
     src/physics/streamfunctions/inlet_slab/InletLabels.cu
     src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
     src/physics/streamfunctions/inlet_slab/SlabOracle.cu
+    src/physics/streamfunctions/inlet_slab/ProtoCase.cu
 )
 
 set(MULTIGRID_SOURCES
@@ -639,6 +640,16 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_production_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_production_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_production16 COMMAND inlet_slab_production_tests)
+    # SF-33 N4: .npy reader/writer and prototype-case loader (fast tier; synthetic N = 8 case)
+    add_executable(inlet_slab_npy_tests tests/inlet_slab/slab_npy_tests.cu)
+    target_link_libraries(inlet_slab_npy_tests PRIVATE macroflow3d_lib)
+    target_compile_definitions(inlet_slab_npy_tests PRIVATE
+        INLET_SLAB_FIXTURE_DIR="${CMAKE_SOURCE_DIR}/tests/inlet_slab/fixtures")
+    add_test(NAME inlet_slab_npy COMMAND inlet_slab_npy_tests)
+    # SF-33 N4: prototype cross-check on a Python export (built, NOT a ctest entry: needs
+    # docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/export_proto.py output)
+    add_executable(inlet_slab_proto_check tests/inlet_slab/slab_proto_check.cu)
+    target_link_libraries(inlet_slab_proto_check PRIVATE macroflow3d_lib)
     # --- SF-33 inlet slab tests: end ---
 
     # PETSc/SLEPc apps (only when backend is enabled)
