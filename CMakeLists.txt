@@ -214,6 +214,13 @@ set(STREAMLINE_TRACKER_SOURCES
     src/physics/particles/streamline_tracker/ReferenceRkTracker.cu
 )
 
+# SF-33: inlet-label equation (14) on the x1-non-periodic slab (grid/types, 4th-order stencils, residual, metrics)
+set(INLET_SLAB_SOURCES
+    src/physics/streamfunctions/inlet_slab/SlabStencils4.cu
+    src/physics/streamfunctions/inlet_slab/SlabResidual.cu
+    src/physics/streamfunctions/inlet_slab/SlabMetrics.cu
+)
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -297,6 +304,7 @@ add_library(macroflow3d_lib STATIC
     ${OPERATOR_SOURCES}
     ${INTERPOLATION_SOURCES}
     ${STREAMLINE_TRACKER_SOURCES}
+    ${INLET_SLAB_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
@@ -601,6 +609,14 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(streamline_closure_controls_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamline_closure_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME streamline_closure_controls16 COMMAND streamline_closure_controls_tests)
+
+    # --- SF-33 inlet slab tests: begin ---
+    # SF-33 N0: inlet-slab foundation contract tests (fast tier; grids <= 32^3)
+    add_executable(inlet_slab_contract_tests tests/inlet_slab/slab_contract_tests.cu)
+    target_link_libraries(inlet_slab_contract_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_contract_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_contracts COMMAND inlet_slab_contract_tests)
+    # --- SF-33 inlet slab tests: end ---
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
