@@ -1,0 +1,346 @@
+{
+  "field": {
+    "tool": "spurious_spreading solve-labels",
+    "increment": "SF-32 N2a",
+    "route": "stack",
+    "field": "lester_brk",
+    "eps": 0.25,
+    "n": 256,
+    "h": 0.00390625,
+    "vbar": 1.0,
+    "gbar1": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "gbar2": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "exit_reason": "stagnated",
+    "status": "not_converged",
+    "iterations": 95,
+    "r_F": 1.2790399872957345e-05,
+    "r_F_initial": 0.015792190070248974,
+    "r_F_final": 1.2790399872957345e-05,
+    "tolerance": 1e-08,
+    "tolerance_met": false,
+    "e_v": 0.0003786352696857755,
+    "e_psi1": 0.00061406010326301634,
+    "e_psi2": 0.00019723479505969068,
+    "e_div": 5.7650495889797458e-06,
+    "abs_c": {
+      "min": 0.7935814994464061,
+      "p0.001": 0.84608828836270855,
+      "p0.01": 0.84608828836270855,
+      "p0.05": 0.90107187334451622
+    },
+    "abs_c_source": "min: StreamfunctionSolveReport::diagnostics.c_min; percentiles: residual_histogram_percentile(report.residual, p) (histogram upper edges)",
+    "min_abs_c_grid": 0.79347101445152013,
+    "min_abs_c_grid_source": "SF-28 spline pair, |grad psi1 x grad psi2| at the n^3 cell centres",
+    "nonfinite_cells": 0,
+    "Y": {
+      "mean": 3.489877589300638e-20,
+      "variance": 0.010312499999994052,
+      "min": -0.30625065663172241,
+      "max": 0.30625065663172241
+    },
+    "darcy_pcg_converged": true,
+    "darcy": {
+      "K_eff": [
+        [
+          1.0024014664195229,
+          -4.8558474637189087e-21,
+          -1.4738067411190702e-21
+        ],
+        [
+          -6.8906243838534499e-21,
+          1.0025493546772624,
+          -4.3707614294276163e-19
+        ],
+        [
+          -1.6649535747626425e-20,
+          -1.309436436586823e-19,
+          1.0002000130288298
+        ]
+      ],
+      "symmetry_defect_rel": 3.0535404352499793e-19,
+      "eigenvalues_symmetric_part": [
+        1.0002000130288298,
+        1.0024014664195231,
+        1.0025493546772624
+      ],
+      "G": [
+        0.99760428680526514,
+        6.8566364259542963e-21,
+        1.6606326753437939e-20
+      ],
+      "achieved_mean_flux": [
+        1.0000000000000002,
+        -1.0631734487916649e-20,
+        -2.672996561820697e-21
+      ],
+      "div_max_abs": 4.1868730704663903e-12,
+      "div_rms": 4.4669549143717996e-13,
+      "corrector_results": [
+        {
+          "status": "converged",
+          "converged": true,
+          "iterations": 10,
+          "raw_rhs_mean": -3.8963515573697816e-20,
+          "raw_rhs_l2_norm": 2640.7099145710513,
+          "raw_rhs_compatibility_defect": 6.0436233040686063e-20,
+          "initial_projected_residual": 2640.7099145710513,
+          "final_projected_residual": 1.7886097541611437e-09,
+          "relative_projected_residual": 6.7732155822639073e-13,
+          "final_field_mean": 3.3054137277618986e-21
+        },
+        {
+          "status": "converged",
+          "converged": true,
+          "iterations": 10,
+          "raw_rhs_mean": 2.1684043449710089e-19,
+          "raw_rhs_l2_norm": 2299.6569214370729,
+          "raw_rhs_compatibility_defect": 3.8622214097270466e-19,
+          "initial_projected_residual": 2299.6569214370729,
+          "final_projected_residual": 1.4677375211543265e-09,
+          "relative_projected_residual": 6.3824195142861839e-13,
+          "final_field_mean": 3.1763735522036263e-21
+        },
+        {
+          "status": "converged",
+          "converged": true,
+          "iterations": 10,
+          "raw_rhs_mean": 0.0,
+          "raw_rhs_l2_norm": 5671.5007286094069,
+          "raw_rhs_compatibility_defect": 0.0,
+          "initial_projected_residual": 5671.5007286094069,
+          "final_projected_residual": 2.4167684279510248e-09,
+          "relative_projected_residual": 4.2612503173275468e-13,
+          "final_field_mean": 8.9203157257718504e-21
+        }
+      ],
+      "memory_total_bytes": 2628522091
+    },
+    "wall_seconds_darcy": 2.201627051,
+    "wall_seconds_solve": 146.420766558,
+    "wall_seconds": 151.141342694,
+    "files": {
+      "u1": "stack_lester_brk_e025_n256_u1.bin",
+      "u2": "stack_lester_brk_e025_n256_u2.bin",
+      "dtype": "float64 little-endian",
+      "layout": "i + n*(j + n*k), cell centres (i+1/2)h"
+    },
+    "config": {
+      "field": "lester_brk",
+      "eps": 0.25,
+      "n": 256,
+      "max_iter": 600,
+      "tolerance": 1e-08,
+      "epsilon": 9.9999999999999995e-07,
+      "anderson": true,
+      "newton": false,
+      "pcg_rtol": 1e-10,
+      "mg_levels": 7,
+      "mg_levels_mode": "auto",
+      "no_timing": false,
+      "out": "output_sf32/labels/stack_lester_brk_e025_n256",
+      "lambda": 1.0,
+      "initial_state": "zero_source",
+      "coefficient_state": "rebuild",
+      "gauge": "AffineGauge::benchmark(1)",
+      "conductivity_representation": "log_conductivity_y",
+      "solver_config": {
+        "picard": {
+          "max_iter": 600,
+          "tolerance": 1e-08,
+          "omega": 0.25
+        },
+        "adaptive": {
+          "enabled": true,
+          "omega_min": 0.01,
+          "backtrack_factor": 0.5,
+          "growth_factor": 1.2,
+          "omega_max": 1.0,
+          "easy_streak": 3,
+          "armijo_c": 0.0001,
+          "stagnation_window": 10,
+          "stagnation_min_reduction": 0.01,
+          "max_unexplained_fraction": 0.01,
+          "unexplained_growth_factor": 2.0,
+          "unexplained_growth_offset": 0.0001,
+          "percentile_collapse_factor": 10.0,
+          "floor_guard": {
+            "enabled": false,
+            "window": 5,
+            "drop_factor": 0.90000000000000002,
+            "max_resets": 3
+          }
+        },
+        "anderson": {
+          "enabled": true,
+          "depth": 5,
+          "start_iteration": 5,
+          "condition_limit": 1000000000000.0,
+          "restart_on_stagnation": false,
+          "max_restarts": 2
+        },
+        "newton": {
+          "enabled": false,
+          "activation_r_F": 0.01,
+          "stagnation_activation_r_F": 0.10000000000000001,
+          "forcing_coefficient": 1.0,
+          "forcing_min": 1e-08,
+          "forcing_max": 0.10000000000000001,
+          "armijo_c": 0.0001,
+          "alpha_min": 0.03125,
+          "backtrack_factor": 0.5,
+          "max_newton_iterations": 50,
+          "rescue_picard_steps": 5,
+          "gmres": {
+            "restart": 10,
+            "max_iterations": 100,
+            "rel_tol": 1e-10
+          },
+          "delta": {
+            "delta_min": 9.9999999999999998e-13,
+            "delta_max": 100.0
+          },
+          "rescue_resets_omega": false
+        },
+        "eta": 1.0,
+        "epsilon": 9.9999999999999995e-07,
+        "linear": {
+          "rtol": 1e-10,
+          "max_iter": 1000,
+          "check_every": 10
+        },
+        "mg": {
+          "num_levels": 7,
+          "pre_smooth": 2,
+          "post_smooth": 2,
+          "coarse_solve_iters": 50,
+          "check_convergence_every": 1,
+          "omega": 1.0
+        },
+        "histogram": {
+          "c_min_rel": 1e-10,
+          "c_max_rel": 10000.0
+        },
+        "diagnostics": {
+          "angle_exclusion_rel": 1e-08,
+          "low_speed_rel": 0.01,
+          "num_degeneracy_thresholds": 0,
+          "degeneracy_thresholds": []
+        },
+        "source_num_degeneracy_thresholds": 0,
+        "source_degeneracy_thresholds": [],
+        "initial_state": "zero_source",
+        "coefficient_state": "rebuild"
+      },
+      "darcy_config": {
+        "qbar": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "linear": {
+          "rtol": 1e-10,
+          "max_iter": 1000,
+          "check_every": 10
+        },
+        "mg": {
+          "num_levels": 7,
+          "pre_smooth": 2,
+          "post_smooth": 2,
+          "coarse_solve_iters": 50,
+          "check_convergence_every": 1,
+          "omega": 1.0
+        }
+      }
+    }
+  },
+  "tracker": "pollock",
+  "level": {
+    "delta_ratio": 2,
+    "n_cells": 128,
+    "delta": 0.0078125
+  },
+  "n_seeds": 8192,
+  "n_ok": 8192,
+  "status_counts": {
+    "0": 8192
+  },
+  "stats": {
+    "delta_x2": {
+      "mean": 5.8724403579965239e-07,
+      "var": 1.3094775378558943e-08,
+      "rms": 0.00011443391208080122,
+      "max_abs": 0.00096844248738514604
+    },
+    "delta_x3": {
+      "mean": 2.1007021481289065e-07,
+      "var": 2.3773372438765553e-10,
+      "rms": 1.5420047142690804e-05,
+      "max_abs": 0.0004210276912658701
+    },
+    "delta_psi1": {
+      "mean": 5.8831321475161036e-07,
+      "var": 1.3107940052708056e-08,
+      "rms": 0.0001144914239807797,
+      "max_abs": 0.00096859553694184086
+    },
+    "delta_psi2": {
+      "mean": 2.2605363533456395e-07,
+      "var": 2.3798684647908386e-10,
+      "rms": 1.5428478431949554e-05,
+      "max_abs": 0.00042474617981001599
+    },
+    "tau": {
+      "mean": 1.0000121299256977,
+      "var": 3.4752462038702493e-05,
+      "min": 0.98036499882320527,
+      "max": 1.0168923592152705
+    }
+  },
+  "flux_weighted_tau_mean": 0.99999961065633047,
+  "D22_uniform": 6.5473082709166255e-09,
+  "D33_uniform": 1.1886542036511072e-10,
+  "D22_flux": 6.5637418299306351e-09,
+  "D33_flux": 1.1879106157096785e-10,
+  "divergence_max_rel": 7.0710862089091034e-16,
+  "min_abs_c_grid": 0.79347101445152013,
+  "landing": {
+    "max_err": 0.0,
+    "max_iterations": 0
+  },
+  "config": {
+    "labels": "output_sf32/labels/stack_lester_brk_e025_n256",
+    "tracker": "pollock",
+    "tol_psi": 1e-10,
+    "ds_ratio": 0.5,
+    "tol": 9.9999999999999995e-07,
+    "dt_max": 0.25,
+    "rk_chunk": 0.25,
+    "delta_ratio": 2,
+    "seeds": 8192,
+    "seed": 20261006,
+    "max_panels": 10000000,
+    "max_chunks": 10000000,
+    "max_cells": 10000000,
+    "no_timing": false,
+    "out": "output_sf32/ladders/stack_lester_brk_e0.25_n256/pollock_m2",
+    "max_newton_iter": 8,
+    "trust_factor": 1.0,
+    "min_cross_norm": 0.0,
+    "min_cross_sin2": 3.5527136788005009e-15,
+    "rk_min_step": 1e-14,
+    "rk_max_steps_per_call": 1000000,
+    "rk_initial_step_ratio_of_dt_max": 0.10000000000000001,
+    "landing_tol": 9.9999999999999998e-13,
+    "landing_max_trials": 60,
+    "target_x1": 1.0
+  },
+  "wall_seconds": 0.32880199100000002
+}

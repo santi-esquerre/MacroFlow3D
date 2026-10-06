@@ -1,0 +1,262 @@
+{
+  "tool": "spurious_spreading solve-labels",
+  "increment": "SF-32 N2a",
+  "route": "stack",
+  "field": "lester_brk",
+  "eps": 0.25,
+  "n": 128,
+  "h": 0.0078125,
+  "vbar": 1.0,
+  "gbar1": [
+    0.0,
+    1.0,
+    0.0
+  ],
+  "gbar2": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "exit_reason": "stagnated",
+  "status": "not_converged",
+  "iterations": 142,
+  "r_F": 3.8185554217261088e-05,
+  "r_F_initial": 0.015700619256004817,
+  "r_F_final": 3.8185554217261088e-05,
+  "tolerance": 1e-08,
+  "tolerance_met": false,
+  "e_v": 0.00046088474272866438,
+  "e_psi1": 0.00061263267646363706,
+  "e_psi2": 0.00019098139461216904,
+  "e_div": 2.3122666385876022e-05,
+  "abs_c": {
+    "min": 0.79424030360297604,
+    "p0.001": 0.84608488855081099,
+    "p0.01": 0.84608488855081099,
+    "p0.05": 0.9010682525936824
+  },
+  "abs_c_source": "min: StreamfunctionSolveReport::diagnostics.c_min; percentiles: residual_histogram_percentile(report.residual, p) (histogram upper edges)",
+  "min_abs_c_grid": 0.79380310118019581,
+  "min_abs_c_grid_source": "SF-28 spline pair, |grad psi1 x grad psi2| at the n^3 cell centres",
+  "nonfinite_cells": 0,
+  "Y": {
+    "mean": 1.3690666318365161e-19,
+    "variance": 0.010312499999999072,
+    "min": -0.3060365471812666,
+    "max": 0.3060365471812666
+  },
+  "darcy_pcg_converged": true,
+  "darcy": {
+    "K_eff": [
+      [
+        1.0023977334599654,
+        7.7336217394879631e-22,
+        -1.4896301246258414e-20
+      ],
+      [
+        -1.2798293533785298e-20,
+        1.0025469967335112,
+        -5.8365961495322861e-19
+      ],
+      [
+        -7.3292565367201721e-21,
+        -2.5519846517151982e-19,
+        1.0001969171245284
+      ]
+    ],
+    "symmetry_defect_rel": 3.2762668568346188e-19,
+    "eigenvalues_symmetric_part": [
+      1.0001969171245282,
+      1.0023977334599667,
+      1.0025469967335099
+    ],
+    "G": [
+      0.99760800191388188,
+      1.2735243416763937e-20,
+      7.3102854487216235e-21
+    ],
+    "achieved_mean_flux": [
+      1.0000000000000011,
+      7.6652242425874846e-21,
+      -1.0529830523960453e-20
+    ],
+    "div_max_abs": 1.2487788580983761e-12,
+    "div_rms": 1.7125373091824475e-13,
+    "corrector_results": [
+      {
+        "status": "converged",
+        "converged": true,
+        "iterations": 10,
+        "raw_rhs_mean": 0.0,
+        "raw_rhs_l2_norm": 933.34634515022265,
+        "raw_rhs_compatibility_defect": 0.0,
+        "initial_projected_residual": 933.34634515022265,
+        "final_projected_residual": 2.4550354080755392e-10,
+        "relative_projected_residual": 2.6303584096430998e-13,
+        "final_field_mean": -9.4695636525070608e-21
+      },
+      {
+        "status": "converged",
+        "converged": true,
+        "iterations": 10,
+        "raw_rhs_mean": 4.87890977618477e-19,
+        "raw_rhs_l2_norm": 812.80340969938925,
+        "raw_rhs_compatibility_defect": 8.6926506210032917e-19,
+        "initial_projected_residual": 812.80340969938925,
+        "final_projected_residual": 1.9114582475495547e-10,
+        "relative_projected_residual": 2.3516858132478758e-13,
+        "final_field_mean": 9.3173624197973037e-21
+      },
+      {
+        "status": "converged",
+        "converged": true,
+        "iterations": 10,
+        "raw_rhs_mean": 1.7347234759768071e-18,
+        "raw_rhs_l2_norm": 1996.9795422861282,
+        "raw_rhs_compatibility_defect": 1.2579737952739119e-18,
+        "initial_projected_residual": 1996.9795422861282,
+        "final_projected_residual": 3.3034804134969867e-10,
+        "relative_projected_residual": 1.654238485445467e-13,
+        "final_field_mean": -1.1223186551119479e-20
+      }
+    ],
+    "memory_total_bytes": 328847460
+  },
+  "wall_seconds_darcy": 1.2588217269999999,
+  "wall_seconds_solve": 118.014939279,
+  "wall_seconds": 119.635363101,
+  "files": {
+    "u1": "stack_lester_brk_e025_n128_u1.bin",
+    "u2": "stack_lester_brk_e025_n128_u2.bin",
+    "dtype": "float64 little-endian",
+    "layout": "i + n*(j + n*k), cell centres (i+1/2)h"
+  },
+  "config": {
+    "field": "lester_brk",
+    "eps": 0.25,
+    "n": 128,
+    "max_iter": 600,
+    "tolerance": 1e-08,
+    "epsilon": 9.9999999999999995e-07,
+    "anderson": true,
+    "newton": false,
+    "pcg_rtol": 1e-10,
+    "mg_levels": 6,
+    "mg_levels_mode": "auto",
+    "no_timing": false,
+    "out": "output_sf32/labels/stack_lester_brk_e025_n128",
+    "lambda": 1.0,
+    "initial_state": "zero_source",
+    "coefficient_state": "rebuild",
+    "gauge": "AffineGauge::benchmark(1)",
+    "conductivity_representation": "log_conductivity_y",
+    "solver_config": {
+      "picard": {
+        "max_iter": 600,
+        "tolerance": 1e-08,
+        "omega": 0.25
+      },
+      "adaptive": {
+        "enabled": true,
+        "omega_min": 0.01,
+        "backtrack_factor": 0.5,
+        "growth_factor": 1.2,
+        "omega_max": 1.0,
+        "easy_streak": 3,
+        "armijo_c": 0.0001,
+        "stagnation_window": 10,
+        "stagnation_min_reduction": 0.01,
+        "max_unexplained_fraction": 0.01,
+        "unexplained_growth_factor": 2.0,
+        "unexplained_growth_offset": 0.0001,
+        "percentile_collapse_factor": 10.0,
+        "floor_guard": {
+          "enabled": false,
+          "window": 5,
+          "drop_factor": 0.90000000000000002,
+          "max_resets": 3
+        }
+      },
+      "anderson": {
+        "enabled": true,
+        "depth": 5,
+        "start_iteration": 5,
+        "condition_limit": 1000000000000.0,
+        "restart_on_stagnation": false,
+        "max_restarts": 2
+      },
+      "newton": {
+        "enabled": false,
+        "activation_r_F": 0.01,
+        "stagnation_activation_r_F": 0.10000000000000001,
+        "forcing_coefficient": 1.0,
+        "forcing_min": 1e-08,
+        "forcing_max": 0.10000000000000001,
+        "armijo_c": 0.0001,
+        "alpha_min": 0.03125,
+        "backtrack_factor": 0.5,
+        "max_newton_iterations": 50,
+        "rescue_picard_steps": 5,
+        "gmres": {
+          "restart": 10,
+          "max_iterations": 100,
+          "rel_tol": 1e-10
+        },
+        "delta": {
+          "delta_min": 9.9999999999999998e-13,
+          "delta_max": 100.0
+        },
+        "rescue_resets_omega": false
+      },
+      "eta": 1.0,
+      "epsilon": 9.9999999999999995e-07,
+      "linear": {
+        "rtol": 1e-10,
+        "max_iter": 1000,
+        "check_every": 10
+      },
+      "mg": {
+        "num_levels": 6,
+        "pre_smooth": 2,
+        "post_smooth": 2,
+        "coarse_solve_iters": 50,
+        "check_convergence_every": 1,
+        "omega": 1.0
+      },
+      "histogram": {
+        "c_min_rel": 1e-10,
+        "c_max_rel": 10000.0
+      },
+      "diagnostics": {
+        "angle_exclusion_rel": 1e-08,
+        "low_speed_rel": 0.01,
+        "num_degeneracy_thresholds": 0,
+        "degeneracy_thresholds": []
+      },
+      "source_num_degeneracy_thresholds": 0,
+      "source_degeneracy_thresholds": [],
+      "initial_state": "zero_source",
+      "coefficient_state": "rebuild"
+    },
+    "darcy_config": {
+      "qbar": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "linear": {
+        "rtol": 1e-10,
+        "max_iter": 1000,
+        "check_every": 10
+      },
+      "mg": {
+        "num_levels": 6,
+        "pre_smooth": 2,
+        "post_smooth": 2,
+        "coarse_solve_iters": 50,
+        "check_convergence_every": 1,
+        "omega": 1.0
+      }
+    }
+  }
+}

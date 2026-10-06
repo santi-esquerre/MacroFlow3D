@@ -1,0 +1,85 @@
+[2026-10-06T16:14:44Z] job=sf32-brk session=macroflow3d-SF-32-sf32-brk started
+[2026-10-06T16:14:44Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-06T16:14:44Z] cwd=/home/sesquerre/MacroFlow3D-SF-32
+[2026-10-06T16:14:44Z] command=set -o pipefail; B=./build/v100-release/spurious_spreading; for N in 128 256; do echo "=== solve lester_brk eps 0.25 n $N"; $B solve-labels --field lester_brk --eps 0.25 --n $N --max-iter 600 --out output_sf32/labels/stack_lester_brk_e025_n$N; echo SOLVE_EXIT_$N=$?; done; for p in stack_lester_brk_e025_n256 stack_lester_brk_e025_n128; do echo "=== ladders $p"; bash apps/spurious_spreading/run_ladders.sh $B output_sf32/labels/$p output_sf32/ladders; echo LADDER_EXIT_$p=$?; done; echo "=== analyze (all fields)"; python3 apps/spurious_spreading/analyze.py output_sf32/ladders; echo ANALYZE_EXIT=$?
+=== solve lester_brk eps 0.25 n 128
+==== spurious_spreading solve-labels (SF-32 N2a; frozen periodic stack) ====
+field = lester_brk  eps = 0.25  N = 128  h = 0.0078125  mg_levels = 6 (auto)
+  Y: mean = 1.3690666318365161e-19  var = 0.010312499999999072  min = -0.3060365471812666  max = 0.3060365471812666
+config: eta = 1  epsilon = 1e-06  tolerance = 1e-08  max_iter = 600  anderson = 1  newton = 0  darcy pcg rtol = 1e-10
+darcy: achieved mean flux = (1.0000000000000011, 7.6652242425874846e-21, -1.0529830523960453e-20)  div_max_abs = 1.249e-12  wall = 1.259 s
+  corrector x: converged iters=10 rel_res=2.630e-13
+  corrector y: converged iters=10 rel_res=2.352e-13
+  corrector z: converged iters=10 rel_res=1.654e-13
+solve: status = not_converged  exit = stagnated  iterations = 142  wall = 118.015 s
+  r_F initial = 0.015700619256004817
+  r_F final   = 3.8185554217261088e-05  tolerance = 1e-08  tolerance_met = false
+  e_v = 0.00046088474272866438  e_psi1 = 6.126327e-04  e_psi2 = 1.909814e-04  e_div = 2.312267e-05
+  |c| (report) min = 7.942403e-01  0.1% = 8.460849e-01  1% = 8.460849e-01  5% = 9.010683e-01
+  min_abs_c_grid (spline, cell centres) = 0.79380310118019581
+labels written: output_sf32/labels/stack_lester_brk_e025_n128{.json,_u1.bin,_u2.bin}  (total wall 119.635 s)
+SOLVE_EXIT_128=0
+=== solve lester_brk eps 0.25 n 256
+==== spurious_spreading solve-labels (SF-32 N2a; frozen periodic stack) ====
+field = lester_brk  eps = 0.25  N = 256  h = 0.00390625  mg_levels = 7 (auto)
+  Y: mean = 3.489877589300638e-20  var = 0.010312499999994052  min = -0.30625065663172241  max = 0.30625065663172241
+config: eta = 1  epsilon = 1e-06  tolerance = 1e-08  max_iter = 600  anderson = 1  newton = 0  darcy pcg rtol = 1e-10
+darcy: achieved mean flux = (1.0000000000000002, -1.0631734487916649e-20, -2.672996561820697e-21)  div_max_abs = 4.187e-12  wall = 2.202 s
+  corrector x: converged iters=10 rel_res=6.773e-13
+  corrector y: converged iters=10 rel_res=6.382e-13
+  corrector z: converged iters=10 rel_res=4.261e-13
+solve: status = not_converged  exit = stagnated  iterations = 95  wall = 146.421 s
+  r_F initial = 0.015792190070248974
+  r_F final   = 1.2790399872957345e-05  tolerance = 1e-08  tolerance_met = false
+  e_v = 0.0003786352696857755  e_psi1 = 6.140601e-04  e_psi2 = 1.972348e-04  e_div = 5.765050e-06
+  |c| (report) min = 7.935815e-01  0.1% = 8.460883e-01  1% = 8.460883e-01  5% = 9.010719e-01
+  min_abs_c_grid (spline, cell centres) = 0.79347101445152013
+labels written: output_sf32/labels/stack_lester_brk_e025_n256{.json,_u1.bin,_u2.bin}  (total wall 151.141 s)
+SOLVE_EXIT_256=0
+=== ladders stack_lester_brk_e025_n256
+run_ladders: field stack_lester_brk_e0.25_n256 -> output_sf32/ladders/stack_lester_brk_e0.25_n256 (seeds 8192, seed 20261006)
+pollock            m1           exit=0 wall=3.39s
+pollock            m2           exit=0 wall=2.97s
+pollock            m4           exit=0 wall=3.10s
+pollock            m8           exit=0 wall=3.11s
+rk                 tol1e-04     exit=0 wall=3.10s
+rk                 tol1e-05     exit=0 wall=3.12s
+rk                 tol1e-06     exit=0 wall=2.92s
+rk                 tol1e-07     exit=0 wall=2.90s
+rk                 tol1e-08     exit=0 wall=3.10s
+rk                 tol1e-09     exit=0 wall=2.97s
+rk                 tol1e-10     exit=0 wall=3.14s
+pseudo_symplectic  tolpsi1e-08  exit=0 wall=2.94s
+pseudo_symplectic  tolpsi1e-10  exit=0 wall=2.99s
+pseudo_symplectic  tolpsi1e-12  exit=0 wall=2.93s
+run_ladders: all runs exited 0
+LADDER_EXIT_stack_lester_brk_e025_n256=0
+=== ladders stack_lester_brk_e025_n128
+run_ladders: field stack_lester_brk_e0.25_n128 -> output_sf32/ladders/stack_lester_brk_e0.25_n128 (seeds 8192, seed 20261006)
+pollock            m1           exit=0 wall=2.69s
+pollock            m2           exit=0 wall=2.59s
+pollock            m4           exit=0 wall=2.59s
+pollock            m8           exit=0 wall=2.61s
+rk                 tol1e-04     exit=0 wall=2.63s
+rk                 tol1e-05     exit=0 wall=2.41s
+rk                 tol1e-06     exit=0 wall=2.59s
+rk                 tol1e-07     exit=0 wall=2.40s
+rk                 tol1e-08     exit=0 wall=2.44s
+rk                 tol1e-09     exit=0 wall=2.63s
+rk                 tol1e-10     exit=0 wall=2.64s
+pseudo_symplectic  tolpsi1e-08  exit=0 wall=2.63s
+pseudo_symplectic  tolpsi1e-10  exit=0 wall=2.68s
+pseudo_symplectic  tolpsi1e-12  exit=0 wall=2.60s
+run_ladders: all runs exited 0
+LADDER_EXIT_stack_lester_brk_e025_n128=0
+=== analyze (all fields)
+analyze: 5 field(s), 69 file(s) written to output_sf32/ladders/analysis
+| field | Pollock p var(dx2) | Pollock p var(dx3) | RK p var(dx2) (5 tol) | RK p var(dx3) (5 tol) | RK p var(dx2) (all) | RK p var(dx3) (all) | PS T3 |
+|---|---|---|---|---|---|---|---|
+| analytic_G_a0.05_n128 | 3.030 (out_of_band) | 3.040 (out_of_band) | 1.901 (out_of_band) | 1.848 (out_of_band) | 1.255 (out_of_band) | 1.248 (out_of_band) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+| stack_lester2021_e0.25_n128 | -0.645 (out_of_band, non_monotone) | -0.781 (out_of_band, non_monotone) | 1.404 (out_of_band) | 1.395 (out_of_band) | 1.001 (out_of_band, non_monotone) | 1.024 (out_of_band, non_monotone) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+| stack_lester2021_e0.25_n256 | -1.837 (out_of_band, non_monotone) | -1.843 (out_of_band, non_monotone) | 1.712 (out_of_band) | 1.673 (out_of_band) | 1.392 (out_of_band) | 1.397 (out_of_band) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+| stack_lester_brk_e0.25_n128 | 1.627 (out_of_band) | 1.528 (out_of_band) | 1.218 (out_of_band) | 1.421 (out_of_band) | 0.901 (out_of_band, non_monotone) | 1.057 (out_of_band, non_monotone) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+| stack_lester_brk_e0.25_n256 | 2.358 (out_of_band) | 1.776 (in_band) | 1.479 (out_of_band) | 1.711 (out_of_band) | 1.285 (out_of_band) | 1.446 (out_of_band) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+ANALYZE_EXIT=0
+[2026-10-06T16:21:04Z] job=sf32-brk finished exit=0

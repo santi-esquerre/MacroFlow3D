@@ -1,0 +1,14 @@
+==== spurious_spreading return-map (SF-32 N2a/N2b) ====
+labels = output_sf32/labels/analytic_G_a005_n128  route = analytic  n = 128  h = 0.0078125  tracker = pollock  seeds = 8192  seed = 20261006
+  min_abs_c_grid (spline, cell centres) = 0.70084716323705221
+  level:  delta_ratio = 8  n_cells = 16  delta = 0.0625
+  divergence_max_rel (face fluxes) = 3.306e-16
+  n_ok = 8192 / 8192  [status 0: 8192]
+  delta_x2:   mean 4.215411e-05  var 3.073284e-05  rms 5.543881e-03  max 2.739795e-02
+  delta_x3:   mean -2.736646e-05  var 5.724710e-05  rms 7.566231e-03  max 3.884771e-02
+  delta_psi1: mean 3.433820e-05  rms 5.449918e-03  max 2.542821e-02
+  delta_psi2: mean -3.125004e-05  rms 7.180379e-03  max 3.200028e-02
+  tau: mean 1.0131631684592735  min 0.8555528745344545  max 1.1931990812397133  flux-weighted mean 1.0012367180379769
+  eq.36 protocol numbers: D22_u 1.516678e-05  D33_u 2.825167e-05  D22_f 1.480903e-05  D33_f 2.732460e-05
+  landing: max |x1_u - 1| = 0.000e+00  max trials = 0
+  outputs: output_sf32/ladders/analytic_G_a0.05_n128/pollock_m8/seeds.csv, output_sf32/ladders/analytic_G_a0.05_n128/pollock_m8/summary.json  (wall 0.072 s)

@@ -1,0 +1,13 @@
+==== spurious_spreading return-map (SF-32 N2a/N2b) ====
+labels = output_sf32/labels/stack_lester_brk_e025_n128  route = stack  n = 128  h = 0.0078125  tracker = rk  seeds = 8192  seed = 20261006
+  min_abs_c_grid (spline, cell centres) = 0.79380310118019581
+  level:  tol = 9.9999999999999995e-07  dt_max = 0.25
+  n_ok = 8192 / 8192  [status 0: 8192]
+  delta_x2:   mean 1.320893e-09  var 1.503519e-14  rms 1.226252e-07  max 6.100063e-07
+  delta_x3:   mean -5.037256e-08  var 7.187581e-14  rms 2.727878e-07  max 2.107835e-06
+  delta_psi1: mean 1.325753e-09  rms 1.226910e-07  max 6.125826e-07
+  delta_psi2: mean -4.912881e-08  rms 2.674229e-07  max 1.983765e-06
+  tau: mean 1.0000257494827416  min 0.98099182936221041  max 1.0168312431660524  flux-weighted mean 1.0000134439868913
+  eq.36 protocol numbers: D22_u 7.517401e-15  D33_u 3.593698e-14  D22_f 7.443862e-15  D33_f 3.519000e-14
+  landing: max |x1_u - 1| = 9.999e-13  max trials = 38
+  outputs: output_sf32/ladders/stack_lester_brk_e0.25_n128/rk_tol1e-06/seeds.csv, output_sf32/ladders/stack_lester_brk_e0.25_n128/rk_tol1e-06/summary.json  (wall 0.096 s)

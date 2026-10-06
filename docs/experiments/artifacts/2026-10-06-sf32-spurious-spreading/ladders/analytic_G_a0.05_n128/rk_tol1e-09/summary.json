@@ -1,0 +1,129 @@
+{
+  "field": {
+    "tool": "spurious_spreading analytic-labels",
+    "increment": "SF-32 N2a",
+    "route": "analytic",
+    "pair": "G",
+    "formula": "s1 = e [sin(2 pi x1) cos(2 pi x3) + 0.5 sin(2 pi (x2 + x3))], s2 = e [cos(2 pi x1) sin(2 pi x2) + 0.5 cos(2 pi (x1 - x3))]",
+    "amplitude": 0.050000000000000003,
+    "amplitude_b": null,
+    "n": 128,
+    "h": 0.0078125,
+    "vbar": 1.0,
+    "gbar1": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "gbar2": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "exit_reason": null,
+    "iterations": null,
+    "r_F": null,
+    "e_v": null,
+    "e_psi1": null,
+    "e_psi2": null,
+    "min_abs_c_grid": 0.70084716323705221,
+    "min_abs_c_grid_source": "SF-28 spline pair, |grad psi1 x grad psi2| at the n^3 cell centres",
+    "min_abs_c_exact_cells": 0.70084715333915693,
+    "wall_seconds": 0.67855674799999999,
+    "files": {
+      "u1": "analytic_G_a005_n128_u1.bin",
+      "u2": "analytic_G_a005_n128_u2.bin",
+      "dtype": "float64 little-endian",
+      "layout": "i + n*(j + n*k), cell centres (i+1/2)h"
+    },
+    "config": {
+      "pair": "G",
+      "amplitude": 0.050000000000000003,
+      "amplitude_b": null,
+      "n": 128,
+      "no_timing": false,
+      "out": "output_sf32/labels/analytic_G_a005_n128"
+    }
+  },
+  "tracker": "rk",
+  "level": {
+    "tol": 1.0000000000000001e-09,
+    "dt_max": 0.25
+  },
+  "n_seeds": 8192,
+  "n_ok": 8192,
+  "status_counts": {
+    "0": 8192
+  },
+  "stats": {
+    "delta_x2": {
+      "mean": -2.3106614177438128e-10,
+      "var": 5.9999741330261811e-16,
+      "rms": 2.4495934455833552e-08,
+      "max_abs": 1.3566228967976102e-07
+    },
+    "delta_x3": {
+      "mean": -1.3179909861117229e-09,
+      "var": 8.3202212984642295e-16,
+      "rms": 2.8874889265344267e-08,
+      "max_abs": 1.4324844832547257e-07
+    },
+    "delta_psi1": {
+      "mean": -4.0208038310919528e-10,
+      "var": 6.1219016215116912e-16,
+      "rms": 2.4745743690292584e-08,
+      "max_abs": 1.3054814848589835e-07
+    },
+    "delta_psi2": {
+      "mean": -1.4475584644183038e-09,
+      "var": 7.8174596817377504e-16,
+      "rms": 2.7997167601057133e-08,
+      "max_abs": 1.4568366779599273e-07
+    },
+    "tau": {
+      "mean": 1.0137277227150372,
+      "var": 0.012276255509559351,
+      "min": 0.85473469306725747,
+      "max": 1.1927042697416255
+    }
+  },
+  "flux_weighted_tau_mean": 1.001482488215339,
+  "D22_uniform": 2.9593617687383681e-16,
+  "D33_uniform": 4.1037751617270684e-16,
+  "D22_flux": 2.9889061512714185e-16,
+  "D33_flux": 4.1344614243799361e-16,
+  "divergence_max_rel": null,
+  "min_abs_c_grid": 0.70084716323705221,
+  "landing": {
+    "max_err": 9.9986685597741598e-13,
+    "max_iterations": 39
+  },
+  "config": {
+    "labels": "output_sf32/labels/analytic_G_a005_n128",
+    "tracker": "rk",
+    "tol_psi": 1e-10,
+    "ds_ratio": 0.5,
+    "tol": 1.0000000000000001e-09,
+    "dt_max": 0.25,
+    "rk_chunk": 0.25,
+    "delta_ratio": 1,
+    "seeds": 8192,
+    "seed": 20261006,
+    "max_panels": 10000000,
+    "max_chunks": 10000000,
+    "max_cells": 10000000,
+    "no_timing": false,
+    "out": "output_sf32/ladders/analytic_G_a0.05_n128/rk_tol1e-09",
+    "max_newton_iter": 8,
+    "trust_factor": 1.0,
+    "min_cross_norm": 0.0,
+    "min_cross_sin2": 3.5527136788005009e-15,
+    "rk_min_step": 1e-14,
+    "rk_max_steps_per_call": 1000000,
+    "rk_initial_step_ratio_of_dt_max": 0.10000000000000001,
+    "landing_tol": 9.9999999999999998e-13,
+    "landing_max_trials": 60,
+    "target_x1": 1.0
+  },
+  "wall_seconds": 0.157431076
+}
