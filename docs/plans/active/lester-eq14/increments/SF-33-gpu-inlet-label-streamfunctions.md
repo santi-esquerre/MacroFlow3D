@@ -1,6 +1,6 @@
 # SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)
 
-- State: `pending`
+- State: `blocked`
 - Goal: `Implementar en GPU, dentro de src/physics/streamfunctions/, la formulación de etiquetas de entrada decidida por SF-29 (slab no periódico en x1, condición de salida, esténciles de cuarto orden y Newton-Krylov con continuación) y verificar que reproduce el prototipo CPU y converge bajo refinamiento hasta 128^3.`
 - Depends on: `SF-29`
 - Unlocks: `SF-34`
@@ -8,9 +8,9 @@
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 2 + Gate 3A`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
-- Completed: `not completed`
+- Owner: `Claude Fable 5.1 orchestrator (sessions 2026-10-06/07)`
+- Started: `2026-10-06T18:45Z on base 37bfb25`
+- Completed: `not completed (claim (b) blocked at the preconditioner gate; owner decision pending)`
 - PR: `not opened`
 - Commit: `not recorded`
 
@@ -176,10 +176,10 @@ bash scripts/hooks/check-lester-increments.sh
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [ ] Implementation matches the scope and contains no unrelated changes.
+- [x] Implementation matches the scope and contains no unrelated changes.
 - [ ] Targeted validation passes and its evidence is recorded.
-- [ ] Required regression tests pass.
-- [ ] Scientific or engineering findings are appended to the bitácora.
+- [x] Required regression tests pass.
+- [x] Scientific or engineering findings are appended to the bitácora.
 - [ ] Required human review is recorded.
 - [ ] PR and commit identifiers are recorded.
 - [ ] The master checklist entry is checked in this branch and `check-lester-increments.sh` passes.
@@ -197,3 +197,7 @@ artifacts or experiment notes and link them here.
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
 | 2026-10-06T00:00Z | not started | Specification created by the SF-29 closure PR (decision record `docs/decisions/2026-10-06-eq14-inlet-label-formulation.md`). | Formulation locked with bounded validity (owner, Option A). | Activate only when the checker reports it READY. |
+| 2026-10-06T18:45Z | activation on `master=37bfb25` (checker OK ready=SF-32 SF-33, nonterminal=none; SF-32 active in a parallel session; no dependency; per-increment mirror `--increment SF-33`) | UNDERSTAND: numerical contract in the orchestration record (discrete problem locked to the SF-29 `i1o4`; exact-pair control `k = k(x1)`, `u1 = Phi(x3)` derived; two-stage preconditioner plan with a validation gate; inlet `v1` = SF-19 U-face flux, `vperp`/`vD` = spline flow; oracle by `trace_to_plane`; recorded deviations: `Diagnostics.cuh` not applicable (periodic cell-centred), `CoupledGmres.cuh` not reusable, byte-compare = the SF-26/27 trio, reachable-amplitude enumeration for the stage inputs). Scientific-rigor skill invoked (categories B + C). DAG N0 -> {N1, N3, N4} -> N2 -> N5 -> N6 (gate) -> N7 -> N8 -> N9; one integrator. | Human-review increment. | Launch N0; base refs job on V100. |
+| 2026-10-06T19:19Z .. 2026-10-07T01:00Z | chain accepted (details in `docs/experiments/2026-10-06-sf33-gpu-inlet-labels.md`): N0 `2766beb` (foundation; criterion restated to the prototype's 32->64 stencil-order gate), N1 `0d6755c` (analytic JVP; k = 1 outlet rows `+(2q/h) d1`), N2 `4366127` (GMRES, P-A = full plane-averaged linearization exact at k = 1 and x1-only states, Newton, continuation), N3 `2be35a8` (D-1 labels, SF-18/19/28 inputs, production oracle; FINDING: round trip ~h_max^3 on the spline flow -> `h_max = h/8`), N4 `f198975` (exporter, `.npy`, loader; N0 metrics = prototype on real data to 4e-15), C1 `0681c19` (robust test gates; FINDING: legacy-stream pageable copies race the non-blocking ctx stream, 11/15 failures under load), N5 `8dee959` (driver, scripts; local 16^3 reproduction to 1e-14), C2/C2b `82a4af9`/`681b039` (stream-safe copies), N6 `f5b050f` (V100 campaign A: 12/14 of 9a reproduce the prototype to ~1e-14; gate FAIL at 24^3 eps 0.5: GMRES+P-A stall), N7a `a198369` (Eisenstat-Walker forcing), N7b `30347aa` (pseudo-transient continuation, SER), N7c `d093c7a`..`ea53d09` (Galerkin coarse correction on the weak `xi1 = 0` subspace: 24^3 eps 0.5 converges to 1e-13; colored assembly + banded LU), C3 `bfe4efb` (driver defaults), N6b `3676bb0` (V100: the full 9a matrix PASSES at <= 3.8e-11 vs full-precision references; 32^3 eps 0.5 FAILS -> gate FAIL for 64-128 at eps 0.5/1.0, spec rule applied). | Audits in `.claude/orchestration/SF-33-gpu-inlet-label-streamfunctions/audits/` (runtime record); evidence under the artifact `analysis/`. | Campaign B reduced to the gate-validated amplitude (eps 0.25). |
+| 2026-10-07T01:08Z .. 13:37Z | N8' `13c6bf8`, C4 `964c43a` (grid-scaled shift `mu_0 (h_ref/h)^2`), N8'' `e113ff9`: eps 0.25 production ladder (SF-18 `sigma^2 = 1`, `ell = 1/4`, seed 3001) — 32^3 and 64^3 converged (orders 32->64: `e_v` 2.13, `e_psi` 3.01, `e_psi1` 3.08, `e_psi2` 2.87, `e_i` 2.54/2.35, `e_div` 3.75), 128^3 `continuation_floor` (genuine GMRES plateau for eps >= 0.14, flat restart curves; coarse LU 79 % of 2 h 59 min; peak device 6.5 GB; host RSS 4.8 GiB); production 32^3 eps 0.5 converged; oracle round trips <= 1.2e-9 at `h/8` on every grid (`applied_scale` identical across grids); 32^3 oracle vs the SF-29 spectral oracle 0.6 % RMS, order 2.00. Orchestrator job with a relaxed GMRES stagnation rule cancelled (cannot reach eta within the cap at the measured rate). N9 `ddf8bec`: experiment note. | Acceptance: (a) PASS on the full 9a matrix; (b) NOT MET at eps 0.5/1.0 (not run: spec rule) and at eps 0.25 met on 32->64 only; (c) recorded (converged at 64^3; 128^3 for a non-converged run); (d) PASS; SF-19 cross-check orders 1.92-2.04 recorded. | Integrate; full ctest + byte-compare on V100; publish as `blocked`. |
+| 2026-10-07T14:50Z | FINAL_AUDIT positive on the integrated head `ddf8bec` (fast-forward of the 25 audited commits; no integration changes); State -> `blocked` | V100 (`scripts/remote --increment SF-33`, mirror `~/MacroFlow3D-SF-33`, preset `v100-release`, CUDA 11.4; source of the mirror tree = head source, `git diff 964c43a..ddf8bec -- src apps tests CMakeLists.txt` empty): job `sf33-ctest-full-bytecmp` — **26/26 tests passed, Total Test time (real) 2787.25 s** (20 pre-existing + 6 `inlet_slab_*`); byte-compare of the SF-26/27 precedent trio (`config_pspta_small`, `config_streamfunctions_homogeneous`, `config_streamfunctions_continuation`) vs `~/sf33_base_refs` (base `37bfb25` build): IDENTICAL excluding manifests, manifests identical modulo timestamps. Local: wsl-debug build, 6/6 fast tests, `ctest -N` = 26, checker OK. Frozen stack: `git diff 37bfb25..ddf8bec` on `src/**` (except `inlet_slab/`), `apps/**` (except `inlet_slab/`), `CMakePresets.json`, `scripts/` empty. | Increment outcome: Goal part 1 met (claim (a)); Goal part 2 ("converge bajo refinamiento hasta 128^3") NOT met at the spec's amplitudes — spec failure policy "(b) not met at eps = 0.5: stop and return to the owner"; `blocked` until the owner decides (options in the experiment note's Result section: scalable-preconditioner increment / accept the partial and re-scope SF-34 / re-examine the decision record's resolution claim). | PR opened for the owner (human-review increment; no agent merges); SF-34 stays blocked. |
