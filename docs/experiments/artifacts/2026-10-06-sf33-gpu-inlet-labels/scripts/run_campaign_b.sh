@@ -5,6 +5,7 @@
 #                                                logs/ladder_0.25/N<N>.log, raw/ladder_0.25/N<N>.json,
 #                                                /usr/bin/time -v in logs/ladder_0.25/N<N>.time (host max RSS),
 #                                                then ladder_orders.py -> raw/ladder_0.25/ladder_orders.md
+#                                                (env LADDER_DIR replaces ladder_0.25, e.g. ladder_0.25_c4 in N8'')
 #   run_campaign_b.sh <build_dir> prod32-05      production 32^3 at eps 0.5 (same SF-18 field), logs/prod32_05/
 #   run_campaign_b.sh <build_dir> oracle32       --cells <exports>/crosscheck_gauss_0.25_N/Y_cells.npy --eps 1
 #                                                at N = 16, 24, 32 with --save-oracle (exports/oracle_gpu/N<N>),
@@ -43,8 +44,9 @@ drive() { # drive <log> <time_file> args...
 case "$PART" in
 ladder)
     NS=${3:-"32 64 128"}
-    LOGS=$ART/logs/ladder_0.25
-    RAW=$ART/raw/ladder_0.25
+    LADDER_DIR=${LADDER_DIR:-ladder_0.25} # SF-33 N8'': LADDER_DIR=ladder_0.25_c4 (C4 grid-scaled shift)
+    LOGS=$ART/logs/$LADDER_DIR
+    RAW=$ART/raw/$LADDER_DIR
     mkdir -p "$LOGS" "$RAW"
     logs=()
     for n in $NS; do

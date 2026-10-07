@@ -145,3 +145,34 @@ job logs `logs/jobs/sf33c-*.log`.
 
 Retrieval: `tar czf ~/sf33c_evidence.tgz logs/ladder_0.25 logs/prod32_05 logs/oracle32 raw/ladder_0.25 raw/prod32_05
 raw/oracle32` + the four job logs on the host, `scp` to the worktree, extracted into this artifact (text only).
+
+---
+
+# SF-33 N8'' — eps 0.25 production ladder 32/64/128 with the C4 grid-scaled shift: index
+
+| file | content | verdict |
+|---|---|---|
+| `ladder_orders_025_c4.md` | same ladder as N8' with the C4 shift `mu_0 (h_ref/h)^2` (`h_ref = 1/16`; effective mu_0 1/4, 1/16, 1/64): per-grid and per-stage status, PATH, CASE values and ceiling, orders, oracle round trips, applied_scale, timing, memory, coarse statistics, every failed 128^3 stage (cause, eta, mu, GMRES curve, rcond), mu sequences, comparison with N8' | 32 and 64 converged (64 after two bisections), e_v / e_psi orders 2.13 / 3.01 on 32->64 (no converged solution at 128); **128^3 `continuation_floor`** (r_F 0.916): every failed stage is a GMRES-stagnation `linear_failure`, none a Newton stagnation; the 0.125 stage now converges (N8': stagnation) -> acceptance (b) at eps 0.25: FAIL; oracle round trips <= 1.2e-9: PASS; applied_scale identical: PASS |
+
+Raw: `raw/ladder_0.25_c4/` (JSON summaries, `ladder_orders.md` and `digest_newton.txt` from the job,
+`digest_coarse.md` from `scripts/digest_coarse.py` run locally). Logs: `logs/ladder_0.25_c4/` (`N<N>.log` +
+`/usr/bin/time -v` in `N<N>.time`), job logs `logs/jobs/sf33d-*.log`.
+
+## Execution facts (N8'')
+
+- Mirror `~/MacroFlow3D-SF-33` synced from the SF-33 C4 commit `964c43a` (chain N0..N8' + C4) before the build
+  (the sync was done by the previous, interrupted N8'' worker, not by the evidence node; the SOLVER / STAGE lines of
+  every log print the C4 fields `psitc_h_ref=0.0625 psitc_mu0_eff=...`, consistent with the C4 build). Script
+  change: `scripts/run_campaign_b.sh` reads `LADDER_DIR` (default `ladder_0.25`) for the ladder output directory.
+- Both jobs on GPU 0, `scripts/remote --increment SF-33 run`.
+
+| job | kind | GPU | start (UTC) | end (UTC) | exit | command / outputs |
+|---|---|---|---|---|---|---|
+| `sf33d-build` | configure + build + ctest `-R inlet_slab_` | 0 | 2026-10-07T10:23:53Z | 10:25:04Z | 0 | `BUILD_EXIT=0` (CUDA 11.4.152, preset `v100-release`), 6/6 inlet_slab tests passed (42.9 s), `CTEST_EXIT=0` |
+| `sf33d-ladder-025` | GPU | 0 | 10:26:02Z | 13:36:57Z | 0 | `env LADDER_DIR=ladder_0.25_c4 bash .../scripts/run_campaign_b.sh build/v100-release ladder`; driver exits N32 0, N64 0, N128 15 (`continuation_floor`); `logs/ladder_0.25_c4/`, `raw/ladder_0.25_c4/` |
+
+Wall times (`/usr/bin/time -v`): N32 0:17.06, N64 11:29.50, N128 2:59:07 (N8': 22 s, 944 s, 8 h 37 min).
+
+Retrieval: `scripts/remote --increment SF-33 exec -- "cd <artifact> && tar czf /tmp/sf33d.tgz logs/ladder_0.25_c4
+raw/ladder_0.25_c4"`, `scp v100:/tmp/sf33d.tgz`, extracted into this artifact; the two job logs copied with `scp`
+from `~/.macroflow3d-remote/macroflow3d-SF-33/logs/` (text only; no new remote job, no sync).

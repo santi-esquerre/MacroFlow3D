@@ -142,6 +142,8 @@ inspect and, after review, commit as small text).
   0.25 ladder, the 32^3 eps 0.5 point and the oracle-vs-SF-29 runs (each driver call wrapped in `/usr/bin/time -v`,
   `logs/<part>/N<N>.time`); `compare_oracle_sf29.py --case N GPU_DIR SF29_DIR ... [--suffix S] [--out md]`;
   `digest_coarse.py LOG... [--out md]` (coarse-correction builds/applies, GMRES its, host max RSS per log).
+- SF-33 N8'': `run_campaign_b.sh` reads `LADDER_DIR` (default `ladder_0.25`) as the ladder output directory
+  (`LADDER_DIR=ladder_0.25_c4` for the re-run with the C4 grid-scaled shift).
 
 ## Output layout
 
