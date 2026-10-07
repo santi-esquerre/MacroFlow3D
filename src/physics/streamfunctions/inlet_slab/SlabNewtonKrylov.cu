@@ -101,10 +101,11 @@ void SlabNewtonKrylov::prepare(CudaContext& ctx, const InletSlabGrid& grid, int 
     ctx.synchronize();
 }
 
-void SlabNewtonKrylov::prepare_coarse(CudaContext& ctx, int profiles) {
+void SlabNewtonKrylov::prepare_coarse(CudaContext& ctx, int profiles, SlabCoarseAssembly assembly,
+                                      SlabCoarseFactor factor) {
     if (!prepared())
         throw std::logic_error("SlabNewtonKrylov::prepare_coarse: call prepare() first");
-    coarse_.prepare(ctx, grid_, profiles);
+    coarse_.prepare(ctx, grid_, profiles, assembly, factor);
 }
 
 std::size_t SlabNewtonKrylov::allocated_bytes() const {
@@ -252,10 +253,18 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
                 step.t_fact += cr.t_assembly + cr.t_lu + cr.t_cond;
                 log(fmt("    COARSE build mode=%s profiles=%d K=%d t_assembly=%.3fs t_lu=%.3fs "
                         "t_cond=%.3fs norm1=%.3e inv_norm1_est=%.3e rcond_est=%.3e "
-                        "min|U_kk|=%.3e max|U_kk|=%.3e zero_pivots=%d mu=%.3e",
-                        to_string(cfg.coarse), cr.profiles, cr.K, cr.t_assembly, cr.t_lu,
-                        cr.t_cond, cr.norm1, cr.inv_norm1_est, cr.rcond_est, cr.min_abs_u,
-                        cr.max_abs_u, cr.zero_pivots, mu));
+                        "min|U_kk|=%.3e max|U_kk|=%.3e zero_pivots=%d mu=%.3e%s",
+                        to_string(cfg.coarse), cr.profiles, cr.K, cr.t_assembly, cr.t_lu, cr.t_cond,
+                        cr.norm1, cr.inv_norm1_est, cr.rcond_est, cr.min_abs_u, cr.max_abs_u,
+                        cr.zero_pivots, mu,
+                        cr.assembly == SlabCoarseAssembly::direct &&
+                                cr.factor == SlabCoarseFactor::dense
+                            ? ""
+                            : fmt(" assembly=%s factor=%s applications=%d color_period=%d "
+                                  "kl=%d ku=%d",
+                                  to_string(cr.assembly), to_string(cr.factor), cr.applications,
+                                  cr.color_period, cr.kl, cr.ku)
+                                  .c_str()));
             }
             const auto tl0 = std::chrono::steady_clock::now();
             if (fr.singular_modes == 0 && coarse_ok) {

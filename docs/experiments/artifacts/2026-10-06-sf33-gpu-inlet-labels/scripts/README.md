@@ -115,6 +115,16 @@ scripts/remote --increment SF-33 run sf33-ladder-0.5 -- \
 - `digest_newton.py JSON...` (SF-33 N7b): per-stage Newton / GMRES digest of the driver's `--summary` JSON
   (status, steps, r_F history, eta and mu sequences, GMRES total / max / median per solve, per-restart curves of
   every failed linear solve). `--crosscheck LOG...`: the step-8 table and orders.
+- SF-33 N7c (probe, `SlabCoarseCorrection.cuh`): driver options `--coarse off|add|mult` (default off = the N7b
+  solver bitwise), `--coarse-profiles 1|2` (x1-constant, + x1-linear column profiles; K = 2 P N^2),
+  `--coarse-assembly direct|colored` (K vs p^2 2 P operator applications, bitwise-equal E),
+  `--coarse-factor dense|banded` (host dense LU vs banded LU in the folded m2 ordering; banded needs colored); `COARSE
+  build` / `COARSE apply` lines per Newton step. Mode `--linear-probe <case_dir> --eps-stage E --newton-steps k
+  [--eps-from A] [--probe-ladder 0.25,0.375] [--probe-precs pa,mult1,mult2,add1] [--probe-tol 1e-8] [--probe-mu
+  both|ser|zero] [--probe-stagnation 1]`: continuation to A (driver policy), k Newton steps of E, then the FROZEN
+  Jacobian solved with every listed preconditioner at mu_SER and mu = 0 (`PROBE` / `PROBE_CURVE` lines, JSON).
+  `run_linear_probe.sh <build_dir> [<out_root>]` runs the N7c probe matrix (`PROBES=...` overrides; logs
+  `logs/n7c_local/probe/`, JSON `raw/n7c_local/probe/`); `digest_probe.py JSON... [--curves]` tabulates them.
 - `ladder_orders.py LOG...`: per-grid table (status, r_F, PATH, metrics, ceiling, oracle round trips, GMRES,
   timing, memory), observed orders, the acceptance-(b) reading, SF-18 applied-scale consistency.
 

@@ -54,6 +54,25 @@
  * vectors of 2 N^3 doubles, 1 dense basis vector, 2 coarse vectors of K. Host: E and its LU (2 K^2
  * doubles), pivots, pinned staging of 2 K doubles.
  *
+ * Productization (SF-33 N7c, step 4; selectable in prepare(), defaults = the probe above)
+ * -------------------------------------------------------------------------------------
+ *   assembly = colored: A has an in-plane reach of kCoarseStencilRadius = 2 columns (Chebyshev
+ *     distance: 4th-order d2 / d22 rows are 5-point, d23 = d3 d2 reaches (+-2, +-2); the shift
+ *     D is diagonal), so V^T A v_c is nonzero only on the (2R+1)^2 columns around c. Columns
+ *     whose (m2 mod p, m3 mod p) agree (p = color period, the smallest divisor of N that is
+ *     >= 2R+1, so the coloring is consistent with the periodic wrap) never share a restricted
+ *     row: ONE application of A to the sum of all basis vectors of a color (and field, profile)
+ *     gives all their columns exactly (each output point sees one column of the color only, so
+ *     the entries are bitwise those of the direct assembly). Applications: p^2 * 2 * P instead of
+ *     K = 2 P N^2 (24^3: p = 6, 72 P vs 1152 P; 64^3 / 128^3: p = 8, 128 P). E is stored sparse:
+ *     nb = (2R+1)^2 * 2P entries per coarse column (device scatter kernel, one D2H copy).
+ *   factor = banded (requires colored): E in the FOLDED ordering of m2 (0, N-1, 1, N-2, ...:
+ *     periodic neighbours within distance R are within 2R positions), m3 and (f, p) inner; the
+ *     half bandwidths kl = ku are measured from the pattern (~ (2R+1) * 2 P N); LAPACK dgbtf2 /
+ *     dgbtrs (unblocked, partial pivoting, column-major band storage ldab = 2 kl + ku + 1) on the
+ *     host. Flops ~ 2 K kl (kl + ku) per factorization, ~ 2 K (2 kl + ku) per solve.
+ *   factor = dense with colored assembly expands the sparse E into the dense host matrix.
+ *
  * Allocation / synchronization: prepare() is the only allocating call. build(): K x (fill + A +
  * restrict) enqueued, one D2H copy of E + one cudaStreamSynchronize, host LU; no allocation.
  * apply(): see above (one sync per application in add / mult; none in off).
@@ -74,9 +93,30 @@ namespace macroflow3d {
 namespace streamfunctions {
 namespace inlet_slab {
 
+/// Assembly strategy of E (SF-33 N7c productization; direct = the probe).
+enum class SlabCoarseAssembly { direct, colored };
+/// Factorization of E (dense host LU = the probe; banded host LU in the folded ordering).
+enum class SlabCoarseFactor { dense, banded };
+
+inline const char* to_string(SlabCoarseAssembly a) {
+    return a == SlabCoarseAssembly::direct ? "direct" : "colored";
+}
+inline const char* to_string(SlabCoarseFactor f) {
+    return f == SlabCoarseFactor::dense ? "dense" : "banded";
+}
+
+/// In-plane reach (Chebyshev, in columns) of the operator handed to build() with colored
+/// assembly: the inlet-slab JVP (4th-order in-plane stencils) plus a diagonal shift.
+constexpr int kCoarseStencilRadius = 2;
+
 struct SlabCoarseBuildReport {
     int K = 0;
     int profiles = 0;
+    SlabCoarseAssembly assembly = SlabCoarseAssembly::direct;
+    SlabCoarseFactor factor = SlabCoarseFactor::dense;
+    int applications = 0;     ///< operator applications of the assembly
+    int color_period = 0;     ///< p (colored assembly), 0 otherwise
+    int kl = 0, ku = 0;       ///< band half widths (banded factor), 0 otherwise
     double t_assembly = 0.0;  ///< K operator applications + restrictions + the D2H copy of E
     double t_lu = 0.0;        ///< host LU factorization
     double t_cond = 0.0;      ///< host condition estimate
@@ -99,7 +139,16 @@ class SlabCoarseCorrection {
 
     /// The only allocating call (grow-only device buffers, host matrices, pinned staging).
     /// profiles in {1, 2}.
-    void prepare(CudaContext& ctx, const InletSlabGrid& g, int profiles);
+    /// assembly / factor: see the header (colored / banded = productization; banded requires
+    /// colored).
+    void prepare(CudaContext& ctx, const InletSlabGrid& g, int profiles,
+                 SlabCoarseAssembly assembly = SlabCoarseAssembly::direct,
+                 SlabCoarseFactor factor = SlabCoarseFactor::dense);
+    SlabCoarseAssembly assembly() const { return assembly_; }
+    SlabCoarseFactor factor() const { return factor_; }
+    int color_period() const { return p_; }
+    /// Smallest divisor of N that is >= 2 kCoarseStencilRadius + 1.
+    static int colored_period(int N);
     bool prepared_for(const InletSlabGrid& g) const { return n_ == g.n && n_ > 0; }
     int K() const { return K_; }
     int profiles() const { return P_; }
@@ -136,8 +185,11 @@ class SlabCoarseCorrection {
         t_host_solve_ = 0.0;
     }
 
-    /// Host copy of E (row-major, E[r * K + c]) as assembled by the last build().
+    /// Host copy of E (row-major, E[r * K + c]) as assembled by the last build() (factor dense;
+    /// empty with factor banded).
     const std::vector<real>& galerkin_matrix() const { return E_; }
+    /// Host E = (V^T A V) as a dense row-major matrix, from either assembly (tests; allocates).
+    std::vector<real> galerkin_dense_copy() const;
 
     std::size_t allocated_bytes() const;
     std::vector<const void*> buffer_pointers() const;
@@ -153,19 +205,43 @@ class SlabCoarseCorrection {
     static void lu_solve_transpose(int n, const real* LU, const int* piv, real* b);
     /// Hager-Higham estimate of ||A^-1||_1 from the factors (work: 2 n scratch).
     static real inv_norm1_estimate(int n, const real* LU, const int* piv, real* work);
+    /// Generic Hager-Higham estimate of ||A^-1||_1 given in-place solvers with A and A^T.
+    static real inv_norm1_estimate_fn(int n, const std::function<void(real*)>& solve,
+                                      const std::function<void(real*)>& solve_t, real* work);
+
+    // ---- host banded LU (LAPACK dgbtf2 / dgbtrs semantics, column-major band storage) ----------
+    /// AB: ldab x n, ldab = 2 kl + ku + 1, element (i, j) at AB[j * ldab + kl + ku + i - j]; the
+    /// first kl rows hold fill-in (zero on entry). Returns the number of zero / non-finite pivots.
+    static int band_lu_factor(int n, int kl, int ku, real* AB, int* piv);
+    static void band_lu_solve(int n, int kl, int ku, const real* AB, const int* piv, real* b);
+    static void band_lu_solve_transpose(int n, int kl, int ku, const real* AB, const int* piv,
+                                        real* b);
 
   private:
+    std::vector<real> galerkin_dense_copy_from_sparse() const;
+    void coarse_solve_host(real* b);           ///< b <- E^-1 b (dense or banded factors)
+    void coarse_solve_transpose_host(real* b); ///< b <- E^-T b
     int n_ = 0;
     int P_ = 0;
     int K_ = 0;
     bool built_ = false;
-    DeviceBuffer<real> Ecols_;   ///< K * K, column c at c * K (V^T A v_c)
-    DeviceBuffer<real> basis_;   ///< 2 N^3 dense basis vector
-    DeviceBuffer<real> Abasis_;  ///< 2 N^3
-    DeviceBuffer<real> t1_, t2_; ///< 2 N^3 work vectors of apply(mult)
-    DeviceBuffer<real> rc_, yc_; ///< K each
-    std::vector<real> E_;        ///< host E, row-major
-    std::vector<real> LU_;       ///< host LU factors, row-major
+    SlabCoarseAssembly assembly_ = SlabCoarseAssembly::direct;
+    SlabCoarseFactor factor_ = SlabCoarseFactor::dense;
+    int p_ = 0;  ///< color period (colored)
+    int nb_ = 0; ///< sparse entries per coarse column (colored)
+    int kl_ = 0, ku_ = 0, ldab_ = 0;
+    DeviceBuffer<real> Esp_;      ///< K * nb sparse columns (colored)
+    std::vector<real> Esp_h_;     ///< host copy
+    std::vector<int> perm_;       ///< coarse index -> folded index (banded)
+    std::vector<real> band_;      ///< ldab * K (banded)
+    std::vector<real> perm_work_; ///< K
+    DeviceBuffer<real> Ecols_;    ///< K * K, column c at c * K (V^T A v_c)
+    DeviceBuffer<real> basis_;    ///< 2 N^3 dense basis vector
+    DeviceBuffer<real> Abasis_;   ///< 2 N^3
+    DeviceBuffer<real> t1_, t2_;  ///< 2 N^3 work vectors of apply(mult)
+    DeviceBuffer<real> rc_, yc_;  ///< K each
+    std::vector<real> E_;         ///< host E, row-major
+    std::vector<real> LU_;        ///< host LU factors, row-major
     std::vector<int> piv_;
     std::vector<real> work_; ///< 2 K
     real* h_rc_ = nullptr;   ///< pinned K

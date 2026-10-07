@@ -192,6 +192,8 @@ struct DriverConfig {
     real psitc_mu_max = 100.0;
     std::string coarse = "off"; ///< SF-33 N7c probe: off | add | mult (Galerkin coarse correction)
     int coarse_profiles = 1;    ///< 1 (x1-constant) | 2 (+ x1-linear)
+    std::string coarse_assembly = "direct"; ///< direct (K applies) | colored (productization)
+    std::string coarse_factor = "dense";    ///< dense host LU | banded host LU (needs colored)
     // linear probe (SF-33 N7c)
     bool has_eps_from = false;
     real eps_from = 0.0;
@@ -230,6 +232,7 @@ inline const char* usage_text() {
            "                [--prec pa] [--device 0] [--forcing ew|fixed] [--ew-eta-max 0.1]\n"
            "                [--ew-eta0 0.1] [--psitc on|off] [--psitc-mu0 1] [--psitc-mu-max 100]\n"
            "                [--coarse off|add|mult] [--coarse-profiles 1|2]\n"
+           "                [--coarse-assembly direct|colored] [--coarse-factor dense|banded]\n"
            "exit codes: 0 converged; 1 exception; 2 usage; 10 linesearch-fail; 11 stagnation; 12 "
            "maxit;\n"
            "            13 linear_failure; 14 nan_inf; 15 continuation_floor; 16 "
@@ -339,6 +342,10 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.coarse = val;
         } else if (opt == "--coarse-profiles") {
             c.coarse_profiles = parse_int(opt, val);
+        } else if (opt == "--coarse-assembly") {
+            c.coarse_assembly = val;
+        } else if (opt == "--coarse-factor") {
+            c.coarse_factor = val;
         } else if (opt == "--eps-target") {
             c.eps_target = parse_double(opt, val);
             c.has_eps_target = true;
@@ -423,6 +430,12 @@ inline DriverConfig parse_args(int argc, char** argv) {
         throw UsageError("--coarse: off (default) | add | mult");
     if (c.coarse_profiles != 1 && c.coarse_profiles != 2)
         throw UsageError("--coarse-profiles: 1 | 2");
+    if (c.coarse_assembly != "direct" && c.coarse_assembly != "colored")
+        throw UsageError("--coarse-assembly: direct (default) | colored");
+    if (c.coarse_factor != "dense" && c.coarse_factor != "banded")
+        throw UsageError("--coarse-factor: dense (default) | banded");
+    if (c.coarse_factor == "banded" && c.coarse_assembly != "colored")
+        throw UsageError("--coarse-factor banded requires --coarse-assembly colored");
     if (c.mode == Mode::linear_probe) {
         if (!c.has_eps_stage || !(c.eps_stage > 0.0))
             throw UsageError("--linear-probe requires --eps-stage E > 0");
@@ -434,9 +447,6 @@ inline DriverConfig parse_args(int argc, char** argv) {
             throw UsageError("--probe-mu: both | ser | zero");
         if (!(c.probe_tol > 0.0) || !(c.probe_stagnation > 0.0))
             throw UsageError("--probe-tol / --probe-stagnation must be > 0");
-        if (c.coarse != "off")
-            throw UsageError("--linear-probe: the Newton steps use P-A only; the preconditioners "
-                             "compared are given by --probe-precs (do not pass --coarse)");
     }
     // SF-33 N7b: SER-damped steps converge linearly while mu is large; Psi-tc default 120.
     if (!c.max_newton_given)
@@ -834,6 +844,15 @@ struct SolveOutcome {
     std::size_t solver_bytes = 0;
 };
 
+inline sl::SlabCoarseAssembly coarse_assembly_of(const DriverConfig& c) {
+    return c.coarse_assembly == "colored" ? sl::SlabCoarseAssembly::colored
+                                          : sl::SlabCoarseAssembly::direct;
+}
+inline sl::SlabCoarseFactor coarse_factor_of(const DriverConfig& c) {
+    return c.coarse_factor == "banded" ? sl::SlabCoarseFactor::banded
+                                       : sl::SlabCoarseFactor::dense;
+}
+
 inline sl::SlabNewtonConfig newton_config(const DriverConfig& c) {
     sl::SlabNewtonConfig n;
     n.tol = c.newton_tol;
@@ -877,14 +896,16 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                  ncfg.psitc.mu0, ncfg.psitc.mu_max, ncfg.psitc.max_retries,
                  ncfg.psitc.retry_factor, ncfg.stagnation_window, ncfg.stagnation_factor));
     if (ncfg.coarse != sl::SlabCoarseMode::off)
-        out_line(fmt("SOLVER_COARSE mode=%s profiles=%d K=%d (SF-33 N7c probe: Galerkin "
-                     "coarse correction on the x1-constant%s column subspace, rebuilt with P-A at "
-                     "every factor)",
+        out_line(fmt("SOLVER_COARSE mode=%s profiles=%d K=%d assembly=%s factor=%s (SF-33 N7c "
+                     "probe: Galerkin coarse correction on the x1-constant%s column subspace, "
+                     "rebuilt with P-A at every factor)",
                      sl::to_string(ncfg.coarse), c.coarse_profiles,
-                     2 * c.coarse_profiles * sc.grid.n * sc.grid.n,
-                     c.coarse_profiles == 2 ? " + x1-linear" : ""));
+                     2 * c.coarse_profiles * sc.grid.n * sc.grid.n, c.coarse_assembly.c_str(),
+                     c.coarse_factor.c_str(), c.coarse_profiles == 2 ? " + x1-linear" : ""));
     J["solver_config_coarse"] = {{"coarse", sl::to_string(ncfg.coarse)},
-                                 {"coarse_profiles", c.coarse_profiles}};
+                                 {"coarse_profiles", c.coarse_profiles},
+                                 {"coarse_assembly", c.coarse_assembly},
+                                 {"coarse_factor", c.coarse_factor}};
     J["solver_config"] = {{"forcing", sl::to_string(ncfg.forcing)},
                           {"ew_gamma", ncfg.ew.gamma},
                           {"ew_alpha", ncfg.ew.alpha},
@@ -1141,7 +1162,7 @@ inline int run_proto(CudaContext& ctx, const DriverConfig& c) {
     pl.begin("prepare");
     nk.prepare(ctx, grid, c.restart, c.max_newton, c.max_inner);
     if (c.coarse != "off")
-        nk.prepare_coarse(ctx, c.coarse_profiles);
+        nk.prepare_coarse(ctx, c.coarse_profiles, coarse_assembly_of(c), coarse_factor_of(c));
     pl.end();
     SolveOutcome so;
     pl.begin("solve");
@@ -1433,7 +1454,7 @@ inline int run_production(CudaContext& ctx, const DriverConfig& c) {
     pl.begin("prepare");
     nk.prepare(ctx, grid, c.restart, c.max_newton, c.max_inner);
     if (c.coarse != "off")
-        nk.prepare_coarse(ctx, c.coarse_profiles);
+        nk.prepare_coarse(ctx, c.coarse_profiles, coarse_assembly_of(c), coarse_factor_of(c));
     pl.end();
     SolveOutcome so;
     pl.begin("solve");
@@ -1653,10 +1674,12 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
     const real eps_from = c.has_eps_from ? c.eps_from : 0.0;
     const std::string cname = fmt("%s_%g_%d", meta.field.c_str(), meta.eps, meta.N);
     out_line(fmt("PROBE_SETUP case=%s field=%s N=%d stage=%g from=%g k=%d precs=%s tol=%.1e "
-                 "restart=%d cap=%d stagnation_factor=%g mu=%s",
+                 "restart=%d cap=%d stagnation_factor=%g mu=%s policy_coarse=%s(%d) "
+                 "coarse_assembly=%s coarse_factor=%s",
                  cname.c_str(), meta.field.c_str(), grid.n, c.eps_stage, eps_from,
                  c.newton_steps, c.probe_precs.c_str(), c.probe_tol, c.restart, c.max_inner,
-                 c.probe_stagnation, c.probe_mu.c_str()));
+                 c.probe_stagnation, c.probe_mu.c_str(), c.coarse.c_str(), c.coarse_profiles,
+                 c.coarse_assembly.c_str(), c.coarse_factor.c_str()));
     J["case"] = cname;
     J["stage"] = c.eps_stage;
     J["from"] = eps_from;
@@ -1665,7 +1688,11 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
     sl::SlabNewtonKrylov nk;
     nk.prepare(ctx, grid, c.restart, std::max(c.max_newton, std::max(1, c.newton_steps)),
                c.max_inner);
-    const sl::SlabNewtonConfig ncfg = newton_config(c); // coarse off (checked in parse_args)
+    // policy of the warm start and of the k Newton steps: the driver options (P-A only unless
+    // --coarse is given); the preconditioners COMPARED on the frozen Jacobian: --probe-precs
+    const sl::SlabNewtonConfig ncfg = newton_config(c);
+    if (c.coarse != "off")
+        nk.prepare_coarse(ctx, c.coarse_profiles, coarse_assembly_of(c), coarse_factor_of(c));
     DeviceBuffer<real> x(grid.unknown_size());
     const sl::StageInputProvider provider = prov.callback();
 
@@ -1746,9 +1773,9 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
         need2 = need2 || p.profiles == 2;
     }
     if (need1)
-        cc1.prepare(ctx, grid, 1);
+        cc1.prepare(ctx, grid, 1, coarse_assembly_of(c), coarse_factor_of(c));
     if (need2)
-        cc2.prepare(ctx, grid, 2);
+        cc2.prepare(ctx, grid, 2, coarse_assembly_of(c), coarse_factor_of(c));
 
     std::vector<std::pair<std::string, real>> mus;
     if (c.probe_mu != "zero")
@@ -1790,9 +1817,11 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
                 usable = br.zero_pivots == 0;
                 cinfo = fmt(" K=%d t_assembly=%.3fs t_lu=%.3fs t_cond=%.3fs norm1=%.3e "
                             "inv_norm1_est=%.3e rcond_est=%.3e min|U_kk|=%.3e max|U_kk|=%.3e "
-                            "zero_pivots=%d",
+                            "zero_pivots=%d assembly=%s factor=%s applications_asm=%d kl=%d",
                             br.K, br.t_assembly, br.t_lu, br.t_cond, br.norm1, br.inv_norm1_est,
-                            br.rcond_est, br.min_abs_u, br.max_abs_u, br.zero_pivots);
+                            br.rcond_est, br.min_abs_u, br.max_abs_u, br.zero_pivots,
+                            sl::to_string(br.assembly), sl::to_string(br.factor),
+                            br.applications, br.kl);
                 r["coarse"] = {{"K", br.K},
                                {"profiles", br.profiles},
                                {"t_assembly", br.t_assembly},
@@ -1803,7 +1832,13 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
                                {"rcond_est", jnum(br.rcond_est)},
                                {"min_abs_u", jnum(br.min_abs_u)},
                                {"max_abs_u", jnum(br.max_abs_u)},
-                               {"zero_pivots", br.zero_pivots}};
+                               {"zero_pivots", br.zero_pivots},
+                               {"assembly", sl::to_string(br.assembly)},
+                               {"factor", sl::to_string(br.factor)},
+                               {"applications_asm", br.applications},
+                               {"color_period", br.color_period},
+                               {"kl", br.kl},
+                               {"ku", br.ku}};
             }
             sl::SlabGmresReport gr;
             if (usable) {

@@ -137,7 +137,10 @@ class SlabNewtonKrylov {
 
     /// SF-33 N7c (probe): allocates the coarse correction (SlabCoarseCorrection, `profiles` 1 or
     /// 2) used when SlabNewtonConfig::coarse != off. Optional; allocating; call after prepare().
-    void prepare_coarse(CudaContext& ctx, int profiles);
+    /// assembly / factor: SlabCoarseCorrection productization options (defaults = the probe).
+    void prepare_coarse(CudaContext& ctx, int profiles,
+                        SlabCoarseAssembly assembly = SlabCoarseAssembly::direct,
+                        SlabCoarseFactor factor = SlabCoarseFactor::dense);
 
     /// Newton from the start vector x (in/out, 2 N^3). See the header comment.
     SlabNewtonReport solve(CudaContext& ctx, const SlabStageInputs& inputs, DeviceSpan<real> x,

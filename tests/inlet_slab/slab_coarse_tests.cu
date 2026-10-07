@@ -21,6 +21,13 @@
  *   5  Newton hook: exact pair (k = exp(0.7 sin 2 pi x1), N = 12) from x = 0 with coarse = mult
  *      and add (profiles 1): converged, r_F, r_out <= 1e-13; `COARSE build` and `COARSE apply`
  *      lines printed; coarse = off gives the history of a solver without prepare_coarse bitwise.
+ *   6  Productization: colored assembly (color period p = 6 at N = 12, 8 at N = 16) gives E
+ *      bitwise equal to the direct assembly (3-D state, mu = 0.7, profiles 1 and 2) with p^2 2 P
+ *      operator applications; the banded host LU in the folded ordering solves E y = b like the
+ *      dense LU (relative difference <= 1e-12) and its transpose solve likewise; the multiplicative
+ *      preconditioner with the banded factors equals the dense one to 1e-12; rcond estimates of
+ * both factorizations agree to 10 %; banded LU of a random banded matrix (n = 600, kl = 37, ku =
+ * 23) against the dense LU to 1e-12.
  */
 
 #include "src/core/DeviceBuffer.cuh"
@@ -37,6 +44,7 @@
 #include "src/runtime/cuda_check.cuh"
 #include "src/runtime/CudaContext.cuh"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -542,6 +550,95 @@ void case_newton_hook(TestReport& rep, CudaContext& ctx) {
     }
 }
 
+// ------------------------------------------------------------------------------------------------
+void case_productization(TestReport& rep, CudaContext& ctx) {
+    for (int N : {12, 16}) {
+        OpHarness hs;
+        hs.build(ctx, N, state3d_spec(), 0.7);
+        for (int P : {1, 2}) {
+            sl::SlabCoarseCorrection cd, cc, cb;
+            cd.prepare(ctx, hs.g, P);
+            cc.prepare(ctx, hs.g, P, sl::SlabCoarseAssembly::colored, sl::SlabCoarseFactor::dense);
+            cb.prepare(ctx, hs.g, P, sl::SlabCoarseAssembly::colored, sl::SlabCoarseFactor::banded);
+            const auto rd = cd.build(ctx, hs.g, hs.opA(ctx));
+            const auto rcl = cc.build(ctx, hs.g, hs.opA(ctx));
+            const auto rb = cb.build(ctx, hs.g, hs.opA(ctx));
+            const auto Ed = cd.galerkin_dense_copy();
+            const auto Ec = cc.galerkin_dense_copy();
+            const auto Eb = cb.galerkin_dense_copy();
+            real dmax = 0.0, dbmax = 0.0;
+            for (std::size_t i = 0; i < Ed.size(); ++i) {
+                dmax = std::fmax(dmax, std::fabs(Ed[i] - Ec[i]));
+                dbmax = std::fmax(dbmax, std::fabs(Ed[i] - Eb[i]));
+            }
+            char d[360];
+            std::snprintf(d, sizeof(d),
+                          "K=%d p=%d applies colored %d vs direct %d; max|E_col - E_dir| = %.1e, "
+                          "banded copy %.1e; t_asm direct %.3fs colored %.3fs",
+                          cc.K(), rcl.color_period, rcl.applications, rd.applications, dmax, dbmax,
+                          rd.t_assembly, rcl.t_assembly);
+            rep.check(dmax == 0.0 && dbmax == 0.0 &&
+                          rcl.applications == rcl.color_period * rcl.color_period * 2 * P,
+                      "colored assembly == direct assembly bitwise, N = " + std::to_string(N) +
+                          ", profiles " + std::to_string(P),
+                      d);
+            // banded vs dense solves through the preconditioner application
+            std::mt19937_64 rng(7800 + N + P);
+            const auto r = gaussian(rng, hs.g.unknown_size());
+            upload(hs.a, r);
+            cd.apply(ctx, hs.g, sl::SlabCoarseMode::mult, hs.opA(ctx), hs.opPA(ctx), cspan(hs.a),
+                     mspan(hs.b));
+            const auto zd = download(ctx, hs.b.data(), hs.b.size());
+            cb.apply(ctx, hs.g, sl::SlabCoarseMode::mult, hs.opA(ctx), hs.opPA(ctx), cspan(hs.a),
+                     mspan(hs.c));
+            const auto zb = download(ctx, hs.c.data(), hs.c.size());
+            const real dz = rel_diff(zb, zd);
+            const real rr = rb.rcond_est / rd.rcond_est;
+            char d2[360];
+            std::snprintf(d2, sizeof(d2),
+                          "mult apply banded vs dense %.2e; rcond dense %.3e banded %.3e; kl %d ku "
+                          "%d; t_lu dense %.3fs banded %.3fs; min/max|U_kk| banded %.3e/%.3e",
+                          dz, rd.rcond_est, rb.rcond_est, rb.kl, rb.ku, rd.t_lu, rb.t_lu,
+                          rb.min_abs_u, rb.max_abs_u);
+            rep.check(dz <= 1e-12 && rb.zero_pivots == 0 && rr > 0.9 && rr < 1.1,
+                      "banded LU (folded ordering) == dense LU through the mult preconditioner, "
+                      "N = " +
+                          std::to_string(N) + ", profiles " + std::to_string(P),
+                      d2);
+        }
+    }
+    {
+        // banded LU kernels vs dense on a random banded matrix (solve and transpose solve)
+        const int n = 600, kl = 37, ku = 23;
+        std::mt19937_64 rng(7900);
+        std::normal_distribution<real> nd(0.0, 1.0);
+        std::vector<real> A(static_cast<std::size_t>(n) * n, 0.0);
+        const int ldab = 2 * kl + ku + 1;
+        std::vector<real> AB(static_cast<std::size_t>(ldab) * n, 0.0);
+        for (int j = 0; j < n; ++j)
+            for (int i = std::max(0, j - ku); i <= std::min(n - 1, j + kl); ++i) {
+                const real v = nd(rng);
+                A[static_cast<std::size_t>(i) * n + j] = v;
+                AB[static_cast<std::size_t>(j) * ldab + kl + ku + i - j] = v;
+            }
+        std::vector<int> pd(n), pb(n);
+        std::vector<real> LU = A;
+        sl::SlabCoarseCorrection::lu_factor(n, LU.data(), pd.data());
+        const int zb = sl::SlabCoarseCorrection::band_lu_factor(n, kl, ku, AB.data(), pb.data());
+        const auto b = gaussian(rng, n);
+        auto xd = b, xb = b, td = b, tb = b;
+        sl::SlabCoarseCorrection::lu_solve(n, LU.data(), pd.data(), xd.data());
+        sl::SlabCoarseCorrection::band_lu_solve(n, kl, ku, AB.data(), pb.data(), xb.data());
+        sl::SlabCoarseCorrection::lu_solve_transpose(n, LU.data(), pd.data(), td.data());
+        sl::SlabCoarseCorrection::band_lu_solve_transpose(n, kl, ku, AB.data(), pb.data(),
+                                                          tb.data());
+        const real e1 = rel_diff(xb, xd), e2 = rel_diff(tb, td);
+        char d[160];
+        std::snprintf(d, sizeof(d), "solve %.2e transpose %.2e", e1, e2);
+        rep.check(zb == 0 && e1 <= 1e-12 && e2 <= 1e-12,
+                  "banded LU vs dense LU on a random banded matrix (n = 600, kl = 37, ku = 23)", d);
+    }
+}
 } // namespace
 
 int main() {
@@ -559,6 +656,8 @@ int main() {
         case_host_lu(rep);
         std::printf("=== SF-33 N7c: (5) Newton hook ===\n");
         case_newton_hook(rep, ctx);
+        std::printf("=== SF-33 N7c: (6) colored assembly and banded LU ===\n");
+        case_productization(rep, ctx);
     } catch (const std::exception& e) {
         std::printf("[FAIL] unexpected exception: %s\n", e.what());
         rep.overall_pass = false;
