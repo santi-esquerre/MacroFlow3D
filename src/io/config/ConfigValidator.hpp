@@ -77,6 +77,12 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         err("stochastic.n_modes", "must be > 0");
     if (cfg.stochastic.K_mean <= 0)
         err("stochastic.K_mean", "must be > 0");
+    if (cfg.stochastic.covariance_type != 1)
+        err("stochastic.covariance_type",
+            std::to_string(cfg.stochastic.covariance_type) +
+                ": only 1 (Gaussian, C(r)=sigma2*exp(-(r/lambda)^2)) is accepted; 0 "
+                "(exponential) was retired, see "
+                "docs/decisions/2026-10-07-gaussian-covariance-only.md");
 
     // ── Flow ─────────────────────────────────────────────────────────
     const auto& solver = cfg.flow.solver;

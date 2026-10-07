@@ -243,6 +243,7 @@ static CaseSpec make_small_darcy_case(CudaContext& ctx) {
     stoch_cfg.sigma2 = 0.25;
     stoch_cfg.corr_length = 0.25;
     stoch_cfg.n_modes = 256;
+    stoch_cfg.covariance_type = 1; // Gaussian, the only accepted value (decision 2026-10-07)
     stoch_cfg.seed = 20260416;
     stoch_cfg.K_geometric_mean = 1.0;
 

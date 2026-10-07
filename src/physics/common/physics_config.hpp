@@ -26,8 +26,10 @@ struct StochasticConfig {
     real corr_length = 1.0; ///< Correlation length (λ)
     int n_modes = 1000;     ///< Number of Fourier modes for spectral method
 
-    // Covariance type: 0 = exponential, 1 = gaussian
-    int covariance_type = 0;
+    // Covariance type: 1 = Gaussian C(r)=sigma2*exp(-(r/lambda)^2); the only
+    // accepted value; 0 (exponential) retired —
+    // docs/decisions/2026-10-07-gaussian-covariance-only.md
+    int covariance_type = 1;
 
     // RNG seeds
     uint64_t seed = 12345; ///< Base seed for RNG

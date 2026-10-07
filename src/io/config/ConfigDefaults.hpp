@@ -38,7 +38,9 @@ inline AppConfig make_default_config() {
     cfg.stochastic.sigma2 = 1.0;
     cfg.stochastic.corr_length = 1.0;
     cfg.stochastic.n_modes = 1000;
-    cfg.stochastic.covariance_type = 0;
+    // 1 = Gaussian C(r)=sigma2*exp(-(r/lambda)^2); the only accepted value;
+    // 0 (exponential) retired — docs/decisions/2026-10-07-gaussian-covariance-only.md
+    cfg.stochastic.covariance_type = 1;
     cfg.stochastic.seed = 12345;
     cfg.stochastic.K_mean = 1.0;
 

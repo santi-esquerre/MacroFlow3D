@@ -6,8 +6,29 @@
 # campo de conductividad hidráulica K, resolución del flujo estacionario,
 # transporte de partículas (RWPT) y análisis de macrodispersión.
 #
-# Configuración de referencia: replica el problema legacy sigma=1 con
-#   Nx=2048, Ny=Nz=256, delta_x=5, nRealizations=100, nParticles=10000.
+# Configuración de referencia de dominio largo, derivada del problema legacy
+# legacy/input/parameters_sigma1.json (+ legacy/main_transport_JSON_input.cu).
+#
+# QUÉ SE REPLICA del legacy:
+#   - malla Nx=2048, Ny=Nz=256, h=delta_x=5;
+#   - λ = 10·h = 50, σ² = 1, n_modes = 10000 (i_max legacy), K_g = 1;
+#   - cargas de contorno west=100 / east=0;
+#   - n_particles = 10000;
+#   - covarianza GAUSSIANA: el legacy solo lanzaba random_kernel_3D_gauss
+#     (nunca el kernel exponencial).
+#
+# QUÉ NO SE REPLICA (diferencias deliberadas o pendientes):
+#   - convención de λ: aquí C(r) = σ² exp(-(r/λ)²); el legacy usaba
+#     exp(-π r²/(4λ²)) (legacy/random_field_generation.cu:114). Para obtener
+#     la covarianza legacy haría falta corr_length = 2·λ_legacy/√π (NO usado);
+#   - dispersividades: aquí alpha_l = alpha_t = 0 (advección pura); legacy
+#     alphaL = alphaT = 0.5;
+#   - realizaciones: aquí analysis.macrodispersion.NR = 1; legacy
+#     nRealizations = 500. El estudio debe fijar NR explícitamente;
+#   - semillas: aquí curand_init(seed + ix, ...); legacy curand_init(ix, ...),
+#     por lo que las realizaciones NO son reproducibles una a una.
+#
+# Decisión: docs/decisions/2026-10-07-gaussian-covariance-only.md
 #
 # Cómo usar:
 #   ./macroflow3d_pipeline config_pipeline.yaml
@@ -74,9 +95,10 @@ grid:
 #                    Más modos → campo más preciso pero más lento de generar.
 #                    1000 es suficiente para la mayoría de casos; 10000
 #                    para dominios muy grandes (Nx=2048).
-#   covariance_type → Tipo de función de covarianza del campo Y=ln(K):
-#                    0 = exponencial  C(r) = exp(-r/λ)
-#                    1 = gaussiana    C(r) = exp(-(r/λ)²)
+#   covariance_type → Tipo de función de covarianza del campo Y=ln(K).
+#                    Único valor aceptado: 1 = gaussiana C(r) = σ² exp(-(r/λ)²).
+#                    0 (exponencial) fue retirado y el validador lo rechaza
+#                    (docs/decisions/2026-10-07-gaussian-covariance-only.md).
 #   seed           → Semilla base del generador pseudoaleatorio (uint64).
 #                    Cambiarla produce un ensemble completamente diferente.
 #   K_mean         → Media geométrica de K: E[K] = exp(E[Y]) = K_mean.
@@ -86,7 +108,7 @@ stochastic:
   sigma2: 1.0
   corr_length: 50.0
   n_modes: 10000
-  covariance_type: 0
+  covariance_type: 1
   seed: 42
   K_mean: 1.0
 
