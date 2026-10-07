@@ -173,6 +173,9 @@ struct DriverConfig {
     real ell = 0.25;
     unsigned long long seed = 3001ULL;
     std::string analytic; ///< empty: SF-18 gaussian field
+    /// SF-33 N8': --cells <npy>: user cell samples Y (N^3, x1 fastest = Grid3D layout) as a
+    /// SlabFieldSource::spectral source (stage field k = exp(eps Y)); excludes --analytic.
+    std::string cells_path;
     int oracle_hmax_div = 8;
     real oracle_tol = 1e-8;
     real oracle_max_roundtrip = 1e-8; ///< acceptance (d): round trip <= 1e-8 on every plane
@@ -219,6 +222,7 @@ struct DriverConfig {
     std::string probe_ladder;      ///< empty: the prototype ladder (0.25, 0.5, 1)
     // outputs
     std::string save_solution_dir;
+    std::string save_oracle_dir; ///< SF-33 N8': psi_or_{1,2}.npy (full labels) of every oracle run
     std::string summary_path;
     int device = 0;
     std::string command_line;
@@ -229,8 +233,8 @@ inline const char* usage_text() {
            "  inlet_slab --proto <case_dir> [--eps-target E] [--solution <solution_dir>]\n"
            "             [--save-solution <dir>] [--summary <json>] [solver options]\n"
            "  inlet_slab --production --n N --eps E [--sigma2 1 --ell 0.25 --seed 3001 | "
-           "--analytic <field>]\n"
-           "             [--oracle-hmax-div 8] [--oracle-tol 1e-8] [--oracle-max-roundtrip 1e-8]\n"
+           "--analytic <field> | --cells <Y.npy>]\n"
+           "             [--save-oracle <dir>] [--oracle-hmax-div 8] [--oracle-tol 1e-8] [--oracle-max-roundtrip 1e-8]\n"
            "             [--oracle-ladder] [--no-oracle] [--threads T] [--pcg-rtol 1e-10]\n"
            "             [--save-solution <dir>] [--summary <json>] [solver options]\n"
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
@@ -383,6 +387,10 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.seed = parse_u64(opt, val);
         } else if (opt == "--analytic") {
             c.analytic = val;
+        } else if (opt == "--cells") {
+            c.cells_path = val;
+        } else if (opt == "--save-oracle") {
+            c.save_oracle_dir = val;
         } else if (opt == "--oracle-hmax-div") {
             c.oracle_hmax_div = parse_int(opt, val);
         } else if (opt == "--oracle-tol") {
@@ -483,6 +491,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
             throw UsageError("--oracle-tol / --oracle-max-roundtrip must be > 0");
         if (!(c.sigma2 > 0.0) || !(c.ell > 0.0))
             throw UsageError("--sigma2 / --ell must be > 0");
+        if (!c.cells_path.empty() && !c.analytic.empty())
+            throw UsageError("--cells and --analytic are exclusive");
     } else if (c.mode == Mode::proto) {
         if (c.has_eps_target && !(c.eps_target > 0.0))
             throw UsageError("--eps-target must be > 0");
@@ -1436,7 +1446,20 @@ inline int run_production(CudaContext& ctx, const DriverConfig& c) {
 
     pl.begin("field");
     sl::SlabFieldSource src;
-    if (c.analytic.empty()) {
+    if (!c.cells_path.empty()) {
+        // SF-33 N8': user cell samples, layout i + N (j + N k) (x1 fastest), unit amplitude
+        // (the stage multiplies by eps); vertex values by spectral evaluation (N3 source).
+        const sl::NpyArray a = sl::read_npy(c.cells_path);
+        const std::size_t n3 = static_cast<std::size_t>(c.n) * c.n * c.n;
+        if (a.count() != n3)
+            throw std::runtime_error("--cells: " + c.cells_path + " has " + a.shape_string() +
+                                     ", expected N^3 = " + std::to_string(n3) + " samples");
+        src = sl::SlabFieldSource::spectral(ctx, "cells", c.n, a.data);
+        out_line(fmt("FIELD cells %s (N^3 cell samples, x1 fastest; spectral vertex values) N=%d "
+                     "| stage field k = exp(eps Y), eps = %g",
+                     c.cells_path.c_str(), c.n, c.eps));
+        J["field_spec"] = {{"kind", "cells"}, {"path", c.cells_path}};
+    } else if (c.analytic.empty()) {
         sl::ProductionFieldSpec spec;
         spec.N = c.n;
         spec.sigma2 = c.sigma2;
@@ -1525,6 +1548,24 @@ inline int run_production(CudaContext& ctx, const DriverConfig& c) {
                                  "max|dpsi2|=%.3e",
                                  entries[k].hmax, entries[k].tol, d1, d2));
                 }
+            }
+            if (!c.save_oracle_dir.empty()) {
+                // SF-33 N8': full labels psi_or_{1,2} (N+1, N, N) of every oracle run; the
+                // primary run without a suffix, ladder runs with _h<div>_tol<tol>.
+                make_dir(c.save_oracle_dir);
+                const std::size_t N = static_cast<std::size_t>(grid.n);
+                const std::vector<std::size_t> shape = {N + 1, N, N};
+                for (std::size_t k = 0; k < entries.size(); ++k) {
+                    const std::string suf =
+                        k == 0 ? std::string()
+                               : fmt("_h%.6g_tol%.0e", h / entries[k].hmax, entries[k].tol);
+                    sl::write_npy(c.save_oracle_dir + "/psi_or_1" + suf + ".npy", shape,
+                                  entries[k].psi1.data(), entries[k].psi1.size());
+                    sl::write_npy(c.save_oracle_dir + "/psi_or_2" + suf + ".npy", shape,
+                                  entries[k].psi2.data(), entries[k].psi2.size());
+                }
+                out_line("SAVED_ORACLE " + c.save_oracle_dir + " (psi_or_{1,2}[suffix].npy, full "
+                         "labels, (N+1, N, N), slab layout)");
             }
             oracle_status = sl::to_string(entries[0].res.status);
             json oj = json::array();
