@@ -1,0 +1,20 @@
+== 1. Stokes face fluxes on pair G (e=0.05), n = 8 ==
+max|div| = 2.776e-16   max|u| = 1.329  (S1: expect roundoff)
+max |edge-loop flux - direct surface quadrature| = 9.714e-17  (S2: expect ~1e-14)
+max |coarse flux - mean of fine| = 2.220e-16  (S3)
+uniform: max|u-1| = 0.0e+00 max|v| = 0.0e+00 max|w| = 0.0e+00  (S4)
+pair A: max|u-1| = 4.4e-16  max|v - exact cell mean| = 1.1e-16  max|w| = 0.0e+00  (S5)
+
+== 2. Pollock: uniform pair (P1) and pair A exactness (P2) ==
+U: start (0.2,0.3) -> xu = [1.  0.2 0.3], tau = np.float64(1.0), status ok, cells 4
+U: start (0.61,0.07) -> xu = [1.   0.61 0.07], tau = np.float64(1.0), status ok, cells 4
+A (n=16): max |delta_x2|, |delta_x3|, |tau-1| over 64 seeds = 4.441e-16  (P2: expect roundoff)
+
+== 3. Pollock return map on pair G (e=0.05): variance vs Delta (prediction P1) ==
+n=  8: var(dx2) = 2.984e-04 var(dx3) = 4.313e-04 mean(dx2) = +1.17e-03 mean(dx3) = -7.62e-04 <tau> = 1.015294 bad = 0
+n= 16: var(dx2) = 3.148e-05 var(dx3) = 7.083e-05 mean(dx2) = +1.90e-05 mean(dx3) = -1.45e-04 <tau> = 1.016959 bad = 0
+n= 32: var(dx2) = 3.952e-06 var(dx3) = 8.006e-06 mean(dx2) = +3.40e-05 mean(dx3) = -2.00e-05 <tau> = 1.017580 bad = 0
+n= 64: var(dx2) = 4.683e-07 var(dx3) = 9.961e-07 mean(dx2) = +6.34e-06 mean(dx3) = +2.10e-05 <tau> = 1.017771 bad = 0
+variance(x2) ~ Delta^p: least-squares p = 3.094; two-level [3.2449 2.9938 3.077 ]
+variance(x3) ~ Delta^p: least-squares p = 2.942; two-level [2.6062 3.1452 3.0068]
+python3 prototype_pollock.py  36,61s user 1,11s system 79% cpu 47,571 total

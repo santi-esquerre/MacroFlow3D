@@ -1,0 +1,68 @@
+[2026-10-06T16:08:31Z] job=sf32-ladders session=macroflow3d-SF-32-sf32-ladders started
+[2026-10-06T16:08:31Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-06T16:08:31Z] cwd=/home/sesquerre/MacroFlow3D-SF-32
+[2026-10-06T16:08:31Z] command=set -o pipefail; ./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml > output_sf32/smoke_pspta_small.log 2>&1; echo SMOKE_EXIT=$?; B=./build/v100-release/spurious_spreading; for p in stack_lester2021_e025_n256 stack_lester2021_e025_n128 analytic_G_a005_n128; do echo "=== ladders $p"; bash apps/spurious_spreading/run_ladders.sh $B output_sf32/labels/$p output_sf32/ladders; echo LADDER_EXIT_$p=$?; done; echo "=== analyze"; python3 apps/spurious_spreading/analyze.py output_sf32/ladders; echo ANALYZE_EXIT=$?
+SMOKE_EXIT=0
+=== ladders stack_lester2021_e025_n256
+run_ladders: field stack_lester2021_e0.25_n256 -> output_sf32/ladders/stack_lester2021_e0.25_n256 (seeds 8192, seed 20261006)
+pollock            m1           exit=0 wall=3.54s
+pollock            m2           exit=0 wall=3.04s
+pollock            m4           exit=0 wall=2.77s
+pollock            m8           exit=0 wall=2.96s
+rk                 tol1e-04     exit=0 wall=3.05s
+rk                 tol1e-05     exit=0 wall=2.98s
+rk                 tol1e-06     exit=0 wall=2.95s
+rk                 tol1e-07     exit=0 wall=2.99s
+rk                 tol1e-08     exit=0 wall=2.86s
+rk                 tol1e-09     exit=0 wall=2.92s
+rk                 tol1e-10     exit=0 wall=3.00s
+pseudo_symplectic  tolpsi1e-08  exit=0 wall=2.89s
+pseudo_symplectic  tolpsi1e-10  exit=0 wall=3.23s
+pseudo_symplectic  tolpsi1e-12  exit=0 wall=3.01s
+run_ladders: all runs exited 0
+LADDER_EXIT_stack_lester2021_e025_n256=0
+=== ladders stack_lester2021_e025_n128
+run_ladders: field stack_lester2021_e0.25_n128 -> output_sf32/ladders/stack_lester2021_e0.25_n128 (seeds 8192, seed 20261006)
+pollock            m1           exit=0 wall=2.53s
+pollock            m2           exit=0 wall=2.71s
+pollock            m4           exit=0 wall=2.52s
+pollock            m8           exit=0 wall=2.64s
+rk                 tol1e-04     exit=0 wall=2.41s
+rk                 tol1e-05     exit=0 wall=2.64s
+rk                 tol1e-06     exit=0 wall=2.63s
+rk                 tol1e-07     exit=0 wall=2.59s
+rk                 tol1e-08     exit=0 wall=2.70s
+rk                 tol1e-09     exit=0 wall=2.59s
+rk                 tol1e-10     exit=0 wall=2.73s
+pseudo_symplectic  tolpsi1e-08  exit=0 wall=2.52s
+pseudo_symplectic  tolpsi1e-10  exit=0 wall=2.60s
+pseudo_symplectic  tolpsi1e-12  exit=0 wall=2.36s
+run_ladders: all runs exited 0
+LADDER_EXIT_stack_lester2021_e025_n128=0
+=== ladders analytic_G_a005_n128
+run_ladders: field analytic_G_a0.05_n128 -> output_sf32/ladders/analytic_G_a0.05_n128 (seeds 8192, seed 20261006)
+pollock            m1           exit=0 wall=2.67s
+pollock            m2           exit=0 wall=2.31s
+pollock            m4           exit=0 wall=2.45s
+pollock            m8           exit=0 wall=2.48s
+rk                 tol1e-04     exit=0 wall=2.58s
+rk                 tol1e-05     exit=0 wall=2.60s
+rk                 tol1e-06     exit=0 wall=2.56s
+rk                 tol1e-07     exit=0 wall=2.75s
+rk                 tol1e-08     exit=0 wall=2.59s
+rk                 tol1e-09     exit=0 wall=2.50s
+rk                 tol1e-10     exit=0 wall=2.75s
+pseudo_symplectic  tolpsi1e-08  exit=0 wall=2.52s
+pseudo_symplectic  tolpsi1e-10  exit=0 wall=2.65s
+pseudo_symplectic  tolpsi1e-12  exit=0 wall=2.62s
+run_ladders: all runs exited 0
+LADDER_EXIT_analytic_G_a005_n128=0
+=== analyze
+analyze: 3 field(s), 43 file(s) written to output_sf32/ladders/analysis
+| field | Pollock p var(dx2) | Pollock p var(dx3) | RK p var(dx2) (5 tol) | RK p var(dx3) (5 tol) | RK p var(dx2) (all) | RK p var(dx3) (all) | PS T3 |
+|---|---|---|---|---|---|---|---|
+| analytic_G_a0.05_n128 | 3.030 (out_of_band) | 3.040 (out_of_band) | 1.901 (out_of_band) | 1.848 (out_of_band) | 1.255 (out_of_band) | 1.248 (out_of_band) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+| stack_lester2021_e0.25_n128 | -0.645 (out_of_band, non_monotone) | -0.781 (out_of_band, non_monotone) | 1.404 (out_of_band) | 1.395 (out_of_band) | 1.001 (out_of_band, non_monotone) | 1.024 (out_of_band, non_monotone) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+| stack_lester2021_e0.25_n256 | -1.837 (out_of_band, non_monotone) | -1.843 (out_of_band, non_monotone) | 1.712 (out_of_band) | 1.673 (out_of_band) | 1.392 (out_of_band) | 1.397 (out_of_band) | 1e-08:pass, 1e-10:pass, 1e-12:pass |
+ANALYZE_EXIT=0
+[2026-10-06T16:10:45Z] job=sf32-ladders finished exit=0

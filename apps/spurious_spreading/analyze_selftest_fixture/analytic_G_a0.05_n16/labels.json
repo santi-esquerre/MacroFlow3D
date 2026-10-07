@@ -1,0 +1,31 @@
+{
+ "amplitude": 0.05,
+ "e_psi1": 0.0,
+ "e_psi2": 0.0,
+ "e_v": 0.0,
+ "exit_reason": "analytic",
+ "files": [
+  "fixture_u1.bin",
+  "fixture_u2.bin"
+ ],
+ "gbar1": [
+  0,
+  1,
+  0
+ ],
+ "gbar2": [
+  0,
+  0,
+  1
+ ],
+ "h": 0.0625,
+ "iterations": 0,
+ "min_abs_c_grid": 0.875,
+ "n": 16,
+ "note": "hand-written analyze.py self-test fixture; not a measurement",
+ "pair": "G",
+ "r_F": 0.0,
+ "route": "analytic",
+ "vbar": 1.0,
+ "wall_seconds": 0.0
+}

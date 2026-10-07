@@ -212,6 +212,8 @@ set(STREAMLINE_TRACKER_SOURCES
     src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu
     src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu
     src/physics/particles/streamline_tracker/ReferenceRkTracker.cu
+    src/physics/particles/streamline_tracker/StokesFaceVelocity.cu
+    src/physics/particles/streamline_tracker/PollockTracker.cu
 )
 
 set(MULTIGRID_SOURCES
@@ -585,6 +587,18 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(streamline_tracker_rk_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME streamline_tracker_reference_rk COMMAND streamline_tracker_rk_tests)
 
+    # SF-32 N3a: Stokes face-flux (StokesFaceVelocity) contract tests S1-S7 (fast tier)
+    add_executable(streamline_tracker_face_flux_tests tests/streamline_tracker/face_flux_tests.cu)
+    target_link_libraries(streamline_tracker_face_flux_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_tracker_face_flux_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_tracker_face_flux COMMAND streamline_tracker_face_flux_tests)
+
+    # SF-32 N3b: Pollock-type (RT0) tracker contract tests P1-P6 (fast tier)
+    add_executable(streamline_tracker_pollock_tests tests/streamline_tracker/pollock_tracker_tests.cu)
+    target_link_libraries(streamline_tracker_pollock_tests PRIVATE macroflow3d_lib)
+    target_compile_options(streamline_tracker_pollock_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME streamline_tracker_pollock COMMAND streamline_tracker_pollock_tests)
+
     # SF-30 N1: SF-19 potential accessor + oracle streamline integrator contracts (fast tier)
     add_executable(streamline_closure_integrator_tests tests/closure/streamline_closure_integrator_tests.cu)
     target_link_libraries(streamline_closure_integrator_tests PRIVATE macroflow3d_lib)
@@ -595,6 +609,26 @@ if(MACROFLOW3D_BUILD_APPS)
     add_executable(closure_gate apps/closure_gate/closure_gate_main.cu)
     target_link_libraries(closure_gate PRIVATE macroflow3d_lib)
     target_compile_options(closure_gate PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
+    # SF-32 N2a/N2b: spurious-spreading return-map instrument (documented-experiment instrument; not a ctest entry).
+    # The non-main translation units form a small static library shared with the controls ctest below,
+    # so the test drives exactly the instrument's code (in memory, no subprocess).
+    add_library(spurious_spreading_core STATIC
+        apps/spurious_spreading/label_routes.cu
+        apps/spurious_spreading/return_map_run.cu)
+    target_link_libraries(spurious_spreading_core PUBLIC macroflow3d_lib)
+    # Same device-code model as macroflow3d_lib (relocatable device code, resolved at the executables' device link).
+    set_target_properties(spurious_spreading_core PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_compile_options(spurious_spreading_core PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_executable(spurious_spreading apps/spurious_spreading/spurious_spreading_main.cu)
+    target_link_libraries(spurious_spreading PRIVATE spurious_spreading_core)
+    target_compile_options(spurious_spreading PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
+    # SF-32 N2b: 16^3 controls of the spurious-spreading instrument (fast tier)
+    add_executable(spurious_spreading_controls_tests tests/spurious_spreading/spurious_spreading_controls_tests.cu)
+    target_link_libraries(spurious_spreading_controls_tests PRIVATE spurious_spreading_core)
+    target_compile_options(spurious_spreading_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME spurious_spreading_controls16 COMMAND spurious_spreading_controls_tests)
 
     # SF-30 N2: 16^3 controls of the closure gate (fast tier)
     add_executable(streamline_closure_controls_tests tests/closure/streamline_closure_controls_tests.cu)

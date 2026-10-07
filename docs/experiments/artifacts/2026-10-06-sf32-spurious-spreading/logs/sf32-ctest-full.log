@@ -1,0 +1,56 @@
+[2026-10-06T16:08:09Z] job=sf32-ctest-full session=macroflow3d-SF-32-sf32-ctest-full started
+[2026-10-06T16:08:09Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T16:08:09Z] cwd=/home/sesquerre/MacroFlow3D-SF-32
+[2026-10-06T16:08:09Z] command=ctest --test-dir build/v100-release --output-on-failure
+Test project /home/sesquerre/MacroFlow3D-SF-32/build/v100-release
+      Start  1: operator_tests
+ 1/23 Test  #1: operator_tests .........................   Passed    3.36 sec
+      Start  2: streamfunction_operator_tests
+ 2/23 Test  #2: streamfunction_operator_tests ..........   Passed  1344.63 sec
+      Start  3: streamfunction_exact_pair
+ 3/23 Test  #3: streamfunction_exact_pair ..............   Passed   11.20 sec
+      Start  4: streamfunction_homogeneous
+ 4/23 Test  #4: streamfunction_homogeneous .............   Passed    3.55 sec
+      Start  5: streamfunction_picard_fixed
+ 5/23 Test  #5: streamfunction_picard_fixed ............   Passed  423.68 sec
+      Start  6: streamfunction_picard_adaptive
+ 6/23 Test  #6: streamfunction_picard_adaptive .........   Passed  118.66 sec
+      Start  7: streamfunction_continuation
+ 7/23 Test  #7: streamfunction_continuation ............   Passed  162.39 sec
+      Start  8: streamfunction_anderson
+ 8/23 Test  #8: streamfunction_anderson ................   Passed  143.01 sec
+      Start  9: streamfunction_heterogeneity_unit
+ 9/23 Test  #9: streamfunction_heterogeneity_unit ......   Passed   20.37 sec
+      Start 10: streamfunction_jvp
+10/23 Test #10: streamfunction_jvp .....................   Passed   35.57 sec
+      Start 11: streamfunction_gmres
+11/23 Test #11: streamfunction_gmres ...................   Passed  264.46 sec
+      Start 12: streamfunction_newton
+12/23 Test #12: streamfunction_newton ..................   Passed  140.41 sec
+      Start 13: streamfunction_terminal_unit
+13/23 Test #13: streamfunction_terminal_unit ...........   Passed   25.49 sec
+      Start 14: periodic_gaussian
+14/23 Test #14: periodic_gaussian ......................   Passed    3.70 sec
+      Start 15: affine_periodic_flow
+15/23 Test #15: affine_periodic_flow ...................   Passed    8.32 sec
+      Start 16: interpolation_periodic_tricubic
+16/23 Test #16: interpolation_periodic_tricubic ........   Passed    4.03 sec
+      Start 17: streamline_tracker_pseudo_symplectic
+17/23 Test #17: streamline_tracker_pseudo_symplectic ...   Passed    4.63 sec
+      Start 18: streamline_tracker_reference_rk
+18/23 Test #18: streamline_tracker_reference_rk ........   Passed    3.93 sec
+      Start 19: streamline_tracker_face_flux
+19/23 Test #19: streamline_tracker_face_flux ...........   Passed    4.60 sec
+      Start 20: streamline_tracker_pollock
+20/23 Test #20: streamline_tracker_pollock .............   Passed    4.89 sec
+      Start 21: streamline_closure_integrator
+21/23 Test #21: streamline_closure_integrator ..........   Passed    5.67 sec
+      Start 22: spurious_spreading_controls16
+22/23 Test #22: spurious_spreading_controls16 ..........   Passed    4.07 sec
+      Start 23: streamline_closure_controls16
+23/23 Test #23: streamline_closure_controls16 ..........   Passed   12.24 sec
+
+100% tests passed, 0 tests failed out of 23
+
+Total Test time (real) = 2752.88 sec
+[2026-10-06T16:54:03Z] job=sf32-ctest-full finished exit=0

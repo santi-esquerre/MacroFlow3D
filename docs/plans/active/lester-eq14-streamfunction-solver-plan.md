@@ -136,7 +136,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-29 — CPU prototype: equation (14) with `x1` non-periodic and inlet labels](lester-eq14/increments/SF-29-eq14-inlet-labels-cpu-prototype.md)
 - [x] [SF-30 — Streamline-closure gate on the production stack](lester-eq14/increments/SF-30-streamline-closure-gate.md)
 - [x] [SF-31 — Pseudo-symplectic tracker core and RK reference](lester-eq14/increments/SF-31-pseudo-symplectic-tracker-core.md)
-- [ ] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
+- [x] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
 - [ ] [SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
 - [ ] [SF-34 — Acceptance of the inlet labels in the periodic medium against the closure gate](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
 
