@@ -56,7 +56,10 @@ not a ctest entry) consumes these exports. Run from the repository root:
 ```
 
 Solver options (all modes that solve): `--lin-tol 1e-12 --restart 100 --max-inner 6000 --newton-tol 1e-13
---max-newton 120 (40 with --psitc off) --bisect 4 --prec pa` (P-A is the only preconditioner); linear forcing (SF-33 N7a) `--forcing ew`
+--max-newton 120 (40 with --psitc off) --bisect 4 --prec pa` (P-A is the base preconditioner; driver production
+defaults since SF-33 C3: `--coarse mult --coarse-profiles 2 --coarse-assembly colored --coarse-factor banded`, i.e.
+P-A + the N7c Galerkin coarse correction, and `--gmres-stagnation-factor 0.9`: GMRES stops on stagnation when the true
+residual at a restart exceeds f x the one two restarts earlier); linear forcing (SF-33 N7a) `--forcing ew`
 (default: inexact Newton, Eisenstat-Walker choice 2, gamma 0.9, alpha 2, `--ew-eta0 0.1`, `--ew-eta-max 0.1`,
 eta_min = `--lin-tol`, oversolving guard 0.5 newton_tol / merit; every NEWTON line prints `eta=`, the SOLVER line and
 `GMRES_STATS` record the policy and the per-stage eta sequence) or `--forcing fixed` (every Newton system to
@@ -115,7 +118,8 @@ scripts/remote --increment SF-33 run sf33-ladder-0.5 -- \
 - `digest_newton.py JSON...` (SF-33 N7b): per-stage Newton / GMRES digest of the driver's `--summary` JSON
   (status, steps, r_F history, eta and mu sequences, GMRES total / max / median per solve, per-restart curves of
   every failed linear solve). `--crosscheck LOG...`: the step-8 table and orders.
-- SF-33 N7c (probe, `SlabCoarseCorrection.cuh`): driver options `--coarse off|add|mult` (default off = the N7b
+- SF-33 N7c (`SlabCoarseCorrection.cuh`; driver default since SF-33 C3: `mult`, 2 profiles, colored, banded):
+  driver options `--coarse off|add|mult` (off = the N7b
   solver bitwise), `--coarse-profiles 1|2` (x1-constant, + x1-linear column profiles; K = 2 P N^2),
   `--coarse-assembly direct|colored` (K vs p^2 2 P operator applications, bitwise-equal E),
   `--coarse-factor dense|banded` (host dense LU vs banded LU in the folded m2 ordering; banded needs colored); `COARSE

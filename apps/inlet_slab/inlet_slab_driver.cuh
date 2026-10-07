@@ -27,7 +27,14 @@
  *                             {mu_SER of that iterate, 0} (--probe-mu). PROBE / PROBE_CURVE lines.
  *
  * SF-33 N7c also adds `--coarse off|add|mult --coarse-profiles 1|2` (Galerkin coarse correction
- * on top of P-A in the Newton solves; SlabCoarseCorrection.cuh); default off (N7b behaviour).
+ * on top of P-A in the Newton solves; SlabCoarseCorrection.cuh).
+ *
+ * SF-33 C3 (driver production defaults): `--coarse mult --coarse-profiles 2 --coarse-assembly
+ * colored --coarse-factor banded` (the N7c-validated solver), `--psitc on`, `--forcing ew`,
+ * `--restart 100`, `--max-inner 6000`, `--max-newton 120` (40 when `--psitc off` and not given).
+ * `--coarse off` restores the N7b solver bitwise. `--gmres-stagnation-factor f` (default 0.9, the
+ * prototype rule) sets SlabGmresConfig::stagnation_factor of the Newton solves. Library defaults
+ * (SlabNewtonConfig: coarse off) are unchanged.
  *
  * Nothing is clamped or regularized here: the driver only orchestrates N0-N4 and reports. Every
  * terminal status is printed as `STATUS <name>` and mapped to a distinct exit code (ExitCode).
@@ -190,10 +197,15 @@ struct DriverConfig {
     std::string psitc = "on"; ///< SF-33 N7b: pseudo-transient continuation (SER shift) on | off
     real psitc_mu0 = 1.0;
     real psitc_mu_max = 100.0;
-    std::string coarse = "off"; ///< SF-33 N7c probe: off | add | mult (Galerkin coarse correction)
-    int coarse_profiles = 1;    ///< 1 (x1-constant) | 2 (+ x1-linear)
-    std::string coarse_assembly = "direct"; ///< direct (K applies) | colored (productization)
-    std::string coarse_factor = "dense";    ///< dense host LU | banded host LU (needs colored)
+    // SF-33 C3: driver production defaults = the N7c-validated solver (mult, 2 profiles,
+    // colored assembly, banded host LU); the library default (SlabNewtonConfig) stays off.
+    std::string coarse = "mult"; ///< off | add | mult (Galerkin coarse correction, N7c)
+    int coarse_profiles = 2;     ///< 1 (x1-constant) | 2 (+ x1-linear)
+    std::string coarse_assembly = "colored"; ///< direct (K applies) | colored (productization)
+    std::string coarse_factor = "banded";    ///< dense host LU | banded host LU (needs colored)
+    /// SF-33 C3: GMRES restart-stagnation factor of the Newton solves (SlabGmresConfig):
+    /// stop when the true residual at a restart > f x the one two restarts earlier.
+    real gmres_stagnation_factor = 0.9;
     // linear probe (SF-33 N7c)
     bool has_eps_from = false;
     real eps_from = 0.0;
@@ -231,8 +243,9 @@ inline const char* usage_text() {
            "                [--max-newton 120 (psitc on) | 40 (psitc off)] [--bisect 4]\n"
            "                [--prec pa] [--device 0] [--forcing ew|fixed] [--ew-eta-max 0.1]\n"
            "                [--ew-eta0 0.1] [--psitc on|off] [--psitc-mu0 1] [--psitc-mu-max 100]\n"
-           "                [--coarse off|add|mult] [--coarse-profiles 1|2]\n"
-           "                [--coarse-assembly direct|colored] [--coarse-factor dense|banded]\n"
+           "                [--coarse mult|add|off] [--coarse-profiles 2|1]\n"
+           "                [--coarse-assembly colored|direct] [--coarse-factor banded|dense]\n"
+           "                [--gmres-stagnation-factor 0.9]\n"
            "exit codes: 0 converged; 1 exception; 2 usage; 10 linesearch-fail; 11 stagnation; 12 "
            "maxit;\n"
            "            13 linear_failure; 14 nan_inf; 15 continuation_floor; 16 "
@@ -346,6 +359,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.coarse_assembly = val;
         } else if (opt == "--coarse-factor") {
             c.coarse_factor = val;
+        } else if (opt == "--gmres-stagnation-factor") {
+            c.gmres_stagnation_factor = parse_double(opt, val);
         } else if (opt == "--eps-target") {
             c.eps_target = parse_double(opt, val);
             c.has_eps_target = true;
@@ -427,15 +442,18 @@ inline DriverConfig parse_args(int argc, char** argv) {
     if (!(c.psitc_mu0 >= 0.0) || !(c.psitc_mu_max >= c.psitc_mu0))
         throw UsageError("--psitc-mu0 / --psitc-mu-max: 0 <= mu0 <= mu_max");
     if (c.coarse != "off" && c.coarse != "add" && c.coarse != "mult")
-        throw UsageError("--coarse: off (default) | add | mult");
+        throw UsageError("--coarse: mult (default) | add | off");
     if (c.coarse_profiles != 1 && c.coarse_profiles != 2)
         throw UsageError("--coarse-profiles: 1 | 2");
     if (c.coarse_assembly != "direct" && c.coarse_assembly != "colored")
-        throw UsageError("--coarse-assembly: direct (default) | colored");
+        throw UsageError("--coarse-assembly: colored (default) | direct");
     if (c.coarse_factor != "dense" && c.coarse_factor != "banded")
-        throw UsageError("--coarse-factor: dense (default) | banded");
+        throw UsageError("--coarse-factor: banded (default) | dense");
     if (c.coarse_factor == "banded" && c.coarse_assembly != "colored")
-        throw UsageError("--coarse-factor banded requires --coarse-assembly colored");
+        throw UsageError("--coarse-factor banded (default) requires --coarse-assembly colored "
+                         "(use --coarse-factor dense with --coarse-assembly direct)");
+    if (!(c.gmres_stagnation_factor > 0.0))
+        throw UsageError("--gmres-stagnation-factor must be > 0");
     if (c.mode == Mode::linear_probe) {
         if (!c.has_eps_stage || !(c.eps_stage > 0.0))
             throw UsageError("--linear-probe requires --eps-stage E > 0");
@@ -860,6 +878,7 @@ inline sl::SlabNewtonConfig newton_config(const DriverConfig& c) {
     n.gmres.tol = c.lin_tol;
     n.gmres.restart = c.restart;
     n.gmres.max_iterations = c.max_inner;
+    n.gmres.stagnation_factor = c.gmres_stagnation_factor;
     n.prec_name = "P-A";
     n.forcing = c.forcing == "fixed" ? sl::SlabForcing::fixed : sl::SlabForcing::ew;
     n.ew.eta_max = c.ew_eta_max;
@@ -888,13 +907,17 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                  "restart=%d max_inner=%d bisect=%d prec=P-A ladder=(0.25,0.5,1) stage_ok=%.0e "
                  "forcing=%s ew_gamma=%g ew_alpha=%g ew_eta0=%g ew_eta_max=%g ew_eta_min=%.1e "
                  "psitc=%s psitc_mu0=%g psitc_mu_max=%g psitc_norm=merit psitc_retries=%d "
-                 "psitc_retry_factor=%g stagnation_window=%d stagnation_factor=%g",
+                 "psitc_retry_factor=%g stagnation_window=%d stagnation_factor=%g "
+                 "gmres_stagnation_factor=%g coarse=%s coarse_profiles=%d coarse_assembly=%s "
+                 "coarse_factor=%s",
                  sc.grid.n, sc.eps, ncfg.tol, ncfg.max_iterations, ncfg.gmres.tol,
                  ncfg.gmres.restart, ncfg.gmres.max_iterations, ccfg.max_bisections,
                  ccfg.stage_ok, sl::to_string(ncfg.forcing), ncfg.ew.gamma, ncfg.ew.alpha,
                  ncfg.ew.eta0, ncfg.ew.eta_max, ncfg.gmres.tol, ncfg.psitc.enabled ? "on" : "off",
                  ncfg.psitc.mu0, ncfg.psitc.mu_max, ncfg.psitc.max_retries,
-                 ncfg.psitc.retry_factor, ncfg.stagnation_window, ncfg.stagnation_factor));
+                 ncfg.psitc.retry_factor, ncfg.stagnation_window, ncfg.stagnation_factor,
+                 ncfg.gmres.stagnation_factor, sl::to_string(ncfg.coarse), c.coarse_profiles,
+                 c.coarse_assembly.c_str(), c.coarse_factor.c_str()));
     if (ncfg.coarse != sl::SlabCoarseMode::off)
         out_line(fmt("SOLVER_COARSE mode=%s profiles=%d K=%d assembly=%s factor=%s (SF-33 N7c "
                      "probe: Galerkin coarse correction on the x1-constant%s column subspace, "
@@ -925,6 +948,11 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                           {"psitc_retry_factor", ncfg.psitc.retry_factor},
                           {"stagnation_window", ncfg.stagnation_window},
                           {"stagnation_factor", ncfg.stagnation_factor},
+                          {"gmres_stagnation_factor", ncfg.gmres.stagnation_factor},
+                          {"coarse", sl::to_string(ncfg.coarse)},
+                          {"coarse_profiles", c.coarse_profiles},
+                          {"coarse_assembly", c.coarse_assembly},
+                          {"coarse_factor", c.coarse_factor},
                           {"bisect", ccfg.max_bisections}};
     const auto t0 = std::chrono::steady_clock::now();
     try {
