@@ -140,7 +140,25 @@ struct SlabPsitcConfig {
     real mu_max = 100.0; ///< clamp of every mu (SER value and line-search retries)
     int max_retries = 4; ///< line-search failure: mu *= retry_factor, re-solve, at most this often
     real retry_factor = 4.0;
+    /// SF-33 C4: grid scaling of the SER reference shift. The shift mu D (D = q_v / h^2) with a
+    /// grid-independent mu damps the weakly determined family (eigenvalues ~h^2) until mu <~ h^2;
+    /// the SER schedule therefore uses the EFFECTIVE mu0_eff = mu0 (h / h_ref)^2
+    /// (psitc_effective_mu0), i.e. the pseudo-time step scales with that family (the absolute
+    /// shift mu0_eff D = mu0 q_v / h_ref^2 is grid independent). h_ref = 1/16 makes N = 16 bitwise
+    /// identical to the unscaled N7b behaviour (h / h_ref = 1 exactly); at N = 32, 64, 128 the
+    /// factor is 1/4, 1/16, 1/64 (at N = 12: 16/9). h_ref = 0 disables the scaling (mu0_eff = mu0:
+    /// the N7b behaviour at every N). mu_max and retry_factor are not scaled.
+    real h_ref = 1.0 / 16.0;
 };
+
+/// SF-33 C4: effective SER reference shift mu0_eff = mu0 (h / h_ref)^2 (h_ref = 0: mu0 unchanged).
+/// Exactly mu0 when h == h_ref (the ratio is 1.0 exactly).
+inline real psitc_effective_mu0(const SlabPsitcConfig& p, real h) {
+    if (p.h_ref == 0.0)
+        return p.mu0;
+    const real s = h / p.h_ref;
+    return p.mu0 * (s * s);
+}
 
 /// SF-33 N7c (probe): Galerkin coarse-space correction on the x1-constant / x1-linear column
 /// subspace combined with P-A (SlabCoarseCorrection.cuh). off = P-A alone (the N7b behaviour,

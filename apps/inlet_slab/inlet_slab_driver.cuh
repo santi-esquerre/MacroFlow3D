@@ -200,6 +200,8 @@ struct DriverConfig {
     std::string psitc = "on"; ///< SF-33 N7b: pseudo-transient continuation (SER shift) on | off
     real psitc_mu0 = 1.0;
     real psitc_mu_max = 100.0;
+    /// SF-33 C4: SER reference shift mu0_eff = mu0 (h / h_ref)^2; 0 disables (N7b behaviour).
+    real psitc_h_ref = 1.0 / 16.0;
     // SF-33 C3: driver production defaults = the N7c-validated solver (mult, 2 profiles,
     // colored assembly, banded host LU); the library default (SlabNewtonConfig) stays off.
     std::string coarse = "mult"; ///< off | add | mult (Galerkin coarse correction, N7c)
@@ -247,6 +249,7 @@ inline const char* usage_text() {
            "                [--max-newton 120 (psitc on) | 40 (psitc off)] [--bisect 4]\n"
            "                [--prec pa] [--device 0] [--forcing ew|fixed] [--ew-eta-max 0.1]\n"
            "                [--ew-eta0 0.1] [--psitc on|off] [--psitc-mu0 1] [--psitc-mu-max 100]\n"
+           "                [--psitc-href 0.0625 (mu0_eff = mu0 (h/href)^2; 0 = unscaled)]\n"
            "                [--coarse mult|add|off] [--coarse-profiles 2|1]\n"
            "                [--coarse-assembly colored|direct] [--coarse-factor banded|dense]\n"
            "                [--gmres-stagnation-factor 0.9]\n"
@@ -428,6 +431,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.psitc_mu0 = parse_double(opt, val);
         } else if (opt == "--psitc-mu-max") {
             c.psitc_mu_max = parse_double(opt, val);
+        } else if (opt == "--psitc-href") {
+            c.psitc_h_ref = parse_double(opt, val);
         } else if (opt == "--device") {
             c.device = parse_int(opt, val);
         } else {
@@ -449,6 +454,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
         throw UsageError("--psitc: 'on' (pseudo-transient continuation, default) or 'off'");
     if (!(c.psitc_mu0 >= 0.0) || !(c.psitc_mu_max >= c.psitc_mu0))
         throw UsageError("--psitc-mu0 / --psitc-mu-max: 0 <= mu0 <= mu_max");
+    if (!(c.psitc_h_ref >= 0.0))
+        throw UsageError("--psitc-href: >= 0 (0 disables the grid scaling of mu0)");
     if (c.coarse != "off" && c.coarse != "add" && c.coarse != "mult")
         throw UsageError("--coarse: mult (default) | add | off");
     if (c.coarse_profiles != 1 && c.coarse_profiles != 2)
@@ -896,6 +903,7 @@ inline sl::SlabNewtonConfig newton_config(const DriverConfig& c) {
     n.psitc.enabled = c.psitc == "on";
     n.psitc.mu0 = c.psitc_mu0;
     n.psitc.mu_max = c.psitc_mu_max;
+    n.psitc.h_ref = c.psitc_h_ref;
     if (c.coarse != "off") {
         n.coarse = c.coarse == "add" ? sl::SlabCoarseMode::add : sl::SlabCoarseMode::mult;
         n.prec_name = fmt("P-A+CC(%s,%d)", c.coarse.c_str(), c.coarse_profiles);
@@ -919,7 +927,7 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                  "psitc=%s psitc_mu0=%g psitc_mu_max=%g psitc_norm=merit psitc_retries=%d "
                  "psitc_retry_factor=%g stagnation_window=%d stagnation_factor=%g "
                  "gmres_stagnation_factor=%g coarse=%s coarse_profiles=%d coarse_assembly=%s "
-                 "coarse_factor=%s",
+                 "coarse_factor=%s psitc_h_ref=%g psitc_mu0_eff=%.6e",
                  sc.grid.n, sc.eps, ncfg.tol, ncfg.max_iterations, ncfg.gmres.tol,
                  ncfg.gmres.restart, ncfg.gmres.max_iterations, ccfg.max_bisections,
                  ccfg.stage_ok, sl::to_string(ncfg.forcing), ncfg.ew.gamma, ncfg.ew.alpha,
@@ -927,7 +935,8 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                  ncfg.psitc.mu0, ncfg.psitc.mu_max, ncfg.psitc.max_retries,
                  ncfg.psitc.retry_factor, ncfg.stagnation_window, ncfg.stagnation_factor,
                  ncfg.gmres.stagnation_factor, sl::to_string(ncfg.coarse), c.coarse_profiles,
-                 c.coarse_assembly.c_str(), c.coarse_factor.c_str()));
+                 c.coarse_assembly.c_str(), c.coarse_factor.c_str(), ncfg.psitc.h_ref,
+                 sl::psitc_effective_mu0(ncfg.psitc, sc.grid.h)));
     if (ncfg.coarse != sl::SlabCoarseMode::off)
         out_line(fmt("SOLVER_COARSE mode=%s profiles=%d K=%d assembly=%s factor=%s (SF-33 N7c "
                      "probe: Galerkin coarse correction on the x1-constant%s column subspace, "
@@ -953,6 +962,8 @@ inline void run_solve(CudaContext& ctx, const DriverConfig& c, SolveContext& sc,
                           {"psitc", ncfg.psitc.enabled ? "on" : "off"},
                           {"psitc_mu0", ncfg.psitc.mu0},
                           {"psitc_mu_max", ncfg.psitc.mu_max},
+                          {"psitc_h_ref", ncfg.psitc.h_ref},
+                          {"psitc_mu0_eff", sl::psitc_effective_mu0(ncfg.psitc, sc.grid.h)},
                           {"psitc_norm", "merit"},
                           {"psitc_max_retries", ncfg.psitc.max_retries},
                           {"psitc_retry_factor", ncfg.psitc.retry_factor},
@@ -1813,12 +1824,13 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
     const sl::SlabResidualNorms nk_n = nk.residual_norms(ctx, in, cspan(x));
     const real mk = nk_n.merit();
     const bool psitc = ncfg.psitc.enabled;
+    const real mu0_eff = sl::psitc_effective_mu0(ncfg.psitc, grid.h); // SF-33 C4
     const real mu_ser =
-        psitc ? std::fmin(std::fmax(ncfg.psitc.mu0 * (mk / m0), 0.0), ncfg.psitc.mu_max) : 0.0;
+        psitc ? std::fmin(std::fmax(mu0_eff * (mk / m0), 0.0), ncfg.psitc.mu_max) : 0.0;
     out_line(fmt("PROBE_ITERATE k=%d r_F=%.6e r_out=%.6e merit=%.6e mu_SER=%.6e (psitc %s, "
-                 "mu0 %g, m0 %.6e)",
+                 "mu0 %g, mu0_eff %.6e, m0 %.6e)",
                  c.newton_steps, nk_n.r_F, nk_n.r_out, mk, mu_ser, psitc ? "on" : "off",
-                 ncfg.psitc.mu0, m0));
+                 ncfg.psitc.mu0, mu0_eff, m0));
     J["iterate"] = {{"r_F", jnum(nk_n.r_F)},   {"r_out", jnum(nk_n.r_out)},
                     {"merit", jnum(mk)},        {"merit_stage_start", jnum(m0)},
                     {"mu_ser", jnum(mu_ser)}};

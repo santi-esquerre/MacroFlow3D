@@ -158,10 +158,11 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
     if (cfg.psitc.enabled &&
         (!(cfg.psitc.mu0 >= 0.0) || !(cfg.psitc.mu_max >= cfg.psitc.mu0) ||
          !std::isfinite(cfg.psitc.mu_max) || cfg.psitc.max_retries < 0 ||
-         !(cfg.psitc.retry_factor > 1.0) || !std::isfinite(cfg.psitc.retry_factor)))
+         !(cfg.psitc.retry_factor > 1.0) || !std::isfinite(cfg.psitc.retry_factor) ||
+         !(cfg.psitc.h_ref >= 0.0) || !std::isfinite(cfg.psitc.h_ref)))
         throw std::invalid_argument("SlabNewtonKrylov::solve: Psi-tc parameters out of range "
                                     "(0 <= mu0 <= mu_max < inf, max_retries >= 0, "
-                                    "retry_factor > 1)");
+                                    "retry_factor > 1, 0 <= h_ref < inf)");
 
     SlabNewtonReport rep;
     rep.forcing = cfg.forcing;
@@ -213,6 +214,8 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
     SlabSolveStatus status = SlabSolveStatus::maxit;
     real m_prev = 0.0, eta_prev = 0.0;
     const real m_start = m; // SER reference: merit of the start state of this solve() call
+    // SF-33 C4: grid-scaled SER reference shift (== mu0 exactly when h == h_ref or h_ref == 0)
+    const real mu0_eff = psitc_effective_mu0(cfg.psitc, grid_.h);
     SlabGmresConfig gcfg = cfg.gmres; // tol overwritten per step with the forcing term
     for (int it = 1; it <= cfg.max_iterations; ++it) {
         if (converged()) {
@@ -227,7 +230,7 @@ SlabNewtonReport SlabNewtonKrylov::solve(CudaContext& ctx, const SlabStageInputs
         gcfg.tol = eta;
         real mu = 0.0;
         if (psitc) // switched evolution relaxation, clamped to [0, mu_max]
-            mu = std::fmin(std::fmax(cfg.psitc.mu0 * (m / m_start), 0.0), cfg.psitc.mu_max);
+            mu = std::fmin(std::fmax(mu0_eff * (m / m_start), 0.0), cfg.psitc.mu_max);
         SlabNewtonStepRecord step;
         step.eta = eta;
         step.mu_ser = mu;
@@ -417,6 +420,13 @@ SlabContinuationReport SlabNewtonKrylov::solve_with_continuation(
                                                cudaMemcpyDeviceToDevice, ctx.cuda_stream()));
     };
     auto label_of = [&](real e) { return fmt("%s:%g:%d:%s", field, e, N, cand); };
+    // SF-33 C4: the effective SER reference shift is printed on every STAGE line (Psi-tc on only)
+    const std::string psitc_tag =
+        ncfg.psitc.enabled
+            ? fmt(" psitc_mu0_eff=%.6e (mu0=%g h_ref=%.6g h=%.6g)",
+                  psitc_effective_mu0(ncfg.psitc, grid_.h), ncfg.psitc.mu0, ncfg.psitc.h_ref,
+                  grid_.h)
+            : std::string();
 
     while (!todo.empty()) {
         const real e = todo.front();
@@ -425,8 +435,8 @@ SlabContinuationReport SlabNewtonKrylov::solve_with_continuation(
             copy_vec(x, xconv);
         else
             slab_fill(ctx, 0.0, x);
-        log(fmt("STAGE field=%s eps=%g N=%d cand=%s (from eps=%g, %s)", field, e, N, cand, e_conv,
-                have_conv ? "warm start" : "u=0"));
+        log(fmt("STAGE field=%s eps=%g N=%d cand=%s (from eps=%g, %s)%s", field, e, N, cand,
+                e_conv, have_conv ? "warm start" : "u=0", psitc_tag.c_str()));
         SlabStageRecord st;
         st.eps = e;
         st.from_eps = e_conv;
@@ -468,8 +478,8 @@ SlabContinuationReport SlabNewtonKrylov::solve_with_continuation(
                     copy_vec(x, xconv);
                 else
                     slab_fill(ctx, 0.0, x);
-                log(fmt("STAGE field=%s eps=%g N=%d cand=%s (final attempt from eps=%g)", field,
-                        eps, N, cand, e_conv));
+                log(fmt("STAGE field=%s eps=%g N=%d cand=%s (final attempt from eps=%g)%s",
+                        field, eps, N, cand, e_conv, psitc_tag.c_str()));
                 SlabStageRecord fs;
                 fs.eps = eps;
                 fs.from_eps = e_conv;

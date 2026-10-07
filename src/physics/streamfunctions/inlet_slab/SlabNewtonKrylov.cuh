@@ -50,9 +50,15 @@
  * Enabled: Newton step k solves the SHIFTED system (J(x_k) + mu_k D) p = -E(x_k) with
  *   D = diag(q_v / h^2) on the equation rows (planes 1..N-1, both fields), D = 0 on the outlet
  *       rows (plane N: exact linear constraints of the oblique condition, never relaxed);
- *   mu_k = clamp(mu0 * m_k / m_0, 0, mu_max)  (switched evolution relaxation, SER), with the
+ *   mu_k = clamp(mu0_eff * m_k / m_0, 0, mu_max)  (switched evolution relaxation, SER), with the
  *       MERIT norm m = sqrt(r_F^2 + r_out^2) (the line-search / Eisenstat-Walker norm) and m_0 the
  *       merit of the START state of this solve() call (i.e. of the stage's start state);
+ *   mu0_eff = mu0 (h / h_ref)^2 (SF-33 C4, psitc_effective_mu0; default h_ref = 1/16, so N = 16
+ *       is bitwise the N7b schedule and N = 32/64/128 use 1/4, 1/16, 1/64 of mu0; h_ref = 0: no
+ *       scaling; the absolute shift mu0_eff D = mu0 q_v / h_ref^2 is grid independent). Rationale: with D = q_v / h^2 the weakly determined family has eigenvalues
+ *       ~h^2, and a grid-independent mu kept it damped until mu <~ h^2 (N8' at 128^3: stagnation
+ *       rule before the slow phase ended). mu_max / retry_factor are not scaled. mu0_eff is
+ *       printed on the STAGE lines of solve_with_continuation (` psitc_mu0_eff=`);
  *   the operator applied matrix-free as J p + mu (D .* p) (N1 JVP + one kernel,
  *       slab_add_pseudo_time_shift; no allocation) and P-A factored for the shifted operator
  *       (SlabModePreconditioner::factor(..., mu): exact for the shifted plane-averaged operator);

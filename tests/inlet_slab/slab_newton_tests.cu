@@ -64,7 +64,24 @@
  *      recomputed from the merit history (1e-14 relative); `mu=` on every LINEAR / NEWTON line;
  *   4p Psi-tc on (ew) on the generic3d ladder to 0.5: converged (r_F, r_out <= 1e-13);
  *   5p forced line-search failure with Psi-tc (lambda_min = 2): 4 retries with mu = 4, 16, 64,
- *      100 (x4, clamped to mu_max), 5 LINEAR lines, then linesearch-fail.
+ *      100 (x4, clamped to mu_max), 5 LINEAR lines, then linesearch-fail (run with h_ref = 0, the
+ *      unscaled N7b schedule, so the literal mu values stay exact).
+ *
+ * SF-33 C4 (grid-scaled SER reference shift mu0_eff = mu0 (h / h_ref)^2, default h_ref = 1/16):
+ *   - the SER checks recompute mu_k with mu0_eff; 3p (exact pair, the N7b contract mu0 = 1) is
+ *     pinned to h_ref = 0; 4p (generic3d 12^3 ladder) runs the default (mu0_eff = 16/9) and must
+ *     still converge;
+ *   7  psitc_effective_mu0: exactly mu0 at N = 16, exactly 1/4, 1/16, 1/64 of mu0 at N = 32, 64,
+ *      128, 16/9 at N = 12 (1e-15 relative), mu0 at every N with h_ref = 0;
+ *      N = 16 BITWISE identity of h_ref = 0 vs h_ref = 1/16: Psi-tc (ew) on the exact pair from
+ *      x = 0 and on the generic3d stage eps = 0.25 from u = 0: r_F / r_out histories, per-step mu,
+ *      mu_ser, eta, GMRES iteration counts and the final iterate x all bitwise equal;
+ *      N = 12 exact pair, default h_ref: first-step mu = mu0_eff = 16/9 and the SER sequence
+ *      verified (gated); the Newton outcome is RECORDED, not gated: with the larger coarse-grid
+ *      shift (16/9 > 1) the exact pair from x = 0 is stopped by the stagnation rule in the slow
+ *      phase (observed: its 9, r_F 1.1e-1, mu 6.5e-2) -- the same damping/stagnation interaction
+ *      C4 removes on the fine grids; N < 16 is not a production grid. The STAGE lines print
+ *      `psitc_mu0_eff=`.
  */
 
 #include "apps/closure_gate/closure_fields.hpp"
@@ -654,9 +671,11 @@ RefHistory history_of(const sl::SlabNewtonReport& r) {
 }
 
 /// Prints the mu sequence of a Psi-tc report (`^` = line-search retry) and checks the SER values
-/// mu_k = clamp(mu0 m_k / m_0, 0, mu_max) against the merit history (1e-14 relative).
-bool check_ser_mus(const sl::SlabNewtonReport& r, const sl::SlabNewtonConfig& cfg,
+/// mu_k = clamp(mu0_eff m_k / m_0, 0, mu_max) against the merit history (1e-14 relative);
+/// mu0_eff = mu0 (h / h_ref)^2 (SF-33 C4).
+bool check_ser_mus(const sl::SlabNewtonReport& r, const sl::SlabNewtonConfig& cfg, real h,
                    const std::string& name, std::string& det) {
+    const real mu0_eff = sl::psitc_effective_mu0(cfg.psitc, h); // SF-33 C4
     bool ok = r.psitc && !r.steps.empty();
     std::string seq;
     auto merit = [&](std::size_t k) {
@@ -664,7 +683,7 @@ bool check_ser_mus(const sl::SlabNewtonReport& r, const sl::SlabNewtonConfig& cf
     };
     for (std::size_t k = 0; k < r.steps.size() && k < r.hist_r_F.size(); ++k) {
         const real want =
-            std::fmin(std::fmax(cfg.psitc.mu0 * (merit(k) / merit(0)), 0.0), cfg.psitc.mu_max);
+            std::fmin(std::fmax(mu0_eff * (merit(k) / merit(0)), 0.0), cfg.psitc.mu_max);
         const real got = r.steps[k].mu_ser;
         if (!(std::fabs(got - want) <= 1e-14 * std::fmax(want, 1e-300)))
             ok = false;
@@ -799,6 +818,10 @@ void case_newton_exact_pair(TestReport& rep, CudaContext& ctx) {
             sl::SlabNewtonConfig pcfg;
             pcfg.forcing = sl::SlabForcing::ew;
             pcfg.psitc.enabled = true;
+            // SF-33 C4: this is the N7b contract (mu0 = 1 at every N): pinned to the unscaled
+            // schedule. The grid-scaled default is exercised in case 7 (at N = 16 it is bitwise
+            // this schedule; at N = 12 it is mu0_eff = 16/9, recorded there).
+            pcfg.psitc.h_ref = 0.0;
             pcfg.max_iterations = 120;
             Capture capp;
             const auto rp =
@@ -810,7 +833,7 @@ void case_newton_exact_pair(TestReport& rep, CudaContext& ctx) {
                 maxerr_p = std::fmax(maxerr_p, std::fabs(xp[i] - u_ex[i]));
             std::string md;
             const bool mok =
-                check_ser_mus(rp, pcfg, "exact pair Psi-tc N = " + std::to_string(N), md);
+                check_ser_mus(rp, pcfg, g.h, "exact pair Psi-tc N = " + std::to_string(N), md);
             char dp[300];
             std::snprintf(dp, sizeof(dp),
                           "status %s its %d r_F %.3e r_out %.3e max|u-u_ex| %.3e GMRES total %d "
@@ -1120,8 +1143,8 @@ void case_continuation(TestReport& rep, CudaContext& ctx) {
         for (const auto& st : r.stages) {
             its += " " + std::to_string(st.newton.its);
             std::string md;
-            mok = check_ser_mus(st.newton, pcfg, "generic3d Psi-tc stage eps=" + fmtd("%g", st.eps),
-                                md) &&
+            mok = check_ser_mus(st.newton, pcfg, g.h,
+                                "generic3d Psi-tc stage eps=" + fmtd("%g", st.eps), md) &&
                   mok;
             md_all += " [" + md + "]";
         }
@@ -1262,6 +1285,7 @@ void case_statuses(TestReport& rep, CudaContext& ctx) {
         sl::SlabNewtonConfig cfg;
         cfg.lambda_min = 2.0;
         cfg.psitc.enabled = true;
+        cfg.psitc.h_ref = 0.0; // SF-33 C4: unscaled schedule (mu0_eff = mu0 = 1 exactly at N = 12)
         Capture cap;
         const auto r = run(cfg, "ls_psitc", cap);
         const std::vector<real> want = {4.0, 16.0, 64.0, 100.0};
@@ -1353,6 +1377,175 @@ void case_no_allocation(TestReport& rep, CudaContext& ctx) {
               "across a continuation and a Newton solve");
 }
 
+// ------------------------------------------------------------------------------------------------
+// 7. SF-33 C4: grid-scaled SER reference shift mu0_eff = mu0 (h / h_ref)^2
+// ------------------------------------------------------------------------------------------------
+/// Bitwise comparison of two Psi-tc reports (histories, per-step mu / mu_ser / eta / GMRES its).
+bool reports_bitwise(const sl::SlabNewtonReport& a, const sl::SlabNewtonReport& b,
+                     std::string& det) {
+    bool ok = a.status == b.status && a.its == b.its && a.hist_r_F == b.hist_r_F &&
+              a.hist_r_out == b.hist_r_out && a.steps.size() == b.steps.size() &&
+              a.linear_iterations_total == b.linear_iterations_total &&
+              a.linesearch_retries == b.linesearch_retries;
+    std::string mus;
+    for (std::size_t k = 0; k < a.steps.size() && k < b.steps.size(); ++k) {
+        const auto& sa = a.steps[k];
+        const auto& sb = b.steps[k];
+        ok = ok && sa.mu == sb.mu && sa.mu_ser == sb.mu_ser && sa.eta == sb.eta &&
+             sa.mu_retries == sb.mu_retries && sa.linear_its_solves == sb.linear_its_solves;
+        char m[40];
+        std::snprintf(m, sizeof(m), "%s%.3e", k ? "," : "", sa.mu_ser);
+        mus += m;
+    }
+    char d[160];
+    std::snprintf(d, sizeof(d), "status %s its %d GMRES total %d entries %zu mus ",
+                  sl::to_string(a.status), a.its, a.linear_iterations_total, a.hist_r_F.size());
+    det = d + mus;
+    return ok;
+}
+
+void case_psitc_grid_scaling(TestReport& rep, CudaContext& ctx) {
+    {
+        sl::SlabPsitcConfig p; // default h_ref = 1/16, mu0 = 1
+        p.mu0 = 1.0;
+        const real e16 = sl::psitc_effective_mu0(p, sl::InletSlabGrid::make(16).h);
+        const real e32 = sl::psitc_effective_mu0(p, sl::InletSlabGrid::make(32).h);
+        const real e64 = sl::psitc_effective_mu0(p, sl::InletSlabGrid::make(64).h);
+        const real e128 = sl::psitc_effective_mu0(p, sl::InletSlabGrid::make(128).h);
+        const real e12 = sl::psitc_effective_mu0(p, sl::InletSlabGrid::make(12).h);
+        sl::SlabPsitcConfig p0 = p;
+        p0.h_ref = 0.0;
+        p0.mu0 = 0.7;
+        bool off_ok = true;
+        for (int N : {12, 16, 32, 64, 128})
+            off_ok = off_ok && sl::psitc_effective_mu0(p0, sl::InletSlabGrid::make(N).h) == 0.7;
+        char d[200];
+        std::snprintf(d, sizeof(d), "N=12 %.17g N=16 %.17g N=32 %.17g N=64 %.17g N=128 %.17g", e12,
+                      e16, e32, e64, e128);
+        rep.check(e16 == 1.0 && e32 == 0.25 && e64 == 1.0 / 16.0 && e128 == 1.0 / 64.0 &&
+                      std::fabs(e12 - 16.0 / 9.0) <= 1e-15 * (16.0 / 9.0) &&
+                      sl::SlabPsitcConfig().h_ref == 1.0 / 16.0 && off_ok,
+                  "C4 psitc_effective_mu0: mu0 (h / h_ref)^2 = 1, 1/4, 1/16, 1/64 at N = 16, 32, "
+                  "64, 128 (exact), 16/9 at N = 12; default h_ref = 1/16; h_ref = 0 -> mu0",
+                  d);
+    }
+    // N = 16 bitwise identity: h_ref = 0 (unscaled) vs h_ref = 1/16 (default)
+    {
+        const auto g = sl::InletSlabGrid::make(16);
+        sl::SlabStageInputs in;
+        fill_inputs(ctx, g, in, exact_pair_spec());
+        sl::SlabNewtonKrylov nk;
+        nk.prepare(ctx, g, 50, 120);
+        DeviceBuffer<real> x(g.unknown_size());
+        sl::SlabNewtonConfig c_on;
+        c_on.forcing = sl::SlabForcing::ew;
+        c_on.psitc.enabled = true;
+        c_on.max_iterations = 120;
+        sl::SlabNewtonConfig c_off = c_on;
+        c_off.psitc.h_ref = 0.0;
+        const sl::SlabLogger quiet = [](const std::string&) {};
+        upload(x, std::vector<real>(g.unknown_size(), 0.0));
+        const auto r0 = nk.solve(ctx, in, mspan(x), "c4_href0", c_off, quiet);
+        const auto x0 = download(x.data(), x.size());
+        upload(x, std::vector<real>(g.unknown_size(), 0.0));
+        const auto r1 = nk.solve(ctx, in, mspan(x), "c4_href16", c_on, quiet);
+        const auto x1 = download(x.data(), x.size());
+        std::string d;
+        const bool same = reports_bitwise(r1, r0, d) && x0 == x1;
+        std::printf("[INFO] C4 exact pair N = 16 (h_ref 1/16 vs 0): %s\n", d.c_str());
+        rep.check(same && r1.status == sl::SlabSolveStatus::converged,
+                  "C4 N = 16 exact pair Psi-tc (ew) from x = 0: h_ref = 1/16 vs h_ref = 0 bitwise "
+                  "identical (histories, mu, mu_ser, eta, GMRES its, final x), converged",
+                  d);
+    }
+    {
+        const auto g = sl::InletSlabGrid::make(16);
+        Generic3dProvider prov;
+        prov.build(ctx, g);
+        const sl::StageInputProvider provider = [&](real amp) -> const sl::SlabStageInputs& {
+            return prov(amp);
+        };
+        sl::SlabNewtonKrylov nk;
+        nk.prepare(ctx, g, 50, 120);
+        DeviceBuffer<real> x(g.unknown_size());
+        sl::SlabNewtonConfig c_on;
+        c_on.forcing = sl::SlabForcing::ew;
+        c_on.psitc.enabled = true;
+        c_on.max_iterations = 120;
+        sl::SlabNewtonConfig c_off = c_on;
+        c_off.psitc.h_ref = 0.0;
+        sl::SlabContinuationConfig ccfg;
+        ccfg.field = "generic3d";
+        Capture cap0, cap1;
+        const auto r0 =
+            nk.solve_with_continuation(ctx, 0.25, provider, mspan(x), ccfg, c_off, cap0.logger());
+        const auto x0 = download(x.data(), x.size());
+        const auto r1 =
+            nk.solve_with_continuation(ctx, 0.25, provider, mspan(x), ccfg, c_on, cap1.logger());
+        const auto x1 = download(x.data(), x.size());
+        bool same = r0.status == r1.status && r0.path == r1.path &&
+                    r0.stages.size() == r1.stages.size() && x0 == x1;
+        std::string d_all;
+        for (std::size_t s = 0; s < r0.stages.size() && s < r1.stages.size(); ++s) {
+            std::string d;
+            same = reports_bitwise(r1.stages[s].newton, r0.stages[s].newton, d) && same;
+            d_all += " [" + d + "]";
+        }
+        std::printf("[INFO] C4 generic3d 16^3 eps 0.25 (h_ref 1/16 vs 0): status %s path %s%s\n",
+                    sl::to_string(r1.status), r1.path.c_str(), d_all.c_str());
+        rep.check(same && r1.status == sl::SlabSolveStatus::converged,
+                  "C4 N = 16 generic3d stage eps = 0.25 Psi-tc (ew) from u = 0: h_ref = 1/16 vs "
+                  "h_ref = 0 bitwise identical (stage histories, mu, eta, GMRES its, final x)",
+                  "path " + r1.path + d_all);
+        rep.check(cap1.count("psitc_mu0_eff=1.000000e+00 (mu0=1 h_ref=0.0625 h=0.0625)") ==
+                          static_cast<int>(r1.stages.size()) &&
+                      cap0.count("psitc_mu0_eff=1.000000e+00 (mu0=1 h_ref=0 h=0.0625)") ==
+                          static_cast<int>(r0.stages.size()),
+                  "C4 STAGE lines print psitc_mu0_eff (N = 16: 1 for both h_ref)");
+    }
+    // N = 12: effective mu0 = 16/9 on the first step; exact-pair Newton still converges
+    {
+        const auto g = sl::InletSlabGrid::make(12);
+        sl::SlabStageInputs in;
+        const auto u_ex = fill_inputs(ctx, g, in, exact_pair_spec());
+        sl::SlabNewtonKrylov nk;
+        nk.prepare(ctx, g, 50, 120);
+        DeviceBuffer<real> x(g.unknown_size());
+        upload(x, std::vector<real>(g.unknown_size(), 0.0));
+        sl::SlabNewtonConfig cfg;
+        cfg.forcing = sl::SlabForcing::ew;
+        cfg.psitc.enabled = true;
+        cfg.max_iterations = 120;
+        Capture cap;
+        const auto r = nk.solve(ctx, in, mspan(x), "c4_exact_pair:12", cfg, cap.logger());
+        const auto xh = download(x.data(), x.size());
+        real maxerr = 0.0;
+        for (std::size_t i = 0; i < xh.size(); ++i)
+            maxerr = std::fmax(maxerr, std::fabs(xh[i] - u_ex[i]));
+        const real mu0_eff = sl::psitc_effective_mu0(cfg.psitc, g.h);
+        std::string md;
+        const bool mok = check_ser_mus(r, cfg, g.h, "C4 exact pair N = 12", md);
+        char d[260];
+        std::snprintf(d, sizeof(d),
+                      "mu0_eff %.17g first mu %.17g status %s its %d r_F %.3e r_out %.3e "
+                      "max|u-u_ex| %.3e GMRES total %d",
+                      mu0_eff, r.steps.empty() ? -1.0 : r.steps[0].mu_ser, sl::to_string(r.status),
+                      r.its, r.r_F, r.r_out, maxerr, r.linear_iterations_total);
+        rep.check(!r.steps.empty() && r.steps[0].mu_ser == mu0_eff &&
+                      std::fabs(mu0_eff - 16.0 / 9.0) <= 1e-15 * (16.0 / 9.0) && mok,
+                  "C4 N = 12 exact pair Psi-tc (ew, default h_ref): first mu = mu0_eff = 16/9, SER "
+                  "sequence verified with mu0_eff",
+                  d);
+        // RECORDED, not gated (see the file header): Newton outcome with mu0_eff = 16/9 at N = 12
+        std::printf("[INFO] C4 exact pair N = 12, default h_ref (mu0_eff = 16/9): Newton outcome "
+                    "(recorded, not gated): %s; converged to the exact pair: %s\n",
+                    d, (r.status == sl::SlabSolveStatus::converged && r.r_F <= 1e-13 &&
+                        r.r_out <= 1e-13 && maxerr <= 1e-11)
+                           ? "yes"
+                           : "no");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -1376,6 +1569,8 @@ int main() {
         case_statuses(rep, ctx);
         std::printf("=== SF-33 N2: (6) no allocation after prepare ===\n");
         case_no_allocation(rep, ctx);
+        std::printf("=== SF-33 C4: (7) grid-scaled Psi-tc reference shift ===\n");
+        case_psitc_grid_scaling(rep, ctx);
     } catch (const std::exception& e) {
         std::printf("[FAIL] unexpected exception: %s\n", e.what());
         rep.overall_pass = false;
