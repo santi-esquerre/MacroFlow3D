@@ -11,8 +11,8 @@
 - Owner: `Claude Fable 5.1 orchestrator (sessions 2026-10-06/07)`
 - Started: `2026-10-06T18:45Z on base 37bfb25`
 - Completed: `not completed (claim (b) blocked at the preconditioner gate; owner decision pending)`
-- PR: `not opened`
-- Commit: `not recorded`
+- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/51` (open; human-review increment; audited source-bearing head `ddf8bec845eb0463e456707f1d0b161ef72f56a7`)
+- Commit: `ddf8bec845eb0463e456707f1d0b161ef72f56a7` (source-bearing audited head); metadata commits above it on the PR branch
 
 ## Scientific or engineering intent
 
@@ -181,7 +181,7 @@ bash scripts/hooks/check-lester-increments.sh
 - [x] Required regression tests pass.
 - [x] Scientific or engineering findings are appended to the bitácora.
 - [ ] Required human review is recorded.
-- [ ] PR and commit identifiers are recorded.
+- [x] PR and commit identifiers are recorded.
 - [ ] The master checklist entry is checked in this branch and `check-lester-increments.sh` passes.
 <!-- completion-checklist:end -->
 
