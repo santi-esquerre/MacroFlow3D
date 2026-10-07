@@ -1,0 +1,26 @@
+command: /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/build/wsl-release/inlet_slab --linear-probe /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 --eps-stage 0.25 --newton-steps 1 --probe-tol 1e-8 --probe-precs pa,mult1,mult2,add1 --summary /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/n7c_local/probe/gauss_0.25_16_k1.json
+PROBE_SETUP case=gauss_0.25_16 field=gauss N=16 stage=0.25 from=0 k=1 precs=pa,mult1,mult2,add1 tol=1.0e-08 restart=100 cap=6000 stagnation_factor=1 mu=both
+PROBE_STAGE_START r_F=2.567037e+00 r_out=6.529746e-02 merit=2.567867e+00
+  NEWTON gauss:0.25:16:probe it= 0 r_F=2.567e+00 r_out=6.530e-02
+    LINEAR gmres+P-A its=2 rel=3.2e-03 t=0.00s cycles=1 reorth=2 rec=3.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gauss:0.25:16:probe it= 1 r_F=1.343e+00 r_out=3.891e-03 lambda=1 |dx|max=3.80e-02 lin=gmres+P-A rel=3.2e-03 lits=2 t_lin=0.0s |dx|2=4.69e-01 t_fact=0.00s eta=1.00e-01 mu=1.000e+00 retries=0
+PROBE_ITERATE k=1 r_F=1.342845e+00 r_out=3.891455e-03 merit=1.342850e+00 mu_SER=5.229439e-01 (psitc on, mu0 1, m0 2.567867e+00)
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=ser mu=5.229e-01 prec=pa its=12 cycles=1 status=converged rel=4.525e-10 t=0.01s pa_singular=0
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=ser prec=pa true: 4.525e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=ser mu=5.229e-01 prec=mult1 its=11 cycles=1 status=converged rel=6.093e-10 t=0.01s pa_singular=0 K=512 t_assembly=0.098s t_lu=0.006s t_cond=0.001s norm1=4.228e+04 inv_norm1_est=9.740e-04 rcond_est=2.428e-02 min|U_kk|=4.810e+03 max|U_kk|=1.505e+04 zero_pivots=0 applications=12 t_apply_avg=0.739ms t_host_solve_avg=0.173ms
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=ser prec=mult1 true: 6.093e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=ser mu=5.229e-01 prec=mult2 its=10 cycles=1 status=converged rel=8.075e-10 t=0.02s pa_singular=0 K=1024 t_assembly=0.200s t_lu=0.066s t_cond=0.008s norm1=6.332e+04 inv_norm1_est=1.689e-02 rcond_est=9.353e-04 min|U_kk|=3.755e+02 max|U_kk|=1.505e+04 zero_pivots=0 applications=11 t_apply_avg=1.279ms t_host_solve_avg=0.719ms
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=ser prec=mult2 true: 8.075e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=ser mu=5.229e-01 prec=add1 its=15 cycles=1 status=converged rel=7.903e-10 t=0.01s pa_singular=0 K=512 t_assembly=0.098s t_lu=0.006s t_cond=0.001s norm1=4.228e+04 inv_norm1_est=9.740e-04 rcond_est=2.428e-02 min|U_kk|=4.810e+03 max|U_kk|=1.505e+04 zero_pivots=0 applications=16 t_apply_avg=0.604ms t_host_solve_avg=0.174ms
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=ser prec=add1 true: 7.903e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=zero mu=0.000e+00 prec=pa its=73 cycles=1 status=converged rel=7.817e-10 t=0.09s pa_singular=0
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=zero prec=pa true: 7.817e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=zero mu=0.000e+00 prec=mult1 its=52 cycles=1 status=converged rel=6.369e-10 t=0.07s pa_singular=0 K=512 t_assembly=0.096s t_lu=0.005s t_cond=0.001s norm1=3.953e+04 inv_norm1_est=2.725e-02 rcond_est=9.284e-04 min|U_kk|=1.073e+03 max|U_kk|=1.251e+04 zero_pivots=0 applications=53 t_apply_avg=0.725ms t_host_solve_avg=0.169ms
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=zero prec=mult1 true: 6.369e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=zero mu=0.000e+00 prec=mult2 its=34 cycles=1 status=converged rel=5.741e-10 t=0.06s pa_singular=0 K=1024 t_assembly=0.198s t_lu=0.066s t_cond=0.006s norm1=5.919e+04 inv_norm1_est=1.876e-01 rcond_est=9.004e-05 min|U_kk|=1.444e+02 max|U_kk|=1.251e+04 zero_pivots=0 applications=35 t_apply_avg=1.277ms t_host_solve_avg=0.720ms
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=zero prec=mult2 true: 5.741e-10
+PROBE case=gauss_0.25_16 stage=0.25 from=0 k=1 mu_kind=zero mu=0.000e+00 prec=add1 its=71 cycles=1 status=converged rel=9.294e-10 t=0.10s pa_singular=0 K=512 t_assembly=0.097s t_lu=0.006s t_cond=0.001s norm1=3.953e+04 inv_norm1_est=2.725e-02 rcond_est=9.284e-04 min|U_kk|=1.073e+03 max|U_kk|=1.251e+04 zero_pivots=0 applications=72 t_apply_avg=0.602ms t_host_solve_avg=0.171ms
+PROBE_CURVE case=gauss_0.25_16 stage=0.25 k=1 mu_kind=zero prec=add1 true: 9.294e-10
+PROBE_DONE case=gauss_0.25_16 stage=0.25 k=1 t=1.3s
+SUMMARY_JSON /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/n7c_local/probe/gauss_0.25_16_k1.json
+STATUS ok
