@@ -1,0 +1,17 @@
+Test project /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/build/wsl-release
+    Start 21: inlet_slab_contracts
+1/6 Test #21: inlet_slab_contracts .............   Passed    1.84 sec
+    Start 22: inlet_slab_jvp
+2/6 Test #22: inlet_slab_jvp ...................   Passed    0.31 sec
+    Start 23: inlet_slab_newton
+3/6 Test #23: inlet_slab_newton ................   Passed   16.12 sec
+    Start 24: inlet_slab_coarse
+4/6 Test #24: inlet_slab_coarse ................   Passed    3.30 sec
+    Start 25: inlet_slab_production16
+5/6 Test #25: inlet_slab_production16 ..........   Passed   10.53 sec
+    Start 26: inlet_slab_npy
+6/6 Test #26: inlet_slab_npy ...................   Passed    0.35 sec
+
+100% tests passed out of 6
+
+Total Test time (real) =  32.44 sec
