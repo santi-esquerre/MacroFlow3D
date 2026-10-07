@@ -264,6 +264,8 @@ Exponential-covariance fields are not automatically equivalent. Their reduced sm
 - whether the original or regularized problem is solved;
 - whether invariants converge under grid refinement.
 
+Project status (2026-10-07): the code generates Gaussian covariance only; exponential fields would require reintroducing a generator and a new decision.
+
 ## 10. Tensor conductivity and local anisotropy
 
 Do not assume two global invariants exist for locally anisotropic tensor conductivity. That case can break the helicity-free structure and is outside the initial equation (14) solver scope.
