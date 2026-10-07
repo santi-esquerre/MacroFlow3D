@@ -104,3 +104,44 @@ extracted into this artifact (text only; no binaries, no exports).
 
 Script changes in N6b: none. `run_proto.sh` writes to `logs/proto/` only and passes `--solution` only for the
 SF-29 16^3 solutions, so the run used an inline loop (as N6's `sf33-proto-24ref`).
+
+---
+
+# SF-33 N8' — V100 campaign B (reduced by the N6b gate): index
+
+Deviation (recorded): the N6b gate FAILED at 32^3 eps 0.5, so by the spec's failure policy the 64^3-128^3 ladders at
+eps 0.5 / 1.0 were NOT run; the production ladder runs at eps 0.25 (the gate-validated amplitude), plus the
+production 32^3 point at eps 0.5 and the oracle comparisons.
+
+| file | content | verdict |
+|---|---|---|
+| `ladder_orders_025.md` | eps 0.25 production ladder 32/64/128: per-grid status, PATH, CASE values and ceiling, observed orders, oracle round trips, applied_scale identity, timing per phase, memory, coarse-correction and GMRES statistics, the 128^3 failure observations | 32 and 64 converged (64 after one bisection), e_v / e_psi orders 2.13 / 3.01 on 32->64; **128^3 `continuation_floor`** (r_F 0.156) -> acceptance (b) at eps 0.25: FAIL; oracle round trips <= 1.2e-9 everywhere: PASS; applied_scale identical: PASS |
+| `prod32_05.md` | production 32^3 at eps 0.5 (SF-18 field) | `converged`, PATH `0.25->0.5`, no linear failure (GMRES max 2000 / median 100 in the 0.5 stage) |
+| `oracle32_vs_sf29.md` | GPU production oracle vs SF-29 spectral oracle on the step-8 `gauss` field, 16/24/32 | RMS difference 0.58 % / 0.64 % at 32^3, observed order 2.00 (both labels, both pairs) |
+
+Raw: `raw/ladder_0.25/` (JSON summaries, `ladder_orders.md`, `digest_newton.txt`), `raw/prod32_05/`, `raw/oracle32/`
+(JSON, the three `oracle_vs_sf29*.md` tables), `raw/digest_coarse.md` (`scripts/digest_coarse.py` over every N8' log).
+Logs: `logs/ladder_0.25/`, `logs/prod32_05/`, `logs/oracle32/` (`N<N>.log` + `/usr/bin/time -v` in `N<N>.time`),
+job logs `logs/jobs/sf33c-*.log`.
+
+## Execution facts (N8')
+
+- Worktree commit `94c5d53` (SF-33 N8' driver options `--cells`, `--save-oracle`, additive, on the chain head
+  `3676bb0`); campaign script `scripts/run_campaign_b.sh` and analysis scripts `scripts/compare_oracle_sf29.py`,
+  `scripts/digest_coarse.py` (evidence commit). Two `scripts/remote --increment SF-33 sync` calls,
+  2026-10-07T01:07:54Z (before the build) and 01:11:00Z (after the build, to ship the campaign scripts; no driver
+  source change in between), each after checking that no SF-33 job was `running` / `waiting_gpu`. As in N6b,
+  `rsync --delete` would remove the host-only `exports/` and the SF-29 untracked oracle caches: both were copied to
+  `~/sf33c_keep/` before the first sync and restored with `rsync -a --ignore-existing` after each sync (25 export
+  entries, 17 caches).
+- Every job ran with `REMOTE_GPU_WAIT=7200`; none waited.
+
+| job | kind | GPU | start (UTC) | end (UTC) | exit | command / outputs |
+|---|---|---|---|---|---|---|
+| `sf33c-build` | configure + build + ctest `-R inlet_slab_` | 0 | 2026-10-07T01:08:51Z | 01:10:01Z | 0 | `BUILD_EXIT=0` (CUDA 11.4.152, preset `v100-release`), 6/6 inlet_slab tests passed (41.9 s), `CTEST_EXIT=0` |
+| `sf33c-ladder-025` | GPU | 0 | 01:12:14Z | 10:05:48Z | 0 | `run_campaign_b.sh build/v100-release ladder`; driver exits N32 0, N64 0, N128 15 (`continuation_floor`, wall 31046 s); `logs/ladder_0.25/`, `raw/ladder_0.25/` |
+| `sf33c-oracle32-vs-sf29` | GPU | 1 | 01:12:36Z | 01:13:49Z | 0 | `run_campaign_b.sh build/v100-release oracle32`; driver exits 0 at 16/24/32; oracle labels saved host-only in `exports/oracle_gpu/N<N>/` (gitignored); `logs/oracle32/`, `raw/oracle32/` |
+| `sf33c-prod32-05` | GPU | 1 | 01:14:32Z | 01:15:51Z | 0 | `run_campaign_b.sh build/v100-release prod32-05`; driver exit 0; `logs/prod32_05/`, `raw/prod32_05/` |
+
+Retrieval: `tar czf ~/sf33c_evidence.tgz logs/ladder_0.25 logs/prod32_05 logs/oracle32 raw/ladder_0.25 raw/prod32_05
+raw/oracle32` + the four job logs on the host, `scp` to the worktree, extracted into this artifact (text only).

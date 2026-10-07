@@ -135,6 +135,14 @@ scripts/remote --increment SF-33 run sf33-ladder-0.5 -- \
 Default `<out_root>` is this artifact directory (`exports/` is gitignored; `logs/` and `raw/` are the outputs to
 inspect and, after review, commit as small text).
 
+- SF-33 N8' (campaign B, gate-reduced): driver options `--cells <Y.npy>` (production mode: N^3 cell samples, x1
+  fastest, as a spectral field source, stage field `k = exp(eps Y)`; exclusive with `--analytic`) and
+  `--save-oracle <dir>` (`psi_or_{1,2}.npy`, full labels `(N+1, N, N)`, of the primary oracle run; ladder runs with
+  suffixes `_h16_tol1e-08`, `_h16_tol1e-10`). `run_campaign_b.sh <build_dir> ladder|prod32-05|oracle32 [NS]`: the eps
+  0.25 ladder, the 32^3 eps 0.5 point and the oracle-vs-SF-29 runs (each driver call wrapped in `/usr/bin/time -v`,
+  `logs/<part>/N<N>.time`); `compare_oracle_sf29.py --case N GPU_DIR SF29_DIR ... [--suffix S] [--out md]`;
+  `digest_coarse.py LOG... [--out md]` (coarse-correction builds/applies, GMRES its, host max RSS per log).
+
 ## Output layout
 
 All arrays are float64, C order, NumPy `.npy` (version 1.0 header).

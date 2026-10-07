@@ -1,0 +1,23 @@
+[2026-10-07T01:14:32Z] job=sf33c-prod32-05 session=macroflow3d-SF-33-sf33c-prod32-05 started
+[2026-10-07T01:14:32Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-07T01:14:32Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-07T01:14:32Z] command=bash docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_campaign_b.sh build/v100-release prod32-05
+run_campaign_b.sh: part=prod32-05 bin=/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-07T01:14:33Z
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/prod32_05/N32.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 32 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/prod32_05/N32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/prod32_05/N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/prod32_05/N32.log rc=0 STATUS converged wall=78s max_rss_kB=678632 end=2026-10-07T01:15:51Z
+    SOLVER N=32 eps=0.5 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded
+    SOLVER_COARSE mode=mult profiles=2 K=4096 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=gaussian eps=0.5 N=32 cand=i1o4 continuation path: 0.25->0.5
+    ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=2.740e-09 non_ok=0 t_trace=0.84s t_labels=0.002s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=4.168e-10 non_ok=0 t_trace=1.49s t_labels=0.001s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-10 status=ok max_roundtrip=4.168e-10 non_ok=0 t_trace=1.49s t_labels=0.001s
+    CASE field=gaussian eps=0.5 N=32 cand=i1o4 | r_F=4.714e-14 its=19 | e_v=5.315e-03 e_psi=3.837e-02 e_i=(3.941e-03,2.242e-03) e_div=4.860e-03 min_c=2.291e-01 p0.1=2.534e-01 p1=3.275e-01 p5=4.807e-01 p50=9.701e-01 | t=71.9 | e_psi1=3.837e-02 e_psi2=2.756e-02
+    CASE field=gaussian eps=0.5 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=5.984e-03 e_psi=8.614e-18 e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.0 | e_psi1=8.614e-18 e_psi2=6.604e-18
+    TIMING_SETUP stage_builds=1.851s (inside the solve phase; Newton-Krylov only = 70.033s)
+    TIMING field=0.055s metrics=0.003s oracle=3.827s prepare=0.047s solve=71.884s total=75.817s
+    MEMORY peak_device_bytes=621805568 free_min=33467924480 total_device=34089730048 workspaces_bytes=105537159 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/digest_newton.py /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/prod32_05/N32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/prod32_05/digest_newton.txt
+  digest_newton rc=0
+run_campaign_b.sh: part=prod32-05 end=2026-10-07T01:15:51Z
+[2026-10-07T01:15:51Z] job=sf33c-prod32-05 finished exit=0
