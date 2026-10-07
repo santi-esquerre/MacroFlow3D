@@ -166,7 +166,8 @@ Required:
 - gauge definition and gauge restoration evidence;
 - grid-convergence plan or result;
 - velocity-reconstruction error `e_v` measured under grid refinement on the same continuum field, with the observed order reported; a result is never accepted on `r_F` alone;
-- for any new target object, an independent existence / positive-control check (not using the solver under test) precedes solver acceptance.
+- for any new target object, an independent existence / positive-control check (not using the solver under test) precedes solver acceptance;
+- for a **tracing constructor** (label transport along backward-traced streamlines, decision 2026-10-07): `r_F` and `r_out` are diagnostics evaluated at the constructed labels (a necessary condition, never an acceptance quantity alone); required in addition: the tracing status histogram, the per-plane forward round trip with the `h_max`/`tol` used and an `h_max`/`tol` ladder, the error growth along `x1` (per-plane `e_v`, `e_i`), backflow statistics (inlet `v1` minimum, vertex `vD1 <= 0` count, backflow encounters, discarded landings), exact-label positive controls and, where the elliptic solution exists, cross-construction agreement; the items "Newton failures", gauge restoration and denominator regularization do not apply (nothing is regularized).
 
 Reject if:
 

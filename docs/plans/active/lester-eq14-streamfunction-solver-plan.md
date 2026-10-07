@@ -139,6 +139,7 @@ until that closure state is merged and visible on the default branch.
 - [ ] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
 - [x] [SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
 - [ ] [SF-34 — Acceptance of the inlet labels in the periodic medium against the closure gate](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
+- [ ] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -149,7 +150,10 @@ for them and the periodic solution of eq. (14) is a different flow (see
 former SF-27..SF-30 are cancelled (their specifications remain in git history at
 `4670fb5`) and replaced by SF-27..SF-32 above. Dependency graph: SF-27 and SF-29
 start in parallel; SF-28 follows SF-27; SF-30 and SF-31 follow SF-28 (in
-parallel); SF-32 follows SF-31; SF-33 follows SF-29; SF-34 follows SF-33. Disposition of the open decisions D1-D7 of
+parallel); SF-32 follows SF-31; SF-33 follows SF-29; SF-35 follows SF-33; SF-34 follows SF-35 (re-sequencing
+2026-10-07: SF-33 closed with the Newton-Krylov solve of eq. (14) not viable as production constructor; SF-35 adopts
+label transport by backward streamline tracing, `docs/decisions/2026-10-07-label-transport-constructor.md`; SF-34
+re-specified in place to accept the SF-35 labels). Disposition of the open decisions D1-D7 of
 `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
 D5 are moot (they tune a system whose solution is not the target); D2 is retired
 with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
@@ -227,6 +231,13 @@ Locked discretization rules:
 *Govern SF-33 and later work on the `x1`-non-periodic slab. Authority:
 `docs/decisions/2026-10-06-eq14-inlet-label-formulation.md` (items 1-7); evidence:
 `docs/experiments/2026-10-02-sf29-inlet-labels.md`.*
+
+*Status 2026-10-07 (`docs/decisions/2026-10-07-label-transport-constructor.md`): items 1, 3, 5 and 6 are
+superseded — equation (14) with the D-2 outlet rows is a diagnostic evaluated at the constructed labels, the
+Newton-Krylov solver is an instrument (cross-construction at `<= 64^3`, `eps <= 0.5`), and the validity envelope is
+the one SF-35 measures; items 2 (D-1 inlet labels, `v1 > 0` required), 4 (stencils, as the diagnostic/metric
+operators) and 7 (metrics; `e_psi` against the elliptic cross-construction where it exists) remain. The production
+constructor is label transport by backward streamline tracing (SF-35).*
 
 1. Same-index equation (14) in non-divergence form
    `lap psi_i - grad(ln k) . grad psi_i = S_i`, exact `grad ln k` where available, on the slab
@@ -374,10 +385,14 @@ macrodispersion production are outside this execution sequence.
 ## Later phases (items 1-2 specified by the SF-29 closure PR; items 3-4 prose)
 
 1. GPU generalization of `src/physics/streamfunctions/` to `x1` non-periodic per
-   the SF-29 choice: [SF-33](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md).
-2. Acceptance in the periodic medium: `e_v(h)` and invariance convergent and the
-   labels' return map agreeing with SF-30 at `sigma^2 = 0.25, 1, 2.25`;
-   `(4, 1/16, 256^3)` is non-blocking:
+   the SF-29 choice: [SF-33](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
+   (done: the discrete problem and the production oracle established; the
+   Newton-Krylov solve not viable as production constructor). Production
+   constructor = label transport by backward streamline tracing:
+   [SF-35](lester-eq14/increments/SF-35-label-transport-constructor.md).
+2. Acceptance in the periodic medium of the SF-35 labels: `e_v(h)` and
+   invariance convergent and the labels' return map agreeing with SF-30 at
+   `sigma^2 = 0.25, 1, 2.25`; `(4, 1/16, 256^3)` is non-blocking:
    [SF-34](lester-eq14/increments/SF-34-periodic-medium-acceptance.md).
 3. Long domain (Dirichlet in `x`, periodic in `y`, `z`; 2048x256x256,
    `lambda/h = 10`): runner wiring and the study. `alpha_L` must match RWPT;
