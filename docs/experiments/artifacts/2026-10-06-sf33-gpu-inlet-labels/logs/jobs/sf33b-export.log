@@ -1,0 +1,75 @@
+[2026-10-07T00:34:46Z] job=sf33b-export session=macroflow3d-SF-33-sf33b-export started
+[2026-10-07T00:34:46Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-07T00:34:46Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-07T00:34:46Z] command=cd docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts && echo "export start $(date -u +%FT%TZ)" && OMP_NUM_THREADS=8 python3 export_proto.py gauss:0.5:32 gauss_ch:0.5:32 --out ../exports && echo "export end $(date -u +%FT%TZ)"
+export start 2026-10-07T00:34:46Z
+  STAGE_EXPORT gauss_0.5_32 amp=0.015625 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_32 amp=0.03125 nphi=32 t=2.4s
+  STAGE_EXPORT gauss_0.5_32 amp=0.046875 nphi=32 t=2.3s
+  STAGE_EXPORT gauss_0.5_32 amp=0.0625 nphi=32 t=2.4s
+  STAGE_EXPORT gauss_0.5_32 amp=0.078125 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.5_32 amp=0.09375 nphi=32 t=2.9s
+  STAGE_EXPORT gauss_0.5_32 amp=0.109375 nphi=32 t=3.1s
+  STAGE_EXPORT gauss_0.5_32 amp=0.125 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.5_32 amp=0.140625 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.5_32 amp=0.15625 nphi=32 t=2.5s
+  STAGE_EXPORT gauss_0.5_32 amp=0.171875 nphi=32 t=2.6s
+  STAGE_EXPORT gauss_0.5_32 amp=0.1875 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.5_32 amp=0.203125 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.5_32 amp=0.21875 nphi=32 t=2.6s
+  STAGE_EXPORT gauss_0.5_32 amp=0.234375 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.5_32 amp=0.25 nphi=32 t=2.7s
+  STAGE_EXPORT gauss_0.5_32 amp=0.265625 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.5_32 amp=0.28125 nphi=32 t=2.8s
+  STAGE_EXPORT gauss_0.5_32 amp=0.296875 nphi=32 t=2.9s
+  STAGE_EXPORT gauss_0.5_32 amp=0.3125 nphi=32 t=2.9s
+  STAGE_EXPORT gauss_0.5_32 amp=0.328125 nphi=32 t=3.0s
+  STAGE_EXPORT gauss_0.5_32 amp=0.34375 nphi=32 t=3.1s
+  STAGE_EXPORT gauss_0.5_32 amp=0.359375 nphi=32 t=3.1s
+  STAGE_EXPORT gauss_0.5_32 amp=0.375 nphi=32 t=3.2s
+  STAGE_EXPORT gauss_0.5_32 amp=0.390625 nphi=32 t=3.3s
+  STAGE_EXPORT gauss_0.5_32 amp=0.40625 nphi=32 t=3.4s
+  STAGE_EXPORT gauss_0.5_32 amp=0.421875 nphi=32 t=3.4s
+  STAGE_EXPORT gauss_0.5_32 amp=0.4375 nphi=32 t=3.6s
+  STAGE_EXPORT gauss_0.5_32 amp=0.453125 nphi=32 t=3.8s
+  STAGE_EXPORT gauss_0.5_32 amp=0.46875 nphi=32 t=3.9s
+  STAGE_EXPORT gauss_0.5_32 amp=0.484375 nphi=32 t=3.8s
+  STAGE_EXPORT gauss_0.5_32 amp=0.5 nphi=32 t=0.0s
+EXPORT gauss_0.5_32 nphi=32 cache_hit=False cache_written=True stages=32 t_case=32.0s t_export=122.7s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_32
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_32 ok
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.015625 nphi=48 t=4.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.03125 nphi=48 t=3.8s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.046875 nphi=48 t=4.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.0625 nphi=48 t=4.1s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.078125 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.09375 nphi=48 t=4.7s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.109375 nphi=48 t=4.5s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.125 nphi=48 t=4.6s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.140625 nphi=48 t=4.6s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.15625 nphi=48 t=5.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.171875 nphi=48 t=5.3s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.1875 nphi=48 t=5.2s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.203125 nphi=48 t=5.4s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.21875 nphi=48 t=5.5s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.234375 nphi=48 t=5.8s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.25 nphi=48 t=5.8s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.265625 nphi=48 t=5.7s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.28125 nphi=48 t=5.7s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.296875 nphi=48 t=5.9s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.3125 nphi=48 t=6.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.328125 nphi=48 t=6.2s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.34375 nphi=48 t=6.4s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.359375 nphi=48 t=6.5s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.375 nphi=48 t=7.1s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.390625 nphi=48 t=7.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.40625 nphi=48 t=7.4s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.421875 nphi=48 t=8.1s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.4375 nphi=48 t=7.8s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.453125 nphi=48 t=8.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.46875 nphi=48 t=8.5s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.484375 nphi=48 t=9.0s
+  STAGE_EXPORT gauss_ch_0.5_32 amp=0.5 nphi=48 t=0.0s
+EXPORT gauss_ch_0.5_32 nphi=48 cache_hit=False cache_written=True stages=32 t_case=51.0s t_export=233.3s -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_32
+RELOAD docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_32 ok
+export end 2026-10-07T00:40:43Z
+[2026-10-07T00:40:43Z] job=sf33b-export finished exit=0

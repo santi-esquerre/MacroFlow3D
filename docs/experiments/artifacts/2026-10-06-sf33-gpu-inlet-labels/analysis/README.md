@@ -72,3 +72,35 @@ Cross-check: ~1 s per grid (`TIMING total` 0.94 / 1.01 / 1.03 s at 16 / 24 / 32)
 None. The campaign scripts ran as committed; `run_proto.sh` has no option for extra driver arguments or for
 solution directories other than the SF-29 16^3 ones, so the additional runs (`sf33-proto-r200`,
 `sf33-proto-24ref`) were plain driver loops written inline in the job command (recorded in the job logs).
+
+---
+
+# SF-33 N6b — V100 re-run of the 9a matrix with the coarse-corrected solver (C3 defaults): index
+
+| file | content | verdict |
+|---|---|---|
+| `proto_comparison_b.md` | per-case GPU vs prototype table (both sides), the `compare_proto.py` table verbatim, continuation outcome of the non-converged cases, reading rule (`PASS` vs `PASS(4dig)`; 32^3 eps 0.5 rows: no prototype reference) | the 14 N6 9a cases: 14/14 PASS (0 bisections); `gauss:0.5:32`, `gauss_ch:0.5:32`: FAIL (`continuation_floor`); `generic3d` eps 1 at 16/20/24: `continuation_floor` (informative) |
+| `preconditioner_gate_b.md` | verdict rule (verbatim), per-criterion evidence, GMRES its per accepted step per case, per case/stage linear failures, GMRES max/median, coarse K, build/apply times, rcond, curves of every failed linear solve at 32^3 eps 0.5, wall times | **FAIL** (32^3, eps 0.5) |
+
+## Execution facts (N6b)
+
+- Worktree commit `bfe4efb` (SF-33 C3 on the N0..N7c chain head `ea53d09`). One `scripts/remote --increment SF-33
+  sync` at 2026-10-07T00:33Z, after checking that no SF-33 job was `running` / `waiting_gpu` (all 12 earlier SF-33
+  jobs `succeeded`). `rsync --delete` would remove the host-only (gitignored) `exports/` and the SF-29 24^3/32^3
+  oracle caches; both were copied aside to `~/sf33b_keep/` before the sync and restored with `rsync -a
+  --ignore-existing` right after it (short `exec` steps; 22 case exports + 17 solution directories + 10 untracked
+  caches back in place), so only the two new 32^3 eps 0.5 exports had to be computed.
+- Every job ran with `REMOTE_GPU_WAIT=7200`; none waited. Job logs (copied): `logs/jobs/sf33b-*.log`.
+
+| job | kind | GPU | start (UTC) | end (UTC) | exit | command / outputs |
+|---|---|---|---|---|---|---|
+| `sf33b-build` | configure + build + ctest `-R inlet_slab_` | 0 | 2026-10-07T00:34:21Z | 00:35:32Z | 0 | `BUILD_EXIT=0` (CUDA 11.4, preset `v100-release`; first V100 build of the N7c coarse code), 6/6 inlet_slab tests passed (43 s, incl. `inlet_slab_coarse`), `CTEST_EXIT=0` |
+| `sf33b-export` | CPU | 1 (lock only) | 00:34:46Z | 00:40:43Z | 0 | `export_proto.py gauss:0.5:32 gauss_ch:0.5:32 --out ../exports` (32 stage amplitudes each; oracle caches computed and written, `cache_written=True`) |
+| `sf33b-proto` | GPU | 0 | 00:36:36Z | 00:52:18Z | 0 | inline loop (recorded in the job log): `inlet_slab --proto <exports>/<case> [--solution <exports>/solutions/<case>_i1o4] --summary raw/proto_b/<case>.json > logs/proto_b/<case>.log`, driver defaults, 21 cases; the two 32^3 eps 0.5 cases ran after waiting for `sf33b-export` to finish (status file polled); per-case `CASE_RESULT ... rc= STATUS ... wall=` lines |
+| `sf33b-compare` | CPU | 0 (lock only) | 00:53:58Z | 00:53:59Z | 0 | `compare_proto.py ../logs/proto_b/*.log --exports ../exports --out ../raw/proto_b/compare_proto_b.md` (exit 1 = some case FAIL, by design); `digest_newton.py ../raw/proto_b/*.json > ../raw/proto_b/digest_b.txt` (exit 0) |
+
+Retrieval: `tar czf ~/sf33b_evidence.tgz logs/proto_b raw/proto_b jobs/` on the host, `scp` to the worktree,
+extracted into this artifact (text only; no binaries, no exports).
+
+Script changes in N6b: none. `run_proto.sh` writes to `logs/proto/` only and passes `--solution` only for the
+SF-29 16^3 solutions, so the run used an inline loop (as N6's `sf33-proto-24ref`).
