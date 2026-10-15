@@ -96,7 +96,7 @@ drive() { # drive <part_dir> <name> driver-args...   (adds --summary raw/<part_d
     echo "  CASE_RESULT log=$log rc=$rc $(grep '^STATUS ' "$log" | tail -1) wall=$(( $(date +%s) - t0 ))s" \
          "max_rss_kB=$(grep 'Maximum resident' "$tf" 2>/dev/null | awk '{print $NF}') end=$(date -u +%FT%TZ)"
     grep -E '^(CASE|BACKFLOW|GROWTH|RESIDUAL|TRANSPORT_STATUS|LABELDIFF|TIMING|MEMORY|STATUS)' "$log" | sed 's/^/    /'
-    if ! in_set "$rc" "${ALLOWED[@]}"; then
+    if ! in_set "$rc" ${ALLOWED[@]+"${ALLOWED[@]}"}; then
         echo "  UNEXPECTED_EXIT_CODE name=$name rc=$rc allowed=${ALLOWED[*]} (recorded, not retried)"
         BAD=$((BAD + 1))
     fi
@@ -193,7 +193,7 @@ part_matrix() {
         extra=()
         case " $ladder_ns " in *" $n "*) extra=(--ladder) ;; esac
         drive "$pd" "N$n" --construct trace --n "$n" --eps "$eps" "${FIELD[@]}" --threads "$THREADS" \
-            --save-labels "$EXP/N$n" "${extra[@]}"
+            --save-labels "$EXP/N$n" ${extra[@]+"${extra[@]}"}
     done
     digest orders_digest.py --eps "$eps" "$ART"/raw/"$pd"/N*.json --out "$ART/analysis/${APFX}matrix_eps$lab.md"
     cost_digest_part
@@ -207,9 +207,9 @@ cost_digest_part() { # H: whichever N256 points exist so far (re-run after each 
         js+=("$f")
         ts+=("${f/\/raw\//\/logs\/}")
     done
-    ts=("${ts[@]/%.json/.time}")
+    ts=(${ts[@]+"${ts[@]/%.json/.time}"})
     if [ "${#js[@]}" -gt 0 ]; then
-        digest cost_digest.py "${js[@]}" "${ts[@]}" --out "$ART/analysis/${APFX}cost_256.md"
+        digest cost_digest.py ${js[@]+"${js[@]}"} ${ts[@]+"${ts[@]}"} --out "$ART/analysis/${APFX}cost_256.md"
     else
         echo "  cost_digest: no N256 point yet (skipped)"
     fi
@@ -254,7 +254,7 @@ part_gpu() {
     if [ "$not_built" -eq 1 ]; then
         digest gpu_equiv.py --not-built --out "$ART/analysis/${APFX}gpu.md"
     else
-        digest gpu_equiv.py "${cases[@]}" --out "$ART/analysis/${APFX}gpu.md"
+        digest gpu_equiv.py ${cases[@]+"${cases[@]}"} --out "$ART/analysis/${APFX}gpu.md"
     fi
 }
 
