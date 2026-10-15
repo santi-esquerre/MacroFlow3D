@@ -1,0 +1,93 @@
+command: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto_b/gauss_ch_0.25_32.json
+CASE_DIR /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_32 field=gauss_ch eps=0.25 N=32 nphi=48 Q0=1.00000000000808 inlet_vmin=5.832088e-01 v_rms=1.02179976064776 cache_hit=0 stage_amplitudes=16 target_eps=0.25
+SETUP grad_lnk=analytic (prototype export: complex-step gradient of the analytic ln k at the vertices)
+SOLVER N=32 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded
+SOLVER_COARSE mode=mult profiles=2 K=4096 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+STAGE field=gauss_ch eps=0.25 N=32 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss_ch:0.25:32:i1o4 it= 0 r_F=5.871e+00 r_out=1.582e-16
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.030s t_lu=0.523s t_cond=0.033s norm1=5.571e+05 inv_norm1_est=1.419e-03 rcond_est=1.265e-03 min|U_kk|=4.165e+03 max|U_kk|=1.537e+05 zero_pivots=0 mu=1.000e+00 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=5.991ms t_host_solve_avg=5.040ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=7.4e-03 t=0.02s cycles=1 reorth=2 rec=7.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gauss_ch:0.25:32:i1o4 it= 1 r_F=3.083e+00 r_out=5.439e-05 lambda=1 |dx|max=4.56e-02 lin=gmres+P-A+CC(mult,2) rel=7.4e-03 lits=2 t_lin=0.0s |dx|2=7.67e-01 t_fact=0.59s eta=1.00e-01 mu=1.000e+00 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.533s t_cond=0.035s norm1=5.311e+05 inv_norm1_est=2.789e-03 rcond_est=6.751e-04 min|U_kk|=2.948e+03 max|U_kk|=1.334e+05 zero_pivots=0 mu=5.251e-01 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=6.223ms t_host_solve_avg=5.283ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=5.8e-03 t=0.02s cycles=1 reorth=2 rec=5.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.251e-01
+  NEWTON gauss_ch:0.25:32:i1o4 it= 2 r_F=1.695e+00 r_out=5.211e-05 lambda=1 |dx|max=2.93e-02 lin=gmres+P-A+CC(mult,2) rel=5.8e-03 lits=2 t_lin=0.0s |dx|2=8.12e-01 t_fact=0.60s eta=1.00e-01 mu=5.251e-01 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.545s t_cond=0.035s norm1=5.222e+05 inv_norm1_est=5.038e-03 rcond_est=3.801e-04 min|U_kk|=2.195e+03 max|U_kk|=1.233e+05 zero_pivots=0 mu=2.887e-01 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=6.118ms t_host_solve_avg=5.190ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=9.2e-03 t=0.02s cycles=1 reorth=2 rec=9.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.887e-01
+  NEWTON gauss_ch:0.25:32:i1o4 it= 3 r_F=9.637e-01 r_out=7.435e-05 lambda=1 |dx|max=2.20e-02 lin=gmres+P-A+CC(mult,2) rel=9.2e-03 lits=2 t_lin=0.0s |dx|2=8.44e-01 t_fact=0.61s eta=1.00e-01 mu=2.887e-01 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.564s t_cond=0.040s norm1=5.213e+05 inv_norm1_est=8.425e-03 rcond_est=2.277e-04 min|U_kk|=1.696e+03 max|U_kk|=1.179e+05 zero_pivots=0 mu=1.641e-01 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=4 t_apply_avg=6.175ms t_host_solve_avg=5.253ms
+    LINEAR gmres+P-A+CC(mult,2) its=3 rel=3.2e-03 t=0.03s cycles=1 reorth=3 rec=3.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.641e-01
+  NEWTON gauss_ch:0.25:32:i1o4 it= 4 r_F=5.268e-01 r_out=1.179e-05 lambda=1 |dx|max=1.81e-02 lin=gmres+P-A+CC(mult,2) rel=3.2e-03 lits=3 t_lin=0.0s |dx|2=8.07e-01 t_fact=0.63s eta=1.00e-01 mu=1.641e-01 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.028s t_lu=0.550s t_cond=0.035s norm1=5.245e+05 inv_norm1_est=1.361e-02 rcond_est=1.401e-04 min|U_kk|=1.328e+03 max|U_kk|=1.146e+05 zero_pivots=0 mu=8.974e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=4 t_apply_avg=6.100ms t_host_solve_avg=5.175ms
+    LINEAR gmres+P-A+CC(mult,2) its=3 rel=5.2e-03 t=0.03s cycles=1 reorth=3 rec=5.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=8.974e-02
+  NEWTON gauss_ch:0.25:32:i1o4 it= 5 r_F=2.722e-01 r_out=1.406e-05 lambda=1 |dx|max=1.62e-02 lin=gmres+P-A+CC(mult,2) rel=5.2e-03 lits=3 t_lin=0.0s |dx|2=7.54e-01 t_fact=0.61s eta=1.00e-01 mu=8.974e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.683s t_cond=0.046s norm1=5.299e+05 inv_norm1_est=2.106e-02 rcond_est=8.961e-05 min|U_kk|=1.064e+03 max|U_kk|=1.128e+05 zero_pivots=0 mu=4.636e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=5 t_apply_avg=6.587ms t_host_solve_avg=5.665ms
+    LINEAR gmres+P-A+CC(mult,2) its=4 rel=4.2e-03 t=0.03s cycles=1 reorth=4 rec=4.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=4.636e-02
+  NEWTON gauss_ch:0.25:32:i1o4 it= 6 r_F=1.410e-01 r_out=4.898e-06 lambda=1 |dx|max=1.53e-02 lin=gmres+P-A+CC(mult,2) rel=4.2e-03 lits=4 t_lin=0.0s |dx|2=7.54e-01 t_fact=0.76s eta=1.00e-01 mu=4.636e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.548s t_cond=0.033s norm1=5.358e+05 inv_norm1_est=2.952e-02 rcond_est=6.323e-05 min|U_kk|=8.900e+02 max|U_kk|=1.118e+05 zero_pivots=0 mu=2.401e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=5 t_apply_avg=5.979ms t_host_solve_avg=5.062ms
+    LINEAR gmres+P-A+CC(mult,2) its=4 rel=9.2e-03 t=0.03s cycles=1 reorth=4 rec=9.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.401e-02
+  NEWTON gauss_ch:0.25:32:i1o4 it= 7 r_F=7.950e-02 r_out=7.159e-06 lambda=1 |dx|max=1.48e-02 lin=gmres+P-A+CC(mult,2) rel=9.2e-03 lits=4 t_lin=0.0s |dx|2=8.39e-01 t_fact=0.61s eta=1.00e-01 mu=2.401e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.556s t_cond=0.033s norm1=5.421e+05 inv_norm1_est=3.688e-02 rcond_est=5.002e-05 min|U_kk|=7.858e+02 max|U_kk|=1.113e+05 zero_pivots=0 mu=1.354e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=6 t_apply_avg=5.969ms t_host_solve_avg=5.059ms
+    LINEAR gmres+P-A+CC(mult,2) its=5 rel=8.5e-03 t=0.04s cycles=1 reorth=5 rec=8.5e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.354e-02
+  NEWTON gauss_ch:0.25:32:i1o4 it= 8 r_F=5.236e-02 r_out=6.035e-06 lambda=1 |dx|max=1.48e-02 lin=gmres+P-A+CC(mult,2) rel=8.5e-03 lits=5 t_lin=0.0s |dx|2=1.00e+00 t_fact=0.62s eta=1.00e-01 mu=1.354e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.590s t_cond=0.035s norm1=5.754e+05 inv_norm1_est=4.177e-02 rcond_est=4.161e-05 min|U_kk|=7.274e+02 max|U_kk|=1.126e+05 zero_pivots=0 mu=8.919e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=8 t_apply_avg=6.133ms t_host_solve_avg=5.204ms
+    LINEAR gmres+P-A+CC(mult,2) its=7 rel=6.3e-03 t=0.05s cycles=1 reorth=7 rec=6.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=8.919e-03
+  NEWTON gauss_ch:0.25:32:i1o4 it= 9 r_F=3.864e-02 r_out=2.821e-06 lambda=1 |dx|max=1.63e-02 lin=gmres+P-A+CC(mult,2) rel=6.3e-03 lits=7 t_lin=0.1s |dx|2=1.13e+00 t_fact=0.65s eta=1.00e-01 mu=8.919e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.603s t_cond=0.035s norm1=6.098e+05 inv_norm1_est=4.661e-02 rcond_est=3.518e-05 min|U_kk|=6.882e+02 max|U_kk|=1.108e+05 zero_pivots=0 mu=6.582e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=11 t_apply_avg=6.081ms t_host_solve_avg=5.158ms
+    LINEAR gmres+P-A+CC(mult,2) its=10 rel=8.9e-03 t=0.07s cycles=1 reorth=9 rec=8.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=6.582e-03
+  NEWTON gauss_ch:0.25:32:i1o4 it=10 r_F=2.830e-02 r_out=3.097e-06 lambda=1 |dx|max=1.76e-02 lin=gmres+P-A+CC(mult,2) rel=8.9e-03 lits=10 t_lin=0.1s |dx|2=1.11e+00 t_fact=0.67s eta=1.00e-01 mu=6.582e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.612s t_cond=0.033s norm1=6.377e+05 inv_norm1_est=4.612e-02 rcond_est=3.400e-05 min|U_kk|=6.518e+02 max|U_kk|=1.107e+05 zero_pivots=0 mu=4.820e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=14 t_apply_avg=7.306ms t_host_solve_avg=6.391ms
+    LINEAR gmres+P-A+CC(mult,2) its=13 rel=7.0e-03 t=0.11s cycles=1 reorth=12 rec=7.0e-03 status=converged t_fact=0.00s singular_modes=0 mu=4.820e-03
+  NEWTON gauss_ch:0.25:32:i1o4 it=11 r_F=1.926e-02 r_out=1.832e-06 lambda=1 |dx|max=1.64e-02 lin=gmres+P-A+CC(mult,2) rel=7.0e-03 lits=13 t_lin=0.1s |dx|2=1.00e+00 t_fact=0.67s eta=1.00e-01 mu=4.820e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.601s t_cond=0.033s norm1=6.584e+05 inv_norm1_est=5.279e-02 rcond_est=2.877e-05 min|U_kk|=6.160e+02 max|U_kk|=1.106e+05 zero_pivots=0 mu=3.281e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=17 t_apply_avg=5.986ms t_host_solve_avg=5.071ms
+    LINEAR gmres+P-A+CC(mult,2) its=16 rel=9.3e-03 t=0.11s cycles=1 reorth=15 rec=9.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.281e-03
+  NEWTON gauss_ch:0.25:32:i1o4 it=12 r_F=1.160e-02 r_out=1.500e-06 lambda=1 |dx|max=1.38e-02 lin=gmres+P-A+CC(mult,2) rel=9.3e-03 lits=16 t_lin=0.1s |dx|2=8.48e-01 t_fact=0.66s eta=1.00e-01 mu=3.281e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.026s t_lu=0.615s t_cond=0.033s norm1=6.861e+05 inv_norm1_est=5.617e-02 rcond_est=2.595e-05 min|U_kk|=5.817e+02 max|U_kk|=1.105e+05 zero_pivots=0 mu=1.977e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=22 t_apply_avg=6.014ms t_host_solve_avg=5.096ms
+    LINEAR gmres+P-A+CC(mult,2) its=21 rel=8.9e-03 t=0.14s cycles=1 reorth=20 rec=8.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.977e-03
+  NEWTON gauss_ch:0.25:32:i1o4 it=13 r_F=5.699e-03 r_out=8.574e-07 lambda=1 |dx|max=1.03e-02 lin=gmres+P-A+CC(mult,2) rel=8.9e-03 lits=21 t_lin=0.1s |dx|2=6.33e-01 t_fact=0.68s eta=1.00e-01 mu=1.977e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.642s t_cond=0.035s norm1=7.192e+05 inv_norm1_est=5.987e-02 rcond_est=2.322e-05 min|U_kk|=5.519e+02 max|U_kk|=1.104e+05 zero_pivots=0 mu=9.708e-04 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=28 t_apply_avg=8.525ms t_host_solve_avg=7.592ms
+    LINEAR gmres+P-A+CC(mult,2) its=27 rel=9.7e-03 t=0.25s cycles=1 reorth=26 rec=9.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=9.708e-04
+  NEWTON gauss_ch:0.25:32:i1o4 it=14 r_F=1.911e-03 r_out=5.822e-07 lambda=1 |dx|max=5.94e-03 lin=gmres+P-A+CC(mult,2) rel=9.7e-03 lits=27 t_lin=0.3s |dx|2=3.70e-01 t_fact=0.71s eta=1.00e-01 mu=9.708e-04 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.641s t_cond=0.036s norm1=7.414e+05 inv_norm1_est=6.168e-02 rcond_est=2.187e-05 min|U_kk|=5.260e+02 max|U_kk|=1.103e+05 zero_pivots=0 mu=3.254e-04 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=33 t_apply_avg=6.143ms t_host_solve_avg=5.227ms
+    LINEAR gmres+P-A+CC(mult,2) its=32 rel=9.3e-03 t=0.22s cycles=1 reorth=31 rec=9.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.254e-04
+  NEWTON gauss_ch:0.25:32:i1o4 it=15 r_F=2.889e-04 r_out=1.933e-07 lambda=1 |dx|max=2.06e-03 lin=gmres+P-A+CC(mult,2) rel=9.3e-03 lits=32 t_lin=0.2s |dx|2=1.31e-01 t_fact=0.71s eta=1.00e-01 mu=3.254e-04 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.646s t_cond=0.035s norm1=7.500e+05 inv_norm1_est=6.951e-02 rcond_est=1.918e-05 min|U_kk|=5.252e+02 max|U_kk|=1.103e+05 zero_pivots=0 mu=4.920e-05 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=45 t_apply_avg=5.996ms t_host_solve_avg=5.081ms
+    LINEAR gmres+P-A+CC(mult,2) its=44 rel=1.9e-03 t=0.30s cycles=1 reorth=42 rec=1.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=4.920e-05
+  NEWTON gauss_ch:0.25:32:i1o4 it=16 r_F=7.610e-06 r_out=5.837e-09 lambda=1 |dx|max=2.71e-04 lin=gmres+P-A+CC(mult,2) rel=1.9e-03 lits=44 t_lin=0.3s |dx|2=1.75e-02 t_fact=0.71s eta=2.06e-02 mu=4.920e-05 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.028s t_lu=0.619s t_cond=0.044s norm1=7.513e+05 inv_norm1_est=7.006e-02 rcond_est=1.900e-05 min|U_kk|=5.238e+02 max|U_kk|=1.103e+05 zero_pivots=0 mu=1.296e-06 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=66 t_apply_avg=5.987ms t_host_solve_avg=5.069ms
+    LINEAR gmres+P-A+CC(mult,2) its=65 rel=6.0e-05 t=0.45s cycles=1 reorth=64 rec=6.0e-05 status=converged t_fact=0.00s singular_modes=0 mu=1.296e-06
+  NEWTON gauss_ch:0.25:32:i1o4 it=17 r_F=5.091e-09 r_out=4.346e-12 lambda=1 |dx|max=5.56e-06 lin=gmres+P-A+CC(mult,2) rel=6.0e-05 lits=65 t_lin=0.4s |dx|2=3.60e-04 t_fact=0.69s eta=6.25e-04 mu=1.296e-06 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.629s t_cond=0.035s norm1=7.513e+05 inv_norm1_est=7.007e-02 rcond_est=1.900e-05 min|U_kk|=5.238e+02 max|U_kk|=1.103e+05 zero_pivots=0 mu=8.671e-10 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=87 t_apply_avg=6.152ms t_host_solve_avg=5.237ms
+    LINEAR gmres+P-A+CC(mult,2) its=86 rel=9.5e-07 t=0.62s cycles=1 reorth=85 rec=9.5e-07 status=converged t_fact=0.00s singular_modes=0 mu=8.671e-10
+  NEWTON gauss_ch:0.25:32:i1o4 it=18 r_F=1.224e-14 r_out=5.287e-16 lambda=1 |dx|max=3.15e-09 lin=gmres+P-A+CC(mult,2) rel=9.5e-07 lits=86 t_lin=0.6s |dx|2=1.96e-07 t_fact=0.69s eta=9.82e-06 mu=8.671e-10 retries=0
+  STAGE_END field=gauss_ch eps=0.25 N=32 cand=i1o4 status=converged its=18 r_F=1.224e-14 r_out=5.287e-16 -> accepted
+PATH field=gauss_ch eps=0.25 N=32 cand=i1o4 continuation path: 0.25
+GMRES_STATS field=gauss_ch eps=0.25 N=32 stage_eps=0.25 status=converged newton_its=18 steps=18 its_max=86 its_median=8.5 its_total=346 rel_max=9.7e-03 linear_failures=0 forcing=ew etas=1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,2.06e-02,6.25e-04,9.82e-06 psitc=on mus=1.00e+00,5.25e-01,2.89e-01,1.64e-01,8.97e-02,4.64e-02,2.40e-02,1.35e-02,8.92e-03,6.58e-03,4.82e-03,3.28e-03,1.98e-03,9.71e-04,3.25e-04,4.92e-05,1.30e-06,8.67e-10
+CASE field=gauss_ch eps=0.25 N=32 cand=i1o4 | r_F=1.224e-14 its=18 | e_v=7.657e-04 e_psi=1.086e-02 e_i=(6.231e-04,3.668e-04) e_div=1.139e-03 min_c=5.539e-01 p0.1=5.916e-01 p1=6.553e-01 p5=7.307e-01 p50=9.727e-01 | t=14.4 | e_psi1=1.086e-02 e_psi2=6.777e-03
+CASE field=gauss_ch eps=0.25 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=2.759e-04 e_psi=9.745e-18 e_i=(1.141e-04,8.817e-05) e_div=1.339e-03 min_c=5.540e-01 p0.1=5.916e-01 p1=6.554e-01 p5=7.307e-01 p50=9.728e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=9.745e-18
+EXTRA field=gauss_ch eps=0.25 N=32 cand=i1o4 status=converged r_F=1.224e-14 r_out=5.287e-16 | outlet c_perp-vperp_in: cand=5.287e-16 oracle_fd=7.068e-05 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.044e-03 oracle_fd=6.626e-05; j=1 cand=1.287e-02 oracle_fd=1.286e-02; j=1 vs vD(j=1) cand=1.024e-03 oracle_fd=1.887e-05 | min|c|/v_rms=0.5421 min|vD|/v_rms=0.5421 e_i1=6.231e-04 e_i2=3.668e-04 | t=14.4s | a_psi1=4.015e-04 a_psi2=2.181e-04 (FD order 4)
+HISTORY field=gauss_ch eps=0.25 N=32 cand=i1o4 r_F: 5.87e+00 3.08e+00 1.69e+00 9.64e-01 5.27e-01 2.72e-01 1.41e-01 7.95e-02 5.24e-02 3.86e-02 2.83e-02 1.93e-02 1.16e-02 5.70e-03 1.91e-03 2.89e-04 7.61e-06 5.09e-09 1.22e-14
+HISTORY field=gauss_ch eps=0.25 N=32 cand=i1o4 r_out: 1.58e-16 5.44e-05 5.21e-05 7.43e-05 1.18e-05 1.41e-05 4.90e-06 7.16e-06 6.03e-06 2.82e-06 3.10e-06 1.83e-06 1.50e-06 8.57e-07 5.82e-07 1.93e-07 5.84e-09 4.35e-12 5.29e-16
+HISTORY_FULL field=gauss_ch eps=0.25 N=32 cand=i1o4 r_F: 5.87076427272500201e+00 3.08258957810928846e+00 1.69483474110401100e+00 9.63671428992376122e-01 5.26824251715540259e-01 2.72165803782980442e-01 1.40971995112208509e-01 7.95000829692850686e-02 5.23613829762636096e-02 3.86411987032272419e-02 2.82990541142949699e-02 1.92647917949825519e-02 1.16041751970696258e-02 5.69919310045833606e-03 1.91056888473678022e-03 2.88855380921727780e-04 7.61005135477118001e-06 5.09053898957656576e-09 1.22390339968706287e-14
+HISTORY_FULL field=gauss_ch eps=0.25 N=32 cand=i1o4 r_out: 1.58188183897139045e-16 5.43867683282902429e-05 5.21119262341351763e-05 7.43462033493182692e-05 1.17910040368948040e-05 1.40551290682832456e-05 4.89835095895728927e-06 7.15887396742969080e-06 6.03460794098156486e-06 2.82076392954994427e-06 3.09690255987445947e-06 1.83186764722104388e-06 1.50000814499157037e-06 8.57413732401079403e-07 5.82185055591834000e-07 1.93277456052409135e-07 5.83730086214053518e-09 4.34645013336272571e-12 5.28652947047028952e-16
+TIMING load=0.014s metrics=0.003s prepare=0.068s solve=14.409s total=14.495s
+MEMORY peak_device_bytes=600834048 free_min=33488896000 total_device=34089730048 workspaces_bytes=84336031 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto_b/gauss_ch_0.25_32.json
+STATUS converged

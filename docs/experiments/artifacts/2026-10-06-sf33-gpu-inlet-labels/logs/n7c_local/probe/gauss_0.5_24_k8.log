@@ -1,0 +1,147 @@
+command: /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/build/wsl-release/inlet_slab --linear-probe /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_24 --eps-stage 0.5 --newton-steps 8 --probe-tol 1e-8 --probe-precs pa,mult1,mult2,add1 --summary /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/n7c_local/probe/gauss_0.5_24_k8.json --eps-from 0.4375 --probe-ladder 0.25,0.375
+PROBE_SETUP case=gauss_0.5_24 field=gauss N=24 stage=0.5 from=0.4375 k=8 precs=pa,mult1,mult2,add1 tol=1.0e-08 restart=100 cap=6000 stagnation_factor=1 mu=both
+STAGE field=gauss eps=0.25 N=24 cand=i1o4 (from eps=0, u=0)
+  NEWTON gauss:0.25:24:i1o4 it= 0 r_F=3.571e+00 r_out=6.530e-02
+    LINEAR gmres+P-A its=2 rel=3.4e-03 t=0.00s cycles=1 reorth=2 rec=3.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gauss:0.25:24:i1o4 it= 1 r_F=2.009e+00 r_out=2.319e-03 lambda=1 |dx|max=3.80e-02 lin=gmres+P-A rel=3.4e-03 lits=2 t_lin=0.0s |dx|2=5.66e-01 t_fact=0.00s eta=1.00e-01 mu=1.000e+00 retries=0
+    LINEAR gmres+P-A its=2 rel=5.1e-03 t=0.00s cycles=1 reorth=2 rec=5.1e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.627e-01
+  NEWTON gauss:0.25:24:i1o4 it= 2 r_F=1.124e+00 r_out=3.310e-04 lambda=1 |dx|max=2.30e-02 lin=gmres+P-A rel=5.1e-03 lits=2 t_lin=0.0s |dx|2=5.72e-01 t_fact=0.00s eta=1.00e-01 mu=5.627e-01 retries=0
+    LINEAR gmres+P-A its=2 rel=9.7e-03 t=0.00s cycles=1 reorth=2 rec=9.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.148e-01
+  NEWTON gauss:0.25:24:i1o4 it= 3 r_F=5.820e-01 r_out=2.762e-04 lambda=1 |dx|max=1.69e-02 lin=gmres+P-A rel=9.7e-03 lits=2 t_lin=0.0s |dx|2=5.35e-01 t_fact=0.00s eta=1.00e-01 mu=3.148e-01 retries=0
+    LINEAR gmres+P-A its=3 rel=3.9e-03 t=0.00s cycles=1 reorth=3 rec=3.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.630e-01
+  NEWTON gauss:0.25:24:i1o4 it= 4 r_F=2.623e-01 r_out=7.422e-05 lambda=1 |dx|max=1.45e-02 lin=gmres+P-A rel=3.9e-03 lits=3 t_lin=0.0s |dx|2=4.64e-01 t_fact=0.00s eta=1.00e-01 mu=1.630e-01 retries=0
+    LINEAR gmres+P-A its=4 rel=3.5e-03 t=0.01s cycles=1 reorth=4 rec=3.5e-03 status=converged t_fact=0.00s singular_modes=0 mu=7.346e-02
+  NEWTON gauss:0.25:24:i1o4 it= 5 r_F=1.117e-01 r_out=2.379e-05 lambda=1 |dx|max=1.42e-02 lin=gmres+P-A rel=3.5e-03 lits=4 t_lin=0.0s |dx|2=4.35e-01 t_fact=0.00s eta=1.00e-01 mu=7.346e-02 retries=0
+    LINEAR gmres+P-A its=5 rel=7.6e-03 t=0.01s cycles=1 reorth=5 rec=7.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.128e-02
+  NEWTON gauss:0.25:24:i1o4 it= 6 r_F=5.588e-02 r_out=1.618e-05 lambda=1 |dx|max=1.44e-02 lin=gmres+P-A rel=7.6e-03 lits=5 t_lin=0.0s |dx|2=5.18e-01 t_fact=0.00s eta=1.00e-01 mu=3.128e-02 retries=0
+    LINEAR gmres+P-A its=8 rel=8.6e-03 t=0.01s cycles=1 reorth=8 rec=8.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.565e-02
+  NEWTON gauss:0.25:24:i1o4 it= 7 r_F=3.496e-02 r_out=3.883e-05 lambda=1 |dx|max=1.49e-02 lin=gmres+P-A rel=8.6e-03 lits=8 t_lin=0.0s |dx|2=6.60e-01 t_fact=0.00s eta=1.00e-01 mu=1.565e-02 retries=0
+    LINEAR gmres+P-A its=13 rel=9.9e-03 t=0.02s cycles=1 reorth=12 rec=9.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=9.789e-03
+  NEWTON gauss:0.25:24:i1o4 it= 8 r_F=2.400e-02 r_out=6.233e-05 lambda=1 |dx|max=1.78e-02 lin=gmres+P-A rel=9.9e-03 lits=13 t_lin=0.0s |dx|2=7.01e-01 t_fact=0.00s eta=1.00e-01 mu=9.789e-03 retries=0
+    LINEAR gmres+P-A its=20 rel=8.6e-03 t=0.03s cycles=1 reorth=19 rec=8.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=6.721e-03
+  NEWTON gauss:0.25:24:i1o4 it= 9 r_F=1.522e-02 r_out=5.252e-05 lambda=1 |dx|max=1.65e-02 lin=gmres+P-A rel=8.6e-03 lits=20 t_lin=0.0s |dx|2=6.14e-01 t_fact=0.00s eta=1.00e-01 mu=6.721e-03 retries=0
+    LINEAR gmres+P-A its=30 rel=9.0e-03 t=0.05s cycles=1 reorth=29 rec=9.0e-03 status=converged t_fact=0.00s singular_modes=0 mu=4.262e-03
+  NEWTON gauss:0.25:24:i1o4 it=10 r_F=8.319e-03 r_out=3.300e-05 lambda=1 |dx|max=1.30e-02 lin=gmres+P-A rel=9.0e-03 lits=30 t_lin=0.0s |dx|2=4.78e-01 t_fact=0.00s eta=1.00e-01 mu=4.262e-03 retries=0
+    LINEAR gmres+P-A its=42 rel=8.8e-03 t=0.08s cycles=1 reorth=41 rec=8.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.330e-03
+  NEWTON gauss:0.25:24:i1o4 it=11 r_F=3.408e-03 r_out=1.375e-05 lambda=1 |dx|max=8.21e-03 lin=gmres+P-A rel=8.8e-03 lits=42 t_lin=0.1s |dx|2=3.06e-01 t_fact=0.00s eta=1.00e-01 mu=2.330e-03 retries=0
+    LINEAR gmres+P-A its=52 rel=9.7e-03 t=0.10s cycles=1 reorth=51 rec=9.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=9.544e-04
+  NEWTON gauss:0.25:24:i1o4 it=12 r_F=7.894e-04 r_out=2.896e-06 lambda=1 |dx|max=3.59e-03 lin=gmres+P-A rel=9.7e-03 lits=52 t_lin=0.1s |dx|2=1.36e-01 t_fact=0.00s eta=1.00e-01 mu=9.544e-04 retries=0
+    LINEAR gmres+P-A its=66 rel=4.1e-03 t=0.14s cycles=1 reorth=65 rec=4.1e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.210e-04
+  NEWTON gauss:0.25:24:i1o4 it=13 r_F=5.157e-05 r_out=1.513e-07 lambda=1 |dx|max=7.52e-04 lin=gmres+P-A rel=4.1e-03 lits=66 t_lin=0.1s |dx|2=2.90e-02 t_fact=0.00s eta=4.83e-02 mu=2.210e-04 retries=0
+    LINEAR gmres+P-A its=84 rel=3.8e-04 t=0.20s cycles=1 reorth=83 rec=3.8e-04 status=converged t_fact=0.00s singular_modes=0 mu=1.444e-05
+  NEWTON gauss:0.25:24:i1o4 it=14 r_F=1.912e-07 r_out=5.802e-10 lambda=1 |dx|max=3.80e-05 lin=gmres+P-A rel=3.8e-04 lits=84 t_lin=0.2s |dx|2=1.50e-03 t_fact=0.00s eta=3.84e-03 mu=1.444e-05 retries=0
+    LINEAR gmres+P-A its=154 rel=1.1e-06 t=0.36s cycles=2 reorth=152 rec=1.1e-06 status=converged t_fact=0.00s singular_modes=0 mu=5.355e-08
+  NEWTON gauss:0.25:24:i1o4 it=15 r_F=2.769e-12 r_out=6.295e-15 lambda=1 |dx|max=1.31e-07 lin=gmres+P-A rel=1.1e-06 lits=154 t_lin=0.4s |dx|2=5.12e-06 t_fact=0.00s eta=1.24e-05 mu=5.355e-08 retries=0
+    LINEAR gmres+P-A its=72 rel=1.8e-03 t=0.16s cycles=1 reorth=72 rec=1.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=7.755e-13
+  NEWTON gauss:0.25:24:i1o4 it=16 r_F=7.005e-15 r_out=2.979e-16 lambda=1 |dx|max=1.58e-12 lin=gmres+P-A rel=1.8e-03 lits=72 t_lin=0.2s |dx|2=6.34e-11 t_fact=0.00s eta=1.81e-02 mu=7.755e-13 retries=0
+  STAGE_END field=gauss eps=0.25 N=24 cand=i1o4 status=converged its=16 r_F=7.005e-15 r_out=2.979e-16 -> accepted
+STAGE field=gauss eps=0.375 N=24 cand=i1o4 (from eps=0.25, warm start)
+  NEWTON gauss:0.375:24:i1o4 it= 0 r_F=1.806e+00 r_out=3.524e-02
+    LINEAR gmres+P-A its=2 rel=9.3e-03 t=0.00s cycles=1 reorth=2 rec=9.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gauss:0.375:24:i1o4 it= 1 r_F=1.003e+00 r_out=3.076e-03 lambda=1 |dx|max=1.92e-02 lin=gmres+P-A rel=9.3e-03 lits=2 t_lin=0.0s |dx|2=2.85e-01 t_fact=0.00s eta=1.00e-01 mu=1.000e+00 retries=0
+    LINEAR gmres+P-A its=3 rel=5.7e-03 t=0.00s cycles=1 reorth=3 rec=5.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.552e-01
+  NEWTON gauss:0.375:24:i1o4 it= 2 r_F=5.500e-01 r_out=2.410e-04 lambda=1 |dx|max=1.18e-02 lin=gmres+P-A rel=5.7e-03 lits=3 t_lin=0.0s |dx|2=2.88e-01 t_fact=0.00s eta=1.00e-01 mu=5.552e-01 retries=0
+    LINEAR gmres+P-A its=4 rel=6.3e-03 t=0.01s cycles=1 reorth=4 rec=6.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.044e-01
+  NEWTON gauss:0.375:24:i1o4 it= 3 r_F=2.808e-01 r_out=1.171e-04 lambda=1 |dx|max=8.90e-03 lin=gmres+P-A rel=6.3e-03 lits=4 t_lin=0.0s |dx|2=2.70e-01 t_fact=0.00s eta=1.00e-01 mu=3.044e-01 retries=0
+    LINEAR gmres+P-A its=6 rel=6.3e-03 t=0.01s cycles=1 reorth=6 rec=6.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.554e-01
+  NEWTON gauss:0.375:24:i1o4 it= 4 r_F=1.272e-01 r_out=4.142e-05 lambda=1 |dx|max=7.63e-03 lin=gmres+P-A rel=6.3e-03 lits=6 t_lin=0.0s |dx|2=2.38e-01 t_fact=0.00s eta=1.00e-01 mu=1.554e-01 retries=0
+    LINEAR gmres+P-A its=10 rel=9.4e-03 t=0.01s cycles=1 reorth=10 rec=9.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=7.042e-02
+  NEWTON gauss:0.375:24:i1o4 it= 5 r_F=5.622e-02 r_out=1.293e-05 lambda=1 |dx|max=7.04e-03 lin=gmres+P-A rel=9.4e-03 lits=10 t_lin=0.0s |dx|2=2.32e-01 t_fact=0.00s eta=1.00e-01 mu=7.042e-02 retries=0
+    LINEAR gmres+P-A its=25 rel=8.0e-03 t=0.04s cycles=1 reorth=25 rec=8.0e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.112e-02
+  NEWTON gauss:0.375:24:i1o4 it= 6 r_F=2.895e-02 r_out=8.067e-06 lambda=1 |dx|max=6.74e-03 lin=gmres+P-A rel=8.0e-03 lits=25 t_lin=0.0s |dx|2=2.76e-01 t_fact=0.00s eta=1.00e-01 mu=3.112e-02 retries=0
+    LINEAR gmres+P-A its=43 rel=9.9e-03 t=0.08s cycles=1 reorth=42 rec=9.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.602e-02
+  NEWTON gauss:0.375:24:i1o4 it= 7 r_F=1.813e-02 r_out=1.555e-05 lambda=1 |dx|max=7.01e-03 lin=gmres+P-A rel=9.9e-03 lits=43 t_lin=0.1s |dx|2=3.44e-01 t_fact=0.00s eta=1.00e-01 mu=1.602e-02 retries=0
+    LINEAR gmres+P-A its=61 rel=9.7e-03 t=0.12s cycles=1 reorth=60 rec=9.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.003e-02
+  NEWTON gauss:0.375:24:i1o4 it= 8 r_F=1.228e-02 r_out=2.497e-05 lambda=1 |dx|max=8.51e-03 lin=gmres+P-A rel=9.7e-03 lits=61 t_lin=0.1s |dx|2=3.69e-01 t_fact=0.00s eta=1.00e-01 mu=1.003e-02 retries=0
+    LINEAR gmres+P-A its=78 rel=9.6e-03 t=0.18s cycles=1 reorth=77 rec=9.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=6.797e-03
+  NEWTON gauss:0.375:24:i1o4 it= 9 r_F=7.714e-03 r_out=2.224e-05 lambda=1 |dx|max=8.03e-03 lin=gmres+P-A rel=9.6e-03 lits=78 t_lin=0.2s |dx|2=3.30e-01 t_fact=0.00s eta=1.00e-01 mu=6.797e-03 retries=0
+    LINEAR gmres+P-A its=100 rel=9.8e-03 t=0.25s cycles=1 reorth=99 rec=9.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=4.270e-03
+  NEWTON gauss:0.375:24:i1o4 it=10 r_F=4.091e-03 r_out=1.462e-05 lambda=1 |dx|max=6.38e-03 lin=gmres+P-A rel=9.8e-03 lits=100 t_lin=0.3s |dx|2=2.60e-01 t_fact=0.00s eta=1.00e-01 mu=4.270e-03 retries=0
+    LINEAR gmres+P-A its=100 rel=3.5e-02 t=0.25s cycles=1 reorth=99 rec=3.5e-02 status=converged t_fact=0.00s singular_modes=0 mu=2.264e-03
+  NEWTON gauss:0.375:24:i1o4 it=11 r_F=1.552e-03 r_out=7.117e-06 lambda=1 |dx|max=4.12e-03 lin=gmres+P-A rel=3.5e-02 lits=100 t_lin=0.3s |dx|2=1.69e-01 t_fact=0.00s eta=1.00e-01 mu=2.264e-03 retries=0
+    LINEAR gmres+P-A its=100 rel=8.7e-02 t=0.25s cycles=1 reorth=99 rec=8.7e-02 status=converged t_fact=0.00s singular_modes=0 mu=8.592e-04
+  NEWTON gauss:0.375:24:i1o4 it=12 r_F=3.282e-04 r_out=2.553e-06 lambda=1 |dx|max=1.79e-03 lin=gmres+P-A rel=8.7e-02 lits=100 t_lin=0.3s |dx|2=7.47e-02 t_fact=0.00s eta=1.00e-01 mu=8.592e-04 retries=0
+    LINEAR gmres+P-A its=200 rel=2.5e-02 t=0.51s cycles=2 reorth=198 rec=2.5e-02 status=converged t_fact=0.00s singular_modes=0 mu=1.816e-04
+  NEWTON gauss:0.375:24:i1o4 it=13 r_F=4.756e-05 r_out=2.000e-07 lambda=1 |dx|max=4.15e-04 lin=gmres+P-A rel=2.5e-02 lits=200 t_lin=0.5s |dx|2=1.55e-02 t_fact=0.00s eta=4.02e-02 mu=1.816e-04 retries=0
+    LINEAR gmres+P-A its=200 rel=7.7e-03 t=0.51s cycles=2 reorth=198 rec=7.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.632e-05
+  NEWTON gauss:0.375:24:i1o4 it=14 r_F=3.878e-07 r_out=7.628e-09 lambda=1 |dx|max=1.96e-05 lin=gmres+P-A rel=7.7e-03 lits=200 t_lin=0.5s |dx|2=6.31e-04 t_fact=0.00s eta=1.89e-02 mu=2.632e-05 retries=0
+    LINEAR gmres+P-A its=500 rel=4.9e-05 t=1.27s cycles=5 reorth=494 rec=4.9e-05 status=converged t_fact=0.00s singular_modes=0 mu=2.147e-07
+  NEWTON gauss:0.375:24:i1o4 it=15 r_F=6.490e-11 r_out=3.626e-13 lambda=1 |dx|max=5.91e-07 lin=gmres+P-A rel=4.9e-05 lits=500 t_lin=1.3s |dx|2=9.20e-06 t_fact=0.00s eta=5.98e-05 mu=2.147e-07 retries=0
+    LINEAR gmres+P-A its=400 rel=1.1e-04 t=1.02s cycles=4 reorth=396 rec=1.1e-04 status=converged t_fact=0.00s singular_modes=0 mu=3.592e-11
+  NEWTON gauss:0.375:24:i1o4 it=16 r_F=1.035e-14 r_out=4.789e-16 lambda=1 |dx|max=1.50e-11 lin=gmres+P-A rel=1.1e-04 lits=400 t_lin=1.0s |dx|2=3.61e-10 t_fact=0.00s eta=7.70e-04 mu=3.592e-11 retries=0
+  STAGE_END field=gauss eps=0.375 N=24 cand=i1o4 status=converged its=16 r_F=1.035e-14 r_out=4.789e-16 -> accepted
+STAGE field=gauss eps=0.4375 N=24 cand=i1o4 (from eps=0.375, warm start)
+  NEWTON gauss:0.4375:24:i1o4 it= 0 r_F=9.043e-01 r_out=1.888e-02
+    LINEAR gmres+P-A its=3 rel=5.6e-03 t=0.00s cycles=1 reorth=3 rec=5.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gauss:0.4375:24:i1o4 it= 1 r_F=4.992e-01 r_out=7.726e-04 lambda=1 |dx|max=9.50e-03 lin=gmres+P-A rel=5.6e-03 lits=3 t_lin=0.0s |dx|2=1.43e-01 t_fact=0.00s eta=1.00e-01 mu=1.000e+00 retries=0
+    LINEAR gmres+P-A its=4 rel=6.4e-03 t=0.01s cycles=1 reorth=4 rec=6.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.520e-01
+  NEWTON gauss:0.4375:24:i1o4 it= 2 r_F=2.718e-01 r_out=1.270e-04 lambda=1 |dx|max=5.85e-03 lin=gmres+P-A rel=6.4e-03 lits=4 t_lin=0.0s |dx|2=1.45e-01 t_fact=0.00s eta=1.00e-01 mu=5.520e-01 retries=0
+    LINEAR gmres+P-A its=6 rel=8.1e-03 t=0.01s cycles=1 reorth=6 rec=8.1e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.005e-01
+  NEWTON gauss:0.4375:24:i1o4 it= 3 r_F=1.384e-01 r_out=6.041e-05 lambda=1 |dx|max=4.54e-03 lin=gmres+P-A rel=8.1e-03 lits=6 t_lin=0.0s |dx|2=1.36e-01 t_fact=0.00s eta=1.00e-01 mu=3.005e-01 retries=0
+    LINEAR gmres+P-A its=9 rel=1.0e-02 t=0.01s cycles=1 reorth=9 rec=1.0e-02 status=converged t_fact=0.00s singular_modes=0 mu=1.530e-01
+  NEWTON gauss:0.4375:24:i1o4 it= 4 r_F=6.343e-02 r_out=2.091e-05 lambda=1 |dx|max=3.87e-03 lin=gmres+P-A rel=1.0e-02 lits=9 t_lin=0.0s |dx|2=1.21e-01 t_fact=0.00s eta=1.00e-01 mu=1.530e-01 retries=0
+    LINEAR gmres+P-A its=27 rel=9.9e-03 t=0.04s cycles=1 reorth=27 rec=9.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=7.013e-02
+  NEWTON gauss:0.4375:24:i1o4 it= 5 r_F=2.881e-02 r_out=5.376e-06 lambda=1 |dx|max=3.48e-03 lin=gmres+P-A rel=9.9e-03 lits=27 t_lin=0.0s |dx|2=1.20e-01 t_fact=0.00s eta=1.00e-01 mu=7.013e-02 retries=0
+    LINEAR gmres+P-A its=59 rel=9.4e-03 t=0.12s cycles=1 reorth=58 rec=9.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.186e-02
+  NEWTON gauss:0.4375:24:i1o4 it= 6 r_F=1.506e-02 r_out=3.826e-06 lambda=1 |dx|max=3.24e-03 lin=gmres+P-A rel=9.4e-03 lits=59 t_lin=0.1s |dx|2=1.41e-01 t_fact=0.00s eta=1.00e-01 mu=3.186e-02 retries=0
+    LINEAR gmres+P-A its=94 rel=9.3e-03 t=0.23s cycles=1 reorth=93 rec=9.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.665e-02
+  NEWTON gauss:0.4375:24:i1o4 it= 7 r_F=9.402e-03 r_out=5.092e-06 lambda=1 |dx|max=3.30e-03 lin=gmres+P-A rel=9.3e-03 lits=94 t_lin=0.2s |dx|2=1.73e-01 t_fact=0.00s eta=1.00e-01 mu=1.665e-02 retries=0
+    LINEAR gmres+P-A its=100 rel=3.9e-02 t=0.25s cycles=1 reorth=99 rec=3.9e-02 status=converged t_fact=0.00s singular_modes=0 mu=1.039e-02
+  NEWTON gauss:0.4375:24:i1o4 it= 8 r_F=6.318e-03 r_out=9.077e-06 lambda=1 |dx|max=4.08e-03 lin=gmres+P-A rel=3.9e-02 lits=100 t_lin=0.3s |dx|2=1.87e-01 t_fact=0.00s eta=1.00e-01 mu=1.039e-02 retries=0
+    LINEAR gmres+P-A its=200 rel=1.8e-02 t=0.51s cycles=2 reorth=198 rec=1.8e-02 status=converged t_fact=0.00s singular_modes=0 mu=6.985e-03
+  NEWTON gauss:0.4375:24:i1o4 it= 9 r_F=3.938e-03 r_out=7.189e-06 lambda=1 |dx|max=3.85e-03 lin=gmres+P-A rel=1.8e-02 lits=200 t_lin=0.5s |dx|2=1.71e-01 t_fact=0.00s eta=1.00e-01 mu=6.985e-03 retries=0
+    LINEAR gmres+P-A its=200 rel=7.1e-02 t=0.51s cycles=2 reorth=198 rec=7.1e-02 status=converged t_fact=0.00s singular_modes=0 mu=4.354e-03
+  NEWTON gauss:0.4375:24:i1o4 it=10 r_F=2.046e-03 r_out=6.185e-06 lambda=1 |dx|max=3.13e-03 lin=gmres+P-A rel=7.1e-02 lits=200 t_lin=0.5s |dx|2=1.37e-01 t_fact=0.00s eta=1.00e-01 mu=4.354e-03 retries=0
+    LINEAR gmres+P-A its=400 rel=6.8e-02 t=1.02s cycles=4 reorth=395 rec=6.8e-02 status=converged t_fact=0.00s singular_modes=0 mu=2.263e-03
+  NEWTON gauss:0.4375:24:i1o4 it=11 r_F=7.790e-04 r_out=2.823e-06 lambda=1 |dx|max=2.05e-03 lin=gmres+P-A rel=6.8e-02 lits=400 t_lin=1.0s |dx|2=9.24e-02 t_fact=0.00s eta=1.00e-01 mu=2.263e-03 retries=0
+    LINEAR gmres+P-A its=700 rel=6.7e-02 t=1.78s cycles=7 reorth=693 rec=6.7e-02 status=converged t_fact=0.00s singular_modes=0 mu=8.613e-04
+  NEWTON gauss:0.4375:24:i1o4 it=12 r_F=1.756e-04 r_out=9.975e-07 lambda=1 |dx|max=9.48e-04 lin=gmres+P-A rel=6.7e-02 lits=700 t_lin=1.8s |dx|2=4.20e-02 t_fact=0.00s eta=1.00e-01 mu=8.613e-04 retries=0
+    LINEAR gmres+P-A its=1500 rel=3.9e-02 t=3.81s cycles=15 reorth=1474 rec=3.9e-02 status=converged t_fact=0.00s singular_modes=0 mu=1.941e-04
+  NEWTON gauss:0.4375:24:i1o4 it=13 r_F=1.404e-05 r_out=7.623e-08 lambda=1 |dx|max=2.13e-04 lin=gmres+P-A rel=3.9e-02 lits=1500 t_lin=3.8s |dx|2=8.78e-03 t_fact=0.00s eta=4.57e-02 mu=1.941e-04 retries=0
+    LINEAR gmres+P-A its=2900 rel=5.5e-03 t=7.36s cycles=29 reorth=2836 rec=5.5e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.552e-05
+  NEWTON gauss:0.4375:24:i1o4 it=14 r_F=1.455e-07 r_out=1.084e-09 lambda=1 |dx|max=1.61e-05 lin=gmres+P-A rel=5.5e-03 lits=2900 t_lin=7.4s |dx|2=5.14e-04 t_fact=0.00s eta=5.75e-03 mu=1.552e-05 retries=0
+    LINEAR gmres+P-A its=5000 rel=9.2e-05 t=12.69s cycles=50 reorth=4890 rec=9.2e-05 status=converged t_fact=0.00s singular_modes=0 mu=1.609e-07
+  NEWTON gauss:0.4375:24:i1o4 it=15 r_F=1.852e-11 r_out=2.077e-13 lambda=1 |dx|max=2.65e-07 lin=gmres+P-A rel=9.2e-05 lits=5000 t_lin=12.7s |dx|2=3.64e-06 t_fact=0.00s eta=9.67e-05 mu=1.609e-07 retries=0
+    LINEAR gmres+P-A its=3900 rel=2.4e-03 t=9.90s cycles=39 reorth=3821 rec=2.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.048e-11
+  NEWTON gauss:0.4375:24:i1o4 it=16 r_F=4.542e-14 r_out=9.179e-16 lambda=1 |dx|max=3.26e-11 lin=gmres+P-A rel=2.4e-03 lits=3900 t_lin=9.9s |dx|2=4.79e-10 t_fact=0.00s eta=2.70e-03 mu=2.048e-11 retries=0
+  STAGE_END field=gauss eps=0.4375 N=24 cand=i1o4 status=converged its=16 r_F=4.542e-14 r_out=9.179e-16 -> accepted
+PATH field=gauss eps=0.4375 N=24 cand=i1o4 continuation path: 0.25->0.375->0.4375
+PROBE_WARM status=converged path=0.25->0.375->0.4375 r_F=4.542e-14 r_out=9.179e-16 t=44.1s
+PROBE_STAGE_START r_F=9.055483e-01 r_out=1.977774e-02 merit=9.057643e-01
+  NEWTON gauss:0.5:24:probe it= 0 r_F=9.055e-01 r_out=1.978e-02
+    LINEAR gmres+P-A its=3 rel=8.2e-03 t=0.00s cycles=1 reorth=3 rec=8.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gauss:0.5:24:probe it= 1 r_F=4.976e-01 r_out=1.062e-03 lambda=1 |dx|max=9.41e-03 lin=gmres+P-A rel=8.2e-03 lits=3 t_lin=0.0s |dx|2=1.44e-01 t_fact=0.00s eta=1.00e-01 mu=1.000e+00 retries=0
+    LINEAR gmres+P-A its=5 rel=7.4e-03 t=0.01s cycles=1 reorth=5 rec=7.4e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.494e-01
+  NEWTON gauss:0.5:24:probe it= 2 r_F=2.687e-01 r_out=1.429e-04 lambda=1 |dx|max=5.77e-03 lin=gmres+P-A rel=7.4e-03 lits=5 t_lin=0.0s |dx|2=1.45e-01 t_fact=0.00s eta=1.00e-01 mu=5.494e-01 retries=0
+    LINEAR gmres+P-A its=8 rel=8.8e-03 t=0.01s cycles=1 reorth=8 rec=8.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.966e-01
+  NEWTON gauss:0.5:24:probe it= 3 r_F=1.360e-01 r_out=5.978e-05 lambda=1 |dx|max=4.57e-03 lin=gmres+P-A rel=8.8e-03 lits=8 t_lin=0.0s |dx|2=1.37e-01 t_fact=0.00s eta=1.00e-01 mu=2.966e-01 retries=0
+    LINEAR gmres+P-A its=20 rel=8.8e-03 t=0.03s cycles=1 reorth=20 rec=8.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.502e-01
+  NEWTON gauss:0.5:24:probe it= 4 r_F=6.283e-02 r_out=1.706e-05 lambda=1 |dx|max=3.87e-03 lin=gmres+P-A rel=8.8e-03 lits=20 t_lin=0.0s |dx|2=1.22e-01 t_fact=0.00s eta=1.00e-01 mu=1.502e-01 retries=0
+    LINEAR gmres+P-A its=53 rel=9.9e-03 t=0.10s cycles=1 reorth=52 rec=9.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=6.936e-02
+  NEWTON gauss:0.5:24:probe it= 5 r_F=2.915e-02 r_out=9.037e-06 lambda=1 |dx|max=3.41e-03 lin=gmres+P-A rel=9.9e-03 lits=53 t_lin=0.1s |dx|2=1.23e-01 t_fact=0.00s eta=1.00e-01 mu=6.936e-02 retries=0
+    LINEAR gmres+P-A its=100 rel=1.7e-02 t=0.25s cycles=1 reorth=99 rec=1.7e-02 status=converged t_fact=0.00s singular_modes=0 mu=3.219e-02
+  NEWTON gauss:0.5:24:probe it= 6 r_F=1.541e-02 r_out=7.149e-06 lambda=1 |dx|max=3.25e-03 lin=gmres+P-A rel=1.7e-02 lits=100 t_lin=0.3s |dx|2=1.43e-01 t_fact=0.00s eta=1.00e-01 mu=3.219e-02 retries=0
+    LINEAR gmres+P-A its=200 rel=5.8e-02 t=0.51s cycles=2 reorth=197 rec=5.8e-02 status=converged t_fact=0.00s singular_modes=0 mu=1.701e-02
+  NEWTON gauss:0.5:24:probe it= 7 r_F=9.640e-03 r_out=1.479e-05 lambda=1 |dx|max=3.17e-03 lin=gmres+P-A rel=5.8e-02 lits=200 t_lin=0.5s |dx|2=1.71e-01 t_fact=0.00s eta=1.00e-01 mu=1.701e-02 retries=0
+    LINEAR gmres+P-A its=700 rel=9.1e-02 t=1.78s cycles=7 reorth=684 rec=9.1e-02 status=converged t_fact=0.00s singular_modes=0 mu=1.064e-02
+  NEWTON gauss:0.5:24:probe it= 8 r_F=6.578e-03 r_out=1.530e-05 lambda=1 |dx|max=3.90e-03 lin=gmres+P-A rel=9.1e-02 lits=700 t_lin=1.8s |dx|2=1.85e-01 t_fact=0.00s eta=1.00e-01 mu=1.064e-02 retries=0
+PROBE_ITERATE k=8 r_F=6.578307e-03 r_out=1.529612e-05 merit=6.578325e-03 mu_SER=7.262734e-03 (psitc on, mu0 1, m0 9.057643e-01)
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=ser mu=7.263e-03 prec=pa its=6000 cycles=60 status=max_iterations rel=3.282e-02 t=15.23s pa_singular=0
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=ser prec=pa true: 5.250e-01 5.193e-01 5.177e-01 5.142e-01 4.945e-01 4.806e-01 4.647e-01 4.405e-01 4.176e-01 3.845e-01 3.577e-01 3.456e-01 3.168e-01 3.030e-01 2.944e-01 2.804e-01 2.439e-01 2.171e-01 2.075e-01 2.011e-01 1.867e-01 1.744e-01 1.674e-01 1.617e-01 1.570e-01 1.479e-01 1.383e-01 1.360e-01 1.305e-01 1.220e-01 1.175e-01 1.132e-01 1.110e-01 1.049e-01 9.568e-02 9.354e-02 8.873e-02 8.611e-02 8.465e-02 7.929e-02 7.789e-02 7.711e-02 7.503e-02 7.364e-02 6.845e-02 6.401e-02 6.210e-02 6.108e-02 5.720e-02 5.525e-02 5.415e-02 5.255e-02 5.197e-02 4.851e-02 4.582e-02 4.454e-02 3.986e-02 3.517e-02 3.445e-02 3.282e-02
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=ser mu=7.263e-03 prec=mult1 its=1300 cycles=13 status=converged rel=3.204e-09 t=5.69s pa_singular=0 K=1152 t_assembly=0.788s t_lu=0.077s t_cond=0.012s norm1=3.430e+05 inv_norm1_est=1.421e-01 rcond_est=2.051e-05 min|U_kk|=1.959e+03 max|U_kk|=5.893e+04 zero_pivots=0 applications=1313 t_apply_avg=2.477ms t_host_solve_avg=1.315ms
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=ser prec=mult1 true: 1.537e-01 2.553e-02 5.584e-03 1.323e-03 3.267e-04 8.285e-05 1.906e-05 4.403e-06 9.873e-07 2.491e-07 6.003e-08 1.293e-08 3.204e-09
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=ser mu=7.263e-03 prec=mult2 its=368 cycles=4 status=converged rel=9.421e-10 t=2.63s pa_singular=0 K=2304 t_assembly=1.597s t_lu=0.537s t_cond=0.049s norm1=5.165e+05 inv_norm1_est=8.726e-02 rcond_est=2.219e-05 min|U_kk|=2.957e+02 max|U_kk|=5.887e+04 zero_pivots=0 applications=372 t_apply_avg=5.295ms t_host_solve_avg=4.128ms
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=ser prec=mult2 true: 2.504e-03 6.512e-06 1.730e-08 9.421e-10
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=ser mu=7.263e-03 prec=add1 its=6000 cycles=60 status=max_iterations rel=3.080e-05 t=20.81s pa_singular=0 K=1152 t_assembly=0.785s t_lu=0.055s t_cond=0.007s norm1=3.430e+05 inv_norm1_est=1.421e-01 rcond_est=2.051e-05 min|U_kk|=1.959e+03 max|U_kk|=5.893e+04 zero_pivots=0 applications=6060 t_apply_avg=1.584ms t_host_solve_avg=0.884ms
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=ser prec=add1 true: 4.904e-01 2.916e-01 2.351e-01 1.875e-01 1.603e-01 1.235e-01 1.018e-01 8.301e-02 6.912e-02 5.829e-02 4.815e-02 4.288e-02 3.600e-02 3.160e-02 2.715e-02 2.319e-02 2.031e-02 1.725e-02 1.568e-02 1.416e-02 1.239e-02 1.129e-02 1.007e-02 8.522e-03 7.399e-03 6.636e-03 5.970e-03 5.113e-03 4.680e-03 4.163e-03 3.678e-03 3.060e-03 2.656e-03 2.380e-03 2.097e-03 1.813e-03 1.608e-03 1.385e-03 1.189e-03 1.085e-03 9.781e-04 7.496e-04 6.108e-04 5.003e-04 4.246e-04 3.691e-04 3.273e-04 2.814e-04 2.412e-04 2.149e-04 1.901e-04 1.450e-04 1.207e-04 9.709e-05 7.539e-05 6.223e-05 4.961e-05 4.301e-05 3.776e-05 3.080e-05
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=zero mu=0.000e+00 prec=pa its=6000 cycles=60 status=max_iterations rel=9.086e-01 t=15.18s pa_singular=0
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=zero prec=pa true: 9.421e-01 9.364e-01 9.322e-01 9.291e-01 9.264e-01 9.232e-01 9.211e-01 9.173e-01 9.154e-01 9.149e-01 9.139e-01 9.112e-01 9.104e-01 9.103e-01 9.100e-01 9.096e-01 9.094e-01 9.093e-01 9.090e-01 9.089e-01 9.089e-01 9.089e-01 9.088e-01 9.088e-01 9.087e-01 9.087e-01 9.087e-01 9.087e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01 9.086e-01
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=zero mu=0.000e+00 prec=mult1 its=3600 cycles=36 status=converged rel=7.060e-09 t=14.10s pa_singular=0 K=1152 t_assembly=0.778s t_lu=0.054s t_cond=0.007s norm1=3.428e+05 inv_norm1_est=2.097e-01 rcond_est=1.391e-05 min|U_kk|=1.623e+03 max|U_kk|=5.877e+04 zero_pivots=0 applications=3636 t_apply_avg=2.038ms t_host_solve_avg=0.884ms
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=zero prec=mult1 true: 6.051e-01 4.307e-01 2.348e-01 1.208e-01 6.057e-02 3.407e-02 2.293e-02 1.276e-02 8.095e-03 4.673e-03 2.863e-03 1.781e-03 1.126e-03 6.418e-04 3.530e-04 1.671e-04 9.211e-05 5.515e-05 3.250e-05 2.051e-05 1.342e-05 6.538e-06 3.706e-06 2.260e-06 1.327e-06 8.003e-07 5.185e-07 3.082e-07 1.948e-07 1.219e-07 7.489e-08 4.659e-08 2.948e-08 1.948e-08 1.142e-08 7.060e-09
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=zero mu=0.000e+00 prec=mult2 its=496 cycles=5 status=converged rel=9.514e-10 t=3.80s pa_singular=0 K=2304 t_assembly=1.578s t_lu=0.507s t_cond=0.054s norm1=5.163e+05 inv_norm1_est=1.656e+00 rcond_est=1.170e-06 min|U_kk|=2.394e+02 max|U_kk|=5.870e+04 zero_pivots=0 applications=501 t_apply_avg=5.746ms t_host_solve_avg=4.586ms
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=zero prec=mult2 true: 2.274e-02 2.766e-04 3.824e-06 5.286e-08 9.514e-10
+PROBE case=gauss_0.5_24 stage=0.5 from=0.4375 k=8 mu_kind=zero mu=0.000e+00 prec=add1 its=6000 cycles=60 status=max_iterations rel=3.671e-02 t=21.65s pa_singular=0 K=1152 t_assembly=0.781s t_lu=0.081s t_cond=0.012s norm1=3.428e+05 inv_norm1_est=2.097e-01 rcond_est=1.391e-05 min|U_kk|=1.623e+03 max|U_kk|=5.877e+04 zero_pivots=0 applications=6060 t_apply_avg=1.730ms t_host_solve_avg=1.029ms
+PROBE_CURVE case=gauss_0.5_24 stage=0.5 k=8 mu_kind=zero prec=add1 true: 8.656e-01 8.625e-01 8.619e-01 8.613e-01 8.603e-01 8.584e-01 8.582e-01 8.578e-01 8.474e-01 8.393e-01 8.292e-01 8.214e-01 8.211e-01 8.186e-01 8.156e-01 8.125e-01 8.077e-01 8.064e-01 7.981e-01 7.884e-01 7.868e-01 7.842e-01 7.831e-01 7.723e-01 7.595e-01 7.568e-01 7.506e-01 7.421e-01 7.350e-01 7.247e-01 6.734e-01 5.667e-01 4.773e-01 4.077e-01 3.574e-01 3.105e-01 2.577e-01 2.259e-01 2.043e-01 1.834e-01 1.701e-01 1.559e-01 1.445e-01 1.265e-01 1.092e-01 1.046e-01 1.010e-01 9.382e-02 8.562e-02 7.481e-02 6.957e-02 6.688e-02 6.029e-02 5.702e-02 5.144e-02 4.783e-02 4.699e-02 4.323e-02 3.920e-02 3.671e-02
+PROBE_DONE case=gauss_0.5_24 stage=0.5 k=8 t=153.7s
+SUMMARY_JSON /home/sesquerre/Projects/MacroFlow3D/.claude/worktrees/agent-a1e617fafafb3e3f0/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/n7c_local/probe/gauss_0.5_24_k8.json
+STATUS ok

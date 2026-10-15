@@ -1,0 +1,199 @@
+{
+ "N": 24,
+ "case_dir": "/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24",
+ "case_line": "CASE field=control2d eps=0.25 N=24 cand=i1o4 | r_F=2.790e-15 its=2 | e_v=5.247e-04 e_psi=2.667e-03 e_i=(4.026e-04,4.380e-13) e_div=6.894e-14 min_c=7.390e-01 p0.1=7.390e-01 p1=7.521e-01 p5=7.926e-01 p50=1.001e+00 | t=0.1 | e_psi1=2.667e-03 e_psi2=5.261e-12",
+ "ceiling_line": "CASE field=control2d eps=0.25 N=24 cand=oracle_fd4 | r_F=nan its=nan | e_v=3.153e-04 e_psi=3.287e-18 e_i=(3.208e-04,4.371e-28) e_div=3.344e-15 min_c=7.390e-01 p0.1=7.390e-01 p1=7.532e-01 p5=7.927e-01 p50=1.001e+00 | t=0.0 | e_psi1=3.287e-18 e_psi2=0.000e+00",
+ "command": "/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.25_24.json",
+ "continuation": {
+  "bisections": 0,
+  "eps_accepted": 0.25,
+  "floor_reached": false,
+  "path": "0.25",
+  "seconds": 0.121669893,
+  "stages": [
+   {
+    "accepted": true,
+    "eps": 0.25,
+    "final_attempt": false,
+    "from_eps": 0.0,
+    "newton": {
+     "gmres": {
+      "failures": 0,
+      "its_max": 62,
+      "its_median": 50.5,
+      "its_total": 101,
+      "rel_max": 7.865214386033493e-14,
+      "steps": 2
+     },
+     "hist_r_F": [
+      2.641685705966339,
+      4.939301662076416e-13,
+      2.789720349555238e-15
+     ],
+     "hist_r_out": [
+      0.08375907185345786,
+      2.4000035345130756e-14,
+      2.085261158573834e-16
+     ],
+     "its": 2,
+     "linear_iterations_max": 62,
+     "linear_iterations_total": 101,
+     "r_F": 2.789720349555238e-15,
+     "r_out": 2.085261158573834e-16,
+     "seconds": 0.118696395,
+     "status": "converged",
+     "steps": [
+      {
+       "dx_l2": 2.4826405105191456,
+       "dx_max": 0.04938402998574021,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 39,
+       "lin_rec": 7.853636160649176e-14,
+       "lin_rel": 7.865214386033493e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 4.939301662076416e-13,
+       "r_out": 2.4000035345130756e-14,
+       "t_fact": 0.001461211,
+       "t_lin": 0.038486343
+      },
+      {
+       "dx_l2": 1.5262140982117789e-12,
+       "dx_max": 4.4653501517504396e-14,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 62,
+       "lin_rec": 7.491347740421753e-14,
+       "lin_rel": 7.672940952054109e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 2.789720349555238e-15,
+       "r_out": 2.085261158573834e-16,
+       "t_fact": 0.001414186,
+       "t_lin": 0.076897146
+      }
+     ]
+    },
+    "warm_start": false
+   }
+  ],
+  "status": "converged"
+ },
+ "eps": 0.25,
+ "exit_code": 0,
+ "extra": {
+  "inlet_j0_cand": 0.001084658437447308,
+  "inlet_j0_oracle": 0.0008643265152524209,
+  "inlet_j1_cand": 0.04770120315673564,
+  "inlet_j1_oracle": 0.04771849488005859,
+  "inlet_j1_vD_cand": 0.00025044916994942744,
+  "inlet_j1_vD_oracle": 0.000223348732461166,
+  "min_c_over_vrms": 0.7288985553302146,
+  "min_vD_over_vrms": 0.7289337155804961,
+  "outlet_cand": 2.085261158573834e-16,
+  "outlet_oracle": 0.0009934596051323116
+ },
+ "field": "control2d",
+ "memory": {
+  "free_min": 33539227648,
+  "peak_device_bytes": 550502400,
+  "total_device": 34089730048,
+  "workspaces_bytes": 33454751
+ },
+ "metrics": {
+  "i1o4": {
+   "a_psi1": 5.7459258022928856e-05,
+   "a_psi2": 1.1335925872600129e-13,
+   "den_psi": [
+    0.021545360872397,
+    0.021545360872397
+   ],
+   "e_div": 6.894190027578184e-14,
+   "e_i1": 0.00040262422936869713,
+   "e_i2": 4.3803486399901064e-13,
+   "e_psi": 0.0026668969883230503,
+   "e_psi1": 0.0026668969883230503,
+   "e_psi2": 5.261423069094765e-12,
+   "e_v": 0.0005246774230004589,
+   "min_c": 0.7390004326264952,
+   "nonfinite": 0,
+   "p0.1": 0.7390004326284766,
+   "p1": 0.7521301669554746,
+   "p5": 0.7926127604322272,
+   "p50": 1.0005373727790796,
+   "vD_min": 0.739036080166169,
+   "vD_p": [
+    0.739036080166169,
+    0.7531269287908682,
+    0.7926210725387478,
+    1.0005560622196614
+   ],
+   "v_rms": 1.013859099078203
+  },
+  "oracle_fd4": {
+   "a_psi1": 7.081978934950617e-20,
+   "a_psi2": 0.0,
+   "den_psi": [
+    0.021545360872397,
+    0.021545360872397
+   ],
+   "e_div": 3.3443260867954758e-15,
+   "e_i1": 0.00032081188191446675,
+   "e_i2": 4.37050885305105e-28,
+   "e_psi": 3.28700873329244e-18,
+   "e_psi1": 3.28700873329244e-18,
+   "e_psi2": 0.0,
+   "e_v": 0.0003153262778258059,
+   "min_c": 0.7390367697504998,
+   "nonfinite": 0,
+   "p0.1": 0.7390367697550211,
+   "p1": 0.7531650252389576,
+   "p5": 0.7926524255778483,
+   "p50": 1.0005537427634774,
+   "vD_min": 0.739036080166169,
+   "vD_p": [
+    0.739036080166169,
+    0.7531269287908682,
+    0.7926210725387478,
+    1.0005560622196614
+   ],
+   "v_rms": 1.013859099078203
+  }
+ },
+ "mode": "proto",
+ "phases": [
+  {
+   "free_after": 33585364992,
+   "free_before": 33585364992,
+   "phase": "load",
+   "seconds": 0.006765337
+  },
+  {
+   "free_after": 33539227648,
+   "free_before": 33585364992,
+   "phase": "prepare",
+   "seconds": 0.051069701
+  },
+  {
+   "free_after": 33539227648,
+   "free_before": 33539227648,
+   "phase": "solve",
+   "seconds": 0.12179055
+  },
+  {
+   "free_after": 33539227648,
+   "free_before": 33539227648,
+   "phase": "metrics",
+   "seconds": 0.001403127
+  }
+ ],
+ "status": "converged",
+ "timing": {
+  "load": 0.006765337,
+  "metrics": 0.001403127,
+  "prepare": 0.051069701,
+  "solve": 0.12179055,
+  "total": 0.181295513
+ }
+}

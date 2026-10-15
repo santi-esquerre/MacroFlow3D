@@ -1,0 +1,41 @@
+{
+ "N": 32,
+ "command": "/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --sf19-crosscheck /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/N32.json",
+ "crosscheck": {
+  "G": [
+   0.990283868209767,
+   0.0002619437593660128,
+   -0.004531923802058113
+  ],
+  "inlet_mean": 1.000000000000001,
+  "v1_face_max_rel": 0.002387348830355299,
+  "v1_face_rms_rel": 0.0010009334679084447,
+  "v1_face_rms_rel_avg": 0.0008976796982599888,
+  "v1_spline_vs_uface_rms_rel": 0.0015373520520401457,
+  "vperp_ref_rms": 0.06663486209771301,
+  "vperp_vertex_max": 0.001435665485704749,
+  "vperp_vertex_rms": 0.0006538296647996429
+ },
+ "dir": "/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_32",
+ "exit_code": 0,
+ "memory": {
+  "free_min": 33560199168,
+  "peak_device_bytes": 529530880,
+  "total_device": 34089730048,
+  "workspaces_bytes": 0
+ },
+ "mode": "sf19-crosscheck",
+ "phases": [
+  {
+   "free_after": 33560199168,
+   "free_before": 33585364992,
+   "phase": "setup",
+   "seconds": 1.025686678
+  }
+ ],
+ "status": "ok",
+ "timing": {
+  "setup": 1.025686678,
+  "total": 1.027825263
+ }
+}

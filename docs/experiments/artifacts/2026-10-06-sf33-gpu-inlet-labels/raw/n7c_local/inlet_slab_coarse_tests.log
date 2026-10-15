@@ -1,0 +1,84 @@
+=== SF-33 N7c: (1) coarse basis and transfers ===
+[PASS] coarse basis, profiles 1: v_c = definition, prolong(e_c) = v_c, V^T V = block profile Gram  K=288 def 0.00e+00 prolong 0.00e+00 gram 0.00e+00
+[PASS] coarse basis, profiles 2: v_c = definition, prolong(e_c) = v_c, V^T V = block profile Gram  K=576 def 0.00e+00 prolong 0.00e+00 gram 0.00e+00
+=== SF-33 N7c: (2) Galerkin matrix vs explicit V^T A V ===
+[PASS] E = V^T (J + mu D) V vs explicit host product (3-D state, mu = 0.7), profiles 1  K=288 max|E - V^T A V|/max|E| = 0.00e+00 (max|E| 7.055e+03); t_asm 0.089s t_lu 0.001s rcond_est 2.683e-02 min/max|U_kk| 2.370e+03/6.782e+03 zero_pivots 0
+[PASS] E = V^T (J + mu D) V vs explicit host product (3-D state, mu = 0.7), profiles 2  K=576 max|E - V^T A V|/max|E| = 1.29e-16 (max|E| 7.055e+03); t_asm 0.124s t_lu 0.010s rcond_est 1.013e-03 min/max|U_kk| 1.969e+02/6.782e+03 zero_pivots 0
+=== SF-33 N7c: (3) k = 1: P-A + coarse ===
+[INFO] K1 profiles=1 K=288 rcond_est(E)=3.565e-03 min/max|U_kk|=5.631e+02/4.068e+03 mult |M^-1 J x - x|/|x| = 6.910e-15  add |M^-1 J x - x|/|x| = 6.352e+00
+[PASS] k = 1, u = 0, profiles 1: P-A + coarse (mult) applied to J x returns x to 1e-12  6.910e-15
+[PASS] k = 1, u = 0, profiles 1: additive variant finite (value reported, not exact by construction)  6.352e+00
+[INFO] K1 profiles=2 K=576 rcond_est(E)=4.532e-04 min/max|U_kk|=8.948e+01/4.068e+03 mult |M^-1 J x - x|/|x| = 7.391e-15  add |M^-1 J x - x|/|x| = 1.624e+01
+[PASS] k = 1, u = 0, profiles 2: P-A + coarse (mult) applied to J x returns x to 1e-12  7.391e-15
+[PASS] k = 1, u = 0, profiles 2: additive variant finite (value reported, not exact by construction)  1.624e+01
+=== SF-33 N7c: (4) host LU and condition estimate ===
+[PASS] host LU: random K x K system (K = 1152) and its transpose solved to 1e-12 relative residual  n=1152 rel resid 3.87e-14, transpose 3.12e-14, t_lu 0.249s
+[PASS] Hager-Higham estimate of ||A^-1||_1 within [exact/10, exact] (n = 200)  est 1.581970e+01 exact 1.581970e+01 ratio 1.0000
+[INFO] LU equal rows: zero_pivots=1 (roundoff-small pivot expected)
+[PASS] host LU: an exactly singular matrix (zero column) reports a zero pivot  zero_pivots=1
+=== SF-33 N7c: (5) Newton hook ===
+[PASS] coarse = off: history bitwise equal to a solver without prepare_coarse
+    |   NEWTON exact_pair_mult it= 0 r_F=3.504e+00 r_out=0.000e+00
+    |     COARSE build mode=mult profiles=1 K=288 t_assembly=0.066s t_lu=0.001s t_cond=0.000s norm1=1.421e+04 inv_norm1_est=3.127e-02 rcond_est=2.251e-03 min|U_kk|=5.093e+02 max|U_kk|=4.613e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=4 t_apply_avg=0.485ms t_host_solve_avg=0.061ms
+    |     LINEAR gmres+P-A+CC(mult,1) its=3 rel=1.9e-03 t=0.00s cycles=1 reorth=3 rec=1.9e-03 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_mult it= 1 r_F=5.368e-01 r_out=1.924e-15 lambda=1 |dx|max=3.96e-01 lin=gmres+P-A+CC(mult,1) rel=1.9e-03 lits=3 t_lin=0.0s |dx|2=1.00e+01 t_fact=0.07s eta=1.00e-01
+    |     COARSE build mode=mult profiles=1 K=288 t_assembly=0.054s t_lu=0.001s t_cond=0.000s norm1=7.510e+04 inv_norm1_est=1.199e-01 rcond_est=1.111e-04 min|U_kk|=1.089e+02 max|U_kk|=1.534e+04 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=8 t_apply_avg=0.417ms t_host_solve_avg=0.060ms
+    |     LINEAR gmres+P-A+CC(mult,1) its=7 rel=1.1e-03 t=0.01s cycles=1 reorth=7 rec=1.1e-03 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_mult it= 2 r_F=3.365e-01 r_out=1.052e-15 lambda=1 |dx|max=9.88e-02 lin=gmres+P-A+CC(mult,1) rel=1.1e-03 lits=7 t_lin=0.0s |dx|2=2.11e+00 t_fact=0.06s eta=2.11e-02
+    |     COARSE build mode=mult profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.508e+04 inv_norm1_est=7.839e-02 rcond_est=2.316e-04 min|U_kk|=1.454e+02 max|U_kk|=9.957e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=5 t_apply_avg=0.409ms t_host_solve_avg=0.058ms
+    |     LINEAR gmres+P-A+CC(mult,1) its=4 rel=3.4e-03 t=0.00s cycles=1 reorth=4 rec=3.4e-03 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_mult it= 3 r_F=2.206e-02 r_out=9.124e-16 lambda=1 |dx|max=3.27e-02 lin=gmres+P-A+CC(mult,1) rel=3.4e-03 lits=4 t_lin=0.0s |dx|2=7.13e-01 t_fact=0.06s eta=1.00e-01
+    |     COARSE build mode=mult profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.124e+04 inv_norm1_est=1.004e-01 rcond_est=1.945e-04 min|U_kk|=2.166e+02 max|U_kk|=7.479e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=5 t_apply_avg=0.415ms t_host_solve_avg=0.064ms
+    |     LINEAR gmres+P-A+CC(mult,1) its=4 rel=6.2e-05 t=0.00s cycles=1 reorth=4 rec=6.2e-05 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_mult it= 4 r_F=1.570e-04 r_out=8.218e-16 lambda=1 |dx|max=1.34e-03 lin=gmres+P-A+CC(mult,1) rel=6.2e-05 lits=4 t_lin=0.0s |dx|2=1.89e-02 t_fact=0.06s eta=3.87e-03
+    |     COARSE build mode=mult profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.111e+04 inv_norm1_est=1.002e-01 rcond_est=1.953e-04 min|U_kk|=1.622e+02 max|U_kk|=7.453e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=6 t_apply_avg=0.407ms t_host_solve_avg=0.057ms
+    |     LINEAR gmres+P-A+CC(mult,1) its=5 rel=4.5e-06 t=0.00s cycles=1 reorth=5 rec=4.5e-06 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_mult it= 5 r_F=8.582e-09 r_out=7.414e-16 lambda=1 |dx|max=2.84e-05 lin=gmres+P-A+CC(mult,1) rel=4.5e-06 lits=5 t_lin=0.0s |dx|2=4.76e-04 t_fact=0.06s eta=4.56e-05
+    |     COARSE build mode=mult profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.111e+04 inv_norm1_est=1.002e-01 rcond_est=1.953e-04 min|U_kk|=1.621e+02 max|U_kk|=7.456e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=19 t_apply_avg=0.430ms t_host_solve_avg=0.058ms
+    |     LINEAR gmres+P-A+CC(mult,1) its=18 rel=4.9e-07 t=0.01s cycles=1 reorth=18 rec=4.9e-07 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_mult it= 6 r_F=8.443e-15 r_out=8.736e-16 lambda=1 |dx|max=1.85e-09 lin=gmres+P-A+CC(mult,1) rel=4.9e-07 lits=18 t_lin=0.0s |dx|2=4.06e-08 t_fact=0.06s eta=5.83e-06
+[PASS] Newton hook coarse = mult, exact pair N = 12 from x = 0: converged, COARSE lines per step  status converged its 6 r_F 8.443e-15 r_out 8.736e-16 max|u-u_ex| 6.828e-15 GMRES total 41 (plain P-A: 6 Newton its)
+    |   NEWTON exact_pair_add it= 0 r_F=3.504e+00 r_out=0.000e+00
+    |     COARSE build mode=add profiles=1 K=288 t_assembly=0.066s t_lu=0.001s t_cond=0.000s norm1=1.421e+04 inv_norm1_est=3.127e-02 rcond_est=2.251e-03 min|U_kk|=5.093e+02 max|U_kk|=4.613e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=5 t_apply_avg=0.283ms t_host_solve_avg=0.056ms
+    |     LINEAR gmres+P-A+CC(add,1) its=4 rel=4.1e-03 t=0.00s cycles=1 reorth=4 rec=4.1e-03 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_add it= 1 r_F=5.379e-01 r_out=1.575e-15 lambda=1 |dx|max=3.96e-01 lin=gmres+P-A+CC(add,1) rel=4.1e-03 lits=4 t_lin=0.0s |dx|2=1.01e+01 t_fact=0.07s eta=1.00e-01
+    |     COARSE build mode=add profiles=1 K=288 t_assembly=0.054s t_lu=0.001s t_cond=0.000s norm1=7.491e+04 inv_norm1_est=1.196e-01 rcond_est=1.117e-04 min|U_kk|=1.094e+02 max|U_kk|=1.521e+04 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=10 t_apply_avg=0.277ms t_host_solve_avg=0.054ms
+    |     LINEAR gmres+P-A+CC(add,1) its=9 rel=7.1e-04 t=0.01s cycles=1 reorth=9 rec=7.1e-04 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_add it= 2 r_F=3.411e-01 r_out=1.205e-15 lambda=1 |dx|max=9.85e-02 lin=gmres+P-A+CC(add,1) rel=7.1e-04 lits=9 t_lin=0.0s |dx|2=2.12e+00 t_fact=0.06s eta=2.12e-02
+    |     COARSE build mode=add profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.551e+04 inv_norm1_est=7.963e-02 rcond_est=2.262e-04 min|U_kk|=1.489e+02 max|U_kk|=8.788e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=6 t_apply_avg=0.285ms t_host_solve_avg=0.054ms
+    |     LINEAR gmres+P-A+CC(add,1) its=5 rel=3.3e-03 t=0.00s cycles=1 reorth=5 rec=3.3e-03 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_add it= 3 r_F=2.309e-02 r_out=7.888e-16 lambda=1 |dx|max=3.51e-02 lin=gmres+P-A+CC(add,1) rel=3.3e-03 lits=5 t_lin=0.0s |dx|2=7.55e-01 t_fact=0.06s eta=1.00e-01
+    |     COARSE build mode=add profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.160e+04 inv_norm1_est=1.007e-01 rcond_est=1.924e-04 min|U_kk|=2.167e+02 max|U_kk|=7.605e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=8 t_apply_avg=0.279ms t_host_solve_avg=0.055ms
+    |     LINEAR gmres+P-A+CC(add,1) its=7 rel=1.7e-04 t=0.00s cycles=1 reorth=7 rec=1.7e-04 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_add it= 4 r_F=1.427e-04 r_out=8.972e-16 lambda=1 |dx|max=2.98e-03 lin=gmres+P-A+CC(add,1) rel=1.7e-04 lits=7 t_lin=0.0s |dx|2=5.30e-02 t_fact=0.06s eta=4.13e-03
+    |     COARSE build mode=add profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.111e+04 inv_norm1_est=1.002e-01 rcond_est=1.953e-04 min|U_kk|=1.622e+02 max|U_kk|=7.453e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=15 t_apply_avg=0.285ms t_host_solve_avg=0.054ms
+    |     LINEAR gmres+P-A+CC(add,1) its=14 rel=1.6e-06 t=0.01s cycles=1 reorth=13 rec=1.6e-06 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_add it= 5 r_F=8.237e-09 r_out=8.014e-16 lambda=1 |dx|max=3.10e-05 lin=gmres+P-A+CC(add,1) rel=1.6e-06 lits=14 t_lin=0.0s |dx|2=5.12e-04 t_fact=0.06s eta=3.44e-05
+    |     COARSE build mode=add profiles=1 K=288 t_assembly=0.053s t_lu=0.001s t_cond=0.000s norm1=5.111e+04 inv_norm1_est=1.002e-01 rcond_est=1.953e-04 min|U_kk|=1.621e+02 max|U_kk|=7.456e+03 zero_pivots=0 mu=0.000e+00
+    |     COARSE apply applications=50 t_apply_avg=0.334ms t_host_solve_avg=0.056ms
+    |     LINEAR gmres+P-A+CC(add,1) its=49 rel=5.9e-07 t=0.04s cycles=1 reorth=49 rec=5.9e-07 status=converged t_fact=0.00s singular_modes=0
+    |   NEWTON exact_pair_add it= 6 r_F=9.015e-15 r_out=8.208e-16 lambda=1 |dx|max=1.72e-09 lin=gmres+P-A+CC(add,1) rel=5.9e-07 lits=49 t_lin=0.0s |dx|2=2.68e-08 t_fact=0.06s eta=6.07e-06
+[PASS] Newton hook coarse = add, exact pair N = 12 from x = 0: converged, COARSE lines per step  status converged its 6 r_F 9.015e-15 r_out 8.208e-16 max|u-u_ex| 6.939e-15 GMRES total 88 (plain P-A: 6 Newton its)
+=== SF-33 N7c: (6) colored assembly and banded LU ===
+[PASS] colored assembly == direct assembly bitwise, N = 12, profiles 1  K=288 p=6 applies colored 72 vs direct 288; max|E_col - E_dir| = 0.0e+00, banded copy 0.0e+00; t_asm direct 0.057s colored 0.015s
+[PASS] banded LU (folded ordering) == dense LU through the mult preconditioner, N = 12, profiles 1  mult apply banded vs dense 1.73e-16; rcond dense 2.683e-02 banded 2.683e-02; kl 119 ku 119; t_lu dense 0.001s banded 0.001s; min/max|U_kk| banded 2.370e+03/6.701e+03
+[PASS] colored assembly == direct assembly bitwise, N = 12, profiles 2  K=576 p=6 applies colored 144 vs direct 576; max|E_col - E_dir| = 0.0e+00, banded copy 0.0e+00; t_asm direct 0.116s colored 0.030s
+[PASS] banded LU (folded ordering) == dense LU through the mult preconditioner, N = 12, profiles 2  mult apply banded vs dense 1.68e-15; rcond dense 1.013e-03 banded 1.013e-03; kl 239 ku 239; t_lu dense 0.010s banded 0.007s; min/max|U_kk| banded 1.969e+02/6.701e+03
+[PASS] colored assembly == direct assembly bitwise, N = 16, profiles 1  K=512 p=8 applies colored 128 vs direct 512; max|E_col - E_dir| = 0.0e+00, banded copy 0.0e+00; t_asm direct 0.109s colored 0.028s
+[PASS] banded LU (folded ordering) == dense LU through the mult preconditioner, N = 16, profiles 1  mult apply banded vs dense 1.85e-16; rcond dense 2.299e-02 banded 2.299e-02; kl 159 ku 159; t_lu dense 0.006s banded 0.003s; min/max|U_kk| banded 5.564e+03/1.618e+04
+[PASS] colored assembly == direct assembly bitwise, N = 16, profiles 2  K=1024 p=8 applies colored 256 vs direct 1024; max|E_col - E_dir| = 0.0e+00, banded copy 0.0e+00; t_asm direct 0.221s colored 0.056s
+[PASS] banded LU (folded ordering) == dense LU through the mult preconditioner, N = 16, profiles 2  mult apply banded vs dense 1.33e-15; rcond dense 9.205e-04 banded 9.205e-04; kl 319 ku 319; t_lu dense 0.066s banded 0.022s; min/max|U_kk| banded 4.564e+02/1.618e+04
+[PASS] banded LU vs dense LU on a random banded matrix (n = 600, kl = 37, ku = 23)  solve 1.66e-13 transpose 2.84e-13
+
+=== inlet_slab_coarse: 23 checks, PASS (2.9 s) ===

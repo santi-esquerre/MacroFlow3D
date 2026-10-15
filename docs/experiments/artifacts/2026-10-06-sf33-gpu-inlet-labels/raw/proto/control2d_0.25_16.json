@@ -1,0 +1,215 @@
+{
+ "N": 16,
+ "case_dir": "/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_16",
+ "case_line": "CASE field=control2d eps=0.25 N=16 cand=i1o4 | r_F=1.217e-15 its=2 | e_v=3.067e-03 e_psi=3.220e-02 e_i=(2.304e-03,4.180e-13) e_div=8.426e-14 min_c=7.405e-01 p0.1=7.405e-01 p1=7.461e-01 p5=7.884e-01 p50=1.000e+00 | t=0.1 | e_psi1=3.220e-02 e_psi2=5.175e-12",
+ "ceiling_line": "CASE field=control2d eps=0.25 N=16 cand=oracle_fd4 | r_F=nan its=nan | e_v=1.715e-03 e_psi=0.000e+00 e_i=(1.741e-03,3.845e-28) e_div=3.095e-15 min_c=7.401e-01 p0.1=7.401e-01 p1=7.563e-01 p5=7.888e-01 p50=9.999e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=0.000e+00",
+ "command": "/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.25_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.25_16.json",
+ "continuation": {
+  "bisections": 0,
+  "eps_accepted": 0.25,
+  "floor_reached": false,
+  "path": "0.25",
+  "seconds": 0.051758627,
+  "stages": [
+   {
+    "accepted": true,
+    "eps": 0.25,
+    "final_attempt": false,
+    "from_eps": 0.0,
+    "newton": {
+     "gmres": {
+      "failures": 0,
+      "its_max": 48,
+      "its_median": 38.0,
+      "its_total": 76,
+      "rel_max": 9.641589590475514e-14,
+      "steps": 2
+     },
+     "hist_r_F": [
+      1.8552819917212642,
+      2.896249617857636e-13,
+      1.2168026041979161e-15
+     ],
+     "hist_r_out": [
+      0.0837473318335354,
+      3.311372894316411e-14,
+      1.3134956667188482e-16
+     ],
+     "its": 2,
+     "linear_iterations_max": 48,
+     "linear_iterations_total": 76,
+     "r_F": 1.2168026041979161e-15,
+     "r_out": 1.3134956667188482e-16,
+     "seconds": 0.050586528,
+     "status": "converged",
+     "steps": [
+      {
+       "dx_l2": 1.3704471106266936,
+       "dx_max": 0.04946666300257016,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 28,
+       "lin_rec": 9.639519449699931e-14,
+       "lin_rel": 9.641589590475514e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 2.896249617857636e-13,
+       "r_out": 3.311372894316411e-14,
+       "t_fact": 0.000909523,
+       "t_lin": 0.014323321
+      },
+      {
+       "dx_l2": 1.3794285314050138e-12,
+       "dx_max": 6.672739880543772e-14,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 48,
+       "lin_rec": 6.276667895544026e-14,
+       "lin_rel": 6.40993492777695e-14,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 1.2168026041979161e-15,
+       "r_out": 1.3134956667188482e-16,
+       "t_fact": 0.000856824,
+       "t_lin": 0.034063057
+      }
+     ]
+    },
+    "warm_start": false
+   }
+  ],
+  "status": "converged"
+ },
+ "eps": 0.25,
+ "exit_code": 0,
+ "extra": {
+  "inlet_j0_cand": 0.005913376278755172,
+  "inlet_j0_oracle": 0.004364443859979219,
+  "inlet_j1_cand": 0.0742235467717379,
+  "inlet_j1_oracle": 0.07418649436282279,
+  "inlet_j1_vD_cand": 0.001785485650834096,
+  "inlet_j1_vD_oracle": 0.0011801628719381254,
+  "min_c_over_vrms": 0.730247362618233,
+  "min_vD_over_vrms": 0.7299033974829908,
+  "outlet_cand": 1.3134956667188482e-16,
+  "outlet_oracle": 0.004412185719957295
+ },
+ "field": "control2d",
+ "fielddiff": {
+  "max_abs_diff_u1": 3.122502256758253e-16,
+  "max_abs_diff_u2": 8.116762604032622e-17,
+  "max_abs_u_proto": [
+   0.049466663002571735,
+   4.0967229608668276e-13
+  ],
+  "max_rel_diff_joint": 6.31233656613529e-15,
+  "max_rel_diff_u1": 6.31233656613529e-15,
+  "max_rel_diff_u2": 0.00019812817907304117,
+  "proto_its": 2,
+  "proto_path": "0.25",
+  "proto_r_F": 1.5317887521831891e-15,
+  "proto_status": "converged",
+  "solution_dir": "/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.25_16_i1o4"
+ },
+ "memory": {
+  "free_min": 33568587776,
+  "peak_device_bytes": 521142272,
+  "total_device": 34089730048,
+  "workspaces_bytes": 10018687
+ },
+ "metrics": {
+  "i1o4": {
+   "a_psi1": 0.0007005627949840736,
+   "a_psi2": 1.1257518846193854e-13,
+   "den_psi": [
+    0.02175376266954933,
+    0.02175376266954933
+   ],
+   "e_div": 8.426309568003269e-14,
+   "e_i1": 0.002303811807155178,
+   "e_i2": 4.180308908507764e-13,
+   "e_psi": 0.03220421246779131,
+   "e_psi1": 0.03220421246779131,
+   "e_psi2": 5.17497548226542e-12,
+   "e_v": 0.003067326431382152,
+   "min_c": 0.7404717207648681,
+   "nonfinite": 0,
+   "p0.1": 0.7404717207660064,
+   "p1": 0.746057578075557,
+   "p5": 0.7884370534384778,
+   "p50": 1.000008150618784,
+   "vD_min": 0.7401229396961317,
+   "vD_p": [
+    0.7401229396961317,
+    0.7563218815643915,
+    0.789699271798032,
+    1.0000900782330615
+   ],
+   "v_rms": 1.0140012257079254
+  },
+  "oracle_fd4": {
+   "a_psi1": 0.0,
+   "a_psi2": 0.0,
+   "den_psi": [
+    0.02175376266954933,
+    0.02175376266954933
+   ],
+   "e_div": 3.095171694988529e-15,
+   "e_i1": 0.0017413969614006647,
+   "e_i2": 3.8450645228132457e-28,
+   "e_psi": 0.0,
+   "e_psi1": 0.0,
+   "e_psi2": 0.0,
+   "e_v": 0.0017152553945885233,
+   "min_c": 0.7401276575403399,
+   "nonfinite": 0,
+   "p0.1": 0.7401276575433586,
+   "p1": 0.7563014178558994,
+   "p5": 0.7888037811903795,
+   "p50": 0.9999460958973447,
+   "vD_min": 0.7401229396961317,
+   "vD_p": [
+    0.7401229396961317,
+    0.7563218815643915,
+    0.789699271798032,
+    1.0000900782330615
+   ],
+   "v_rms": 1.0140012257079254
+  }
+ },
+ "mode": "proto",
+ "phases": [
+  {
+   "free_after": 33585364992,
+   "free_before": 33585364992,
+   "phase": "load",
+   "seconds": 0.002738028
+  },
+  {
+   "free_after": 33568587776,
+   "free_before": 33585364992,
+   "phase": "prepare",
+   "seconds": 0.036044232
+  },
+  {
+   "free_after": 33568587776,
+   "free_before": 33568587776,
+   "phase": "solve",
+   "seconds": 0.051866269
+  },
+  {
+   "free_after": 33568587776,
+   "free_before": 33568587776,
+   "phase": "metrics",
+   "seconds": 0.001266982
+  }
+ ],
+ "status": "converged",
+ "timing": {
+  "load": 0.002738028,
+  "metrics": 0.001266982,
+  "prepare": 0.036044232,
+  "solve": 0.051866269,
+  "total": 0.092889457
+ }
+}

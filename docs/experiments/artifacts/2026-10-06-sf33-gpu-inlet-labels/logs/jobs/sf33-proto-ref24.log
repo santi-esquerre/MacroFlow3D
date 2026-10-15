@@ -1,0 +1,23 @@
+[2026-10-06T21:00:02Z] job=sf33-proto-ref24 session=macroflow3d-SF-33-sf33-proto-ref24 started
+[2026-10-06T21:00:02Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T21:00:02Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T21:00:02Z] command=cd docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/scripts && mkdir -p ~/sf33_ref24 && echo "ref24 start $(date -u +%FT%TZ)" && pids="" && for c in gauss:0.25:24:i1o4 gauss_ch:0.25:24:i1o4 control2d:0.5:24:i1o4 gauss:0.5:24:i1o4 gauss_ch:0.5:24:i1o4; do tag=$(echo $c | tr : _); echo "+ python3 candidate_i.py $c --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 (3 threads) > ~/sf33_ref24/candidate_i_24_$tag.log"; OMP_NUM_THREADS=3 OPENBLAS_NUM_THREADS=3 MKL_NUM_THREADS=3 python3 candidate_i.py $c --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 > ~/sf33_ref24/candidate_i_24_$tag.log 2>&1 & pids="$pids $!"; done; rc=0; for p in $pids; do wait $p; r=$?; echo "pid $p exit $r $(date -u +%FT%TZ)"; [ $r -ne 0 ] && rc=$r; done; cat ~/sf33_ref24/candidate_i_24_*.log > ~/sf33_ref24/candidate_i_24.log; cd ../../2026-10-06-sf33-gpu-inlet-labels/scripts && python3 export_proto.py --solutions ~/sf33_ref24/*.npz --out ../exports/solutions; r=$?; echo "export_solutions exit $r"; [ $r -ne 0 ] && rc=$r; echo "ref24 end $(date -u +%FT%TZ) rc=$rc"; exit $rc
+ref24 start 2026-10-06T21:00:03Z
++ python3 candidate_i.py gauss:0.25:24:i1o4 --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 (3 threads) > ~/sf33_ref24/candidate_i_24_gauss_0.25_24_i1o4.log
++ python3 candidate_i.py gauss_ch:0.25:24:i1o4 --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 (3 threads) > ~/sf33_ref24/candidate_i_24_gauss_ch_0.25_24_i1o4.log
++ python3 candidate_i.py control2d:0.5:24:i1o4 --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 (3 threads) > ~/sf33_ref24/candidate_i_24_control2d_0.5_24_i1o4.log
++ python3 candidate_i.py gauss:0.5:24:i1o4 --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 (3 threads) > ~/sf33_ref24/candidate_i_24_gauss_0.5_24_i1o4.log
++ python3 candidate_i.py gauss_ch:0.5:24:i1o4 --direct-max 32 --reuse-lu 0 --save ~/sf33_ref24 (3 threads) > ~/sf33_ref24/candidate_i_24_gauss_ch_0.5_24_i1o4.log
+pid 225707 exit 0 2026-10-06T21:31:19Z
+pid 225711 exit 0 2026-10-06T21:32:32Z
+pid 225715 exit 0 2026-10-06T21:32:32Z
+pid 225719 exit 0 2026-10-06T22:01:27Z
+pid 225723 exit 0 2026-10-06T22:01:27Z
+SOLUTION control2d_0.5_24_i1o4 status=converged its=2 r_F=6.582e-15 r_out=5.174e-16 path=0.25->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.5_24_i1o4
+SOLUTION gauss_0.25_24_i1o4 status=converged its=7 r_F=6.363e-15 r_out=3.608e-16 path=0.25(fail)->0.125->0.25 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.25_24_i1o4
+SOLUTION gauss_0.5_24_i1o4 status=converged its=8 r_F=1.224e-14 r_out=7.597e-16 path=0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.5_24_i1o4
+SOLUTION gauss_ch_0.25_24_i1o4 status=converged its=7 r_F=8.914e-15 r_out=5.296e-16 path=0.25(fail)->0.125->0.25 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_0.25_24_i1o4
+SOLUTION gauss_ch_0.5_24_i1o4 status=converged its=8 r_F=1.613e-14 r_out=1.179e-15 path=0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5 -> docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_0.5_24_i1o4
+export_solutions exit 0
+ref24 end 2026-10-06T22:01:28Z rc=0
+[2026-10-06T22:01:28Z] job=sf33-proto-ref24 finished exit=0

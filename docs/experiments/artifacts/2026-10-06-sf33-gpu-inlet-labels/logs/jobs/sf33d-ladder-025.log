@@ -1,0 +1,136 @@
+[2026-10-07T10:26:02Z] job=sf33d-ladder-025 session=macroflow3d-SF-33-sf33d-ladder-025 started
+[2026-10-07T10:26:02Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-07T10:26:02Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-07T10:26:02Z] command=env LADDER_DIR=ladder_0.25_c4 bash docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_campaign_b.sh build/v100-release ladder
+run_campaign_b.sh: part=ladder bin=/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-07T10:26:03Z
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25_c4/N32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log rc=0 STATUS converged wall=17s max_rss_kB=690604 end=2026-10-07T10:26:20Z
+    SOLVER N=32 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded psitc_h_ref=0.0625 psitc_mu0_eff=2.500000e-01
+    SOLVER_COARSE mode=mult profiles=2 K=4096 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=gaussian eps=0.25 N=32 cand=i1o4 continuation path: 0.25
+    ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=1.227e-09 non_ok=0 t_trace=0.84s t_labels=0.001s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.47s t_labels=0.002s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-10 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.50s t_labels=0.002s
+    CASE field=gaussian eps=0.25 N=32 cand=i1o4 | r_F=1.097e-14 its=11 | e_v=1.711e-03 e_psi=1.250e-02 e_i=(8.425e-04,5.905e-04) e_div=7.440e-04 min_c=4.950e-01 p0.1=5.188e-01 p1=5.875e-01 p5=7.053e-01 p50=9.940e-01 | t=9.6 | e_psi1=1.250e-02 e_psi2=1.140e-02
+    CASE field=gaussian eps=0.25 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=2.247e-03 e_psi=4.685e-18 e_i=(8.389e-05,7.095e-05) e_div=8.281e-04 min_c=4.954e-01 p0.1=5.191e-01 p1=5.876e-01 p5=7.051e-01 p50=9.939e-01 | t=0.0 | e_psi1=4.685e-18 e_psi2=4.387e-18
+    TIMING_SETUP stage_builds=0.947s (inside the solve phase; Newton-Krylov only = 8.659s)
+    TIMING field=0.056s metrics=0.004s oracle=3.816s prepare=0.047s solve=9.606s total=13.530s
+    MEMORY peak_device_bytes=617611264 free_min=33472118784 total_device=34089730048 workspaces_bytes=103341703 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N64.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 64 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25_c4/N64.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N64.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N64.log rc=0 STATUS converged wall=690s max_rss_kB=1168220 end=2026-10-07T10:37:50Z
+    SOLVER N=64 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded psitc_h_ref=0.0625 psitc_mu0_eff=6.250000e-02
+    SOLVER_COARSE mode=mult profiles=2 K=16384 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=gaussian eps=0.25 N=64 cand=i1o4 continuation path: 0.25(fail)->0.125->0.25(fail)->0.1875->0.25
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=1.071e-10 non_ok=0 t_trace=11.39s t_labels=0.016s
+    ORACLE_SUMMARY hmax=9.765625e-04 tol=1.0e-08 status=ok max_roundtrip=1.065e-11 non_ok=0 t_trace=22.39s t_labels=0.017s
+    ORACLE_SUMMARY hmax=9.765625e-04 tol=1.0e-10 status=ok max_roundtrip=1.065e-11 non_ok=0 t_trace=22.36s t_labels=0.016s
+    CASE field=gaussian eps=0.25 N=64 cand=i1o4 | r_F=5.102e-14 its=9 | e_v=3.904e-04 e_psi=1.555e-03 e_i=(1.449e-04,1.155e-04) e_div=5.528e-05 min_c=4.946e-01 p0.1=5.184e-01 p1=5.873e-01 p5=7.052e-01 p50=9.937e-01 | t=629.3 | e_psi1=1.483e-03 e_psi2=1.555e-03
+    CASE field=gaussian eps=0.25 N=64 cand=oracle_fd4 | r_F=nan its=nan | e_v=5.684e-04 e_psi=4.590e-18 e_i=(9.110e-06,7.396e-06) e_div=5.742e-05 min_c=4.947e-01 p0.1=5.185e-01 p1=5.874e-01 p5=7.049e-01 p50=9.937e-01 | t=0.0 | e_psi1=4.590e-18 e_psi2=4.569e-18
+    TIMING_SETUP stage_builds=3.235s (inside the solve phase; Newton-Krylov only = 626.037s)
+    TIMING field=0.087s metrics=0.011s oracle=56.244s prepare=0.287s solve=629.272s total=685.903s
+    MEMORY peak_device_bytes=1324351488 free_min=32765378560 total_device=34089730048 workspaces_bytes=745537031 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N128.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 128 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25_c4/N128.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N128.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N128.log rc=15 STATUS continuation_floor wall=10747s max_rss_kB=5021912 end=2026-10-07T13:36:57Z
+    SOLVER N=128 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded psitc_h_ref=0.0625 psitc_mu0_eff=1.562500e-02
+    SOLVER_COARSE mode=mult profiles=2 K=65536 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=gaussian eps=0.25 N=128 cand=i1o4 continuation path: 0.25(fail)->0.125->0.25(fail)->0.1875(fail)->0.15625(fail)->0.140625(fail)->0.25(final)
+    ORACLE_SUMMARY hmax=9.765625e-04 tol=1.0e-08 status=ok max_roundtrip=1.127e-11 non_ok=0 t_trace=179.52s t_labels=0.114s
+    ORACLE_SUMMARY hmax=4.882812e-04 tol=1.0e-08 status=ok max_roundtrip=9.331e-13 non_ok=0 t_trace=357.27s t_labels=0.138s
+    ORACLE_SUMMARY hmax=4.882812e-04 tol=1.0e-10 status=ok max_roundtrip=9.331e-13 non_ok=0 t_trace=356.74s t_labels=0.139s
+    CASE field=gaussian eps=0.25 N=128 cand=i1o4 | r_F=9.158e-01 its=2 | e_v=8.219e-02 e_psi=4.500e-01 e_i=(4.818e-02,3.457e-02) e_div=5.993e-04 min_c=5.810e-01 p0.1=6.228e-01 p1=6.969e-01 p5=7.910e-01 p50=9.978e-01 | t=9846.0 | e_psi1=4.429e-01 e_psi2=4.500e-01
+    CASE field=gaussian eps=0.25 N=128 cand=oracle_fd4 | r_F=nan its=nan | e_v=1.427e-04 e_psi=4.747e-18 e_i=(1.368e-06,1.198e-06) e_div=3.750e-06 min_c=4.943e-01 p0.1=5.184e-01 p1=5.882e-01 p5=7.055e-01 p50=9.936e-01 | t=0.0 | e_psi1=4.514e-18 e_psi2=4.747e-18
+    TIMING_SETUP stage_builds=8.757s (inside the solve phase; Newton-Krylov only = 9837.288s)
+    TIMING field=0.598s metrics=0.059s oracle=894.332s prepare=2.211s solve=9846.045s total=10743.273s
+    MEMORY peak_device_bytes=6506414080 free_min=27583315968 total_device=34089730048 workspaces_bytes=5960464391 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=continuation_floor oracle=ok
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/ladder_orders.py /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N64.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N128.log --out /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25_c4/ladder_orders.md
+# SF-33 production ladder: field=gaussian eps=0.25
+
+Generated by `scripts/ladder_orders.py` from N32.log, N64.log, N128.log (no interpretation).
+
+| N | status | r_F | its | PATH | e_v | e_psi | e_psi1 | e_psi2 | e_i1 | e_i2 | e_div | min_c | ceiling e_v | oracle max round trip (primary) | GMRES max / median (target stage) | wall [s] | solve [s] | oracle [s] | peak device [GB] |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 32 | solver=converged oracle=ok | 1.097e-14 | 11 | `0.25` | 1.711e-03 | 1.250e-02 | 1.250e-02 | 1.140e-02 | 8.425e-04 | 5.905e-04 | 7.440e-04 | 4.950e-01 | 2.247e-03 | 1.227e-09 | 58 / 13.0 | 13.5 | 9.6 | 3.8 | 0.62 |
+| 64 | solver=converged oracle=ok | 5.102e-14 | 9 | `0.25(fail)->0.125->0.25(fail)->0.1875->0.25` | 3.904e-04 | 1.555e-03 | 1.483e-03 | 1.555e-03 | 1.449e-04 | 1.155e-04 | 5.528e-05 | 4.946e-01 | 5.684e-04 | 1.071e-10 | 1100 / 200.0 | 685.9 | 629.3 | 56.2 | 1.32 |
+| 128 | solver=continuation_floor oracle=ok | 9.158e-01 | 2 | `0.25(fail)->0.125->0.25(fail)->0.1875(fail)->0.15625(fail)->0.140625(fail)->0.25(final)` | 8.219e-02 | 4.500e-01 | 4.429e-01 | 4.500e-01 | 4.818e-02 | 3.457e-02 | 5.993e-04 | 5.810e-01 | 1.427e-04 | 1.127e-11 | 300 / 151.0 | 10743.3 | 9846.0 | 894.3 | 6.51 |
+
+Observed orders over N = 32/64/128 (`metrics.orders`):
+
+- e_v: 1.711e-03 3.904e-04 8.219e-02 | orders 2.13 -7.72
+- e_psi: 1.250e-02 1.555e-03 4.500e-01 | orders 3.01 -8.18
+- e_psi1: 1.250e-02 1.483e-03 4.429e-01 | orders 3.08 -8.22
+- e_psi2: 1.140e-02 1.555e-03 4.500e-01 | orders 2.87 -8.18
+- e_i1: 8.425e-04 1.449e-04 4.818e-02 | orders 2.54 -8.38
+- e_i2: 5.905e-04 1.155e-04 3.457e-02 | orders 2.35 -8.23
+- e_div: 7.440e-04 5.528e-05 5.993e-04 | orders 3.75 -3.44
+- ceiling e_v (oracle_fd4): 2.247e-03 5.684e-04 1.427e-04 | orders 1.98 1.99
+
+SF-33 acceptance (b) reading on N = 32/64/128: e_v orders >= 1.8 on every pair: no (2.13 -7.72); e_psi: no (3.01 -8.18); r_F <= 1e-10 on every grid: no; continuation floor reached: yes; PATH with a failed stage: yes.
+
+SF-18 applied_scale per grid: 1.602888711251000e+00 1.602888711251000e+00 1.602888711251000e+00; max relative spread 0.00e+00 (<= 1e-10: same continuum field)
+
+Production-oracle round trips (ORACLE_SUMMARY, every (h_max, tol) run):
+
+- N=32 hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=1.227e-09 non_ok=0 t_trace=0.84s
+- N=32 hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.47s
+- N=32 hmax=1.953125e-03 tol=1.0e-10 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.50s
+- N=64 hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=1.071e-10 non_ok=0 t_trace=11.39s
+- N=64 hmax=9.765625e-04 tol=1.0e-08 status=ok max_roundtrip=1.065e-11 non_ok=0 t_trace=22.39s
+- N=64 hmax=9.765625e-04 tol=1.0e-10 status=ok max_roundtrip=1.065e-11 non_ok=0 t_trace=22.36s
+- N=128 hmax=9.765625e-04 tol=1.0e-08 status=ok max_roundtrip=1.127e-11 non_ok=0 t_trace=179.52s
+- N=128 hmax=4.882812e-04 tol=1.0e-08 status=ok max_roundtrip=9.331e-13 non_ok=0 t_trace=357.27s
+- N=128 hmax=4.882812e-04 tol=1.0e-10 status=ok max_roundtrip=9.331e-13 non_ok=0 t_trace=356.74s
+
+GMRES statistics per continuation stage (GMRES_STATS):
+
+- N=32 stage_eps=0.25 status=converged newton_its=11 its_max=58 its_median=13.0 its_total=218 linear_failures=0
+- N=64 stage_eps=0.25 status=linear_failure newton_its=4 its_max=300 its_median=54.5 its_total=411 linear_failures=1
+- N=64 stage_eps=0.125 status=converged newton_its=9 its_max=58 its_median=12.0 its_total=172 linear_failures=0
+- N=64 stage_eps=0.25 status=linear_failure newton_its=4 its_max=300 its_median=53.5 its_total=409 linear_failures=1
+- N=64 stage_eps=0.1875 status=converged newton_its=8 its_max=190 its_median=36.0 its_total=426 linear_failures=0
+- N=64 stage_eps=0.25 status=converged newton_its=9 its_max=1100 its_median=200.0 its_total=2496 linear_failures=0
+- N=128 stage_eps=0.25 status=linear_failure newton_its=3 its_max=300 its_median=88.0 its_total=390 linear_failures=1
+- N=128 stage_eps=0.125 status=converged newton_its=9 its_max=900 its_median=100.0 its_total=2118 linear_failures=0
+- N=128 stage_eps=0.25 status=linear_failure newton_its=2 its_max=300 its_median=151.0 its_total=302 linear_failures=1
+- N=128 stage_eps=0.1875 status=linear_failure newton_its=3 its_max=300 its_median=100.0 its_total=401 linear_failures=1
+- N=128 stage_eps=0.15625 status=linear_failure newton_its=3 its_max=300 its_median=19.0 its_total=320 linear_failures=1
+- N=128 stage_eps=0.140625 status=linear_failure newton_its=3 its_max=600 its_median=15.0 its_total=616 linear_failures=1
+- N=128 stage_eps=0.25(final) status=linear_failure newton_its=2 its_max=300 its_median=151.0 its_total=302 linear_failures=1
+
+Timing / memory:
+
+- N=32 TIMING field=0.1s metrics=0.0s oracle=3.8s prepare=0.0s solve=9.6s stage_builds=0.9s total=13.5s | MEMORY free_min=33472118784 peak_device_bytes=617611264 total_device=34089730048 workspaces_bytes=103341703
+- N=64 TIMING field=0.1s metrics=0.0s oracle=56.2s prepare=0.3s solve=629.3s stage_builds=3.2s total=685.9s | MEMORY free_min=32765378560 peak_device_bytes=1324351488 total_device=34089730048 workspaces_bytes=745537031
+- N=128 TIMING field=0.6s metrics=0.1s oracle=894.3s prepare=2.2s solve=9846.0s stage_builds=8.8s total=10743.3s | MEMORY free_min=27583315968 peak_device_bytes=6506414080 total_device=34089730048 workspaces_bytes=5960464391
+
+Target-stage setup (SF-19 / inlet / v1 consistency):
+
+- N=32 STAGE field=gaussian eps=0.25 N=32 status=ok
+- N=32 SF-18: raw_mean=1.512462e-17 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=15375
+- N=32 SF-19: mg_levels=4 converged=1 G=(9.900435490247e-01, 5.488473815809e-04, 3.324452862087e-03) mean_flux=(1.000e+00, -1.870e-18, 1.723e-18) div_max=2.503e-12 div_rms=5.085e-13
+- N=32 SF-19 corrector x: status=converged its=10 rel_residual=2.930e-13 final_residual=9.295e-11
+- N=32 SF-19 corrector y: status=converged its=10 rel_residual=2.373e-13 final_residual=8.177e-11
+- N=32 SF-19 corrector z: status=converged its=10 rel_residual=2.533e-13 final_residual=8.183e-11
+- N=32 inlet: vmin=5.095185e-01 mean(U plane 0)=1.000000000000005 (mean-1=5.329e-15) Q0-1=5.329e-15 v_rms=1.020607e+00
+- N=64 STAGE field=gaussian eps=0.25 N=64 status=ok
+- N=64 SF-18: raw_mean=0.000000e+00 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=127007
+- N=64 SF-19: mg_levels=5 converged=1 G=(9.898531600809e-01, 5.468837041348e-04, 3.358270904093e-03) mean_flux=(1.000e+00, 2.990e-19, -2.649e-18) div_max=6.954e-12 div_rms=1.044e-12
+- N=64 SF-19 corrector x: status=converged its=10 rel_residual=5.926e-13 final_residual=5.397e-10
+- N=64 SF-19 corrector y: status=converged its=10 rel_residual=4.372e-13 final_residual=4.333e-10
+- N=64 SF-19 corrector z: status=converged its=10 rel_residual=4.605e-13 final_residual=4.273e-10
+- N=64 inlet: vmin=5.078054e-01 mean(U plane 0)=1.000000000000007 (mean-1=7.105e-15) Q0-1=8.216e-15 v_rms=1.020327e+00
+- N=128 STAGE field=gaussian eps=0.25 N=128 status=ok
+- N=128 SF-18: raw_mean=-4.770490e-18 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=1032255
+- N=128 SF-19: mg_levels=6 converged=1 G=(9.898053215785e-01, 5.463871453182e-04, 3.366756905312e-03) mean_flux=(1.000e+00, 2.996e-18, -3.109e-19) div_max=1.787e-11 div_rms=2.002e-12
+- N=128 SF-19 corrector x: status=converged its=10 rel_residual=1.130e-12 final_residual=2.921e-09
+- N=128 SF-19 corrector y: status=converged its=10 rel_residual=7.893e-13 final_residual=2.222e-09
+- N=128 SF-19 corrector z: status=converged its=10 rel_residual=8.129e-13 final_residual=2.141e-09
+- N=128 inlet: vmin=5.070647e-01 mean(U plane 0)=1.000000000000008 (mean-1=7.994e-15) Q0-1=7.105e-15 v_rms=1.020255e+00
+
+  ladder_orders rc=0
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/digest_newton.py /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25_c4/N*.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25_c4/digest_newton.txt
+  digest_newton rc=0
+run_campaign_b.sh: part=ladder end=2026-10-07T13:36:57Z
+[2026-10-07T13:36:57Z] job=sf33d-ladder-025 finished exit=0

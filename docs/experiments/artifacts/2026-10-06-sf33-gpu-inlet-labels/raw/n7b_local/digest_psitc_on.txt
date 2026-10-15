@@ -1,0 +1,242 @@
+== gauss_0.25_16.json  status=converged path=0.25
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=12 solves=12 gmres_total=   233 max=   69 median=   12.0
+      r_F  [2.57e+00,1.34e+00,5.93e-01,2.09e-01,7.44e-02,3.72e-02,2.34e-02,1.18e-02,4.60e-03,8.14e-04,3.40e-05,4.48e-08,9.08e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,2.81e-02,1.57e-03,1.56e-06]
+      mu   [1.00e+00,5.23e-01,2.31e-01,8.15e-02,2.90e-02,1.45e-02,9.13e-03,4.61e-03,1.79e-03,3.17e-04,1.32e-05,1.74e-08]
+  TOTAL newton steps 12, linear solves 12, GMRES its 233
+== gauss_ch_0.25_16.json  status=converged path=0.25
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=13 solves=13 gmres_total=   257 max=   57 median=   14.0
+      r_F  [2.80e+00,1.44e+00,6.43e-01,2.51e-01,1.00e-01,5.12e-02,3.31e-02,1.90e-02,9.09e-03,2.59e-03,3.12e-04,4.00e-06,6.62e-10,5.40e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,7.30e-02,1.30e-02,1.49e-04,7.56e-05]
+      mu   [1.00e+00,5.13e-01,2.30e-01,8.95e-02,3.58e-02,1.83e-02,1.18e-02,6.79e-03,3.24e-03,9.24e-04,1.11e-04,1.43e-06,2.36e-10]
+  TOTAL newton steps 13, linear solves 13, GMRES its 257
+== control2d_0.5_16.json  status=converged path=0.25->0.5
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=10 solves=10 gmres_total=    39 max=    9 median=    3.5
+      r_F  [1.86e+00,1.03e+00,5.21e-01,2.27e-01,7.67e-02,1.62e-02,3.76e-03,6.43e-04,2.28e-05,2.95e-08,4.98e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,3.99e-02,4.88e-02,2.63e-02,1.13e-03,1.70e-06]
+      mu   [1.00e+00,5.56e-01,2.80e-01,1.22e-01,4.13e-02,8.70e-03,2.03e-03,3.46e-04,1.23e-05,1.59e-08]
+  stage 0.5               from 0.25      converged        newton_steps=11 solves=11 gmres_total=    58 max=   15 median=    5.0
+      r_F  [1.72e+00,9.49e-01,4.71e-01,2.03e-01,7.13e-02,1.65e-02,3.80e-03,7.11e-04,3.15e-05,6.47e-08,2.74e-13,4.88e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.84e-02,4.76e-02,3.15e-02,1.77e-03,3.80e-06,1.83e-01]
+      mu   [1.00e+00,5.50e-01,2.73e-01,1.18e-01,4.13e-02,9.58e-03,2.20e-03,4.12e-04,1.83e-05,3.75e-08,1.59e-13]
+  TOTAL newton steps 21, linear solves 21, GMRES its 97
+== gauss_0.5_24.json  status=continuation_floor path=0.25->0.5(fail)->0.375->0.5(fail)->0.4375->0.5(fail)->0.46875(fail)->0.453125(fail)->0.5(final)
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=16 solves=16 gmres_total=   559 max=  154 median=   16.5
+      r_F  [3.57e+00,2.01e+00,1.12e+00,5.82e-01,2.62e-01,1.12e-01,5.59e-02,3.50e-02,2.40e-02,1.52e-02,8.32e-03,3.41e-03,7.89e-04,5.16e-05,1.91e-07,2.77e-12,7.00e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.83e-02,3.84e-03,1.24e-05,1.81e-02]
+      mu   [1.00e+00,5.63e-01,3.15e-01,1.63e-01,7.35e-02,3.13e-02,1.56e-02,9.79e-03,6.72e-03,4.26e-03,2.33e-03,9.54e-04,2.21e-04,1.44e-05,5.35e-08,7.76e-13]
+  stage 0.5               from 0.25      linear_failure   newton_steps=11 solves=11 gmres_total=  1497 max=  700 median=   61.0
+      r_F  [3.64e+00,2.00e+00,1.08e+00,5.41e-01,2.44e-01,1.10e-01,5.74e-02,3.69e-02,2.67e-02,1.86e-02,1.11e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.50e-01,2.97e-01,1.49e-01,6.69e-02,3.01e-02,1.58e-02,1.01e-02,7.33e-03,5.10e-03,3.04e-03]
+      FAILED linear solve step 11: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=3.04e-03 rel=6.21e-01; per-restart true rel: 6.60e-01 6.29e-01 6.21e-01
+  stage 0.375             from 0.25      converged        newton_steps=16 solves=16 gmres_total=  1832 max=  500 median=   69.5
+      r_F  [1.81e+00,1.00e+00,5.50e-01,2.81e-01,1.27e-01,5.62e-02,2.90e-02,1.81e-02,1.23e-02,7.71e-03,4.09e-03,1.55e-03,3.28e-04,4.76e-05,3.88e-07,6.49e-11,1.04e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.02e-02,1.89e-02,5.98e-05,7.70e-04]
+      mu   [1.00e+00,5.55e-01,3.04e-01,1.55e-01,7.04e-02,3.11e-02,1.60e-02,1.00e-02,6.80e-03,4.27e-03,2.26e-03,8.59e-04,1.82e-04,2.63e-05,2.15e-07,3.59e-11]
+  stage 0.5               from 0.375     linear_failure   newton_steps=10 solves=10 gmres_total=  1541 max=  800 median=   58.5
+      r_F  [1.82e+00,9.99e-01,5.38e-01,2.71e-01,1.24e-01,5.70e-02,3.00e-02,1.88e-02,1.30e-02,8.56e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.50e-01,2.97e-01,1.49e-01,6.84e-02,3.14e-02,1.65e-02,1.04e-02,7.16e-03,4.71e-03]
+      FAILED linear solve step 10: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=4.71e-03 rel=5.80e-01; per-restart true rel: 6.07e-01 5.81e-01 5.80e-01
+  stage 0.4375            from 0.375     converged        newton_steps=16 solves=16 gmres_total= 15102 max= 5000 median=  150.0
+      r_F  [9.04e-01,4.99e-01,2.72e-01,1.38e-01,6.34e-02,2.88e-02,1.51e-02,9.40e-03,6.32e-03,3.94e-03,2.05e-03,7.79e-04,1.76e-04,1.40e-05,1.46e-07,1.85e-11,4.54e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.57e-02,5.75e-03,9.67e-05,2.70e-03]
+      mu   [1.00e+00,5.52e-01,3.00e-01,1.53e-01,7.01e-02,3.19e-02,1.67e-02,1.04e-02,6.99e-03,4.35e-03,2.26e-03,8.61e-04,1.94e-04,1.55e-05,1.61e-07,2.05e-11]
+  stage 0.5               from 0.4375    linear_failure   newton_steps= 9 solves= 9 gmres_total=  1389 max=  700 median=   53.0
+      r_F  [9.06e-01,4.98e-01,2.69e-01,1.36e-01,6.28e-02,2.92e-02,1.54e-02,9.64e-03,6.58e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.49e-01,2.97e-01,1.50e-01,6.94e-02,3.22e-02,1.70e-02,1.06e-02,7.26e-03]
+      FAILED linear solve step 9: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=7.26e-03 rel=5.18e-01; per-restart true rel: 5.25e-01 5.19e-01 5.18e-01
+  stage 0.46875           from 0.4375    linear_failure   newton_steps=10 solves=10 gmres_total=  1472 max=  600 median=   70.5
+      r_F  [4.52e-01,2.49e-01,1.35e-01,6.87e-02,3.18e-02,1.46e-02,7.72e-03,4.83e-03,3.26e-03,2.06e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.50e-01,2.99e-01,1.52e-01,7.02e-02,3.24e-02,1.71e-02,1.07e-02,7.22e-03,4.56e-03]
+      FAILED linear solve step 10: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=4.56e-03 rel=6.06e-01; per-restart true rel: 6.15e-01 6.06e-01 6.06e-01
+  stage 0.453125          from 0.4375    linear_failure   newton_steps=12 solves=12 gmres_total=  2964 max= 1200 median=   95.0
+      r_F  [2.26e-01,1.24e-01,6.77e-02,3.45e-02,1.60e-02,7.34e-03,3.86e-03,2.41e-03,1.63e-03,1.02e-03,5.32e-04,2.01e-04]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.51e-01,3.00e-01,1.53e-01,7.07e-02,3.25e-02,1.71e-02,1.07e-02,7.20e-03,4.50e-03,2.36e-03,8.92e-04]
+      FAILED linear solve step 12: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=8.92e-04 rel=7.81e-01; per-restart true rel: 8.13e-01 7.83e-01 7.81e-01
+  stage 0.5      (final)  from 0.4375    linear_failure   newton_steps= 9 solves= 9 gmres_total=  1389 max=  700 median=   53.0
+      r_F  [9.06e-01,4.98e-01,2.69e-01,1.36e-01,6.28e-02,2.92e-02,1.54e-02,9.64e-03,6.58e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.49e-01,2.97e-01,1.50e-01,6.94e-02,3.22e-02,1.70e-02,1.06e-02,7.26e-03]
+      FAILED linear solve step 9: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=7.26e-03 rel=5.18e-01; per-restart true rel: 5.25e-01 5.19e-01 5.18e-01
+  TOTAL newton steps 109, linear solves 109, GMRES its 27745
+== gauss_ch_0.5_24.json  status=continuation_floor path=0.25->0.5(fail)->0.375->0.5(fail)->0.4375(fail)->0.40625(fail)->0.390625(fail)->0.5(final)
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=16 solves=16 gmres_total=   559 max=  139 median=   25.5
+      r_F  [4.13e+00,2.23e+00,1.20e+00,6.11e-01,2.89e-01,1.37e-01,7.23e-02,4.66e-02,3.31e-02,2.21e-02,1.30e-02,6.10e-03,1.89e-03,2.33e-04,4.43e-06,1.03e-09,7.91e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,8.67e-02,1.36e-02,3.26e-04,4.85e-05]
+      mu   [1.00e+00,5.40e-01,2.90e-01,1.48e-01,7.01e-02,3.31e-02,1.75e-02,1.13e-02,8.01e-03,5.36e-03,3.16e-03,1.48e-03,4.59e-04,5.64e-05,1.07e-06,2.50e-10]
+  stage 0.5               from 0.25      linear_failure   newton_steps= 8 solves= 8 gmres_total=   867 max=  400 median=   28.0
+      r_F  [4.10e+00,2.20e+00,1.17e+00,5.96e-01,2.90e-01,1.44e-01,7.83e-02,5.31e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.35e-01,2.84e-01,1.45e-01,7.08e-02,3.50e-02,1.91e-02,1.29e-02]
+      FAILED linear solve step 8: status=stagnation its=400 cycles=4 eta=1.00e-01 mu=1.29e-02 rel=3.29e-01; per-restart true rel: 4.75e-01 3.63e-01 3.37e-01 3.29e-01
+  stage 0.375             from 0.25      converged        newton_steps=17 solves=17 gmres_total=  4479 max= 1400 median=   91.0
+      r_F  [2.06e+00,1.11e+00,5.91e-01,3.04e-01,1.48e-01,7.17e-02,3.88e-02,2.56e-02,1.85e-02,1.27e-02,7.75e-03,3.83e-03,1.38e-03,2.23e-04,3.00e-05,4.87e-07,1.48e-10,2.85e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,2.37e-02,1.63e-02,2.37e-04,3.37e-04]
+      mu   [1.00e+00,5.37e-01,2.86e-01,1.47e-01,7.16e-02,3.48e-02,1.88e-02,1.24e-02,8.97e-03,6.17e-03,3.75e-03,1.85e-03,6.67e-04,1.08e-04,1.46e-05,2.36e-07,7.18e-11]
+  stage 0.5               from 0.375     linear_failure   newton_steps= 9 solves= 9 gmres_total=  1789 max=  900 median=   61.0
+      r_F  [2.05e+00,1.10e+00,5.85e-01,3.01e-01,1.49e-01,7.42e-02,4.07e-02,2.75e-02,2.09e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.37e-01,2.85e-01,1.47e-01,7.25e-02,3.61e-02,1.98e-02,1.34e-02,1.02e-02]
+      FAILED linear solve step 9: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=1.02e-02 rel=3.01e-01; per-restart true rel: 4.14e-01 3.49e-01 3.26e-01 3.11e-01 3.01e-01
+  stage 0.4375            from 0.375     linear_failure   newton_steps=11 solves=11 gmres_total=  2339 max=  800 median=   81.0
+      r_F  [1.03e+00,5.52e-01,2.94e-01,1.52e-01,7.52e-02,3.72e-02,2.03e-02,1.36e-02,1.01e-02,7.09e-03,4.54e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.37e-01,2.86e-01,1.48e-01,7.31e-02,3.61e-02,1.97e-02,1.32e-02,9.78e-03,6.90e-03,4.41e-03]
+      FAILED linear solve step 11: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=4.41e-03 rel=4.33e-01; per-restart true rel: 5.90e-01 5.12e-01 4.74e-01 4.52e-01 4.33e-01
+  stage 0.40625           from 0.375     linear_failure   newton_steps=13 solves=13 gmres_total=  3713 max= 1400 median=  100.0
+      r_F  [5.15e-01,2.76e-01,1.48e-01,7.66e-02,3.78e-02,1.86e-02,1.02e-02,6.77e-03,4.94e-03,3.43e-03,2.12e-03,1.07e-03,3.77e-04]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.37e-01,2.87e-01,1.49e-01,7.34e-02,3.61e-02,1.97e-02,1.32e-02,9.60e-03,6.66e-03,4.12e-03,2.07e-03,7.33e-04]
+      FAILED linear solve step 13: status=stagnation its=900 cycles=9 eta=1.00e-01 mu=7.33e-04 rel=3.52e-01; per-restart true rel: 7.75e-01 6.24e-01 5.74e-01 5.24e-01 4.83e-01 4.27e-01 3.75e-01 3.56e-01 3.52e-01
+  stage 0.390625          from 0.375     linear_failure   newton_steps=16 solves=16 gmres_total= 15596 max= 6000 median=  100.0
+      r_F  [2.58e-01,1.38e-01,7.40e-02,3.84e-02,1.89e-02,9.31e-03,5.08e-03,3.39e-03,2.46e-03,1.70e-03,1.03e-03,5.04e-04,1.69e-04,2.82e-05,1.26e-06,2.83e-09]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,2.51e-02,1.80e-03,1.77e-05]
+      mu   [1.00e+00,5.37e-01,2.87e-01,1.49e-01,7.35e-02,3.61e-02,1.97e-02,1.31e-02,9.55e-03,6.59e-03,4.00e-03,1.96e-03,6.56e-04,1.09e-04,4.89e-06,1.10e-08]
+      FAILED linear solve step 16: status=max_iterations its=6000 cycles=60 eta=1.77e-05 mu=1.10e-08 rel=1.31e-03; per-restart true rel: 8.29e-01 7.77e-01 6.62e-01 5.76e-01 5.05e-01 4.65e-01 3.40e-01 2.77e-01 2.50e-01 2.19e-01 1.99e-01 1.84e-01 1.69e-01 1.58e-01 1.46e-01 1.37e-01 1.24e-01 1.14e-01 1.06e-01 9.31e-02 8.61e-02 7.43e-02 6.71e-02 6.21e-02 5.57e-02 4.99e-02 4.42e-02 3.90e-02 3.45e-02 3.14e-02 2.78e-02 2.42e-02 2.13e-02 1.75e-02 1.52e-02 1.38e-02 1.26e-02 1.15e-02 1.07e-02 9.28e-03 8.38e-03 7.89e-03 7.25e-03 6.87e-03 6.39e-03 5.93e-03 5.53e-03 4.92e-03 4.66e-03 4.13e-03 3.70e-03 3.44e-03 3.12e-03 2.76e-03 2.47e-03 1.98e-03 1.70e-03 1.55e-03 1.40e-03 1.31e-03
+  stage 0.5      (final)  from 0.375     linear_failure   newton_steps= 9 solves= 9 gmres_total=  1789 max=  900 median=   61.0
+      r_F  [2.05e+00,1.10e+00,5.85e-01,3.01e-01,1.49e-01,7.42e-02,4.07e-02,2.75e-02,2.09e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.37e-01,2.85e-01,1.47e-01,7.25e-02,3.61e-02,1.98e-02,1.34e-02,1.02e-02]
+      FAILED linear solve step 9: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=1.02e-02 rel=3.01e-01; per-restart true rel: 4.14e-01 3.49e-01 3.26e-01 3.11e-01 3.01e-01
+  TOTAL newton steps 99, linear solves 99, GMRES its 31131
+== generic3d_1_16.json  status=continuation_floor path=0.25->0.5->1(fail)->0.75(fail)->0.625->0.75(fail)->0.6875(fail)->0.65625(fail)->1(final)
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=13 solves=13 gmres_total=   174 max=   42 median=    9.0
+      r_F  [2.21e+00,1.29e+00,6.99e-01,3.29e-01,1.26e-01,4.69e-02,2.35e-02,1.27e-02,5.30e-03,1.32e-03,1.06e-04,7.46e-07,3.76e-11,4.13e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,5.56e-02,5.87e-03,4.44e-05,1.33e-03]
+      mu   [1.00e+00,5.80e-01,3.15e-01,1.48e-01,5.68e-02,2.11e-02,1.06e-02,5.71e-03,2.39e-03,5.93e-04,4.79e-05,3.36e-07,1.70e-11]
+  stage 0.5               from 0.25      converged        newton_steps=15 solves=15 gmres_total=  1010 max=  288 median=   44.0
+      r_F  [2.02e+00,1.19e+00,6.58e-01,3.19e-01,1.31e-01,5.57e-02,3.14e-02,2.03e-02,1.19e-02,5.75e-03,2.14e-03,4.54e-04,2.31e-05,6.20e-08,4.28e-13,5.93e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.04e-02,2.32e-03,6.51e-06,1.17e-01]
+      mu   [1.00e+00,5.86e-01,3.25e-01,1.57e-01,6.45e-02,2.75e-02,1.55e-02,1.00e-02,5.87e-03,2.84e-03,1.06e-03,2.24e-04,1.14e-05,3.06e-08,2.12e-13]
+  stage 1                 from 0.5       linear_failure   newton_steps= 7 solves= 7 gmres_total=  1565 max=  800 median=   42.0
+      r_F  [3.18e+00,1.81e+00,9.75e-01,4.40e-01,1.68e-01,1.18e-01,1.07e-01]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.65e-01,3.03e-01,1.37e-01,5.23e-02,3.68e-02,3.34e-02]
+      FAILED linear solve step 7: status=stagnation its=800 cycles=8 eta=1.00e-01 mu=3.34e-02 rel=2.07e-01; per-restart true rel: 3.83e-01 3.30e-01 2.86e-01 2.49e-01 2.38e-01 2.23e-01 2.14e-01 2.07e-01
+  stage 0.75              from 0.5       linear_failure   newton_steps=10 solves=10 gmres_total=  1368 max=  500 median=   68.0
+      r_F  [1.78e+00,1.05e+00,5.80e-01,2.78e-01,1.15e-01,5.59e-02,3.83e-02,2.91e-02,2.06e-02,1.40e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.82e-01,3.22e-01,1.55e-01,6.40e-02,3.11e-02,2.13e-02,1.62e-02,1.14e-02,7.82e-03]
+      FAILED linear solve step 10: status=stagnation its=400 cycles=4 eta=1.00e-01 mu=7.82e-03 rel=4.30e-01; per-restart true rel: 5.57e-01 4.63e-01 4.36e-01 4.30e-01
+  stage 0.625             from 0.5       converged        newton_steps=16 solves=16 gmres_total=  7099 max= 3000 median=  100.0
+      r_F  [9.39e-01,5.57e-01,3.11e-01,1.52e-01,6.45e-02,3.07e-02,1.93e-02,1.34e-02,8.80e-03,5.11e-03,2.44e-03,9.53e-04,2.31e-04,1.96e-05,1.42e-07,6.87e-12,3.56e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,5.30e-02,6.51e-03,4.73e-05,7.23e-03]
+      mu   [1.00e+00,5.89e-01,3.29e-01,1.60e-01,6.82e-02,3.24e-02,2.04e-02,1.42e-02,9.30e-03,5.41e-03,2.58e-03,1.01e-03,2.44e-04,2.08e-05,1.51e-07,7.31e-12]
+  stage 0.75              from 0.625     linear_failure   newton_steps= 8 solves= 8 gmres_total=  1036 max=  500 median=   58.0
+      r_F  [8.85e-01,5.23e-01,2.90e-01,1.40e-01,5.96e-02,3.02e-02,2.08e-02,1.52e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.85e-01,3.25e-01,1.57e-01,6.67e-02,3.38e-02,2.33e-02,1.70e-02]
+      FAILED linear solve step 8: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=1.70e-02 rel=1.75e-01; per-restart true rel: 3.54e-01 2.23e-01 1.90e-01 1.82e-01 1.75e-01
+  stage 0.6875            from 0.625     linear_failure   newton_steps=10 solves=10 gmres_total=  1920 max=  600 median=   86.5
+      r_F  [4.55e-01,2.70e-01,1.51e-01,7.34e-02,3.17e-02,1.59e-02,1.03e-02,7.33e-03,5.02e-03,3.10e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.88e-01,3.28e-01,1.60e-01,6.89e-02,3.45e-02,2.24e-02,1.59e-02,1.09e-02,6.75e-03]
+      FAILED linear solve step 10: status=stagnation its=600 cycles=6 eta=1.00e-01 mu=6.75e-03 rel=2.87e-01; per-restart true rel: 5.81e-01 4.77e-01 3.37e-01 3.02e-01 2.92e-01 2.87e-01
+  stage 0.65625           from 0.625     linear_failure   newton_steps=11 solves=11 gmres_total=  2113 max=  700 median=  100.0
+      r_F  [2.31e-01,1.37e-01,7.66e-02,3.75e-02,1.63e-02,8.10e-03,5.18e-03,3.66e-03,2.44e-03,1.46e-03,7.29e-04]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.89e-01,3.29e-01,1.61e-01,6.99e-02,3.48e-02,2.22e-02,1.57e-02,1.05e-02,6.28e-03,3.13e-03]
+      FAILED linear solve step 11: status=stagnation its=700 cycles=7 eta=1.00e-01 mu=3.13e-03 rel=2.68e-01; per-restart true rel: 6.57e-01 4.67e-01 3.87e-01 3.27e-01 2.94e-01 2.79e-01 2.68e-01
+  stage 1        (final)  from 0.625     linear_failure   newton_steps= 6 solves= 6 gmres_total=   800 max=  400 median=   43.5
+      r_F  [2.34e+00,1.35e+00,7.29e-01,3.31e-01,1.31e-01,1.28e-01]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.68e-01,3.07e-01,1.39e-01,5.53e-02,5.38e-02]
+      FAILED linear solve step 6: status=stagnation its=400 cycles=4 eta=1.00e-01 mu=5.38e-02 rel=2.58e-01; per-restart true rel: 3.02e-01 2.64e-01 2.60e-01 2.58e-01
+  TOTAL newton steps 96, linear solves 96, GMRES its 17085
+== generic3d_1_20.json  status=continuation_floor path=0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625->0.625(fail)->0.59375(fail)->1(final)
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=15 solves=15 gmres_total=   220 max=   58 median=    9.0
+      r_F  [2.63e+00,1.56e+00,9.37e-01,5.33e-01,2.66e-01,1.13e-01,4.80e-02,2.61e-02,1.58e-02,8.34e-03,3.22e-03,6.76e-04,3.82e-05,1.30e-07,1.57e-12,5.02e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,3.97e-02,2.87e-03,1.05e-05,3.18e-02]
+      mu   [1.00e+00,5.93e-01,3.56e-01,2.03e-01,1.01e-01,4.29e-02,1.82e-02,9.93e-03,6.02e-03,3.17e-03,1.22e-03,2.57e-04,1.45e-05,4.95e-08,5.98e-13]
+  stage 0.5               from 0.25      converged        newton_steps=17 solves=17 gmres_total=  1894 max=  600 median=   50.0
+      r_F  [2.43e+00,1.44e+00,8.72e-01,5.04e-01,2.57e-01,1.16e-01,5.57e-02,3.33e-02,2.29e-02,1.51e-02,8.82e-03,4.29e-03,1.63e-03,3.67e-04,2.29e-05,1.22e-07,3.03e-12,2.86e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.57e-02,3.50e-03,2.56e-05,1.65e-02]
+      mu   [1.00e+00,5.91e-01,3.58e-01,2.07e-01,1.05e-01,4.78e-02,2.29e-02,1.37e-02,9.38e-03,6.19e-03,3.62e-03,1.76e-03,6.68e-04,1.51e-04,9.39e-06,5.01e-08,1.24e-12]
+  stage 1                 from 0.5       linear_failure   newton_steps= 6 solves= 6 gmres_total=   621 max=  500 median=   12.5
+      r_F  [3.99e+00,2.23e+00,1.30e+00,7.08e-01,3.24e-01,1.36e-01]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.56e-01,3.25e-01,1.76e-01,8.06e-02,3.39e-02]
+      FAILED linear solve step 6: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=3.39e-02 rel=1.90e-01; per-restart true rel: 2.80e-01 2.14e-01 1.92e-01 1.91e-01 1.90e-01
+  stage 0.75              from 0.5       linear_failure   newton_steps= 9 solves= 9 gmres_total=   914 max=  400 median=   25.0
+      r_F  [2.21e+00,1.29e+00,7.69e-01,4.36e-01,2.17e-01,9.86e-02,5.29e-02,3.67e-02,2.79e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.78e-01,3.46e-01,1.96e-01,9.76e-02,4.44e-02,2.38e-02,1.65e-02,1.26e-02]
+      FAILED linear solve step 9: status=stagnation its=400 cycles=4 eta=1.00e-01 mu=1.26e-02 rel=4.10e-01; per-restart true rel: 4.74e-01 4.51e-01 4.25e-01 4.10e-01
+  stage 0.625             from 0.5       linear_failure   newton_steps=12 solves=12 gmres_total=  1454 max=  600 median=   63.0
+      r_F  [1.15e+00,6.81e-01,4.12e-01,2.37e-01,1.21e-01,5.67e-02,2.99e-02,1.97e-02,1.44e-02,1.03e-02,6.89e-03,4.07e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.88e-01,3.55e-01,2.05e-01,1.04e-01,4.89e-02,2.58e-02,1.70e-02,1.24e-02,8.93e-03,5.95e-03,3.51e-03]
+      FAILED linear solve step 12: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=3.51e-03 rel=7.15e-01; per-restart true rel: 7.43e-01 7.27e-01 7.15e-01
+  stage 0.5625            from 0.5       converged        newton_steps=17 solves=17 gmres_total= 10716 max= 4200 median=  100.0
+      r_F  [5.88e-01,3.50e-01,2.12e-01,1.23e-01,6.33e-02,2.99e-02,1.57e-02,1.01e-02,7.24e-03,5.10e-03,3.29e-03,1.82e-03,7.90e-04,2.34e-04,3.81e-05,1.34e-06,1.87e-09,4.03e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,7.90e-02,2.39e-02,1.12e-03,2.67e-05]
+      mu   [1.00e+00,5.92e-01,3.59e-01,2.08e-01,1.07e-01,5.06e-02,2.65e-02,1.71e-02,1.23e-02,8.63e-03,5.57e-03,3.08e-03,1.34e-03,3.96e-04,6.46e-05,2.27e-06,3.17e-09]
+  stage 0.625             from 0.5625    linear_failure   newton_steps=10 solves=10 gmres_total=  1299 max=  800 median=   40.5
+      r_F  [5.76e-01,3.41e-01,2.06e-01,1.19e-01,6.08e-02,2.89e-02,1.55e-02,1.03e-02,7.54e-03,5.43e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.89e-01,3.56e-01,2.05e-01,1.05e-01,4.99e-02,2.68e-02,1.78e-02,1.30e-02,9.38e-03]
+      FAILED linear solve step 10: status=stagnation its=800 cycles=8 eta=1.00e-01 mu=9.38e-03 rel=1.05e-01; per-restart true rel: 4.54e-01 3.13e-01 2.00e-01 1.48e-01 1.26e-01 1.16e-01 1.12e-01 1.05e-01
+  stage 0.59375           from 0.5625    linear_failure   newton_steps=13 solves=13 gmres_total=  2785 max= 1300 median=  100.0
+      r_F  [2.91e-01,1.73e-01,1.05e-01,6.05e-02,3.11e-02,1.48e-02,7.96e-03,5.22e-03,3.78e-03,2.72e-03,1.79e-03,1.04e-03,4.87e-04]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.91e-01,3.58e-01,2.07e-01,1.06e-01,5.08e-02,2.72e-02,1.78e-02,1.29e-02,9.29e-03,6.13e-03,3.56e-03,1.66e-03]
+      FAILED linear solve step 13: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=1.66e-03 rel=8.11e-01; per-restart true rel: 8.41e-01 8.19e-01 8.11e-01
+  stage 1        (final)  from 0.5625    linear_failure   newton_steps= 6 solves= 6 gmres_total=   743 max=  600 median=   16.5
+      r_F  [3.47e+00,1.95e+00,1.14e+00,6.18e-01,2.84e-01,1.21e-01]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.57e-01,3.25e-01,1.77e-01,8.12e-02,3.46e-02]
+      FAILED linear solve step 6: status=stagnation its=600 cycles=6 eta=1.00e-01 mu=3.46e-02 rel=2.60e-01; per-restart true rel: 4.06e-01 3.27e-01 3.08e-01 2.81e-01 2.70e-01 2.60e-01
+  TOTAL newton steps 105, linear solves 105, GMRES its 20646
+== generic3d_1_24.json  status=continuation_floor path=0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625(fail)->0.53125(fail)->1(final)
+   solver: forcing=ew psitc=on mu0=1.0 mu_max=100.0 max_newton=120
+  stage 0.25              from 0         converged        newton_steps=16 solves=16 gmres_total=   262 max=   68 median=    8.0
+      r_F  [3.13e+00,1.83e+00,1.14e+00,7.12e-01,4.14e-01,2.11e-01,9.54e-02,4.50e-02,2.65e-02,1.72e-02,1.01e-02,4.73e-03,1.45e-03,1.88e-04,3.75e-06,1.56e-09,6.16e-15]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,8.49e-02,1.51e-02,3.58e-04,3.20e-05]
+      mu   [1.00e+00,5.85e-01,3.64e-01,2.27e-01,1.32e-01,6.74e-02,3.05e-02,1.44e-02,8.46e-03,5.49e-03,3.22e-03,1.51e-03,4.64e-04,6.00e-05,1.20e-06,4.99e-10]
+  stage 0.5               from 0.25      converged        newton_steps=19 solves=19 gmres_total=  9037 max= 3300 median=   58.0
+      r_F  [2.94e+00,1.70e+00,1.05e+00,6.63e-01,3.89e-01,2.03e-01,9.81e-02,5.18e-02,3.32e-02,2.39e-02,1.67e-02,1.07e-02,6.00e-03,2.74e-03,9.77e-04,2.24e-04,1.72e-05,1.40e-07,9.91e-12,4.76e-14]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,4.73e-02,5.31e-03,5.99e-05,5.04e-03]
+      mu   [1.00e+00,5.77e-01,3.58e-01,2.26e-01,1.32e-01,6.89e-02,3.34e-02,1.76e-02,1.13e-02,8.11e-03,5.70e-03,3.65e-03,2.04e-03,9.31e-04,3.32e-04,7.61e-05,5.85e-06,4.77e-08,3.37e-12]
+  stage 1                 from 0.5       linear_failure   newton_steps= 7 solves= 7 gmres_total=   808 max=  400 median=   14.0
+      r_F  [4.97e+00,2.66e+00,1.58e+00,9.44e-01,5.02e-01,2.29e-01,1.10e-01]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.34e-01,3.18e-01,1.89e-01,1.01e-01,4.59e-02,2.22e-02]
+      FAILED linear solve step 7: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=2.22e-02 rel=7.31e-01; per-restart true rel: 7.42e-01 7.34e-01 7.31e-01
+  stage 0.75              from 0.5       linear_failure   newton_steps= 8 solves= 8 gmres_total=   687 max=  500 median=    8.0
+      r_F  [2.72e+00,1.53e+00,9.31e-01,5.74e-01,3.26e-01,1.64e-01,8.10e-02,4.86e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.59e-01,3.40e-01,2.10e-01,1.19e-01,6.00e-02,2.96e-02,1.78e-02]
+      FAILED linear solve step 8: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=1.78e-02 rel=1.88e-01; per-restart true rel: 3.29e-01 2.19e-01 2.07e-01 1.89e-01 1.88e-01
+  stage 0.625             from 0.5       linear_failure   newton_steps=10 solves=10 gmres_total=   917 max=  500 median=   13.5
+      r_F  [1.41e+00,8.09e-01,4.98e-01,3.11e-01,1.81e-01,9.42e-02,4.76e-02,2.78e-02,1.95e-02,1.48e-02]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.71e-01,3.51e-01,2.20e-01,1.28e-01,6.65e-02,3.36e-02,1.96e-02,1.37e-02,1.05e-02]
+      FAILED linear solve step 10: status=stagnation its=500 cycles=5 eta=1.00e-01 mu=1.05e-02 rel=2.56e-01; per-restart true rel: 3.17e-01 2.91e-01 2.81e-01 2.61e-01 2.56e-01
+  stage 0.5625            from 0.5       linear_failure   newton_steps=12 solves=12 gmres_total=  1271 max=  400 median=   30.0
+      r_F  [7.17e-01,4.15e-01,2.56e-01,1.61e-01,9.45e-02,4.98e-02,2.53e-02,1.46e-02,1.00e-02,7.53e-03,5.60e-03,3.93e-03]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.76e-01,3.56e-01,2.24e-01,1.31e-01,6.92e-02,3.52e-02,2.03e-02,1.40e-02,1.05e-02,7.79e-03,5.46e-03]
+      FAILED linear solve step 12: status=stagnation its=400 cycles=4 eta=1.00e-01 mu=5.46e-03 rel=3.86e-01; per-restart true rel: 4.70e-01 4.08e-01 3.94e-01 3.86e-01
+  stage 0.53125           from 0.5       linear_failure   newton_steps=14 solves=14 gmres_total=  2452 max=  800 median=   61.0
+      r_F  [3.61e-01,2.10e-01,1.30e-01,8.20e-02,4.82e-02,2.55e-02,1.30e-02,7.46e-03,5.07e-03,3.78e-03,2.80e-03,1.95e-03,1.22e-03,6.47e-04]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.79e-01,3.59e-01,2.26e-01,1.33e-01,7.04e-02,3.59e-02,2.06e-02,1.40e-02,1.04e-02,7.72e-03,5.37e-03,3.37e-03,1.79e-03]
+      FAILED linear solve step 14: status=stagnation its=800 cycles=8 eta=1.00e-01 mu=1.79e-03 rel=3.48e-01; per-restart true rel: 7.61e-01 6.50e-01 5.80e-01 5.30e-01 4.45e-01 3.80e-01 3.63e-01 3.48e-01
+  stage 1        (final)  from 0.5       linear_failure   newton_steps= 7 solves= 7 gmres_total=   808 max=  400 median=   14.0
+      r_F  [4.97e+00,2.66e+00,1.58e+00,9.44e-01,5.02e-01,2.29e-01,1.10e-01]
+      eta  [1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01]
+      mu   [1.00e+00,5.34e-01,3.18e-01,1.89e-01,1.01e-01,4.59e-02,2.22e-02]
+      FAILED linear solve step 7: status=stagnation its=300 cycles=3 eta=1.00e-01 mu=2.22e-02 rel=7.31e-01; per-restart true rel: 7.42e-01 7.34e-01 7.31e-01
+  TOTAL newton steps 93, linear solves 93, GMRES its 16242

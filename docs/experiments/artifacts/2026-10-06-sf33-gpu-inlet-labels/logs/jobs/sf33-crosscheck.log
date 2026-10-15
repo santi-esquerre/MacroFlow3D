@@ -1,0 +1,36 @@
+[2026-10-06T22:01:32Z] job=sf33-crosscheck session=macroflow3d-SF-33-sf33-crosscheck started
+[2026-10-06T22:01:32Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T22:01:32Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T22:01:32Z] command=docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_crosscheck.sh build/v100-release
+run_crosscheck.sh: build=build/v100-release bin=/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab out=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels host=localhost.localdomain start=2026-10-06T22:01:33Z
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --sf19-crosscheck /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_16 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/N16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/crosscheck/N16.log 2>&1
+  N=16 rc=0 STATUS ok
+CROSSCHECK N=16 v1_face: rms_rel=3.992547e-03 max_rel=9.292286e-03 (vs v1_face_ref point values) rms_rel_avg=3.557448e-03 (vs v1_faceavg_ref) | vperp_vertex: rms=2.677655e-03 max=5.805968e-03 (spline flow k_v (G + grad s_h) at the inlet vertices vs vperp_vertex_ref; ref rms=6.663486e-02) | G=(9.911687952518e-01, 1.484056880490e-04, -4.449968182398e-03)
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --sf19-crosscheck /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_24 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/N24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/crosscheck/N24.log 2>&1
+  N=24 rc=0 STATUS ok
+CROSSCHECK N=24 v1_face: rms_rel=1.778114e-03 max_rel=4.142096e-03 (vs v1_face_ref point values) rms_rel_avg=1.592003e-03 (vs v1_faceavg_ref) | vperp_vertex: rms=1.169111e-03 max=2.570587e-03 (spline flow k_v (G + grad s_h) at the inlet vertices vs vperp_vertex_ref; ref rms=6.663486e-02) | G=(9.905158777472e-01, 2.321719405349e-04, -4.510584368320e-03)
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_32 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --sf19-crosscheck /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/N32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/crosscheck/N32.log 2>&1
+  N=32 rc=0 STATUS ok
+CROSSCHECK N=32 v1_face: rms_rel=1.000933e-03 max_rel=2.387349e-03 (vs v1_face_ref point values) rms_rel_avg=8.976797e-04 (vs v1_faceavg_ref) | vperp_vertex: rms=6.538297e-04 max=1.435665e-03 (spline flow k_v (G + grad s_h) at the inlet vertices vs vperp_vertex_ref; ref rms=6.663486e-02) | G=(9.902838682098e-01, 2.619437593660e-04, -4.531923802058e-03)
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/compare_proto.py --crosscheck /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/crosscheck/N16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/crosscheck/N24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/crosscheck/N32.log --out /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/crosscheck.md
+| N | v1 rms_rel | v1 max_rel | v1 rms_rel_avg | vperp rms | vperp max |
+|---|---|---|---|---|---|
+| 16 | 3.993e-03 | 9.292e-03 | 3.557e-03 | 2.678e-03 | 5.806e-03 |
+| 24 | 1.778e-03 | 4.142e-03 | 1.592e-03 | 1.169e-03 | 2.571e-03 |
+| 32 | 1.001e-03 | 2.387e-03 | 8.977e-04 | 6.538e-04 | 1.436e-03 |
+
+- observed order v1 rms_rel over N=16/24/32: 1.99 2.00
+
+- observed order v1 max_rel over N=16/24/32: 1.99 1.92
+
+- observed order v1 rms_rel_avg over N=16/24/32: 1.98 1.99
+
+- observed order vperp rms over N=16/24/32: 2.04 2.02
+
+- observed order vperp max over N=16/24/32: 2.01 2.02
+
+run_crosscheck.sh: end=2026-10-06T22:01:46Z
+[2026-10-06T22:01:46Z] job=sf33-crosscheck finished exit=0

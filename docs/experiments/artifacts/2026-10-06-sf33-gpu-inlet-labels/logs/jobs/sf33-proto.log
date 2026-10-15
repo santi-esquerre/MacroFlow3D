@@ -1,0 +1,888 @@
+[2026-10-06T21:26:53Z] job=sf33-proto session=macroflow3d-SF-33-sf33-proto started
+[2026-10-06T21:26:53Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-06T21:26:53Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T21:26:53Z] command=docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_proto.sh build/v100-release docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels
+run_proto.sh: build=build/v100-release bin=/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab out=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels host=localhost.localdomain start=2026-10-06T21:26:54Z
+run_proto.sh: python 3.11.7 numpy 1.26.4
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.25_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_0.25_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_16.log 2>&1
+  CASE_RESULT gauss_0.25_16 rc=0 STATUS converged wall=5s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_0.25_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_24.log 2>&1
+  CASE_RESULT gauss_0.25_24 rc=0 STATUS converged wall=24s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_0.25_32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_32.log 2>&1
+  CASE_RESULT gauss_0.25_32 rc=0 STATUS converged wall=17s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_0.5_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_0.5_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.5_16.log 2>&1
+  CASE_RESULT gauss_0.5_16 rc=0 STATUS converged wall=19s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.5_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_0.5_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.5_24.log 2>&1
+  CASE_RESULT gauss_0.5_24 rc=15 STATUS continuation_floor wall=116s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_0.25_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.25_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_16.log 2>&1
+  CASE_RESULT gauss_ch_0.25_16 rc=0 STATUS converged wall=6s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.25_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_24.log 2>&1
+  CASE_RESULT gauss_ch_0.25_24 rc=0 STATUS converged wall=9s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_32 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.25_32  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.25_32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_32.log 2>&1
+  CASE_RESULT gauss_ch_0.25_32 rc=0 STATUS converged wall=19s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/gauss_ch_0.5_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.5_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.5_16.log 2>&1
+  CASE_RESULT gauss_ch_0.5_16 rc=0 STATUS converged wall=20s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_ch_0.5_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/gauss_ch_0.5_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.5_24.log 2>&1
+  CASE_RESULT gauss_ch_0.5_24 rc=15 STATUS continuation_floor wall=68s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.25_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.25_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.25_16.log 2>&1
+  CASE_RESULT control2d_0.25_16 rc=0 STATUS converged wall=4s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.25_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.25_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.25_24.log 2>&1
+  CASE_RESULT control2d_0.25_24 rc=0 STATUS converged wall=3s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.5_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.5_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.5_16.log 2>&1
+  CASE_RESULT control2d_0.5_16 rc=0 STATUS converged wall=4s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/control2d_0.5_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.5_24.log 2>&1
+  CASE_RESULT control2d_0.5_24 rc=0 STATUS converged wall=4s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_1_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/generic3d_1_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_16.log 2>&1
+  CASE_RESULT generic3d_1_16 rc=15 STATUS continuation_floor wall=82s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_20 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_20  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/generic3d_1_20.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_20.log 2>&1
+  CASE_RESULT generic3d_1_20 rc=15 STATUS continuation_floor wall=80s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_24 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_1_24  --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/generic3d_1_24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_24.log 2>&1
+  CASE_RESULT generic3d_1_24 rc=15 STATUS continuation_floor wall=112s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.25_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.25_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_0.25_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/generic3d_0.25_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_0.25_16.log 2>&1
+  CASE_RESULT generic3d_0.25_16 rc=0 STATUS converged wall=4s
+  export /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.5_16 exists (reused)
++ /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --proto /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/generic3d_0.5_16 --solution /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/generic3d_0.5_16_i1o4 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/generic3d_0.5_16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_0.5_16.log 2>&1
+  CASE_RESULT generic3d_0.5_16 rc=0 STATUS converged wall=8s
+run_proto.sh: driver results
+  gauss_0.25_16 rc=0 STATUS converged
+  gauss_0.25_24 rc=0 STATUS converged
+  gauss_0.25_32 rc=0 STATUS converged
+  gauss_0.5_16 rc=0 STATUS converged
+  gauss_0.5_24 rc=15 STATUS continuation_floor
+  gauss_ch_0.25_16 rc=0 STATUS converged
+  gauss_ch_0.25_24 rc=0 STATUS converged
+  gauss_ch_0.25_32 rc=0 STATUS converged
+  gauss_ch_0.5_16 rc=0 STATUS converged
+  gauss_ch_0.5_24 rc=15 STATUS continuation_floor
+  control2d_0.25_16 rc=0 STATUS converged
+  control2d_0.25_24 rc=0 STATUS converged
+  control2d_0.5_16 rc=0 STATUS converged
+  control2d_0.5_24 rc=0 STATUS converged
+  generic3d_1_16 rc=15 STATUS continuation_floor
+  generic3d_1_20 rc=15 STATUS continuation_floor
+  generic3d_1_24 rc=15 STATUS continuation_floor
+  generic3d_0.25_16 rc=0 STATUS converged
+  generic3d_0.5_16 rc=0 STATUS converged
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/compare_proto.py /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.25_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.25_24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.5_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.5_24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_32.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.5_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.5_24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_32.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.5_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.5_24.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_0.25_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_0.5_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_16.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_20.log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_24.log --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-02-sf29-inlet-labels/raw/sweep2/summary.md --exports /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports --out /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/compare_proto.md
+==============================================================================================================
+CASE control2d eps=0.25 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.25_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0030673264313821522    0.0030673264313821579    1.84e-15    PASS
+    e_psi   0.032204212467791309     0.032204212467792218     2.82e-14    PASS
+    e_psi1  0.032204212467791309     0.032204212467792218     2.82e-14    PASS
+    e_psi2  5.1749754822654202e-12   5.1749940265103953e-12   nan         roundoff
+    e_i1    0.002303811807155178     0.0023038118071551728    2.26e-15    PASS
+    e_i2    4.1803089085077638e-13   4.1803299883969688e-13   nan         roundoff
+    e_div   8.4263095680032687e-14   8.431421736950982e-14    nan         roundoff
+    min_c   0.74047172076486811      0.74047172076486834      3.00e-16    PASS
+    p0.1    0.74047172076600642      0.74047172076600665      3.00e-16    PASS
+    p1      0.74605757807555695      0.74605757807555662      4.46e-16    PASS
+    p5      0.78843705343847781      0.78843705343847792      1.41e-16    PASS
+    p50     1.0000081506187839       1.0000081506187839       0.00e+00    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0017152553945885233    0.0017152553945888477    1.89e-13    PASS
+    e_psi   0                        0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  0                        0                        nan         roundoff
+    e_i1    0.0017413969614006647    0.0017413969614010318    2.11e-13    PASS
+    e_i2    3.8450645228132457e-28   4.3107153297252553e-28   nan         roundoff
+    e_div   3.095171694988529e-15    3.3787140684696202e-15   nan         roundoff
+    min_c   0.74012765754033993      0.74012765754034127      1.80e-15    PASS
+    p0.1    0.74012765754335863      0.74012765754335974      1.50e-15    PASS
+    p1      0.75630141785589944      0.75630141785590288      4.55e-15    PASS
+    p5      0.78880378119037953      0.78880378119037342      7.74e-15    PASS
+    p50     0.99994609589734473      0.99994609589734251      2.22e-15    PASS
+  r_F gpu=1.217e-15 (gate <= 1e-10: PASS) prototype=1.532e-15 | its gpu=2 prototype=2
+  PATH gpu=`0.25` prototype=`0.25` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=6.312e-15 max_rel_diff_u2=1.981e-04 max_rel_diff_joint=6.312e-15 max_abs_diff=(3.123e-16, 8.117e-17) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       1.855282e+00 2.896250e-13 1.216803e-15
+  r_F history (prototype hist, solution.json): 1.855282e+00 1.736019e-11 1.531789e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 15.9 over 1 entries; lengths gpu=3 prototype=3
+  GMRES stage eps=0.25 status=converged newton_steps=2 its_max=48 its_median=38.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE control2d eps=0.25 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.25_24.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-control2d-0.25-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00052467742300045886   0.00052470000000000001   4.30e-05    PASS(4dig)
+    e_psi   0.0026668969883230503    0.0026670000000000001    3.86e-05    PASS(4dig)
+    e_psi1  0.0026668969883230503    0.0026670000000000001    3.86e-05    PASS(4dig)
+    e_psi2  5.2614230690947646e-12   5.2610000000000003e-12   nan         roundoff
+    e_i1    0.00040262422936869713   0.00040259999999999997   6.02e-05    PASS(4dig)
+    e_i2    4.3803486399901064e-13   4.38e-13                 nan         roundoff
+    e_div   6.894190027578184e-14    6.8949999999999999e-14   nan         roundoff
+    min_c   0.73900043262649517      0.73899999999999999      5.85e-07    PASS(4dig)
+    p0.1    0.73900043262847659      0.73899999999999999      5.85e-07    PASS(4dig)
+    p1      0.75213016695547463      0.75209999999999999      4.01e-05    PASS(4dig)
+    p5      0.79261276043222717      0.79259999999999997      1.61e-05    PASS(4dig)
+    p50     1.0005373727790796       1.0009999999999999       4.62e-04    PASS(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00031532627782580592   0.00031532627782580419   5.50e-15    PASS
+    e_psi   3.2870087332924401e-18   0                        nan         roundoff
+    e_psi1  3.2870087332924401e-18   0                        nan         roundoff
+    e_psi2  0                        0                        nan         roundoff
+    e_i1    0.00032081188191446675   0.00032081188191446518   4.90e-15    PASS
+    e_i2    4.3705088530510498e-28   4.7078034391987537e-28   nan         roundoff
+    e_div   3.3443260867954758e-15   3.5283993707934836e-15   nan         roundoff
+    min_c   0.73903676975049981      0.73903676975049981      0.00e+00    PASS
+    p0.1    0.73903676975502108      0.73903676975502108      0.00e+00    PASS
+    p1      0.75316502523895756      0.75316502523895756      0.00e+00    PASS
+    p5      0.79265242557784832      0.79265242557784832      0.00e+00    PASS
+    p50     1.0005537427634774       1.0005537427634774       0.00e+00    PASS
+  r_F gpu=2.790e-15 (gate <= 1e-10: PASS) prototype=3.393e-15 | its gpu=2 prototype=2
+  PATH gpu=`0.25` prototype=`0.25` -> EQUAL
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       2.64e+00 4.94e-13 2.79e-15
+  r_F history (prototype, %.2e cell log): 2.64e+00 2.39e-11 3.39e-15
+  GMRES stage eps=0.25 status=converged newton_steps=2 its_max=62 its_median=50.5 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE control2d eps=0.5 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.5_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0076867914868427867    0.007686791486842765     2.82e-15    PASS
+    e_psi   0.031833069451627713     0.031833069451626929     2.46e-14    PASS
+    e_psi1  0.031833069451627713     0.031833069451626929     2.46e-14    PASS
+    e_psi2  2.3339324824749608e-13   2.3342565258862226e-13   nan         roundoff
+    e_i1    0.0058931832010938635    0.0058931832010938037    1.02e-14    PASS
+    e_i2    3.7631529617973895e-14   3.7672831546933479e-14   nan         roundoff
+    e_div   1.6617456618799568e-14   1.6665346742016425e-14   nan         roundoff
+    min_c   0.52663855045659047      0.52663855045658969      1.48e-15    PASS
+    p0.1    0.52663855045659069      0.52663855045659003      1.26e-15    PASS
+    p1      0.52844024169017068      0.5284402416901709       4.20e-16    PASS
+    p5      0.6071395690836433       0.6071395690836433       0.00e+00    PASS
+    p50     1.0105485170062352       1.0105485170062352       0.00e+00    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0043097661282942047    0.0043097661282942082    8.05e-16    PASS
+    e_psi   8.556859241508362e-18    0                        nan         roundoff
+    e_psi1  8.556859241508362e-18    0                        nan         roundoff
+    e_psi2  0                        0                        nan         roundoff
+    e_i1    0.0046636980968276067    0.004663698096827611     9.30e-16    PASS
+    e_i2    3.0795756733221871e-29   3.4544620153737382e-29   nan         roundoff
+    e_div   2.7422082960790698e-15   3.0898993040558989e-15   nan         roundoff
+    min_c   0.52647428290213361      0.52647428290213361      0.00e+00    PASS
+    p0.1    0.5264742829023229       0.5264742829023229       0.00e+00    PASS
+    p1      0.55082207059762089      0.55082207059762089      0.00e+00    PASS
+    p5      0.61556278308774448      0.61556278308774459      1.80e-16    PASS
+    p50     1.0092491452145458       1.0092491452145458       0.00e+00    PASS
+  r_F gpu=2.445e-15 (gate <= 1e-10: PASS) prototype=2.980e-15 | its gpu=2 prototype=2
+  PATH gpu=`0.25->0.5` prototype=`0.25->0.5` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=7.443e-15 max_rel_diff_u2=6.643e-03 max_rel_diff_joint=7.443e-15 max_abs_diff=(7.078e-16, 2.404e-16) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       1.723822e+00 2.690613e-13 2.444569e-15
+  r_F history (prototype hist, solution.json): 1.723822e+00 2.285588e-11 2.980433e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 17.0 over 1 entries; lengths gpu=3 prototype=3
+  GMRES stage eps=0.25 status=converged newton_steps=2 its_max=48 its_median=38.0 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=2 its_max=89 its_median=58.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE control2d eps=0.5 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/control2d_0.5_24.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-control2d-0.5-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0016180422778911718    0.0016180000000000001    2.61e-05    PASS(4dig)
+    e_psi   0.010650007214296419     0.01065                  6.77e-07    PASS(4dig)
+    e_psi1  0.010650007214296419     0.01065                  6.77e-07    PASS(4dig)
+    e_psi2  2.3469802528964612e-13   2.347e-13                nan         roundoff
+    e_i1    0.0013219505175435017    0.001322                 3.74e-05    PASS(4dig)
+    e_i2    3.8957795049647186e-14   3.8950000000000001e-14   nan         roundoff
+    e_div   1.3170125946456079e-14   1.3e-14                  nan         roundoff
+    min_c   0.52582051625245174      0.52580000000000005      3.90e-05    PASS(4dig)
+    p0.1    0.52582051625257353      0.52580000000000005      3.90e-05    PASS(4dig)
+    p1      0.54817772068319481      0.54820000000000002      4.06e-05    PASS(4dig)
+    p5      0.61633925747131724      0.61629999999999996      6.37e-05    PASS(4dig)
+    p50     0.9987773688222239       0.99880000000000002      2.27e-05    PASS(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00082560031706063524   0.00082560031706065086   1.89e-14    PASS
+    e_psi   5.5714939239180502e-18   0                        nan         roundoff
+    e_psi1  5.5714939239180502e-18   0                        nan         roundoff
+    e_psi2  0                        0                        nan         roundoff
+    e_i1    0.00084998599303742165   0.00084998599303743488   1.56e-14    PASS
+    e_i2    3.8157868389379754e-29   4.2822288924677653e-29   nan         roundoff
+    e_div   3.6378697899699469e-15   4.1439387742404653e-15   nan         roundoff
+    min_c   0.52601133141265066      0.52601133141265066      0.00e+00    PASS
+    p0.1    0.52601133141293233      0.52601133141293233      0.00e+00    PASS
+    p1      0.54865818826531165      0.54865818826531165      0.00e+00    PASS
+    p5      0.61665840315206277      0.61665840315206277      0.00e+00    PASS
+    p50     0.99877823738654214      0.99877823738654214      0.00e+00    PASS
+  r_F gpu=5.306e-15 (gate <= 1e-10: PASS) prototype=6.582e-15 | its gpu=2 prototype=2
+  PATH gpu=`0.25->0.5` prototype=`0.25->0.5` -> EQUAL
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       2.43e+00 5.66e-13 5.31e-15
+  r_F history (prototype, %.2e cell log): 2.43e+00 4.51e-11 6.58e-15
+  GMRES stage eps=0.25 status=converged newton_steps=2 its_max=62 its_median=50.5 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=2 its_max=154 its_median=92.5 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss eps=0.25 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0055059288177684374    0.0055059288177684131    4.41e-15    PASS
+    e_psi   0.077266164256451678     0.077266164256451234     5.75e-15    PASS
+    e_psi1  0.077266164256451678     0.077266164256451234     5.75e-15    PASS
+    e_psi2  0.058594649382247684     0.058594649382247281     6.87e-15    PASS
+    e_i1    0.0040494395651047514    0.0040494395651047349    4.07e-15    PASS
+    e_i2    0.0026386290078277666    0.0026386290078277345    1.22e-14    PASS
+    e_div   0.0094566745681158842    0.0094566745681159796    1.01e-14    PASS
+    min_c   0.50580641999102194      0.50580641999102194      0.00e+00    PASS
+    p0.1    0.54698217771625834      0.54698217771625834      0.00e+00    PASS
+    p1      0.63521829296585697      0.63521829296585697      0.00e+00    PASS
+    p5      0.73019144887114884      0.73019144887114851      4.56e-16    PASS
+    p50     0.98132069825542001      0.98132069825542034      3.39e-16    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0032913671840159183    0.0032913671840159166    5.27e-16    PASS
+    e_psi   1.2371155124191247e-17   0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  1.2371155124191247e-17   0                        nan         roundoff
+    e_i1    0.0010980608182935636    0.0010980608182935634    1.97e-16    PASS
+    e_i2    0.0007751624974607471    0.000775162497460747     1.40e-16    PASS
+    e_div   0.01259879382429269      0.012598793824292742     4.13e-15    PASS
+    min_c   0.50645310922590581      0.50645310922590581      0.00e+00    PASS
+    p0.1    0.5477683231869126       0.5477683231869126       0.00e+00    PASS
+    p1      0.63604189493282837      0.63604189493282848      1.75e-16    PASS
+    p5      0.73154098846451976      0.73154098846451987      1.52e-16    PASS
+    p50     0.98185292630748755      0.98185292630748744      1.13e-16    PASS
+  r_F gpu=8.628e-14 (gate <= 1e-10: PASS) prototype=8.631e-14 | its gpu=10 prototype=10
+  PATH gpu=`0.25` prototype=`0.25` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=2.625e-15 max_rel_diff_u2=3.343e-15 max_rel_diff_joint=2.625e-15 max_abs_diff=(2.429e-16, 2.255e-16) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       2.567037e+00 5.016864e-01 3.632939e-01 3.470429e-01 2.109785e-01 1.812480e-01 2.600654e-02 5.566076e-03 1.307938e-04 6.466291e-08 8.627637e-14
+  r_F history (prototype hist, solution.json): 2.567037e+00 5.016864e-01 3.632939e-01 3.470429e-01 2.109785e-01 1.812480e-01 2.600654e-02 5.566078e-03 1.307939e-04 6.466305e-08 8.631193e-14
+  r_F history agreement while r_F > 1e-10: min correct digits 5.7 over 10 entries; lengths gpu=11 prototype=11
+  GMRES stage eps=0.25 status=converged newton_steps=10 its_max=167 its_median=124.5 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss eps=0.25 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_24.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-gauss-0.25-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0018080867183720315    0.0018079999999999999    4.80e-05    PASS(4dig)
+    e_psi   0.028860579640689197     0.02886                  2.01e-05    PASS(4dig)
+    e_psi1  0.028860579640689197     0.02886                  2.01e-05    PASS(4dig)
+    e_psi2  0.021059960186840945     0.021059999999999999     1.89e-06    PASS(4dig)
+    e_i1    0.0014786898460458977    0.0014790000000000001    2.10e-04    PASS(4dig)
+    e_i2    0.0008368034213197792    0.00083679999999999996   4.09e-06    PASS(4dig)
+    e_div   0.0026893602778596468    0.002689                 1.34e-04    PASS(4dig)
+    min_c   0.50504978879102813      0.505                    9.86e-05    PASS(4dig)
+    p0.1    0.53997391078176415      0.54000000000000004      4.83e-05    PASS(4dig)
+    p1      0.62671443240976343      0.62670000000000003      2.30e-05    PASS(4dig)
+    p5      0.73007440367960075      0.73009999999999997      3.51e-05    PASS(4dig)
+    p50     0.98210883650272207      0.98209999999999997      9.00e-06    PASS(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00076985149675690568   0.00076985149675690655   1.13e-15    PASS
+    e_psi   9.7910910197690885e-18   0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  9.7910910197690885e-18   0                        nan         roundoff
+    e_i1    0.00024495459668650638   0.00024495459668650633   2.21e-16    PASS
+    e_i2    0.00015200250431324734   0.00015200250431324691   2.85e-15    PASS
+    e_div   0.0033442780269803854    0.0033442780269804179    9.73e-15    PASS
+    min_c   0.50515514426254626      0.50515514426254626      0.00e+00    PASS
+    p0.1    0.54015790951644582      0.54015790951644582      0.00e+00    PASS
+    p1      0.62681853327826731      0.62681853327826731      0.00e+00    PASS
+    p5      0.73006846990350827      0.73006846990350827      0.00e+00    PASS
+    p50     0.98221591371479711      0.98221591371479711      0.00e+00    PASS
+  r_F gpu=5.147e-15 (gate <= 1e-10: PASS) prototype=6.363e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25(fail)->0.125->0.25` prototype=`0.25(fail)->0.125->0.25` -> EQUAL
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       1.78e+00 7.86e-02 4.87e-02 2.07e-02 1.80e-03 2.80e-05 2.02e-08 5.15e-15
+  r_F history (prototype, %.2e cell log): 1.78e+00 7.86e-02 4.87e-02 2.07e-02 1.80e-03 2.80e-05 2.02e-08 6.36e-15
+  GMRES stage eps=0.25 status=linear_failure newton_steps=4 its_max=6000 its_median=2700.0 linear_failures=1
+  GMRES stage eps=0.125 status=converged newton_steps=7 its_max=161 its_median=82.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=300 its_median=286.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss eps=0.25 N=32   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.25_32.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-gauss-0.25-N32.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00080142813631700345   0.00080139999999999996   3.51e-05    PASS(4dig)
+    e_psi   0.013027149708043204     0.01303                  2.19e-04    PASS(4dig)
+    e_psi1  0.013027149708043204     0.01303                  2.19e-04    PASS(4dig)
+    e_psi2  0.0099516667507886965    0.0099520000000000008    3.35e-05    PASS(4dig)
+    e_i1    0.00066255067862453431   0.00066259999999999995   7.44e-05    PASS(4dig)
+    e_i2    0.00037791669183977243   0.00037790000000000002   4.42e-05    PASS(4dig)
+    e_div   0.0010254068615790795    0.0010250000000000001    3.97e-04    PASS(4dig)
+    min_c   0.50512346533207009      0.50509999999999999      4.65e-05    PASS(4dig)
+    p0.1    0.53877300013587093      0.53879999999999995      5.01e-05    PASS(4dig)
+    p1      0.62584025046195157      0.62580000000000002      6.43e-05    PASS(4dig)
+    p5      0.72902797029256106      0.72899999999999998      3.84e-05    PASS(4dig)
+    p50     0.9832336097196257       0.98319999999999996      3.42e-05    PASS(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00026200481931668555   0.00026200481931668512   1.66e-15    PASS
+    e_psi   1.3499783241745041e-17   0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  1.3499783241745041e-17   0                        nan         roundoff
+    e_i1    8.0911499775766207e-05   8.0911499775765855e-05   4.35e-15    PASS
+    e_i2    4.5469360335973097e-05   4.5469360335972894e-05   4.47e-15    PASS
+    e_div   0.0012059903048740226    0.0012059903048740129    8.09e-15    PASS
+    min_c   0.5051552457945323       0.5051552457945323       0.00e+00    PASS
+    p0.1    0.53879211389148962      0.53879211389148962      0.00e+00    PASS
+    p1      0.62591827770348163      0.62591827770348163      0.00e+00    PASS
+    p5      0.72904981627955823      0.72904981627955812      1.52e-16    PASS
+    p50     0.98323472243186316      0.98323472243186316      0.00e+00    PASS
+  r_F gpu=8.961e-15 (gate <= 1e-10: PASS) prototype=1.108e-14 | its gpu=8 prototype=8
+  PATH gpu=`0.25(fail)->0.125->0.25` prototype=`0.25(fail)->0.125->0.25` -> EQUAL
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       2.47e+00 8.65e-02 5.68e-02 2.63e-02 5.08e-03 2.00e-04 2.27e-06 2.16e-11 8.96e-15
+  r_F history (prototype, %.2e cell log): 2.47e+00 8.65e-02 5.68e-02 2.63e-02 5.08e-03 2.00e-04 2.27e-06 2.16e-11 1.11e-14
+  GMRES stage eps=0.25 status=linear_failure newton_steps=2 its_max=700 its_median=550.0 linear_failures=1
+  GMRES stage eps=0.125 status=converged newton_steps=8 its_max=248 its_median=142.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=8 its_max=888 its_median=800.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss eps=0.5 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.5_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.019083846132441802     0.019083846132441729     3.82e-15    PASS
+    e_psi   0.14025886949718538      0.14025886949718477      4.35e-15    PASS
+    e_psi1  0.14025886949718538      0.14025886949718477      4.35e-15    PASS
+    e_psi2  0.099536390148090348     0.09953639014809007      2.79e-15    PASS
+    e_i1    0.013914124612117058     0.013914124612117015     3.12e-15    PASS
+    e_i2    0.0092304638049228258    0.0092304638049227738    5.64e-15    PASS
+    e_div   0.049075426927741174     0.049075426927741396     4.52e-15    PASS
+    min_c   0.23715611459726904      0.23715611459726868      1.52e-15    PASS
+    p0.1    0.28014180269344052      0.28014180269344036      5.94e-16    PASS
+    p1      0.384942011384103        0.38494201138410311      2.88e-16    PASS
+    p5      0.51956186865181042      0.51956186865181042      0.00e+00    PASS
+    p50     0.94223679298257024      0.94223679298257024      0.00e+00    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.021490219524203893     0.021490219524204119     1.05e-14    PASS
+    e_psi   1.8830318774493574e-17   0                        nan         roundoff
+    e_psi1  1.4445200426126246e-18   0                        nan         roundoff
+    e_psi2  1.8830318774493574e-17   0                        nan         roundoff
+    e_i1    0.0089984924634340414    0.0089984924634342704    2.54e-14    PASS
+    e_i2    0.0027763674884986986    0.0027763674884991154    1.50e-13    PASS
+    e_div   0.1002354982222292       0.10023549822222931      1.11e-15    PASS
+    min_c   0.23704512954132381      0.23704512954132351      1.29e-15    PASS
+    p0.1    0.28079897262258774      0.2807989726225868       3.36e-15    PASS
+    p1      0.38549969537416356      0.38549969537416423      1.73e-15    PASS
+    p5      0.51995141386643551      0.51995141386643495      1.07e-15    PASS
+    p50     0.94294839867086533      0.94294839867086444      9.42e-16    PASS
+  r_F gpu=4.576e-15 (gate <= 1e-10: PASS) prototype=5.431e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25->0.5(fail)->0.375->0.5` prototype=`0.25->0.5(fail)->0.375->0.5` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=5.236e-15 max_rel_diff_u2=4.217e-15 max_rel_diff_joint=5.236e-15 max_abs_diff=(9.714e-16, 6.661e-16) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       1.255023e+00 8.025202e-02 4.313358e-02 2.219285e-02 4.805510e-04 2.804117e-06 7.670142e-12 4.576420e-15
+  r_F history (prototype hist, solution.json): 1.255023e+00 8.025202e-02 4.313358e-02 2.219285e-02 4.805511e-04 2.804118e-06 7.670087e-12 5.431287e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 7.0 over 6 entries; lengths gpu=8 prototype=8
+  GMRES stage eps=0.25 status=converged newton_steps=10 its_max=167 its_median=124.5 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=6000 its_median=3143.5 linear_failures=1
+  GMRES stage eps=0.375 status=converged newton_steps=7 its_max=285 its_median=274.0 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=7 its_max=900 its_median=899.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss eps=0.5 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_0.5_24.log, GPU STATUS continuation_floor)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-gauss-0.5-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.017755636228115278     0.0084740000000000006    1.10e+00    FAIL(4dig)
+    e_psi   0.15035349745846083      0.068309999999999996     1.20e+00    FAIL(4dig)
+    e_psi1  0.15035349745846083      0.068309999999999996     1.20e+00    FAIL(4dig)
+    e_psi2  0.1131402074642098       0.044049999999999999     1.57e+00    FAIL(4dig)
+    e_i1    0.014893859358540141     0.0065690000000000002    1.27e+00    FAIL(4dig)
+    e_i2    0.0093120822481349303    0.0037209999999999999    1.50e+00    FAIL(4dig)
+    e_div   0.017804339750244397     0.02053                  1.33e-01    FAIL(4dig)
+    min_c   0.23805184632772972      0.2392                   4.80e-03    FAIL(4dig)
+    p0.1    0.27502255680834103      0.27579999999999999      2.82e-03    FAIL(4dig)
+    p1      0.37627334654906924      0.37719999999999998      2.46e-03    FAIL(4dig)
+    p5      0.51707743930642014      0.51829999999999998      2.36e-03    FAIL(4dig)
+    p50     0.94503021888248662      0.94440000000000002      6.67e-04    FAIL(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0072780541958739437    0.0072780541958739437    0.00e+00    PASS
+    e_psi   2.0451357171404643e-17   0                        nan         roundoff
+    e_psi1  9.4592799259127618e-19   0                        nan         roundoff
+    e_psi2  2.0451357171404643e-17   0                        nan         roundoff
+    e_i1    0.0026644354971603326    0.0026644354971603322    1.63e-16    PASS
+    e_i2    0.00076882237631580724   0.00076882237631580659   8.46e-16    PASS
+    e_div   0.042423013443581785     0.042423013443581806     4.91e-16    PASS
+    min_c   0.23914692416320404      0.23914692416320404      0.00e+00    PASS
+    p0.1    0.2755997349449899       0.27559973494498985      2.01e-16    PASS
+    p1      0.37621848205633962      0.37621848205633962      0.00e+00    PASS
+    p5      0.51889710731306227      0.51889710731306227      0.00e+00    PASS
+    p50     0.94421194561590016      0.94421194561590016      0.00e+00    PASS
+  r_F gpu=5.182e-02 (gate <= 1e-10: FAIL) prototype=1.224e-14 | its gpu=2 prototype=8
+  PATH gpu=`0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5(fail)->0.4375(fail)->0.40625->0.4375(fail)->0.5(final)` prototype=`0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5` -> DIFFERENT
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       1.36e+00 5.18e-02
+  r_F history (prototype, %.2e cell log): 1.82e+00 8.40e-02 5.50e-02 3.39e-02 6.93e-03 3.20e-04 2.05e-06 2.26e-11 1.22e-14
+  GMRES stage eps=0.25 status=linear_failure newton_steps=4 its_max=6000 its_median=2700.0 linear_failures=1
+  GMRES stage eps=0.125 status=converged newton_steps=7 its_max=161 its_median=82.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=300 its_median=286.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=800 its_median=794.5 linear_failures=1
+  GMRES stage eps=0.375 status=converged newton_steps=8 its_max=1400 its_median=1250.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=6000 its_median=4200.0 linear_failures=1
+  GMRES stage eps=0.4375 status=linear_failure newton_steps=4 its_max=6000 its_median=4950.0 linear_failures=1
+  GMRES stage eps=0.40625 status=converged newton_steps=5 its_max=3100 its_median=2700.0 linear_failures=0
+  GMRES stage eps=0.4375 status=linear_failure newton_steps=2 its_max=6000 its_median=4900.0 linear_failures=1
+  GMRES stage eps=0.5(final) status=None newton_steps=2 its_max=4200 its_median=2300.0 linear_failures=1
+  OVERALL FAIL
+==============================================================================================================
+CASE gauss_ch eps=0.25 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0052873838164600694    0.0052873838164600234    8.69e-15    PASS
+    e_psi   0.067803545078497368     0.067803545078496369     1.47e-14    PASS
+    e_psi1  0.067803545078497368     0.067803545078496369     1.47e-14    PASS
+    e_psi2  0.041388179360834207     0.041388179360833423     1.89e-14    PASS
+    e_i1    0.0041105712804962438    0.004110571280496203     9.92e-15    PASS
+    e_i2    0.0025560002390321301    0.0025560002390320928    1.46e-14    PASS
+    e_div   0.009407682325937014     0.0094076823259370782    6.82e-15    PASS
+    min_c   0.5569124634261805       0.55691246342618028      3.99e-16    PASS
+    p0.1    0.5884288680522316       0.58842886805223127      5.66e-16    PASS
+    p1      0.65722832590885472      0.65722832590885438      5.07e-16    PASS
+    p5      0.72688584755635843      0.72688584755635888      6.11e-16    PASS
+    p50     0.97240999315800902      0.97240999315800869      3.43e-16    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.003447236161187083     0.0034472361611870826    1.26e-16    PASS
+    e_psi   8.7976909748202829e-18   0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  8.7976909748202829e-18   0                        nan         roundoff
+    e_i1    0.0014406080164069347    0.001440608016406935     1.51e-16    PASS
+    e_i2    0.0012087935962050084    0.0012087935962050073    8.97e-16    PASS
+    e_div   0.013144895160092832     0.013144895160092835     2.64e-16    PASS
+    min_c   0.55749800216063905      0.55749800216063905      0.00e+00    PASS
+    p0.1    0.58881883273020175      0.58881883273020175      0.00e+00    PASS
+    p1      0.65726562636644315      0.65726562636644315      0.00e+00    PASS
+    p5      0.72784669423579251      0.72784669423579251      0.00e+00    PASS
+    p50     0.97320588181273782      0.97320588181273782      0.00e+00    PASS
+  r_F gpu=2.781e-15 (gate <= 1e-10: PASS) prototype=3.407e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25(fail)->0.125->0.25` prototype=`0.25(fail)->0.125->0.25` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=5.411e-15 max_rel_diff_u2=5.374e-15 max_rel_diff_joint=5.411e-15 max_abs_diff=(6.245e-16, 3.816e-16) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       1.392335e+00 8.978884e-02 4.819909e-02 1.738264e-02 2.618397e-04 1.208196e-06 1.555268e-12 2.780701e-15
+  r_F history (prototype hist, solution.json): 1.392335e+00 8.978884e-02 4.819909e-02 1.738264e-02 2.618397e-04 1.208196e-06 1.555305e-12 3.406678e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 7.1 over 6 entries; lengths gpu=8 prototype=8
+  GMRES stage eps=0.25 status=stagnation newton_steps=5 its_max=500 its_median=261.0 linear_failures=0
+  GMRES stage eps=0.125 status=converged newton_steps=7 its_max=76 its_median=52.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=128 its_median=123.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss_ch eps=0.25 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_24.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-gauss_ch-0.25-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0017830408700225627    0.0017830000000000001    2.29e-05    PASS(4dig)
+    e_psi   0.024826874601857153     0.024830000000000001     1.26e-04    PASS(4dig)
+    e_psi1  0.024826874601857153     0.024830000000000001     1.26e-04    PASS(4dig)
+    e_psi2  0.015026994982074335     0.01503                  2.00e-04    PASS(4dig)
+    e_i1    0.0014483121073123695    0.0014480000000000001    2.16e-04    PASS(4dig)
+    e_i2    0.00085046050388898852   0.00085050000000000002   4.64e-05    PASS(4dig)
+    e_div   0.0029010312372818397    0.0029009999999999999    1.08e-05    PASS(4dig)
+    min_c   0.55559818874237221      0.55559999999999998      3.26e-06    PASS(4dig)
+    p0.1    0.58814637847041695      0.58809999999999996      7.89e-05    PASS(4dig)
+    p1      0.65664829826057858      0.65659999999999996      7.36e-05    PASS(4dig)
+    p5      0.73022091175127057      0.73019999999999996      2.86e-05    PASS(4dig)
+    p50     0.97292842480885589      0.97289999999999999      2.92e-05    PASS(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00080601410762117605   0.0008060141076211754    8.07e-16    PASS
+    e_psi   7.75830957337493e-18     0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  7.75830957337493e-18     0                        nan         roundoff
+    e_i1    0.00033272366965752463   0.00033272366965752392   2.12e-15    PASS
+    e_i2    0.000261672921494174     0.00026167292149417422   8.29e-16    PASS
+    e_div   0.0036454754186365161    0.0036454754186364961    5.47e-15    PASS
+    min_c   0.55572855169059032      0.55572855169059032      0.00e+00    PASS
+    p0.1    0.58822720771399295      0.58822720771399306      1.89e-16    PASS
+    p1      0.65668828650860211      0.65668828650860211      0.00e+00    PASS
+    p5      0.73029365882518704      0.73029365882518715      1.52e-16    PASS
+    p50     0.97318375168024263      0.97318375168024263      0.00e+00    PASS
+  r_F gpu=7.617e-15 (gate <= 1e-10: PASS) prototype=8.914e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25(fail)->0.125->0.25` prototype=`0.25(fail)->0.125->0.25` -> EQUAL
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       2.07e+00 8.96e-02 5.21e-02 2.23e-02 2.03e-03 4.88e-05 2.68e-08 7.62e-15
+  r_F history (prototype, %.2e cell log): 2.07e+00 8.96e-02 5.21e-02 2.23e-02 2.03e-03 4.88e-05 2.68e-08 8.91e-15
+  GMRES stage eps=0.25 status=linear_failure newton_steps=2 its_max=400 its_median=381.5 linear_failures=1
+  GMRES stage eps=0.125 status=converged newton_steps=7 its_max=153 its_median=85.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=300 its_median=295.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss_ch eps=0.25 N=32   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.25_32.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-gauss_ch-0.25-N32.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00076571896425189977   0.00076570000000000002   2.48e-05    PASS(4dig)
+    e_psi   0.010860563405742225     0.01086                  5.19e-05    PASS(4dig)
+    e_psi1  0.010860563405742225     0.01086                  5.19e-05    PASS(4dig)
+    e_psi2  0.006777236818847376     0.006777                 3.49e-05    PASS(4dig)
+    e_i1    0.00062314181064812753   0.00062310000000000002   6.71e-05    PASS(4dig)
+    e_i2    0.00036684929207536881   0.00036680000000000003   1.34e-04    PASS(4dig)
+    e_div   0.0011389751574798364    0.001139                 2.18e-05    PASS(4dig)
+    min_c   0.55392093386699726      0.55389999999999995      3.78e-05    PASS(4dig)
+    p0.1    0.59163164374845556      0.59160000000000001      5.35e-05    PASS(4dig)
+    p1      0.65532274114033018      0.65529999999999999      3.47e-05    PASS(4dig)
+    p5      0.73066587370223157      0.73070000000000002      4.67e-05    PASS(4dig)
+    p50     0.97269327398423711      0.97270000000000001      6.91e-06    PASS(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.00027594285829234041   0.00027594285829234062   7.86e-16    PASS
+    e_psi   9.7454856037911592e-18   0                        nan         roundoff
+    e_psi1  0                        0                        nan         roundoff
+    e_psi2  9.7454856037911592e-18   0                        nan         roundoff
+    e_i1    0.00011407508178919183   0.00011407508178919173   8.32e-16    PASS
+    e_i2    8.8171994091388993e-05   8.8171994091388803e-05   2.15e-15    PASS
+    e_div   0.0013393551950993381    0.0013393551950993524    1.07e-14    PASS
+    min_c   0.55395482196455237      0.55395482196455237      0.00e+00    PASS
+    p0.1    0.59163981869095728      0.59163981869095728      0.00e+00    PASS
+    p1      0.65535187375670823      0.65535187375670823      0.00e+00    PASS
+    p5      0.73071710406711698      0.73071710406711687      1.52e-16    PASS
+    p50     0.97275413195464033      0.97275413195464044      1.14e-16    PASS
+  r_F gpu=1.104e-14 (gate <= 1e-10: PASS) prototype=1.396e-14 | its gpu=8 prototype=8
+  PATH gpu=`0.25(fail)->0.125->0.25` prototype=`0.25(fail)->0.125->0.25` -> EQUAL
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       2.95e+00 9.55e-02 5.52e-02 2.58e-02 5.37e-03 2.16e-04 1.64e-06 1.26e-11 1.10e-14
+  r_F history (prototype, %.2e cell log): 2.95e+00 9.55e-02 5.52e-02 2.58e-02 5.37e-03 2.16e-04 1.64e-06 1.26e-11 1.40e-14
+  GMRES stage eps=0.25 status=linear_failure newton_steps=2 its_max=580 its_median=440.0 linear_failures=1
+  GMRES stage eps=0.125 status=converged newton_steps=8 its_max=200 its_median=142.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=8 its_max=1900 its_median=788.5 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss_ch eps=0.5 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.5_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.017845965057715029     0.01784596505771505      1.17e-15    PASS
+    e_psi   0.12316189898272002      0.12316189898272015      1.01e-15    PASS
+    e_psi1  0.12316189898272002      0.12316189898272015      1.01e-15    PASS
+    e_psi2  0.060805706746256252     0.060805706746257369     1.84e-14    PASS
+    e_i1    0.013163698355623893     0.013163698355623895     1.32e-16    PASS
+    e_i2    0.0083251794294130713    0.0083251794294131216    6.04e-15    PASS
+    e_div   0.051310169842383027     0.051310169842383097     1.35e-15    PASS
+    min_c   0.29092081215835536      0.29092081215835541      1.91e-16    PASS
+    p0.1    0.32933286412375196      0.32933286412375201      1.69e-16    PASS
+    p1      0.4123256824930569       0.41232568249305718      6.73e-16    PASS
+    p5      0.50968935170473539      0.50968935170473595      1.09e-15    PASS
+    p50     0.92306160516849989      0.92306160516849989      0.00e+00    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.019412339143102392     0.019412339143102267     6.43e-15    PASS
+    e_psi   1.5045381163617107e-17   0                        nan         roundoff
+    e_psi1  1.6070175401210584e-18   0                        nan         roundoff
+    e_psi2  1.5045381163617107e-17   0                        nan         roundoff
+    e_i1    0.0080915356455620174    0.0080915356455611865    1.03e-13    PASS
+    e_i2    0.0035817983493309728    0.0035817983493303474    1.75e-13    PASS
+    e_div   0.1011540565971388       0.10115405659713807      7.27e-15    PASS
+    min_c   0.29068012519669384      0.29068012519669228      5.35e-15    PASS
+    p0.1    0.32728371531280231      0.32728371531280143      2.71e-15    PASS
+    p1      0.41147372662314036      0.41147372662314019      4.05e-16    PASS
+    p5      0.51133318842050435      0.5113331884205059       3.04e-15    PASS
+    p50     0.92281418824870576      0.92281418824870554      2.41e-16    PASS
+  r_F gpu=5.777e-15 (gate <= 1e-10: PASS) prototype=7.014e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5` prototype=`0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=3.736e-15 max_rel_diff_u2=6.203e-15 max_rel_diff_joint=4.677e-15 max_abs_diff=(8.535e-16, 1.069e-15) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       1.357729e+00 9.335119e-02 4.990846e-02 1.995465e-02 5.173512e-04 4.745572e-06 1.317927e-11 5.776857e-15
+  r_F history (prototype hist, solution.json): 1.357729e+00 9.335119e-02 4.990846e-02 1.995465e-02 5.173513e-04 4.745571e-06 1.317962e-11 7.014004e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 6.7 over 6 entries; lengths gpu=8 prototype=8
+  GMRES stage eps=0.25 status=stagnation newton_steps=5 its_max=500 its_median=261.0 linear_failures=0
+  GMRES stage eps=0.125 status=converged newton_steps=7 its_max=76 its_median=52.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=128 its_median=123.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=400 its_median=342.5 linear_failures=1
+  GMRES stage eps=0.375 status=converged newton_steps=7 its_max=346 its_median=300.0 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=7 its_max=1800 its_median=1800.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE gauss_ch eps=0.5 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/gauss_ch_0.5_24.log, GPU STATUS continuation_floor)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-gauss_ch-0.5-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.024825801532347015     0.0084189999999999994    1.95e+00    FAIL(4dig)
+    e_psi   0.17624233259465513      0.062210000000000001     1.83e+00    FAIL(4dig)
+    e_psi1  0.17624233259465513      0.062210000000000001     1.83e+00    FAIL(4dig)
+    e_psi2  0.11599196459505565      0.032590000000000001     2.56e+00    FAIL(4dig)
+    e_i1    0.021056521120689526     0.0061640000000000002    2.42e+00    FAIL(4dig)
+    e_i2    0.014365483466967244     0.0039950000000000003    2.60e+00    FAIL(4dig)
+    e_div   0.020751744163993186     0.02461                  1.57e-01    FAIL(4dig)
+    min_c   0.29071750871364588      0.2918                   3.71e-03    FAIL(4dig)
+    p0.1    0.32782562920434122      0.32979999999999998      5.99e-03    FAIL(4dig)
+    p1      0.41241769176055892      0.41320000000000001      1.89e-03    FAIL(4dig)
+    p5      0.51281387064880113      0.5131                   5.58e-04    FAIL(4dig)
+    p50     0.92343829332589         0.92120000000000002      2.43e-03    FAIL(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0067660354835255695    0.0067660354835255669    3.85e-16    PASS
+    e_psi   1.5377454979339756e-17   0                        nan         roundoff
+    e_psi1  7.3995907977315642e-19   0                        nan         roundoff
+    e_psi2  1.5377454979339756e-17   0                        nan         roundoff
+    e_i1    0.0024694605157904214    0.0024694605157904201    5.27e-16    PASS
+    e_i2    0.00097976535525313448   0.00097976535525313253   1.99e-15    PASS
+    e_div   0.047221270747174311     0.047221270747174242     1.47e-15    PASS
+    min_c   0.2918515561509395       0.29185155615093944      1.90e-16    PASS
+    p0.1    0.32969336361064655      0.32969336361064655      0.00e+00    PASS
+    p1      0.41283277885332537      0.41283277885332537      0.00e+00    PASS
+    p5      0.51351380506164457      0.51351380506164457      0.00e+00    PASS
+    p50     0.9212178122661252       0.92121781226612498      2.41e-16    PASS
+  r_F gpu=1.008e-01 (gate <= 1e-10: FAIL) prototype=1.613e-14 | its gpu=2 prototype=8
+  PATH gpu=`0.25(fail)->0.125->0.25->0.5(fail)->0.375(fail)->0.3125->0.375->0.5(fail)->0.4375(fail)->0.5(final)` prototype=`0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5` -> DIFFERENT
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       2.05e+00 1.01e-01
+  r_F history (prototype, %.2e cell log): 2.05e+00 1.01e-01 5.82e-02 2.78e-02 5.87e-03 4.51e-05 2.66e-07 1.14e-13 1.61e-14
+  GMRES stage eps=0.25 status=linear_failure newton_steps=2 its_max=400 its_median=381.5 linear_failures=1
+  GMRES stage eps=0.125 status=converged newton_steps=7 its_max=153 its_median=85.0 linear_failures=0
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=300 its_median=295.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=788 its_median=544.0 linear_failures=1
+  GMRES stage eps=0.375 status=linear_failure newton_steps=2 its_max=6000 its_median=3250.0 linear_failures=1
+  GMRES stage eps=0.3125 status=converged newton_steps=6 its_max=685 its_median=600.0 linear_failures=0
+  GMRES stage eps=0.375 status=converged newton_steps=6 its_max=4100 its_median=3700.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=3400 its_median=1900.0 linear_failures=1
+  GMRES stage eps=0.4375 status=linear_failure newton_steps=2 its_max=3100 its_median=1850.0 linear_failures=1
+  GMRES stage eps=0.5(final) status=None newton_steps=2 its_max=3400 its_median=1900.0 linear_failures=1
+  OVERALL FAIL
+==============================================================================================================
+CASE generic3d eps=0.25 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_0.25_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0034232120895973414    0.0034232120895973596    5.32e-15    PASS
+    e_psi   0.046339148648063648     0.04633914864806344      4.49e-15    PASS
+    e_psi1  0.027939156020694269     0.027939156020694588     1.14e-14    PASS
+    e_psi2  0.046339148648063648     0.04633914864806344      4.49e-15    PASS
+    e_i1    0.0020448352318062752    0.0020448352318062912    7.85e-15    PASS
+    e_i2    0.0022697507683088641    0.0022697507683088797    6.88e-15    PASS
+    e_div   0.005189059348881012     0.0051890593488808038    4.01e-14    PASS
+    min_c   0.64299600037354365      0.64299600037354376      1.73e-16    PASS
+    p0.1    0.6531341389514006       0.65313413895140049      1.70e-16    PASS
+    p1      0.69759580744434879      0.69759580744434868      1.59e-16    PASS
+    p5      0.75842917198969151      0.75842917198969162      1.46e-16    PASS
+    p50     0.99664444176159517      0.99664444176159539      2.23e-16    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.001744042058378236     0.001744042058379205     5.56e-13    PASS
+    e_psi   1.0321001191873742e-17   0                        nan         roundoff
+    e_psi1  7.3114957781330156e-18   0                        nan         roundoff
+    e_psi2  1.0321001191873742e-17   0                        nan         roundoff
+    e_i1    0.0013316327077573836    0.0013316327077578715    3.66e-13    PASS
+    e_i2    0.0011571616581430811    0.0011571616581441235    9.01e-13    PASS
+    e_div   0.0053643184449654662    0.0053643184449652433    4.16e-14    PASS
+    min_c   0.64320115766017183      0.64320115766017283      1.55e-15    PASS
+    p0.1    0.65333999797628783      0.65333999797628617      2.55e-15    PASS
+    p1      0.69770605610742509      0.69770605610742487      3.18e-16    PASS
+    p5      0.75814698655785318      0.75814698655785617      3.95e-15    PASS
+    p50     0.99710482641271581      0.99710482641271558      2.23e-16    PASS
+  r_F gpu=2.142e-15 (gate <= 1e-10: PASS) prototype=2.688e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25` prototype=`0.25` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=3.221e-15 max_rel_diff_u2=5.805e-15 max_rel_diff_joint=4.529e-15 max_abs_diff=(2.220e-16, 3.123e-16) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       2.213440e+00 1.293573e-01 5.420673e-02 5.271031e-03 2.618444e-04 7.638208e-08 1.509797e-13 2.142105e-15
+  r_F history (prototype hist, solution.json): 2.213440e+00 1.293573e-01 5.420673e-02 5.271031e-03 2.618444e-04 7.638210e-08 1.509789e-13 2.688330e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 6.6 over 6 entries; lengths gpu=8 prototype=8
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=99 its_median=84.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE generic3d eps=0.5 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_0.5_16.log, GPU STATUS converged)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.014598831033932613     0.014598831033932504     7.49e-15    PASS
+    e_psi   0.10171694625392105      0.10171694625392055      4.91e-15    PASS
+    e_psi1  0.077984919248808848     0.077984919248807127     2.21e-14    PASS
+    e_psi2  0.10171694625392105      0.10171694625392055      4.91e-15    PASS
+    e_i1    0.0098369350990286739    0.0098369350990283773    3.02e-14    PASS
+    e_i2    0.010589679677032808     0.010589679677032789     1.80e-15    PASS
+    e_div   0.034460336851507387     0.034460336851507373     4.03e-16    PASS
+    min_c   0.39006150764153291      0.39006150764153291      0.00e+00    PASS
+    p0.1    0.40487884914486566      0.40487884914486577      2.74e-16    PASS
+    p1      0.46299806866980092      0.46299806866980076      3.60e-16    PASS
+    p5      0.56077930597229986      0.5607793059723003       7.92e-16    PASS
+    p50     0.993058882737473        0.99305888273747289      1.12e-16    PASS
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.0074347605701137734    0.007434760570114286     6.89e-14    PASS
+    e_psi   1.681060513749577e-17    0                        nan         roundoff
+    e_psi1  9.8262544699827437e-18   0                        nan         roundoff
+    e_psi2  1.681060513749577e-17    0                        nan         roundoff
+    e_i1    0.0046464512732140549    0.0046464512732161001    4.40e-13    PASS
+    e_i2    0.0034970345375361107    0.0034970345375356553    1.30e-13    PASS
+    e_div   0.049020465302297651     0.049020465302298102     9.20e-15    PASS
+    min_c   0.39047503976005826      0.39047503976005221      1.55e-14    PASS
+    p0.1    0.40526102489962557      0.40526102489962362      4.79e-15    PASS
+    p1      0.46373322226526553      0.46373322226526498      1.20e-15    PASS
+    p5      0.56102256278634532      0.56102256278634077      8.11e-15    PASS
+    p50     0.99430725590668656      0.99430725590668223      4.35e-15    PASS
+  r_F gpu=4.532e-15 (gate <= 1e-10: PASS) prototype=5.521e-15 | its gpu=7 prototype=7
+  PATH gpu=`0.25->0.5` prototype=`0.25->0.5` -> EQUAL
+  FIELDDIFF max_rel_diff_u1=6.810e-15 max_rel_diff_u2=5.967e-15 max_rel_diff_joint=6.805e-15 max_abs_diff=(9.021e-16, 7.910e-16) -> PASS (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       2.016358e+00 1.345475e-01 1.045835e-01 1.514138e-02 2.437946e-03 7.286797e-06 2.279884e-09 4.532269e-15
+  r_F history (prototype hist, solution.json): 2.016358e+00 1.345475e-01 1.045835e-01 1.514138e-02 2.437946e-03 7.286798e-06 2.279883e-09 5.520528e-15
+  r_F history agreement while r_F > 1e-10: min correct digits 6.3 over 7 entries; lengths gpu=8 prototype=8
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=99 its_median=84.0 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=7 its_max=600 its_median=581.0 linear_failures=0
+  OVERALL PASS
+==============================================================================================================
+CASE generic3d eps=1 N=16   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_16.log, GPU STATUS continuation_floor)
+  cand=i1o4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.16718875239925907      0.10338238571604319      6.17e-01    FAIL
+    e_psi   0.48850538835880825      0.34681690945968885      4.09e-01    FAIL
+    e_psi1  0.43764737522595931      0.34681690945968885      2.62e-01    FAIL
+    e_psi2  0.48850538835880825      0.2900409663273677       6.84e-01    FAIL
+    e_i1    0.12655284349640877      0.076567023550888819     6.53e-01    FAIL
+    e_i2    0.10407422559505948      0.076568129629684678     3.59e-01    FAIL
+    e_div   0.34361828070870137      0.40609032818509327      1.54e-01    FAIL
+    min_c   0.10817880129072109      0.11575094032849352      6.54e-02    FAIL
+    p0.1    0.11716909779960015      0.12549995474366021      6.64e-02    FAIL
+    p1      0.16229504425978289      0.16914522758406808      4.05e-02    FAIL
+    p5      0.26758680259861845      0.26672096025369851      3.25e-03    FAIL
+    p50     0.95639734145552335      0.93677677062618403      2.09e-02    FAIL
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: solution.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.16340614608527418      0.16340614608527237      1.10e-14    PASS
+    e_psi   2.2714659911689366e-17   0                        nan         roundoff
+    e_psi1  1.2528525347037097e-17   0                        nan         roundoff
+    e_psi2  2.2714659911689366e-17   0                        nan         roundoff
+    e_i1    0.049508642041133123     0.04950864204115351      4.12e-13    PASS
+    e_i2    0.042915641923494896     0.042915641923493592     3.04e-14    PASS
+    e_div   1.2576953295610742       1.2576953295611266       4.17e-14    PASS
+    min_c   0.026146448848604176     0.026146448848655086     1.95e-12    PASS
+    p0.1    0.12344748391120385      0.12344748391120731      2.81e-14    PASS
+    p1      0.17136523937781675      0.17136523937782927      7.30e-14    PASS
+    p5      0.27094409170104233      0.27094409170104367      4.92e-15    PASS
+    p50     0.94517535191691193      0.94517535191689173      2.14e-14    PASS
+  r_F gpu=4.728e-01 (gate <= 1e-10: FAIL) prototype=1.580e-14 | its gpu=2 prototype=9
+  PATH gpu=`0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625->0.625(fail)->0.59375->0.625(fail)->1(final)` prototype=`0.25->0.5->1(fail)->0.75->1(fail)->0.875->1(fail)->0.9375->1` -> DIFFERENT
+  FIELDDIFF max_rel_diff_u1=5.263e-01 max_rel_diff_u2=6.010e-01 max_rel_diff_joint=6.010e-01 max_abs_diff=(1.474e-01, 2.158e-01) -> FAIL (expected <= 1e-8 relative; joint = max abs diff / max|u_proto| over both fields)
+  r_F history (gpu, full precision):       2.546775e+00 4.727792e-01
+  r_F history (prototype hist, solution.json): 3.956234e-01 1.992189e-01 1.061791e-01 7.029162e-02 3.959601e-02 1.387652e-02 5.149543e-04 2.945020e-06 1.032160e-10 1.579719e-14
+  r_F history agreement while r_F > 1e-10: min correct digits -0.7 over 2 entries; lengths gpu=2 prototype=10
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=99 its_median=84.0 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=7 its_max=600 its_median=581.0 linear_failures=0
+  GMRES stage eps=1 status=linear_failure newton_steps=2 its_max=1200 its_median=800.0 linear_failures=1
+  GMRES stage eps=0.75 status=linear_failure newton_steps=3 its_max=6000 its_median=4300.0 linear_failures=1
+  GMRES stage eps=0.625 status=linear_failure newton_steps=3 its_max=6000 its_median=1400.0 linear_failures=1
+  GMRES stage eps=0.5625 status=converged newton_steps=5 its_max=1300 its_median=1300.0 linear_failures=0
+  GMRES stage eps=0.625 status=linear_failure newton_steps=4 its_max=6000 its_median=5400.0 linear_failures=1
+  GMRES stage eps=0.59375 status=converged newton_steps=5 its_max=3000 its_median=2700.0 linear_failures=0
+  GMRES stage eps=0.625 status=linear_failure newton_steps=2 its_max=6000 its_median=4200.0 linear_failures=1
+  GMRES stage eps=1(final) status=None newton_steps=2 its_max=3900 its_median=2100.0 linear_failures=1
+  OVERALL FAIL
+==============================================================================================================
+CASE generic3d eps=1 N=20   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_20.log, GPU STATUS continuation_floor)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-generic3d-1-N20.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.21653989182455108      0.05885                  2.68e+00    FAIL(4dig)
+    e_psi   0.5652467640476857       0.23419999999999999      1.41e+00    FAIL(4dig)
+    e_psi1  0.55034739054577697      0.23419999999999999      1.35e+00    FAIL(4dig)
+    e_psi2  0.5652467640476857       0.16850000000000001      2.35e+00    FAIL(4dig)
+    e_i1    0.16652182536074769      0.052350000000000001     2.18e+00    FAIL(4dig)
+    e_i2    0.13072152253140876      0.04385                  1.98e+00    FAIL(4dig)
+    e_div   0.23706305255063995      0.2336                   1.48e-02    FAIL(4dig)
+    min_c   0.10449844970814412      0.11650000000000001      1.03e-01    FAIL(4dig)
+    p0.1    0.11430821993360517      0.12659999999999999      9.71e-02    FAIL(4dig)
+    p1      0.15960366229041723      0.17419999999999999      8.38e-02    FAIL(4dig)
+    p5      0.26325203441017681      0.27260000000000001      3.43e-02    FAIL(4dig)
+    p50     0.96600529617387121      0.94540000000000002      2.18e-02    FAIL(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.13497433303649403      0.134974333036494        2.06e-16    PASS
+    e_psi   3.2277021791570487e-17   0                        nan         roundoff
+    e_psi1  1.9879258899988265e-17   0                        nan         roundoff
+    e_psi2  3.2277021791570487e-17   0                        nan         roundoff
+    e_i1    0.036809582245250404     0.036809582245250411     1.89e-16    PASS
+    e_i2    0.029406189585059347     0.029406189585059337     3.54e-16    PASS
+    e_div   0.98161014678297931      0.98161014678297953      2.26e-16    PASS
+    min_c   0.10020329449484221      0.10020329449484257      3.60e-15    PASS
+    p0.1    0.12568554913771368      0.12568554913771368      0.00e+00    PASS
+    p1      0.17384937698486208      0.17384937698486208      0.00e+00    PASS
+    p5      0.27185753484422553      0.27185753484422553      0.00e+00    PASS
+    p50     0.94395770727188943      0.94395770727188943      0.00e+00    PASS
+  r_F gpu=6.604e-01 (gate <= 1e-10: FAIL) prototype=1.969e-14 | its gpu=2 prototype=14
+  PATH gpu=`0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625(fail)->0.53125->0.5625(fail)->1(final)` prototype=`0.25->0.5->1(fail)->0.75->1(fail)->0.875(fail)->0.8125->0.875->1` -> DIFFERENT
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       3.73e+00 6.60e-01
+  r_F history (prototype, %.2e cell log): 9.94e-01 1.01e-01 7.00e-02 6.27e-02 5.55e-02 4.55e-02 2.83e-02 2.32e-02 1.94e-02 1.67e-02 1.19e-02 4.54e-04 2.78e-05 2.84e-09 1.97e-14
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=159 its_median=113.0 linear_failures=0
+  GMRES stage eps=0.5 status=converged newton_steps=7 its_max=4100 its_median=1400.0 linear_failures=0
+  GMRES stage eps=1 status=linear_failure newton_steps=2 its_max=3800 its_median=2050.0 linear_failures=1
+  GMRES stage eps=0.75 status=linear_failure newton_steps=2 its_max=2000 its_median=1200.0 linear_failures=1
+  GMRES stage eps=0.625 status=linear_failure newton_steps=2 its_max=5500 its_median=3700.0 linear_failures=1
+  GMRES stage eps=0.5625 status=linear_failure newton_steps=3 its_max=3700 its_median=1800.0 linear_failures=1
+  GMRES stage eps=0.53125 status=converged newton_steps=5 its_max=2800 its_median=2700.0 linear_failures=0
+  GMRES stage eps=0.5625 status=linear_failure newton_steps=2 its_max=6000 its_median=4700.0 linear_failures=1
+  GMRES stage eps=1(final) status=None newton_steps=2 its_max=5600 its_median=2950.0 linear_failures=1
+  OVERALL FAIL
+==============================================================================================================
+CASE generic3d eps=1 N=24   (GPU log /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/proto/generic3d_1_24.log, GPU STATUS continuation_floor)
+  cand=i1o4  gpu: full precision (JSON) | prototype: i1o4-generic3d-1-N24.txt (4 significant digits)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.26111496129095874      0.043999999999999997     4.93e+00    FAIL(4dig)
+    e_psi   0.66169970042917137      0.1782                   2.71e+00    FAIL(4dig)
+    e_psi1  0.66169970042917137      0.1782                   2.71e+00    FAIL(4dig)
+    e_psi2  0.62841132320433368      0.1234                   4.09e+00    FAIL(4dig)
+    e_i1    0.21475505668490791      0.03959                  4.42e+00    FAIL(4dig)
+    e_i2    0.1524727358322128       0.030030000000000001     4.08e+00    FAIL(4dig)
+    e_div   0.19329875877162075      0.1487                   3.00e-01    FAIL(4dig)
+    min_c   0.10232176157084051      0.1173                   1.28e-01    FAIL(4dig)
+    p0.1    0.11088074923908912      0.1278                   1.32e-01    FAIL(4dig)
+    p1      0.15669454642805694      0.17499999999999999      1.05e-01    FAIL(4dig)
+    p5      0.26035344561097262      0.27310000000000001      4.67e-02    FAIL(4dig)
+    p50     0.96914760255778587      0.9496                   2.06e-02    FAIL(4dig)
+  cand=oracle_fd4  gpu: full precision (JSON) | prototype: ref_metrics.json (full precision)
+    key     gpu                      prototype                rel diff    verdict
+    e_v     0.11355071263200478      0.11355071263200478      0.00e+00    PASS
+    e_psi   2.8222163761218968e-17   0                        nan         roundoff
+    e_psi1  1.6505549734272074e-17   0                        nan         roundoff
+    e_psi2  2.8222163761218968e-17   0                        nan         roundoff
+    e_i1    0.030219794085622063     0.030219794085622063     0.00e+00    PASS
+    e_i2    0.023477187669279587     0.023477187669279583     1.48e-16    PASS
+    e_div   0.83582959859011419      0.83582959859011419      0.00e+00    PASS
+    min_c   0.11073642533569472      0.11073642533569443      2.63e-15    PASS
+    p0.1    0.12631960580525356      0.12631960580525356      0.00e+00    PASS
+    p1      0.17491643667952322      0.17491643667952322      0.00e+00    PASS
+    p5      0.27350792682581548      0.27350792682581537      4.06e-16    PASS
+    p50     0.94524564455259252      0.94524564455259275      2.35e-16    PASS
+  r_F gpu=8.159e-01 (gate <= 1e-10: FAIL) prototype=2.835e-14 | its gpu=2 prototype=9
+  PATH gpu=`0.25->0.5(fail)->0.375->0.5(fail)->0.4375->0.5(fail)->0.46875->0.5(fail)->0.484375->0.5(fail)->1(final)` prototype=`0.25->0.5->1(fail)->0.75(fail)->0.625->0.75->1(fail)->0.875->1(fail)->0.9375->1` -> DIFFERENT
+  FIELDDIFF: none (no --solution for this case)
+  r_F history (gpu):       5.13e+00 8.16e-01
+  r_F history (prototype, %.2e cell log): 6.33e-01 3.45e-02 3.22e-02 3.22e-02 1.97e-02 5.49e-03 6.33e-04 1.07e-05 3.64e-09 2.83e-14
+  GMRES stage eps=0.25 status=converged newton_steps=7 its_max=194 its_median=149.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=3 its_max=593 its_median=400.0 linear_failures=1
+  GMRES stage eps=0.375 status=converged newton_steps=6 its_max=499 its_median=479.5 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=3 its_max=1400 its_median=674.0 linear_failures=1
+  GMRES stage eps=0.4375 status=converged newton_steps=5 its_max=1200 its_median=1100.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=3 its_max=6000 its_median=4100.0 linear_failures=1
+  GMRES stage eps=0.46875 status=converged newton_steps=5 its_max=2500 its_median=2400.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=6000 its_median=4500.0 linear_failures=1
+  GMRES stage eps=0.484375 status=converged newton_steps=4 its_max=4900 its_median=4300.0 linear_failures=0
+  GMRES stage eps=0.5 status=linear_failure newton_steps=2 its_max=6000 its_median=5150.0 linear_failures=1
+  GMRES stage eps=1(final) status=None newton_steps=2 its_max=5300 its_median=2800.0 linear_failures=1
+  OVERALL FAIL
+| case | status | r_F | PATH equal | e_v gpu | e_v proto | e_v verdict | e_psi gpu | e_psi proto | e_psi verdict | ceiling e_v verdict | FIELDDIFF joint | r_F hist digits | GMRES max / median (target) | overall |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| control2d:0.25:16 | converged | 1.22e-15 | yes | 3.067326e-03 | 3.067326e-03 | PASS | 3.220421e-02 | 3.220421e-02 | PASS | PASS | 6.31e-15 | 15.9 | 48 / 38.0 | PASS |
+| control2d:0.25:24 | converged | 2.79e-15 | yes | 5.246774e-04 | 5.247000e-04 | PASS(4dig) | 2.666897e-03 | 2.667000e-03 | PASS(4dig) | PASS | - | - | 62 / 50.5 | PASS |
+| control2d:0.5:16 | converged | 2.45e-15 | yes | 7.686791e-03 | 7.686791e-03 | PASS | 3.183307e-02 | 3.183307e-02 | PASS | PASS | 7.44e-15 | 17.0 | 89 / 58.0 | PASS |
+| control2d:0.5:24 | converged | 5.31e-15 | yes | 1.618042e-03 | 1.618000e-03 | PASS(4dig) | 1.065001e-02 | 1.065000e-02 | PASS(4dig) | PASS | - | - | 154 / 92.5 | PASS |
+| gauss:0.25:16 | converged | 8.63e-14 | yes | 5.505929e-03 | 5.505929e-03 | PASS | 7.726616e-02 | 7.726616e-02 | PASS | PASS | 2.62e-15 | 5.7 | 167 / 124.5 | PASS |
+| gauss:0.25:24 | converged | 5.15e-15 | yes | 1.808087e-03 | 1.808000e-03 | PASS(4dig) | 2.886058e-02 | 2.886000e-02 | PASS(4dig) | PASS | - | - | 300 / 286.0 | PASS |
+| gauss:0.25:32 | converged | 8.96e-15 | yes | 8.014281e-04 | 8.014000e-04 | PASS(4dig) | 1.302715e-02 | 1.303000e-02 | PASS(4dig) | PASS | - | - | 888 / 800.0 | PASS |
+| gauss:0.5:16 | converged | 4.58e-15 | yes | 1.908385e-02 | 1.908385e-02 | PASS | 1.402589e-01 | 1.402589e-01 | PASS | PASS | 5.24e-15 | 7.0 | 900 / 899.0 | PASS |
+| gauss:0.5:24 | continuation_floor | 5.18e-02 | no (`0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5(fail)->0.4375(fail)->0.40625->0.4375(fail)->0.5(final)` vs `0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5`) | 1.775564e-02 | 8.474000e-03 | FAIL(4dig) | 1.503535e-01 | 6.831000e-02 | FAIL(4dig) | PASS | - | - | 4200 / 2300.0 | FAIL |
+| gauss_ch:0.25:16 | converged | 2.78e-15 | yes | 5.287384e-03 | 5.287384e-03 | PASS | 6.780355e-02 | 6.780355e-02 | PASS | PASS | 5.41e-15 | 7.1 | 128 / 123.0 | PASS |
+| gauss_ch:0.25:24 | converged | 7.62e-15 | yes | 1.783041e-03 | 1.783000e-03 | PASS(4dig) | 2.482687e-02 | 2.483000e-02 | PASS(4dig) | PASS | - | - | 300 / 295.0 | PASS |
+| gauss_ch:0.25:32 | converged | 1.10e-14 | yes | 7.657190e-04 | 7.657000e-04 | PASS(4dig) | 1.086056e-02 | 1.086000e-02 | PASS(4dig) | PASS | - | - | 1900 / 788.5 | PASS |
+| gauss_ch:0.5:16 | converged | 5.78e-15 | yes | 1.784597e-02 | 1.784597e-02 | PASS | 1.231619e-01 | 1.231619e-01 | PASS | PASS | 4.68e-15 | 6.7 | 1800 / 1800.0 | PASS |
+| gauss_ch:0.5:24 | continuation_floor | 1.01e-01 | no (`0.25(fail)->0.125->0.25->0.5(fail)->0.375(fail)->0.3125->0.375->0.5(fail)->0.4375(fail)->0.5(final)` vs `0.25(fail)->0.125->0.25->0.5(fail)->0.375->0.5`) | 2.482580e-02 | 8.419000e-03 | FAIL(4dig) | 1.762423e-01 | 6.221000e-02 | FAIL(4dig) | PASS | - | - | 3400 / 1900.0 | FAIL |
+| generic3d:0.25:16 | converged | 2.14e-15 | yes | 3.423212e-03 | 3.423212e-03 | PASS | 4.633915e-02 | 4.633915e-02 | PASS | PASS | 4.53e-15 | 6.6 | 99 / 84.0 | PASS |
+| generic3d:0.5:16 | converged | 4.53e-15 | yes | 1.459883e-02 | 1.459883e-02 | PASS | 1.017169e-01 | 1.017169e-01 | PASS | PASS | 6.80e-15 | 6.3 | 600 / 581.0 | PASS |
+| generic3d:1:16 | continuation_floor | 4.73e-01 | no (`0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625->0.625(fail)->0.59375->0.625(fail)->1(final)` vs `0.25->0.5->1(fail)->0.75->1(fail)->0.875->1(fail)->0.9375->1`) | 1.671888e-01 | 1.033824e-01 | FAIL | 4.885054e-01 | 3.468169e-01 | FAIL | PASS | 6.01e-01 | -0.7 | 3900 / 2100.0 | FAIL |
+| generic3d:1:20 | continuation_floor | 6.60e-01 | no (`0.25->0.5->1(fail)->0.75(fail)->0.625(fail)->0.5625(fail)->0.53125->0.5625(fail)->1(final)` vs `0.25->0.5->1(fail)->0.75->1(fail)->0.875(fail)->0.8125->0.875->1`) | 2.165399e-01 | 5.885000e-02 | FAIL(4dig) | 5.652468e-01 | 2.342000e-01 | FAIL(4dig) | PASS | - | - | 5600 / 2950.0 | FAIL |
+| generic3d:1:24 | continuation_floor | 8.16e-01 | no (`0.25->0.5(fail)->0.375->0.5(fail)->0.4375->0.5(fail)->0.46875->0.5(fail)->0.484375->0.5(fail)->1(final)` vs `0.25->0.5->1(fail)->0.75(fail)->0.625->0.75->1(fail)->0.875->1(fail)->0.9375->1`) | 2.611150e-01 | 4.400000e-02 | FAIL(4dig) | 6.616997e-01 | 1.782000e-01 | FAIL(4dig) | PASS | - | - | 5300 / 2800.0 | FAIL |
+
+Pass rule: full-precision prototype values (solution.json / ref_metrics.json) gated at 1e-6 relative; 4-significant-digit prototype values (cell logs / summary.md) gated at the rounding bound of the printed value (`PASS(4dig)`), which cannot resolve 1e-6.  r_F gate <= 1e-10; FIELDDIFF expected <= 1e-8 (joint normalization).
+
+run_proto.sh: compare_proto.py exit 1; table /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/proto/compare_proto.md; end=2026-10-06T21:36:58Z
+[2026-10-06T21:36:58Z] job=sf33-proto finished exit=0

@@ -1,0 +1,337 @@
+{
+ "N": 16,
+ "case_dir": "docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_16",
+ "case_line": "CASE field=control2d eps=0.5 N=16 cand=i1o4 | r_F=2.997e-15 its=3 | e_v=7.687e-03 e_psi=3.183e-02 e_i=(5.893e-03,3.763e-14) e_div=1.661e-14 min_c=5.266e-01 p0.1=5.266e-01 p1=5.284e-01 p5=6.071e-01 p50=1.011e+00 | t=0.1 | e_psi1=3.183e-02 e_psi2=2.334e-13",
+ "ceiling_line": "CASE field=control2d eps=0.5 N=16 cand=oracle_fd4 | r_F=nan its=nan | e_v=4.310e-03 e_psi=8.557e-18 e_i=(4.664e-03,3.080e-29) e_div=2.742e-15 min_c=5.265e-01 p0.1=5.265e-01 p1=5.508e-01 p5=6.156e-01 p50=1.009e+00 | t=0.0 | e_psi1=8.557e-18 e_psi2=0.000e+00",
+ "command": "./build/wsl-release/inlet_slab --proto docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/control2d_0.5_16 --solution docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.5_16_i1o4 --summary /tmp/claude-1000/-home-sesquerre-Projects-MacroFlow3D/7492cfe9-8162-44b8-9ec8-3c1ae11d21e9/scratchpad/n7a/json/control2d_0.5_16_ew.json --forcing ew",
+ "continuation": {
+  "bisections": 0,
+  "eps_accepted": 0.5,
+  "floor_reached": false,
+  "path": "0.25->0.5",
+  "seconds": 0.0742854,
+  "stages": [
+   {
+    "accepted": true,
+    "eps": 0.25,
+    "final_attempt": false,
+    "from_eps": 0.0,
+    "newton": {
+     "forcing": "ew",
+     "gmres": {
+      "failures": 0,
+      "its_max": 8,
+      "its_median": 7.0,
+      "its_total": 18,
+      "rel_max": 0.001185666799389079,
+      "steps": 3
+     },
+     "hist_r_F": [
+      1.8552819917212628,
+      0.0022671019208824576,
+      7.009598723698281e-11,
+      1.5511842980827413e-15
+     ],
+     "hist_r_out": [
+      0.08374733183353537,
+      1.6081737130588662e-05,
+      3.568640663817806e-13,
+      1.92841214783488e-16
+     ],
+     "its": 3,
+     "linear_iterations_max": 8,
+     "linear_iterations_total": 18,
+     "r_F": 1.5511842980827413e-15,
+     "r_out": 1.92841214783488e-16,
+     "seconds": 0.027113352,
+     "status": "converged",
+     "steps": [
+      {
+       "dx_l2": 1.3674932269785212,
+       "dx_max": 0.049474035935243896,
+       "eta": 0.1,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 3,
+       "lin_rec": 0.0011856667993890928,
+       "lin_rel": 0.001185666799389079,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.0022671019208824576,
+       "r_out": 1.6081737130588662e-05,
+       "t_fact": 0.003993226,
+       "t_lin": 0.003807902
+      },
+      {
+       "dx_l2": 0.011421901583447802,
+       "dx_max": 0.00031255255029898505,
+       "eta": 1.3412278684919741e-06,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 8,
+       "lin_rec": 3.090695204963379e-08,
+       "lin_rel": 3.0906951554639e-08,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 7.009598723698281e-11,
+       "r_out": 3.568640663817806e-13,
+       "t_fact": 0.002793372,
+       "t_lin": 0.006838147
+      },
+      {
+       "dx_l2": 2.7719207371753265e-10,
+       "dx_max": 6.339829667299045e-12,
+       "eta": 0.0007132983499745625,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 7,
+       "lin_rec": 1.5942716211418803e-05,
+       "lin_rel": 1.5942716211564713e-05,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 1.5511842980827413e-15,
+       "r_out": 1.92841214783488e-16,
+       "t_fact": 0.00154302,
+       "t_lin": 0.005941285
+      }
+     ]
+    },
+    "warm_start": false
+   },
+   {
+    "accepted": true,
+    "eps": 0.5,
+    "final_attempt": false,
+    "from_eps": 0.25,
+    "newton": {
+     "forcing": "ew",
+     "gmres": {
+      "failures": 0,
+      "its_max": 16,
+      "its_median": 8.0,
+      "its_total": 27,
+      "rel_max": 0.009691196032647051,
+      "steps": 3
+     },
+     "hist_r_F": [
+      1.7238220176215682,
+      0.016999568154059782,
+      1.3854520812450766e-07,
+      2.9967136031757456e-15
+     ],
+     "hist_r_out": [
+      0.08538699091078297,
+      0.0002994004334796263,
+      2.1234418727541567e-09,
+      3.5248133725669673e-16
+     ],
+     "its": 3,
+     "linear_iterations_max": 16,
+     "linear_iterations_total": 27,
+     "r_F": 2.9967136031757456e-15,
+     "r_out": 3.5248133725669673e-16,
+     "seconds": 0.039161465,
+     "status": "converged",
+     "steps": [
+      {
+       "dx_l2": 1.311852283939809,
+       "dx_max": 0.045696372418248345,
+       "eta": 0.1,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 3,
+       "lin_rec": 0.009691196032647073,
+       "lin_rel": 0.009691196032647051,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 0.016999568154059782,
+       "r_out": 0.0002994004334796263,
+       "t_fact": 0.002177145,
+       "t_lin": 0.002678103
+      },
+      {
+       "dx_l2": 0.04127109048064781,
+       "dx_max": 0.0012108835088381553,
+       "eta": 8.733812551471526e-05,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 8,
+       "lin_rec": 8.144847321029313e-06,
+       "lin_rel": 8.144847321091778e-06,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 1.3854520812450766e-07,
+       "r_out": 2.1234418727541567e-09,
+       "t_fact": 0.001554541,
+       "t_lin": 0.0090499
+      },
+      {
+       "dx_l2": 2.484549724118908e-07,
+       "dx_max": 1.014927835427803e-08,
+       "eta": 3.608506494898001e-07,
+       "lambda": 1.0,
+       "lin_cycles": 1,
+       "lin_its": 16,
+       "lin_rec": 1.4406458713367134e-08,
+       "lin_rel": 1.4406459172528618e-08,
+       "lin_status": "converged",
+       "prec_singular_modes": 0,
+       "r_F": 2.9967136031757456e-15,
+       "r_out": 3.5248133725669673e-16,
+       "t_fact": 0.001911111,
+       "t_lin": 0.018045641
+      }
+     ]
+    },
+    "warm_start": true
+   }
+  ],
+  "status": "converged"
+ },
+ "eps": 0.5,
+ "exit_code": 0,
+ "extra": {
+  "inlet_j0_cand": 0.016257796842957098,
+  "inlet_j0_oracle": 0.01184479722935881,
+  "inlet_j1_cand": 0.14231942028971553,
+  "inlet_j1_oracle": 0.1422357439739096,
+  "inlet_j1_vD_cand": 0.004450649825973416,
+  "inlet_j1_vD_oracle": 0.0033527112848257133,
+  "min_c_over_vrms": 0.49961779189598626,
+  "min_vD_over_vrms": 0.4996943052647244,
+  "outlet_cand": 3.5248133725669673e-16,
+  "outlet_oracle": 0.009488034627703522
+ },
+ "field": "control2d",
+ "fielddiff": {
+  "max_abs_diff_u1": 1.2559397966072083e-15,
+  "max_abs_diff_u2": 3.2593875985234984e-16,
+  "max_abs_u_proto": [
+   0.09509064772014805,
+   3.6193270602780103e-14
+  ],
+  "max_rel_diff_joint": 1.3207816191382368e-14,
+  "max_rel_diff_u1": 1.3207816191382368e-14,
+  "max_rel_diff_u2": 0.009005507223414996,
+  "proto_its": 2,
+  "proto_path": "0.25->0.5",
+  "proto_r_F": 2.980433022484972e-15,
+  "proto_status": "converged",
+  "solution_dir": "docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/solutions/control2d_0.5_16_i1o4"
+ },
+ "memory": {
+  "free_min": 3895459840,
+  "peak_device_bytes": 112132096,
+  "total_device": 4007591936,
+  "workspaces_bytes": 9944960
+ },
+ "metrics": {
+  "i1o4": {
+   "a_psi1": 0.0013555032263182275,
+   "a_psi2": 9.937809114851794e-15,
+   "den_psi": [
+    0.04258160616204039,
+    0.04258160616204039
+   ],
+   "e_div": 1.6614565780028683e-14,
+   "e_i1": 0.005893183201093896,
+   "e_i2": 3.7629132553374374e-14,
+   "e_psi": 0.03183306945163093,
+   "e_psi1": 0.03183306945163093,
+   "e_psi2": 2.333826741301015e-13,
+   "e_v": 0.00768679148684278,
+   "min_c": 0.526638550456591,
+   "nonfinite": 0,
+   "p0.1": 0.5266385504565912,
+   "p1": 0.5284402416901711,
+   "p5": 0.6071395690836435,
+   "p50": 1.0105485170062354,
+   "vD_min": 0.5267192018870573,
+   "vD_p": [
+    0.5267192018870573,
+    0.5507242760948122,
+    0.6154155354509974,
+    1.0090703177118558
+   ],
+   "v_rms": 1.054082858935156
+  },
+  "oracle_fd4": {
+   "a_psi1": 3.643648102059247e-19,
+   "a_psi2": 0.0,
+   "den_psi": [
+    0.04258160616204039,
+    0.04258160616204039
+   ],
+   "e_div": 2.7422082960790698e-15,
+   "e_i1": 0.004663698096827607,
+   "e_i2": 3.079575673322187e-29,
+   "e_psi": 8.556859241508362e-18,
+   "e_psi1": 8.556859241508362e-18,
+   "e_psi2": 0.0,
+   "e_v": 0.004309766128294205,
+   "min_c": 0.5264742829021336,
+   "nonfinite": 0,
+   "p0.1": 0.5264742829023229,
+   "p1": 0.5508220705976209,
+   "p5": 0.6155627830877445,
+   "p50": 1.0092491452145458,
+   "vD_min": 0.5267192018870573,
+   "vD_p": [
+    0.5267192018870573,
+    0.5507242760948122,
+    0.6154155354509974,
+    1.0090703177118558
+   ],
+   "v_rms": 1.054082858935156
+  }
+ },
+ "mode": "proto",
+ "phases": [
+  {
+   "free_after": 3912237056,
+   "free_before": 3912237056,
+   "phase": "load",
+   "seconds": 0.042196251
+  },
+  {
+   "free_after": 3895459840,
+   "free_before": 3912237056,
+   "phase": "prepare",
+   "seconds": 0.008957633
+  },
+  {
+   "free_after": 3895459840,
+   "free_before": 3895459840,
+   "phase": "solve",
+   "seconds": 0.074824917
+  },
+  {
+   "free_after": 3895459840,
+   "free_before": 3895459840,
+   "phase": "metrics",
+   "seconds": 0.003892254
+  }
+ ],
+ "solver_config": {
+  "bisect": 4,
+  "ew_alpha": 2.0,
+  "ew_eta0": 0.1,
+  "ew_eta_max": 0.1,
+  "ew_eta_min": 1e-12,
+  "ew_gamma": 0.9,
+  "forcing": "ew",
+  "lin_tol": 1e-12,
+  "max_inner": 6000,
+  "max_newton": 40,
+  "newton_tol": 1e-13,
+  "restart": 100
+ },
+ "status": "converged",
+ "timing": {
+  "load": 0.042196251,
+  "metrics": 0.003892254,
+  "prepare": 0.008957633,
+  "solve": 0.074824917,
+  "total": 0.136910467
+ }
+}

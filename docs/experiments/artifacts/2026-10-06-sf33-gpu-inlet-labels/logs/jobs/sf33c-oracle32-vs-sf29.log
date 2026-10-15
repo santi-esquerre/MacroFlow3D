@@ -1,0 +1,115 @@
+[2026-10-07T01:12:36Z] job=sf33c-oracle32-vs-sf29 session=macroflow3d-SF-33-sf33c-oracle32-vs-sf29 started
+[2026-10-07T01:12:36Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-07T01:12:36Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-07T01:12:36Z] command=bash docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/run_campaign_b.sh build/v100-release oracle32
+run_campaign_b.sh: part=oracle32 bin=/home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-07T01:12:37Z
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N16.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 16 --eps 1 --cells /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_16/Y_cells.npy --oracle-ladder --threads 32 --save-oracle /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N16 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/oracle32/N16.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N16.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N16.log rc=0 STATUS converged wall=8s max_rss_kB=624756 end=2026-10-07T01:12:45Z
+    SOLVER N=16 eps=1 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded
+    SOLVER_COARSE mode=mult profiles=2 K=1024 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=cells eps=1 N=16 cand=i1o4 continuation path: 0.25->0.5->1
+    ORACLE_SUMMARY hmax=7.812500e-03 tol=1.0e-08 status=ok max_roundtrip=9.698e-09 non_ok=0 t_trace=0.09s t_labels=0.000s
+    ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=8.218e-10 non_ok=0 t_trace=0.11s t_labels=0.000s
+    ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-10 status=ok max_roundtrip=8.218e-10 non_ok=0 t_trace=0.09s t_labels=0.000s
+    CASE field=cells eps=1 N=16 cand=i1o4 | r_F=3.762e-15 its=12 | e_v=7.886e-03 e_psi=7.743e-02 e_i=(4.426e-03,3.193e-03) e_div=9.347e-03 min_c=5.059e-01 p0.1=5.471e-01 p1=6.351e-01 p5=7.302e-01 p50=9.818e-01 | t=4.4 | e_psi1=7.743e-02 e_psi2=6.524e-02
+    CASE field=cells eps=1 N=16 cand=oracle_fd4 | r_F=nan its=nan | e_v=8.994e-03 e_psi=1.163e-17 e_i=(1.059e-03,7.876e-04) e_div=1.265e-02 min_c=5.022e-01 p0.1=5.397e-01 p1=6.289e-01 p5=7.315e-01 p50=9.822e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=1.163e-17
+    TIMING_SETUP stage_builds=2.582s (inside the solve phase; Newton-Krylov only = 1.789s)
+    TIMING field=0.052s metrics=0.003s oracle=0.300s prepare=0.017s solve=4.371s total=4.745s
+    MEMORY peak_device_bytes=533725184 free_min=33556004864 total_device=34089730048 workspaces_bytes=19914727 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N24.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 24 --eps 1 --cells /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_24/Y_cells.npy --oracle-ladder --threads 32 --save-oracle /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N24 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/oracle32/N24.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N24.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N24.log rc=0 STATUS converged wall=16s max_rss_kB=649464 end=2026-10-07T01:13:01Z
+    SOLVER N=24 eps=1 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded
+    SOLVER_COARSE mode=mult profiles=2 K=2304 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=cells eps=1 N=24 cand=i1o4 continuation path: 0.25->0.5->1
+    ORACLE_SUMMARY hmax=5.208333e-03 tol=1.0e-08 status=ok max_roundtrip=2.576e-09 non_ok=0 t_trace=0.30s t_labels=0.001s
+    ORACLE_SUMMARY hmax=2.604167e-03 tol=1.0e-08 status=ok max_roundtrip=2.023e-10 non_ok=0 t_trace=0.46s t_labels=0.000s
+    ORACLE_SUMMARY hmax=2.604167e-03 tol=1.0e-10 status=ok max_roundtrip=2.023e-10 non_ok=0 t_trace=0.47s t_labels=0.001s
+    CASE field=cells eps=1 N=24 cand=i1o4 | r_F=6.310e-15 its=15 | e_v=3.157e-03 e_psi=2.934e-02 e_i=(1.733e-03,1.190e-03) e_div=2.665e-03 min_c=5.051e-01 p0.1=5.400e-01 p1=6.266e-01 p5=7.301e-01 p50=9.822e-01 | t=12.1 | e_psi1=2.934e-02 e_psi2=2.382e-02
+    CASE field=cells eps=1 N=24 cand=oracle_fd4 | r_F=nan its=nan | e_v=4.042e-03 e_psi=1.047e-17 e_i=(2.479e-04,1.791e-04) e_div=3.359e-03 min_c=5.035e-01 p0.1=5.384e-01 p1=6.241e-01 p5=7.301e-01 p50=9.821e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=1.047e-17
+    TIMING_SETUP stage_builds=2.729s (inside the solve phase; Newton-Krylov only = 9.331s)
+    TIMING field=0.055s metrics=0.002s oracle=1.237s prepare=0.036s solve=12.060s total=13.391s
+    MEMORY peak_device_bytes=571473920 free_min=33518256128 total_device=34089730048 workspaces_bytes=51338055 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N32.time /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 32 --eps 1 --cells /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_32/Y_cells.npy --oracle-ladder --threads 32 --save-oracle /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/oracle32/N32.json > /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/oracle32/N32.log rc=0 STATUS converged wall=47s max_rss_kB=678672 end=2026-10-07T01:13:48Z
+    SOLVER N=32 eps=1 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded
+    SOLVER_COARSE mode=mult profiles=2 K=4096 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+    PATH field=cells eps=1 N=32 cand=i1o4 continuation path: 0.25->0.5->1
+    ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=9.557e-10 non_ok=0 t_trace=0.86s t_labels=0.001s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=7.723e-11 non_ok=0 t_trace=1.51s t_labels=0.001s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-10 status=ok max_roundtrip=7.723e-11 non_ok=0 t_trace=1.51s t_labels=0.002s
+    CASE field=cells eps=1 N=32 cand=i1o4 | r_F=9.745e-15 its=18 | e_v=1.674e-03 e_psi=1.345e-02 e_i=(8.481e-04,6.207e-04) e_div=1.019e-03 min_c=5.052e-01 p0.1=5.388e-01 p1=6.261e-01 p5=7.291e-01 p50=9.833e-01 | t=41.0 | e_psi1=1.345e-02 e_psi2=1.149e-02
+    CASE field=cells eps=1 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=2.294e-03 e_psi=1.378e-17 e_i=(8.717e-05,6.251e-05) e_div=1.210e-03 min_c=5.043e-01 p0.1=5.374e-01 p1=6.252e-01 p5=7.294e-01 p50=9.832e-01 | t=0.0 | e_psi1=0.000e+00 e_psi2=1.378e-17
+    TIMING_SETUP stage_builds=2.769s (inside the solve phase; Newton-Krylov only = 38.276s)
+    TIMING field=0.048s metrics=0.003s oracle=3.895s prepare=0.047s solve=41.045s total=45.039s
+    MEMORY peak_device_bytes=625999872 free_min=33463730176 total_device=34089730048 workspaces_bytes=107732615 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/compare_oracle_sf29.py --case 16 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N16 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 --case 24 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N24 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24 --case 32 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N32 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32 --suffix '' --out /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/oracle32/oracle_vs_sf29.md
+GPU oracle file suffix: '(primary h/8, tol 1e-8)'
+
+| N | label | scale RMS(psi_or^SF29 - affine) | rms | max | mean | rms_demeaned | rms_inlet | max_inlet | rms_interior | max_interior | plane of max |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 16 | psi1 | 3.135897e-02 | 2.326e-02 | 7.358e-02 | -1.099e-02 | 2.050e-02 | 2.143e-02 | 6.582e-02 | 2.337e-02 | 7.358e-02 | 16 |
+| 16 | psi2 | 2.226783e-02 | 2.533e-02 | 6.438e-02 | 2.057e-02 | 1.478e-02 | 1.912e-02 | 2.747e-02 | 2.566e-02 | 6.438e-02 | 10 |
+| 24 | psi1 | 3.132811e-02 | 1.035e-02 | 3.363e-02 | -4.870e-03 | 9.138e-03 | 9.543e-03 | 2.965e-02 | 1.039e-02 | 3.363e-02 | 24 |
+| 24 | psi2 | 2.229936e-02 | 1.132e-02 | 3.060e-02 | 9.185e-03 | 6.623e-03 | 8.481e-03 | 1.220e-02 | 1.143e-02 | 3.060e-02 | 23 |
+| 32 | psi1 | 3.131215e-02 | 5.829e-03 | 1.900e-02 | -2.735e-03 | 5.148e-03 | 5.373e-03 | 1.690e-02 | 5.843e-03 | 1.900e-02 | 32 |
+| 32 | psi2 | 2.231560e-02 | 6.380e-03 | 1.702e-02 | 5.185e-03 | 3.717e-03 | 4.767e-03 | 6.857e-03 | 6.423e-03 | 1.702e-02 | 31 |
+
+Observed orders log(e_a/e_b)/log(N_b/N_a) between consecutive grids:
+
+| pair | label | rms | max | mean | rms_demeaned | rms_inlet | max_inlet | rms_interior | max_interior |
+|---|---|---|---|---|---|---|---|---|---|
+| 16->24 | psi1 | 2.00 | 1.93 | 2.01 | 1.99 | 1.99 | 1.97 | 2.00 | 1.93 |
+| 16->24 | psi2 | 1.99 | 1.83 | 1.99 | 1.98 | 2.00 | 2.00 | 2.00 | 1.83 |
+| 24->32 | psi1 | 2.00 | 1.98 | 2.01 | 1.99 | 2.00 | 1.95 | 2.00 | 1.98 |
+| 24->32 | psi2 | 1.99 | 2.04 | 1.99 | 2.01 | 2.00 | 2.00 | 2.00 | 2.04 |
+
+  compare rc=0
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/compare_oracle_sf29.py --case 16 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N16 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 --case 24 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N24 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24 --case 32 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N32 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32 --suffix '_h16_tol1e-08' --out /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/oracle32/oracle_vs_sf29_h16_tol1e-08.md
+GPU oracle file suffix: '_h16_tol1e-08'
+
+| N | label | scale RMS(psi_or^SF29 - affine) | rms | max | mean | rms_demeaned | rms_inlet | max_inlet | rms_interior | max_interior | plane of max |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 16 | psi1 | 3.135897e-02 | 2.326e-02 | 7.358e-02 | -1.099e-02 | 2.050e-02 | 2.143e-02 | 6.582e-02 | 2.337e-02 | 7.358e-02 | 16 |
+| 16 | psi2 | 2.226783e-02 | 2.533e-02 | 6.438e-02 | 2.057e-02 | 1.478e-02 | 1.912e-02 | 2.747e-02 | 2.566e-02 | 6.438e-02 | 10 |
+| 24 | psi1 | 3.132811e-02 | 1.035e-02 | 3.363e-02 | -4.870e-03 | 9.138e-03 | 9.543e-03 | 2.965e-02 | 1.039e-02 | 3.363e-02 | 24 |
+| 24 | psi2 | 2.229936e-02 | 1.132e-02 | 3.060e-02 | 9.185e-03 | 6.623e-03 | 8.481e-03 | 1.220e-02 | 1.143e-02 | 3.060e-02 | 23 |
+| 32 | psi1 | 3.131215e-02 | 5.829e-03 | 1.900e-02 | -2.735e-03 | 5.148e-03 | 5.373e-03 | 1.690e-02 | 5.843e-03 | 1.900e-02 | 32 |
+| 32 | psi2 | 2.231560e-02 | 6.380e-03 | 1.702e-02 | 5.185e-03 | 3.717e-03 | 4.767e-03 | 6.857e-03 | 6.423e-03 | 1.702e-02 | 31 |
+
+Observed orders log(e_a/e_b)/log(N_b/N_a) between consecutive grids:
+
+| pair | label | rms | max | mean | rms_demeaned | rms_inlet | max_inlet | rms_interior | max_interior |
+|---|---|---|---|---|---|---|---|---|---|
+| 16->24 | psi1 | 2.00 | 1.93 | 2.01 | 1.99 | 1.99 | 1.97 | 2.00 | 1.93 |
+| 16->24 | psi2 | 1.99 | 1.83 | 1.99 | 1.98 | 2.00 | 2.00 | 2.00 | 1.83 |
+| 24->32 | psi1 | 2.00 | 1.98 | 2.01 | 1.99 | 2.00 | 1.95 | 2.00 | 1.98 |
+| 24->32 | psi2 | 1.99 | 2.04 | 1.99 | 2.01 | 2.00 | 2.00 | 2.00 | 2.04 |
+
+  compare rc=0
++ python3 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/compare_oracle_sf29.py --case 16 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N16 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_16 --case 24 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N24 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_24 --case 32 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/oracle_gpu/N32 /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/gauss_0.25_32 --suffix '_h16_tol1e-10' --out /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/oracle32/oracle_vs_sf29_h16_tol1e-10.md
+GPU oracle file suffix: '_h16_tol1e-10'
+
+| N | label | scale RMS(psi_or^SF29 - affine) | rms | max | mean | rms_demeaned | rms_inlet | max_inlet | rms_interior | max_interior | plane of max |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 16 | psi1 | 3.135897e-02 | 2.326e-02 | 7.358e-02 | -1.099e-02 | 2.050e-02 | 2.143e-02 | 6.582e-02 | 2.337e-02 | 7.358e-02 | 16 |
+| 16 | psi2 | 2.226783e-02 | 2.533e-02 | 6.438e-02 | 2.057e-02 | 1.478e-02 | 1.912e-02 | 2.747e-02 | 2.566e-02 | 6.438e-02 | 10 |
+| 24 | psi1 | 3.132811e-02 | 1.035e-02 | 3.363e-02 | -4.870e-03 | 9.138e-03 | 9.543e-03 | 2.965e-02 | 1.039e-02 | 3.363e-02 | 24 |
+| 24 | psi2 | 2.229936e-02 | 1.132e-02 | 3.060e-02 | 9.185e-03 | 6.623e-03 | 8.481e-03 | 1.220e-02 | 1.143e-02 | 3.060e-02 | 23 |
+| 32 | psi1 | 3.131215e-02 | 5.829e-03 | 1.900e-02 | -2.735e-03 | 5.148e-03 | 5.373e-03 | 1.690e-02 | 5.843e-03 | 1.900e-02 | 32 |
+| 32 | psi2 | 2.231560e-02 | 6.380e-03 | 1.702e-02 | 5.185e-03 | 3.717e-03 | 4.767e-03 | 6.857e-03 | 6.423e-03 | 1.702e-02 | 31 |
+
+Observed orders log(e_a/e_b)/log(N_b/N_a) between consecutive grids:
+
+| pair | label | rms | max | mean | rms_demeaned | rms_inlet | max_inlet | rms_interior | max_interior |
+|---|---|---|---|---|---|---|---|---|---|
+| 16->24 | psi1 | 2.00 | 1.93 | 2.01 | 1.99 | 1.99 | 1.97 | 2.00 | 1.93 |
+| 16->24 | psi2 | 1.99 | 1.83 | 1.99 | 1.98 | 2.00 | 2.00 | 2.00 | 1.83 |
+| 24->32 | psi1 | 2.00 | 1.98 | 2.01 | 1.99 | 2.00 | 1.95 | 2.00 | 1.98 |
+| 24->32 | psi2 | 1.99 | 2.04 | 1.99 | 2.01 | 2.00 | 2.00 | 2.00 | 2.04 |
+
+  compare rc=0
+run_campaign_b.sh: part=oracle32 end=2026-10-07T01:13:49Z
+[2026-10-07T01:13:49Z] job=sf33c-oracle32-vs-sf29 finished exit=0

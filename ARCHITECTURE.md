@@ -148,8 +148,8 @@ It currently includes:
 
 Do not extend the old PSPTA invariant-construction architecture. New invariant construction belongs to the Lester equation (14) streamfunction solver. Existing PSPTA code may still be useful as a compatibility surface, diagnostic source, or transport consumer while the new path is brought up.
 
-### 4.3 Lester equation (14) streamfunction solver
-The new invariant-construction direction is a solver for the coupled nonlinear Lester et al. equation (14) system.
+### 4.3 Darcy labels: tracing constructor and the Lester equation (14) diagnostic
+Status 2026-10-07 (`docs/decisions/2026-10-07-label-transport-constructor.md`): the production constructor of the inlet-anchored Darcy labels on the `x1`-slab is **label transport by backward streamline tracing** from every vertex to the inlet plane (`src/physics/streamfunctions/inlet_slab/`: SF-30 DP5(4) integrator with Hénon landing on the SF-28 spline of the SF-19 flow; D-1 inlet labels at the feet; SF-35). The coupled nonlinear Lester et al. equation (14) system is retained as the **diagnostic** of those labels (`r_F`, `r_out` evaluated at the constructed labels, 4th-order stencils) and as the contract of the frozen periodic stack; its slab Newton-Krylov solver (SF-33) is an instrument for cross-construction where it converges (`<= 64^3`, `eps <= 0.5`), not a producer.
 
 The target is to compute `psi1`, `psi2` such that:
 
@@ -182,7 +182,7 @@ This formulation keeps a variable-coefficient diffusion structure and avoids exp
 - its periodic solution on generic Gaussian fields is not the Darcy flow: streamlines of a generic smooth periodic `k` do not close on the torus, so no nondegenerate affine + periodic pair represents Darcy there, and the periodic solution of (14) is the closed-streamline field nearest to Darcy (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; CPU probes, amplitude <= 1, `L/ell = 4`; production-stack repeat pending in SF-30);
 - the new target is the Darcy labels non-periodic in `x1` with inlet anchoring, prototyped on CPU (SF-29) before any GPU generalization (`docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`);
 - planned consumer modules: `src/numerics/interpolation/` (periodic tricubic B-spline, SF-28) and `src/physics/particles/streamline_tracker/` (SF-31/32);
-- the closure gate (SF-30) is the label-independent oracle;
+- the SF-30 return map is the flow-level oracle of the labels (SF-34); the tracing constructor is verified by checks that do not share its construction — grid FD metrics and the (14) residual, exact-label controls, cross-construction with the elliptic solution (decision 2026-10-07, item 3);
 - the legacy PSPTA engine is a possible invariant-preserving transport consumer once labels of the Darcy flow exist, but its role must be re-evaluated.
 
 ---
@@ -194,8 +194,8 @@ This formulation keeps a variable-coefficient diffusion structure and avoids exp
 The new architecture separates invariant construction from invariant consumption:
 
 1. **Construct invariants**
-   - solve the Lester equation (14) streamfunction system;
-   - keep construction residuals, gauges, denominator regularization, and continuation state visible.
+   - transport the D-1 inlet labels along backward-traced streamlines of the SF-19/SF-28 flow (production constructor, SF-35); evaluate the Lester equation (14) residual at the result as a diagnostic;
+   - keep tracing statuses, per-plane round trips, `h_max`/`tol`, the (14) residual and (for the periodic stack) gauges, denominator regularization and continuation state visible.
 
 2. **Measure invariant quality**
    - residual of `v·∇ψi`

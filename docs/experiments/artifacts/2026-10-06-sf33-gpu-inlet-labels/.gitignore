@@ -1,0 +1,4 @@
+# Exports are regenerated deterministically by scripts/export_proto.py (see scripts/README.md);
+# only small text outputs are ever committed.
+exports/
+__pycache__/

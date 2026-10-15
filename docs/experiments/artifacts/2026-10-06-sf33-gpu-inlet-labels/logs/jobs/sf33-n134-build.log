@@ -1,0 +1,39 @@
+[2026-10-06T19:55:49Z] job=sf33-n134-build session=macroflow3d-SF-33-sf33-n134-build started
+[2026-10-06T19:55:49Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T19:55:49Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T19:55:49Z] command=cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | grep -iE 'error|warning: ' | grep -v 'CMake' | head -40; echo BUILD_EXIT=${PIPESTATUS[0]}; ctest --test-dir build/v100-release --output-on-failure -R inlet_slab_ 2>&1 | tail -12
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+/home/sesquerre/MacroFlow3D-SF-33/src/multigrid/transfer/prolong_3d.cu(107): warning: variable "NZ" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-33/src/physics/streamfunctions/Diagnostics.cu(300): warning: parameter "nz" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/projected_pcg_gpu_cases.cu(92): warning: 'long double' is treated as 'double' in device code
+Warning: 'long double' is treated as 'double' in device code
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/projected_pcg_gpu_cases.cu(31): warning: 'long double' is treated as 'double' in device code
+Warning: 'long double' is treated as 'double' in device code
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/coupled_residual_gpu_cases.cu(473): warning: variable "grads" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/physical_diagnostics_gpu_cases.cu(260): warning: function "macroflow3d::streamfunctions::test::<unnamed>::PhysicalDiagnosticsGpuFixture::n" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/jvp_gpu_cases.cu(139): warning: 'long double' is treated as 'double' in device code
+/home/sesquerre/MacroFlow3D-SF-33/tests/inlet_slab/slab_production_tests.cu(197): warning: handler parameter "e" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/terminal_solver_gpu_cases.cu(2615): warning: variable "check" was declared but never referenced
+/home/sesquerre/MacroFlow3D-SF-33/tests/streamfunctions/terminal_solver_gpu_cases.cu(3505): warning: variable "check" was declared but never referenced
+BUILD_EXIT=0
+    Start 21: inlet_slab_contracts
+1/4 Test #21: inlet_slab_contracts .............   Passed    3.41 sec
+    Start 22: inlet_slab_jvp
+2/4 Test #22: inlet_slab_jvp ...................   Passed    3.33 sec
+    Start 23: inlet_slab_production16
+3/4 Test #23: inlet_slab_production16 ..........   Passed   11.85 sec
+    Start 24: inlet_slab_npy
+4/4 Test #24: inlet_slab_npy ...................   Passed    3.39 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =  21.99 sec
+[2026-10-06T19:56:34Z] job=sf33-n134-build finished exit=0

@@ -89,7 +89,7 @@ entrada, no periódicas en `x1`** (decisión O1 = B). El objetivo inmediato no e
 modificar el transporte ni demostrar por sí solo ningún valor de `alpha_T`.
 Primero debemos construir invariantes confiables y demostrar simultáneamente que:
 
-1. satisfacen el sistema elíptico no lineal;
+1. satisfacen la ecuación (14) discreta como condición necesaria (diagnóstico evaluado en las etiquetas construidas; el constructor es el transporte de etiquetas por trazado, decisión 2026-10-07);
 2. reconstruyen el flujo Darcy;
 3. son invariantes a lo largo de ese flujo;
 4. permanecen independientes fuera de zonas Darcy genuinamente lentas;
@@ -521,6 +521,17 @@ solución y la energía de disipación (candidato (ii)) no es competitiva. SF-30
 (PR #46) confirmó en el stack de producción que las líneas de corriente de Darcy no
 cierran.
 
+Estado 2026-10-07 (`docs/decisions/2026-10-07-label-transport-constructor.md`): SF-33
+implementó esa formulación en GPU y reprodujo el problema discreto del prototipo
+(14/14 casos) y el oráculo de producción (round trips <= 1.2e-9), pero el solver
+Newton-Krylov de la ecuación (14) no es viable como constructor de producción
+(estancamiento genuino del solver lineal en 128^3 para `eps >= 0.14`; 32^3 `eps = 0.5`
+falla; la familia de modos independiente de `x1` tiene determinante del símbolo
+principal nulo). El constructor de producción pasa a ser el transporte de etiquetas
+por trazado regresivo de líneas de corriente desde la cara de entrada (SF-35); la
+ecuación (14) queda como diagnóstico (`r_F`, `r_out` en las etiquetas construidas) y
+el solver del slab como instrumento de construcción cruzada donde converge.
+
 Nueva secuencia (dependencias entre paréntesis; el estado vigente lo gobierna el
 dashboard):
 
@@ -535,11 +546,15 @@ dashboard):
   (←SF-31).
 - SF-33: implementación GPU de la formulación de etiquetas de entrada en
   `src/physics/streamfunctions/` (←SF-29).
-- SF-34: aceptación en el medio periódico frente al gate de cierre de SF-30 en
-  `sigma^2` en {0.25, 1, 2.25}, `(4, 1/16, 256^3)` no bloqueante (←SF-33).
+- SF-35: transporte de etiquetas por trazado regresivo como constructor de
+  producción, verificado sin trazar y con órdenes observados en 32^3-256^3 (←SF-33).
+- SF-34: aceptación de las etiquetas de SF-35 en el medio periódico frente al gate de
+  cierre de SF-30 en `sigma^2` en {0.25, 1, 2.25}, `(4, 1/16, 256^3)` no bloqueante
+  (←SF-35; re-especificado 2026-10-07).
 
-Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29; el resto en prosa):
-generalización a GPU de `src/physics/streamfunctions/` a `x1` no periódico;
+Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29, SF-35 por el cierre de SF-33; el resto en prosa):
+generalización a GPU de `src/physics/streamfunctions/` a `x1` no periódico (SF-33) y
+constructor de producción por trazado (SF-35);
 aceptación en el medio periódico (`e_v(h)`, invariancia y mapa de retorno frente a
 SF-30 en `sigma^2 = 0.25, 1, 2.25`); dominio largo (2048 x 256 x 256,
 `lambda/h = 10`; `alpha_L` debe coincidir con RWPT y `alpha_T` se reporta con

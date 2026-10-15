@@ -1,0 +1,63 @@
+[2026-10-06T21:00:54Z] job=sf33-build session=macroflow3d-SF-33-sf33-build started
+[2026-10-06T21:00:54Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-06T21:00:54Z] cwd=/home/sesquerre/MacroFlow3D-SF-33
+[2026-10-06T21:00:54Z] command=cmake --preset v100-release && cmake --build build/v100-release -j 2>&1 | tail -n 30; echo BUILD_EXIT=${PIPESTATUS[0]}; ctest --test-dir build/v100-release --output-on-failure -R inlet_slab_
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (0.2s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release
+[164/193] Linking CXX executable CMakeFiles/macroflow3d_pipeline.dir/cmake_device_link.o
+[165/193] Linking CXX executable CMakeFiles/inlet_slab_proto_check.dir/cmake_device_link.o
+[166/193] Linking CXX executable CMakeFiles/streamline_tracker_rk_tests.dir/cmake_device_link.o
+[167/193] Linking CXX executable CMakeFiles/streamline_closure_integrator_tests.dir/cmake_device_link.o
+[168/193] Linking CXX executable CMakeFiles/inlet_slab_production_tests.dir/cmake_device_link.o
+[169/193] Linking CXX executable CMakeFiles/inlet_slab_newton_tests.dir/cmake_device_link.o
+[170/193] Linking CXX executable CMakeFiles/inlet_slab_npy_tests.dir/cmake_device_link.o
+[171/193] Linking CXX executable CMakeFiles/affine_periodic_flow_tests.dir/cmake_device_link.o
+[172/193] Linking CXX executable CMakeFiles/periodic_gaussian_tests.dir/cmake_device_link.o
+[173/193] Building CUDA object CMakeFiles/inlet_slab.dir/apps/inlet_slab/inlet_slab_main.cu.o
+[174/193] Linking CXX executable inlet_slab_jvp_tests
+[175/193] Linking CXX executable streamline_tracker_ps_tests
+[176/193] Linking CXX executable interpolation_tests
+[177/193] Linking CXX executable inlet_slab_contract_tests
+[178/193] Linking CXX executable closure_gate
+[179/193] Linking CXX executable streamfunction_ev_ladder
+[180/193] Linking CXX executable streamline_tracker_rk_tests
+[181/193] Linking CXX executable inlet_slab_proto_check
+[182/193] Linking CXX executable run_operator_tests
+[183/193] Linking CXX executable inlet_slab_production_tests
+[184/193] Linking CXX executable streamline_closure_integrator_tests
+[185/193] Linking CXX executable macroflow3d_pipeline
+[186/193] Linking CXX executable streamline_closure_controls_tests
+[187/193] Linking CXX executable inlet_slab_npy_tests
+[188/193] Linking CXX executable inlet_slab_newton_tests
+[189/193] Linking CXX executable streamfunction_operator_tests
+[190/193] Linking CXX executable periodic_gaussian_tests
+[191/193] Linking CXX executable affine_periodic_flow_tests
+[192/193] Linking CXX executable CMakeFiles/inlet_slab.dir/cmake_device_link.o
+[193/193] Linking CXX executable inlet_slab
+BUILD_EXIT=0
+Test project /home/sesquerre/MacroFlow3D-SF-33/build/v100-release
+    Start 21: inlet_slab_contracts
+1/5 Test #21: inlet_slab_contracts .............   Passed    3.52 sec
+    Start 22: inlet_slab_jvp
+2/5 Test #22: inlet_slab_jvp ...................   Passed    3.52 sec
+    Start 23: inlet_slab_newton
+3/5 Test #23: inlet_slab_newton ................   Passed   16.65 sec
+    Start 24: inlet_slab_production16
+4/5 Test #24: inlet_slab_production16 ..........   Passed   11.87 sec
+    Start 25: inlet_slab_npy
+5/5 Test #25: inlet_slab_npy ...................   Passed    3.61 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =  39.18 sec
+[2026-10-06T21:02:01Z] job=sf33-build finished exit=0

@@ -216,6 +216,23 @@ set(STREAMLINE_TRACKER_SOURCES
     src/physics/particles/streamline_tracker/PollockTracker.cu
 )
 
+# SF-33: inlet-label equation (14) on the x1-non-periodic slab (grid/types, 4th-order stencils, residual, metrics)
+set(INLET_SLAB_SOURCES
+    src/physics/streamfunctions/inlet_slab/SlabStencils4.cu
+    src/physics/streamfunctions/inlet_slab/SlabResidual.cu
+    src/physics/streamfunctions/inlet_slab/SlabMetrics.cu
+    src/physics/streamfunctions/inlet_slab/SlabJacobianVectorProduct.cu
+    src/physics/streamfunctions/inlet_slab/SlabGmres.cu
+    src/physics/streamfunctions/inlet_slab/SlabModePreconditioner.cu
+    src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cu
+    src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cu
+    # SF-33 N3: D-1 inlet labels, production inputs (SF-18/SF-19/SF-28), production oracle
+    src/physics/streamfunctions/inlet_slab/InletLabels.cu
+    src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
+    src/physics/streamfunctions/inlet_slab/SlabOracle.cu
+    src/physics/streamfunctions/inlet_slab/ProtoCase.cu
+)
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -299,6 +316,7 @@ add_library(macroflow3d_lib STATIC
     ${OPERATOR_SOURCES}
     ${INTERPOLATION_SOURCES}
     ${STREAMLINE_TRACKER_SOURCES}
+    ${INLET_SLAB_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
@@ -644,6 +662,51 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(streamline_closure_controls_tests PRIVATE macroflow3d_lib)
     target_compile_options(streamline_closure_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME streamline_closure_controls16 COMMAND streamline_closure_controls_tests)
+
+    # --- SF-33 inlet slab tests: begin ---
+    # SF-33 N0: inlet-slab foundation contract tests (fast tier; grids <= 32^3)
+    add_executable(inlet_slab_contract_tests tests/inlet_slab/slab_contract_tests.cu)
+    target_link_libraries(inlet_slab_contract_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_contract_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_contracts COMMAND inlet_slab_contract_tests)
+    # SF-33 N1: analytic slab Jacobian-vector product vs central FD ladder, k = 1 symbol (fast tier; N = 12)
+    add_executable(inlet_slab_jvp_tests tests/inlet_slab/slab_jvp_tests.cu)
+    target_link_libraries(inlet_slab_jvp_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_jvp_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_jvp COMMAND inlet_slab_jvp_tests)
+    # SF-33 N2: slab GMRES, per-mode preconditioner P-A, Newton line search, continuation (fast tier; N <= 16)
+    add_executable(inlet_slab_newton_tests tests/inlet_slab/slab_newton_tests.cu)
+    target_link_libraries(inlet_slab_newton_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_newton_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_newton COMMAND inlet_slab_newton_tests)
+    # SF-33 N7c (probe): Galerkin coarse-space correction (N = 12 contract checks)
+    add_executable(inlet_slab_coarse_tests tests/inlet_slab/slab_coarse_tests.cu)
+    target_link_libraries(inlet_slab_coarse_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_coarse_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_coarse COMMAND inlet_slab_coarse_tests)
+    # SF-33 N3: inlet labels, production inputs and production oracle (fast tier; grids <= 16^3)
+    add_executable(inlet_slab_production_tests tests/inlet_slab/slab_production_tests.cu)
+    target_link_libraries(inlet_slab_production_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_production_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_production16 COMMAND inlet_slab_production_tests)
+    # SF-33 N4: .npy reader/writer and prototype-case loader (fast tier; synthetic N = 8 case)
+    add_executable(inlet_slab_npy_tests tests/inlet_slab/slab_npy_tests.cu)
+    target_link_libraries(inlet_slab_npy_tests PRIVATE macroflow3d_lib)
+    target_compile_definitions(inlet_slab_npy_tests PRIVATE
+        INLET_SLAB_FIXTURE_DIR="${CMAKE_SOURCE_DIR}/tests/inlet_slab/fixtures")
+    add_test(NAME inlet_slab_npy COMMAND inlet_slab_npy_tests)
+    # SF-33 N4: prototype cross-check on a Python export (built, NOT a ctest entry: needs
+    # docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/scripts/export_proto.py output)
+    add_executable(inlet_slab_proto_check tests/inlet_slab/slab_proto_check.cu)
+    target_link_libraries(inlet_slab_proto_check PRIVATE macroflow3d_lib)
+    # --- SF-33 inlet slab tests: end ---
+
+    # SF-33 N5: inlet-slab experiment driver (documented-experiment instrument, NOT a ctest entry):
+    # --proto (SF-29 prototype reproduction), --production (SF-18/SF-19 ladder + oracle),
+    # --sf19-crosscheck (step 8). See docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/.
+    add_executable(inlet_slab apps/inlet_slab/inlet_slab_main.cu)
+    target_link_libraries(inlet_slab PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)

@@ -1,0 +1,208 @@
+command: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25/N32.json
+FIELD gaussian (SF-18) N=32 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=15375 | stage field k = exp(eps Y), eps = 0.25
+SOLVER N=32 eps=0.25 cand=i1o4 newton_tol=1.0e-13 max_newton=120 lin_tol=1.0e-12 restart=100 max_inner=6000 bisect=4 prec=P-A ladder=(0.25,0.5,1) stage_ok=1e-09 forcing=ew ew_gamma=0.9 ew_alpha=2 ew_eta0=0.1 ew_eta_max=0.1 ew_eta_min=1.0e-12 psitc=on psitc_mu0=1 psitc_mu_max=100 psitc_norm=merit psitc_retries=4 psitc_retry_factor=4 stagnation_window=5 stagnation_factor=0.5 gmres_stagnation_factor=0.9 coarse=mult coarse_profiles=2 coarse_assembly=colored coarse_factor=banded
+SOLVER_COARSE mode=mult profiles=2 K=4096 assembly=colored factor=banded (SF-33 N7c probe: Galerkin coarse correction on the x1-constant + x1-linear column subspace, rebuilt with P-A at every factor)
+SETUP STAGE field=gaussian eps=0.25 N=32 status=ok
+SETUP   SF-18: raw_mean=1.512462e-17 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=15375
+SETUP   SF-19: mg_levels=4 converged=1 G=(9.900435490247e-01, 5.488473815809e-04, 3.324452862087e-03) mean_flux=(1.000e+00, -1.870e-18, 1.723e-18) div_max=2.503e-12 div_rms=5.085e-13
+SETUP   SF-19 corrector x: status=converged its=10 rel_residual=2.930e-13 final_residual=9.295e-11
+SETUP   SF-19 corrector y: status=converged its=10 rel_residual=2.373e-13 final_residual=8.177e-11
+SETUP   SF-19 corrector z: status=converged its=10 rel_residual=2.533e-13 final_residual=8.183e-11
+SETUP   inlet: vmin=5.095185e-01 mean(U plane 0)=1.000000000000005 (mean-1=5.329e-15) Q0-1=5.329e-15 v_rms=1.020607e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=1.624293e-03 max_rel=5.898313e-03; spline potential GPU vs host prefilter rel=3.117e-15
+SETUP stage eps=0.25 built in 0.962s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+STAGE field=gaussian eps=0.25 N=32 cand=i1o4 (from eps=0, u=0)
+  NEWTON gaussian:0.25:32:i1o4 it= 0 r_F=5.680e+00 r_out=7.304e-02
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.638s t_cond=0.033s norm1=6.240e+05 inv_norm1_est=1.316e-03 rcond_est=1.218e-03 min|U_kk|=4.749e+03 max|U_kk|=1.521e+05 zero_pivots=0 mu=1.000e+00 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=5.941ms t_host_solve_avg=5.065ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=5.1e-03 t=0.02s cycles=1 reorth=2 rec=5.1e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.000e+00
+  NEWTON gaussian:0.25:32:i1o4 it= 1 r_F=2.997e+00 r_out=1.614e-03 lambda=1 |dx|max=4.27e-02 lin=gmres+P-A+CC(mult,2) rel=5.1e-03 lits=2 t_lin=0.0s |dx|2=6.77e-01 t_fact=0.70s eta=1.00e-01 mu=1.000e+00 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.024s t_lu=0.530s t_cond=0.033s norm1=5.958e+05 inv_norm1_est=2.551e-03 rcond_est=6.580e-04 min|U_kk|=3.408e+03 max|U_kk|=1.319e+05 zero_pivots=0 mu=5.275e-01 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=5.884ms t_host_solve_avg=5.021ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=5.2e-03 t=0.02s cycles=1 reorth=2 rec=5.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.275e-01
+  NEWTON gaussian:0.25:32:i1o4 it= 2 r_F=1.664e+00 r_out=1.502e-04 lambda=1 |dx|max=2.81e-02 lin=gmres+P-A+CC(mult,2) rel=5.2e-03 lits=2 t_lin=0.0s |dx|2=7.37e-01 t_fact=0.59s eta=1.00e-01 mu=5.275e-01 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.024s t_lu=0.525s t_cond=0.033s norm1=5.874e+05 inv_norm1_est=4.577e-03 rcond_est=3.719e-04 min|U_kk|=2.539e+03 max|U_kk|=1.219e+05 zero_pivots=0 mu=2.929e-01 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=5.893ms t_host_solve_avg=5.035ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=6.7e-03 t=0.02s cycles=1 reorth=2 rec=6.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.929e-01
+  NEWTON gaussian:0.25:32:i1o4 it= 3 r_F=9.534e-01 r_out=1.619e-04 lambda=1 |dx|max=2.24e-02 lin=gmres+P-A+CC(mult,2) rel=6.7e-03 lits=2 t_lin=0.0s |dx|2=7.89e-01 t_fact=0.58s eta=1.00e-01 mu=2.929e-01 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.024s t_lu=0.525s t_cond=0.033s norm1=5.876e+05 inv_norm1_est=7.554e-03 rcond_est=2.253e-04 min|U_kk|=1.966e+03 max|U_kk|=1.165e+05 zero_pivots=0 mu=1.679e-01 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=3 t_apply_avg=6.626ms t_host_solve_avg=5.725ms
+    LINEAR gmres+P-A+CC(mult,2) its=2 rel=8.8e-03 t=0.02s cycles=1 reorth=2 rec=8.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.679e-01
+  NEWTON gaussian:0.25:32:i1o4 it= 4 r_F=5.303e-01 r_out=1.926e-04 lambda=1 |dx|max=2.00e-02 lin=gmres+P-A+CC(mult,2) rel=8.8e-03 lits=2 t_lin=0.0s |dx|2=7.82e-01 t_fact=0.58s eta=1.00e-01 mu=1.679e-01 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.024s t_lu=0.537s t_cond=0.041s norm1=5.922e+05 inv_norm1_est=1.181e-02 rcond_est=1.430e-04 min|U_kk|=1.554e+03 max|U_kk|=1.133e+05 zero_pivots=0 mu=9.336e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=4 t_apply_avg=5.959ms t_host_solve_avg=5.026ms
+    LINEAR gmres+P-A+CC(mult,2) its=3 rel=3.1e-03 t=0.02s cycles=1 reorth=3 rec=3.1e-03 status=converged t_fact=0.00s singular_modes=0 mu=9.336e-02
+  NEWTON gaussian:0.25:32:i1o4 it= 5 r_F=2.772e-01 r_out=5.984e-05 lambda=1 |dx|max=1.80e-02 lin=gmres+P-A+CC(mult,2) rel=3.1e-03 lits=3 t_lin=0.0s |dx|2=7.38e-01 t_fact=0.60s eta=1.00e-01 mu=9.336e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.028s t_lu=0.526s t_cond=0.033s norm1=6.000e+05 inv_norm1_est=1.745e-02 rcond_est=9.548e-05 min|U_kk|=1.234e+03 max|U_kk|=1.115e+05 zero_pivots=0 mu=4.880e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=4 t_apply_avg=5.936ms t_host_solve_avg=5.018ms
+    LINEAR gmres+P-A+CC(mult,2) its=3 rel=6.1e-03 t=0.02s cycles=1 reorth=3 rec=6.1e-03 status=converged t_fact=0.00s singular_modes=0 mu=4.880e-02
+  NEWTON gaussian:0.25:32:i1o4 it= 6 r_F=1.345e-01 r_out=4.986e-05 lambda=1 |dx|max=1.59e-02 lin=gmres+P-A+CC(mult,2) rel=6.1e-03 lits=3 t_lin=0.0s |dx|2=6.77e-01 t_fact=0.59s eta=1.00e-01 mu=4.880e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.527s t_cond=0.033s norm1=6.133e+05 inv_norm1_est=2.593e-02 rcond_est=6.288e-05 min|U_kk|=1.011e+03 max|U_kk|=1.105e+05 zero_pivots=0 mu=2.368e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=5 t_apply_avg=5.962ms t_host_solve_avg=5.034ms
+    LINEAR gmres+P-A+CC(mult,2) its=4 rel=6.2e-03 t=0.03s cycles=1 reorth=4 rec=6.2e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.368e-02
+  NEWTON gaussian:0.25:32:i1o4 it= 7 r_F=6.536e-02 r_out=2.336e-05 lambda=1 |dx|max=1.42e-02 lin=gmres+P-A+CC(mult,2) rel=6.2e-03 lits=4 t_lin=0.0s |dx|2=6.62e-01 t_fact=0.59s eta=1.00e-01 mu=2.368e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.546s t_cond=0.040s norm1=6.310e+05 inv_norm1_est=3.528e-02 rcond_est=4.492e-05 min|U_kk|=8.739e+02 max|U_kk|=1.100e+05 zero_pivots=0 mu=1.151e-02 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=6 t_apply_avg=5.938ms t_host_solve_avg=5.010ms
+    LINEAR gmres+P-A+CC(mult,2) its=5 rel=8.8e-03 t=0.04s cycles=1 reorth=5 rec=8.8e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.151e-02
+  NEWTON gaussian:0.25:32:i1o4 it= 8 r_F=3.991e-02 r_out=3.301e-05 lambda=1 |dx|max=1.36e-02 lin=gmres+P-A+CC(mult,2) rel=8.8e-03 lits=5 t_lin=0.0s |dx|2=8.16e-01 t_fact=0.62s eta=1.00e-01 mu=1.151e-02 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.028s t_lu=0.546s t_cond=0.035s norm1=6.524e+05 inv_norm1_est=4.022e-02 rcond_est=3.810e-05 min|U_kk|=7.948e+02 max|U_kk|=1.097e+05 zero_pivots=0 mu=7.027e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=10 t_apply_avg=6.013ms t_host_solve_avg=5.086ms
+    LINEAR gmres+P-A+CC(mult,2) its=9 rel=5.6e-03 t=0.06s cycles=1 reorth=8 rec=5.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=7.027e-03
+  NEWTON gaussian:0.25:32:i1o4 it= 9 r_F=2.918e-02 r_out=7.457e-05 lambda=1 |dx|max=1.47e-02 lin=gmres+P-A+CC(mult,2) rel=5.6e-03 lits=9 t_lin=0.1s |dx|2=9.50e-01 t_fact=0.61s eta=1.00e-01 mu=7.027e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.569s t_cond=0.033s norm1=6.756e+05 inv_norm1_est=4.030e-02 rcond_est=3.673e-05 min|U_kk|=7.500e+02 max|U_kk|=1.096e+05 zero_pivots=0 mu=5.137e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=11 t_apply_avg=5.955ms t_host_solve_avg=5.035ms
+    LINEAR gmres+P-A+CC(mult,2) its=10 rel=8.3e-03 t=0.07s cycles=1 reorth=9 rec=8.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.137e-03
+  NEWTON gaussian:0.25:32:i1o4 it=10 r_F=2.082e-02 r_out=7.785e-05 lambda=1 |dx|max=1.54e-02 lin=gmres+P-A+CC(mult,2) rel=8.3e-03 lits=10 t_lin=0.1s |dx|2=9.01e-01 t_fact=0.63s eta=1.00e-01 mu=5.137e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.605s t_cond=0.035s norm1=6.968e+05 inv_norm1_est=4.589e-02 rcond_est=3.127e-05 min|U_kk|=6.792e+02 max|U_kk|=1.095e+05 zero_pivots=0 mu=3.666e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=13 t_apply_avg=5.970ms t_host_solve_avg=5.045ms
+    LINEAR gmres+P-A+CC(mult,2) its=12 rel=8.6e-03 t=0.08s cycles=1 reorth=10 rec=8.6e-03 status=converged t_fact=0.00s singular_modes=0 mu=3.666e-03
+  NEWTON gaussian:0.25:32:i1o4 it=11 r_F=1.352e-02 r_out=6.262e-05 lambda=1 |dx|max=1.38e-02 lin=gmres+P-A+CC(mult,2) rel=8.6e-03 lits=12 t_lin=0.1s |dx|2=7.93e-01 t_fact=0.67s eta=1.00e-01 mu=3.666e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.028s t_lu=0.593s t_cond=0.034s norm1=7.109e+05 inv_norm1_est=5.439e-02 rcond_est=2.587e-05 min|U_kk|=6.392e+02 max|U_kk|=1.094e+05 zero_pivots=0 mu=2.381e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=15 t_apply_avg=6.011ms t_host_solve_avg=5.097ms
+    LINEAR gmres+P-A+CC(mult,2) its=14 rel=9.9e-03 t=0.09s cycles=1 reorth=13 rec=9.9e-03 status=converged t_fact=0.00s singular_modes=0 mu=2.381e-03
+  NEWTON gaussian:0.25:32:i1o4 it=12 r_F=7.559e-03 r_out=4.196e-05 lambda=1 |dx|max=1.12e-02 lin=gmres+P-A+CC(mult,2) rel=9.9e-03 lits=14 t_lin=0.1s |dx|2=6.42e-01 t_fact=0.66s eta=1.00e-01 mu=2.381e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.613s t_cond=0.033s norm1=7.197e+05 inv_norm1_est=6.518e-02 rcond_est=2.132e-05 min|U_kk|=6.054e+02 max|U_kk|=1.094e+05 zero_pivots=0 mu=1.331e-03 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=18 t_apply_avg=6.001ms t_host_solve_avg=5.075ms
+    LINEAR gmres+P-A+CC(mult,2) its=17 rel=9.3e-03 t=0.11s cycles=1 reorth=16 rec=9.3e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.331e-03
+  NEWTON gaussian:0.25:32:i1o4 it=13 r_F=3.338e-03 r_out=2.125e-05 lambda=1 |dx|max=7.66e-03 lin=gmres+P-A+CC(mult,2) rel=9.3e-03 lits=17 t_lin=0.1s |dx|2=4.44e-01 t_fact=0.67s eta=1.00e-01 mu=1.331e-03 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.635s t_cond=0.047s norm1=7.247e+05 inv_norm1_est=7.545e-02 rcond_est=1.829e-05 min|U_kk|=4.281e+02 max|U_kk|=1.093e+05 zero_pivots=0 mu=5.877e-04 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=21 t_apply_avg=6.048ms t_host_solve_avg=5.125ms
+    LINEAR gmres+P-A+CC(mult,2) its=20 rel=9.7e-03 t=0.13s cycles=1 reorth=19 rec=9.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=5.877e-04
+  NEWTON gaussian:0.25:32:i1o4 it=14 r_F=9.709e-04 r_out=6.236e-06 lambda=1 |dx|max=3.80e-03 lin=gmres+P-A+CC(mult,2) rel=9.7e-03 lits=20 t_lin=0.1s |dx|2=2.23e-01 t_fact=0.71s eta=1.00e-01 mu=5.877e-04 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.028s t_lu=0.619s t_cond=0.033s norm1=7.268e+05 inv_norm1_est=8.246e-02 rcond_est=1.669e-05 min|U_kk|=5.548e+02 max|U_kk|=1.093e+05 zero_pivots=0 mu=1.709e-04 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=24 t_apply_avg=5.945ms t_host_solve_avg=5.028ms
+    LINEAR gmres+P-A+CC(mult,2) its=23 rel=6.7e-03 t=0.15s cycles=1 reorth=22 rec=6.7e-03 status=converged t_fact=0.00s singular_modes=0 mu=1.709e-04
+  NEWTON gaussian:0.25:32:i1o4 it=15 r_F=1.076e-04 r_out=6.232e-07 lambda=1 |dx|max=1.04e-03 lin=gmres+P-A+CC(mult,2) rel=6.7e-03 lits=23 t_lin=0.2s |dx|2=6.01e-02 t_fact=0.68s eta=7.61e-02 mu=1.709e-04 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.632s t_cond=0.034s norm1=7.273e+05 inv_norm1_est=8.524e-02 rcond_est=1.613e-05 min|U_kk|=5.410e+02 max|U_kk|=1.093e+05 zero_pivots=0 mu=1.895e-05 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=33 t_apply_avg=5.992ms t_host_solve_avg=5.077ms
+    LINEAR gmres+P-A+CC(mult,2) its=32 rel=8.9e-04 t=0.21s cycles=1 reorth=31 rec=8.9e-04 status=converged t_fact=0.00s singular_modes=0 mu=1.895e-05
+  NEWTON gaussian:0.25:32:i1o4 it=16 r_F=1.386e-06 r_out=6.841e-09 lambda=1 |dx|max=9.17e-05 lin=gmres+P-A+CC(mult,2) rel=8.9e-04 lits=32 t_lin=0.2s |dx|2=5.24e-03 t_fact=0.69s eta=1.11e-02 mu=1.895e-05 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.629s t_cond=0.033s norm1=7.273e+05 inv_norm1_est=8.558e-02 rcond_est=1.606e-05 min|U_kk|=5.403e+02 max|U_kk|=1.093e+05 zero_pivots=0 mu=2.440e-07 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=51 t_apply_avg=6.006ms t_host_solve_avg=5.089ms
+    LINEAR gmres+P-A+CC(mult,2) its=50 rel=1.2e-05 t=0.34s cycles=1 reorth=49 rec=1.2e-05 status=converged t_fact=0.00s singular_modes=0 mu=2.440e-07
+  NEWTON gaussian:0.25:32:i1o4 it=17 r_F=2.320e-10 r_out=1.016e-12 lambda=1 |dx|max=1.01e-06 lin=gmres+P-A+CC(mult,2) rel=1.2e-05 lits=50 t_lin=0.3s |dx|2=5.30e-05 t_fact=0.69s eta=1.49e-04 mu=2.440e-07 retries=0
+    COARSE build mode=mult profiles=2 K=4096 t_assembly=0.027s t_lu=0.624s t_cond=0.033s norm1=7.273e+05 inv_norm1_est=8.559e-02 rcond_est=1.606e-05 min|U_kk|=5.403e+02 max|U_kk|=1.093e+05 zero_pivots=0 mu=4.084e-11 assembly=colored factor=banded applications=256 color_period=8 kl=639 ku=639
+    COARSE apply applications=48 t_apply_avg=5.947ms t_host_solve_avg=5.030ms
+    LINEAR gmres+P-A+CC(mult,2) its=47 rel=1.8e-05 t=0.32s cycles=1 reorth=45 rec=1.8e-05 status=converged t_fact=0.00s singular_modes=0 mu=4.084e-11
+  NEWTON gaussian:0.25:32:i1o4 it=18 r_F=1.073e-14 r_out=4.281e-16 lambda=1 |dx|max=1.46e-10 lin=gmres+P-A+CC(mult,2) rel=1.8e-05 lits=47 t_lin=0.3s |dx|2=7.12e-09 t_fact=0.69s eta=2.16e-04 mu=4.084e-11 retries=0
+  STAGE_END field=gaussian eps=0.25 N=32 cand=i1o4 status=converged its=18 r_F=1.073e-14 r_out=4.281e-16 -> accepted
+PATH field=gaussian eps=0.25 N=32 cand=i1o4 continuation path: 0.25
+GMRES_STATS field=gaussian eps=0.25 N=32 stage_eps=0.25 status=converged newton_its=18 steps=18 its_max=50 its_median=9.5 its_total=257 rel_max=9.9e-03 linear_failures=0 forcing=ew etas=1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,1.00e-01,7.61e-02,1.11e-02,1.49e-04,2.16e-04 psitc=on mus=1.00e+00,5.28e-01,2.93e-01,1.68e-01,9.34e-02,4.88e-02,2.37e-02,1.15e-02,7.03e-03,5.14e-03,3.67e-03,2.38e-03,1.33e-03,5.88e-04,1.71e-04,1.89e-05,2.44e-07,4.08e-11
+ORACLE_CONFIG primary hmax=h/8=3.906250e-03 tol=1.0e-08 (SF-30 default h gives step-limited round trips; orchestrator decision: h/8) | ladder: + (h/16, tol) + (h/16, 1e-10)
+ORACLE_RUN hmax=3.906250e-03 (h/8) tol=1.0e-08 threads=32 max_roundtrip_gate=1.0e-08
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=1 roundtrip=9.728e-11 nfev=70656 nfev_rt=70656 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=2 roundtrip=1.794e-10 nfev=119808 nfev_rt=119808 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=3 roundtrip=2.613e-10 nfev=168960 nfev_rt=168960 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=4 roundtrip=4.565e-10 nfev=218112 nfev_rt=218112 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=5 roundtrip=5.803e-10 nfev=267264 nfev_rt=267264 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=6 roundtrip=5.502e-10 nfev=316416 nfev_rt=316416 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=7 roundtrip=4.660e-10 nfev=365580 nfev_rt=365580 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=8 roundtrip=3.684e-10 nfev=414828 nfev_rt=414828 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=9 roundtrip=3.418e-10 nfev=464064 nfev_rt=464064 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=10 roundtrip=3.409e-10 nfev=513306 nfev_rt=513306 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=11 roundtrip=3.499e-10 nfev=562518 nfev_rt=562518 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=12 roundtrip=3.758e-10 nfev=611850 nfev_rt=611850 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=13 roundtrip=3.852e-10 nfev=661152 nfev_rt=661152 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=14 roundtrip=4.305e-10 nfev=710436 nfev_rt=710436 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=15 roundtrip=4.306e-10 nfev=759834 nfev_rt=759834 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=16 roundtrip=3.874e-10 nfev=809250 nfev_rt=809250 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=17 roundtrip=4.434e-10 nfev=858732 nfev_rt=858732 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=18 roundtrip=4.240e-10 nfev=908178 nfev_rt=908178 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=19 roundtrip=4.529e-10 nfev=957594 nfev_rt=957594 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=20 roundtrip=5.625e-10 nfev=1006956 nfev_rt=1006956 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=21 roundtrip=5.533e-10 nfev=1056276 nfev_rt=1056276 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=22 roundtrip=7.275e-10 nfev=1105698 nfev_rt=1105698 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=23 roundtrip=8.034e-10 nfev=1155066 nfev_rt=1155066 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=24 roundtrip=8.799e-10 nfev=1204434 nfev_rt=1204434 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=25 roundtrip=8.341e-10 nfev=1253718 nfev_rt=1253718 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=26 roundtrip=7.890e-10 nfev=1303092 nfev_rt=1303092 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=27 roundtrip=8.418e-10 nfev=1352418 nfev_rt=1352418 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=28 roundtrip=8.517e-10 nfev=1401834 nfev_rt=1401834 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=29 roundtrip=8.566e-10 nfev=1451160 nfev_rt=1451160 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=30 roundtrip=1.011e-09 nfev=1500546 nfev_rt=1500546 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=31 roundtrip=1.145e-09 nfev=1549872 nfev_rt=1549872 nonok=0 backflow_enc=0
+ORACLE hmax=3.906250e-03 tol=1.0e-08 plane=32 roundtrip=1.227e-09 nfev=1599174 nfev_rt=1599174 nonok=0 backflow_enc=0
+ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=1.227e-09 non_ok=0 t_trace=0.86s t_labels=0.003s
+ORACLE_RUN hmax=1.953125e-03 (h/16) tol=1.0e-08 threads=32 max_roundtrip_gate=1.0e-08
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=1 roundtrip=1.172e-11 nfev=119808 nfev_rt=119808 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=2 roundtrip=1.847e-11 nfev=218112 nfev_rt=218112 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=3 roundtrip=2.942e-11 nfev=316416 nfev_rt=316416 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=4 roundtrip=4.873e-11 nfev=414720 nfev_rt=414720 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=5 roundtrip=5.268e-11 nfev=513126 nfev_rt=513126 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=6 roundtrip=3.730e-11 nfev=611964 nfev_rt=611964 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=7 roundtrip=3.343e-11 nfev=710886 nfev_rt=710886 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=8 roundtrip=3.673e-11 nfev=809826 nfev_rt=809826 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=9 roundtrip=4.424e-11 nfev=908724 nfev_rt=908724 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=10 roundtrip=4.894e-11 nfev=1007418 nfev_rt=1007418 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=11 roundtrip=5.130e-11 nfev=1106118 nfev_rt=1106118 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=12 roundtrip=5.602e-11 nfev=1204680 nfev_rt=1204680 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=13 roundtrip=5.766e-11 nfev=1303212 nfev_rt=1303212 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=14 roundtrip=5.563e-11 nfev=1401666 nfev_rt=1401666 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=15 roundtrip=5.034e-11 nfev=1500120 nfev_rt=1500120 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=16 roundtrip=5.743e-11 nfev=1598730 nfev_rt=1598730 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=17 roundtrip=6.977e-11 nfev=1697244 nfev_rt=1697244 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=18 roundtrip=5.980e-11 nfev=1795986 nfev_rt=1795986 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=19 roundtrip=5.559e-11 nfev=1894752 nfev_rt=1894752 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=20 roundtrip=6.440e-11 nfev=1993524 nfev_rt=1993524 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=21 roundtrip=5.926e-11 nfev=2092200 nfev_rt=2092200 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=22 roundtrip=5.613e-11 nfev=2190852 nfev_rt=2190852 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=23 roundtrip=6.213e-11 nfev=2289498 nfev_rt=2289498 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=24 roundtrip=7.650e-11 nfev=2388132 nfev_rt=2388132 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=25 roundtrip=8.528e-11 nfev=2486766 nfev_rt=2486766 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=26 roundtrip=7.714e-11 nfev=2585412 nfev_rt=2585412 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=27 roundtrip=7.975e-11 nfev=2684160 nfev_rt=2684160 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=28 roundtrip=1.002e-10 nfev=2782968 nfev_rt=2782968 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=29 roundtrip=1.053e-10 nfev=2881668 nfev_rt=2881668 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=30 roundtrip=1.031e-10 nfev=2980380 nfev_rt=2980380 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=31 roundtrip=9.207e-11 nfev=3078990 nfev_rt=3078990 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-08 plane=32 roundtrip=8.382e-11 nfev=3177612 nfev_rt=3177612 nonok=0 backflow_enc=0
+ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.42s t_labels=0.003s
+ORACLE_RUN hmax=1.953125e-03 (h/16) tol=1.0e-10 threads=32 max_roundtrip_gate=1.0e-08
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=1 roundtrip=1.172e-11 nfev=119808 nfev_rt=119808 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=2 roundtrip=1.847e-11 nfev=218112 nfev_rt=218112 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=3 roundtrip=2.942e-11 nfev=316416 nfev_rt=316416 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=4 roundtrip=4.873e-11 nfev=414720 nfev_rt=414720 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=5 roundtrip=5.268e-11 nfev=513126 nfev_rt=513126 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=6 roundtrip=3.730e-11 nfev=611964 nfev_rt=611964 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=7 roundtrip=3.343e-11 nfev=710886 nfev_rt=710886 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=8 roundtrip=3.673e-11 nfev=809826 nfev_rt=809826 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=9 roundtrip=4.424e-11 nfev=908724 nfev_rt=908724 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=10 roundtrip=4.894e-11 nfev=1007418 nfev_rt=1007418 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=11 roundtrip=5.130e-11 nfev=1106118 nfev_rt=1106118 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=12 roundtrip=5.602e-11 nfev=1204680 nfev_rt=1204680 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=13 roundtrip=5.766e-11 nfev=1303212 nfev_rt=1303212 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=14 roundtrip=5.563e-11 nfev=1401666 nfev_rt=1401666 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=15 roundtrip=5.034e-11 nfev=1500120 nfev_rt=1500120 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=16 roundtrip=5.743e-11 nfev=1598730 nfev_rt=1598730 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=17 roundtrip=6.977e-11 nfev=1697244 nfev_rt=1697244 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=18 roundtrip=5.980e-11 nfev=1795986 nfev_rt=1795986 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=19 roundtrip=5.559e-11 nfev=1894752 nfev_rt=1894752 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=20 roundtrip=6.440e-11 nfev=1993524 nfev_rt=1993524 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=21 roundtrip=5.926e-11 nfev=2092200 nfev_rt=2092200 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=22 roundtrip=5.613e-11 nfev=2190852 nfev_rt=2190852 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=23 roundtrip=6.213e-11 nfev=2289498 nfev_rt=2289498 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=24 roundtrip=7.650e-11 nfev=2388132 nfev_rt=2388132 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=25 roundtrip=8.528e-11 nfev=2486766 nfev_rt=2486766 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=26 roundtrip=7.714e-11 nfev=2585412 nfev_rt=2585412 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=27 roundtrip=7.975e-11 nfev=2684160 nfev_rt=2684160 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=28 roundtrip=1.002e-10 nfev=2782968 nfev_rt=2782968 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=29 roundtrip=1.053e-10 nfev=2881668 nfev_rt=2881668 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=30 roundtrip=1.031e-10 nfev=2980380 nfev_rt=2980380 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=31 roundtrip=9.207e-11 nfev=3078990 nfev_rt=3078990 nonok=0 backflow_enc=0
+ORACLE hmax=1.953125e-03 tol=1.0e-10 plane=32 roundtrip=8.382e-11 nfev=3177612 nfev_rt=3177612 nonok=0 backflow_enc=0
+ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-10 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.47s t_labels=0.003s
+ORACLE_LABELDIFF (hmax=1.953125e-03 tol=1.0e-08) vs primary: max|dpsi1|=7.121e-10 max|dpsi2|=7.094e-10
+ORACLE_LABELDIFF (hmax=1.953125e-03 tol=1.0e-10) vs primary: max|dpsi1|=7.121e-10 max|dpsi2|=7.094e-10
+CASE field=gaussian eps=0.25 N=32 cand=i1o4 | r_F=1.073e-14 its=18 | e_v=1.711e-03 e_psi=1.250e-02 e_i=(8.425e-04,5.905e-04) e_div=7.440e-04 min_c=4.950e-01 p0.1=5.188e-01 p1=5.875e-01 p5=7.053e-01 p50=9.940e-01 | t=14.3 | e_psi1=1.250e-02 e_psi2=1.140e-02
+CASE field=gaussian eps=0.25 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=2.247e-03 e_psi=4.685e-18 e_i=(8.389e-05,7.095e-05) e_div=8.281e-04 min_c=4.954e-01 p0.1=5.191e-01 p1=5.876e-01 p5=7.051e-01 p50=9.939e-01 | t=0.0 | e_psi1=4.685e-18 e_psi2=4.387e-18
+EXTRA field=gaussian eps=0.25 N=32 cand=i1o4 status=converged r_F=1.073e-14 r_out=4.281e-16 | outlet c_perp-vperp_in: cand=4.281e-16 oracle_fd=2.840e-04 | inlet oblique defect (c x e1 - vperp_in x e1)/v_rms: j=0(one-sided) cand=1.459e-03 oracle_fd=2.418e-04; j=1 cand=2.194e-02 oracle_fd=2.238e-02; j=1 vs vD(j=1) cand=1.324e-03 oracle_fd=1.159e-04 | min|c|/v_rms=0.4850 min|vD|/v_rms=0.4834 e_i1=8.425e-04 e_i2=5.905e-04 | t=14.3s | a_psi1=4.226e-04 a_psi2=2.476e-04 (FD order 4)
+HISTORY field=gaussian eps=0.25 N=32 cand=i1o4 r_F: 5.68e+00 3.00e+00 1.66e+00 9.53e-01 5.30e-01 2.77e-01 1.34e-01 6.54e-02 3.99e-02 2.92e-02 2.08e-02 1.35e-02 7.56e-03 3.34e-03 9.71e-04 1.08e-04 1.39e-06 2.32e-10 1.07e-14
+HISTORY field=gaussian eps=0.25 N=32 cand=i1o4 r_out: 7.30e-02 1.61e-03 1.50e-04 1.62e-04 1.93e-04 5.98e-05 4.99e-05 2.34e-05 3.30e-05 7.46e-05 7.78e-05 6.26e-05 4.20e-05 2.13e-05 6.24e-06 6.23e-07 6.84e-09 1.02e-12 4.28e-16
+HISTORY_FULL field=gaussian eps=0.25 N=32 cand=i1o4 r_F: 5.67961843998814420e+00 2.99652154548053451e+00 1.66372084490672267e+00 9.53408660298761257e-01 5.30307050846945627e-01 2.77184312460807325e-01 1.34490343634031367e-01 6.53592141529535930e-02 3.99118682597245228e-02 2.91811761094400123e-02 2.08233116107418605e-02 1.35245672781777182e-02 7.55872352655462872e-03 3.33824343563504005e-03 9.70861036779923129e-04 1.07618295166076990e-04 1.38595365322193561e-06 2.31977714571068481e-10 1.07330534679111623e-14
+HISTORY_FULL field=gaussian eps=0.25 N=32 cand=i1o4 r_out: 7.30406363943350012e-02 1.61434479404515383e-03 1.50237975485498698e-04 1.61943507540273350e-04 1.92562575830009045e-04 5.98406220632442481e-05 4.98613238164925503e-05 2.33591424835710482e-05 3.30051088978994462e-05 7.45665819794374919e-05 7.78468602211508485e-05 6.26193832498359921e-05 4.19554024072611460e-05 2.12521267407447734e-05 6.23615011163697183e-06 6.23164385605827399e-07 6.84061066142755043e-09 1.01598259087563982e-12 4.28102211937554984e-16
+TIMING_SETUP stage_builds=0.962s (inside the solve phase; Newton-Krylov only = 13.338s)
+TIMING field=0.057s metrics=0.004s oracle=3.763s prepare=0.047s solve=14.300s total=18.172s
+MEMORY peak_device_bytes=617611264 free_min=33472118784 total_device=34089730048 workspaces_bytes=103341703 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+STATUS_DETAIL solver=converged oracle=ok
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/ladder_0.25/N32.json
+STATUS converged

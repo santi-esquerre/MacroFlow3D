@@ -1,0 +1,14 @@
+command: /home/sesquerre/MacroFlow3D-SF-33/build/v100-release/inlet_slab --sf19-crosscheck /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_24 --summary /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/N24.json
+CROSSCHECK_INPUT dir=/home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/exports/crosscheck_gauss_0.25_24 N=24 (Y_cells = ln k at the cell centres, x-fastest; SF-19 qbar=e1 rtol=1.0e-10 auto MG levels)
+SETUP STAGE field=crosscheck eps=1 N=24 status=ok
+SETUP   SF-19: mg_levels=3 converged=1 G=(9.905158777472e-01, 2.321719405349e-04, -4.510584368320e-03) mean_flux=(1.000e+00, -7.148e-19, 9.959e-19) div_max=8.442e-13 div_rms=1.237e-13
+SETUP   SF-19 corrector x: status=converged its=10 rel_residual=7.182e-14 final_residual=1.465e-11
+SETUP   SF-19 corrector y: status=converged its=10 rel_residual=6.814e-14 final_residual=1.679e-11
+SETUP   SF-19 corrector z: status=converged its=10 rel_residual=5.055e-14 final_residual=9.982e-12
+SETUP   inlet: vmin=6.389701e-01 mean(U plane 0)=0.999999999999999 (mean-1=-5.551e-16) Q0-1=2.220e-16 v_rms=1.021199e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=2.729989e-03 max_rel=6.338227e-03; spline potential GPU vs host prefilter rel=2.403e-15
+CROSSCHECK N=24 v1_face: rms_rel=1.778114e-03 max_rel=4.142096e-03 (vs v1_face_ref point values) rms_rel_avg=1.592003e-03 (vs v1_faceavg_ref) | vperp_vertex: rms=1.169111e-03 max=2.570587e-03 (spline flow k_v (G + grad s_h) at the inlet vertices vs vperp_vertex_ref; ref rms=6.663486e-02) | G=(9.905158777472e-01, 2.321719405349e-04, -4.510584368320e-03)
+TIMING setup=1.011s total=1.012s
+MEMORY peak_device_bytes=523239424 free_min=33566490624 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-33/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/raw/crosscheck/N24.json
+STATUS ok

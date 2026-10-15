@@ -1,0 +1,4 @@
+SF-33 N7c: --coarse off (default) vs the N7b log logs/n7b_local/psitc_on/gauss_0.25_16.log
+binary: build/wsl-release/inlet_slab at the N7c productization head (pre-commit tree), command: inlet_slab --proto exports/gauss_0.25_16
+compared: every NEWTON / LINEAR / HISTORY_FULL line with the t=/t_lin=/t_fact= timing tokens removed
+result: 27 lines, 0 differing (diff exit 0)
