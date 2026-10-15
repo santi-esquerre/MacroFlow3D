@@ -1,0 +1,6 @@
+# SF-35 campaign artifact: not committed
+exports/
+# local smoke of the scripts (run_campaign.sh ... smoke); not campaign evidence
+logs/smoke/
+raw/smoke/
+analysis/smoke_*
