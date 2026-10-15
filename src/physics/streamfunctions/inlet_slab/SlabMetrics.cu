@@ -158,6 +158,74 @@ __global__ void metrics_div_kernel(InletSlabGrid g, SlabStencilView st, const re
     detail::block_reduce_store<1>(acc, partials, nblocks);
 }
 
+constexpr int kPlaneSums = 7; // cv2, vg1^2, |g1|^2, vg2^2, |g2|^2, nonpos, nonfinite
+constexpr int kPlaneOut = 9;  // 7 sums, min |c|, min vD1
+
+/// One block (kSlabBlock threads) per plane; fixed block-stride order and tree (deterministic).
+__global__ void metrics_plane_kernel(InletSlabGrid g, SlabStencilView st,
+                                     const real* __restrict__ U1, const real* __restrict__ U2,
+                                     const real* __restrict__ v0, const real* __restrict__ v1,
+                                     const real* __restrict__ v2, const real* __restrict__ c0,
+                                     const real* __restrict__ c1, const real* __restrict__ c2,
+                                     const real* __restrict__ cn, const real* __restrict__ vn,
+                                     real* plane_out) {
+    const int j = blockIdx.x;
+    const std::size_t np = g.plane_size();
+    real acc[kPlaneSums];
+    for (int k = 0; k < kPlaneSums; ++k)
+        acc[k] = 0.0;
+    real mc = INFINITY, mv = INFINITY;
+    for (std::size_t rem = threadIdx.x; rem < np; rem += blockDim.x) {
+        const std::size_t idx = static_cast<std::size_t>(j) * np + rem;
+        const int m2 = static_cast<int>(rem / static_cast<std::size_t>(g.n));
+        const int m3 = static_cast<int>(rem % static_cast<std::size_t>(g.n));
+        real du1[3], du2[3];
+        grad4_at(U1, st, g, j, m2, m3, du1);
+        grad4_at(U2, st, g, j, m2, m3, du2);
+        const real g1[3] = {du1[0], 1.0 + du1[1], du1[2]};
+        const real g2[3] = {du2[0], du2[1], 1.0 + du2[2]};
+        const real v[3] = {v0[idx], v1[idx], v2[idx]};
+        const real e0 = c0[idx] - v[0], e1 = c1[idx] - v[1], e2 = c2[idx] - v[2];
+        acc[0] += e0 * e0 + e1 * e1 + e2 * e2;
+        const real vg1 = v[0] * g1[0] + v[1] * g1[1] + v[2] * g1[2];
+        const real vg2 = v[0] * g2[0] + v[1] * g2[1] + v[2] * g2[2];
+        acc[1] += vg1 * vg1;
+        acc[2] += g1[0] * g1[0] + g1[1] * g1[1] + g1[2] * g1[2];
+        acc[3] += vg2 * vg2;
+        acc[4] += g2[0] * g2[0] + g2[1] * g2[1] + g2[2] * g2[2];
+        if (v[0] <= 0.0)
+            acc[5] += 1.0;
+        if (!(isfinite(cn[idx]) && isfinite(vn[idx])))
+            acc[6] += 1.0;
+        if (cn[idx] < mc)
+            mc = cn[idx];
+        if (v[0] < mv)
+            mv = v[0];
+    }
+    __shared__ real sh[kPlaneOut][detail::kSlabBlock];
+    const int t = threadIdx.x;
+    for (int k = 0; k < kPlaneSums; ++k)
+        sh[k][t] = acc[k];
+    sh[7][t] = mc;
+    sh[8][t] = mv;
+    __syncthreads();
+    for (int s = detail::kSlabBlock / 2; s > 0; s >>= 1) {
+        if (t < s) {
+            for (int k = 0; k < kPlaneSums; ++k)
+                sh[k][t] += sh[k][t + s];
+            if (sh[7][t + s] < sh[7][t])
+                sh[7][t] = sh[7][t + s];
+            if (sh[8][t + s] < sh[8][t])
+                sh[8][t] = sh[8][t + s];
+        }
+        __syncthreads();
+    }
+    if (t == 0) {
+        for (int k = 0; k < kPlaneOut; ++k)
+            plane_out[static_cast<std::size_t>(j) * kPlaneOut + k] = sh[k][0];
+    }
+}
+
 __global__ void gather_order_stats_kernel(const real* __restrict__ cs, const real* __restrict__ vs,
                                           GatherIdx gi, real* out) {
     if (blockIdx.x != 0 || threadIdx.x != 0)
@@ -225,6 +293,8 @@ void SlabMetricsWorkspace::prepare(const InletSlabGrid& g) {
     nblocks_ = detail::slab_reduce_blocks(nfull);
     partials_.resize(static_cast<std::size_t>(kPointSums + 1) * static_cast<std::size_t>(nblocks_));
     out_.resize(kOutSize);
+    plane_out_.resize(static_cast<std::size_t>(g.n + 1) * kPlaneOut);
+    host_plane_.assign(static_cast<std::size_t>(g.n + 1) * kPlaneOut, 0.0);
     std::size_t bytes = 0;
     MACROFLOW3D_CUDA_CHECK(cub::DeviceRadixSort::SortKeys(
         static_cast<void*>(nullptr), bytes, static_cast<const real*>(nullptr),
@@ -240,14 +310,15 @@ std::size_t SlabMetricsWorkspace::allocated_bytes() const {
     for (const auto& b : c_)
         r += b.capacity() * sizeof(real);
     r += (cn_.capacity() + vn_.capacity() + cn_sorted_.capacity() + vn_sorted_.capacity() +
-          partials_.capacity() + out_.capacity()) *
+          partials_.capacity() + out_.capacity() + plane_out_.capacity()) *
          sizeof(real);
     return r;
 }
 
 std::vector<const void*> SlabMetricsWorkspace::storage_pointers() const {
     return {c_[0].data(),      c_[1].data(),      c_[2].data(),     cn_.data(),  vn_.data(),
-            cn_sorted_.data(), vn_sorted_.data(), partials_.data(), out_.data(), sort_temp_.data()};
+            cn_sorted_.data(), vn_sorted_.data(), partials_.data(), out_.data(), sort_temp_.data(),
+            plane_out_.data()};
 }
 
 SlabMetrics evaluate_metrics(CudaContext& ctx, const InletSlabGrid& grid, DeviceSpan<const real> U1,
@@ -364,6 +435,74 @@ SlabMetrics evaluate_metrics(CudaContext& ctx, const InletSlabGrid& grid, Device
         m.e_psi = std::max(e[0], e[1]);
     }
     return m;
+}
+
+std::vector<SlabPlaneMetrics> evaluate_plane_metrics(CudaContext& ctx, const InletSlabGrid& grid,
+                                                     DeviceSpan<const real> U1,
+                                                     DeviceSpan<const real> U2,
+                                                     const SlabReferenceData& ref,
+                                                     SlabMetricsWorkspace& ws) {
+    require_valid_grid(grid, "evaluate_plane_metrics");
+    if (!ws.prepared_for(grid)) {
+        throw std::logic_error(
+            "evaluate_plane_metrics: workspace not prepared for this grid (call prepare first)");
+    }
+    const std::size_t nfull = grid.full_size();
+    require_size(U1.size(), nfull, "U1");
+    require_size(U2.size(), nfull, "U2");
+    if (!ref.has_vD)
+        throw std::invalid_argument("evaluate_plane_metrics: reference vD is required");
+    for (int k = 0; k < 3; ++k)
+        require_size(ref.vD[k].size(), nfull, "vD");
+
+    const cudaStream_t stream = ctx.cuda_stream();
+    const SlabStencilView st = ws.table_.device_view();
+    const int nb = ws.nblocks_;
+    // Global pass identical to evaluate_metrics (same kernel, same fixed-order reduction) -> v_rms.
+    metrics_point_kernel<<<nb, detail::kSlabBlock, 0, stream>>>(
+        grid, st, U1.data(), U2.data(), ref.vD[0].data(), ref.vD[1].data(), ref.vD[2].data(),
+        nullptr, nullptr, ws.c_[0].data(), ws.c_[1].data(), ws.c_[2].data(), ws.cn_.data(),
+        ws.vn_.data(), ws.partials_.data(), nb);
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    detail::finalize_partials_kernel<kPointSums>
+        <<<1, detail::kSlabBlock, 0, stream>>>(ws.partials_.data(), nb, ws.out_.data());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    metrics_plane_kernel<<<grid.n + 1, detail::kSlabBlock, 0, stream>>>(
+        grid, st, U1.data(), U2.data(), ref.vD[0].data(), ref.vD[1].data(), ref.vD[2].data(),
+        ws.c_[0].data(), ws.c_[1].data(), ws.c_[2].data(), ws.cn_.data(), ws.vn_.data(),
+        ws.plane_out_.data());
+    MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(ws.host_out_, ws.out_.data(), kPointSums * sizeof(real),
+                                           cudaMemcpyDeviceToHost, stream));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(ws.host_plane_.data(), ws.plane_out_.data(),
+                                           ws.host_plane_.size() * sizeof(real),
+                                           cudaMemcpyDeviceToHost, stream));
+    // The single documented host synchronization of evaluate_plane_metrics.
+    MACROFLOW3D_CUDA_CHECK(cudaStreamSynchronize(stream));
+
+    const real n_all = static_cast<real>(nfull);
+    const real v_rms = std::sqrt(ws.host_out_[1] / n_all);
+    const real np = static_cast<real>(grid.plane_size());
+    std::vector<SlabPlaneMetrics> res(static_cast<std::size_t>(grid.n + 1));
+    for (int j = 0; j <= grid.n; ++j) {
+        const real* o = ws.host_plane_.data() + static_cast<std::size_t>(j) * kPlaneOut;
+        SlabPlaneMetrics& p = res[static_cast<std::size_t>(j)];
+        p.j = j;
+        p.x1 = grid.coord(j);
+        p.sum_cv2 = o[0];
+        p.sum_vg1_2 = o[1];
+        p.sum_g1_2 = o[2];
+        p.sum_vg2_2 = o[3];
+        p.sum_g2_2 = o[4];
+        p.vD1_nonpos = static_cast<long long>(o[5]);
+        p.nonfinite = static_cast<long long>(o[6]);
+        p.e_v = std::sqrt(o[0] / np) / v_rms;
+        p.e_i1 = std::sqrt(o[1] / np) / (v_rms * std::sqrt(o[2] / np));
+        p.e_i2 = std::sqrt(o[3] / np) / (v_rms * std::sqrt(o[4] / np));
+        p.min_c = p.nonfinite == 0 ? o[7] : std::nan("");
+        p.vD1_min = o[8];
+    }
+    return res;
 }
 
 void labels_to_periodic_parts(CudaContext& ctx, const InletSlabGrid& grid,
