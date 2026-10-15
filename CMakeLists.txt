@@ -230,6 +230,7 @@ set(INLET_SLAB_SOURCES
     src/physics/streamfunctions/inlet_slab/InletLabels.cu
     src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
     src/physics/streamfunctions/inlet_slab/SlabOracle.cu
+    src/physics/streamfunctions/inlet_slab/SlabLabelTransport.cu
     src/physics/streamfunctions/inlet_slab/ProtoCase.cu
 )
 
@@ -689,6 +690,11 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_production_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_production_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_production16 COMMAND inlet_slab_production_tests)
+    # SF-35 N1: label-transport constructor (wrapper of the oracle; N = 16, fast tier)
+    add_executable(inlet_slab_trace_tests tests/inlet_slab/slab_trace_tests.cu)
+    target_link_libraries(inlet_slab_trace_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_trace_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_trace16 COMMAND inlet_slab_trace_tests)
     # SF-33 N4: .npy reader/writer and prototype-case loader (fast tier; synthetic N = 8 case)
     add_executable(inlet_slab_npy_tests tests/inlet_slab/slab_npy_tests.cu)
     target_link_libraries(inlet_slab_npy_tests PRIVATE macroflow3d_lib)
