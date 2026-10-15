@@ -13,6 +13,7 @@ They are part of the execution harness: agents must read the relevant note befor
 |------|-------|-------------|
 | `lester-2023-key-claims.md` | Lester (2023) — kinematic constraints on 3D Darcy transport | Modern constraint reference. Defines the helicity-free regime, equation (14), two invariants, and the zero transverse macrodispersion claim in smooth isotropic Darcy. Foundation for the streamfunction solver and invariant-preserving tracking. |
 | `beaudoin-de-dreuzy-2013-key-claims.md` | Beaudoin & de Dreuzy (2013) — 3D macrodispersion | Classical baseline reference. Reports positive α_T in numerical 3D Darcy, provides domain-design and Monte Carlo discipline. Must be interpreted with regime awareness after Lester. |
+| `streamline-closure-derivation.md` | Derivation (project) — streamline closure on the torus and the meaning of equation (14) | Explanatory note (Spanish). Why an affine + periodic invariant pair forces closed streamlines, why generic Gaussian Darcy flow does not close (second order in amplitude), and why the periodic eq. (14) solution is the nearest closed-streamline field. Not a decision or acceptance criterion; sources govern. |
 
 ---
 
