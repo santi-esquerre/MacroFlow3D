@@ -1,0 +1,129 @@
+{
+  "field": {
+    "tool": "spurious_spreading analytic-labels",
+    "increment": "SF-32 N2a",
+    "route": "analytic",
+    "pair": "G",
+    "formula": "s1 = e [sin(2 pi x1) cos(2 pi x3) + 0.5 sin(2 pi (x2 + x3))], s2 = e [cos(2 pi x1) sin(2 pi x2) + 0.5 cos(2 pi (x1 - x3))]",
+    "amplitude": 0.050000000000000003,
+    "amplitude_b": null,
+    "n": 128,
+    "h": 0.0078125,
+    "vbar": 1.0,
+    "gbar1": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "gbar2": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "exit_reason": null,
+    "iterations": null,
+    "r_F": null,
+    "e_v": null,
+    "e_psi1": null,
+    "e_psi2": null,
+    "min_abs_c_grid": 0.70084716323705221,
+    "min_abs_c_grid_source": "SF-28 spline pair, |grad psi1 x grad psi2| at the n^3 cell centres",
+    "min_abs_c_exact_cells": 0.70084715333915693,
+    "wall_seconds": 0.67855674799999999,
+    "files": {
+      "u1": "analytic_G_a005_n128_u1.bin",
+      "u2": "analytic_G_a005_n128_u2.bin",
+      "dtype": "float64 little-endian",
+      "layout": "i + n*(j + n*k), cell centres (i+1/2)h"
+    },
+    "config": {
+      "pair": "G",
+      "amplitude": 0.050000000000000003,
+      "amplitude_b": null,
+      "n": 128,
+      "no_timing": false,
+      "out": "output_sf32/labels/analytic_G_a005_n128"
+    }
+  },
+  "tracker": "pseudo_symplectic",
+  "level": {
+    "tol_psi": 1e-08,
+    "ds": 0.00390625
+  },
+  "n_seeds": 8192,
+  "n_ok": 8192,
+  "status_counts": {
+    "0": 8192
+  },
+  "stats": {
+    "delta_x2": {
+      "mean": 7.0754134512513414e-11,
+      "var": 3.8389490662942521e-19,
+      "rms": 6.2361931831850977e-10,
+      "max_abs": 1.0522653304256835e-08
+    },
+    "delta_x3": {
+      "mean": -2.3786964204550451e-12,
+      "var": 1.0925121243316168e-18,
+      "rms": 1.0452357545206232e-09,
+      "max_abs": 1.3916563179616759e-08
+    },
+    "delta_psi1": {
+      "mean": 7.1564690441366323e-11,
+      "var": 3.7642504637500307e-19,
+      "rms": 6.1769454529967445e-10,
+      "max_abs": 9.9985477675090806e-09
+    },
+    "delta_psi2": {
+      "mean": -1.7521724838098306e-12,
+      "var": 1.0414855342893955e-18,
+      "rms": 1.0205334900912469e-09,
+      "max_abs": 9.9617866178292047e-09
+    },
+    "tau": {
+      "mean": 1.0137312314064999,
+      "var": 0.012276385612045573,
+      "min": 0.85473854369743218,
+      "max": 1.1927077646720701
+    }
+  },
+  "flux_weighted_tau_mean": 1.0014859573531563,
+  "D22_uniform": 1.8934747926074585e-19,
+  "D33_uniform": 5.3885689346663044e-19,
+  "D22_flux": 1.8970917575879425e-19,
+  "D33_flux": 5.4716053950806436e-19,
+  "divergence_max_rel": null,
+  "min_abs_c_grid": 0.70084716323705221,
+  "landing": {
+    "max_err": 9.9986685597741598e-13,
+    "max_iterations": 32
+  },
+  "config": {
+    "labels": "output_sf32/labels/analytic_G_a005_n128",
+    "tracker": "pseudo_symplectic",
+    "tol_psi": 1e-08,
+    "ds_ratio": 0.5,
+    "tol": 9.9999999999999995e-07,
+    "dt_max": 0.25,
+    "rk_chunk": 0.25,
+    "delta_ratio": 1,
+    "seeds": 8192,
+    "seed": 20261006,
+    "max_panels": 10000000,
+    "max_chunks": 10000000,
+    "max_cells": 10000000,
+    "no_timing": false,
+    "out": "output_sf32/ladders/analytic_G_a0.05_n128/pseudo_symplectic_tolpsi1e-08",
+    "max_newton_iter": 8,
+    "trust_factor": 1.0,
+    "min_cross_norm": 0.0,
+    "min_cross_sin2": 3.5527136788005009e-15,
+    "rk_min_step": 1e-14,
+    "rk_max_steps_per_call": 1000000,
+    "rk_initial_step_ratio_of_dt_max": 0.10000000000000001,
+    "landing_tol": 9.9999999999999998e-13,
+    "landing_max_trials": 60,
+    "target_x1": 1.0
+  },
+  "wall_seconds": 0.094756670000000001
+}

@@ -15,4 +15,5 @@ Heavy streamfunction cases that are not ctest entries (since SF-27) are indexed 
 
 SF-29 (CPU prototype of equation (14) with `x1` non-periodic and inlet labels; formulation decided 2026-10-06): `2026-10-02-sf29-inlet-labels.md`.
 
+SF-32 (face-flux reference trackers and the paper's scalings; spurious transverse spreading of Pollock/RK vs the pseudo-symplectic tracker on surrogates with exact invariants, five label fields, V100): `2026-10-06-sf32-spurious-spreading.md` (artifacts under `artifacts/2026-10-06-sf32-spurious-spreading/`).
 SF-33 (GPU inlet-label streamfunctions on the `x1`-non-periodic slab; claim (a) and the oracle established, claim (b) not established — closed `done` 2026-10-07 and superseded by the tracing constructor, `docs/decisions/2026-10-07-label-transport-constructor.md`): `2026-10-06-sf33-gpu-inlet-labels.md`.

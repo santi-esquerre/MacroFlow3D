@@ -1,0 +1,46 @@
+{
+  "tool": "spurious_spreading analytic-labels",
+  "increment": "SF-32 N2a",
+  "route": "analytic",
+  "pair": "G",
+  "formula": "s1 = e [sin(2 pi x1) cos(2 pi x3) + 0.5 sin(2 pi (x2 + x3))], s2 = e [cos(2 pi x1) sin(2 pi x2) + 0.5 cos(2 pi (x1 - x3))]",
+  "amplitude": 0.050000000000000003,
+  "amplitude_b": null,
+  "n": 128,
+  "h": 0.0078125,
+  "vbar": 1.0,
+  "gbar1": [
+    0.0,
+    1.0,
+    0.0
+  ],
+  "gbar2": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "exit_reason": null,
+  "iterations": null,
+  "r_F": null,
+  "e_v": null,
+  "e_psi1": null,
+  "e_psi2": null,
+  "min_abs_c_grid": 0.70084716323705221,
+  "min_abs_c_grid_source": "SF-28 spline pair, |grad psi1 x grad psi2| at the n^3 cell centres",
+  "min_abs_c_exact_cells": 0.70084715333915693,
+  "wall_seconds": 0.67855674799999999,
+  "files": {
+    "u1": "analytic_G_a005_n128_u1.bin",
+    "u2": "analytic_G_a005_n128_u2.bin",
+    "dtype": "float64 little-endian",
+    "layout": "i + n*(j + n*k), cell centres (i+1/2)h"
+  },
+  "config": {
+    "pair": "G",
+    "amplitude": 0.050000000000000003,
+    "amplitude_b": null,
+    "n": 128,
+    "no_timing": false,
+    "out": "output_sf32/labels/analytic_G_a005_n128"
+  }
+}

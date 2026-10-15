@@ -1,0 +1,13 @@
+==== spurious_spreading return-map (SF-32 N2a/N2b) ====
+labels = output_sf32/labels/analytic_G_a005_n128  route = analytic  n = 128  h = 0.0078125  tracker = rk  seeds = 8192  seed = 20261006
+  min_abs_c_grid (spline, cell centres) = 0.70084716323705221
+  level:  tol = 9.9999999999999995e-07  dt_max = 0.25
+  n_ok = 8192 / 8192  [status 0: 8192]
+  delta_x2:   mean -4.183934e-08  var 1.086765e-13  rms 3.323057e-07  max 3.060026e-06
+  delta_x3:   mean -7.276352e-08  var 2.182881e-13  rms 4.728452e-07  max 2.544710e-06
+  delta_psi1: mean -4.561632e-08  rms 3.238671e-07  max 2.990064e-06
+  delta_psi2: mean -7.497547e-08  rms 4.633641e-07  max 1.972060e-06
+  tau: mean 1.0137274095582729  min 0.85473461812534879  max 1.1927045007496417  flux-weighted mean 1.0014821555749263
+  eq.36 protocol numbers: D22_u 5.360245e-14  D33_u 1.076661e-13  D22_f 5.141370e-14  D33_f 1.084090e-13
+  landing: max |x1_u - 1| = 9.999e-13  max trials = 39
+  outputs: output_sf32/ladders/analytic_G_a0.05_n128/rk_tol1e-06/seeds.csv, output_sf32/ladders/analytic_G_a0.05_n128/rk_tol1e-06/summary.json  (wall 0.095 s)

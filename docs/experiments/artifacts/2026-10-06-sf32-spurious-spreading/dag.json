@@ -1,0 +1,430 @@
+{
+ "increment": "SF-32",
+ "goal": "Reproducir las figuras 3 y 4 de Lester 2023, mostrando la dispersi\u00f3n transversal espuria de los trackers convencionales frente al pseudo-simpl\u00e9ctico en un campo de invariantes exactos.",
+ "base_commit": "37bfb25e1d5ae3eae2cbe680d6345513a27c2df6",
+ "activation_commit": "9db86f0261337f39bd9fc8de13d6ebf2edfd4ce1",
+ "delivery_branch": "science/lester-sf32-reference-trackers-scalings",
+ "remote": "scripts/remote --increment SF-32 (orchestrator only; mirror ~/MacroFlow3D-SF-32; single-flight per increment)",
+ "review_class": "human-review (awaiting_review at publication)",
+ "output_schema": {
+  "labels_prefix": "<prefix>.json (route metadata: route, field, eps|amplitude, n, h, vbar=1, gbar1=[0,1,0], gbar2=[0,0,1], r_F, e_v, e_psi1, e_psi2, min_abs_c_grid, exit_reason, iterations, wall_seconds, files) + <prefix>_u1.bin, <prefix>_u2.bin (raw little-endian double, n^3, layout i + n*(j + n*k), cell-centred fluctuations)",
+  "run_dir": "<out>/<field_name>/<tracker>_<level_tag>/ with seeds.csv and summary.json",
+  "seeds_csv_columns": [
+   "seed_index",
+   "x2_0",
+   "x3_0",
+   "status",
+   "delta_x2",
+   "delta_x3",
+   "delta_psi1",
+   "delta_psi2",
+   "tau",
+   "count",
+   "land_err"
+  ],
+  "summary_json_keys": {
+   "field": "copy of the labels metadata",
+   "tracker": "pollock | rk | pseudo_symplectic",
+   "level": "pollock: {delta_ratio, n_cells, delta}; rk: {tol, dt_max}; pseudo_symplectic: {tol_psi, ds}",
+   "n_seeds": "int",
+   "n_ok": "int",
+   "status_counts": "{code: count}",
+   "stats": "{delta_x2, delta_x3, delta_psi1, delta_psi2: {mean, var, rms, max_abs}; tau: {mean, var, min, max}} over status == 0",
+   "flux_weighted_tau_mean": "sum(c1(x_0) tau) / sum(c1(x_0)) over status == 0",
+   "D22_uniform, D33_uniform": "var(delta_xi) / (2 mean(tau)) (eq. 36; protocol numbers)",
+   "D22_flux, D33_flux": "flux-weighted variance / (2 flux-weighted mean tau)",
+   "divergence_max_rel": "pollock only: max |div| / max |u| of the face fluxes",
+   "min_abs_c_grid": "min |grad psi1 x grad psi2| over the label grid cell centres (spline)",
+   "landing": "{max_err, max_iterations}",
+   "wall_seconds": "double",
+   "config": "every CLI value"
+  },
+  "histograms": "analyze.py bins seeds.csv; 101 bins; ranges fixed: pollock [-0.75, 0.75], rk [-0.04, 0.04], pseudo_symplectic [-1e-9, 1e-9] (and an auto +-5 sigma panel)"
+ },
+ "nodes": [
+  {
+   "id": "N0",
+   "title": "Stokes face fluxes from the labels (StokesFaceVelocity)",
+   "objective": "Create src/physics/particles/streamline_tracker/StokesFaceVelocity.{cuh,cu}: periodic MAC face averages of c = grad psi1 x grad psi2 on a grid of spacing Delta from ONE edge line integral per grid edge of psi1 (grad psi2 . t) with composite 4-point Gauss-Legendre on the spline knot intervals (exact for the degree-6 piecewise polynomial integrand), reused with opposite signs by the two faces sharing the edge (exactly divergence-free, eq. 33). GPU kernels + host mirror sharing the same __host__ __device__ edge-integral routine; POD PeriodicFaceFluxView; divergence diagnostic; add the .cu to STREAMLINE_TRACKER_SOURCES.",
+   "rationale": "Eq. 32 of Lester 2023; with exact fluxes the only Pollock error is the RT0 interpolation (understanding.md 3.2).",
+   "depends_on": [],
+   "required_context": [
+    "AGENTS.md",
+    "ARCHITECTURE.md",
+    "docs/plans/active/lester-eq14/increments/SF-32-reference-trackers-and-scalings.md",
+    "/home/sesquerre/Projects/MacroFlow3D/.claude/orchestration/SF-32-reference-trackers-and-scalings/understanding.md (3.1, 3.2)",
+    "src/numerics/interpolation/PeriodicTricubicBSpline.cuh",
+    "src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cuh",
+    "tests/streamline_tracker/analytic_pairs.hpp (read only, for self-checks)"
+   ],
+   "required_commits": [
+    "9db86f0261337f39bd9fc8de13d6ebf2edfd4ce1"
+   ],
+   "expected_write_scope": [
+    "src/physics/particles/streamline_tracker/StokesFaceVelocity.cuh",
+    "src/physics/particles/streamline_tracker/StokesFaceVelocity.cu",
+    "CMakeLists.txt (one line in STREAMLINE_TRACKER_SOURCES)"
+   ],
+   "forbidden_scope": [
+    "every other existing file",
+    "tests/**",
+    "apps/**",
+    "docs/**",
+    "scripts/**",
+    "scripts/remote",
+    "push / PR"
+   ],
+   "deliverables": [
+    "the two files",
+    "CMake line",
+    "throwaway self-check numbers (S1-S6 of understanding.md 3.2) in the report, not committed"
+   ],
+   "acceptance_criteria": [
+    "one edge integral per edge, faces as signed sums (divergence algebraically zero)",
+    "composite GL4 on knot intervals; integrand degree argument documented in the header",
+    "face value = face AVERAGE (uniform pair gives u = 1)",
+    "periodic MAC layout documented: u[i,j,k] = face at x = i Delta of cell (i,j,k)",
+    "psi1 evaluated with the unwrapped coordinate of the edge (face's own x2)",
+    "host mirror == device to 1e-13",
+    "self-checks: S1 <= 1e-13 rel, S2 <= 1e-12 rel, S3 <= 1e-13, S4 1e-15, S5 spline-error level",
+    "no allocation in the evaluation kernels beyond output/edge buffers owned by a workspace",
+    "nvcc 11.4-safe (no nlohmann, C++17), builds wsl-debug, ctest -N stays 20"
+   ],
+   "validation_commands": [
+    "cmake --preset wsl-debug -DCMAKE_CUDA_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER=",
+    "cmake --build build/wsl-debug -j --target macroflow3d_lib",
+    "throwaway driver (self-checks)",
+    "ctest --test-dir build/wsl-debug -N"
+   ],
+   "status": "accepted",
+   "prompt": "prompts/N0-stokes-face-velocity.md",
+   "commit": "d1bafa9c2476afde512f4e1bfb3f65d8c8f27203",
+   "audit": "audits/N0-stokes-face-velocity.md"
+  },
+  {
+   "id": "N1",
+   "title": "Pollock-type cellwise-linear tracker (PollockTracker)",
+   "objective": "Create PollockTracker.{cuh,cu}: __host__ __device__ core on a PeriodicFaceFluxView (semi-analytical exits, exit coordinate set exactly, stagnation status 15, advance_to_x1 and advance_to_time, no fallback) and a GPU engine (one thread per particle, SF-31 particle bookkeeping, deterministic); add to STREAMLINE_TRACKER_SOURCES.",
+   "rationale": "The conventional reconstruction-based tracker of Lester 2023 section 5.2 (understanding.md 3.3).",
+   "depends_on": [
+    "N0"
+   ],
+   "required_context": [
+    "understanding.md 3.3",
+    "N0 header",
+    "StreamlineTrackerCommon.cuh",
+    "PseudoSymplecticTracker.cuh (engine shape only)"
+   ],
+   "required_commits": [
+    "d1bafa9c2476afde512f4e1bfb3f65d8c8f27203"
+   ],
+   "expected_write_scope": [
+    "src/physics/particles/streamline_tracker/PollockTracker.cuh",
+    "src/physics/particles/streamline_tracker/PollockTracker.cu",
+    "CMakeLists.txt (one line)"
+   ],
+   "forbidden_scope": [
+    "every other existing file (report N0 defects, do not edit)",
+    "tests/**",
+    "apps/**",
+    "docs/**",
+    "scripts/remote",
+    "push / PR"
+   ],
+   "deliverables": [
+    "the two files",
+    "self-check numbers P1, P2, P3 (orders), P6"
+   ],
+   "acceptance_criteria": [
+    "exits per understanding.md 3.3 (log formula, A == 0 branch, stagnation when the velocity vanishes before the face)",
+    "exit coordinate SET exactly; ties advance both indices; integer wraps",
+    "advance_to_x1 lands exactly on a face target and in closed form inside a cell",
+    "status 15 kStatusPollockStagnation documented; 12 and 14 reused",
+    "host core == GPU bitwise",
+    "no allocation/sync in the step kernels",
+    "P1 exact, P2 at spline-error level, P3 monotone with order >= 0.8"
+   ],
+   "validation_commands": [
+    "cmake --build build/wsl-debug -j --target macroflow3d_lib",
+    "throwaway driver"
+   ],
+   "status": "accepted",
+   "commit": "5a4db8f7bbea5e797ec4e0b95b376f1fd95ffe0e",
+   "audit": "audits/N1-pollock-tracker.md"
+  },
+  {
+   "id": "N2a",
+   "title": "Return-map instrument: label routes + pseudo-symplectic and RK return maps",
+   "objective": "Create apps/spurious_spreading/ (executable spurious_spreading, documented-experiment instrument, not a ctest): subcommands solve-labels (frozen stack on an analytic field, ev_ladder recipe, saves u1/u2 .bin + metadata), analytic-labels (parameterized pair G), return-map --tracker pseudo_symplectic|rk (first return of unwrapped x1 to x1_0 + 1 by bisection on the last panel/chunk from a saved state, SF-31 cores unmodified; N_p hash seeds on x1 = 0; seeds.csv + summary.json per the schema); a --tracker pollock stub that exits 3 'not available' until N2b.",
+   "rationale": "The measurement instrument of eqs. 34-36 (understanding.md 3.4-3.6).",
+   "depends_on": [],
+   "required_context": [
+    "understanding.md 3.1, 3.4, 3.5, 3.6 and the output_schema above",
+    "apps/closure_gate/ev_ladder_main.cu (recipe + JVal)",
+    "apps/closure_gate/closure_fields.hpp",
+    "PseudoSymplecticTracker.cuh, ReferenceRkTracker.cuh, StreamlineTrackerCommon.cuh",
+    "PeriodicTricubicBSpline.cuh",
+    "tests/streamline_tracker/analytic_pairs.hpp (read only; copy pair G parameterized into the app)"
+   ],
+   "required_commits": [
+    "9db86f0261337f39bd9fc8de13d6ebf2edfd4ce1"
+   ],
+   "expected_write_scope": [
+    "apps/spurious_spreading/** (new)",
+    "CMakeLists.txt (add_executable spurious_spreading + link + compile options; no add_test)"
+   ],
+   "forbidden_scope": [
+    "src/**",
+    "tests/**",
+    "docs/**",
+    "scripts/remote",
+    "push / PR",
+    "any modification of SF-31 cores"
+   ],
+   "deliverables": [
+    "the executable",
+    "self-check: pair U and A at 16^3 (delta = 0 / spline level, tau = 1)",
+    "a 32^3 analytic-labels + return-map smoke locally (fast)"
+   ],
+   "acceptance_criteria": [
+    "schema exactly as output_schema",
+    "landing |x1_u - 1| <= 1e-12 or reported",
+    "seeds identical across trackers/levels (inject_box with the given seed)",
+    "label routes write/read bitwise round trip",
+    "solve-labels prints r_F, e_v, min|c| and accepts any exit reason, recording it",
+    "no nlohmann in .cu, C++17, nvcc 11.4-safe",
+    "byte-reproducible outputs across two runs"
+   ],
+   "validation_commands": [
+    "cmake --preset wsl-debug ...",
+    "cmake --build build/wsl-debug -j --target spurious_spreading",
+    "local smokes at 16^3/32^3 (analytic labels only; the stack solve is NOT run locally beyond 16^3 homogeneous smoke)"
+   ],
+   "status": "accepted (F-RK1 routed to N2b)",
+   "prompt": "prompts/N2a-instrument.md",
+   "commit": "ef563720d0867ea9e87765a9f67ce9835e14da0d",
+   "audit": "audits/N2a-instrument.md"
+  },
+  {
+   "id": "N2b",
+   "title": "Pollock return map in the instrument + 16^3 controls ctest",
+   "objective": "Add --tracker pollock (StokesFaceVelocity on the Pollock grid Delta = m h, PollockTracker return map, divergence_max_rel in summary) to spurious_spreading; create tests/spurious_spreading/spurious_spreading_controls_tests.cu -> ctest spurious_spreading_controls16 (pair U: all three trackers return exactly; pair A: PS/RK/Pollock |delta_x2| at spline level; pair B: Pollock variance decreases 16 -> 32; byte-reproducible outputs).",
+   "depends_on": [
+    "N1",
+    "N2a"
+   ],
+   "required_commits": [
+    "5a4db8f7bbea5e797ec4e0b95b376f1fd95ffe0e",
+    "ef563720d0867ea9e87765a9f67ce9835e14da0d"
+   ],
+   "expected_write_scope": [
+    "apps/spurious_spreading/**",
+    "tests/spurious_spreading/** (new)",
+    "CMakeLists.txt (one add_executable + add_test)"
+   ],
+   "forbidden_scope": [
+    "src/** (report defects)",
+    "docs/**",
+    "scripts/remote",
+    "push / PR"
+   ],
+   "status": "accepted (instrument); controls test corrected by C1",
+   "commit": "ac602f3e60d8c97ca3a631d32ba5bfb30cd3060b",
+   "audit": "audits/N2b-pollock-instrument.md"
+  },
+  {
+   "id": "N3a",
+   "title": "Contract tests of StokesFaceVelocity (independent author)",
+   "objective": "tests/streamline_tracker/face_flux_tests.cu -> ctest streamline_tracker_face_flux: S1-S7 of understanding.md 3.2 on pairs U, A, B, G at N = 16, 32 and Delta = h, 2h; printed [PASS]/[FAIL] style of the SF-31 tests.",
+   "depends_on": [
+    "N0"
+   ],
+   "required_commits": [
+    "d1bafa9c2476afde512f4e1bfb3f65d8c8f27203"
+   ],
+   "expected_write_scope": [
+    "tests/streamline_tracker/face_flux_tests.cu",
+    "CMakeLists.txt (add_executable + add_test)"
+   ],
+   "forbidden_scope": [
+    "src/** (report defects)",
+    "apps/**",
+    "docs/**"
+   ],
+   "status": "accepted",
+   "commit": "9d0b58011694c3b3db02322bf188dced1d90a8fa",
+   "audit": "audits/N3a-face-flux-tests.md"
+  },
+  {
+   "id": "N3b",
+   "title": "Contract tests of PollockTracker (independent author)",
+   "objective": "tests/streamline_tracker/pollock_tracker_tests.cu -> ctest streamline_tracker_pollock: P1-P6 of understanding.md 3.3.",
+   "depends_on": [
+    "N1"
+   ],
+   "required_commits": [
+    "5a4db8f7bbea5e797ec4e0b95b376f1fd95ffe0e"
+   ],
+   "expected_write_scope": [
+    "tests/streamline_tracker/pollock_tracker_tests.cu",
+    "CMakeLists.txt (add_executable + add_test)"
+   ],
+   "forbidden_scope": [
+    "src/** (report defects)",
+    "apps/**",
+    "docs/**"
+   ],
+   "status": "accepted",
+   "commit": "0bcbafd456a454c2b8d5b3359a3ba12a341f4380",
+   "audit": "audits/N3b-pollock-tests.md"
+  },
+  {
+   "id": "N4",
+   "title": "Ladder launcher and analysis script",
+   "objective": "apps/spurious_spreading/run_ladders.sh (the pre-registered runs for one labels prefix: pollock m = 1,2,4,8; rk tol = 1e-4..1e-10; pseudo_symplectic tol_psi = 1e-8,1e-10,1e-12; 8192 seeds, seed 20261006) and apps/spurious_spreading/analyze.py (numpy + matplotlib only): per field, tables of the stats, least-squares log-log exponents of var(delta_x2), var(delta_x3) vs Delta (pollock) and vs tol (rk; paper's five and all seven), two-level estimates, band verdicts with the constants in ONE block (pollock [1.7, 2.3]; rk [0.35, 0.65]; ps max|delta_psi| <= 10 tol_psi; level enters a fit only if n_ok/n_seeds >= 0.99), eq. 36 numbers, figures fig3b/fig3c/fig4a/fig4b analogues + ps drift; exponents.json + tables.md; self-test on a synthetic fixture with known slopes.",
+   "depends_on": [],
+   "required_context": [
+    "understanding.md 3.4-3.6, 5, 6 and the output_schema above",
+    "docs/experiments/artifacts/2026-10-05-sf30-closure-gate/ (style of tables/analysis of SF-30, read only)"
+   ],
+   "required_commits": [
+    "9db86f0261337f39bd9fc8de13d6ebf2edfd4ce1"
+   ],
+   "expected_write_scope": [
+    "apps/spurious_spreading/run_ladders.sh",
+    "apps/spurious_spreading/analyze.py",
+    "apps/spurious_spreading/analyze_selftest_fixture/** (small, versioned)"
+   ],
+   "forbidden_scope": [
+    "src/**",
+    "tests/**",
+    "docs/**",
+    "CMakeLists.txt",
+    "any .cu/.cuh",
+    "scripts/remote",
+    "push / PR"
+   ],
+   "status": "accepted",
+   "prompt": "prompts/N4-analysis.md",
+   "commit": "9e6ad135c58f8ee5e3ded88f010f965af460a679",
+   "audit": "audits/N4-analysis.md"
+  },
+  {
+   "id": "I1",
+   "title": "Integration of approved commits",
+   "depends_on": [
+    "N0",
+    "N1",
+    "N2a",
+    "N2b",
+    "N3a",
+    "N3b",
+    "N4"
+   ],
+   "status": "accepted (orchestrator verification done; V100 evidence pending)",
+   "prompt": "prompts/I1-integrate.md",
+   "commit": "0f5b916f6d228f8df107b5c8cd4a42c8b0c7104f",
+   "audit": "integration/I1-audit.md"
+  },
+  {
+   "id": "E",
+   "title": "Orchestrator-owned V100 experiment (detached jobs on --increment SF-32)",
+   "objective": "solve-labels lester2021 eps 0.25 at 256^3 and 128^3; analytic-labels G 0.05 at 128^3; run_ladders.sh on the three prefixes; analyze.py; ctest-full; smoke.",
+   "depends_on": [
+    "I1"
+   ],
+   "status": "running"
+  },
+  {
+   "id": "N5",
+   "title": "Experiment note docs/experiments/2026-10-06-sf32-spurious-spreading.md (worker; orchestrator audits) + artifacts",
+   "depends_on": [
+    "E"
+   ],
+   "expected_write_scope": [
+    "docs/experiments/2026-10-06-sf32-spurious-spreading.md",
+    "docs/experiments/artifacts/2026-10-06-sf32-spurious-spreading/**"
+   ],
+   "status": "blocked"
+  },
+  {
+   "id": "C1",
+   "title": "Corrective: restate the degenerate pair-B control (pair G) + launcher comment",
+   "depends_on": [
+    "N2b",
+    "N4"
+   ],
+   "required_commits": [
+    "ac602f3e60d8c97ca3a631d32ba5bfb30cd3060b",
+    "9e6ad135c58f8ee5e3ded88f010f965af460a679"
+   ],
+   "expected_write_scope": [
+    "tests/spurious_spreading/spurious_spreading_controls_tests.cu",
+    "apps/spurious_spreading/run_ladders.sh (comment)"
+   ],
+   "status": "accepted",
+   "prompt": "prompts/C1-controls-pair-g.md",
+   "commit": "cb445fb9c02a398f5bb840f63fdc55cba71f1d7a",
+   "audit": "audits/C1-controls-pair-g.md"
+  }
+ ],
+ "coverage_map": {
+  "spec: StokesFaceVelocity exactly divergence-free per cell": [
+   "N0",
+   "N3a (S1)"
+  ],
+  "spec: Pollock-type cellwise-linear tracker in the same module": [
+   "N1",
+   "N3b"
+  ],
+  "spec: streamfunctions of the Lester (2021) field with the frozen stack, route recorded": [
+   "N2a (solve-labels)",
+   "E",
+   "N5"
+  ],
+  "spec: diagnostics delta psi_i, delta x2, delta x3 after one period vs the pseudo-symplectic trajectory": [
+   "N2a",
+   "N2b",
+   "N4"
+  ],
+  "spec: grid and tolerance ladders as detached V100 jobs, exponents fitted": [
+   "N4",
+   "E"
+  ],
+  "spec: exponents outside the bands recorded, not tuned": [
+   "N4 (verdicts)",
+   "N5",
+   "orchestrator"
+  ],
+  "threshold: Pollock p = 2 +- 0.3 over >= 3 grids": [
+   "E",
+   "N4"
+  ],
+  "threshold: RK p = 0.5 +- 0.15 over >= 4 tolerances": [
+   "E",
+   "N4"
+  ],
+  "threshold: pseudo-symplectic drift <= 10 x Newton tolerance": [
+   "E",
+   "N4"
+  ],
+  "validation: ctest -R tracker locally and on V100": [
+   "N3a",
+   "N3b",
+   "N2b",
+   "E"
+  ],
+  "validation: scripts/remote run sf32-scalings": [
+   "E"
+  ],
+  "validation: check-lester-increments.sh": [
+   "orchestrator"
+  ],
+  "checklist: no unrelated changes": [
+   "FINAL_AUDIT diff from 37bfb25"
+  ],
+  "checklist: bit\u00e1cora, PR, human review": [
+   "orchestrator"
+  ]
+ }
+}

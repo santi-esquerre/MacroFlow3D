@@ -1,0 +1,96 @@
+{
+ "D22_flux": 0.0017187500000000002,
+ "D22_uniform": 0.0017187500000000002,
+ "D33_flux": 0.003641357421875,
+ "D33_uniform": 0.003641357421875,
+ "config": {
+  "command": "return-map",
+  "delta_ratio": 2,
+  "fixture": true,
+  "seed": 20261006,
+  "seeds": 16,
+  "tracker": "pollock"
+ },
+ "divergence_max_rel": 0.0,
+ "field": {
+  "amplitude": 0.05,
+  "e_psi1": 0.0,
+  "e_psi2": 0.0,
+  "e_v": 0.0,
+  "exit_reason": "analytic",
+  "files": [
+   "fixture_u1.bin",
+   "fixture_u2.bin"
+  ],
+  "gbar1": [
+   0,
+   1,
+   0
+  ],
+  "gbar2": [
+   0,
+   0,
+   1
+  ],
+  "h": 0.0625,
+  "iterations": 0,
+  "min_abs_c_grid": 0.875,
+  "n": 16,
+  "note": "hand-written analyze.py self-test fixture; not a measurement",
+  "pair": "G",
+  "r_F": 0.0,
+  "route": "analytic",
+  "vbar": 1.0,
+  "wall_seconds": 0.0
+ },
+ "flux_weighted_tau_mean": 1.0,
+ "landing": {
+  "max_err": 0.0,
+  "max_iterations": 0
+ },
+ "level": {
+  "delta": 0.125,
+  "delta_ratio": 2,
+  "n_cells": 8
+ },
+ "min_abs_c_grid": 0.875,
+ "n_ok": 16,
+ "n_seeds": 16,
+ "stats": {
+  "delta_psi1": {
+   "max_abs": 0.004,
+   "mean": 0.000125,
+   "rms": 0.002345207879911715,
+   "var": 5.484375e-06
+  },
+  "delta_psi2": {
+   "max_abs": 0.004,
+   "mean": 0.000125,
+   "rms": 0.002345207879911715,
+   "var": 5.484375e-06
+  },
+  "delta_x2": {
+   "max_abs": 0.1,
+   "mean": 8.673617379884035e-19,
+   "rms": 0.05863019699779287,
+   "var": 0.0034375000000000005
+  },
+  "delta_x3": {
+   "max_abs": 0.15,
+   "mean": 0.004687500000000002,
+   "rms": 0.0854674645698584,
+   "var": 0.00728271484375
+  },
+  "tau": {
+   "max": 1.03,
+   "mean": 1.0,
+   "min": 0.97,
+   "var": 0.00025000000000000044
+  }
+ },
+ "status_counts": {
+  "0": 16
+ },
+ "tracker": "pollock",
+ "wall_seconds": 0.0
+}

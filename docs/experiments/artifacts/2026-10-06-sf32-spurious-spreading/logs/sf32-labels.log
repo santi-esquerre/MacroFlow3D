@@ -1,0 +1,77 @@
+[2026-10-06T15:42:17Z] job=sf32-labels session=macroflow3d-SF-32-labels-sf32-labels started
+[2026-10-06T15:42:17Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-06T15:42:17Z] cwd=/home/sesquerre/MacroFlow3D-SF-32-labels
+[2026-10-06T15:42:17Z] command=set -o pipefail; cmake --preset v100-release && cmake --build build/v100-release -j --target spurious_spreading 2>&1 | grep -i -E ' error' ; echo BUILD_EXIT=${PIPESTATUS[0]}; mkdir -p output_sf32/labels && B=./build/v100-release/spurious_spreading && echo '=== analytic G 0.05 128' && $B analytic-labels --pair G --amplitude 0.05 --n 128 --out output_sf32/labels/analytic_G_a005_n128 && echo '=== stack lester2021 eps 0.25 n 128' && $B solve-labels --field lester2021 --eps 0.25 --n 128 --max-iter 600 --out output_sf32/labels/stack_lester2021_e025_n128 && echo '=== stack lester2021 eps 0.25 n 256' && $B solve-labels --field lester2021 --eps 0.25 --n 256 --max-iter 600 --out output_sf32/labels/stack_lester2021_e025_n256; echo SOLVE_EXIT=$?
+-- The CUDA compiler identification is NVIDIA 11.4.152 with host compiler GNU 9.3.1
+-- The CXX compiler identification is GNU 9.3.1
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda-11.4/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/rh/devtoolset-9/root/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CUDAToolkit: /usr/local/cuda-11.4/targets/x86_64-linux/include (found version "11.4.152")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (6.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-32-labels/build/v100-release
+BUILD_EXIT=0
+=== analytic G 0.05 128
+==== spurious_spreading analytic-labels (SF-32 N2a) ====
+pair = G  amplitude = 0.050000000000000003  N = 128  h = 0.0078125
+  min_abs_c_grid (spline, cell centres) = 0.70084716323705221
+  min_abs_c_exact (closed form, cell centres) = 0.70084715333915693
+labels written: output_sf32/labels/analytic_G_a005_n128{.json,_u1.bin,_u2.bin}
+=== stack lester2021 eps 0.25 n 128
+==== spurious_spreading solve-labels (SF-32 N2a; frozen periodic stack) ====
+field = lester2021  eps = 0.25  N = 128  h = 0.0078125  mg_levels = 6 (auto)
+  Y: mean = -4.8695864167055316e-21  var = 0.010312499999999492  min = -0.33290428893293961  max = 0.33290428893293961
+config: eta = 1  epsilon = 1e-06  tolerance = 1e-08  max_iter = 600  anderson = 1  newton = 0  darcy pcg rtol = 1e-10
+darcy: achieved mean flux = (0.99999999999999933, -8.0734895736706884e-21, 7.2622721736908703e-22)  div_max_abs = 1.227e-12  wall = 1.247 s
+  corrector x: converged iters=10 rel_res=2.641e-13
+  corrector y: converged iters=10 rel_res=2.442e-13
+  corrector z: converged iters=10 rel_res=1.682e-13
+solve: status = not_converged  exit = stagnated  iterations = 176  wall = 145.716 s
+  r_F initial = 0.01937073846121605
+  r_F final   = 1.0879139470530402e-06  tolerance = 1e-08  tolerance_met = false
+  e_v = 0.00027203613813590356  e_psi1 = 2.517295e-05  e_psi2 = 1.148843e-05  e_div = 2.022573e-05
+  |c| (report) min = 7.754569e-01  0.1% = 7.944559e-01  1% = 8.460842e-01  5% = 9.010675e-01
+  min_abs_c_grid (spline, cell centres) = 0.77496689742333658
+labels written: output_sf32/labels/stack_lester2021_e025_n128{.json,_u1.bin,_u2.bin}  (total wall 147.263 s)
+=== stack lester2021 eps 0.25 n 256
+==== spurious_spreading solve-labels (SF-32 N2a; frozen periodic stack) ====
+field = lester2021  eps = 0.25  N = 256  h = 0.00390625  mg_levels = 7 (auto)
+  Y: mean = 3.9238402877768245e-20  var = 0.010312499999995197  min = -0.33336205260175883  max = 0.33336205260175883
+config: eta = 1  epsilon = 1e-06  tolerance = 1e-08  max_iter = 600  anderson = 1  newton = 0  darcy pcg rtol = 1e-10
+darcy: achieved mean flux = (0.99999999999999911, 4.2965888145561172e-20, 6.8470589028532782e-21)  div_max_abs = 4.306e-12  wall = 2.193 s
+  corrector x: converged iters=10 rel_res=6.719e-13
+  corrector y: converged iters=10 rel_res=6.547e-13
+  corrector z: converged iters=10 rel_res=4.323e-13
+solve: status = not_converged  exit = stagnated  iterations = 61  wall = 94.443 s
+  r_F initial = 0.019496163053473594
+  r_F final   = 2.9697566391160139e-05  tolerance = 1e-08  tolerance_met = false
+  e_v = 6.7755162576754662e-05  e_psi1 = 2.461849e-06  e_psi2 = 2.914292e-06  e_div = 3.869853e-06
+  |c| (report) min = 7.747693e-01  0.1% = 7.944591e-01  1% = 8.460876e-01  5% = 9.010711e-01
+  min_abs_c_grid (spline, cell centres) = 0.77464182765502676
+labels written: output_sf32/labels/stack_lester2021_e025_n256{.json,_u1.bin,_u2.bin}  (total wall 98.786 s)
+SOLVE_EXIT=0
+[2026-10-06T15:47:15Z] job=sf32-labels finished exit=0
