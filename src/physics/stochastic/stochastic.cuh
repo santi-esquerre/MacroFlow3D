@@ -6,7 +6,9 @@
  * @ingroup physics_stochastic
  *
  * Port of legacy/random_field_generation.cu using Randomized Spectral Method.
- * Does NOT use FFT - direct sum of Fourier modes.
+ * Does NOT use FFT - direct sum of Fourier modes (not periodic).
+ * Gaussian covariance only since 2026-10-07
+ * (docs/decisions/2026-10-07-gaussian-covariance-only.md).
  *
  * Reference:
  *   Räss, Kolyukhin, Minakov (2019), Comp. & Geosci. 131, 158-169
@@ -16,8 +18,12 @@
  *   - sigma_f = sqrt(sigma2) is the std dev of log-K
  *   - logK = (sigma_f / sqrt(n_modes)) * Σᵢ (aᵢ sin(k·x) + bᵢ cos(k·x))
  *   - K = K_g * exp(logK)   (K_g = geometric mean, default 1)
- *   - Exponential cov: k = κ/λ, κ ~ κ²/(1+κ²)²  → C(r)=σ² exp(-r/λ)
- *   - Gaussian cov:    k = κ·√2/λ, κ ~ κ² exp(-κ²/2) → C(r)=σ² exp(-r²/λ²)
+ *   - Gaussian cov (only accepted covariance_type = 1):
+ *       k = κ·√2/λ, κ ~ κ² exp(-κ²/2) → C(r)=σ² exp(-r²/λ²)
+ *   - Exponential cov (covariance_type = 0) retired; generate_gaussian_field
+ *     throws std::invalid_argument for any covariance_type != 1.
+ *   - λ convention differs from legacy (legacy: exp(-π r²/(4λ²)),
+ *     legacy/random_field_generation.cu:114).
  *   - Cell-centered coordinates: x = h * (ix + 0.5, iy + 0.5, iz + 0.5)
  */
 
@@ -55,6 +61,7 @@ void init_stochastic_rng(StochasticWorkspace& workspace, uint64_t seed, const Cu
  * @param grid       Grid specification (nx, ny, nz, dx)
  * @param cfg        Stochastic config (sigma2, corr_length, n_modes, covariance_type)
  * @param ctx        CUDA context (stream)
+ * @throws std::invalid_argument if cfg.covariance_type != 1 (exponential retired)
  */
 void generate_gaussian_field(StochasticWorkspace& workspace, const Grid3D& grid,
                              const StochasticConfig& cfg, const CudaContext& ctx);

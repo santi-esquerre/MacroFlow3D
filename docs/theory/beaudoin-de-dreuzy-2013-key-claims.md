@@ -265,7 +265,7 @@ These should remain part of the acceptance and experiment design culture of the 
 
 If MacroFlow3D compares itself to this paper, comparisons should state explicitly:
 
-- covariance model,
+- covariance model, including the correlation-length convention: here `C(r)=σ² exp(-(r/λ)²)`; the legacy code used `exp(-π r²/(4λ²))`,
 - variance of log-conductivity,
 - dimensionality,
 - boundary conditions,

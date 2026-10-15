@@ -558,6 +558,15 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME periodic_gaussian COMMAND periodic_gaussian_tests)
 
+    # Baseline direct-sum generator (stochastic.cu): Gaussian-only contract
+    # tests (decision 2026-10-07, docs/decisions/2026-10-07-gaussian-covariance-only.md).
+    add_executable(stochastic_baseline_tests tests/stochastic/stochastic_baseline_tests.cu)
+    target_link_libraries(stochastic_baseline_tests PRIVATE macroflow3d_lib)
+    target_compile_options(stochastic_baseline_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME stochastic_baseline_gaussian COMMAND stochastic_baseline_tests)
+
     # SF-19 T02: affine-periodic Darcy solve acceptance tests
     # (AffinePeriodicFlowSolver.cuh). Standalone (mirrors
     # periodic_gaussian_tests.cu), not part of the streamfunctions case

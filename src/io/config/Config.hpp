@@ -72,12 +72,14 @@ struct GridConfig {
  * @brief Stochastic K field configuration
  */
 struct StochasticYamlConfig {
-    real sigma2 = 1.0;       // Variance of log-K
-    real corr_length = 1.0;  // Correlation length
-    int n_modes = 1000;      // Number of Fourier modes
-    int covariance_type = 0; // 0 = exponential, 1 = gaussian
-    uint64_t seed = 12345;   // RNG seed
-    real K_mean = 1.0;       // Geometric mean of K
+    real sigma2 = 1.0;      // Variance of log-K
+    real corr_length = 1.0; // Correlation length
+    int n_modes = 1000;     // Number of Fourier modes
+    // 1 = Gaussian C(r)=sigma2*exp(-(r/lambda)^2); the only accepted value;
+    // 0 (exponential) retired — docs/decisions/2026-10-07-gaussian-covariance-only.md
+    int covariance_type = 1;
+    uint64_t seed = 12345; // RNG seed
+    real K_mean = 1.0;     // Geometric mean of K
 };
 
 /**

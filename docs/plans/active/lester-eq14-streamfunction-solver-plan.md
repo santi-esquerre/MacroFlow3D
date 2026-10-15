@@ -360,7 +360,8 @@ Applies to the frozen periodic stack; the closure-gate matrix lives in SF-30.
 - `sigma_Y^2=6.25` only after the `sigma_Y^2=4` suite is accepted.
 
 Exponential covariance, tensor conductivity, a PSPTA consumer, and scientific
-macrodispersion production are outside this execution sequence.
+macrodispersion production are outside this execution sequence. (Exponential
+covariance: retired from the generator, decision 2026-10-07.)
 
 ## Process rules (2026-10-02)
 
@@ -384,7 +385,9 @@ macrodispersion production are outside this execution sequence.
    `alpha_T` is reported with grid and tolerance convergence without
    presupposing its value; `sigma^2` in `{1, 2.25}` then `{4, 6.25}`. Open items:
    the generator (periodic SF-18 vs baseline) and memory at 1.3e8 cells on one
-   V100.
+   V100. `alpha_L` must match RWPT re-run with the same config in this code
+   (Gaussian covariance, decision 2026-10-07-gaussian-covariance-only), not the
+   legacy figures.
 4. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5).
 
 The periodic-cell study (`D_T` by re-injection, deterministic many-period

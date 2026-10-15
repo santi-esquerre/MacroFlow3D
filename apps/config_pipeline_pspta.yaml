@@ -1,6 +1,14 @@
 # ==============================================================================
 # MacroFlow3D — Sigma²=1.0 con transporte PSPTA (Nivel A + Tier-2)
 # Base: config_pipeline_par2.yaml, cambiando method → pspta
+#
+# Relación con el legacy (legacy/input/parameters_sigma1.json): igual que
+# config_pipeline_par2.yaml — se replican malla, h, λ=10h, σ²=1, n_modes,
+# K_g, cargas de contorno y covarianza GAUSSIANA (el legacy solo usaba el
+# kernel gaussiano); NO se replican la convención de λ (aquí exp(-(r/λ)²),
+# legacy exp(-π r²/(4λ²))), las dispersividades, NR ni las semillas.
+# covariance_type: 1 es el único valor aceptado
+# (docs/decisions/2026-10-07-gaussian-covariance-only.md).
 # ==============================================================================
 
 run_mode: ensemble
@@ -15,7 +23,7 @@ stochastic:
   sigma2: 1.0
   corr_length: 50.0
   n_modes: 10000
-  covariance_type: 0
+  covariance_type: 1
   seed: 42
   K_mean: 1.0
 

@@ -12,7 +12,9 @@
 #
 # Relaciones conservadas:
 #   dx=5, corr_length=50 → λ/dx = 10  (igual que el original)
-#   sigma2=1.0, covariance_type=0, K_mean=1.0  (idéntico)
+#   sigma2=1.0, covariance_type=1 (gaussiana), K_mean=1.0  (idéntico)
+#   (covarianza C(r)=σ² exp(-(r/λ)²); el legacy también era gaussiano pero con
+#    exp(-π r²/(4λ²)) — ver docs/decisions/2026-10-07-gaussian-covariance-only.md)
 #   head: west=100, east=0, y/z periódico  (idéntico)
 #
 # CFL estimado:
@@ -43,7 +45,7 @@ stochastic:
   sigma2: 1.0
   corr_length: 50.0
   n_modes: 1000          # 1000 suficiente para grilla chica
-  covariance_type: 0     # exponencial
+  covariance_type: 1     # gaussiana C(r)=σ² exp(-(r/λ)²); único valor aceptado
   seed: 42
   K_mean: 1.0
 

@@ -130,7 +130,7 @@ For legacy PSPTA work, read `src/physics/particles/pspta/AGENTS.md`. Use the arc
 
 - `docs/plans/archive/pspta-execution-plan.md` explicitly said the project was "not going to solve the coupled nonlinear streamfunction PDEs directly." That conflicts with the new direction and is now marked as historical/superseded for invariant construction.
 - Root `AGENTS.md`, `CLAUDE.md`, skills, architecture, and validation docs previously described PSPTA / transport-near-nullspace as the current strategic route. These were updated to point to the equation (14) plan for new invariant construction.
-- Existing smoke configs use exponential covariance (`covariance_type: 0`). This is not a smooth Gaussian validation case and must not be used as evidence for the initial invariant-existence benchmark without explicit regularization analysis.
+- Existing smoke configs use exponential covariance (`covariance_type: 0`). This is not a smooth Gaussian validation case and must not be used as evidence for the initial invariant-existence benchmark without explicit regularization analysis. (2026-10-07: configs are Gaussian; exponential retired — decision 2026-10-07-gaussian-covariance-only)
 - `RefinementAC.cuh` describes a future Strategy C algorithm, while `RefinementAC.cu` returns `not_implemented`. The implementation state is skeleton only.
 - Earlier docs consistently refer to `scripts/remote`; this was verified present during the audit.
 

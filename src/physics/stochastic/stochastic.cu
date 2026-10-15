@@ -2,14 +2,27 @@
  * @file stochastic.cu
  * @brief Stochastic K field generation - Implementation
  *
- * Direct port of legacy/random_field_generation.cu
- * Randomized Spectral Method (no FFT)
+ * Port of legacy/random_field_generation.cu (Randomized Spectral Method,
+ * direct sum of Fourier modes, no FFT, not periodic).
+ *
+ * Gaussian covariance only since 2026-10-07
+ * (docs/decisions/2026-10-07-gaussian-covariance-only.md):
+ *   C(r) = sigma2 * exp(-(r/lambda)^2).
+ * The exponential-covariance mode sampler was deleted; any
+ * StochasticConfig::covariance_type other than 1 throws.
+ *
+ * Lambda convention differs from the legacy generator: here
+ * exp(-(r/lambda)^2), legacy exp(-pi r^2 / (4 lambda^2))
+ * (legacy/random_field_generation.cu:114, k = k/(2 lambda/sqrt(pi))*sqrt(2)).
+ * Reproducing a legacy covariance would need corr_length = 2 lambda_legacy/sqrt(pi);
+ * that mapping is recorded, not used.
  */
 
 #include "../../runtime/cuda_check.cuh"
 #include "stochastic.cuh"
 #include <cmath>
 #include <curand_kernel.h>
+#include <stdexcept>
 #include <vector>
 
 namespace macroflow3d {
@@ -41,57 +54,6 @@ __global__ void kernel_init_rng(curandState* __restrict__ states, const uint64_t
     // Use base_seed + ix as seed, ix as sequence, 0 as offset
     // This ensures reproducibility: same seed → same sequence
     curand_init(base_seed + ix, ix, 0, &states[ix]);
-}
-
-// ============================================================================
-// Kernel: Generate Fourier mode coefficients (exponential covariance)
-// ============================================================================
-
-/**
- * @brief Generate wavenumbers for EXPONENTIAL covariance
- *
- * Legacy: random_kernel_3D()
- * Uses Cauchy-like distribution via rejection sampling
- */
-__global__ void kernel_random_modes_exp(curandState* __restrict__ states, real* __restrict__ V1,
-                                        real* __restrict__ V2, real* __restrict__ V3,
-                                        real* __restrict__ a, real* __restrict__ b,
-                                        const real lambda, const int n_modes) {
-    const int ix = threadIdx.x + blockIdx.x * blockDim.x;
-    if (ix >= n_modes)
-        return;
-
-    curandState localState = states[ix];
-
-    // Spherical angles for direction
-    double fi = 2.0 * PI_D * curand_uniform_double(&localState);
-    double theta = acos(1.0 - 2.0 * curand_uniform_double(&localState));
-
-    // Wavenumber magnitude k from modified Cauchy distribution (rejection sampling)
-    double k, d;
-    int flag = 1;
-    while (flag == 1) {
-        k = tan(PI_D * 0.5 * curand_uniform_double(&localState));
-        d = (k * k) / (1.0 + k * k);
-        if (curand_uniform_double(&localState) < d)
-            flag = 0;
-    }
-
-    // Wavenumber vector components (legacy: divide by lambda)
-    V1[ix] = static_cast<real>(k * sin(fi) * sin(theta) / lambda);
-    V2[ix] = static_cast<real>(k * cos(fi) * sin(theta) / lambda);
-    V3[ix] = static_cast<real>(k * cos(theta) / lambda);
-
-    // Fourier coefficients a, b ~ N(0,1) via Box-Muller
-    double u1 = curand_uniform_double(&localState);
-    double u2 = curand_uniform_double(&localState);
-    a[ix] = static_cast<real>(sqrt(-2.0 * log(u1)) * cos(2.0 * PI_D * u2));
-
-    u1 = curand_uniform_double(&localState);
-    u2 = curand_uniform_double(&localState);
-    b[ix] = static_cast<real>(sqrt(-2.0 * log(u1)) * cos(2.0 * PI_D * u2));
-
-    states[ix] = localState;
 }
 
 // ============================================================================
@@ -290,6 +252,10 @@ void generate_gaussian_field(StochasticWorkspace& workspace, const Grid3D& grid,
     if (!workspace.is_allocated()) {
         throw std::runtime_error("StochasticWorkspace not allocated");
     }
+    if (cfg.covariance_type != 1) {
+        throw std::invalid_argument(
+            "StochasticConfig::covariance_type must be 1 (Gaussian); exponential (0) retired");
+    }
 
     const int n_modes = cfg.n_modes;
     const real lambda = cfg.corr_length;
@@ -300,20 +266,15 @@ void generate_gaussian_field(StochasticWorkspace& workspace, const Grid3D& grid,
         const int block = 256;
         const int modes_grid = (n_modes + block - 1) / block;
 
-        if (cfg.covariance_type == 0) {
-            // Exponential covariance
-            kernel_random_modes_exp<<<modes_grid, block, 0, ctx.cuda_stream()>>>(
-                workspace.rng_states.data(), workspace.k1.data(), workspace.k2.data(),
-                workspace.k3.data(), workspace.coef_a.data(), workspace.coef_b.data(), lambda,
-                n_modes);
-        } else {
-            // Gaussian covariance (k_max = 100 per legacy)
-            const int k_max = 100;
-            kernel_random_modes_gauss<<<modes_grid, block, 0, ctx.cuda_stream()>>>(
-                workspace.rng_states.data(), workspace.k1.data(), workspace.k2.data(),
-                workspace.k3.data(), workspace.coef_a.data(), workspace.coef_b.data(), lambda,
-                n_modes, k_max);
-        }
+        // Gaussian covariance (k_max = 100 per legacy). k_max is the proposal
+        // interval [0, k_max] of the rejection sampler for kappa ~ kappa^2
+        // exp(-kappa^2/2): P(kappa > 100) = O(e^-5000) (negligible truncation),
+        // acceptance rate sqrt(pi/2) / (k_max * 2/e) ~ 1.7 %.
+        const int k_max = 100;
+        kernel_random_modes_gauss<<<modes_grid, block, 0, ctx.cuda_stream()>>>(
+            workspace.rng_states.data(), workspace.k1.data(), workspace.k2.data(),
+            workspace.k3.data(), workspace.coef_a.data(), workspace.coef_b.data(), lambda, n_modes,
+            k_max);
         MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
     }
 

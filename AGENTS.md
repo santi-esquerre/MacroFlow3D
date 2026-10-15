@@ -333,7 +333,7 @@ For any new invariant-construction work, read `docs/plans/active/lester-eq14-str
 - Do **not** merge “it compiles” changes in the scientific core without validation evidence.
 - Do **not** treat the existing multigrid preconditioner as automatically valid for `A psi = -div(q grad psi)` with `q=1/k`; reuse is a priority hypothesis that must be verified against the actual operator sign, coefficient placement, boundary conditions, gauge, and residual.
 - Do **not** hide small `|grad psi1 x grad psi2|` denominators with arbitrary epsilons. Any regularization must be explicit, configurable, logged, and studied as it tends to zero.
-- Do **not** treat exponential-covariance log-conductivity fields as equivalent to smooth Gaussian-covariance fields for invariant existence validation.
+- Do **not** treat exponential-covariance log-conductivity fields as equivalent to smooth Gaussian-covariance fields for invariant existence validation; the baseline generator produces Gaussian covariance only (`stochastic.covariance_type: 1` is the sole accepted value, decision 2026-10-07).
 - Do **not** assume global streamfunction invariants exist for locally anisotropic tensor conductivity; that case is outside the initial scope.
 - Do **not** rewrite major subsystems when a local change is enough.
 - Do **not** introduce silent behavior changes in configs.

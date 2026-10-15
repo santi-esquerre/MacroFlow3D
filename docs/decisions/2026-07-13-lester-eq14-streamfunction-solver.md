@@ -17,7 +17,7 @@ This decision record separates confirmed project choices from hypotheses that st
 
 2. The primary benchmark uses Gaussian-covariance log-conductivity fields.
    - Status: accepted for validation scope.
-   - Note: existing smoke/reference configs still use exponential covariance; those are not equivalent smooth-invariant validation cases.
+   - Note: existing smoke/reference configs still use exponential covariance; those are not equivalent smooth-invariant validation cases. (2026-10-07: configs are Gaussian; exponential retired — decision 2026-10-07-gaussian-covariance-only)
 
 3. The solver should prioritize the divergent form
    `Delta psi - grad(log k).grad psi = k div((1/k) grad psi)`.

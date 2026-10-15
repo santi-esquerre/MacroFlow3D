@@ -65,7 +65,7 @@ stochastic:
   sigma2: 0.0
   corr_length: 8.0
   n_modes: 8
-  covariance_type: 0
+  covariance_type: 1   # only accepted value (Gaussian; exponential retired 2026-10-07); inert here: field_source periodic_gaussian
   seed: 42
   K_mean: 1.0
 
