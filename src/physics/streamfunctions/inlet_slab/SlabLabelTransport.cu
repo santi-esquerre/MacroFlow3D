@@ -7,6 +7,7 @@
 #include "SlabLabelTransport.cuh"
 
 #include "NpyIo.hpp"
+#include "SlabTraceGpu.cuh"
 
 #include <cstdio>
 #include <filesystem>
@@ -111,7 +112,18 @@ LabelTransportResult construct_labels_by_tracing(CudaContext& ctx, const Product
         throw std::logic_error("construct_labels_by_tracing: production stage is not ok");
     }
     if (opt.backend == TracerBackend::gpu) {
-        throw std::runtime_error("construct_labels_by_tracing: gpu tracer not built (SF-35 N6)");
+        require_valid_grid(stage.grid, "construct_labels_by_tracing");
+        SlabOracleOptions oo;
+        oo.tol = opt.tol;
+        oo.h_max = opt.h_max > 0.0 ? opt.h_max : stage.grid.h / 8.0;
+        oo.min_step = opt.min_step;
+        oo.max_arclength = opt.max_arclength;
+        oo.threads = 1; // unused by the GPU tracer
+        oo.max_roundtrip = opt.max_roundtrip;
+        SlabGpuTracer tracer;
+        tracer.prepare(ctx, stage);
+        SlabOracleResult o = compute_oracle_gpu(ctx, stage.grid, stage, tracer, oo, psi1, psi2);
+        return make_label_transport_result(std::move(o), opt, TracerBackend::gpu, oo.h_max, 0);
     }
     const SlabSplineDirectionField fld = stage.direction_field();
     return construct_labels_by_tracing(ctx, stage.grid, fld, stage.labels, opt, psi1, psi2);

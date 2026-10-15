@@ -231,8 +231,14 @@ set(INLET_SLAB_SOURCES
     src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
     src/physics/streamfunctions/inlet_slab/SlabOracle.cu
     src/physics/streamfunctions/inlet_slab/SlabLabelTransport.cu
+    # SF-35 N6: GPU tracer (device copy of the SF-30 integrator; compiled with --fmad=false below)
+    src/physics/streamfunctions/inlet_slab/SlabTraceGpu.cu
     src/physics/streamfunctions/inlet_slab/ProtoCase.cu
 )
+
+# SF-35 N6: IEEE mult/add in the GPU tracer so that it reproduces the host (no-FMA) tracer; this file only.
+set_source_files_properties(src/physics/streamfunctions/inlet_slab/SlabTraceGpu.cu
+    PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
 
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
@@ -700,6 +706,11 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_controls_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_controls COMMAND inlet_slab_controls_tests)
+    # SF-35 N6: GPU tracer vs host tracer (N = 16/32; <= 60 s on V100)
+    add_executable(inlet_slab_trace_gpu_tests tests/inlet_slab/slab_trace_gpu_tests.cu)
+    target_link_libraries(inlet_slab_trace_gpu_tests PRIVATE macroflow3d_lib)
+    target_compile_options(inlet_slab_trace_gpu_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME inlet_slab_trace_gpu COMMAND inlet_slab_trace_gpu_tests)
     # SF-33 N4: .npy reader/writer and prototype-case loader (fast tier; synthetic N = 8 case)
     add_executable(inlet_slab_npy_tests tests/inlet_slab/slab_npy_tests.cu)
     target_link_libraries(inlet_slab_npy_tests PRIVATE macroflow3d_lib)

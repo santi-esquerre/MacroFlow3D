@@ -25,8 +25,8 @@
  * compute_oracle: per-seed host vectors, the device foot arrays 2 N^3 doubles, and the one-element
  * `records` vector inside trace_to_plane); the GPU label kernel allocates nothing.
  *
- * Backends: `host` (compute_oracle) is implemented here; `gpu` is reserved for SF-35 N6 and is only
- * reachable through the ProductionStage overload (throws until then).
+ * Backends: `host` (compute_oracle) is implemented here; `gpu` (SF-35 N6, SlabTraceGpu.cuh; reports threads = 0) is only
+ * reachable through the ProductionStage overload.
  */
 
 #include "../../../core/DeviceSpan.cuh"
@@ -97,37 +97,16 @@ struct LabelTransportResult {
 /// trips per plane, counters, timings).
 nlohmann::json to_json(const LabelTransportResult& r);
 
-/**
- * Template entry point (host tracer). `labels` must be device-prepared; psi1/psi2 receive the FULL
- * labels on planes 0..N ((N+1) N^2 each, device). gpu backend: std::invalid_argument.
- */
-template <class Field>
-LabelTransportResult construct_labels_by_tracing(CudaContext& ctx, const InletSlabGrid& grid,
-                                                 const Field& field, const InletLabels& labels,
-                                                 const LabelTransportOptions& opt,
-                                                 DeviceSpan<real> psi1, DeviceSpan<real> psi2) {
-    if (opt.backend == TracerBackend::gpu) {
-        throw std::invalid_argument(
-            "construct_labels_by_tracing: gpu backend requires the ProductionStage overload");
-    }
-    if (!labels.device_prepared()) {
-        throw std::logic_error("construct_labels_by_tracing: inlet labels not device-prepared");
-    }
-    require_valid_grid(grid, "construct_labels_by_tracing");
-    SlabOracleOptions oo;
-    oo.tol = opt.tol;
-    oo.h_max = opt.h_max > 0.0 ? opt.h_max : grid.h / 8.0;
-    oo.min_step = opt.min_step;
-    oo.max_arclength = opt.max_arclength;
-    oo.threads = opt.threads;
-    oo.max_roundtrip = opt.max_roundtrip;
-    SlabOracleResult o = compute_oracle(ctx, grid, field, labels, oo, psi1, psi2);
-
+/// Shared conversion SlabOracleResult -> LabelTransportResult (host and GPU backends).
+inline LabelTransportResult make_label_transport_result(SlabOracleResult&& o,
+                                                        const LabelTransportOptions& opt,
+                                                        TracerBackend backend,
+                                                        double h_max_effective, int threads) {
     LabelTransportResult R;
-    R.backend = opt.backend;
+    R.backend = backend;
     R.tol = o.tol;
-    R.h_max_effective = oo.h_max;
-    R.threads = opt.threads;
+    R.h_max_effective = h_max_effective;
+    R.threads = threads;
     R.non_ok = o.non_ok;
     R.seed_backflow = o.seed_backflow;
     R.landings_discarded = o.landings_discarded;
@@ -166,7 +145,35 @@ LabelTransportResult construct_labels_by_tracing(CudaContext& ctx, const InletSl
     return R;
 }
 
-/// ProductionStage overload (requires stage.ok()). gpu backend: not built until SF-35 N6.
+/**
+ * Template entry point (host tracer). `labels` must be device-prepared; psi1/psi2 receive the FULL
+ * labels on planes 0..N ((N+1) N^2 each, device). gpu backend: std::invalid_argument.
+ */
+template <class Field>
+LabelTransportResult construct_labels_by_tracing(CudaContext& ctx, const InletSlabGrid& grid,
+                                                 const Field& field, const InletLabels& labels,
+                                                 const LabelTransportOptions& opt,
+                                                 DeviceSpan<real> psi1, DeviceSpan<real> psi2) {
+    if (opt.backend == TracerBackend::gpu) {
+        throw std::invalid_argument(
+            "construct_labels_by_tracing: gpu backend requires the ProductionStage overload");
+    }
+    if (!labels.device_prepared()) {
+        throw std::logic_error("construct_labels_by_tracing: inlet labels not device-prepared");
+    }
+    require_valid_grid(grid, "construct_labels_by_tracing");
+    SlabOracleOptions oo;
+    oo.tol = opt.tol;
+    oo.h_max = opt.h_max > 0.0 ? opt.h_max : grid.h / 8.0;
+    oo.min_step = opt.min_step;
+    oo.max_arclength = opt.max_arclength;
+    oo.threads = opt.threads;
+    oo.max_roundtrip = opt.max_roundtrip;
+    SlabOracleResult o = compute_oracle(ctx, grid, field, labels, oo, psi1, psi2);
+    return make_label_transport_result(std::move(o), opt, opt.backend, oo.h_max, opt.threads);
+}
+
+/// ProductionStage overload (requires stage.ok()). gpu backend: SlabGpuTracer (SlabTraceGpu.cuh), threads reported as 0.
 LabelTransportResult construct_labels_by_tracing(CudaContext& ctx, const ProductionStage& stage,
                                                  const LabelTransportOptions& opt,
                                                  DeviceSpan<real> psi1, DeviceSpan<real> psi2);

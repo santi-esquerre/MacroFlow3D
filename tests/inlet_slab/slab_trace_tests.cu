@@ -218,15 +218,13 @@ void case_generic3d(TestReport& rep, CudaContext& ctx) {
     rep.check(c.res.status == sl::LabelTransportStatus::roundtrip_exceeded,
               "generic3d: max_roundtrip = 1e-14 -> roundtrip_exceeded",
               std::string(sl::to_string(c.res.status)) + fmt(", max round trip %.3e", c.res.max_roundtrip));
-    bool gpu_throws = false;
     sl::LabelTransportOptions og = o1;
     og.backend = sl::TracerBackend::gpu;
-    try {
-        (void)run_stage(ctx, st, og);
-    } catch (const std::runtime_error&) {
-        gpu_throws = true;
-    }
-    rep.check(gpu_throws, "stage overload: gpu backend throws (tracer not built, N6)");
+    const Run g = run_stage(ctx, st, og);
+    rep.check(g.res.backend == sl::TracerBackend::gpu && g.res.status == sl::LabelTransportStatus::ok &&
+                  g.res.threads == 0,
+              "stage overload: gpu backend (SF-35 N6) runs, backend gpu, threads 0",
+              sl::to_string(g.res.status));
 }
 
 // (iii) ------------------------------------------------------------------------------------------
