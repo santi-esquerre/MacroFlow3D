@@ -1,0 +1,30 @@
+[2026-10-15T18:47:40Z] job=sf35-regress-prod32 session=macroflow3d-SF-35-sf35-regress-prod32 started
+[2026-10-15T18:47:40Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-15T18:47:40Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-15T18:47:40Z] command=export THREADS=32; bash docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh build/v100-release regress
+run_campaign.sh: part=regress bin=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-15T18:47:41Z
+  run.env: COMMIT=55d95a6329b6bc65cc25f936b419e103a7ae33bb HOST=localhost.localdomain DATE_UTC=2026-10-15T18:47:41Z BIN=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab BUILD_DIR=build/v100-release THREADS=32 PART=regress GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/regress/prod32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/regress/prod32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/regress/prod32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/regress/prod32.log rc=0 STATUS converged wall=17s max_rss_kB=682636 end=2026-10-15T18:48:01Z
+    CASE field=gaussian eps=0.25 N=32 cand=i1o4 | r_F=1.097e-14 its=11 | e_v=1.711e-03 e_psi=1.250e-02 e_i=(8.425e-04,5.905e-04) e_div=7.440e-04 min_c=4.950e-01 p0.1=5.188e-01 p1=5.875e-01 p5=7.053e-01 p50=9.940e-01 | t=9.6 | e_psi1=1.250e-02 e_psi2=1.140e-02
+    CASE field=gaussian eps=0.25 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=2.247e-03 e_psi=4.685e-18 e_i=(8.389e-05,7.095e-05) e_div=8.281e-04 min_c=4.954e-01 p0.1=5.191e-01 p1=5.876e-01 p5=7.051e-01 p50=9.939e-01 | t=0.0 | e_psi1=4.685e-18 e_psi2=4.387e-18
+    TIMING_SETUP stage_builds=0.944s (inside the solve phase; Newton-Krylov only = 8.625s)
+    TIMING field=0.057s metrics=0.005s oracle=3.694s prepare=0.047s solve=9.569s total=13.371s
+    MEMORY peak_device_bytes=617611264 free_min=33472118784 total_device=34089730048 workspaces_bytes=103344079 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS_DETAIL solver=converged oracle=ok
+    STATUS converged
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/regress_diff.py /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/regress/prod32.log /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log --out /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/regress.md
+# SF-35 regression G: `--production` 32^3 eps 0.25 vs SF-33 `ladder_0.25_c4/N32.log`
+
+- new log: `docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/regress/prod32.log`
+- reference log: `docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log`
+- compared lines (first token in CASE, ORACLE, ORACLE_SUMMARY, EXTRA): new 102, reference 102
+- masked fields (timing only): `t=`, `t_trace=`, `t_labels=`, `t_lu=`, `t_apply=`, `t_fact=`, `t_lin=`
+
+**Verdict G (production lines): identical** (all 102 lines equal after masking the timing fields)
+
+Informational (not part of G): ORACLE_CONFIG/ORACLE_RUN/ORACLE_LABELDIFF lines: new 6, reference 6, identical
+
+  regress_diff.py rc=0
+run_campaign.sh: part=regress end=2026-10-15T18:48:01Z unexpected_failures=0
+[2026-10-15T18:48:01Z] job=sf35-regress-prod32 finished exit=0

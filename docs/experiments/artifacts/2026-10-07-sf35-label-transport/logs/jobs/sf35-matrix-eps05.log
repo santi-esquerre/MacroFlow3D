@@ -1,0 +1,40 @@
+[2026-10-15T18:48:44Z] job=sf35-matrix-eps05 session=macroflow3d-SF-35-sf35-matrix-eps05 started
+[2026-10-15T18:48:44Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-15T18:48:44Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-15T18:48:44Z] command=export THREADS=32; bash docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh build/v100-release matrix 05
+run_campaign.sh: part=matrix bin=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-15T18:48:45Z
+  run.env: COMMIT=55d95a6329b6bc65cc25f936b419e103a7ae33bb HOST=localhost.localdomain DATE_UTC=2026-10-15T18:48:45Z BIN=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab BUILD_DIR=build/v100-release THREADS=32 PART=matrix GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 32 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps05/N32 --ladder --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps05/N32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N32.log rc=0 STATUS ok wall=12s max_rss_kB=613620 end=2026-10-15T18:48:59Z
+    CASE field=gaussian eps=0.5 N=32 cand=trace | r_F=9.028e-02 its=nan | e_v=5.984e-03 e_psi=nan e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.8
+    BACKFLOW field=gaussian eps=0.5 N=32 inlet_vmin=2.445160e-01 Q0=1.000000e+00 vD1_min=2.271173e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248170e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=32 e_v_N/e_v_1=1.879e+00 e_i_N/e_i_1=3.528e+00 max_roundtrip=2.740e-09 (plane 25)
+    RESIDUAL field=gaussian eps=0.5 N=32 cand=trace r_F=9.028e-02 r_out=1.050e-03 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.740e-09
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.168e-10
+    LABELDIFF (hmax=1.953125e-03 tol=1.0e-08) vs primary: max|dpsi1|=1.802e-09 max|dpsi2|=1.413e-09 max_roundtrip=4.168e-10
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.168e-10
+    LABELDIFF (hmax=1.953125e-03 tol=1.0e-10) vs primary: max|dpsi1|=1.802e-09 max|dpsi2|=1.413e-09 max_roundtrip=4.168e-10
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.656e-11
+    LABELDIFF (hmax=9.765625e-04 tol=1.0e-10) vs primary: max|dpsi1|=1.824e-09 max|dpsi2|=1.453e-09 max_roundtrip=4.656e-11
+    TIMING diagnostics=0.002s field=0.057s stage=0.972s trace=6.495s total=7.540s
+    MEMORY peak_device_bytes=531628032 free_min=33558102016 total_device=34089730048 workspaces_bytes=20675503 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N64.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 64 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps05/N64 --ladder --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps05/N64.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N64.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N64.log rc=0 STATUS ok wall=105s max_rss_kB=665580 end=2026-10-15T18:50:44Z
+    CASE field=gaussian eps=0.5 N=64 cand=trace | r_F=2.046e-02 its=nan | e_v=1.473e-03 e_psi=nan e_i=(6.611e-05,2.851e-05) e_div=8.226e-04 min_c=2.288e-01 p0.1=2.528e-01 p1=3.296e-01 p5=4.798e-01 p50=9.698e-01 | t=11.3
+    BACKFLOW field=gaussian eps=0.5 N=64 inlet_vmin=2.426853e-01 Q0=1.000000e+00 vD1_min=2.278063e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.238267e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=64 e_v_N/e_v_1=2.049e+00 e_i_N/e_i_1=5.571e+00 max_roundtrip=3.403e-10 (plane 64)
+    RESIDUAL field=gaussian eps=0.5 N=64 cand=trace r_F=2.046e-02 r_out=2.234e-04 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.403e-10
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.017e-11
+    LABELDIFF (hmax=9.765625e-04 tol=1.0e-08) vs primary: max|dpsi1|=1.551e-10 max|dpsi2|=1.459e-10 max_roundtrip=4.017e-11
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.017e-11
+    LABELDIFF (hmax=9.765625e-04 tol=1.0e-10) vs primary: max|dpsi1|=1.551e-10 max|dpsi2|=1.459e-10 max_roundtrip=4.017e-11
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=5.013e-12
+    LABELDIFF (hmax=4.882812e-04 tol=1.0e-10) vs primary: max|dpsi1|=1.579e-10 max|dpsi2|=1.536e-10 max_roundtrip=5.013e-12
+    TIMING diagnostics=0.006s field=0.087s stage=1.101s trace=100.693s total=101.941s
+    MEMORY peak_device_bytes=638582784 free_min=33451147264 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh: línea 195: extra[@]: variable sin asignar
+[2026-10-15T18:50:44Z] job=sf35-matrix-eps05 finished exit=1

@@ -1,0 +1,661 @@
+{
+ "N": 16,
+ "backflow": {
+  "Q0": 0.9999999999999999,
+  "backflow_enc": 0,
+  "inlet_vmin": 0.5758302541426792,
+  "landings_discarded": 0,
+  "min_g1_hat": 1.0,
+  "seed_backflow": 0,
+  "status_hist": [
+   4096,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "vD1_min": 0.5703245357657436,
+  "vD1_nonpos": 0
+ },
+ "case_line": "CASE field=cells eps=0.5 N=16 cand=trace | r_F=1.188e-03 its=nan | e_v=5.663e-04 e_psi=nan e_i=(6.099e-17,9.867e-32) e_div=1.531e-15 min_c=5.702e-01 p0.1=5.702e-01 p1=5.702e-01 p5=5.702e-01 p50=9.410e-01 | t=0.1",
+ "command": "/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy --n 16 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cosx2_N16 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/cosx2_N16.json",
+ "eps": 0.5,
+ "exit_code": 0,
+ "field": "cells",
+ "field_spec": {
+  "kind": "cells",
+  "path": "/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy"
+ },
+ "growth": {
+  "e_i_N_over_e_i_1": 2.736857766718676,
+  "e_v_N_over_e_v_1": 1.0,
+  "max_roundtrip": 0.0,
+  "max_roundtrip_plane": 0
+ },
+ "memory": {
+  "free_min": 33572782080,
+  "peak_device_bytes": 516947968,
+  "total_device": 34089730048,
+  "workspaces_bytes": 8451983
+ },
+ "metrics": {
+  "trace": {
+   "e_div": 1.5306244257109424e-15,
+   "e_i1": 6.099439586075212e-17,
+   "e_i2": 9.867193735031924e-32,
+   "e_v": 0.0005663074283535426,
+   "min_c": 0.5702232336475187,
+   "nonfinite": 0,
+   "p0.1": 0.5702232336475187,
+   "p1": 0.5702232336475197,
+   "p5": 0.5702232336475204,
+   "p50": 0.9409668056673568,
+   "vD_min": 0.5703245357657436,
+   "vD_p": [
+    0.5703245357657436,
+    0.5703245357657436,
+    0.5703245357657436,
+    0.9403061933191572
+   ],
+   "v_rms": 1.0580287003659266
+  }
+ },
+ "metrics_json": {
+  "e_div": 1.5306244257109424e-15,
+  "e_i1": 6.099439586075212e-17,
+  "e_i2": 9.867193735031924e-32,
+  "e_v": 0.0005663074283535426,
+  "min_c": 0.5702232336475187,
+  "nonfinite": 0,
+  "p0.1": 0.5702232336475187,
+  "p1": 0.5702232336475197,
+  "p5": 0.5702232336475204,
+  "p50": 0.9409668056673568,
+  "vD_min": 0.5703245357657436,
+  "vD_p": [
+   0.5703245357657436,
+   0.5703245357657436,
+   0.5703245357657436,
+   0.9403061933191572
+  ],
+  "v_rms": 1.0580287003659266
+ },
+ "mode": "construct_trace",
+ "phases": [
+  {
+   "free_after": 33581170688,
+   "free_before": 33585364992,
+   "phase": "field",
+   "seconds": 0.041818003
+  },
+  {
+   "free_after": 33572782080,
+   "free_before": 33581170688,
+   "phase": "stage",
+   "seconds": 0.330252193
+  },
+  {
+   "free_after": 33572782080,
+   "free_before": 33572782080,
+   "phase": "trace",
+   "seconds": 0.094103309
+  },
+  {
+   "free_after": 33572782080,
+   "free_before": 33572782080,
+   "phase": "diagnostics",
+   "seconds": 0.001000942
+  }
+ ],
+ "planes": [
+  {
+   "backflow_enc": 0,
+   "e_i1": 1.4131204061658436e-16,
+   "e_i2": 2.9227064074390904e-31,
+   "e_v": 0.0005663074283535426,
+   "j": 0,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 0,
+   "nfev_rt": 0,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.0
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 6.524336426640638e-17,
+   "e_i2": 2.012813332167154e-31,
+   "e_v": 0.0005663074283535426,
+   "j": 1,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 17664,
+   "nfev_rt": 17664,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.0625
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 2,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 29952,
+   "nfev_rt": 29952,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.125
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 3,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 42240,
+   "nfev_rt": 42240,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.1875
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 4,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 54528,
+   "nfev_rt": 54528,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.25
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 5,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 66816,
+   "nfev_rt": 66816,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.3125
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 6,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 79104,
+   "nfev_rt": 79104,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.375
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 7,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 91392,
+   "nfev_rt": 91392,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.4375
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 8,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 103680,
+   "nfev_rt": 103680,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.5
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 9,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 115968,
+   "nfev_rt": 115968,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.5625
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 10,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 128256,
+   "nfev_rt": 128256,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.625
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 11,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 140544,
+   "nfev_rt": 140544,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.6875
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 12,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 152832,
+   "nfev_rt": 152832,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.75
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 13,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 165120,
+   "nfev_rt": 165120,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.8125
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 2.0664781875932142e-17,
+   "e_i2": 5.472488507128201e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 14,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 177408,
+   "nfev_rt": 177408,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.875
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 3.979745043061067e-17,
+   "e_i2": 6.162975822039155e-33,
+   "e_v": 0.0005663074283535426,
+   "j": 15,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 189696,
+   "nfev_rt": 189696,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 0.9375
+  },
+  {
+   "backflow_enc": 0,
+   "e_i1": 1.7856180821937003e-16,
+   "e_i2": 2.465190328815662e-32,
+   "e_v": 0.0005663074283535426,
+   "j": 16,
+   "landings_discarded": 0,
+   "min_c": 0.5702232336475187,
+   "nfev": 201984,
+   "nfev_rt": 201984,
+   "non_ok": 0,
+   "nonfinite": 0,
+   "roundtrip": 0.0,
+   "vD1_min": 0.5703245357657436,
+   "vD1_nonpos": 0,
+   "x1": 1.0
+  }
+ ],
+ "residual": {
+  "r_F": 0.0011883887751886599,
+  "r_out": 1.8552859649725653e-16
+ },
+ "solve_status": "not_run",
+ "stages_setup": [
+  {
+   "G": [
+    0.9403061933191572,
+    0.0,
+    0.0
+   ],
+   "Q0": 0.9999999999999999,
+   "eps": 0.5,
+   "inlet_mean": 1.0000000000000009,
+   "inlet_vmin": 0.5758302541426792,
+   "mg_levels": 3,
+   "pcg": [
+    {
+     "converged": true,
+     "its": 0,
+     "rel_residual": 0.0
+    },
+    {
+     "converged": true,
+     "its": 10,
+     "rel_residual": 4.380041163355096e-15
+    },
+    {
+     "converged": true,
+     "its": 0,
+     "rel_residual": 0.0
+    }
+   ],
+   "seconds": 0.330166983,
+   "status": "ok",
+   "v1_diff_max_rel": 2.6033601576913735e-16,
+   "v1_diff_rms_rel": 1.2021604534139736e-16,
+   "v_rms": 1.058028700365928
+  }
+ ],
+ "status": "ok",
+ "timing": {
+  "diagnostics": 0.001000942,
+  "field": 0.041818003,
+  "stage": 0.330252193,
+  "total": 0.468833562,
+  "trace": 0.094103309
+ },
+ "trace_config": {
+  "backend": "host",
+  "hmax": 0.0078125,
+  "hmax_div": 8,
+  "max_roundtrip_gate": 1e-08,
+  "threads": 32,
+  "tol": 1e-08
+ },
+ "trace_status": "ok",
+ "transport": {
+  "backend": "host",
+  "backflow_encounters": 0,
+  "h_max": 0.0078125,
+  "hmax": 0.0078125,
+  "hmax_div": 8,
+  "landings_discarded": 0,
+  "max_roundtrip": 0.0,
+  "min_g1_hat": 1.0,
+  "non_ok": 0,
+  "roundtrip_per_plane": [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "seconds_labels": 0.000169192,
+  "seconds_trace": 0.093723563,
+  "seed_backflow": 0,
+  "status": "ok",
+  "status_hist": [
+   4096,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "status_hist_names": [
+   "ok",
+   "seed_backflow",
+   "cap_exceeded",
+   "stagnation",
+   "step_underflow",
+   "landing_failed",
+   "invalid_conductivity"
+  ],
+  "status_hist_per_plane": [
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   [
+    256,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  ],
+  "threads": 32,
+  "tol": 1e-08,
+  "tol_requested": 1e-08
+ }
+}

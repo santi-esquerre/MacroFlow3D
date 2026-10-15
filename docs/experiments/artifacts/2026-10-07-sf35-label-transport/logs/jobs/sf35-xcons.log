@@ -1,0 +1,224 @@
+[2026-10-15T18:35:04Z] job=sf35-xcons session=macroflow3d-SF-35-sf35-xcons started
+[2026-10-15T18:35:04Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-15T18:35:04Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-15T18:35:04Z] command=export THREADS=32; bash docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh build/v100-release xcons
+run_campaign.sh: part=xcons bin=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-15T18:35:05Z
+  run.env: COMMIT=55d95a6329b6bc65cc25f936b419e103a7ae33bb HOST=localhost.localdomain DATE_UTC=2026-10-15T18:35:05Z BIN=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab BUILD_DIR=build/v100-release THREADS=32 PART=xcons GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.25_N32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --solve --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/xcons/eps0.25_N32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.25_N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.25_N32.log rc=0 STATUS ok wall=14s max_rss_kB=679140 end=2026-10-15T18:35:22Z
+    CASE field=gaussian eps=0.25 N=32 cand=trace | r_F=2.345e-02 its=nan | e_v=2.247e-03 e_psi=nan e_i=(8.389e-05,7.095e-05) e_div=8.281e-04 min_c=4.954e-01 p0.1=5.191e-01 p1=5.876e-01 p5=7.051e-01 p50=9.939e-01 | t=0.8
+    BACKFLOW field=gaussian eps=0.25 N=32 inlet_vmin=5.095185e-01 Q0=1.000000e+00 vD1_min=4.930605e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.813037e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.25 N=32 e_v_N/e_v_1=1.183e+00 e_i_N/e_i_1=4.230e+00 max_roundtrip=1.227e-09 (plane 32)
+    RESIDUAL field=gaussian eps=0.25 N=32 cand=trace r_F=2.345e-02 r_out=2.840e-04 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=1.227e-09
+    CASE field=gaussian eps=0.25 N=32 cand=i1o4 | r_F=1.097e-14 its=11 | e_v=1.711e-03 e_psi=1.250e-02 e_i=(8.425e-04,5.905e-04) e_div=7.440e-04 min_c=4.950e-01 p0.1=5.188e-01 p1=5.875e-01 p5=7.053e-01 p50=9.940e-01 | t=8.7 | e_psi1=1.250e-02 e_psi2=1.140e-02
+    CASE field=gaussian eps=0.25 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=2.247e-03 e_psi=4.685e-18 e_i=(8.389e-05,7.095e-05) e_div=8.281e-04 min_c=4.954e-01 p0.1=5.191e-01 p1=5.876e-01 p5=7.051e-01 p50=9.939e-01 | t=0.0 | e_psi1=4.685e-18 e_psi2=4.387e-18
+    TIMING diagnostics=0.002s field=0.056s prepare=0.095s solve=8.672s stage=0.982s trace=0.826s total=10.648s
+    MEMORY peak_device_bytes=619708416 free_min=33470021632 total_device=34089730048 workspaces_bytes=105554582 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.25_N64.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --solve --n 64 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/xcons/eps0.25_N64.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.25_N64.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.25_N64.log rc=0 STATUS ok wall=637s max_rss_kB=1179640 end=2026-10-15T18:45:59Z
+    CASE field=gaussian eps=0.25 N=64 cand=trace | r_F=5.848e-03 its=nan | e_v=5.684e-04 e_psi=nan e_i=(9.110e-06,7.396e-06) e_div=5.742e-05 min_c=4.947e-01 p0.1=5.185e-01 p1=5.874e-01 p5=7.049e-01 p50=9.937e-01 | t=11.2
+    BACKFLOW field=gaussian eps=0.25 N=64 inlet_vmin=5.078054e-01 Q0=1.000000e+00 vD1_min=4.938738e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.811021e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.25 N=64 e_v_N/e_v_1=1.218e+00 e_i_N/e_i_1=5.583e+00 max_roundtrip=1.071e-10 (plane 59)
+    RESIDUAL field=gaussian eps=0.25 N=64 cand=trace r_F=5.848e-03 r_out=4.328e-05 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=1.071e-10
+    CASE field=gaussian eps=0.25 N=64 cand=i1o4 | r_F=5.102e-14 its=9 | e_v=3.904e-04 e_psi=1.555e-03 e_i=(1.449e-04,1.155e-04) e_div=5.528e-05 min_c=4.946e-01 p0.1=5.184e-01 p1=5.873e-01 p5=7.052e-01 p50=9.937e-01 | t=620.2 | e_psi1=1.483e-03 e_psi2=1.555e-03
+    CASE field=gaussian eps=0.25 N=64 cand=oracle_fd4 | r_F=nan its=nan | e_v=5.684e-04 e_psi=4.590e-18 e_i=(9.110e-06,7.396e-06) e_div=5.742e-05 min_c=4.947e-01 p0.1=5.185e-01 p1=5.874e-01 p5=7.049e-01 p50=9.937e-01 | t=0.0 | e_psi1=4.590e-18 e_psi2=4.569e-18
+    TIMING diagnostics=0.006s field=0.087s prepare=0.355s solve=620.226s stage=1.103s trace=11.215s total=633.053s
+    MEMORY peak_device_bytes=1370488832 free_min=32719241216 total_device=34089730048 workspaces_bytes=762837654 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.5_N32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --solve --n 32 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/xcons/eps0.5_N32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.5_N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/xcons/eps0.5_N32.log rc=0 STATUS ok wall=64s max_rss_kB=683032 end=2026-10-15T18:47:03Z
+    CASE field=gaussian eps=0.5 N=32 cand=trace | r_F=9.028e-02 its=nan | e_v=5.984e-03 e_psi=nan e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.8
+    BACKFLOW field=gaussian eps=0.5 N=32 inlet_vmin=2.445160e-01 Q0=1.000000e+00 vD1_min=2.271173e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248170e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=32 e_v_N/e_v_1=1.879e+00 e_i_N/e_i_1=3.528e+00 max_roundtrip=2.740e-09 (plane 25)
+    RESIDUAL field=gaussian eps=0.5 N=32 cand=trace r_F=9.028e-02 r_out=1.050e-03 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.740e-09
+    CASE field=gaussian eps=0.5 N=32 cand=i1o4 | r_F=4.844e-14 its=13 | e_v=5.315e-03 e_psi=3.837e-02 e_i=(3.941e-03,2.242e-03) e_div=4.860e-03 min_c=2.291e-01 p0.1=2.534e-01 p1=3.275e-01 p5=4.807e-01 p50=9.701e-01 | t=58.5 | e_psi1=3.837e-02 e_psi2=2.756e-02
+    CASE field=gaussian eps=0.5 N=32 cand=oracle_fd4 | r_F=nan its=nan | e_v=5.984e-03 e_psi=8.614e-18 e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.0 | e_psi1=8.614e-18 e_psi2=6.604e-18
+    TIMING diagnostics=0.003s field=0.057s prepare=0.094s solve=58.507s stage=0.971s trace=0.793s total=60.441s
+    MEMORY peak_device_bytes=623902720 free_min=33465827328 total_device=34089730048 workspaces_bytes=107750038 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/xcons_digest.py /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/xcons/eps0.25_N32.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/xcons/eps0.25_N64.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/xcons/eps0.5_N32.json --sf33 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels --out /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/xcons.md
+REFERENCE eps=0.25 N=32 e_psi=0.012498926079767736 e_psi1=0.012498926079767736 e_psi2=0.011399336787107195
+REFERENCE eps=0.25 N=64 e_psi=0.001555454994169297 e_psi1=0.0014827366428347424 e_psi2=0.001555454994169297
+REFERENCE eps=0.5 N=32 e_psi=0.038373653105254417 e_psi1=0.038373653105254417 e_psi2=0.027556672140329141
+# SF-35 cross-construction (D): elliptic (SF-33 Newton-Krylov) vs traced labels
+
+Verdict D: every `--solve` run converges (`r_F <= 1e-10`) and `e_psi`, `e_psi1`, `e_psi2` reproduce the SF-33 full-precision values within 1e-6 relative; `a_psi1`, `a_psi2` observed order 32 -> 64 at eps 0.25 >= 2.5 (SF-33: 3.07 / 2.87).
+
+References loaded (SF-33 full precision, `metrics.i1o4`):
+
+- eps=0.25 N=32 (raw/ladder_0.25_c4/N32.json): e_psi=0.012498926079767736 e_psi1=0.012498926079767736 e_psi2=0.011399336787107195 a_psi1=0.00042260935640860755 a_psi2=0.00024762806258530934
+- eps=0.25 N=64 (raw/ladder_0.25_c4/N64.json): e_psi=0.001555454994169297 e_psi1=0.0014827366428347424 e_psi2=0.001555454994169297 a_psi1=5.0215206404753226e-05 a_psi2=3.3830249345184358e-05
+- eps=0.5 N=32 (raw/prod32_05/N32.json): e_psi=0.038373653105254417 e_psi1=0.038373653105254417 e_psi2=0.027556672140329141 a_psi1=0.0025239114533834256 a_psi2=0.0011910794790417666
+
+## Per run
+
+| eps | N | trace status | solve status | r_F (solve) | e_psi | e_psi1 | e_psi2 | rel diff e_psi | rel diff e_psi1 | rel diff e_psi2 | r_F <= 1e-10 | verdict D (value part) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 32 | ok | converged | 1.097e-14 | 1.250e-02 | 1.250e-02 | 1.140e-02 | 0.000e+00 | 0.000e+00 | 0.000e+00 | conv | pass |
+| 0.25 | 64 | ok | converged | 5.102e-14 | 1.555e-03 | 1.483e-03 | 1.555e-03 | 0.000e+00 | 0.000e+00 | 0.000e+00 | conv | pass |
+| 0.5 | 32 | ok | converged | 4.844e-14 | 3.837e-02 | 3.837e-02 | 2.756e-02 | 1.221e-13 | 1.221e-13 | 1.307e-13 | conv | pass |
+
+## Observed order of a_psi (32 -> 64, eps = 0.25)
+
+| quantity | a_psi(32) | a_psi(64) | observed order | SF-33 order (from its JSON) | >= 2.5 |
+|---|---|---|---|---|---|
+| a_psi1 | 4.226e-04 | 5.022e-05 | 3.07 | 3.07 | pass |
+| a_psi2 | 2.476e-04 | 3.383e-05 | 2.87 | 2.87 | pass |
+
+## XCONS per plane (RMS over plane j of psi_solve - psi_trace, periodic parts)
+
+eps = 0.25, N = 32
+
+| j | x1 | a_psi1_j | a_psi2_j |
+|---|---|---|---|
+| 0 | 0.0000 | 0.000e+00 | 0.000e+00 |
+| 1 | 0.0312 | 3.468e-05 | 2.934e-05 |
+| 2 | 0.0625 | 6.680e-05 | 5.313e-05 |
+| 3 | 0.0938 | 9.791e-05 | 7.313e-05 |
+| 4 | 0.1250 | 1.294e-04 | 9.233e-05 |
+| 5 | 0.1562 | 1.616e-04 | 1.126e-04 |
+| 6 | 0.1875 | 1.943e-04 | 1.340e-04 |
+| 7 | 0.2188 | 2.268e-04 | 1.555e-04 |
+| 8 | 0.2500 | 2.581e-04 | 1.757e-04 |
+| 9 | 0.2812 | 2.879e-04 | 1.936e-04 |
+| 10 | 0.3125 | 3.159e-04 | 2.089e-04 |
+| 11 | 0.3438 | 3.421e-04 | 2.215e-04 |
+| 12 | 0.3750 | 3.665e-04 | 2.323e-04 |
+| 13 | 0.4062 | 3.890e-04 | 2.418e-04 |
+| 14 | 0.4375 | 4.092e-04 | 2.507e-04 |
+| 15 | 0.4688 | 4.270e-04 | 2.593e-04 |
+| 16 | 0.5000 | 4.425e-04 | 2.672e-04 |
+| 17 | 0.5312 | 4.560e-04 | 2.742e-04 |
+| 18 | 0.5625 | 4.683e-04 | 2.805e-04 |
+| 19 | 0.5938 | 4.802e-04 | 2.862e-04 |
+| 20 | 0.6250 | 4.924e-04 | 2.915e-04 |
+| 21 | 0.6562 | 5.049e-04 | 2.964e-04 |
+| 22 | 0.6875 | 5.173e-04 | 3.006e-04 |
+| 23 | 0.7188 | 5.291e-04 | 3.042e-04 |
+| 24 | 0.7500 | 5.400e-04 | 3.071e-04 |
+| 25 | 0.7812 | 5.496e-04 | 3.095e-04 |
+| 26 | 0.8125 | 5.577e-04 | 3.114e-04 |
+| 27 | 0.8438 | 5.637e-04 | 3.128e-04 |
+| 28 | 0.8750 | 5.677e-04 | 3.138e-04 |
+| 29 | 0.9062 | 5.698e-04 | 3.146e-04 |
+| 30 | 0.9375 | 5.706e-04 | 3.159e-04 |
+| 31 | 0.9688 | 5.708e-04 | 3.176e-04 |
+| 32 | 1.0000 | 5.704e-04 | 3.190e-04 |
+
+eps = 0.25, N = 64
+
+| j | x1 | a_psi1_j | a_psi2_j |
+|---|---|---|---|
+| 0 | 0.0000 | 0.000e+00 | 0.000e+00 |
+| 1 | 0.0156 | 3.105e-06 | 3.087e-06 |
+| 2 | 0.0312 | 5.807e-06 | 5.646e-06 |
+| 3 | 0.0469 | 8.187e-06 | 7.718e-06 |
+| 4 | 0.0625 | 1.034e-05 | 9.381e-06 |
+| 5 | 0.0781 | 1.235e-05 | 1.074e-05 |
+| 6 | 0.0938 | 1.429e-05 | 1.192e-05 |
+| 7 | 0.1094 | 1.624e-05 | 1.305e-05 |
+| 8 | 0.1250 | 1.822e-05 | 1.423e-05 |
+| 9 | 0.1406 | 2.026e-05 | 1.554e-05 |
+| 10 | 0.1562 | 2.234e-05 | 1.701e-05 |
+| 11 | 0.1719 | 2.445e-05 | 1.860e-05 |
+| 12 | 0.1875 | 2.655e-05 | 2.027e-05 |
+| 13 | 0.2031 | 2.861e-05 | 2.197e-05 |
+| 14 | 0.2188 | 3.060e-05 | 2.364e-05 |
+| 15 | 0.2344 | 3.249e-05 | 2.523e-05 |
+| 16 | 0.2500 | 3.426e-05 | 2.670e-05 |
+| 17 | 0.2656 | 3.591e-05 | 2.803e-05 |
+| 18 | 0.2812 | 3.745e-05 | 2.919e-05 |
+| 19 | 0.2969 | 3.888e-05 | 3.018e-05 |
+| 20 | 0.3125 | 4.023e-05 | 3.100e-05 |
+| 21 | 0.3281 | 4.152e-05 | 3.165e-05 |
+| 22 | 0.3438 | 4.276e-05 | 3.217e-05 |
+| 23 | 0.3594 | 4.397e-05 | 3.258e-05 |
+| 24 | 0.3750 | 4.515e-05 | 3.292e-05 |
+| 25 | 0.3906 | 4.631e-05 | 3.322e-05 |
+| 26 | 0.4062 | 4.743e-05 | 3.353e-05 |
+| 27 | 0.4219 | 4.850e-05 | 3.387e-05 |
+| 28 | 0.4375 | 4.951e-05 | 3.425e-05 |
+| 29 | 0.4531 | 5.043e-05 | 3.467e-05 |
+| 30 | 0.4688 | 5.125e-05 | 3.512e-05 |
+| 31 | 0.4844 | 5.195e-05 | 3.559e-05 |
+| 32 | 0.5000 | 5.253e-05 | 3.606e-05 |
+| 33 | 0.5156 | 5.302e-05 | 3.651e-05 |
+| 34 | 0.5312 | 5.346e-05 | 3.693e-05 |
+| 35 | 0.5469 | 5.387e-05 | 3.733e-05 |
+| 36 | 0.5625 | 5.432e-05 | 3.772e-05 |
+| 37 | 0.5781 | 5.485e-05 | 3.809e-05 |
+| 38 | 0.5938 | 5.546e-05 | 3.847e-05 |
+| 39 | 0.6094 | 5.617e-05 | 3.884e-05 |
+| 40 | 0.6250 | 5.696e-05 | 3.922e-05 |
+| 41 | 0.6406 | 5.783e-05 | 3.958e-05 |
+| 42 | 0.6562 | 5.874e-05 | 3.991e-05 |
+| 43 | 0.6719 | 5.967e-05 | 4.020e-05 |
+| 44 | 0.6875 | 6.058e-05 | 4.044e-05 |
+| 45 | 0.7031 | 6.144e-05 | 4.065e-05 |
+| 46 | 0.7188 | 6.225e-05 | 4.083e-05 |
+| 47 | 0.7344 | 6.300e-05 | 4.098e-05 |
+| 48 | 0.7500 | 6.369e-05 | 4.114e-05 |
+| 49 | 0.7656 | 6.432e-05 | 4.130e-05 |
+| 50 | 0.7812 | 6.489e-05 | 4.146e-05 |
+| 51 | 0.7969 | 6.539e-05 | 4.161e-05 |
+| 52 | 0.8125 | 6.582e-05 | 4.174e-05 |
+| 53 | 0.8281 | 6.615e-05 | 4.185e-05 |
+| 54 | 0.8438 | 6.638e-05 | 4.194e-05 |
+| 55 | 0.8594 | 6.652e-05 | 4.200e-05 |
+| 56 | 0.8750 | 6.657e-05 | 4.204e-05 |
+| 57 | 0.8906 | 6.655e-05 | 4.203e-05 |
+| 58 | 0.9062 | 6.647e-05 | 4.200e-05 |
+| 59 | 0.9219 | 6.636e-05 | 4.196e-05 |
+| 60 | 0.9375 | 6.624e-05 | 4.194e-05 |
+| 61 | 0.9531 | 6.612e-05 | 4.196e-05 |
+| 62 | 0.9688 | 6.601e-05 | 4.200e-05 |
+| 63 | 0.9844 | 6.595e-05 | 4.206e-05 |
+| 64 | 1.0000 | 6.593e-05 | 4.210e-05 |
+
+eps = 0.5, N = 32
+
+| j | x1 | a_psi1_j | a_psi2_j |
+|---|---|---|---|
+| 0 | 0.0000 | 0.000e+00 | 0.000e+00 |
+| 1 | 0.0312 | 1.440e-04 | 8.975e-05 |
+| 2 | 0.0625 | 2.928e-04 | 1.762e-04 |
+| 3 | 0.0938 | 4.492e-04 | 2.619e-04 |
+| 4 | 0.1250 | 6.150e-04 | 3.507e-04 |
+| 5 | 0.1562 | 7.905e-04 | 4.448e-04 |
+| 6 | 0.1875 | 9.744e-04 | 5.435e-04 |
+| 7 | 0.2188 | 1.164e-03 | 6.435e-04 |
+| 8 | 0.2500 | 1.355e-03 | 7.410e-04 |
+| 9 | 0.2812 | 1.545e-03 | 8.322e-04 |
+| 10 | 0.3125 | 1.728e-03 | 9.142e-04 |
+| 11 | 0.3438 | 1.899e-03 | 9.857e-04 |
+| 12 | 0.3750 | 2.055e-03 | 1.047e-03 |
+| 13 | 0.4062 | 2.198e-03 | 1.100e-03 |
+| 14 | 0.4375 | 2.325e-03 | 1.147e-03 |
+| 15 | 0.4688 | 2.438e-03 | 1.190e-03 |
+| 16 | 0.5000 | 2.539e-03 | 1.228e-03 |
+| 17 | 0.5312 | 2.631e-03 | 1.263e-03 |
+| 18 | 0.5625 | 2.716e-03 | 1.296e-03 |
+| 19 | 0.5938 | 2.800e-03 | 1.326e-03 |
+| 20 | 0.6250 | 2.887e-03 | 1.356e-03 |
+| 21 | 0.6562 | 2.979e-03 | 1.387e-03 |
+| 22 | 0.6875 | 3.074e-03 | 1.419e-03 |
+| 23 | 0.7188 | 3.170e-03 | 1.453e-03 |
+| 24 | 0.7500 | 3.265e-03 | 1.489e-03 |
+| 25 | 0.7812 | 3.354e-03 | 1.523e-03 |
+| 26 | 0.8125 | 3.432e-03 | 1.556e-03 |
+| 27 | 0.8438 | 3.496e-03 | 1.585e-03 |
+| 28 | 0.8750 | 3.543e-03 | 1.611e-03 |
+| 29 | 0.9062 | 3.575e-03 | 1.634e-03 |
+| 30 | 0.9375 | 3.594e-03 | 1.655e-03 |
+| 31 | 0.9688 | 3.601e-03 | 1.676e-03 |
+| 32 | 1.0000 | 3.600e-03 | 1.697e-03 |
+
+**Verdict D: pass** (value part: pass,pass,pass; a_psi order part: pass)
+
+  xcons_digest.py rc=0
+run_campaign.sh: part=xcons end=2026-10-15T18:47:03Z unexpected_failures=0
+[2026-10-15T18:47:03Z] job=sf35-xcons finished exit=0
