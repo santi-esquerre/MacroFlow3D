@@ -26,6 +26,11 @@
  *                             --probe-precs (pa | multP | addP, P = coarse profiles) and mu in
  *                             {mu_SER of that iterate, 0} (--probe-mu). PROBE / PROBE_CURVE lines.
  *
+ *   --construct trace         SF-35 N3: production constructor of the Darcy labels by backward
+ *                             streamline tracing (no Newton solve): per-plane metrics, (14)
+ *                             residual diagnostic, optional --ladder / --solve (SF-33 NK
+ *                             cross-construction) / --save-labels.
+ *
  * SF-33 N7c also adds `--coarse off|add|mult --coarse-profiles 1|2` (Galerkin coarse correction
  * on top of P-A in the Newton solves; SlabCoarseCorrection.cuh).
  *
@@ -53,6 +58,7 @@
 #include "src/physics/streamfunctions/inlet_slab/NpyIo.hpp"
 #include "src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cuh"
 #include "src/physics/streamfunctions/inlet_slab/ProtoCase.cuh"
+#include "src/physics/streamfunctions/inlet_slab/SlabLabelTransport.cuh"
 #include "src/physics/streamfunctions/inlet_slab/SlabMetrics.cuh"
 #include "src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cuh"
 #include "src/physics/streamfunctions/inlet_slab/SlabOracle.cuh"
@@ -105,7 +111,9 @@ enum ExitCode : int {
     kExitInletBackflow = 17,
     kExitDarcyFailed = 18,
     kExitOracleRoundtripFail = 19,
+    kExitTraceFail = 19, ///< --construct trace: a streamline of the tracing constructor failed
     kExitNotRun = 20,
+    kExitRoundtripExceeded = 21, ///< --construct trace: round trip > --max-roundtrip
 };
 
 inline int exit_code_of(const std::string& status) {
@@ -131,6 +139,10 @@ inline int exit_code_of(const std::string& status) {
         return kExitDarcyFailed;
     if (status == "oracle_roundtrip_fail")
         return kExitOracleRoundtripFail;
+    if (status == "trace_fail")
+        return kExitTraceFail;
+    if (status == "roundtrip_exceeded")
+        return kExitRoundtripExceeded;
     return kExitNotRun;
 }
 
@@ -156,7 +168,7 @@ class StageBuildFailure : public std::runtime_error {
 // Configuration
 // ================================================================================================
 
-enum class Mode { none, proto, production, crosscheck, linear_probe };
+enum class Mode { none, proto, production, crosscheck, linear_probe, construct_trace };
 
 struct DriverConfig {
     Mode mode = Mode::none;
@@ -222,6 +234,15 @@ struct DriverConfig {
     std::string probe_mu = "both"; ///< ser | zero | both
     real probe_stagnation = 1.0;   ///< GMRES restart-stagnation factor in the probe (1: cap only)
     std::string probe_ladder;      ///< empty: the prototype ladder (0.25, 0.5, 1)
+    // --construct trace (SF-35 N3)
+    int trace_hmax_div = 8;
+    real trace_tol = 1e-8;
+    real trace_max_roundtrip = 1e-8;
+    bool trace_ladder = false;
+    bool trace_solve = false;
+    std::string tracer = "host"; ///< host | gpu
+    std::string save_labels_dir;
+    bool trace_opts_given = false; ///< any of the trace-only options was given
     // outputs
     std::string save_solution_dir;
     std::string save_oracle_dir; ///< SF-33 N8': psi_or_{1,2}.npy (full labels) of every oracle run
@@ -239,6 +260,12 @@ inline const char* usage_text() {
            "             [--save-oracle <dir>] [--oracle-hmax-div 8] [--oracle-tol 1e-8] [--oracle-max-roundtrip 1e-8]\n"
            "             [--oracle-ladder] [--no-oracle] [--threads T] [--pcg-rtol 1e-10]\n"
            "             [--save-solution <dir>] [--summary <json>] [solver options]\n"
+           "  inlet_slab --construct trace --n N --eps E [--sigma2 1 --ell 0.25 --seed 3001 | "
+           "--analytic <field> | --cells <Y.npy>]\n"
+           "             [--hmax-div 8] [--tol 1e-8] [--max-roundtrip 1e-8] [--ladder] "
+           "[--tracer host|gpu] [--threads T]\n"
+           "             [--solve] [--save-labels <dir>] [--summary <json>] [--pcg-rtol 1e-10] "
+           "[--device D] [solver options if --solve]\n"
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
            "  inlet_slab --linear-probe <case_dir> --eps-stage E --newton-steps k [--eps-from A]\n"
            "             [--probe-ladder 0.25,0.375] [--probe-precs pa,mult1,mult2,add1]\n"
@@ -257,7 +284,9 @@ inline const char* usage_text() {
            "maxit;\n"
            "            13 linear_failure; 14 nan_inf; 15 continuation_floor; 16 "
            "missing_stage_input;\n"
-           "            17 inlet_backflow; 18 darcy_failed; 19 oracle_roundtrip_fail\n";
+           "            17 inlet_backflow; 18 darcy_failed; 19 oracle_roundtrip_fail (--production) / "
+           "trace_fail (--construct trace);\n"
+           "            21 roundtrip_exceeded (--construct trace)\n";
 }
 
 namespace detail {
@@ -305,7 +334,7 @@ inline DriverConfig parse_args(int argc, char** argv) {
     auto set_mode = [&](Mode m) {
         if (c.mode != Mode::none)
             throw UsageError("exactly one of --proto, --production, --sf19-crosscheck, "
-                             "--linear-probe");
+                             "--linear-probe, --construct trace");
         c.mode = m;
     };
     for (int i = 1; i < argc; ++i) {
@@ -318,6 +347,16 @@ inline DriverConfig parse_args(int argc, char** argv) {
         // flags without a value
         if (opt == "--production") {
             set_mode(Mode::production);
+            continue;
+        }
+        if (opt == "--ladder") {
+            c.trace_ladder = true;
+            c.trace_opts_given = true;
+            continue;
+        }
+        if (opt == "--solve") {
+            c.trace_solve = true;
+            c.trace_opts_given = true;
             continue;
         }
         if (opt == "--oracle-ladder") {
@@ -340,6 +379,25 @@ inline DriverConfig parse_args(int argc, char** argv) {
         } else if (opt == "--linear-probe") {
             set_mode(Mode::linear_probe);
             c.case_dir = val;
+        } else if (opt == "--construct") {
+            if (val != "trace")
+                throw UsageError("--construct: only 'trace' exists");
+            set_mode(Mode::construct_trace);
+        } else if (opt == "--hmax-div") {
+            c.trace_hmax_div = parse_int(opt, val);
+            c.trace_opts_given = true;
+        } else if (opt == "--tol") {
+            c.trace_tol = parse_double(opt, val);
+            c.trace_opts_given = true;
+        } else if (opt == "--max-roundtrip") {
+            c.trace_max_roundtrip = parse_double(opt, val);
+            c.trace_opts_given = true;
+        } else if (opt == "--tracer") {
+            c.tracer = val;
+            c.trace_opts_given = true;
+        } else if (opt == "--save-labels") {
+            c.save_labels_dir = val;
+            c.trace_opts_given = true;
         } else if (opt == "--eps-from") {
             c.eps_from = parse_double(opt, val);
             c.has_eps_from = true;
@@ -440,8 +498,11 @@ inline DriverConfig parse_args(int argc, char** argv) {
         }
     }
     if (c.mode == Mode::none)
-        throw UsageError("one of --proto, --production, --sf19-crosscheck, --linear-probe is "
-                         "required");
+        throw UsageError("one of --proto, --production, --sf19-crosscheck, --linear-probe, "
+                         "--construct trace is required");
+    if (c.trace_opts_given && c.mode != Mode::construct_trace)
+        throw UsageError("--ladder / --solve / --hmax-div / --tol / --max-roundtrip / --tracer / "
+                         "--save-labels require --construct trace");
     if (c.prec != "pa")
         throw UsageError("--prec: only 'pa' (per-mode plane-averaged preconditioner P-A) exists");
     if (c.forcing != "ew" && c.forcing != "fixed")
@@ -496,6 +557,21 @@ inline DriverConfig parse_args(int argc, char** argv) {
             throw UsageError("--oracle-hmax-div must be >= 1");
         if (!(c.oracle_tol > 0.0) || !(c.oracle_max_roundtrip > 0.0))
             throw UsageError("--oracle-tol / --oracle-max-roundtrip must be > 0");
+        if (!(c.sigma2 > 0.0) || !(c.ell > 0.0))
+            throw UsageError("--sigma2 / --ell must be > 0");
+        if (!c.cells_path.empty() && !c.analytic.empty())
+            throw UsageError("--cells and --analytic are exclusive");
+    } else if (c.mode == Mode::construct_trace) {
+        if (c.n < 8 || c.n % 2 != 0)
+            throw UsageError("--construct trace requires --n N (even, >= 8)");
+        if (!c.has_eps || !(c.eps > 0.0))
+            throw UsageError("--construct trace requires --eps E > 0");
+        if (c.trace_hmax_div < 1)
+            throw UsageError("--hmax-div must be >= 1");
+        if (!(c.trace_tol > 0.0) || !(c.trace_max_roundtrip > 0.0))
+            throw UsageError("--tol / --max-roundtrip must be > 0");
+        if (c.tracer != "host" && c.tracer != "gpu")
+            throw UsageError("--tracer: host | gpu");
         if (!(c.sigma2 > 0.0) || !(c.ell > 0.0))
             throw UsageError("--sigma2 / --ell must be > 0");
         if (!c.cells_path.empty() && !c.analytic.empty())
@@ -1610,6 +1686,420 @@ inline int run_production(CudaContext& ctx, const DriverConfig& c) {
 }
 
 // ================================================================================================
+// --construct trace (SF-35 N3): label transport by backward streamline tracing, no Newton solve
+// ================================================================================================
+
+/// Field selection of --construct trace (same field code and FIELD lines as --production).
+inline sl::SlabFieldSource make_trace_field(CudaContext& ctx, const DriverConfig& c, json& J) {
+    sl::SlabFieldSource src;
+    if (!c.cells_path.empty()) {
+        const sl::NpyArray a = sl::read_npy(c.cells_path);
+        const std::size_t n3 = static_cast<std::size_t>(c.n) * c.n * c.n;
+        if (a.count() != n3)
+            throw std::runtime_error("--cells: " + c.cells_path + " has " + a.shape_string() +
+                                     ", expected N^3 = " + std::to_string(n3) + " samples");
+        src = sl::SlabFieldSource::spectral(ctx, "cells", c.n, a.data);
+        out_line(fmt("FIELD cells %s (N^3 cell samples, x1 fastest; spectral vertex values) N=%d "
+                     "| stage field k = exp(eps Y), eps = %g",
+                     c.cells_path.c_str(), c.n, c.eps));
+        J["field_spec"] = {{"kind", "cells"}, {"path", c.cells_path}};
+    } else if (c.analytic.empty()) {
+        sl::ProductionFieldSpec spec;
+        spec.N = c.n;
+        spec.sigma2 = c.sigma2;
+        spec.ell = c.ell;
+        spec.seed = c.seed;
+        spec.normalize_variance = true;
+        src = sl::SlabFieldSource::gaussian(ctx, spec);
+        out_line(fmt("FIELD gaussian (SF-18) N=%d sigma2=%g ell=%g seed=%llu normalize_variance=1 "
+                     "applied_scale=%.12e raw_variance=%.12e final_variance=%.12e "
+                     "active_modes=%zu | stage field k = exp(eps Y), eps = %g",
+                     c.n, c.sigma2, c.ell, c.seed, src.sf18().applied_scale,
+                     src.sf18().raw_variance, src.sf18().final_variance,
+                     src.sf18().active_mode_count, c.eps));
+        J["field_spec"] = {{"kind", "gaussian"},
+                           {"sigma2", c.sigma2},
+                           {"ell", c.ell},
+                           {"seed", c.seed},
+                           {"applied_scale", jnum(src.sf18().applied_scale)},
+                           {"raw_variance", jnum(src.sf18().raw_variance)},
+                           {"final_variance", jnum(src.sf18().final_variance)}};
+    } else {
+        src = sl::SlabFieldSource::analytic(c.analytic, c.n);
+        out_line(fmt("FIELD analytic %s (closure_fields.hpp, unit amplitude) N=%d | stage field "
+                     "k = exp(eps Y), eps = %g",
+                     c.analytic.c_str(), c.n, c.eps));
+        J["field_spec"] = {{"kind", "analytic"}, {"name", c.analytic}};
+    }
+    return src;
+}
+
+struct TraceEntry {
+    int div = 0;
+    double hmax = 0.0, tol = 0.0;
+    sl::LabelTransportResult res;
+    std::vector<real> psi1, psi2; ///< host copies of the full labels
+};
+
+inline TraceEntry run_trace_entry(CudaContext& ctx, const sl::ProductionStage& st,
+                                  const DriverConfig& c, int div, double tol,
+                                  DeviceBuffer<real>& p1, DeviceBuffer<real>& p2,
+                                  bool print_status) {
+    TraceEntry e;
+    e.div = div;
+    e.hmax = st.grid.h / static_cast<double>(div);
+    e.tol = tol;
+    sl::LabelTransportOptions o;
+    o.tol = tol;
+    o.h_max = e.hmax;
+    o.threads = c.threads;
+    o.max_roundtrip = c.trace_max_roundtrip;
+    o.backend = c.tracer == "gpu" ? sl::TracerBackend::gpu : sl::TracerBackend::host;
+    out_line(fmt("TRACE_CONFIG backend=%s hmax=%.6e (h/%d) tol=%.1e max_roundtrip=%.1e threads=%d "
+                 "min_step=%.1e max_arclength=%g",
+                 sl::to_string(o.backend), e.hmax, div, tol, o.max_roundtrip, o.threads,
+                 o.min_step, o.max_arclength));
+    e.res = sl::construct_labels_by_tracing(ctx, st, o, mspan(p1), mspan(p2));
+    // the library's TRANSPORT summary line (its per-plane PLANE lines use another format and are
+    // not printed here)
+    const std::string tab = e.res.table();
+    std::size_t pos = 0;
+    while (pos < tab.size()) {
+        std::size_t nl = tab.find('\n', pos);
+        if (nl == std::string::npos)
+            nl = tab.size();
+        const std::string line = tab.substr(pos, nl - pos);
+        const std::size_t k = line.find("TRANSPORT backend=");
+        if (k != std::string::npos)
+            out_line(line.substr(k));
+        pos = nl + 1;
+    }
+    if (print_status)
+        out_line(fmt("TRANSPORT_STATUS status=%s non_ok=%lld max_roundtrip=%.3e",
+                     sl::to_string(e.res.status), e.res.non_ok, e.res.max_roundtrip));
+    e.psi1 = download(p1.data(), p1.size());
+    e.psi2 = download(p2.data(), p2.size());
+    return e;
+}
+
+inline json trace_entry_json(const TraceEntry& e) {
+    json j = sl::to_json(e.res);
+    j["hmax_div"] = e.div;
+    j["hmax"] = e.hmax;
+    j["tol_requested"] = e.tol;
+    return j;
+}
+
+inline int run_trace_construct(CudaContext& ctx, const DriverConfig& c) {
+    const auto t_all = std::chrono::steady_clock::now();
+    json J;
+    J["mode"] = "construct_trace";
+    J["command"] = c.command_line;
+    PhaseLog pl;
+    const sl::InletSlabGrid grid = sl::InletSlabGrid::make(c.n);
+    const int N = grid.n;
+    const std::size_t n2 = grid.plane_size();
+
+    pl.begin("field");
+    sl::SlabFieldSource src = make_trace_field(ctx, c, J);
+    pl.end();
+    J["field"] = src.name();
+    J["eps"] = c.eps;
+    J["N"] = c.n;
+    const std::string field = src.name();
+
+    sl::ProductionStageOptions sopt;
+    sopt.pcg_rtol = c.pcg_rtol;
+    ProductionProvider prov(ctx, grid, src, c.eps, sopt);
+
+    pl.begin("stage");
+    sl::ProductionStage* stp = nullptr;
+    try {
+        stp = &prov.stage(c.eps);
+    } catch (const StageBuildFailure& e) {
+        pl.end();
+        const json& rep = prov.reports().back();
+        out_line(fmt("STAGE_FAILED status=%s eps=%g inlet_vmin=%.6e: %s", e.status().c_str(), c.eps,
+                     rep.contains("inlet_vmin") && rep["inlet_vmin"].is_number()
+                         ? rep["inlet_vmin"].get<double>()
+                         : std::nan(""),
+                     e.what()));
+        J["stages_setup"] = prov.reports();
+        J["stage_failure"] = {{"status", e.status()}, {"what", e.what()}};
+        print_timing_memory(pl, prov.stage_device_bytes(), seconds_since(t_all), J);
+        return finish(e.status(), J, c);
+    }
+    pl.end();
+    sl::ProductionStage& st = *stp;
+    J["stages_setup"] = prov.reports();
+    out_line(fmt("TRACE_STAGE field=%s eps=%g N=%d inlet_vmin=%.6e Q0=%.6e v_rms=%.6e mg_levels=%d "
+                 "darcy_converged=%d",
+                 field.c_str(), c.eps, N, st.report.inlet_vmin, st.report.Q0, st.report.v_rms,
+                 st.report.mg_levels, st.report.darcy_converged ? 1 : 0));
+
+    // ---- primary construction -------------------------------------------------------------
+    DeviceBuffer<real> p1(grid.full_size()), p2(grid.full_size());
+    pl.begin("trace");
+    TraceEntry primary = run_trace_entry(ctx, st, c, c.trace_hmax_div, c.trace_tol, p1, p2, false);
+    pl.end();
+    const sl::LabelTransportResult& R = primary.res;
+    J["trace_config"] = {{"backend", c.tracer},
+                         {"hmax", primary.hmax},
+                         {"hmax_div", primary.div},
+                         {"tol", primary.tol},
+                         {"max_roundtrip_gate", c.trace_max_roundtrip},
+                         {"threads", c.threads}};
+    J["transport"] = trace_entry_json(primary);
+
+    // ---- diagnostics at the traced labels (no Newton) --------------------------------------
+    pl.begin("diagnostics");
+    DeviceBuffer<real> U1(grid.full_size()), U2(grid.full_size()), E(grid.unknown_size());
+    sl::labels_to_periodic_parts(ctx, grid, cspan(p1), cspan(p2), mspan(U1), mspan(U2));
+    sl::SlabResidualWorkspace rws;
+    rws.prepare(grid);
+    sl::SlabResidualNorms rn;
+    sl::evaluate_residual(ctx, grid, st.inputs, cspan(U1), cspan(U2), mspan(E), rws, &rn);
+    sl::SlabMetricsWorkspace mws;
+    mws.prepare(grid);
+    st.reference.has_psi_or = false;
+    const sl::SlabMetrics m =
+        sl::evaluate_metrics(ctx, grid, cspan(U1), cspan(U2), st.reference, mws);
+    sl::CaseLineExtras ex;
+    ex.r_F = rn.r_F;
+    ex.t = R.seconds_trace + R.seconds_labels;
+    const std::string case_line = sl::format_case_line(field, c.eps, N, "trace", m, ex);
+    out_line(case_line);
+    J["case_line"] = case_line;
+    J["metrics"]["trace"] = metrics_json(m);
+    J["metrics_json"] = metrics_json(m);
+    const std::vector<sl::SlabPlaneMetrics> pm =
+        sl::evaluate_plane_metrics(ctx, grid, cspan(U1), cspan(U2), st.reference, mws);
+    json planes_j = json::array();
+    long long nonpos_total = 0;
+    double vD1_min = std::numeric_limits<double>::infinity();
+    for (const sl::SlabPlaneMetrics& P : pm) {
+        const sl::LabelTransportPlane& T = R.planes[static_cast<std::size_t>(P.j)];
+        const bool traced = P.j > 0;
+        const double rt = traced ? T.roundtrip : 0.0;
+        out_line(fmt("PLANE j=%d x1=%.4f e_v=%.3e e_i1=%.3e e_i2=%.3e min_c=%.3e vD1_min=%.3e "
+                     "vD1_nonpos=%lld roundtrip=%.3e nfev=%lld nfev_rt=%lld non_ok=%lld "
+                     "backflow_enc=%lld landings_discarded=%lld",
+                     P.j, static_cast<double>(P.x1), static_cast<double>(P.e_v),
+                     static_cast<double>(P.e_i1), static_cast<double>(P.e_i2),
+                     static_cast<double>(P.min_c), static_cast<double>(P.vD1_min), P.vD1_nonpos,
+                     rt, traced ? T.nfev : 0LL, traced ? T.nfev_rt : 0LL, traced ? T.non_ok : 0LL,
+                     traced ? T.backflow_encounters : 0LL,
+                     traced ? T.landings_discarded : 0LL));
+        planes_j.push_back({{"j", P.j},
+                            {"x1", jnum(P.x1)},
+                            {"e_v", jnum(P.e_v)},
+                            {"e_i1", jnum(P.e_i1)},
+                            {"e_i2", jnum(P.e_i2)},
+                            {"min_c", jnum(P.min_c)},
+                            {"vD1_min", jnum(P.vD1_min)},
+                            {"vD1_nonpos", P.vD1_nonpos},
+                            {"nonfinite", P.nonfinite},
+                            {"roundtrip", jnum(rt)},
+                            {"nfev", traced ? T.nfev : 0LL},
+                            {"nfev_rt", traced ? T.nfev_rt : 0LL},
+                            {"non_ok", traced ? T.non_ok : 0LL},
+                            {"backflow_enc", traced ? T.backflow_encounters : 0LL},
+                            {"landings_discarded", traced ? T.landings_discarded : 0LL}});
+        nonpos_total += P.vD1_nonpos;
+        if (!std::isnan(P.vD1_min))
+            vD1_min = std::min(vD1_min, static_cast<double>(P.vD1_min));
+    }
+    J["planes"] = planes_j;
+    long long hist[7] = {0, 0, 0, 0, 0, 0, 0};
+    for (const sl::LabelTransportPlane& T : R.planes)
+        for (int s = 0; s < 7; ++s)
+            hist[s] += T.status_hist[s];
+    out_line(fmt("BACKFLOW field=%s eps=%g N=%d inlet_vmin=%.6e Q0=%.6e vD1_min=%.6e "
+                 "vD1_nonpos=%lld seed_backflow=%lld backflow_enc=%lld landings_discarded=%lld "
+                 "min_g1_hat=%.6e status_hist=%lld,%lld,%lld,%lld,%lld,%lld,%lld",
+                 field.c_str(), c.eps, N, st.report.inlet_vmin, st.report.Q0, vD1_min,
+                 nonpos_total, R.seed_backflow, R.backflow_encounters, R.landings_discarded,
+                 R.min_g1_hat, hist[0], hist[1], hist[2], hist[3], hist[4], hist[5], hist[6]));
+    J["backflow"] = {{"inlet_vmin", jnum(st.report.inlet_vmin)},
+                     {"Q0", jnum(st.report.Q0)},
+                     {"vD1_min", jnum(vD1_min)},
+                     {"vD1_nonpos", nonpos_total},
+                     {"seed_backflow", R.seed_backflow},
+                     {"backflow_enc", R.backflow_encounters},
+                     {"landings_discarded", R.landings_discarded},
+                     {"min_g1_hat", jnum(R.min_g1_hat)},
+                     {"status_hist", std::vector<long long>(hist, hist + 7)}};
+    {
+        auto e_i = [](const sl::SlabPlaneMetrics& P) {
+            return std::sqrt((static_cast<double>(P.e_i1) * P.e_i1 +
+                              static_cast<double>(P.e_i2) * P.e_i2) / 2.0);
+        };
+        const sl::SlabPlaneMetrics& P1 = pm[1];
+        const sl::SlabPlaneMetrics& PN = pm[static_cast<std::size_t>(N)];
+        const double gv = static_cast<double>(PN.e_v) / static_cast<double>(P1.e_v);
+        const double gi = e_i(PN) / e_i(P1);
+        int jmax = 0;
+        double rtmax = 0.0;
+        for (const sl::LabelTransportPlane& T : R.planes)
+            if (T.j > 0 && (T.roundtrip > rtmax || std::isnan(T.roundtrip))) {
+                rtmax = T.roundtrip;
+                jmax = T.j;
+            }
+        out_line(fmt("GROWTH field=%s eps=%g N=%d e_v_N/e_v_1=%.3e e_i_N/e_i_1=%.3e "
+                     "max_roundtrip=%.3e (plane %d)",
+                     field.c_str(), c.eps, N, gv, gi, rtmax, jmax));
+        J["growth"] = {{"e_v_N_over_e_v_1", jnum(gv)},
+                       {"e_i_N_over_e_i_1", jnum(gi)},
+                       {"max_roundtrip", jnum(rtmax)},
+                       {"max_roundtrip_plane", jmax}};
+    }
+    out_line(fmt("RESIDUAL field=%s eps=%g N=%d cand=trace r_F=%.3e r_out=%.3e "
+                 "q_rms_planes=1..N-1",
+                 field.c_str(), c.eps, N, rn.r_F, rn.r_out));
+    J["residual"] = {{"r_F", jnum(rn.r_F)}, {"r_out", jnum(rn.r_out)}};
+    const std::string status = sl::to_string(R.status);
+    out_line(fmt("TRANSPORT_STATUS status=%s non_ok=%lld max_roundtrip=%.3e", status.c_str(),
+                 R.non_ok, R.max_roundtrip));
+    pl.end();
+
+    // ---- fixed ladder ----------------------------------------------------------------------
+    std::vector<TraceEntry> ladder;
+    if (c.trace_ladder) {
+        const std::pair<int, double> settings[3] = {
+            {16, c.trace_tol}, {16, 1e-10}, {32, 1e-10}};
+        DeviceBuffer<real> q1(grid.full_size()), q2(grid.full_size());
+        json lj = json::array();
+        for (const auto& s : settings) {
+            if (s.first == c.trace_hmax_div && s.second == c.trace_tol)
+                continue;
+            pl.begin("trace");
+            ladder.push_back(run_trace_entry(ctx, st, c, s.first, s.second, q1, q2, true));
+            pl.end();
+            const TraceEntry& e = ladder.back();
+            double d1 = 0.0, d2 = 0.0;
+            long long nan_mismatch = 0;
+            bool any_nan = false;
+            for (std::size_t i = 0; i < primary.psi1.size(); ++i) {
+                const bool a1 = std::isnan(e.psi1[i]), b1 = std::isnan(primary.psi1[i]);
+                const bool a2 = std::isnan(e.psi2[i]), b2 = std::isnan(primary.psi2[i]);
+                any_nan = any_nan || a1 || b1 || a2 || b2;
+                if (a1 != b1 || a2 != b2)
+                    ++nan_mismatch;
+                if (!a1 && !b1)
+                    d1 = std::max(d1, std::fabs(e.psi1[i] - primary.psi1[i]));
+                if (!a2 && !b2)
+                    d2 = std::max(d2, std::fabs(e.psi2[i] - primary.psi2[i]));
+            }
+            std::string line = fmt("LABELDIFF (hmax=%.6e tol=%.1e) vs primary: max|dpsi1|=%.3e "
+                                   "max|dpsi2|=%.3e max_roundtrip=%.3e",
+                                   e.hmax, e.tol, d1, d2, e.res.max_roundtrip);
+            if (any_nan)
+                line += fmt(" nan_mismatches=%lld", nan_mismatch);
+            out_line(line);
+            json ej = trace_entry_json(e);
+            ej["labeldiff"] = {{"max_dpsi1", jnum(d1)},
+                               {"max_dpsi2", jnum(d2)},
+                               {"nan_mismatches", nan_mismatch}};
+            lj.push_back(ej);
+        }
+        J["ladder"] = lj;
+    }
+
+    // ---- labels export ---------------------------------------------------------------------
+    if (!c.save_labels_dir.empty()) {
+        auto meta_of = [&](const TraceEntry& e) {
+            json md;
+            md["field"] = J["field_spec"];
+            md["field"]["name"] = field;
+            md["eps"] = c.eps;
+            md["N"] = N;
+            md["h"] = grid.h;
+            md["h_max"] = e.hmax;
+            md["tol"] = e.tol;
+            md["backend"] = c.tracer;
+            md["threads"] = c.threads;
+            md["status"] = sl::to_string(e.res.status);
+            md["transport"] = sl::to_json(e.res);
+            md["commit"] = "unknown";
+            return md;
+        };
+        sl::save_labels(c.save_labels_dir, grid, primary.psi1, primary.psi2, meta_of(primary));
+        for (const TraceEntry& e : ladder)
+            sl::save_labels(c.save_labels_dir + fmt("/ladder_h%d_tol%.0e", e.div, e.tol), grid,
+                            e.psi1, e.psi2, meta_of(e));
+        out_line("SAVED_LABELS " + c.save_labels_dir + " (psi1.npy, psi2.npy, labels.json; ladder "
+                 "entries in ladder_h<div>_tol<tol>/)");
+    }
+
+    // ---- optional Newton-Krylov cross-construction (SF-33 solver, unchanged) -----------------
+    std::size_t ws_bytes = rws.allocated_bytes() + mws.allocated_bytes();
+    std::string solve_status = "not_run";
+    if (c.trace_solve) {
+        for (int i = 0; i < 2; ++i)
+            st.reference.psi_or[i].resize(grid.full_size());
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(st.reference.psi_or[0].data(), p1.data(),
+                                          p1.size() * sizeof(real), cudaMemcpyDeviceToDevice));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(st.reference.psi_or[1].data(), p2.data(),
+                                          p2.size() * sizeof(real), cudaMemcpyDeviceToDevice));
+        st.reference.has_psi_or = true;
+
+        SolveContext sc;
+        sc.field = field;
+        sc.eps = c.eps;
+        sc.grid = grid;
+        sc.provider = [&prov](real a) -> const sl::SlabStageInputs& { return prov(a); };
+        sl::SlabNewtonKrylov nk;
+        pl.begin("prepare");
+        nk.prepare(ctx, grid, c.restart, c.max_newton, c.max_inner);
+        if (c.coarse != "off")
+            nk.prepare_coarse(ctx, c.coarse_profiles, coarse_assembly_of(c), coarse_factor_of(c));
+        pl.end();
+        SolveOutcome so;
+        pl.begin("solve");
+        run_solve(ctx, c, sc, nk, so, J);
+        pl.end();
+        solve_status = so.status;
+        ws_bytes += so.solver_bytes;
+        J["stages_setup"] = prov.reports();
+        if (so.solved) {
+            pl.begin("solve");
+            const ReportOutcome ro = report_solution(ctx, sc, st.inputs, st.reference, so, J);
+            ws_bytes += ro.metrics_bytes;
+            // XCONS: RMS over plane j of (psi_i^solve - psi_i^trace); the affine parts cancel, so
+            // the periodic parts are compared (plane 0 shares the inlet data).
+            const std::vector<real> T1 = download(U1.data(), U1.size());
+            const std::vector<real> T2 = download(U2.data(), U2.size());
+            json xc = json::array();
+            for (int j = 0; j <= N; ++j) {
+                double s1 = 0.0, s2 = 0.0;
+                for (std::size_t i = 0; i < n2; ++i) {
+                    const std::size_t k = static_cast<std::size_t>(j) * n2 + i;
+                    const double d1 = ro.U1[k] - T1[k], d2 = ro.U2[k] - T2[k];
+                    s1 += d1 * d1;
+                    s2 += d2 * d2;
+                }
+                const double a1 = std::sqrt(s1 / static_cast<double>(n2));
+                const double a2 = std::sqrt(s2 / static_cast<double>(n2));
+                const double x1 = R.planes[static_cast<std::size_t>(j)].x1;
+                out_line(fmt("XCONS field=%s eps=%g N=%d j=%d x1=%.4f a_psi1_j=%.3e a_psi2_j=%.3e",
+                             field.c_str(), c.eps, N, j, x1, a1, a2));
+                xc.push_back({{"j", j}, {"x1", x1}, {"a_psi1_j", jnum(a1)}, {"a_psi2_j", jnum(a2)}});
+            }
+            J["xcons"] = xc;
+            pl.end();
+        }
+        out_line(fmt("SOLVE_STATUS %s (informative; the exit code is the trace status)",
+                     solve_status.c_str()));
+    }
+    ws_bytes += prov.stage_device_bytes();
+    print_timing_memory(pl, ws_bytes, seconds_since(t_all), J);
+    J["trace_status"] = status;
+    J["solve_status"] = solve_status;
+    return finish(status, J, c);
+}
+
+// ================================================================================================
 // --sf19-crosscheck
 // ================================================================================================
 
@@ -2000,6 +2490,8 @@ inline int run(int argc, char** argv) {
             return run_crosscheck(ctx, c);
         case Mode::linear_probe:
             return run_linear_probe(ctx, c);
+        case Mode::construct_trace:
+            return run_trace_construct(ctx, c);
         case Mode::none:
             break;
         }
