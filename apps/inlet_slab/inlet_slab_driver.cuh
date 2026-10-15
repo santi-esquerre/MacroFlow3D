@@ -2042,6 +2042,8 @@ inline int run_trace_construct(CudaContext& ctx, const DriverConfig& c) {
                                           p1.size() * sizeof(real), cudaMemcpyDeviceToDevice));
         MACROFLOW3D_CUDA_CHECK(cudaMemcpy(st.reference.psi_or[1].data(), p2.data(),
                                           p2.size() * sizeof(real), cudaMemcpyDeviceToDevice));
+        // SF-33 C2: legacy-stream copies must land before kernels on ctx.cuda_stream()
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
         st.reference.has_psi_or = true;
 
         SolveContext sc;
