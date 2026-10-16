@@ -1,0 +1,11 @@
+[2026-10-16T22:34:04Z] job=sf35c-labeldiag session=macroflow3d-SF-35-sf35c-labeldiag started
+[2026-10-16T22:34:04Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-16T22:34:04Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-16T22:34:04Z] command=python3 docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/label_diagnostics.py ~/sf35_exports_keep --out docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/label_diagnostics.md
+eps 10 N 32 done
+eps 10 N 64 done
+eps 10 N 128 done
+eps 15 N 32 done
+eps 15 N 64 done
+eps 15 N 128 done
+[2026-10-16T22:34:14Z] job=sf35c-labeldiag finished exit=0

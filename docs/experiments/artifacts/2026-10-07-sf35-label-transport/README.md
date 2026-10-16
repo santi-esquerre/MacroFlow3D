@@ -152,3 +152,26 @@ scp v100:~/.macroflow3d-remote/macroflow3d-SF-35/logs/<job>.log \
 
 Caution: `scripts/remote sync` (`rsync --delete`) removes gitignored host-only files (`exports/`) from the mirror;
 the matrix exports are only needed by `info`/`gpu` within their own part, so no save/restore is required between parts.
+
+## Post-hoc diagnostics (not pre-registered)
+
+`scripts/label_diagnostics.py` (python3 + numpy only) was written after the campaign verdicts, on the orchestrator's
+exploratory checks of the eps 1.0 / 1.5 label exports. It is **not** part of the pre-registered thresholds A-H and
+changes no verdict. It reports, per eps: (1) a periodic-wrap check of the periodic parts `U1`, `U2`
+(`max |U(next) - U| * N` along `x1`, `x2`, `x3`); (2) pointwise self-convergence of the labels on common vertices
+(`psi(N)` vs `psi(2N)[::2,::2,::2]`: max, RMS, per-plane max, observed orders); (3) the concentration of the
+non-convergence of the cross product `c = grad psi1 x grad psi2` (2nd-order central differences, interior planes,
+`c(N)` vs `c(2N)` on common vertices, normalized by `RMS|c(2N)|`).
+
+Inputs: label exports kept outside the mirror at `~/sf35_exports_keep/matrix_eps{10,15}/N{32,64,128,256}/{psi1,psi2}.npy`
+on the V100 host (the eps 0.5 exports were lost by an `rsync --delete` sync; their JSON/logs are retained here). Job
+`sf35c-labeldiag`:
+
+```bash
+python3 docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/label_diagnostics.py ~/sf35_exports_keep \
+    --out docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/label_diagnostics.md
+```
+
+Output: `analysis/label_diagnostics.md`; job log `logs/jobs/sf35c-labeldiag.log`. Local check of the script (not
+committed, not evidence): synthetic smooth labels with an added `h^2` term at `N = 16/32/64` give no wrap jumps and
+observed order 2.00.
