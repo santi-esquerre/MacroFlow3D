@@ -8,10 +8,10 @@ SETUP   SF-19 corrector y: status=converged its=10 rel_residual=2.611e-12 final_
 SETUP   SF-19 corrector z: status=converged its=10 rel_residual=2.003e-12 final_residual=1.548e-09
 SETUP   inlet: vmin=2.445160e-01 mean(U plane 0)=0.999999999999966 (mean-1=-3.375e-14) Q0-1=-3.342e-14 v_rms=1.080453e+00
 SETUP   v1(U-face) vs spline flow k g1: rms_rel=2.914986e-03 max_rel=1.121112e-02; spline potential GPU vs host prefilter rel=2.608e-15
-SETUP stage eps=0.5 built in 0.972s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+SETUP stage eps=0.5 built in 0.981s (grad_lnk=spectral (band-limited cell samples, cuFFT))
 TRACE_STAGE field=gaussian eps=0.5 N=32 inlet_vmin=2.445160e-01 Q0=1.000000e+00 v_rms=1.080453e+00 mg_levels=4 darcy_converged=1
 TRACE_CONFIG backend=host hmax=3.906250e-03 (h/8) tol=1.0e-08 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
-TRANSPORT backend=host tol=1.0e-08 h_max=3.906250e-03 threads=32 status=ok max_roundtrip=2.740e-09 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248170e-01 t_trace=0.81s t_labels=0.001s
+TRANSPORT backend=host tol=1.0e-08 h_max=3.906250e-03 threads=32 status=ok max_roundtrip=2.740e-09 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248170e-01 t_trace=0.78s t_labels=0.001s
 CASE field=gaussian eps=0.5 N=32 cand=trace | r_F=9.028e-02 its=nan | e_v=5.984e-03 e_psi=nan e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.8
 PLANE j=0 x1=0.0000 e_v=3.042e-03 e_i1=3.741e-04 e_i2=3.869e-04 min_c=2.456e-01 vD1_min=2.408e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=0 nfev_rt=0 non_ok=0 backflow_enc=0 landings_discarded=0
 PLANE j=1 x1=0.0312 e_v=3.534e-03 e_i1=1.790e-04 e_i2=1.074e-04 min_c=2.328e-01 vD1_min=2.295e-01 vD1_nonpos=0 roundtrip=3.789e-10 nfev=70656 nfev_rt=70656 non_ok=0 backflow_enc=0 landings_discarded=0
@@ -51,19 +51,19 @@ GROWTH field=gaussian eps=0.5 N=32 e_v_N/e_v_1=1.879e+00 e_i_N/e_i_1=3.528e+00 m
 RESIDUAL field=gaussian eps=0.5 N=32 cand=trace r_F=9.028e-02 r_out=1.050e-03 q_rms_planes=1..N-1
 TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.740e-09
 TRACE_CONFIG backend=host hmax=1.953125e-03 (h/16) tol=1.0e-08 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
-TRANSPORT backend=host tol=1.0e-08 h_max=1.953125e-03 threads=32 status=ok max_roundtrip=4.168e-10 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248153e-01 t_trace=1.43s t_labels=0.003s
+TRANSPORT backend=host tol=1.0e-08 h_max=1.953125e-03 threads=32 status=ok max_roundtrip=4.168e-10 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248153e-01 t_trace=1.40s t_labels=0.003s
 TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.168e-10
 LABELDIFF (hmax=1.953125e-03 tol=1.0e-08) vs primary: max|dpsi1|=1.802e-09 max|dpsi2|=1.413e-09 max_roundtrip=4.168e-10
 TRACE_CONFIG backend=host hmax=1.953125e-03 (h/16) tol=1.0e-10 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
-TRANSPORT backend=host tol=1.0e-10 h_max=1.953125e-03 threads=32 status=ok max_roundtrip=4.168e-10 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248153e-01 t_trace=1.43s t_labels=0.001s
+TRANSPORT backend=host tol=1.0e-10 h_max=1.953125e-03 threads=32 status=ok max_roundtrip=4.168e-10 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248153e-01 t_trace=1.39s t_labels=0.001s
 TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.168e-10
 LABELDIFF (hmax=1.953125e-03 tol=1.0e-10) vs primary: max|dpsi1|=1.802e-09 max|dpsi2|=1.413e-09 max_roundtrip=4.168e-10
 TRACE_CONFIG backend=host hmax=9.765625e-04 (h/32) tol=1.0e-10 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
-TRANSPORT backend=host tol=1.0e-10 h_max=9.765625e-04 threads=32 status=ok max_roundtrip=4.656e-11 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248144e-01 t_trace=2.81s t_labels=0.003s
+TRANSPORT backend=host tol=1.0e-10 h_max=9.765625e-04 threads=32 status=ok max_roundtrip=4.656e-11 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248144e-01 t_trace=2.76s t_labels=0.001s
 TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.656e-11
 LABELDIFF (hmax=9.765625e-04 tol=1.0e-10) vs primary: max|dpsi1|=1.824e-09 max|dpsi2|=1.453e-09 max_roundtrip=4.656e-11
 SAVED_LABELS /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps05/N32 (psi1.npy, psi2.npy, labels.json; ladder entries in ladder_h<div>_tol<tol>/)
-TIMING diagnostics=0.002s field=0.057s stage=0.972s trace=6.495s total=7.540s
+TIMING diagnostics=0.001s field=0.057s stage=0.981s trace=6.344s total=7.401s
 MEMORY peak_device_bytes=531628032 free_min=33558102016 total_device=34089730048 workspaces_bytes=20675503 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
 SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps05/N32.json
 STATUS ok

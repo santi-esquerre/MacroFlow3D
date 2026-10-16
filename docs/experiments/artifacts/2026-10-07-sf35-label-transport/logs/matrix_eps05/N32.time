@@ -1,18 +1,18 @@
 	Command being timed: "/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 32 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps05/N32 --ladder --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps05/N32.json"
-	User time (seconds): 207.56
-	System time (seconds): 3.17
-	Percent of CPU this job got: 1894%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:11.12
+	User time (seconds): 202.84
+	System time (seconds): 3.19
+	Percent of CPU this job got: 1886%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:10.92
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 613620
+	Maximum resident set size (kbytes): 613636
 	Average resident set size (kbytes): 0
 	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 143719
-	Voluntary context switches: 304
-	Involuntary context switches: 220
+	Minor (reclaiming a frame) page faults: 141645
+	Voluntary context switches: 370
+	Involuntary context switches: 203
 	Swaps: 0
 	File system inputs: 0
 	File system outputs: 4448

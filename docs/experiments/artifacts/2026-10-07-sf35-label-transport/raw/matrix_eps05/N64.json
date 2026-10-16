@@ -121,8 +121,8 @@
     3.490929767480111e-11,
     3.321098951403201e-11
    ],
-   "seconds_labels": 0.016582856,
-   "seconds_trace": 22.427762788,
+   "seconds_labels": 0.016805781,
+   "seconds_trace": 21.788528223,
    "seed_backflow": 0,
    "status": "ok",
    "status_hist": [
@@ -806,8 +806,8 @@
     3.490929767480111e-11,
     3.321098951403201e-11
    ],
-   "seconds_labels": 0.017649213,
-   "seconds_trace": 22.301618706,
+   "seconds_labels": 0.017663973,
+   "seconds_trace": 21.917542432,
    "seed_backflow": 0,
    "status": "ok",
    "status_hist": [
@@ -1491,8 +1491,8 @@
     5.013378601148588e-12,
     4.373446049754648e-12
    ],
-   "seconds_labels": 0.017372929,
-   "seconds_trace": 44.488193059,
+   "seconds_labels": 0.017122791,
+   "seconds_trace": 43.06836862,
    "seed_backflow": 0,
    "status": "ok",
    "status_hist": [
@@ -2150,43 +2150,43 @@
    "free_after": 33581170688,
    "free_before": 33585364992,
    "phase": "field",
-   "seconds": 0.087368539
+   "seconds": 0.088243503
   },
   {
    "free_after": 33514061824,
    "free_before": 33581170688,
    "phase": "stage",
-   "seconds": 1.101455283
+   "seconds": 1.117957802
   },
   {
    "free_after": 33505673216,
    "free_before": 33505673216,
    "phase": "trace",
-   "seconds": 11.357543169
+   "seconds": 11.271756647
   },
   {
    "free_after": 33459535872,
    "free_before": 33505673216,
    "phase": "diagnostics",
-   "seconds": 0.005696234
+   "seconds": 0.005922511
   },
   {
    "free_after": 33451147264,
    "free_before": 33451147264,
    "phase": "trace",
-   "seconds": 22.465641771
+   "seconds": 21.826483167
   },
   {
    "free_after": 33451147264,
    "free_before": 33451147264,
    "phase": "trace",
-   "seconds": 22.341167247
+   "seconds": 21.957675112
   },
   {
    "free_after": 33451147264,
    "free_before": 33451147264,
    "phase": "trace",
-   "seconds": 44.529004932
+   "seconds": 43.108308582
   }
  ],
  "planes": [
@@ -3330,7 +3330,7 @@
      "rel_residual": 4.493112494367252e-12
     }
    ],
-   "seconds": 1.101331512,
+   "seconds": 1.117830485,
    "sf18": {
     "active_modes": 127007,
     "applied_scale": 1.6028887112506884,
@@ -3346,11 +3346,11 @@
  ],
  "status": "ok",
  "timing": {
-  "diagnostics": 0.005696234,
-  "field": 0.087368539,
-  "stage": 1.101455283,
-  "total": 101.940551132,
-  "trace": 100.69335711900001
+  "diagnostics": 0.005922511,
+  "field": 0.088243503,
+  "stage": 1.117957802,
+  "total": 99.431554043,
+  "trace": 98.16422350799999
  },
  "trace_config": {
   "backend": "host",
@@ -3437,8 +3437,8 @@
    2.728821890674027e-10,
    3.402675918806608e-10
   ],
-  "seconds_labels": 0.015266886,
-  "seconds_trace": 11.327444111,
+  "seconds_labels": 0.015876592,
+  "seconds_trace": 11.240148161,
   "seed_backflow": 0,
   "status": "ok",
   "status_hist": [
