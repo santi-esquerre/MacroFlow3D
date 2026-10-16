@@ -201,13 +201,14 @@ part_matrix() {
 
 cost_digest_part() { # H: whichever N256 points exist so far (re-run after each amplitude)
     local pre=${TAG}
-    local js=() ts=() f
+    local js=() ts=() f pdir
     for f in "$ART"/raw/"${pre}"matrix_eps*/N256.json; do
         [ -e "$f" ] || continue
         js+=("$f")
-        ts+=("${f/\/raw\//\/logs\/}")
+        # no pattern substitution with backslashes: bash 4.2 keeps them literally in the replacement
+        pdir=$(basename "$(dirname "$f")")
+        ts+=("$ART/logs/$pdir/N256.time")
     done
-    ts=(${ts[@]+"${ts[@]/%.json/.time}"})
     if [ "${#js[@]}" -gt 0 ]; then
         digest cost_digest.py ${js[@]+"${js[@]}"} ${ts[@]+"${ts[@]}"} --out "$ART/analysis/${APFX}cost_256.md"
     else
