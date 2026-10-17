@@ -240,6 +240,13 @@ set(INLET_SLAB_SOURCES
 set_source_files_properties(src/physics/streamfunctions/inlet_slab/SlabTraceGpu.cu
     PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
 
+# SF-36 N4: forward Lagrangian-label tracker (device integrator templates; --fmad=false like SlabTraceGpu.cu)
+set(LAGRANGIAN_LABELS_SOURCES
+    src/physics/particles/lagrangian_labels/LagrangianTracker.cu
+)
+set_source_files_properties(src/physics/particles/lagrangian_labels/LagrangianTracker.cu
+    PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
+
 set(MULTIGRID_SOURCES
     src/multigrid/coefficient_hierarchy.cu
     src/multigrid/transfer/restrict_3d.cu
@@ -324,6 +331,7 @@ add_library(macroflow3d_lib STATIC
     ${INTERPOLATION_SOURCES}
     ${STREAMLINE_TRACKER_SOURCES}
     ${INLET_SLAB_SOURCES}
+    ${LAGRANGIAN_LABELS_SOURCES}
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
@@ -717,6 +725,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(inlet_slab_trace_gpu_tests PRIVATE macroflow3d_lib)
     target_compile_options(inlet_slab_trace_gpu_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME inlet_slab_trace_gpu COMMAND inlet_slab_trace_gpu_tests)
+
+    # SF-36 N4: forward Lagrangian tracker vs host trace_to_plane + determinism (the test TU
+    # instantiates the device templates, hence --fmad=false like the library TUs that do)
+    add_executable(lagrangian_gpu_host_tests tests/lagrangian_labels/lagrangian_gpu_host_tests.cu)
+    target_link_libraries(lagrangian_gpu_host_tests PRIVATE macroflow3d_lib)
+    target_compile_options(lagrangian_gpu_host_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_tracker_gpu_host COMMAND lagrangian_gpu_host_tests)
     # SF-36 N2: ProductionStageOptions::require_inlet_labels / flow_ready (fast tier; N = 16)
     add_executable(inlet_slab_stage_options_tests tests/inlet_slab/slab_stage_options_tests.cu)
     target_link_libraries(inlet_slab_stage_options_tests PRIVATE macroflow3d_lib)
