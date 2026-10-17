@@ -1,7 +1,7 @@
 # SF-35: label transport by backward streamline tracing as the production constructor of the Darcy labels
 
 - Date: 2026-10-07 (spec) / campaign 2026-10-15 .. 2026-10-16 (V100 jobs listed under Commands); note written 2026-10-16
-- Status: `partial — claim (a) established; claim (b) established at sigma_Y = 0.5 and 1.0, NOT established at sigma_Y = 1.5; pre-registered thresholds not all met (B at three points, C at eps 1.5); owner decision pending`
+- Status: `partial — claim (a) established; claim (b) established at sigma_Y = 0.5 and 1.0, NOT established at sigma_Y = 1.5; pre-registered thresholds not all met (B at three points, C at eps 1.5); owner decision 2026-10-17: option O1 (envelope sigma_Y <= 1, B-not-met points excluded), SF-35 closed done`
 - Increment: [`SF-35-label-transport-constructor.md`](../plans/active/lester-eq14/increments/SF-35-label-transport-constructor.md)
 - Theory: [`docs/theory/lester-2023-key-claims.md`](../theory/lester-2023-key-claims.md) §3A (equation (14), same-index
   pairing, inlet-label target), §4 (zero-transverse claim: recorded, not assumed)
@@ -315,3 +315,10 @@ decision required (state blocked)**. SF-34 remains blocked until SF-35 is `done`
 ## Next step
 
 Owner decision among O1-O4. SF-34 remains blocked until SF-35 is `done` on the default branch.
+
+**Owner decision (2026-10-17).** O1 as the validity envelope of the gridded labels (`sigma_Y <= 1`; the three
+B-not-met points excluded by owner decision; SF-35 closed `done`), within the combined path O1 + O3 + O6: Lagrangian
+labels carried by forward-traced particles as the production consumer at `sigma^2 >= 4`, the gridded labels as
+diagnostic with O1 as anchor, and O3 as a blind pre-registered robust metric on fresh seeds (SF-37). Follow-up
+probes at `sigma_Y^2 = 4`: `2026-10-17-sf35-sigma4-feasibility.md`; decision:
+`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`.

@@ -206,19 +206,20 @@ The paper shows that both kinds of error can mimic Brownian-like transverse spre
 
 ---
 
-## 6. Pseudo-symplectic tracking is not optional “nice to have”
+## 6. Pseudo-symplectic tracking: the paper's remedy, and the project's consumer
 
-The paper proposes a pseudo-symplectic particle-tracking method that explicitly preserves the invariants `ψ1, ψ2`.
-
-The core logic is:
+**What the paper states.** The paper proposes a pseudo-symplectic particle-tracking method that explicitly preserves the invariants `ψ1, ψ2`:
 - compute or represent the two streamfunctions,
 - parameterize motion along the streamline while preserving the invariant labels,
 - prevent artificial crossing between streamsurfaces.
 
-For MacroFlow3D, this is the scientific rationale for:
-- the Lester equation (14) streamfunction solver,
-- invariant-aware tracking,
-- and any future transport algorithm that prioritizes geometric preservation over generic ODE integration.
+Its argument is that both failure sources of §5 (A: a reconstruction that breaks the helicity-free structure; B: an integrator that drifts off the invariant surfaces) can mimic transverse macrodispersion, so geometric preservation must be prioritized over generic ODE integration.
+
+**Status in this project (owner decision 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`).** The pseudo-symplectic tracker (SF-31) is verified infrastructure and **future work, not a requirement** of the macrodispersion study. It needs gridded labels of the Darcy flow, and those are verified only for `sigma_Y <= 1` (SF-35); at `sigma_Y^2 = 4` their derivatives do not converge beyond about one correlation length even at 512^3 (`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`), so the structural guarantee would refer to the wrong surfaces exactly where the flow is most sensitive. The production consumer is Lagrangian: particles traced forward on the spline flow `v_s = k_s grad Phi_s`, each carrying its own labels. With respect to §5:
+- source (A): `v_s` is helicity-free pointwise by its form (`curl(k grad Phi) = grad k x grad Phi`); its divergence is `O(h^2)` and is measured along each path by `grad psi1 x grad psi2 = v_s exp(-int div v_s dt)`;
+- source (B): there is no structural guarantee; the drift is controlled by the integration tolerance and must be **measured** (paired tolerance and grid ladders, an independent face-flux comparator) — Rule 3 puts the burden of proof on the method.
+
+The paper's message still sets what must be measured; it no longer fixes which tracker the project uses.
 
 ---
 

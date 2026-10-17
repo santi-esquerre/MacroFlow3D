@@ -1,0 +1,120 @@
+[2026-10-17T14:00:55Z] job=J0c-controls session=macroflow3d-SF-35-feas-J0c-controls started
+[2026-10-17T14:00:55Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=1)
+[2026-10-17T14:00:55Z] cwd=/home/sesquerre/MacroFlow3D-SF-35-feas
+[2026-10-17T14:00:55Z] command=./tools/probe_sf35/controls.sh
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 64 --save-field /home/sesquerre/sf35_feas_probe/controls/Y64 --save-labels /home/sesquerre/sf35_feas_probe/controls/L_new64 --summary /home/sesquerre/sf35_feas_probe/controls/N64_new.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:00:56Z)
+  name=N64_new rc=21 end=2026-10-17T14:01:03Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.40 Maximum resident set size (kbytes): 652724
+    FIELD gaussian (SF-18) N=64 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=127007 | stage field k = exp(eps Y), eps = 2
+    CASE field=gaussian eps=2 N=64 cand=trace | r_F=3.462e+02 its=nan | e_v=2.187e+00 e_psi=nan e_i=(1.873e-01,1.079e-01) e_div=5.114e+01 min_c=4.672e-04 p0.1=1.433e-03 p1=5.709e-03 p5=3.339e-02 p50=7.206e-01 | t=1.7
+    TIMING diagnostics=0.003s field=0.091s stage=2.131s trace=1.704s total=3.934s
+    MEMORY peak_device_bytes=646971392 free_min=33442758656 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 64 --save-labels /home/sesquerre/sf35_feas_probe/controls/L_old64 --summary /home/sesquerre/sf35_feas_probe/controls/N64_old.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:01:03Z)
+  name=N64_old rc=21 end=2026-10-17T14:01:10Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.42 Maximum resident set size (kbytes): 652700
+    FIELD gaussian (SF-18) N=64 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=127007 | stage field k = exp(eps Y), eps = 2
+    CASE field=gaussian eps=2 N=64 cand=trace | r_F=3.462e+02 its=nan | e_v=2.187e+00 e_psi=nan e_i=(1.873e-01,1.079e-01) e_div=5.114e+01 min_c=4.672e-04 p0.1=1.433e-03 p1=5.709e-03 p5=3.339e-02 p50=7.206e-01 | t=1.7
+    TIMING diagnostics=0.003s field=0.090s stage=2.137s trace=1.710s total=3.943s
+    MEMORY peak_device_bytes=646971392 free_min=33442758656 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 64 --cells /home/sesquerre/sf35_feas_probe/controls/Y64/Y_cells.npy --save-labels /home/sesquerre/sf35_feas_probe/controls/L_cells64 --summary /home/sesquerre/sf35_feas_probe/controls/N64_cells.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:01:10Z)
+  name=N64_cells rc=21 end=2026-10-17T14:01:18Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.20 Maximum resident set size (kbytes): 656408
+    FIELD cells /home/sesquerre/sf35_feas_probe/controls/Y64/Y_cells.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=64 | stage field k = exp(eps Y), eps = 2
+    CASE field=cells eps=2 N=64 cand=trace | r_F=3.462e+02 its=nan | e_v=2.187e+00 e_psi=nan e_i=(1.873e-01,1.079e-01) e_div=5.114e+01 min_c=4.672e-04 p0.1=1.433e-03 p1=5.709e-03 p5=3.339e-02 p50=7.206e-01 | t=1.7
+    TIMING diagnostics=0.003s field=0.093s stage=2.128s trace=1.712s total=3.940s
+    MEMORY peak_device_bytes=646971392 free_min=33442758656 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
+== P1 identity N=64: gaussian vs --cells
+# SF-35 informative comparison: same exp(eps Y) amplitude through two parametrizations
+
+- A: `../sf35_feas_probe/controls/L_new64` (field 1.0, eps 2.0)
+- B: `../sf35_feas_probe/controls/L_cells64` (field ?, eps 2.0)
+
+| label | max\|dpsi\| | NaN in A | NaN in B | NaN mask mismatches |
+|---|---|---|---|---|
+| psi1 | 0.000e+00 | 0 | 0 | 0 |
+| psi2 | 0.000e+00 | 0 | 0 | 0 |
+
+Expected `<= 1e-13` (recorded, no threshold in the spec): **met** (max over both labels: 0.000e+00)
+
+== P2 labels N=64: new vs old
+# SF-35 informative comparison: same exp(eps Y) amplitude through two parametrizations
+
+- A: `../sf35_feas_probe/controls/L_new64` (field 1.0, eps 2.0)
+- B: `../sf35_feas_probe/controls/L_old64` (field 1.0, eps 2.0)
+
+| label | max\|dpsi\| | NaN in A | NaN in B | NaN mask mismatches |
+|---|---|---|---|---|
+| psi1 | 0.000e+00 | 0 | 0 | 0 |
+| psi2 | 0.000e+00 | 0 | 0 | 0 |
+
+Expected `<= 0e+00` (recorded, no threshold in the spec): **met** (max over both labels: 0.000e+00)
+
+== P2 byte-identity N=64 (CASE/PLANE/BACKFLOW/GROWTH/RESIDUAL/TRANSPORT_STATUS/STATUS lines)
+BYTE_IDENTICAL N=64 lines=72
+LABELS_BYTE_IDENTICAL new_vs_old N=64
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 128 --save-field /home/sesquerre/sf35_feas_probe/controls/Y128 --save-labels /home/sesquerre/sf35_feas_probe/controls/L_new128 --summary /home/sesquerre/sf35_feas_probe/controls/N128_new.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:01:18Z)
+  name=N128_new rc=21 end=2026-10-17T14:01:51Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:33.16 Maximum resident set size (kbytes): 1010720
+    FIELD gaussian (SF-18) N=128 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=1032255 | stage field k = exp(eps Y), eps = 2
+    CASE field=gaussian eps=2 N=128 cand=trace | r_F=1.679e+03 its=nan | e_v=2.914e+00 e_psi=nan e_i=(7.688e-02,8.781e-02) e_div=1.146e+02 min_c=2.244e-04 p0.1=1.435e-03 p1=5.366e-03 p5=3.056e-02 p50=6.897e-01 | t=25.8
+    TIMING diagnostics=0.007s field=0.615s stage=2.963s trace=25.880s total=29.500s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 128 --save-labels /home/sesquerre/sf35_feas_probe/controls/L_old128 --summary /home/sesquerre/sf35_feas_probe/controls/N128_old.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:01:51Z)
+  name=N128_old rc=21 end=2026-10-17T14:02:24Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:33.04 Maximum resident set size (kbytes): 995672
+    FIELD gaussian (SF-18) N=128 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=1032255 | stage field k = exp(eps Y), eps = 2
+    CASE field=gaussian eps=2 N=128 cand=trace | r_F=1.679e+03 its=nan | e_v=2.914e+00 e_psi=nan e_i=(7.688e-02,8.781e-02) e_div=1.146e+02 min_c=2.244e-04 p0.1=1.435e-03 p1=5.366e-03 p5=3.056e-02 p50=6.897e-01 | t=25.8
+    TIMING diagnostics=0.007s field=0.604s stage=2.973s trace=25.851s total=29.467s
+    MEMORY peak_device_bytes=1005584384 free_min=33084145664 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 128 --cells /home/sesquerre/sf35_feas_probe/controls/Y128/Y_cells.npy --save-labels /home/sesquerre/sf35_feas_probe/controls/L_cells128 --summary /home/sesquerre/sf35_feas_probe/controls/N128_cells.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:02:25Z)
+  name=N128_cells rc=21 end=2026-10-17T14:02:57Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:32.92 Maximum resident set size (kbytes): 1012116
+    FIELD cells /home/sesquerre/sf35_feas_probe/controls/Y128/Y_cells.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=128 | stage field k = exp(eps Y), eps = 2
+    CASE field=cells eps=2 N=128 cand=trace | r_F=1.679e+03 its=nan | e_v=2.914e+00 e_psi=nan e_i=(7.688e-02,8.781e-02) e_div=1.146e+02 min_c=2.244e-04 p0.1=1.435e-03 p1=5.366e-03 p5=3.056e-02 p50=6.897e-01 | t=25.8
+    TIMING diagnostics=0.007s field=0.700s stage=2.944s trace=25.878s total=29.564s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
+== P1 identity N=128: gaussian vs --cells
+# SF-35 informative comparison: same exp(eps Y) amplitude through two parametrizations
+
+- A: `../sf35_feas_probe/controls/L_new128` (field 1.0, eps 2.0)
+- B: `../sf35_feas_probe/controls/L_cells128` (field ?, eps 2.0)
+
+| label | max\|dpsi\| | NaN in A | NaN in B | NaN mask mismatches |
+|---|---|---|---|---|
+| psi1 | 0.000e+00 | 0 | 0 | 0 |
+| psi2 | 0.000e+00 | 0 | 0 | 0 |
+
+Expected `<= 1e-13` (recorded, no threshold in the spec): **met** (max over both labels: 0.000e+00)
+
+== P2 labels N=128: new vs old
+# SF-35 informative comparison: same exp(eps Y) amplitude through two parametrizations
+
+- A: `../sf35_feas_probe/controls/L_new128` (field 1.0, eps 2.0)
+- B: `../sf35_feas_probe/controls/L_old128` (field 1.0, eps 2.0)
+
+| label | max\|dpsi\| | NaN in A | NaN in B | NaN mask mismatches |
+|---|---|---|---|---|
+| psi1 | 0.000e+00 | 0 | 0 | 0 |
+| psi2 | 0.000e+00 | 0 | 0 | 0 |
+
+Expected `<= 0e+00` (recorded, no threshold in the spec): **met** (max over both labels: 0.000e+00)
+
+== P2 byte-identity N=128 (CASE/PLANE/BACKFLOW/GROWTH/RESIDUAL/TRANSPORT_STATUS/STATUS lines)
+BYTE_IDENTICAL N=128 lines=136
+LABELS_BYTE_IDENTICAL new_vs_old N=128
+== roll sanity N=64
+rolled /home/sesquerre/sf35_feas_probe/controls/Y64/Y_cells.npy by k=64 cells (N=64) along axis 2 (x1) -> /home/sesquerre/sf35_feas_probe/controls/Y64/Y_roll64.npy
+ROLL_N_IDENTITY_BYTES_EQUAL
+rolled /home/sesquerre/sf35_feas_probe/controls/Y64/Y_cells.npy by k=12 cells (N=64) along axis 2 (x1) -> /home/sesquerre/sf35_feas_probe/controls/Y64/Y_roll12.npy
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 64 --cells /home/sesquerre/sf35_feas_probe/controls/Y64/Y_roll12.npy --summary /home/sesquerre/sf35_feas_probe/controls/N64_roll12.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:02:59Z)
+  name=N64_roll12 rc=21 end=2026-10-17T14:03:06Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.34 Maximum resident set size (kbytes): 654992
+    FIELD cells /home/sesquerre/sf35_feas_probe/controls/Y64/Y_roll12.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=64 | stage field k = exp(eps Y), eps = 2
+    CASE field=cells eps=2 N=64 cand=trace | r_F=2.952e+02 its=nan | e_v=3.650e+00 e_psi=nan e_i=(1.675e-01,1.951e-01) e_div=8.659e+01 min_c=7.599e-04 p0.1=1.655e-03 p1=6.097e-03 p5=3.222e-02 p50=7.339e-01 | t=1.7
+    TIMING diagnostics=0.003s field=0.092s stage=2.114s trace=1.724s total=3.933s
+    MEMORY peak_device_bytes=646971392 free_min=33442758656 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
+CASE field=gaussian eps=2 N=64 cand=trace | r_F=3.462e+02 its=nan | e_v=2.187e+00 e_psi=nan e_i=(1.873e-01,1.079e-01) e_div=5.114e+01 min_c=4.672e-04 p0.1=1.433e-03 p1=5.709e-03 p5=3.339e-02 p50=7.206
+CASE field=cells eps=2 N=64 cand=trace | r_F=2.952e+02 its=nan | e_v=3.650e+00 e_psi=nan e_i=(1.675e-01,1.951e-01) e_div=8.659e+01 min_c=7.599e-04 p0.1=1.655e-03 p1=6.097e-03 p5=3.222e-02 p50=7.339e-0
+inlet_vmin=1.342234e-03
+inlet_vmin=2.011615e-03
+[2026-10-17T14:03:06Z] job=J0c-controls finished exit=0

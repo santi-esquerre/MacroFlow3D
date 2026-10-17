@@ -192,7 +192,7 @@ The target regime is:
 - helicity-free (proven for scalar isotropic conductivity — Lester 2023 §1),
 - two invariants / streamfunctions exist locally (Lester 2023 §2); a global affine + periodic pair does not exist for generic periodic `k` (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`),
 - the project does not presuppose the value of `alpha_T`; every observed transverse growth must be classified physical / numerical / unresolved with grid and tolerance refinement evidence, and compared against the streamline-closure oracle (return map of the independently integrated Darcy streamlines),
-- the tracker should preserve the labels of the actual Darcy flow (non-periodic in `x1`, anchored at the inlet).
+- the tracker should preserve the labels of the actual Darcy flow (non-periodic in `x1`, anchored at the inlet); a Lagrangian-label consumer (decision 2026-10-17) carries each particle's labels by definition and must show that its trajectories' drift is negligible by measurement (below).
 
 Required:
 
@@ -203,6 +203,7 @@ Required:
   - physical,
   - numerical,
   - or unresolved
+- for a **Lagrangian-label consumer** (particles traced forward on the spline flow `v_s = k_s grad Phi_s`, each carrying its own labels; `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, item 4): controls with exact answers (`k = 1`, `k = k(x1)`, a closed-streamline field), host/GPU equivalence, covectors against finite differences of the flow map and the identity `grad psi1 x grad psi2 = v_s exp(-int div v_s dt)` (SF-36); a paired tolerance ladder and a paired grid ladder on the plume statistics with statistical criteria once trajectories decorrelate, the Lagrangian `e_v` under refinement, an independent face-flux representation (Pollock) and, inside their verified envelope, agreement with the gridded labels (SF-37); the SF-30 closure oracle is not independent of this consumer (shared integrator)
 
 Reject if:
 

@@ -71,6 +71,12 @@ Euler potentials in other fields.
    Measured amplitudes only; other `ell`, other realizations and the long domain are unmeasured. Evidence and options:
    `docs/experiments/2026-10-07-sf35-label-transport.md`.
 
+   **Owner decision (2026-10-17).** The envelope is O1: `sigma_Y <= 1` (0.5 and 1.0 established, 1.5 not established)
+   on the measured field, `ell` and grids; the three B-not-met points are excluded by owner decision (SF-35 closed
+   `done`). At `sigma_Y^2 = 4` refinement to 512^3 does not extend the convergent range of the label derivatives
+   (`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`). The gridded labels become a diagnostic and the
+   production consumer at `sigma^2 >= 4` is Lagrangian (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`).
+
 ## Consequences
 
 - SF-33 is closed `done` with claim (a) and the oracle established and claim (b) recorded as not established; its
