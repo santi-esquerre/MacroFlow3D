@@ -69,7 +69,7 @@ Euler potentials in other fields.
    integration certificate (criterion B) is not met at (`sigma_Y`, N) = (1.0, 32), (1.5, 32), (1.5, 64), recorded with
    no setting changed. `sigma_Y = 1.5` is **not established**: C is `reject` with no inlet backflow at any point.
    Measured amplitudes only; other `ell`, other realizations and the long domain are unmeasured. Evidence and options:
-   `docs/experiments/2026-10-07-sf35-label-transport.md`. This status line is unchanged.
+   `docs/experiments/2026-10-07-sf35-label-transport.md`.
 
 ## Consequences
 

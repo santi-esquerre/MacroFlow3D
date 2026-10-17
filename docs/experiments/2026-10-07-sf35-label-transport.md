@@ -287,7 +287,10 @@ decision required (state blocked)**. SF-34 remains blocked until SF-35 is `done`
   `|c - vD|`, or RMS excluding a pre-declared fraction of vertices), applied to the existing exports (`A/exports` is
   gitignored; eps 1.0/1.5 exports exist on the V100 host, the eps 0.5 ones were lost and must be regenerated). It
   would be a new criterion, not a reinterpretation of C. Cost: small (analysis only). Risk: it can only support a
-  weaker claim than the pre-registered one, and the choice of percentile must be fixed before looking.
+  weaker claim than the pre-registered one, and the choice of percentile must be fixed before looking. Disclosure: the
+  percentile distribution of the 128 vs 256 self-convergence of `c` at eps 1.0/1.5 has already been inspected
+  post-hoc (`A/analysis/label_diagnostics.md`), so a percentile or exclusion fraction chosen now on these exports is
+  not blind; a blind application needs a fresh field/seed or the `|c - vD|` distribution, which was not inspected.
 - **O4.** Combinations (for example O1 now with O2 or O3 as a later increment for sigma_Y = 1.5).
 
 ## Caveats
