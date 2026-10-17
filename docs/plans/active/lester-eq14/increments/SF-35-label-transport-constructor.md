@@ -3,7 +3,7 @@
 - State: `done`
 - Goal: `Establecer el trazado regresivo de líneas de corriente desde la cara de entrada como constructor de producción de las etiquetas de Darcy en el slab, verificado sin trazar (controles con etiquetas exactas, métricas por diferencias finitas, residuo de la ecuación (14) como diagnóstico y concordancia con la solución elíptica donde existe) y con órdenes observados en 32^3-256^3 para sigma_Y en {0.5, 1, 1.5}.`
 - Depends on: `SF-33`
-- Unlocks: `SF-34`
+- Unlocks: `SF-34, SF-36`
 - Branch: `science/lester-sf35-label-transport-constructor`
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 2 + Gate 3A (tracing-constructor mapping, see "Acceptance thresholds")`
@@ -248,7 +248,8 @@ Pre-registered verbatim in the activation bitácora row before any run; the ladd
 ## Advancement rule
 
 `SF-34` (re-specified as acceptance of the SF-35 labels against the SF-30 return map) becomes eligible after this
-increment is merged and marked `done` on the default branch.
+increment is merged and marked `done` on the default branch; so does `SF-36` (specified on the closure PR #53,
+decision 2026-10-17).
 
 ## Bitácora
 

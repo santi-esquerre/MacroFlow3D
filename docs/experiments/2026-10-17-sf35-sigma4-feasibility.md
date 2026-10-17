@@ -88,9 +88,9 @@ Job `J0b-controls` failed with exit 126 (scripts not executable; fixed by `aaed9
   (90.5 s into the run); trace body <= 20629 MiB; end-of-run FD diagnostics <= 23385 MiB. Per cell: 202.5 B/cell at
   the peak (includes the CUDA context). The driver's own `peak_device_bytes` (cudaMemGetInfo polled only at phase
   boundaries) reads 24520949760 B and misses the in-phase peak.
-- SF-19 at 512^3: 8 MG levels, the three correctors converged in 20 iterations each (`rel_residual` <= 1.9e-12);
+- SF-19 at 512^3: 8 MG levels, the three correctors converged in 20 iterations each (`rel_residual` <= 1.914e-12);
   `div_rms` 2.862e-10. Inlet `vmin` 1.340e-03 > 0, `vD1_min` 8.865e-04 > 0, every backflow counter 0: no backflow
-  and no stagnation anywhere at 256 and 512.
+  and no stagnation at the vertex samples or on the traced streamlines, at 256 and 512.
 - Trace time ratio 512/256 = 25.4.
 
 ### Q2: refinement does not extend the convergent range (`PL`)
@@ -111,7 +111,8 @@ Label values (`LD20`, section 2, common vertices): the labels self-converge in R
 512). Concentration of the non-convergence of `c = grad psi1 x grad psi2` (`LD20`, section 3): half of the squared
 difference comes from 376 vertices (0.0181 %) for 128 vs 256 and from 1100 vertices (0.0066 %) for 256 vs 512;
 the count grows by 2.9x per doubling (between the 2x of a curve and the 4x of a sheet), and the maximum sits at
-the same place on both pairs, (0.96-0.98, 0.02-0.04, 0.547).
+the same place on both pairs, (x1, x2, x3) = (0.96-0.98, 0.02-0.04, 0.547) in cube units, i.e. `x1 ~ 3.85-3.9 ell`,
+near the outlet plane — downstream of the `x1 ~ 0.8-1.0 ell` where convergence is first lost (`LD20` uses cube units).
 
 ### Q3: the obstruction is localized in the medium (`J1b`)
 
@@ -143,15 +144,15 @@ Classification per `docs/AGENTS.md`.
   no stagnation or topology change. The labels converge in RMS but not in max; the non-convergence of `c`
   concentrates in a set whose vertex count grows ~2.9x per doubling and whose maximum does not move. This reads as a
   thin layer of extreme label gradient generated where the flow is slow (`min_c` ~ 1.2e-04-1.4e-04 at 256-512;
-  `e_v_j` jumps by ~100x between `x1 = 0.75 ell` and `1.0 ell`) and carried downstream, because the labels are
+  `e_v_j` jumps between `x1 = 0.75 ell` and `1.0 ell` by 13x / 96x / 1067x at 128 / 256 / 512) and carried downstream, because the labels are
   invariants. Its width is below what 512^3 (`h = ell/128`) resolves; a uniform resolution sufficient for it is not
   estimated here. On this reading it is a property of the object (the exact labels of this flow at
   `sigma_Y^2 = 4`), not a defect of the constructor.
 - **Scale consequence (derived from the measured cost; not a run).** The long domain of the plan
-  (2048x256x256 = 1.34e8 cells = the cell count of 512^3, `ell/h = 10`) fits the same 25.9 GiB peak, but its
+  (2048x256x256 = 1.34e8 cells = the cell count of 512^3, `ell/h = 10`) fits the same 25.3 GiB (25925 MiB) peak, but its
   `ell/h` is 12.8x coarser than 512^3, where the derivatives already fail beyond `0.75 ell`. Gridded labels there
   would be unverifiable; their FD verification at `ell/128` would need ~2000x the cells of 512^3. A Lagrangian
-  consumer that carries labels on particles needs only the flow and its spline (the same 25.9 GiB peak) and no
+  consumer that carries labels on particles needs only the flow and its spline (the same 25.3 GiB peak) and no
   gridded derivatives of the labels (decision 2026-10-17).
 
 ### Erratum to the runtime planning analysis
@@ -162,7 +163,8 @@ not in the FD diagnostics; the "+13 GB diagnostics" figure came from cudaMemGetI
 (2) the SF-35 constructor integrates in arclength and follows and counts interior backflow and stagnation
 (`SlabLabelTransport.cuh`); only inlet backflow (`v1 <= 0` on the inlet face) stops a case and `seed_backflow` seeds
 get NaN, so the claim that it is "parametrized in `x1`" was wrong; (3) per realization at 1.34e8 cells the
-field + flow construction (~2 min at 512^3: 59 s + 63 s) dominates a Lagrangian ensemble, not the tracing.
+field + flow construction (~2 min at 512^3: 59 s + 63 s, measured) is estimated to dominate a Lagrangian ensemble,
+not the tracing (the tracing cost is not measured here; SF-36 criterion J measures it).
 
 ## Caveats
 
@@ -172,8 +174,8 @@ field + flow construction (~2 min at 512^3: 59 s + 63 s) dominates a Lagrangian 
   after the probes from committed JSON.
 - nvidia-smi `memory.used` is device-wide and includes the CUDA context; the sampler period drifted to 200.6 ms
   (the phase windows of `MEM` use the effective period and are approximate to ~1 s).
-- The P2 byte-neutrality was shown at 64^3 and 128^3 only; at 512^3 there is no P2-off run (it would not fit by the
-  estimate of the planning analysis, ~44 GiB, which is itself not measured).
+- The P2 byte-neutrality was shown at 64^3 and 128^3 only; at 512^3 there is no P2-off run, and whether one would
+  fit was only estimated in the unversioned planning analysis, not measured.
 - The label exports and saved fields are on the V100 host only (`~/sf35_feas_probe/`), not in the repository.
 
 ## Next step

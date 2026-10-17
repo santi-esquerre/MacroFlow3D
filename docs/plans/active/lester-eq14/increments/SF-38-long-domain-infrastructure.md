@@ -49,12 +49,13 @@ No `alpha` estimate is reported as a result (SF-39).
   `sigma^2 = 4`; peak memory.
 - **Medium A/B evaluation** on the same `K`: (a) as above; (b) `solve_head` (`src/physics/flow/solve_head.cuh`,
   Dirichlet in `x`, periodic `y`/`z`, harmonic face `K`) with head drop `G1^(a) L1` so that the mean gradients
-  match, velocities by `velocity_from_head`. Eulerian velocity statistics vs distance to the `x` faces and Pollock
+  match, velocities by `compute_velocity_from_head` (`src/physics/flow/velocity_from_head.cuh`). Eulerian velocity statistics vs distance to the `x` faces and Pollock
   plume statistics on both media (SF-37 repack; for (b) the outlet face plane is dropped and particles are stopped
   at `L1 - 5 lambda`, so the periodic indexing of `PollockTracker` is never exercised across `x`).
 - **Ensemble runner**: loop over realizations `r`: field(seed_r) -> flow -> splines -> injection -> forward tracking
-  -> moments; per-realization directory with `moments_time.csv` (`CsvTimeSeriesWriter` format, compatible with
-  `AnalysisRunner`), `moments_planes.csv`, `track.json`; a completion marker per realization; restart skips
+  -> moments; time series written in the `io::OutputLayout` layout read by `AnalysisRunner` (`run_analysis`):
+  `stats/realization_XXXX_timeseries.csv` (`CsvTimeSeriesWriter` format), plus per-realization
+  `moments_planes.csv` and `track.json`; a completion marker per realization; restart skips
   completed realizations; aggregate through `compute_macrodispersion`.
 - **Par2 RWPT baseline**: new configs (no existing config changed) derived from `apps/config_pipeline_par2.yaml` at
   `sigma^2` in {1, 2.25, 4}: 2048x256x256, `lambda/h = 10`, Dirichlet in `x`, periodic `y`/`z`, injection at
@@ -75,7 +76,8 @@ No `alpha` estimate is reported as a result (SF-39).
   `tests/lagrangian_labels/long_box_tests.cu` (`lagrangian_long_box`, `<= 60 s`),
   `docs/experiments/<date>-sf38-long-domain-infrastructure.md` and artifact.
 - Read-only: SF-18 `generate_periodic_gaussian_field`, SF-19 `solve_affine_periodic_flow`, SF-28,
-  `solve_head`/`velocity_from_head`, `LagrangianTracker`, `PollockTracker` + SF-37 repack, `AnalysisRunner`,
+  `solve_head`/`compute_velocity_from_head`, `LagrangianTracker`, `PollockTracker` + SF-37 repack, `AnalysisRunner`
+  (`src/runtime/analysis/AnalysisRunner.hpp`, `run_analysis`), `io::OutputLayout` (`src/io/output_layout.hpp`),
   `compute_macrodispersion`, `macroflow3d_pipeline`.
 
 ## Implementation specification

@@ -215,8 +215,8 @@ The paper shows that both kinds of error can mimic Brownian-like transverse spre
 
 Its argument is that both failure sources of §5 (A: a reconstruction that breaks the helicity-free structure; B: an integrator that drifts off the invariant surfaces) can mimic transverse macrodispersion, so geometric preservation must be prioritized over generic ODE integration.
 
-**Status in this project (owner decision 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`).** The pseudo-symplectic tracker (SF-31) is verified infrastructure and **future work, not a requirement** of the macrodispersion study. It needs gridded labels of the Darcy flow, and those are verified only for `sigma_Y <= 1` (SF-35); at `sigma_Y^2 = 4` their derivatives do not converge beyond about one correlation length even at 512^3 (`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`), so the structural guarantee would refer to the wrong surfaces exactly where the flow is most sensitive. The production consumer is Lagrangian: particles traced forward on the spline flow `v_s = k_s grad Phi_s`, each carrying its own labels. With respect to §5:
-- source (A): `v_s` is helicity-free pointwise by its form (`curl(k grad Phi) = grad k x grad Phi`); its divergence is `O(h^2)` and is measured along each path by `grad psi1 x grad psi2 = v_s exp(-int div v_s dt)`;
+**Status in this project (owner decision 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`).** The pseudo-symplectic tracker (SF-31) is verified infrastructure and **future work, not a requirement** of the macrodispersion study. It needs gridded labels of the Darcy flow, and those are verified only for `sigma_Y <= 1` (SF-35); on the one realization probed at `sigma_Y^2 = 4` their derivatives do not converge beyond about one correlation length even at 512^3, although the labels converge in RMS (`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`). If the reading of that probe holds (unresolved label layers; a hypothesis), the structural guarantee would refer to under-resolved surfaces exactly where the flow is most sensitive. The production consumer is Lagrangian: particles traced forward on the spline flow `v_s = k_s grad Phi_s`, each carrying its own labels. With respect to §5:
+- source (A): `v_s` is helicity-free pointwise by its form (`curl(k grad Phi) = grad k x grad Phi`); its divergence is expected to be `O(h^2)` and is measured along each path through `grad psi1 x grad psi2 = v_s exp(-int div v_s dt)`;
 - source (B): there is no structural guarantee; the drift is controlled by the integration tolerance and must be **measured** (paired tolerance and grid ladders, an independent face-flux comparator) — Rule 3 puts the burden of proof on the method.
 
 The paper's message still sets what must be measured; it no longer fixes which tracker the project uses.
@@ -341,7 +341,7 @@ So in MacroFlow3D:
 
 - baseline RWPT methods remain useful,
 - but they are not the scientific oracle in the smooth-isotropic pure-advection regime,
-- the invariant-preserving path is the scientifically privileged path for that regime, with labels of the actual Darcy flow (not the periodic surrogate),
+- the path that defends the invariants of the actual Darcy flow (not the periodic surrogate) is the scientifically privileged path for that regime — labels carried by particles with measured drift (decision 2026-10-17) or verified gridded labels with an invariant-preserving tracker,
 - baseline results are not accepted as physical by default, and zero transverse spreading is not presupposed either.
 
 ---

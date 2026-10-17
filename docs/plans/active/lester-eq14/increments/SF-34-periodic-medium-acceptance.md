@@ -1,7 +1,7 @@
 # SF-34 — Acceptance of the gridded inlet labels in the periodic medium against the closure gate (O1 arm)
 
 - State: `pending`
-- Goal: `Aceptar las etiquetas de Darcy en grilla construidas por transporte (SF-35) en el medio periódico dentro de su envolvente verificada: e_v(h) e invariancia convergentes y mapa de retorno de las etiquetas en la cara de salida concordante con la medición de cierre de SF-30 para sigma^2 en {0.25, 1} y ell en {1/8, 1/16}, con sigma^2 en {2.25, 4} registrados como no bloqueantes.`
+- Goal: `Aceptar las etiquetas de Darcy en grilla construidas por transporte (SF-35) en el medio periódico en el rango de amplitudes de su envolvente verificada (sigma_Y <= 1, establecida a ell = 1/4): e_v(h) e invariancia convergentes y mapa de retorno de las etiquetas en la cara de salida concordante con la medición de cierre de SF-30 para sigma^2 en {0.25, 1} y ell en {1/8, 1/16}, con sigma^2 en {2.25, 4} registrados como no bloqueantes.`
 - Depends on: `SF-35`
 - Unlocks: `none`
 - Branch: `science/lester-sf34-periodic-medium-acceptance`
@@ -26,7 +26,10 @@ SF-30: `e_v(h)` and the invariance residual converge under refinement, and the l
 point carrying the same pair of labels as an inlet point) agrees with the first-return map measured by the
 label-independent SF-30 closure gate. This is the flow-level check of the decision record's independence rule (item
 3 (iv)): SF-35 verifies the constructor on one realization at `ell = 1/4` without tracing; SF-34 checks it against the
-flow itself on SF-30's seeds and `ell`, inside the envelope `sigma^2 <= 1`. The move to the long domain no longer
+flow itself on SF-30's seeds and `ell`, at the amplitudes of the envelope (`sigma^2 <= 1`). The envelope was
+established at `ell = 1/4` (seed 3001) only: `ell` 1/8 and 1/16 are new for the gridded labels (16-32 cells per
+`ell` at 256^3, against 64 where the envelope was measured), so this increment also tests whether the envelope
+carries over to them. The move to the long domain no longer
 depends on this increment (decision 2026-10-17, item 6; it superseded the requirement of
 `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`, delegated decision "Move to the long
 domain", for the Lagrangian consumer). No claim about transverse macrodispersion or `alpha_T` is made.
@@ -53,7 +56,8 @@ Context: `docs/decisions/2026-10-07-label-transport-constructor.md`,
   unchanged SF-30 `closure_gate` executable and SF-30's instrument settings (seeds, tolerance ladder, matched
   control).
 - `sigma^2 = 4` at `ell` in {1/8, 1/16} up to 256^3: attempted, non-blocking; SF-30 found backflow there and the
-  2026-10-17 probes found unresolved label layers at `ell = 1/4`, so the outcome may be `inlet_backflow`,
+  2026-10-17 probes found non-convergent label derivatives at `ell = 1/4` (hypothesis, not established: unresolved
+  label layers), so the outcome may be `inlet_backflow`,
   `trace_fail`, `reject` or `unresolved`, recorded as such.
 - Experiment note with the full matrix.
 
@@ -161,4 +165,4 @@ artifacts or experiment notes and link them here.
 |---|---|---|---|---|
 | 2026-10-06T00:00Z | not started | Specification created by the SF-29 closure PR (decision record `docs/decisions/2026-10-06-eq14-inlet-label-formulation.md`; dashboard "Later phases" item 2). | Depends on SF-33; SF-30 is `done` on `master`. | Activate only when the checker reports it READY. |
 | 2026-10-07T16:40Z | not started | Re-specified on the SF-33 closure PR (#51) after the owner decision of 2026-10-07: the labels come from the SF-35 tracing constructor (`--construct trace`, `.npy` export), not from the SF-33 Newton–Krylov solve; `r_F` becomes a recorded diagnostic; the construction's round trips and backflow statistics join the accept condition; the decision rule on `e_v`, invariance and `D_ret` is unchanged (precedent for re-specifying a pending increment in place: SF-27..SF-30 on 2026-10-02). | `docs/decisions/2026-10-07-label-transport-constructor.md`; depends on SF-35. | Activate only when the checker reports it READY. |
-| 2026-10-17T19:30Z | not started | Re-specified in place (O1 arm) on the SF-35 closure PR (#53) after the owner decision of 2026-10-17 (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, items 3 and 6): blocking matrix `sigma^2` in {0.25, 1} x `ell` in {1/8, 1/16} (inside the SF-35 envelope `sigma_Y <= 1`); `sigma^2` 2.25 and 4 classified and recorded, non-blocking; the long-domain phase no longer depends on this increment. Decision rule unchanged. | SF-35 closed `done` with the O1 envelope; depends on SF-35. | Activate only when the checker reports it READY; may run in parallel with SF-36 (remote work serialized or per-increment mirrors). |
+| 2026-10-17T19:30Z | not started | Re-specified in place (O1 arm) on the SF-35 closure PR (#53) after the owner decision of 2026-10-17 (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, items 3 and 6): blocking matrix `sigma^2` in {0.25, 1} x `ell` in {1/8, 1/16} (the amplitudes of the SF-35 envelope `sigma_Y <= 1`, established at `ell = 1/4` only); `sigma^2` 2.25 and 4 classified and recorded, non-blocking; the long-domain phase no longer depends on this increment. Decision rule unchanged. | SF-35 closed `done` with the O1 envelope; depends on SF-35. | Activate only when the checker reports it READY; may run in parallel with SF-36 (remote work serialized or per-increment mirrors). |

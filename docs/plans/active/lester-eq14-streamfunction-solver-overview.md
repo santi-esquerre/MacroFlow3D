@@ -577,8 +577,8 @@ Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29, SF-35 por
 cierre de SF-33, SF-36..SF-39 por el cierre de SF-35; el resto en prosa): las etiquetas en
 grilla como diagnóstico (SF-33, SF-35) y su brazo O1 frente a SF-30 (SF-34); el
 consumidor lagrangiano y su verificación (SF-36, SF-37); el dominio largo (2048 x 256 x
-256, `lambda/h = 10` o el que fije SF-37; SF-38); el estudio (SF-39: `alpha_L` debe
-coincidir con RWPT y `alpha_T` se reporta con convergencia de malla, tolerancia y número
+256, `lambda/h = 10` o el que fije SF-37; SF-38); el estudio (SF-39: `alpha_L` se contrasta
+con RWPT en la misma configuración, y un desacuerdo debe explicarse; `alpha_T` se reporta con convergencia de malla, tolerancia y número
 de realizaciones sin presuponer su valor); dispersión local y `D_T(Pe)`.
 
 Reglas de proceso: verificación independiente de existencia o de control positivo

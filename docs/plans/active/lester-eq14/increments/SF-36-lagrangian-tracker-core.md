@@ -115,10 +115,12 @@ is measured in SF-37 (Rule 3).
    the **position components only**; `tau` (`dtau/ds = 1/(k_s |g|)`), `I` (`dI/ds = (grad s_Y . g + lap s_h) /
    |g|`, i.e. `div v_s / |v_s|`) and the covectors (`da/ds = -H (a - (u.a) u) / |g|`, `H` = Hessian of `s_h`,
    `u = g/|g|`; same for `b`) ride passively on the accepted steps, so positions are bitwise identical with
-   covectors on or off. Planes: strictly increasing unwrapped `x1` values `> X0`; Hénon landing on each in turn
+   covectors on or off. The moved `trace_dev::dp5_step` has `kDim = 4` and is not modified: the forward tracker uses
+   its own DP5 stepper templated on the state dimension (4 without, 11 with covectors and `I`), with the same
+   tableau, `step_factor` and expression order for the position components, so that criterion C holds. Planes: strictly increasing unwrapped `x1` values `> X0`; Hénon landing on each in turn
    (first forward crossing; further crossings counted). Snapshot times: strictly increasing `t_n > 0`; Hénon landing
-   with `tau` as independent variable (`dx/dtau = k_s g`). Statuses: `closure_gate::StreamlineStatus` plus
-   `seed_backflow`; interior backflow followed and counted; nothing clamped or regularized.
+   with `tau` as independent variable (`dx/dtau = k_s g`). Statuses: `closure_gate::StreamlineStatus` (which already
+   contains `seed_backflow`); interior backflow followed and counted; nothing clamped or regularized.
 6. **Moments.** Over particles `ok` at that plane/time, with the normalized weights renormalized over them:
    weighted mean and **biased** weighted variance (`sum w (x - m)^2`, as B&dD eq. 4 and Par2 `var_estimator:
    biased`) of `x1, x2, x3` at each snapshot -> `io::TimeSeriesPoint<double>{time, mean[3], var[3], active}`
@@ -195,7 +197,7 @@ tests at 16^3/32^3; V100 repeats at 64^3. Defaults: `tol = 1e-8`, `h_max = h/8` 
 - **F. SF-35 byte identity and regression.** Against the base-commit build on the same mirror: `--construct trace`
   at 32^3/64^3, `eps` in {0.5, 1.0}, host and GPU: `psi1.npy`, `psi2.npy` and the CASE/PLANE/BACKFLOW/GROWTH/
   RESIDUAL/TRANSPORT_STATUS/STATUS lines byte-identical (timing fields masked); `--production` 32^3 `eps = 0.25`
-  CASE/ORACLE/ORACLE_SUMMARY/EXTRA lines identical to SF-33 `N32.log`; the 9 `inlet_slab_*` tests unchanged and
+  CASE/ORACLE/ORACLE_SUMMARY/EXTRA lines identical to SF-33 `logs/ladder_0.25_c4/N32.log` (as SF-35 G); the 9 `inlet_slab_*` tests unchanged and
   green; full V100 `ctest` green; SF-27 trio byte-compare clean; `git diff <base>..<head>` empty on the frozen
   stack, `src/multigrid`, `apps/closure_gate`, `src/physics/particles/{pspta,par2_adapter,streamline_tracker}`, and
   additive-only in `PeriodicTricubicBSpline.cuh`.

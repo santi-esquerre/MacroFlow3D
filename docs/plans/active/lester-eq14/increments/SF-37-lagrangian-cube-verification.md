@@ -18,7 +18,8 @@
 
 Decision record `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, items 2-4 and 8, stop rules R1, R2, R5.
 The Lagrangian consumer (SF-36) has no structural guarantee against integration drift (source (B), theory note §5)
-and its representation `v_s` is helicity-free but `O(h^2)`-divergent (source (A) reduced to divergence). SF-37
+and its representation `v_s` is helicity-free with a divergence expected to be `O(h^2)` (source (A) reduced to
+divergence; measured here by V4). SF-37
 measures, on the cube where every comparison is affordable and on **fresh** realizations, whether the plume
 statistics the study needs converge in `tol` and in `h` at `sigma^2` in {1, 2.25, 4}, and fixes the production
 `lambda/h`. It is allowed to establish:
@@ -36,8 +37,8 @@ none presupposed (Rule 1).
 ## Preconditions
 
 - `SF-36` is `done` on the default branch (forward tracker, `inlet_slab --track forward`, P2, covectors, controls).
-- SF-35 constructor available (`--construct trace --save-labels`), SF-32 Pollock tracker (`PollockTracker.cuh`,
-  `advance_to_x1`, `advance_to_time`).
+- SF-35 constructor available (`--construct trace --save-labels`), SF-32 Pollock tracker (`PollockTracker.cuh`:
+  `pollock_advance_to_x1`, `pollock_advance_to_time`; class `PollockTracker`, `step_to_x1`, `step`).
 
 ## In scope
 

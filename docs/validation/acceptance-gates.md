@@ -191,7 +191,7 @@ The target regime is:
 - smooth, locally isotropic Darcy flow,
 - helicity-free (proven for scalar isotropic conductivity — Lester 2023 §1),
 - two invariants / streamfunctions exist locally (Lester 2023 §2); a global affine + periodic pair does not exist for generic periodic `k` (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`),
-- the project does not presuppose the value of `alpha_T`; every observed transverse growth must be classified physical / numerical / unresolved with grid and tolerance refinement evidence, and compared against the streamline-closure oracle (return map of the independently integrated Darcy streamlines),
+- the project does not presuppose the value of `alpha_T`; every observed transverse growth must be classified physical / numerical / unresolved with grid and tolerance refinement evidence, and compared against the streamline-closure oracle (return map of the independently integrated Darcy streamlines) where that oracle is independent of the method — for the Lagrangian-label consumer, which shares its integrator, against the independent checks listed below,
 - the tracker should preserve the labels of the actual Darcy flow (non-periodic in `x1`, anchored at the inlet); a Lagrangian-label consumer (decision 2026-10-17) carries each particle's labels by definition and must show that its trajectories' drift is negligible by measurement (below).
 
 Required:

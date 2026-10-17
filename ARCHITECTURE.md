@@ -9,7 +9,7 @@ MacroFlow3D is a GPU-first research codebase for macrodispersion in 3D heterogen
 3. face-centered velocity reconstruction,
 4. particle transport through:
    - the **Par2 baseline path**, or
-   - the Lagrangian-label consumer (decision 2026-10-17; SF-36..SF-39),
+   - the Lagrangian-label consumer (planned: decision 2026-10-17; SF-36..SF-39),
 5. ongoing integration of a Lester equation (14) streamfunction solver for invariant construction,
 6. ensemble statistics and macrodispersion analysis,
 7. reproducible output capture.
@@ -27,7 +27,7 @@ The canonical flow is:
 3. **Compute Darcy velocity `v(x)`**
 4. **Run transport**
    - baseline RWPT through Par2, or
-   - the Lagrangian-label consumer (forward-traced particles carrying their own labels on the spline flow; SF-36..SF-39)
+   - the Lagrangian-label consumer (planned: forward-traced particles carrying their own labels on the spline flow; SF-36..SF-39)
 5. **Collect moments and ensemble statistics**
 6. **Compute macrodispersion outputs**
 7. **Write manifests, configs, CSVs, snapshots**
@@ -181,7 +181,7 @@ This formulation keeps a variable-coefficient diffusion structure and avoids exp
 - the periodic-fluctuation stack (SF-02..SF-26, `src/physics/streamfunctions/`: operators, projected PCG/MG, Picard, Anderson, Newton-Krylov, continuation, diagnostics) is frozen verified infrastructure and the producer of invariants on symmetric controls (the Lester 2021 field);
 - its periodic solution on generic Gaussian fields is not the Darcy flow: streamlines of a generic smooth periodic `k` do not close on the torus, so no nondegenerate affine + periodic pair represents Darcy there, and the periodic solution of (14) is the closed-streamline field nearest to Darcy (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; CPU probes, amplitude <= 1, `L/ell = 4`; production-stack repeat pending in SF-30);
 - the new target is the Darcy labels non-periodic in `x1` with inlet anchoring, prototyped on CPU (SF-29) before any GPU generalization (`docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`);
-- consumer (status 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`): the production consumer at `sigma_Y^2 >= 4` is **Lagrangian** — particles traced forward (SF-30 DP5(4) arclength integrator, tolerance-controlled) on the spline flow `v_s = k_s grad Phi_s` (SF-28 splines of the SF-19 potential and of `ln k`), each carrying its own labels, with covector transport and the accumulated divergence along the path (planned module `src/physics/particles/lagrangian_labels/`, SF-36). `v_s` is helicity-free pointwise by its form; its `O(h^2)` divergence and the integration error are measured (tolerance and grid ladders, Pollock comparator, SF-37), not guaranteed. The gridded labels are a diagnostic, verified for `sigma_Y <= 1` (SF-35 envelope; at `sigma_Y^2 = 4` refinement to 512^3 does not extend their convergent range); `src/physics/particles/streamline_tracker/` (SF-31/32: pseudo-symplectic tracker, RK and Pollock references) is verified infrastructure and the pseudo-symplectic consumer is future work;
+- consumer (status 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`): the production consumer at `sigma_Y^2 >= 4` is **Lagrangian** — particles traced forward (SF-30 DP5(4) arclength integrator, tolerance-controlled) on the spline flow `v_s = k_s grad Phi_s` (SF-28 splines of the SF-19 potential and of `ln k`), each carrying its own labels, with covector transport and the accumulated divergence along the path (planned module `src/physics/particles/lagrangian_labels/`, SF-36). `v_s` is helicity-free pointwise by its form; its divergence (expected `O(h^2)`) and the integration error are measured (tolerance and grid ladders, Pollock comparator, SF-37), not guaranteed. The gridded labels are a diagnostic, verified for `sigma_Y <= 1` (SF-35 envelope, `ell = 1/4`, one realization; at `sigma_Y^2 = 4` refinement to 512^3 does not extend their convergent range); `src/physics/particles/streamline_tracker/` (SF-31/32: pseudo-symplectic tracker, RK and Pollock references) is verified infrastructure and the pseudo-symplectic consumer is future work;
 - the SF-30 return map is the flow-level oracle of the labels (SF-34); the tracing constructor is verified by checks that do not share its construction — grid FD metrics and the (14) residual, exact-label controls, cross-construction with the elliptic solution (decision 2026-10-07, item 3);
 - the legacy PSPTA engine is not part of the consumer path (decision 2026-10-17); its role remains to be re-evaluated (audit, migration or retirement).
 
@@ -219,7 +219,7 @@ For the smooth, locally isotropic Darcy regime, the theory motivating this proje
 
 The streamline integrator of the closure gate is an oracle independent of the gridded labels. It is **not** independent of the Lagrangian consumer, which shares its integrator and spline flow; the consumer's independent checks are listed in `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, item 4.
 
-So the software must not only “move particles”; it must defend those kinematic constraints — by construction where the representation allows it (helicity-free `v_s`, labels carried by the particles) and by measured, refinement-converged evidence where it does not (integration drift, divergence). The old PSPTA engine should not dictate the new invariant-construction or consumer architecture.
+So the software must not only “move particles”; it must defend those kinematic constraints — by construction where the representation allows it (helicity-free `v_s`; each particle's labels constant by definition) and by measured, refinement-converged evidence where it does not (the drift of the integrated trajectories off the true streamsurfaces, the divergence of `v_s`). The old PSPTA engine should not dictate the new invariant-construction or consumer architecture.
 
 ---
 

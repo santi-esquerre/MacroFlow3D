@@ -10,11 +10,12 @@
   runtime analyses `.claude/orchestration/SF-35-label-transport-constructor/analysis/{sigma4-feasibility.md,
   O6-evaluation.md}` (not versioned; the probe erratum is reproduced in the experiment note)
 - Builds on: `docs/decisions/2026-10-07-label-transport-constructor.md` (tracing constructor, independence rule),
-  `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md` (O1 = B inlet-anchored labels; O3 `alpha_T`
-  not presupposed)
+  `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md` (its owner options "O1 = B" inlet-anchored
+  labels and "O3" `alpha_T` not presupposed — not to be confused with the SF-35 options O1-O4 used below)
 - Supersedes: the "planned consumer" line of `ARCHITECTURE.md` §4.3 (`streamline_tracker/` SF-31/32 as the
   consumer) and the mission's "correct pseudo-symplectic tracker" as a requirement; dashboard "Later phases" items
-  2-4 of 2026-10-07
+  2-4 of 2026-10-07; for the Lagrangian consumer, the delegated decision "Move to the long domain" of 2026-10-02
+  (gridded `e_v(h)` convergent and return map concordant up to `sigma^2 = 2.25`), replaced by SF-37
 
 ## Context
 
@@ -54,7 +55,8 @@ invariant surfaces (theory note §5).
      `c = grad psi1 x grad psi2 = v_s exp(-int div v_s dt)` along each path (from `c || v_s`, `div c = 0`,
      `c(0) = v_s(x0)`), so the Lagrangian `e_v = 1 - exp(-int div v_s dt)` measures the representation's
      accumulated divergence without grid derivatives;
-   - **not exact:** `div v_s = O(h^2)` (measured, criterion V4 of SF-37); the integration error (source (B)) is
+   - **not exact:** `div v_s` is expected to be `O(h^2)` (to be measured, criterion V4 of SF-37); the integration
+     error (source (B)) is
      controlled by `tol` and measured by a paired tolerance ladder — there is **no structural guarantee**; the
      burden of proof is on the method (Rule 3);
    - **not claimed:** structure preservation "by construction" of the trajectories; any value of `alpha_T`.
@@ -65,13 +67,15 @@ invariant surfaces (theory note §5).
    by self-convergence defect) is pre-registered in the SF-37 specification before any run and applied blind on
    fresh seeds; it is a diagnostic, non-blocking for the consumer.
 4. **Verification of the consumer (independence rule for a consumer).** The Lagrangian consumer shares the
-   integrator and the spline flow with the SF-30 closure oracle, which is therefore **not** independent of it. It is
-   accepted only on: (i) controls with exact answers (`k = 1`; `k = k(x1)` layers; the Lester (2021) closed-
+   integrator and the spline flow with the SF-30 closure oracle, which is therefore **not** independent of it.
+   Blocking acceptance evidence: (i), (iv) and (v) below. Independent comparisons, recorded with pre-registered
+   classifications and reported to the owner (non-blocking, because the gridded labels exist only inside O1 and
+   Pollock's own convergence is not established): (ii) and (iii). The list: (i) controls with exact answers (`k = 1`; `k = k(x1)` layers; the Lester (2021) closed-
    streamline field; host/GPU equivalence; covectors against finite differences of the flow map; the identity of
    item 2); (ii) the gridded SF-35 labels inside their envelope (`|psi_grid(x_p) - psi_p|`); (iii) an independent
    representation comparator, Pollock (RT0) on the SF-19 finite-volume face fluxes — exactly solenoidal, `C^0`, not
-   structure-preserving — whose plume statistics must approach those of the consumer under refinement and whose
-   excess is the §5A leakage; (iv) paired tolerance and grid ladders on the plume statistics with
+   structure-preserving — whose plume statistics are expected to approach those of the consumer under refinement
+   and whose excess measures the §5A leakage; (iv) paired tolerance and grid ladders on the plume statistics with
    confidence-interval criteria once trajectories decorrelate; (v) the Lagrangian `e_v`; and, for `alpha_L`, the
    Par2 RWPT baseline with the same configuration (Gate 5).
 5. **Pseudo-symplectic tracker.** Cross-validation of the Lagrangian consumer against the SF-31 pseudo-symplectic
@@ -80,7 +84,9 @@ invariant surfaces (theory note §5).
    a non-periodic-in-`x1` spline, item 7).
 6. **SF-34 re-scoped to the O1 arm.** Accept the SF-35 gridded labels against SF-30 at `sigma^2` in {0.25, 1},
    `ell` in {1/8, 1/16}; `sigma^2` 2.25 and 4 recorded, non-blocking. SF-34 is off the critical path of the
-   consumer.
+   consumer: the 2026-10-02 requirement for the move to the long domain (gridded `e_v(h)` convergent and return map
+   concordant up to `sigma^2 = 2.25`) no longer applies to the Lagrangian consumer, whose move to the long domain
+   rests on SF-37.
 7. **Long domain.** Both media are evaluated on the same `K` with a pre-registered criterion (SF-38): (a) SF-19
    affine-periodic on the long box (the periodic spline exists; no boundary layers) and (b) `solve_head` with
    Dirichlet in `x`, periodic in `y`/`z` (the B&dD and Par2 configuration; needs a spline non-periodic in `x1`). (a)
