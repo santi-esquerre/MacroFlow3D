@@ -1,0 +1,40 @@
+command: /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy --n 16 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cosx2_N16 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/cosx2_N16.json
+FIELD cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=16 | stage field k = exp(eps Y), eps = 0.5
+SETUP STAGE field=cells eps=0.5 N=16 status=ok
+SETUP   SF-19: mg_levels=3 converged=1 G=(9.403061933192e-01, 0.000000000000e+00, 0.000000000000e+00) mean_flux=(1.000e+00, 0.000e+00, 0.000e+00) div_max=0.000e+00 div_rms=0.000e+00
+SETUP   SF-19 corrector x: status=converged its=0 rel_residual=0.000e+00 final_residual=0.000e+00
+SETUP   SF-19 corrector y: status=converged its=10 rel_residual=4.380e-15 final_residual=6.437e-13
+SETUP   SF-19 corrector z: status=converged its=0 rel_residual=0.000e+00 final_residual=0.000e+00
+SETUP   inlet: vmin=5.758303e-01 mean(U plane 0)=1.000000000000001 (mean-1=8.882e-16) Q0-1=-1.110e-16 v_rms=1.058029e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=1.202160e-16 max_rel=2.603360e-16; spline potential GPU vs host prefilter rel=0.000e+00
+SETUP stage eps=0.5 built in 0.330s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+TRACE_STAGE field=cells eps=0.5 N=16 inlet_vmin=5.758303e-01 Q0=1.000000e+00 v_rms=1.058029e+00 mg_levels=3 darcy_converged=1
+TRACE_CONFIG backend=host hmax=7.812500e-03 (h/8) tol=1.0e-08 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
+TRANSPORT backend=host tol=1.0e-08 h_max=7.812500e-03 threads=32 status=ok max_roundtrip=0.000e+00 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 t_trace=0.09s t_labels=0.000s
+CASE field=cells eps=0.5 N=16 cand=trace | r_F=1.188e-03 its=nan | e_v=5.663e-04 e_psi=nan e_i=(6.099e-17,9.867e-32) e_div=1.531e-15 min_c=5.702e-01 p0.1=5.702e-01 p1=5.702e-01 p5=5.702e-01 p50=9.410e-01 | t=0.1
+PLANE j=0 x1=0.0000 e_v=5.663e-04 e_i1=1.413e-16 e_i2=2.923e-31 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=0 nfev_rt=0 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=1 x1=0.0625 e_v=5.663e-04 e_i1=6.524e-17 e_i2=2.013e-31 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=17664 nfev_rt=17664 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=2 x1=0.1250 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=29952 nfev_rt=29952 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=3 x1=0.1875 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=42240 nfev_rt=42240 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=4 x1=0.2500 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=54528 nfev_rt=54528 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=5 x1=0.3125 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=66816 nfev_rt=66816 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=6 x1=0.3750 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=79104 nfev_rt=79104 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=7 x1=0.4375 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=91392 nfev_rt=91392 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=8 x1=0.5000 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=103680 nfev_rt=103680 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=9 x1=0.5625 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=115968 nfev_rt=115968 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=10 x1=0.6250 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=128256 nfev_rt=128256 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=11 x1=0.6875 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=140544 nfev_rt=140544 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=12 x1=0.7500 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=152832 nfev_rt=152832 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=13 x1=0.8125 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=165120 nfev_rt=165120 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=14 x1=0.8750 e_v=5.663e-04 e_i1=2.066e-17 e_i2=5.472e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=177408 nfev_rt=177408 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=15 x1=0.9375 e_v=5.663e-04 e_i1=3.980e-17 e_i2=6.163e-33 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=189696 nfev_rt=189696 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=16 x1=1.0000 e_v=5.663e-04 e_i1=1.786e-16 e_i2=2.465e-32 min_c=5.702e-01 vD1_min=5.703e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=201984 nfev_rt=201984 non_ok=0 backflow_enc=0 landings_discarded=0
+BACKFLOW field=cells eps=0.5 N=16 inlet_vmin=5.758303e-01 Q0=1.000000e+00 vD1_min=5.703245e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 status_hist=4096,0,0,0,0,0,0
+GROWTH field=cells eps=0.5 N=16 e_v_N/e_v_1=1.000e+00 e_i_N/e_i_1=2.737e+00 max_roundtrip=0.000e+00 (plane 0)
+RESIDUAL field=cells eps=0.5 N=16 cand=trace r_F=1.188e-03 r_out=1.855e-16 q_rms_planes=1..N-1
+TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=0.000e+00
+SAVED_LABELS /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cosx2_N16 (psi1.npy, psi2.npy, labels.json; ladder entries in ladder_h<div>_tol<tol>/)
+TIMING diagnostics=0.001s field=0.042s stage=0.330s trace=0.094s total=0.469s
+MEMORY peak_device_bytes=516947968 free_min=33572782080 total_device=34089730048 workspaces_bytes=8451983 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/cosx2_N16.json
+STATUS ok

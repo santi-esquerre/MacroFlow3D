@@ -1,0 +1,123 @@
+[2026-10-15T18:33:16Z] job=sf35-controls session=macroflow3d-SF-35-sf35-controls started
+[2026-10-15T18:33:16Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-15T18:33:16Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-15T18:33:16Z] command=export THREADS=32; bash docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh build/v100-release controls
+run_campaign.sh: part=controls bin=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-15T18:33:16Z
+  run.env: COMMIT=55d95a6329b6bc65cc25f936b419e103a7ae33bb HOST=localhost.localdomain DATE_UTC=2026-10-15T18:33:16Z BIN=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab BUILD_DIR=build/v100-release THREADS=32 PART=controls GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/ctest.time ctest --test-dir build/v100-release --output-on-failure -R 'inlet_slab_(controls|trace16)' > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/ctest.log 2>&1
+  CTEST rc=0
+    1/2 Test #30: inlet_slab_trace16 ...............   Passed   10.54 sec
+    2/2 Test #31: inlet_slab_controls ..............   Passed   10.34 sec
+    100% tests passed, 0 tests failed out of 2
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/make_cos_x2_cells.py 16 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy
+wrote /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy shape=(16, 16, 16) cos(2 pi x2) layout_check=True
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N16.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N16.npy --n 16 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cosx2_N16 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/cosx2_N16.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N16.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N16.log rc=0 STATUS ok wall=4s max_rss_kB=611672 end=2026-10-15T18:33:45Z
+    CASE field=cells eps=0.5 N=16 cand=trace | r_F=1.188e-03 its=nan | e_v=5.663e-04 e_psi=nan e_i=(6.099e-17,9.867e-32) e_div=1.531e-15 min_c=5.702e-01 p0.1=5.702e-01 p1=5.702e-01 p5=5.702e-01 p50=9.410e-01 | t=0.1
+    BACKFLOW field=cells eps=0.5 N=16 inlet_vmin=5.758303e-01 Q0=1.000000e+00 vD1_min=5.703245e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 status_hist=4096,0,0,0,0,0,0
+    GROWTH field=cells eps=0.5 N=16 e_v_N/e_v_1=1.000e+00 e_i_N/e_i_1=2.737e+00 max_roundtrip=0.000e+00 (plane 0)
+    RESIDUAL field=cells eps=0.5 N=16 cand=trace r_F=1.188e-03 r_out=1.855e-16 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=0.000e+00
+    TIMING diagnostics=0.001s field=0.042s stage=0.330s trace=0.094s total=0.469s
+    MEMORY peak_device_bytes=516947968 free_min=33572782080 total_device=34089730048 workspaces_bytes=8451983 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/make_cos_x2_cells.py 32 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N32.npy
+wrote /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N32.npy shape=(32, 32, 32) cos(2 pi x2) layout_check=True
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N32.npy --n 32 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cosx2_N32 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/cosx2_N32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N32.log rc=0 STATUS ok wall=4s max_rss_kB=613416 end=2026-10-15T18:33:49Z
+    CASE field=cells eps=0.5 N=32 cand=trace | r_F=7.816e-05 its=nan | e_v=3.741e-05 e_psi=nan e_i=(1.001e-16,1.667e-31) e_div=2.844e-15 min_c=5.703e-01 p0.1=5.703e-01 p1=5.703e-01 p5=5.758e-01 p50=9.403e-01 | t=0.8
+    BACKFLOW field=cells eps=0.5 N=32 inlet_vmin=5.716993e-01 Q0=1.000000e+00 vD1_min=5.703245e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=cells eps=0.5 N=32 e_v_N/e_v_1=1.000e+00 e_i_N/e_i_1=2.264e+00 max_roundtrip=0.000e+00 (plane 0)
+    RESIDUAL field=cells eps=0.5 N=32 cand=trace r_F=7.816e-05 r_out=3.406e-16 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=0.000e+00
+    TIMING diagnostics=0.001s field=0.046s stage=0.364s trace=0.767s total=1.181s
+    MEMORY peak_device_bytes=531628032 free_min=33558102016 total_device=34089730048 workspaces_bytes=20675503 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/make_cos_x2_cells.py 64 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N64.npy
+wrote /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N64.npy shape=(64, 64, 64) cos(2 pi x2) layout_check=True
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N64.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cos_x2_N64.npy --n 64 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/cosx2_N64 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/cosx2_N64.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N64.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/cosx2_N64.log rc=0 STATUS ok wall=15s max_rss_kB=654964 end=2026-10-15T18:34:05Z
+    CASE field=cells eps=0.5 N=64 cand=trace | r_F=4.949e-06 its=nan | e_v=2.371e-06 e_psi=nan e_i=(1.607e-16,2.329e-30) e_div=7.654e-15 min_c=5.703e-01 p0.1=5.703e-01 p1=5.703e-01 p5=5.758e-01 p50=9.403e-01 | t=11.0
+    BACKFLOW field=cells eps=0.5 N=64 inlet_vmin=5.706681e-01 Q0=1.000000e+00 vD1_min=5.703245e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=cells eps=0.5 N=64 e_v_N/e_v_1=1.000e+00 e_i_N/e_i_1=2.952e+00 max_roundtrip=0.000e+00 (plane 0)
+    RESIDUAL field=cells eps=0.5 N=64 cand=trace r_F=4.949e-06 r_out=7.625e-16 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=0.000e+00
+    TIMING diagnostics=0.006s field=0.091s stage=0.439s trace=11.057s total=11.600s
+    MEMORY peak_device_bytes=630194176 free_min=33459535872 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/make_cos_x2_cells.py 64 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/zeros_N64.npy --zeros
+wrote /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/zeros_N64.npy shape=(64, 64, 64) zeros layout_check=True
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/k1_N64.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/zeros_N64.npy --n 64 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/k1_N64 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/k1_N64.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/k1_N64.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/k1_N64.log rc=0 STATUS ok wall=14s max_rss_kB=655048 end=2026-10-15T18:34:19Z
+    CASE field=cells eps=0.5 N=64 cand=trace | r_F=6.692e-14 its=nan | e_v=6.994e-16 e_psi=nan e_i=(7.678e-32,7.678e-32) e_div=3.863e-15 min_c=1.000e+00 p0.1=1.000e+00 p1=1.000e+00 p5=1.000e+00 p50=1.000e+00 | t=9.9
+    BACKFLOW field=cells eps=0.5 N=64 inlet_vmin=1.000000e+00 Q0=1.000000e+00 vD1_min=1.000000e+00 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=cells eps=0.5 N=64 e_v_N/e_v_1=1.000e+00 e_i_N/e_i_1=1.547e+00 max_roundtrip=0.000e+00 (plane 0)
+    RESIDUAL field=cells eps=0.5 N=64 cand=trace r_F=6.692e-14 r_out=3.677e-31 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=0.000e+00
+    TIMING diagnostics=0.006s field=0.092s stage=0.075s trace=9.919s total=10.101s
+    MEMORY peak_device_bytes=630194176 free_min=33459535872 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/control2d_N32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --analytic control2d --n 32 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/control2d_N32 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/control2d_N32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/control2d_N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/control2d_N32.log rc=0 STATUS ok wall=5s max_rss_kB=613172 end=2026-10-15T18:34:24Z
+    CASE field=control2d eps=0.5 N=32 cand=trace | r_F=3.319e-02 its=nan | e_v=5.654e-03 e_psi=nan e_i=(2.825e-04,7.748e-14) e_div=2.180e-14 min_c=5.247e-01 p0.1=5.279e-01 p1=5.479e-01 p5=6.211e-01 p50=1.000e+00 | t=0.8
+    BACKFLOW field=control2d eps=0.5 N=32 inlet_vmin=5.442277e-01 Q0=1.000000e+00 vD1_min=5.186445e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.030217e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=control2d eps=0.5 N=32 e_v_N/e_v_1=1.136e+00 e_i_N/e_i_1=4.126e+00 max_roundtrip=2.407e-09 (plane 30)
+    RESIDUAL field=control2d eps=0.5 N=32 cand=trace r_F=3.319e-02 r_out=1.280e-03 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.407e-09
+    TIMING diagnostics=0.002s field=0.009s stage=0.680s trace=0.828s total=1.523s
+    MEMORY peak_device_bytes=531628032 free_min=33558102016 total_device=34089730048 workspaces_bytes=20675503 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/controls_digest.py --raw /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls --exports /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls --ctest-log /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/controls/ctest.log --out /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/controls.md
+# SF-35 positive controls (A1-A4)
+
+## A1: k = 1 (Y = 0 cells, eps = 0.5)
+
+| N | status | max\|psi1 - x2\| | max\|psi2 - x3\| | A1 (<= 1e-13) |
+|---|---|---|---|---|
+| 64 | ok | 5.551e-17 | 5.551e-17 | pass |
+
+## A2: k = exp(0.5 cos 2 pi x2) (Y_cell = cos(2 pi (j + 1/2) h), eps = 0.5)
+
+| N | status | max\|dpsi1(j)-dpsi1(0)\| | max\|dpsi2(j)-dpsi2(0)\| | straight (<= 1e-10) | e_v | r_F |
+|---|---|---|---|---|---|---|
+| 16 | ok | 0.000e+00 | 0.000e+00 | pass | 5.663e-04 | 1.188e-03 |
+| 32 | ok | 0.000e+00 | 0.000e+00 | pass | 3.741e-05 | 7.816e-05 |
+| 64 | ok | 0.000e+00 | 0.000e+00 | pass | 2.371e-06 | 4.949e-06 |
+
+| quantity | pair | observed order | >= 3.5 |
+|---|---|---|---|
+| e_v | 16->32 | 3.92 | pass |
+| e_v | 32->64 | 3.98 | pass |
+| r_F | 16->32 | 3.93 | pass |
+| r_F | 32->64 | 3.98 | pass |
+
+- A2 order verdict e_v: **pass**
+- A2 order verdict r_F: **pass**
+- A2 straightness verdict: **pass**
+
+## A3: control2d (psi2 = x3), eps = 0.5
+
+| N | status | max\|psi2 - x3\| | A3 (<= 1e-10) |
+|---|---|---|---|
+| 32 | ok | 5.529e-14 | pass |
+
+## A4 and fast tests (ctest)
+
+| test | result | time (s) | passed and <= 60 s |
+|---|---|---|---|
+| inlet_slab_trace16 | Passed | 10.54 | pass |
+| inlet_slab_controls | Passed | 10.34 | pass |
+
+## Summary
+
+| criterion | verdict |
+|---|---|
+| A1 | pass |
+| A2 | pass |
+| A3 | pass |
+| A4/ctest:inlet_slab_trace16 | pass |
+| A4/ctest:inlet_slab_controls | pass |
+
+  controls_digest.py rc=0
+run_campaign.sh: part=controls end=2026-10-15T18:34:24Z unexpected_failures=0
+[2026-10-15T18:34:24Z] job=sf35-controls finished exit=0

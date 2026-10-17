@@ -1,0 +1,13 @@
+[2026-10-17T14:04:08Z] job=J2a-n256 session=macroflow3d-SF-35-feas-J2a-n256 started
+[2026-10-17T14:04:08Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=1)
+[2026-10-17T14:04:08Z] cwd=/home/sesquerre/MacroFlow3D-SF-35-feas
+[2026-10-17T14:04:08Z] command=./tools/probe_sf35/j2a.sh
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 256 --save-field /home/sesquerre/sf35_feas_probe/Y256 --save-labels /home/sesquerre/sf35_feas_probe/exports/matrix_eps20/N256 --summary /home/sesquerre/sf35_feas_probe/J2/N256.json   (CUDA_VISIBLE_DEVICES=1 start=2026-10-17T14:04:08Z)
+  name=N256 rc=21 end=2026-10-17T14:13:43Z Elapsed (wall clock) time (h:mm:ss or m:ss): 9:34.88 Maximum resident set size (kbytes): 3766700
+    FIELD gaussian (SF-18) N=256 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=8323199 | stage field k = exp(eps Y), eps = 2
+    CASE field=gaussian eps=2 N=256 cand=trace | r_F=2.135e+04 its=nan | e_v=4.552e+00 e_psi=nan e_i=(3.035e-02,7.677e-02) e_div=2.659e+02 min_c=1.184e-04 p0.1=1.436e-03 p1=5.268e-03 p5=2.943e-02 p50=6.704e-01 | t=554.9
+    TIMING diagnostics=0.041s field=7.395s stage=8.706s trace=555.289s total=571.782s
+    MEMORY peak_device_bytes=3662675968 free_min=30427054080 total_device=34089730048 workspaces_bytes=2299055151 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
+true device peak (MiB) N=256: 3769  baseline idle (first sample): 0
+[2026-10-17T14:13:43Z] job=J2a-n256 finished exit=0

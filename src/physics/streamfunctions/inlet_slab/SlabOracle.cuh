@@ -239,6 +239,12 @@ struct SlabOraclePlane {
     long long fwd_non_ok = 0;
     long long backflow_encounters = 0; ///< ok streamlines that met g1 <= 0 (informative)
     bool flagged = false;
+    // SF-35 N1 additive accounting (backward traces of the plane; not printed by table()).
+    /// Counts over closure_gate::StreamlineStatus (ok, seed_backflow, cap_exceeded, stagnation,
+    /// step_underflow, landing_failed, invalid_conductivity) of the BACKWARD traces.
+    long long status_hist[7] = {0, 0, 0, 0, 0, 0, 0};
+    long long landings_discarded = 0; ///< backward landings discarded (g1 <= 0 at a stage)
+    double min_g1_hat = std::numeric_limits<double>::infinity(); ///< min g1/|g|, backward traces
 };
 
 struct SlabOracleResult {
@@ -251,8 +257,14 @@ struct SlabOracleResult {
     long long non_ok = 0;
     double seconds_trace = 0.0;
     double seconds_labels = 0.0;
+    // SF-35 N1 additive accounting (stage totals of the backward traces).
+    long long seed_backflow = 0;
+    long long landings_discarded = 0;
+    double min_g1_hat = std::numeric_limits<double>::infinity();
     /// Per-plane table (one line per plane) + a summary line.
     std::string table() const;
+    /// SF-35 N1: separate optional lines with the additive accounting (table() is unchanged).
+    std::string table_accounting() const;
 };
 
 namespace detail {
@@ -339,6 +351,8 @@ SlabOracleResult compute_oracle(CudaContext& ctx, const InletSlabGrid& grid, con
     R.roundtrip.assign(total, nan);
     std::vector<long long> nfev_b(total, 0), nfev_f(total, 0);
     std::vector<std::uint8_t> st_b(total, 0), st_f(total, 0), bfe(total, 0);
+    std::vector<long long> ldisc_b(total, 0);
+    std::vector<double> ming_b(total, std::numeric_limits<double>::infinity());
 
     const auto t0 = std::chrono::steady_clock::now();
     detail::oracle_parallel_for(total, opt.threads, [&](std::size_t i) {
@@ -352,6 +366,8 @@ SlabOracleResult compute_oracle(CudaContext& ctx, const InletSlabGrid& grid, con
         const closure_gate::StreamlineResult rb = trace_to_plane(field, seed, 0.0, ob);
         nfev_b[i] = rb.field_evaluations;
         st_b[i] = static_cast<std::uint8_t>(rb.status);
+        ldisc_b[i] = rb.landings_discarded;
+        ming_b[i] = rb.min_g1_hat;
         if (rb.status != closure_gate::StreamlineStatus::ok) {
             return;
         }
@@ -384,6 +400,9 @@ SlabOracleResult compute_oracle(CudaContext& ctx, const InletSlabGrid& grid, con
             const std::size_t i = static_cast<std::size_t>(j - 1) * n2 + r;
             P.nfev += nfev_b[i];
             P.nfev_rt += nfev_f[i];
+            ++P.status_hist[st_b[i] < 7 ? st_b[i] : 6];
+            P.landings_discarded += ldisc_b[i];
+            P.min_g1_hat = std::min(P.min_g1_hat, ming_b[i]);
             if (st_b[i] != 0) {
                 ++P.back_non_ok;
             } else if (st_f[i] != 0) {
@@ -396,6 +415,9 @@ SlabOracleResult compute_oracle(CudaContext& ctx, const InletSlabGrid& grid, con
         }
         P.flagged = P.back_non_ok > 0 || P.fwd_non_ok > 0 || P.roundtrip > opt.max_roundtrip;
         R.non_ok += P.back_non_ok + P.fwd_non_ok;
+        R.seed_backflow += P.status_hist[1];
+        R.landings_discarded += P.landings_discarded;
+        R.min_g1_hat = std::min(R.min_g1_hat, P.min_g1_hat);
         R.max_roundtrip = std::max(R.max_roundtrip, P.roundtrip);
         if (P.flagged)
             R.status = SlabOracleStatus::oracle_roundtrip_fail;

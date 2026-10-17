@@ -46,6 +46,28 @@ std::string SlabOracleResult::table() const {
     return out;
 }
 
+std::string SlabOracleResult::table_accounting() const {
+    std::string out;
+    char b[320];
+    for (const SlabOraclePlane& P : planes) {
+        if (P.j == 0)
+            continue;
+        std::snprintf(b, sizeof(b),
+                      "  oracle acct j=%3d hist(ok,sb,cap,stag,uflow,land,kinv)=(%lld,%lld,%lld,"
+                      "%lld,%lld,%lld,%lld) landings_discarded=%lld min_g1_hat=%.6e\n",
+                      P.j, P.status_hist[0], P.status_hist[1], P.status_hist[2], P.status_hist[3],
+                      P.status_hist[4], P.status_hist[5], P.status_hist[6], P.landings_discarded,
+                      P.min_g1_hat);
+        out += b;
+    }
+    std::snprintf(b, sizeof(b),
+                  "  oracle acct total seed_backflow=%lld landings_discarded=%lld "
+                  "min_g1_hat=%.6e\n",
+                  seed_backflow, landings_discarded, min_g1_hat);
+    out += b;
+    return out;
+}
+
 namespace detail {
 
 void oracle_evaluate_labels(CudaContext& ctx, const InletSlabGrid& grid, const InletLabels& labels,

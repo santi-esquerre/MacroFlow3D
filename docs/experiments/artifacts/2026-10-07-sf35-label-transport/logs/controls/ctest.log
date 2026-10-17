@@ -1,0 +1,9 @@
+Test project /home/sesquerre/MacroFlow3D-SF-35/build/v100-release
+    Start 30: inlet_slab_trace16
+1/2 Test #30: inlet_slab_trace16 ...............   Passed   10.54 sec
+    Start 31: inlet_slab_controls
+2/2 Test #31: inlet_slab_controls ..............   Passed   10.34 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =  20.92 sec

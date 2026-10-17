@@ -1,0 +1,61 @@
+[2026-10-15T18:30:01Z] job=sf35-build session=macroflow3d-SF-35-sf35-build started
+[2026-10-15T18:30:01Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-15T18:30:01Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-15T18:30:01Z] command=cmake --preset v100-release && cmake --build build/v100-release -j 2>&1 | tail -n 25; echo BUILD_EXIT=${PIPESTATUS[0]}; ctest --test-dir build/v100-release -N | tail -2; ctest --test-dir build/v100-release --output-on-failure -R inlet_slab 2>&1 | tail -n 16
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (0.3s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-35/build/v100-release
+[204/228] Linking CXX executable closure_gate
+[205/228] Linking CXX executable inlet_slab_trace_tests
+[206/228] Linking CXX executable streamline_tracker_rk_tests
+[207/228] Linking CXX executable streamline_tracker_ps_tests
+[208/228] Linking CXX executable macroflow3d_pipeline
+[209/228] Linking CXX executable inlet_slab_trace_gpu_tests
+[210/228] Linking CXX executable periodic_gaussian_tests
+[211/228] Linking CXX executable streamline_closure_controls_tests
+[212/228] Linking CXX executable inlet_slab_jvp_tests
+[213/228] Linking CXX executable inlet_slab_contract_tests
+[214/228] Linking CXX executable inlet_slab_npy_tests
+[215/228] Linking CXX executable inlet_slab_proto_check
+[216/228] Linking CXX executable streamline_tracker_face_flux_tests
+[217/228] Linking CXX executable inlet_slab_production_tests
+[218/228] Linking CXX executable inlet_slab
+[219/228] Linking CXX executable inlet_slab_coarse_tests
+[220/228] Linking CXX executable affine_periodic_flow_tests
+[221/228] Linking CXX executable inlet_slab_controls_tests
+[222/228] Linking CXX executable streamfunction_operator_tests
+[223/228] Linking CXX executable CMakeFiles/inlet_slab_newton_tests.dir/cmake_device_link.o
+[224/228] Linking CXX executable CMakeFiles/spurious_spreading.dir/cmake_device_link.o
+[225/228] Linking CXX executable CMakeFiles/spurious_spreading_controls_tests.dir/cmake_device_link.o
+[226/228] Linking CXX executable inlet_slab_newton_tests
+[227/228] Linking CXX executable spurious_spreading
+[228/228] Linking CXX executable spurious_spreading_controls_tests
+BUILD_EXIT=0
+
+Total Tests: 33
+    Start 28: inlet_slab_coarse
+4/9 Test #28: inlet_slab_coarse ................   Passed    5.01 sec
+    Start 29: inlet_slab_production16
+5/9 Test #29: inlet_slab_production16 ..........   Passed   11.51 sec
+    Start 30: inlet_slab_trace16
+6/9 Test #30: inlet_slab_trace16 ...............   Passed   10.42 sec
+    Start 31: inlet_slab_controls
+7/9 Test #31: inlet_slab_controls ..............   Passed   10.30 sec
+    Start 32: inlet_slab_trace_gpu
+8/9 Test #32: inlet_slab_trace_gpu .............   Passed   33.22 sec
+    Start 33: inlet_slab_npy
+9/9 Test #33: inlet_slab_npy ...................   Passed    3.61 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =  96.91 sec
+[2026-10-15T18:32:30Z] job=sf35-build finished exit=0

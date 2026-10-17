@@ -1,0 +1,347 @@
+diff --git a/apps/inlet_slab/inlet_slab_driver.cuh b/apps/inlet_slab/inlet_slab_driver.cuh
+index c44e4eb..0440515 100644
+--- a/apps/inlet_slab/inlet_slab_driver.cuh
++++ b/apps/inlet_slab/inlet_slab_driver.cuh
+@@ -242,6 +242,7 @@ struct DriverConfig {
+     bool trace_solve = false;
+     std::string tracer = "host"; ///< host | gpu
+     std::string save_labels_dir;
++    std::string save_field_dir; ///< PROBE (SF-35-feas, not for merge): write Y_cells.npy
+     bool trace_opts_given = false; ///< any of the trace-only options was given
+     // outputs
+     std::string save_solution_dir;
+@@ -398,6 +399,9 @@ inline DriverConfig parse_args(int argc, char** argv) {
+         } else if (opt == "--save-labels") {
+             c.save_labels_dir = val;
+             c.trace_opts_given = true;
++        } else if (opt == "--save-field") {
++            c.save_field_dir = val;
++            c.trace_opts_given = true;
+         } else if (opt == "--eps-from") {
+             c.eps_from = parse_double(opt, val);
+             c.has_eps_from = true;
+@@ -1802,6 +1806,13 @@ inline int run_trace_construct(CudaContext& ctx, const DriverConfig& c) {
+ 
+     pl.begin("field");
+     sl::SlabFieldSource src = make_trace_field(ctx, c, J);
++    if (!c.save_field_dir.empty()) {
++        // PROBE: unit-amplitude cell samples, C-order (N,N,N) => numpy axis 2 = x1 (fastest)
++        const std::size_t n_ = static_cast<std::size_t>(c.n);
++        sl::write_npy(c.save_field_dir + "/Y_cells.npy", {n_, n_, n_}, src.cell_samples().data(),
++                      src.cell_samples().size());
++        out_line("SAVED_FIELD " + c.save_field_dir + "/Y_cells.npy");
++    }
+     pl.end();
+     J["field"] = src.name();
+     J["eps"] = c.eps;
+diff --git a/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu b/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
+index 0e00996..da0337e 100644
+--- a/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
++++ b/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu
+@@ -13,6 +13,8 @@
+ 
+ #include <algorithm>
+ #include <cstdio>
++#include <cstdlib>
++#include <memory>
+ #include <stdexcept>
+ #include <utility>
+ 
+@@ -492,13 +494,21 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
+         fcfg.linear.max_iter = opt.pcg_max_iter;
+     R.mg_levels = opt.mg_levels == 0 ? slab_auto_mg_levels(N) : opt.mg_levels;
+     fcfg.mg.num_levels = R.mg_levels;
+-    physics::AffinePeriodicFlowWorkspace fws;
++    // PROBE (SF-35-feas): dead N^3 temporaries are freed at their last use (peak device memory)
++    const bool keep_temps = std::getenv("MF_PROBE_KEEP_TEMPS") != nullptr; // control: old behaviour
++    auto fws_p = std::make_unique<physics::AffinePeriodicFlowWorkspace>();
++    physics::AffinePeriodicFlowWorkspace& fws = *fws_p;
+     DeviceBuffer<real> u(static_cast<std::size_t>(N + 1) * N * N),
+         v(static_cast<std::size_t>(N) * (N + 1) * N), w(static_cast<std::size_t>(N) * N * (N + 1));
+     R.darcy = physics::solve_affine_periodic_flow(
+         ctx, S.cell_grid, cspan(K_dev), fcfg,
+         physics::AffinePeriodicVelocityView{u.span(), v.span(), w.span()}, fws);
+     ctx.synchronize();
++    if (!keep_temps) {
++        K_dev.reset();
++        v.reset();
++        w.reset();
++    }
+     R.darcy_converged = R.darcy.corrector_results[0].converged &&
+                         R.darcy.corrector_results[1].converged &&
+                         R.darcy.corrector_results[2].converged;
+@@ -524,6 +534,8 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
+             }
+         R.inlet_mean = sum / static_cast<real>(n2);
+     }
++    if (!keep_temps)
++        u.reset();
+     try {
+         S.labels = InletLabels::build(S.inlet_v1_samples, N, 0.5, 0.5);
+     } catch (const InletBackflowError& e) {
+@@ -545,6 +557,10 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
+         S.potential_coefficients = download(sh_ws.coefficients.data(), ncell);
+         S.logk_coefficients = download(sy_ws.coefficients.data(), ncell);
+         const std::vector<real> h_host = download(htilde.data(), ncell);
++        if (!keep_temps) {
++            fws_p.reset(); // htilde is dead from here
++            lnK_dev.reset();
++        }
+         std::vector<real> c_host(ncell);
+         interpolation::prefilter_periodic_tricubic_bspline_host(S.cell_grid, h_host.data(),
+                                                                 c_host.data());
+diff --git a/tools/probe_sf35/controls.sh b/tools/probe_sf35/controls.sh
+new file mode 100755
+index 0000000..85f2fb7
+--- /dev/null
++++ b/tools/probe_sf35/controls.sh
+@@ -0,0 +1,40 @@
++#!/usr/bin/env bash
++# PROBE controls: P1 (--cells of --save-field reproduces gaussian), P2 (freed temporaries are byte-identical),
++# roll sanity (k = N identity; shifted inlet_vmin differs).
++set -uo pipefail
++P=~/sf35_feas_probe
++C=$P/controls
++mkdir -p "$C"
++R="bash tools/probe_sf35/run.sh"
++F="--construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32"
++LD=docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/labels_diff.py
++
++for N in 64 128; do
++    mkdir -p "$C/Y$N"
++    # A: new binary (P2 on), gaussian, save field + labels
++    $R "N${N}_new" "$C" -- $F --n $N --save-field "$C/Y$N" --save-labels "$C/L_new$N"
++    # B: P2 off (pre-P2 lifetimes) gaussian
++    MF_PROBE_KEEP_TEMPS=1 $R "N${N}_old" "$C" -- $F --n $N --save-labels "$C/L_old$N"
++    # C: --cells of the saved field (P1 identity)
++    $R "N${N}_cells" "$C" -- $F --n $N --cells "$C/Y$N/Y_cells.npy" --save-labels "$C/L_cells$N"
++    echo "== P1 identity N=$N: gaussian vs --cells"
++    python3 $LD "$C/L_new$N" "$C/L_cells$N" --expect 1e-13 | tail -12
++    echo "== P2 labels N=$N: new vs old"
++    python3 $LD "$C/L_new$N" "$C/L_old$N" --expect 0 | tail -12
++    echo "== P2 byte-identity N=$N (CASE/PLANE/BACKFLOW/GROWTH/RESIDUAL/TRANSPORT_STATUS/STATUS lines)"
++    for t in new old; do
++        grep -E '^(CASE|PLANE|BACKFLOW|GROWTH|RESIDUAL|TRANSPORT_STATUS|STATUS|LABELDIFF|FIELD)' "$C/N${N}_$t.log" > "$C/N${N}_$t.lines"
++    done
++    if cmp "$C/N${N}_new.lines" "$C/N${N}_old.lines"; then echo "BYTE_IDENTICAL N=$N lines=$(wc -l < $C/N${N}_new.lines)"; else echo "DIFFER N=$N"; diff "$C/N${N}_new.lines" "$C/N${N}_old.lines" | head -20; fi
++    cmp "$C/L_new$N/psi1.npy" "$C/L_old$N/psi1.npy" && cmp "$C/L_new$N/psi2.npy" "$C/L_old$N/psi2.npy" && echo "LABELS_BYTE_IDENTICAL new_vs_old N=$N"
++done
++
++echo "== roll sanity N=64"
++python3 tools/probe_sf35/roll_field.py "$C/Y64/Y_cells.npy" "$C/Y64/Y_roll64.npy" 64
++cmp "$C/Y64/Y_roll64.npy" "$C/Y64/Y_cells.npy" && echo "ROLL_N_IDENTITY_BYTES_EQUAL"
++python3 tools/probe_sf35/roll_field.py "$C/Y64/Y_cells.npy" "$C/Y64/Y_roll12.npy" 12
++$R "N64_roll12" "$C" -- $F --n 64 --cells "$C/Y64/Y_roll12.npy"
++grep -E '^(STAGE|CASE)' "$C/N64_new.log" | cut -c1-200
++grep -E '^(STAGE|CASE)' "$C/N64_roll12.log" | cut -c1-200
++grep -o 'inlet_vmin=[^ ]*' "$C/N64_new.log" | head -1
++grep -o 'inlet_vmin=[^ ]*' "$C/N64_roll12.log" | head -1
+diff --git a/tools/probe_sf35/j1a.sh b/tools/probe_sf35/j1a.sh
+new file mode 100755
+index 0000000..0414b06
+--- /dev/null
++++ b/tools/probe_sf35/j1a.sh
+@@ -0,0 +1,18 @@
++#!/usr/bin/env bash
++# PROBE J1a: shift test at N = 128 (eps 2, seed 3001, gpu tracer): control (--cells unshifted), anchor at
++# original x1 = 0.75 ell (k = 24 cells) and 0.5 ell (k = 16 cells).
++set -uo pipefail
++P=~/sf35_feas_probe
++S=$P/J1
++mkdir -p "$S"
++R="bash tools/probe_sf35/run.sh"
++F="--construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32"
++Y=$P/controls/Y128/Y_cells.npy
++python3 tools/probe_sf35/roll_field.py "$Y" "$S/Y128_k24.npy" 24
++python3 tools/probe_sf35/roll_field.py "$Y" "$S/Y128_k16.npy" 16
++$R N128_ctrl "$S" -- $F --n 128 --cells "$Y" --save-labels "$S/L_N128_ctrl"
++$R N128_k24 "$S" -- $F --n 128 --cells "$S/Y128_k24.npy" --save-labels "$S/L_N128_k24"
++$R N128_k16 "$S" -- $F --n 128 --cells "$S/Y128_k16.npy" --save-labels "$S/L_N128_k16"
++echo "== control vs gaussian (controls/L_new128)"
++python3 docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/labels_diff.py "$P/controls/L_new128" "$S/L_N128_ctrl" --expect 1e-13 | tail -10
++rm -f "$S"/Y128_k*.npy
+diff --git a/tools/probe_sf35/j1b.sh b/tools/probe_sf35/j1b.sh
+new file mode 100755
+index 0000000..99fe594
+--- /dev/null
++++ b/tools/probe_sf35/j1b.sh
+@@ -0,0 +1,26 @@
++#!/usr/bin/env bash
++# PROBE J1b: shift test at N = 256: anchors at original x1 = 0.75 ell (k = 48) and 0.5 ell (k = 32).
++# Needs $P/Y256/Y_cells.npy (written by J2a at its start); waits up to 3 h for it.
++set -uo pipefail
++P=~/sf35_feas_probe
++S=$P/J1
++mkdir -p "$S"
++R="bash tools/probe_sf35/run.sh"
++F="--construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32"
++Y=$P/Y256/Y_cells.npy
++for i in $(seq 1 1080); do
++    grep -q SAVED_FIELD "$P/J2/N256.log" 2>/dev/null && [ -s "$Y" ] && break
++    sleep 10
++done
++sleep 5
++[ -s "$Y" ] || { echo "Y256 never appeared"; exit 3; }
++python3 tools/probe_sf35/roll_field.py "$Y" "$S/Y256_k48.npy" 48
++python3 tools/probe_sf35/roll_field.py "$Y" "$S/Y256_k32.npy" 32
++$R N256_k48 "$S" -- $F --n 256 --cells "$S/Y256_k48.npy" --save-labels "$S/L_N256_k48"
++$R N256_k32 "$S" -- $F --n 256 --cells "$S/Y256_k32.npy" --save-labels "$S/L_N256_k32"
++rm -f "$S"/Y256_k*.npy
++for k in 24:48 16:32; do
++    a=${k%%:*}; b=${k##*:}
++    echo "== per-plane k=$a -> $b"
++    python3 tools/probe_sf35/planes.py --shift $(python3 -c "print($a/128)") "$S/N128_k$a.json" "$S/N256_k$b.json"
++done
+diff --git a/tools/probe_sf35/j2a.sh b/tools/probe_sf35/j2a.sh
+new file mode 100755
+index 0000000..9ea4833
+--- /dev/null
++++ b/tools/probe_sf35/j2a.sh
+@@ -0,0 +1,9 @@
++#!/usr/bin/env bash
++# PROBE J2a: N = 256, eps 2, P2 on, with true device-peak sampler; also writes Y256 for J1b.
++set -uo pipefail
++P=~/sf35_feas_probe
++mkdir -p "$P/J2" "$P/Y256" "$P/exports/matrix_eps20"
++R="bash tools/probe_sf35/run.sh"
++F="--construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32"
++$R N256 "$P/J2" --memlog -- $F --n 256 --save-field "$P/Y256" --save-labels "$P/exports/matrix_eps20/N256"
++echo "true device peak (MiB) N=256: $(sort -n "$P/J2/N256.mem" | tail -1)  baseline idle (first sample): $(head -1 "$P/J2/N256.mem")"
+diff --git a/tools/probe_sf35/j2b.sh b/tools/probe_sf35/j2b.sh
+new file mode 100755
+index 0000000..9f148af
+--- /dev/null
++++ b/tools/probe_sf35/j2b.sh
+@@ -0,0 +1,20 @@
++#!/usr/bin/env bash
++# PROBE J2b: N = 512, eps 2, P2 on, true device-peak sampler; then per-plane orders 256->512 and the
++# committed label_diagnostics.py on exports root (matrix_eps20/N{128,256,512}).
++set -uo pipefail
++P=~/sf35_feas_probe
++mkdir -p "$P/J2" "$P/exports/matrix_eps20"
++R="bash tools/probe_sf35/run.sh"
++F="--construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32"
++$R N512 "$P/J2" --memlog -- $F --n 512 --save-labels "$P/exports/matrix_eps20/N512"
++echo "true device peak (MiB) N=512: $(sort -n "$P/J2/N512.mem" | tail -1)  baseline idle (first sample): $(head -1 "$P/J2/N512.mem")"
++if [ -s "$P/J2/N512.json" ]; then
++    echo "== per-plane orders 256 -> 512"
++    python3 tools/probe_sf35/planes.py "$P/J2/N256.json" "$P/J2/N512.json"
++fi
++ln -sfn "$P/controls/L_new128" "$P/exports/matrix_eps20/N128"
++if [ -s "$P/exports/matrix_eps20/N512/psi1.npy" ]; then
++    python3 docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/label_diagnostics.py "$P/exports" \
++        --eps 20 --grids 128 256 512 --out "$P/J2/label_diagnostics_eps20.md"
++    cat "$P/J2/label_diagnostics_eps20.md"
++fi
+diff --git a/tools/probe_sf35/planes.py b/tools/probe_sf35/planes.py
+new file mode 100755
+index 0000000..5312f6d
+--- /dev/null
++++ b/tools/probe_sf35/planes.py
+@@ -0,0 +1,47 @@
++#!/usr/bin/env python3
++"""PROBE (SF-35-feas): per-plane e_v_j, e_i1_j, e_i2_j at local x1/ell = M (ell = 1/4) and observed orders.
++
++  planes.py [--shift S] COARSE.json FINE.json     (N_fine = 2 N_coarse; S = original-x1 offset of the
++                                                   new inlet in cube units, labelling only)
++Plane j has x1 = j / N, i.e. x1/ell = 4 j / N, so j = M N / 4 (same x1 on both grids: j_f = 2 j_c).
++"""
++import argparse
++import json
++import math
++
++ap = argparse.ArgumentParser()
++ap.add_argument("--shift", type=float, default=0.0)
++ap.add_argument("coarse")
++ap.add_argument("fine")
++a = ap.parse_args()
++MS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 4.0]
++
++
++def load(p):
++    with open(p) as f:
++        d = json.load(f)
++    return d["N"], {pl["j"]: pl for pl in d["planes"]}, d
++
++
++def order(c, f):
++    if c is None or f is None or c <= 0 or f <= 0:
++        return float("nan")
++    return math.log2(c / f)
++
++
++nc, pc, dc = load(a.coarse)
++nf, pf, df = load(a.fine)
++assert nf == 2 * nc, (nc, nf)
++print(f"coarse N={nc} status={dc.get('status')}  fine N={nf} status={df.get('status')}  shift={a.shift} (cube units; orig x1/ell = local + {a.shift*4:g})")
++print("x1/ell(local)  x1/ell(orig)  | e_v(N%d)  e_v(N%d)  ord | e_i1(N%d) e_i1(N%d) ord | e_i2(N%d) e_i2(N%d) ord" % (nc, nf, nc, nf, nc, nf))
++for m in MS:
++    jc = round(m * nc / 4.0)
++    jf = 2 * jc
++    if jc not in pc or jf not in pf:
++        continue
++    row = [f"{m:6.2f}", f"{m + 4*a.shift:6.2f}"]
++    s = f"{row[0]}         {row[1]}        |"
++    for key in ("e_v", "e_i1", "e_i2"):
++        c, f = pc[jc][key], pf[jf][key]
++        s += f" {c:.3e} {f:.3e} {order(c, f):6.2f} |"
++    print(s)
+diff --git a/tools/probe_sf35/roll_field.py b/tools/probe_sf35/roll_field.py
+new file mode 100755
+index 0000000..1494706
+--- /dev/null
++++ b/tools/probe_sf35/roll_field.py
+@@ -0,0 +1,19 @@
++#!/usr/bin/env python3
++"""PROBE (SF-35-feas, not for merge): roll Y_cells.npy along x1 by k cells.
++
++Layout: the file is a C-order (N,N,N) array whose LAST axis is x1 (x1 fastest, i + N(j + N k)),
++as written by `inlet_slab --save-field` and read by `--cells`.
++new[..., i] = old[..., (i + k) % N]  => the new inlet (i = 0) sits at original x1 = k h.
++"""
++import sys
++import numpy as np
++
++src, dst, k = sys.argv[1], sys.argv[2], int(sys.argv[3])
++y = np.load(src)
++assert y.ndim == 3 and y.shape[0] == y.shape[1] == y.shape[2]
++n = y.shape[2]
++out = np.ascontiguousarray(np.roll(y, -k, axis=2))
++if k % n == 0:
++    assert np.array_equal(out, y)
++np.save(dst, out)
++print(f"rolled {src} by k={k} cells (N={n}) along axis 2 (x1) -> {dst}")
+diff --git a/tools/probe_sf35/run.sh b/tools/probe_sf35/run.sh
+new file mode 100755
+index 0000000..ecf8823
+--- /dev/null
++++ b/tools/probe_sf35/run.sh
+@@ -0,0 +1,28 @@
++#!/usr/bin/env bash
++# PROBE (SF-35-feas, not for merge). Usage: run.sh <name> <outdir> [--memlog] -- driver-args...
++# Runs inlet_slab from the repo build under /usr/bin/time -v, records rc, never retries.
++# Outputs: <outdir>/<name>.{log,time,json,rc,mem} ; labels are written by the caller's args.
++set -uo pipefail
++name=$1
++out=$2
++shift 2
++memlog=0
++if [ "${1:-}" = "--memlog" ]; then memlog=1; shift; fi
++[ "${1:-}" = "--" ] && shift
++mkdir -p "$out"
++BIN=${BIN:-build/v100-release/inlet_slab}
++gpu=${CUDA_VISIBLE_DEVICES:-0}
++sampler=""
++if [ "$memlog" = 1 ]; then
++    # CUDA_VISIBLE_DEVICES is a remapped index; nvidia-smi sees physical ids: use the job's physical GPU
++    nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits -i "$gpu" -lms 200 > "$out/$name.mem" &
++    sampler=$!
++fi
++echo "+ $BIN $* --summary $out/$name.json   (CUDA_VISIBLE_DEVICES=$gpu start=$(date -u +%FT%TZ))"
++/usr/bin/time -v -o "$out/$name.time" "$BIN" "$@" --summary "$out/$name.json" > "$out/$name.log" 2>&1
++rc=$?
++[ -n "$sampler" ] && kill "$sampler" 2>/dev/null
++echo "$rc" > "$out/$name.rc"
++echo "  name=$name rc=$rc end=$(date -u +%FT%TZ) $(grep 'Elapsed' "$out/$name.time" | sed 's/^\s*//') $(grep 'Maximum resident' "$out/$name.time" | sed 's/^\s*//')"
++grep -E '^(CASE|TIMING|MEMORY|STATUS|FIELD)' "$out/$name.log" | sed 's/^/    /'
++exit 0

@@ -1,0 +1,66 @@
+[2026-10-16T17:52:06Z] job=sf35b-gpu-equiv session=macroflow3d-SF-35-sf35b-gpu-equiv started
+[2026-10-16T17:52:06Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-16T17:52:06Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-16T17:52:06Z] command=export THREADS=32; bash docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh build/v100-release gpu
+run_campaign.sh: part=gpu bin=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-16T17:52:07Z
+  run.env: COMMIT=source 55d95a6329b6bc65cc25f936b419e103a7ae33bb campaign-scripts c11a45570d3b2907831301a517e3e060c2c77a80 HOST=localhost.localdomain DATE_UTC=2026-10-16T17:52:07Z BIN=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab BUILD_DIR=build/v100-release THREADS=32 PART=gpu GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/gpu_N128.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 128 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --tracer gpu --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/gpu_N128 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/gpu_N128.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/gpu_N128.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/gpu_N128.log rc=0 STATUS ok wall=27s max_rss_kB=995716 end=2026-10-16T17:52:36Z
+    CASE field=gaussian eps=0.5 N=128 cand=trace | r_F=5.330e-03 its=nan | e_v=3.682e-04 e_psi=nan e_i=(5.491e-06,3.434e-06) e_div=5.992e-05 min_c=2.286e-01 p0.1=2.527e-01 p1=3.303e-01 p5=4.807e-01 p50=9.698e-01 | t=20.6
+    BACKFLOW field=gaussian eps=0.5 N=128 inlet_vmin=2.421298e-01 Q0=1.000000e+00 vD1_min=2.279634e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.235486e-01 status_hist=2097152,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=128 e_v_N/e_v_1=2.148e+00 e_i_N/e_i_1=1.148e+01 max_roundtrip=3.123e-11 (plane 85)
+    RESIDUAL field=gaussian eps=0.5 N=128 cand=trace r_F=5.330e-03 r_out=5.405e-05 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.123e-11
+    TIMING diagnostics=0.007s field=0.608s stage=1.716s trace=20.628s total=22.993s
+    MEMORY peak_device_bytes=1005584384 free_min=33084145664 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/host_N128.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 128 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --tracer host --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/host_N128 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/host_N128.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/host_N128.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/host_N128.log rc=0 STATUS ok wall=182s max_rss_kB=1010524 end=2026-10-16T17:55:38Z
+    CASE field=gaussian eps=0.5 N=128 cand=trace | r_F=5.330e-03 its=nan | e_v=3.682e-04 e_psi=nan e_i=(5.491e-06,3.434e-06) e_div=5.992e-05 min_c=2.286e-01 p0.1=2.527e-01 p1=3.303e-01 p5=4.807e-01 p50=9.698e-01 | t=176.4
+    BACKFLOW field=gaussian eps=0.5 N=128 inlet_vmin=2.421298e-01 Q0=1.000000e+00 vD1_min=2.279634e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.235486e-01 status_hist=2097152,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=128 e_v_N/e_v_1=2.148e+00 e_i_N/e_i_1=1.148e+01 max_roundtrip=3.123e-11 (plane 85)
+    RESIDUAL field=gaussian eps=0.5 N=128 cand=trace r_F=5.330e-03 r_out=5.405e-05 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.123e-11
+    TIMING diagnostics=0.008s field=0.618s stage=1.733s trace=176.556s total=178.965s
+    MEMORY peak_device_bytes=988807168 free_min=33100922880 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/gpu_N256.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 256 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --tracer gpu --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/gpu_N256 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/gpu_N256.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/gpu_N256.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/gpu_N256.log rc=0 STATUS ok wall=517s max_rss_kB=3766692 end=2026-10-16T18:04:15Z
+    CASE field=gaussian eps=0.5 N=256 cand=trace | r_F=1.481e-03 its=nan | e_v=9.211e-05 e_psi=nan e_i=(6.601e-07,5.457e-07) e_div=4.305e-06 min_c=2.284e-01 p0.1=2.528e-01 p1=3.308e-01 p5=4.810e-01 p50=9.698e-01 | t=499.1
+    BACKFLOW field=gaussian eps=0.5 N=256 inlet_vmin=2.420024e-01 Q0=1.000000e+00 vD1_min=2.278717e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.234907e-01 status_hist=16777216,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=256 e_v_N/e_v_1=2.203e+00 e_i_N/e_i_1=2.617e+01 max_roundtrip=3.770e-12 (plane 247)
+    RESIDUAL field=gaussian eps=0.5 N=256 cand=trace r_F=1.481e-03 r_out=1.328e-05 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.770e-12
+    TIMING diagnostics=0.042s field=7.050s stage=6.448s trace=499.553s total=513.447s
+    MEMORY peak_device_bytes=3664773120 free_min=30424956928 total_device=34089730048 workspaces_bytes=2299055151 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/host_N256.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 256 --eps 0.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --tracer host --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/host_N256 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/host_N256.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/host_N256.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/gpu/host_N256.log rc=0 STATUS ok wall=3015s max_rss_kB=3766700 end=2026-10-16T18:54:30Z
+    CASE field=gaussian eps=0.5 N=256 cand=trace | r_F=1.481e-03 its=nan | e_v=9.211e-05 e_psi=nan e_i=(6.601e-07,5.457e-07) e_div=4.305e-06 min_c=2.284e-01 p0.1=2.528e-01 p1=3.308e-01 p5=4.810e-01 p50=9.698e-01 | t=2995.6
+    BACKFLOW field=gaussian eps=0.5 N=256 inlet_vmin=2.420024e-01 Q0=1.000000e+00 vD1_min=2.278717e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.234907e-01 status_hist=16777216,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=256 e_v_N/e_v_1=2.203e+00 e_i_N/e_i_1=2.617e+01 max_roundtrip=3.770e-12 (plane 247)
+    RESIDUAL field=gaussian eps=0.5 N=256 cand=trace r_F=1.481e-03 r_out=1.328e-05 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.770e-12
+    TIMING diagnostics=0.041s field=7.070s stage=6.499s trace=2996.681s total=3010.619s
+    MEMORY peak_device_bytes=3647995904 free_min=30441734144 total_device=34089730048 workspaces_bytes=2299055151 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/gpu_equiv.py --case 128 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/host_N128.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/gpu_N128.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/host_N128 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/gpu_N128 --case 256 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/host_N256.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/gpu/gpu_N256.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/host_N256 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/gpu/gpu_N256 --out /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/gpu.md
+# SF-35 F: host vs GPU tracer
+
+| N | max\|dpsi1\| | max\|dpsi2\| | NaN mismatches | status host / gpu | per-plane nfev and status histograms | <= 1e-12 | note |
+|---|---|---|---|---|---|---|---|
+| 128 | 0.000e+00 | 0.000e+00 | 0 | ok / ok | identical | pass |  |
+| 256 | 0.000e+00 | 0.000e+00 | 0 | ok / ok | identical | pass |  |
+
+## Wall times (driver `timing`, seconds)
+
+| N | trace host | trace gpu | total host | total gpu | trace speedup host/gpu |
+|---|---|---|---|---|---|
+| 128 | 176.56 | 20.63 | 178.97 | 22.99 | 8.56 |
+| 256 | 2996.68 | 499.55 | 3010.62 | 513.45 | 6.00 |
+
+**Verdict F (max |dpsi| host vs gpu <= 1e-12 at the grids run): pass**
+
+  gpu_equiv.py rc=0
+run_campaign.sh: part=gpu end=2026-10-16T18:54:32Z unexpected_failures=0
+[2026-10-16T18:54:32Z] job=sf35b-gpu-equiv finished exit=0

@@ -1,0 +1,224 @@
+[2026-10-16T16:47:23Z] job=sf35b-matrix-eps15 session=macroflow3d-SF-35-sf35b-matrix-eps15 started
+[2026-10-16T16:47:23Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-16T16:47:23Z] cwd=/home/sesquerre/MacroFlow3D-SF-35
+[2026-10-16T16:47:23Z] command=export THREADS=32; bash docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/run_campaign.sh build/v100-release matrix 15
+run_campaign.sh: part=matrix bin=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab threads=32 host=localhost.localdomain start=2026-10-16T16:47:24Z
+  run.env: COMMIT=source 55d95a6329b6bc65cc25f936b419e103a7ae33bb campaign-scripts c11a45570d3b2907831301a517e3e060c2c77a80 HOST=localhost.localdomain DATE_UTC=2026-10-16T16:47:24Z BIN=/home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab BUILD_DIR=build/v100-release THREADS=32 PART=matrix GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N32.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 32 --eps 1.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps15/N32 --ladder --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N32.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N32.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N32.log rc=21 STATUS roundtrip_exceeded wall=10s max_rss_kB=613648 end=2026-10-16T16:47:34Z
+    CASE field=gaussian eps=1.5 N=32 cand=trace | r_F=4.794e+01 its=nan | e_v=6.276e-01 e_psi=nan e_i=(1.217e-01,5.453e-02) e_div=5.277e+00 min_c=2.971e-03 p0.1=9.123e-03 p1=2.414e-02 p5=8.684e-02 p50=8.100e-01 | t=0.9
+    BACKFLOW field=gaussian eps=1.5 N=32 inlet_vmin=8.489564e-03 Q0=1.000000e+00 vD1_min=6.417925e-03 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=2.672232e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1.5 N=32 e_v_N/e_v_1=8.572e+01 e_i_N/e_i_1=3.193e+01 max_roundtrip=2.527e-07 (plane 15)
+    RESIDUAL field=gaussian eps=1.5 N=32 cand=trace r_F=4.794e+01 r_out=1.357e+00 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=2.527e-07
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=3.483e-08
+    LABELDIFF (hmax=1.953125e-03 tol=1.0e-08) vs primary: max|dpsi1|=8.030e-08 max|dpsi2|=5.742e-08 max_roundtrip=3.483e-08
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=3.483e-08
+    LABELDIFF (hmax=1.953125e-03 tol=1.0e-10) vs primary: max|dpsi1|=8.030e-08 max|dpsi2|=5.742e-08 max_roundtrip=3.483e-08
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.750e-09
+    LABELDIFF (hmax=9.765625e-04 tol=1.0e-10) vs primary: max|dpsi1|=8.289e-08 max|dpsi2|=5.717e-08 max_roundtrip=4.750e-09
+    TIMING diagnostics=0.003s field=0.059s stage=2.042s trace=7.422s total=9.535s
+    MEMORY peak_device_bytes=937426944 free_min=33152303104 total_device=34089730048 workspaces_bytes=20675503 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N64.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 64 --eps 1.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps15/N64 --ladder --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N64.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N64.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N64.log rc=21 STATUS roundtrip_exceeded wall=119s max_rss_kB=665328 end=2026-10-16T16:49:33Z
+    CASE field=gaussian eps=1.5 N=64 cand=trace | r_F=1.886e+02 its=nan | e_v=4.327e-01 e_psi=nan e_i=(3.648e-02,3.150e-02) e_div=8.346e+00 min_c=1.625e-03 p0.1=8.982e-03 p1=2.312e-02 p5=8.220e-02 p50=7.975e-01 | t=13.2
+    BACKFLOW field=gaussian eps=1.5 N=64 inlet_vmin=8.389232e-03 Q0=1.000000e+00 vD1_min=6.424087e-03 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=2.578835e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1.5 N=64 e_v_N/e_v_1=4.377e+02 e_i_N/e_i_1=2.187e+02 max_roundtrip=3.699e-08 (plane 34)
+    RESIDUAL field=gaussian eps=1.5 N=64 cand=trace r_F=1.886e+02 r_out=1.289e+00 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=3.699e-08
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=5.059e-09
+    LABELDIFF (hmax=9.765625e-04 tol=1.0e-08) vs primary: max|dpsi1|=8.944e-09 max|dpsi2|=1.070e-08 max_roundtrip=5.059e-09
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=5.059e-09
+    LABELDIFF (hmax=9.765625e-04 tol=1.0e-10) vs primary: max|dpsi1|=8.944e-09 max|dpsi2|=1.070e-08 max_roundtrip=5.059e-09
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=1.015e-09
+    LABELDIFF (hmax=4.882812e-04 tol=1.0e-10) vs primary: max|dpsi1|=9.219e-09 max|dpsi2|=1.121e-08 max_roundtrip=1.015e-09
+    TIMING diagnostics=0.007s field=0.093s stage=2.300s trace=115.266s total=117.720s
+    MEMORY peak_device_bytes=1044381696 free_min=33045348352 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N128.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 128 --eps 1.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps15/N128 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N128.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N128.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N128.log rc=0 STATUS ok wall=212s max_rss_kB=995668 end=2026-10-16T16:53:05Z
+    CASE field=gaussian eps=1.5 N=128 cand=trace | r_F=1.829e+03 its=nan | e_v=4.070e-01 e_psi=nan e_i=(8.873e-03,2.113e-02) e_div=1.404e+01 min_c=9.990e-04 p0.1=9.091e-03 p1=2.324e-02 p5=8.031e-02 p50=7.897e-01 | t=204.4
+    BACKFLOW field=gaussian eps=1.5 N=128 inlet_vmin=8.362807e-03 Q0=1.000000e+00 vD1_min=6.360955e-03 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=2.555382e-01 status_hist=2097152,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1.5 N=128 e_v_N/e_v_1=1.713e+03 e_i_N/e_i_1=2.562e+03 max_roundtrip=4.117e-09 (plane 56)
+    RESIDUAL field=gaussian eps=1.5 N=128 cand=trace r_F=1.829e+03 r_out=1.076e+00 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.117e-09
+    TIMING diagnostics=0.008s field=0.606s stage=2.961s trace=204.550s total=208.160s
+    MEMORY peak_device_bytes=988807168 free_min=33100922880 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N256.time /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --n 256 --eps 1.5 --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/matrix_eps15/N256 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N256.json > /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N256.log 2>&1
+  CASE_RESULT log=/home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N256.log rc=0 STATUS ok wall=3445s max_rss_kB=3766680 end=2026-10-16T17:50:30Z
+    CASE field=gaussian eps=1.5 N=256 cand=trace | r_F=1.496e+03 its=nan | e_v=4.106e-01 e_psi=nan e_i=(2.963e-03,1.431e-02) e_div=1.293e+01 min_c=2.394e-04 p0.1=9.103e-03 p1=2.328e-02 p5=7.952e-02 p50=7.835e-01 | t=3424.6
+    BACKFLOW field=gaussian eps=1.5 N=256 inlet_vmin=8.356021e-03 Q0=1.000000e+00 vD1_min=6.357739e-03 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=2.549670e-01 status_hist=16777216,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1.5 N=256 e_v_N/e_v_1=4.873e+03 e_i_N/e_i_1=2.349e+04 max_roundtrip=4.862e-10 (plane 107)
+    RESIDUAL field=gaussian eps=1.5 N=256 cand=trace r_F=1.496e+03 r_out=5.469e-01 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=4.862e-10
+    TIMING diagnostics=0.041s field=7.118s stage=8.607s trace=3425.700s total=3441.807s
+    MEMORY peak_device_bytes=3647995904 free_min=30441734144 total_device=34089730048 workspaces_bytes=2299055151 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/orders_digest.py --eps 1.5 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N128.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N256.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N32.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N64.json --out /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/matrix_eps15.md
+# SF-35 matrix digest, eps = 1.5 (sigma_Y = 1.5)
+
+```text
+Verdict rules (pre-registered, SF-35 spec "Acceptance thresholds", implemented literally):
+- B. Round trip <= 1e-8 on every plane at the primary (h/8, 1e-8) for every matrix point; non_ok = 0; at 32 and 64 the
+  ladder gives max|dpsi| between the primary and (h/32, 1e-10) <= 1e-8.
+- C. Convergence per amplitude (32/64/128/256). e_v, e_i1, e_i2, e_div, r_F each decrease on every refinement and show
+  observed order >= 1.8 on 128 -> 256: `accept`; any of them changing < 10 % between 128 and 256 while above 1e-12:
+  `reject` (floor); otherwise `unresolved`. Amplitude verdict: `accept` iff all five quantities are `accept`, else
+  `reject` if any is `reject`, else `unresolved`. Blocking: eps = 0.5 and 1.0 must be `accept`; eps = 1.5 must be
+  `accept` unless the stage reports `inlet_backflow` (then recorded; owner decision).
+- Implementation reading: `decrease on every refinement` = q(2N) < q(N) for every consecutive pair of the expected grid
+  list; the observed order on the last pair is log2(q(128)/q(256)); the relative change is |q(256) - q(128)| / |q(128)|;
+  a non-finite value or a missing grid makes the quantity `not_evaluable` (never silently `unresolved`).
+```
+
+Grids present: [32, 64, 128, 256]; expected for the verdicts: [32, 64, 128, 256].
+
+## Status per grid
+
+| N | status | exit_code | stage |
+|---|---|---|---|
+| 32 | roundtrip_exceeded | 21 | traced |
+| 64 | roundtrip_exceeded | 21 | traced |
+| 128 | ok | 0 | traced |
+| 256 | ok | 0 | traced |
+
+## Quantities per grid
+
+| quantity | N=32 | N=64 | N=128 | N=256 |
+|---|---|---|---|---|
+| e_v | 6.276e-01 | 4.327e-01 | 4.070e-01 | 4.106e-01 |
+| e_i1 | 1.217e-01 | 3.648e-02 | 8.873e-03 | 2.963e-03 |
+| e_i2 | 5.453e-02 | 3.150e-02 | 2.113e-02 | 1.431e-02 |
+| e_div | 5.277e+00 | 8.346e+00 | 1.404e+01 | 1.293e+01 |
+| r_F | 4.794e+01 | 1.886e+02 | 1.829e+03 | 1.496e+03 |
+| r_out | 1.357e+00 | 1.289e+00 | 1.076e+00 | 5.469e-01 |
+| min_c | 2.971e-03 | 1.625e-03 | 9.990e-04 | 2.394e-04 |
+| p0.1 | 9.123e-03 | 8.982e-03 | 9.091e-03 | 9.103e-03 |
+| p1 | 2.414e-02 | 2.312e-02 | 2.324e-02 | 2.328e-02 |
+| p5 | 8.684e-02 | 8.220e-02 | 8.031e-02 | 7.952e-02 |
+| p50 | 8.100e-01 | 7.975e-01 | 7.897e-01 | 7.835e-01 |
+| max_roundtrip | 2.527e-07 | 3.699e-08 | 4.117e-09 | 4.862e-10 |
+| non_ok | 0 | 0 | 0 | 0 |
+| status | roundtrip_exceeded | roundtrip_exceeded | ok | ok |
+| inlet_vmin | 8.490e-03 | 8.389e-03 | 8.363e-03 | 8.356e-03 |
+| vD1_min | 6.418e-03 | 6.424e-03 | 6.361e-03 | 6.358e-03 |
+| vD1_nonpos | 0 | 0 | 0 | 0 |
+| seed_backflow | 0 | 0 | 0 | 0 |
+| backflow_enc | 0 | 0 | 0 | 0 |
+| landings_discarded | 0 | 0 | 0 | 0 |
+| min_g1_hat | 2.672e-01 | 2.579e-01 | 2.555e-01 | 2.550e-01 |
+| status_hist (ok,seed_bf,cap,stag,uflow,landfail,invalid_k) | 32768,0,0,0,0,0,0 | 262144,0,0,0,0,0,0 | 2097152,0,0,0,0,0,0 | 16777216,0,0,0,0,0,0 |
+| e_v_N/e_v_1 | 8.572e+01 | 4.377e+02 | 1.713e+03 | 4.873e+03 |
+| e_i_N/e_i_1 | 3.193e+01 | 2.187e+02 | 2.562e+03 | 2.349e+04 |
+| wall (s, driver total) | 9.53 | 117.72 | 208.16 | 3441.81 |
+| wall (s, /usr/bin/time) | 10.6 | 119.0 | 211.7 | 3445.4 |
+| max RSS (kB) | 613648 | 665328 | 995668 | 3766680 |
+| peak device (bytes) | 937426944 | 1044381696 | 988807168 | 3647995904 |
+
+## Observed orders log2(q_N / q_2N)
+
+| quantity | 32->64 | 64->128 | 128->256 |
+|---|---|---|---|
+| e_v | 0.54 | 0.09 | -0.01 |
+| e_i1 | 1.74 | 2.04 | 1.58 |
+| e_i2 | 0.79 | 0.58 | 0.56 |
+| e_div | -0.66 | -0.75 | 0.12 |
+| r_F | -1.98 | -3.28 | 0.29 |
+
+## Per-plane growth along x1 (E: recorded, no threshold)
+
+`e_i_j = sqrt((e_i1_j^2 + e_i2_j^2)/2)` (as the GROWTH line). Full lists: `docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/planes_eps1.5.csv`.
+
+N = 32
+
+| j | x1 | e_v_j | e_i_j | roundtrip_j |
+|---|---|---|---|---|
+| 0 | 0.0000 | 2.484e-02 | 9.114e-03 | 0.000e+00 |
+| 1 | 0.0312 | 1.774e-02 | 3.615e-03 | 5.402e-09 |
+| 8 | 0.2500 | 7.793e-02 | 1.217e-02 | 3.121e-08 |
+| 16 | 0.5000 | 3.943e-01 | 9.893e-02 | 1.358e-07 |
+| 24 | 0.7500 | 9.863e-01 | 6.590e-02 | 2.981e-08 |
+| 32 | 1.0000 | 1.521e+00 | 1.154e-01 | 1.378e-07 |
+
+N = 64
+
+| j | x1 | e_v_j | e_i_j | roundtrip_j |
+|---|---|---|---|---|
+| 0 | 0.0000 | 3.295e-03 | 6.864e-04 | 0.000e+00 |
+| 1 | 0.0156 | 3.287e-03 | 2.296e-04 | 6.905e-10 |
+| 16 | 0.2500 | 2.007e-02 | 2.377e-03 | 3.974e-09 |
+| 32 | 0.5000 | 2.170e-01 | 3.160e-02 | 3.380e-08 |
+| 48 | 0.7500 | 6.112e-01 | 3.088e-02 | 4.103e-09 |
+| 64 | 1.0000 | 1.439e+00 | 5.023e-02 | 1.647e-08 |
+
+N = 128
+
+| j | x1 | e_v_j | e_i_j | roundtrip_j |
+|---|---|---|---|---|
+| 0 | 0.0000 | 6.861e-04 | 3.896e-05 | 0.000e+00 |
+| 1 | 0.0078 | 7.356e-04 | 1.276e-05 | 3.944e-11 |
+| 32 | 0.2500 | 4.351e-03 | 2.583e-04 | 4.033e-10 |
+| 64 | 0.5000 | 1.814e-01 | 5.244e-03 | 1.595e-09 |
+| 96 | 0.7500 | 4.442e-01 | 1.953e-02 | 5.333e-10 |
+| 128 | 1.0000 | 1.260e+00 | 3.270e-02 | 1.955e-09 |
+
+N = 256
+
+| j | x1 | e_v_j | e_i_j | roundtrip_j |
+|---|---|---|---|---|
+| 0 | 0.0000 | 1.690e-04 | 2.195e-06 | 0.000e+00 |
+| 1 | 0.0039 | 1.759e-04 | 7.451e-07 | 2.491e-12 |
+| 64 | 0.2500 | 8.136e-04 | 2.312e-05 | 7.149e-11 |
+| 128 | 0.5000 | 1.344e-01 | 1.217e-03 | 2.228e-10 |
+| 192 | 0.7500 | 5.903e-01 | 1.573e-02 | 8.996e-11 |
+| 256 | 1.0000 | 8.573e-01 | 1.750e-02 | 1.900e-10 |
+
+## Integration ladder (B)
+
+| N | hmax | tol | max\|dpsi1\| vs primary | max\|dpsi2\| vs primary | max_roundtrip | status |
+|---|---|---|---|---|---|---|
+| 32 | h/16 | 1e-08 | 8.030e-08 | 5.742e-08 | 3.483e-08 | roundtrip_exceeded |
+| 32 | h/16 | 1e-10 | 8.030e-08 | 5.742e-08 | 3.483e-08 | roundtrip_exceeded |
+| 32 | h/32 | 1e-10 | 8.289e-08 | 5.717e-08 | 4.750e-09 | ok |
+| 64 | h/16 | 1e-08 | 8.944e-09 | 1.070e-08 | 5.059e-09 | ok |
+| 64 | h/16 | 1e-10 | 8.944e-09 | 1.070e-08 | 5.059e-09 | ok |
+| 64 | h/32 | 1e-10 | 9.219e-09 | 1.121e-08 | 1.015e-09 | ok |
+
+## Verdict B (integration certificate)
+
+| N | status | max_roundtrip (every plane) | non_ok | ladder max\|dpsi\| (primary vs h/32,1e-10; N=32,64) | point |
+|---|---|---|---|---|---|
+| 32 | roundtrip_exceeded | 2.527e-07 | 0 | 8.289e-08 | fail |
+| 64 | roundtrip_exceeded | 3.699e-08 | 0 | 1.121e-08 | fail |
+| 128 | ok | 4.117e-09 | 0 | n/a | pass |
+| 256 | ok | 4.862e-10 | 0 | n/a | pass |
+
+**B verdict: fail**
+
+## Verdict C (convergence per amplitude)
+
+| quantity | q(128) | q(256) | order last pair | rel change last pair | decreases on every refinement | verdict | note |
+|---|---|---|---|---|---|---|---|
+| e_v | 4.070e-01 | 4.106e-01 | -0.01 | 0.009 | False | reject |  |
+| e_i1 | 8.873e-03 | 2.963e-03 | 1.58 | 0.666 | True | unresolved |  |
+| e_i2 | 2.113e-02 | 1.431e-02 | 0.56 | 0.323 | True | unresolved |  |
+| e_div | 1.404e+01 | 1.293e+01 | 0.12 | 0.079 | False | reject |  |
+| r_F | 1.829e+03 | 1.496e+03 | 0.29 | 0.183 | False | unresolved |  |
+
+**Amplitude verdict (C): reject**
+
+  orders_digest.py rc=0
++ python3 /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/scripts/cost_digest.py /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps05/N256.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps10/N256.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/matrix_eps15/N256.json /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps05/N256.time /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps10/N256.time /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/logs/matrix_eps15/N256.time --out /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/analysis/cost_256.md
+# SF-35 H: cost at 256^3
+
+| amplitude | status | driver total (s) | wall /usr/bin/time (s) | host max RSS (GiB) | peak device (GiB, device-wide poll) | trace phase (s) |
+|---|---|---|---|---|---|---|
+| eps05 | ok | 3002.1 | 3005.9 | 3.59 | 3.40 | 2988.2 |
+| eps10 | ok | 3122.8 | 3126.5 | 3.59 | 3.40 | 3106.3 |
+| eps15 | ok | 3441.8 | 3445.4 | 3.59 | 3.40 | 3425.7 |
+
+  cost_digest.py rc=0
+run_campaign.sh: part=matrix end=2026-10-16T17:50:31Z unexpected_failures=0
+[2026-10-16T17:50:31Z] job=sf35b-matrix-eps15 finished exit=0

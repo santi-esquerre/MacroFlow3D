@@ -488,7 +488,8 @@ Para cada solución aceptada se registran como mínimo:
 
 La covarianza exponencial, la conductividad tensorial, `sigma_Y^2=6.25`, la
 integración con transporte y la producción de macrodispersión quedan fuera del
-primer benchmark aceptado. No deben usarse para decidir si la implementación
+primer benchmark aceptado (la producción de macrodispersión entra por el consumidor
+lagrangiano, SF-36..SF-39). No deben usarse para decidir si la implementación
 básica de la ecuación (14) es correcta.
 
 ## Estado actual y ruta de ejecución
@@ -532,6 +533,20 @@ por trazado regresivo de líneas de corriente desde la cara de entrada (SF-35); 
 ecuación (14) queda como diagnóstico (`r_F`, `r_out` en las etiquetas construidas) y
 el solver del slab como instrumento de construcción cruzada donde converge.
 
+Estado 2026-10-17 (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`): SF-35
+quedó cerrado con la envolvente O1 de las etiquetas en grilla (`sigma_Y` 0.5 y 1
+establecidos, 1.5 no). El owner exige que el estudio de macrodispersión llegue al menos
+a `sigma_Y^2 = 4`. Las sondas a `sigma_Y^2 = 4`
+(`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`) mostraron dos cosas. 512^3 cabe
+en una V100 de 32 GB. Pero refinar no extiende la convergencia de las derivadas de las
+etiquetas más allá de `0.75 ell`, y la obstrucción está localizada en el medio. Por eso
+el consumidor de producción pasa a ser lagrangiano: partículas trazadas hacia adelante
+sobre el spline `v_s = k_s grad Phi_s`, sin helicidad por su forma, cada una con sus
+propias etiquetas. La deriva de integración y la divergencia se miden con escaleras
+pareadas en tolerancia y en `h` y con un comparador de Pollock; no están garantizadas
+por construcción. Las etiquetas en grilla quedan como diagnóstico y el tracker
+pseudo-simpléctico, como trabajo futuro.
+
 Nueva secuencia (dependencias entre paréntesis; el estado vigente lo gobierna el
 dashboard):
 
@@ -548,18 +563,23 @@ dashboard):
   `src/physics/streamfunctions/` (←SF-29).
 - SF-35: transporte de etiquetas por trazado regresivo como constructor de
   producción, verificado sin trazar y con órdenes observados en 32^3-256^3 (←SF-33).
-- SF-34: aceptación de las etiquetas de SF-35 en el medio periódico frente al gate de
-  cierre de SF-30 en `sigma^2` en {0.25, 1, 2.25}, `(4, 1/16, 256^3)` no bloqueante
-  (←SF-35; re-especificado 2026-10-07).
+- SF-34: aceptación de las etiquetas en grilla de SF-35 en el medio periódico frente al
+  gate de cierre de SF-30 en `sigma^2` en {0.25, 1}, con 2.25 y 4 no bloqueantes (brazo
+  O1, fuera del camino crítico; ←SF-35; re-especificado 2026-10-07 y 2026-10-17).
+- SF-36: núcleo del tracker lagrangiano sobre el stage del cubo (←SF-35).
+- SF-37: verificación del consumidor lagrangiano en el cubo a `sigma^2` en {1, 2.25, 4}
+  con semillas nuevas, más O3 a ciegas; fija el `lambda/h` de producción (←SF-36).
+- SF-38: dominio largo: stage no cúbico, evaluación A/B del medio, runner de ensemble y
+  baseline Par2 (←SF-36).
+- SF-39: estudio de macrodispersión a `sigma^2` en {1, 2.25, 4} (←SF-37, SF-38).
 
-Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29, SF-35 por el cierre de SF-33; el resto en prosa):
-generalización a GPU de `src/physics/streamfunctions/` a `x1` no periódico (SF-33) y
-constructor de producción por trazado (SF-35);
-aceptación en el medio periódico (`e_v(h)`, invariancia y mapa de retorno frente a
-SF-30 en `sigma^2 = 0.25, 1, 2.25`); dominio largo (2048 x 256 x 256,
-`lambda/h = 10`; `alpha_L` debe coincidir con RWPT y `alpha_T` se reporta con
-convergencia de malla y tolerancia sin presuponer su valor); dispersión local y
-`D_T(Pe)`.
+Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29, SF-35 por el
+cierre de SF-33, SF-36..SF-39 por el cierre de SF-35; el resto en prosa): las etiquetas en
+grilla como diagnóstico (SF-33, SF-35) y su brazo O1 frente a SF-30 (SF-34); el
+consumidor lagrangiano y su verificación (SF-36, SF-37); el dominio largo (2048 x 256 x
+256, `lambda/h = 10` o el que fije SF-37; SF-38); el estudio (SF-39: `alpha_L` se contrasta
+con RWPT en la misma configuración, y un desacuerdo debe explicarse; `alpha_T` se reporta con convergencia de malla, tolerancia y número
+de realizaciones sin presuponer su valor); dispersión local y `D_T(Pe)`.
 
 Reglas de proceso: verificación independiente de existencia o de control positivo
 antes de cualquier solver para un objeto nuevo; aceptación sobre una métrica

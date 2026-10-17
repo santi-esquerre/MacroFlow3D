@@ -1,0 +1,39 @@
+[2026-10-17T14:04:30Z] job=J1a-n128 session=macroflow3d-SF-35-feas-J1a-n128 started
+[2026-10-17T14:04:30Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=0)
+[2026-10-17T14:04:30Z] cwd=/home/sesquerre/MacroFlow3D-SF-35-feas
+[2026-10-17T14:04:30Z] command=./tools/probe_sf35/j1a.sh
+rolled /home/sesquerre/sf35_feas_probe/controls/Y128/Y_cells.npy by k=24 cells (N=128) along axis 2 (x1) -> /home/sesquerre/sf35_feas_probe/J1/Y128_k24.npy
+rolled /home/sesquerre/sf35_feas_probe/controls/Y128/Y_cells.npy by k=16 cells (N=128) along axis 2 (x1) -> /home/sesquerre/sf35_feas_probe/J1/Y128_k16.npy
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 128 --cells /home/sesquerre/sf35_feas_probe/controls/Y128/Y_cells.npy --save-labels /home/sesquerre/sf35_feas_probe/J1/L_N128_ctrl --summary /home/sesquerre/sf35_feas_probe/J1/N128_ctrl.json   (CUDA_VISIBLE_DEVICES=0 start=2026-10-17T14:04:31Z)
+  name=N128_ctrl rc=21 end=2026-10-17T14:05:02Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:30.47 Maximum resident set size (kbytes): 1012080
+    FIELD cells /home/sesquerre/sf35_feas_probe/controls/Y128/Y_cells.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=128 | stage field k = exp(eps Y), eps = 2
+    CASE field=cells eps=2 N=128 cand=trace | r_F=1.679e+03 its=nan | e_v=2.914e+00 e_psi=nan e_i=(7.688e-02,8.781e-02) e_div=1.146e+02 min_c=2.244e-04 p0.1=1.435e-03 p1=5.366e-03 p5=3.056e-02 p50=6.897e-01 | t=25.8
+    TIMING diagnostics=0.007s field=0.703s stage=2.983s trace=25.861s total=29.589s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 128 --cells /home/sesquerre/sf35_feas_probe/J1/Y128_k24.npy --save-labels /home/sesquerre/sf35_feas_probe/J1/L_N128_k24 --summary /home/sesquerre/sf35_feas_probe/J1/N128_k24.json   (CUDA_VISIBLE_DEVICES=0 start=2026-10-17T14:05:02Z)
+  name=N128_k24 rc=21 end=2026-10-17T14:05:33Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:30.88 Maximum resident set size (kbytes): 1010996
+    FIELD cells /home/sesquerre/sf35_feas_probe/J1/Y128_k24.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=128 | stage field k = exp(eps Y), eps = 2
+    CASE field=cells eps=2 N=128 cand=trace | r_F=1.020e+03 its=nan | e_v=5.619e+00 e_psi=nan e_i=(9.159e-02,1.838e-01) e_div=2.478e+02 min_c=6.361e-04 p0.1=1.492e-03 p1=5.386e-03 p5=2.982e-02 p50=6.970e-01 | t=26.3
+    TIMING diagnostics=0.007s field=0.703s stage=2.991s trace=26.319s total=30.057s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
++ build/v100-release/inlet_slab --construct trace --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --n 128 --cells /home/sesquerre/sf35_feas_probe/J1/Y128_k16.npy --save-labels /home/sesquerre/sf35_feas_probe/J1/L_N128_k16 --summary /home/sesquerre/sf35_feas_probe/J1/N128_k16.json   (CUDA_VISIBLE_DEVICES=0 start=2026-10-17T14:05:33Z)
+  name=N128_k16 rc=21 end=2026-10-17T14:06:04Z Elapsed (wall clock) time (h:mm:ss or m:ss): 0:31.05 Maximum resident set size (kbytes): 1010464
+    FIELD cells /home/sesquerre/sf35_feas_probe/J1/Y128_k16.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=128 | stage field k = exp(eps Y), eps = 2
+    CASE field=cells eps=2 N=128 cand=trace | r_F=3.420e+03 its=nan | e_v=4.586e+00 e_psi=nan e_i=(1.149e-01,1.696e-01) e_div=2.156e+02 min_c=9.480e-05 p0.1=1.475e-03 p1=5.346e-03 p5=3.032e-02 p50=6.954e-01 | t=26.5
+    TIMING diagnostics=0.007s field=0.704s stage=2.973s trace=26.518s total=30.238s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
+== control vs gaussian (controls/L_new128)
+- A: `../sf35_feas_probe/controls/L_new128` (field 1.0, eps 2.0)
+- B: `../sf35_feas_probe/J1/L_N128_ctrl` (field ?, eps 2.0)
+
+| label | max\|dpsi\| | NaN in A | NaN in B | NaN mask mismatches |
+|---|---|---|---|---|
+| psi1 | 0.000e+00 | 0 | 0 | 0 |
+| psi2 | 0.000e+00 | 0 | 0 | 0 |
+
+Expected `<= 1e-13` (recorded, no threshold in the spec): **met** (max over both labels: 0.000e+00)
+
+[2026-10-17T14:06:04Z] job=J1a-n128 finished exit=0

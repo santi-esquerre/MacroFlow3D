@@ -1,0 +1,6 @@
+[2026-10-17T14:00:06Z] job=J0b-controls session=macroflow3d-SF-35-feas-J0b-controls started
+[2026-10-17T14:00:06Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=1)
+[2026-10-17T14:00:06Z] cwd=/home/sesquerre/MacroFlow3D-SF-35-feas
+[2026-10-17T14:00:06Z] command=./tools/probe_sf35/controls.sh
+bash: ./tools/probe_sf35/controls.sh: Permiso denegado
+[2026-10-17T14:00:07Z] job=J0b-controls finished exit=126

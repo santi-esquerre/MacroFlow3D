@@ -138,8 +138,12 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-31 — Pseudo-symplectic tracker core and RK reference](lester-eq14/increments/SF-31-pseudo-symplectic-tracker-core.md)
 - [x] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
 - [x] [SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
-- [ ] [SF-34 — Acceptance of the inlet labels in the periodic medium against the closure gate](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
-- [ ] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
+- [ ] [SF-34 — Acceptance of the gridded inlet labels in the periodic medium against the closure gate (O1 arm)](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
+- [x] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
+- [ ] [SF-36 — Lagrangian-label tracker core on the cube production stage](lester-eq14/increments/SF-36-lagrangian-tracker-core.md)
+- [ ] [SF-37 — Verification of the Lagrangian consumer on the cube at sigma^2 <= 4, with blind O3](lester-eq14/increments/SF-37-lagrangian-cube-verification.md)
+- [ ] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
+- [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -153,7 +157,12 @@ start in parallel; SF-28 follows SF-27; SF-30 and SF-31 follow SF-28 (in
 parallel); SF-32 follows SF-31; SF-33 follows SF-29; SF-35 follows SF-33; SF-34 follows SF-35 (re-sequencing
 2026-10-07: SF-33 closed with the Newton-Krylov solve of eq. (14) not viable as production constructor; SF-35 adopts
 label transport by backward streamline tracing, `docs/decisions/2026-10-07-label-transport-constructor.md`; SF-34
-re-specified in place to accept the SF-35 labels). Disposition of the open decisions D1-D7 of
+re-specified in place to accept the SF-35 labels). Re-sequencing 2026-10-17
+(`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`; probes
+`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`): SF-35 closed with the validity envelope `sigma_Y <= 1` of
+the gridded labels; the production consumer at `sigma^2 >= 4` is Lagrangian (labels carried by forward-traced
+particles). SF-34 (re-specified in place as the O1 arm, off the critical path) and SF-36 follow SF-35 in parallel;
+SF-37 and SF-38 follow SF-36 (in parallel); SF-39 follows SF-37 and SF-38. Disposition of the open decisions D1-D7 of
 `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
 D5 are moot (they tune a system whose solution is not the target); D2 is retired
 with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
@@ -370,9 +379,11 @@ Applies to the frozen periodic stack; the closure-gate matrix lives in SF-30.
 - robustness: 5–10 selected realizations at a validated smaller grid;
 - `sigma_Y^2=6.25` only after the `sigma_Y^2=4` suite is accepted.
 
-Exponential covariance, tensor conductivity, a PSPTA consumer, and scientific
-macrodispersion production are outside this execution sequence. (Exponential
-covariance: retired from the generator, decision 2026-10-07.)
+Exponential covariance, tensor conductivity and a PSPTA consumer are outside this
+execution sequence (exponential covariance: retired from the generator, decision
+2026-10-07). Scientific macrodispersion production enters the sequence through the
+Lagrangian consumer (SF-36..SF-39, decision 2026-10-17); the benchmark progression
+above governs the frozen periodic stack only.
 
 ## Process rules (2026-10-02)
 
@@ -383,33 +394,38 @@ covariance: retired from the generator, decision 2026-10-07.)
 4. `ctest` holds fast contract tests only; science runs are experiment notes run
    as detached V100 jobs.
 
-## Later phases (items 1-2 specified by the SF-29 closure PR; items 3-4 prose)
+## Later phases (rewritten 2026-10-17; items 1-5 specified, item 6 prose)
 
-1. GPU generalization of `src/physics/streamfunctions/` to `x1` non-periodic per
-   the SF-29 choice: [SF-33](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
-   (done: the discrete problem and the production oracle established; the
-   Newton-Krylov solve not viable as production constructor). Production
-   constructor = label transport by backward streamline tracing:
-   [SF-35](lester-eq14/increments/SF-35-label-transport-constructor.md).
-2. Acceptance in the periodic medium of the SF-35 labels: `e_v(h)` and
-   invariance convergent and the labels' return map agreeing with SF-30 at
-   `sigma^2 = 0.25, 1, 2.25`; `(4, 1/16, 256^3)` is non-blocking:
+Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requirement: the study reaches
+`sigma_Y^2 >= 4`; final amplitudes {1, 2.25, 4}, 6.25 exploratory).
+
+1. Darcy labels on the slab: [SF-33](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md) (done: the
+   discrete problem and the production oracle; Newton-Krylov not viable as constructor) and
+   [SF-35](lester-eq14/increments/SF-35-label-transport-constructor.md) (done: tracing constructor; gridded labels
+   verified for `sigma_Y <= 1` at `ell = 1/4`, not at 1.5; at `sigma_Y^2 = 4` refinement to 512^3 does not extend the
+   convergent range, `docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`). The gridded labels are a diagnostic.
+2. O1 arm — the gridded labels against the SF-30 return map inside their envelope (`sigma^2` in {0.25, 1},
+   `ell` 1/8-1/16; 2.25 and 4 non-blocking), off the critical path:
    [SF-34](lester-eq14/increments/SF-34-periodic-medium-acceptance.md).
-3. Long domain (Dirichlet in `x`, periodic in `y`, `z`; 2048x256x256,
-   `lambda/h = 10`): runner wiring and the study. `alpha_L` must match RWPT;
-   `alpha_T` is reported with grid and tolerance convergence without
-   presupposing its value; `sigma^2` in `{1, 2.25}` then `{4, 6.25}`. Open items:
-   the generator (periodic SF-18 vs baseline) and memory at 1.3e8 cells on one
-   V100. `alpha_L` must match RWPT re-run with the same config in this code
-   (Gaussian covariance, decision 2026-10-07-gaussian-covariance-only), not the
-   legacy figures.
-4. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5).
+3. Lagrangian consumer core on the cube stage (forward DP5(4) on `v_s = k_s grad Phi_s`, per-particle labels,
+   covectors, accumulated divergence, moments): [SF-36](lester-eq14/increments/SF-36-lagrangian-tracker-core.md).
+4. Verification on the cube at `sigma^2` in {1, 2.25, 4} on fresh seeds (tolerance and grid ladders, O1 anchor,
+   Pollock comparator, Lagrangian `e_v`, stretching, blind O3; production `lambda/h`):
+   [SF-37](lester-eq14/increments/SF-37-lagrangian-cube-verification.md); long-domain infrastructure (non-cubic
+   stage at 2048x256x256, medium A/B affine-periodic vs Dirichlet in `x`, ensemble runner, Par2 baseline):
+   [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md). If SF-38 selects the Dirichlet medium, a
+   spline non-periodic in `x1` (provisional SF-40) is specified before the study.
+5. The study: `alpha_L`, `alpha_T` at `sigma^2` in {1, 2.25, 4} with `lambda/h`, `tol` and `N_R` convergence by
+   confidence intervals; `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
+   physical / numerical / unresolved without presupposing its value (Gate 4):
+   [SF-39](lester-eq14/increments/SF-39-macrodispersion-study.md).
+6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
+   SF-31 pseudo-symplectic tracker on gridded labels (deferred: future work, not a requirement).
 
-The periodic-cell study (`D_T` by re-injection, deterministic many-period
-iteration) has no increment of its own: it is read off the return map that SF-30
-measures and that the labels must reproduce. The move to the long domain
-requires `e_v(h)` convergent and the return map concordant up to
-`sigma^2 = 2.25`.
+The periodic-cell study (`D_T` by re-injection, deterministic many-period iteration) has no increment of its own: it
+is read off the return map that SF-30 measures. The 2026-10-02 requirement for the move to the long domain
+(`e_v(h)` convergent and return map concordant up to `sigma^2 = 2.25` for the gridded labels) is superseded for the
+Lagrangian consumer by SF-37 (decision 2026-10-17, item 6).
 
 ## Recording and advancement
 

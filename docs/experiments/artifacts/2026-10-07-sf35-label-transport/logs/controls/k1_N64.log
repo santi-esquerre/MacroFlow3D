@@ -1,0 +1,88 @@
+command: /home/sesquerre/MacroFlow3D-SF-35/build/v100-release/inlet_slab --construct trace --cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/zeros_N64.npy --n 64 --eps 0.5 --threads 32 --save-labels /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/k1_N64 --summary /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/k1_N64.json
+FIELD cells /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/zeros_N64.npy (N^3 cell samples, x1 fastest; spectral vertex values) N=64 | stage field k = exp(eps Y), eps = 0.5
+SETUP STAGE field=cells eps=0.5 N=64 status=ok
+SETUP   SF-19: mg_levels=5 converged=1 G=(1.000000000000e+00, 0.000000000000e+00, 0.000000000000e+00) mean_flux=(1.000e+00, 0.000e+00, 0.000e+00) div_max=0.000e+00 div_rms=0.000e+00
+SETUP   SF-19 corrector x: status=converged its=0 rel_residual=0.000e+00 final_residual=0.000e+00
+SETUP   SF-19 corrector y: status=converged its=0 rel_residual=0.000e+00 final_residual=0.000e+00
+SETUP   SF-19 corrector z: status=converged its=0 rel_residual=0.000e+00 final_residual=0.000e+00
+SETUP   inlet: vmin=1.000000e+00 mean(U plane 0)=1.000000000000000 (mean-1=0.000e+00) Q0-1=0.000e+00 v_rms=1.000000e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=0.000000e+00 max_rel=0.000000e+00; spline potential GPU vs host prefilter rel=0.000e+00
+SETUP stage eps=0.5 built in 0.075s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+TRACE_STAGE field=cells eps=0.5 N=64 inlet_vmin=1.000000e+00 Q0=1.000000e+00 v_rms=1.000000e+00 mg_levels=5 darcy_converged=1
+TRACE_CONFIG backend=host hmax=1.953125e-03 (h/8) tol=1.0e-08 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
+TRANSPORT backend=host tol=1.0e-08 h_max=1.953125e-03 threads=32 status=ok max_roundtrip=0.000e+00 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 t_trace=9.89s t_labels=0.016s
+CASE field=cells eps=0.5 N=64 cand=trace | r_F=6.692e-14 its=nan | e_v=6.994e-16 e_psi=nan e_i=(7.678e-32,7.678e-32) e_div=3.863e-15 min_c=1.000e+00 p0.1=1.000e+00 p1=1.000e+00 p5=1.000e+00 p50=1.000e+00 | t=9.9
+PLANE j=0 x1=0.0000 e_v=6.994e-16 e_i1=3.364e-31 e_i2=3.364e-31 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=0 nfev_rt=0 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=1 x1=0.0156 e_v=6.994e-16 e_i1=1.680e-31 e_i2=1.680e-31 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=282624 nfev_rt=282624 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=2 x1=0.0312 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=479232 nfev_rt=479232 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=3 x1=0.0469 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=675840 nfev_rt=675840 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=4 x1=0.0625 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=872448 nfev_rt=872448 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=5 x1=0.0781 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=1069056 nfev_rt=1069056 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=6 x1=0.0938 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=1265664 nfev_rt=1265664 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=7 x1=0.1094 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=1462272 nfev_rt=1462272 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=8 x1=0.1250 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=1658880 nfev_rt=1658880 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=9 x1=0.1406 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=1855488 nfev_rt=1855488 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=10 x1=0.1562 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=2052096 nfev_rt=2052096 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=11 x1=0.1719 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=2248704 nfev_rt=2248704 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=12 x1=0.1875 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=2445312 nfev_rt=2445312 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=13 x1=0.2031 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=2641920 nfev_rt=2641920 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=14 x1=0.2188 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=2838528 nfev_rt=2838528 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=15 x1=0.2344 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=3035136 nfev_rt=3035136 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=16 x1=0.2500 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=3231744 nfev_rt=3231744 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=17 x1=0.2656 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=3428352 nfev_rt=3428352 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=18 x1=0.2812 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=3624960 nfev_rt=3624960 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=19 x1=0.2969 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=3821568 nfev_rt=3821568 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=20 x1=0.3125 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=4018176 nfev_rt=4018176 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=21 x1=0.3281 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=4214784 nfev_rt=4214784 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=22 x1=0.3438 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=4411392 nfev_rt=4411392 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=23 x1=0.3594 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=4608000 nfev_rt=4608000 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=24 x1=0.3750 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=4804608 nfev_rt=4804608 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=25 x1=0.3906 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=5001216 nfev_rt=5001216 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=26 x1=0.4062 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=5197824 nfev_rt=5197824 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=27 x1=0.4219 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=5394432 nfev_rt=5394432 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=28 x1=0.4375 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=5591040 nfev_rt=5591040 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=29 x1=0.4531 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=5787648 nfev_rt=5787648 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=30 x1=0.4688 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=5984256 nfev_rt=5984256 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=31 x1=0.4844 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=6180864 nfev_rt=6180864 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=32 x1=0.5000 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=6377472 nfev_rt=6377472 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=33 x1=0.5156 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=6574080 nfev_rt=6574080 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=34 x1=0.5312 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=6770688 nfev_rt=6770688 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=35 x1=0.5469 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=6967296 nfev_rt=6967296 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=36 x1=0.5625 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=7163904 nfev_rt=7163904 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=37 x1=0.5781 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=7360512 nfev_rt=7360512 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=38 x1=0.5938 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=7557120 nfev_rt=7557120 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=39 x1=0.6094 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=7753728 nfev_rt=7753728 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=40 x1=0.6250 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=7950336 nfev_rt=7950336 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=41 x1=0.6406 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=8146944 nfev_rt=8146944 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=42 x1=0.6562 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=8343552 nfev_rt=8343552 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=43 x1=0.6719 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=8540160 nfev_rt=8540160 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=44 x1=0.6875 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=8736768 nfev_rt=8736768 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=45 x1=0.7031 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=8933376 nfev_rt=8933376 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=46 x1=0.7188 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=9129984 nfev_rt=9129984 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=47 x1=0.7344 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=9326592 nfev_rt=9326592 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=48 x1=0.7500 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=9523200 nfev_rt=9523200 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=49 x1=0.7656 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=9719808 nfev_rt=9719808 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=50 x1=0.7812 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=9916416 nfev_rt=9916416 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=51 x1=0.7969 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=10113024 nfev_rt=10113024 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=52 x1=0.8125 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=10309632 nfev_rt=10309632 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=53 x1=0.8281 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=10506240 nfev_rt=10506240 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=54 x1=0.8438 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=10702848 nfev_rt=10702848 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=55 x1=0.8594 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=10899456 nfev_rt=10899456 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=56 x1=0.8750 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=11096064 nfev_rt=11096064 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=57 x1=0.8906 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=11292672 nfev_rt=11292672 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=58 x1=0.9062 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=11489280 nfev_rt=11489280 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=59 x1=0.9219 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=11685888 nfev_rt=11685888 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=60 x1=0.9375 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=11882496 nfev_rt=11882496 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=61 x1=0.9531 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=12079104 nfev_rt=12079104 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=62 x1=0.9688 e_v=6.994e-16 e_i1=5.284e-32 e_i2=5.284e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=12275712 nfev_rt=12275712 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=63 x1=0.9844 e_v=6.994e-16 e_i1=6.163e-32 e_i2=6.163e-32 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=12472320 nfev_rt=12472320 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=64 x1=1.0000 e_v=6.994e-16 e_i1=2.600e-31 e_i2=2.600e-31 min_c=1.000e+00 vD1_min=1.000e+00 vD1_nonpos=0 roundtrip=0.000e+00 nfev=12668928 nfev_rt=12668928 non_ok=0 backflow_enc=0 landings_discarded=0
+BACKFLOW field=cells eps=0.5 N=64 inlet_vmin=1.000000e+00 Q0=1.000000e+00 vD1_min=1.000000e+00 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=1.000000e+00 status_hist=262144,0,0,0,0,0,0
+GROWTH field=cells eps=0.5 N=64 e_v_N/e_v_1=1.000e+00 e_i_N/e_i_1=1.547e+00 max_roundtrip=0.000e+00 (plane 0)
+RESIDUAL field=cells eps=0.5 N=64 cand=trace r_F=6.692e-14 r_out=3.677e-31 q_rms_planes=1..N-1
+TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=0.000e+00
+SAVED_LABELS /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/exports/controls/k1_N64 (psi1.npy, psi2.npy, labels.json; ladder entries in ladder_h<div>_tol<tol>/)
+TIMING diagnostics=0.006s field=0.092s stage=0.075s trace=9.919s total=10.101s
+MEMORY peak_device_bytes=630194176 free_min=33459535872 total_device=34089730048 workspaces_bytes=67562543 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/MacroFlow3D-SF-35/docs/experiments/artifacts/2026-10-07-sf35-label-transport/raw/controls/k1_N64.json
+STATUS ok

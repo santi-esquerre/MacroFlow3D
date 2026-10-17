@@ -63,6 +63,20 @@ Euler potentials in other fields.
 5. **Validity envelope.** The amplitudes and resolutions at which SF-35 classifies the constructor `accept` are the
    envelope; it is filled at SF-35 closure, not presupposed. `alpha_T` is not presupposed anywhere (O3 unchanged).
 
+   **Measured (SF-35 campaign, 2026-10-16; owner decision pending).** On the SF-18 field (`sigma2 = 1` normalized,
+   `ell = 1/4`, seed 3001), at 32^3-256^3: the constructor is classified `accept` (criterion C) at `sigma_Y = 0.5` and
+   `sigma_Y = 1.0` (observed orders on 128 -> 256 between 1.85 and 3.80 at 0.5 and between 2.33 and 3.21 at 1.0); the
+   integration certificate (criterion B) is not met at (`sigma_Y`, N) = (1.0, 32), (1.5, 32), (1.5, 64), recorded with
+   no setting changed. `sigma_Y = 1.5` is **not established**: C is `reject` with no inlet backflow at any point.
+   Measured amplitudes only; other `ell`, other realizations and the long domain are unmeasured. Evidence and options:
+   `docs/experiments/2026-10-07-sf35-label-transport.md`.
+
+   **Owner decision (2026-10-17).** The envelope is O1: `sigma_Y <= 1` (0.5 and 1.0 established, 1.5 not established)
+   on the measured field, `ell` and grids; the three B-not-met points are excluded by owner decision (SF-35 closed
+   `done`). At `sigma_Y^2 = 4` refinement to 512^3 does not extend the convergent range of the label derivatives
+   (`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`). The gridded labels become a diagnostic and the
+   production consumer at `sigma^2 >= 4` is Lagrangian (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`).
+
 ## Consequences
 
 - SF-33 is closed `done` with claim (a) and the oracle established and claim (b) recorded as not established; its
