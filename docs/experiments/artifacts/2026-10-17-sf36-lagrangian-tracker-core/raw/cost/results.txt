@@ -1,0 +1,12 @@
+  COST N64_e1_plain rc=0 device_peak_MiB=651 max_rss_kB=656200 wall=0:07.05
+  COST N64_e1_cov rc=0 device_peak_MiB=785 max_rss_kB=682792 wall=0:08.23
+  COST N64_e2_plain rc=0 device_peak_MiB=651 max_rss_kB=656308 wall=0:08.03
+  COST N64_e2_cov rc=0 device_peak_MiB=785 max_rss_kB=684172 wall=0:10.28
+  COST N128_e1_plain rc=0 device_peak_MiB=891 max_rss_kB=997580 wall=0:12.62
+  COST N128_e1_cov rc=0 device_peak_MiB=957 max_rss_kB=1013904 wall=0:15.07
+  COST N128_e2_plain rc=0 device_peak_MiB=891 max_rss_kB=1012444 wall=0:16.36
+  COST N128_e2_cov rc=0 device_peak_MiB=957 max_rss_kB=1012336 wall=0:19.61
+  COST N256_e1_plain rc=0 device_peak_MiB=3771 max_rss_kB=3769280 wall=0:40.14
+  COST N256_e1_cov rc=0 device_peak_MiB=3771 max_rss_kB=3769272 wall=0:44.23
+  COST N256_e2_plain rc=0 device_peak_MiB=3771 max_rss_kB=3769284 wall=0:50.94
+  COST N256_e2_cov rc=0 device_peak_MiB=3771 max_rss_kB=3769152 wall=0:56.45

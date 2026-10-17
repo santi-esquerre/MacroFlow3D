@@ -1,0 +1,40 @@
+[PASS] k = 1 N=64: stage flow ready  ok
+[PASS] k = 1 N=64: per-particle status identical to host trace_to_plane  differing 0 of 4096
+[PASS] k = 1 N=64: max |dx| (x2, x3 at the plane) <= 1e-12  max|dx| 0.000e+00 over 4096 ok particles
+[PASS] k = 1 N=64: per-particle nfev identical (same step sequences)  differing step sequences 0
+  k = 1 N=64: INFO max|dtau| 0.000e+00 (bitwise-different tau 0), seed_backflow 0, dev statuses ok 4096  [stage 0.1s, case 1.9s, plane kernel 0.031s]
+  k = 1 N=64: SANITY (k = 1) max |tau(X) - (X - X0)| = 0.000e+00
+[PASS] generic3d eps 0.25 N=64: stage flow ready  ok
+[PASS] generic3d eps 0.25 N=64: per-particle status identical to host trace_to_plane  differing 0 of 4096
+[PASS] generic3d eps 0.25 N=64: max |dx| (x2, x3 at the plane) <= 1e-12  max|dx| 0.000e+00 over 4096 ok particles
+[PASS] generic3d eps 0.25 N=64: per-particle nfev identical (same step sequences)  differing step sequences 0
+  generic3d eps 0.25 N=64: INFO max|dtau| 2.220e-16 (bitwise-different tau 328), seed_backflow 0, dev statuses ok 4096  [stage 1.1s, case 3.2s, plane kernel 0.024s]
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 0.5 N=64: stage flow ready  ok
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 0.5 N=64: per-particle status identical to host trace_to_plane  differing 0 of 4096
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 0.5 N=64: max |dx| (x2, x3 at the plane) <= 1e-12  max|dx| 0.000e+00 over 4096 ok particles
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 0.5 N=64: per-particle nfev identical (same step sequences)  differing step sequences 0
+  gauss s2=1 ell=0.25 seed=3001 eps 0.5 N=64: INFO max|dtau| 4.441e-16 (bitwise-different tau 323), seed_backflow 0, dev statuses ok 4096  [stage 1.1s, case 3.2s, plane kernel 0.025s]
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 2.0 N=64: stage flow ready  ok
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 2.0 N=64: per-particle status identical to host trace_to_plane  differing 0 of 4096
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 2.0 N=64: max |dx| (x2, x3 at the plane) <= 1e-12  max|dx| 0.000e+00 over 4096 ok particles
+[PASS] gauss s2=1 ell=0.25 seed=3001 eps 2.0 N=64: per-particle nfev identical (same step sequences)  differing step sequences 0
+  gauss s2=1 ell=0.25 seed=3001 eps 2.0 N=64: INFO max|dtau| 2.842e-14 (bitwise-different tau 327), seed_backflow 0, dev statuses ok 4096  [stage 2.1s, case 4.6s, plane kernel 0.040s]
+  [time] C at N=64: 13.2s elapsed
+[PASS] I gauss eps 0.5 N=16: stage ok with labels  ok
+  I gauss eps 0.5 N=16: INFO free bytes: before 1st track 33511964672, after 1st 33405009920 (delta 106954752 = driver first-launch reservation if non-zero), after 2nd 33405009920, after 3rd 33405009920
+[PASS] I gauss eps 0.5 N=16: device storage pointers stable across track() (no reallocation)
+[PASS] I gauss eps 0.5 N=16: cudaMemGetInfo free bytes equal across the 1st, 2nd and 3rd track()  free bytes 33405009920 / 33405009920 / 33405009920 (device shared: re-run alone before concluding)
+[PASS] I gauss eps 0.5 N=16: two launches bitwise identical (all outputs, moments)
+[PASS] I gauss eps 0.5 N=16: block 64 vs 256 bitwise identical
+[PASS] I gauss eps 0.5 N=16: positions, tau, I, statuses, nfev bitwise identical with covectors on vs off  nfev differing particles 0
+  I gauss eps 0.5 N=16: INFO identity [tol 1e-8, h_max h/8] max |a x b - v exp(-I)|/|v|: planes 2.285e-04, times 1.828e-04 (max |I| 1.956e-01, max |cov| 2.376e+00)
+  I gauss eps 0.5 N=16: INFO identity [tol 1e-10, h_max h/16] max |a x b - v exp(-I)|/|v|: planes 7.007e-05, times 4.371e-05 (max |I| 1.956e-01, max |cov| 2.376e+00)
+  I gauss eps 0.5 N=16: INFO identity [tol 1e-10, h_max h/32] max |a x b - v exp(-I)|/|v|: planes 1.387e-05, times 9.515e-06 (max |I| 1.956e-01, max |cov| 2.376e+00)
+[PASS] I gauss eps 0.5 N=16: D-1 labels finite at the seeds, weights sum to 1  sum w 0.9999999999999994
+[PASS] I gauss eps 0.5 N=16: moments_time.csv read back by analysis::read_timeseries_csv reproduces the in-memory moments (rows 1..T; row 0 = reader's header artifact)  max rel 4.163e-17, raw rows 4
+[PASS] I gauss eps 0.5 N=16: compute_macrodispersion runs on the read series  rows 3
+[PASS] I gauss eps 0.5 N=16: planes_x23.npy round trip exact, shape (Np, P, 2)
+  I gauss eps 0.5 N=16: INFO ok statuses: plane 256/256, time 256/256; seed_backflow 0; moments_time n=3 active[0]=256; kernels plane 0.028s time 0.035s
+  [time] I: 14.7s elapsed
+
+SUMMARY: 26 checks, 0 failed -> ALL PASS

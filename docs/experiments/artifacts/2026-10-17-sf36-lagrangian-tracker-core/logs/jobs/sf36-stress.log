@@ -1,0 +1,22 @@
+[2026-10-17T22:56:36Z] job=sf36-stress session=macroflow3d-SF-36-sf36-stress started
+[2026-10-17T22:56:36Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-17T22:56:36Z] cwd=/home/sesquerre/MacroFlow3D-SF-36
+[2026-10-17T22:56:36Z] command=cd ~/MacroFlow3D-SF-36 && bash docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/run_sf36.sh build/v100-release stress
+run_sf36.sh: part=stress build=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release host=localhost.localdomain gpu_id=0 start=2026-10-17T22:56:37Z
+  run.env: COMMIT=e81b11833412149027643293d7e11ff989643189 HOST=localhost.localdomain DATE_UTC=2026-10-17T22:56:37Z BUILD=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release PART=stress DRYRUN=0 BASE_REFS=/home/sesquerre/sf36_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ timeout -k 10 1800 /usr/bin/time -v ... inlet_slab --track forward --n 16 --ell 0.15 --seed 2 --eps 4 --sigma2 1 --np-side 16 --planes 0.5,1 --times 0.5,1 (default tol/h_max/cap)
+  STRESS_RESULT rc=22 wall=1228s timeout=1800s (terminated)
+    TRACK field=gaussian eps=4 N=16 h=0.0625 x0=0 M=16 Np=256 planes=0.5,1 times=0.5,1 tol=1.0e-08 h_max=7.812500e-03 (h/8) min_step=1.0e-13 max_arclength=14 covectors=0 labels_available=0 inlet_vmin=-8.241447e-01
+    BACKFLOW field=gaussian eps=4 N=16 inlet_vmin=-8.241447e-01 labels_available=0 seed_backflow=0 backflow_enc_plane=254 backflow_enc_time=90 (inlet backflow is recorded, not an exit condition)
+    TSTATUS pass=plane hist=2,0,254,0,0,0,0 landings_discarded=0 backflow_enc=254 nfev=17548989856
+    TSTATUS pass=time hist=256,0,0,0,0,0,0 landings_discarded=0 backflow_enc=90 nfev=584714
+    STATUS track_fail
++ python3 /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/digest_sf36.py /home/sesquerre/sf36_campaign /home/sesquerre/sf36_campaign/analysis
+wrote /home/sesquerre/sf36_campaign/analysis/controls.md
+wrote /home/sesquerre/sf36_campaign/analysis/bytecmp.md
+wrote /home/sesquerre/sf36_campaign/analysis/mem.md
+wrote /home/sesquerre/sf36_campaign/analysis/cost.md
+wrote /home/sesquerre/sf36_campaign/analysis/stress.md
+  digest_sf36.py rc=0
+run_sf36.sh: part=stress end=2026-10-17T23:17:09Z blocking_failures=0
+[2026-10-17T23:17:09Z] job=sf36-stress finished exit=0

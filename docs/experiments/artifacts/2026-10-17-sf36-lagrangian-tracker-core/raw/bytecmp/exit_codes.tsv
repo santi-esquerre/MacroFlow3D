@@ -1,0 +1,11 @@
+N32_e0.5_host	0
+N32_e0.5_gpu	0
+N32_e1.0_host	21
+N32_e1.0_gpu	21
+N64_e0.5_host	0
+N64_e0.5_gpu	0
+N64_e1.0_host	0
+N64_e1.0_gpu	0
+N64_e2.0_gpu	21
+N128_e2.0_gpu	21
+prod32	0

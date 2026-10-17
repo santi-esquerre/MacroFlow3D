@@ -1,0 +1,86 @@
+lagrangian_tracker_controls (FULL mode)
+[PASS] A1 k=1 N=64: stage flow ready  ok
+[PASS] A1 k=1 N=64: all particles ok in both passes  plane ok 64/64, time ok 64
+[PASS] A1 k=1 N=64: transverse displacement (planes+snapshots) <= 1e-12  max 0.000e+00 over 640 records
+[PASS] A1 k=1 N=64: tau at plane X equals X - X0, relative <= 1e-12  max rel 0.000e+00
+[PASS] A1 k=1 N=64: covectors equal initial values <= 1e-12  max 0.000e+00
+[PASS] A1 k=1 N=64: |I| <= 1e-14  max 0.000e+00
+  A1 k=1 N=64: INFO max |x1(t) - (X0 + t)| at snapshots 0.000e+00  [0.6 s]
+  [time] A1: 0.6 s elapsed
+[PASS] A2 layered N=64: stage flow ready  ok
+[PASS] A2 layered N=64: all particles ok in both passes
+[PASS] A2 layered N=64: transverse positions constant <= 1e-12  max 9.714e-17 (max |g2|,|g3| of the spline flow on the lines: 1.133e-15)
+[PASS] A2 layered N=64: covectors constant <= 1e-12  max 1.195e-13
+[PASS] A2 layered N=64: tau at planes vs independent quadrature <= 1e-9 relative  max rel 5.649e-11 (abs 1.412e-11)
+[RECORD] A2 layered N=64: I at planes+snapshots vs independent quadrature (no threshold; original 1e-9 relative criterion not met, O(h_max^~2) on the C^2 spline): max rel 7.407e-04 over 256 records with |I_ref| >= 1e-3 max|I_ref| (384 records with I_ref ~ 0 excluded from the relative form)
+  A2 layered N=64: INFO I error by pass: planes max abs 7.562e-09, snapshots max abs 5.947e-07
+  A2 layered N=64: INFO I error: max abs 5.947e-07; max |I_ref| 8.029e-04; abs error / max|I_ref| = 7.407e-04 (spec: 1e-9 relative)
+[PASS] A2 layered N=64: snapshots (extra, not a spec threshold): quadrature tau(x1 recorded) = t within 10 tol (positions are error-controlled at tol)  max rel 8.418e-11 (limit 1.0e-07)
+  A2 layered N=64: DIAG-4 tol 1e-12 h_max h/8 (planes): I max abs err 7.562e-09 (rel-form 3.768e-05), tau rel err 5.649e-11
+  A2 layered N=64: DIAG-4 tol 1e-12 h_max h/16 (planes): I max abs err 2.048e-09 (rel-form 1.020e-05) order vs previous 1.88, tau rel err 7.052e-12
+  A2 layered N=64: DIAG-4 tol 1e-12 h_max h/32 (planes): I max abs err 5.318e-10 (rel-form 2.649e-06) order vs previous 1.95, tau rel err 8.808e-13
+  A2 layered N=64: INFO 640 records  [4.1 s]
+  [time] A2: 4.7 s elapsed
+[PASS] A3 failure field M=16: plane-pass status histogram exactly as constructed  got 88 40 32 32 0 32 32 | want 88 40 32 32 0 32 32
+[PASS] A3 failure field M=16: time-pass status histogram exactly as constructed  got 120 40 32 32 0 0 32 | want 120 40 32 32 0 0 32
+[PASS] A3 failure field M=16: per-particle status and n_reached (both passes) exactly as constructed  mismatching: plane status 0, time status 0, n_reached 0
+[PASS] A3 failure field M=16: seed_backflow = 104 (32 g1<0 + 32 NaN + 32 k<0 + 8 pocket), zero weights exactly there, sum w = 1  seed_backflow 104, sum w - 1 = 1.11e-15, weight mismatches 0
+[PASS] A3 failure field M=16: backflow_encounters = 24 per pass (one per pocket seed outside the pocket, none elsewhere)  plane 24, time 24
+[PASS] A3 failure field M=16: recrossings = 0  plane 0
+[PASS] A3 failure field M=16: landings_discarded: >= 1 for every landing_failed seed (LOWER BOUND, the retry count is not derivable), exactly 0 for every other particle/pass  min over band 37, plane total 1184, elsewhere 0
+[PASS] A3 failure field M=16: moments bookkeeping: plane contributing {120,88,88}, non_ok 168; snapshot active {152,152,120}
+  A3 failure field M=16: INFO 0.0 s
+  [time] A3: 4.7 s elapsed
+[PASS] B lester2021 eps=1 N=64: stage flow ready  ok
+[PASS] B lester2021 eps=1 N=64: all statuses ok (plane pass)  ok 256/256
+[PASS] B lester2021 eps=1 N=64: one-period transverse return <= 10 tol = 1e-7  max 3.966e-11 (limit 1.0e-07)
+  B lester2021 eps=1 N=64: INFO 1.3 s
+  [time] B: 6.0 s elapsed
+[PASS] E1 derivative check (central FD, d=1e-4) of g, H, grad ln k of the analytic field  max |g - FD| 2.21e-08, |H - FD(g)| 1.12e-07, |grad ln k - FD| 2.06e-07
+[PASS] E1 C-inf analytic field (Phi = x1 + .05 sin2pi x2 cos2pi x1 + .05 sin2pi x3 sin2pi x1, k = exp(.5 cos2pi(x1+x2+x3))): identity |a x b - v exp(-I)|/|v| <= 1e-8 at tol 1e-10, h_max 1/128, planes+times {.5,1,2,4} [BLOCKING]  max 5.286e-11 (threshold 1e-8), rms 8.205e-12 over 2048 records (non-ok passes 0); max|I| 2.603e+00; |cov| p50 1.089e+00 max 8.435e+00
+  E1 0.0 s
+[RECORD] E2 generic3d eps 0.25 N=64: identity |a x b - v exp(-I)|/|v| at tol 1e-10, h_max h/8 (no threshold; original 1e-8 criterion not met, O(h_max^~2) on the C^2 spline): max 6.680e-06, rms 1.110e-06 over 2048 records (non-ok passes 0)
+  E2 generic3d eps 0.25 N=64: INFO covector norms |a|,|b| percentiles p50 9.926e-01 p90 1.223e+00 p99 1.450e+00 max 1.530e+00; max|I| 3.022e-03 rms I 5.622e-04
+[RECORD] E2 gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64: identity |a x b - v exp(-I)|/|v| at tol 1e-10, h_max h/8 (no threshold; original 1e-8 criterion not met, O(h_max^~2) on the C^2 spline): max 4.610e-05, rms 5.728e-06 over 2048 records (non-ok passes 0)
+  E2 gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64: INFO covector norms |a|,|b| percentiles p50 1.166e+00 p90 2.850e+00 p99 8.036e+00 max 4.734e+01; max|I| 9.458e-02 rms I 1.361e-02
+[RECORD] E2 gauss s2=1 ell=.25 seed=3001 eps 2.0 N=64: identity |a x b - v exp(-I)|/|v| at tol 1e-10, h_max h/8 (no threshold; original 1e-8 criterion not met, O(h_max^~2) on the C^2 spline): max 1.542e-03, rms 7.282e-05 over 2048 records (non-ok passes 0)
+  E2 gauss s2=1 ell=.25 seed=3001 eps 2.0 N=64: INFO covector norms |a|,|b| percentiles p50 2.076e+00 p90 1.256e+01 p99 3.019e+02 max 2.719e+04; max|I| 2.759e-01 rms I 5.137e-02
+  E2 total 7.5 s
+  [time] E: 13.5 s elapsed
+[PASS] D generic3d eps 0.25 N=64 seeds=256: stage flow ready  ok
+[PASS] D generic3d eps 0.25 N=64 seeds=256: tau=0.5: observed order >= 1.8 on both delta pairs (a and b)  rms_a (1,.5,.25)e-3 = 4.339e-06 1.149e-06 2.870e-07 | rms_b = 3.946e-06 1.037e-06 2.689e-07 | orders a: 1.917 2.001, b: 1.927 1.948 | seeds used 256 | min order 1.917 (threshold 1.8)
+[RECORD] D generic3d eps 0.25 N=64 seeds=256: pre-registered ladder tau=0.5 (criterion as originally registered: met): rms_a (8,4,2)e-3 = 2.327e-04 6.109e-05 1.620e-05 | rms_b = 2.367e-04 6.008e-05 1.530e-05 | orders a: 1.929 1.915, b: 1.978 1.973 | seeds used 256 | min order 1.915 (threshold 1.8)
+[PASS] D generic3d eps 0.25 N=64 seeds=256: tau=2.0: observed order >= 1.8 on both delta pairs (a and b)  rms_a (1,.5,.25)e-3 = 7.204e-06 1.871e-06 4.725e-07 | rms_b = 5.225e-06 1.384e-06 3.586e-07 | orders a: 1.945 1.985, b: 1.917 1.948 | seeds used 256 | min order 1.917 (threshold 1.8)
+[RECORD] D generic3d eps 0.25 N=64 seeds=256: pre-registered ladder tau=2.0 (criterion as originally registered: met): rms_a (8,4,2)e-3 = 3.830e-04 1.002e-04 2.700e-05 | rms_b = 2.831e-04 7.418e-05 1.958e-05 | orders a: 1.934 1.892, b: 1.932 1.922 | seeds used 256 | min order 1.892 (threshold 1.8)
+  D generic3d eps 0.25 N=64 seeds=256: INFO tol 1e-12, h_max h/32; FULL D: 256 seeds
+[PASS] D gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64 seeds=256: stage flow ready  ok
+[PASS] D gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64 seeds=256: tau=0.5: observed order >= 1.8 on both delta pairs (a and b)  rms_a (1,.5,.25)e-3 = 1.886e-03 4.702e-04 1.176e-04 | rms_b = 7.774e-04 1.961e-04 4.911e-05 | orders a: 2.004 2.000, b: 1.987 1.997 | seeds used 256 | min order 1.987 (threshold 1.8)
+[RECORD] D gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64 seeds=256: pre-registered ladder tau=0.5 (criterion as originally registered: met): rms_a (8,4,2)e-3 = 1.197e-01 3.021e-02 7.568e-03 | rms_b = 4.646e-02 1.212e-02 3.071e-03 | orders a: 1.986 1.997, b: 1.939 1.980 | seeds used 256 | min order 1.939 (threshold 1.8)
+[PASS] D gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64 seeds=256: tau=2.0: observed order >= 1.8 on both delta pairs (a and b)  rms_a (1,.5,.25)e-3 = 4.905e-01 1.199e-01 2.953e-02 | rms_b = 1.862e-01 4.624e-02 1.147e-02 | orders a: 2.033 2.021, b: 2.010 2.011 | seeds used 256 | min order 2.010 (threshold 1.8)
+[RECORD] D gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64 seeds=256: pre-registered ladder tau=2.0 (criterion as originally registered: not met): rms_a (8,4,2)e-3 = 5.221e+00 3.146e+00 1.605e+00 | rms_b = 2.611e+00 1.086e+00 5.852e-01 | orders a: 0.731 0.971, b: 1.266 0.892 | seeds used 256 | min order 0.731 (threshold 1.8)
+  D gauss s2=1 ell=.25 seed=3001 eps 1.0 N=64 seeds=256: INFO tol 1e-12, h_max h/32; FULL D: 256 seeds
+  D total 50.8 s
+  [time] D: 64.4 s elapsed
+  E2 ladder generic3d eps 0.25 N=64: kernels h/8: plane 0.22 s, time 0.24 s
+  E2 ladder generic3d eps 0.25 N=64: kernels h/16: plane 0.44 s, time 0.48 s
+  E2 ladder generic3d eps 0.25 N=64: kernels h/32: plane 0.88 s, time 0.94 s
+  E2 ladder generic3d eps 0.25 N=64: kernels h/64: plane 1.76 s, time 1.87 s
+[RECORD] E2 ladder generic3d eps 0.25 N=64: E residual (max / rms) at tol 1e-12 for h_max = h/8,h/16,h/32,h/64: 6.680e-06/1.105e-06  9.703e-07/1.952e-07  2.553e-07/4.855e-08  5.778e-08/1.163e-08  | observed orders (max): 2.78 1.93 2.14 | (rms): 2.50 2.01 2.06
+[RECORD] DIAG-3 generic3d eps 0.25 N=64: |I(h/8) - I(h/64)| over plane records: max 6.674e-06 rms 1.119e-06 (snapshots max 6.366e-06); RMS of I (h/64) 5.621e-04, max|I| 3.019e-03; RMS of e_v = 1 - exp(-I) 5.622e-04
+  E2 ladder gauss eps 1.0 N=64: kernels h/8: plane 0.27 s, time 0.48 s
+  E2 ladder gauss eps 1.0 N=64: kernels h/16: plane 0.48 s, time 0.92 s
+  E2 ladder gauss eps 1.0 N=64: kernels h/32: plane 0.95 s, time 1.83 s
+  E2 ladder gauss eps 1.0 N=64: kernels h/64: plane 1.89 s, time 3.64 s
+[RECORD] E2 ladder gauss eps 1.0 N=64: E residual (max / rms) at tol 1e-12 for h_max = h/8,h/16,h/32,h/64: 1.868e-05/3.315e-06  7.949e-06/1.315e-06  2.695e-06/3.181e-07  8.695e-07/8.506e-08  | observed orders (max): 1.23 1.56 1.63 | (rms): 1.33 2.05 1.90
+[RECORD] DIAG-3 gauss eps 1.0 N=64: |I(h/8) - I(h/64)| over plane records: max 1.319e-05 rms 2.799e-06 (snapshots max 2.007e-05); RMS of I (h/64) 1.361e-02, max|I| 9.454e-02; RMS of e_v = 1 - exp(-I) 1.363e-02
+  E2 ladder gauss eps 2.0 N=64: kernels h/8: plane 0.38 s, time 0.66 s
+  E2 ladder gauss eps 2.0 N=64: kernels h/16: plane 0.61 s, time 1.10 s
+  E2 ladder gauss eps 2.0 N=64: kernels h/32: plane 1.19 s, time 2.17 s
+  E2 ladder gauss eps 2.0 N=64: kernels h/64: plane 2.35 s, time 4.33 s
+[RECORD] E2 ladder gauss eps 2.0 N=64: E residual (max / rms) at tol 1e-12 for h_max = h/8,h/16,h/32,h/64: 1.004e-03/3.632e-05  2.729e-04/1.341e-05  9.551e-05/4.667e-06  3.307e-05/1.333e-06  | observed orders (max): 1.88 1.51 1.53 | (rms): 1.44 1.52 1.81
+[RECORD] DIAG-3 gauss eps 2.0 N=64: |I(h/8) - I(h/64)| over plane records: max 2.444e-05 rms 5.877e-06 (snapshots max 2.987e-05); RMS of I (h/64) 5.137e-02, max|I| 2.759e-01; RMS of e_v = 1 - exp(-I) 5.199e-02
+[RECORD] E2 ladder C-inf field, tol 1e-12, E residual (max / rms) for h_max = h/8..h/64 (h=1/64): 1.645e-13/1.845e-14  1.997e-13/2.407e-14  2.947e-13/3.051e-14  4.335e-13/4.581e-14  | observed orders (max): -0.28 -0.56 -0.56
+  DIAG-2/3 36.8 s
+  [time] DIAG: 101.2 s elapsed
+
+SUMMARY: 31 checks, 0 failed -> ALL PASS  (101.2 s)

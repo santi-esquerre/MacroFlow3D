@@ -1,0 +1,111 @@
+[2026-10-17T22:50:35Z] job=sf36-cost session=macroflow3d-SF-36-sf36-cost started
+[2026-10-17T22:50:35Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-17T22:50:35Z] cwd=/home/sesquerre/MacroFlow3D-SF-36
+[2026-10-17T22:50:35Z] command=cd ~/MacroFlow3D-SF-36 && bash docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/run_sf36.sh build/v100-release cost
+run_sf36.sh: part=cost build=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release host=localhost.localdomain gpu_id=0 start=2026-10-17T22:50:36Z
+  run.env: COMMIT=e81b11833412149027643293d7e11ff989643189 HOST=localhost.localdomain DATE_UTC=2026-10-17T22:50:36Z BUILD=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release PART=cost DRYRUN=0 BASE_REFS=/home/sesquerre/sf36_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N64_e1_plain.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N64_e1_plain.json > /home/sesquerre/sf36_campaign/cost/N64_e1_plain.log 2>&1
+  CASE_RESULT name=N64_e1_plain rc=0 wall=7s end=2026-10-17T22:50:47Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=861334862
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=839253068
+    TIMING field=0.089s prepare=0.009s stage=2.139s track=2.876s total=5.113s
+    MEMORY peak_device_bytes=682622976 free_min=33407107072 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N64_e1_plain rc=0 device_peak_MiB=651 max_rss_kB=656200 wall=0:07.05
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N64_e1_cov.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --covectors --summary /home/sesquerre/sf36_campaign/cost/N64_e1_cov.json > /home/sesquerre/sf36_campaign/cost/N64_e1_cov.log 2>&1
+  CASE_RESULT name=N64_e1_cov rc=0 wall=8s end=2026-10-17T22:50:58Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=861334862
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=839253068
+    TIMING field=0.090s prepare=0.025s stage=2.135s track=4.191s total=6.441s
+    MEMORY peak_device_bytes=823132160 free_min=33266597888 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N64_e1_cov rc=0 device_peak_MiB=785 max_rss_kB=682792 wall=0:08.23
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N64_e2_plain.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N64_e2_plain.json > /home/sesquerre/sf36_campaign/cost/N64_e2_plain.log 2>&1
+  CASE_RESULT name=N64_e2_plain rc=0 wall=8s end=2026-10-17T22:51:09Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1009678376
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1038538244
+    TIMING field=0.089s prepare=0.009s stage=2.140s track=4.029s total=6.268s
+    MEMORY peak_device_bytes=682622976 free_min=33407107072 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N64_e2_plain rc=0 device_peak_MiB=651 max_rss_kB=656308 wall=0:08.03
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N64_e2_cov.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --covectors --summary /home/sesquerre/sf36_campaign/cost/N64_e2_cov.json > /home/sesquerre/sf36_campaign/cost/N64_e2_cov.log 2>&1
+  CASE_RESULT name=N64_e2_cov rc=0 wall=11s end=2026-10-17T22:51:22Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1009678376
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1038538244
+    TIMING field=0.091s prepare=0.027s stage=2.133s track=5.927s total=8.178s
+    MEMORY peak_device_bytes=823132160 free_min=33266597888 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N64_e2_cov rc=0 device_peak_MiB=785 max_rss_kB=684172 wall=0:10.28
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N128_e1_plain.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 128 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N128_e1_plain.json > /home/sesquerre/sf36_campaign/cost/N128_e1_plain.log 2>&1
+  CASE_RESULT name=N128_e1_plain rc=0 wall=13s end=2026-10-17T22:51:37Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1718603336
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1672446752
+    TIMING field=0.604s prepare=0.026s stage=2.985s track=7.251s total=10.867s
+    MEMORY peak_device_bytes=862978048 free_min=33226752000 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N128_e1_plain rc=0 device_peak_MiB=891 max_rss_kB=997580 wall=0:12.62
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N128_e1_cov.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 128 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --covectors --summary /home/sesquerre/sf36_campaign/cost/N128_e1_cov.json > /home/sesquerre/sf36_campaign/cost/N128_e1_cov.log 2>&1
+  CASE_RESULT name=N128_e1_cov rc=0 wall=15s end=2026-10-17T22:51:55Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1718603336
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1672446752
+    TIMING field=0.610s prepare=0.038s stage=2.989s track=9.533s total=13.170s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N128_e1_cov rc=0 device_peak_MiB=957 max_rss_kB=1013904 wall=0:15.07
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N128_e2_plain.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 128 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N128_e2_plain.json > /home/sesquerre/sf36_campaign/cost/N128_e2_plain.log 2>&1
+  CASE_RESULT name=N128_e2_plain rc=0 wall=16s end=2026-10-17T22:52:14Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=2015148236
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=2071766630
+    TIMING field=0.602s prepare=0.026s stage=2.969s track=10.666s total=14.264s
+    MEMORY peak_device_bytes=862978048 free_min=33226752000 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N128_e2_plain rc=0 device_peak_MiB=891 max_rss_kB=1012444 wall=0:16.36
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N128_e2_cov.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 128 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --covectors --summary /home/sesquerre/sf36_campaign/cost/N128_e2_cov.json > /home/sesquerre/sf36_campaign/cost/N128_e2_cov.log 2>&1
+  CASE_RESULT name=N128_e2_cov rc=0 wall=19s end=2026-10-17T22:52:36Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=2015148236
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=2071766630
+    TIMING field=0.604s prepare=0.037s stage=2.978s track=14.060s total=17.680s
+    MEMORY peak_device_bytes=1003487232 free_min=33086242816 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N128_e2_cov rc=0 device_peak_MiB=957 max_rss_kB=1012336 wall=0:19.61
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N256_e1_plain.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 256 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N256_e1_plain.json > /home/sesquerre/sf36_campaign/cost/N256_e1_plain.log 2>&1
+  CASE_RESULT name=N256_e1_plain rc=0 wall=40s end=2026-10-17T22:53:19Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=3433060916
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=3339750134
+    TIMING field=7.252s prepare=0.060s stage=8.625s track=22.111s total=38.049s
+    MEMORY peak_device_bytes=2106589184 free_min=31983140864 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N256_e1_plain rc=0 device_peak_MiB=3771 max_rss_kB=3769280 wall=0:40.14
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N256_e1_cov.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 256 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --covectors --summary /home/sesquerre/sf36_campaign/cost/N256_e1_cov.json > /home/sesquerre/sf36_campaign/cost/N256_e1_cov.log 2>&1
+  CASE_RESULT name=N256_e1_cov rc=0 wall=44s end=2026-10-17T22:54:06Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=3433060916
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=3339750134
+    TIMING field=7.075s prepare=0.145s stage=8.651s track=26.399s total=42.270s
+    MEMORY peak_device_bytes=2247098368 free_min=31842631680 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N256_e1_cov rc=0 device_peak_MiB=3771 max_rss_kB=3769272 wall=0:44.23
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N256_e2_plain.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 256 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N256_e2_plain.json > /home/sesquerre/sf36_campaign/cost/N256_e2_plain.log 2>&1
+  CASE_RESULT name=N256_e2_plain rc=0 wall=51s end=2026-10-17T22:55:00Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=4026126752
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=4138737188
+    TIMING field=7.115s prepare=0.085s stage=8.624s track=33.016s total=48.841s
+    MEMORY peak_device_bytes=2106589184 free_min=31983140864 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N256_e2_plain rc=0 device_peak_MiB=3771 max_rss_kB=3769284 wall=0:50.94
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/cost/N256_e2_cov.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 256 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --covectors --summary /home/sesquerre/sf36_campaign/cost/N256_e2_cov.json > /home/sesquerre/sf36_campaign/cost/N256_e2_cov.log 2>&1
+  CASE_RESULT name=N256_e2_cov rc=0 wall=56s end=2026-10-17T22:55:59Z
+    TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=4026126752
+    TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=4138737188
+    TIMING field=7.078s prepare=0.099s stage=8.583s track=38.577s total=54.337s
+    MEMORY peak_device_bytes=2247098368 free_min=31842631680 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS ok
+  COST N256_e2_cov rc=0 device_peak_MiB=3771 max_rss_kB=3769152 wall=0:56.45
++ python3 /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/digest_sf36.py /home/sesquerre/sf36_campaign /home/sesquerre/sf36_campaign/analysis
+wrote /home/sesquerre/sf36_campaign/analysis/controls.md
+wrote /home/sesquerre/sf36_campaign/analysis/bytecmp.md
+wrote /home/sesquerre/sf36_campaign/analysis/mem.md
+wrote /home/sesquerre/sf36_campaign/analysis/cost.md
+wrote /home/sesquerre/sf36_campaign/analysis/stress.md
+  digest_sf36.py rc=0
+run_sf36.sh: part=cost end=2026-10-17T22:56:01Z blocking_failures=0
+[2026-10-17T22:56:01Z] job=sf36-cost finished exit=0

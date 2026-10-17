@@ -1,0 +1,23 @@
+command: /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --n 16 --ell 0.15 --seed 2 --eps 4 --sigma2 1 --np-side 16 --planes 0.5,1 --times 0.5,1 --summary /home/sesquerre/sf36_campaign/stress/backflow_stress_n16.json
+FIELD gaussian (SF-18) N=16 sigma2=1 ell=0.15 seed=2 normalize_variance=1 applied_scale=1.052364588296e+00 raw_variance=9.029579964622e-01 final_variance=1.000000000000e+00 active_modes=1799 | stage field k = exp(eps Y), eps = 4
+SETUP STAGE field=gaussian eps=4 N=16 status=inlet_backflow
+SETUP   SF-18: raw_mean=-1.301043e-17 raw_variance=9.029579964622e-01 applied_scale=1.052364588296e+00 final_variance=1.000000000000e+00 active_modes=1799
+SETUP   SF-19: mg_levels=3 converged=1 G=(1.717793365066e-01, -8.936280033929e-03, -1.871772707061e-02) mean_flux=(1.000e+00, -1.032e-16, -7.329e-17) div_max=2.578e-06 div_rms=9.460e-08
+SETUP   SF-19 corrector x: status=converged its=30 rel_residual=1.489e-11 final_residual=3.499e-05
+SETUP   SF-19 corrector y: status=converged its=30 rel_residual=3.962e-12 final_residual=1.435e-05
+SETUP   SF-19 corrector z: status=converged its=30 rel_residual=6.151e-12 final_residual=1.619e-05
+SETUP   inlet: vmin=-8.241447e-01 mean(U plane 0)=0.999999999706249 (mean-1=-2.938e-10) Q0-1=nan v_rms=1.804812e+01
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=5.438612e+00 max_rel=8.365124e+01; spline potential GPU vs host prefilter rel=1.146e-15
+SETUP stage eps=4 built in 2.601s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+TRACK field=gaussian eps=4 N=16 h=0.0625 x0=0 M=16 Np=256 planes=0.5,1 times=0.5,1 tol=1.0e-08 h_max=7.812500e-03 (h/8) min_step=1.0e-13 max_arclength=14 covectors=0 labels_available=0 inlet_vmin=-8.241447e-01
+BACKFLOW field=gaussian eps=4 N=16 inlet_vmin=-8.241447e-01 labels_available=0 seed_backflow=0 backflow_enc_plane=254 backflow_enc_time=90 (inlet backflow is recorded, not an exit condition)
+TPLANE m=0 x1=0.5 n_ok=208 mean2=5.277602075684e-01 mean3=3.915793251716e-01 var2=3.335946894451e-02 var3=3.254648161945e-02 mean_tau=9.333682536160e+01 var_tau=1.535102730159e+05 ev_rms=2.069184e+121 ev_max=4.228849e+122
+TPLANE m=1 x1=1 n_ok=2 mean2=5.471555259782e-01 mean3=8.178022865934e-01 var2=5.169083485890e-05 var3=2.994323592218e-06 mean_tau=2.065209966599e+00 var_tau=6.212148280041e+00 ev_rms=2.958191e+00 ev_max=2.978173e+00
+TTIME n=0 t=0.5 active=256 mean1=2.245329916706e-01 mean2=6.948878722672e-01 mean3=3.142501206255e-01 var1=4.535512001837e-02 var2=1.815640644155e-02 var3=4.404871679713e-02
+TTIME n=1 t=1 active=256 mean1=2.327401324034e-01 mean2=6.925196117285e-01 mean3=3.116181398198e-01 var1=4.863793253697e-02 var2=2.419460477608e-02 var3=4.265895032793e-02
+TSTATUS pass=plane hist=2,0,254,0,0,0,0 landings_discarded=0 backflow_enc=254 nfev=17548989856
+TSTATUS pass=time hist=256,0,0,0,0,0,0 landings_discarded=0 backflow_enc=90 nfev=584714
+TIMING field=0.056s prepare=0.000s stage=2.601s track=1222.595s total=1225.252s
+MEMORY peak_device_bytes=569376768 free_min=33520353280 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf36_campaign/stress/backflow_stress_n16.json
+STATUS track_fail

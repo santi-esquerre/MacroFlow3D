@@ -1,0 +1,27 @@
+[2026-10-17T22:33:45Z] job=sf36-controls session=macroflow3d-SF-36-sf36-controls started
+[2026-10-17T22:33:45Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-17T22:33:45Z] cwd=/home/sesquerre/MacroFlow3D-SF-36
+[2026-10-17T22:33:45Z] command=cd ~/MacroFlow3D-SF-36 && bash docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/run_sf36.sh build/v100-release controls
+run_sf36.sh: part=controls build=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release host=localhost.localdomain gpu_id=0 start=2026-10-17T22:33:46Z
+  run.env: COMMIT=e81b11833412149027643293d7e11ff989643189 HOST=localhost.localdomain DATE_UTC=2026-10-17T22:33:46Z BUILD=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release PART=controls DRYRUN=0 BASE_REFS=/home/sesquerre/sf36_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/controls/controls_full.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/lagrangian_controls_tests --full > /home/sesquerre/sf36_campaign/controls/controls_full.log 2>&1
+  CASE_RESULT name=controls_full rc=0 wall=105s end=2026-10-17T22:35:33Z
+    SUMMARY: 31 checks, 0 failed -> ALL PASS  (101.2 s)
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/controls/controls_diag.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/lagrangian_controls_tests --diag > /home/sesquerre/sf36_campaign/controls/controls_diag.log 2>&1
+  CASE_RESULT name=controls_diag rc=0 wall=41s end=2026-10-17T22:36:14Z
+    SUMMARY: 31 checks, 0 failed -> ALL PASS  (37.3 s)
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/controls/gpu_host_full.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/lagrangian_gpu_host_tests --full > /home/sesquerre/sf36_campaign/controls/gpu_host_full.log 2>&1
+  CASE_RESULT name=gpu_host_full rc=0 wall=18s end=2026-10-17T22:36:32Z
+    SUMMARY: 26 checks, 0 failed -> ALL PASS
+  controls_full: PASS=31 FAIL=0 RECORD=15
+  controls_diag: PASS=31 FAIL=0 RECORD=11
+  gpu_host_full: PASS=26 FAIL=0 RECORD=0
++ python3 /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/digest_sf36.py /home/sesquerre/sf36_campaign /home/sesquerre/sf36_campaign/analysis
+wrote /home/sesquerre/sf36_campaign/analysis/controls.md
+wrote /home/sesquerre/sf36_campaign/analysis/bytecmp.md
+wrote /home/sesquerre/sf36_campaign/analysis/mem.md
+wrote /home/sesquerre/sf36_campaign/analysis/cost.md
+wrote /home/sesquerre/sf36_campaign/analysis/stress.md
+  digest_sf36.py rc=0
+run_sf36.sh: part=controls end=2026-10-17T22:36:32Z blocking_failures=0
+[2026-10-17T22:36:32Z] job=sf36-controls finished exit=0

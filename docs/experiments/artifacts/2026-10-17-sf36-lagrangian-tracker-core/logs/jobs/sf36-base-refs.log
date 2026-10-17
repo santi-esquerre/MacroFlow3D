@@ -1,0 +1,46 @@
+[2026-10-17T19:51:13Z] job=sf36-base-refs session=macroflow3d-SF-36-sf36-base-refs started
+[2026-10-17T19:51:13Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-17T19:51:13Z] cwd=/home/sesquerre/MacroFlow3D-SF-36
+[2026-10-17T19:51:13Z] command=bash sf36_base_refs.sh
+BASE_TREE_COMMIT=040e3ce52cb62bf9c0dba07c05f1136748aa35e5
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[224/228] Linking CXX executable affine_periodic_flow_tests
+[225/228] Linking CXX executable inlet_slab_newton_tests
+[226/228] Linking CXX executable streamline_closure_integrator_tests
+[227/228] Linking CXX executable inlet_slab_contract_tests
+[228/228] Linking CXX executable spurious_spreading_controls_tests
+BUILD_EXIT=0
+
+Total Tests: 33
+06532483d3c3a760839e2cd27c65e84c  /home/sesquerre/sf36_base_refs/bin/inlet_slab
+2e268af5bac86f9659cdeac6607bcfa6  /home/sesquerre/sf36_base_refs/bin/macroflow3d_pipeline
+== SF-27 trio (base)
+config_pspta_small exit=0
+config_streamfunctions_homogeneous exit=0
+config_streamfunctions_continuation exit=0
+== SF-35 --construct trace (base): F at 32/64 x eps 0.5/1.0 x host/gpu; eps 2 gpu at 64/128
+N32_e0.5_host rc=0
+N32_e0.5_gpu rc=0
+N32_e1.0_host rc=21
+N32_e1.0_gpu rc=21
+N64_e0.5_host rc=0
+N64_e0.5_gpu rc=0
+N64_e1.0_host rc=0
+N64_e1.0_gpu rc=0
+N64_e2.0_gpu rc=21
+N128_e2.0_gpu rc=21
+== SF-33 production regression input (base): --production 32^3 eps 0.25 --oracle-ladder
+prod32 rc=0
+== G: device peak, base build, 256^3 eps 2 gpu (nvidia-smi 200 ms, physical GPU 0)
+N256_e2 rc=21
+BASE_PEAK_MIB_N256_E2=6239
+SF36_BASE_REFS_END
+[2026-10-17T20:04:00Z] job=sf36-base-refs finished exit=0

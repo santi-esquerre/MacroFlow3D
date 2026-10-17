@@ -1,0 +1,12 @@
+BYTECMP N32_e0.5_host npy=IDENTICAL lines=IDENTICAL rc=0/0
+BYTECMP N32_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0/0
+BYTECMP N32_e1.0_host npy=IDENTICAL lines=IDENTICAL rc=21/21
+BYTECMP N32_e1.0_gpu npy=IDENTICAL lines=IDENTICAL rc=21/21
+BYTECMP N64_e0.5_host npy=IDENTICAL lines=IDENTICAL rc=0/0
+BYTECMP N64_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0/0
+BYTECMP N64_e1.0_host npy=IDENTICAL lines=IDENTICAL rc=0/0
+BYTECMP N64_e1.0_gpu npy=IDENTICAL lines=IDENTICAL rc=0/0
+BYTECMP N64_e2.0_gpu npy=IDENTICAL lines=IDENTICAL rc=21/21
+BYTECMP N128_e2.0_gpu npy=IDENTICAL lines=IDENTICAL rc=21/21
+BYTECMP prod32_vs_base npy=n/a lines=IDENTICAL rc=?/0
+BYTECMP prod32_vs_sf33 npy=n/a lines=IDENTICAL rc=?/0 (ref /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log)

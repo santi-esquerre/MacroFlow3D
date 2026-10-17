@@ -15,10 +15,10 @@ it. It is not a result summary: results live in `analysis/` and, once written, i
 
 | item | value |
 |---|---|
-| head commit synced to the SF-36 mirror | `<TO FILL: git rev-parse HEAD of the clean worktree, also written to COMMIT>` |
+| head commit synced to the SF-36 mirror | `e81b11833412149027643293d7e11ff989643189` (integrated head; synced from a clean worktree with `--increment SF-36`; the `COMMIT` file was read by the scripts' `run.env` but is not committed) |
 | base commit of the references | `040e3ce` (SF-35 closure; job `sf36-base-refs`, `~/sf36_base_refs/` on the host) |
 | V100 build | `build/v100-release` (`cmake --preset v100-release`) |
-| jobs / dates | `<TO FILL: job names, start/end UTC, exit codes>` |
+| jobs / dates | `sf36-controls` 2026-10-17 22:33:46Z-22:36:32Z; `sf36-bytecmp` 22:37:34Z-22:39:44Z; `sf36-mem` 22:40:19Z-22:49:58Z; `sf36-cost` 22:50:36Z-22:56:01Z; `sf36-stress` 22:56:37Z-23:17:09Z (inner run 1228 s, rc 22); all jobs exit 0, GPU 0 (Tesla V100-PCIE-32GB), strictly sequential (`raw/<part>/run.env`, `logs/status/*.env`). Toolchain: CUDA 11.4 (nvcc 11.4.152), GCC 9.3.1 20200408, build exit 0 (233 targets) |
 
 The synced mirror has no `.git`; the campaign node writes the head hash to `COMMIT` in this directory before
 `scripts/remote sync` (absent -> `unknown` in `run.env`).
@@ -30,7 +30,7 @@ The synced mirror has no `.git`; the campaign node writes the head hash to `COMM
 | `scripts/run_sf36.sh` | campaign runner, one part per detached job (`controls`, `bytecmp`, `mem`, `cost`, `stress`, `all`) | yes |
 | `scripts/digest_sf36.py` | log parser -> markdown tables (python3 standard library) | yes |
 | `scripts/lines_cmp.py` | selected-line comparison with timing fields masked (criterion F) | yes |
-| `logs/<part>/` | copy of the host directory `~/sf36_campaign/<part>/`: `<name>.log`, `<name>.time` (`/usr/bin/time -v`), `<name>.mem` (nvidia-smi 200 ms sampler), `<name>.linecmp`, `results.txt` (BYTECMP / HEAD_PEAK_MIB / COST / STRESS_RESULT lines), `exit_codes.tsv`, `run.env`; remote job logs in `logs/jobs/<job>.log` | yes (text; not the saved `labels/` directories) |
+| `raw/<part>/` (this campaign's layout; was named `logs/<part>/` before the campaign) | copy of the host directory `~/sf36_campaign/<part>/`: `<name>.log`, `<name>.time` (`/usr/bin/time -v`), `<name>.mem` (nvidia-smi 200 ms sampler), `<name>.linecmp`, `results.txt` (BYTECMP / HEAD_PEAK_MIB / COST / STRESS_RESULT lines), `exit_codes.tsv`, `run.env`; remote job logs in `logs/jobs/<job>.log` | yes (text; not the saved `labels/` directories) |
 | `raw/<part>/` | driver `--summary` JSON per run (copy of `~/sf36_campaign/<part>/raw` or `<part>/*.json`) | yes (text) |
 | `analysis/` | digests: `controls.md`, `bytecmp.md`, `mem.md`, `cost.md`, `stress.md` | yes |
 | `COMMIT` | head hash of the synced tree | N8 decides |
@@ -60,7 +60,7 @@ scripts/remote --increment SF-36 wait sf36-stress
 `$SF36_OUT_ROOT/analysis`. To regenerate the digests from copied logs:
 
 ```bash
-python3 $A/scripts/digest_sf36.py $A/logs $A/analysis     # logs/<part>/ layout as above
+python3 $A/scripts/digest_sf36.py $A/raw $A/analysis     # raw/<part>/ layout; gunzip raw/*/*.mem.gz first (mem/cost digests read the *.mem samplers; the committed analysis/ was produced from the un-gzipped files and equals the host digests byte for byte)
 ```
 
 ## Parts and what they record

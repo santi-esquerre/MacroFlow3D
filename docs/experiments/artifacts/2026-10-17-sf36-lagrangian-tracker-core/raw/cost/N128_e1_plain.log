@@ -1,0 +1,29 @@
+command: /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 128 --eps 1 --np-side 256 --planes 0.25,0.5,1,2,4 --times 0.25,0.5,1,2,4 --summary /home/sesquerre/sf36_campaign/cost/N128_e1_plain.json
+FIELD gaussian (SF-18) N=128 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=1032255 | stage field k = exp(eps Y), eps = 1
+SETUP STAGE field=gaussian eps=1 N=128 status=ok
+SETUP   SF-18: raw_mean=-4.770490e-18 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=1032255
+SETUP   SF-19: mg_levels=6 converged=1 G=(8.664743335203e-01, -3.657024957174e-03, 6.321365847447e-02) mean_flux=(1.000e+00, 1.026e-17, -4.662e-17) div_max=4.859e-11 div_rms=1.603e-12
+SETUP   SF-19 corrector x: status=converged its=20 rel_residual=1.013e-13 final_residual=2.150e-09
+SETUP   SF-19 corrector y: status=converged its=20 rel_residual=7.404e-14 final_residual=1.903e-09
+SETUP   SF-19 corrector z: status=converged its=20 rel_residual=7.599e-14 final_residual=1.822e-09
+SETUP   inlet: vmin=4.788867e-02 mean(U plane 0)=0.999999999999999 (mean-1=-7.772e-16) Q0-1=8.882e-16 v_rms=1.306269e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=4.173581e-04 max_rel=1.346369e-03; spline potential GPU vs host prefilter rel=3.764e-15
+SETUP stage eps=1 built in 2.985s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+TRACK field=gaussian eps=1 N=128 h=0.0078125 x0=0 M=256 Np=65536 planes=0.25,0.5,1,2,4 times=0.25,0.5,1,2,4 tol=1.0e-08 h_max=9.765625e-04 (h/8) min_step=1.0e-13 max_arclength=26 covectors=0 labels_available=1 inlet_vmin=4.788867e-02
+BACKFLOW field=gaussian eps=1 N=128 inlet_vmin=4.788867e-02 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+TPLANE m=0 x1=0.25 n_ok=65536 mean2=4.992863052427e-01 mean3=5.626523035677e-01 var2=7.092118277196e-02 var3=8.509190812912e-02 mean_tau=2.498448679598e-01 var_tau=6.447845340434e-02 ev_rms=1.293218e-03 ev_max=5.881982e-03
+TPLANE m=1 x1=0.5 n_ok=65536 mean2=4.974758308051e-01 mean3=5.698624715004e-01 var2=6.727656462591e-02 var3=1.014313992804e-01 mean_tau=4.997560221546e-01 var_tau=1.772077156974e-01 ev_rms=1.356795e-03 ev_max=7.922680e-03
+TPLANE m=2 x1=1 n_ok=65536 mean2=5.080117037781e-01 mean3=5.577599225965e-01 var2=8.858060204647e-02 var3=7.399580561903e-02 mean_tau=9.995585314905e-01 var_tau=4.001005474327e-01 ev_rms=1.646687e-03 ev_max=6.732547e-03
+TPLANE m=3 x1=2 n_ok=65536 mean2=5.080621607795e-01 mean3=5.577056097400e-01 var2=9.261813442557e-02 var3=8.864680991231e-02 mean_tau=1.999106690533e+00 var_tau=1.383343111894e+00 ev_rms=2.997409e-03 ev_max=1.293073e-02
+TPLANE m=4 x1=4 n_ok=65536 mean2=5.081579444376e-01 mean3=5.576239881049e-01 var2=1.091249126044e-01 var3=1.301786316701e-01 mean_tau=3.998358257950e+00 var_tau=4.196480551017e+00 ev_rms=5.260353e-03 ev_max=2.463388e-02
+TTIME n=0 t=0.25 active=65536 mean1=3.388420425392e-01 mean2=5.036930699682e-01 mean3=5.560160776188e-01 var1=2.610342919708e-02 var2=7.065928103868e-02 var3=9.244926340675e-02
+TTIME n=1 t=0.5 active=65536 mean1=6.317806830055e-01 mean2=5.078441703542e-01 mean3=5.662122054368e-01 var1=6.094802403394e-02 var2=8.176820083677e-02 var3=9.932268718899e-02
+TTIME n=2 t=1 active=65536 mean1=1.241865794431e+00 mean2=5.070980214435e-01 mean3=5.516940720530e-01 var1=2.442461046541e-01 var2=8.248646745098e-02 var3=9.830634502691e-02
+TTIME n=3 t=2 active=65536 mean1=2.438552945623e+00 mean2=5.138465407913e-01 mean3=5.464765648499e-01 var1=8.804744641194e-01 var2=8.932052175674e-02 var3=1.103340094195e-01
+TTIME n=4 t=4 active=65536 mean1=4.659263433795e+00 mean2=5.294802279785e-01 mean3=5.425115299779e-01 var1=2.918164097897e+00 var2=1.038621458404e-01 var3=1.416529763812e-01
+TSTATUS pass=plane hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1718603336
+TSTATUS pass=time hist=65536,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1672446752
+TIMING field=0.604s prepare=0.026s stage=2.985s track=7.251s total=10.867s
+MEMORY peak_device_bytes=862978048 free_min=33226752000 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf36_campaign/cost/N128_e1_plain.json
+STATUS ok
