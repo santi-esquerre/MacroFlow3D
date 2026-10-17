@@ -12,6 +12,8 @@
  *    allocation in track() after prepare (storage pointer stability AND cudaMemGetInfo);
  *    moments_time.csv written and read back by analysis::read_timeseries_csv reproduces the
  *    in-memory moments; compute_macrodispersion runs on it.
+ * Usage: lagrangian_gpu_host_tests [--n N] [--full]  (default ctest tier C at 16/32; --n N: C at N;
+ *        --full: C at 64^3 on the four fields). Final line `SUMMARY:`, exit 0 iff all checks pass.
  * Also printed (not thresholds): with k = 1, tau at plane X equals X - X0.
  */
 
@@ -29,6 +31,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <string>
@@ -44,7 +47,11 @@ namespace {
 
 struct TestReport {
     bool overall_pass = true;
+    int checks = 0, failed = 0;
     void check(bool cond, const std::string& name, const std::string& detail = "") {
+        ++checks;
+        if (!cond)
+            ++failed;
         std::printf("[%s] %s%s%s\n", cond ? "PASS" : "FAIL", name.c_str(),
                     detail.empty() ? "" : "  ", detail.c_str());
         std::fflush(stdout);
@@ -377,7 +384,21 @@ void run_case_I(TestReport& rep, CudaContext& ctx, const std::string& name,
 
 } // namespace
 
-int main() {
+int main(int argc, char** argv) {
+    // default: C at N = 16, 32 and I at N = 16 (ctest tier); --n N: C at that single N (I unchanged);
+    // --full: C at N = 64 on the four fields (M = N = 64 seeds per side), I unchanged.
+    std::vector<int> c_grids = {16, 32};
+    for (int i = 1; i < argc; ++i) {
+        const std::string a = argv[i];
+        if (a == "--full")
+            c_grids = {64};
+        else if (a == "--n" && i + 1 < argc)
+            c_grids = {std::atoi(argv[++i])};
+        else {
+            std::fprintf(stderr, "usage: %s [--n N] [--full]\n", argv[0]);
+            return 2;
+        }
+    }
     TestReport rep;
     CudaContext ctx(0);
     const auto t0 = std::chrono::steady_clock::now();
@@ -387,7 +408,7 @@ int main() {
         std::fflush(stdout);
     };
 
-    for (const int N : {16, 32}) {
+    for (const int N : c_grids) {
         {
             const sl::SlabFieldSource src = sl::SlabFieldSource::spectral(
                 ctx, "uniform", N, std::vector<real>(static_cast<std::size_t>(N) * N * N, 0.0));
@@ -421,6 +442,7 @@ int main() {
         lap("I");
     }
 
-    std::printf("\n%s\n", rep.overall_pass ? "ALL PASS" : "SOME FAILED");
+    std::printf("\nSUMMARY: %d checks, %d failed -> %s\n", rep.checks, rep.failed,
+                rep.overall_pass ? "ALL PASS" : "SOME FAILED");
     return rep.overall_pass ? 0 : 1;
 }

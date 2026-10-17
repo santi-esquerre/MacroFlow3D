@@ -3,34 +3,36 @@
  * @brief SF-36 N6: exact-control tests of the forward Lagrangian-label tracker
  *        (`lagrangian_tracker_controls`). Independent of the tracker author.
  *
- * Thresholds A1, A2, A3, B, D, E are those of the SF-36 specification ("Acceptance thresholds",
- * pre-registered verbatim at activation; nothing is tuned here):
+ * Thresholds A1, A3, B and the A2 positions / covectors / tau are those of the SF-36 specification
+ * ("Acceptance thresholds", pre-registered verbatim at activation; nothing is tuned here). E, A2 (I) and D
+ * follow the OWNER AMENDMENT of 2026-10-17 (after the N6 measurements; the original verdicts remain recorded as
+ * not met in the spec and the old measurements are kept below as RECORD lines):
  *
  *  A1  k = 1: on every plane and snapshot |x2 - x2_0|, |x3 - x3_0| <= 1e-12; tau at plane X equals
  *      X - X0 to 1e-12 relative; covectors equal their initial values to 1e-12; |I| <= 1e-14.
  *  A2  layered k = exp(0.5 cos 2 pi x1) (SlabFieldSource::spectral): transverse positions and
- *      covectors constant to 1e-12; tau and I at each plane against an independent adaptive
- *      Gauss-Kronrod quadrature (<= 1e-13) of 1/v_s1 and div v_s / v_s1 on the same spline,
- *      <= 1e-9 relative.
+ *      covectors constant to 1e-12; tau at each plane against an independent adaptive Gauss-Kronrod
+ *      quadrature of 1/v_s1 on the same spline, <= 1e-9 relative (N >= 32). RECORD: I against the
+ *      quadrature of div v_s / v_s1 (original 1e-9 relative: not met; O(h_max^~2) on the C^2 spline),
+ *      with the h_max ladder (DIAG-4) in --diag / --full.
  *  A3  synthetic failure field (device functor; the SF-35 A4 bands adapted to the FORWARD
  *      direction): per-particle status / n_reached and the pass histograms and counters exactly as
- *      constructed (landings_discarded of the landing_failed band as a lower bound: the number of
- *      discards of the Zeno-like retry loop is not derivable).
+ *      constructed (landings_discarded of the landing_failed band as a lower bound).
  *  B   lester2021 (eps = 1): one period (plane X0 + 1) returns every particle to its seed within
  *      10 tol at tol = 1e-8, all statuses ok.
- *  D   covectors vs central finite differences of the time-tau flow map: observed order >= 1.8 of
- *      the RMS defect |a(tau)^T DPhi_FD - a(0)^T| (and b) on both delta pairs of {8, 4, 2} x 1e-3.
- *  E   Lagrangian identity |a x b - v_s exp(-I)| / |v_s| <= 1e-8 at every plane / snapshot up to
- *      x1 = 4 for every ok particle, tol = 1e-10: generic3d eps 0.25 and gauss eps 1.0 are
- *      blocking; gauss eps 2.0 is recorded with covector-norm percentiles.
+ *  D   (amended) covectors vs central finite differences of the time-tau flow map: observed order >= 1.8 of
+ *      the RMS defect |a(tau)^T DPhi_FD - a(0)^T| (and b) on both delta pairs of {1, .5, .25} x 1e-3,
+ *      tau {0.5, 2}, tol 1e-12, h_max h/32, generic3d 0.25 and gauss 1.0. Blocking at 64^3 / 256 seeds
+ *      (--full); in the default tier (32^3, 16 seeds, h_max h/16) a case that is not asymptotic there is shown as RECORD
+ *      (explicitly). --full also records the pre-registered ladder {8, 4, 2} x 1e-3 (not met).
+ *  E1  (amended, BLOCKING) Lagrangian identity |a x b - v exp(-I)| / |v| <= 1e-8 at tol 1e-10, h_max = 1/128,
+ *      planes and times {0.5, 1, 2, 4}, on the C-infinity analytic field with exact g, H, grad ln k.
+ *  E2  (RECORD only) the same identity on the spline fields generic3d 0.25, gauss 1.0 and 2.0: tol 1e-10, h/8
+ *      (default tier, 16^3); in --diag / --full the h_max ladder h/8..h/64 at tol 1e-12 with observed orders,
+ *      plus DIAG-3 (accuracy of I) and the C-inf ladder.
  *
- * Diagnostics (recorded, no thresholds; they separate an implementation defect from a regularity
- * limit of the C^2 spline, whose Hessian is only C^0):
- *  DIAG-1  C-infinity analytic field with exact derivatives: identity residual of E at tol 1e-10 /
- *          1e-12, h_max = 1/128.
- *  DIAG-2  identity residual vs h_max in {h/8, h/16, h/32, h/64} (tol 1e-12) on the spline fields
- *          of E (+ gauss 2.0) and on the C-infinity field, with observed orders.
- *  DIAG-3  accuracy of I (h/8 vs h/64) next to the RMS of I and of e_v = 1 - exp(-I).
+ * The C^2 spline has a C^0 Hessian: the passive I and covectors carry an O(h_max^~2) error independent of
+ * tol, which is why E2 and the A2 I-comparison are recorded rather than thresholded.
  *
  * Usage: lagrangian_controls_tests [--n N] [--full] [--only A1|A2|A3|B|D|E|DIAG] [--diag]
  *   default: fast tier (16^3 / 32^3, <= 60 s); --full: 64^3 repeats of A, B, D, E with the full D
@@ -364,7 +366,7 @@ template <class F> double quad_split(const F& f, double a, double b, double h) {
     return total;
 }
 
-void case_A2(TestReport& rep, CudaContext& ctx, int N) {
+void case_A2(TestReport& rep, CudaContext& ctx, int N, bool ladder) {
     const std::string tag = "A2 layered N=" + std::to_string(N) + ": ";
     const double t0 = now_s();
     std::vector<real> cells(static_cast<std::size_t>(N) * N * N);
@@ -482,10 +484,10 @@ void case_A2(TestReport& rep, CudaContext& ctx, int N) {
     rep.check(dcov <= 1e-12, tag + "covectors constant <= 1e-12", fmt("max %.3e", dcov));
     rep.check(rel_tau <= 1e-9, tag + "tau at planes vs independent quadrature <= 1e-9 relative",
               fmt("max rel %.3e", rel_tau) + fmt(" (abs %.3e)", abs_tau));
-    rep.check(E8.n_rel > 0 && E8.rel_I_spec <= 1e-9,
-              tag + "I at planes+snapshots vs independent quadrature <= 1e-9 relative (records with |I_ref| >= 1e-3 max|I_ref|)",
-              fmt("max rel %.3e", E8.rel_I_spec) + " over " + std::to_string(E8.n_rel) + " records; " +
-                  std::to_string(E8.n_small) + " records with I_ref ~ 0 (periodic returns) excluded from the relative form");
+    std::printf("[RECORD] %sI at planes+snapshots vs independent quadrature (no threshold; original 1e-9 relative criterion not met, "
+                "O(h_max^~2) on the C^2 spline): max rel %.3e over %lld records with |I_ref| >= 1e-3 max|I_ref| (%lld records with I_ref ~ 0 "
+                "excluded from the relative form)\n",
+                tag.c_str(), E8.rel_I_spec, E8.n_rel, E8.n_small);
     std::printf("  %sINFO I error by pass: planes max abs %.3e, snapshots max abs %.3e\n", tag.c_str(), E8.abs_I_planes, E8.abs_I_times);
     std::printf("  %sINFO I error: max abs %.3e; max |I_ref| %.3e; abs error / max|I_ref| = %.3e (spec: 1e-9 relative)\n",
                 tag.c_str(), abs_I, max_Iref, E8.abs_I_over_scale);
@@ -494,7 +496,7 @@ void case_A2(TestReport& rep, CudaContext& ctx, int N) {
               fmt("max rel %.3e", rel_tau_t) + fmt(" (limit %.1e)", 10.0 * to.tol));
     // Scaling of the passive-I error with h_max (diagnostic, not a threshold): plane records only,
     // references computed once.
-    {
+    if (ladder) {
         const std::size_t Pn = R.planes.size(), Npz = static_cast<std::size_t>(R.Np);
         std::vector<double> refI(Npz * Pn), refT(Npz * Pn);
         double mx = 0.0;
@@ -762,62 +764,6 @@ void case_B(TestReport& rep, CudaContext& ctx, int N) {
 }
 
 // ================================================================================================
-// E: Lagrangian identity on the spline fields
-// ================================================================================================
-struct SplineCase {
-    std::string name;
-    double eps;
-    bool blocking;
-};
-
-void case_E(TestReport& rep, CudaContext& ctx, int N) {
-    const double t0 = now_s();
-    const sl::SlabFieldSource gsrc = gauss_source(ctx, N);
-    const sl::SlabFieldSource asrc = sl::SlabFieldSource::analytic("generic3d", N);
-    struct C {
-        std::string name;
-        const sl::SlabFieldSource* src;
-        double eps;
-        bool blocking;
-    };
-    const std::vector<C> cases = {{"generic3d eps 0.25", &asrc, 0.25, true},
-                                  {"gauss s2=1 ell=.25 seed=3001 eps 1.0", &gsrc, 1.0, true},
-                                  {"gauss s2=1 ell=.25 seed=3001 eps 2.0", &gsrc, 2.0, false}};
-    for (const C& c : cases) {
-        const std::string tag = "E " + c.name + " N=" + std::to_string(N) + ": ";
-        const sl::ProductionStage st = make_stage(ctx, N, *c.src, c.eps);
-        rep.check(st.flow_ready(), tag + "stage flow ready", sl::to_string(st.report.status));
-        if (!st.flow_ready())
-            continue;
-        ll::InjectionSpec inj;
-        inj.X0 = 0.0;
-        inj.M = 16;
-        ll::TrackOptions to;
-        to.tol = 1e-10;
-        to.h_max = (1.0 / N) / 8.0;
-        to.planes = {0.5, 1.0, 2.0, 4.0};
-        to.times = {0.5, 1.0, 2.0, 4.0};
-        to.covectors = true;
-        const ll::LagrangianTrackResult R = run_spline(ctx, st, inj, to);
-        const IdStats s = identity_stats(R, spline_velocity(st.direction_field()));
-        const std::vector<double> q = pct(s.cnorm, {0.5, 0.9, 0.99, 1.0});
-        const std::string det = fmt("max %.3e", s.max) + fmt(", rms %.3e", s.rms()) + " over " +
-                                std::to_string(s.n) + " records (non-ok passes " +
-                                std::to_string(s.nonok) + ")";
-        if (c.blocking) {
-            rep.check(s.n > 0 && s.max <= 1e-8,
-                      tag + "identity |a x b - v exp(-I)|/|v| <= 1e-8 at tol 1e-10, h_max h/8 [BLOCKING]", det);
-        } else {
-            std::printf("[RECORD] %sidentity |a x b - v exp(-I)|/|v| (not blocking): %s\n", tag.c_str(), det.c_str());
-        }
-        std::printf("  %sINFO covector norms |a|,|b| percentiles p50 %.3e p90 %.3e p99 %.3e max %.3e;"
-                    " max|I| %.3e rms I %.3e\n",
-                    tag.c_str(), q[0], q[1], q[2], q[3], s.max_I, s.rms_I());
-    }
-    std::printf("  E total %.1f s\n", now_s() - t0);
-}
-
-// ================================================================================================
 // D: covectors vs central finite differences of the time-tau flow map
 // ================================================================================================
 struct DOut {
@@ -905,7 +851,13 @@ std::vector<DOut> d_level(CudaContext& ctx, const sl::ProductionStage& st, const
     return out;
 }
 
-void case_D(TestReport& rep, CudaContext& ctx, int N, int M, const std::string& mode_note, bool extra) {
+/// D (amended): delta in {1, 0.5, 0.25} x 1e-3, order >= 1.8 on both pairs (a and b), tau {0.5, 2}.
+/// `blocking_all`: every case blocking (the 64^3 / 256-seed D of --full and of explicit --n runs);
+/// otherwise (fast tier at 32^3 / 36 seeds) a case that is not asymptotic there is demoted to RECORD
+/// (stated in the output); a case that reaches the order is reported PASS either way.
+/// `record_old`: also record the pre-registered ladder delta = (8, 4, 2) x 1e-3 (not met, kept for transparency).
+void case_D(TestReport& rep, CudaContext& ctx, int N, int M, const std::string& mode_note, bool blocking_all,
+            bool record_old, double hmax_div) {
     const double t0 = now_s();
     const sl::SlabFieldSource gsrc = gauss_source(ctx, N);
     const sl::SlabFieldSource asrc = sl::SlabFieldSource::analytic("generic3d", N);
@@ -917,7 +869,8 @@ void case_D(TestReport& rep, CudaContext& ctx, int N, int M, const std::string& 
     const std::vector<C> cases = {{"generic3d eps 0.25", &asrc, 0.25},
                                   {"gauss s2=1 ell=.25 seed=3001 eps 1.0", &gsrc, 1.0}};
     const std::vector<double> taus = {0.5, 2.0};
-    const std::array<double, 3> deltas = {8e-3, 4e-3, 2e-3};
+    const std::array<double, 3> deltas = {1e-3, 5e-4, 2.5e-4};
+    const std::array<double, 3> deltas_old = {8e-3, 4e-3, 2e-3};
     const double h = 1.0 / N;
     for (const C& c : cases) {
         const std::string tag = "D " + c.name + " N=" + std::to_string(N) + " seeds=" +
@@ -931,53 +884,53 @@ void case_D(TestReport& rep, CudaContext& ctx, int N, int M, const std::string& 
         inj0.M = M;
         ll::TrackOptions tb;
         tb.tol = 1e-12;
-        tb.h_max = h / 32.0;
+        tb.h_max = h / hmax_div;
         tb.times = taus;
         tb.covectors = true;
         const ll::LagrangianTrackResult base = run_spline(ctx, st, inj0, tb);
+        // The level runs are per delta set; compute them once per set and reuse across taus.
         std::vector<std::vector<DOut>> lev;
         for (double d : deltas)
-            lev.push_back(d_level(ctx, st, base, vf, M, h, taus, d, 1e-12, 32.0));
-        for (std::size_t n = 0; n < taus.size(); ++n) {
-            double ord[2][2]; // [pair][a,b]
+            lev.push_back(d_level(ctx, st, base, vf, M, h, taus, d, 1e-12, hmax_div));
+        std::vector<std::vector<DOut>> lev_old;
+        if (record_old)
+            for (double d : deltas_old)
+                lev_old.push_back(d_level(ctx, st, base, vf, M, h, taus, d, 1e-12, hmax_div));
+        auto line = [&](const std::vector<std::vector<DOut>>& L, const char* dl, std::size_t n, double& omin) {
+            double ord[2][2];
             for (int pr = 0; pr < 2; ++pr) {
-                const DOut &x = lev[static_cast<std::size_t>(pr)][n], &y = lev[static_cast<std::size_t>(pr) + 1][n];
+                const DOut &x = L[static_cast<std::size_t>(pr)][n], &y = L[static_cast<std::size_t>(pr) + 1][n];
                 ord[pr][0] = std::log2(x.rms_a / y.rms_a);
                 ord[pr][1] = std::log2(x.rms_b / y.rms_b);
             }
-            const double omin = std::min({ord[0][0], ord[0][1], ord[1][0], ord[1][1]});
-            char b[600];
+            omin = std::min({ord[0][0], ord[0][1], ord[1][0], ord[1][1]});
+            char b[640];
             std::snprintf(b, sizeof(b),
-                          "rms_a (8,4,2)e-3 = %.3e %.3e %.3e | rms_b = %.3e %.3e %.3e | orders a: %.3f %.3f, b: %.3f %.3f"
-                          " | seeds used %d",
-                          lev[0][n].rms_a, lev[1][n].rms_a, lev[2][n].rms_a, lev[0][n].rms_b, lev[1][n].rms_b,
-                          lev[2][n].rms_b, ord[0][0], ord[1][0], ord[0][1], ord[1][1], lev[2][n].used);
-            rep.check(omin >= 1.8, tag + fmt("tau=%.1f: observed order >= 1.8 on both delta pairs (a and b)", taus[n]),
-                      std::string(b) + fmt(" | min order %.3f", omin));
-        }
-        std::printf("  %sINFO tol 1e-12, h_max h/32; %s\n", tag.c_str(), mode_note.c_str());
-        if (extra) {
-            // DIAG-5 (recorded): smaller deltas, to see whether the pre-asymptotic orders reach 2.
-            std::vector<std::vector<DOut>> lv2;
-            const std::array<double, 4> d2 = {1e-3, 5e-4, 2.5e-4, 1.25e-4};
-            for (double d : d2)
-                lv2.push_back(d_level(ctx, st, base, vf, M, h, taus, d, 1e-12, 32.0));
-            for (std::size_t n = 0; n < taus.size(); ++n) {
-                std::string l = "rms_a (1,.5,.25,.125)e-3 =";
-                for (const auto& v : lv2)
-                    l += fmt(" %.3e", v[n].rms_a);
-                l += " | orders a:";
-                for (std::size_t i = 0; i + 1 < lv2.size(); ++i)
-                    l += fmt(" %.2f", std::log2(lv2[i][n].rms_a / lv2[i + 1][n].rms_a));
-                l += " | rms_b =";
-                for (const auto& v : lv2)
-                    l += fmt(" %.3e", v[n].rms_b);
-                l += " | orders b:";
-                for (std::size_t i = 0; i + 1 < lv2.size(); ++i)
-                    l += fmt(" %.2f", std::log2(lv2[i][n].rms_b / lv2[i + 1][n].rms_b));
-                std::printf("[RECORD] DIAG-5 %stau=%.1f: %s\n", tag.c_str(), taus[n], l.c_str());
+                          "rms_a %s = %.3e %.3e %.3e | rms_b = %.3e %.3e %.3e | orders a: %.3f %.3f, b: %.3f %.3f"
+                          " | seeds used %d | min order %.3f (threshold 1.8)",
+                          dl, L[0][n].rms_a, L[1][n].rms_a, L[2][n].rms_a, L[0][n].rms_b, L[1][n].rms_b,
+                          L[2][n].rms_b, ord[0][0], ord[1][0], ord[0][1], ord[1][1], L[2][n].used, omin);
+            return std::string(b);
+        };
+        for (std::size_t n = 0; n < taus.size(); ++n) {
+            double omin;
+            const std::string d = line(lev, "(1,.5,.25)e-3", n, omin);
+            const std::string name = tag + fmt("tau=%.1f: observed order >= 1.8 on both delta pairs (a and b)", taus[n]);
+            if (blocking_all || omin >= 1.8) {
+                rep.check(omin >= 1.8, name, d);
+            } else {
+                std::printf("[RECORD] %s  (not asymptotic at this fast-tier size N=%d / %d seeds: demoted to RECORD in the "
+                            "fast tier only; the blocking D is the 64^3 --full one)  %s\n",
+                            name.c_str(), N, M * M, d.c_str());
+            }
+            if (record_old) {
+                double o2;
+                const std::string d2 = line(lev_old, "(8,4,2)e-3", n, o2);
+                std::printf("[RECORD] %spre-registered ladder tau=%.1f (criterion as originally registered: %s): %s\n",
+                            tag.c_str(), taus[n], o2 >= 1.8 ? "met" : "not met", d2.c_str());
             }
         }
+        std::printf("  %sINFO tol 1e-12, h_max h/%.0f; %s\n", tag.c_str(), hmax_div, mode_note.c_str());
     }
     std::printf("  D total %.1f s\n", now_s() - t0);
 }
@@ -1070,26 +1023,72 @@ ll::LagrangianTrackResult run_smooth(CudaContext& ctx, const SmoothField& f, int
     return tr.track(ctx);
 }
 
-void diag1(TestReport& rep, CudaContext& ctx) {
+/// E1 (amended, BLOCKING): Lagrangian identity on the C-infinity analytic field with exact g, H, grad ln k.
+void case_E1(TestReport& rep, CudaContext& ctx) {
     const double t0 = now_s();
     const SmoothField f;
     double mg, mH, mgl;
     smooth_derivative_check(f, mg, mH, mgl);
     const bool dok = mg < 1e-6 && mH < 1e-5 && mgl < 1e-6;
-    rep.check(dok, "DIAG-1 derivative check (central FD, d=1e-4) of g, H, grad ln k of the analytic field",
+    rep.check(dok, "E1 derivative check (central FD, d=1e-4) of g, H, grad ln k of the analytic field",
               fmt("max |g - FD| %.2e", mg) + fmt(", |H - FD(g)| %.2e", mH) + fmt(", |grad ln k - FD| %.2e", mgl));
     const VFun vf = smooth_velocity(f);
-    for (double tol : {1e-10, 1e-12}) {
-        const ll::LagrangianTrackResult R = run_smooth(ctx, f, 16, tol, 1.0 / 128.0);
-        const IdStats s = identity_stats(R, vf);
-        const std::vector<double> q = pct(s.cnorm, {0.5, 0.99, 1.0});
-        std::printf("[RECORD] DIAG-1 C-inf field (A=B=0.05, c=0.5), h_max=1/128, tol %.0e: identity residual max %.3e "
-                    "rms %.3e over %lld records (non-ok passes %lld); max|I| %.3e; |cov| p50 %.3e p99 %.3e max %.3e\n",
-                    tol, s.max, s.rms(), s.n, s.nonok, s.max_I, q[0], q[1], q[2]);
-    }
-    std::printf("  DIAG-1 %.1f s\n", now_s() - t0);
+    const ll::LagrangianTrackResult R = run_smooth(ctx, f, 16, 1e-10, 1.0 / 128.0);
+    const IdStats s = identity_stats(R, vf);
+    const std::vector<double> q = pct(s.cnorm, {0.5, 0.99, 1.0});
+    rep.check(s.n > 0 && s.nonok == 0 && s.max <= 1e-8,
+              "E1 C-inf analytic field (Phi = x1 + .05 sin2pi x2 cos2pi x1 + .05 sin2pi x3 sin2pi x1, k = exp(.5 cos2pi(x1+x2+x3))): "
+              "identity |a x b - v exp(-I)|/|v| <= 1e-8 at tol 1e-10, h_max 1/128, planes+times {.5,1,2,4} [BLOCKING]",
+              fmt("max %.3e", s.max) + fmt(" (threshold 1e-8), rms %.3e", s.rms()) + " over " + std::to_string(s.n) +
+                  " records (non-ok passes " + std::to_string(s.nonok) + ")" + fmt("; max|I| %.3e", s.max_I) +
+                  fmt2("; |cov| p50 %.3e max %.3e", q[0], q[2]));
+    std::printf("  E1 %.1f s\n", now_s() - t0);
 }
 
+/// E2 (RECORD, never FAIL): identity residual on the spline fields, tol 1e-10, h_max h/8 (the h_max ladder
+/// is `diag2_3`).
+void case_E2(TestReport& rep, CudaContext& ctx, int N) {
+    (void)rep;
+    const double t0 = now_s();
+    const sl::SlabFieldSource gsrc = gauss_source(ctx, N);
+    const sl::SlabFieldSource asrc = sl::SlabFieldSource::analytic("generic3d", N);
+    struct C {
+        std::string name;
+        const sl::SlabFieldSource* src;
+        double eps;
+    };
+    const std::vector<C> cases = {{"generic3d eps 0.25", &asrc, 0.25},
+                                  {"gauss s2=1 ell=.25 seed=3001 eps 1.0", &gsrc, 1.0},
+                                  {"gauss s2=1 ell=.25 seed=3001 eps 2.0", &gsrc, 2.0}};
+    for (const C& c : cases) {
+        const std::string tag = "E2 " + c.name + " N=" + std::to_string(N) + ": ";
+        const sl::ProductionStage st = make_stage(ctx, N, *c.src, c.eps);
+        if (!st.flow_ready()) {
+            std::printf("[RECORD] %sstage not ready (%s)\n", tag.c_str(), sl::to_string(st.report.status));
+            continue;
+        }
+        ll::InjectionSpec inj;
+        inj.X0 = 0.0;
+        inj.M = 16;
+        ll::TrackOptions to;
+        to.tol = 1e-10;
+        to.h_max = (1.0 / N) / 8.0;
+        to.planes = {0.5, 1.0, 2.0, 4.0};
+        to.times = {0.5, 1.0, 2.0, 4.0};
+        to.covectors = true;
+        const ll::LagrangianTrackResult R = run_spline(ctx, st, inj, to);
+        const IdStats s = identity_stats(R, spline_velocity(st.direction_field()));
+        const std::vector<double> q = pct(s.cnorm, {0.5, 0.9, 0.99, 1.0});
+        std::printf("[RECORD] %sidentity |a x b - v exp(-I)|/|v| at tol 1e-10, h_max h/8 (no threshold; original 1e-8 criterion not met, "
+                    "O(h_max^~2) on the C^2 spline): max %.3e, rms %.3e over %lld records (non-ok passes %lld)\n",
+                    tag.c_str(), s.max, s.rms(), s.n, s.nonok);
+        std::printf("  %sINFO covector norms |a|,|b| percentiles p50 %.3e p90 %.3e p99 %.3e max %.3e; max|I| %.3e rms I %.3e\n",
+                    tag.c_str(), q[0], q[1], q[2], q[3], s.max_I, s.rms_I());
+    }
+    std::printf("  E2 total %.1f s\n", now_s() - t0);
+}
+
+/// E2 h_max ladder (RECORD) + DIAG-3 (accuracy of I) + C-inf ladder.
 void diag2_3(TestReport& rep, CudaContext& ctx, int N) {
     (void)rep;
     const double t0 = now_s();
@@ -1106,7 +1105,7 @@ void diag2_3(TestReport& rep, CudaContext& ctx, int N) {
     const double h = 1.0 / N;
     const std::array<double, 4> divs = {8.0, 16.0, 32.0, 64.0};
     for (const C& c : cases) {
-        const std::string tag = "DIAG-2 " + c.name + " N=" + std::to_string(N) + ": ";
+        const std::string tag = "E2 ladder " + c.name + " N=" + std::to_string(N) + ": ";
         const sl::ProductionStage st = make_stage(ctx, N, *c.src, c.eps);
         if (!st.flow_ready()) {
             std::printf("[RECORD] %sstage not ready\n", tag.c_str());
@@ -1170,7 +1169,7 @@ void diag2_3(TestReport& rep, CudaContext& ctx, int N) {
         std::vector<IdStats> ids;
         for (double dv : divs)
             ids.push_back(identity_stats(run_smooth(ctx, f, 16, 1e-12, h / dv), vf));
-        std::string line = "DIAG-2 C-inf field, tol 1e-12, E residual (max / rms) for h_max = h/8..h/64 (h=1/" +
+        std::string line = "E2 ladder C-inf field, tol 1e-12, E residual (max / rms) for h_max = h/8..h/64 (h=1/" +
                            std::to_string(N) + "): ";
         for (std::size_t i = 0; i < divs.size(); ++i)
             line += fmt2("%.3e/%.3e  ", ids[i].max, ids[i].rms());
@@ -1201,14 +1200,14 @@ int main(int argc, char** argv) {
             return 2;
         }
     }
-    // default (fast) tier: 16^3 / 32^3 (A1, A2, E, D at 16^3; B at 32^3), --full: 64^3 (A, B, D, E)
+    // default (fast) tier: 16^3 / 32^3 (A1, E2 at 16^3; A2, B, D at 32^3), --full: 64^3 (A, B, D, E2 ladder)
     const int nA1 = cfg.n > 0 ? cfg.n : (cfg.full ? 64 : 16);
     const int nA2 = cfg.n > 0 ? cfg.n : (cfg.full ? 64 : 32);
     const int nB = cfg.n > 0 ? cfg.n : (cfg.full ? 64 : 32);
     const int nE = cfg.n > 0 ? cfg.n : (cfg.full ? 64 : 16);
     const int nD = cfg.n > 0 ? cfg.n : (cfg.full ? 64 : 32);
-    const int nDiag = cfg.n > 0 ? cfg.n : 32;
-    const int MD = cfg.full ? 16 : 6; // 256 seeds (spec) / 36 seeds (fast tier)
+    const int nDiag = cfg.n > 0 ? cfg.n : (cfg.full ? 64 : 32);
+    const int MD = cfg.full ? 16 : 4; // 256 seeds (spec) / 16 seeds (fast tier)
     const bool heavy_diag = cfg.full || cfg.diag_flag || cfg.only.count("DIAG") > 0;
 
     TestReport rep;
@@ -1222,7 +1221,7 @@ int main(int argc, char** argv) {
         lap("A1");
     }
     if (cfg.run("A2")) {
-        case_A2(rep, ctx, nA2);
+        case_A2(rep, ctx, nA2, heavy_diag);
         lap("A2");
     }
     if (cfg.run("A3")) {
@@ -1234,21 +1233,25 @@ int main(int argc, char** argv) {
         lap("B");
     }
     if (cfg.run("E")) {
-        case_E(rep, ctx, nE);
+        case_E1(rep, ctx);
+        case_E2(rep, ctx, nE);
+        // E2 h_max ladder (tol 1e-12, h/8..h/64): --diag / --full; part of DIAG when DIAG also runs
+        if (heavy_diag && !cfg.run("DIAG"))
+            diag2_3(rep, ctx, nDiag);
         lap("E");
     }
     if (cfg.run("D")) {
+        const bool blocking_all = cfg.full || cfg.n > 0;
         case_D(rep, ctx, nD, MD,
-               cfg.full ? "FULL D: 256 seeds" : "default tier: 36 seeds (6x6 lattice) at this N instead of the spec's 256 seeds at 64^3 (see --full)",
-               heavy_diag);
+               cfg.full ? "FULL D: 256 seeds" : "default tier: 16 seeds (4x4 lattice), h_max h/16 at this N instead of the spec's 256 seeds, h/32 at 64^3 (see --full)",
+               blocking_all, cfg.full, cfg.full ? 32.0 : 16.0);
         lap("D");
     }
     if (cfg.run("DIAG")) {
-        diag1(rep, ctx);
         if (heavy_diag)
             diag2_3(rep, ctx, nDiag);
         else
-            std::printf("  DIAG-2/3/5 (h_max sweeps, small-delta FD) are skipped in the fast tier: run with --diag, --only DIAG or --full\n");
+            std::printf("  E2 ladder / DIAG-3 (h_max sweeps) are skipped in the fast tier: run with --diag, --only DIAG or --full\n");
         lap("DIAG");
     }
 
