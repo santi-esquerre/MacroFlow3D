@@ -26,6 +26,10 @@
  *                             --probe-precs (pa | multP | addP, P = coarse profiles) and mu in
  *                             {mu_SER of that iterate, 0} (--probe-mu). PROBE / PROBE_CURVE lines.
  *
+ *   --track forward          SF-36 N5: forward Lagrangian-label tracker on the cube production
+ *                             stage (DP5(4) on the spline flow, per-particle labels / tau / I /
+ *                             covectors, moments per plane and per time); no Newton solve.
+ *
  *   --construct trace         SF-35 N3: production constructor of the Darcy labels by backward
  *                             streamline tracing (no Newton solve): per-plane metrics, (14)
  *                             residual diagnostic, optional --ladder / --solve (SF-33 NK
@@ -53,6 +57,7 @@
 #include "src/core/DeviceSpan.cuh"
 #include "src/core/Scalar.hpp"
 #include "src/external/nlohmann/json.hpp"
+#include "src/physics/particles/lagrangian_labels/LagrangianTracker.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletLabels.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletSlabGrid.cuh"
 #include "src/physics/streamfunctions/inlet_slab/NpyIo.hpp"
@@ -114,6 +119,7 @@ enum ExitCode : int {
     kExitTraceFail = 19, ///< --construct trace: a streamline of the tracing constructor failed
     kExitNotRun = 20,
     kExitRoundtripExceeded = 21, ///< --construct trace: round trip > --max-roundtrip
+    kExitTrackFail = 22, ///< --track forward: a particle failed (not seed_backflow) in either pass
 };
 
 inline int exit_code_of(const std::string& status) {
@@ -143,6 +149,8 @@ inline int exit_code_of(const std::string& status) {
         return kExitTraceFail;
     if (status == "roundtrip_exceeded")
         return kExitRoundtripExceeded;
+    if (status == "track_fail")
+        return kExitTrackFail;
     return kExitNotRun;
 }
 
@@ -168,7 +176,7 @@ class StageBuildFailure : public std::runtime_error {
 // Configuration
 // ================================================================================================
 
-enum class Mode { none, proto, production, crosscheck, linear_probe, construct_trace };
+enum class Mode { none, proto, production, crosscheck, linear_probe, construct_trace, track_forward };
 
 struct DriverConfig {
     Mode mode = Mode::none;
@@ -243,6 +251,18 @@ struct DriverConfig {
     std::string tracer = "host"; ///< host | gpu
     std::string save_labels_dir;
     bool trace_opts_given = false; ///< any of the trace-only options was given
+    /// --hmax-div / --tol (shared by --construct trace and --track forward; defaults identical)
+    bool trace_shared_given = false;
+    // --track forward (SF-36 N5)
+    int np_side = 16;
+    double x0 = 0.0;
+    std::string planes_list, times_list; ///< raw comma-separated lists
+    double min_step = 1e-13;
+    double max_arclength = 0.0; ///< <= 0: tracker default 4 max(X_last - X0, t_last) + 10
+    bool covectors = false;
+    std::string window = "0,1,0,1";
+    std::string save_particles_dir;
+    bool fwd_opts_given = false; ///< any of the forward-only options was given
     // outputs
     std::string save_solution_dir;
     std::string save_oracle_dir; ///< SF-33 N8': psi_or_{1,2}.npy (full labels) of every oracle run
@@ -266,6 +286,18 @@ inline const char* usage_text() {
            "[--tracer host|gpu] [--threads T]\n"
            "             [--solve] [--save-labels <dir>] [--summary <json>] [--pcg-rtol 1e-10] "
            "[--device D] [solver options if --solve]\n"
+           "  inlet_slab --track forward --n N --eps E [--sigma2 1 --ell 0.25 --seed 3001 | "
+           "--analytic <field> | --cells <Y.npy>]\n"
+           "             --np-side M --planes X1,X2,.. --times T1,T2,.. [--x0 0] [--tol 1e-8] "
+           "[--hmax-div 8]\n"
+           "             [--min-step 1e-13] [--max-arclength A] [--covectors] "
+           "[--window w2a,w2b,w3a,w3b]\n"
+           "             [--save-particles <dir>] [--summary <json>] [--pcg-rtol 1e-10] "
+           "[--device D]\n"
+           "             (planes strictly increasing and > x0; times strictly increasing and > 0; "
+           "at least one list;\n"
+           "              h_max = h/hmax-div; M x M stratified flux-weighted lattice on the "
+           "window of the plane x1 = x0)\n"
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
            "  inlet_slab --linear-probe <case_dir> --eps-stage E --newton-steps k [--eps-from A]\n"
            "             [--probe-ladder 0.25,0.375] [--probe-precs pa,mult1,mult2,add1]\n"
@@ -286,7 +318,9 @@ inline const char* usage_text() {
            "missing_stage_input;\n"
            "            17 inlet_backflow; 18 darcy_failed; 19 oracle_roundtrip_fail (--production) / "
            "trace_fail (--construct trace);\n"
-           "            21 roundtrip_exceeded (--construct trace)\n";
+           "            21 roundtrip_exceeded (--construct trace); 22 track_fail (--track forward: "
+           "any particle non-ok\n"
+           "            in either pass other than seed_backflow)\n";
 }
 
 namespace detail {
@@ -320,6 +354,23 @@ inline unsigned long long parse_u64(const std::string& opt, const std::string& s
     return v;
 }
 
+/// Strict comma-separated list of finite numbers (no empty entries).
+inline std::vector<double> parse_list(const std::string& opt, const std::string& s) {
+    std::vector<double> v;
+    std::size_t a = 0;
+    if (s.empty())
+        throw UsageError(opt + ": empty list");
+    while (true) {
+        const std::size_t b = s.find(',', a);
+        const std::string tok = s.substr(a, b == std::string::npos ? std::string::npos : b - a);
+        v.push_back(parse_double(opt, tok));
+        if (b == std::string::npos)
+            break;
+        a = b + 1;
+    }
+    return v;
+}
+
 } // namespace detail
 
 inline DriverConfig parse_args(int argc, char** argv) {
@@ -334,7 +385,7 @@ inline DriverConfig parse_args(int argc, char** argv) {
     auto set_mode = [&](Mode m) {
         if (c.mode != Mode::none)
             throw UsageError("exactly one of --proto, --production, --sf19-crosscheck, "
-                             "--linear-probe, --construct trace");
+                             "--linear-probe, --construct trace, --track forward");
         c.mode = m;
     };
     for (int i = 1; i < argc; ++i) {
@@ -367,6 +418,11 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.no_oracle = true;
             continue;
         }
+        if (opt == "--covectors") {
+            c.covectors = true;
+            c.fwd_opts_given = true;
+            continue;
+        }
         if (i + 1 >= argc)
             throw UsageError(opt + " requires a value");
         const std::string val = argv[++i];
@@ -383,12 +439,40 @@ inline DriverConfig parse_args(int argc, char** argv) {
             if (val != "trace")
                 throw UsageError("--construct: only 'trace' exists");
             set_mode(Mode::construct_trace);
+        } else if (opt == "--track") {
+            if (val != "forward")
+                throw UsageError("--track: only 'forward' exists");
+            set_mode(Mode::track_forward);
+        } else if (opt == "--np-side") {
+            c.np_side = parse_int(opt, val);
+            c.fwd_opts_given = true;
+        } else if (opt == "--x0") {
+            c.x0 = parse_double(opt, val);
+            c.fwd_opts_given = true;
+        } else if (opt == "--planes") {
+            c.planes_list = val;
+            c.fwd_opts_given = true;
+        } else if (opt == "--times") {
+            c.times_list = val;
+            c.fwd_opts_given = true;
+        } else if (opt == "--min-step") {
+            c.min_step = parse_double(opt, val);
+            c.fwd_opts_given = true;
+        } else if (opt == "--max-arclength") {
+            c.max_arclength = parse_double(opt, val);
+            c.fwd_opts_given = true;
+        } else if (opt == "--window") {
+            c.window = val;
+            c.fwd_opts_given = true;
+        } else if (opt == "--save-particles") {
+            c.save_particles_dir = val;
+            c.fwd_opts_given = true;
         } else if (opt == "--hmax-div") {
             c.trace_hmax_div = parse_int(opt, val);
-            c.trace_opts_given = true;
+            c.trace_shared_given = true;
         } else if (opt == "--tol") {
             c.trace_tol = parse_double(opt, val);
-            c.trace_opts_given = true;
+            c.trace_shared_given = true;
         } else if (opt == "--max-roundtrip") {
             c.trace_max_roundtrip = parse_double(opt, val);
             c.trace_opts_given = true;
@@ -499,10 +583,17 @@ inline DriverConfig parse_args(int argc, char** argv) {
     }
     if (c.mode == Mode::none)
         throw UsageError("one of --proto, --production, --sf19-crosscheck, --linear-probe, "
-                         "--construct trace is required");
-    if (c.trace_opts_given && c.mode != Mode::construct_trace)
+                         "--construct trace, --track forward is required");
+    if (c.mode == Mode::track_forward && c.trace_opts_given)
+        throw UsageError("--ladder / --solve / --max-roundtrip / --tracer / --save-labels are "
+                         "--construct trace options, not valid with --track forward");
+    if ((c.trace_opts_given || c.trace_shared_given) && c.mode != Mode::construct_trace &&
+        c.mode != Mode::track_forward)
         throw UsageError("--ladder / --solve / --hmax-div / --tol / --max-roundtrip / --tracer / "
                          "--save-labels require --construct trace");
+    if (c.fwd_opts_given && c.mode != Mode::track_forward)
+        throw UsageError("--np-side / --x0 / --planes / --times / --min-step / --max-arclength / "
+                         "--covectors / --window / --save-particles require --track forward");
     if (c.prec != "pa")
         throw UsageError("--prec: only 'pa' (per-mode plane-averaged preconditioner P-A) exists");
     if (c.forcing != "ew" && c.forcing != "fixed")
@@ -576,6 +667,51 @@ inline DriverConfig parse_args(int argc, char** argv) {
             throw UsageError("--sigma2 / --ell must be > 0");
         if (!c.cells_path.empty() && !c.analytic.empty())
             throw UsageError("--cells and --analytic are exclusive");
+    } else if (c.mode == Mode::track_forward) {
+        if (c.n < 8 || c.n % 2 != 0)
+            throw UsageError("--track forward requires --n N (even, >= 8)");
+        if (!c.has_eps || !(c.eps > 0.0))
+            throw UsageError("--track forward requires --eps E > 0");
+        if (c.trace_hmax_div < 1)
+            throw UsageError("--hmax-div must be >= 1");
+        if (!(c.trace_tol > 0.0))
+            throw UsageError("--tol must be > 0");
+        if (!(c.min_step > 0.0))
+            throw UsageError("--min-step must be > 0");
+        if (c.max_arclength != 0.0 && !(c.max_arclength > 0.0))
+            throw UsageError("--max-arclength must be > 0 (omit it for the default "
+                             "4 max(X_last - x0, t_last) + 10)");
+        if (!(c.sigma2 > 0.0) || !(c.ell > 0.0))
+            throw UsageError("--sigma2 / --ell must be > 0");
+        if (!c.cells_path.empty() && !c.analytic.empty())
+            throw UsageError("--cells and --analytic are exclusive");
+        if (c.np_side < 1)
+            throw UsageError("--np-side must be >= 1 (particles = M x M)");
+        if (c.planes_list.empty() && c.times_list.empty())
+            throw UsageError("--track forward requires --planes and/or --times");
+        if (!c.planes_list.empty()) {
+            const std::vector<double> pl = parse_list("--planes", c.planes_list);
+            double prev = c.x0;
+            for (double X : pl) {
+                if (!(X > prev))
+                    throw UsageError("--planes must be strictly increasing and > --x0 (got " +
+                                     c.planes_list + ", x0 = " + std::to_string(c.x0) + ")");
+                prev = X;
+            }
+        }
+        if (!c.times_list.empty()) {
+            const std::vector<double> tl = parse_list("--times", c.times_list);
+            double prev = 0.0;
+            for (double t : tl) {
+                if (!(t > prev))
+                    throw UsageError("--times must be strictly increasing and > 0 (got " +
+                                     c.times_list + ")");
+                prev = t;
+            }
+        }
+        const std::vector<double> w = parse_list("--window", c.window);
+        if (w.size() != 4 || !(w[0] < w[1]) || !(w[2] < w[3]))
+            throw UsageError("--window w2a,w2b,w3a,w3b requires w2a < w2b and w3a < w3b");
     } else if (c.mode == Mode::proto) {
         if (c.has_eps_target && !(c.eps_target > 0.0))
             throw UsageError("--eps-target must be > 0");
@@ -2102,6 +2238,223 @@ inline int run_trace_construct(CudaContext& ctx, const DriverConfig& c) {
 }
 
 // ================================================================================================
+// --track forward (SF-36 N5): forward Lagrangian-label tracker on the cube production stage
+// ================================================================================================
+
+inline std::string join_list(const std::vector<double>& v) {
+    std::string s;
+    for (std::size_t i = 0; i < v.size(); ++i)
+        s += fmt(i == 0 ? "%.10g" : ",%.10g", v[i]);
+    return s;
+}
+
+inline json pass_totals_json(const lagrangian_labels::PassTotals& t) {
+    json j;
+    j["status_hist"] = std::vector<long long>(t.status_hist.begin(), t.status_hist.end());
+    j["nfev"] = t.nfev;
+    j["accepted_steps"] = t.accepted_steps;
+    j["rejected_steps"] = t.rejected_steps;
+    j["landing_steps"] = t.landing_steps;
+    j["landing_rejected"] = t.landing_rejected;
+    j["landings_discarded"] = t.landings_discarded;
+    j["recrossings"] = t.recrossings;
+    j["backflow_encounters"] = t.backflow_encounters;
+    j["min_g1_hat"] = jnum(t.min_g1_hat);
+    return j;
+}
+
+inline std::string tstatus_line(const char* pass, const lagrangian_labels::PassTotals& t) {
+    return fmt("TSTATUS pass=%s hist=%lld,%lld,%lld,%lld,%lld,%lld,%lld landings_discarded=%lld "
+               "backflow_enc=%lld nfev=%lld",
+               pass, t.status_hist[0], t.status_hist[1], t.status_hist[2], t.status_hist[3],
+               t.status_hist[4], t.status_hist[5], t.status_hist[6], t.landings_discarded,
+               t.backflow_encounters, t.nfev);
+}
+
+inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
+    namespace ll = lagrangian_labels;
+    const auto t_all = std::chrono::steady_clock::now();
+    json J;
+    J["mode"] = "track_forward";
+    J["command"] = c.command_line;
+    PhaseLog pl;
+    const sl::InletSlabGrid grid = sl::InletSlabGrid::make(c.n);
+    const int N = grid.n;
+
+    pl.begin("field");
+    sl::SlabFieldSource src = make_trace_field(ctx, c, J);
+    pl.end();
+    J["field"] = src.name();
+    J["eps"] = c.eps;
+    J["N"] = c.n;
+    const std::string field = src.name();
+
+    // reading rule 8: inlet backflow is recorded, not an exit condition
+    sl::ProductionStageOptions sopt;
+    sopt.pcg_rtol = c.pcg_rtol;
+    sopt.require_inlet_labels = false;
+    pl.begin("stage");
+    const auto t_stage = std::chrono::steady_clock::now();
+    sl::ProductionStage st = sl::build_production_stage(ctx, grid, src, c.eps, sopt);
+    pl.end();
+    out_block("SETUP ", st.report.summary());
+    out_line(fmt("SETUP stage eps=%g built in %.3fs (grad_lnk=%s)", c.eps, seconds_since(t_stage),
+                 src.kind() == sl::SlabFieldKind::analytic
+                     ? "analytic (closure_fields.hpp, hand-derived gradient)"
+                     : "spectral (band-limited cell samples, cuFFT)"));
+    J["stage"] = {{"status", sl::to_string(st.report.status)},
+                  {"darcy_converged", st.report.darcy_converged},
+                  {"labels_available", st.labels_available},
+                  {"flow_ready", st.flow_ready()},
+                  {"inlet_vmin", jnum(st.report.inlet_vmin)},
+                  {"inlet_mean", jnum(st.report.inlet_mean)},
+                  {"Q0", jnum(st.report.Q0)},
+                  {"v_rms", jnum(st.report.v_rms)},
+                  {"mg_levels", st.report.mg_levels},
+                  {"G", {jnum(st.report.darcy.G[0]), jnum(st.report.darcy.G[1]),
+                         jnum(st.report.darcy.G[2])}}};
+    if (!st.flow_ready()) {
+        const std::string status = "darcy_failed";
+        out_line(fmt("STAGE_FAILED status=%s eps=%g inlet_vmin=%.6e: the SF-19 flow did not "
+                     "converge or the splines were not built (stage status %s)",
+                     status.c_str(), c.eps, st.report.inlet_vmin,
+                     sl::to_string(st.report.status)));
+        J["stage_failure"] = {{"status", status}};
+        print_timing_memory(pl, 0, seconds_since(t_all), J);
+        return finish(status, J, c);
+    }
+
+    ll::InjectionSpec inj;
+    inj.X0 = c.x0;
+    inj.M = c.np_side;
+    {
+        const std::vector<double> w = detail::parse_list("--window", c.window);
+        inj.w2a = w[0];
+        inj.w2b = w[1];
+        inj.w3a = w[2];
+        inj.w3b = w[3];
+    }
+    ll::TrackOptions topt;
+    topt.tol = c.trace_tol;
+    topt.h_max = st.grid.h / static_cast<double>(c.trace_hmax_div);
+    topt.min_step = c.min_step;
+    topt.max_arclength = c.max_arclength;
+    if (!c.planes_list.empty())
+        topt.planes = detail::parse_list("--planes", c.planes_list);
+    if (!c.times_list.empty())
+        topt.times = detail::parse_list("--times", c.times_list);
+    topt.covectors = c.covectors;
+
+    ll::LagrangianTracker tracker;
+    pl.begin("prepare");
+    tracker.prepare(ctx, st, inj, topt);
+    pl.end();
+    pl.begin("track");
+    const ll::LagrangianTrackResult& R = tracker.track(ctx);
+    pl.end();
+
+    out_line(fmt("TRACK field=%s eps=%g N=%d h=%.10g x0=%.10g M=%d Np=%d planes=%s times=%s "
+                 "tol=%.1e h_max=%.6e (h/%d) min_step=%.1e max_arclength=%g covectors=%d "
+                 "labels_available=%d inlet_vmin=%.6e",
+                 field.c_str(), c.eps, N, static_cast<double>(st.grid.h), inj.X0, inj.M, R.Np,
+                 join_list(R.planes).c_str(), join_list(R.times).c_str(), R.tol, R.h_max,
+                 c.trace_hmax_div, R.min_step, R.max_arclength, R.covectors ? 1 : 0,
+                 st.labels_available ? 1 : 0, st.report.inlet_vmin));
+    J["track"] = {{"h", st.grid.h},
+                  {"x0", inj.X0},
+                  {"M", inj.M},
+                  {"Np", R.Np},
+                  {"window", {inj.w2a, inj.w2b, inj.w3a, inj.w3b}},
+                  {"planes", R.planes},
+                  {"times", R.times},
+                  {"tol", R.tol},
+                  {"h_max", R.h_max},
+                  {"hmax_div", c.trace_hmax_div},
+                  {"min_step", R.min_step},
+                  {"max_arclength", R.max_arclength},
+                  {"covectors", R.covectors},
+                  {"labels_available", st.labels_available}};
+
+    out_line(fmt("BACKFLOW field=%s eps=%g N=%d inlet_vmin=%.6e labels_available=%d "
+                 "seed_backflow=%lld backflow_enc_plane=%lld backflow_enc_time=%lld "
+                 "(inlet backflow is recorded, not an exit condition)",
+                 field.c_str(), c.eps, N, st.report.inlet_vmin, st.labels_available ? 1 : 0,
+                 R.seed_backflow, R.totals_plane.backflow_encounters,
+                 R.totals_time.backflow_encounters));
+    J["backflow"] = {{"inlet_vmin", jnum(st.report.inlet_vmin)},
+                     {"stage_status", sl::to_string(st.report.status)},
+                     {"seed_backflow", R.seed_backflow},
+                     {"backflow_enc_plane", R.totals_plane.backflow_encounters},
+                     {"backflow_enc_time", R.totals_time.backflow_encounters}};
+
+    json pj = json::array(), tj = json::array();
+    for (std::size_t m = 0; m < R.moments_planes.size(); ++m) {
+        const ll::PlaneMoments& q = R.moments_planes[m];
+        out_line(fmt("TPLANE m=%zu x1=%.10g n_ok=%d mean2=%.12e mean3=%.12e var2=%.12e var3=%.12e "
+                     "mean_tau=%.12e var_tau=%.12e ev_rms=%.6e ev_max=%.6e",
+                     m, q.x1, q.contributing, q.mean_x2, q.mean_x3, q.var_x2, q.var_x3, q.mean_tau,
+                     q.var_tau, q.rms_ev, q.max_ev));
+        pj.push_back({{"m", m},
+                      {"x1", jnum(q.x1)},
+                      {"n_ok", q.contributing},
+                      {"non_ok", q.non_ok},
+                      {"mean2", jnum(q.mean_x2)},
+                      {"mean3", jnum(q.mean_x3)},
+                      {"var2", jnum(q.var_x2)},
+                      {"var3", jnum(q.var_x3)},
+                      {"mean_tau", jnum(q.mean_tau)},
+                      {"var_tau", jnum(q.var_tau)},
+                      {"ev_rms", jnum(q.rms_ev)},
+                      {"ev_max", jnum(q.max_ev)}});
+    }
+    for (std::size_t n = 0; n < R.moments_time.size(); ++n) {
+        const auto& q = R.moments_time[n];
+        out_line(fmt("TTIME n=%zu t=%.10g active=%d mean1=%.12e mean2=%.12e mean3=%.12e "
+                     "var1=%.12e var2=%.12e var3=%.12e",
+                     n, q.time, q.active, q.mean[0], q.mean[1], q.mean[2], q.var[0], q.var[1],
+                     q.var[2]));
+        tj.push_back({{"n", n},
+                      {"t", jnum(q.time)},
+                      {"active", q.active},
+                      {"mean", {jnum(q.mean[0]), jnum(q.mean[1]), jnum(q.mean[2])}},
+                      {"var", {jnum(q.var[0]), jnum(q.var[1]), jnum(q.var[2])}}});
+    }
+    J["moments_planes"] = pj;
+    J["moments_time"] = tj;
+    out_line(tstatus_line("plane", R.totals_plane));
+    out_line(tstatus_line("time", R.totals_time));
+    J["plane_pass"] = pass_totals_json(R.totals_plane);
+    J["time_pass"] = pass_totals_json(R.totals_time);
+    J["tracker_timings_s"] = {{"plane_kernel", R.seconds_plane_kernel},
+                              {"time_kernel", R.seconds_time_kernel},
+                              {"download", R.seconds_download},
+                              {"moments", R.seconds_moments}};
+
+    long long fails = 0;
+    for (int s = 2; s < 7; ++s)
+        fails += R.totals_plane.status_hist[static_cast<std::size_t>(s)] +
+                 R.totals_time.status_hist[static_cast<std::size_t>(s)];
+    J["track_failures"] = fails;
+
+    if (!c.save_particles_dir.empty()) {
+        pl.begin("write");
+        ll::TrackMeta meta;
+        meta.field = field;
+        meta.eps = c.eps;
+        meta.N = N;
+        meta.h = st.grid.h;
+        meta.commit = "unknown";
+        ll::write_track_outputs(c.save_particles_dir, R, meta);
+        pl.end();
+        out_line("SAVED_PARTICLES " + c.save_particles_dir +
+                 " (seeds / weights / labels / status_* / planes_* / times_* .npy, "
+                 "moments_{time,planes}.csv, track.json)");
+    }
+    print_timing_memory(pl, 0, seconds_since(t_all), J);
+    return finish(fails == 0 ? "ok" : "track_fail", J, c);
+}
+
+// ================================================================================================
 // --sf19-crosscheck
 // ================================================================================================
 
@@ -2494,6 +2847,8 @@ inline int run(int argc, char** argv) {
             return run_linear_probe(ctx, c);
         case Mode::construct_trace:
             return run_trace_construct(ctx, c);
+        case Mode::track_forward:
+            return run_track_forward(ctx, c);
         case Mode::none:
             break;
         }
