@@ -261,6 +261,115 @@ __host__ __device__ inline void evaluate_point(const PeriodicTricubicBSplineView
     gz = fz;
 }
 
+namespace detail {
+
+/// SF-36 N3: AxisStencil plus second-derivative weights d2w (already divided
+/// by h^2). idx/w/dw are produced by the very same axis_stencil call, hence
+/// bitwise identical to what evaluate_point uses.
+struct AxisStencil2 {
+    int idx[4];
+    real w[4];
+    real dw[4];
+    real d2w[4];
+};
+
+__host__ __device__ inline void axis_stencil2(real x, int n, real h, real L, AxisStencil2& s) {
+    AxisStencil base;
+    axis_stencil(x, n, h, L, base);
+#pragma unroll
+    for (int k = 0; k < 4; ++k) {
+        s.idx[k] = base.idx[k];
+        s.w[k] = base.w[k];
+        s.dw[k] = base.dw[k];
+    }
+    // Same reduction expressions as axis_stencil to recover u.
+    real xr = x - L * floor(x / L);
+    if (xr >= L)
+        xr -= L;
+    if (xr < static_cast<real>(0.0))
+        xr += L;
+    const real t = xr / h - static_cast<real>(0.5);
+    const real ft = floor(t);
+    const real u = t - ft;
+    const real v = static_cast<real>(1.0) - u;
+    const real inv_h = static_cast<real>(1.0) / h;
+    const real inv_h2 = inv_h * inv_h;
+    // u-derivative of dw (times 1/h): {1-u, 3u-2, 1-3u, u} / h^2.
+    s.d2w[0] = v * inv_h2;
+    s.d2w[1] = (static_cast<real>(3.0) * u - static_cast<real>(2.0)) * inv_h2;
+    s.d2w[2] = (static_cast<real>(1.0) - static_cast<real>(3.0) * u) * inv_h2;
+    s.d2w[3] = u * inv_h2;
+}
+
+} // namespace detail
+
+/**
+ * @brief Value, gradient and Hessian H = (xx, yy, zz, xy, xz, yz) of the
+ *        periodic tricubic B-spline at (x, y, z).
+ *
+ * value, gx, gy, gz use exactly the loop nesting, accumulation order and
+ * expressions of evaluate_point and are BITWISE equal to its outputs on the
+ * same platform (SF-36 reading rule 3); the Hessian accumulators run alongside.
+ */
+__host__ __device__ inline void evaluate_point_hessian(const PeriodicTricubicBSplineView& v,
+                                                       real x, real y, real z, real& value,
+                                                       real& gx, real& gy, real& gz, real H[6]) {
+    detail::AxisStencil2 sx, sy, sz;
+    detail::axis_stencil2(x, v.nx, v.hx, v.Lx, sx);
+    detail::axis_stencil2(y, v.ny, v.hy, v.Ly, sy);
+    detail::axis_stencil2(z, v.nz, v.hz, v.Lz, sz);
+
+    const size_t nx = static_cast<size_t>(v.nx);
+    const size_t nxy = nx * static_cast<size_t>(v.ny);
+
+    real f = 0.0, fx = 0.0, fy = 0.0, fz = 0.0;
+    real fxx = 0.0, fyy = 0.0, fzz = 0.0, fxy = 0.0, fxz = 0.0, fyz = 0.0;
+#pragma unroll
+    for (int c = 0; c < 4; ++c) {
+        const size_t off_z = static_cast<size_t>(sz.idx[c]) * nxy;
+        real f_c = 0.0, fx_c = 0.0, fy_c = 0.0;
+        real fxx_c = 0.0, fyy_c = 0.0, fxy_c = 0.0;
+#pragma unroll
+        for (int b = 0; b < 4; ++b) {
+            const real* row = v.coeff + off_z + static_cast<size_t>(sy.idx[b]) * nx;
+            real r = 0.0, rx = 0.0, rxx = 0.0;
+#pragma unroll
+            for (int a = 0; a < 4; ++a) {
+                const real cv = row[sx.idx[a]];
+                r += sx.w[a] * cv;
+                rx += sx.dw[a] * cv;
+                rxx += sx.d2w[a] * cv;
+            }
+            f_c += sy.w[b] * r;
+            fx_c += sy.w[b] * rx;
+            fy_c += sy.dw[b] * r;
+            fxx_c += sy.w[b] * rxx;
+            fxy_c += sy.dw[b] * rx;
+            fyy_c += sy.d2w[b] * r;
+        }
+        f += sz.w[c] * f_c;
+        fx += sz.w[c] * fx_c;
+        fy += sz.w[c] * fy_c;
+        fz += sz.dw[c] * f_c;
+        fxx += sz.w[c] * fxx_c;
+        fyy += sz.w[c] * fyy_c;
+        fxy += sz.w[c] * fxy_c;
+        fxz += sz.dw[c] * fx_c;
+        fyz += sz.dw[c] * fy_c;
+        fzz += sz.d2w[c] * f_c;
+    }
+    value = f;
+    gx = fx;
+    gy = fy;
+    gz = fz;
+    H[0] = fxx;
+    H[1] = fyy;
+    H[2] = fzz;
+    H[3] = fxy;
+    H[4] = fxz;
+    H[5] = fyz;
+}
+
 /**
  * @brief Exact-byte report of one GPU prefilter call (no fudge factors).
  */

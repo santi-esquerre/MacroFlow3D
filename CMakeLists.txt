@@ -609,6 +609,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(interpolation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME interpolation_periodic_tricubic COMMAND interpolation_tests)
 
+    # SF-36 N3: spline Hessian (evaluate_point_hessian) contract tests (fast tier)
+    add_executable(interpolation_hessian_tests tests/interpolation/spline_hessian_tests.cu)
+    target_link_libraries(interpolation_hessian_tests PRIVATE macroflow3d_lib)
+    target_compile_options(interpolation_hessian_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME interpolation_hessian COMMAND interpolation_hessian_tests)
+
     # SF-31 N3: pseudo-symplectic streamline tracker contract tests (fast tier)
     add_executable(streamline_tracker_ps_tests tests/streamline_tracker/pseudo_symplectic_tracker_tests.cu)
     target_link_libraries(streamline_tracker_ps_tests PRIVATE macroflow3d_lib)
