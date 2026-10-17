@@ -139,7 +139,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-32 — Face-flux reference trackers and the paper's scalings](lester-eq14/increments/SF-32-reference-trackers-and-scalings.md)
 - [x] [SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
 - [ ] [SF-34 — Acceptance of the inlet labels in the periodic medium against the closure gate](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
-- [ ] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
+- [x] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
