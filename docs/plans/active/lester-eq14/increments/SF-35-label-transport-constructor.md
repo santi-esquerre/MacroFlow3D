@@ -11,8 +11,8 @@
 - Owner: `Claude Fable 5.1 orchestrator (session 2026-10-15)`
 - Started: `2026-10-15T17:05Z on base f8bec23`
 - Completed: `not completed (claim (b) not established at sigma_Y = 1.5 and integration certificate B not met at three coarse points; owner decision pending)`
-- PR: `not opened`
-- Commit: `not recorded`
+- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/53` (open; human-review increment; State `blocked` pending the owner decision; audited source-bearing head `5ab23231e012cb6c4bcfc59f4c03ab93744aab42`)
+- Commit: `5ab23231e012cb6c4bcfc59f4c03ab93744aab42` (source-bearing audited head); metadata commits above it on the PR branch
 
 ## Scientific or engineering intent
 
@@ -241,7 +241,7 @@ Pre-registered verbatim in the activation bitácora row before any run; the ladd
 - [x] Required regression tests pass.
 - [x] Scientific or engineering findings are appended to the bitácora.
 - [ ] Required human review is recorded.
-- [ ] PR and commit identifiers are recorded.
+- [x] PR and commit identifiers are recorded.
 - [ ] The master checklist entry is checked in this branch and `check-lester-increments.sh` passes.
 <!-- completion-checklist:end -->
 
