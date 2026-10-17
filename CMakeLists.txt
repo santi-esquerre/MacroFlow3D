@@ -732,6 +732,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(lagrangian_gpu_host_tests PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_gpu_host_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_tracker_gpu_host COMMAND lagrangian_gpu_host_tests)
+    # SF-36 N6: exact-control tests of the forward tracker (A1-A3, B, D, E + diagnostics; fast tier
+    # <= 60 s; --full is the V100 mode). Instantiates the device templates: --fmad=false.
+    add_executable(lagrangian_controls_tests tests/lagrangian_labels/lagrangian_controls_tests.cu)
+    target_link_libraries(lagrangian_controls_tests PRIVATE macroflow3d_lib)
+    target_compile_options(lagrangian_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_tracker_controls COMMAND lagrangian_controls_tests)
     # SF-36 N2: ProductionStageOptions::require_inlet_labels / flow_ready (fast tier; N = 16)
     add_executable(inlet_slab_stage_options_tests tests/inlet_slab/slab_stage_options_tests.cu)
     target_link_libraries(inlet_slab_stage_options_tests PRIVATE macroflow3d_lib)
