@@ -20,6 +20,8 @@ it. It is not a result summary: results live in `analysis/` and, once written, i
 | V100 build | `build/v100-release` (`cmake --preset v100-release`) |
 | jobs / dates | `sf36-controls` 2026-10-17 22:33:46Z-22:36:32Z; `sf36-bytecmp` 22:37:34Z-22:39:44Z; `sf36-mem` 22:40:19Z-22:49:58Z; `sf36-cost` 22:50:36Z-22:56:01Z; `sf36-stress` 22:56:37Z-23:17:09Z (inner run 1228 s, rc 22); all jobs exit 0, GPU 0 (Tesla V100-PCIE-32GB), strictly sequential (`raw/<part>/run.env`, `logs/status/*.env`). Toolchain: CUDA 11.4 (nvcc 11.4.152), GCC 9.3.1 20200408, build exit 0 (233 targets) |
 
+| orchestrator jobs (outside the campaign runner) | `sf36-base-refs` (`scripts/base_refs.sh`, tree `040e3ce` synced from a clean detached worktree, before any SF-36 source reached the mirror; trio, trace and memory references in `~/sf36_base_refs/`); `sf36-ctest-full-bytecmp` (`scripts/final_ctest_bytecmp.sh`, tree `fc3e5b4` = campaign head `e81b118` + evidence only, 2026-10-17 23:21:05Z-2026-10-18 00:10:37Z, GPU 0): build exit 0, full `ctest` 37/37 passed in 2881.9 s, SF-27 trio outputs byte-identical to the base build (`diff -rq` excluding `manifest.json`; manifests identical after removing time/date/duration lines) — `logs/jobs/sf36-ctest-full-bytecmp.log`. Both scripts were run as copies at the mirror root (`bash <script>`), reading the tree hash from `.sf36_base_commit` / `.sf36_final_commit` |
+
 The synced mirror has no `.git`; the campaign node writes the head hash to `COMMIT` in this directory before
 `scripts/remote sync` (absent -> `unknown` in `run.env`).
 
@@ -30,6 +32,8 @@ The synced mirror has no `.git`; the campaign node writes the head hash to `COMM
 | `scripts/run_sf36.sh` | campaign runner, one part per detached job (`controls`, `bytecmp`, `mem`, `cost`, `stress`, `all`) | yes |
 | `scripts/digest_sf36.py` | log parser -> markdown tables (python3 standard library) | yes |
 | `scripts/lines_cmp.py` | selected-line comparison with timing fields masked (criterion F) | yes |
+| `scripts/base_refs.sh` | orchestrator job `sf36-base-refs`: base-commit build references for F and G (SF-27 trio, `--construct trace` cases, `--production` 32^3, 256^3 eps 2 device peak) | yes |
+| `scripts/final_ctest_bytecmp.sh` | orchestrator FINAL_AUDIT job `sf36-ctest-full-bytecmp`: full `ctest` and SF-27 trio byte-compare against the base references | yes |
 | `raw/<part>/` (this campaign's layout; was named `logs/<part>/` before the campaign) | copy of the host directory `~/sf36_campaign/<part>/`: `<name>.log`, `<name>.time` (`/usr/bin/time -v`), `<name>.mem` (nvidia-smi 200 ms sampler), `<name>.linecmp`, `results.txt` (BYTECMP / HEAD_PEAK_MIB / COST / STRESS_RESULT lines), `exit_codes.tsv`, `run.env`; remote job logs in `logs/jobs/<job>.log` | yes (text; not the saved `labels/` directories) |
 | `raw/<part>/` | driver `--summary` JSON per run (copy of `~/sf36_campaign/<part>/raw` or `<part>/*.json`) | yes (text) |
 | `analysis/` | digests: `controls.md`, `bytecmp.md`, `mem.md`, `cost.md`, `stress.md` | yes |

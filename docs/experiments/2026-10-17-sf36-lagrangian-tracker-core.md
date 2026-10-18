@@ -108,7 +108,12 @@ Head vs base (`040e3ce`) on the same mirror: `--construct trace` at 32/64 x eps 
 64/128 — 10/10 cases `psi1.npy`, `psi2.npy` byte-identical, CASE/PLANE/BACKFLOW/GROWTH/RESIDUAL/TRANSPORT_STATUS/STATUS
 lines identical (timings masked), exit codes equal (21 where the base has 21). `--production` 32^3 eps 0.25: 102/102
 CASE/ORACLE/ORACLE_SUMMARY/EXTRA lines identical to the base and to SF-33's `ladder_0.25_c4/N32.log`. Full ctest and the
-SF-27 trio: FINAL_AUDIT row of the bitácora.
+SF-27 trio (orchestrator job `sf36-ctest-full-bytecmp`, tree `fc3e5b4`, `logs/jobs/sf36-ctest-full-bytecmp.log`): 37/37
+tests passed (2881.9 s), the 9 `inlet_slab_*` tests among them; `config_pspta_small`,
+`config_streamfunctions_homogeneous` and `config_streamfunctions_continuation` outputs byte-identical to the base build
+(manifests identical after removing time/date/duration lines). `git diff 040e3ce..` is empty on the frozen stack,
+`src/multigrid`, `apps/closure_gate` and `src/physics/particles/{pspta,par2_adapter,streamline_tracker}`, and has no
+removed line in `PeriodicTricubicBSpline.cuh`.
 
 ### G. P2 memory (`MEM`)
 
