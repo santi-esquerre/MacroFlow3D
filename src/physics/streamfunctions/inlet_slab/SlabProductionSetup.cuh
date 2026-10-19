@@ -44,7 +44,21 @@
  * batched spline evaluation); vperp_in = (vD_2, vD_3) on plane 0; v_rms = RMS |vD|; (vi)
  * diagnostic: U-face v1 samples vs the spline flow v1 = k g1 at the same face centres (k = exp(eps
  * Y) from the source's face values): rms_rel = RMS(d) / RMS(U), max_rel = max |d_i| / |U_i|
- * (expected O(h^2)). The SlabStageInputs and SlabReferenceData (vD only; psi_or is filled by the
+ * (expected O(h^2)).
+ *
+ * Device memory (SF-36 P2): the dead N^3 device temporaries are released at their last use inside
+ * build_production_stage (K, v, w after the SF-19 solve; u after the inlet samples are read; the
+ * SF-19 workspace and the device ln K after the host copy of the potential fluctuation). No
+ * numerical effect (the released buffers are never read again).
+ *
+ * Stage without inlet labels (SF-36): with ProductionStageOptions::require_inlet_labels = false an
+ * inlet backflow (min v1 <= 0) is recorded (inlet_vmin, status inlet_backflow,
+ * labels_available = false) but does NOT stop the build: steps (iv)-(v) and the diagnostic (vi) run
+ * (spline coefficients, host direction field, vD at the vertices, v_rms). What genuinely needs the
+ * D-1 labels is left unfilled: `labels` (not built, not device-prepared), Q0 (NaN), and the inlet
+ * periodic parts `inputs.u0` (device, allocated but not written). ok() stays false (status is
+ * inlet_backflow); flow_ready() is true. The default (true) is the unchanged early return.
+ * The SlabStageInputs and SlabReferenceData (vD only; psi_or is filled by the
  * oracle) are filled. Setup cost is one-time per stage: host <-> device copies and synchronizations
  * are explicit here (this is not a hot path). Every legacy-stream host-to-device cudaMemcpy is
  * followed by cudaDeviceSynchronize before ctx.cuda_stream() work (SF-33 C2: the ctx stream is
@@ -183,6 +197,10 @@ struct ProductionStageOptions {
     int pcg_max_iter = -1; ///< -1: library default (solvers::ProjectedPCGConfig)
     int mg_levels = 0;     ///< 0: slab_auto_mg_levels(N)
     int label_chunk = 16384;
+    /// true (default): inlet backflow stops the build right after the inlet samples (unchanged).
+    /// false: backflow is recorded and the flow/spline steps are still built (labels_available
+    /// false; see the file header).
+    bool require_inlet_labels = true;
 };
 
 struct ProductionStageReport {
@@ -214,14 +232,23 @@ class ProductionStage {
     Grid3D cell_grid;
     SlabStageInputs inputs;             ///< filled iff ok()
     SlabReferenceData reference;        ///< vD filled iff ok(); psi_or left to the oracle
-    InletLabels labels;                 ///< built and device-prepared iff ok()
+    InletLabels labels;                 ///< built and device-prepared iff labels_available
     std::vector<real> inlet_v1_samples; ///< U-face plane 0, layout m3 + N m2
     std::vector<real>
         potential_coefficients;          ///< host SF-28 coefficients of h_tilde (GPU prefilter)
     std::vector<real> logk_coefficients; ///< host SF-28 coefficients of eps Y_cell
     real G[3] = {0.0, 0.0, 0.0};
+    /// true iff the D-1 labels were built (no inlet backflow); false after inlet_backflow with
+    /// require_inlet_labels = false (inputs.u0 / labels / Q0 then unfilled).
+    bool labels_available = false;
 
     bool ok() const { return report.status == SlabProductionStatus::ok; }
+    /// Darcy converged AND the spline coefficients were built (true also under inlet_backflow
+    /// with require_inlet_labels = false). Sufficient for direction_field() and the forward tracer.
+    bool flow_ready() const {
+        return report.darcy_converged && !potential_coefficients.empty() &&
+               !logk_coefficients.empty();
+    }
     /// Host direction field over the coefficient vectors (valid while this stage lives).
     SlabSplineDirectionField direction_field() const;
 };

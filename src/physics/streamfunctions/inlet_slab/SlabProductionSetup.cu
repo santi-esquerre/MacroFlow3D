@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -492,13 +493,18 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
         fcfg.linear.max_iter = opt.pcg_max_iter;
     R.mg_levels = opt.mg_levels == 0 ? slab_auto_mg_levels(N) : opt.mg_levels;
     fcfg.mg.num_levels = R.mg_levels;
-    physics::AffinePeriodicFlowWorkspace fws;
+    auto fws_p = std::make_unique<physics::AffinePeriodicFlowWorkspace>();
+    physics::AffinePeriodicFlowWorkspace& fws = *fws_p;
     DeviceBuffer<real> u(static_cast<std::size_t>(N + 1) * N * N),
         v(static_cast<std::size_t>(N) * (N + 1) * N), w(static_cast<std::size_t>(N) * N * (N + 1));
     R.darcy = physics::solve_affine_periodic_flow(
         ctx, S.cell_grid, cspan(K_dev), fcfg,
         physics::AffinePeriodicVelocityView{u.span(), v.span(), w.span()}, fws);
     ctx.synchronize();
+    // SF-36 P2: K, v, w are dead after the solve (u is read below, ln K by the prefilter)
+    K_dev.reset();
+    v.reset();
+    w.reset();
     R.darcy_converged = R.darcy.corrector_results[0].converged &&
                         R.darcy.corrector_results[1].converged &&
                         R.darcy.corrector_results[2].converged;
@@ -524,16 +530,23 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
             }
         R.inlet_mean = sum / static_cast<real>(n2);
     }
+    u.reset(); // SF-36 P2: the U-face velocity is dead once the inlet samples are copied
+    bool backflow = false;
     try {
         S.labels = InletLabels::build(S.inlet_v1_samples, N, 0.5, 0.5);
     } catch (const InletBackflowError& e) {
         R.inlet_vmin = e.vmin();
         R.status = SlabProductionStatus::inlet_backflow;
-        return S;
+        if (opt.require_inlet_labels)
+            return S;
+        backflow = true; // SF-36: record and continue without D-1 labels
     }
-    R.inlet_vmin = S.labels.vmin();
-    R.Q0 = S.labels.Q0();
-    S.labels.prepare_device(opt.label_chunk);
+    S.labels_available = !backflow;
+    if (!backflow) {
+        R.inlet_vmin = S.labels.vmin();
+        R.Q0 = S.labels.Q0();
+        S.labels.prepare_device(opt.label_chunk);
+    }
 
     // ---- (iv) splines of h_tilde and of eps Y_cell
     {
@@ -545,6 +558,9 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
         S.potential_coefficients = download(sh_ws.coefficients.data(), ncell);
         S.logk_coefficients = download(sy_ws.coefficients.data(), ncell);
         const std::vector<real> h_host = download(htilde.data(), ncell);
+        // SF-36 P2: htilde (workspace-owned) and the device ln K are dead from here
+        fws_p.reset();
+        lnK_dev.reset();
         std::vector<real> c_host(ncell);
         interpolation::prefilter_periodic_tricubic_bspline_host(S.cell_grid, h_host.data(),
                                                                 c_host.data());
@@ -639,7 +655,13 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
         for (int d = 0; d < 3; ++d)
             put(S.reference.vD[d], vD[d]);
 
-        // inlet periodic parts u0_i = psi0_i - coord at the inlet vertices (GPU label evaluation)
+        // inlet periodic parts u0_i = psi0_i - coord at the inlet vertices (GPU label evaluation);
+        // needs the D-1 labels: skipped (inputs.u0 unfilled) under inlet backflow
+        if (backflow) {
+            ctx.synchronize();
+            R.status = SlabProductionStatus::inlet_backflow;
+            return S;
+        }
         DeviceBuffer<real> p1(n2), p2(n2);
         S.labels.evaluate_labels(ctx, DeviceSpan<const real>(dpy.data(), n2),
                                  DeviceSpan<const real>(dpz.data(), n2), p1.span(), p2.span());

@@ -1,0 +1,24 @@
+[2026-10-17T22:40:18Z] job=sf36-mem session=macroflow3d-SF-36-sf36-mem started
+[2026-10-17T22:40:18Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-17T22:40:18Z] cwd=/home/sesquerre/MacroFlow3D-SF-36
+[2026-10-17T22:40:18Z] command=cd ~/MacroFlow3D-SF-36 && bash docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/run_sf36.sh build/v100-release mem
+run_sf36.sh: part=mem build=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release host=localhost.localdomain gpu_id=0 start=2026-10-17T22:40:19Z
+  run.env: COMMIT=e81b11833412149027643293d7e11ff989643189 HOST=localhost.localdomain DATE_UTC=2026-10-17T22:40:19Z BUILD=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release PART=mem DRYRUN=0 BASE_REFS=/home/sesquerre/sf36_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/mem/N256_e2.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --n 256 --eps 2 --sigma2 1 --ell 0.25 --seed 3001 --tracer gpu --threads 32 --summary /home/sesquerre/sf36_campaign/mem/N256_e2.json > /home/sesquerre/sf36_campaign/mem/N256_e2.log 2>&1
+  CASE_RESULT name=N256_e2 rc=21 wall=574s end=2026-10-17T22:49:56Z
+    TIMING diagnostics=0.041s field=7.018s stage=8.535s trace=555.778s total=571.373s
+    MEMORY peak_device_bytes=3664773120 free_min=30424956928 total_device=34089730048 workspaces_bytes=2299055151 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+    STATUS roundtrip_exceeded
+HEAD_PEAK_MIB=3771   (N=256, nvidia-smi memory.used, 200 ms, physical GPU 0)
+BASE_PEAK_MIB=6239   (max of /home/sesquerre/sf36_base_refs/mem/N256_e2.mem; orchestrator recorded 6239)
+PROBE_REF_MIB=3769   (P2 probe; band +-2 % = 3693.6..3844.4)
+G_VERDICT head<=base: yes ; head within 2 % of probe 3769: yes
++ python3 /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/digest_sf36.py /home/sesquerre/sf36_campaign /home/sesquerre/sf36_campaign/analysis
+wrote /home/sesquerre/sf36_campaign/analysis/controls.md
+wrote /home/sesquerre/sf36_campaign/analysis/bytecmp.md
+wrote /home/sesquerre/sf36_campaign/analysis/mem.md
+wrote /home/sesquerre/sf36_campaign/analysis/cost.md
+wrote /home/sesquerre/sf36_campaign/analysis/stress.md
+  digest_sf36.py rc=0
+run_sf36.sh: part=mem end=2026-10-17T22:49:58Z blocking_failures=0
+[2026-10-17T22:49:58Z] job=sf36-mem finished exit=0

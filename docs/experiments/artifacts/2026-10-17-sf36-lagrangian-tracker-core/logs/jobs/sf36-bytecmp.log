@@ -1,0 +1,115 @@
+[2026-10-17T22:37:33Z] job=sf36-bytecmp session=macroflow3d-SF-36-sf36-bytecmp started
+[2026-10-17T22:37:33Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-17T22:37:33Z] cwd=/home/sesquerre/MacroFlow3D-SF-36
+[2026-10-17T22:37:33Z] command=cd ~/MacroFlow3D-SF-36 && bash docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/run_sf36.sh build/v100-release bytecmp
+run_sf36.sh: part=bytecmp build=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release host=localhost.localdomain gpu_id=0 start=2026-10-17T22:37:34Z
+  run.env: COMMIT=e81b11833412149027643293d7e11ff989643189 HOST=localhost.localdomain DATE_UTC=2026-10-17T22:37:34Z BUILD=/home/sesquerre/MacroFlow3D-SF-36/build/v100-release PART=bytecmp DRYRUN=0 BASE_REFS=/home/sesquerre/sf36_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N32_e0.5_host.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N32_e0.5_host --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N32_e0.5_host.json > /home/sesquerre/sf36_campaign/bytecmp/N32_e0.5_host.log 2>&1
+  CASE_RESULT name=N32_e0.5_host rc=0 wall=6s end=2026-10-17T22:37:42Z
+    CASE field=gaussian eps=0.5 N=32 cand=trace | r_F=9.028e-02 its=nan | e_v=5.984e-03 e_psi=nan e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.8
+    BACKFLOW field=gaussian eps=0.5 N=32 inlet_vmin=2.445160e-01 Q0=1.000000e+00 vD1_min=2.271173e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248170e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=32 e_v_N/e_v_1=1.879e+00 e_i_N/e_i_1=3.528e+00 max_roundtrip=2.740e-09 (plane 25)
+    RESIDUAL field=gaussian eps=0.5 N=32 cand=trace r_F=9.028e-02 r_out=1.050e-03 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.740e-09
+    STATUS ok
+BYTECMP N32_e0.5_host npy=IDENTICAL lines=IDENTICAL rc=0/0
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N32_e0.5_gpu.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N32_e0.5_gpu --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N32_e0.5_gpu.json > /home/sesquerre/sf36_campaign/bytecmp/N32_e0.5_gpu.log 2>&1
+  CASE_RESULT name=N32_e0.5_gpu rc=0 wall=4s end=2026-10-17T22:37:46Z
+    CASE field=gaussian eps=0.5 N=32 cand=trace | r_F=9.028e-02 its=nan | e_v=5.984e-03 e_psi=nan e_i=(7.798e-04,2.840e-04) e_div=8.714e-03 min_c=2.294e-01 p0.1=2.539e-01 p1=3.278e-01 p5=4.802e-01 p50=9.699e-01 | t=0.1
+    BACKFLOW field=gaussian eps=0.5 N=32 inlet_vmin=2.445160e-01 Q0=1.000000e+00 vD1_min=2.271173e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.248170e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=32 e_v_N/e_v_1=1.879e+00 e_i_N/e_i_1=3.528e+00 max_roundtrip=2.740e-09 (plane 25)
+    RESIDUAL field=gaussian eps=0.5 N=32 cand=trace r_F=9.028e-02 r_out=1.050e-03 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.740e-09
+    STATUS ok
+BYTECMP N32_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0/0
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N32_e1.0_host.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N32_e1.0_host --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N32_e1.0_host.json > /home/sesquerre/sf36_campaign/bytecmp/N32_e1.0_host.log 2>&1
+  CASE_RESULT name=N32_e1.0_host rc=21 wall=6s end=2026-10-17T22:37:53Z
+    CASE field=gaussian eps=1 N=32 cand=trace | r_F=4.404e+00 its=nan | e_v=6.789e-02 e_psi=nan e_i=(2.473e-02,1.161e-02) e_div=4.986e-01 min_c=3.327e-02 p0.1=5.222e-02 p1=9.123e-02 p5=2.024e-01 p50=8.862e-01 | t=0.8
+    BACKFLOW field=gaussian eps=1 N=32 inlet_vmin=4.909982e-02 Q0=1.000000e+00 vD1_min=4.098428e-02 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=6.608577e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1 N=32 e_v_N/e_v_1=9.789e+00 e_i_N/e_i_1=2.560e+01 max_roundtrip=2.282e-08 (plane 32)
+    RESIDUAL field=gaussian eps=1 N=32 cand=trace r_F=4.404e+00 r_out=6.783e-02 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=2.282e-08
+    STATUS roundtrip_exceeded
+BYTECMP N32_e1.0_host npy=IDENTICAL lines=IDENTICAL rc=21/21
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N32_e1.0_gpu.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N32_e1.0_gpu --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N32_e1.0_gpu.json > /home/sesquerre/sf36_campaign/bytecmp/N32_e1.0_gpu.log 2>&1
+  CASE_RESULT name=N32_e1.0_gpu rc=21 wall=5s end=2026-10-17T22:37:58Z
+    CASE field=gaussian eps=1 N=32 cand=trace | r_F=4.404e+00 its=nan | e_v=6.789e-02 e_psi=nan e_i=(2.473e-02,1.161e-02) e_div=4.986e-01 min_c=3.327e-02 p0.1=5.222e-02 p1=9.123e-02 p5=2.024e-01 p50=8.862e-01 | t=0.1
+    BACKFLOW field=gaussian eps=1 N=32 inlet_vmin=4.909982e-02 Q0=1.000000e+00 vD1_min=4.098428e-02 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=6.608577e-01 status_hist=32768,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1 N=32 e_v_N/e_v_1=9.789e+00 e_i_N/e_i_1=2.560e+01 max_roundtrip=2.282e-08 (plane 32)
+    RESIDUAL field=gaussian eps=1 N=32 cand=trace r_F=4.404e+00 r_out=6.783e-02 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=2.282e-08
+    STATUS roundtrip_exceeded
+BYTECMP N32_e1.0_gpu npy=IDENTICAL lines=IDENTICAL rc=21/21
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N64_e0.5_host.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N64_e0.5_host --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N64_e0.5_host.json > /home/sesquerre/sf36_campaign/bytecmp/N64_e0.5_host.log 2>&1
+  CASE_RESULT name=N64_e0.5_host rc=0 wall=17s end=2026-10-17T22:38:15Z
+    CASE field=gaussian eps=0.5 N=64 cand=trace | r_F=2.046e-02 its=nan | e_v=1.473e-03 e_psi=nan e_i=(6.611e-05,2.851e-05) e_div=8.226e-04 min_c=2.288e-01 p0.1=2.528e-01 p1=3.296e-01 p5=4.798e-01 p50=9.698e-01 | t=11.4
+    BACKFLOW field=gaussian eps=0.5 N=64 inlet_vmin=2.426853e-01 Q0=1.000000e+00 vD1_min=2.278063e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.238267e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=64 e_v_N/e_v_1=2.049e+00 e_i_N/e_i_1=5.571e+00 max_roundtrip=3.403e-10 (plane 64)
+    RESIDUAL field=gaussian eps=0.5 N=64 cand=trace r_F=2.046e-02 r_out=2.234e-04 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.403e-10
+    STATUS ok
+BYTECMP N64_e0.5_host npy=IDENTICAL lines=IDENTICAL rc=0/0
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N64_e0.5_gpu.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N64_e0.5_gpu --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N64_e0.5_gpu.json > /home/sesquerre/sf36_campaign/bytecmp/N64_e0.5_gpu.log 2>&1
+  CASE_RESULT name=N64_e0.5_gpu rc=0 wall=6s end=2026-10-17T22:38:21Z
+    CASE field=gaussian eps=0.5 N=64 cand=trace | r_F=2.046e-02 its=nan | e_v=1.473e-03 e_psi=nan e_i=(6.611e-05,2.851e-05) e_div=8.226e-04 min_c=2.288e-01 p0.1=2.528e-01 p1=3.296e-01 p5=4.798e-01 p50=9.698e-01 | t=1.4
+    BACKFLOW field=gaussian eps=0.5 N=64 inlet_vmin=2.426853e-01 Q0=1.000000e+00 vD1_min=2.278063e-01 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=9.238267e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=0.5 N=64 e_v_N/e_v_1=2.049e+00 e_i_N/e_i_1=5.571e+00 max_roundtrip=3.403e-10 (plane 64)
+    RESIDUAL field=gaussian eps=0.5 N=64 cand=trace r_F=2.046e-02 r_out=2.234e-04 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=3.403e-10
+    STATUS ok
+BYTECMP N64_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0/0
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N64_e1.0_host.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N64_e1.0_host --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N64_e1.0_host.json > /home/sesquerre/sf36_campaign/bytecmp/N64_e1.0_host.log 2>&1
+  CASE_RESULT name=N64_e1.0_host rc=0 wall=17s end=2026-10-17T22:38:38Z
+    CASE field=gaussian eps=1 N=64 cand=trace | r_F=1.905e+00 its=nan | e_v=1.501e-02 e_psi=nan e_i=(3.763e-03,4.189e-03) e_div=2.339e-01 min_c=4.166e-02 p0.1=5.176e-02 p1=9.277e-02 p5=2.037e-01 p50=8.866e-01 | t=11.8
+    BACKFLOW field=gaussian eps=1 N=64 inlet_vmin=4.807311e-02 Q0=1.000000e+00 vD1_min=4.115127e-02 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=6.580377e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1 N=64 e_v_N/e_v_1=1.549e+01 e_i_N/e_i_1=1.234e+02 max_roundtrip=2.402e-09 (plane 64)
+    RESIDUAL field=gaussian eps=1 N=64 cand=trace r_F=1.905e+00 r_out=2.289e-02 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.402e-09
+    STATUS ok
+BYTECMP N64_e1.0_host npy=IDENTICAL lines=IDENTICAL rc=0/0
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N64_e1.0_gpu.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N64_e1.0_gpu --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N64_e1.0_gpu.json > /home/sesquerre/sf36_campaign/bytecmp/N64_e1.0_gpu.log 2>&1
+  CASE_RESULT name=N64_e1.0_gpu rc=0 wall=7s end=2026-10-17T22:38:46Z
+    CASE field=gaussian eps=1 N=64 cand=trace | r_F=1.905e+00 its=nan | e_v=1.501e-02 e_psi=nan e_i=(3.763e-03,4.189e-03) e_div=2.339e-01 min_c=4.166e-02 p0.1=5.176e-02 p1=9.277e-02 p5=2.037e-01 p50=8.866e-01 | t=1.5
+    BACKFLOW field=gaussian eps=1 N=64 inlet_vmin=4.807311e-02 Q0=1.000000e+00 vD1_min=4.115127e-02 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=6.580377e-01 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=1 N=64 e_v_N/e_v_1=1.549e+01 e_i_N/e_i_1=1.234e+02 max_roundtrip=2.402e-09 (plane 64)
+    RESIDUAL field=gaussian eps=1 N=64 cand=trace r_F=1.905e+00 r_out=2.289e-02 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=2.402e-09
+    STATUS ok
+BYTECMP N64_e1.0_gpu npy=IDENTICAL lines=IDENTICAL rc=0/0
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N64_e2.0_gpu.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 2 --tracer gpu --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N64_e2.0_gpu --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N64_e2.0_gpu.json > /home/sesquerre/sf36_campaign/bytecmp/N64_e2.0_gpu.log 2>&1
+  CASE_RESULT name=N64_e2.0_gpu rc=21 wall=7s end=2026-10-17T22:38:53Z
+    CASE field=gaussian eps=2 N=64 cand=trace | r_F=3.462e+02 its=nan | e_v=2.187e+00 e_psi=nan e_i=(1.873e-01,1.079e-01) e_div=5.114e+01 min_c=4.672e-04 p0.1=1.433e-03 p1=5.709e-03 p5=3.339e-02 p50=7.206e-01 | t=1.7
+    BACKFLOW field=gaussian eps=2 N=64 inlet_vmin=1.342234e-03 Q0=1.000000e+00 vD1_min=9.020219e-04 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=5.414092e-02 status_hist=262144,0,0,0,0,0,0
+    GROWTH field=gaussian eps=2 N=64 e_v_N/e_v_1=1.440e+03 e_i_N/e_i_1=2.286e+02 max_roundtrip=1.011e-06 (plane 26)
+    RESIDUAL field=gaussian eps=2 N=64 cand=trace r_F=3.462e+02 r_out=9.618e+00 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=1.011e-06
+    STATUS roundtrip_exceeded
+BYTECMP N64_e2.0_gpu npy=IDENTICAL lines=IDENTICAL rc=21/21
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/N128_e2.0_gpu.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 128 --eps 2 --tracer gpu --save-labels /home/sesquerre/sf36_campaign/bytecmp/labels/N128_e2.0_gpu --summary /home/sesquerre/sf36_campaign/bytecmp/raw/N128_e2.0_gpu.json > /home/sesquerre/sf36_campaign/bytecmp/N128_e2.0_gpu.log 2>&1
+  CASE_RESULT name=N128_e2.0_gpu rc=21 wall=33s end=2026-10-17T22:39:27Z
+    CASE field=gaussian eps=2 N=128 cand=trace | r_F=1.679e+03 its=nan | e_v=2.914e+00 e_psi=nan e_i=(7.688e-02,8.781e-02) e_div=1.146e+02 min_c=2.244e-04 p0.1=1.435e-03 p1=5.366e-03 p5=3.056e-02 p50=6.897e-01 | t=25.9
+    BACKFLOW field=gaussian eps=2 N=128 inlet_vmin=1.339291e-03 Q0=1.000000e+00 vD1_min=8.896059e-04 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=5.212239e-02 status_hist=2097152,0,0,0,0,0,0
+    GROWTH field=gaussian eps=2 N=128 e_v_N/e_v_1=1.244e+04 e_i_N/e_i_1=3.439e+03 max_roundtrip=1.674e-07 (plane 60)
+    RESIDUAL field=gaussian eps=2 N=128 cand=trace r_F=1.679e+03 r_out=1.353e+01 q_rms_planes=1..N-1
+    TRANSPORT_STATUS status=roundtrip_exceeded non_ok=0 max_roundtrip=1.674e-07
+    STATUS roundtrip_exceeded
+BYTECMP N128_e2.0_gpu npy=IDENTICAL lines=IDENTICAL rc=21/21
++ /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder > /home/sesquerre/sf36_campaign/bytecmp/prod32.log
++ /usr/bin/time -v -o /home/sesquerre/sf36_campaign/bytecmp/prod32.time /home/sesquerre/MacroFlow3D-SF-36/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder > /home/sesquerre/sf36_campaign/bytecmp/prod32.log 2>&1
+  CASE_RESULT name=prod32 rc=0 wall=17s end=2026-10-17T22:39:44Z
+    ORACLE_SUMMARY hmax=3.906250e-03 tol=1.0e-08 status=ok max_roundtrip=1.227e-09 non_ok=0 t_trace=0.77s t_labels=0.001s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-08 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.38s t_labels=0.003s
+    ORACLE_SUMMARY hmax=1.953125e-03 tol=1.0e-10 status=ok max_roundtrip=1.053e-10 non_ok=0 t_trace=1.37s t_labels=0.002s
+    STATUS_DETAIL solver=converged oracle=ok
+    STATUS converged
+BYTECMP prod32_vs_base npy=n/a lines=IDENTICAL rc=?/0
+BYTECMP prod32_vs_sf33 npy=n/a lines=IDENTICAL rc=?/0 (ref /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-06-sf33-gpu-inlet-labels/logs/ladder_0.25_c4/N32.log)
++ python3 /home/sesquerre/MacroFlow3D-SF-36/docs/experiments/artifacts/2026-10-17-sf36-lagrangian-tracker-core/scripts/digest_sf36.py /home/sesquerre/sf36_campaign /home/sesquerre/sf36_campaign/analysis
+wrote /home/sesquerre/sf36_campaign/analysis/controls.md
+wrote /home/sesquerre/sf36_campaign/analysis/bytecmp.md
+wrote /home/sesquerre/sf36_campaign/analysis/mem.md
+wrote /home/sesquerre/sf36_campaign/analysis/cost.md
+wrote /home/sesquerre/sf36_campaign/analysis/stress.md
+  digest_sf36.py rc=0
+run_sf36.sh: part=bytecmp end=2026-10-17T22:39:44Z blocking_failures=0
+[2026-10-17T22:39:44Z] job=sf36-bytecmp finished exit=0
