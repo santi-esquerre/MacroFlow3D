@@ -140,7 +140,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-33 — GPU inlet-label streamfunctions (equation (14) on the `x1`-non-periodic slab)](lester-eq14/increments/SF-33-gpu-inlet-label-streamfunctions.md)
 - [ ] [SF-34 — Acceptance of the gridded inlet labels in the periodic medium against the closure gate (O1 arm)](lester-eq14/increments/SF-34-periodic-medium-acceptance.md)
 - [x] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
-- [ ] [SF-36 — Lagrangian-label tracker core on the cube production stage](lester-eq14/increments/SF-36-lagrangian-tracker-core.md)
+- [x] [SF-36 — Lagrangian-label tracker core on the cube production stage](lester-eq14/increments/SF-36-lagrangian-tracker-core.md)
 - [ ] [SF-37 — Verification of the Lagrangian consumer on the cube at sigma^2 <= 4, with blind O3](lester-eq14/increments/SF-37-lagrangian-cube-verification.md)
 - [ ] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
 - [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
@@ -408,7 +408,9 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    `ell` 1/8-1/16; 2.25 and 4 non-blocking), off the critical path:
    [SF-34](lester-eq14/increments/SF-34-periodic-medium-acceptance.md).
 3. Lagrangian consumer core on the cube stage (forward DP5(4) on `v_s = k_s grad Phi_s`, per-particle labels,
-   covectors, accumulated divergence, moments): [SF-36](lester-eq14/increments/SF-36-lagrangian-tracker-core.md).
+   covectors, accumulated divergence, moments): [SF-36](lester-eq14/increments/SF-36-lagrangian-tracker-core.md)
+   (done: tracker and exact controls verified, GPU equal to the SF-30 host integrator, SF-35 outputs unchanged; on the
+   spline the passive `I` and covectors are accurate to `O(h_max^~2)`, `docs/experiments/2026-10-17-sf36-lagrangian-tracker-core.md`).
 4. Verification on the cube at `sigma^2` in {1, 2.25, 4} on fresh seeds (tolerance and grid ladders, O1 anchor,
    Pollock comparator, Lagrangian `e_v`, stretching, blind O3; production `lambda/h`):
    [SF-37](lester-eq14/increments/SF-37-lagrangian-cube-verification.md); long-domain infrastructure (non-cubic
