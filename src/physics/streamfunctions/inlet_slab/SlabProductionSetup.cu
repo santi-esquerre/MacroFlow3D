@@ -501,13 +501,19 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
         ctx, S.cell_grid, cspan(K_dev), fcfg,
         physics::AffinePeriodicVelocityView{u.span(), v.span(), w.span()}, fws);
     ctx.synchronize();
+    R.darcy_converged = R.darcy.corrector_results[0].converged &&
+                        R.darcy.corrector_results[1].converged &&
+                        R.darcy.corrector_results[2].converged;
+    // SF-37 C-STAGE: optional host copy of the v, w faces (pageable D2H only, no device
+    // allocation); only if the Darcy solve converged. u is kept below from the inlet download.
+    if (opt.keep_face_fluxes && R.darcy_converged) {
+        S.face_flux_v = download(v.data(), v.size());
+        S.face_flux_w = download(w.data(), w.size());
+    }
     // SF-36 P2: K, v, w are dead after the solve (u is read below, ln K by the prefilter)
     K_dev.reset();
     v.reset();
     w.reset();
-    R.darcy_converged = R.darcy.corrector_results[0].converged &&
-                        R.darcy.corrector_results[1].converged &&
-                        R.darcy.corrector_results[2].converged;
     if (!R.darcy_converged) {
         R.status = SlabProductionStatus::darcy_failed;
         return S;
@@ -517,7 +523,7 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
 
     // ---- (iii) inlet v1 = U-face plane i = 0, face centres ((j + 1/2) h, (k + 1/2) h)
     {
-        const std::vector<real> U = download(u.data(), u.size());
+        std::vector<real> U = download(u.data(), u.size());
         S.inlet_v1_samples.assign(n2, 0.0);
         real sum = 0.0;
         for (int j = 0; j < N; ++j)
@@ -529,6 +535,8 @@ ProductionStage build_production_stage(CudaContext& ctx, const InletSlabGrid& gr
                 sum += val;
             }
         R.inlet_mean = sum / static_cast<real>(n2);
+        if (opt.keep_face_fluxes)
+            S.face_flux_u = std::move(U); // SF-37 C-STAGE: reuse, no second download
     }
     u.reset(); // SF-36 P2: the U-face velocity is dead once the inlet samples are copied
     bool backflow = false;

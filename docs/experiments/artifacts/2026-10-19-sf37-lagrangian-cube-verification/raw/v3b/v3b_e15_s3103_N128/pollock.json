@@ -1,0 +1,53 @@
+{
+  "M": 256,
+  "N": 128,
+  "X0": 0.0,
+  "cells": {
+    "plane": 183049595,
+    "time": 184500236
+  },
+  "commit": "unknown",
+  "eps": 1.5,
+  "field": "gaussian",
+  "h": 0.0078125,
+  "max_cells_per_call": 10000000,
+  "planes": [
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0
+  ],
+  "seed_nonpos": 0,
+  "status_hist_plane": {
+    "0": 65536
+  },
+  "status_hist_time": {
+    "0": 65536
+  },
+  "times": [
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    4.0,
+    8.0,
+    16.0
+  ],
+  "timings_s": {
+    "download": 0.010381915,
+    "moments": 0.021243245,
+    "plane_kernel": 0.064410422,
+    "repack": 0.026813488,
+    "time_kernel": 0.080832845
+  },
+  "weights": "rt0_v1_at_seed",
+  "window": [
+    0.0,
+    1.0,
+    0.0,
+    1.0
+  ]
+}

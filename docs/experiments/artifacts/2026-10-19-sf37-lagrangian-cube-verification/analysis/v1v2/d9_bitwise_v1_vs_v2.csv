@@ -1,0 +1,20 @@
+# python=3.11.7 numpy=1.26.4 scipy=1.11.4 bootstrap_sha256=16c1a5b9d9fe062576d5f18fc9d54127db76472c7fbe64493201d8cffc66af39 digest=digest_v1v2
+eps_code,seed,N,records_bitwise_identical,statuses_identical
+10,3101,256,true,true
+10,3101,512,true,true
+10,3102,256,true,true
+10,3102,512,true,true
+10,3103,256,true,true
+10,3103,512,true,true
+15,3101,256,true,true
+15,3101,512,true,true
+15,3102,256,true,true
+15,3102,512,true,true
+15,3103,256,true,true
+15,3103,512,true,true
+20,3101,256,true,true
+20,3101,512,true,true
+20,3102,256,true,true
+20,3102,512,true,true
+20,3103,256,true,true
+20,3103,512,true,true

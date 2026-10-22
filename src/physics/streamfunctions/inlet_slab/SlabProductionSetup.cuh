@@ -51,6 +51,20 @@
  * SF-19 workspace and the device ln K after the host copy of the potential fluctuation). No
  * numerical effect (the released buffers are never read again).
  *
+ * Face fluxes on the host (SF-37 C-STAGE): with ProductionStageOptions::keep_face_fluxes = true the
+ * SF-19 CompactMAC face fluxes u, v, w are also kept on the HOST (ProductionStage::face_flux_u/v/w,
+ * faces_available()). This does not change the P2 device sequence: v and w are copied device ->
+ * host (pageable cudaMemcpy, no new device or pinned allocation) after the post-solve
+ * synchronization and immediately BEFORE their existing release; u reuses the full host copy
+ * already downloaded for the inlet samples (moved into the stage, no second download). The faces
+ * are kept only if the three SF-19 correctors converged (otherwise the host vectors stay empty).
+ * Every other output, report field, kernel launch and device allocation is bitwise identical with
+ * the option on or off; the default (false) leaves the face vectors empty (zero host cost).
+ * Layout = the SF-19 CompactMAC convention of AffinePeriodicFlowSolver.cuh: U (N+1) N N,
+ * idx = i + j (N+1) + k (N+1) N; V N (N+1) N, idx = i + j N + k N (N+1); W N N (N+1),
+ * idx = i + j N + k N N; U[i] is the x1-face between cells i - 1 and i; the duplicate plane
+ * (U i = N, V j = N, W k = N) equals plane 0 by construction.
+ *
  * Stage without inlet labels (SF-36): with ProductionStageOptions::require_inlet_labels = false an
  * inlet backflow (min v1 <= 0) is recorded (inlet_vmin, status inlet_backflow,
  * labels_available = false) but does NOT stop the build: steps (iv)-(v) and the diagnostic (vi) run
@@ -201,6 +215,10 @@ struct ProductionStageOptions {
     /// false: backflow is recorded and the flow/spline steps are still built (labels_available
     /// false; see the file header).
     bool require_inlet_labels = true;
+    /// false (default): the SF-19 face fluxes are released as before (SF-36 P2) and the stage
+    /// face vectors stay empty. true: copy them to the host (see the file header, "Face fluxes on
+    /// the host"); kept only if the Darcy solve converged. No device-memory effect.
+    bool keep_face_fluxes = false;
 };
 
 struct ProductionStageReport {
@@ -241,6 +259,11 @@ class ProductionStage {
     /// true iff the D-1 labels were built (no inlet backflow); false after inlet_backflow with
     /// require_inlet_labels = false (inputs.u0 / labels / Q0 then unfilled).
     bool labels_available = false;
+    /// SF-19 CompactMAC face fluxes on the host (SF-37), filled iff ProductionStageOptions::
+    /// keep_face_fluxes and the Darcy solve converged; empty otherwise. Sizes (N+1) N^2, N (N+1) N,
+    /// N^2 (N+1); indexing as the SF-19 solver (see the file header). The last plane duplicates
+    /// plane 0.
+    std::vector<real> face_flux_u, face_flux_v, face_flux_w;
 
     bool ok() const { return report.status == SlabProductionStatus::ok; }
     /// Darcy converged AND the spline coefficients were built (true also under inlet_backflow
@@ -248,6 +271,10 @@ class ProductionStage {
     bool flow_ready() const {
         return report.darcy_converged && !potential_coefficients.empty() &&
                !logk_coefficients.empty();
+    }
+    /// true iff the three host face-flux vectors are filled (keep_face_fluxes and Darcy converged).
+    bool faces_available() const {
+        return !face_flux_u.empty() && !face_flux_v.empty() && !face_flux_w.empty();
     }
     /// Host direction field over the coefficient vectors (valid while this stage lives).
     SlabSplineDirectionField direction_field() const;

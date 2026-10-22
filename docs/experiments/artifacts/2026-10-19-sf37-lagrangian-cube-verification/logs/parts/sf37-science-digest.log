@@ -1,0 +1,19 @@
+run_sf37.sh: part=digest bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_campaign start=2026-10-22T07:46:56Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-22T07:46:56Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=digest DRYRUN=0 OUT_ROOT=/home/sesquerre/sf37_campaign BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/digest_v1v2.py /home/sesquerre/sf37_campaign /home/sesquerre/sf37_campaign/analysis/v1v2 --design full) > /home/sesquerre/sf37_campaign/analysis/v1v2.log 2>&1
+  DIGEST v1v2 rc=0 (log /home/sesquerre/sf37_campaign/analysis/v1v2.log)
+    digest_v1v2: wrote 24 files to /home/sesquerre/sf37_campaign/analysis/v1v2 (missing runs: 0)
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/digest_v4v5.py /home/sesquerre/sf37_campaign /home/sesquerre/sf37_campaign/analysis/v4v5 --design full) > /home/sesquerre/sf37_campaign/analysis/v4v5.log 2>&1
+  DIGEST v4v5 rc=0 (log /home/sesquerre/sf37_campaign/analysis/v4v5.log)
+    digest_v4v5: wrote 12 files to /home/sesquerre/sf37_campaign/analysis/v4v5 (missing runs: 0)
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/digest_v3.py /home/sesquerre/sf37_campaign /home/sesquerre/sf37_campaign/analysis/v3 --design full) > /home/sesquerre/sf37_campaign/analysis/v3.log 2>&1
+  DIGEST v3 rc=0 (log /home/sesquerre/sf37_campaign/analysis/v3.log)
+    V3a eps=1 seed=3103: C=accept
+    V3b: 54 discordant, 0 not_evaluable of 63 (eps, seed, plane) cells
+    digest_v3: wrote 15 files to /home/sesquerre/sf37_campaign/analysis/v3
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/o3.py /home/sesquerre/sf37_campaign /home/sesquerre/sf37_campaign/analysis/o3 --design full) > /home/sesquerre/sf37_campaign/analysis/o3.log 2>&1
+  DIGEST o3 rc=0 (log /home/sesquerre/sf37_campaign/analysis/o3.log)
+    O3 eps=2 seed=3102: O3a=unresolved O3b=shrinking
+    O3 eps=2 seed=3103: O3a=accept O3b=shrinking
+    o3: wrote 6 files to /home/sesquerre/sf37_campaign/analysis/o3
+run_sf37.sh: part=digest end=2026-10-22T07:56:16Z blocking_failures=0

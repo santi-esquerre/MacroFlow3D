@@ -1,0 +1,299 @@
+[2026-10-20T19:39:48Z] job=sf37-dryrun session=macroflow3d-SF-37-sf37-dryrun started
+[2026-10-20T19:39:48Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-20T19:39:48Z] cwd=/home/sesquerre/MacroFlow3D-SF-37
+[2026-10-20T19:39:48Z] command=export SF37_DRYRUN=1 SF37_OUT_ROOT=$HOME/sf37_dryrun SF37_COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350; rm -rf $HOME/sf37_dryrun; A=docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts; for p in labels-eps10 labels-o3; do bash $A/run_sf37.sh $HOME/sf37_base_refs/bin $p; echo "PART_EXIT $p $?"; done; for p in v2 v3a v1 v3b digest; do bash $A/run_sf37.sh build/v100-release $p; echo "PART_EXIT $p $?"; done
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=labels-eps10 bin=/home/sesquerre/sf37_base_refs/bin/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:39:49Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:39:49Z BIN=/home/sesquerre/sf37_base_refs/bin/inlet_slab BIN_MD5=fef042097f08dc725831f3df7ab975b5 PART=labels-eps10 DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ preflight: /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/preflight_labels-eps10/N32_e0.5_gpu.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 0.5 --save-labels /home/sesquerre/sf37_dryrun/labels/preflight_labels-eps10/N32_e0.5_gpu --summary /home/sesquerre/sf37_dryrun/labels/preflight_labels-eps10/N32_e0.5_gpu.json > /home/sesquerre/sf37_dryrun/labels/preflight_labels-eps10/N32_e0.5_gpu.log 2>&1
+    preflight N32_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0 ref_rc=0
+    IDENTICAL 39
+PREFLIGHT_OK N32_e0.5_gpu
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/logs/eps10_s3001/N16.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 8 --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1 --save-labels /home/sesquerre/sf37_dryrun/labels/exports/eps10_s3001/N16 --summary /home/sesquerre/sf37_dryrun/labels/raw/eps10_s3001/N16.json > /home/sesquerre/sf37_dryrun/labels/logs/eps10_s3001/N16.log 2>&1
+  CASE_RESULT case=eps10_s3001/N16 rc=21 wall=4s end=2026-10-20T19:40:00Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/logs/eps10_s3001/N32.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 8 --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --save-labels /home/sesquerre/sf37_dryrun/labels/exports/eps10_s3001/N32 --summary /home/sesquerre/sf37_dryrun/labels/raw/eps10_s3001/N32.json > /home/sesquerre/sf37_dryrun/labels/logs/eps10_s3001/N32.log 2>&1
+  CASE_RESULT case=eps10_s3001/N32 rc=21 wall=6s end=2026-10-20T19:40:06Z
+    STATUS roundtrip_exceeded
+run_sf37.sh: part=labels-eps10 end=2026-10-20T19:40:06Z blocking_failures=0
+PART_EXIT labels-eps10 0
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=labels-o3 bin=/home/sesquerre/sf37_base_refs/bin/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:40:06Z
+labels-o3: eps filter=all, 6 cases
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:40:06Z BIN=/home/sesquerre/sf37_base_refs/bin/inlet_slab BIN_MD5=fef042097f08dc725831f3df7ab975b5 PART=labels-o3 DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ preflight: /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/preflight_labels-o3/N32_e0.5_gpu.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 0.5 --save-labels /home/sesquerre/sf37_dryrun/labels/preflight_labels-o3/N32_e0.5_gpu --summary /home/sesquerre/sf37_dryrun/labels/preflight_labels-o3/N32_e0.5_gpu.json > /home/sesquerre/sf37_dryrun/labels/preflight_labels-o3/N32_e0.5_gpu.log 2>&1
+    preflight N32_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0 ref_rc=0
+    IDENTICAL 39
+PREFLIGHT_OK N32_e0.5_gpu
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/logs/eps15_s3001/N16.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 8 --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1.5 --save-labels /home/sesquerre/sf37_dryrun/labels/exports/eps15_s3001/N16 --summary /home/sesquerre/sf37_dryrun/labels/raw/eps15_s3001/N16.json > /home/sesquerre/sf37_dryrun/labels/logs/eps15_s3001/N16.log 2>&1
+  CASE_RESULT case=eps15_s3001/N16 rc=21 wall=6s end=2026-10-20T19:40:19Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/logs/eps15_s3001/N32.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 8 --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --save-labels /home/sesquerre/sf37_dryrun/labels/exports/eps15_s3001/N32 --summary /home/sesquerre/sf37_dryrun/labels/raw/eps15_s3001/N32.json > /home/sesquerre/sf37_dryrun/labels/logs/eps15_s3001/N32.log 2>&1
+  CASE_RESULT case=eps15_s3001/N32 rc=21 wall=5s end=2026-10-20T19:40:24Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/logs/eps20_s3001/N16.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 8 --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 2 --save-labels /home/sesquerre/sf37_dryrun/labels/exports/eps20_s3001/N16 --summary /home/sesquerre/sf37_dryrun/labels/raw/eps20_s3001/N16.json > /home/sesquerre/sf37_dryrun/labels/logs/eps20_s3001/N16.log 2>&1
+  CASE_RESULT case=eps20_s3001/N16 rc=21 wall=5s end=2026-10-20T19:40:29Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/labels/logs/eps20_s3001/N32.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 8 --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --save-labels /home/sesquerre/sf37_dryrun/labels/exports/eps20_s3001/N32 --summary /home/sesquerre/sf37_dryrun/labels/raw/eps20_s3001/N32.json > /home/sesquerre/sf37_dryrun/labels/logs/eps20_s3001/N32.log 2>&1
+  CASE_RESULT case=eps20_s3001/N32 rc=21 wall=5s end=2026-10-20T19:40:35Z
+    STATUS roundtrip_exceeded
+SKIP_DONE case=eps15_s3001/N32 rc=21
+SKIP_DONE case=eps20_s3001/N32 rc=21
+run_sf37.sh: part=labels-o3 end=2026-10-20T19:40:35Z blocking_failures=0
+PART_EXIT labels-o3 0
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=v2 bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:40:35Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:40:35Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=v2 DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N16.json > /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N16.log 2>&1
+  CASE_RESULT run=v2_e10_s3001_N16 rc=0 wall=4s end=2026-10-20T19:40:42Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N32.json > /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N32.log 2>&1
+  CASE_RESULT run=v2_e10_s3001_N32 rc=0 wall=6s end=2026-10-20T19:40:48Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N64.json > /home/sesquerre/sf37_dryrun/v2/v2_e10_s3001_N64.log 2>&1
+  MEM_PEAK run=v2_e10_s3001_N64 mib=611
+  CASE_RESULT run=v2_e10_s3001_N64 rc=0 wall=5s end=2026-10-20T19:40:54Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N16.json > /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N16.log 2>&1
+  CASE_RESULT run=v2_e15_s3001_N16 rc=0 wall=6s end=2026-10-20T19:41:01Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N32/vd --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N32.json > /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N32.log 2>&1
+  CASE_RESULT run=v2_e15_s3001_N32 rc=0 wall=6s end=2026-10-20T19:41:07Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N64/vd --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N64.json > /home/sesquerre/sf37_dryrun/v2/v2_e15_s3001_N64.log 2>&1
+  MEM_PEAK run=v2_e15_s3001_N64 mib=611
+  CASE_RESULT run=v2_e15_s3001_N64 rc=0 wall=4s end=2026-10-20T19:41:12Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N16.json > /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N16.log 2>&1
+  CASE_RESULT run=v2_e20_s3001_N16 rc=0 wall=5s end=2026-10-20T19:41:19Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N32/vd --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N32.json > /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N32.log 2>&1
+  CASE_RESULT run=v2_e20_s3001_N32 rc=0 wall=6s end=2026-10-20T19:41:25Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N64/vd --save-particles /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N64.json > /home/sesquerre/sf37_dryrun/v2/v2_e20_s3001_N64.log 2>&1
+  MEM_PEAK run=v2_e20_s3001_N64 mib=611
+  CASE_RESULT run=v2_e20_s3001_N64 rc=0 wall=5s end=2026-10-20T19:41:31Z
+    STATUS ok
+run_sf37.sh: part=v2 end=2026-10-20T19:41:32Z blocking_failures=0
+PART_EXIT v2 0
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=v3a bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:41:32Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:41:32Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=v3a DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,0.75,1 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N16.json > /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N16.log 2>&1
+  CASE_RESULT run=v3a_e10_s3001_N16 rc=0 wall=5s end=2026-10-20T19:41:40Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,0.75,1 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N32.json > /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N32.log 2>&1
+  CASE_RESULT run=v3a_e10_s3001_N32 rc=0 wall=5s end=2026-10-20T19:41:45Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,0.75,1 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N64.json > /home/sesquerre/sf37_dryrun/v3a/v3a_e10_s3001_N64.log 2>&1
+  MEM_PEAK run=v3a_e10_s3001_N64 mib=611
+  CASE_RESULT run=v3a_e10_s3001_N64 rc=0 wall=4s end=2026-10-20T19:41:50Z
+    STATUS ok
+run_sf37.sh: part=v3a end=2026-10-20T19:41:52Z blocking_failures=0
+PART_EXIT v3a 0
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=v1 bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:41:52Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:41:52Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=v1 DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-6_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-6 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-6_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-6_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-6_h8.log 2>&1
+  CASE_RESULT run=v1_e10_s3001_N32_tol1e-6_h8 rc=0 wall=5s end=2026-10-20T19:42:00Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-7_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-7 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-7_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-7_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-7_h8.log 2>&1
+  CASE_RESULT run=v1_e10_s3001_N32_tol1e-7_h8 rc=0 wall=5s end=2026-10-20T19:42:06Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-8_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-8_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-8_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-8_h8.log 2>&1
+  CASE_RESULT run=v1_e10_s3001_N32_tol1e-8_h8 rc=0 wall=6s end=2026-10-20T19:42:12Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-9_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-9 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-9_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-9_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-9_h8.log 2>&1
+  CASE_RESULT run=v1_e10_s3001_N32_tol1e-9_h8 rc=0 wall=5s end=2026-10-20T19:42:17Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h8.log 2>&1
+  CASE_RESULT run=v1_e10_s3001_N32_tol1e-10_h8 rc=0 wall=6s end=2026-10-20T19:42:23Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 32 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h32 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h32.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N32_tol1e-10_h32.log 2>&1
+  CASE_RESULT run=v1_e10_s3001_N32_tol1e-10_h32 rc=0 wall=6s end=2026-10-20T19:42:29Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-6_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-6 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-6_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-6_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-6_h8.log 2>&1
+  MEM_PEAK run=v1_e10_s3001_N64_tol1e-6_h8 mib=713
+  CASE_RESULT run=v1_e10_s3001_N64_tol1e-6_h8 rc=0 wall=5s end=2026-10-20T19:42:35Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-7_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-7 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-7_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-7_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-7_h8.log 2>&1
+  MEM_PEAK run=v1_e10_s3001_N64_tol1e-7_h8 mib=713
+  CASE_RESULT run=v1_e10_s3001_N64_tol1e-7_h8 rc=0 wall=4s end=2026-10-20T19:42:42Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-8_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-8_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-8_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-8_h8.log 2>&1
+  MEM_PEAK run=v1_e10_s3001_N64_tol1e-8_h8 mib=713
+  CASE_RESULT run=v1_e10_s3001_N64_tol1e-8_h8 rc=0 wall=4s end=2026-10-20T19:42:49Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-9_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-9 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-9_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-9_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-9_h8.log 2>&1
+  MEM_PEAK run=v1_e10_s3001_N64_tol1e-9_h8 mib=713
+  CASE_RESULT run=v1_e10_s3001_N64_tol1e-9_h8 rc=0 wall=5s end=2026-10-20T19:42:57Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h8.log 2>&1
+  MEM_PEAK run=v1_e10_s3001_N64_tol1e-10_h8 mib=713
+  CASE_RESULT run=v1_e10_s3001_N64_tol1e-10_h8 rc=0 wall=5s end=2026-10-20T19:43:04Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 32 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h32 --summary /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h32.json > /home/sesquerre/sf37_dryrun/v1/v1_e10_s3001_N64_tol1e-10_h32.log 2>&1
+  MEM_PEAK run=v1_e10_s3001_N64_tol1e-10_h32 mib=713
+  CASE_RESULT run=v1_e10_s3001_N64_tol1e-10_h32 rc=0 wall=5s end=2026-10-20T19:43:12Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-6_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-6 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-6_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-6_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-6_h8.log 2>&1
+  CASE_RESULT run=v1_e15_s3001_N32_tol1e-6_h8 rc=0 wall=6s end=2026-10-20T19:43:20Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-7_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-7 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-7_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-7_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-7_h8.log 2>&1
+  CASE_RESULT run=v1_e15_s3001_N32_tol1e-7_h8 rc=0 wall=5s end=2026-10-20T19:43:25Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-8_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-8_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-8_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-8_h8.log 2>&1
+  CASE_RESULT run=v1_e15_s3001_N32_tol1e-8_h8 rc=0 wall=6s end=2026-10-20T19:43:31Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-9_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-9 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-9_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-9_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-9_h8.log 2>&1
+  CASE_RESULT run=v1_e15_s3001_N32_tol1e-9_h8 rc=0 wall=6s end=2026-10-20T19:43:37Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h8.log 2>&1
+  CASE_RESULT run=v1_e15_s3001_N32_tol1e-10_h8 rc=0 wall=6s end=2026-10-20T19:43:43Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 32 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h32 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h32.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N32_tol1e-10_h32.log 2>&1
+  CASE_RESULT run=v1_e15_s3001_N32_tol1e-10_h32 rc=0 wall=6s end=2026-10-20T19:43:49Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-6_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-6 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-6_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-6_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-6_h8.log 2>&1
+  MEM_PEAK run=v1_e15_s3001_N64_tol1e-6_h8 mib=713
+  CASE_RESULT run=v1_e15_s3001_N64_tol1e-6_h8 rc=0 wall=5s end=2026-10-20T19:43:55Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-7_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-7 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-7_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-7_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-7_h8.log 2>&1
+  MEM_PEAK run=v1_e15_s3001_N64_tol1e-7_h8 mib=713
+  CASE_RESULT run=v1_e15_s3001_N64_tol1e-7_h8 rc=0 wall=4s end=2026-10-20T19:44:02Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-8_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-8_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-8_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-8_h8.log 2>&1
+  MEM_PEAK run=v1_e15_s3001_N64_tol1e-8_h8 mib=713
+  CASE_RESULT run=v1_e15_s3001_N64_tol1e-8_h8 rc=0 wall=5s end=2026-10-20T19:44:10Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-9_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-9 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-9_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-9_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-9_h8.log 2>&1
+  MEM_PEAK run=v1_e15_s3001_N64_tol1e-9_h8 mib=713
+  CASE_RESULT run=v1_e15_s3001_N64_tol1e-9_h8 rc=0 wall=5s end=2026-10-20T19:44:17Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h8.log 2>&1
+  MEM_PEAK run=v1_e15_s3001_N64_tol1e-10_h8 mib=713
+  CASE_RESULT run=v1_e15_s3001_N64_tol1e-10_h8 rc=0 wall=4s end=2026-10-20T19:44:24Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 32 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h32 --summary /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h32.json > /home/sesquerre/sf37_dryrun/v1/v1_e15_s3001_N64_tol1e-10_h32.log 2>&1
+  MEM_PEAK run=v1_e15_s3001_N64_tol1e-10_h32 mib=713
+  CASE_RESULT run=v1_e15_s3001_N64_tol1e-10_h32 rc=0 wall=6s end=2026-10-20T19:44:33Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-6_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-6 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-6_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-6_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-6_h8.log 2>&1
+  CASE_RESULT run=v1_e20_s3001_N32_tol1e-6_h8 rc=0 wall=6s end=2026-10-20T19:44:41Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-7_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-7 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-7_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-7_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-7_h8.log 2>&1
+  CASE_RESULT run=v1_e20_s3001_N32_tol1e-7_h8 rc=0 wall=6s end=2026-10-20T19:44:47Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-8_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-8_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-8_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-8_h8.log 2>&1
+  CASE_RESULT run=v1_e20_s3001_N32_tol1e-8_h8 rc=0 wall=6s end=2026-10-20T19:44:53Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-9_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-9 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-9_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-9_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-9_h8.log 2>&1
+  CASE_RESULT run=v1_e20_s3001_N32_tol1e-9_h8 rc=0 wall=6s end=2026-10-20T19:44:59Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h8.log 2>&1
+  CASE_RESULT run=v1_e20_s3001_N32_tol1e-10_h8 rc=0 wall=5s end=2026-10-20T19:45:04Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 32 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h32 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h32.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N32_tol1e-10_h32.log 2>&1
+  CASE_RESULT run=v1_e20_s3001_N32_tol1e-10_h32 rc=0 wall=7s end=2026-10-20T19:45:11Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-6_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-6 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-6_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-6_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-6_h8.log 2>&1
+  MEM_PEAK run=v1_e20_s3001_N64_tol1e-6_h8 mib=713
+  CASE_RESULT run=v1_e20_s3001_N64_tol1e-6_h8 rc=0 wall=5s end=2026-10-20T19:45:17Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-7_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-7 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-7_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-7_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-7_h8.log 2>&1
+  MEM_PEAK run=v1_e20_s3001_N64_tol1e-7_h8 mib=713
+  CASE_RESULT run=v1_e20_s3001_N64_tol1e-7_h8 rc=0 wall=4s end=2026-10-20T19:45:24Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-8_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-8_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-8_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-8_h8.log 2>&1
+  MEM_PEAK run=v1_e20_s3001_N64_tol1e-8_h8 mib=713
+  CASE_RESULT run=v1_e20_s3001_N64_tol1e-8_h8 rc=0 wall=5s end=2026-10-20T19:45:32Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-9_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-9 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-9_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-9_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-9_h8.log 2>&1
+  MEM_PEAK run=v1_e20_s3001_N64_tol1e-9_h8 mib=713
+  CASE_RESULT run=v1_e20_s3001_N64_tol1e-9_h8 rc=0 wall=4s end=2026-10-20T19:45:39Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h8.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 8 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h8 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h8.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h8.log 2>&1
+  MEM_PEAK run=v1_e20_s3001_N64_tol1e-10_h8 mib=713
+  CASE_RESULT run=v1_e20_s3001_N64_tol1e-10_h8 rc=0 wall=5s end=2026-10-20T19:45:47Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-10 --hmax-div 32 --covectors --save-seed-velocity --save-particles /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h32 --summary /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h32.json > /home/sesquerre/sf37_dryrun/v1/v1_e20_s3001_N64_tol1e-10_h32.log 2>&1
+  MEM_PEAK run=v1_e20_s3001_N64_tol1e-10_h32 mib=713
+  CASE_RESULT run=v1_e20_s3001_N64_tol1e-10_h32 rc=0 wall=6s end=2026-10-20T19:45:56Z
+    STATUS ok
+run_sf37.sh: part=v1 end=2026-10-20T19:45:58Z blocking_failures=0
+PART_EXIT v1 0
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=v3b bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:45:58Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:45:58Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=v3b DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N16.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N16.log 2>&1
+  CASE_RESULT run=v3b_e10_s3001_N16 rc=0 wall=4s end=2026-10-20T19:46:05Z
+    PSTATUS pass=plane hist=0:256 cells=11396
+    PSTATUS pass=time hist=0:256 cells=11137
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N32.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N32.log 2>&1
+  CASE_RESULT run=v3b_e10_s3001_N32 rc=0 wall=6s end=2026-10-20T19:46:11Z
+    PSTATUS pass=plane hist=0:256 cells=22920
+    PSTATUS pass=time hist=0:256 cells=22462
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N64.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e10_s3001_N64.log 2>&1
+  MEM_PEAK run=v3b_e10_s3001_N64 mib=611
+  CASE_RESULT run=v3b_e10_s3001_N64 rc=0 wall=4s end=2026-10-20T19:46:16Z
+    PSTATUS pass=plane hist=0:256 cells=46055
+    PSTATUS pass=time hist=0:256 cells=45417
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N16.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N16.log 2>&1
+  CASE_RESULT run=v3b_e15_s3001_N16 rc=0 wall=6s end=2026-10-20T19:46:24Z
+    PSTATUS pass=plane hist=0:256 cells=13032
+    PSTATUS pass=time hist=0:256 cells=13490
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N32.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N32.log 2>&1
+  CASE_RESULT run=v3b_e15_s3001_N32 rc=0 wall=5s end=2026-10-20T19:46:29Z
+    PSTATUS pass=plane hist=0:256 cells=26166
+    PSTATUS pass=time hist=0:256 cells=27184
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1.5 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N64.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e15_s3001_N64.log 2>&1
+  MEM_PEAK run=v3b_e15_s3001_N64 mib=611
+  CASE_RESULT run=v3b_e15_s3001_N64 rc=0 wall=5s end=2026-10-20T19:46:35Z
+    PSTATUS pass=plane hist=0:256 cells=52688
+    PSTATUS pass=time hist=0:256 cells=54905
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N16.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N16 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N16.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N16.log 2>&1
+  CASE_RESULT run=v3b_e20_s3001_N16 rc=0 wall=5s end=2026-10-20T19:46:42Z
+    PSTATUS pass=plane hist=0:256 cells=14451
+    PSTATUS pass=time hist=0:256 cells=16457
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N32 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N32.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N32.log 2>&1
+  CASE_RESULT run=v3b_e20_s3001_N32 rc=0 wall=5s end=2026-10-20T19:46:47Z
+    PSTATUS pass=plane hist=0:256 cells=29280
+    PSTATUS pass=time hist=0:256 cells=33495
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 16 --max-arclength 1000 --planes 0.25,0.5,1,2 --times 0.5,1,2 --tol 1e-8 --hmax-div 8 --comparator pollock --save-particles /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N64 --summary /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N64.json > /home/sesquerre/sf37_dryrun/v3b/v3b_e20_s3001_N64.log 2>&1
+  MEM_PEAK run=v3b_e20_s3001_N64 mib=611
+  CASE_RESULT run=v3b_e20_s3001_N64 rc=0 wall=5s end=2026-10-20T19:46:53Z
+    PSTATUS pass=plane hist=0:256 cells=58902
+    PSTATUS pass=time hist=0:256 cells=68121
+    STATUS ok
+run_sf37.sh: part=v3b end=2026-10-20T19:46:55Z blocking_failures=0
+PART_EXIT v3b 0
+run_sf37.sh: SF37_DRYRUN=1 (local smoke: seed 3001 only, small grids, --threads 8; NOT campaign evidence)
+run_sf37.sh: part=digest bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_dryrun start=2026-10-20T19:46:55Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:46:55Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=digest DRYRUN=1 OUT_ROOT=/home/sesquerre/sf37_dryrun BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/digest_v1v2.py /home/sesquerre/sf37_dryrun /home/sesquerre/sf37_dryrun/analysis/v1v2 --design discovered) > /home/sesquerre/sf37_dryrun/analysis/v1v2.log 2>&1
+  DIGEST v1v2 rc=0 (log /home/sesquerre/sf37_dryrun/analysis/v1v2.log)
+    digest_v1v2: wrote 24 files to /home/sesquerre/sf37_dryrun/analysis/v1v2 (missing runs: 0)
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/digest_v4v5.py /home/sesquerre/sf37_dryrun /home/sesquerre/sf37_dryrun/analysis/v4v5 --design discovered) > /home/sesquerre/sf37_dryrun/analysis/v4v5.log 2>&1
+  DIGEST v4v5 rc=0 (log /home/sesquerre/sf37_dryrun/analysis/v4v5.log)
+    digest_v4v5: wrote 12 files to /home/sesquerre/sf37_dryrun/analysis/v4v5 (missing runs: 0)
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/digest_v3.py /home/sesquerre/sf37_dryrun /home/sesquerre/sf37_dryrun/analysis/v3 --design discovered) > /home/sesquerre/sf37_dryrun/analysis/v3.log 2>&1
+  DIGEST v3 rc=0 (log /home/sesquerre/sf37_dryrun/analysis/v3.log)
+    V3a eps=1 seed=3001: C=not_evaluable
+    V3b: 6 discordant, 0 not_evaluable of 12 (eps, seed, plane) cells
+    digest_v3: wrote 15 files to /home/sesquerre/sf37_dryrun/analysis/v3
++ (cd /home/sesquerre/MacroFlow3D-SF-37 && python3 /home/sesquerre/MacroFlow3D-SF-37/docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/o3.py /home/sesquerre/sf37_dryrun /home/sesquerre/sf37_dryrun/analysis/o3 --design discovered) > /home/sesquerre/sf37_dryrun/analysis/o3.log 2>&1
+  DIGEST o3 rc=0 (log /home/sesquerre/sf37_dryrun/analysis/o3.log)
+    O3 eps=1.5 seed=3001: O3a=not_evaluable O3b=not_evaluable
+    O3 eps=2 seed=3001: O3a=not_evaluable O3b=not_evaluable
+    o3: wrote 6 files to /home/sesquerre/sf37_dryrun/analysis/o3
+run_sf37.sh: part=digest end=2026-10-20T19:47:02Z blocking_failures=0
+PART_EXIT digest 0
+[2026-10-20T19:47:02Z] job=sf37-dryrun finished exit=0

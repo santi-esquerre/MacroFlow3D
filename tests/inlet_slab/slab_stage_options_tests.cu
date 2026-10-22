@@ -14,6 +14,15 @@
  *     flow_ready(), finite coefficients and vD, finite host direction field.
  * (b) Field WITHOUT backflow (gaussian seed 3001, ell 0.25, eps 0.5): both option values give
  *     bitwise-identical coefficients, vD, inlet u0, and labels_available == true.
+ *
+ * SF-37 N2 (contract C-STAGE), ProductionStageOptions::keep_face_fluxes, N = 16:
+ * (c) default options: faces_available() false, face vectors empty.
+ * (d) option off vs on (gaussian seed 3001 ell 0.25 eps 1; analytic generic3d eps 0.25): every
+ *     other output (coefficients, vD, inputs arrays, inlet samples, G, labels, report) bitwise
+ *     identical.
+ * (e) option on: CompactMAC sizes, duplicate planes == plane 0 bitwise, U plane 0 ==
+ *     inlet_v1_samples bitwise, unique-face means (1, 0, 0) within 1e-12.
+ * (f) Darcy failure forced by pcg_max_iter = 1: status darcy_failed, faces not kept.
  */
 
 #include "src/core/DeviceBuffer.cuh"
@@ -164,6 +173,152 @@ void case_no_backflow(TestReport& rep, CudaContext& ctx) {
               "inlet_vmin, Q0, v_rms identical");
 }
 
+// ---- SF-37 N2 (C-STAGE) -----------------------------------------------------------------------
+
+sl::ProductionStage build_faces(CudaContext& ctx, const sl::SlabFieldSource& src, real eps,
+                                bool keep, int pcg_max_iter = -1) {
+    const sl::InletSlabGrid grid = sl::InletSlabGrid::make(kN);
+    sl::ProductionStageOptions opt;
+    opt.keep_face_fluxes = keep;
+    opt.pcg_max_iter = pcg_max_iter;
+    return sl::build_production_stage(ctx, grid, src, eps, opt);
+}
+
+bool same_bits(real a, real b) { return std::memcmp(&a, &b, sizeof(real)) == 0; }
+
+bool report_identical(const sl::ProductionStageReport& a, const sl::ProductionStageReport& b) {
+    bool ok = a.status == b.status && a.field == b.field && a.N == b.N &&
+              a.mg_levels == b.mg_levels && a.darcy_converged == b.darcy_converged &&
+              a.has_sf18 == b.has_sf18 && same_bits(a.eps, b.eps) &&
+              same_bits(a.inlet_vmin, b.inlet_vmin) && same_bits(a.inlet_mean, b.inlet_mean) &&
+              same_bits(a.Q0, b.Q0) && same_bits(a.v1_diff_rms_rel, b.v1_diff_rms_rel) &&
+              same_bits(a.v1_diff_max_rel, b.v1_diff_max_rel) && same_bits(a.v_rms, b.v_rms) &&
+              same_bits(a.spline_potential_gpu_vs_host_rel, b.spline_potential_gpu_vs_host_rel) &&
+              same_bits(a.darcy.symmetry_defect_rel, b.darcy.symmetry_defect_rel) &&
+              same_bits(a.darcy.div_max_abs, b.darcy.div_max_abs) &&
+              same_bits(a.darcy.div_rms, b.darcy.div_rms);
+    for (int d = 0; d < 3; ++d) {
+        const auto& ca = a.darcy.corrector_results[d];
+        const auto& cb = b.darcy.corrector_results[d];
+        ok = ok && same_bits(a.darcy.G[d], b.darcy.G[d]) &&
+             same_bits(a.darcy.achieved_mean_flux[d], b.darcy.achieved_mean_flux[d]) &&
+             same_bits(a.darcy.eigenvalues_symmetric_part[d],
+                       b.darcy.eigenvalues_symmetric_part[d]) &&
+             ca.iterations == cb.iterations && ca.converged == cb.converged &&
+             same_bits(ca.relative_projected_residual, cb.relative_projected_residual) &&
+             same_bits(ca.final_projected_residual, cb.final_projected_residual);
+        for (int i = 0; i < 3; ++i)
+            ok = ok && same_bits(a.darcy.K_eff[i][d], b.darcy.K_eff[i][d]);
+    }
+    return ok && a.summary() == b.summary();
+}
+
+bool stage_outputs_identical(const sl::ProductionStage& a, const sl::ProductionStage& b) {
+    bool ok = bitwise_equal(a.potential_coefficients, b.potential_coefficients) &&
+              bitwise_equal(a.logk_coefficients, b.logk_coefficients) &&
+              bitwise_equal(a.inlet_v1_samples, b.inlet_v1_samples) &&
+              a.labels_available == b.labels_available &&
+              std::memcmp(a.G, b.G, sizeof(a.G)) == 0 && same_bits(a.inputs.v_rms, b.inputs.v_rms) &&
+              same_bits(a.inputs.eps, b.inputs.eps) && a.inputs.field == b.inputs.field &&
+              a.inputs.N == b.inputs.N;
+    for (int d = 0; d < 3; ++d)
+        ok = ok && bitwise_equal(download(a.reference.vD[d]), download(b.reference.vD[d])) &&
+             bitwise_equal(download(a.inputs.grad_lnk[d]), download(b.inputs.grad_lnk[d]));
+    for (int d = 0; d < 2; ++d)
+        ok = ok && bitwise_equal(download(a.inputs.u0[d]), download(b.inputs.u0[d])) &&
+             bitwise_equal(download(a.inputs.vperp_in[d]), download(b.inputs.vperp_in[d]));
+    ok = ok && bitwise_equal(download(a.inputs.q), download(b.inputs.q)) &&
+         bitwise_equal(download(a.inputs.lnk), download(b.inputs.lnk));
+    return ok && report_identical(a.report, b.report);
+}
+
+void check_faces(TestReport& rep, const sl::ProductionStage& on, const std::string& tag) {
+    const std::size_t N = kN;
+    rep.check(on.faces_available(), tag + ": faces_available() true");
+    rep.check(on.face_flux_u.size() == (N + 1) * N * N && on.face_flux_v.size() == N * (N + 1) * N &&
+                  on.face_flux_w.size() == N * N * (N + 1),
+              tag + ": CompactMAC sizes (N+1)N^2, N(N+1)N, N^2(N+1)");
+    bool dup_u = true, dup_v = true, dup_w = true;
+    double su = 0.0, sv = 0.0, sw = 0.0;
+    // SF-19 indexing: U i + j (N+1) + k (N+1) N; V i + j N + k N (N+1); W i + j N + k N N
+    for (std::size_t k = 0; k < N; ++k)
+        for (std::size_t j = 0; j < N; ++j)
+            dup_u = dup_u && same_bits(on.face_flux_u[0 + j * (N + 1) + k * (N + 1) * N],
+                                       on.face_flux_u[N + j * (N + 1) + k * (N + 1) * N]);
+    for (std::size_t k = 0; k < N; ++k)
+        for (std::size_t i = 0; i < N; ++i)
+            dup_v = dup_v && same_bits(on.face_flux_v[i + 0 * N + k * N * (N + 1)],
+                                       on.face_flux_v[i + N * N + k * N * (N + 1)]);
+    for (std::size_t j = 0; j < N; ++j)
+        for (std::size_t i = 0; i < N; ++i)
+            dup_w = dup_w && same_bits(on.face_flux_w[i + j * N + 0 * N * N],
+                                       on.face_flux_w[i + j * N + N * N * N]);
+    for (std::size_t k = 0; k < N; ++k)
+        for (std::size_t j = 0; j < N; ++j)
+            for (std::size_t i = 0; i < N; ++i) {
+                su += on.face_flux_u[i + j * (N + 1) + k * (N + 1) * N];
+                sv += on.face_flux_v[i + j * N + k * N * (N + 1)];
+                sw += on.face_flux_w[i + j * N + k * N * N];
+            }
+    const double nn = static_cast<double>(N * N * N);
+    rep.check(dup_u && dup_v && dup_w,
+              tag + ": duplicate planes (U i=N, V j=N, W k=N) == plane 0 bitwise");
+    // inlet sample index m3 + N m2 with m2 = j, m3 = k
+    bool inlet = on.inlet_v1_samples.size() == N * N;
+    for (std::size_t k = 0; inlet && k < N; ++k)
+        for (std::size_t j = 0; j < N; ++j)
+            inlet = inlet && same_bits(on.face_flux_u[0 + j * (N + 1) + k * (N + 1) * N],
+                                       on.inlet_v1_samples[k + N * j]);
+    rep.check(inlet, tag + ": U plane 0 == inlet_v1_samples bitwise");
+    char b[160];
+    std::snprintf(b, sizeof(b), "mean U-1=%.3e mean V=%.3e mean W=%.3e", su / nn - 1.0, sv / nn,
+                  sw / nn);
+    rep.check(std::abs(su / nn - 1.0) < 1e-12 && std::abs(sv / nn) < 1e-12 &&
+                  std::abs(sw / nn) < 1e-12,
+              tag + ": unique-face means = (1, 0, 0) within 1e-12 (qbar = e1)", b);
+}
+
+void case_faces(TestReport& rep, CudaContext& ctx) {
+    {
+        const sl::SlabFieldSource src = sl::SlabFieldSource::analytic("generic3d", kN);
+        const sl::ProductionStage off = build_faces(ctx, src, 0.25, false);
+        rep.check(off.ok() && !off.faces_available() && off.face_flux_u.empty() &&
+                      off.face_flux_v.empty() && off.face_flux_w.empty(),
+                  "default options (keep_face_fluxes=false): faces_available() false, vectors empty");
+        const sl::ProductionStage on = build_faces(ctx, src, 0.25, true);
+        rep.check(on.ok(), "generic3d eps 0.25, keep_face_fluxes: stage ok");
+        rep.check(stage_outputs_identical(off, on),
+                  "generic3d eps 0.25: all other outputs bitwise identical, option off vs on");
+        check_faces(rep, on, "generic3d eps 0.25");
+    }
+    {
+        sl::ProductionFieldSpec spec;
+        spec.N = kN;
+        spec.sigma2 = 1.0;
+        spec.ell = 0.25;
+        spec.seed = 3001ULL;
+        const sl::SlabFieldSource src = sl::SlabFieldSource::gaussian(ctx, spec);
+        const sl::ProductionStage off = build_faces(ctx, src, 1.0, false);
+        const sl::ProductionStage on = build_faces(ctx, src, 1.0, true);
+        rep.check(off.ok() && on.ok() && !off.faces_available(),
+                  "gaussian 3001 eps 1: ok, option off keeps no faces");
+        rep.check(stage_outputs_identical(off, on),
+                  "gaussian 3001 eps 1: all other outputs bitwise identical, option off vs on");
+        check_faces(rep, on, "gaussian 3001 eps 1");
+    }
+    {
+        // forced Darcy failure: one PCG iteration cannot reach rtol 1e-10
+        const sl::SlabFieldSource src = sl::SlabFieldSource::analytic("generic3d", kN);
+        const sl::ProductionStage bad = build_faces(ctx, src, 0.25, true, 1);
+        rep.check(bad.report.status == sl::SlabProductionStatus::darcy_failed &&
+                      !bad.report.darcy_converged,
+                  "pcg_max_iter=1: status darcy_failed");
+        rep.check(!bad.faces_available() && bad.face_flux_u.empty() && bad.face_flux_v.empty() &&
+                      bad.face_flux_w.empty(),
+                  "darcy_failed with keep_face_fluxes: faces not kept (host vectors empty)");
+    }
+}
+
 } // namespace
 
 int main() {
@@ -175,6 +330,8 @@ int main() {
         case_backflow(rep, ctx);
         std::printf("=== SF-36 N2: (b) field without backflow ===\n");
         case_no_backflow(rep, ctx);
+        std::printf("=== SF-37 N2: keep_face_fluxes (C-STAGE) ===\n");
+        case_faces(rep, ctx);
     } catch (const std::exception& e) {
         std::printf("[FAIL] unexpected exception: %s\n", e.what());
         rep.overall_pass = false;

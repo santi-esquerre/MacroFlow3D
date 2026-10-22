@@ -1,0 +1,215 @@
+IDENTICAL trace:N32_e0.5_host:psi1.npy
+IDENTICAL trace:N32_e0.5_host:psi2.npy
+IDENTICAL trace:N32_e0.5_host:labels.json
+IDENTICAL trace:N32_e0.5_host:lines: IDENTICAL 39
+IDENTICAL trace:N32_e0.5_host:rc base=0 head=0
+IDENTICAL trace:N32_e0.5_gpu:psi1.npy
+IDENTICAL trace:N32_e0.5_gpu:psi2.npy
+IDENTICAL trace:N32_e0.5_gpu:labels.json
+IDENTICAL trace:N32_e0.5_gpu:lines: IDENTICAL 39
+IDENTICAL trace:N32_e0.5_gpu:rc base=0 head=0
+IDENTICAL trace:N32_e1.0_host:psi1.npy
+IDENTICAL trace:N32_e1.0_host:psi2.npy
+IDENTICAL trace:N32_e1.0_host:labels.json
+IDENTICAL trace:N32_e1.0_host:lines: IDENTICAL 39
+IDENTICAL trace:N32_e1.0_host:rc base=21 head=21
+IDENTICAL trace:N32_e1.0_gpu:psi1.npy
+IDENTICAL trace:N32_e1.0_gpu:psi2.npy
+IDENTICAL trace:N32_e1.0_gpu:labels.json
+IDENTICAL trace:N32_e1.0_gpu:lines: IDENTICAL 39
+IDENTICAL trace:N32_e1.0_gpu:rc base=21 head=21
+IDENTICAL trace:N64_e0.5_host:psi1.npy
+IDENTICAL trace:N64_e0.5_host:psi2.npy
+IDENTICAL trace:N64_e0.5_host:labels.json
+IDENTICAL trace:N64_e0.5_host:lines: IDENTICAL 71
+IDENTICAL trace:N64_e0.5_host:rc base=0 head=0
+IDENTICAL trace:N64_e0.5_gpu:psi1.npy
+IDENTICAL trace:N64_e0.5_gpu:psi2.npy
+IDENTICAL trace:N64_e0.5_gpu:labels.json
+IDENTICAL trace:N64_e0.5_gpu:lines: IDENTICAL 71
+IDENTICAL trace:N64_e0.5_gpu:rc base=0 head=0
+IDENTICAL trace:N64_e1.0_host:psi1.npy
+IDENTICAL trace:N64_e1.0_host:psi2.npy
+IDENTICAL trace:N64_e1.0_host:labels.json
+IDENTICAL trace:N64_e1.0_host:lines: IDENTICAL 71
+IDENTICAL trace:N64_e1.0_host:rc base=0 head=0
+IDENTICAL trace:N64_e1.0_gpu:psi1.npy
+IDENTICAL trace:N64_e1.0_gpu:psi2.npy
+IDENTICAL trace:N64_e1.0_gpu:labels.json
+IDENTICAL trace:N64_e1.0_gpu:lines: IDENTICAL 71
+IDENTICAL trace:N64_e1.0_gpu:rc base=0 head=0
+IDENTICAL trace:N64_e2.0_gpu:psi1.npy
+IDENTICAL trace:N64_e2.0_gpu:psi2.npy
+IDENTICAL trace:N64_e2.0_gpu:labels.json
+IDENTICAL trace:N64_e2.0_gpu:lines: IDENTICAL 71
+IDENTICAL trace:N64_e2.0_gpu:rc base=21 head=21
+IDENTICAL production:prod32:lines: IDENTICAL 102
+IDENTICAL production:prod32:rc head=0 (no reference .time; 0 expected)
+IDENTICAL fwd:smoke_g3d_n16:labels.npy
+IDENTICAL fwd:smoke_g3d_n16:moments_planes.csv
+IDENTICAL fwd:smoke_g3d_n16:moments_time.csv
+IDENTICAL fwd:smoke_g3d_n16:planes_I.npy
+IDENTICAL fwd:smoke_g3d_n16:planes_cov.npy
+IDENTICAL fwd:smoke_g3d_n16:planes_tau.npy
+IDENTICAL fwd:smoke_g3d_n16:planes_x23.npy
+IDENTICAL fwd:smoke_g3d_n16:seeds.npy
+IDENTICAL fwd:smoke_g3d_n16:status_plane.npy
+IDENTICAL fwd:smoke_g3d_n16:status_time.npy
+IDENTICAL fwd:smoke_g3d_n16:times_I.npy
+IDENTICAL fwd:smoke_g3d_n16:times_cov.npy
+IDENTICAL fwd:smoke_g3d_n16:times_x.npy
+IDENTICAL fwd:smoke_g3d_n16:track.json
+IDENTICAL fwd:smoke_g3d_n16:weights.npy
+IDENTICAL fwd:smoke_g3d_n16:fileset
+IDENTICAL fwd:smoke_g3d_n16:lines: IDENTICAL 18
+IDENTICAL fwd:smoke_g3d_n16:rc base=0 head=0
+IDENTICAL fwd:g3d_n32_cov:labels.npy
+IDENTICAL fwd:g3d_n32_cov:moments_planes.csv
+IDENTICAL fwd:g3d_n32_cov:moments_time.csv
+IDENTICAL fwd:g3d_n32_cov:planes_I.npy
+IDENTICAL fwd:g3d_n32_cov:planes_cov.npy
+IDENTICAL fwd:g3d_n32_cov:planes_tau.npy
+IDENTICAL fwd:g3d_n32_cov:planes_x23.npy
+IDENTICAL fwd:g3d_n32_cov:seeds.npy
+IDENTICAL fwd:g3d_n32_cov:status_plane.npy
+IDENTICAL fwd:g3d_n32_cov:status_time.npy
+IDENTICAL fwd:g3d_n32_cov:times_I.npy
+IDENTICAL fwd:g3d_n32_cov:times_cov.npy
+IDENTICAL fwd:g3d_n32_cov:times_x.npy
+IDENTICAL fwd:g3d_n32_cov:track.json
+IDENTICAL fwd:g3d_n32_cov:weights.npy
+IDENTICAL fwd:g3d_n32_cov:fileset
+IDENTICAL fwd:g3d_n32_cov:lines: IDENTICAL 16
+IDENTICAL fwd:g3d_n32_cov:rc base=0 head=0
+IDENTICAL fwd:gauss_n64_e1_cov:labels.npy
+IDENTICAL fwd:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL fwd:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL fwd:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL fwd:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL fwd:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL fwd:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL fwd:gauss_n64_e1_cov:seeds.npy
+IDENTICAL fwd:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL fwd:gauss_n64_e1_cov:status_time.npy
+IDENTICAL fwd:gauss_n64_e1_cov:times_I.npy
+IDENTICAL fwd:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL fwd:gauss_n64_e1_cov:times_x.npy
+IDENTICAL fwd:gauss_n64_e1_cov:track.json
+IDENTICAL fwd:gauss_n64_e1_cov:weights.npy
+IDENTICAL fwd:gauss_n64_e1_cov:fileset
+IDENTICAL fwd:gauss_n64_e1_cov:lines: IDENTICAL 21
+IDENTICAL fwd:gauss_n64_e1_cov:rc base=0 head=0
+IDENTICAL fwd:gauss_n64_e2:labels.npy
+IDENTICAL fwd:gauss_n64_e2:moments_planes.csv
+IDENTICAL fwd:gauss_n64_e2:moments_time.csv
+IDENTICAL fwd:gauss_n64_e2:planes_I.npy
+IDENTICAL fwd:gauss_n64_e2:planes_tau.npy
+IDENTICAL fwd:gauss_n64_e2:planes_x23.npy
+IDENTICAL fwd:gauss_n64_e2:seeds.npy
+IDENTICAL fwd:gauss_n64_e2:status_plane.npy
+IDENTICAL fwd:gauss_n64_e2:status_time.npy
+IDENTICAL fwd:gauss_n64_e2:times_I.npy
+IDENTICAL fwd:gauss_n64_e2:times_x.npy
+IDENTICAL fwd:gauss_n64_e2:track.json
+IDENTICAL fwd:gauss_n64_e2:weights.npy
+IDENTICAL fwd:gauss_n64_e2:fileset
+IDENTICAL fwd:gauss_n64_e2:lines: IDENTICAL 23
+IDENTICAL fwd:gauss_n64_e2:rc base=0 head=0
+IDENTICAL fwd:gauss_n64_e2_tol:labels.npy
+IDENTICAL fwd:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL fwd:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL fwd:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL fwd:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL fwd:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL fwd:gauss_n64_e2_tol:seeds.npy
+IDENTICAL fwd:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL fwd:gauss_n64_e2_tol:status_time.npy
+IDENTICAL fwd:gauss_n64_e2_tol:times_I.npy
+IDENTICAL fwd:gauss_n64_e2_tol:times_x.npy
+IDENTICAL fwd:gauss_n64_e2_tol:track.json
+IDENTICAL fwd:gauss_n64_e2_tol:weights.npy
+IDENTICAL fwd:gauss_n64_e2_tol:fileset
+IDENTICAL fwd:gauss_n64_e2_tol:lines: IDENTICAL 19
+IDENTICAL fwd:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL fwd:gauss_n40_e1:labels.npy
+IDENTICAL fwd:gauss_n40_e1:moments_planes.csv
+IDENTICAL fwd:gauss_n40_e1:moments_time.csv
+IDENTICAL fwd:gauss_n40_e1:planes_I.npy
+IDENTICAL fwd:gauss_n40_e1:planes_tau.npy
+IDENTICAL fwd:gauss_n40_e1:planes_x23.npy
+IDENTICAL fwd:gauss_n40_e1:seeds.npy
+IDENTICAL fwd:gauss_n40_e1:status_plane.npy
+IDENTICAL fwd:gauss_n40_e1:status_time.npy
+IDENTICAL fwd:gauss_n40_e1:times_I.npy
+IDENTICAL fwd:gauss_n40_e1:times_x.npy
+IDENTICAL fwd:gauss_n40_e1:track.json
+IDENTICAL fwd:gauss_n40_e1:weights.npy
+IDENTICAL fwd:gauss_n40_e1:fileset
+IDENTICAL fwd:gauss_n40_e1:lines: IDENTICAL 17
+IDENTICAL fwd:gauss_n40_e1:rc base=0 head=0
+IDENTICAL fwd:gauss_n80_e2:labels.npy
+IDENTICAL fwd:gauss_n80_e2:moments_planes.csv
+IDENTICAL fwd:gauss_n80_e2:moments_time.csv
+IDENTICAL fwd:gauss_n80_e2:planes_I.npy
+IDENTICAL fwd:gauss_n80_e2:planes_tau.npy
+IDENTICAL fwd:gauss_n80_e2:planes_x23.npy
+IDENTICAL fwd:gauss_n80_e2:seeds.npy
+IDENTICAL fwd:gauss_n80_e2:status_plane.npy
+IDENTICAL fwd:gauss_n80_e2:status_time.npy
+IDENTICAL fwd:gauss_n80_e2:times_I.npy
+IDENTICAL fwd:gauss_n80_e2:times_x.npy
+IDENTICAL fwd:gauss_n80_e2:track.json
+IDENTICAL fwd:gauss_n80_e2:weights.npy
+IDENTICAL fwd:gauss_n80_e2:fileset
+IDENTICAL fwd:gauss_n80_e2:lines: IDENTICAL 17
+IDENTICAL fwd:gauss_n80_e2:rc base=0 head=0
+IDENTICAL neutral:gauss_n64_e1_cov:labels.npy
+IDENTICAL neutral:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL neutral:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL neutral:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL neutral:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL neutral:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL neutral:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL neutral:gauss_n64_e1_cov:seeds.npy
+IDENTICAL neutral:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL neutral:gauss_n64_e1_cov:status_time.npy
+IDENTICAL neutral:gauss_n64_e1_cov:times_I.npy
+IDENTICAL neutral:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL neutral:gauss_n64_e1_cov:times_x.npy
+IDENTICAL neutral:gauss_n64_e1_cov:track.json
+IDENTICAL neutral:gauss_n64_e1_cov:weights.npy
+IDENTICAL neutral:gauss_n64_e1_cov:lines: IDENTICAL 21
+IDENTICAL neutral:gauss_n64_e1_cov:rc base=0 head=0
+IDENTICAL neutral:gauss_n64_e2:labels.npy
+IDENTICAL neutral:gauss_n64_e2:moments_planes.csv
+IDENTICAL neutral:gauss_n64_e2:moments_time.csv
+IDENTICAL neutral:gauss_n64_e2:planes_I.npy
+IDENTICAL neutral:gauss_n64_e2:planes_tau.npy
+IDENTICAL neutral:gauss_n64_e2:planes_x23.npy
+IDENTICAL neutral:gauss_n64_e2:seeds.npy
+IDENTICAL neutral:gauss_n64_e2:status_plane.npy
+IDENTICAL neutral:gauss_n64_e2:status_time.npy
+IDENTICAL neutral:gauss_n64_e2:times_I.npy
+IDENTICAL neutral:gauss_n64_e2:times_x.npy
+IDENTICAL neutral:gauss_n64_e2:track.json
+IDENTICAL neutral:gauss_n64_e2:weights.npy
+IDENTICAL neutral:gauss_n64_e2:lines: IDENTICAL 23
+IDENTICAL neutral:gauss_n64_e2:rc base=0 head=0
+IDENTICAL neutral:gauss_n64_e2_tol:labels.npy
+IDENTICAL neutral:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL neutral:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL neutral:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL neutral:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL neutral:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL neutral:gauss_n64_e2_tol:seeds.npy
+IDENTICAL neutral:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL neutral:gauss_n64_e2_tol:status_time.npy
+IDENTICAL neutral:gauss_n64_e2_tol:times_I.npy
+IDENTICAL neutral:gauss_n64_e2_tol:times_x.npy
+IDENTICAL neutral:gauss_n64_e2_tol:track.json
+IDENTICAL neutral:gauss_n64_e2_tol:weights.npy
+IDENTICAL neutral:gauss_n64_e2_tol:lines: IDENTICAL 19
+IDENTICAL neutral:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL binary:md5_differs head=a2ecce53bdeda469b41593f706dd7028 base=fef042097f08dc725831f3df7ab975b5
+IDENTICAL binary:usage_lists_--comparator
+BYTECMP_ALL_IDENTICAL

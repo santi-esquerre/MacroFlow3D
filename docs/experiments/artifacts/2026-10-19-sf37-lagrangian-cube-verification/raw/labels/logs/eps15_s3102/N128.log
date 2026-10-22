@@ -1,0 +1,153 @@
+command: /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3102/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3102/N128.json
+FIELD gaussian (SF-18) N=128 sigma2=1 ell=0.25 seed=3102 normalize_variance=1 applied_scale=9.898488613605e-01 raw_variance=1.020615651994e+00 final_variance=1.000000000000e+00 active_modes=1032255 | stage field k = exp(eps Y), eps = 1.5
+SETUP STAGE field=gaussian eps=1.5 N=128 status=ok
+SETUP   SF-18: raw_mean=9.486769e-18 raw_variance=1.020615651994e+00 applied_scale=9.898488613605e-01 final_variance=1.000000000000e+00 active_modes=1032255
+SETUP   SF-19: mg_levels=6 converged=1 G=(7.130032214004e-01, 1.912796523799e-02, -1.539665291875e-02) mean_flux=(1.000e+00, -5.567e-18, 1.897e-19) div_max=9.808e-11 div_rms=4.409e-12
+SETUP   SF-19 corrector x: status=converged its=20 rel_residual=1.457e-13 final_residual=7.353e-09
+SETUP   SF-19 corrector y: status=converged its=20 rel_residual=1.699e-13 final_residual=8.336e-09
+SETUP   SF-19 corrector z: status=converged its=20 rel_residual=1.291e-13 final_residual=6.181e-09
+SETUP   inlet: vmin=1.050913e-01 mean(U plane 0)=1.000000000000001 (mean-1=8.882e-16) Q0-1=-1.110e-15 v_rms=1.891588e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=1.282067e-03 max_rel=4.268470e-03; spline potential GPU vs host prefilter rel=4.766e-15
+SETUP stage eps=1.5 built in 2.951s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+TRACE_STAGE field=gaussian eps=1.5 N=128 inlet_vmin=1.050913e-01 Q0=1.000000e+00 v_rms=1.891588e+00 mg_levels=6 darcy_converged=1
+TRACE_CONFIG backend=gpu hmax=9.765625e-04 (h/8) tol=1.0e-08 max_roundtrip=1.0e-08 threads=32 min_step=1.0e-13 max_arclength=100
+TRANSPORT backend=gpu tol=1.0e-08 h_max=9.765625e-04 threads=0 status=ok max_roundtrip=1.410e-09 non_ok=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=5.525967e-01 t_trace=22.00s t_labels=0.097s
+CASE field=gaussian eps=1.5 N=128 cand=trace | r_F=3.345e+00 its=nan | e_v=1.839e-02 e_psi=nan e_i=(4.013e-03,5.944e-03) e_div=8.116e-01 min_c=2.094e-02 p0.1=2.915e-02 p1=5.934e-02 p5=1.136e-01 p50=5.531e-01 | t=22.1
+PLANE j=0 x1=0.0000 e_v=1.527e-03 e_i1=2.232e-05 e_i2=1.379e-05 min_c=1.073e-01 vD1_min=1.052e-01 vD1_nonpos=0 roundtrip=0.000e+00 nfev=0 nfev_rt=0 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=1 x1=0.0078 e_v=1.574e-03 e_i1=1.089e-05 e_i2=8.049e-06 min_c=1.030e-01 vD1_min=1.010e-01 vD1_nonpos=0 roundtrip=2.419e-11 nfev=1185732 nfev_rt=1185732 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=2 x1=0.0156 e_v=1.617e-03 e_i1=4.795e-06 e_i2=2.236e-06 min_c=9.894e-02 vD1_min=9.699e-02 vD1_nonpos=0 roundtrip=5.063e-11 nfev=2048442 nfev_rt=2048442 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=3 x1=0.0234 e_v=1.658e-03 e_i1=5.235e-06 e_i2=2.389e-06 min_c=9.523e-02 vD1_min=9.328e-02 vD1_nonpos=0 roundtrip=4.452e-11 nfev=2909274 nfev_rt=2909274 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=4 x1=0.0312 e_v=1.695e-03 e_i1=5.765e-06 e_i2=2.207e-06 min_c=9.183e-02 vD1_min=8.989e-02 vD1_nonpos=0 roundtrip=5.583e-11 nfev=3772068 nfev_rt=3772068 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=5 x1=0.0391 e_v=1.725e-03 e_i1=6.593e-06 e_i2=2.752e-06 min_c=8.862e-02 vD1_min=8.679e-02 vD1_nonpos=0 roundtrip=7.516e-11 nfev=4635018 nfev_rt=4635018 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=6 x1=0.0469 e_v=1.746e-03 e_i1=7.612e-06 e_i2=3.214e-06 min_c=8.573e-02 vD1_min=8.382e-02 vD1_nonpos=0 roundtrip=8.148e-11 nfev=5499498 nfev_rt=5499498 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=7 x1=0.0547 e_v=1.759e-03 e_i1=8.740e-06 e_i2=3.527e-06 min_c=8.316e-02 vD1_min=8.118e-02 vD1_nonpos=0 roundtrip=1.080e-10 nfev=6364098 nfev_rt=6364098 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=8 x1=0.0625 e_v=1.762e-03 e_i1=9.981e-06 e_i2=4.077e-06 min_c=8.084e-02 vD1_min=7.885e-02 vD1_nonpos=0 roundtrip=1.214e-10 nfev=7229196 nfev_rt=7229196 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=9 x1=0.0703 e_v=1.756e-03 e_i1=1.118e-05 e_i2=4.736e-06 min_c=7.874e-02 vD1_min=7.682e-02 vD1_nonpos=0 roundtrip=1.339e-10 nfev=8093466 nfev_rt=8093466 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=10 x1=0.0781 e_v=1.745e-03 e_i1=1.222e-05 e_i2=5.412e-06 min_c=7.692e-02 vD1_min=7.501e-02 vD1_nonpos=0 roundtrip=1.408e-10 nfev=8956956 nfev_rt=8956956 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=11 x1=0.0859 e_v=1.730e-03 e_i1=1.310e-05 e_i2=6.076e-06 min_c=7.513e-02 vD1_min=7.275e-02 vD1_nonpos=0 roundtrip=1.292e-10 nfev=9819438 nfev_rt=9819438 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=12 x1=0.0938 e_v=1.714e-03 e_i1=1.414e-05 e_i2=6.667e-06 min_c=7.088e-02 vD1_min=6.879e-02 vD1_nonpos=0 roundtrip=1.354e-10 nfev=10680840 nfev_rt=10680840 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=13 x1=0.1016 e_v=1.700e-03 e_i1=1.586e-05 e_i2=7.209e-06 min_c=6.698e-02 vD1_min=6.516e-02 vD1_nonpos=0 roundtrip=1.195e-10 nfev=11540628 nfev_rt=11540628 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=14 x1=0.1094 e_v=1.689e-03 e_i1=1.800e-05 e_i2=7.759e-06 min_c=6.342e-02 vD1_min=6.185e-02 vD1_nonpos=0 roundtrip=1.828e-10 nfev=12398556 nfev_rt=12398556 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=15 x1=0.1172 e_v=1.684e-03 e_i1=1.973e-05 e_i2=8.311e-06 min_c=6.018e-02 vD1_min=5.883e-02 vD1_nonpos=0 roundtrip=1.327e-10 nfev=13255200 nfev_rt=13255200 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=16 x1=0.1250 e_v=1.683e-03 e_i1=2.093e-05 e_i2=8.940e-06 min_c=5.724e-02 vD1_min=5.608e-02 vD1_nonpos=0 roundtrip=1.766e-10 nfev=14109804 nfev_rt=14109804 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=17 x1=0.1328 e_v=1.688e-03 e_i1=2.197e-05 e_i2=9.918e-06 min_c=5.458e-02 vD1_min=5.360e-02 vD1_nonpos=0 roundtrip=1.599e-10 nfev=14962986 nfev_rt=14962986 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=18 x1=0.1406 e_v=1.695e-03 e_i1=2.278e-05 e_i2=1.130e-05 min_c=5.218e-02 vD1_min=5.135e-02 vD1_nonpos=0 roundtrip=1.088e-10 nfev=15814854 nfev_rt=15814854 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=19 x1=0.1484 e_v=1.705e-03 e_i1=2.313e-05 e_i2=1.300e-05 min_c=5.000e-02 vD1_min=4.932e-02 vD1_nonpos=0 roundtrip=1.099e-10 nfev=16666020 nfev_rt=16666020 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=20 x1=0.1562 e_v=1.715e-03 e_i1=2.326e-05 e_i2=1.495e-05 min_c=4.806e-02 vD1_min=4.751e-02 vD1_nonpos=0 roundtrip=1.037e-10 nfev=17516778 nfev_rt=17516778 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=21 x1=0.1641 e_v=1.724e-03 e_i1=2.306e-05 e_i2=1.701e-05 min_c=4.635e-02 vD1_min=4.593e-02 vD1_nonpos=0 roundtrip=1.101e-10 nfev=18367572 nfev_rt=18367572 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=22 x1=0.1719 e_v=1.732e-03 e_i1=2.243e-05 e_i2=1.899e-05 min_c=4.485e-02 vD1_min=4.453e-02 vD1_nonpos=0 roundtrip=1.088e-10 nfev=19219632 nfev_rt=19219632 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=23 x1=0.1797 e_v=1.738e-03 e_i1=2.174e-05 e_i2=2.071e-05 min_c=4.355e-02 vD1_min=4.332e-02 vD1_nonpos=0 roundtrip=1.314e-10 nfev=20072790 nfev_rt=20072790 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=24 x1=0.1875 e_v=1.741e-03 e_i1=2.094e-05 e_i2=2.206e-05 min_c=4.249e-02 vD1_min=4.232e-02 vD1_nonpos=0 roundtrip=1.611e-10 nfev=20927814 nfev_rt=20927814 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=25 x1=0.1953 e_v=1.741e-03 e_i1=2.029e-05 e_i2=2.296e-05 min_c=4.167e-02 vD1_min=4.153e-02 vD1_nonpos=0 roundtrip=1.910e-10 nfev=21785262 nfev_rt=21785262 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=26 x1=0.2031 e_v=1.738e-03 e_i1=1.984e-05 e_i2=2.338e-05 min_c=4.108e-02 vD1_min=4.091e-02 vD1_nonpos=0 roundtrip=1.081e-10 nfev=22646154 nfev_rt=22646154 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=27 x1=0.2109 e_v=1.732e-03 e_i1=1.984e-05 e_i2=2.336e-05 min_c=4.002e-02 vD1_min=3.852e-02 vD1_nonpos=0 roundtrip=1.217e-10 nfev=23511150 nfev_rt=23511150 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=28 x1=0.2188 e_v=1.725e-03 e_i1=2.045e-05 e_i2=2.297e-05 min_c=3.761e-02 vD1_min=3.581e-02 vD1_nonpos=0 roundtrip=1.359e-10 nfev=24379956 nfev_rt=24379956 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=29 x1=0.2266 e_v=1.717e-03 e_i1=2.162e-05 e_i2=2.232e-05 min_c=3.550e-02 vD1_min=3.343e-02 vD1_nonpos=0 roundtrip=1.195e-10 nfev=25253466 nfev_rt=25253466 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=30 x1=0.2344 e_v=1.707e-03 e_i1=2.369e-05 e_i2=2.151e-05 min_c=3.364e-02 vD1_min=3.134e-02 vD1_nonpos=0 roundtrip=1.240e-10 nfev=26131494 nfev_rt=26131494 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=31 x1=0.2422 e_v=1.698e-03 e_i1=2.618e-05 e_i2=2.051e-05 min_c=3.198e-02 vD1_min=2.951e-02 vD1_nonpos=0 roundtrip=1.408e-10 nfev=27013980 nfev_rt=27013980 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=32 x1=0.2500 e_v=1.689e-03 e_i1=2.931e-05 e_i2=1.964e-05 min_c=3.050e-02 vD1_min=2.791e-02 vD1_nonpos=0 roundtrip=1.478e-10 nfev=27901530 nfev_rt=27901530 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=33 x1=0.2578 e_v=1.682e-03 e_i1=3.287e-05 e_i2=1.892e-05 min_c=2.916e-02 vD1_min=2.650e-02 vD1_nonpos=0 roundtrip=1.440e-10 nfev=28793100 nfev_rt=28793100 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=34 x1=0.2656 e_v=1.675e-03 e_i1=3.635e-05 e_i2=1.819e-05 min_c=2.791e-02 vD1_min=2.528e-02 vD1_nonpos=0 roundtrip=1.443e-10 nfev=29688774 nfev_rt=29688774 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=35 x1=0.2734 e_v=1.670e-03 e_i1=4.012e-05 e_i2=1.796e-05 min_c=2.677e-02 vD1_min=2.422e-02 vD1_nonpos=0 roundtrip=1.817e-10 nfev=30588072 nfev_rt=30588072 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=36 x1=0.2812 e_v=1.666e-03 e_i1=4.425e-05 e_i2=1.757e-05 min_c=2.574e-02 vD1_min=2.332e-02 vD1_nonpos=0 roundtrip=1.640e-10 nfev=31490958 nfev_rt=31490958 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=37 x1=0.2891 e_v=1.663e-03 e_i1=4.875e-05 e_i2=1.761e-05 min_c=2.482e-02 vD1_min=2.255e-02 vD1_nonpos=0 roundtrip=1.808e-10 nfev=32396256 nfev_rt=32396256 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=38 x1=0.2969 e_v=1.662e-03 e_i1=5.427e-05 e_i2=1.792e-05 min_c=2.397e-02 vD1_min=2.186e-02 vD1_nonpos=0 roundtrip=2.743e-10 nfev=33304014 nfev_rt=33304014 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=39 x1=0.3047 e_v=1.663e-03 e_i1=6.086e-05 e_i2=1.837e-05 min_c=2.320e-02 vD1_min=2.129e-02 vD1_nonpos=0 roundtrip=1.603e-10 nfev=34213230 nfev_rt=34213230 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=40 x1=0.3125 e_v=1.666e-03 e_i1=6.753e-05 e_i2=1.899e-05 min_c=2.254e-02 vD1_min=2.083e-02 vD1_nonpos=0 roundtrip=1.544e-10 nfev=35122782 nfev_rt=35122782 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=41 x1=0.3203 e_v=1.670e-03 e_i1=7.351e-05 e_i2=2.003e-05 min_c=2.198e-02 vD1_min=2.049e-02 vD1_nonpos=0 roundtrip=1.546e-10 nfev=36033342 nfev_rt=36033342 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=42 x1=0.3281 e_v=1.677e-03 e_i1=7.902e-05 e_i2=2.153e-05 min_c=2.152e-02 vD1_min=2.027e-02 vD1_nonpos=0 roundtrip=1.796e-10 nfev=36943224 nfev_rt=36943224 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=43 x1=0.3359 e_v=1.686e-03 e_i1=8.467e-05 e_i2=2.324e-05 min_c=2.117e-02 vD1_min=2.015e-02 vD1_nonpos=0 roundtrip=1.909e-10 nfev=37852122 nfev_rt=37852122 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=44 x1=0.3438 e_v=1.698e-03 e_i1=9.007e-05 e_i2=2.525e-05 min_c=2.097e-02 vD1_min=2.013e-02 vD1_nonpos=0 roundtrip=1.585e-10 nfev=38759940 nfev_rt=38759940 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=45 x1=0.3516 e_v=1.712e-03 e_i1=9.494e-05 e_i2=2.783e-05 min_c=2.094e-02 vD1_min=2.025e-02 vD1_nonpos=0 roundtrip=1.723e-10 nfev=39666504 nfev_rt=39666504 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=46 x1=0.3594 e_v=1.728e-03 e_i1=9.926e-05 e_i2=3.070e-05 min_c=2.112e-02 vD1_min=2.050e-02 vD1_nonpos=0 roundtrip=2.764e-10 nfev=40570266 nfev_rt=40570266 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=47 x1=0.3672 e_v=1.748e-03 e_i1=1.032e-04 e_i2=3.414e-05 min_c=2.153e-02 vD1_min=2.090e-02 vD1_nonpos=0 roundtrip=2.970e-10 nfev=41471400 nfev_rt=41471400 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=48 x1=0.3750 e_v=1.769e-03 e_i1=1.072e-04 e_i2=3.809e-05 min_c=2.218e-02 vD1_min=2.143e-02 vD1_nonpos=0 roundtrip=2.486e-10 nfev=42370368 nfev_rt=42370368 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=49 x1=0.3828 e_v=1.792e-03 e_i1=1.113e-04 e_i2=4.247e-05 min_c=2.304e-02 vD1_min=2.211e-02 vD1_nonpos=0 roundtrip=1.945e-10 nfev=43266876 nfev_rt=43266876 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=50 x1=0.3906 e_v=1.816e-03 e_i1=1.163e-04 e_i2=4.740e-05 min_c=2.416e-02 vD1_min=2.299e-02 vD1_nonpos=0 roundtrip=2.261e-10 nfev=44160018 nfev_rt=44160018 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=51 x1=0.3984 e_v=1.842e-03 e_i1=1.226e-04 e_i2=5.289e-05 min_c=2.560e-02 vD1_min=2.406e-02 vD1_nonpos=0 roundtrip=2.483e-10 nfev=45050238 nfev_rt=45050238 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=52 x1=0.4062 e_v=1.867e-03 e_i1=1.304e-04 e_i2=5.851e-05 min_c=2.729e-02 vD1_min=2.535e-02 vD1_nonpos=0 roundtrip=2.447e-10 nfev=45938394 nfev_rt=45938394 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=53 x1=0.4141 e_v=1.892e-03 e_i1=1.403e-04 e_i2=6.473e-05 min_c=2.929e-02 vD1_min=2.684e-02 vD1_nonpos=0 roundtrip=2.866e-10 nfev=46822650 nfev_rt=46822650 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=54 x1=0.4219 e_v=1.916e-03 e_i1=1.523e-04 e_i2=7.136e-05 min_c=3.162e-02 vD1_min=2.856e-02 vD1_nonpos=0 roundtrip=2.138e-10 nfev=47704500 nfev_rt=47704500 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=55 x1=0.4297 e_v=1.939e-03 e_i1=1.658e-04 e_i2=7.742e-05 min_c=3.422e-02 vD1_min=3.048e-02 vD1_nonpos=0 roundtrip=2.714e-10 nfev=48584652 nfev_rt=48584652 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=56 x1=0.4375 e_v=1.960e-03 e_i1=1.807e-04 e_i2=8.389e-05 min_c=3.711e-02 vD1_min=3.269e-02 vD1_nonpos=0 roundtrip=2.394e-10 nfev=49461114 nfev_rt=49461114 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=57 x1=0.4453 e_v=1.980e-03 e_i1=1.970e-04 e_i2=9.089e-05 min_c=4.042e-02 vD1_min=3.522e-02 vD1_nonpos=0 roundtrip=2.739e-10 nfev=50335806 nfev_rt=50335806 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=58 x1=0.4531 e_v=1.998e-03 e_i1=2.132e-04 e_i2=9.628e-05 min_c=4.405e-02 vD1_min=3.799e-02 vD1_nonpos=0 roundtrip=2.951e-10 nfev=51208014 nfev_rt=51208014 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=59 x1=0.4609 e_v=2.014e-03 e_i1=2.295e-04 e_i2=1.019e-04 min_c=4.806e-02 vD1_min=4.108e-02 vD1_nonpos=0 roundtrip=2.911e-10 nfev=52077816 nfev_rt=52077816 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=60 x1=0.4688 e_v=2.031e-03 e_i1=2.455e-04 e_i2=1.083e-04 min_c=5.236e-02 vD1_min=4.451e-02 vD1_nonpos=0 roundtrip=2.997e-10 nfev=52945476 nfev_rt=52945476 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=61 x1=0.4766 e_v=2.049e-03 e_i1=2.609e-04 e_i2=1.126e-04 min_c=5.711e-02 vD1_min=4.823e-02 vD1_nonpos=0 roundtrip=3.523e-10 nfev=53810304 nfev_rt=53810304 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=62 x1=0.4844 e_v=2.069e-03 e_i1=2.769e-04 e_i2=1.174e-04 min_c=6.232e-02 vD1_min=5.225e-02 vD1_nonpos=0 roundtrip=3.937e-10 nfev=54674112 nfev_rt=54674112 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=63 x1=0.4922 e_v=2.095e-03 e_i1=2.943e-04 e_i2=1.242e-04 min_c=6.786e-02 vD1_min=5.664e-02 vD1_nonpos=0 roundtrip=2.707e-10 nfev=55536246 nfev_rt=55536246 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=64 x1=0.5000 e_v=2.130e-03 e_i1=3.150e-04 e_i2=1.301e-04 min_c=7.379e-02 vD1_min=6.125e-02 vD1_nonpos=0 roundtrip=3.509e-10 nfev=56395572 nfev_rt=56395572 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=65 x1=0.5078 e_v=2.178e-03 e_i1=3.422e-04 e_i2=1.388e-04 min_c=8.002e-02 vD1_min=6.604e-02 vD1_nonpos=0 roundtrip=2.763e-10 nfev=57254466 nfev_rt=57254466 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=66 x1=0.5156 e_v=2.243e-03 e_i1=3.787e-04 e_i2=1.528e-04 min_c=8.644e-02 vD1_min=7.107e-02 vD1_nonpos=0 roundtrip=2.759e-10 nfev=58111560 nfev_rt=58111560 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=67 x1=0.5234 e_v=2.330e-03 e_i1=4.268e-04 e_i2=1.706e-04 min_c=9.288e-02 vD1_min=7.609e-02 vD1_nonpos=0 roundtrip=4.037e-10 nfev=58967970 nfev_rt=58967970 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=68 x1=0.5312 e_v=2.444e-03 e_i1=4.876e-04 e_i2=1.960e-04 min_c=9.913e-02 vD1_min=8.110e-02 vD1_nonpos=0 roundtrip=2.909e-10 nfev=59823126 nfev_rt=59823126 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=69 x1=0.5391 e_v=2.590e-03 e_i1=5.597e-04 e_i2=2.309e-04 min_c=9.834e-02 vD1_min=8.532e-02 vD1_nonpos=0 roundtrip=3.386e-10 nfev=60678912 nfev_rt=60678912 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=70 x1=0.5469 e_v=2.767e-03 e_i1=6.392e-04 e_i2=2.747e-04 min_c=9.694e-02 vD1_min=8.418e-02 vD1_nonpos=0 roundtrip=3.543e-10 nfev=61534626 nfev_rt=61534626 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=71 x1=0.5547 e_v=2.977e-03 e_i1=7.214e-04 e_i2=3.293e-04 min_c=9.541e-02 vD1_min=8.312e-02 vD1_nonpos=0 roundtrip=3.395e-10 nfev=62391138 nfev_rt=62391138 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=72 x1=0.5625 e_v=3.218e-03 e_i1=8.019e-04 e_i2=3.953e-04 min_c=9.391e-02 vD1_min=8.206e-02 vD1_nonpos=0 roundtrip=3.156e-10 nfev=63249516 nfev_rt=63249516 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=73 x1=0.5703 e_v=3.485e-03 e_i1=8.762e-04 e_i2=4.738e-04 min_c=9.228e-02 vD1_min=8.100e-02 vD1_nonpos=0 roundtrip=2.839e-10 nfev=64110678 nfev_rt=64110678 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=74 x1=0.5781 e_v=3.771e-03 e_i1=9.396e-04 e_i2=5.653e-04 min_c=9.063e-02 vD1_min=8.002e-02 vD1_nonpos=0 roundtrip=3.564e-10 nfev=64974660 nfev_rt=64974660 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=75 x1=0.5859 e_v=4.069e-03 e_i1=9.851e-04 e_i2=6.700e-04 min_c=8.889e-02 vD1_min=7.903e-02 vD1_nonpos=0 roundtrip=3.223e-10 nfev=65842572 nfev_rt=65842572 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=76 x1=0.5938 e_v=4.369e-03 e_i1=1.007e-03 e_i2=7.883e-04 min_c=8.715e-02 vD1_min=7.807e-02 vD1_nonpos=0 roundtrip=3.234e-10 nfev=66715350 nfev_rt=66715350 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=77 x1=0.6016 e_v=4.665e-03 e_i1=1.001e-03 e_i2=9.206e-04 min_c=8.543e-02 vD1_min=7.723e-02 vD1_nonpos=0 roundtrip=4.241e-10 nfev=67593708 nfev_rt=67593708 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=78 x1=0.6094 e_v=4.950e-03 e_i1=9.639e-04 e_i2=1.065e-03 min_c=8.375e-02 vD1_min=7.632e-02 vD1_nonpos=0 roundtrip=3.583e-10 nfev=68476986 nfev_rt=68476986 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=79 x1=0.6172 e_v=5.224e-03 e_i1=8.967e-04 e_i2=1.221e-03 min_c=8.220e-02 vD1_min=7.555e-02 vD1_nonpos=0 roundtrip=4.298e-10 nfev=69365904 nfev_rt=69365904 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=80 x1=0.6250 e_v=5.487e-03 e_i1=8.005e-04 e_i2=1.387e-03 min_c=8.075e-02 vD1_min=7.484e-02 vD1_nonpos=0 roundtrip=4.028e-10 nfev=70260834 nfev_rt=70260834 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=81 x1=0.6328 e_v=5.746e-03 e_i1=6.846e-04 e_i2=1.559e-03 min_c=7.942e-02 vD1_min=7.418e-02 vD1_nonpos=0 roundtrip=3.710e-10 nfev=71161428 nfev_rt=71161428 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=82 x1=0.6406 e_v=6.009e-03 e_i1=5.656e-04 e_i2=1.736e-03 min_c=7.836e-02 vD1_min=7.370e-02 vD1_nonpos=0 roundtrip=3.908e-10 nfev=72066864 nfev_rt=72066864 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=83 x1=0.6484 e_v=6.274e-03 e_i1=4.859e-04 e_i2=1.915e-03 min_c=7.739e-02 vD1_min=7.322e-02 vD1_nonpos=0 roundtrip=4.629e-10 nfev=72976806 nfev_rt=72976806 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=84 x1=0.6562 e_v=6.560e-03 e_i1=5.118e-04 e_i2=2.092e-03 min_c=7.672e-02 vD1_min=7.282e-02 vD1_nonpos=0 roundtrip=4.988e-10 nfev=73889700 nfev_rt=73889700 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=85 x1=0.6641 e_v=6.881e-03 e_i1=6.732e-04 e_i2=2.271e-03 min_c=7.619e-02 vD1_min=7.261e-02 vD1_nonpos=0 roundtrip=4.571e-10 nfev=74805426 nfev_rt=74805426 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=86 x1=0.6719 e_v=7.154e-03 e_i1=9.071e-04 e_i2=2.446e-03 min_c=7.587e-02 vD1_min=7.244e-02 vD1_nonpos=0 roundtrip=4.750e-10 nfev=75721554 nfev_rt=75721554 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=87 x1=0.6797 e_v=7.640e-03 e_i1=1.195e-03 e_i2=2.615e-03 min_c=7.582e-02 vD1_min=7.247e-02 vD1_nonpos=0 roundtrip=3.743e-10 nfev=76637478 nfev_rt=76637478 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=88 x1=0.6875 e_v=7.980e-03 e_i1=1.523e-03 e_i2=2.791e-03 min_c=7.586e-02 vD1_min=7.268e-02 vD1_nonpos=0 roundtrip=4.502e-10 nfev=77553612 nfev_rt=77553612 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=89 x1=0.6953 e_v=8.449e-03 e_i1=1.842e-03 e_i2=2.953e-03 min_c=7.613e-02 vD1_min=7.291e-02 vD1_nonpos=0 roundtrip=5.891e-10 nfev=78467958 nfev_rt=78467958 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=90 x1=0.7031 e_v=9.357e-03 e_i1=2.195e-03 e_i2=3.106e-03 min_c=7.663e-02 vD1_min=7.331e-02 vD1_nonpos=0 roundtrip=6.033e-10 nfev=79379616 nfev_rt=79379616 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=91 x1=0.7109 e_v=9.639e-03 e_i1=2.560e-03 e_i2=3.285e-03 min_c=7.727e-02 vD1_min=7.392e-02 vD1_nonpos=0 roundtrip=5.576e-10 nfev=80287524 nfev_rt=80287524 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=92 x1=0.7188 e_v=1.091e-02 e_i1=2.895e-03 e_i2=3.410e-03 min_c=7.802e-02 vD1_min=7.465e-02 vD1_nonpos=0 roundtrip=6.194e-10 nfev=81191958 nfev_rt=81191958 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=93 x1=0.7266 e_v=1.183e-02 e_i1=3.271e-03 e_i2=3.562e-03 min_c=7.894e-02 vD1_min=7.554e-02 vD1_nonpos=0 roundtrip=5.484e-10 nfev=82092450 nfev_rt=82092450 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=94 x1=0.7344 e_v=1.271e-02 e_i1=3.641e-03 e_i2=3.712e-03 min_c=8.006e-02 vD1_min=7.656e-02 vD1_nonpos=0 roundtrip=6.079e-10 nfev=82988160 nfev_rt=82988160 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=95 x1=0.7422 e_v=1.447e-02 e_i1=3.972e-03 e_i2=3.802e-03 min_c=8.134e-02 vD1_min=7.776e-02 vD1_nonpos=0 roundtrip=8.001e-10 nfev=83880054 nfev_rt=83880054 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=96 x1=0.7500 e_v=1.536e-02 e_i1=4.362e-03 e_i2=3.975e-03 min_c=8.270e-02 vD1_min=7.905e-02 vD1_nonpos=0 roundtrip=7.138e-10 nfev=84766326 nfev_rt=84766326 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=97 x1=0.7578 e_v=1.717e-02 e_i1=4.701e-03 e_i2=3.996e-03 min_c=8.425e-02 vD1_min=8.053e-02 vD1_nonpos=0 roundtrip=7.637e-10 nfev=85647714 nfev_rt=85647714 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=98 x1=0.7656 e_v=1.860e-02 e_i1=5.040e-03 e_i2=4.261e-03 min_c=8.598e-02 vD1_min=8.221e-02 vD1_nonpos=0 roundtrip=8.226e-10 nfev=86525436 nfev_rt=86525436 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=99 x1=0.7734 e_v=2.015e-02 e_i1=5.420e-03 e_i2=4.086e-03 min_c=8.776e-02 vD1_min=8.406e-02 vD1_nonpos=0 roundtrip=1.073e-09 nfev=87398964 nfev_rt=87398964 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=100 x1=0.7812 e_v=2.193e-02 e_i1=5.713e-03 e_i2=4.590e-03 min_c=8.972e-02 vD1_min=8.603e-02 vD1_nonpos=0 roundtrip=7.832e-10 nfev=88267818 nfev_rt=88267818 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=101 x1=0.7891 e_v=2.343e-02 e_i1=6.076e-03 e_i2=4.130e-03 min_c=9.185e-02 vD1_min=8.815e-02 vD1_nonpos=0 roundtrip=8.473e-10 nfev=89132718 nfev_rt=89132718 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=102 x1=0.7969 e_v=2.518e-02 e_i1=6.367e-03 e_i2=4.912e-03 min_c=9.415e-02 vD1_min=9.048e-02 vD1_nonpos=0 roundtrip=7.799e-10 nfev=89994438 nfev_rt=89994438 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=103 x1=0.8047 e_v=2.674e-02 e_i1=6.660e-03 e_i2=4.256e-03 min_c=9.659e-02 vD1_min=9.302e-02 vD1_nonpos=0 roundtrip=8.197e-10 nfev=90851508 nfev_rt=90851508 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=104 x1=0.8125 e_v=2.835e-02 e_i1=6.950e-03 e_i2=5.163e-03 min_c=9.928e-02 vD1_min=9.575e-02 vD1_nonpos=0 roundtrip=7.796e-10 nfev=91705920 nfev_rt=91705920 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=105 x1=0.8203 e_v=2.984e-02 e_i1=7.177e-03 e_i2=4.644e-03 min_c=1.022e-01 vD1_min=9.866e-02 vD1_nonpos=0 roundtrip=9.821e-10 nfev=92556840 nfev_rt=92556840 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=106 x1=0.8281 e_v=3.136e-02 e_i1=7.414e-03 e_i2=5.262e-03 min_c=1.054e-01 vD1_min=1.018e-01 vD1_nonpos=0 roundtrip=9.340e-10 nfev=93404688 nfev_rt=93404688 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=107 x1=0.8359 e_v=3.261e-02 e_i1=7.612e-03 e_i2=5.384e-03 min_c=1.088e-01 vD1_min=1.052e-01 vD1_nonpos=0 roundtrip=7.379e-10 nfev=94250274 nfev_rt=94250274 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=108 x1=0.8438 e_v=3.405e-02 e_i1=7.720e-03 e_i2=5.321e-03 min_c=1.126e-01 vD1_min=1.089e-01 vD1_nonpos=0 roundtrip=8.552e-10 nfev=95093274 nfev_rt=95093274 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=109 x1=0.8516 e_v=3.504e-02 e_i1=7.931e-03 e_i2=6.233e-03 min_c=1.103e-01 vD1_min=1.076e-01 vD1_nonpos=0 roundtrip=8.464e-10 nfev=95934138 nfev_rt=95934138 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=110 x1=0.8594 e_v=3.630e-02 e_i1=7.891e-03 e_i2=5.788e-03 min_c=1.074e-01 vD1_min=1.049e-01 vD1_nonpos=0 roundtrip=1.002e-09 nfev=96773178 nfev_rt=96773178 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=111 x1=0.8672 e_v=3.713e-02 e_i1=8.090e-03 e_i2=6.914e-03 min_c=1.048e-01 vD1_min=1.025e-01 vD1_nonpos=0 roundtrip=8.673e-10 nfev=97611192 nfev_rt=97611192 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=112 x1=0.8750 e_v=3.802e-02 e_i1=7.977e-03 e_i2=6.852e-03 min_c=1.026e-01 vD1_min=1.005e-01 vD1_nonpos=0 roundtrip=8.145e-10 nfev=98448876 nfev_rt=98448876 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=113 x1=0.8828 e_v=3.886e-02 e_i1=8.050e-03 e_i2=7.546e-03 min_c=1.008e-01 vD1_min=9.880e-02 vD1_nonpos=0 roundtrip=8.637e-10 nfev=99285486 nfev_rt=99285486 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=114 x1=0.8906 e_v=3.927e-02 e_i1=8.011e-03 e_i2=8.189e-03 min_c=9.948e-02 vD1_min=9.749e-02 vD1_nonpos=0 roundtrip=9.016e-10 nfev=100122084 nfev_rt=100122084 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=115 x1=0.8984 e_v=4.011e-02 e_i1=7.889e-03 e_i2=8.378e-03 min_c=9.841e-02 vD1_min=9.650e-02 vD1_nonpos=0 roundtrip=9.002e-10 nfev=100959210 nfev_rt=100959210 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=116 x1=0.9062 e_v=4.023e-02 e_i1=7.955e-03 e_i2=9.566e-03 min_c=9.778e-02 vD1_min=9.590e-02 vD1_nonpos=0 roundtrip=8.403e-10 nfev=101797752 nfev_rt=101797752 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=117 x1=0.9141 e_v=4.079e-02 e_i1=7.769e-03 e_i2=9.491e-03 min_c=9.745e-02 vD1_min=9.554e-02 vD1_nonpos=0 roundtrip=8.923e-10 nfev=102636720 nfev_rt=102636720 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=118 x1=0.9219 e_v=4.098e-02 e_i1=7.773e-03 e_i2=1.084e-02 min_c=9.753e-02 vD1_min=9.557e-02 vD1_nonpos=0 roundtrip=8.459e-10 nfev=103477434 nfev_rt=103477434 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=119 x1=0.9297 e_v=4.107e-02 e_i1=7.729e-03 e_i2=1.090e-02 min_c=9.804e-02 vD1_min=9.600e-02 vD1_nonpos=0 roundtrip=8.267e-10 nfev=104319990 nfev_rt=104319990 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=120 x1=0.9375 e_v=4.132e-02 e_i1=7.657e-03 e_i2=1.197e-02 min_c=9.892e-02 vD1_min=9.670e-02 vD1_nonpos=0 roundtrip=8.199e-10 nfev=105164838 nfev_rt=105164838 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=121 x1=0.9453 e_v=4.113e-02 e_i1=7.696e-03 e_i2=1.253e-02 min_c=1.002e-01 vD1_min=9.781e-02 vD1_nonpos=0 roundtrip=1.131e-09 nfev=106011480 nfev_rt=106011480 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=122 x1=0.9531 e_v=4.137e-02 e_i1=7.703e-03 e_i2=1.300e-02 min_c=1.021e-01 vD1_min=9.937e-02 vD1_nonpos=0 roundtrip=8.559e-10 nfev=106861224 nfev_rt=106861224 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=123 x1=0.9609 e_v=4.134e-02 e_i1=7.764e-03 e_i2=1.407e-02 min_c=1.045e-01 vD1_min=1.014e-01 vD1_nonpos=0 roundtrip=1.010e-09 nfev=107713230 nfev_rt=107713230 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=124 x1=0.9688 e_v=4.091e-02 e_i1=7.826e-03 e_i2=1.436e-02 min_c=1.074e-01 vD1_min=1.038e-01 vD1_nonpos=0 roundtrip=7.120e-10 nfev=108567564 nfev_rt=108567564 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=125 x1=0.9766 e_v=4.172e-02 e_i1=7.929e-03 e_i2=1.513e-02 min_c=1.110e-01 vD1_min=1.067e-01 vD1_nonpos=0 roundtrip=1.198e-09 nfev=109424448 nfev_rt=109424448 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=126 x1=0.9844 e_v=4.097e-02 e_i1=8.100e-03 e_i2=1.604e-02 min_c=1.153e-01 vD1_min=1.102e-01 vD1_nonpos=0 roundtrip=1.410e-09 nfev=110283834 nfev_rt=110283834 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=127 x1=0.9922 e_v=4.300e-02 e_i1=9.145e-03 e_i2=1.811e-02 min_c=1.115e-01 vD1_min=1.096e-01 vD1_nonpos=0 roundtrip=1.230e-09 nfev=111145914 nfev_rt=111145914 non_ok=0 backflow_enc=0 landings_discarded=0
+PLANE j=128 x1=1.0000 e_v=5.434e-02 e_i1=1.295e-02 e_i2=2.351e-02 min_c=1.072e-01 vD1_min=1.052e-01 vD1_nonpos=0 roundtrip=1.395e-09 nfev=112009284 nfev_rt=112009284 non_ok=0 backflow_enc=0 landings_discarded=0
+BACKFLOW field=gaussian eps=1.5 N=128 inlet_vmin=1.050913e-01 Q0=1.000000e+00 vD1_min=2.013136e-02 vD1_nonpos=0 seed_backflow=0 backflow_enc=0 landings_discarded=0 min_g1_hat=5.525967e-01 status_hist=2097152,0,0,0,0,0,0
+GROWTH field=gaussian eps=1.5 N=128 e_v_N/e_v_1=3.452e+01 e_i_N/e_i_1=1.982e+03 max_roundtrip=1.410e-09 (plane 126)
+RESIDUAL field=gaussian eps=1.5 N=128 cand=trace r_F=3.345e+00 r_out=4.093e-02 q_rms_planes=1..N-1
+TRANSPORT_STATUS status=ok non_ok=0 max_roundtrip=1.410e-09
+SAVED_LABELS /home/sesquerre/sf37_campaign/labels/exports/eps15_s3102/N128 (psi1.npy, psi2.npy, labels.json; ladder entries in ladder_h<div>_tol<tol>/)
+TIMING diagnostics=0.007s field=0.605s stage=2.951s trace=22.133s total=25.733s
+MEMORY peak_device_bytes=1005584384 free_min=33084145664 total_device=34089730048 workspaces_bytes=338851887 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf37_campaign/labels/raw/eps15_s3102/N128.json
+STATUS ok

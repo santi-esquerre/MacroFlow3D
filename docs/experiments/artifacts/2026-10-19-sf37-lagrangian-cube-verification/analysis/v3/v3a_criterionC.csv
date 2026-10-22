@@ -1,0 +1,5 @@
+# python=3.11.7 numpy=1.26.4 scipy=1.11.4 bootstrap_sha256=16c1a5b9d9fe062576d5f18fc9d54127db76472c7fbe64493201d8cffc66af39 digest=digest_v3
+eps_code,seed,C_verdict,script_verdict,note
+10,3101,accept,accept,
+10,3102,accept,accept,
+10,3103,accept,accept,

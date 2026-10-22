@@ -1,0 +1,40 @@
+LATTICE p//M==floor(x2 M): True ; p%M==floor(x3 M): True
+MOMENTS max rel diff (sigma_T^2, var tau) recomputed vs moments_planes.csv over 693 (run, plane): 3.214e-14
+V1 cells 126, failing 0: []
+V1 eps 10: met 42/42 ; branches det 42 stat 0 fail 0 ; bitwise-identical planes 42
+V1 eps 15: met 42/42 ; branches det 42 stat 0 fail 0 ; bitwise-identical planes 42
+V1 eps 20: met 42/42 ; branches det 42 stat 0 fail 0 ; bitwise-identical planes 42
+V2 cells 126, failing 0: []
+LAMBDA_H eps 10: passing [8, 10, 16, 20, 32, 64] ; literal 8 ; monotone 8
+LAMBDA_H eps 15: passing [16, 20, 32, 64] ; literal 16 ; monotone 16
+LAMBDA_H eps 20: passing [32, 64] ; literal 32 ; monotone 32
+V4 cells 45, failing 0: []
+V4 order 256->512 range: 1.996 .. 2.007
+V3b eps 10: concordant 2 / 21
+V3b eps 15: concordant 3 / 21
+V3b eps 20: concordant 4 / 21
+V3A spot rows 36 (see v3a_spot.csv)
+O3 eps 15 seed 3101 N 128: e_v^q 9.236255e-03 f_half 4.572793e-03 f(d>0.1) 1.310221e-02 v_rms 1.628898e+00
+O3 eps 15 seed 3101 N 256: e_v^q 2.376773e-03 f_half 3.750058e-03 f(d>0.1) 7.747140e-04 v_rms 1.626461e+00
+O3 eps 15 seed 3101 N 512: e_v^q 5.998669e-04 f_half 3.367944e-03 f(d>0.1) 0.000000e+00 v_rms 1.625418e+00
+O3 VERDICT eps 15 seed 3101: O3a accept (order 1.986, rel 0.748) O3b shrinking
+O3 eps 15 seed 3102 N 128: e_v^q 9.339686e-03 f_half 2.003503e-03 f(d>0.1) 6.006634e-03 v_rms 1.880619e+00
+O3 eps 15 seed 3102 N 256: e_v^q 2.341188e-03 f_half 1.412940e-04 f(d>0.1) 1.079409e-03 v_rms 1.883528e+00
+O3 eps 15 seed 3102 N 512: e_v^q 5.358042e-04 f_half 2.686744e-05 f(d>0.1) 2.438414e-04 v_rms 1.885156e+00
+O3 VERDICT eps 15 seed 3102: O3a accept (order 2.127, rel 0.771) O3b shrinking
+O3 eps 15 seed 3103 N 128: e_v^q 8.671143e-03 f_half 1.790365e-03 f(d>0.1) 7.370722e-03 v_rms 1.456037e+00
+O3 eps 15 seed 3103 N 256: e_v^q 2.078697e-03 f_half 9.707954e-04 f(d>0.1) 1.540297e-03 v_rms 1.455440e+00
+O3 eps 15 seed 3103 N 512: e_v^q 5.220385e-04 f_half 7.627599e-04 f(d>0.1) 4.009172e-06 v_rms 1.455273e+00
+O3 VERDICT eps 15 seed 3103: O3a accept (order 1.993, rel 0.749) O3b shrinking
+O3 eps 20 seed 3101 N 128: e_v^q 4.867792e-02 f_half 1.786489e-03 f(d>0.1) 3.551665e-02 v_rms 1.951079e+00
+O3 eps 20 seed 3101 N 256: e_v^q 1.719757e-02 f_half 1.645066e-03 f(d>0.1) 1.384152e-02 v_rms 1.947450e+00
+O3 eps 20 seed 3101 N 512: e_v^q 3.738812e-03 f_half 2.768124e-04 f(d>0.1) 3.238035e-03 v_rms 1.945959e+00
+O3 VERDICT eps 20 seed 3101: O3a accept (order 2.202, rel 0.783) O3b shrinking
+O3 eps 20 seed 3102 N 128: e_v^q 1.226392e-01 f_half 1.937624e-04 f(d>0.1) 3.536164e-02 v_rms 2.570426e+00
+O3 eps 20 seed 3102 N 256: e_v^q 7.379582e-02 f_half 2.547136e-05 f(d>0.1) 1.493103e-02 v_rms 2.575630e+00
+O3 eps 20 seed 3102 N 512: e_v^q 2.348844e-02 f_half 8.257698e-06 f(d>0.1) 5.093683e-03 v_rms 2.578634e+00
+O3 VERDICT eps 20 seed 3102: O3a unresolved (order 1.652, rel 0.682) O3b shrinking
+O3 eps 20 seed 3103 N 128: e_v^q 2.373702e-01 f_half 2.363901e-04 f(d>0.1) 2.861871e-02 v_rms 1.732388e+00
+O3 eps 20 seed 3103 N 256: e_v^q 1.505688e-01 f_half 1.028466e-04 f(d>0.1) 1.057494e-02 v_rms 1.731173e+00
+O3 eps 20 seed 3103 N 512: e_v^q 2.487027e-02 f_half 4.451976e-05 f(d>0.1) 4.769598e-03 v_rms 1.730808e+00
+O3 VERDICT eps 20 seed 3103: O3a accept (order 2.598, rel 0.835) O3b shrinking

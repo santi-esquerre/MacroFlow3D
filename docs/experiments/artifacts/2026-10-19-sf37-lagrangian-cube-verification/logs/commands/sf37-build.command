@@ -1,0 +1,1 @@
+cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 5 && md5sum build/v100-release/inlet_slab ~/sf37_base_refs/bin/inlet_slab && (build/v100-release/inlet_slab --sf37-invalid-option 2>&1 | grep -c -- --comparator)

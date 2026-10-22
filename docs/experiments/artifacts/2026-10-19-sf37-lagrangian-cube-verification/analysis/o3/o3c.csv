@@ -1,0 +1,74 @@
+# python=3.11.7 numpy=1.26.4 scipy=1.11.4 bootstrap_sha256=16c1a5b9d9fe062576d5f18fc9d54127db76472c7fbe64493201d8cffc66af39 digest=o3
+eps_code,seed,N,x1,status,weighted_fraction,n_contributors,n_near_marked,note
+15,3101,128,0.25,ok,0.0,65536,0,
+15,3101,128,0.5,ok,0.0,65536,0,
+15,3101,128,pooled,ok,0.0,65536,0,
+15,3101,128,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3101,256,0.25,ok,0.0,65536,0,
+15,3101,256,0.5,ok,0.0005998435549337258,65536,82,
+15,3101,256,pooled,ok,0.0005998435549337258,65536,82,
+15,3101,256,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3101,512,0.25,ok,0.0,65536,0,
+15,3101,512,0.5,ok,0.00044676920660888166,65536,62,
+15,3101,512,pooled,ok,0.00044676920660888166,65536,62,
+15,3101,512,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3102,128,0.25,ok,0.0,65536,0,
+15,3102,128,0.5,ok,0.0,65536,0,
+15,3102,128,pooled,ok,0.0,65536,0,
+15,3102,128,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3102,256,0.25,ok,0.0,65536,0,
+15,3102,256,0.5,ok,0.0,65536,0,
+15,3102,256,pooled,ok,0.0,65536,0,
+15,3102,256,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3102,512,0.25,ok,0.0,65536,0,
+15,3102,512,0.5,ok,0.0,65536,0,
+15,3102,512,pooled,ok,0.0,65536,0,
+15,3102,512,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3103,128,0.25,ok,0.0,65536,0,
+15,3103,128,0.5,ok,0.003334804622566923,65536,2297,
+15,3103,128,pooled,ok,0.003334804622566923,65536,2297,
+15,3103,128,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3103,256,0.25,ok,0.0,65536,0,
+15,3103,256,0.5,ok,0.0020345868134197176,65536,1614,
+15,3103,256,pooled,ok,0.0020345868134197176,65536,1614,
+15,3103,256,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+15,3103,512,0.25,ok,0.0,65536,0,
+15,3103,512,0.5,ok,0.0014036103880362136,65536,1209,
+15,3103,512,pooled,ok,0.0014036103880362136,65536,1209,
+15,3103,512,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3101,128,0.25,ok,0.0,65536,0,
+20,3101,128,0.5,ok,0.002130870787499237,65536,429,
+20,3101,128,pooled,ok,0.002130870787499237,65536,429,
+20,3101,128,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3101,256,0.25,ok,0.0,65536,0,
+20,3101,256,0.5,ok,0.001921265532670172,65536,419,
+20,3101,256,pooled,ok,0.001921265532670172,65536,419,
+20,3101,256,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3101,512,0.25,ok,0.0,65536,0,
+20,3101,512,0.5,ok,0.0014910477225000684,65536,335,
+20,3101,512,pooled,ok,0.0014910477225000684,65536,335,
+20,3101,512,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3102,128,0.25,ok,0.0,65536,0,
+20,3102,128,0.5,ok,0.0,65536,0,
+20,3102,128,pooled,ok,0.0,65536,0,
+20,3102,128,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3102,256,0.25,ok,0.0,65536,0,
+20,3102,256,0.5,ok,0.0,65536,0,
+20,3102,256,pooled,ok,0.0,65536,0,
+20,3102,256,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3102,512,0.25,ok,0.0,65536,0,
+20,3102,512,0.5,ok,0.0,65536,0,
+20,3102,512,pooled,ok,0.0,65536,0,
+20,3102,512,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3103,128,0.25,ok,0.0,65536,0,
+20,3103,128,0.5,ok,0.002500035327971235,65536,2456,
+20,3103,128,pooled,ok,0.002500035327971235,65536,2456,
+20,3103,128,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3103,256,0.25,ok,0.0,65536,0,
+20,3103,256,0.5,ok,0.0016671067148126579,65536,2233,
+20,3103,256,pooled,ok,0.0016671067148126579,65536,2233,
+20,3103,256,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)
+20,3103,512,0.25,ok,0.0,65536,0,
+20,3103,512,0.5,ok,0.0011394974568498008,65536,1989,
+20,3103,512,pooled,ok,0.0011394974568498008,65536,1989,
+20,3103,512,1.0,structurally_empty,nan,0,0,x1 = 1 is the outlet coarse plane: no marked vertices by construction (interior planes only)

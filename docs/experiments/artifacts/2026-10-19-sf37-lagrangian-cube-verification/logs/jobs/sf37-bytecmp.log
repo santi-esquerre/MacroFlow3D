@@ -1,0 +1,263 @@
+[2026-10-20T19:48:46Z] job=sf37-bytecmp session=macroflow3d-SF-37-sf37-bytecmp started
+[2026-10-20T19:48:46Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-20T19:48:46Z] cwd=/home/sesquerre/MacroFlow3D-SF-37
+[2026-10-20T19:48:46Z] command=SF37_COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 bash docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/run_sf37.sh build/v100-release bytecmp
+run_sf37.sh: part=bytecmp bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_campaign start=2026-10-20T19:48:47Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:48:47Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=bytecmp DRYRUN=0 OUT_ROOT=/home/sesquerre/sf37_campaign BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e0.5_host --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e0.5_host.json
+  RUN name=trace_N32_e0.5_host rc=0 wall=5s
+IDENTICAL trace:N32_e0.5_host:psi1.npy
+IDENTICAL trace:N32_e0.5_host:psi2.npy
+IDENTICAL trace:N32_e0.5_host:labels.json
+IDENTICAL trace:N32_e0.5_host:lines: IDENTICAL 39
+IDENTICAL trace:N32_e0.5_host:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e0.5_gpu --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e0.5_gpu.json
+  RUN name=trace_N32_e0.5_gpu rc=0 wall=4s
+IDENTICAL trace:N32_e0.5_gpu:psi1.npy
+IDENTICAL trace:N32_e0.5_gpu:psi2.npy
+IDENTICAL trace:N32_e0.5_gpu:labels.json
+IDENTICAL trace:N32_e0.5_gpu:lines: IDENTICAL 39
+IDENTICAL trace:N32_e0.5_gpu:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e1.0_host --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e1.0_host.json
+  RUN name=trace_N32_e1.0_host rc=21 wall=6s
+IDENTICAL trace:N32_e1.0_host:psi1.npy
+IDENTICAL trace:N32_e1.0_host:psi2.npy
+IDENTICAL trace:N32_e1.0_host:labels.json
+IDENTICAL trace:N32_e1.0_host:lines: IDENTICAL 39
+IDENTICAL trace:N32_e1.0_host:rc base=21 head=21
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e1.0_gpu --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N32_e1.0_gpu.json
+  RUN name=trace_N32_e1.0_gpu rc=21 wall=5s
+IDENTICAL trace:N32_e1.0_gpu:psi1.npy
+IDENTICAL trace:N32_e1.0_gpu:psi2.npy
+IDENTICAL trace:N32_e1.0_gpu:labels.json
+IDENTICAL trace:N32_e1.0_gpu:lines: IDENTICAL 39
+IDENTICAL trace:N32_e1.0_gpu:rc base=21 head=21
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e0.5_host --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e0.5_host.json
+  RUN name=trace_N64_e0.5_host rc=0 wall=16s
+IDENTICAL trace:N64_e0.5_host:psi1.npy
+IDENTICAL trace:N64_e0.5_host:psi2.npy
+IDENTICAL trace:N64_e0.5_host:labels.json
+IDENTICAL trace:N64_e0.5_host:lines: IDENTICAL 71
+IDENTICAL trace:N64_e0.5_host:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e0.5_gpu --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e0.5_gpu.json
+  RUN name=trace_N64_e0.5_gpu rc=0 wall=6s
+IDENTICAL trace:N64_e0.5_gpu:psi1.npy
+IDENTICAL trace:N64_e0.5_gpu:psi2.npy
+IDENTICAL trace:N64_e0.5_gpu:labels.json
+IDENTICAL trace:N64_e0.5_gpu:lines: IDENTICAL 71
+IDENTICAL trace:N64_e0.5_gpu:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e1.0_host --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e1.0_host.json
+  RUN name=trace_N64_e1.0_host rc=0 wall=18s
+IDENTICAL trace:N64_e1.0_host:psi1.npy
+IDENTICAL trace:N64_e1.0_host:psi2.npy
+IDENTICAL trace:N64_e1.0_host:labels.json
+IDENTICAL trace:N64_e1.0_host:lines: IDENTICAL 71
+IDENTICAL trace:N64_e1.0_host:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e1.0_gpu --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e1.0_gpu.json
+  RUN name=trace_N64_e1.0_gpu rc=0 wall=7s
+IDENTICAL trace:N64_e1.0_gpu:psi1.npy
+IDENTICAL trace:N64_e1.0_gpu:psi2.npy
+IDENTICAL trace:N64_e1.0_gpu:labels.json
+IDENTICAL trace:N64_e1.0_gpu:lines: IDENTICAL 71
+IDENTICAL trace:N64_e1.0_gpu:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 2 --tracer gpu --save-labels /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e2.0_gpu --summary /home/sesquerre/sf37_campaign/bytecmp/trace/N64_e2.0_gpu.json
+  RUN name=trace_N64_e2.0_gpu rc=21 wall=7s
+IDENTICAL trace:N64_e2.0_gpu:psi1.npy
+IDENTICAL trace:N64_e2.0_gpu:psi2.npy
+IDENTICAL trace:N64_e2.0_gpu:labels.json
+IDENTICAL trace:N64_e2.0_gpu:lines: IDENTICAL 71
+IDENTICAL trace:N64_e2.0_gpu:rc base=21 head=21
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder
+  RUN name=prod32 rc=0 wall=17s
+IDENTICAL production:prod32:lines: IDENTICAL 102
+IDENTICAL production:prod32:rc head=0 (no reference .time; 0 expected)
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --analytic generic3d --n 16 --eps 0.25 --np-side 16 --planes 0.25,0.5,1 --times 0.5,1 --covectors --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/smoke_g3d_n16 --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/smoke_g3d_n16.json
+  RUN name=fwd_smoke_g3d_n16 rc=0 wall=4s
+IDENTICAL fwd:smoke_g3d_n16:labels.npy
+IDENTICAL fwd:smoke_g3d_n16:moments_planes.csv
+IDENTICAL fwd:smoke_g3d_n16:moments_time.csv
+IDENTICAL fwd:smoke_g3d_n16:planes_I.npy
+IDENTICAL fwd:smoke_g3d_n16:planes_cov.npy
+IDENTICAL fwd:smoke_g3d_n16:planes_tau.npy
+IDENTICAL fwd:smoke_g3d_n16:planes_x23.npy
+IDENTICAL fwd:smoke_g3d_n16:seeds.npy
+IDENTICAL fwd:smoke_g3d_n16:status_plane.npy
+IDENTICAL fwd:smoke_g3d_n16:status_time.npy
+IDENTICAL fwd:smoke_g3d_n16:times_I.npy
+IDENTICAL fwd:smoke_g3d_n16:times_cov.npy
+IDENTICAL fwd:smoke_g3d_n16:times_x.npy
+IDENTICAL fwd:smoke_g3d_n16:track.json
+IDENTICAL fwd:smoke_g3d_n16:weights.npy
+IDENTICAL fwd:smoke_g3d_n16:fileset
+IDENTICAL fwd:smoke_g3d_n16:lines: IDENTICAL 18
+IDENTICAL fwd:smoke_g3d_n16:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --analytic generic3d --n 32 --eps 0.25 --np-side 32 --planes 0.5,1 --times 1 --covectors --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/g3d_n32_cov --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/g3d_n32_cov.json
+  RUN name=fwd_g3d_n32_cov rc=0 wall=5s
+IDENTICAL fwd:g3d_n32_cov:labels.npy
+IDENTICAL fwd:g3d_n32_cov:moments_planes.csv
+IDENTICAL fwd:g3d_n32_cov:moments_time.csv
+IDENTICAL fwd:g3d_n32_cov:planes_I.npy
+IDENTICAL fwd:g3d_n32_cov:planes_cov.npy
+IDENTICAL fwd:g3d_n32_cov:planes_tau.npy
+IDENTICAL fwd:g3d_n32_cov:planes_x23.npy
+IDENTICAL fwd:g3d_n32_cov:seeds.npy
+IDENTICAL fwd:g3d_n32_cov:status_plane.npy
+IDENTICAL fwd:g3d_n32_cov:status_time.npy
+IDENTICAL fwd:g3d_n32_cov:times_I.npy
+IDENTICAL fwd:g3d_n32_cov:times_cov.npy
+IDENTICAL fwd:g3d_n32_cov:times_x.npy
+IDENTICAL fwd:g3d_n32_cov:track.json
+IDENTICAL fwd:g3d_n32_cov:weights.npy
+IDENTICAL fwd:g3d_n32_cov:fileset
+IDENTICAL fwd:g3d_n32_cov:lines: IDENTICAL 16
+IDENTICAL fwd:g3d_n32_cov:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n64_e1_cov --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n64_e1_cov.json
+  RUN name=fwd_gauss_n64_e1_cov rc=0 wall=6s
+IDENTICAL fwd:gauss_n64_e1_cov:labels.npy
+IDENTICAL fwd:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL fwd:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL fwd:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL fwd:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL fwd:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL fwd:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL fwd:gauss_n64_e1_cov:seeds.npy
+IDENTICAL fwd:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL fwd:gauss_n64_e1_cov:status_time.npy
+IDENTICAL fwd:gauss_n64_e1_cov:times_I.npy
+IDENTICAL fwd:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL fwd:gauss_n64_e1_cov:times_x.npy
+IDENTICAL fwd:gauss_n64_e1_cov:track.json
+IDENTICAL fwd:gauss_n64_e1_cov:weights.npy
+IDENTICAL fwd:gauss_n64_e1_cov:fileset
+IDENTICAL fwd:gauss_n64_e1_cov:lines: IDENTICAL 21
+IDENTICAL fwd:gauss_n64_e1_cov:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n64_e2 --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n64_e2.json
+  RUN name=fwd_gauss_n64_e2 rc=0 wall=7s
+IDENTICAL fwd:gauss_n64_e2:labels.npy
+IDENTICAL fwd:gauss_n64_e2:moments_planes.csv
+IDENTICAL fwd:gauss_n64_e2:moments_time.csv
+IDENTICAL fwd:gauss_n64_e2:planes_I.npy
+IDENTICAL fwd:gauss_n64_e2:planes_tau.npy
+IDENTICAL fwd:gauss_n64_e2:planes_x23.npy
+IDENTICAL fwd:gauss_n64_e2:seeds.npy
+IDENTICAL fwd:gauss_n64_e2:status_plane.npy
+IDENTICAL fwd:gauss_n64_e2:status_time.npy
+IDENTICAL fwd:gauss_n64_e2:times_I.npy
+IDENTICAL fwd:gauss_n64_e2:times_x.npy
+IDENTICAL fwd:gauss_n64_e2:track.json
+IDENTICAL fwd:gauss_n64_e2:weights.npy
+IDENTICAL fwd:gauss_n64_e2:fileset
+IDENTICAL fwd:gauss_n64_e2:lines: IDENTICAL 23
+IDENTICAL fwd:gauss_n64_e2:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.5,1,2 --times 1,2 --tol 1e-10 --hmax-div 32 --max-arclength 1000 --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n64_e2_tol --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n64_e2_tol.json
+  RUN name=fwd_gauss_n64_e2_tol rc=0 wall=7s
+IDENTICAL fwd:gauss_n64_e2_tol:labels.npy
+IDENTICAL fwd:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL fwd:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL fwd:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL fwd:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL fwd:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL fwd:gauss_n64_e2_tol:seeds.npy
+IDENTICAL fwd:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL fwd:gauss_n64_e2_tol:status_time.npy
+IDENTICAL fwd:gauss_n64_e2_tol:times_I.npy
+IDENTICAL fwd:gauss_n64_e2_tol:times_x.npy
+IDENTICAL fwd:gauss_n64_e2_tol:track.json
+IDENTICAL fwd:gauss_n64_e2_tol:weights.npy
+IDENTICAL fwd:gauss_n64_e2_tol:fileset
+IDENTICAL fwd:gauss_n64_e2_tol:lines: IDENTICAL 19
+IDENTICAL fwd:gauss_n64_e2_tol:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 40 --eps 1 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n40_e1 --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n40_e1.json
+  RUN name=fwd_gauss_n40_e1 rc=0 wall=5s
+IDENTICAL fwd:gauss_n40_e1:labels.npy
+IDENTICAL fwd:gauss_n40_e1:moments_planes.csv
+IDENTICAL fwd:gauss_n40_e1:moments_time.csv
+IDENTICAL fwd:gauss_n40_e1:planes_I.npy
+IDENTICAL fwd:gauss_n40_e1:planes_tau.npy
+IDENTICAL fwd:gauss_n40_e1:planes_x23.npy
+IDENTICAL fwd:gauss_n40_e1:seeds.npy
+IDENTICAL fwd:gauss_n40_e1:status_plane.npy
+IDENTICAL fwd:gauss_n40_e1:status_time.npy
+IDENTICAL fwd:gauss_n40_e1:times_I.npy
+IDENTICAL fwd:gauss_n40_e1:times_x.npy
+IDENTICAL fwd:gauss_n40_e1:track.json
+IDENTICAL fwd:gauss_n40_e1:weights.npy
+IDENTICAL fwd:gauss_n40_e1:fileset
+IDENTICAL fwd:gauss_n40_e1:lines: IDENTICAL 17
+IDENTICAL fwd:gauss_n40_e1:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 80 --eps 2 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n80_e2 --summary /home/sesquerre/sf37_campaign/bytecmp/fwd/gauss_n80_e2.json
+  RUN name=fwd_gauss_n80_e2 rc=0 wall=6s
+IDENTICAL fwd:gauss_n80_e2:labels.npy
+IDENTICAL fwd:gauss_n80_e2:moments_planes.csv
+IDENTICAL fwd:gauss_n80_e2:moments_time.csv
+IDENTICAL fwd:gauss_n80_e2:planes_I.npy
+IDENTICAL fwd:gauss_n80_e2:planes_tau.npy
+IDENTICAL fwd:gauss_n80_e2:planes_x23.npy
+IDENTICAL fwd:gauss_n80_e2:seeds.npy
+IDENTICAL fwd:gauss_n80_e2:status_plane.npy
+IDENTICAL fwd:gauss_n80_e2:status_time.npy
+IDENTICAL fwd:gauss_n80_e2:times_I.npy
+IDENTICAL fwd:gauss_n80_e2:times_x.npy
+IDENTICAL fwd:gauss_n80_e2:track.json
+IDENTICAL fwd:gauss_n80_e2:weights.npy
+IDENTICAL fwd:gauss_n80_e2:fileset
+IDENTICAL fwd:gauss_n80_e2:lines: IDENTICAL 17
+IDENTICAL fwd:gauss_n80_e2:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --comparator pollock --save-vd /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e1_cov/vd --save-seed-velocity --save-particles /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e1_cov --summary /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e1_cov.json
+  RUN name=neutral_gauss_n64_e1_cov rc=0 wall=6s
+IDENTICAL neutral:gauss_n64_e1_cov:labels.npy
+IDENTICAL neutral:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL neutral:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL neutral:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL neutral:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL neutral:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL neutral:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL neutral:gauss_n64_e1_cov:seeds.npy
+IDENTICAL neutral:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL neutral:gauss_n64_e1_cov:status_time.npy
+IDENTICAL neutral:gauss_n64_e1_cov:times_I.npy
+IDENTICAL neutral:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL neutral:gauss_n64_e1_cov:times_x.npy
+IDENTICAL neutral:gauss_n64_e1_cov:track.json
+IDENTICAL neutral:gauss_n64_e1_cov:weights.npy
+IDENTICAL neutral:gauss_n64_e1_cov:lines: IDENTICAL 21
+IDENTICAL neutral:gauss_n64_e1_cov:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --comparator pollock --save-vd /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e2/vd --save-seed-velocity --save-particles /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e2 --summary /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e2.json
+  RUN name=neutral_gauss_n64_e2 rc=0 wall=7s
+IDENTICAL neutral:gauss_n64_e2:labels.npy
+IDENTICAL neutral:gauss_n64_e2:moments_planes.csv
+IDENTICAL neutral:gauss_n64_e2:moments_time.csv
+IDENTICAL neutral:gauss_n64_e2:planes_I.npy
+IDENTICAL neutral:gauss_n64_e2:planes_tau.npy
+IDENTICAL neutral:gauss_n64_e2:planes_x23.npy
+IDENTICAL neutral:gauss_n64_e2:seeds.npy
+IDENTICAL neutral:gauss_n64_e2:status_plane.npy
+IDENTICAL neutral:gauss_n64_e2:status_time.npy
+IDENTICAL neutral:gauss_n64_e2:times_I.npy
+IDENTICAL neutral:gauss_n64_e2:times_x.npy
+IDENTICAL neutral:gauss_n64_e2:track.json
+IDENTICAL neutral:gauss_n64_e2:weights.npy
+IDENTICAL neutral:gauss_n64_e2:lines: IDENTICAL 23
+IDENTICAL neutral:gauss_n64_e2:rc base=0 head=0
++ /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.5,1,2 --times 1,2 --tol 1e-10 --hmax-div 32 --max-arclength 1000 --comparator pollock --save-vd /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e2_tol/vd --save-seed-velocity --save-particles /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e2_tol --summary /home/sesquerre/sf37_campaign/bytecmp/neutral/gauss_n64_e2_tol.json
+  RUN name=neutral_gauss_n64_e2_tol rc=0 wall=8s
+IDENTICAL neutral:gauss_n64_e2_tol:labels.npy
+IDENTICAL neutral:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL neutral:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL neutral:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL neutral:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL neutral:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL neutral:gauss_n64_e2_tol:seeds.npy
+IDENTICAL neutral:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL neutral:gauss_n64_e2_tol:status_time.npy
+IDENTICAL neutral:gauss_n64_e2_tol:times_I.npy
+IDENTICAL neutral:gauss_n64_e2_tol:times_x.npy
+IDENTICAL neutral:gauss_n64_e2_tol:track.json
+IDENTICAL neutral:gauss_n64_e2_tol:weights.npy
+IDENTICAL neutral:gauss_n64_e2_tol:lines: IDENTICAL 19
+IDENTICAL neutral:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL binary:md5_differs head=a2ecce53bdeda469b41593f706dd7028 base=fef042097f08dc725831f3df7ab975b5
+IDENTICAL binary:usage_lists_--comparator
+BYTECMP_ALL_IDENTICAL
+run_sf37.sh: part=bytecmp end=2026-10-20T19:51:26Z blocking_failures=0
+[2026-10-20T19:51:26Z] job=sf37-bytecmp finished exit=0

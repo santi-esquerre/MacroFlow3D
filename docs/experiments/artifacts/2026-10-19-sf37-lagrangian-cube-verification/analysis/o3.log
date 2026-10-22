@@ -1,0 +1,7 @@
+O3 eps=1.5 seed=3101: O3a=accept O3b=shrinking
+O3 eps=1.5 seed=3102: O3a=accept O3b=shrinking
+O3 eps=1.5 seed=3103: O3a=accept O3b=shrinking
+O3 eps=2 seed=3101: O3a=accept O3b=shrinking
+O3 eps=2 seed=3102: O3a=unresolved O3b=shrinking
+O3 eps=2 seed=3103: O3a=accept O3b=shrinking
+o3: wrote 6 files to /home/sesquerre/sf37_campaign/analysis/o3

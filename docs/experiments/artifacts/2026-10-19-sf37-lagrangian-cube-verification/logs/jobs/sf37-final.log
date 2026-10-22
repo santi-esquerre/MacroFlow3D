@@ -1,0 +1,144 @@
+[2026-10-22T07:58:19Z] job=sf37-final session=macroflow3d-SF-37-sf37-final started
+[2026-10-22T07:58:19Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-22T07:58:19Z] cwd=/home/sesquerre/MacroFlow3D-SF-37
+[2026-10-22T07:58:19Z] command=export SF37_FINAL_COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350
+#!/usr/bin/env bash
+# SF-37 FINAL_AUDIT job sf37-final: full V100 ctest + SF-27 trio byte-compare vs the base build (~/sf37_base_refs/trio).
+# bash 4.2-safe. Passed verbatim as the command string of `scripts/remote --increment SF-37 run sf37-final` (preceded by
+# `export SF37_FINAL_COMMIT=<hash>`), so the host keeps the exact text in commands/sf37-final.command. Runs on the SF-37
+# mirror synced from a clean worktree of the source-bearing tree it reports (H1; later commits are docs/evidence only).
+set -o pipefail
+M=~/MacroFlow3D-SF-37
+cd "$M" || exit 2
+echo "FINAL_TREE_COMMIT=${SF37_FINAL_COMMIT:-unknown}"
+echo "GPU=${CUDA_VISIBLE_DEVICES:-unset} $(nvidia-smi --query-gpu=name --format=csv,noheader -i "${CUDA_VISIBLE_DEVICES:-0}")"
+cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 5
+echo "BUILD_EXIT=$?"
+md5sum build/v100-release/inlet_slab build/v100-release/macroflow3d_pipeline
+T0=$(date +%s)
+ctest --test-dir build/v100-release --output-on-failure
+echo "CTEST_EXIT=$? CTEST_WALL_S=$(( $(date +%s) - T0 ))"
+R=~/sf37_head_refs
+rm -rf "$R"; mkdir -p "$R"; cd "$R" || exit 2
+for c in config_pspta_small config_streamfunctions_homogeneous config_streamfunctions_continuation; do
+    "$M/build/v100-release/macroflow3d_pipeline" "$M/apps/$c.yaml" > "$c.log" 2>&1
+    echo "$c exit=$?"
+done
+for o in output_pspta_small output_streamfunctions_homogeneous output_streamfunctions_continuation; do
+    echo "== $o"
+    diff -rq -x manifest.json ~/sf37_base_refs/trio/$o "$R/$o" && echo "BYTECMP_IDENTICAL $o (excluding manifest.json)"
+    diff <(grep -v -E 'time|date|timestamp|elapsed|duration|_s"|seconds' ~/sf37_base_refs/trio/$o/manifest.json) <(grep -v -E 'time|date|timestamp|elapsed|duration|_s"|seconds' "$R/$o/manifest.json") && echo "MANIFEST_IDENTICAL_MODULO_TIMES $o"
+done
+echo FINAL_JOB_END
+FINAL_TREE_COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350
+GPU=0 Tesla V100-PCIE-32GB
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[0/2] Re-checking globbed directories...
+ninja: no work to do.
+BUILD_EXIT=0
+a2ecce53bdeda469b41593f706dd7028  build/v100-release/inlet_slab
+d0112ce8497b751303543c7de60a9e94  build/v100-release/macroflow3d_pipeline
+Test project /home/sesquerre/MacroFlow3D-SF-37/build/v100-release
+      Start  1: operator_tests
+ 1/38 Test  #1: operator_tests .........................   Passed    3.44 sec
+      Start  2: streamfunction_operator_tests
+ 2/38 Test  #2: streamfunction_operator_tests ..........   Passed  1340.82 sec
+      Start  3: streamfunction_exact_pair
+ 3/38 Test  #3: streamfunction_exact_pair ..............   Passed   11.42 sec
+      Start  4: streamfunction_homogeneous
+ 4/38 Test  #4: streamfunction_homogeneous .............   Passed    3.42 sec
+      Start  5: streamfunction_picard_fixed
+ 5/38 Test  #5: streamfunction_picard_fixed ............   Passed  423.74 sec
+      Start  6: streamfunction_picard_adaptive
+ 6/38 Test  #6: streamfunction_picard_adaptive .........   Passed  120.84 sec
+      Start  7: streamfunction_continuation
+ 7/38 Test  #7: streamfunction_continuation ............   Passed  160.94 sec
+      Start  8: streamfunction_anderson
+ 8/38 Test  #8: streamfunction_anderson ................   Passed  142.42 sec
+      Start  9: streamfunction_heterogeneity_unit
+ 9/38 Test  #9: streamfunction_heterogeneity_unit ......   Passed   20.38 sec
+      Start 10: streamfunction_jvp
+10/38 Test #10: streamfunction_jvp .....................   Passed   35.74 sec
+      Start 11: streamfunction_gmres
+11/38 Test #11: streamfunction_gmres ...................   Passed  263.60 sec
+      Start 12: streamfunction_newton
+12/38 Test #12: streamfunction_newton ..................   Passed  139.01 sec
+      Start 13: streamfunction_terminal_unit
+13/38 Test #13: streamfunction_terminal_unit ...........   Passed   25.34 sec
+      Start 14: periodic_gaussian
+14/38 Test #14: periodic_gaussian ......................   Passed    3.75 sec
+      Start 15: stochastic_baseline_gaussian
+15/38 Test #15: stochastic_baseline_gaussian ...........   Passed    3.67 sec
+      Start 16: affine_periodic_flow
+16/38 Test #16: affine_periodic_flow ...................   Passed    8.34 sec
+      Start 17: interpolation_periodic_tricubic
+17/38 Test #17: interpolation_periodic_tricubic ........   Passed    4.13 sec
+      Start 18: interpolation_hessian
+18/38 Test #18: interpolation_hessian ..................   Passed    2.99 sec
+      Start 19: streamline_tracker_pseudo_symplectic
+19/38 Test #19: streamline_tracker_pseudo_symplectic ...   Passed    4.74 sec
+      Start 20: streamline_tracker_reference_rk
+20/38 Test #20: streamline_tracker_reference_rk ........   Passed    3.95 sec
+      Start 21: streamline_tracker_face_flux
+21/38 Test #21: streamline_tracker_face_flux ...........   Passed    4.61 sec
+      Start 22: streamline_tracker_pollock
+22/38 Test #22: streamline_tracker_pollock .............   Passed    4.97 sec
+      Start 23: streamline_closure_integrator
+23/38 Test #23: streamline_closure_integrator ..........   Passed    5.76 sec
+      Start 24: spurious_spreading_controls16
+24/38 Test #24: spurious_spreading_controls16 ..........   Passed    4.22 sec
+      Start 25: streamline_closure_controls16
+25/38 Test #25: streamline_closure_controls16 ..........   Passed   11.85 sec
+      Start 26: inlet_slab_contracts
+26/38 Test #26: inlet_slab_contracts ...................   Passed    3.56 sec
+      Start 27: inlet_slab_jvp
+27/38 Test #27: inlet_slab_jvp .........................   Passed    3.50 sec
+      Start 28: inlet_slab_newton
+28/38 Test #28: inlet_slab_newton ......................   Passed   15.68 sec
+      Start 29: inlet_slab_coarse
+29/38 Test #29: inlet_slab_coarse ......................   Passed    4.97 sec
+      Start 30: inlet_slab_production16
+30/38 Test #30: inlet_slab_production16 ................   Passed   11.73 sec
+      Start 31: inlet_slab_trace16
+31/38 Test #31: inlet_slab_trace16 .....................   Passed   10.39 sec
+      Start 32: inlet_slab_controls
+32/38 Test #32: inlet_slab_controls ....................   Passed   10.33 sec
+      Start 33: inlet_slab_trace_gpu
+33/38 Test #33: inlet_slab_trace_gpu ...................   Passed   32.94 sec
+      Start 34: lagrangian_tracker_gpu_host
+34/38 Test #34: lagrangian_tracker_gpu_host ............   Passed   13.73 sec
+      Start 35: lagrangian_tracker_controls
+35/38 Test #35: lagrangian_tracker_controls ............   Passed   18.90 sec
+      Start 36: lagrangian_face_flux_repack
+36/38 Test #36: lagrangian_face_flux_repack ............   Passed    4.18 sec
+      Start 37: inlet_slab_stage_options
+37/38 Test #37: inlet_slab_stage_options ...............   Passed   13.93 sec
+      Start 38: inlet_slab_npy
+38/38 Test #38: inlet_slab_npy .........................   Passed    3.56 sec
+
+100% tests passed, 0 tests failed out of 38
+
+Total Test time (real) = 2901.55 sec
+CTEST_EXIT=0 CTEST_WALL_S=2902
+config_pspta_small exit=0
+config_streamfunctions_homogeneous exit=0
+config_streamfunctions_continuation exit=0
+== output_pspta_small
+BYTECMP_IDENTICAL output_pspta_small (excluding manifest.json)
+MANIFEST_IDENTICAL_MODULO_TIMES output_pspta_small
+== output_streamfunctions_homogeneous
+BYTECMP_IDENTICAL output_streamfunctions_homogeneous (excluding manifest.json)
+MANIFEST_IDENTICAL_MODULO_TIMES output_streamfunctions_homogeneous
+== output_streamfunctions_continuation
+BYTECMP_IDENTICAL output_streamfunctions_continuation (excluding manifest.json)
+MANIFEST_IDENTICAL_MODULO_TIMES output_streamfunctions_continuation
+FINAL_JOB_END
+[2026-10-22T08:46:56Z] job=sf37-final finished exit=0

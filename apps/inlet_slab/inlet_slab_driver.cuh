@@ -30,6 +30,11 @@
  *                             stage (DP5(4) on the spline flow, per-particle labels / tau / I /
  *                             covectors, moments per plane and per time); no Newton solve.
  *
+ *                             SF-37 N4 opt-in additions (every other output unchanged when unused):
+ *                             --comparator pollock (Pollock/RT0 lattice comparator on the SF-19 face
+ *                             fluxes, V3b), --save-vd <dir> (reference vertex velocity vD),
+ *                             --save-seed-velocity (k g at the seeds; needs --save-particles).
+ *
  *   --construct trace         SF-35 N3: production constructor of the Darcy labels by backward
  *                             streamline tracing (no Newton solve): per-plane metrics, (14)
  *                             residual diagnostic, optional --ladder / --solve (SF-33 NK
@@ -57,7 +62,9 @@
 #include "src/core/DeviceSpan.cuh"
 #include "src/core/Scalar.hpp"
 #include "src/external/nlohmann/json.hpp"
+#include "src/physics/particles/lagrangian_labels/FaceFluxRepack.cuh"
 #include "src/physics/particles/lagrangian_labels/LagrangianTracker.cuh"
+#include "src/physics/particles/lagrangian_labels/PollockComparator.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletLabels.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletSlabGrid.cuh"
 #include "src/physics/streamfunctions/inlet_slab/NpyIo.hpp"
@@ -74,6 +81,7 @@
 #include "src/runtime/CudaContext.cuh"
 
 #include <algorithm>
+#include <array>
 #include <cerrno>
 #include <chrono>
 #include <cmath>
@@ -81,6 +89,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <limits>
 #include <map>
@@ -120,6 +130,7 @@ enum ExitCode : int {
     kExitNotRun = 20,
     kExitRoundtripExceeded = 21, ///< --construct trace: round trip > --max-roundtrip
     kExitTrackFail = 22, ///< --track forward: a particle failed (not seed_backflow) in either pass
+    kExitComparatorFail = 23, ///< --track forward --comparator pollock: a weighted Pollock particle failed
 };
 
 inline int exit_code_of(const std::string& status) {
@@ -151,6 +162,8 @@ inline int exit_code_of(const std::string& status) {
         return kExitRoundtripExceeded;
     if (status == "track_fail")
         return kExitTrackFail;
+    if (status == "comparator_fail")
+        return kExitComparatorFail;
     return kExitNotRun;
 }
 
@@ -263,6 +276,11 @@ struct DriverConfig {
     std::string window = "0,1,0,1";
     std::string save_particles_dir;
     bool fwd_opts_given = false; ///< any of the forward-only options was given
+    // SF-37 N4 opt-in additions of --track forward
+    std::string comparator;      ///< "" | "pollock"
+    std::string save_vd_dir;     ///< --save-vd: vD1/2/3.npy + vD.json of the stage
+    bool save_seed_velocity = false; ///< --save-seed-velocity: seed_v.npy in --save-particles dir
+    bool sf37_opts_given = false;    ///< any of the three was given
     // outputs
     std::string save_solution_dir;
     std::string save_oracle_dir; ///< SF-33 N8': psi_or_{1,2}.npy (full labels) of every oracle run
@@ -298,6 +316,20 @@ inline const char* usage_text() {
            "at least one list;\n"
            "              h_max = h/hmax-div; M x M stratified flux-weighted lattice on the "
            "window of the plane x1 = x0)\n"
+           "             SF-37 opt-in additions of --track forward (all other outputs unchanged):\n"
+           "             [--comparator pollock] Pollock (RT0, cell-by-cell) tracker on the SF-19 face "
+           "fluxes over the same\n"
+           "                 seed lattice, planes and times; with --save-particles also pollock_*.npy / "
+           "pollock_moments_*.csv /\n"
+           "                 pollock.json; lines PTRACK / PPLANE / PTIME / PSTATUS; exit 23 "
+           "(comparator_fail) if a Pollock\n"
+           "                 particle with positive weight is not active in either pass\n"
+           "             [--save-vd <dir>] export of the stage reference vertex velocity vD "
+           "(vD1/2/3.npy, shape (N+1,N,N),\n"
+           "                 idx = m3 + N (m2 + N j); vD.json); independent of --save-particles\n"
+           "             [--save-seed-velocity] seed_v.npy (Np,3) = k g at the seeds in the "
+           "--save-particles dir (requires\n"
+           "                 --save-particles); prints SEEDV\n"
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
            "  inlet_slab --linear-probe <case_dir> --eps-stage E --newton-steps k [--eps-from A]\n"
            "             [--probe-ladder 0.25,0.375] [--probe-precs pa,mult1,mult2,add1]\n"
@@ -320,7 +352,9 @@ inline const char* usage_text() {
            "trace_fail (--construct trace);\n"
            "            21 roundtrip_exceeded (--construct trace); 22 track_fail (--track forward: "
            "any particle non-ok\n"
-           "            in either pass other than seed_backflow)\n";
+           "            in either pass other than seed_backflow); 23 comparator_fail (--track forward "
+           "--comparator pollock:\n"
+           "            a Pollock particle with positive weight is not active in either pass)\n";
 }
 
 namespace detail {
@@ -423,6 +457,11 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.fwd_opts_given = true;
             continue;
         }
+        if (opt == "--save-seed-velocity") {
+            c.save_seed_velocity = true;
+            c.sf37_opts_given = true;
+            continue;
+        }
         if (i + 1 >= argc)
             throw UsageError(opt + " requires a value");
         const std::string val = argv[++i];
@@ -467,6 +506,16 @@ inline DriverConfig parse_args(int argc, char** argv) {
         } else if (opt == "--save-particles") {
             c.save_particles_dir = val;
             c.fwd_opts_given = true;
+        } else if (opt == "--comparator") {
+            if (val != "pollock")
+                throw UsageError("--comparator: only 'pollock' exists");
+            c.comparator = val;
+            c.sf37_opts_given = true;
+        } else if (opt == "--save-vd") {
+            if (val.empty())
+                throw UsageError("--save-vd: empty directory");
+            c.save_vd_dir = val;
+            c.sf37_opts_given = true;
         } else if (opt == "--hmax-div") {
             c.trace_hmax_div = parse_int(opt, val);
             c.trace_shared_given = true;
@@ -594,6 +643,10 @@ inline DriverConfig parse_args(int argc, char** argv) {
     if (c.fwd_opts_given && c.mode != Mode::track_forward)
         throw UsageError("--np-side / --x0 / --planes / --times / --min-step / --max-arclength / "
                          "--covectors / --window / --save-particles require --track forward");
+    if (c.sf37_opts_given && c.mode != Mode::track_forward)
+        throw UsageError("--comparator / --save-vd / --save-seed-velocity require --track forward");
+    if (c.save_seed_velocity && c.save_particles_dir.empty())
+        throw UsageError("--save-seed-velocity requires --save-particles <dir>");
     if (c.prec != "pa")
         throw UsageError("--prec: only 'pa' (per-mode plane-averaged preconditioner P-A) exists");
     if (c.forcing != "ew" && c.forcing != "fixed")
@@ -2271,6 +2324,299 @@ inline std::string tstatus_line(const char* pass, const lagrangian_labels::PassT
                t.backflow_encounters, t.nfev);
 }
 
+// ---- SF-37 N4 helpers: raw npy writer, Pollock comparator, vD export ---------------------------
+
+/// Writes a C-order `.npy` (version 1.0, header padded to 64 bytes exactly as the NpyIo writer) of
+/// any little-endian element type given by its numpy descr (here "|u1" and "<u8"; the f8 arrays use
+/// sl::write_npy).
+inline void write_npy_raw(const std::string& path, const std::string& descr,
+                          const std::vector<std::size_t>& shape, const void* data,
+                          std::size_t count, std::size_t elem_bytes) {
+    sl::NpyArray tmp;
+    tmp.shape = shape;
+    if (tmp.count() != count)
+        throw std::invalid_argument("write_npy_raw: data count does not match shape for " + path);
+    const std::string dict =
+        "{'descr': '" + descr + "', 'fortran_order': False, 'shape': " + tmp.shape_string() + ", }";
+    const std::size_t total = 10 + dict.size() + 1;
+    const std::size_t pad = (64 - total % 64) % 64;
+    const std::string hdr = dict + std::string(pad, ' ') + "\n";
+    std::string out("\x93NUMPY", 6);
+    out.push_back('\x01');
+    out.push_back('\x00');
+    const std::uint16_t hl = static_cast<std::uint16_t>(hdr.size());
+    out.push_back(static_cast<char>(hl & 0xFFu));
+    out.push_back(static_cast<char>((hl >> 8) & 0xFFu));
+    out += hdr;
+    std::ofstream f(path, std::ios::binary | std::ios::trunc);
+    if (!f)
+        throw std::runtime_error("cannot write " + path);
+    f.write(out.data(), static_cast<std::streamsize>(out.size()));
+    if (count > 0)
+        f.write(static_cast<const char*>(data), static_cast<std::streamsize>(count * elem_bytes));
+    if (!f)
+        throw std::runtime_error("write failed for " + path);
+}
+
+using PollockHist = std::array<long long, lagrangian_labels::kPollockStatusSlots>;
+
+inline std::string pollock_hist_string(const PollockHist& h) {
+    std::string s;
+    for (std::size_t k = 0; k < h.size(); ++k) {
+        if (h[k] == 0 && k != 0)
+            continue;
+        s += fmt(s.empty() ? "%zu:%lld" : ",%zu:%lld", k, h[k]);
+    }
+    return s;
+}
+
+inline json pollock_hist_json(const PollockHist& h) {
+    json j = json::object();
+    for (std::size_t k = 0; k < h.size(); ++k)
+        if (h[k] != 0 || k == 0)
+            j[std::to_string(k)] = h[k];
+    return j;
+}
+
+/// SF-37 V3b: the Pollock (RT0) lattice comparator on the SF-19 face fluxes over the same seed
+/// lattice / planes / times as the Lagrangian tracker. Prints PTRACK / PPLANE / PTIME / PSTATUS,
+/// writes the pollock_* files when `save_dir` is non-empty, fills `pj` (summary object). Returns the
+/// number of weighted (positive weight) particles that are not active (code != 0) in either pass.
+inline long long run_pollock_comparator(CudaContext& ctx, const sl::ProductionStage& st,
+                                        const lagrangian_labels::InjectionSpec& inj,
+                                        const std::vector<double>& planes,
+                                        const std::vector<double>& times,
+                                        const std::vector<double>& tracker_seeds,
+                                        const std::string& field, double eps,
+                                        const std::string& save_dir, json& pj) {
+    namespace ll = lagrangian_labels;
+    if (!st.faces_available())
+        throw std::runtime_error("--comparator pollock: the stage face fluxes are not available");
+    const int N = st.grid.n;
+    const auto t_rep = std::chrono::steady_clock::now();
+    ll::PeriodicFaceFluxes faces = ll::PeriodicFaceFluxes::upload_and_repack(
+        ctx, st.face_flux_u, st.face_flux_v, st.face_flux_w, N, N, N, st.grid.h);
+    const double seconds_repack = seconds_since(t_rep);
+    physics::particles::streamline_tracker::PollockParams prm;
+    prm.max_cells_per_call = 10000000; // the SF-32 documented default
+    const ll::PollockLatticeResult Q =
+        ll::track_pollock_lattice(ctx, faces.view(), inj, planes, times, prm);
+    const bool seeds_equal = Q.seeds == tracker_seeds;
+
+    out_line(fmt("PTRACK field=%s eps=%g N=%d h=%.10g x0=%.10g M=%d Np=%d planes=%s times=%s "
+                 "seed_nonpos=%lld max_cells_per_call=%d seeds_equal_tracker=%d weights=rt0_v1_at_seed",
+                 field.c_str(), eps, N, static_cast<double>(st.grid.h), inj.X0, inj.M, Q.Np,
+                 join_list(Q.planes).c_str(), join_list(Q.times).c_str(), Q.seed_nonpos,
+                 Q.max_cells_per_call, seeds_equal ? 1 : 0));
+    json mp = json::array(), mt = json::array();
+    for (std::size_t m = 0; m < Q.moments_planes.size(); ++m) {
+        const ll::PollockPlaneMoments& q = Q.moments_planes[m];
+        out_line(fmt("PPLANE m=%zu x1=%.10g contributing=%d mean2=%.12e var2=%.12e mean3=%.12e "
+                     "var3=%.12e mean_t=%.12e var_t=%.12e",
+                     m, q.x1, q.contributing, q.mean_x2, q.var_x2, q.mean_x3, q.var_x3, q.mean_t,
+                     q.var_t));
+        mp.push_back({{"m", m},
+                      {"x1", jnum(q.x1)},
+                      {"contributing", q.contributing},
+                      {"non_ok", q.non_ok},
+                      {"mean2", jnum(q.mean_x2)},
+                      {"var2", jnum(q.var_x2)},
+                      {"mean3", jnum(q.mean_x3)},
+                      {"var3", jnum(q.var_x3)},
+                      {"mean_t", jnum(q.mean_t)},
+                      {"var_t", jnum(q.var_t)}});
+    }
+    for (std::size_t n = 0; n < Q.moments_time.size(); ++n) {
+        const auto& q = Q.moments_time[n];
+        out_line(fmt("PTIME n=%zu t=%.10g active=%d mean1=%.12e mean2=%.12e mean3=%.12e "
+                     "var1=%.12e var2=%.12e var3=%.12e",
+                     n, q.time, q.active, q.mean[0], q.mean[1], q.mean[2], q.var[0], q.var[1],
+                     q.var[2]));
+        mt.push_back({{"n", n},
+                      {"t", jnum(q.time)},
+                      {"active", q.active},
+                      {"mean", {jnum(q.mean[0]), jnum(q.mean[1]), jnum(q.mean[2])}},
+                      {"var", {jnum(q.var[0]), jnum(q.var[1]), jnum(q.var[2])}}});
+    }
+    out_line(fmt("PSTATUS pass=plane hist=%s cells=%llu",
+                 pollock_hist_string(Q.status_hist_plane).c_str(), Q.cells_plane));
+    out_line(fmt("PSTATUS pass=time hist=%s cells=%llu",
+                 pollock_hist_string(Q.status_hist_time).c_str(), Q.cells_time));
+
+    long long n_fail = 0;
+    for (int p = 0; p < Q.Np; ++p) {
+        const std::size_t u = static_cast<std::size_t>(p);
+        if (Q.weights[u] > 0.0 && (Q.status_plane[u] != 0 || Q.status_time[u] != 0))
+            ++n_fail;
+    }
+    if (n_fail > 0)
+        out_line(fmt("PFAIL weighted_particles_not_active=%lld (positive weight, status != 0 in a "
+                     "pass)",
+                     n_fail));
+
+    pj = {{"comparator", "pollock"},
+          {"weights", "rt0_v1_at_seed"},
+          {"Np", Q.Np},
+          {"seed_nonpos", Q.seed_nonpos},
+          {"seeds_equal_tracker", seeds_equal},
+          {"max_cells_per_call", Q.max_cells_per_call},
+          {"status_hist_plane", pollock_hist_json(Q.status_hist_plane)},
+          {"status_hist_time", pollock_hist_json(Q.status_hist_time)},
+          {"cells_plane", Q.cells_plane},
+          {"cells_time", Q.cells_time},
+          {"weighted_particles_not_active", n_fail},
+          {"moments_planes", mp},
+          {"moments_time", mt},
+          {"timings_s", {{"repack", seconds_repack},
+                         {"plane_kernel", Q.seconds_plane_kernel},
+                         {"time_kernel", Q.seconds_time_kernel},
+                         {"download", Q.seconds_download},
+                         {"moments", Q.seconds_moments}}}};
+
+    if (!save_dir.empty()) {
+        std::filesystem::create_directories(save_dir);
+        const std::size_t Np = static_cast<std::size_t>(Q.Np);
+        const std::size_t P = static_cast<std::size_t>(Q.P), T = static_cast<std::size_t>(Q.T);
+        auto f8 = [&](const char* name, const std::vector<std::size_t>& shape,
+                      const std::vector<double>& v) {
+            sl::write_npy(save_dir + "/" + name, shape, v.data(), v.size());
+        };
+        f8("pollock_weights.npy", {Np}, Q.weights);
+        write_npy_raw(save_dir + "/pollock_status_plane.npy", "|u1", {Np}, Q.status_plane.data(),
+                      Q.status_plane.size(), 1);
+        write_npy_raw(save_dir + "/pollock_status_time.npy", "|u1", {Np}, Q.status_time.data(),
+                      Q.status_time.size(), 1);
+        f8("pollock_planes_x23.npy", {Np, P, 2}, Q.planes_x23);
+        f8("pollock_planes_t.npy", {Np, P}, Q.planes_t);
+        f8("pollock_times_x.npy", {Np, T, 3}, Q.times_x);
+        write_npy_raw(save_dir + "/pollock_cells.npy", "<u8", {Np, 2}, Q.cells.data(),
+                      Q.cells.size(), sizeof(std::uint64_t));
+        if (!io::CsvTimeSeriesWriter::write(save_dir + "/pollock_moments_time.csv", Q.moments_time))
+            throw std::runtime_error("cannot write pollock_moments_time.csv");
+        {
+            std::FILE* f = std::fopen((save_dir + "/pollock_moments_planes.csv").c_str(), "w");
+            if (!f)
+                throw std::runtime_error("cannot write pollock_moments_planes.csv");
+            std::fprintf(f, "x1,contributing,non_ok,mean_x2,var_x2,mean_x3,var_x3,mean_t,var_t\n");
+            for (const ll::PollockPlaneMoments& m : Q.moments_planes)
+                std::fprintf(f, "%.15e,%d,%d,%.15e,%.15e,%.15e,%.15e,%.15e,%.15e\n", m.x1,
+                             m.contributing, m.non_ok, m.mean_x2, m.var_x2, m.mean_x3, m.var_x3,
+                             m.mean_t, m.var_t);
+            std::fclose(f);
+        }
+        json j;
+        j["field"] = field;
+        j["eps"] = eps;
+        j["N"] = N;
+        j["h"] = st.grid.h;
+        j["M"] = Q.injection.M;
+        j["X0"] = Q.injection.X0;
+        j["window"] = {Q.injection.w2a, Q.injection.w2b, Q.injection.w3a, Q.injection.w3b};
+        j["planes"] = Q.planes;
+        j["times"] = Q.times;
+        j["weights"] = "rt0_v1_at_seed";
+        j["seed_nonpos"] = Q.seed_nonpos;
+        j["status_hist_plane"] = pollock_hist_json(Q.status_hist_plane);
+        j["status_hist_time"] = pollock_hist_json(Q.status_hist_time);
+        j["cells"] = {{"plane", Q.cells_plane}, {"time", Q.cells_time}};
+        j["max_cells_per_call"] = Q.max_cells_per_call;
+        j["timings_s"] = pj["timings_s"];
+        j["commit"] = "unknown";
+        std::ofstream jf(save_dir + "/pollock.json", std::ios::trunc);
+        if (!jf)
+            throw std::runtime_error("cannot write pollock.json");
+        jf << j.dump(2) << "\n";
+        out_line("SAVED_POLLOCK " + save_dir +
+                 " (pollock_{weights,status_plane,status_time,planes_x23,planes_t,times_x,cells}.npy, "
+                 "pollock_moments_{time,planes}.csv, pollock.json)");
+    }
+    return n_fail;
+}
+
+/// SF-37 --save-vd: exports the stage reference vertex velocity vD (idx = m3 + N (m2 + N j), shape
+/// (N+1, N, N), one component downloaded at a time) and vD.json.
+inline void save_vd_export(const std::string& dir, const sl::ProductionStage& st,
+                           const std::string& field, double eps) {
+    if (!st.reference.has_vD)
+        throw std::runtime_error("--save-vd: the stage has no reference vD (has_vD = false)");
+    const sl::InletSlabGrid& grid = st.grid;
+    std::filesystem::create_directories(dir);
+    const std::vector<std::size_t> shape = {static_cast<std::size_t>(grid.n) + 1,
+                                            static_cast<std::size_t>(grid.n),
+                                            static_cast<std::size_t>(grid.n)};
+    long double sum_v2 = 0.0L; // extended-precision RMS of the exported data (cross-check of v_rms)
+    for (int d = 0; d < 3; ++d) {
+        const DeviceBuffer<real>& b = st.reference.vD[d];
+        if (b.size() != grid.full_size())
+            throw std::runtime_error("--save-vd: reference vD has an unexpected size");
+        const std::vector<real> h = download(b.data(), b.size());
+        for (const real x : h)
+            sum_v2 += static_cast<long double>(x) * static_cast<long double>(x);
+        sl::write_npy(dir + "/vD" + std::to_string(d + 1) + ".npy", shape, h.data(), h.size());
+    }
+    json m;
+    m["field"] = field;
+    m["eps"] = eps;
+    m["N"] = grid.n;
+    m["h"] = grid.h;
+    m["layout"] = "idx = m3 + N (m2 + N j)";
+    m["x"] = "m/N";
+    m["shape"] = {grid.n + 1, grid.n, grid.n};
+    m["v_rms"] = jnum(st.report.v_rms); // the stage report's value (sequential double accumulation)
+    // RMS |vD| of the exported arrays, long-double accumulation (rounding of v_rms ~ 1e-14 relative)
+    m["v_rms_export_ld"] = jnum(static_cast<double>(
+        std::sqrt(sum_v2 / static_cast<long double>(grid.full_size()))));
+    m["commit"] = "unknown";
+    std::ofstream f(dir + "/vD.json", std::ios::trunc);
+    if (!f)
+        throw std::runtime_error("--save-vd: cannot write vD.json in " + dir);
+    f << m.dump(2) << "\n";
+    out_line("SAVED_VD " + dir + " (vD1.npy, vD2.npy, vD3.npy, vD.json)");
+}
+
+/// SF-37 --save-seed-velocity: seed_v.npy (Np, 3) = k g at the tracker seeds (host spline field) and
+/// the SEEDV consistency line against the tracker weights.
+inline void save_seed_velocity(const std::string& dir, const sl::ProductionStage& st,
+                               const lagrangian_labels::LagrangianTrackResult& R) {
+    const sl::SlabSplineDirectionField fld = st.direction_field();
+    const std::size_t Np = static_cast<std::size_t>(R.Np);
+    std::vector<double> v(3 * Np, 0.0);
+    for (std::size_t p = 0; p < Np; ++p) {
+        const double x[3] = {R.seeds[3 * p], R.seeds[3 * p + 1], R.seeds[3 * p + 2]};
+        double g[3], k = 0.0;
+        fld(x, g, k);
+        for (int d = 0; d < 3; ++d)
+            v[3 * p + static_cast<std::size_t>(d)] = k * g[d];
+    }
+    std::filesystem::create_directories(dir);
+    sl::write_npy(dir + "/seed_v.npy", {Np, std::size_t(3)}, v.data(), v.size());
+    double S = 0.0, wmax = 0.0;
+    long long nonpos = 0, wzero = 0;
+    for (std::size_t p = 0; p < Np; ++p) {
+        const double v1 = v[3 * p];
+        if (std::isfinite(v1) && v1 > 0.0)
+            S += v1;
+        else
+            ++nonpos;
+        wmax = std::max(wmax, R.weights[p]);
+        if (R.weights[p] == 0.0)
+            ++wzero;
+    }
+    double dev = 0.0;
+    bool set_equal = true;
+    for (std::size_t p = 0; p < Np; ++p) {
+        const double v1 = v[3 * p];
+        const bool pos = std::isfinite(v1) && v1 > 0.0;
+        const double wp = pos ? v1 / S : 0.0; // the weight the seed velocity predicts
+        dev = std::max(dev, std::fabs(wp - R.weights[p]));
+        if (pos != (R.weights[p] > 0.0))
+            set_equal = false;
+    }
+    out_line(fmt("SEEDV Np=%zu max_rel_weight_dev=%.6e nonpos=%lld weights_zero=%lld set_equal=%d "
+                 "(seed_v.npy = k g at the seeds; dev = max_p |max(v1_p,0)/S - w_p| / max_p w_p)",
+                 Np, wmax > 0.0 ? dev / wmax : std::nan(""), nonpos, wzero, set_equal ? 1 : 0));
+}
+
 inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
     namespace ll = lagrangian_labels;
     const auto t_all = std::chrono::steady_clock::now();
@@ -2293,6 +2639,7 @@ inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
     sl::ProductionStageOptions sopt;
     sopt.pcg_rtol = c.pcg_rtol;
     sopt.require_inlet_labels = false;
+    sopt.keep_face_fluxes = c.comparator == "pollock"; // SF-37: host copy of the SF-19 faces
     pl.begin("stage");
     const auto t_stage = std::chrono::steady_clock::now();
     sl::ProductionStage st = sl::build_production_stage(ctx, grid, src, c.eps, sopt);
@@ -2322,6 +2669,12 @@ inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
         J["stage_failure"] = {{"status", status}};
         print_timing_memory(pl, 0, seconds_since(t_all), J);
         return finish(status, J, c);
+    }
+
+    if (!c.save_vd_dir.empty()) { // SF-37: independent of the tracker; saved before it runs
+        pl.begin("save_vd");
+        save_vd_export(c.save_vd_dir, st, field, c.eps);
+        pl.end();
     }
 
     ll::InjectionSpec inj;
@@ -2450,8 +2803,23 @@ inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
                  " (seeds / weights / labels / status_* / planes_* / times_* .npy, "
                  "moments_{time,planes}.csv, track.json)");
     }
+    if (c.save_seed_velocity) {
+        pl.begin("seed_velocity");
+        save_seed_velocity(c.save_particles_dir, st, R);
+        pl.end();
+    }
+    long long pollock_fail = 0;
+    if (c.comparator == "pollock") {
+        pl.begin("pollock");
+        json pj;
+        pollock_fail = run_pollock_comparator(ctx, st, inj, topt.planes, topt.times, R.seeds, field,
+                                              c.eps, c.save_particles_dir, pj);
+        pl.end();
+        J["pollock"] = pj;
+    }
     print_timing_memory(pl, 0, seconds_since(t_all), J);
-    return finish(fails == 0 ? "ok" : "track_fail", J, c);
+    // exit-code rules: track_fail first (unchanged), then comparator_fail, else ok
+    return finish(fails != 0 ? "track_fail" : (pollock_fail != 0 ? "comparator_fail" : "ok"), J, c);
 }
 
 // ================================================================================================

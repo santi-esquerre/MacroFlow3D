@@ -1,0 +1,18 @@
+sigma^2 1 (worst of 3 seeds):
+   lam/h 10: sigT2(16) 1.9% | var_tau(any plane) 1.6% | aT-rate abs err 5.8e-04 lambda | aL-rate 12.0%
+   lam/h 20: sigT2(16) 0.5% | var_tau(any plane) 0.4% | aT-rate abs err 1.5e-04 lambda | aL-rate 2.9%
+   lam/h 32: sigT2(16) 0.2% | var_tau(any plane) 0.2% | aT-rate abs err 5.7e-05 lambda | aL-rate 1.1%
+sigma^2 2.25 (worst of 3 seeds):
+   lam/h 10: sigT2(16) 9.2% | var_tau(any plane) 1.7% | aT-rate abs err 4.4e-03 lambda | aL-rate 44.2%
+   lam/h 20: sigT2(16) 2.4% | var_tau(any plane) 0.4% | aT-rate abs err 1.2e-03 lambda | aL-rate 11.7%
+   lam/h 32: sigT2(16) 1.1% | var_tau(any plane) 0.2% | aT-rate abs err 5.3e-04 lambda | aL-rate 4.4%
+sigma^2 4 (worst of 3 seeds):
+   lam/h 10: sigT2(16) 19.2% | var_tau(any plane) 7.4% | aT-rate abs err 1.0e-02 lambda | aL-rate 73.9%
+   lam/h 20: sigT2(16) 6.1% | var_tau(any plane) 2.0% | aT-rate abs err 3.2e-03 lambda | aL-rate 26.7%
+   lam/h 32: sigT2(16) 2.8% | var_tau(any plane) 1.1% | aT-rate abs err 1.5e-03 lambda | aL-rate 10.4%
+eps10 N128 (lam/h 32): plane pass 13.9 s -> 302,342 particle-lambda/s; per (lambda/h) normalised 9,674,941
+eps10 N256 (lam/h 64): plane pass 55.5 s -> 75,550 particle-lambda/s; per (lambda/h) normalised 4,835,179
+eps10 N512 (lam/h 128): plane pass 191.5 s -> 21,900 particle-lambda/s; per (lambda/h) normalised 2,803,168
+eps20 N128 (lam/h 32): plane pass 18.2 s -> 230,726 particle-lambda/s; per (lambda/h) normalised 7,383,222
+eps20 N256 (lam/h 64): plane pass 76.3 s -> 54,964 particle-lambda/s; per (lambda/h) normalised 3,517,726
+eps20 N512 (lam/h 128): plane pass 223.4 s -> 18,774 particle-lambda/s; per (lambda/h) normalised 2,403,048

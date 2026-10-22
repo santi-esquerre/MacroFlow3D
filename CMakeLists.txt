@@ -243,8 +243,14 @@ set_source_files_properties(src/physics/streamfunctions/inlet_slab/SlabTraceGpu.
 # SF-36 N4: forward Lagrangian-label tracker (device integrator templates; --fmad=false like SlabTraceGpu.cu)
 set(LAGRANGIAN_LABELS_SOURCES
     src/physics/particles/lagrangian_labels/LagrangianTracker.cu
+    src/physics/particles/lagrangian_labels/FaceFluxRepack.cu
+    src/physics/particles/lagrangian_labels/PollockComparator.cu
 )
 set_source_files_properties(src/physics/particles/lagrangian_labels/LagrangianTracker.cu
+    PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
+# SF-37 N3: CompactMAC -> periodic face repack and the Pollock lattice comparator (V3b)
+set_source_files_properties(src/physics/particles/lagrangian_labels/FaceFluxRepack.cu
+    src/physics/particles/lagrangian_labels/PollockComparator.cu
     PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
 
 set(MULTIGRID_SOURCES
@@ -738,6 +744,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(lagrangian_controls_tests PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_tracker_controls COMMAND lagrangian_controls_tests)
+
+    # SF-37 N3: CompactMAC -> periodic face repack (bitwise), Pollock lattice tracker on k = 1 and a smooth K
+    add_executable(face_flux_repack_tests tests/lagrangian_labels/face_flux_repack_tests.cu)
+    target_link_libraries(face_flux_repack_tests PRIVATE macroflow3d_lib)
+    target_compile_options(face_flux_repack_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_face_flux_repack COMMAND face_flux_repack_tests)
     # SF-36 N2: ProductionStageOptions::require_inlet_labels / flow_ready (fast tier; N = 16)
     add_executable(inlet_slab_stage_options_tests tests/inlet_slab/slab_stage_options_tests.cu)
     target_link_libraries(inlet_slab_stage_options_tests PRIVATE macroflow3d_lib)

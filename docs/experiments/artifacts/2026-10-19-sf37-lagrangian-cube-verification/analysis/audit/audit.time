@@ -1,0 +1,23 @@
+	Command being timed: "python3 /home/sesquerre/sf37_audit_job/audit_recompute.py /home/sesquerre/sf37_campaign docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/analysis/bootstrap_blocks.npy /home/sesquerre/sf37_audit --o3 --v3a"
+	User time (seconds): 197.94
+	System time (seconds): 15.88
+	Percent of CPU this job got: 269%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:19.36
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5584180
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 9366391
+	Voluntary context switches: 121
+	Involuntary context switches: 263
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 352
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
