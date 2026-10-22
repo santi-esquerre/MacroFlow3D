@@ -144,7 +144,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-37 — Verification of the Lagrangian consumer on the cube at sigma^2 <= 4, with blind O3](lester-eq14/increments/SF-37-lagrangian-cube-verification.md)
 - [ ] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
 - [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
-- [ ] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
+- [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -422,7 +422,9 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    `h/8` cap; V3b `discordant` from the comparator seed weighting; `docs/experiments/2026-10-19-sf37-lagrangian-cube-verification.md`,
    `docs/experiments/2026-10-22-sf37-posthoc-review-and-mecom-feasibility.md`); lean `Grid3D` stage at memory level S+
    for 3328x384x384 within 30000 MiB, bitwise, with tracker speedups and Par2 dead-buffer cleanup:
-   [SF-40](lester-eq14/increments/SF-40-lean-lagrangian-stage.md) (decision 2026-10-22); long-domain infrastructure
+   [SF-40](lester-eq14/increments/SF-40-lean-lagrangian-stage.md) (decision 2026-10-22; done: 3328x384x384 runs at a
+   measured peak of 28885 MiB, outputs byte-identical to the cube stage, tracker speedup 1.55x bitwise, capacity ~5.1e8
+   cells, `docs/experiments/2026-10-22-sf40-lean-lagrangian-stage.md`); long-domain infrastructure
    (non-cubic stage on the SF-40 lean stage, medium A/B affine-periodic vs Dirichlet in `x`, ensemble runner, Par2
    baseline): [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md). If SF-38 selects the Dirichlet
    medium, a spline non-periodic in `x1` (provisional SF-41) is specified before the study.
