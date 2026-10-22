@@ -173,7 +173,7 @@ allowed only there and are recorded as such.
 ## Advancement rule
 
 `SF-39` becomes eligible after this increment and `SF-37` are merged and marked `done` on the default branch (and,
-if C selects medium (b), after the non-periodic spline increment).
+if C selects medium (b), after the non-periodic spline increment (SF-41)).
 
 ## Bitácora
 

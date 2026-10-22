@@ -3,8 +3,7 @@
 - Status: accepted (owner, 2026-10-22, planning session; ratified by the human merge of the PR that adds this record)
 - Date: 2026-10-22
 - Deciders: owner (planning session 2026-10-22)
-- Evidence: `docs/experiments/2026-10-22-lagrangian-memory-audit.md` (audit; §3, §4, §8, §9, §10 cited below; expected
-  unresolved link until node N1 of the same PR lands),
+- Evidence: `docs/experiments/2026-10-22-lagrangian-memory-audit.md` (audit; §3, §4, §8, §9, §10 cited below),
   `docs/experiments/2026-10-19-sf37-lagrangian-cube-verification.md` (SF-37 `lambda/h` ladder and measured peaks),
   `docs/experiments/2026-10-22-sf37-posthoc-review-and-mecom-feasibility.md` (§I.5 item 2 and §II.3 raised the
   resolution-versus-domain tension),
@@ -23,11 +22,11 @@ SF-37 fixed the production `lambda/h` of the Lagrangian consumer: 8 / 16 / 32 at
 (`docs/experiments/2026-10-19-sf37-lagrangian-cube-verification.md`). With the current stage (~197 B/cell in the SF-19
 solve phase, ~213 B/cell at the stage peak by exact bytes; audit §4) one V100-32GB holds ~1.45e8 to ~1.57e8 cells
 (audit §8-§9). That does not reach the validated `lambda/h` for `sigma_Y^2 >= 2.25` on a long domain: SF-38's
-provisional 2048x256x256 box (1.34e8 cells) is `lambda/h` 10, and the legacy `lambda/h ~ 11` was shown to carry
+specified 2048x256x256 production box (1.34e8 cells) is `lambda/h` 10, and the legacy `lambda/h ~ 11` was shown to carry
 estimated errors at `sigma_Y^2 = 4` (audit §3; post-hoc review §I.5 item 2, §II.3).
 
 The audit found that the peak is orchestration and duplication, not the tracker: the tracker costs ~16 B/cell, while
-the flow construction keeps three correctors, a duplicate coefficient hierarchy, separate flux/divergence arrays and
+the flow construction keeps three correctors, a copy of `K` in the level-0 MG coefficient, separate flux/divergence arrays and
 host-reconstructable fields alive on the device (audit §4, §8). Techniques that remove them without changing a bit of
 the result exist as designs (levels O1, O2, S, S+; audit §8); none is implemented or verified yet.
 
@@ -36,8 +35,7 @@ the result exist as designs (levels O1, O2, S, S+; audit §8); none is implement
 1. **Bitwise-only policy.** Every technique of the memory and time work must reproduce the current outputs byte for
    byte. A technique that breaks bytes is discarded; "almost identical" is not accepted. (Non-bitwise options are
    item 7.)
-2. **New increment SF-40** (`docs/plans/active/lester-eq14/increments/SF-40-lean-lagrangian-stage.md`, expected
-   unresolved link until node N3 of the same PR lands): a lean, parametric stage on `Grid3D` (non-cubic) at memory
+2. **New increment SF-40** (`docs/plans/active/lester-eq14/increments/SF-40-lean-lagrangian-stage.md`): a lean, parametric stage on `Grid3D` (non-cubic) at memory
    level **S+**, comprising
    - O1: orchestration only (2 of 3 correctors offloaded to host; flux/divergence on dead PCG/MG buffers; `rhs_b` in the
      PCG `z`; `rhs_a` in a level-0 MG buffer; `lnK` on host; `u,v,w` not alive during the PCG);
@@ -58,7 +56,9 @@ the result exist as designs (levels O1, O2, S, S+; audit §8); none is implement
 5. **Memory target.** Level S+ with the box **3328x384x384** (490,733,568 = 4.9e8 cells) within **30000 MiB measured**
    on one V100-32GB. The model gives 28847 MiB including a 500 MiB CUDA context (60.57 B/cell; audit §8-§9). In
    `lambda` units the box is 208 x 24 x 24 at `lambda/h` 16 (`sigma_Y^2` 2.25) and 104 x 12 x 12 at `lambda/h` 32
-   (`sigma_Y^2` 4). The 30000 MiB target is acceptance; the model figure is a prediction to be measured.
+   (`sigma_Y^2` 4). The 30000 MiB target is acceptance; the model figure is a prediction to be measured. The margin to 30000 MiB is 0.5-1.1 GiB, because the unmodeled device
+   overhead grows with size (485 / 622 / 748 MiB measured; ~1129 MiB extrapolated at 4.9e8 cells; audit §4, §9); the
+   measured peak of SF-40 criterion D decides.
 6. **DAG.** SF-40 depends on SF-37 and unlocks SF-38; SF-38 depends on SF-36 and SF-40. SF-38's Goal is not changed;
    its production geometry and `lambda/h` are fixed at its activation from SF-37 and SF-40's measured capacity.
 7. **Recorded, not in SF-40's scope.**
@@ -99,9 +99,9 @@ At most two nonterminal increments. Remote work stays serialized across sessions
 
 | item | class |
 |---|---|
-| Current stage peak (~197 B/cell solve phase, ~213 B/cell at the second prefilter) and the level compositions O1/O2/S/S+ | confirmed in code (audit §4, §8) |
+| Current stage peak (~197 B/cell solve phase, ~213 B/cell at the second prefilter) | confirmed in code (audit §4, §8) |
 | Measured peak distribution 25921 ... 27981 MiB at 1.34e8 cells (sampler misses a ~2 GiB transient) | confirmed in runs (SF-35 probes; SF-37 `sf37-v2.log`, `sf37-science.log`; audit §4-§5) |
-| Level byte counts (92.57 / 84.57 / 68.57 / 60.57 B/cell), capacity 5.11e8 cells at S+, 3328x384x384 at 28847 MiB | derived (audit §8-§9, model script); to be measured in SF-40 |
+| Level byte counts (92.57 / 84.57 / 68.57 / 60.57 B/cell), capacity 5.11e8 cells at S+, 3328x384x384 at 28847 MiB; the margin depends on the unmodeled overhead (open) | derived (audit §8-§9, model script); to be measured in SF-40 |
 | S+ time cost (~+8 s per realization at 4.9e8 cells) | estimate (audit §8) |
 | Bitwise feasibility of each technique (O1, O2, S, S+, tracker speedups, Par2 buffer removal) | open question (SF-40 A/B) |
 | MG convergence on the 52x6x6 coarsest level of 3328x384x384 (7 levels, 50 coarse sweeps) | open question (SF-40 E) |

@@ -73,7 +73,7 @@ Bitwise rules (normative):
 8. `--save-vd`, `v_rms` and the v1 face-vs-spline diagnostic are rejected or printed `n/a` explicitly; no fallback to
    the full stage.
 
-Phases (each frees what it no longer uses; the host has 125 GiB):
+Phases (each frees what it no longer uses; the V100 host has 125.35 GiB of RAM, audit `raw/host_memory_pcie.txt`):
 
 - **F:** SF-18 produces `Y`, downloaded to host; no spectral vertex evaluation.
 - **S1:** `lnK = eps*Y` and `K = exp(lnK)` on host (as today); prefilter `lnK` into `coef_logk`, downloaded to host;
@@ -82,7 +82,8 @@ Phases (each frees what it no longer uses; the host has 125 GiB):
   - one corrector buffer on device; each `w_d` downloaded after its `K_eff` column;
   - `rhs_b` (discarded scratch) and `rhs_a` on dead buffers allowed by the lifetimes (`rhs_a` is read only before the
     first `M.apply`; the guard `pcg.cuh:291-296` forbids it inside the PCG workspace, so the variant defines its own
-    guard);
+    guard); `rhs_a`, `rhs_b` and `K` must also be pairwise non-overlapping (assembler guard
+    `src/physics/streamfunctions/affine_periodic_rhs.cu:79-86`);
   - K loaded directly into the level-0 MG coefficient, coarse levels built by the public
     `coarsen_coefficient_geometric` loop (`src/multigrid/coefficient_hierarchy.cu:86-107`; no change in
     `src/multigrid`);
@@ -115,7 +116,9 @@ can start in parallel):
   by PID.
 - **L6** tracker speedups: fused evaluation of the two splines (interleaved `double2` coefficients, same accumulation
   order per spline, `--fmad=false`, `eval`/`eval_ext` contract intact, no change in `src/numerics/interpolation`);
-  plane and time passes in a single launch as an opt-in (existing `timings_s` fields keep their meaning).
+  plane and time passes in a single launch as an opt-in: each thread runs the plane pass and then the
+  time pass with their own unchanged step sequences (the two integrations are not merged: their landing rules
+  differ, audit §6); existing `timings_s` fields keep their meaning.
 - **L7** Par2: remove `FlowWorkspace::{residual, aux1, aux2}` (`src/physics/common/workspaces.cuh`).
 - Integration, then V100 jobs, then the experiment note, then the final audit.
 
@@ -158,7 +161,9 @@ can start in parallel):
 3. Ownership: `LongBoxStage` owns the device coefficient arrays and passes them to the tracker; the host owns `Y`,
    `coef_logk`, offloaded correctors and (S+) the pinned `b_hat`.
 4. Logging: one line per phase
-   `MEM_PHASE phase=<F|S1|S2|S3|T> exact_bytes=<n> cufft_work=<n>` (cuFFT work areas from `cufftGetSize`).
+   `MEM_PHASE phase=<F|S1|S2|S3|T> exact_bytes=<n> cufft_work=<n>` (cuFFT work areas from `cufftGetSize`); the `MEM_PHASE` lines also print the categories of
+   `AffinePeriodicFlowWorkspace::memory_report()` and the cuFFT work areas of the generator and of both prefilters (audit
+   §5: these exact reports exist and are not printed today).
 5. Failure behavior: rejected options (`--save-vd`, the v1 diagnostic, `--stage lean` without `--track forward`) exit
    non-zero with a message naming the option; an allocation failure exits non-zero naming the phase; no silent
    fallback to the full stage.
@@ -167,10 +172,15 @@ can start in parallel):
 ## Expected numerical effect
 
 None: byte-identical outputs on the default and lean paths. Expected memory: S+ 60.57 B/cell at the SF-19 PCG peak plus
-context, i.e. `8 x [7 n + 4 sum_{l>=1} n_l]` bytes plus the enumerated fixed-size scratch (level-0 coefficient = K,
-level-0 `x`, `b` (= `z` = `Ap`), `r`, PCG `r`, `p`, active corrector, coarse levels `x,b,r,coefficient`); FFT phases
-<= ~40 B/cell; tracking 16 B/cell + ~650 B/particle. At 3328x384x384 (4.9e8 cells) the estimate is 28847 MiB including
-500 MiB of context (audit §8-§9). Expected time: S+ adds ~8 s per realization at 4.9e8 cells (estimate); PCG iterations
+context, i.e. `8 x [7 n + 4 sum_{l>=1} n_l]` bytes — the seven n-sized arrays are the level-0 coefficient (= K), level-0 `x`, `b` (= `z` = `Ap`), `r`, PCG
+`r`, `p` and the active corrector; the coarse levels hold `x, b, r, coefficient` — plus enumerated fixed-size
+scratch (reduction blocks, mean-zero workspaces, PCG reduction scalar); FFT phases
+<= ~48 B/cell (lean second prefilter 48.09 B/cell, audit §9); tracking 16 B/cell + ~650 B/particle. At 3328x384x384 (4.9e8 cells) the estimate is 28847 MiB including
+500 MiB of context (audit §8-§9); the audit measured an unmodeled overhead of 485 / 622 / 748 MiB growing with size
+(~1129 MiB extrapolated at 4.9e8 cells), so the margin to 30000 MiB is 0.5-1.1 GiB (audit §4, §9). Host: the current
+path's host RSS (197.0 B/cell) would be ~90 GiB of the 125.35 GiB host at 4.9e8 cells; the lean path's host arrays
+(`Y`, `K`, `coef_logk`, offloaded correctors, `b_hat`, optional faces) are enumerated in the experiment note and the
+host RSS is recorded. Expected time: S+ adds ~8 s per realization at 4.9e8 cells (estimate); PCG iterations
 may grow on the 52x6x6 coarsest level (`slab_auto_mg_levels` on the minimum dimension 384 gives 7 levels; 50 GSRB
 sweeps on a 52-cell-long coarse grid); the tracker speedup is not predicted (recorded).
 
@@ -206,8 +216,8 @@ Pre-registered verbatim in the activation bitácora row before any run.
 - **B. Tests.** The L1 and L2 ctests are byte-for-byte green (local fast and V100 full).
 - **C. Exact bytes.** The per-phase exact-byte report equals the S+ closed form (formula and enumerated scratch in the
   experiment note) with difference 0 bytes, at 512^3 and at 3328x384x384.
-- **D. Measured memory.** nvidia-smi by PID at 200 ms; the CUDA context is measured separately (process creating the
-  context only). At 512^3 (`eps` 2, seed 3102): measured peak <= exact bytes of the largest phase + context + 3 %. At
+- **D. Measured memory.** nvidia-smi by PID at 200 ms; the CUDA context is measured separately by a probe process that creates the
+  `CudaContext` as the stage does and allocates nothing else. At 512^3 (`eps` 2, seed 3102): measured peak <= exact bytes of the largest phase + context + 3 %. At
   3328x384x384 (field + flow + splines + 1e4 particles injected on `x1 = 0` and traced over the full length, planes at
   `2^m ell`, `m = 0, 1, ...`, and at `L1 = 3328 h`): measured peak <= 30000 MiB and exit 0 in two runs: `sigma^2` 2.25
   with `ell = 16 h`, seed 4001; `sigma^2` 4 with `ell = 32 h`, seed 4001.
@@ -245,6 +255,10 @@ Pre-registered verbatim in the activation bitácora row before any run.
 - D or E not met at 3328x384x384 -> recorded with the measured peak/iterations; the domain of SF-38 is decided by the
   owner (stop rule R3 of `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`); SF-40 may close with the measured
   capacity if the owner accepts.
+- D not met at 512^3 -> the excess over exact bytes + context is itemized in the experiment note; an allocation of the
+  lean path missing from the exact-byte report is a C defect (BLOCKING); an excess not attributable to any allocation
+  of the code (driver, library or allocator overhead; the audit measured 485-748 MiB of unmodeled overhead, §4) is
+  recorded and the owner decides.
 - A technique that breaks bytes is removed (not tuned); "almost identical" is not accepted; if no L6 technique is
   bitwise, the speedup is recorded as not achieved (owner).
 

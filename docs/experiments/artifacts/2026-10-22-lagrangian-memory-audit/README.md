@@ -1,6 +1,6 @@
 # Artifacts of the Lagrangian memory audit (2026-10-22)
 
-Note: [`../../2026-10-22-lagrangian-memory-audit.md`](../../2026-10-22-lagrangian-memory-audit.md). Code analysis plus existing measurements; no new runs except the two read-only V100 queries under `raw/`.
+Note: [`../../2026-10-22-lagrangian-memory-audit.md`](../../2026-10-22-lagrangian-memory-audit.md). Code analysis plus existing measurements; no new runs except the three read-only V100 queries under `raw/`.
 
 | file | what it is |
 |---|---|
@@ -12,6 +12,7 @@ Note: [`../../2026-10-22-lagrangian-memory-audit.md`](../../2026-10-22-lagrangia
 | `analysis/lh_interpolation.txt` | its stdout |
 | `raw/cuobjdump_res_usage.txt` | stdout of the read-only query 1 (registers and stack of the Lagrangian kernels in the SF-37 campaign binary) |
 | `raw/nvidia_smi_visible_devices.txt` | stdout of the read-only query 2 (binary timestamp; `nvidia-smi` listing with `CUDA_VISIBLE_DEVICES=1`) |
+| `raw/host_memory_pcie.txt` | stdout of the read-only query 3 (`free -b`, `nproc`, GPU PCIe link generation and width; run from the corrective node C1; only the `Mem:` total is cited) |
 | `SHA256SUMS` | sha256 of every file above |
 
 ## Reproduce (local, light, seconds)
@@ -27,13 +28,15 @@ python3 ../2026-10-19-sf37-lagrangian-cube-verification/scripts/posthoc/lh10.py 
   | diff - <(head -12 ../2026-10-19-sf37-lagrangian-cube-verification/analysis/posthoc/lh10.txt)
 ```
 
-## Remote queries (read-only, run 2026-10-22 from the orchestrated worktree of node N1)
+## Remote queries (read-only, run 2026-10-22; queries 1-2 from the audit worktree, query 3 from the corrective node C1)
 
-Both through the mirror of the SF-37 campaign (`~/MacroFlow3D-SF-37`); no `sync`, no `run`, no build, nothing written on the remote. The SSH client printed a post-quantum key-exchange warning on stderr for each call; it is not part of the files (`2>/dev/null`).
+All three through the mirror of the SF-37 campaign (`~/MacroFlow3D-SF-37`); no `sync`, no `run`, no build, nothing written on the remote. The SSH client printed a post-quantum key-exchange warning on stderr for each call; it is not part of the files (`2>/dev/null`).
 
 ```bash
 scripts/remote --increment SF-37 exec -- 'cuobjdump -res-usage build/v100-release/inlet_slab 2>&1 | grep -B1 -A1 -iE "lagrangian|plane_kernel|time_kernel" | head -80' > raw/cuobjdump_res_usage.txt
 scripts/remote --increment SF-37 exec -- 'ls -la --time-style=full-iso build/v100-release/inlet_slab; CUDA_VISIBLE_DEVICES=1 nvidia-smi --query-gpu=index,name,memory.total --format=csv' > raw/nvidia_smi_visible_devices.txt
+# query 3, run from the corrective node C1 on 2026-10-22:
+scripts/remote --increment SF-37 exec -- 'free -b; nproc; nvidia-smi --query-gpu=index,name,memory.total,pcie.link.gen.max,pcie.link.width.max --format=csv' 2>/dev/null > raw/host_memory_pcie.txt
 ```
 
 - The mangled kernel names were readable with the filter as given (no adaptation was needed); lines cut by `grep -B1 -A1` carry the name on the `Function` line and the numbers on the following line.

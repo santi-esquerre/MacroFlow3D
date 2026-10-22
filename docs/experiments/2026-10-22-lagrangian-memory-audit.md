@@ -1,11 +1,11 @@
 # Memory and time audit of the Lagrangian path after SF-37 (code analysis + existing measurements)
 
 - Date: 2026-10-22
-- Status: `complete — code analysis plus existing measurements; NOT pre-registered; no new runs except two read-only V100 queries (§5, §6); evidence for the owner decision of 2026-10-22, not acceptance evidence of any increment`
+- Status: `complete — code analysis plus existing measurements; NOT pre-registered; no new runs except three read-only V100 queries (§5, §6); evidence for the owner decision of 2026-10-22, not acceptance evidence of any increment`
 - Class: code reading at `da1c185`, a byte model (`scripts/memory_model.py`), re-tabulation of versioned SF-35/SF-36/SF-37 measurements.
-- Increment context: SF-37 closed `done` (PR #56). SF-38 (long-domain infrastructure) and the provisional non-periodic spline were specified before this audit; this audit is the basis of the intermediate increment SF-40 and of the renumbering of the provisional spline to SF-41.
-- Decision fed: [`2026-10-22-lean-lagrangian-stage.md`](../decisions/2026-10-22-lean-lagrangian-stage.md) (created by node N2 of the same PR)
-- Specification fed: [`SF-40-lean-lagrangian-stage.md`](../plans/active/lester-eq14/increments/SF-40-lean-lagrangian-stage.md) (created by node N3 of the same PR)
+- Increment context: SF-37 closed `done` (PR #56). SF-38 (long-domain infrastructure) was specified, and the non-periodic spline was named as a provisional increment, before this audit; this audit is the basis of the intermediate increment SF-40 and of the renumbering of the provisional spline to SF-41.
+- Decision fed: [`2026-10-22-lean-lagrangian-stage.md`](../decisions/2026-10-22-lean-lagrangian-stage.md)
+- Specification fed: [`SF-40-lean-lagrangian-stage.md`](../plans/active/lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 - Theory: [`lester-2023-key-claims.md`](../theory/lester-2023-key-claims.md) (Rule 1: `alpha_T` is not presupposed; this note makes **no** `alpha` claim), [`beaudoin-de-dreuzy-2013-key-claims.md`](../theory/beaudoin-de-dreuzy-2013-key-claims.md) (domain)
 - Artifacts: [`artifacts/2026-10-22-lagrangian-memory-audit/`](artifacts/2026-10-22-lagrangian-memory-audit/README.md) (`scripts/`, `analysis/`, `raw/`, `SHA256SUMS`)
 
@@ -24,7 +24,7 @@ stage costs about 213 B/cell (exact bytes) and 512^3 = 2048x256x256 = 1.34e8 cel
 3. What does the tracker itself cost (bytes, registers, time), and which of its costs are structural?
 4. What else did the audit find in the pipeline, the Par2 baseline and the analysis path that matters for SF-38/SF-40?
 
-Scope: reading and arithmetic only. Out of scope: any source change, any new run (two read-only queries excepted), any `alpha_L`/`alpha_T` statement. The
+Scope: reading and arithmetic only. Out of scope: any source change, any new run (three read-only queries excepted), any `alpha_L`/`alpha_T` statement. The
 byte-saving levels of §8 are a **design analysis**, not an implementation or a measurement: none of them has been built or run.
 
 ## 2. Sources and method
@@ -35,7 +35,7 @@ byte-saving levels of §8 are a **design analysis**, not an implementation or a 
   `(nx/2+1) ny nz` and the `(N+1)` vertex planes; "nominal" counts every array as `n` cells (the convention of the planning session).
 - Measurements already versioned: SF-35 feasibility (`S35F`), SF-36 note, SF-37 raw logs/JSON/`time -v` files (`S37`), SF-30 closure-gate summaries
   (cuFFT work areas). Re-tabulated by `A/scripts/tabulate_sf37_measurements.py` (`SM`) and `A/scripts/lh_interpolation.py` (`LH`).
-- Two read-only queries on the V100 host (`scripts/remote --increment SF-37 exec`, mirror `~/MacroFlow3D-SF-37`): `cuobjdump -res-usage` and an `nvidia-smi` listing
+- Three read-only queries on the V100 host (`scripts/remote --increment SF-37 exec`, mirror `~/MacroFlow3D-SF-37`): `cuobjdump -res-usage`, an `nvidia-smi` listing and a `free -b`/`nproc`/PCIe-link query (the last from the corrective node C1)
   (`A/raw/`). The binary is the **SF-37 campaign binary** `build/v100-release/inlet_slab` of 2026-10-20 16:38:52 -0300 (19:38:52Z; the `sf37-build` job started 19:37:32Z, `S37/logs/jobs/sf37-build.log`),
   built from the SF-37 measured source tree H1 `d866c40` (md5 `a2ecce53bdeda469b41593f706dd7028` in that log; SF-37 note line 11), not a build of `da1c185`. `git diff d866c40 da1c185 -- src apps CMakeLists.txt` is empty (checked), so the sources are identical;
   the md5 of the file on the remote was not recomputed.
@@ -122,7 +122,7 @@ Other reconciliations (`MM`):
   (this section). A two-point linear fit (indicative only, two points) gives 604 MiB + 1.12 B/cell x cells, i.e. 1129 MiB at 3328x384x384. §9 carries the sensitivity.
 - **Host RSS.** `/usr/bin/time -v` of the nine V2 512^3 runs: 25824852-25826816 kB = 197.0 B/cell (`SM`; the planning figure ~192 is not what the versioned files show); the Pollock runs (`keep_face_fluxes`, V3b) 28976760-28977636 kB = 221.1 B/cell (+24 = the three face
   arrays). Of the 197, `SlabFieldSource` holds `cell_` + `vtx_` + `vgrad_[3]` = 40.1 B/cell that the tracker never reads (`SlabProductionSetup.cuh:175`). Scaled linearly to 3328x384x384 the current host footprint would be 90.0 GiB;
-  **the host RAM of the V100 machine is not recorded in the repository** (open question, §11).
+  the V100 host has 134590115840 B = 125.35 GiB of RAM (`A/raw/host_memory_pcie.txt`), so the current host footprint would use 72 % of it.
 
 ## 5. Instrumentation findings
 
@@ -215,7 +215,7 @@ the level-0 coefficient and running the same coarsening loop gives identical coe
 - Hence `z`, `Ap` and MG level-0 `b` share one buffer: 3 buffers become 1 (-16 B/cell). Every operation sees the same values in the same order.
 
 **S+** and the `b_hat` traffic (`pcg.cuh:321-331,411,455`): per corrector `b_hat` receives one write (`copy`, `:321`), one `project` (sum read, then subtract read + write = 3 passes of traffic, `MeanZeroProjector.cu:77-86`), and one read per `recompute_true_residual` (the initial one plus one every `check_every = 10` iterations).
-With the observed 20 iterations: 3 recomputes, so 1 + 1 + 2 + 3 = **7 array-traffic passes per corrector** (the planning figure "7-8"; 8 at 30 iterations). At 3328x384x384 (3.93 GB per pass) three correctors move 82.4 GB; at an **assumed** effective PCIe bandwidth of 10-12 GB/s (not measured on this host) that is
+With the observed 20 iterations: 3 recomputes, so 1 + 1 + 2 + 3 = **7 array-traffic passes per corrector** (the planning figure "7-8"; 8 at 30 iterations). At 3328x384x384 (3.93 GB per pass) three correctors move 82.4 GB; at an **assumed** effective PCIe bandwidth of 10-12 GB/s (not measured on this host) (the link is PCIe gen3 x16, 15.75 GB/s theoretical, `A/raw/host_memory_pcie.txt`) that is
 **6.9-8.2 s per realization** (`MM`), the planning estimate of ~+8 s. Pinned/mapped memory changes where `b_hat` lives, not its values. Open: the real mapped-memory bandwidth, and whether kernels reading `b_hat` over PCIe overlap with other work.
 
 ## 9. Feasibility at the SF-37 `lambda/h`
@@ -239,7 +239,7 @@ With the observed 20 iterations: 3 recomputes, so 1 + 1 + 2 + 3 = **7 array-traf
 - **FFT phases stay below S+.** Derived from §4: the SF-28 prefilter of one field is coefficients 8 + half-spectrum 8.03 + two work areas 16.06 = 32.09 B/cell by itself (measured 540016640 B / 16777216 cells = 32.19 at 256^3, SF-30 summary), the generator 24.06. In a lean stage with the SF-19 workspace freed and the first spline's spectrum released, the second prefilter is
   `lnK` 8 + `sh` coefficients 8 + `sy_ws` 16.03 + work areas 16.06 = **48.09 B/cell** (56.13 if the first spectrum is kept) < 60.57. The 96 B/cell spectral vertex evaluation (§4) must not exist in the lean stage; if kept, the field phase (112 B/cell) would exceed S+.
 - **MG coarse solve.** The same rule applied to the minimum dimension 384 gives a 52x6x6 coarsest grid; the coarse solve is 50 GSRB sweeps (`mg_types.hpp:20`). The coarsest grid is 52 cells long in `x`, so the coarse correction may under-solve and PCG iterations may grow beyond 20 (not tested; the byte count above assumes none). The 8-level cube has a 4^3 coarsest grid.
-- **Host side.** At 197.0 B/cell the current host footprint extrapolates to 90.0 GiB at 3328x384x384 (§4); host RAM is unrecorded. Two correctors offloaded in O1 add 2 x 3.93 GB on the host.
+- **Host side.** At 197.0 B/cell the current host footprint extrapolates to 90.0 GiB at 3328x384x384 (§4); host RAM is 125.35 GiB. Two correctors offloaded in O1 add 2 x 3.93 GB on the host.
 - **Time** (estimate): the stage is about 62-65 s at 1.34e8 cells (§3) with no per-phase breakdown in the logs; a box 3.66x larger is of the order of 7 min per realization for field + stage (2 min x 3.66) if the cost scales with cells (estimate, not measured), plus ~7-8 s for the S+ traffic.
 
 ## 10. Medium (b), Dirichlet in `x` (recorded, no scope change)
@@ -262,7 +262,7 @@ Recorded for SF-38 (medium A/B evaluation, `docs/plans/active/lester-eq14/increm
 | The sampler misses the cuFFT transient in most runs; stage peak best estimate = 27981 MiB at 512^3 | derived from the distribution (consistent with exact-byte peak + 748 MiB) |
 | Work area of one plan = one half-spectrum at 512^3 | estimate (measured as the sum of two plans at 256^3; consistent with the 512^3 levels) |
 | Unmodeled overhead 485 / 622 / 748 MiB; linear extrapolation 1129 MiB at 4.9e8 cells | derived by difference (two points; the extrapolation is indicative only) |
-| Host RSS 197.0 B/cell (221.1 with Pollock faces); 90 GiB extrapolation | confirmed in runs (RSS); extrapolation derived; host RAM of the V100 machine: open question |
+| Host RSS 197.0 B/cell (221.1 with Pollock faces); 90 GiB extrapolation | confirmed in runs (RSS); extrapolation derived; host RAM 125.35 GiB: confirmed by query |
 | Tracker 16 B/cell + 648 B/particle; 255 registers, 1376 B stack; 9 coordinate reductions and 128 coefficient reads per evaluation | confirmed in code / confirmed in runs (cuobjdump of the SF-37 binary, built from sources identical to `da1c185`) |
 | 20480 resident threads; 1e4 particles = 0.49 load | derived (V100 datasheet constants) |
 | Tracking 372-432 s at 512^3; 6.0008 evaluations per step; `rejected_steps = 0` | confirmed in runs |
