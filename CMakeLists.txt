@@ -639,6 +639,14 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME projected_pcg_external COMMAND projected_pcg_external_tests)
 
+    # SF-40 L7: FlowWorkspace byte-count contract (dead residual/aux1/aux2 removed)
+    add_executable(flow_workspace_bytes_tests tests/flow/flow_workspace_bytes_tests.cu)
+    target_link_libraries(flow_workspace_bytes_tests PRIVATE macroflow3d_lib)
+    target_compile_options(flow_workspace_bytes_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME flow_workspace_bytes COMMAND flow_workspace_bytes_tests)
+
     # SF-28 T02: periodic tricubic B-spline contract tests (fast tier)
     add_executable(interpolation_tests tests/interpolation/periodic_tricubic_bspline_tests.cu)
     target_link_libraries(interpolation_tests PRIVATE macroflow3d_lib)
