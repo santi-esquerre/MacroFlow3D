@@ -1,0 +1,22 @@
+[2026-10-20T19:37:32Z] job=sf37-build session=macroflow3d-SF-37-sf37-build started
+[2026-10-20T19:37:32Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-20T19:37:32Z] cwd=/home/sesquerre/MacroFlow3D-SF-37
+[2026-10-20T19:37:32Z] command=cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 5 && md5sum build/v100-release/inlet_slab ~/sf37_base_refs/bin/inlet_slab && (build/v100-release/inlet_slab --sf37-invalid-option 2>&1 | grep -c -- --comparator)
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[234/238] Linking CXX executable inlet_slab_trace_tests
+[235/238] Linking CXX executable inlet_slab_newton_tests
+[236/238] Linking CXX executable spurious_spreading_controls_tests
+[237/238] Linking CXX executable spurious_spreading
+[238/238] Linking CXX executable streamfunction_operator_tests
+a2ecce53bdeda469b41593f706dd7028  build/v100-release/inlet_slab
+fef042097f08dc725831f3df7ab975b5  /home/sesquerre/sf37_base_refs/bin/inlet_slab
+2
+[2026-10-20T19:38:52Z] job=sf37-build finished exit=0

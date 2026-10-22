@@ -1,0 +1,206 @@
+[2026-10-20T19:51:56Z] job=sf37-v2 session=macroflow3d-SF-37-sf37-v2 started
+[2026-10-20T19:51:56Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-20T19:51:56Z] cwd=/home/sesquerre/MacroFlow3D-SF-37
+[2026-10-20T19:51:56Z] command=SF37_COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 bash docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/run_sf37.sh build/v100-release v2
+run_sf37.sh: part=v2 bin=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_campaign start=2026-10-20T19:51:57Z
+  env: COMMIT=d866c40875cc52b3bdef7c7c9921b00b504a2350 HOST=localhost.localdomain DATE_UTC=2026-10-20T19:51:57Z BIN=/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab BIN_MD5=a2ecce53bdeda469b41593f706dd7028 PART=v2 DRYRUN=0 OUT_ROOT=/home/sesquerre/sf37_campaign BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 40 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N40.log 2>&1
+  CASE_RESULT run=v2_e10_s3101_N40 rc=0 wall=11s end=2026-10-20T19:52:11Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 80 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N80.log 2>&1
+  CASE_RESULT run=v2_e10_s3101_N80 rc=0 wall=23s end=2026-10-20T19:52:34Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 32 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N32.log 2>&1
+  CASE_RESULT run=v2_e10_s3101_N32 rc=0 wall=10s end=2026-10-20T19:52:44Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 64 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N64.log 2>&1
+  CASE_RESULT run=v2_e10_s3101_N64 rc=0 wall=18s end=2026-10-20T19:53:02Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 128 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N128.log 2>&1
+  CASE_RESULT run=v2_e10_s3101_N128 rc=0 wall=40s end=2026-10-20T19:53:42Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 256 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N256.log 2>&1
+  CASE_RESULT run=v2_e10_s3101_N256 rc=0 wall=135s end=2026-10-20T19:55:58Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 512 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3101_N512.log 2>&1
+  MEM_PEAK run=v2_e10_s3101_N512 mib=25921
+  CASE_RESULT run=v2_e10_s3101_N512 rc=0 wall=536s end=2026-10-20T20:04:55Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 40 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N40.log 2>&1
+  CASE_RESULT run=v2_e10_s3102_N40 rc=0 wall=11s end=2026-10-20T20:05:08Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 80 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N80.log 2>&1
+  CASE_RESULT run=v2_e10_s3102_N80 rc=0 wall=21s end=2026-10-20T20:05:30Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 32 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N32.log 2>&1
+  CASE_RESULT run=v2_e10_s3102_N32 rc=0 wall=7s end=2026-10-20T20:05:37Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 64 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N64.log 2>&1
+  CASE_RESULT run=v2_e10_s3102_N64 rc=0 wall=14s end=2026-10-20T20:05:51Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N128.log 2>&1
+  CASE_RESULT run=v2_e10_s3102_N128 rc=0 wall=35s end=2026-10-20T20:06:26Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 256 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N256.log 2>&1
+  CASE_RESULT run=v2_e10_s3102_N256 rc=0 wall=129s end=2026-10-20T20:08:35Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 512 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3102_N512.log 2>&1
+  MEM_PEAK run=v2_e10_s3102_N512 mib=25921
+  CASE_RESULT run=v2_e10_s3102_N512 rc=0 wall=529s end=2026-10-20T20:17:25Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 40 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N40.log 2>&1
+  CASE_RESULT run=v2_e10_s3103_N40 rc=0 wall=11s end=2026-10-20T20:17:38Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 80 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N80.log 2>&1
+  CASE_RESULT run=v2_e10_s3103_N80 rc=0 wall=20s end=2026-10-20T20:17:58Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 32 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N32.log 2>&1
+  CASE_RESULT run=v2_e10_s3103_N32 rc=0 wall=10s end=2026-10-20T20:18:08Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 64 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N64.log 2>&1
+  CASE_RESULT run=v2_e10_s3103_N64 rc=0 wall=15s end=2026-10-20T20:18:23Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 128 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N128.log 2>&1
+  CASE_RESULT run=v2_e10_s3103_N128 rc=0 wall=36s end=2026-10-20T20:18:59Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 256 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N256.log 2>&1
+  CASE_RESULT run=v2_e10_s3103_N256 rc=0 wall=118s end=2026-10-20T20:20:58Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 512 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e10_s3103_N512.log 2>&1
+  MEM_PEAK run=v2_e10_s3103_N512 mib=25921
+  CASE_RESULT run=v2_e10_s3103_N512 rc=0 wall=527s end=2026-10-20T20:29:47Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 40 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N40.log 2>&1
+  CASE_RESULT run=v2_e15_s3101_N40 rc=0 wall=13s end=2026-10-20T20:30:02Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 80 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N80.log 2>&1
+  CASE_RESULT run=v2_e15_s3101_N80 rc=0 wall=26s end=2026-10-20T20:30:28Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 32 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N32.log 2>&1
+  CASE_RESULT run=v2_e15_s3101_N32 rc=0 wall=11s end=2026-10-20T20:30:39Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 64 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N64.log 2>&1
+  CASE_RESULT run=v2_e15_s3101_N64 rc=0 wall=20s end=2026-10-20T20:31:00Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 128 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N128/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N128.log 2>&1
+  CASE_RESULT run=v2_e15_s3101_N128 rc=0 wall=46s end=2026-10-20T20:31:46Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 256 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N256/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N256.log 2>&1
+  CASE_RESULT run=v2_e15_s3101_N256 rc=0 wall=152s end=2026-10-20T20:34:19Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 512 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N512/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3101_N512.log 2>&1
+  MEM_PEAK run=v2_e15_s3101_N512 mib=25921
+  CASE_RESULT run=v2_e15_s3101_N512 rc=0 wall=546s end=2026-10-20T20:43:28Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 40 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N40.log 2>&1
+  CASE_RESULT run=v2_e15_s3102_N40 rc=0 wall=13s end=2026-10-20T20:43:50Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 80 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N80.log 2>&1
+  CASE_RESULT run=v2_e15_s3102_N80 rc=0 wall=25s end=2026-10-20T20:44:15Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 32 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N32.log 2>&1
+  CASE_RESULT run=v2_e15_s3102_N32 rc=0 wall=11s end=2026-10-20T20:44:27Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 64 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N64.log 2>&1
+  CASE_RESULT run=v2_e15_s3102_N64 rc=0 wall=19s end=2026-10-20T20:44:46Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N128/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N128.log 2>&1
+  CASE_RESULT run=v2_e15_s3102_N128 rc=0 wall=44s end=2026-10-20T20:45:31Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 256 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N256/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N256.log 2>&1
+  CASE_RESULT run=v2_e15_s3102_N256 rc=0 wall=149s end=2026-10-20T20:48:00Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 512 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N512/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3102_N512.log 2>&1
+  MEM_PEAK run=v2_e15_s3102_N512 mib=25921
+  CASE_RESULT run=v2_e15_s3102_N512 rc=0 wall=531s end=2026-10-20T20:56:53Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 40 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N40.log 2>&1
+  CASE_RESULT run=v2_e15_s3103_N40 rc=0 wall=11s end=2026-10-20T20:57:14Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 80 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N80.log 2>&1
+  CASE_RESULT run=v2_e15_s3103_N80 rc=0 wall=22s end=2026-10-20T20:57:36Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 32 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N32.log 2>&1
+  CASE_RESULT run=v2_e15_s3103_N32 rc=0 wall=11s end=2026-10-20T20:57:47Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 64 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N64.log 2>&1
+  CASE_RESULT run=v2_e15_s3103_N64 rc=0 wall=17s end=2026-10-20T20:58:04Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 128 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N128/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N128.log 2>&1
+  CASE_RESULT run=v2_e15_s3103_N128 rc=0 wall=39s end=2026-10-20T20:58:44Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 256 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N256/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N256.log 2>&1
+  CASE_RESULT run=v2_e15_s3103_N256 rc=0 wall=133s end=2026-10-20T21:00:57Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 512 --eps 1.5 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N512/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e15_s3103_N512.log 2>&1
+  MEM_PEAK run=v2_e15_s3103_N512 mib=25921
+  CASE_RESULT run=v2_e15_s3103_N512 rc=0 wall=527s end=2026-10-20T21:09:46Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 40 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N40.log 2>&1
+  CASE_RESULT run=v2_e20_s3101_N40 rc=0 wall=12s end=2026-10-20T21:10:07Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 80 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N80.log 2>&1
+  CASE_RESULT run=v2_e20_s3101_N80 rc=0 wall=28s end=2026-10-20T21:10:35Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 32 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N32.log 2>&1
+  CASE_RESULT run=v2_e20_s3101_N32 rc=0 wall=10s end=2026-10-20T21:10:45Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 64 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N64.log 2>&1
+  CASE_RESULT run=v2_e20_s3101_N64 rc=0 wall=20s end=2026-10-20T21:11:06Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 128 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N128/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N128.log 2>&1
+  CASE_RESULT run=v2_e20_s3101_N128 rc=0 wall=50s end=2026-10-20T21:11:57Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 256 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N256/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N256.log 2>&1
+  CASE_RESULT run=v2_e20_s3101_N256 rc=0 wall=165s end=2026-10-20T21:14:42Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3101 --n 512 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N512/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3101_N512.log 2>&1
+  MEM_PEAK run=v2_e20_s3101_N512 mib=25921
+  CASE_RESULT run=v2_e20_s3101_N512 rc=0 wall=563s end=2026-10-20T21:24:07Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 40 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N40.log 2>&1
+  CASE_RESULT run=v2_e20_s3102_N40 rc=0 wall=13s end=2026-10-20T21:24:29Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 80 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N80.log 2>&1
+  CASE_RESULT run=v2_e20_s3102_N80 rc=0 wall=28s end=2026-10-20T21:24:57Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 32 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N32.log 2>&1
+  CASE_RESULT run=v2_e20_s3102_N32 rc=0 wall=11s end=2026-10-20T21:25:08Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 64 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N64.log 2>&1
+  CASE_RESULT run=v2_e20_s3102_N64 rc=0 wall=21s end=2026-10-20T21:25:30Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N128/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N128.log 2>&1
+  CASE_RESULT run=v2_e20_s3102_N128 rc=0 wall=50s end=2026-10-20T21:26:20Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 256 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N256/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N256.log 2>&1
+  CASE_RESULT run=v2_e20_s3102_N256 rc=0 wall=166s end=2026-10-20T21:29:07Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 512 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N512/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3102_N512.log 2>&1
+  MEM_PEAK run=v2_e20_s3102_N512 mib=25921
+  CASE_RESULT run=v2_e20_s3102_N512 rc=0 wall=564s end=2026-10-20T21:38:33Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N40.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 40 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N40 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N40.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N40.log 2>&1
+  CASE_RESULT run=v2_e20_s3103_N40 rc=0 wall=13s end=2026-10-20T21:38:56Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N80.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 80 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N80 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N80.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N80.log 2>&1
+  CASE_RESULT run=v2_e20_s3103_N80 rc=0 wall=25s end=2026-10-20T21:39:22Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N32.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 32 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N32 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N32.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N32.log 2>&1
+  CASE_RESULT run=v2_e20_s3103_N32 rc=0 wall=11s end=2026-10-20T21:39:33Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N64.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 64 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N64 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N64.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N64.log 2>&1
+  CASE_RESULT run=v2_e20_s3103_N64 rc=0 wall=19s end=2026-10-20T21:39:52Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N128.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 128 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N128/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N128 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N128.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N128.log 2>&1
+  CASE_RESULT run=v2_e20_s3103_N128 rc=0 wall=44s end=2026-10-20T21:40:36Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N256.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 256 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N256/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N256 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N256.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N256.log 2>&1
+  CASE_RESULT run=v2_e20_s3103_N256 rc=0 wall=149s end=2026-10-20T21:43:05Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N512.time /home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 512 --eps 2 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --save-vd /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N512/vd --save-particles /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N512 --summary /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N512.json > /home/sesquerre/sf37_campaign/v2/v2_e20_s3103_N512.log 2>&1
+  MEM_PEAK run=v2_e20_s3103_N512 mib=25921
+  CASE_RESULT run=v2_e20_s3103_N512 rc=0 wall=546s end=2026-10-20T21:52:14Z
+    STATUS ok
+run_sf37.sh: part=v2 end=2026-10-20T21:52:25Z blocking_failures=0
+[2026-10-20T21:52:25Z] job=sf37-v2 finished exit=0

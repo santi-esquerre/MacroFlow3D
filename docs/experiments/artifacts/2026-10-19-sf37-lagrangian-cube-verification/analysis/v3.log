@@ -1,0 +1,5 @@
+V3a eps=1 seed=3101: C=accept
+V3a eps=1 seed=3102: C=accept
+V3a eps=1 seed=3103: C=accept
+V3b: 54 discordant, 0 not_evaluable of 63 (eps, seed, plane) cells
+digest_v3: wrote 15 files to /home/sesquerre/sf37_campaign/analysis/v3

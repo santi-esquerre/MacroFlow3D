@@ -1,0 +1,219 @@
+{
+ "N": 128,
+ "backflow": {
+  "backflow_enc_plane": 0,
+  "backflow_enc_time": 0,
+  "inlet_vmin": 0.2672161595687991,
+  "seed_backflow": 0,
+  "stage_status": "ok"
+ },
+ "command": "/home/sesquerre/MacroFlow3D-SF-37/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 1 --np-side 256 --max-arclength 1000 --planes 0.25,0.5,0.75,1 --tol 1e-8 --hmax-div 8 --save-particles /home/sesquerre/sf37_campaign/v3a/v3a_e10_s3102_N128 --summary /home/sesquerre/sf37_campaign/v3a/v3a_e10_s3102_N128.json",
+ "eps": 1.0,
+ "exit_code": 0,
+ "field": "gaussian",
+ "field_spec": {
+  "applied_scale": 0.9898488613605391,
+  "ell": 0.25,
+  "final_variance": 1.0,
+  "kind": "gaussian",
+  "raw_variance": 1.020615651993755,
+  "seed": 3102,
+  "sigma2": 1.0
+ },
+ "memory": {
+  "free_min": 33245626368,
+  "peak_device_bytes": 844103680,
+  "total_device": 34089730048,
+  "workspaces_bytes": 0
+ },
+ "mode": "track_forward",
+ "moments_planes": [
+  {
+   "ev_max": 0.0034047588098811143,
+   "ev_rms": 0.0008202171894225548,
+   "m": 0,
+   "mean2": 0.3411200245624633,
+   "mean3": 0.5186135357381976,
+   "mean_tau": 0.2498923196693611,
+   "n_ok": 65536,
+   "non_ok": 0,
+   "var2": 0.07671375142269136,
+   "var3": 0.07540877276026703,
+   "var_tau": 0.049109373074244164,
+   "x1": 0.25
+  },
+  {
+   "ev_max": 0.0030204798832716984,
+   "ev_rms": 0.000980122352049533,
+   "m": 1,
+   "mean2": 0.3677947498964388,
+   "mean3": 0.5113136052991101,
+   "mean_tau": 0.4997906890581033,
+   "n_ok": 65536,
+   "non_ok": 0,
+   "var2": 0.06487698880334374,
+   "var3": 0.07278192524669296,
+   "var_tau": 0.16354766394268982,
+   "x1": 0.5
+  },
+  {
+   "ev_max": 0.0036003633888483932,
+   "ev_rms": 0.000967952792564669,
+   "m": 2,
+   "mean2": 0.3710300420879134,
+   "mean3": 0.4942687209592501,
+   "mean_tau": 0.7496457034695786,
+   "n_ok": 65536,
+   "non_ok": 0,
+   "var2": 0.06764017785652707,
+   "var3": 0.06604997428409295,
+   "var_tau": 0.269065092640571,
+   "x1": 0.75
+  },
+  {
+   "ev_max": 0.0043792966012385914,
+   "ev_rms": 0.0010245384490350747,
+   "m": 3,
+   "mean2": 0.34665787557042393,
+   "mean3": 0.5006115131655026,
+   "mean_tau": 0.9996018443185307,
+   "n_ok": 65536,
+   "non_ok": 0,
+   "var2": 0.0802194948192049,
+   "var3": 0.06713513440527574,
+   "var_tau": 0.41495289290711407,
+   "x1": 1.0
+  }
+ ],
+ "moments_time": [],
+ "phases": [
+  {
+   "free_after": 33579073536,
+   "free_before": 33581170688,
+   "phase": "field",
+   "seconds": 0.587944279
+  },
+  {
+   "free_after": 33360969728,
+   "free_before": 33579073536,
+   "phase": "stage",
+   "seconds": 2.525037447
+  },
+  {
+   "free_after": 33304346624,
+   "free_before": 33360969728,
+   "phase": "prepare",
+   "seconds": 0.02142106
+  },
+  {
+   "free_after": 33245626368,
+   "free_before": 33304346624,
+   "phase": "track",
+   "seconds": 0.766492466
+  },
+  {
+   "free_after": 33245626368,
+   "free_before": 33245626368,
+   "phase": "write",
+   "seconds": 0.011278424
+  }
+ ],
+ "plane_pass": {
+  "accepted_steps": 70171771,
+  "backflow_encounters": 0,
+  "landing_rejected": 0,
+  "landing_steps": 262144,
+  "landings_discarded": 0,
+  "min_g1_hat": 0.7783957999447073,
+  "nfev": 424766178,
+  "recrossings": 0,
+  "rejected_steps": 0,
+  "status_hist": [
+   65536,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "stage": {
+  "G": [
+   0.8868810113667357,
+   0.012494886305911982,
+   -0.00418563791781665
+  ],
+  "Q0": 1.000000000000497,
+  "darcy_converged": true,
+  "flow_ready": true,
+  "inlet_mean": 1.0000000000005,
+  "inlet_vmin": 0.2672161595687991,
+  "labels_available": true,
+  "mg_levels": 6,
+  "status": "ok",
+  "v_rms": 1.3666394363586767
+ },
+ "status": "ok",
+ "time_pass": {
+  "accepted_steps": 0,
+  "backflow_encounters": 0,
+  "landing_rejected": 0,
+  "landing_steps": 0,
+  "landings_discarded": 0,
+  "min_g1_hat": null,
+  "nfev": 0,
+  "recrossings": 0,
+  "rejected_steps": 0,
+  "status_hist": [
+   65536,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "timing": {
+  "field": 0.587944279,
+  "prepare": 0.02142106,
+  "stage": 2.525037447,
+  "total": 3.912713278,
+  "track": 0.766492466,
+  "write": 0.011278424
+ },
+ "track": {
+  "M": 256,
+  "Np": 65536,
+  "covectors": false,
+  "h": 0.0078125,
+  "h_max": 0.0009765625,
+  "hmax_div": 8,
+  "labels_available": true,
+  "max_arclength": 1000.0,
+  "min_step": 1e-13,
+  "planes": [
+   0.25,
+   0.5,
+   0.75,
+   1.0
+  ],
+  "times": [],
+  "tol": 1e-08,
+  "window": [
+   0.0,
+   1.0,
+   0.0,
+   1.0
+  ],
+  "x0": 0.0
+ },
+ "track_failures": 0,
+ "tracker_timings_s": {
+  "download": 0.003236054,
+  "moments": 0.015041452,
+  "plane_kernel": 0.748202746,
+  "time_kernel": 8.14e-07
+ }
+}

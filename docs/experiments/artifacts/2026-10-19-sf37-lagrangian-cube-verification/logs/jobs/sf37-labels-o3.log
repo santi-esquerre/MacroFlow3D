@@ -1,0 +1,85 @@
+[2026-10-19T14:32:43Z] job=sf37-labels-o3 session=macroflow3d-SF-37-sf37-labels-o3 started
+[2026-10-19T14:32:43Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-19T14:32:43Z] cwd=/home/sesquerre/MacroFlow3D-SF-37
+[2026-10-19T14:32:43Z] command=SF37_COMMIT=610cfc471b9ee8b50e22eb0a5932ec97e57a6d14 bash docs/experiments/artifacts/2026-10-19-sf37-lagrangian-cube-verification/scripts/run_sf37.sh ~/sf37_base_refs/bin labels-o3
+run_sf37.sh: part=labels-o3 bin=/home/sesquerre/sf37_base_refs/bin/inlet_slab host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf37_campaign start=2026-10-19T14:32:43Z
+labels-o3: eps filter=all, 24 cases
+  env: COMMIT=610cfc471b9ee8b50e22eb0a5932ec97e57a6d14 HOST=localhost.localdomain DATE_UTC=2026-10-19T14:32:43Z BIN=/home/sesquerre/sf37_base_refs/bin/inlet_slab BIN_MD5=fef042097f08dc725831f3df7ab975b5 PART=labels-o3 DRYRUN=0 OUT_ROOT=/home/sesquerre/sf37_campaign BASE_REFS=/home/sesquerre/sf37_base_refs CUDA_VISIBLE_DEVICES=0 GPU=Tesla V100-PCIE-32GB 
++ preflight: /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/preflight_labels-o3/N32_e0.5_gpu.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 0.5 --save-labels /home/sesquerre/sf37_campaign/labels/preflight_labels-o3/N32_e0.5_gpu --summary /home/sesquerre/sf37_campaign/labels/preflight_labels-o3/N32_e0.5_gpu.json > /home/sesquerre/sf37_campaign/labels/preflight_labels-o3/N32_e0.5_gpu.log 2>&1
+    preflight N32_e0.5_gpu npy=IDENTICAL lines=IDENTICAL rc=0 ref_rc=0
+    IDENTICAL 39
+PREFLIGHT_OK N32_e0.5_gpu
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N64.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 64 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3101/N64 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3101/N64.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N64.log 2>&1
+  CASE_RESULT case=eps15_s3101/N64 rc=0 wall=7s end=2026-10-19T14:32:58Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N128.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 128 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3101/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3101/N128.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N128.log 2>&1
+  CASE_RESULT case=eps15_s3101/N128 rc=0 wall=29s end=2026-10-19T14:33:27Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N256.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 256 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3101/N256 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3101/N256.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N256.log 2>&1
+  CASE_RESULT case=eps15_s3101/N256 rc=0 wall=534s end=2026-10-19T14:42:21Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N64.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 64 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3102/N64 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3102/N64.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N64.log 2>&1
+  CASE_RESULT case=eps15_s3102/N64 rc=21 wall=7s end=2026-10-19T14:42:29Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N128.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3102/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3102/N128.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N128.log 2>&1
+  CASE_RESULT case=eps15_s3102/N128 rc=0 wall=29s end=2026-10-19T14:42:58Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N256.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 256 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3102/N256 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3102/N256.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N256.log 2>&1
+  CASE_RESULT case=eps15_s3102/N256 rc=0 wall=555s end=2026-10-19T14:52:13Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N64.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 64 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3103/N64 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3103/N64.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N64.log 2>&1
+  CASE_RESULT case=eps15_s3103/N64 rc=21 wall=7s end=2026-10-19T14:52:21Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N128.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 128 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3103/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3103/N128.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N128.log 2>&1
+  CASE_RESULT case=eps15_s3103/N128 rc=0 wall=28s end=2026-10-19T14:52:49Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N256.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 256 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3103/N256 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3103/N256.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N256.log 2>&1
+  CASE_RESULT case=eps15_s3103/N256 rc=0 wall=536s end=2026-10-19T15:01:46Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N64.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 64 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3101/N64 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3101/N64.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N64.log 2>&1
+  CASE_RESULT case=eps20_s3101/N64 rc=21 wall=8s end=2026-10-19T15:01:55Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N128.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 128 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3101/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3101/N128.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N128.log 2>&1
+  CASE_RESULT case=eps20_s3101/N128 rc=0 wall=30s end=2026-10-19T15:02:25Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N256.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 256 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3101/N256 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3101/N256.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N256.log 2>&1
+  CASE_RESULT case=eps20_s3101/N256 rc=0 wall=547s end=2026-10-19T15:11:32Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N64.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 64 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3102/N64 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3102/N64.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N64.log 2>&1
+  CASE_RESULT case=eps20_s3102/N64 rc=21 wall=7s end=2026-10-19T15:11:40Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N128.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 128 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3102/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3102/N128.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N128.log 2>&1
+  CASE_RESULT case=eps20_s3102/N128 rc=0 wall=31s end=2026-10-19T15:12:11Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N256.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 256 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3102/N256 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3102/N256.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N256.log 2>&1
+  CASE_RESULT case=eps20_s3102/N256 rc=0 wall=574s end=2026-10-19T15:21:45Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N64.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 64 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3103/N64 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3103/N64.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N64.log 2>&1
+  CASE_RESULT case=eps20_s3103/N64 rc=21 wall=7s end=2026-10-19T15:21:53Z
+    STATUS roundtrip_exceeded
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N128.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 128 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3103/N128 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3103/N128.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N128.log 2>&1
+  CASE_RESULT case=eps20_s3103/N128 rc=0 wall=30s end=2026-10-19T15:22:23Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N256.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 256 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3103/N256 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3103/N256.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N256.log 2>&1
+  CASE_RESULT case=eps20_s3103/N256 rc=0 wall=550s end=2026-10-19T15:31:33Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N512.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 512 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3101/N512 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3101/N512.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3101/N512.log 2>&1
+  CASE_RESULT case=eps15_s3101/N512 rc=0 wall=13844s end=2026-10-19T19:22:18Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N512.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 512 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3102/N512 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3102/N512.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3102/N512.log 2>&1
+  CASE_RESULT case=eps15_s3102/N512 rc=0 wall=14464s end=2026-10-19T23:23:29Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N512.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 512 --eps 1.5 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps15_s3103/N512 --summary /home/sesquerre/sf37_campaign/labels/raw/eps15_s3103/N512.json > /home/sesquerre/sf37_campaign/labels/logs/eps15_s3103/N512.log 2>&1
+  CASE_RESULT case=eps15_s3103/N512 rc=0 wall=14343s end=2026-10-20T03:22:37Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N512.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3101 --n 512 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3101/N512 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3101/N512.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3101/N512.log 2>&1
+  CASE_RESULT case=eps20_s3101/N512 rc=0 wall=13878s end=2026-10-20T07:14:02Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N512.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3102 --n 512 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3102/N512 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3102/N512.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3102/N512.log 2>&1
+  CASE_RESULT case=eps20_s3102/N512 rc=0 wall=14314s end=2026-10-20T11:12:42Z
+    STATUS ok
++ /usr/bin/time -v -o /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N512.time /home/sesquerre/sf37_base_refs/bin/inlet_slab --construct trace --tracer gpu --threads 32 --sigma2 1 --ell 0.25 --seed 3103 --n 512 --eps 2 --save-labels /home/sesquerre/sf37_campaign/labels/exports/eps20_s3103/N512 --summary /home/sesquerre/sf37_campaign/labels/raw/eps20_s3103/N512.json > /home/sesquerre/sf37_campaign/labels/logs/eps20_s3103/N512.log 2>&1
+  CASE_RESULT case=eps20_s3103/N512 rc=0 wall=14434s end=2026-10-20T15:13:23Z
+    STATUS ok
+run_sf37.sh: part=labels-o3 end=2026-10-20T15:13:29Z blocking_failures=0
+[2026-10-20T15:13:29Z] job=sf37-labels-o3 finished exit=0
