@@ -1,0 +1,107 @@
+INFO 256x256x256_eps2 levels=7 n=16777216 iters=10,10,10 status=0,0,0 G=0.84892995805356242,-0.026721374904471348,0.040121147157503846
+CHECK 256x256x256_eps2 reference_converged PASS
+CHECK 256x256x256_eps2/b_hat=mapped h_tilde_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped face_u_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped face_v_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped face_w_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped inlet_u_plane_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped K_eff_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped G_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped eigenvalues_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped achieved_mean_flux_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped symmetry_defect_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped div_max_abs_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped div_rms_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped corrector0_result_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped corrector1_result_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped corrector2_result_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=mapped memory_items_equal_geometric_sizes PASS
+CHECK 256x256x256_eps2/b_hat=mapped memory_total_equals_closed_form PASS
+INFO 256x256x256_eps2/b_hat=mapped total_device_bytes=1018433643 closed_form=1018433643 diff=0 device_used_at_peak=1538260992 face_max=16842752 bhat_host_bytes=134217728 pcg_red_temp=0 seconds=2.993
+CHECK 256x256x256_eps2/b_hat=mapped pcg_reduction_workspace_has_no_temp PASS
+CHECK 256x256x256_eps2/b_hat=mapped bhat_host_bytes PASS
+CHECK 256x256x256_eps2/b_hat=mapped memory_categories_sum_to_total PASS
+CHECK 256x256x256_eps2/b_hat=mapped memory_report_timing_and_peak PASS
+INFO 256x256x256_eps2/b_hat=mapped residual_after_call=136314880 expected_8m=134742016 (diff 1572864)
+CHECK 256x256x256_eps2/b_hat=mapped h_tilde_capacity_is_m PASS
+CHECK 256x256x256_eps2/b_hat=mapped residual_allocation_is_8m PASS
+CHECK 256x256x256_eps2/b_hat=device h_tilde_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device face_u_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device face_v_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device face_w_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device inlet_u_plane_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device K_eff_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device G_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device eigenvalues_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device achieved_mean_flux_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device symmetry_defect_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device div_max_abs_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device div_rms_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device corrector0_result_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device corrector1_result_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device corrector2_result_bitwise PASS
+CHECK 256x256x256_eps2/b_hat=device memory_items_equal_geometric_sizes PASS
+CHECK 256x256x256_eps2/b_hat=device memory_total_equals_closed_form PASS
+INFO 256x256x256_eps2/b_hat=device total_device_bytes=1152651371 closed_form=1152651371 diff=0 device_used_at_peak=1672478720 face_max=16842752 bhat_host_bytes=0 pcg_red_temp=0 seconds=2.790
+CHECK 256x256x256_eps2/b_hat=device pcg_reduction_workspace_has_no_temp PASS
+CHECK 256x256x256_eps2/b_hat=device bhat_host_bytes PASS
+CHECK 256x256x256_eps2/b_hat=device memory_categories_sum_to_total PASS
+CHECK 256x256x256_eps2/b_hat=device memory_report_timing_and_peak PASS
+INFO 256x256x256_eps2/b_hat=device residual_after_call=136314880 expected_8m=134742016 (diff 1572864)
+CHECK 256x256x256_eps2/b_hat=device h_tilde_capacity_is_m PASS
+CHECK 256x256x256_eps2/b_hat=device residual_allocation_is_8m PASS
+INFO 512x64x64_eps2 levels=5 n=2097152 iters=20,20,20 status=0,0,0 G=0.66595819654880406,-0.0032005861328966733,0.0057360871203117883
+CHECK 512x64x64_eps2 reference_converged PASS
+CHECK 512x64x64_eps2/b_hat=mapped h_tilde_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped face_u_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped face_v_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped face_w_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped inlet_u_plane_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped K_eff_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped G_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped eigenvalues_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped achieved_mean_flux_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped symmetry_defect_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped div_max_abs_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped div_rms_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped corrector0_result_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped corrector1_result_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped corrector2_result_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=mapped memory_items_equal_geometric_sizes PASS
+CHECK 512x64x64_eps2/b_hat=mapped memory_total_equals_closed_form PASS
+INFO 512x64x64_eps2/b_hat=mapped total_device_bytes=128174171 closed_form=128174171 diff=0 device_used_at_peak=649068544 face_max=2129920 bhat_host_bytes=16777216 pcg_red_temp=0 seconds=2.321
+CHECK 512x64x64_eps2/b_hat=mapped pcg_reduction_workspace_has_no_temp PASS
+CHECK 512x64x64_eps2/b_hat=mapped bhat_host_bytes PASS
+CHECK 512x64x64_eps2/b_hat=mapped memory_categories_sum_to_total PASS
+CHECK 512x64x64_eps2/b_hat=mapped memory_report_timing_and_peak PASS
+INFO 512x64x64_eps2/b_hat=mapped residual_after_call=18874368 expected_8m=17039360 (diff 1835008)
+CHECK 512x64x64_eps2/b_hat=mapped h_tilde_capacity_is_m PASS
+CHECK 512x64x64_eps2/b_hat=mapped residual_allocation_is_8m PASS
+CHECK 512x64x64_eps2/b_hat=device h_tilde_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device face_u_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device face_v_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device face_w_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device inlet_u_plane_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device K_eff_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device G_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device eigenvalues_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device achieved_mean_flux_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device symmetry_defect_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device div_max_abs_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device div_rms_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device corrector0_result_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device corrector1_result_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device corrector2_result_bitwise PASS
+CHECK 512x64x64_eps2/b_hat=device memory_items_equal_geometric_sizes PASS
+CHECK 512x64x64_eps2/b_hat=device memory_total_equals_closed_form PASS
+INFO 512x64x64_eps2/b_hat=device total_device_bytes=144951387 closed_form=144951387 diff=0 device_used_at_peak=665845760 face_max=2129920 bhat_host_bytes=0 pcg_red_temp=0 seconds=2.285
+CHECK 512x64x64_eps2/b_hat=device pcg_reduction_workspace_has_no_temp PASS
+CHECK 512x64x64_eps2/b_hat=device bhat_host_bytes PASS
+CHECK 512x64x64_eps2/b_hat=device memory_categories_sum_to_total PASS
+CHECK 512x64x64_eps2/b_hat=device memory_report_timing_and_peak PASS
+INFO 512x64x64_eps2/b_hat=device residual_after_call=18874368 expected_8m=17039360 (diff 1835008)
+CHECK 512x64x64_eps2/b_hat=device h_tilde_capacity_is_m PASS
+CHECK 512x64x64_eps2/b_hat=device residual_allocation_is_8m PASS
+CHECK validation K_size_mismatch_throws PASS
+CHECK validation anisotropic_spacing_throws PASS
+ALL_PASS

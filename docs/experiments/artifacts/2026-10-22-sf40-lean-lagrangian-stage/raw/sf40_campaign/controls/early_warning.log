@@ -1,0 +1,26 @@
+command: /home/sesquerre/MacroFlow3D-SF-40/build/v100-release/inlet_slab --track forward --stage lean --fused-splines --single-launch --grid 1664,192,192 --sigma2 1 --eps 2 --ell 0.08333333333333333 --seed 4001 --np-side 10 --planes 0.5 --max-arclength 1000 --summary /home/sesquerre/sf40_campaign/controls/early_warning.json
+FIELD gaussian (SF-18) N=1664 grid=1664x192x192 sigma2=1 ell=0.0833333 seed=4001 normalize_variance=1 applied_scale=9.932143098851e-01 raw_variance=1.013710777493e+00 final_variance=1.000000000000e+00 active_modes=30352191 | stage field k = exp(eps Y), eps = 2
+SETUP STAGE field=gaussian eps=2 N=1664 status=inlet_backflow
+SETUP   SF-18: raw_mean=-2.983873e-19 raw_variance=1.013710777493e+00 applied_scale=9.932143098851e-01 final_variance=1.000000000000e+00 active_modes=30352191
+SETUP   SF-19: mg_levels=6 converged=1 G=(5.299137182695e-01, -2.412547841614e-03, -6.945218206088e-03) mean_flux=(1.000e+00, 1.334e-19, -2.254e-18) div_max=1.075e-06 div_rms=2.858e-09
+SETUP   SF-19 corrector x: status=converged its=30 rel_residual=3.805e-12 final_residual=4.222e-05
+SETUP   SF-19 corrector y: status=converged its=30 rel_residual=3.460e-12 final_residual=3.641e-05
+SETUP   SF-19 corrector z: status=converged its=30 rel_residual=2.271e-12 final_residual=2.687e-05
+SETUP   inlet: vmin=-3.993641e-02 mean(U plane 0)=0.999999999999050 (mean-1=-9.496e-13) Q0-1=nan v_rms=n/a (lean stage: vertex vD not built)
+SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+SETUP stage eps=2 built in 21.039s (lean stage, Grid3D 1664x192x192, bhat=mapped)
+MEM_GEOM pid=146293 nx=1664 ny=192 nz=192 n=61341696 levels=6 level_cells=61341696,7667712,958464,119808,14976,1872 coarsest=52x6x6 face_max=61661184 bhat=mapped bhat_host_bytes=490733568 cub_sum_bytes=16383,16383,16383,16383,16383,1
+MEM_PHASE phase=F exact_bytes=1473382408 cufft_work=491323392 cufft_gen=491323392 device_used=1500512256 seconds=0.440556 items=y:490733568,sf18_spectrum:491323392,sf18_mode_counter:8,sf18_reduce_blocks:2048
+MEM_PHASE phase=S1 exact_bytes=2455437312 cufft_work=982646784 cufft_prefilter_logk=982646784 device_used=1991245824 seconds=1.915209 items=lnk:490733568,coef_logk:490733568,prefilter_spectrum:491323392
+MEM_PHASE phase=S2 exact_bytes=3725886050 cufft_work=0 device_used=4258267136 seconds=16.295131 categories=correctors:986578944,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:493305871,mg_hierarchy:2245900800,mg_preconditioner:81964 items=mg_l0_x:493289472,mg_l0_b:490733568,mg_l0_r:490733568,mg_l0_coef:490733568,mg_l1_x:61341696,mg_l1_b:61341696,mg_l1_r:61341696,mg_l1_coef:61341696,mg_l2_x:7667712,mg_l2_b:7667712,mg_l2_r:7667712,mg_l2_coef:7667712,mg_l3_x:958464,mg_l3_b:958464,mg_l3_r:958464,mg_l3_coef:958464,mg_l4_x:119808,mg_l4_b:119808,mg_l4_r:119808,mg_l4_coef:119808,mg_l5_x:14976,mg_l5_b:14976,mg_l5_r:14976,mg_l5_coef:14976,pcg_r:493289472,pcg_p:493289472,corrector:493289472,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:9,scratch_reduce_blocks:2048
+MEM_PHASE phase=S3 exact_bytes=2948726784 cufft_work=982646784 cufft_prefilter_pot=982646784 device_used=2486173696 seconds=2.108277 items=h_tilde:493289472,coef_logk:490733568,coef_pot:490733568,prefilter_spectrum:491323392
+MEM_PHASE phase=T exact_bytes=981491168 cufft_work=0 device_used=1498415104 seconds=0.000246 items=coef_interleaved:981467136,tracker_seeds:2400,tracker_planes:8,tracker_times:8,tracker_stats_plane:8800,tracker_stats_time:8800,tracker_planes_x23:1600,tracker_planes_tau:800,tracker_planes_I:800,tracker_times_x:8,tracker_times_I:8,tracker_prepare_transient:800
+TRACK field=gaussian eps=2 N=1664 h=0.005208333333 x0=0 M=10 Np=100 planes=0.5 times= tol=1.0e-08 h_max=6.510417e-04 (h/8) min_step=1.0e-13 max_arclength=1000 covectors=0 labels_available=0 inlet_vmin=-3.993641e-02
+BACKFLOW field=gaussian eps=2 N=1664 inlet_vmin=-3.993641e-02 labels_available=0 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+TPLANE m=0 x1=0.5 n_ok=100 mean2=5.267324833123e-01 mean3=5.576576780653e-01 var2=1.316698785407e-01 var3=1.002136719829e-01 mean_tau=5.797053160917e-01 var_tau=1.624870167922e+00 ev_rms=2.367838e-02 ev_max=1.561047e-01
+TSTATUS pass=plane hist=100,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=573024
+TSTATUS pass=time hist=100,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=0
+TIMING prepare=0.000s stage=21.039s track=0.077s total=21.117s
+MEMORY peak_device_bytes=1641021440 free_min=32448708608 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf40_campaign/controls/early_warning.json
+STATUS ok

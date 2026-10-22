@@ -1,0 +1,52 @@
+[2026-10-22T19:27:14Z] job=sf40-build session=macroflow3d-SF-40-sf40-build started
+[2026-10-22T19:27:14Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-22T19:27:14Z] cwd=/home/sesquerre/MacroFlow3D-SF-40
+[2026-10-22T19:27:14Z] command=set -o pipefail; cd ~/MacroFlow3D-SF-40 || exit 2; echo H1_TREE=bc089455efc5620bba63412dbe2c5400d4ac18a6; echo GPU=${CUDA_VISIBLE_DEVICES:-unset} $(nvidia-smi --query-gpu=name --format=csv,noheader -i ${CUDA_VISIBLE_DEVICES:-0}); cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 5; echo BUILD_EXIT=${PIPESTATUS[0]}; md5sum build/v100-release/inlet_slab build/v100-release/macroflow3d_pipeline ~/sf40_base_refs/bin/inlet_slab; ctest --test-dir build/v100-release -N | tail -n 1; nvcc --version | tail -n 2; S=~/sf40_campaign/sass; rm -rf $S; mkdir -p $S && cd $S && cuobjdump -xelf all ~/MacroFlow3D-SF-40/build/v100-release/inlet_slab > /dev/null 2>&1; ls *.cubin | head; for f in *.cubin; do nvdisasm -c "$f" > "$f.sass" 2>/dev/null; done; echo SASS_FUNCS=$(grep -h -c "^\s*\.text\." *.sass 2>/dev/null | paste -sd+ | bc); grep -h -E "CALL" *.sass | grep -E -c "evaluate_point|axis_stencil|FusedSpline" | sed "s/^/SASS_OUT_OF_LINE_SPLINE_CALLS=/"; grep -h -E "CALL" *.sass | grep -o -E "\`\([^)]*\)" | sort | uniq -c | sort -rn | head -20
+H1_TREE=bc089455efc5620bba63412dbe2c5400d4ac18a6
+GPU=0 Tesla V100-PCIE-32GB
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[150/154] Linking CXX executable streamline_closure_controls_tests
+[151/154] Linking CXX executable macroflow3d_pipeline
+[152/154] Linking CXX executable spurious_spreading
+[153/154] Linking CXX executable streamfunction_operator_tests
+[154/154] Linking CXX executable spurious_spreading_controls_tests
+BUILD_EXIT=0
+95febc0b40245fac1f4b19af12d569bd  build/v100-release/inlet_slab
+fb93e8d08541b8616d934e291cd88b5d  build/v100-release/macroflow3d_pipeline
+ac806f1b1d8d5076eac4ad97e6f4ffc7  /home/sesquerre/sf40_base_refs/bin/inlet_slab
+Total Tests: 43
+Cuda compilation tools, release 11.4, V11.4.152
+Build cuda_11.4.r11.4/compiler.30521435_0
+inlet_slab.1.sm_70.cubin
+inlet_slab.2.sm_70.cubin
+SASS_FUNCS=397
+SASS_OUT_OF_LINE_SPLINE_CALLS=2
+   3248 `(__cuda_sm20_div_f64_slowpath_v2__90)
+    640 `(__cuda_sm20_dblrcp_rn_slowpath_v3__88)
+    465 `(__cuda_sm20_div_f64_slowpath_v2__80)
+    439 `(__cuda_sm20_dblrcp_rn_slowpath_v3__102)
+    433 `(__cuda_sm20_dblrcp_rn_slowpath_v3__98)
+    274 `(__cuda_sm20_div_f64_slowpath_v2__100)
+    266 `(__cuda_sm20_div_f64_slowpath_v2__96)
+    244 `(__cuda_sm70_votesync_ballot)
+    210 `(__cuda_sm20_dsqrt_rn_f64_mediumpath_v1__86)
+    148 `(__cuda_sm20_div_f64_slowpath_v2__172)
+    127 `(__cuda_sm20_div_f64_slowpath_v2__38)
+    118 `(__cuda_sm20_div_f64_slowpath_v2__10)
+    101 `(__cuda_sm20_div_f64_slowpath_v2__94)
+    101 `(__cuda_sm20_div_f64_slowpath_v2__184)
+    100 `(__cuda_sm20_div_f64_slowpath_v2__44)
+     88 `(__cuda_sm20_div_f64_slowpath_v2__14)
+     74 `(__cuda_sm20_div_f64_slowpath_v2__22)
+     63 `(__cuda_sm20_div_f64_slowpath_v2__26)
+     53 `(__cuda_sm70_warpsync)
+     48 `(__cuda_sm20_div_f64_slowpath_v2__138)
+[2026-10-22T19:30:26Z] job=sf40-build finished exit=0

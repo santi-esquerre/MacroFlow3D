@@ -1,0 +1,8 @@
+CHECK cufft_plans_created PASS
+CUFFT_SIZE nx=3328 ny=384 nz=384 gen_z2d=3928227840 prefilter_d2z=3928227840 prefilter_z2d=3928227840 levels=7
+PREDICT phase=F exact_bytes=11782326280 bytes_per_cell=24.0096 MiB=11236.5
+PREDICT phase=S1 exact_bytes=19636420608 bytes_per_cell=40.0144 MiB=18726.8
+PREDICT phase=S2 exact_bytes=29765452393 bytes_per_cell=60.6550 MiB=28386.5
+PREDICT phase=S3 exact_bytes=23775677416 bytes_per_cell=48.4493 MiB=22674.3
+CHECK s2_largest_predicted PASS  S2 29765452393 max other 23775677416
+ALL_PASS

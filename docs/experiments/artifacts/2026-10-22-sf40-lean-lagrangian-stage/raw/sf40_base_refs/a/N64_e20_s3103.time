@@ -1,0 +1,23 @@
+	Command being timed: "/home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3103 --n 64 --eps 2 --np-side 256 --planes 0.25,0.5,1,2,4,8,16 --times 0.25,0.5,1,2,4,8,16 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_base_refs/a/N64_e20_s3103/ --summary /home/sesquerre/sf40_base_refs/a/N64_e20_s3103.json"
+	User time (seconds): 9.98
+	System time (seconds): 8.51
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:18.64
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 676088
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 174249
+	Voluntary context switches: 250
+	Involuntary context switches: 9
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 63888
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

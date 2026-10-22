@@ -145,6 +145,9 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace macroflow3d {
 namespace physics {
@@ -331,6 +334,88 @@ class AffinePeriodicFlowWorkspace {
     CudaContext& context, const Grid3D& grid, DeviceSpan<const real> K,
     const AffinePeriodicFlowConfig& config, AffinePeriodicVelocityView velocity,
     AffinePeriodicFlowWorkspace& workspace);
+
+// ---------------------------------------------------------------------------
+// SF-40 L2: lean (memory level S / S+) variant of solve_affine_periodic_flow.
+// ---------------------------------------------------------------------------
+
+/**
+ * Options of `solve_affine_periodic_flow_lean`.
+ *
+ * `bhat_mapped_host = true` is memory level S+ (the PCG projected right-hand side `b_hat`
+ * lives in pinned mapped host memory, `cudaHostAlloc(cudaHostAllocMapped)` +
+ * `cudaHostGetDevicePointer`, relying on UVA; the library never calls cudaSetDeviceFlags);
+ * `false` is level S (`b_hat` in a device buffer of n doubles).
+ * `keep_face_fluxes_host = true` fills `face_u/v/w` with full CompactMAC host copies of the
+ * final velocity (returned whatever the corrector status; the caller decides, e.g. the
+ * production stage keeps them only if all three correctors converged).
+ */
+struct AffinePeriodicFlowLeanOptions {
+    bool bhat_mapped_host = true;
+    bool keep_face_fluxes_host = false;
+};
+
+struct AffinePeriodicFlowLeanMemoryItem {
+    std::string name;
+    std::size_t bytes{};
+};
+
+/**
+ * Exact byte report of the S2 (PCG) peak of the lean solve (contract C-MEMPHASE, S2).
+ * `items` lists, in allocation order, EVERY device allocation live at the peak with its
+ * capacity in bytes: `mg_l<l>_{x,b,r,coef}` (`mg_l0_x` has capacity 8m), `pcg_r`, `pcg_p`,
+ * `corrector` (capacity 8m each), `bhat_device` (level S only) and the fixed-size
+ * `scratch_*` items. Category mapping (each item in exactly one category):
+ * correctors = corrector + pcg_p (pcg_p becomes h_tilde); pcg_workspace = pcg_r + bhat_device
+ * + scratch_pcg_d_scalar + scratch_pcg_mean_zero; affine_rhs_workspace = scratch_rhs_mean_zero
+ * + scratch_rhs_means; reduction_scratch = scratch_reduce_blocks; mg_hierarchy = every
+ * mg_l<l>_*; mg_preconditioner = scratch_mg_mean_zero_l<l>; rhs_scratch and flux_scratch are
+ * 0 (the RHS, the face fluxes and the divergence live in MG level-0 x/b and in pcg_r/pcg_p/
+ * corrector, which are counted under their owners). cuBLAS/CUB handle memory owned by the
+ * CudaContext is excluded project-wide.
+ */
+struct AffinePeriodicFlowLeanMemoryReport {
+    std::vector<AffinePeriodicFlowLeanMemoryItem> items;
+    std::size_t face_max{};          // m = max((nx+1)ny nz, nx(ny+1)nz, nx ny(nz+1))
+    std::size_t total_device_bytes{}; // sum of items
+    std::size_t bhat_host_bytes{};   // 8n of pinned mapped host memory (level S+), else 0
+    std::size_t pcg_red_temp_bytes{}; // capacity of the PCG ReductionWorkspace::temp (expected 0)
+    AffinePeriodicFlowMemoryReport categories{};
+    std::size_t device_used_at_peak{}; // cudaMemGetInfo total - free right after the S2 allocations
+    // cudaMemGetInfo total - free right after the three corrector solves (SF-40 L3): lazy library
+    // allocations (e.g. the cuBLAS workspace) appear only after the first calls.
+    std::size_t device_used_after_solve{};
+    double seconds{};                  // wall time of the whole solve
+};
+
+/**
+ * Result of `solve_affine_periodic_flow_lean`. `report` equals bit for bit the report of
+ * `solve_affine_periodic_flow` (except `report.memory`, left value-initialized; see
+ * `memory`). `h_tilde` is the periodic potential fluctuation (size n, capacity m). 
+ * `inlet_u_plane[k + nz*j] = U[j*(nx+1) + k*(nx+1)*ny]` (j < ny, k < nz): the final U-face
+ * plane i = 0. `face_u/v/w` are filled only with `keep_face_fluxes_host`.
+ */
+struct AffinePeriodicFlowLeanResult {
+    AffinePeriodicFlowReport report;
+    DeviceBuffer<real> h_tilde;
+    std::vector<real> inlet_u_plane;
+    std::vector<real> face_u, face_v, face_w;
+    AffinePeriodicFlowLeanMemoryReport memory;
+};
+
+/**
+ * Same mathematics and bitwise-identical numbers as `solve_affine_periodic_flow`, with the
+ * device peak lowered by the buffer placement of contract C-LEAN-PLACEMENT (SF-40; see
+ * docs/experiments/artifacts/2026-10-22-sf40-lean-lagrangian-stage/preregistration.md):
+ * K is taken from the host (`K_host`, n values), no workspace/velocity buffers are owned by
+ * the caller, and only `h_tilde` remains allocated on return. Same validation and exception
+ * messages as the current solver; a device allocation failure throws `std::runtime_error`
+ * whose message contains `phase=S2`. A non-converged corrector is reported in
+ * `report.corrector_results`, not thrown (as in the current solver).
+ */
+[[nodiscard]] AffinePeriodicFlowLeanResult solve_affine_periodic_flow_lean(
+    CudaContext& context, const Grid3D& grid, const std::vector<real>& K_host,
+    const AffinePeriodicFlowConfig& config, const AffinePeriodicFlowLeanOptions& options);
 
 } // namespace physics
 } // namespace macroflow3d

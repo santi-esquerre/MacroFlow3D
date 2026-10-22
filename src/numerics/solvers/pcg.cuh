@@ -463,5 +463,249 @@ ProjectedPCGResult projected_pcg_solve(CudaContext& ctx, const Operator& A, cons
     return result;
 }
 
+/**
+ * Externally-owned vectors for projected_pcg_solve_external (SF-40 memory levels S/S+).
+ *
+ * The caller may alias `z` and `Ap` to the SAME span (exact identity: their lifetimes
+ * never overlap -- z is written by M.apply and dead before A.apply writes Ap, and vice
+ * versa).  Constraints: x, r, p must never live in MG buffers; `b` may live in the MG
+ * level-0 `x` only because it is consumed (mean_host, nrm2_host, copy to b_hat) before the
+ * first M.apply; `b_hat` may be the device pointer of pinned mapped host memory
+ * (cudaHostAlloc(cudaHostAllocMapped) + cudaHostGetDevicePointer).  All spans must start at
+ * an allocation base (never a sub-offset) so CUB/cuBLAS alignment assumptions hold.
+ */
+struct ProjectedPCGExternalVectors {
+    DeviceSpan<real> r;
+    DeviceSpan<real> p;
+    DeviceSpan<real> z;
+    DeviceSpan<real> Ap;
+    DeviceSpan<real> b_hat;
+    blas::ReductionWorkspace* red = nullptr;
+    constraints::MeanZeroWorkspace* mean_zero = nullptr;
+};
+
+namespace detail {
+
+inline bool external_vectors_alias(DeviceSpan<const real> b, DeviceSpan<const real> x,
+                                   const ProjectedPCGExternalVectors& v) noexcept {
+    using CS = DeviceSpan<const real>;
+    const bool z_is_Ap = v.z.data() == v.Ap.data() && v.z.size() == v.Ap.size();
+    // Distinct vectors (Ap only when it is not the exact same span as z).
+    const CS distinct[6] = {CS(v.r),  CS(v.p),
+                            CS(v.z),  CS(v.b_hat),
+                            CS(v.red->d_scalar.span()), CS(v.Ap)};
+    const int n_distinct = z_is_Ap ? 5 : 6;
+    for (int i = 0; i < n_distinct; ++i) {
+        for (int j = i + 1; j < n_distinct; ++j) {
+            if (spans_overlap(distinct[i], distinct[j])) {
+                return true;
+            }
+        }
+        if (spans_overlap(b, distinct[i]) || spans_overlap(x, distinct[i])) {
+            return true;
+        }
+    }
+    return spans_overlap(b, x);
+}
+
+} // namespace detail
+
+/**
+ * Same algorithm as projected_pcg_solve with caller-owned vectors (see
+ * ProjectedPCGExternalVectors).  The body is a statement-for-statement transcription of
+ * projected_pcg_solve: only the guard and the vector sources differ.
+ */
+template <typename Operator, typename Preconditioner>
+ProjectedPCGResult projected_pcg_solve_external(CudaContext& ctx, const Operator& A,
+                                                const Preconditioner& M, DeviceSpan<const real> b,
+                                                DeviceSpan<real> x, const ProjectedPCGConfig& cfg,
+                                                const constraints::MeanZeroProjector& projector,
+                                                ProjectedPCGExternalVectors& v) {
+    ProjectedPCGResult result;
+    const size_t n = x.size();
+
+    if (n == 0 || b.size() != n || v.r.size() != n || v.p.size() != n || v.z.size() != n ||
+        v.Ap.size() != n || v.b_hat.size() != n || v.red == nullptr ||
+        v.red->d_scalar.size() < 1 || v.mean_zero == nullptr || !v.mean_zero->prepared_for(n)) {
+        result.status = ProjectedPCGStatus::size_mismatch;
+        return result;
+    }
+    if (cfg.max_iter < 0 || cfg.check_every <= 0 || cfg.rtol < real(0.0) ||
+        !std::isfinite(cfg.rtol)) {
+        result.status = ProjectedPCGStatus::invalid_configuration;
+        return result;
+    }
+    if (detail::external_vectors_alias(b, DeviceSpan<const real>(x), v)) {
+        result.status = ProjectedPCGStatus::aliasing;
+        return result;
+    }
+
+    auto b_hat = v.b_hat;
+    auto r = v.r;
+    auto z = v.z;
+    auto p = v.p;
+    auto Ap = v.Ap;
+
+    result.raw_rhs_mean = projector.mean_host(ctx, b, *v.mean_zero);
+    result.raw_rhs_l2_norm = blas::nrm2_host(ctx, b, *v.red);
+    if (!std::isfinite(result.raw_rhs_mean) || !std::isfinite(result.raw_rhs_l2_norm)) {
+        result.status = ProjectedPCGStatus::nonfinite_value;
+        return result;
+    }
+    result.raw_rhs_compatibility_defect =
+        result.raw_rhs_l2_norm > real(0.0)
+            ? std::abs(result.raw_rhs_mean) /
+                  (result.raw_rhs_l2_norm / std::sqrt(static_cast<real>(n)))
+            : real(0.0);
+    if (!std::isfinite(result.raw_rhs_compatibility_defect)) {
+        result.status = ProjectedPCGStatus::nonfinite_value;
+        return result;
+    }
+
+    blas::copy(ctx, b, b_hat);
+    projector.project(ctx, b_hat, *v.mean_zero);
+    projector.project(ctx, x, *v.mean_zero);
+
+    const auto recompute_true_residual = [&]() {
+        A.apply(ctx, DeviceSpan<const real>(x), Ap);
+        blas::copy(ctx, DeviceSpan<const real>(b_hat), r);
+        blas::axpy(ctx, real(-1.0), DeviceSpan<const real>(Ap), r);
+        projector.project(ctx, r, *v.mean_zero);
+        return blas::nrm2_host(ctx, DeviceSpan<const real>(r), *v.red);
+    };
+    const auto record_final_diagnostics = [&]() {
+        result.final_field_mean =
+            projector.mean_host(ctx, DeviceSpan<const real>(x), *v.mean_zero);
+        if (!std::isfinite(result.final_field_mean)) {
+            result.status = ProjectedPCGStatus::nonfinite_value;
+            result.converged = false;
+        }
+    };
+    const auto set_relative_residual = [&](real residual) {
+        result.final_projected_residual = residual;
+        result.relative_projected_residual =
+            result.initial_projected_residual == real(0.0)
+                ? (residual == real(0.0) ? real(0.0) : std::numeric_limits<real>::infinity())
+                : residual / result.initial_projected_residual;
+    };
+
+    result.initial_projected_residual = recompute_true_residual();
+    set_relative_residual(result.initial_projected_residual);
+    if (!std::isfinite(result.initial_projected_residual) ||
+        !std::isfinite(result.relative_projected_residual)) {
+        result.status = ProjectedPCGStatus::nonfinite_value;
+        record_final_diagnostics();
+        return result;
+    }
+    if (result.relative_projected_residual <= cfg.rtol) {
+        result.status = ProjectedPCGStatus::converged;
+        result.converged = true;
+        record_final_diagnostics();
+        return result;
+    }
+    if (cfg.max_iter == 0) {
+        result.status = ProjectedPCGStatus::max_iterations;
+        record_final_diagnostics();
+        return result;
+    }
+
+    M.apply(ctx, DeviceSpan<const real>(r), z);
+    projector.project(ctx, z, *v.mean_zero);
+    blas::copy(ctx, DeviceSpan<const real>(z), p);
+    projector.project(ctx, p, *v.mean_zero);
+    real rz_old = blas::dot_host(ctx, DeviceSpan<const real>(r), DeviceSpan<const real>(z), *v.red);
+    if (!std::isfinite(rz_old)) {
+        result.status = ProjectedPCGStatus::nonfinite_value;
+        record_final_diagnostics();
+        return result;
+    }
+    if (rz_old <= real(0.0)) {
+        result.status = ProjectedPCGStatus::breakdown_rz;
+        record_final_diagnostics();
+        return result;
+    }
+
+    bool residual_is_current = true;
+    for (int iter = 0; iter < cfg.max_iter; ++iter) {
+        result.iterations = iter + 1;
+        A.apply(ctx, DeviceSpan<const real>(p), Ap);
+        const real pAp =
+            blas::dot_host(ctx, DeviceSpan<const real>(p), DeviceSpan<const real>(Ap), *v.red);
+        if (!std::isfinite(pAp)) {
+            result.status = ProjectedPCGStatus::nonfinite_value;
+            break;
+        }
+        if (pAp <= real(0.0)) {
+            result.status = ProjectedPCGStatus::breakdown_pAp;
+            break;
+        }
+        const real alpha = rz_old / pAp;
+        if (!std::isfinite(alpha)) {
+            result.status = ProjectedPCGStatus::nonfinite_value;
+            break;
+        }
+
+        blas::axpy(ctx, alpha, DeviceSpan<const real>(p), x);
+        projector.project(ctx, x, *v.mean_zero);
+        blas::axpy(ctx, -alpha, DeviceSpan<const real>(Ap), r);
+        projector.project(ctx, r, *v.mean_zero);
+        residual_is_current = false;
+
+        if ((iter + 1) % cfg.check_every == 0 || iter == cfg.max_iter - 1) {
+            const real residual = recompute_true_residual();
+            residual_is_current = true;
+            set_relative_residual(residual);
+            if (!std::isfinite(residual) || !std::isfinite(result.relative_projected_residual)) {
+                result.status = ProjectedPCGStatus::nonfinite_value;
+                break;
+            }
+            if (result.relative_projected_residual <= cfg.rtol) {
+                result.status = ProjectedPCGStatus::converged;
+                result.converged = true;
+                break;
+            }
+            if (iter == cfg.max_iter - 1) {
+                result.status = ProjectedPCGStatus::max_iterations;
+                break;
+            }
+        }
+
+        M.apply(ctx, DeviceSpan<const real>(r), z);
+        projector.project(ctx, z, *v.mean_zero);
+        const real rz_new =
+            blas::dot_host(ctx, DeviceSpan<const real>(r), DeviceSpan<const real>(z), *v.red);
+        if (!std::isfinite(rz_new)) {
+            result.status = ProjectedPCGStatus::nonfinite_value;
+            break;
+        }
+        if (rz_new <= real(0.0)) {
+            result.status = ProjectedPCGStatus::breakdown_rz;
+            break;
+        }
+        const real beta = rz_new / rz_old;
+        if (!std::isfinite(beta)) {
+            result.status = ProjectedPCGStatus::nonfinite_value;
+            break;
+        }
+        blas::axpby(ctx, real(1.0), DeviceSpan<const real>(z), beta, p);
+        projector.project(ctx, p, *v.mean_zero);
+        rz_old = rz_new;
+    }
+
+    if (!result.converged && result.status == ProjectedPCGStatus::invalid_configuration) {
+        result.status = ProjectedPCGStatus::max_iterations;
+    }
+    if (!residual_is_current) {
+        set_relative_residual(recompute_true_residual());
+    }
+    if (!std::isfinite(result.final_projected_residual) ||
+        !std::isfinite(result.relative_projected_residual)) {
+        result.status = ProjectedPCGStatus::nonfinite_value;
+        result.converged = false;
+    }
+    record_final_diagnostics();
+    return result;
+}
+
 } // namespace solvers
 } // namespace macroflow3d

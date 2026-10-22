@@ -1,0 +1,53 @@
+RECORDED l6_timings.tsv written (/home/sesquerre/sf40_campaign/l6/l6_timings.tsv)
+RECORDED L6_SPEEDUP variant=fused kernel_total_s=98.49943467 default_kernel_total_s=149.22923876200002 speedup=1.5150 launches=2
+RECORDED L6_SPEEDUP variant=single kernel_total_s=142.638341413 default_kernel_total_s=149.22923876200002 speedup=1.0462 launches=1
+RECORDED L6_SPEEDUP variant=both kernel_total_s=96.337586389 default_kernel_total_s=149.22923876200002 speedup=1.5490 launches=1
+IDENTICAL l6:fused-vs-default:labels.npy
+IDENTICAL l6:fused-vs-default:moments_planes.csv
+IDENTICAL l6:fused-vs-default:moments_time.csv
+IDENTICAL l6:fused-vs-default:planes_I.npy
+IDENTICAL l6:fused-vs-default:planes_tau.npy
+IDENTICAL l6:fused-vs-default:planes_x23.npy
+IDENTICAL l6:fused-vs-default:seeds.npy
+IDENTICAL l6:fused-vs-default:status_plane.npy
+IDENTICAL l6:fused-vs-default:status_time.npy
+IDENTICAL l6:fused-vs-default:times_I.npy
+IDENTICAL l6:fused-vs-default:times_x.npy
+IDENTICAL l6:fused-vs-default:track.json
+IDENTICAL l6:fused-vs-default:weights.npy
+IDENTICAL l6:fused-vs-default:fileset
+IDENTICAL l6:fused-vs-default:lines: IDENTICAL 29
+IDENTICAL l6:fused-vs-default:rc base=0 head=0
+IDENTICAL l6:single-vs-default:labels.npy
+IDENTICAL l6:single-vs-default:moments_planes.csv
+IDENTICAL l6:single-vs-default:moments_time.csv
+IDENTICAL l6:single-vs-default:planes_I.npy
+IDENTICAL l6:single-vs-default:planes_tau.npy
+IDENTICAL l6:single-vs-default:planes_x23.npy
+IDENTICAL l6:single-vs-default:seeds.npy
+IDENTICAL l6:single-vs-default:status_plane.npy
+IDENTICAL l6:single-vs-default:status_time.npy
+IDENTICAL l6:single-vs-default:times_I.npy
+IDENTICAL l6:single-vs-default:times_x.npy
+IDENTICAL l6:single-vs-default:track.json
+IDENTICAL l6:single-vs-default:weights.npy
+IDENTICAL l6:single-vs-default:fileset
+IDENTICAL l6:single-vs-default:lines: IDENTICAL 29
+IDENTICAL l6:single-vs-default:rc base=0 head=0
+IDENTICAL l6:both-vs-default:labels.npy
+IDENTICAL l6:both-vs-default:moments_planes.csv
+IDENTICAL l6:both-vs-default:moments_time.csv
+IDENTICAL l6:both-vs-default:planes_I.npy
+IDENTICAL l6:both-vs-default:planes_tau.npy
+IDENTICAL l6:both-vs-default:planes_x23.npy
+IDENTICAL l6:both-vs-default:seeds.npy
+IDENTICAL l6:both-vs-default:status_plane.npy
+IDENTICAL l6:both-vs-default:status_time.npy
+IDENTICAL l6:both-vs-default:times_I.npy
+IDENTICAL l6:both-vs-default:times_x.npy
+IDENTICAL l6:both-vs-default:track.json
+IDENTICAL l6:both-vs-default:weights.npy
+IDENTICAL l6:both-vs-default:fileset
+IDENTICAL l6:both-vs-default:lines: IDENTICAL 29
+IDENTICAL l6:both-vs-default:rc base=0 head=0
+L6_VARIANTS_ALL_IDENTICAL

@@ -1,0 +1,1318 @@
+IDENTICAL lean_N64_e10_s3101:labels.npy
+IDENTICAL lean_N64_e10_s3101:moments_planes.csv
+IDENTICAL lean_N64_e10_s3101:moments_time.csv
+IDENTICAL lean_N64_e10_s3101:planes_I.npy
+IDENTICAL lean_N64_e10_s3101:planes_tau.npy
+IDENTICAL lean_N64_e10_s3101:planes_x23.npy
+IDENTICAL lean_N64_e10_s3101:seeds.npy
+IDENTICAL lean_N64_e10_s3101:status_plane.npy
+IDENTICAL lean_N64_e10_s3101:status_time.npy
+IDENTICAL lean_N64_e10_s3101:times_I.npy
+IDENTICAL lean_N64_e10_s3101:times_x.npy
+IDENTICAL lean_N64_e10_s3101:track.json
+IDENTICAL lean_N64_e10_s3101:weights.npy
+IDENTICAL lean_N64_e10_s3101:fileset
+IDENTICAL lean_N64_e10_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N64_e10_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e10_s3101:rc base=0 head=0
+IDENTICAL lean_N128_e10_s3101:labels.npy
+IDENTICAL lean_N128_e10_s3101:moments_planes.csv
+IDENTICAL lean_N128_e10_s3101:moments_time.csv
+IDENTICAL lean_N128_e10_s3101:planes_I.npy
+IDENTICAL lean_N128_e10_s3101:planes_tau.npy
+IDENTICAL lean_N128_e10_s3101:planes_x23.npy
+IDENTICAL lean_N128_e10_s3101:seeds.npy
+IDENTICAL lean_N128_e10_s3101:status_plane.npy
+IDENTICAL lean_N128_e10_s3101:status_time.npy
+IDENTICAL lean_N128_e10_s3101:times_I.npy
+IDENTICAL lean_N128_e10_s3101:times_x.npy
+IDENTICAL lean_N128_e10_s3101:track.json
+IDENTICAL lean_N128_e10_s3101:weights.npy
+IDENTICAL lean_N128_e10_s3101:fileset
+IDENTICAL lean_N128_e10_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N128_e10_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e10_s3101:rc base=0 head=0
+IDENTICAL lean_N256_e10_s3101:labels.npy
+IDENTICAL lean_N256_e10_s3101:moments_planes.csv
+IDENTICAL lean_N256_e10_s3101:moments_time.csv
+IDENTICAL lean_N256_e10_s3101:planes_I.npy
+IDENTICAL lean_N256_e10_s3101:planes_tau.npy
+IDENTICAL lean_N256_e10_s3101:planes_x23.npy
+IDENTICAL lean_N256_e10_s3101:seeds.npy
+IDENTICAL lean_N256_e10_s3101:status_plane.npy
+IDENTICAL lean_N256_e10_s3101:status_time.npy
+IDENTICAL lean_N256_e10_s3101:times_I.npy
+IDENTICAL lean_N256_e10_s3101:times_x.npy
+IDENTICAL lean_N256_e10_s3101:track.json
+IDENTICAL lean_N256_e10_s3101:weights.npy
+IDENTICAL lean_N256_e10_s3101:fileset
+IDENTICAL lean_N256_e10_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N256_e10_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e10_s3101:rc base=0 head=0
+IDENTICAL lean_N64_e10_s3102:labels.npy
+IDENTICAL lean_N64_e10_s3102:moments_planes.csv
+IDENTICAL lean_N64_e10_s3102:moments_time.csv
+IDENTICAL lean_N64_e10_s3102:planes_I.npy
+IDENTICAL lean_N64_e10_s3102:planes_tau.npy
+IDENTICAL lean_N64_e10_s3102:planes_x23.npy
+IDENTICAL lean_N64_e10_s3102:seeds.npy
+IDENTICAL lean_N64_e10_s3102:status_plane.npy
+IDENTICAL lean_N64_e10_s3102:status_time.npy
+IDENTICAL lean_N64_e10_s3102:times_I.npy
+IDENTICAL lean_N64_e10_s3102:times_x.npy
+IDENTICAL lean_N64_e10_s3102:track.json
+IDENTICAL lean_N64_e10_s3102:weights.npy
+IDENTICAL lean_N64_e10_s3102:fileset
+IDENTICAL lean_N64_e10_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N64_e10_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e10_s3102:rc base=0 head=0
+IDENTICAL lean_N128_e10_s3102:labels.npy
+IDENTICAL lean_N128_e10_s3102:moments_planes.csv
+IDENTICAL lean_N128_e10_s3102:moments_time.csv
+IDENTICAL lean_N128_e10_s3102:planes_I.npy
+IDENTICAL lean_N128_e10_s3102:planes_tau.npy
+IDENTICAL lean_N128_e10_s3102:planes_x23.npy
+IDENTICAL lean_N128_e10_s3102:seeds.npy
+IDENTICAL lean_N128_e10_s3102:status_plane.npy
+IDENTICAL lean_N128_e10_s3102:status_time.npy
+IDENTICAL lean_N128_e10_s3102:times_I.npy
+IDENTICAL lean_N128_e10_s3102:times_x.npy
+IDENTICAL lean_N128_e10_s3102:track.json
+IDENTICAL lean_N128_e10_s3102:weights.npy
+IDENTICAL lean_N128_e10_s3102:fileset
+IDENTICAL lean_N128_e10_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N128_e10_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e10_s3102:rc base=0 head=0
+IDENTICAL lean_N256_e10_s3102:labels.npy
+IDENTICAL lean_N256_e10_s3102:moments_planes.csv
+IDENTICAL lean_N256_e10_s3102:moments_time.csv
+IDENTICAL lean_N256_e10_s3102:planes_I.npy
+IDENTICAL lean_N256_e10_s3102:planes_tau.npy
+IDENTICAL lean_N256_e10_s3102:planes_x23.npy
+IDENTICAL lean_N256_e10_s3102:seeds.npy
+IDENTICAL lean_N256_e10_s3102:status_plane.npy
+IDENTICAL lean_N256_e10_s3102:status_time.npy
+IDENTICAL lean_N256_e10_s3102:times_I.npy
+IDENTICAL lean_N256_e10_s3102:times_x.npy
+IDENTICAL lean_N256_e10_s3102:track.json
+IDENTICAL lean_N256_e10_s3102:weights.npy
+IDENTICAL lean_N256_e10_s3102:fileset
+IDENTICAL lean_N256_e10_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N256_e10_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e10_s3102:rc base=0 head=0
+IDENTICAL lean_N64_e10_s3103:labels.npy
+IDENTICAL lean_N64_e10_s3103:moments_planes.csv
+IDENTICAL lean_N64_e10_s3103:moments_time.csv
+IDENTICAL lean_N64_e10_s3103:planes_I.npy
+IDENTICAL lean_N64_e10_s3103:planes_tau.npy
+IDENTICAL lean_N64_e10_s3103:planes_x23.npy
+IDENTICAL lean_N64_e10_s3103:seeds.npy
+IDENTICAL lean_N64_e10_s3103:status_plane.npy
+IDENTICAL lean_N64_e10_s3103:status_time.npy
+IDENTICAL lean_N64_e10_s3103:times_I.npy
+IDENTICAL lean_N64_e10_s3103:times_x.npy
+IDENTICAL lean_N64_e10_s3103:track.json
+IDENTICAL lean_N64_e10_s3103:weights.npy
+IDENTICAL lean_N64_e10_s3103:fileset
+IDENTICAL lean_N64_e10_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N64_e10_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e10_s3103:rc base=0 head=0
+IDENTICAL lean_N128_e10_s3103:labels.npy
+IDENTICAL lean_N128_e10_s3103:moments_planes.csv
+IDENTICAL lean_N128_e10_s3103:moments_time.csv
+IDENTICAL lean_N128_e10_s3103:planes_I.npy
+IDENTICAL lean_N128_e10_s3103:planes_tau.npy
+IDENTICAL lean_N128_e10_s3103:planes_x23.npy
+IDENTICAL lean_N128_e10_s3103:seeds.npy
+IDENTICAL lean_N128_e10_s3103:status_plane.npy
+IDENTICAL lean_N128_e10_s3103:status_time.npy
+IDENTICAL lean_N128_e10_s3103:times_I.npy
+IDENTICAL lean_N128_e10_s3103:times_x.npy
+IDENTICAL lean_N128_e10_s3103:track.json
+IDENTICAL lean_N128_e10_s3103:weights.npy
+IDENTICAL lean_N128_e10_s3103:fileset
+IDENTICAL lean_N128_e10_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N128_e10_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e10_s3103:rc base=0 head=0
+IDENTICAL lean_N256_e10_s3103:labels.npy
+IDENTICAL lean_N256_e10_s3103:moments_planes.csv
+IDENTICAL lean_N256_e10_s3103:moments_time.csv
+IDENTICAL lean_N256_e10_s3103:planes_I.npy
+IDENTICAL lean_N256_e10_s3103:planes_tau.npy
+IDENTICAL lean_N256_e10_s3103:planes_x23.npy
+IDENTICAL lean_N256_e10_s3103:seeds.npy
+IDENTICAL lean_N256_e10_s3103:status_plane.npy
+IDENTICAL lean_N256_e10_s3103:status_time.npy
+IDENTICAL lean_N256_e10_s3103:times_I.npy
+IDENTICAL lean_N256_e10_s3103:times_x.npy
+IDENTICAL lean_N256_e10_s3103:track.json
+IDENTICAL lean_N256_e10_s3103:weights.npy
+IDENTICAL lean_N256_e10_s3103:fileset
+IDENTICAL lean_N256_e10_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N256_e10_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e10_s3103:rc base=0 head=0
+IDENTICAL lean_N64_e15_s3101:labels.npy
+IDENTICAL lean_N64_e15_s3101:moments_planes.csv
+IDENTICAL lean_N64_e15_s3101:moments_time.csv
+IDENTICAL lean_N64_e15_s3101:planes_I.npy
+IDENTICAL lean_N64_e15_s3101:planes_tau.npy
+IDENTICAL lean_N64_e15_s3101:planes_x23.npy
+IDENTICAL lean_N64_e15_s3101:seeds.npy
+IDENTICAL lean_N64_e15_s3101:status_plane.npy
+IDENTICAL lean_N64_e15_s3101:status_time.npy
+IDENTICAL lean_N64_e15_s3101:times_I.npy
+IDENTICAL lean_N64_e15_s3101:times_x.npy
+IDENTICAL lean_N64_e15_s3101:track.json
+IDENTICAL lean_N64_e15_s3101:weights.npy
+IDENTICAL lean_N64_e15_s3101:fileset
+IDENTICAL lean_N64_e15_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N64_e15_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e15_s3101:rc base=0 head=0
+IDENTICAL lean_N128_e15_s3101:labels.npy
+IDENTICAL lean_N128_e15_s3101:moments_planes.csv
+IDENTICAL lean_N128_e15_s3101:moments_time.csv
+IDENTICAL lean_N128_e15_s3101:planes_I.npy
+IDENTICAL lean_N128_e15_s3101:planes_tau.npy
+IDENTICAL lean_N128_e15_s3101:planes_x23.npy
+IDENTICAL lean_N128_e15_s3101:seeds.npy
+IDENTICAL lean_N128_e15_s3101:status_plane.npy
+IDENTICAL lean_N128_e15_s3101:status_time.npy
+IDENTICAL lean_N128_e15_s3101:times_I.npy
+IDENTICAL lean_N128_e15_s3101:times_x.npy
+IDENTICAL lean_N128_e15_s3101:track.json
+IDENTICAL lean_N128_e15_s3101:weights.npy
+IDENTICAL lean_N128_e15_s3101:fileset
+IDENTICAL lean_N128_e15_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N128_e15_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e15_s3101:rc base=0 head=0
+IDENTICAL lean_N256_e15_s3101:labels.npy
+IDENTICAL lean_N256_e15_s3101:moments_planes.csv
+IDENTICAL lean_N256_e15_s3101:moments_time.csv
+IDENTICAL lean_N256_e15_s3101:planes_I.npy
+IDENTICAL lean_N256_e15_s3101:planes_tau.npy
+IDENTICAL lean_N256_e15_s3101:planes_x23.npy
+IDENTICAL lean_N256_e15_s3101:seeds.npy
+IDENTICAL lean_N256_e15_s3101:status_plane.npy
+IDENTICAL lean_N256_e15_s3101:status_time.npy
+IDENTICAL lean_N256_e15_s3101:times_I.npy
+IDENTICAL lean_N256_e15_s3101:times_x.npy
+IDENTICAL lean_N256_e15_s3101:track.json
+IDENTICAL lean_N256_e15_s3101:weights.npy
+IDENTICAL lean_N256_e15_s3101:fileset
+IDENTICAL lean_N256_e15_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N256_e15_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e15_s3101:rc base=0 head=0
+IDENTICAL lean_N64_e15_s3102:labels.npy
+IDENTICAL lean_N64_e15_s3102:moments_planes.csv
+IDENTICAL lean_N64_e15_s3102:moments_time.csv
+IDENTICAL lean_N64_e15_s3102:planes_I.npy
+IDENTICAL lean_N64_e15_s3102:planes_tau.npy
+IDENTICAL lean_N64_e15_s3102:planes_x23.npy
+IDENTICAL lean_N64_e15_s3102:seeds.npy
+IDENTICAL lean_N64_e15_s3102:status_plane.npy
+IDENTICAL lean_N64_e15_s3102:status_time.npy
+IDENTICAL lean_N64_e15_s3102:times_I.npy
+IDENTICAL lean_N64_e15_s3102:times_x.npy
+IDENTICAL lean_N64_e15_s3102:track.json
+IDENTICAL lean_N64_e15_s3102:weights.npy
+IDENTICAL lean_N64_e15_s3102:fileset
+IDENTICAL lean_N64_e15_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N64_e15_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e15_s3102:rc base=0 head=0
+IDENTICAL lean_N128_e15_s3102:labels.npy
+IDENTICAL lean_N128_e15_s3102:moments_planes.csv
+IDENTICAL lean_N128_e15_s3102:moments_time.csv
+IDENTICAL lean_N128_e15_s3102:planes_I.npy
+IDENTICAL lean_N128_e15_s3102:planes_tau.npy
+IDENTICAL lean_N128_e15_s3102:planes_x23.npy
+IDENTICAL lean_N128_e15_s3102:seeds.npy
+IDENTICAL lean_N128_e15_s3102:status_plane.npy
+IDENTICAL lean_N128_e15_s3102:status_time.npy
+IDENTICAL lean_N128_e15_s3102:times_I.npy
+IDENTICAL lean_N128_e15_s3102:times_x.npy
+IDENTICAL lean_N128_e15_s3102:track.json
+IDENTICAL lean_N128_e15_s3102:weights.npy
+IDENTICAL lean_N128_e15_s3102:fileset
+IDENTICAL lean_N128_e15_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N128_e15_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e15_s3102:rc base=0 head=0
+IDENTICAL lean_N256_e15_s3102:labels.npy
+IDENTICAL lean_N256_e15_s3102:moments_planes.csv
+IDENTICAL lean_N256_e15_s3102:moments_time.csv
+IDENTICAL lean_N256_e15_s3102:planes_I.npy
+IDENTICAL lean_N256_e15_s3102:planes_tau.npy
+IDENTICAL lean_N256_e15_s3102:planes_x23.npy
+IDENTICAL lean_N256_e15_s3102:seeds.npy
+IDENTICAL lean_N256_e15_s3102:status_plane.npy
+IDENTICAL lean_N256_e15_s3102:status_time.npy
+IDENTICAL lean_N256_e15_s3102:times_I.npy
+IDENTICAL lean_N256_e15_s3102:times_x.npy
+IDENTICAL lean_N256_e15_s3102:track.json
+IDENTICAL lean_N256_e15_s3102:weights.npy
+IDENTICAL lean_N256_e15_s3102:fileset
+IDENTICAL lean_N256_e15_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N256_e15_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e15_s3102:rc base=0 head=0
+IDENTICAL lean_N64_e15_s3103:labels.npy
+IDENTICAL lean_N64_e15_s3103:moments_planes.csv
+IDENTICAL lean_N64_e15_s3103:moments_time.csv
+IDENTICAL lean_N64_e15_s3103:planes_I.npy
+IDENTICAL lean_N64_e15_s3103:planes_tau.npy
+IDENTICAL lean_N64_e15_s3103:planes_x23.npy
+IDENTICAL lean_N64_e15_s3103:seeds.npy
+IDENTICAL lean_N64_e15_s3103:status_plane.npy
+IDENTICAL lean_N64_e15_s3103:status_time.npy
+IDENTICAL lean_N64_e15_s3103:times_I.npy
+IDENTICAL lean_N64_e15_s3103:times_x.npy
+IDENTICAL lean_N64_e15_s3103:track.json
+IDENTICAL lean_N64_e15_s3103:weights.npy
+IDENTICAL lean_N64_e15_s3103:fileset
+IDENTICAL lean_N64_e15_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N64_e15_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e15_s3103:rc base=0 head=0
+IDENTICAL lean_N128_e15_s3103:labels.npy
+IDENTICAL lean_N128_e15_s3103:moments_planes.csv
+IDENTICAL lean_N128_e15_s3103:moments_time.csv
+IDENTICAL lean_N128_e15_s3103:planes_I.npy
+IDENTICAL lean_N128_e15_s3103:planes_tau.npy
+IDENTICAL lean_N128_e15_s3103:planes_x23.npy
+IDENTICAL lean_N128_e15_s3103:seeds.npy
+IDENTICAL lean_N128_e15_s3103:status_plane.npy
+IDENTICAL lean_N128_e15_s3103:status_time.npy
+IDENTICAL lean_N128_e15_s3103:times_I.npy
+IDENTICAL lean_N128_e15_s3103:times_x.npy
+IDENTICAL lean_N128_e15_s3103:track.json
+IDENTICAL lean_N128_e15_s3103:weights.npy
+IDENTICAL lean_N128_e15_s3103:fileset
+IDENTICAL lean_N128_e15_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N128_e15_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e15_s3103:rc base=0 head=0
+IDENTICAL lean_N256_e15_s3103:labels.npy
+IDENTICAL lean_N256_e15_s3103:moments_planes.csv
+IDENTICAL lean_N256_e15_s3103:moments_time.csv
+IDENTICAL lean_N256_e15_s3103:planes_I.npy
+IDENTICAL lean_N256_e15_s3103:planes_tau.npy
+IDENTICAL lean_N256_e15_s3103:planes_x23.npy
+IDENTICAL lean_N256_e15_s3103:seeds.npy
+IDENTICAL lean_N256_e15_s3103:status_plane.npy
+IDENTICAL lean_N256_e15_s3103:status_time.npy
+IDENTICAL lean_N256_e15_s3103:times_I.npy
+IDENTICAL lean_N256_e15_s3103:times_x.npy
+IDENTICAL lean_N256_e15_s3103:track.json
+IDENTICAL lean_N256_e15_s3103:weights.npy
+IDENTICAL lean_N256_e15_s3103:fileset
+IDENTICAL lean_N256_e15_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N256_e15_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e15_s3103:rc base=0 head=0
+IDENTICAL lean_N64_e20_s3101:labels.npy
+IDENTICAL lean_N64_e20_s3101:moments_planes.csv
+IDENTICAL lean_N64_e20_s3101:moments_time.csv
+IDENTICAL lean_N64_e20_s3101:planes_I.npy
+IDENTICAL lean_N64_e20_s3101:planes_tau.npy
+IDENTICAL lean_N64_e20_s3101:planes_x23.npy
+IDENTICAL lean_N64_e20_s3101:seeds.npy
+IDENTICAL lean_N64_e20_s3101:status_plane.npy
+IDENTICAL lean_N64_e20_s3101:status_time.npy
+IDENTICAL lean_N64_e20_s3101:times_I.npy
+IDENTICAL lean_N64_e20_s3101:times_x.npy
+IDENTICAL lean_N64_e20_s3101:track.json
+IDENTICAL lean_N64_e20_s3101:weights.npy
+IDENTICAL lean_N64_e20_s3101:fileset
+IDENTICAL lean_N64_e20_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N64_e20_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e20_s3101:rc base=0 head=0
+IDENTICAL lean_N128_e20_s3101:labels.npy
+IDENTICAL lean_N128_e20_s3101:moments_planes.csv
+IDENTICAL lean_N128_e20_s3101:moments_time.csv
+IDENTICAL lean_N128_e20_s3101:planes_I.npy
+IDENTICAL lean_N128_e20_s3101:planes_tau.npy
+IDENTICAL lean_N128_e20_s3101:planes_x23.npy
+IDENTICAL lean_N128_e20_s3101:seeds.npy
+IDENTICAL lean_N128_e20_s3101:status_plane.npy
+IDENTICAL lean_N128_e20_s3101:status_time.npy
+IDENTICAL lean_N128_e20_s3101:times_I.npy
+IDENTICAL lean_N128_e20_s3101:times_x.npy
+IDENTICAL lean_N128_e20_s3101:track.json
+IDENTICAL lean_N128_e20_s3101:weights.npy
+IDENTICAL lean_N128_e20_s3101:fileset
+IDENTICAL lean_N128_e20_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N128_e20_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e20_s3101:rc base=0 head=0
+IDENTICAL lean_N256_e20_s3101:labels.npy
+IDENTICAL lean_N256_e20_s3101:moments_planes.csv
+IDENTICAL lean_N256_e20_s3101:moments_time.csv
+IDENTICAL lean_N256_e20_s3101:planes_I.npy
+IDENTICAL lean_N256_e20_s3101:planes_tau.npy
+IDENTICAL lean_N256_e20_s3101:planes_x23.npy
+IDENTICAL lean_N256_e20_s3101:seeds.npy
+IDENTICAL lean_N256_e20_s3101:status_plane.npy
+IDENTICAL lean_N256_e20_s3101:status_time.npy
+IDENTICAL lean_N256_e20_s3101:times_I.npy
+IDENTICAL lean_N256_e20_s3101:times_x.npy
+IDENTICAL lean_N256_e20_s3101:track.json
+IDENTICAL lean_N256_e20_s3101:weights.npy
+IDENTICAL lean_N256_e20_s3101:fileset
+IDENTICAL lean_N256_e20_s3101:lines: IDENTICAL 20
+IDENTICAL lean_N256_e20_s3101:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e20_s3101:rc base=0 head=0
+IDENTICAL lean_N64_e20_s3102:labels.npy
+IDENTICAL lean_N64_e20_s3102:moments_planes.csv
+IDENTICAL lean_N64_e20_s3102:moments_time.csv
+IDENTICAL lean_N64_e20_s3102:planes_I.npy
+IDENTICAL lean_N64_e20_s3102:planes_tau.npy
+IDENTICAL lean_N64_e20_s3102:planes_x23.npy
+IDENTICAL lean_N64_e20_s3102:seeds.npy
+IDENTICAL lean_N64_e20_s3102:status_plane.npy
+IDENTICAL lean_N64_e20_s3102:status_time.npy
+IDENTICAL lean_N64_e20_s3102:times_I.npy
+IDENTICAL lean_N64_e20_s3102:times_x.npy
+IDENTICAL lean_N64_e20_s3102:track.json
+IDENTICAL lean_N64_e20_s3102:weights.npy
+IDENTICAL lean_N64_e20_s3102:fileset
+IDENTICAL lean_N64_e20_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N64_e20_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e20_s3102:rc base=0 head=0
+IDENTICAL lean_N128_e20_s3102:labels.npy
+IDENTICAL lean_N128_e20_s3102:moments_planes.csv
+IDENTICAL lean_N128_e20_s3102:moments_time.csv
+IDENTICAL lean_N128_e20_s3102:planes_I.npy
+IDENTICAL lean_N128_e20_s3102:planes_tau.npy
+IDENTICAL lean_N128_e20_s3102:planes_x23.npy
+IDENTICAL lean_N128_e20_s3102:seeds.npy
+IDENTICAL lean_N128_e20_s3102:status_plane.npy
+IDENTICAL lean_N128_e20_s3102:status_time.npy
+IDENTICAL lean_N128_e20_s3102:times_I.npy
+IDENTICAL lean_N128_e20_s3102:times_x.npy
+IDENTICAL lean_N128_e20_s3102:track.json
+IDENTICAL lean_N128_e20_s3102:weights.npy
+IDENTICAL lean_N128_e20_s3102:fileset
+IDENTICAL lean_N128_e20_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N128_e20_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e20_s3102:rc base=0 head=0
+IDENTICAL lean_N256_e20_s3102:labels.npy
+IDENTICAL lean_N256_e20_s3102:moments_planes.csv
+IDENTICAL lean_N256_e20_s3102:moments_time.csv
+IDENTICAL lean_N256_e20_s3102:planes_I.npy
+IDENTICAL lean_N256_e20_s3102:planes_tau.npy
+IDENTICAL lean_N256_e20_s3102:planes_x23.npy
+IDENTICAL lean_N256_e20_s3102:seeds.npy
+IDENTICAL lean_N256_e20_s3102:status_plane.npy
+IDENTICAL lean_N256_e20_s3102:status_time.npy
+IDENTICAL lean_N256_e20_s3102:times_I.npy
+IDENTICAL lean_N256_e20_s3102:times_x.npy
+IDENTICAL lean_N256_e20_s3102:track.json
+IDENTICAL lean_N256_e20_s3102:weights.npy
+IDENTICAL lean_N256_e20_s3102:fileset
+IDENTICAL lean_N256_e20_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N256_e20_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e20_s3102:rc base=0 head=0
+IDENTICAL lean_N64_e20_s3103:labels.npy
+IDENTICAL lean_N64_e20_s3103:moments_planes.csv
+IDENTICAL lean_N64_e20_s3103:moments_time.csv
+IDENTICAL lean_N64_e20_s3103:planes_I.npy
+IDENTICAL lean_N64_e20_s3103:planes_tau.npy
+IDENTICAL lean_N64_e20_s3103:planes_x23.npy
+IDENTICAL lean_N64_e20_s3103:seeds.npy
+IDENTICAL lean_N64_e20_s3103:status_plane.npy
+IDENTICAL lean_N64_e20_s3103:status_time.npy
+IDENTICAL lean_N64_e20_s3103:times_I.npy
+IDENTICAL lean_N64_e20_s3103:times_x.npy
+IDENTICAL lean_N64_e20_s3103:track.json
+IDENTICAL lean_N64_e20_s3103:weights.npy
+IDENTICAL lean_N64_e20_s3103:fileset
+IDENTICAL lean_N64_e20_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N64_e20_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N64_e20_s3103:rc base=0 head=0
+IDENTICAL lean_N128_e20_s3103:labels.npy
+IDENTICAL lean_N128_e20_s3103:moments_planes.csv
+IDENTICAL lean_N128_e20_s3103:moments_time.csv
+IDENTICAL lean_N128_e20_s3103:planes_I.npy
+IDENTICAL lean_N128_e20_s3103:planes_tau.npy
+IDENTICAL lean_N128_e20_s3103:planes_x23.npy
+IDENTICAL lean_N128_e20_s3103:seeds.npy
+IDENTICAL lean_N128_e20_s3103:status_plane.npy
+IDENTICAL lean_N128_e20_s3103:status_time.npy
+IDENTICAL lean_N128_e20_s3103:times_I.npy
+IDENTICAL lean_N128_e20_s3103:times_x.npy
+IDENTICAL lean_N128_e20_s3103:track.json
+IDENTICAL lean_N128_e20_s3103:weights.npy
+IDENTICAL lean_N128_e20_s3103:fileset
+IDENTICAL lean_N128_e20_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N128_e20_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N128_e20_s3103:rc base=0 head=0
+IDENTICAL lean_N256_e20_s3103:labels.npy
+IDENTICAL lean_N256_e20_s3103:moments_planes.csv
+IDENTICAL lean_N256_e20_s3103:moments_time.csv
+IDENTICAL lean_N256_e20_s3103:planes_I.npy
+IDENTICAL lean_N256_e20_s3103:planes_tau.npy
+IDENTICAL lean_N256_e20_s3103:planes_x23.npy
+IDENTICAL lean_N256_e20_s3103:seeds.npy
+IDENTICAL lean_N256_e20_s3103:status_plane.npy
+IDENTICAL lean_N256_e20_s3103:status_time.npy
+IDENTICAL lean_N256_e20_s3103:times_I.npy
+IDENTICAL lean_N256_e20_s3103:times_x.npy
+IDENTICAL lean_N256_e20_s3103:track.json
+IDENTICAL lean_N256_e20_s3103:weights.npy
+IDENTICAL lean_N256_e20_s3103:fileset
+IDENTICAL lean_N256_e20_s3103:lines: IDENTICAL 20
+IDENTICAL lean_N256_e20_s3103:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N256_e20_s3103:rc base=0 head=0
+IDENTICAL lean_N512_e10_s3102:labels.npy
+IDENTICAL lean_N512_e10_s3102:moments_planes.csv
+IDENTICAL lean_N512_e10_s3102:moments_time.csv
+IDENTICAL lean_N512_e10_s3102:planes_I.npy
+IDENTICAL lean_N512_e10_s3102:planes_tau.npy
+IDENTICAL lean_N512_e10_s3102:planes_x23.npy
+IDENTICAL lean_N512_e10_s3102:seeds.npy
+IDENTICAL lean_N512_e10_s3102:status_plane.npy
+IDENTICAL lean_N512_e10_s3102:status_time.npy
+IDENTICAL lean_N512_e10_s3102:times_I.npy
+IDENTICAL lean_N512_e10_s3102:times_x.npy
+IDENTICAL lean_N512_e10_s3102:track.json
+IDENTICAL lean_N512_e10_s3102:weights.npy
+IDENTICAL lean_N512_e10_s3102:fileset
+IDENTICAL lean_N512_e10_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N512_e10_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N512_e10_s3102:rc base=0 head=0
+IDENTICAL lean_N512_e20_s3102:labels.npy
+IDENTICAL lean_N512_e20_s3102:moments_planes.csv
+IDENTICAL lean_N512_e20_s3102:moments_time.csv
+IDENTICAL lean_N512_e20_s3102:planes_I.npy
+IDENTICAL lean_N512_e20_s3102:planes_tau.npy
+IDENTICAL lean_N512_e20_s3102:planes_x23.npy
+IDENTICAL lean_N512_e20_s3102:seeds.npy
+IDENTICAL lean_N512_e20_s3102:status_plane.npy
+IDENTICAL lean_N512_e20_s3102:status_time.npy
+IDENTICAL lean_N512_e20_s3102:times_I.npy
+IDENTICAL lean_N512_e20_s3102:times_x.npy
+IDENTICAL lean_N512_e20_s3102:track.json
+IDENTICAL lean_N512_e20_s3102:weights.npy
+IDENTICAL lean_N512_e20_s3102:fileset
+IDENTICAL lean_N512_e20_s3102:lines: IDENTICAL 20
+IDENTICAL lean_N512_e20_s3102:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_N512_e20_s3102:rc base=0 head=0
+IDENTICAL lean_cov:labels.npy
+IDENTICAL lean_cov:moments_planes.csv
+IDENTICAL lean_cov:moments_time.csv
+IDENTICAL lean_cov:planes_I.npy
+IDENTICAL lean_cov:planes_cov.npy
+IDENTICAL lean_cov:planes_tau.npy
+IDENTICAL lean_cov:planes_x23.npy
+IDENTICAL lean_cov:seeds.npy
+IDENTICAL lean_cov:status_plane.npy
+IDENTICAL lean_cov:status_time.npy
+IDENTICAL lean_cov:times_I.npy
+IDENTICAL lean_cov:times_cov.npy
+IDENTICAL lean_cov:times_x.npy
+IDENTICAL lean_cov:track.json
+IDENTICAL lean_cov:weights.npy
+IDENTICAL lean_cov:fileset
+IDENTICAL lean_cov:lines: IDENTICAL 20
+IDENTICAL lean_cov:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_cov:rc base=0 head=0
+IDENTICAL lean_pol:labels.npy
+IDENTICAL lean_pol:moments_planes.csv
+IDENTICAL lean_pol:moments_time.csv
+IDENTICAL lean_pol:planes_I.npy
+IDENTICAL lean_pol:planes_tau.npy
+IDENTICAL lean_pol:planes_x23.npy
+IDENTICAL lean_pol:pollock.json
+IDENTICAL lean_pol:pollock_cells.npy
+IDENTICAL lean_pol:pollock_moments_planes.csv
+IDENTICAL lean_pol:pollock_moments_time.csv
+IDENTICAL lean_pol:pollock_planes_t.npy
+IDENTICAL lean_pol:pollock_planes_x23.npy
+IDENTICAL lean_pol:pollock_status_plane.npy
+IDENTICAL lean_pol:pollock_status_time.npy
+IDENTICAL lean_pol:pollock_times_x.npy
+IDENTICAL lean_pol:pollock_weights.npy
+IDENTICAL lean_pol:seeds.npy
+IDENTICAL lean_pol:status_plane.npy
+IDENTICAL lean_pol:status_time.npy
+IDENTICAL lean_pol:times_I.npy
+IDENTICAL lean_pol:times_x.npy
+IDENTICAL lean_pol:track.json
+IDENTICAL lean_pol:weights.npy
+IDENTICAL lean_pol:fileset
+IDENTICAL lean_pol:lines: IDENTICAL 37
+IDENTICAL lean_pol:setup_lines: IDENTICAL 5 ('SETUP   SF-18:' x1, 'SETUP   SF-19:' x1, 'SETUP   SF-19 corrector' x3)
+IDENTICAL lean_pol:rc base=0 head=0
+IDENTICAL l6_N64_e10_s3101:labels.npy
+IDENTICAL l6_N64_e10_s3101:moments_planes.csv
+IDENTICAL l6_N64_e10_s3101:moments_time.csv
+IDENTICAL l6_N64_e10_s3101:planes_I.npy
+IDENTICAL l6_N64_e10_s3101:planes_tau.npy
+IDENTICAL l6_N64_e10_s3101:planes_x23.npy
+IDENTICAL l6_N64_e10_s3101:seeds.npy
+IDENTICAL l6_N64_e10_s3101:status_plane.npy
+IDENTICAL l6_N64_e10_s3101:status_time.npy
+IDENTICAL l6_N64_e10_s3101:times_I.npy
+IDENTICAL l6_N64_e10_s3101:times_x.npy
+IDENTICAL l6_N64_e10_s3101:track.json
+IDENTICAL l6_N64_e10_s3101:weights.npy
+IDENTICAL l6_N64_e10_s3101:fileset
+IDENTICAL l6_N64_e10_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N64_e10_s3101:rc base=0 head=0
+IDENTICAL l6_N128_e10_s3101:labels.npy
+IDENTICAL l6_N128_e10_s3101:moments_planes.csv
+IDENTICAL l6_N128_e10_s3101:moments_time.csv
+IDENTICAL l6_N128_e10_s3101:planes_I.npy
+IDENTICAL l6_N128_e10_s3101:planes_tau.npy
+IDENTICAL l6_N128_e10_s3101:planes_x23.npy
+IDENTICAL l6_N128_e10_s3101:seeds.npy
+IDENTICAL l6_N128_e10_s3101:status_plane.npy
+IDENTICAL l6_N128_e10_s3101:status_time.npy
+IDENTICAL l6_N128_e10_s3101:times_I.npy
+IDENTICAL l6_N128_e10_s3101:times_x.npy
+IDENTICAL l6_N128_e10_s3101:track.json
+IDENTICAL l6_N128_e10_s3101:weights.npy
+IDENTICAL l6_N128_e10_s3101:fileset
+IDENTICAL l6_N128_e10_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N128_e10_s3101:rc base=0 head=0
+IDENTICAL l6_N256_e10_s3101:labels.npy
+IDENTICAL l6_N256_e10_s3101:moments_planes.csv
+IDENTICAL l6_N256_e10_s3101:moments_time.csv
+IDENTICAL l6_N256_e10_s3101:planes_I.npy
+IDENTICAL l6_N256_e10_s3101:planes_tau.npy
+IDENTICAL l6_N256_e10_s3101:planes_x23.npy
+IDENTICAL l6_N256_e10_s3101:seeds.npy
+IDENTICAL l6_N256_e10_s3101:status_plane.npy
+IDENTICAL l6_N256_e10_s3101:status_time.npy
+IDENTICAL l6_N256_e10_s3101:times_I.npy
+IDENTICAL l6_N256_e10_s3101:times_x.npy
+IDENTICAL l6_N256_e10_s3101:track.json
+IDENTICAL l6_N256_e10_s3101:weights.npy
+IDENTICAL l6_N256_e10_s3101:fileset
+IDENTICAL l6_N256_e10_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N256_e10_s3101:rc base=0 head=0
+IDENTICAL l6_N64_e10_s3102:labels.npy
+IDENTICAL l6_N64_e10_s3102:moments_planes.csv
+IDENTICAL l6_N64_e10_s3102:moments_time.csv
+IDENTICAL l6_N64_e10_s3102:planes_I.npy
+IDENTICAL l6_N64_e10_s3102:planes_tau.npy
+IDENTICAL l6_N64_e10_s3102:planes_x23.npy
+IDENTICAL l6_N64_e10_s3102:seeds.npy
+IDENTICAL l6_N64_e10_s3102:status_plane.npy
+IDENTICAL l6_N64_e10_s3102:status_time.npy
+IDENTICAL l6_N64_e10_s3102:times_I.npy
+IDENTICAL l6_N64_e10_s3102:times_x.npy
+IDENTICAL l6_N64_e10_s3102:track.json
+IDENTICAL l6_N64_e10_s3102:weights.npy
+IDENTICAL l6_N64_e10_s3102:fileset
+IDENTICAL l6_N64_e10_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N64_e10_s3102:rc base=0 head=0
+IDENTICAL l6_N128_e10_s3102:labels.npy
+IDENTICAL l6_N128_e10_s3102:moments_planes.csv
+IDENTICAL l6_N128_e10_s3102:moments_time.csv
+IDENTICAL l6_N128_e10_s3102:planes_I.npy
+IDENTICAL l6_N128_e10_s3102:planes_tau.npy
+IDENTICAL l6_N128_e10_s3102:planes_x23.npy
+IDENTICAL l6_N128_e10_s3102:seeds.npy
+IDENTICAL l6_N128_e10_s3102:status_plane.npy
+IDENTICAL l6_N128_e10_s3102:status_time.npy
+IDENTICAL l6_N128_e10_s3102:times_I.npy
+IDENTICAL l6_N128_e10_s3102:times_x.npy
+IDENTICAL l6_N128_e10_s3102:track.json
+IDENTICAL l6_N128_e10_s3102:weights.npy
+IDENTICAL l6_N128_e10_s3102:fileset
+IDENTICAL l6_N128_e10_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N128_e10_s3102:rc base=0 head=0
+IDENTICAL l6_N256_e10_s3102:labels.npy
+IDENTICAL l6_N256_e10_s3102:moments_planes.csv
+IDENTICAL l6_N256_e10_s3102:moments_time.csv
+IDENTICAL l6_N256_e10_s3102:planes_I.npy
+IDENTICAL l6_N256_e10_s3102:planes_tau.npy
+IDENTICAL l6_N256_e10_s3102:planes_x23.npy
+IDENTICAL l6_N256_e10_s3102:seeds.npy
+IDENTICAL l6_N256_e10_s3102:status_plane.npy
+IDENTICAL l6_N256_e10_s3102:status_time.npy
+IDENTICAL l6_N256_e10_s3102:times_I.npy
+IDENTICAL l6_N256_e10_s3102:times_x.npy
+IDENTICAL l6_N256_e10_s3102:track.json
+IDENTICAL l6_N256_e10_s3102:weights.npy
+IDENTICAL l6_N256_e10_s3102:fileset
+IDENTICAL l6_N256_e10_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N256_e10_s3102:rc base=0 head=0
+IDENTICAL l6_N64_e10_s3103:labels.npy
+IDENTICAL l6_N64_e10_s3103:moments_planes.csv
+IDENTICAL l6_N64_e10_s3103:moments_time.csv
+IDENTICAL l6_N64_e10_s3103:planes_I.npy
+IDENTICAL l6_N64_e10_s3103:planes_tau.npy
+IDENTICAL l6_N64_e10_s3103:planes_x23.npy
+IDENTICAL l6_N64_e10_s3103:seeds.npy
+IDENTICAL l6_N64_e10_s3103:status_plane.npy
+IDENTICAL l6_N64_e10_s3103:status_time.npy
+IDENTICAL l6_N64_e10_s3103:times_I.npy
+IDENTICAL l6_N64_e10_s3103:times_x.npy
+IDENTICAL l6_N64_e10_s3103:track.json
+IDENTICAL l6_N64_e10_s3103:weights.npy
+IDENTICAL l6_N64_e10_s3103:fileset
+IDENTICAL l6_N64_e10_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N64_e10_s3103:rc base=0 head=0
+IDENTICAL l6_N128_e10_s3103:labels.npy
+IDENTICAL l6_N128_e10_s3103:moments_planes.csv
+IDENTICAL l6_N128_e10_s3103:moments_time.csv
+IDENTICAL l6_N128_e10_s3103:planes_I.npy
+IDENTICAL l6_N128_e10_s3103:planes_tau.npy
+IDENTICAL l6_N128_e10_s3103:planes_x23.npy
+IDENTICAL l6_N128_e10_s3103:seeds.npy
+IDENTICAL l6_N128_e10_s3103:status_plane.npy
+IDENTICAL l6_N128_e10_s3103:status_time.npy
+IDENTICAL l6_N128_e10_s3103:times_I.npy
+IDENTICAL l6_N128_e10_s3103:times_x.npy
+IDENTICAL l6_N128_e10_s3103:track.json
+IDENTICAL l6_N128_e10_s3103:weights.npy
+IDENTICAL l6_N128_e10_s3103:fileset
+IDENTICAL l6_N128_e10_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N128_e10_s3103:rc base=0 head=0
+IDENTICAL l6_N256_e10_s3103:labels.npy
+IDENTICAL l6_N256_e10_s3103:moments_planes.csv
+IDENTICAL l6_N256_e10_s3103:moments_time.csv
+IDENTICAL l6_N256_e10_s3103:planes_I.npy
+IDENTICAL l6_N256_e10_s3103:planes_tau.npy
+IDENTICAL l6_N256_e10_s3103:planes_x23.npy
+IDENTICAL l6_N256_e10_s3103:seeds.npy
+IDENTICAL l6_N256_e10_s3103:status_plane.npy
+IDENTICAL l6_N256_e10_s3103:status_time.npy
+IDENTICAL l6_N256_e10_s3103:times_I.npy
+IDENTICAL l6_N256_e10_s3103:times_x.npy
+IDENTICAL l6_N256_e10_s3103:track.json
+IDENTICAL l6_N256_e10_s3103:weights.npy
+IDENTICAL l6_N256_e10_s3103:fileset
+IDENTICAL l6_N256_e10_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N256_e10_s3103:rc base=0 head=0
+IDENTICAL l6_N64_e15_s3101:labels.npy
+IDENTICAL l6_N64_e15_s3101:moments_planes.csv
+IDENTICAL l6_N64_e15_s3101:moments_time.csv
+IDENTICAL l6_N64_e15_s3101:planes_I.npy
+IDENTICAL l6_N64_e15_s3101:planes_tau.npy
+IDENTICAL l6_N64_e15_s3101:planes_x23.npy
+IDENTICAL l6_N64_e15_s3101:seeds.npy
+IDENTICAL l6_N64_e15_s3101:status_plane.npy
+IDENTICAL l6_N64_e15_s3101:status_time.npy
+IDENTICAL l6_N64_e15_s3101:times_I.npy
+IDENTICAL l6_N64_e15_s3101:times_x.npy
+IDENTICAL l6_N64_e15_s3101:track.json
+IDENTICAL l6_N64_e15_s3101:weights.npy
+IDENTICAL l6_N64_e15_s3101:fileset
+IDENTICAL l6_N64_e15_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N64_e15_s3101:rc base=0 head=0
+IDENTICAL l6_N128_e15_s3101:labels.npy
+IDENTICAL l6_N128_e15_s3101:moments_planes.csv
+IDENTICAL l6_N128_e15_s3101:moments_time.csv
+IDENTICAL l6_N128_e15_s3101:planes_I.npy
+IDENTICAL l6_N128_e15_s3101:planes_tau.npy
+IDENTICAL l6_N128_e15_s3101:planes_x23.npy
+IDENTICAL l6_N128_e15_s3101:seeds.npy
+IDENTICAL l6_N128_e15_s3101:status_plane.npy
+IDENTICAL l6_N128_e15_s3101:status_time.npy
+IDENTICAL l6_N128_e15_s3101:times_I.npy
+IDENTICAL l6_N128_e15_s3101:times_x.npy
+IDENTICAL l6_N128_e15_s3101:track.json
+IDENTICAL l6_N128_e15_s3101:weights.npy
+IDENTICAL l6_N128_e15_s3101:fileset
+IDENTICAL l6_N128_e15_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N128_e15_s3101:rc base=0 head=0
+IDENTICAL l6_N256_e15_s3101:labels.npy
+IDENTICAL l6_N256_e15_s3101:moments_planes.csv
+IDENTICAL l6_N256_e15_s3101:moments_time.csv
+IDENTICAL l6_N256_e15_s3101:planes_I.npy
+IDENTICAL l6_N256_e15_s3101:planes_tau.npy
+IDENTICAL l6_N256_e15_s3101:planes_x23.npy
+IDENTICAL l6_N256_e15_s3101:seeds.npy
+IDENTICAL l6_N256_e15_s3101:status_plane.npy
+IDENTICAL l6_N256_e15_s3101:status_time.npy
+IDENTICAL l6_N256_e15_s3101:times_I.npy
+IDENTICAL l6_N256_e15_s3101:times_x.npy
+IDENTICAL l6_N256_e15_s3101:track.json
+IDENTICAL l6_N256_e15_s3101:weights.npy
+IDENTICAL l6_N256_e15_s3101:fileset
+IDENTICAL l6_N256_e15_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N256_e15_s3101:rc base=0 head=0
+IDENTICAL l6_N64_e15_s3102:labels.npy
+IDENTICAL l6_N64_e15_s3102:moments_planes.csv
+IDENTICAL l6_N64_e15_s3102:moments_time.csv
+IDENTICAL l6_N64_e15_s3102:planes_I.npy
+IDENTICAL l6_N64_e15_s3102:planes_tau.npy
+IDENTICAL l6_N64_e15_s3102:planes_x23.npy
+IDENTICAL l6_N64_e15_s3102:seeds.npy
+IDENTICAL l6_N64_e15_s3102:status_plane.npy
+IDENTICAL l6_N64_e15_s3102:status_time.npy
+IDENTICAL l6_N64_e15_s3102:times_I.npy
+IDENTICAL l6_N64_e15_s3102:times_x.npy
+IDENTICAL l6_N64_e15_s3102:track.json
+IDENTICAL l6_N64_e15_s3102:weights.npy
+IDENTICAL l6_N64_e15_s3102:fileset
+IDENTICAL l6_N64_e15_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N64_e15_s3102:rc base=0 head=0
+IDENTICAL l6_N128_e15_s3102:labels.npy
+IDENTICAL l6_N128_e15_s3102:moments_planes.csv
+IDENTICAL l6_N128_e15_s3102:moments_time.csv
+IDENTICAL l6_N128_e15_s3102:planes_I.npy
+IDENTICAL l6_N128_e15_s3102:planes_tau.npy
+IDENTICAL l6_N128_e15_s3102:planes_x23.npy
+IDENTICAL l6_N128_e15_s3102:seeds.npy
+IDENTICAL l6_N128_e15_s3102:status_plane.npy
+IDENTICAL l6_N128_e15_s3102:status_time.npy
+IDENTICAL l6_N128_e15_s3102:times_I.npy
+IDENTICAL l6_N128_e15_s3102:times_x.npy
+IDENTICAL l6_N128_e15_s3102:track.json
+IDENTICAL l6_N128_e15_s3102:weights.npy
+IDENTICAL l6_N128_e15_s3102:fileset
+IDENTICAL l6_N128_e15_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N128_e15_s3102:rc base=0 head=0
+IDENTICAL l6_N256_e15_s3102:labels.npy
+IDENTICAL l6_N256_e15_s3102:moments_planes.csv
+IDENTICAL l6_N256_e15_s3102:moments_time.csv
+IDENTICAL l6_N256_e15_s3102:planes_I.npy
+IDENTICAL l6_N256_e15_s3102:planes_tau.npy
+IDENTICAL l6_N256_e15_s3102:planes_x23.npy
+IDENTICAL l6_N256_e15_s3102:seeds.npy
+IDENTICAL l6_N256_e15_s3102:status_plane.npy
+IDENTICAL l6_N256_e15_s3102:status_time.npy
+IDENTICAL l6_N256_e15_s3102:times_I.npy
+IDENTICAL l6_N256_e15_s3102:times_x.npy
+IDENTICAL l6_N256_e15_s3102:track.json
+IDENTICAL l6_N256_e15_s3102:weights.npy
+IDENTICAL l6_N256_e15_s3102:fileset
+IDENTICAL l6_N256_e15_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N256_e15_s3102:rc base=0 head=0
+IDENTICAL l6_N64_e15_s3103:labels.npy
+IDENTICAL l6_N64_e15_s3103:moments_planes.csv
+IDENTICAL l6_N64_e15_s3103:moments_time.csv
+IDENTICAL l6_N64_e15_s3103:planes_I.npy
+IDENTICAL l6_N64_e15_s3103:planes_tau.npy
+IDENTICAL l6_N64_e15_s3103:planes_x23.npy
+IDENTICAL l6_N64_e15_s3103:seeds.npy
+IDENTICAL l6_N64_e15_s3103:status_plane.npy
+IDENTICAL l6_N64_e15_s3103:status_time.npy
+IDENTICAL l6_N64_e15_s3103:times_I.npy
+IDENTICAL l6_N64_e15_s3103:times_x.npy
+IDENTICAL l6_N64_e15_s3103:track.json
+IDENTICAL l6_N64_e15_s3103:weights.npy
+IDENTICAL l6_N64_e15_s3103:fileset
+IDENTICAL l6_N64_e15_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N64_e15_s3103:rc base=0 head=0
+IDENTICAL l6_N128_e15_s3103:labels.npy
+IDENTICAL l6_N128_e15_s3103:moments_planes.csv
+IDENTICAL l6_N128_e15_s3103:moments_time.csv
+IDENTICAL l6_N128_e15_s3103:planes_I.npy
+IDENTICAL l6_N128_e15_s3103:planes_tau.npy
+IDENTICAL l6_N128_e15_s3103:planes_x23.npy
+IDENTICAL l6_N128_e15_s3103:seeds.npy
+IDENTICAL l6_N128_e15_s3103:status_plane.npy
+IDENTICAL l6_N128_e15_s3103:status_time.npy
+IDENTICAL l6_N128_e15_s3103:times_I.npy
+IDENTICAL l6_N128_e15_s3103:times_x.npy
+IDENTICAL l6_N128_e15_s3103:track.json
+IDENTICAL l6_N128_e15_s3103:weights.npy
+IDENTICAL l6_N128_e15_s3103:fileset
+IDENTICAL l6_N128_e15_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N128_e15_s3103:rc base=0 head=0
+IDENTICAL l6_N256_e15_s3103:labels.npy
+IDENTICAL l6_N256_e15_s3103:moments_planes.csv
+IDENTICAL l6_N256_e15_s3103:moments_time.csv
+IDENTICAL l6_N256_e15_s3103:planes_I.npy
+IDENTICAL l6_N256_e15_s3103:planes_tau.npy
+IDENTICAL l6_N256_e15_s3103:planes_x23.npy
+IDENTICAL l6_N256_e15_s3103:seeds.npy
+IDENTICAL l6_N256_e15_s3103:status_plane.npy
+IDENTICAL l6_N256_e15_s3103:status_time.npy
+IDENTICAL l6_N256_e15_s3103:times_I.npy
+IDENTICAL l6_N256_e15_s3103:times_x.npy
+IDENTICAL l6_N256_e15_s3103:track.json
+IDENTICAL l6_N256_e15_s3103:weights.npy
+IDENTICAL l6_N256_e15_s3103:fileset
+IDENTICAL l6_N256_e15_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N256_e15_s3103:rc base=0 head=0
+IDENTICAL l6_N64_e20_s3101:labels.npy
+IDENTICAL l6_N64_e20_s3101:moments_planes.csv
+IDENTICAL l6_N64_e20_s3101:moments_time.csv
+IDENTICAL l6_N64_e20_s3101:planes_I.npy
+IDENTICAL l6_N64_e20_s3101:planes_tau.npy
+IDENTICAL l6_N64_e20_s3101:planes_x23.npy
+IDENTICAL l6_N64_e20_s3101:seeds.npy
+IDENTICAL l6_N64_e20_s3101:status_plane.npy
+IDENTICAL l6_N64_e20_s3101:status_time.npy
+IDENTICAL l6_N64_e20_s3101:times_I.npy
+IDENTICAL l6_N64_e20_s3101:times_x.npy
+IDENTICAL l6_N64_e20_s3101:track.json
+IDENTICAL l6_N64_e20_s3101:weights.npy
+IDENTICAL l6_N64_e20_s3101:fileset
+IDENTICAL l6_N64_e20_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N64_e20_s3101:rc base=0 head=0
+IDENTICAL l6_N128_e20_s3101:labels.npy
+IDENTICAL l6_N128_e20_s3101:moments_planes.csv
+IDENTICAL l6_N128_e20_s3101:moments_time.csv
+IDENTICAL l6_N128_e20_s3101:planes_I.npy
+IDENTICAL l6_N128_e20_s3101:planes_tau.npy
+IDENTICAL l6_N128_e20_s3101:planes_x23.npy
+IDENTICAL l6_N128_e20_s3101:seeds.npy
+IDENTICAL l6_N128_e20_s3101:status_plane.npy
+IDENTICAL l6_N128_e20_s3101:status_time.npy
+IDENTICAL l6_N128_e20_s3101:times_I.npy
+IDENTICAL l6_N128_e20_s3101:times_x.npy
+IDENTICAL l6_N128_e20_s3101:track.json
+IDENTICAL l6_N128_e20_s3101:weights.npy
+IDENTICAL l6_N128_e20_s3101:fileset
+IDENTICAL l6_N128_e20_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N128_e20_s3101:rc base=0 head=0
+IDENTICAL l6_N256_e20_s3101:labels.npy
+IDENTICAL l6_N256_e20_s3101:moments_planes.csv
+IDENTICAL l6_N256_e20_s3101:moments_time.csv
+IDENTICAL l6_N256_e20_s3101:planes_I.npy
+IDENTICAL l6_N256_e20_s3101:planes_tau.npy
+IDENTICAL l6_N256_e20_s3101:planes_x23.npy
+IDENTICAL l6_N256_e20_s3101:seeds.npy
+IDENTICAL l6_N256_e20_s3101:status_plane.npy
+IDENTICAL l6_N256_e20_s3101:status_time.npy
+IDENTICAL l6_N256_e20_s3101:times_I.npy
+IDENTICAL l6_N256_e20_s3101:times_x.npy
+IDENTICAL l6_N256_e20_s3101:track.json
+IDENTICAL l6_N256_e20_s3101:weights.npy
+IDENTICAL l6_N256_e20_s3101:fileset
+IDENTICAL l6_N256_e20_s3101:lines: IDENTICAL 29
+IDENTICAL l6_N256_e20_s3101:rc base=0 head=0
+IDENTICAL l6_N64_e20_s3102:labels.npy
+IDENTICAL l6_N64_e20_s3102:moments_planes.csv
+IDENTICAL l6_N64_e20_s3102:moments_time.csv
+IDENTICAL l6_N64_e20_s3102:planes_I.npy
+IDENTICAL l6_N64_e20_s3102:planes_tau.npy
+IDENTICAL l6_N64_e20_s3102:planes_x23.npy
+IDENTICAL l6_N64_e20_s3102:seeds.npy
+IDENTICAL l6_N64_e20_s3102:status_plane.npy
+IDENTICAL l6_N64_e20_s3102:status_time.npy
+IDENTICAL l6_N64_e20_s3102:times_I.npy
+IDENTICAL l6_N64_e20_s3102:times_x.npy
+IDENTICAL l6_N64_e20_s3102:track.json
+IDENTICAL l6_N64_e20_s3102:weights.npy
+IDENTICAL l6_N64_e20_s3102:fileset
+IDENTICAL l6_N64_e20_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N64_e20_s3102:rc base=0 head=0
+IDENTICAL l6_N128_e20_s3102:labels.npy
+IDENTICAL l6_N128_e20_s3102:moments_planes.csv
+IDENTICAL l6_N128_e20_s3102:moments_time.csv
+IDENTICAL l6_N128_e20_s3102:planes_I.npy
+IDENTICAL l6_N128_e20_s3102:planes_tau.npy
+IDENTICAL l6_N128_e20_s3102:planes_x23.npy
+IDENTICAL l6_N128_e20_s3102:seeds.npy
+IDENTICAL l6_N128_e20_s3102:status_plane.npy
+IDENTICAL l6_N128_e20_s3102:status_time.npy
+IDENTICAL l6_N128_e20_s3102:times_I.npy
+IDENTICAL l6_N128_e20_s3102:times_x.npy
+IDENTICAL l6_N128_e20_s3102:track.json
+IDENTICAL l6_N128_e20_s3102:weights.npy
+IDENTICAL l6_N128_e20_s3102:fileset
+IDENTICAL l6_N128_e20_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N128_e20_s3102:rc base=0 head=0
+IDENTICAL l6_N256_e20_s3102:labels.npy
+IDENTICAL l6_N256_e20_s3102:moments_planes.csv
+IDENTICAL l6_N256_e20_s3102:moments_time.csv
+IDENTICAL l6_N256_e20_s3102:planes_I.npy
+IDENTICAL l6_N256_e20_s3102:planes_tau.npy
+IDENTICAL l6_N256_e20_s3102:planes_x23.npy
+IDENTICAL l6_N256_e20_s3102:seeds.npy
+IDENTICAL l6_N256_e20_s3102:status_plane.npy
+IDENTICAL l6_N256_e20_s3102:status_time.npy
+IDENTICAL l6_N256_e20_s3102:times_I.npy
+IDENTICAL l6_N256_e20_s3102:times_x.npy
+IDENTICAL l6_N256_e20_s3102:track.json
+IDENTICAL l6_N256_e20_s3102:weights.npy
+IDENTICAL l6_N256_e20_s3102:fileset
+IDENTICAL l6_N256_e20_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N256_e20_s3102:rc base=0 head=0
+IDENTICAL l6_N64_e20_s3103:labels.npy
+IDENTICAL l6_N64_e20_s3103:moments_planes.csv
+IDENTICAL l6_N64_e20_s3103:moments_time.csv
+IDENTICAL l6_N64_e20_s3103:planes_I.npy
+IDENTICAL l6_N64_e20_s3103:planes_tau.npy
+IDENTICAL l6_N64_e20_s3103:planes_x23.npy
+IDENTICAL l6_N64_e20_s3103:seeds.npy
+IDENTICAL l6_N64_e20_s3103:status_plane.npy
+IDENTICAL l6_N64_e20_s3103:status_time.npy
+IDENTICAL l6_N64_e20_s3103:times_I.npy
+IDENTICAL l6_N64_e20_s3103:times_x.npy
+IDENTICAL l6_N64_e20_s3103:track.json
+IDENTICAL l6_N64_e20_s3103:weights.npy
+IDENTICAL l6_N64_e20_s3103:fileset
+IDENTICAL l6_N64_e20_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N64_e20_s3103:rc base=0 head=0
+IDENTICAL l6_N128_e20_s3103:labels.npy
+IDENTICAL l6_N128_e20_s3103:moments_planes.csv
+IDENTICAL l6_N128_e20_s3103:moments_time.csv
+IDENTICAL l6_N128_e20_s3103:planes_I.npy
+IDENTICAL l6_N128_e20_s3103:planes_tau.npy
+IDENTICAL l6_N128_e20_s3103:planes_x23.npy
+IDENTICAL l6_N128_e20_s3103:seeds.npy
+IDENTICAL l6_N128_e20_s3103:status_plane.npy
+IDENTICAL l6_N128_e20_s3103:status_time.npy
+IDENTICAL l6_N128_e20_s3103:times_I.npy
+IDENTICAL l6_N128_e20_s3103:times_x.npy
+IDENTICAL l6_N128_e20_s3103:track.json
+IDENTICAL l6_N128_e20_s3103:weights.npy
+IDENTICAL l6_N128_e20_s3103:fileset
+IDENTICAL l6_N128_e20_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N128_e20_s3103:rc base=0 head=0
+IDENTICAL l6_N256_e20_s3103:labels.npy
+IDENTICAL l6_N256_e20_s3103:moments_planes.csv
+IDENTICAL l6_N256_e20_s3103:moments_time.csv
+IDENTICAL l6_N256_e20_s3103:planes_I.npy
+IDENTICAL l6_N256_e20_s3103:planes_tau.npy
+IDENTICAL l6_N256_e20_s3103:planes_x23.npy
+IDENTICAL l6_N256_e20_s3103:seeds.npy
+IDENTICAL l6_N256_e20_s3103:status_plane.npy
+IDENTICAL l6_N256_e20_s3103:status_time.npy
+IDENTICAL l6_N256_e20_s3103:times_I.npy
+IDENTICAL l6_N256_e20_s3103:times_x.npy
+IDENTICAL l6_N256_e20_s3103:track.json
+IDENTICAL l6_N256_e20_s3103:weights.npy
+IDENTICAL l6_N256_e20_s3103:fileset
+IDENTICAL l6_N256_e20_s3103:lines: IDENTICAL 29
+IDENTICAL l6_N256_e20_s3103:rc base=0 head=0
+IDENTICAL l6_N512_e10_s3102:labels.npy
+IDENTICAL l6_N512_e10_s3102:moments_planes.csv
+IDENTICAL l6_N512_e10_s3102:moments_time.csv
+IDENTICAL l6_N512_e10_s3102:planes_I.npy
+IDENTICAL l6_N512_e10_s3102:planes_tau.npy
+IDENTICAL l6_N512_e10_s3102:planes_x23.npy
+IDENTICAL l6_N512_e10_s3102:seeds.npy
+IDENTICAL l6_N512_e10_s3102:status_plane.npy
+IDENTICAL l6_N512_e10_s3102:status_time.npy
+IDENTICAL l6_N512_e10_s3102:times_I.npy
+IDENTICAL l6_N512_e10_s3102:times_x.npy
+IDENTICAL l6_N512_e10_s3102:track.json
+IDENTICAL l6_N512_e10_s3102:weights.npy
+IDENTICAL l6_N512_e10_s3102:fileset
+IDENTICAL l6_N512_e10_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N512_e10_s3102:rc base=0 head=0
+IDENTICAL l6_N512_e20_s3102:labels.npy
+IDENTICAL l6_N512_e20_s3102:moments_planes.csv
+IDENTICAL l6_N512_e20_s3102:moments_time.csv
+IDENTICAL l6_N512_e20_s3102:planes_I.npy
+IDENTICAL l6_N512_e20_s3102:planes_tau.npy
+IDENTICAL l6_N512_e20_s3102:planes_x23.npy
+IDENTICAL l6_N512_e20_s3102:seeds.npy
+IDENTICAL l6_N512_e20_s3102:status_plane.npy
+IDENTICAL l6_N512_e20_s3102:status_time.npy
+IDENTICAL l6_N512_e20_s3102:times_I.npy
+IDENTICAL l6_N512_e20_s3102:times_x.npy
+IDENTICAL l6_N512_e20_s3102:track.json
+IDENTICAL l6_N512_e20_s3102:weights.npy
+IDENTICAL l6_N512_e20_s3102:fileset
+IDENTICAL l6_N512_e20_s3102:lines: IDENTICAL 29
+IDENTICAL l6_N512_e20_s3102:rc base=0 head=0
+IDENTICAL l6_cov:labels.npy
+IDENTICAL l6_cov:moments_planes.csv
+IDENTICAL l6_cov:moments_time.csv
+IDENTICAL l6_cov:planes_I.npy
+IDENTICAL l6_cov:planes_cov.npy
+IDENTICAL l6_cov:planes_tau.npy
+IDENTICAL l6_cov:planes_x23.npy
+IDENTICAL l6_cov:seeds.npy
+IDENTICAL l6_cov:status_plane.npy
+IDENTICAL l6_cov:status_time.npy
+IDENTICAL l6_cov:times_I.npy
+IDENTICAL l6_cov:times_cov.npy
+IDENTICAL l6_cov:times_x.npy
+IDENTICAL l6_cov:track.json
+IDENTICAL l6_cov:weights.npy
+IDENTICAL l6_cov:fileset
+IDENTICAL l6_cov:lines: IDENTICAL 29
+IDENTICAL l6_cov:rc base=0 head=0
+IDENTICAL l6_pol:labels.npy
+IDENTICAL l6_pol:moments_planes.csv
+IDENTICAL l6_pol:moments_time.csv
+IDENTICAL l6_pol:planes_I.npy
+IDENTICAL l6_pol:planes_tau.npy
+IDENTICAL l6_pol:planes_x23.npy
+IDENTICAL l6_pol:pollock.json
+IDENTICAL l6_pol:pollock_cells.npy
+IDENTICAL l6_pol:pollock_moments_planes.csv
+IDENTICAL l6_pol:pollock_moments_time.csv
+IDENTICAL l6_pol:pollock_planes_t.npy
+IDENTICAL l6_pol:pollock_planes_x23.npy
+IDENTICAL l6_pol:pollock_status_plane.npy
+IDENTICAL l6_pol:pollock_status_time.npy
+IDENTICAL l6_pol:pollock_times_x.npy
+IDENTICAL l6_pol:pollock_weights.npy
+IDENTICAL l6_pol:seeds.npy
+IDENTICAL l6_pol:status_plane.npy
+IDENTICAL l6_pol:status_time.npy
+IDENTICAL l6_pol:times_I.npy
+IDENTICAL l6_pol:times_x.npy
+IDENTICAL l6_pol:track.json
+IDENTICAL l6_pol:weights.npy
+IDENTICAL l6_pol:fileset
+IDENTICAL l6_pol:lines: IDENTICAL 46
+IDENTICAL l6_pol:rc base=0 head=0
+IDENTICAL r:trace:N32_e0.5_host:labels.json
+IDENTICAL r:trace:N32_e0.5_host:psi1.npy
+IDENTICAL r:trace:N32_e0.5_host:psi2.npy
+IDENTICAL r:trace:N32_e0.5_host:fileset
+IDENTICAL r:trace:N32_e0.5_host:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e0.5_host:rc base=0 head=0
+IDENTICAL r:trace:N32_e0.5_gpu:labels.json
+IDENTICAL r:trace:N32_e0.5_gpu:psi1.npy
+IDENTICAL r:trace:N32_e0.5_gpu:psi2.npy
+IDENTICAL r:trace:N32_e0.5_gpu:fileset
+IDENTICAL r:trace:N32_e0.5_gpu:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e0.5_gpu:rc base=0 head=0
+IDENTICAL r:trace:N32_e1.0_host:labels.json
+IDENTICAL r:trace:N32_e1.0_host:psi1.npy
+IDENTICAL r:trace:N32_e1.0_host:psi2.npy
+IDENTICAL r:trace:N32_e1.0_host:fileset
+IDENTICAL r:trace:N32_e1.0_host:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e1.0_host:rc base=21 head=21
+IDENTICAL r:trace:N32_e1.0_gpu:labels.json
+IDENTICAL r:trace:N32_e1.0_gpu:psi1.npy
+IDENTICAL r:trace:N32_e1.0_gpu:psi2.npy
+IDENTICAL r:trace:N32_e1.0_gpu:fileset
+IDENTICAL r:trace:N32_e1.0_gpu:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e1.0_gpu:rc base=21 head=21
+IDENTICAL r:trace:N64_e0.5_host:labels.json
+IDENTICAL r:trace:N64_e0.5_host:psi1.npy
+IDENTICAL r:trace:N64_e0.5_host:psi2.npy
+IDENTICAL r:trace:N64_e0.5_host:fileset
+IDENTICAL r:trace:N64_e0.5_host:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e0.5_host:rc base=0 head=0
+IDENTICAL r:trace:N64_e0.5_gpu:labels.json
+IDENTICAL r:trace:N64_e0.5_gpu:psi1.npy
+IDENTICAL r:trace:N64_e0.5_gpu:psi2.npy
+IDENTICAL r:trace:N64_e0.5_gpu:fileset
+IDENTICAL r:trace:N64_e0.5_gpu:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e0.5_gpu:rc base=0 head=0
+IDENTICAL r:trace:N64_e1.0_host:labels.json
+IDENTICAL r:trace:N64_e1.0_host:psi1.npy
+IDENTICAL r:trace:N64_e1.0_host:psi2.npy
+IDENTICAL r:trace:N64_e1.0_host:fileset
+IDENTICAL r:trace:N64_e1.0_host:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e1.0_host:rc base=0 head=0
+IDENTICAL r:trace:N64_e1.0_gpu:labels.json
+IDENTICAL r:trace:N64_e1.0_gpu:psi1.npy
+IDENTICAL r:trace:N64_e1.0_gpu:psi2.npy
+IDENTICAL r:trace:N64_e1.0_gpu:fileset
+IDENTICAL r:trace:N64_e1.0_gpu:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e1.0_gpu:rc base=0 head=0
+IDENTICAL r:trace:N64_e2.0_gpu:labels.json
+IDENTICAL r:trace:N64_e2.0_gpu:psi1.npy
+IDENTICAL r:trace:N64_e2.0_gpu:psi2.npy
+IDENTICAL r:trace:N64_e2.0_gpu:fileset
+IDENTICAL r:trace:N64_e2.0_gpu:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e2.0_gpu:rc base=21 head=21
+IDENTICAL r:prod32:lines: IDENTICAL 102
+IDENTICAL r:prod32:rc base=0 head=0
+IDENTICAL r:fwd:smoke_g3d_n16:labels.npy
+IDENTICAL r:fwd:smoke_g3d_n16:moments_planes.csv
+IDENTICAL r:fwd:smoke_g3d_n16:moments_time.csv
+IDENTICAL r:fwd:smoke_g3d_n16:planes_I.npy
+IDENTICAL r:fwd:smoke_g3d_n16:planes_cov.npy
+IDENTICAL r:fwd:smoke_g3d_n16:planes_tau.npy
+IDENTICAL r:fwd:smoke_g3d_n16:planes_x23.npy
+IDENTICAL r:fwd:smoke_g3d_n16:seeds.npy
+IDENTICAL r:fwd:smoke_g3d_n16:status_plane.npy
+IDENTICAL r:fwd:smoke_g3d_n16:status_time.npy
+IDENTICAL r:fwd:smoke_g3d_n16:times_I.npy
+IDENTICAL r:fwd:smoke_g3d_n16:times_cov.npy
+IDENTICAL r:fwd:smoke_g3d_n16:times_x.npy
+IDENTICAL r:fwd:smoke_g3d_n16:track.json
+IDENTICAL r:fwd:smoke_g3d_n16:weights.npy
+IDENTICAL r:fwd:smoke_g3d_n16:fileset
+IDENTICAL r:fwd:smoke_g3d_n16:lines: IDENTICAL 19
+IDENTICAL r:fwd:smoke_g3d_n16:rc base=0 head=0
+IDENTICAL r:fwd:g3d_n32_cov:labels.npy
+IDENTICAL r:fwd:g3d_n32_cov:moments_planes.csv
+IDENTICAL r:fwd:g3d_n32_cov:moments_time.csv
+IDENTICAL r:fwd:g3d_n32_cov:planes_I.npy
+IDENTICAL r:fwd:g3d_n32_cov:planes_cov.npy
+IDENTICAL r:fwd:g3d_n32_cov:planes_tau.npy
+IDENTICAL r:fwd:g3d_n32_cov:planes_x23.npy
+IDENTICAL r:fwd:g3d_n32_cov:seeds.npy
+IDENTICAL r:fwd:g3d_n32_cov:status_plane.npy
+IDENTICAL r:fwd:g3d_n32_cov:status_time.npy
+IDENTICAL r:fwd:g3d_n32_cov:times_I.npy
+IDENTICAL r:fwd:g3d_n32_cov:times_cov.npy
+IDENTICAL r:fwd:g3d_n32_cov:times_x.npy
+IDENTICAL r:fwd:g3d_n32_cov:track.json
+IDENTICAL r:fwd:g3d_n32_cov:weights.npy
+IDENTICAL r:fwd:g3d_n32_cov:fileset
+IDENTICAL r:fwd:g3d_n32_cov:lines: IDENTICAL 17
+IDENTICAL r:fwd:g3d_n32_cov:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n64_e1_cov:labels.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL r:fwd:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:seeds.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:status_time.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:times_I.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:times_x.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:track.json
+IDENTICAL r:fwd:gauss_n64_e1_cov:weights.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:fileset
+IDENTICAL r:fwd:gauss_n64_e1_cov:lines: IDENTICAL 22
+IDENTICAL r:fwd:gauss_n64_e1_cov:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n64_e2:labels.npy
+IDENTICAL r:fwd:gauss_n64_e2:moments_planes.csv
+IDENTICAL r:fwd:gauss_n64_e2:moments_time.csv
+IDENTICAL r:fwd:gauss_n64_e2:planes_I.npy
+IDENTICAL r:fwd:gauss_n64_e2:planes_tau.npy
+IDENTICAL r:fwd:gauss_n64_e2:planes_x23.npy
+IDENTICAL r:fwd:gauss_n64_e2:seeds.npy
+IDENTICAL r:fwd:gauss_n64_e2:status_plane.npy
+IDENTICAL r:fwd:gauss_n64_e2:status_time.npy
+IDENTICAL r:fwd:gauss_n64_e2:times_I.npy
+IDENTICAL r:fwd:gauss_n64_e2:times_x.npy
+IDENTICAL r:fwd:gauss_n64_e2:track.json
+IDENTICAL r:fwd:gauss_n64_e2:weights.npy
+IDENTICAL r:fwd:gauss_n64_e2:fileset
+IDENTICAL r:fwd:gauss_n64_e2:lines: IDENTICAL 24
+IDENTICAL r:fwd:gauss_n64_e2:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n64_e2_tol:labels.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL r:fwd:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL r:fwd:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:seeds.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:status_time.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:times_I.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:times_x.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:track.json
+IDENTICAL r:fwd:gauss_n64_e2_tol:weights.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:fileset
+IDENTICAL r:fwd:gauss_n64_e2_tol:lines: IDENTICAL 20
+IDENTICAL r:fwd:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n40_e1:labels.npy
+IDENTICAL r:fwd:gauss_n40_e1:moments_planes.csv
+IDENTICAL r:fwd:gauss_n40_e1:moments_time.csv
+IDENTICAL r:fwd:gauss_n40_e1:planes_I.npy
+IDENTICAL r:fwd:gauss_n40_e1:planes_tau.npy
+IDENTICAL r:fwd:gauss_n40_e1:planes_x23.npy
+IDENTICAL r:fwd:gauss_n40_e1:seeds.npy
+IDENTICAL r:fwd:gauss_n40_e1:status_plane.npy
+IDENTICAL r:fwd:gauss_n40_e1:status_time.npy
+IDENTICAL r:fwd:gauss_n40_e1:times_I.npy
+IDENTICAL r:fwd:gauss_n40_e1:times_x.npy
+IDENTICAL r:fwd:gauss_n40_e1:track.json
+IDENTICAL r:fwd:gauss_n40_e1:weights.npy
+IDENTICAL r:fwd:gauss_n40_e1:fileset
+IDENTICAL r:fwd:gauss_n40_e1:lines: IDENTICAL 18
+IDENTICAL r:fwd:gauss_n40_e1:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n80_e2:labels.npy
+IDENTICAL r:fwd:gauss_n80_e2:moments_planes.csv
+IDENTICAL r:fwd:gauss_n80_e2:moments_time.csv
+IDENTICAL r:fwd:gauss_n80_e2:planes_I.npy
+IDENTICAL r:fwd:gauss_n80_e2:planes_tau.npy
+IDENTICAL r:fwd:gauss_n80_e2:planes_x23.npy
+IDENTICAL r:fwd:gauss_n80_e2:seeds.npy
+IDENTICAL r:fwd:gauss_n80_e2:status_plane.npy
+IDENTICAL r:fwd:gauss_n80_e2:status_time.npy
+IDENTICAL r:fwd:gauss_n80_e2:times_I.npy
+IDENTICAL r:fwd:gauss_n80_e2:times_x.npy
+IDENTICAL r:fwd:gauss_n80_e2:track.json
+IDENTICAL r:fwd:gauss_n80_e2:weights.npy
+IDENTICAL r:fwd:gauss_n80_e2:fileset
+IDENTICAL r:fwd:gauss_n80_e2:lines: IDENTICAL 18
+IDENTICAL r:fwd:gauss_n80_e2:rc base=0 head=0
+IDENTICAL r:neutral:gauss_n64_e1_cov:labels.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock.json
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_cells.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_planes_t.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_status_time.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_times_x.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_weights.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:seed_v.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:seeds.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:status_time.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:times_I.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:times_x.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:track.json
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD.json
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD1.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD2.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD3.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:weights.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:fileset
+IDENTICAL r:neutral:gauss_n64_e1_cov:lines: IDENTICAL 33
+IDENTICAL r:neutral:gauss_n64_e1_cov:rc base=0 head=0
+IDENTICAL r:neutral:gauss_n64_e2:labels.npy
+IDENTICAL r:neutral:gauss_n64_e2:moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2:moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2:planes_I.npy
+IDENTICAL r:neutral:gauss_n64_e2:planes_tau.npy
+IDENTICAL r:neutral:gauss_n64_e2:planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock.json
+IDENTICAL r:neutral:gauss_n64_e2:pollock_cells.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2:pollock_moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2:pollock_planes_t.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_weights.npy
+IDENTICAL r:neutral:gauss_n64_e2:seed_v.npy
+IDENTICAL r:neutral:gauss_n64_e2:seeds.npy
+IDENTICAL r:neutral:gauss_n64_e2:status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2:status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2:times_I.npy
+IDENTICAL r:neutral:gauss_n64_e2:times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2:track.json
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD.json
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD1.npy
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD2.npy
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD3.npy
+IDENTICAL r:neutral:gauss_n64_e2:weights.npy
+IDENTICAL r:neutral:gauss_n64_e2:fileset
+IDENTICAL r:neutral:gauss_n64_e2:lines: IDENTICAL 37
+IDENTICAL r:neutral:gauss_n64_e2:rc base=0 head=0
+IDENTICAL r:neutral:gauss_n64_e2_tol:labels.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock.json
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_cells.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_planes_t.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_weights.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:seed_v.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:seeds.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:times_I.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:track.json
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD.json
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD1.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD2.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD3.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:weights.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:fileset
+IDENTICAL r:neutral:gauss_n64_e2_tol:lines: IDENTICAL 29
+IDENTICAL r:neutral:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL binary:md5_differs head=95febc0b40245fac1f4b19af12d569bd base=ac806f1b1d8d5076eac4ad97e6f4ffc7
+BYTECMP_ALL_IDENTICAL

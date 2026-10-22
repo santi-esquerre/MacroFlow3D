@@ -831,6 +831,57 @@ __global__ void time_kernel(const Field field, const KernelArgs a) {
     a.stats_time[p] = st;
 }
 
+/// SF-40 L6 (opt-in `single_launch`): one thread runs, for its particle, `if (P > 0)` exactly the body
+/// of plane_kernel and then `if (T > 0)` exactly the body of time_kernel (bodies duplicated
+/// verbatim so that the existing kernels are untouched; each pass has its own fresh PassStats and
+/// its own unchanged step sequence, nothing is merged). Same grid/block as the two kernels.
+template <int D, class Field>
+__global__ void single_kernel(const Field field, const KernelArgs a) {
+    const int p = static_cast<int>(blockIdx.x * blockDim.x + threadIdx.x);
+    if (p >= a.Np) {
+        return;
+    }
+    const std::size_t pz = static_cast<std::size_t>(p);
+    if (a.P > 0) {
+        const std::size_t Pz = static_cast<std::size_t>(a.P);
+        for (std::size_t m = 0; m < Pz; ++m) {
+            a.planes_x23[(pz * Pz + m) * 2] = dnan();
+            a.planes_x23[(pz * Pz + m) * 2 + 1] = dnan();
+            a.planes_tau[pz * Pz + m] = dnan();
+            a.planes_I[pz * Pz + m] = dnan();
+            if (a.planes_cov != nullptr) {
+                for (int i = 0; i < 6; ++i)
+                    a.planes_cov[(pz * Pz + m) * 6 + i] = dnan();
+            }
+        }
+        PassStats st;
+        const double seed[3] = {a.seeds[3 * pz], a.seeds[3 * pz + 1], a.seeds[3 * pz + 2]};
+        PlaneOut out{a.planes_x23 + pz * Pz * 2, a.planes_tau + pz * Pz, a.planes_I + pz * Pz,
+                     a.planes_cov != nullptr ? a.planes_cov + pz * Pz * 6 : nullptr};
+        plane_pass<D>(field, seed, a.planes, a.P, a.opt, out, st);
+        a.stats_plane[p] = st;
+    }
+    if (a.T > 0) {
+        const std::size_t Tz = static_cast<std::size_t>(a.T);
+        for (std::size_t n = 0; n < Tz; ++n) {
+            a.times_x[(pz * Tz + n) * 3] = dnan();
+            a.times_x[(pz * Tz + n) * 3 + 1] = dnan();
+            a.times_x[(pz * Tz + n) * 3 + 2] = dnan();
+            a.times_I[pz * Tz + n] = dnan();
+            if (a.times_cov != nullptr) {
+                for (int i = 0; i < 6; ++i)
+                    a.times_cov[(pz * Tz + n) * 6 + i] = dnan();
+            }
+        }
+        PassStats st;
+        const double seed[3] = {a.seeds[3 * pz], a.seeds[3 * pz + 1], a.seeds[3 * pz + 2]};
+        TimeOut out{a.times_x + pz * Tz * 3, a.times_I + pz * Tz,
+                    a.times_cov != nullptr ? a.times_cov + pz * Tz * 6 : nullptr};
+        time_pass<D>(field, seed, a.times, a.T, a.opt, out, st);
+        a.stats_time[p] = st;
+    }
+}
+
 /// Raw flux k g1 at the seeds (injection weights, before clamping/normalization) and the labels'
 /// input is separate. Writes NaN when the evaluation is not valid.
 template <class Field>

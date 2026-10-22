@@ -245,6 +245,8 @@ set(LAGRANGIAN_LABELS_SOURCES
     src/physics/particles/lagrangian_labels/LagrangianTracker.cu
     src/physics/particles/lagrangian_labels/FaceFluxRepack.cu
     src/physics/particles/lagrangian_labels/PollockComparator.cu
+    # SF-40 L3: lean parametric stage (host orchestration; includes only LagrangianTracker.cuh)
+    src/physics/particles/lagrangian_labels/LongBoxStage.cu
 )
 set_source_files_properties(src/physics/particles/lagrangian_labels/LagrangianTracker.cu
     PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
@@ -617,6 +619,34 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME affine_periodic_flow COMMAND affine_periodic_flow_tests)
 
+    # SF-40 L2: solve_affine_periodic_flow_lean is bit-for-bit identical to
+    # solve_affine_periodic_flow (b_hat mapped host and device) with an exact S2 byte report;
+    # fast mode only under ctest, `--full` (256^3, 512x64x64) is a V100 manual run.
+    add_executable(affine_periodic_flow_lean_tests tests/flow/affine_periodic_flow_lean_tests.cu)
+    target_link_libraries(affine_periodic_flow_lean_tests PRIVATE macroflow3d_lib)
+    target_compile_options(affine_periodic_flow_lean_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME affine_periodic_flow_lean COMMAND affine_periodic_flow_lean_tests)
+
+    # SF-40 L1: projected_pcg_solve_external is bit-for-bit identical to
+    # projected_pcg_solve (z == Ap == MG b, b == MG x, b_hat mapped host); fast mode only
+    # under ctest, `--full` (256^3, 512x64x64) is a V100 manual run.
+    add_executable(projected_pcg_external_tests tests/streamfunctions/projected_pcg_external_tests.cu)
+    target_link_libraries(projected_pcg_external_tests PRIVATE macroflow3d_lib)
+    target_compile_options(projected_pcg_external_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME projected_pcg_external COMMAND projected_pcg_external_tests)
+
+    # SF-40 L7: FlowWorkspace byte-count contract (dead residual/aux1/aux2 removed)
+    add_executable(flow_workspace_bytes_tests tests/flow/flow_workspace_bytes_tests.cu)
+    target_link_libraries(flow_workspace_bytes_tests PRIVATE macroflow3d_lib)
+    target_compile_options(flow_workspace_bytes_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME flow_workspace_bytes COMMAND flow_workspace_bytes_tests)
+
     # SF-28 T02: periodic tricubic B-spline contract tests (fast tier)
     add_executable(interpolation_tests tests/interpolation/periodic_tricubic_bspline_tests.cu)
     target_link_libraries(interpolation_tests PRIVATE macroflow3d_lib)
@@ -744,6 +774,19 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(lagrangian_controls_tests PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_tracker_controls COMMAND lagrangian_controls_tests)
+    # SF-40 L6: opt-in tracker speedups (fused two-spline evaluation, single launch) bitwise vs the
+    # default path (fast tier <= 60 s). Includes the fused header -> --fmad=false.
+    add_executable(tracker_l6_tests tests/lagrangian_labels/tracker_l6_tests.cu)
+    target_link_libraries(tracker_l6_tests PRIVATE macroflow3d_lib)
+    target_compile_options(tracker_l6_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_tracker_l6 COMMAND tracker_l6_tests)
+    # SF-40 L3: LongBoxStage + tracker device-coefficient API: bitwise vs build_production_stage on cubes,
+    # memory records (C-MEMPHASE), F1-F4 controls on non-cubic boxes (fast subset <= 60 s; --full and
+    # --cufft-size are the V100 modes). Includes the tracker API only -> --fmad=false like its siblings.
+    add_executable(long_box_tests tests/lagrangian_labels/long_box_tests.cu)
+    target_link_libraries(long_box_tests PRIVATE macroflow3d_lib)
+    target_compile_options(long_box_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_long_box COMMAND long_box_tests)
 
     # SF-37 N3: CompactMAC -> periodic face repack (bitwise), Pollock lattice tracker on k = 1 and a smooth K
     add_executable(face_flux_repack_tests tests/lagrangian_labels/face_flux_repack_tests.cu)

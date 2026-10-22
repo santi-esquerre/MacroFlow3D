@@ -6,6 +6,7 @@
  */
 
 #include "LagrangianTracker.cuh"
+#include "FusedSplineLagrangianField.cuh"
 #include "LagrangianTrackerImpl.cuh"
 
 #include "../../../external/nlohmann/json.hpp"
@@ -236,6 +237,11 @@ void finalize_track_result(LagrangianTrackResult& r) {
 struct LagrangianTracker::Impl {
     DeviceBuffer<real> coef_pot, coef_logk;
     LagrangianTrackerT<SplineLagrangianField> core;
+    // SF-40 L6 (TrackOptions::fused_splines): interleaved {pot, logk} array and its tracker; the
+    // separate arrays above are not created in that mode.
+    DeviceBuffer<double2> coef_fused;
+    LagrangianTrackerT<FusedSplineLagrangianField> core_fused;
+    bool fused = false;
 };
 
 LagrangianTracker::LagrangianTracker() : impl_(std::make_unique<Impl>()) {}
@@ -253,6 +259,26 @@ void LagrangianTracker::prepare(CudaContext& ctx, const sl::ProductionStage& sta
     if (stage.logk_coefficients.size() != nc) {
         throw std::logic_error("LagrangianTracker::prepare: coefficient arrays differ in size");
     }
+    SplineLagrangianField f;
+    f.potential = hf.potential;
+    f.log_conductivity = hf.log_conductivity;
+    for (int d = 0; d < 3; ++d)
+        f.G[d] = hf.G[d];
+    const sl::InletLabels* labels =
+        (stage.labels_available && stage.labels.device_prepared()) ? &stage.labels : nullptr;
+    impl_->fused = opt.fused_splines;
+    if (opt.fused_splines) {
+        const std::vector<double2> inter = interleave_coefficients(
+            stage.potential_coefficients.data(), stage.logk_coefficients.data(), nc);
+        impl_->coef_fused = DeviceBuffer<double2>(nc);
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(impl_->coef_fused.data(), inter.data(),
+                                          nc * sizeof(double2), cudaMemcpyHostToDevice));
+        // SF-33 C2: legacy-stream copies must land before ctx-stream work.
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+        impl_->core_fused.prepare(ctx, make_fused_field(f, impl_->coef_fused.data()), inj, opt,
+                                  labels);
+        return;
+    }
     impl_->coef_pot = DeviceBuffer<real>(nc);
     impl_->coef_logk = DeviceBuffer<real>(nc);
     MACROFLOW3D_CUDA_CHECK(cudaMemcpy(impl_->coef_pot.data(), stage.potential_coefficients.data(),
@@ -261,27 +287,67 @@ void LagrangianTracker::prepare(CudaContext& ctx, const sl::ProductionStage& sta
                                       nc * sizeof(real), cudaMemcpyHostToDevice));
     // SF-33 C2: legacy-stream copies must land before ctx-stream work.
     MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
-    SplineLagrangianField f;
-    f.potential = hf.potential;
     f.potential.coeff = impl_->coef_pot.data();
-    f.log_conductivity = hf.log_conductivity;
     f.log_conductivity.coeff = impl_->coef_logk.data();
-    for (int d = 0; d < 3; ++d)
-        f.G[d] = hf.G[d];
-    const sl::InletLabels* labels =
-        (stage.labels_available && stage.labels.device_prepared()) ? &stage.labels : nullptr;
     impl_->core.prepare(ctx, f, inj, opt, labels);
 }
 
+void LagrangianTracker::prepare(CudaContext& ctx, const DeviceSplineFlow& flow,
+                                const InjectionSpec& inj, const TrackOptions& opt) {
+    const bool fused = opt.fused_splines;
+    if (fused ? flow.coef_interleaved == nullptr
+              : (flow.coef_pot == nullptr || flow.coef_logk == nullptr)) {
+        throw std::logic_error(
+            "LagrangianTracker::prepare: DeviceSplineFlow lacks the coefficient array(s) needed "
+            "by TrackOptions::fused_splines");
+    }
+    if (flow.labels != nullptr && !flow.labels->device_prepared()) {
+        throw std::logic_error("LagrangianTracker::prepare: DeviceSplineFlow labels not "
+                               "device-prepared");
+    }
+    // Geometry only in the fused case (make_fused_field ignores the coefficient pointers).
+    const real* geom_ptr =
+        fused ? reinterpret_cast<const real*>(flow.coef_interleaved) : flow.coef_pot;
+    SplineLagrangianField f;
+    f.potential = interpolation::make_host_view(flow.grid, geom_ptr);
+    f.log_conductivity = interpolation::make_host_view(flow.grid, geom_ptr);
+    for (int d = 0; d < 3; ++d)
+        f.G[d] = flow.G[d];
+    impl_->fused = fused;
+    if (fused) {
+        impl_->core_fused.prepare(ctx, make_fused_field(f, flow.coef_interleaved), inj, opt,
+                                  flow.labels);
+        return;
+    }
+    f.potential.coeff = flow.coef_pot;
+    f.log_conductivity.coeff = flow.coef_logk;
+    impl_->core.prepare(ctx, f, inj, opt, flow.labels);
+}
+
+std::vector<std::pair<std::string, std::size_t>> LagrangianTracker::device_buffer_bytes() const {
+    if (!impl_ || !prepared())
+        return {};
+    auto v = impl_->fused ? impl_->core_fused.device_buffer_bytes()
+                          : impl_->core.device_buffer_bytes();
+    v.emplace_back("prepare_transient", impl_->fused ? impl_->core_fused.prepare_transient_bytes()
+                                                     : impl_->core.prepare_transient_bytes());
+    return v;
+}
+
 const LagrangianTrackResult& LagrangianTracker::track(CudaContext& ctx, int block) {
-    return impl_->core.track(ctx, block);
+    return impl_->fused ? impl_->core_fused.track(ctx, block) : impl_->core.track(ctx, block);
 }
 
 bool LagrangianTracker::prepared() const {
-    return impl_ && impl_->core.prepared();
+    return impl_ && (impl_->fused ? impl_->core_fused.prepared() : impl_->core.prepared());
 }
 
 std::vector<const void*> LagrangianTracker::device_storage_pointers() const {
+    if (impl_->fused) {
+        std::vector<const void*> v = impl_->core_fused.device_storage_pointers();
+        v.push_back(impl_->coef_fused.data());
+        return v;
+    }
     std::vector<const void*> v = impl_->core.device_storage_pointers();
     v.push_back(impl_->coef_pot.data());
     v.push_back(impl_->coef_logk.data());
@@ -415,6 +481,8 @@ void write_track_outputs(const std::string& dir, const LagrangianTrackResult& r,
                       {"time_kernel", r.seconds_time_kernel},
                       {"download", r.seconds_download},
                       {"moments", r.seconds_moments}};
+    if (r.single_launch) // SF-40 L6: key only with --single-launch (plane/time kernel are null)
+        j["timings_s"]["single_kernel"] = r.seconds_single_kernel;
     std::ofstream jf(dir + "/track.json", std::ios::trunc);
     if (!jf)
         throw std::runtime_error("write_track_outputs: cannot write track.json");

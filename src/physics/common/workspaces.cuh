@@ -109,11 +109,6 @@ struct StochasticWorkspace {
  * Includes MG hierarchy for multigrid solve.
  */
 struct FlowWorkspace {
-    // Residual and auxiliary vectors for iterative solvers
-    DeviceBuffer<real> residual;
-    DeviceBuffer<real> aux1;
-    DeviceBuffer<real> aux2;
-
     // RHS buffer (can be modified during solve)
     DeviceBuffer<real> rhs;
 
@@ -134,9 +129,6 @@ struct FlowWorkspace {
     // Allocate for given grid
     void allocate(const Grid3D& grid) {
         n_cells = grid.num_cells();
-        residual.resize(n_cells);
-        aux1.resize(n_cells);
-        aux2.resize(n_cells);
         rhs.resize(n_cells);
         // mg_hierarchy is allocated on-demand in solve_head
         // cg_workspace/pcg_workspace are allocated on-demand in solve_head
@@ -155,9 +147,6 @@ struct FlowWorkspace {
 
     // Clear (free memory)
     void clear() {
-        residual = DeviceBuffer<real>();
-        aux1 = DeviceBuffer<real>();
-        aux2 = DeviceBuffer<real>();
         rhs = DeviceBuffer<real>();
         mg_hierarchy = multigrid::MGHierarchy();
         cg_workspace = solvers::CGWorkspace();

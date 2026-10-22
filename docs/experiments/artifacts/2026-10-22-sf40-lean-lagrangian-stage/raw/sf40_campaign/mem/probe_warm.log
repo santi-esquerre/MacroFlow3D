@@ -1,0 +1,2 @@
+command: /home/sesquerre/MacroFlow3D-SF-40/build/v100-release/inlet_slab --context-probe 10 --warm
+CONTEXT_PROBE pid=163236 device=0 driver=11040 runtime=11040 device_used=516947968 seconds=10 warm=1
