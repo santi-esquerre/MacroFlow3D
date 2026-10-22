@@ -564,7 +564,10 @@ a_args() {
     A_ARGS=(--track forward --sigma2 1 --ell 0.25 --seed "$3" --n "$1" --eps "$2" --np-side "$NPSIDE" --planes "$PLANES"
         --times "$TIMES" --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles "$4/" --summary "$4.json")
     if [ "$5" != "-" ]; then
-        A_ARGS+=("$5")
+        # the extra field may hold several words (`--comparator pollock`): one argv element per word (bash 4.2-safe on empty arrays)
+        local ex=()
+        read -r -a ex <<< "$5"
+        A_ARGS+=(${ex[@]+"${ex[@]}"})
     fi
 }
 
