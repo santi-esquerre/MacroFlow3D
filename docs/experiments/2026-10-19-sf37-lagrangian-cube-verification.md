@@ -372,3 +372,35 @@ Classification per `docs/AGENTS.md`.
 SF-38 (long domain) and SF-39 (macrodispersion study) consume `lambda/h = 32` (the study value; per-amplitude 8 / 16 / 32 are available) and the V4 `e_v` as the representation-divergence measure; SF-39
 should also decide, on the owner's reading, whether long-range criteria are statistical only (V5 named no fit) and whether the D8 shadow `lambda/h` of 64 for some estimator series changes the grid used. Human review
 of SF-37 is required (SPEC "Human review"), in particular the V3b `discordant` outcome and the O3 `q` disclosure.
+
+## Addendum 2026-10-22 (post-hoc, not pre-registered; no verdict changes)
+
+Written during the human review of PR #56. Full report (Spanish):
+[`2026-10-22-sf37-posthoc-review-and-mecom-feasibility.md`](2026-10-22-sf37-posthoc-review-and-mecom-feasibility.md).
+Scripts and outputs: `A/scripts/posthoc/`, `A/analysis/posthoc/`.
+
+- **V3b mechanism, corrected.**
+  - The hypothesis stated in §5 ("+h/2 by the floor rule") is inexact. `pollock_init_state` puts a seed lying on a
+    lower face in the lower cell when the face velocity is <= 0. At N = 2M the offset is therefore +-h/2, following
+    the sign of the local transverse velocity.
+  - With that rule, the predicted weight perturbation matches the measured one at N = 512: slope 0.91-1.00,
+    correlation 0.97-0.999, in 9/9 runs.
+  - The predicted weight part reproduces the measured one at every plane (e.g. eps 2, seed 3101, x1 16: -1.16e-3
+    measured, -1.15e-3 predicted).
+  - With a fixed +h/2 the slope is -0.54..+0.15, which refutes that form. At N 64/128 the same cell-centre-offset
+    model gives slope 1.000.
+  - This is a comparator weighting artifact. The verdict stays `discordant` (RR7).
+- **Pollock vs O6 at equal N.**
+  - Pollock is closer to O6(512) than O6(N) in 55/63 cells at N 64 and 56/63 at N 128. Example, sigma^2 4, seed
+    3102, x1 16: O6 -10.1 / -2.8 %, Pollock +0.7 / -0.3 % at N 64 / 128.
+  - D_P is therefore dominated by O6's own grid deficit. Both share SF-18/SF-19.
+- **Growth part and alpha-equivalent scale.**
+  - The grid error of sigma_T2(x1) - sigma_T2(0.25) at lambda/h 32 is <= 3.3 %.
+  - The O6 alpha_T-like rate error at lambda/h 32 is <= 6e-5 / 5e-4 / 1.5e-3 lambda at sigma^2 1 / 2.25 / 4.
+  - Cube growth exponents are 1.0-2.05, i.e. superdiffusive and non-Fickian.
+- **Stretching.** The median finite-time covector rate decreases with travel; no constant positive rate is visible.
+- **Feasibility in the MECOM 2025 domain (Par2 legacy setup).**
+  - Feasible after SF-38 at sigma^2 0.25 and 1.
+  - Not feasible at sigma^2 >= 2.25: 1.7-3.5x the stage memory ceiling, and lambda/h ~ 11 is below the SF-37 values.
+  - Recorded Par2 legacy setup issues: uniform rather than flux-weighted injection (empty cell filter), closed
+    outlet with t_max beyond breakthrough, lambda convention, nominal-velocity normalisation.
