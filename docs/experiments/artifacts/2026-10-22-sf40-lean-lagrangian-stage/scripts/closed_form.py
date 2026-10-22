@@ -14,7 +14,9 @@ Per phase line (F, S1, S2, S3, T):
     disclosed extra fixed-size `scratch_<name>` items, C-MEMPHASE);
   * S2 equals the S+ closed form  8 [7 n + 4 sum_{l>=1} n_l] + 32 (m - n) + S_scr  (+ 8 n if bhat=device), plus the
     reported cufft_work (0 for S2);
-  * S2 is the largest phase.
+  * S2 is the largest phase;
+  * an F phase with no items, exact_bytes=0 and cufft_work=0 (`items=-`, cells source: no SF-18 phase) passes with a
+    C_INFO note; any F phase with at least one item (or nonzero bytes) keeps the full SF-18 rule above.
 Output lines (parsed by the campaign scripts):
   C_VERDICT run=<r> phase=<p> expected=<b> reported=<b> diff=<b> PASS|FAIL|NOT_EVALUABLE
   C_ITEM run= phase= item= expected= reported= FAIL        (failing items only)
@@ -188,6 +190,12 @@ def evaluate(text, run="run", complete=True, extra_scratch=None, probe_device_us
         exacts[ph] = P["exact"]
         if first_dev is None and P["device_used"] is not None:
             first_dev = (ph, P["device_used"])
+        if ph == "F" and not P["items"] and P["exact"] == 0 and P["cufft"] == 0:
+            # cells source (host Y, lean stage runs no SF-18 generator): `items=-` is an empty list, nothing to size
+            out.append("C_VERDICT run=%s phase=F expected=0 reported=0 diff=0 PASS" % run)
+            out.append("C_INFO run=%s phase=F note=F:_no_SF-18_phase_(cells_source) seconds=%s device_used=%s"
+                       % (run, P["seconds"], P["device_used"]))
+            continue
         req, free_req, free_prefix, alt = item_rules(geom, ph, extra_scratch)
         got = {}
         fail_phase = False
@@ -398,6 +406,26 @@ def selftest():
         n = 64 * 16 * 16
         items["T"] = [("coef_interleaved", 16 * n), ("tracker_a", 10)]
     expect("T_interleaved", evaluate(synth(*base, mutate=tinter)[0], "r")[1] == "PASS")
+    # cells-source F phase: empty F passes (S2 stays largest); partial F and nonzero-bytes empty F fail; full F passes
+    def emptyF(items, cuf):
+        items["F"], cuf["F"] = [], 0
+    txtE, _ = synth(*base, mutate=emptyF)
+    expect("emptyF_line", "phase=F exact_bytes=0 cufft_work=0" in txtE and " items=\n" in txtE)
+    txtE = txtE.replace(" items=\n", " items=-\n")  # the stage prints "-" for an empty list
+    expect("items_dash_empty", parse_items("-") == [] and parse_items("") == [])
+    linesE, stE = evaluate(txtE, "r")
+    expect("emptyF_pass", stE == "PASS" and any(l.startswith("C_VERDICT") and "phase=F" in l and l.endswith("PASS")
+                                                for l in linesE) and any("no_SF-18_phase" in l for l in linesE))
+    expect("emptyF_largest", any(l.startswith("C_LARGEST") and l.endswith("PASS") for l in linesE))
+
+    def partialF(items, cuf):
+        items["F"], cuf["F"] = [("y", 8 * 64 * 16 * 16)], 0
+    expect("partialF_fail", evaluate(synth(*base, mutate=partialF)[0], "r")[1] == "FAIL")
+
+    def cufftOnlyF(items, cuf):
+        items["F"] = []  # cufft_work=1000 left: not the cells-source signature
+    expect("emptyF_cufft_fail", evaluate(synth(*base, mutate=cufftOnlyF)[0], "r")[1] == "FAIL")
+    expect("fullF_pass", evaluate(synth(*base)[0], "r")[1] == "PASS")
     # probe-relative excess line is produced
     lines, _ = evaluate(synth(*base)[0], "r", probe_device_used=500 * 2**20)
     expect("probe_info", any("dev_minus_probe_minus_exact=123456" in l for l in lines))
