@@ -9,9 +9,11 @@
 #include "../../runtime/cuda_check.cuh"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace macroflow3d {
@@ -877,6 +879,356 @@ AffinePeriodicFlowReport solve_affine_periodic_flow(CudaContext& context, const 
 
     workspace.solved_ = true;
     return report;
+}
+
+
+// ===========================================================================
+// SF-40 L2: solve_affine_periodic_flow_lean (placement: contract C-LEAN-PLACEMENT)
+//
+// Every floating-point operation, kernel, launch configuration and reduction below is the
+// one of solve_affine_periodic_flow above (the kernels/helpers are reused from the anonymous
+// namespace, which is why this lives in this translation unit); only the buffers differ.
+// Spans are always built from data() with an explicit count (n or the exact CompactMAC face
+// count), never from capacity.
+// ===========================================================================
+namespace {
+
+// U-face plane i = 0 gathered into the host-side layout of build_production_stage's
+// `inlet_v1_samples`: out[k + nz*j] = U[j*(nx+1) + k*(nx+1)*ny]. Pure copy, no arithmetic.
+__global__ void gather_inlet_u_plane_kernel(const real* __restrict__ U, int nx, int ny, int nz,
+                                            real* __restrict__ out) {
+    const std::size_t total = static_cast<std::size_t>(ny) * static_cast<std::size_t>(nz);
+    const std::size_t start = static_cast<std::size_t>(blockIdx.x) * blockDim.x + threadIdx.x;
+    const std::size_t stride = static_cast<std::size_t>(gridDim.x) * blockDim.x;
+    for (std::size_t idx = start; idx < total; idx += stride) {
+        const std::size_t j = idx / static_cast<std::size_t>(nz);
+        const std::size_t k = idx % static_cast<std::size_t>(nz);
+        out[idx] = U[j * static_cast<std::size_t>(nx + 1) +
+                     k * static_cast<std::size_t>(nx + 1) * static_cast<std::size_t>(ny)];
+    }
+}
+
+// RAII pinned mapped host buffer (freed on every path; the device is synchronized first because
+// queued kernels may still be reading/writing the mapped memory when an exception unwinds).
+class PinnedMappedHostBuffer {
+  public:
+    PinnedMappedHostBuffer() = default;
+    PinnedMappedHostBuffer(const PinnedMappedHostBuffer&) = delete;
+    PinnedMappedHostBuffer& operator=(const PinnedMappedHostBuffer&) = delete;
+    ~PinnedMappedHostBuffer() {
+        if (host_ != nullptr) {
+            cudaDeviceSynchronize();
+            cudaFreeHost(host_);
+        }
+    }
+    real* allocate(std::size_t n) {
+        MACROFLOW3D_CUDA_CHECK(cudaHostAlloc(reinterpret_cast<void**>(&host_), n * sizeof(real),
+                                             cudaHostAllocMapped));
+        void* dev = nullptr;
+        MACROFLOW3D_CUDA_CHECK(cudaHostGetDevicePointer(&dev, host_, 0));
+        return static_cast<real*>(dev);
+    }
+
+  private:
+    real* host_{nullptr};
+};
+
+// Host part after the three K_eff columns: identical statements, order and messages to
+// solve_affine_periodic_flow (symmetry defect, eigenvalues, positivity throw, Cramer solve).
+void lean_host_tensor_part(AffinePeriodicFlowReport& report, const real qbar[3]) {
+    real max_abs_entry = real{0};
+    real max_asym = real{0};
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            max_abs_entry = std::max(max_abs_entry, std::abs(report.K_eff[i][j]));
+            max_asym = std::max(max_asym, std::abs(report.K_eff[i][j] - report.K_eff[j][i]));
+        }
+    }
+    report.symmetry_defect_rel = max_abs_entry > real{0} ? max_asym / max_abs_entry : real{0};
+
+    real Ksym[3][3];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            Ksym[i][j] = real{0.5} * (report.K_eff[i][j] + report.K_eff[j][i]);
+        }
+    }
+    symmetric_3x3_eigenvalues(Ksym, report.eigenvalues_symmetric_part);
+
+    if (!std::isfinite(report.eigenvalues_symmetric_part[0]) ||
+        !std::isfinite(report.eigenvalues_symmetric_part[1]) ||
+        !std::isfinite(report.eigenvalues_symmetric_part[2]) ||
+        report.eigenvalues_symmetric_part[0] <= real{0}) {
+        throw std::runtime_error(
+            "AffinePeriodicFlow: effective conductivity tensor's symmetric part is not positive "
+            "definite; refusing to solve for a mean pressure gradient");
+    }
+    solve_3x3_cramer(report.K_eff, qbar, report.G);
+}
+
+} // namespace
+
+AffinePeriodicFlowLeanResult solve_affine_periodic_flow_lean(
+    CudaContext& context, const Grid3D& grid, const std::vector<real>& K_host,
+    const AffinePeriodicFlowConfig& config, const AffinePeriodicFlowLeanOptions& options) {
+    const auto t_begin = std::chrono::steady_clock::now();
+
+    require_valid_grid_geometry(grid);
+    require_valid_mg_config(config.mg, grid);
+    require_valid_linear_config(config.linear);
+    require_finite_qbar(config.qbar);
+    const std::size_t n = grid.num_cells();
+    if (K_host.size() != n) {
+        throw std::invalid_argument(
+            "AffinePeriodicFlow requires a conductivity span with exactly grid.num_cells() "
+            "elements");
+    }
+    const std::size_t nu = compact_mac_u_size(grid);
+    const std::size_t nv = compact_mac_v_size(grid);
+    const std::size_t nw = compact_mac_w_size(grid);
+    const std::size_t m = std::max(nu, std::max(nv, nw));
+
+    AffinePeriodicFlowLeanResult result;
+    AffinePeriodicFlowReport& report = result.report;
+    AffinePeriodicFlowLeanMemoryReport& mem = result.memory;
+    mem.face_max = m;
+
+    // ---- S2 allocations (C-LEAN-PLACEMENT order) ------------------------------------------
+    std::unique_ptr<multigrid::MGHierarchy> hierarchy; // heap: never moved after M is built
+    std::optional<solvers::ProjectedPositiveMGPreconditioner> M;
+    DeviceBuffer<real> pcg_r, pcg_p, corrector, bhat_device, reduce_blocks;
+    std::unique_ptr<blas::ReductionWorkspace> red;
+    std::unique_ptr<constraints::MeanZeroWorkspace> pcg_mean_zero;
+    std::unique_ptr<streamfunctions::AffinePeriodicRhsWorkspace> rhs_ws;
+    PinnedMappedHostBuffer bhat_host;
+    real* bhat_ptr = nullptr;
+    try {
+        hierarchy = std::make_unique<multigrid::MGHierarchy>(grid, config.mg.num_levels);
+        // Level-0 x also receives face arrays: capacity m, size n (grow-only DeviceBuffer);
+        // must happen before the preconditioner is constructed (it validates sizes == n).
+        hierarchy->levels.front().x.resize(m);
+        hierarchy->levels.front().x.resize(n);
+        pcg_r.resize(m);
+        pcg_r.resize(n);
+        pcg_p.resize(m);
+        pcg_p.resize(n);
+        corrector.resize(m);
+        corrector.resize(n);
+        if (options.bhat_mapped_host) {
+            bhat_ptr = bhat_host.allocate(n);
+            mem.bhat_host_bytes = n * sizeof(real);
+        } else {
+            bhat_device.resize(n);
+            bhat_ptr = bhat_device.data();
+        }
+        M.emplace(*hierarchy, config.mg);
+        red = std::make_unique<blas::ReductionWorkspace>();
+        pcg_mean_zero = std::make_unique<constraints::MeanZeroWorkspace>();
+        pcg_mean_zero->prepare(n);
+        rhs_ws = std::make_unique<streamfunctions::AffinePeriodicRhsWorkspace>();
+        rhs_ws->prepare(n);
+        reduce_blocks.resize(static_cast<std::size_t>(kMaxReduceBlocks));
+    } catch (const std::exception& e) {
+        throw std::runtime_error(std::string("AffinePeriodicFlowLean: device allocation failed "
+                                             "(phase=S2): ") +
+                                 e.what());
+    }
+    {
+        std::size_t free_b = 0, total_b = 0;
+        MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free_b, &total_b));
+        mem.device_used_at_peak = total_b - free_b;
+    }
+
+    // ---- exact byte report of the S2 peak ---------------------------------------------------
+    {
+        using Cat = AffinePeriodicFlowMemoryReport;
+        const auto add = [&mem](const std::string& name, std::size_t bytes,
+                                std::size_t Cat::*category) {
+            mem.items.push_back({name, bytes});
+            mem.total_device_bytes += bytes;
+            mem.categories.*category += bytes;
+        };
+        for (std::size_t l = 0; l < hierarchy->levels.size(); ++l) {
+            const auto& lv = hierarchy->levels[l];
+            const std::string p = "mg_l" + std::to_string(l) + "_";
+            add(p + "x", lv.x.capacity() * sizeof(real), &Cat::mg_hierarchy_bytes);
+            add(p + "b", lv.b.capacity() * sizeof(real), &Cat::mg_hierarchy_bytes);
+            add(p + "r", lv.r.capacity() * sizeof(real), &Cat::mg_hierarchy_bytes);
+            add(p + "coef", lv.coefficient.capacity() * sizeof(real), &Cat::mg_hierarchy_bytes);
+        }
+        add("pcg_r", pcg_r.capacity() * sizeof(real), &Cat::pcg_workspace_bytes);
+        add("pcg_p", pcg_p.capacity() * sizeof(real), &Cat::correctors_bytes);
+        add("corrector", corrector.capacity() * sizeof(real), &Cat::correctors_bytes);
+        if (!options.bhat_mapped_host) {
+            add("bhat_device", bhat_device.capacity() * sizeof(real), &Cat::pcg_workspace_bytes);
+        }
+        add("scratch_pcg_d_scalar", red->d_scalar.capacity() * sizeof(real),
+            &Cat::pcg_workspace_bytes);
+        add("scratch_pcg_mean_zero", pcg_mean_zero->allocated_device_bytes(),
+            &Cat::pcg_workspace_bytes);
+        // AffinePeriodicRhsWorkspace = one MeanZeroWorkspace + raw_means(2) + projected_means(2).
+        const std::size_t rhs_means_bytes = 4 * sizeof(real);
+        add("scratch_rhs_mean_zero", rhs_ws->allocated_device_bytes() - rhs_means_bytes,
+            &Cat::affine_rhs_workspace_bytes);
+        add("scratch_rhs_means", rhs_means_bytes, &Cat::affine_rhs_workspace_bytes);
+        // The preconditioner owns one MeanZeroWorkspace per level (private); per-level sizes
+        // are the colocated static estimate, cross-checked against the actual total.
+        std::size_t mg_mz_total = 0;
+        for (std::size_t l = 0; l < hierarchy->levels.size(); ++l) {
+            const std::size_t b = constraints::MeanZeroWorkspace::estimate_device_bytes(
+                hierarchy->levels[l].grid.num_cells());
+            mg_mz_total += b;
+            add("scratch_mg_mean_zero_l" + std::to_string(l), b, &Cat::mg_preconditioner_bytes);
+        }
+        if (mg_mz_total != M->allocated_device_bytes()) {
+            throw std::logic_error("AffinePeriodicFlowLean: MG mean-zero scratch estimate does not "
+                                   "match the preconditioner's actual allocation");
+        }
+        add("scratch_reduce_blocks", reduce_blocks.capacity() * sizeof(real),
+            &Cat::reduction_scratch_bytes);
+        mem.pcg_red_temp_bytes = red->temp.capacity();
+        if (mem.pcg_red_temp_bytes != 0) {
+            add("scratch_pcg_red_temp", mem.pcg_red_temp_bytes, &Cat::reduction_scratch_bytes);
+        }
+        mem.categories.total_bytes = mem.total_device_bytes;
+    }
+
+    // ---- K -> level-0 coefficient and the coarse levels ---------------------------------------
+    auto& lvl0 = hierarchy->levels.front();
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(lvl0.coefficient.data(), K_host.data(), n * sizeof(real),
+                                      cudaMemcpyHostToDevice));
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize()); // C-SYNC: legacy-stream upload
+    for (int level = 0; level + 1 < hierarchy->num_levels(); ++level) {
+        auto& fine = hierarchy->levels[level];
+        auto& coarse = hierarchy->levels[level + 1];
+        multigrid::coarsen_coefficient_geometric(
+            context, coarse.grid, fine.grid,
+            DeviceSpan<const real>(fine.coefficient.data(), fine.coefficient.size()),
+            DeviceSpan<real>(coarse.coefficient.data(), coarse.coefficient.size()));
+    }
+
+    const DeviceSpan<const real> K(lvl0.coefficient.data(), n);
+    operators::LesterPositiveDiffusionOperator A(grid, K);
+    constraints::MeanZeroProjector projector;
+
+    const streamfunctions::AffineGradient unit_directions[3] = {
+        streamfunctions::AffineGradient{real{1}, real{0}, real{0}},
+        streamfunctions::AffineGradient{real{0}, real{1}, real{0}},
+        streamfunctions::AffineGradient{real{0}, real{0}, real{1}},
+    };
+    const DeviceSpan<real> face_u(pcg_r.data(), nu);      // U / final u
+    const DeviceSpan<real> face_v(pcg_p.data(), nv);      // V (K_eff passes only)
+    const DeviceSpan<real> face_w(lvl0.x.data(), nw);     // W / final w
+    const DeviceSpan<real> final_v(corrector.data(), nv); // final v
+    std::vector<real> w_host[2];
+
+    for (int d = 0; d < 3; ++d) {
+        streamfunctions::AffineGauge gauge;
+        gauge.psi1_gradient = unit_directions[d];
+        gauge.psi2_gradient = unit_directions[d];
+        (void)streamfunctions::assemble_affine_periodic_rhs(
+            context, grid, K, gauge, DeviceSpan<real>(lvl0.x.data(), n),
+            DeviceSpan<real>(lvl0.b.data(), n), *rhs_ws);
+
+        MACROFLOW3D_CUDA_CHECK(
+            cudaMemsetAsync(corrector.data(), 0, n * sizeof(real), context.cuda_stream()));
+        solvers::ProjectedPCGExternalVectors vec;
+        vec.r = DeviceSpan<real>(pcg_r.data(), n);
+        vec.p = DeviceSpan<real>(pcg_p.data(), n);
+        vec.z = DeviceSpan<real>(lvl0.b.data(), n);
+        vec.Ap = DeviceSpan<real>(lvl0.b.data(), n); // z == Ap (disjoint lifetimes)
+        vec.b_hat = DeviceSpan<real>(bhat_ptr, n);
+        vec.red = red.get();
+        vec.mean_zero = pcg_mean_zero.get();
+        report.corrector_results[d] = solvers::projected_pcg_solve_external(
+            context, A, *M, DeviceSpan<const real>(lvl0.x.data(), n),
+            DeviceSpan<real>(corrector.data(), n), config.linear, projector, vec);
+
+        launch_affine_face_flux(context, grid, K, DeviceSpan<const real>(corrector.data(), n),
+                                unit_directions[d].x, unit_directions[d].y, unit_directions[d].z,
+                                face_u, face_v, face_w);
+        report.K_eff[0][d] =
+            mean_unique_u(context, grid, DeviceSpan<const real>(face_u), reduce_blocks);
+        report.K_eff[1][d] =
+            mean_unique_v(context, grid, DeviceSpan<const real>(face_v), reduce_blocks);
+        report.K_eff[2][d] =
+            mean_unique_w(context, grid, DeviceSpan<const real>(face_w), reduce_blocks);
+
+        if (d < 2) {
+            context.synchronize(); // C-SYNC: before the legacy-stream D2H
+            w_host[d].resize(n);
+            MACROFLOW3D_CUDA_CHECK(cudaMemcpy(w_host[d].data(), corrector.data(),
+                                              n * sizeof(real), cudaMemcpyDeviceToHost));
+        }
+    }
+
+    lean_host_tensor_part(report, config.qbar);
+
+    // h_tilde = sum_d G_d w_d accumulated in pcg_p in the order d = 0, 1, 2.
+    MACROFLOW3D_CUDA_CHECK(
+        cudaMemsetAsync(pcg_p.data(), 0, n * sizeof(real), context.cuda_stream()));
+    for (int d = 0; d < 2; ++d) {
+        context.synchronize(); // C-SYNC: lvl0.r is about to be overwritten
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(lvl0.r.data(), w_host[d].data(), n * sizeof(real),
+                                          cudaMemcpyHostToDevice));
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize()); // C-SYNC: legacy-stream upload
+        blas::axpy(context, report.G[d], DeviceSpan<const real>(lvl0.r.data(), n),
+                   DeviceSpan<real>(pcg_p.data(), n));
+    }
+    blas::axpy(context, report.G[2], DeviceSpan<const real>(corrector.data(), n),
+               DeviceSpan<real>(pcg_p.data(), n));
+
+    launch_affine_face_flux(context, grid, K, DeviceSpan<const real>(pcg_p.data(), n),
+                            report.G[0], report.G[1], report.G[2], face_u, final_v, face_w);
+
+    report.achieved_mean_flux[0] =
+        mean_unique_u(context, grid, DeviceSpan<const real>(face_u), reduce_blocks);
+    report.achieved_mean_flux[1] =
+        mean_unique_v(context, grid, DeviceSpan<const real>(final_v), reduce_blocks);
+    report.achieved_mean_flux[2] =
+        mean_unique_w(context, grid, DeviceSpan<const real>(face_w), reduce_blocks);
+
+    const DeviceSpan<const real> divergence(lvl0.b.data(), n);
+    {
+        const std::size_t blocks =
+            (n + static_cast<std::size_t>(kBlock1D) - 1) / static_cast<std::size_t>(kBlock1D);
+        const int grid1d = static_cast<int>(std::min<std::size_t>(blocks, 65535));
+        compute_divergence_kernel<<<grid1d, kBlock1D, 0, context.cuda_stream()>>>(
+            face_u.data(), final_v.data(), face_w.data(), grid.nx, grid.ny, grid.nz, grid.dx,
+            grid.dy, grid.dz, lvl0.b.data());
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+    report.div_max_abs = max_abs_reduction(context, divergence, reduce_blocks);
+    report.div_rms = blas::nrm2_host(context, divergence, *red) / std::sqrt(static_cast<real>(n));
+
+    // Inlet U plane: gather into the (now dead) level-0 r, then one contiguous D2H.
+    const std::size_t n2 = static_cast<std::size_t>(grid.ny) * static_cast<std::size_t>(grid.nz);
+    {
+        const std::size_t blocks =
+            (n2 + static_cast<std::size_t>(kBlock1D) - 1) / static_cast<std::size_t>(kBlock1D);
+        const int grid1d = static_cast<int>(std::min<std::size_t>(blocks, 65535));
+        gather_inlet_u_plane_kernel<<<grid1d, kBlock1D, 0, context.cuda_stream()>>>(
+            face_u.data(), grid.nx, grid.ny, grid.nz, lvl0.r.data());
+        MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+    }
+    context.synchronize(); // C-SYNC: before every legacy-stream D2H below
+    result.inlet_u_plane.resize(n2);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(result.inlet_u_plane.data(), lvl0.r.data(),
+                                      n2 * sizeof(real), cudaMemcpyDeviceToHost));
+    if (options.keep_face_fluxes_host) {
+        result.face_u.resize(nu);
+        result.face_v.resize(nv);
+        result.face_w.resize(nw);
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(result.face_u.data(), face_u.data(), nu * sizeof(real),
+                                          cudaMemcpyDeviceToHost));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(result.face_v.data(), final_v.data(), nv * sizeof(real),
+                                          cudaMemcpyDeviceToHost));
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(result.face_w.data(), face_w.data(), nw * sizeof(real),
+                                          cudaMemcpyDeviceToHost));
+    }
+
+    result.h_tilde = std::move(pcg_p); // everything else is released by the destructors
+    mem.seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - t_begin).count();
+    return result;
 }
 
 } // namespace physics

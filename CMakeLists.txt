@@ -617,6 +617,16 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME affine_periodic_flow COMMAND affine_periodic_flow_tests)
 
+    # SF-40 L2: solve_affine_periodic_flow_lean is bit-for-bit identical to
+    # solve_affine_periodic_flow (b_hat mapped host and device) with an exact S2 byte report;
+    # fast mode only under ctest, `--full` (256^3, 512x64x64) is a V100 manual run.
+    add_executable(affine_periodic_flow_lean_tests tests/flow/affine_periodic_flow_lean_tests.cu)
+    target_link_libraries(affine_periodic_flow_lean_tests PRIVATE macroflow3d_lib)
+    target_compile_options(affine_periodic_flow_lean_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME affine_periodic_flow_lean COMMAND affine_periodic_flow_lean_tests)
+
     # SF-40 L1: projected_pcg_solve_external is bit-for-bit identical to
     # projected_pcg_solve (z == Ap == MG b, b == MG x, b_hat mapped host); fast mode only
     # under ctest, `--full` (256^3, 512x64x64) is a V100 manual run.
