@@ -1,0 +1,215 @@
+[2026-10-22T17:50:14Z] job=sf40-j0a-build-dry session=macroflow3d-SF-40-sf40-j0a-build-dry started
+[2026-10-22T17:50:14Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-22T17:50:14Z] cwd=/home/sesquerre/MacroFlow3D-SF-40
+[2026-10-22T17:50:14Z] command=set -o pipefail; cd ~/MacroFlow3D-SF-40 || exit 2; echo J0_TREE=0adc407ea1b07bdd3f6d5a50e5e18d6dd5ceb9bc; echo GPU=${CUDA_VISIBLE_DEVICES:-unset} $(nvidia-smi --query-gpu=name --format=csv,noheader -i ${CUDA_VISIBLE_DEVICES:-0}); cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target inlet_slab macroflow3d_pipeline 2>&1 | tail -n 5; echo BUILD_EXIT=${PIPESTATUS[0]}; mkdir -p ~/sf40_base_refs/bin && cp -f build/v100-release/inlet_slab build/v100-release/macroflow3d_pipeline ~/sf40_base_refs/bin/ && md5sum ~/sf40_base_refs/bin/inlet_slab ~/sf40_base_refs/bin/macroflow3d_pipeline; A=docs/experiments/artifacts/2026-10-22-sf40-lean-lagrangian-stage/scripts; SF40_DRYRUN=1 SF40_COMMIT=0adc407-basetree bash $A/run_sf40.sh ~/sf40_base_refs/bin baserefs; echo DRY_BASEREFS_EXIT=$?
+J0_TREE=0adc407ea1b07bdd3f6d5a50e5e18d6dd5ceb9bc
+GPU=0 Tesla V100-PCIE-32GB
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[124/128] Linking CXX static library libmacroflow3d_lib.a
+[125/128] Linking CXX executable CMakeFiles/macroflow3d_pipeline.dir/cmake_device_link.o
+[126/128] Linking CXX executable CMakeFiles/inlet_slab.dir/cmake_device_link.o
+[127/128] Linking CXX executable inlet_slab
+[128/128] Linking CXX executable macroflow3d_pipeline
+BUILD_EXIT=0
+ac806f1b1d8d5076eac4ad97e6f4ffc7  /home/sesquerre/sf40_base_refs/bin/inlet_slab
+82560276574c4af1a248e6961760a08f  /home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline
+run_sf40.sh: SF40_DRYRUN=1 (tiny settings; NOT campaign evidence)
+run_sf40.sh: part=baserefs bin_dir=/home/sesquerre/sf40_base_refs/bin host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf40_dryrun base_refs=/home/sesquerre/sf40_dryrun/base_refs repo=/home/sesquerre/MacroFlow3D-SF-40 start=2026-10-22T17:51:36Z
+  env: BIN_DIR=/home/sesquerre/sf40_base_refs/bin BIN=/home/sesquerre/sf40_base_refs/bin/inlet_slab BIN_MD5=ac806f1b1d8d5076eac4ad97e6f4ffc7 PIPE=/home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline PIPE_MD5=82560276574c4af1a248e6961760a08f DRYRUN=1 OUT_ROOT=/home/sesquerre/sf40_dryrun BASE_REFS=/home/sesquerre/sf40_dryrun/base_refs REPO=/home/sesquerre/MacroFlow3D-SF-40 CUDA_VISIBLE_DEVICES=0 GPU_NAME=Tesla V100-PCIE-32GB NVIDIA_DRIVER=470.239.06 CUDA_VERSION_NVIDIA_SMI=11.4 NVCC=11.4 
+  base binaries copied to /home/sesquerre/sf40_dryrun/base_refs/bin: ac806f1b1d8d5076eac4ad97e6f4ffc7  /home/sesquerre/sf40_dryrun/base_refs/bin/inlet_slab 82560276574c4af1a248e6961760a08f  /home/sesquerre/sf40_dryrun/base_refs/bin/macroflow3d_pipeline 
+== RR4 A set (31 cases, default stage) -> /home/sesquerre/sf40_dryrun/base_refs/a
++ [a_N16_e10_s3001] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/N16_e10_s3001/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/N16_e10_s3001.json > /home/sesquerre/sf40_dryrun/base_refs/a/N16_e10_s3001.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_N16_e10_s3001 rc=0 wall=4s end=2026-10-22T17:51:49Z
+    STATUS ok
++ [a_N32_e10_s3001] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/N32_e10_s3001/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/N32_e10_s3001.json > /home/sesquerre/sf40_dryrun/base_refs/a/N32_e10_s3001.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_N32_e10_s3001 rc=0 wall=6s end=2026-10-22T17:51:55Z
+    STATUS ok
++ [a_N16_e15_s3001] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1.5 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/N16_e15_s3001/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/N16_e15_s3001.json > /home/sesquerre/sf40_dryrun/base_refs/a/N16_e15_s3001.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_N16_e15_s3001 rc=0 wall=5s end=2026-10-22T17:52:00Z
+    STATUS ok
++ [a_N32_e15_s3001] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 1.5 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/N32_e15_s3001/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/N32_e15_s3001.json > /home/sesquerre/sf40_dryrun/base_refs/a/N32_e15_s3001.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_N32_e15_s3001 rc=0 wall=5s end=2026-10-22T17:52:06Z
+    STATUS ok
++ [a_N16_e20_s3001] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 2 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/N16_e20_s3001/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/N16_e20_s3001.json > /home/sesquerre/sf40_dryrun/base_refs/a/N16_e20_s3001.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_N16_e20_s3001 rc=0 wall=6s end=2026-10-22T17:52:12Z
+    STATUS ok
++ [a_N32_e20_s3001] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 32 --eps 2 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/N32_e20_s3001/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/N32_e20_s3001.json > /home/sesquerre/sf40_dryrun/base_refs/a/N32_e20_s3001.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_N32_e20_s3001 rc=0 wall=5s end=2026-10-22T17:52:17Z
+    STATUS ok
++ [a_cov] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 1 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/cov/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/cov.json --covectors > /home/sesquerre/sf40_dryrun/base_refs/a/cov.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_cov rc=0 wall=5s end=2026-10-22T17:52:22Z
+    STATUS ok
++ [a_pol] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 16 --eps 2 --np-side 16 --planes 0.25,0.5,1,2 --times 0.25,0.5,1,2 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --save-particles /home/sesquerre/sf40_dryrun/base_refs/a/pol/ --summary /home/sesquerre/sf40_dryrun/base_refs/a/pol.json --comparator pollock > /home/sesquerre/sf40_dryrun/base_refs/a/pol.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=a_pol rc=2 wall=0s end=2026-10-22T17:52:22Z
+  UNEXPECTED_EXIT_CODE run=a_pol rc=2 (expected 0 18 22 23 ; recorded, not retried)
+== RR8 default-path set -> /home/sesquerre/sf40_dryrun/base_refs/r
++ [r_trace_N32_e0.5_host] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e0.5_host --summary /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e0.5_host.json > /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e0.5_host.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e0.5_host rc=0 wall=5s end=2026-10-22T17:52:28Z
+    STATUS ok
++ [r_trace_N32_e0.5_gpu] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e0.5_gpu --summary /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e0.5_gpu.json > /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e0.5_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e0.5_gpu rc=0 wall=4s end=2026-10-22T17:52:32Z
+    STATUS ok
++ [r_trace_N32_e1.0_host] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e1.0_host --summary /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e1.0_host.json > /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e1.0_host.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e1.0_host rc=21 wall=7s end=2026-10-22T17:52:39Z
+    STATUS roundtrip_exceeded
++ [r_trace_N32_e1.0_gpu] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e1.0_gpu --summary /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e1.0_gpu.json > /home/sesquerre/sf40_dryrun/base_refs/r/trace/N32_e1.0_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e1.0_gpu rc=21 wall=5s end=2026-10-22T17:52:44Z
+    STATUS roundtrip_exceeded
++ [r_prod] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder > /home/sesquerre/sf40_dryrun/base_refs/r/prod32.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_prod rc=0 wall=17s end=2026-10-22T17:53:01Z
+    STATUS_DETAIL solver=converged oracle=ok
+    STATUS converged
++ [r_fwd_smoke_g3d_n16] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --analytic generic3d --n 16 --eps 0.25 --np-side 16 --planes 0.25,0.5,1 --times 0.5,1 --covectors --save-particles /home/sesquerre/sf40_dryrun/base_refs/r/fwd/smoke_g3d_n16 --summary /home/sesquerre/sf40_dryrun/base_refs/r/fwd/smoke_g3d_n16.json > /home/sesquerre/sf40_dryrun/base_refs/r/fwd/smoke_g3d_n16.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_smoke_g3d_n16 rc=0 wall=5s end=2026-10-22T17:53:06Z
+    STATUS ok
++ [r_fwd_g3d_n32_cov] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --analytic generic3d --n 32 --eps 0.25 --np-side 32 --planes 0.5,1 --times 1 --covectors --save-particles /home/sesquerre/sf40_dryrun/base_refs/r/fwd/g3d_n32_cov --summary /home/sesquerre/sf40_dryrun/base_refs/r/fwd/g3d_n32_cov.json > /home/sesquerre/sf40_dryrun/base_refs/r/fwd/g3d_n32_cov.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_g3d_n32_cov rc=0 wall=4s end=2026-10-22T17:53:10Z
+    STATUS ok
++ [r_fwd_gauss_n40_e1] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 40 --eps 1 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf40_dryrun/base_refs/r/fwd/gauss_n40_e1 --summary /home/sesquerre/sf40_dryrun/base_refs/r/fwd/gauss_n40_e1.json > /home/sesquerre/sf40_dryrun/base_refs/r/fwd/gauss_n40_e1.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_gauss_n40_e1 rc=0 wall=5s end=2026-10-22T17:53:15Z
+    STATUS ok
++ [r_neutral_gauss_n64_e1_cov] .: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --comparator pollock --save-vd /home/sesquerre/sf40_dryrun/base_refs/r/neutral/gauss_n64_e1_cov/vd --save-seed-velocity --save-particles /home/sesquerre/sf40_dryrun/base_refs/r/neutral/gauss_n64_e1_cov --summary /home/sesquerre/sf40_dryrun/base_refs/r/neutral/gauss_n64_e1_cov.json > /home/sesquerre/sf40_dryrun/base_refs/r/neutral/gauss_n64_e1_cov.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_neutral_gauss_n64_e1_cov rc=0 wall=6s end=2026-10-22T17:53:21Z
+    PSTATUS pass=plane hist=0:4096 cells=739677
+    PSTATUS pass=time hist=0:4096 cells=725839
+    STATUS ok
+== SF-27 trio -> /home/sesquerre/sf40_dryrun/base_refs/trio/<cfg> (each from its own empty working directory)
++ [trio_config_pspta_small] /home/sesquerre/sf40_dryrun/base_refs/trio/config_pspta_small: /home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-40/apps/config_pspta_small.yaml > /home/sesquerre/sf40_dryrun/base_refs/trio/config_pspta_small.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=trio_config_pspta_small rc=0 wall=4s end=2026-10-22T17:53:25Z
++ [trio_config_streamfunctions_homogeneous] /home/sesquerre/sf40_dryrun/base_refs/trio/config_streamfunctions_homogeneous: /home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-40/apps/config_streamfunctions_homogeneous.yaml > /home/sesquerre/sf40_dryrun/base_refs/trio/config_streamfunctions_homogeneous.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=trio_config_streamfunctions_homogeneous rc=0 wall=4s end=2026-10-22T17:53:29Z
++ [trio_config_streamfunctions_continuation] /home/sesquerre/sf40_dryrun/base_refs/trio/config_streamfunctions_continuation: /home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-40/apps/config_streamfunctions_continuation.yaml > /home/sesquerre/sf40_dryrun/base_refs/trio/config_streamfunctions_continuation.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=trio_config_streamfunctions_continuation rc=0 wall=3s end=2026-10-22T17:53:32Z
+== Par2 config twice (determinism control; config_pspta_small)
++ [par2_a] /home/sesquerre/sf40_dryrun/base_refs/par2_a: /home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-40/apps/config_pspta_small.yaml > /home/sesquerre/sf40_dryrun/base_refs/par2_a.log 2>&1   (timeout=1800s flags=S)
+  CASE_RESULT run=par2_a rc=0 wall=5s end=2026-10-22T17:53:38Z
++ [par2_b] /home/sesquerre/sf40_dryrun/base_refs/par2_b: /home/sesquerre/sf40_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-40/apps/config_pspta_small.yaml > /home/sesquerre/sf40_dryrun/base_refs/par2_b.log 2>&1   (timeout=1800s flags=S)
+  CASE_RESULT run=par2_b rc=0 wall=4s end=2026-10-22T17:53:43Z
+# base-reference bookkeeping above; determinism control par2_a vs par2_b (RR7 rule):
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/effective_config.yaml
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/manifest.json(drop timestamp build.git_hash)
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/psi_refine_history.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/psi_refine_summary.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/r_0000/step_00000100.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/r_0000/step_00000200.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/r_0000/step_00000300.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/r_0000/step_00000400.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/r_0000/step_00000500.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000005.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000010.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000015.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000020.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000025.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000030.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000035.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000040.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000045.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000050.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000055.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000060.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000065.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000070.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000075.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000080.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000085.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000090.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000095.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000100.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000105.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000110.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000115.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000120.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000125.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000130.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000135.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000140.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000145.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000150.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000155.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000160.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000165.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000170.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000175.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000180.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000185.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000190.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000195.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000200.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000205.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000210.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000215.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000220.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000225.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000230.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000235.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000240.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000245.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000250.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000255.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000260.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000265.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000270.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000275.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000280.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000285.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000290.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000295.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000300.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000305.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000310.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000315.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000320.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000325.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000330.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000335.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000340.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000345.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000350.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000355.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000360.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000365.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000370.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000375.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000380.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000385.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000390.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000395.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000400.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000405.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000410.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000415.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000420.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000425.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000430.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000435.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000440.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000445.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000450.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000455.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000460.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000465.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000470.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000475.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000480.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000485.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000490.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000495.csv
+IDENTICAL determinism:par2_b_vs_par2_a:output_pspta_small/snapshots/step_00000500.csv
+IDENTICAL determinism:par2_b_vs_par2_a:fileset
+IDENTICAL determinism:par2:rc base=0 head=0
+RECORDED manifest_git_hash par2_a: unknown
+BASEREFS_PAR2_DETERMINISTIC (base vs base identical under the RR7 rule)
+RECORDED par2_wall_s a=5 b=4
+RECORDED PAR2_PEAK par2_a: PID_PEAK pid=106382 samples=6 pid_peak_mib=495 dev_peak_mib=499 max_exact_mib=- tree_pid=106382 status=OK reasons=-
+RECORDED PAR2_PEAK par2_b: PID_PEAK pid=106467 samples=6 pid_peak_mib=495 dev_peak_mib=499 max_exact_mib=- tree_pid=106467 status=OK reasons=-
+run_sf40.sh: part=baserefs end=2026-10-22T17:53:44Z blocking_failures=1
+DRY_BASEREFS_EXIT=1
+[2026-10-22T17:53:44Z] job=sf40-j0a-build-dry finished exit=0

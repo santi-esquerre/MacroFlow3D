@@ -1,0 +1,33 @@
+INFO 256x256x256_eps2_e0 ref status=0 iterations=10 rel=6.458e-11
+CHECK 256x256x256_eps2_e0/b_hat=device result_fields_bitwise PASS
+CHECK 256x256x256_eps2_e0/b_hat=device solution_bitwise PASS
+CHECK 256x256x256_eps2_e0/b_hat=device nontrivial_solve PASS
+CHECK 256x256x256_eps2_e0/b_hat=mapped result_fields_bitwise PASS
+CHECK 256x256x256_eps2_e0/b_hat=mapped solution_bitwise PASS
+CHECK 256x256x256_eps2_e0/b_hat=mapped nontrivial_solve PASS
+INFO 512x64x64_eps2_e0 ref status=0 iterations=20 rel=5.382e-13
+CHECK 512x64x64_eps2_e0/b_hat=device result_fields_bitwise PASS
+CHECK 512x64x64_eps2_e0/b_hat=device solution_bitwise PASS
+CHECK 512x64x64_eps2_e0/b_hat=device nontrivial_solve PASS
+CHECK 512x64x64_eps2_e0/b_hat=mapped result_fields_bitwise PASS
+CHECK 512x64x64_eps2_e0/b_hat=mapped solution_bitwise PASS
+CHECK 512x64x64_eps2_e0/b_hat=mapped nontrivial_solve PASS
+CHECK guard z_Ap_partial_overlap PASS
+CHECK guard z_Ap_wrong_size PASS
+CHECK guard z_eq_Ap_accepted PASS
+CHECK guard r_p_overlap PASS
+CHECK guard b_hat_Ap_overlap PASS
+CHECK guard b_overlaps_x PASS
+CHECK guard b_overlaps_r PASS
+CHECK guard b_overlaps_p PASS
+CHECK guard b_overlaps_z PASS
+CHECK guard b_overlaps_Ap PASS
+CHECK guard b_overlaps_b_hat PASS
+CHECK guard r_overlaps_d_scalar PASS
+CHECK guard x_overlaps_r PASS
+CHECK guard x_overlaps_z PASS
+CHECK guard red_null PASS
+CHECK guard mean_zero_null PASS
+CHECK guard b_hat_wrong_size PASS
+CHECK guard invalid_configuration PASS
+ALL_PASS

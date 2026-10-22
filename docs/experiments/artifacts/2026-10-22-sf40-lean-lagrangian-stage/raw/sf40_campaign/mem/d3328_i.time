@@ -1,0 +1,23 @@
+	Command being timed: "/home/sesquerre/MacroFlow3D-SF-40/build/v100-release/inlet_slab --track forward --stage lean --fused-splines --single-launch --grid 3328,384,384 --sigma2 1 --seed 4001 --np-side 100 --tol 1e-8 --hmax-div 8 --max-arclength 1000 --eps 1.5 --ell 0.041666666666666664 --planes 0.041666666666666664,0.08333333333333333,0.16666666666666666,0.3333333333333333,0.6666666666666666,1.3333333333333333,2.6666666666666665,5.333333333333333,8.666666666666666 --summary /home/sesquerre/sf40_campaign/mem/d3328_i.json"
+	User time (seconds): 91.74
+	System time (seconds): 80.07
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:53.40
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 19802104
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 18565286
+	Voluntary context switches: 2207
+	Involuntary context switches: 92
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 40
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -1,0 +1,76 @@
+[2026-10-22T19:31:43Z] job=sf40-dry session=macroflow3d-SF-40-sf40-dry started
+[2026-10-22T19:31:43Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-22T19:31:43Z] cwd=/home/sesquerre/MacroFlow3D-SF-40
+[2026-10-22T19:31:43Z] command=cd ~/MacroFlow3D-SF-40 || exit 2; A=docs/experiments/artifacts/2026-10-22-sf40-lean-lagrangian-stage/scripts; for part in controls bytecmp l6 mem par2; do echo "PART_BEGIN $part $(date -u +%FT%TZ)"; SF40_DRYRUN=1 SF40_COMMIT=bc08945-dry SF40_BUILD_DIR=build/v100-release bash $A/run_sf40.sh build/v100-release $part > ~/sf40_dryrun_$part.log 2>&1; echo "PART_EXIT $part rc=$? $(date -u +%FT%TZ)"; grep -E "UNEXPECTED|DIFF|MISSING|FAIL|NOT_EVALUABLE|blocking_failures|_VERDICT|BYTECMP_|L6_VARIANTS|PAR2_|SAMPLER_SMOKE" ~/sf40_dryrun_$part.log | grep -v "IDENTICAL" | cut -c1-260 | head -40; done
+PART_BEGIN controls 2026-10-22T19:31:44Z
+PART_EXIT controls rc=1 2026-10-22T19:33:29Z
+CONTROL_VERDICT run=long_box_full exit=0 checks_pass=144 checks_fail=0 all_pass=1 PASS
+CONTROL_VERDICT run=projected_pcg_external_full exit=0 checks_pass=42 checks_fail=0 all_pass=1 PASS
+CONTROL_VERDICT run=affine_periodic_flow_lean_full exit=0 checks_pass=190 checks_fail=0 all_pass=1 PASS
+CONTROL_VERDICT run=long_box_cufft3328 exit=1 checks_pass=1 checks_fail=1 all_pass=0 FAIL
+C_VERDICT run=smoke_lean phase=F expected=0 reported=0 diff=0 PASS
+C_VERDICT run=smoke_lean phase=S1 expected=1323008 reported=1323008 diff=0 PASS
+C_VERDICT run=smoke_lean phase=S2 expected=2115661 reported=2115661 diff=0 PASS
+C_VERDICT run=smoke_lean phase=S3 expected=9470056 reported=9470056 diff=0 PASS
+C_VERDICT run=smoke_lean phase=T expected=8417936 reported=8417936 diff=0 PASS
+C_LARGEST run=smoke_lean S2=2115661 max_other=9470056 FAIL
+C_RUN run=smoke_lean FAIL
+CONTROL_VERDICT run=smoke_lean driver_smoke(128x16x16,zeros) mem_geom_lines=1 mem_phase_lines=5 closed_form_exit=1 FAIL
+SAMPLER_SMOKE run=sampler_probe PID_PEAK pid=139557 samples=29 pid_peak_mib=487 dev_peak_mib=491 max_exact_mib=- tree_pid=139557 status=OK reasons=- OK
+SAMPLER_SMOKE run=sampler_lean PID_PEAK pid=139698 samples=13 pid_peak_mib=511 dev_peak_mib=617 max_exact_mib=27.625 tree_pid=139698 status=OK reasons=- OK
+RECORDED C_VERDICT run=early_warning phase=F expected=6326280 reported=6326280 diff=0 PASS
+RECORDED C_VERDICT run=early_warning phase=S1 expected=10534912 reported=10534912 diff=0 PASS
+RECORDED C_VERDICT run=early_warning phase=S2 expected=16222292 reported=16222292 diff=0 PASS
+RECORDED C_VERDICT run=early_warning phase=S3 expected=28967144 reported=28967144 diff=0 PASS
+RECORDED C_VERDICT run=early_warning phase=T expected=20480776 reported=20480776 diff=0 PASS
+RECORDED C_RUN run=early_warning FAIL
+run_sf40.sh: part=controls end=2026-10-22T19:33:29Z blocking_failures=2
+PART_BEGIN bytecmp 2026-10-22T19:33:29Z
+PART_EXIT bytecmp rc=0 2026-10-22T19:36:04Z
+run_sf40.sh: part=bytecmp end=2026-10-22T19:36:04Z blocking_failures=0
+PART_BEGIN l6 2026-10-22T19:36:04Z
+PART_EXIT l6 rc=0 2026-10-22T19:36:36Z
+run_sf40.sh: part=l6 end=2026-10-22T19:36:36Z blocking_failures=0
+PART_BEGIN mem 2026-10-22T19:36:36Z
+PART_EXIT mem rc=0 2026-10-22T19:38:03Z
+C_VERDICT run=d512 phase=F expected=401928 reported=401928 diff=0 PASS
+C_VERDICT run=d512 phase=S1 expected=667648 reported=667648 diff=0 PASS
+C_VERDICT run=d512 phase=S2 expected=1075279 reported=1075279 diff=0 PASS
+C_VERDICT run=d512 phase=S3 expected=8675432 reported=8675432 diff=0 PASS
+C_VERDICT run=d512 phase=T expected=8153760 reported=8153760 diff=0 PASS
+C_LARGEST run=d512 S2=1075279 max_other=8675432 FAIL
+C_RUN run=d512 FAIL
+C_VERDICT run=d3328_i phase=F expected=401928 reported=401928 diff=0 PASS
+C_VERDICT run=d3328_i phase=S1 expected=667648 reported=667648 diff=0 PASS
+C_VERDICT run=d3328_i phase=S2 expected=1075279 reported=1075279 diff=0 PASS
+C_VERDICT run=d3328_i phase=S3 expected=8675432 reported=8675432 diff=0 PASS
+C_VERDICT run=d3328_i phase=T expected=8153760 reported=8153760 diff=0 PASS
+C_LARGEST run=d3328_i S2=1075279 max_other=8675432 FAIL
+C_RUN run=d3328_i FAIL
+C_VERDICT run=d3328_ii phase=F expected=401928 reported=401928 diff=0 PASS
+C_VERDICT run=d3328_ii phase=S1 expected=667648 reported=667648 diff=0 PASS
+C_VERDICT run=d3328_ii phase=S2 expected=1075279 reported=1075279 diff=0 PASS
+C_VERDICT run=d3328_ii phase=S3 expected=8675432 reported=8675432 diff=0 PASS
+C_VERDICT run=d3328_ii phase=T expected=8153760 reported=8153760 diff=0 PASS
+C_LARGEST run=d3328_ii S2=1075279 max_other=8675432 FAIL
+C_RUN run=d3328_ii FAIL
+CS_VERDICT run=d512_bhatdev phase=F expected=401928 reported=401928 diff=0 PASS
+CS_VERDICT run=d512_bhatdev phase=S1 expected=667648 reported=667648 diff=0 PASS
+CS_VERDICT run=d512_bhatdev phase=S2 expected=1206351 reported=1206351 diff=0 PASS
+CS_VERDICT run=d512_bhatdev phase=S3 expected=8675432 reported=8675432 diff=0 PASS
+CS_VERDICT run=d512_bhatdev phase=T expected=8153760 reported=8153760 diff=0 PASS
+CS_LARGEST run=d512_bhatdev S2=1206351 max_other=8675432 FAIL
+CS_RUN run=d512_bhatdev FAIL
+D_VERDICT run=d512 pid_peak_mib=615 E_max_mib=8.274 C_mib=487 limit_mib=495.522 exit=0 FAIL
+D_ALT run=d512 limit_alt_mib=510.132 ((E_max + C) * 1.03; reported, not the verdict) would_be=FAIL
+D3328_VERDICT run=d3328_i exit=0 pid_peak_mib=633 limit_mib=30000 exit_class=ok PASS
+E_VERDICT run=d3328_i correctors=converged,20,7.151e-15 converged,20,2.782e-15 converged,20,2.749e-15 converged=1 levels=3 coarsest=16x4x4 PASS (dry: levels/coarsest expectation waived)
+D3328_VERDICT run=d3328_ii exit=0 pid_peak_mib=615 limit_mib=30000 exit_class=ok PASS
+E_VERDICT run=d3328_ii correctors=converged,20,5.974e-14 converged,20,9.697e-14 converged,20,8.997e-14 converged=1 levels=3 coarsest=16x4x4 PASS (dry: levels/coarsest expectation waived)
+run_sf40.sh: part=mem end=2026-10-22T19:38:03Z blocking_failures=0
+PART_BEGIN par2 2026-10-22T19:38:03Z
+PART_EXIT par2 rc=0 2026-10-22T19:38:17Z
+RECORDED PAR2_PEAK base_par2_a: PID_PEAK pid=109498 samples=6 pid_peak_mib=495 dev_peak_mib=499 max_exact_mib=- tree_pid=109498 status=OK reasons=-
+RECORDED PAR2_PEAK head_par2: PID_PEAK pid=144249 samples=6 pid_peak_mib=499 dev_peak_mib=503 max_exact_mib=- tree_pid=144249 status=OK reasons=-
+run_sf40.sh: part=par2 end=2026-10-22T19:38:17Z blocking_failures=0
+[2026-10-22T19:38:17Z] job=sf40-dry finished exit=0

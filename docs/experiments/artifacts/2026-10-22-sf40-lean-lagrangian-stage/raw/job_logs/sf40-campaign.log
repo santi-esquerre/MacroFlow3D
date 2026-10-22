@@ -1,0 +1,21 @@
+[2026-10-22T19:39:37Z] job=sf40-campaign session=macroflow3d-SF-40-sf40-campaign started
+[2026-10-22T19:39:37Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-22T19:39:37Z] cwd=/home/sesquerre/MacroFlow3D-SF-40
+[2026-10-22T19:39:37Z] command=cd ~/MacroFlow3D-SF-40 || exit 2; A=docs/experiments/artifacts/2026-10-22-sf40-lean-lagrangian-stage/scripts; echo H1=bc089455efc5620bba63412dbe2c5400d4ac18a6; md5sum build/v100-release/inlet_slab build/v100-release/macroflow3d_pipeline; for part in controls bytecmp l6 mem par2 final; do echo "PART_BEGIN $part $(date -u +%FT%TZ)"; SF40_COMMIT=bc089455efc5620bba63412dbe2c5400d4ac18a6 SF40_BUILD_DIR=build/v100-release bash $A/run_sf40.sh build/v100-release $part > ~/sf40_campaign_$part.log 2>&1; echo "PART_EXIT $part rc=$? $(date -u +%FT%TZ)"; done; echo CAMPAIGN_END
+H1=bc089455efc5620bba63412dbe2c5400d4ac18a6
+95febc0b40245fac1f4b19af12d569bd  build/v100-release/inlet_slab
+fb93e8d08541b8616d934e291cd88b5d  build/v100-release/macroflow3d_pipeline
+PART_BEGIN controls 2026-10-22T19:39:38Z
+PART_EXIT controls rc=1 2026-10-22T19:42:01Z
+PART_BEGIN bytecmp 2026-10-22T19:42:01Z
+PART_EXIT bytecmp rc=0 2026-10-22T20:53:44Z
+PART_BEGIN l6 2026-10-22T20:53:44Z
+PART_EXIT l6 rc=0 2026-10-22T21:03:16Z
+PART_BEGIN mem 2026-10-22T21:03:16Z
+PART_EXIT mem rc=0 2026-10-22T21:20:12Z
+PART_BEGIN par2 2026-10-22T21:20:12Z
+PART_EXIT par2 rc=0 2026-10-22T21:21:14Z
+PART_BEGIN final 2026-10-22T21:21:14Z
+PART_EXIT final rc=0 2026-10-22T22:11:02Z
+CAMPAIGN_END
+[2026-10-22T22:11:02Z] job=sf40-campaign finished exit=0

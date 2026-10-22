@@ -1,0 +1,22 @@
+command: /home/sesquerre/sf40_base_refs/bin/inlet_slab --track forward --analytic generic3d --n 32 --eps 0.25 --np-side 32 --planes 0.5,1 --times 1 --covectors --save-particles /home/sesquerre/sf40_base_refs/r/fwd/g3d_n32_cov --summary /home/sesquerre/sf40_base_refs/r/fwd/g3d_n32_cov.json
+FIELD analytic generic3d (closure_fields.hpp, unit amplitude) N=32 | stage field k = exp(eps Y), eps = 0.25
+SETUP STAGE field=generic3d eps=0.25 N=32 status=ok
+SETUP   SF-19: mg_levels=4 converged=1 G=(9.989750916620e-01, 1.228581693097e-02, 1.796739009242e-02) mean_flux=(1.000e+00, 9.578e-18, 1.565e-18) div_max=1.377e-12 div_rms=2.470e-13
+SETUP   SF-19 corrector x: status=converged its=10 rel_residual=1.022e-13 final_residual=4.441e-11
+SETUP   SF-19 corrector y: status=converged its=10 rel_residual=8.521e-14 final_residual=2.609e-11
+SETUP   SF-19 corrector z: status=converged its=10 rel_residual=7.108e-14 final_residual=2.176e-11
+SETUP   inlet: vmin=7.325259e-01 mean(U plane 0)=1.000000000000000 (mean-1=-3.331e-16) Q0-1=2.220e-16 v_rms=1.025188e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=2.823903e-03 max_rel=5.183297e-03; spline potential GPU vs host prefilter rel=2.509e-15
+SETUP stage eps=0.25 built in 0.988s (grad_lnk=analytic (closure_fields.hpp, hand-derived gradient))
+TRACK field=generic3d eps=0.25 N=32 h=0.03125 x0=0 M=32 Np=1024 planes=0.5,1 times=1 tol=1.0e-08 h_max=3.906250e-03 (h/8) min_step=1.0e-13 max_arclength=14 covectors=1 labels_available=1 inlet_vmin=7.325259e-01
+BACKFLOW field=generic3d eps=0.25 N=32 inlet_vmin=7.325259e-01 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+TPLANE m=0 x1=0.5 n_ok=1024 mean2=4.996455405525e-01 mean3=5.147688608582e-01 var2=7.761605366183e-02 var3=7.921015909701e-02 mean_tau=4.997165753789e-01 var_tau=2.823036108804e-03 ev_rms=2.451560e-03 ev_max=6.557592e-03
+TPLANE m=1 x1=1 n_ok=1024 mean2=4.993712924938e-01 mean3=5.142642059324e-01 var2=8.993584015587e-02 var3=8.820724806317e-02 mean_tau=9.994507303673e-01 var_tau=4.748767062785e-04 ev_rms=1.017792e-03 ev_max=4.175161e-03
+TTIME n=0 t=1 active=1024 mean1=9.993099996385e-01 mean2=4.994837690693e-01 mean3=5.147703382898e-01 var1=5.997317832188e-04 var2=8.982516073741e-02 var3=8.815539417354e-02
+TSTATUS pass=plane hist=1024,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1621676
+TSTATUS pass=time hist=1024,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1611312
+SAVED_PARTICLES /home/sesquerre/sf40_base_refs/r/fwd/g3d_n32_cov (seeds / weights / labels / status_* / planes_* / times_* .npy, moments_{time,planes}.csv, track.json)
+TIMING field=0.017s prepare=0.000s stage=0.988s track=0.063s write=0.001s total=1.070s
+MEMORY peak_device_bytes=697303040 free_min=33392427008 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf40_base_refs/r/fwd/g3d_n32_cov.json
+STATUS ok

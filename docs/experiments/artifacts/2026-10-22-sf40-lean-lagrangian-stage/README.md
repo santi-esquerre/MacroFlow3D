@@ -163,3 +163,64 @@ stochastic, flow and transport keys are compared.
 * The driver-smoke and sampler-smoke argument sets, the `--warm` probe flag and the `--cells` .npy shape `(nz, ny, nx)` are
   assumptions on interfaces owned by other nodes; a rejection is recorded, not worked around.
 * Dry mode runs the test executables without `--full` and shrinks `--cufft-size`/early-warning (cannot be verified locally).
+
+## Raw evidence (N8, imported by the orchestrator from the V100 host)
+
+`raw/` is the text subset of the outputs of the SF-40 V100 jobs, extracted unchanged from
+`sf40_evidence.tar.gz` (sha256 `b6b1f0a6b9b4b6df07332dec141daaa4ff9eb5c052f3bad5fd3a290f59c879f2`, 1469 files, 17 MB). Layout
+(the V100 relative layout):
+
+| Directory | Source on the V100 host | Content |
+|---|---|---|
+| `raw/sf40_base_refs/` | `~/sf40_base_refs` (job `sf40-j0b-base-refs`) | base references: A set (`a/`), R set (`r/`), SF-27 trio, Par2 base twice, `results.txt`, `run.env` |
+| `raw/sf40_campaign/{controls,bytecmp,l6,mem,par2,final}/` | `~/sf40_campaign` (job `sf40-campaign`) | per part: `exit_codes.tsv`, `walls.tsv`, `run.env`, `sha256.txt`, `results.txt`, run logs, `.time`, `.free`, samplers |
+| `raw/sf40_campaign/sass/calls_extract.txt` | `~/sf40_campaign/sass` (job `sf40-build`) | CALL targets per function of the `inlet_slab` cubin (C-TRACKER-L6) |
+| `raw/job_logs/*.log` | `~/.macroflow3d-remote/macroflow3d-SF-40/logs/` (renamed to `job_logs/` by the pack command) | `sf40-j0a-build-dry`, `sf40-j0b-base-refs`, `sf40-build`, `sf40-dry`, `sf40-campaign` |
+
+Excluded from `raw/` (listed, with their sha256, in the per-part `sha256.txt` manifests): every `*.npy`, `*.cubin`,
+`*.cubin.sass`, the base binaries `sf40_base_refs/bin/*`, the Par2 bulk output directories (`*/output/*`), and any other file
+larger than 2 MB (the list `sf40_evidence.excluded_large` was empty). The dry-run tree `~/sf40_dryrun` (jobs `sf40-j0a-build-dry`
+dry part and `sf40-dry`) is NOT evidence and is not included; only the job logs of those jobs are.
+
+The SF-27 trio output directories (`output_pspta_small/`, `output_streamfunctions_*/`, 332 files under `sf40_base_refs/trio/` and
+`sf40_campaign/final/trio/`) match the repository rule `output*/` of `.gitignore` and were committed with `git add -f`, so that `raw/` equals the tarball.
+
+Pack (one short `scripts/remote --increment SF-40 exec -- "<script>"` call on the V100 host, 2026-10-22T22:12Z, after job
+`sf40-campaign` finished with exit 0); the script verbatim:
+
+```bash
+set -o pipefail; cd ~ || exit 2
+S=sf40_campaign/sass
+awk '/^\.text\.[^ ]*:$/{f=$1} /CALL/{if (match($0,/`\([^)]*\)/)) t=substr($0,RSTART,RLENGTH); else t="(no-target)"; print f" -> "t}' $S/inlet_slab.2.sm_70.cubin.sass | sort | uniq -c | sort -rn > $S/calls_extract.txt
+find sf40_campaign sf40_base_refs -type f ! -name '*.npy' ! -name '*.cubin' ! -name '*.cubin.sass' ! -path 'sf40_base_refs/bin/*' ! -path '*/output/*' -size -2M | LC_ALL=C sort > ~/sf40_evidence.list
+find sf40_campaign sf40_base_refs -type f ! -name '*.npy' ! -name '*.cubin' ! -name '*.cubin.sass' ! -path 'sf40_base_refs/bin/*' ! -path '*/output/*' -size +2M -printf '%p %s\n' | LC_ALL=C sort > ~/sf40_evidence.excluded_large
+ls .macroflow3d-remote/macroflow3d-SF-40/logs/*.log >> ~/sf40_evidence.list
+tar --transform 's,^\.macroflow3d-remote/macroflow3d-SF-40/logs,job_logs,' -czf ~/sf40_evidence.tar.gz -T ~/sf40_evidence.list
+echo FILES=$(wc -l < ~/sf40_evidence.list); echo EXCLUDED_LARGE:; cat ~/sf40_evidence.excluded_large; wc -l < $S/calls_extract.txt; ls -l ~/sf40_evidence.tar.gz; sha256sum ~/sf40_evidence.tar.gz
+```
+
+Transfer (local, from the clean sync worktree):
+
+```bash
+scripts/remote --increment SF-40 exec -- 'echo B64_BEGIN; base64 -w 0 ~/sf40_evidence.tar.gz; echo; echo B64_END' 2>/dev/null > b64.txt
+sed -n '/^B64_BEGIN$/,/^B64_END$/p' b64.txt | sed '1d;$d' | tr -d '\n' | base64 -d > sf40_evidence.tar.gz
+sha256sum sf40_evidence.tar.gz   # b6b1f0a6b9b4b6df07332dec141daaa4ff9eb5c052f3bad5fd3a290f59c879f2 on both hosts
+```
+
+Re-verification:
+
+```bash
+# 1. the tarball: sha256 above; extracting it into an empty directory gives a tree with `diff -r` empty against raw/
+mkdir /tmp/sf40_chk && tar -xzf sf40_evidence.tar.gz -C /tmp/sf40_chk && diff -r /tmp/sf40_chk raw
+# 2. every raw file that is in a manifest matches it (1427 files; the other manifest lines are the excluded files, 42 raw
+#    files are bookkeeping outside the manifests: exit_codes.tsv, walls.tsv, run.env, results.txt, l6_timings.tsv,
+#    sha256.txt, calls_extract.txt, job logs)
+for d in sf40_base_refs sf40_campaign/{controls,bytecmp,l6,mem,par2,final}; do (cd raw/$d && sha256sum -c --ignore-missing sha256.txt | grep -vc ': OK'); done   # 0 each
+# 3. derived tables (committed in analysis/, regenerate byte-identically)
+python3 scripts/note_tables.py --selftest
+python3 scripts/note_tables.py raw analysis
+```
+
+`scripts/note_tables.py` reads only `raw/` and writes `analysis/{feasibility.csv,feasibility.md,pid_plateaus.md,completeness.md,summary.md}`
+(summary.md: byte-comparison counts, per-phase exact bytes and the S+ closed form, D/E/RSS tables, S vs S+, F controls, L6, Par2, ctest).
+The experiment note `docs/experiments/2026-10-22-sf40-lean-lagrangian-stage.md` cites these files.

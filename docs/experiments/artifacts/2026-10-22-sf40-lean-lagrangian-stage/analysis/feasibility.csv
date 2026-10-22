@@ -1,0 +1,4 @@
+sigma2,lambda_over_h,box_lx_lambda,box_ly_lz_lambda,cells_box_measured,pid_peak_mib_measured,cells_max_30000_derived,nx_max_ny384_derived,lx_max_lambda_derived,bdd_cells_derived,bdd_need_mib_derived,bdd_fits_derived
+1,8,416,48,490733568,28885,5.10009e+08,3456,432,6.87195e+07,4473.54,fit
+2.25,16,208,24,490733568,28885,5.10009e+08,3456,216,5.49756e+08,32299.15,no_fit
+4,32,104,12,490733568,28885,5.10009e+08,3456,108,4.39805e+09,254904.03,no_fit

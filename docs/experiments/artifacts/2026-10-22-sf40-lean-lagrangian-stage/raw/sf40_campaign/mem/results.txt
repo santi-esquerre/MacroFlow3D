@@ -1,0 +1,79 @@
+PROBE run=probe1 exit=0 pid=162671 pid_peak_mib=487 device_used_bytes=514850816 driver=11040 runtime=11040 status=OK -
+PROBE run=probe2 exit=0 pid=162737 pid_peak_mib=487 device_used_bytes=514850816 driver=11040 runtime=11040 status=OK -
+PROBE run=probe3 exit=0 pid=162949 pid_peak_mib=487 device_used_bytes=514850816 driver=11040 runtime=11040 status=OK -
+C_CONTEXT mib=487 (minimum PID peak over 3 evaluable of 3 probes)
+RECORDED warm_probe pid_peak_mib=489 device_used_bytes=516947968 status=OK
+C_INFO run=d512 level_cells_halving=consistent
+C_VERDICT run=d512 phase=F expected=3229616136 reported=3229616136 diff=0 PASS
+C_INFO run=d512 phase=F exact=3229616136 sum_rounded_2MiB_per_alloc=3233808384 seconds=0.877824 device_used=2668625920 dev_minus_first_phase_minus_exact=-3229616136(first=F) dev_minus_probe_minus_exact=-1075841032
+C_VERDICT run=d512 phase=S1 expected=5381292032 reported=5381292032 diff=0 PASS
+C_INFO run=d512 phase=S1 exact=5381292032 sum_rounded_2MiB_per_alloc=5381292032 seconds=4.885465 device_used=3742367744 dev_minus_first_phase_minus_exact=-4307550208(first=F) dev_minus_probe_minus_exact=-2153775104
+C_INFO run=d512 S2_closed_form=8138281074 S_scr=133234 cufft_work=0 bhat=mapped
+C_VERDICT run=d512 phase=S2 expected=8138281074 reported=8138281074 diff=0 PASS
+C_INFO run=d512 phase=S2 exact=8138281074 sum_rounded_2MiB_per_alloc=8197767168 seconds=28.640221 device_used=8655994880 dev_minus_first_phase_minus_exact=-2150912114(first=F) dev_minus_probe_minus_exact=2862990
+C_VERDICT run=d512 phase=S3 expected=6729240552 reported=6729240552 diff=0 PASS
+C_INFO run=d512 phase=S3 exact=6729240552 sum_rounded_2MiB_per_alloc=6729760768 seconds=4.440621 device_used=5090836480 dev_minus_first_phase_minus_exact=-4307029992(first=F) dev_minus_probe_minus_exact=-2153254888
+C_VERDICT run=d512 phase=T expected=2464157784 reported=2464157784 diff=0 PASS
+C_INFO run=d512 phase=T exact=2464157784 sum_rounded_2MiB_per_alloc=2474639360 seconds=0.046457 device_used=2983198720 dev_minus_first_phase_minus_exact=-2149584984(first=F) dev_minus_probe_minus_exact=4190120
+C_LARGEST run=d512 S2=8138281074 max_other=6729240552 PASS
+C_RUN run=d512 PASS
+C_INFO run=d3328_i level_cells_halving=consistent
+C_VERDICT run=d3328_i phase=F expected=11782326280 reported=11782326280 diff=0 PASS
+C_INFO run=d3328_i phase=F exact=11782326280 sum_rounded_2MiB_per_alloc=11790188544 seconds=3.575474 device_used=8372879360 dev_minus_first_phase_minus_exact=-11782326280(first=F) dev_minus_probe_minus_exact=-3924297736
+C_VERDICT run=d3328_i phase=S1 expected=19636420608 reported=19636420608 diff=0 PASS
+C_INFO run=d3328_i phase=S1 exact=19636420608 sum_rounded_2MiB_per_alloc=19639828480 seconds=17.744869 device_used=12298747904 dev_minus_first_phase_minus_exact=-15710552064(first=F) dev_minus_probe_minus_exact=-7852523520
+C_INFO run=d3328_i S2_closed_form=29765452393 S_scr=133225 cufft_work=0 bhat=mapped
+C_VERDICT run=d3328_i phase=S2 expected=29765452393 reported=29765452393 diff=0 PASS
+C_INFO run=d3328_i phase=S2 exact=29765452393 sum_rounded_2MiB_per_alloc=29821501440 seconds=118.559475 device_used=30298603520 dev_minus_first_phase_minus_exact=-7839728233(first=F) dev_minus_probe_minus_exact=18300311
+C_VERDICT run=d3328_i phase=S3 expected=23775677416 reported=23775677416 diff=0 PASS
+C_INFO run=d3328_i phase=S3 exact=23775677416 sum_rounded_2MiB_per_alloc=23779606528 seconds=18.372186 device_used=16440623104 dev_minus_first_phase_minus_exact=-15707933672(first=F) dev_minus_probe_minus_exact=-7849905128
+C_VERDICT run=d3328_i phase=T expected=8060101832 reported=8060101832 diff=0 PASS
+C_INFO run=d3328_i phase=T exact=8060101832 sum_rounded_2MiB_per_alloc=8078229504 seconds=0.00885 device_used=8578400256 dev_minus_first_phase_minus_exact=-7854580936(first=F) dev_minus_probe_minus_exact=3447608
+C_LARGEST run=d3328_i S2=29765452393 max_other=23775677416 PASS
+C_RUN run=d3328_i PASS
+C_INFO run=d3328_ii level_cells_halving=consistent
+C_VERDICT run=d3328_ii phase=F expected=11782326280 reported=11782326280 diff=0 PASS
+C_INFO run=d3328_ii phase=F exact=11782326280 sum_rounded_2MiB_per_alloc=11790188544 seconds=3.828071 device_used=8372879360 dev_minus_first_phase_minus_exact=-11782326280(first=F) dev_minus_probe_minus_exact=-3924297736
+C_VERDICT run=d3328_ii phase=S1 expected=19636420608 reported=19636420608 diff=0 PASS
+C_INFO run=d3328_ii phase=S1 exact=19636420608 sum_rounded_2MiB_per_alloc=19639828480 seconds=17.659594 device_used=12298747904 dev_minus_first_phase_minus_exact=-15710552064(first=F) dev_minus_probe_minus_exact=-7852523520
+C_INFO run=d3328_ii S2_closed_form=29765452393 S_scr=133225 cufft_work=0 bhat=mapped
+C_VERDICT run=d3328_ii phase=S2 expected=29765452393 reported=29765452393 diff=0 PASS
+C_INFO run=d3328_ii phase=S2 exact=29765452393 sum_rounded_2MiB_per_alloc=29821501440 seconds=119.512592 device_used=30298603520 dev_minus_first_phase_minus_exact=-7839728233(first=F) dev_minus_probe_minus_exact=18300311
+C_VERDICT run=d3328_ii phase=S3 expected=23572512768 reported=23572512768 diff=0 PASS
+C_INFO run=d3328_ii phase=S3 exact=23572512768 sum_rounded_2MiB_per_alloc=23576182784 seconds=21.322091 device_used=16235102208 dev_minus_first_phase_minus_exact=-15710289920(first=F) dev_minus_probe_minus_exact=-7852261376
+C_VERDICT run=d3328_ii phase=T expected=7856377176 reported=7856377176 diff=0 PASS
+C_INFO run=d3328_ii phase=T exact=7856377176 sum_rounded_2MiB_per_alloc=7874805760 seconds=0.007708 device_used=8372879360 dev_minus_first_phase_minus_exact=-7856377176(first=F) dev_minus_probe_minus_exact=1651368
+C_LARGEST run=d3328_ii S2=29765452393 max_other=23572512768 PASS
+C_RUN run=d3328_ii PASS
+CS_INFO run=d512_bhatdev level_cells_halving=consistent
+CS_VERDICT run=d512_bhatdev phase=F expected=3229616136 reported=3229616136 diff=0 PASS
+CS_INFO run=d512_bhatdev phase=F exact=3229616136 sum_rounded_2MiB_per_alloc=3233808384 seconds=0.916373 device_used=2668625920 dev_minus_first_phase_minus_exact=-3229616136(first=F) dev_minus_probe_minus_exact=-1075841032
+CS_VERDICT run=d512_bhatdev phase=S1 expected=5381292032 reported=5381292032 diff=0 PASS
+CS_INFO run=d512_bhatdev phase=S1 exact=5381292032 sum_rounded_2MiB_per_alloc=5381292032 seconds=4.145161 device_used=3742367744 dev_minus_first_phase_minus_exact=-4307550208(first=F) dev_minus_probe_minus_exact=-2153775104
+CS_INFO run=d512_bhatdev S2_closed_form=9212022898 S_scr=133234 cufft_work=0 bhat=device
+CS_VERDICT run=d512_bhatdev phase=S2 expected=9212022898 reported=9212022898 diff=0 PASS
+CS_INFO run=d512_bhatdev phase=S2 exact=9212022898 sum_rounded_2MiB_per_alloc=9271508992 seconds=26.326715 device_used=9727639552 dev_minus_first_phase_minus_exact=-2153009266(first=F) dev_minus_probe_minus_exact=765838
+CS_VERDICT run=d512_bhatdev phase=S3 expected=6729240552 reported=6729240552 diff=0 PASS
+CS_INFO run=d512_bhatdev phase=S3 exact=6729240552 sum_rounded_2MiB_per_alloc=6729760768 seconds=4.423882 device_used=5090836480 dev_minus_first_phase_minus_exact=-4307029992(first=F) dev_minus_probe_minus_exact=-2153254888
+CS_VERDICT run=d512_bhatdev phase=T expected=2464157784 reported=2464157784 diff=0 PASS
+CS_INFO run=d512_bhatdev phase=T exact=2464157784 sum_rounded_2MiB_per_alloc=2474639360 seconds=0.045935 device_used=2983198720 dev_minus_first_phase_minus_exact=-2149584984(first=F) dev_minus_probe_minus_exact=4190120
+CS_LARGEST run=d512_bhatdev S2=9212022898 max_other=6729240552 PASS
+CS_RUN run=d512_bhatdev PASS
+D_VERDICT run=d512 pid_peak_mib=8249 E_max_mib=7761.270 C_mib=487 limit_mib=8481.108 exit=0 PASS
+D_ALT run=d512 limit_alt_mib=8495.718 ((E_max + C) * 1.03; reported, not the verdict) would_be=PASS
+D3328_VERDICT run=d3328_i exit=0 pid_peak_mib=28885 limit_mib=30000 exit_class=ok PASS
+E_VERDICT run=d3328_i correctors=converged,30,8.367e-14 converged,30,6.495e-14 converged,30,7.528e-14 converged=1 levels=7 coarsest=52x6x6 PASS
+D3328_VERDICT run=d3328_ii exit=0 pid_peak_mib=28885 limit_mib=30000 exit_class=ok PASS
+E_VERDICT run=d3328_ii correctors=converged,30,8.941e-12 converged,30,8.486e-12 converged,30,4.614e-12 converged=1 levels=7 coarsest=52x6x6 PASS
+RECORDED E_d512 correctors=x,converged,20,2.422e-12 y,converged,20,3.227e-12 z,converged,20,2.368e-12 converged=1 mg_levels=8
+RECORDED run=d512 exit=0 host_max_rss_kb=5867076 wall_s=284.61 free_b_before=[Mem: 134590115840 3198115840 26595344384 214081536 104796655616 130536898560]
+RECORDED run=d512 phase_seconds=F:0.877824,S1:4.885465,S2:28.640221,S3:4.440621,T:0.046457 exact_bytes=F:3229616136,S1:5381292032,S2:8138281074,S3:6729240552,T:2464157784
+RECORDED run=d512_bhatdev exit=0 host_max_rss_kb=4828676 wall_s=280.99 free_b_before=[Mem: 134590115840 3194224640 26565799936 214073344 104830091264 130540818432]
+RECORDED run=d512_bhatdev phase_seconds=F:0.916373,S1:4.145161,S2:26.326715,S3:4.423882,T:0.045935 exact_bytes=F:3229616136,S1:5381292032,S2:9212022898,S3:6729240552,T:2464157784
+RECORDED run=d3328_i exit=0 host_max_rss_kb=19802104 wall_s=173.4 free_b_before=[Mem: 134590115840 3196506112 26530435072 214073344 104863174656 130538504192]
+RECORDED run=d3328_i phase_seconds=F:3.575474,S1:17.744869,S2:118.559475,S3:18.372186,T:0.00885 exact_bytes=F:11782326280,S1:19636420608,S2:29765452393,S3:23775677416,T:8060101832
+RECORDED run=d3328_ii exit=0 host_max_rss_kb=19802128 wall_s=177.13 free_b_before=[Mem: 134590115840 3195129856 26531270656 214073344 104863715328 130539909120]
+RECORDED run=d3328_ii phase_seconds=F:3.828071,S1:17.659594,S2:119.512592,S3:21.322091,T:0.007708 exact_bytes=F:11782326280,S1:19636420608,S2:29765452393,S3:23572512768,T:7856377176
+RECORDED max_cells_exit0 n=490733568 run=d3328_i
+RECORDED S_vs_S+ run=512 S2_seconds_S+(mapped)=28.640221 S2_seconds_S(device)=26.326715 wall_s_S+=284.61 wall_s_S=280.99
+RECORDED versions driver=11040 runtime=11040

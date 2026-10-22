@@ -1,0 +1,75 @@
+{
+  "M": 32,
+  "N": 40,
+  "Np": 1024,
+  "X0": 0.0,
+  "commit": "unknown",
+  "covectors": false,
+  "eps": 1.0,
+  "field": "gaussian",
+  "h": 0.025,
+  "h_max": 0.003125,
+  "max_arclength": 14.0,
+  "min_step": 1e-13,
+  "plane_pass": {
+    "accepted_steps": 349018,
+    "backflow_encounters": 0,
+    "landing_rejected": 0,
+    "landing_steps": 2048,
+    "landings_discarded": 0,
+    "min_g1_hat": 0.6608729206464002,
+    "nfev": 2123804,
+    "recrossings": 0,
+    "rejected_steps": 0,
+    "status_hist": {
+      "cap_exceeded": 0,
+      "invalid_conductivity": 0,
+      "landing_failed": 0,
+      "ok": 1024,
+      "seed_backflow": 0,
+      "stagnation": 0,
+      "step_underflow": 0
+    }
+  },
+  "planes": [
+    0.5,
+    1.0
+  ],
+  "seed_backflow": 0,
+  "time_pass": {
+    "accepted_steps": 350581,
+    "backflow_encounters": 0,
+    "landing_rejected": 0,
+    "landing_steps": 1025,
+    "landings_discarded": 0,
+    "min_g1_hat": 0.6608969473666015,
+    "nfev": 2118852,
+    "recrossings": 0,
+    "rejected_steps": 0,
+    "status_hist": {
+      "cap_exceeded": 0,
+      "invalid_conductivity": 0,
+      "landing_failed": 0,
+      "ok": 1024,
+      "seed_backflow": 0,
+      "stagnation": 0,
+      "step_underflow": 0
+    }
+  },
+  "times": [
+    1.0
+  ],
+  "timings_s": {
+    "download": 0.000131805,
+    "moments": 9.1582e-05,
+    "plane_kernel": 0.040505906,
+    "time_kernel": 0.07242285
+  },
+  "tol": 1e-08,
+  "window": [
+    0.0,
+    1.0,
+    0.0,
+    1.0
+  ]
+}
