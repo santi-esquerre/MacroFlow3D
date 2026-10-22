@@ -617,6 +617,16 @@ if(MACROFLOW3D_BUILD_APPS)
     )
     add_test(NAME affine_periodic_flow COMMAND affine_periodic_flow_tests)
 
+    # SF-40 L1: projected_pcg_solve_external is bit-for-bit identical to
+    # projected_pcg_solve (z == Ap == MG b, b == MG x, b_hat mapped host); fast mode only
+    # under ctest, `--full` (256^3, 512x64x64) is a V100 manual run.
+    add_executable(projected_pcg_external_tests tests/streamfunctions/projected_pcg_external_tests.cu)
+    target_link_libraries(projected_pcg_external_tests PRIVATE macroflow3d_lib)
+    target_compile_options(projected_pcg_external_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME projected_pcg_external COMMAND projected_pcg_external_tests)
+
     # SF-28 T02: periodic tricubic B-spline contract tests (fast tier)
     add_executable(interpolation_tests tests/interpolation/periodic_tricubic_bspline_tests.cu)
     target_link_libraries(interpolation_tests PRIVATE macroflow3d_lib)
