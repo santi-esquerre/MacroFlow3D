@@ -59,6 +59,12 @@ struct TrackOptions {
     std::vector<double> times;  ///< strictly increasing t_n > 0
     bool covectors = false;     ///< transport the covectors a, b (D = 11) in both passes
     int block = 64;             ///< threads per block (results are independent of it)
+    /// SF-40 L6 (opt-in, bitwise-identical outputs): evaluate the potential and ln k splines over one
+    /// interleaved double2 coefficient array (FusedSplineLagrangianField).
+    bool fused_splines = false;
+    /// SF-40 L6 (opt-in, bitwise-identical outputs): one kernel launch runs the plane pass and then the
+    /// time pass of each particle; timings: plane/time kernel NaN, seconds_single_kernel set.
+    bool single_launch = false;
 };
 
 /// Weighted statistics at one plane over the particles that reached it.
@@ -115,6 +121,8 @@ struct LagrangianTrackResult {
     // timings [s]
     double seconds_plane_kernel = 0.0, seconds_time_kernel = 0.0, seconds_download = 0.0,
            seconds_moments = 0.0;
+    bool single_launch = false;         ///< SF-40 L6: the passes ran in one launch
+    double seconds_single_kernel = 0.0; ///< SF-40 L6: launch time iff single_launch (else 0)
 };
 
 /// Run metadata for track.json (everything the tracker itself does not know).

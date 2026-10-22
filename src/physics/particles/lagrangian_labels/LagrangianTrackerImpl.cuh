@@ -40,10 +40,12 @@ template <class Field> class LagrangianTrackerT {
         field_ = field;
         block_ = opt.block;
         covectors_ = opt.covectors;
+        single_launch_ = opt.single_launch;
 
         LagrangianTrackResult& r = result_;
         r = LagrangianTrackResult{};
         r.covectors = opt.covectors;
+        r.single_launch = opt.single_launch;
         r.tol = opt.tol;
         r.h_max = opt.h_max;
         r.min_step = opt.min_step;
@@ -190,26 +192,39 @@ template <class Field> class LagrangianTrackerT {
         using clock = std::chrono::steady_clock;
 
         auto t0 = clock::now();
-        if (P > 0) {
+        if (single_launch_) {
+            // SF-40 L6: one launch, plane pass then time pass per thread (own step sequences).
             if (covectors_)
-                ldev::plane_kernel<11, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
+                ldev::single_kernel<11, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
             else
-                ldev::plane_kernel<5, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
+                ldev::single_kernel<5, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
             MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
             ctx.synchronize();
-        }
-        r.seconds_plane_kernel = std::chrono::duration<double>(clock::now() - t0).count();
+            r.seconds_single_kernel = std::chrono::duration<double>(clock::now() - t0).count();
+            r.seconds_plane_kernel = r.seconds_time_kernel =
+                std::numeric_limits<double>::quiet_NaN();
+        } else {
+            if (P > 0) {
+                if (covectors_)
+                    ldev::plane_kernel<11, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
+                else
+                    ldev::plane_kernel<5, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
+                MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+                ctx.synchronize();
+            }
+            r.seconds_plane_kernel = std::chrono::duration<double>(clock::now() - t0).count();
 
-        t0 = clock::now();
-        if (T > 0) {
-            if (covectors_)
-                ldev::time_kernel<11, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
-            else
-                ldev::time_kernel<5, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
-            MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
-            ctx.synchronize();
+            t0 = clock::now();
+            if (T > 0) {
+                if (covectors_)
+                    ldev::time_kernel<11, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
+                else
+                    ldev::time_kernel<5, Field><<<grid, blk, 0, ctx.cuda_stream()>>>(field_, a);
+                MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+                ctx.synchronize();
+            }
+            r.seconds_time_kernel = std::chrono::duration<double>(clock::now() - t0).count();
         }
-        r.seconds_time_kernel = std::chrono::duration<double>(clock::now() - t0).count();
 
         t0 = clock::now();
         auto down = [](void* dst, const void* src, std::size_t bytes) {
@@ -251,6 +266,7 @@ template <class Field> class LagrangianTrackerT {
   private:
     bool prepared_ = false;
     bool covectors_ = false;
+    bool single_launch_ = false;
     int block_ = 64;
     Field field_{};
     LagrangianTrackResult result_;

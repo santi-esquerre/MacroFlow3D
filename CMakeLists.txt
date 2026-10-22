@@ -764,6 +764,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(lagrangian_controls_tests PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_tracker_controls COMMAND lagrangian_controls_tests)
+    # SF-40 L6: opt-in tracker speedups (fused two-spline evaluation, single launch) bitwise vs the
+    # default path (fast tier <= 60 s). Includes the fused header -> --fmad=false.
+    add_executable(tracker_l6_tests tests/lagrangian_labels/tracker_l6_tests.cu)
+    target_link_libraries(tracker_l6_tests PRIVATE macroflow3d_lib)
+    target_compile_options(tracker_l6_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_tracker_l6 COMMAND tracker_l6_tests)
 
     # SF-37 N3: CompactMAC -> periodic face repack (bitwise), Pollock lattice tracker on k = 1 and a smooth K
     add_executable(face_flux_repack_tests tests/lagrangian_labels/face_flux_repack_tests.cu)

@@ -273,6 +273,8 @@ struct DriverConfig {
     double min_step = 1e-13;
     double max_arclength = 0.0; ///< <= 0: tracker default 4 max(X_last - X0, t_last) + 10
     bool covectors = false;
+    bool fused_splines = false; ///< SF-40 L6: --fused-splines (bitwise-identical outputs)
+    bool single_launch = false; ///< SF-40 L6: --single-launch (bitwise-identical outputs)
     std::string window = "0,1,0,1";
     std::string save_particles_dir;
     bool fwd_opts_given = false; ///< any of the forward-only options was given
@@ -312,6 +314,10 @@ inline const char* usage_text() {
            "[--window w2a,w2b,w3a,w3b]\n"
            "             [--save-particles <dir>] [--summary <json>] [--pcg-rtol 1e-10] "
            "[--device D]\n"
+           "             [--fused-splines] [--single-launch] SF-40 L6 opt-in tracker speedups, outputs bitwise\n"
+           "                 identical to the default path: one interleaved coefficient array for both splines /\n"
+           "                 plane and time passes in one launch (timings_s.single_kernel replaces plane_kernel and\n"
+           "                 time_kernel, which are then null)\n"
            "             (planes strictly increasing and > x0; times strictly increasing and > 0; "
            "at least one list;\n"
            "              h_max = h/hmax-div; M x M stratified flux-weighted lattice on the "
@@ -454,6 +460,16 @@ inline DriverConfig parse_args(int argc, char** argv) {
         }
         if (opt == "--covectors") {
             c.covectors = true;
+            c.fwd_opts_given = true;
+            continue;
+        }
+        if (opt == "--fused-splines") {
+            c.fused_splines = true;
+            c.fwd_opts_given = true;
+            continue;
+        }
+        if (opt == "--single-launch") {
+            c.single_launch = true;
             c.fwd_opts_given = true;
             continue;
         }
@@ -642,7 +658,8 @@ inline DriverConfig parse_args(int argc, char** argv) {
                          "--save-labels require --construct trace");
     if (c.fwd_opts_given && c.mode != Mode::track_forward)
         throw UsageError("--np-side / --x0 / --planes / --times / --min-step / --max-arclength / "
-                         "--covectors / --window / --save-particles require --track forward");
+                         "--covectors / --window / --save-particles / --fused-splines / --single-launch "
+                         "require --track forward");
     if (c.sf37_opts_given && c.mode != Mode::track_forward)
         throw UsageError("--comparator / --save-vd / --save-seed-velocity require --track forward");
     if (c.save_seed_velocity && c.save_particles_dir.empty())
@@ -2697,6 +2714,8 @@ inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
     if (!c.times_list.empty())
         topt.times = detail::parse_list("--times", c.times_list);
     topt.covectors = c.covectors;
+    topt.fused_splines = c.fused_splines;
+    topt.single_launch = c.single_launch;
 
     ll::LagrangianTracker tracker;
     pl.begin("prepare");
@@ -2782,6 +2801,8 @@ inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
                               {"time_kernel", R.seconds_time_kernel},
                               {"download", R.seconds_download},
                               {"moments", R.seconds_moments}};
+    if (R.single_launch) // SF-40 L6: only with --single-launch
+        J["tracker_timings_s"]["single_kernel"] = R.seconds_single_kernel;
 
     long long fails = 0;
     for (int s = 2; s < 7; ++s)
