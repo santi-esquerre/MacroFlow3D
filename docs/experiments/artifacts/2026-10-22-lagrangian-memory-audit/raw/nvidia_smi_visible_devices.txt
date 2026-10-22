@@ -1,0 +1,4 @@
+-rwxrwxr-x. 1 sesquerre sesquerre 15195104 2026-10-20 16:38:52.659071301 -0300 build/v100-release/inlet_slab
+index, name, memory.total [MiB]
+0, Tesla V100-PCIE-32GB, 32510 MiB
+1, Tesla V100-PCIE-32GB, 32510 MiB

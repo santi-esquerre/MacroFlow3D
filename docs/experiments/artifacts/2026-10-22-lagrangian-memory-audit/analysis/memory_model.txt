@@ -1,0 +1,124 @@
+== constants ==
+MIB = 1048576; CONTEXT_MIB = 500 (planning assumption); LIMIT_MIB = 30000 (owner decision 2026-10-22); sizeof(real) = 8; sizeof(cufftDoubleComplex) = 16
+
+== cell counts ==
+512^3            =    134,217,728
+2048x256x256     =    134,217,728  (equal to 512^3: True)
+3328x384x384     =    490,733,568  (4.9073e+08)
+B&dD 204.8x25.6x25.6 lambda at lambda/h = 16: 5.4976e+08 cells (3276.8 x 409.6 x 409.6 cells)
+B&dD 204.8x25.6x25.6 lambda at lambda/h = 32: 4.3980e+09 cells (6553.6 x 819.2 x 819.2 cells)
+MiB per (B/cell) at 512^3 = 128.0000; at 3328x384x384 = 468.0000
+slab_auto_mg_levels(512) = 8 (coarsest (4, 4, 4)); slab_auto_mg_levels(384) = 7
+MG levels of 3328x384x384 with 7 levels: [(3328, 384, 384), (1664, 192, 192), (832, 96, 96), (416, 48, 48), (208, 24, 24), (104, 12, 12), (52, 6, 6)]
+coarse tail 32*sum 8^-l: levels 8 (coarse 1..7) = 4.57143; levels 7 (1..6) = 4.57141; limit = 4.57143
+
+== section 4: SF-19 AffinePeriodicFlowWorkspace at 512^3 (exact bytes) ==
+  correctors w_x,w_y,w_z (.cuh:283)                                 24.000 B/cell       3072.0 MiB 
+  h_tilde (.cuh:284)                                                 8.000 B/cell       1024.0 MiB 
+  rhs_a, rhs_b (.cuh:289-290)                                       16.000 B/cell       2048.0 MiB 
+  flux_u,flux_v,flux_w (.cuh:295-297, CompactMAC)                   24.047 B/cell       3078.0 MiB 
+  divergence (.cuh:301)                                              8.000 B/cell       1024.0 MiB 
+  PCG r,z,p,Ap (pcg.cuh:50-54)                                      32.000 B/cell       4096.0 MiB 
+  PCG b_hat = projected_rhs (pcg.cuh:224)                            8.000 B/cell       1024.0 MiB 
+  MG level 0 x,b,r,coefficient (mg_types.hpp:27-50)                 32.000 B/cell       4096.0 MiB 
+  MG coarse levels 1.. x,b,r,coefficient                             4.571 B/cell        585.1 MiB 
+  workspace total (canonical 156.6)                                156.618 B/cell      20047.1 MiB 
+  K_dev (SlabProductionSetup.cu:479,486)                             8.000 B/cell       1024.0 MiB 
+  lnK_dev (SlabProductionSetup.cu:479,485)                           8.000 B/cell       1024.0 MiB 
+  u,v,w velocity (SlabProductionSetup.cu:498-499)                   24.047 B/cell       3078.0 MiB 
+  SF-19 solve phase total (canonical ~196.7)                       196.665 B/cell      25173.1 MiB 
+  nominal (all arrays = n): workspace 156.571, SF-19 phase 196.571 B/cell (CompactMAC +1/nx adds 0.094)
+
+== section 4: stage phases at 512^3 (exact bytes; cuFFT work area = 1 half-spectrum per plan) ==
+  [field] SF-18 generator: y_out + half-spectrum + one Z2D work area:
+      generator peak (y_out 8 + spectrum + work area)               24.062 B/cell       3080.0 MiB (the '~24 B/cell' of the planning text)
+      generator peak without y_out (spectrum + work area)           16.062 B/cell       2056.0 MiB (the '16 B/cell' of the planning text)
+    [field] spectral_periodic_evaluate: y + gen spectrum + in,F,ov,og[3] (6 complex n)   112.031 B/cell      14340.0 MiB (Z2Z work area not modeled)
+    [flow]  SF-19 solve phase                                      196.665 B/cell      25173.1 MiB 
+    [prefilter 1] SF-19 workspace + lnK + sh_ws + 2 plans (:562-563)   196.712 B/cell      25179.1 MiB 
+    [prefilter 2] SF-19 workspace + lnK + sh_ws + sy_ws + 2 plans (:564)   212.743 B/cell      27231.1 MiB <- exact-byte stage peak (canonical ~213)
+    [steps v-vi] sh_ws + sy_ws + 7 vertex arrays + inputs(5) + reference(3)   152.297 B/cell      19494.0 MiB (canonical ~154; u0, vperp_in, p1, p2 are O(N^2) and omitted)
+    [tracking] stage inputs+reference kept by the driver            64.125 B/cell       8208.0 MiB (read by nobody during tracking)
+    [tracking] + tracker coefficients coef_pot, coef_logk (LagrangianTracker.cu:237,256-257)    80.125 B/cell      10256.0 MiB 
+
+== section 6: tracker device bytes per particle (LagrangianTrackerImpl.cuh:63-79) ==
+  sizeof(PassStats) = 88 B (7 long long, 2 double, 4 int)
+  per particle, P = T = 7, no covectors: seeds 24 + 2 x PassStats 176 + planes 7 x 32 = 224 + times 7 x 32 = 224  =  648 B (covectors would add 672 B)
+   10000 particles:     6.48 MB device
+   65536 particles:    42.47 MB device
+  255 regs/thread -> 256 allocated -> 256 threads/SM (register file 65536) -> 20480 resident threads on 80 SMs (V100 datasheet)
+  load at 1e4 particles: 0.49 of the resident threads; 65536 particles = 3.20 waves
+  stack 1376 B/thread (plane_kernel<5>) x 20480 threads = 28.2 MB local memory
+
+== section 7: Par2 baseline ensemble path, 2048x256x256, mg_cg, mg_levels 6 (EnsembleRunner.cu:156-170) ==
+  K_field                                                            8.000 B/cell       1024.0 MiB 
+  head_field                                                         8.000 B/cell       1024.0 MiB 
+  FlowWorkspace residual,aux1,aux2 (never read)                     24.000 B/cell       3072.0 MiB 
+  FlowWorkspace rhs                                                  8.000 B/cell       1024.0 MiB 
+  FlowWorkspace MG hierarchy (6 levels)                             36.571 B/cell       4681.1 MiB 
+  FlowWorkspace PCG r,z,p,Ap (solver mg_cg -> PCG_MG)               32.000 B/cell       4096.0 MiB 
+  StochasticWorkspace logK                                           8.000 B/cell       1024.0 MiB 
+  PaddedVelocityField U,V,W                                         24.200 B/cell       3097.6 MiB 
+  total (Par2_Core particle arrays and mode arrays not modeled)    148.771 B/cell      19042.7 MiB 
+    of which dead FlowWorkspace buffers residual+aux1+aux2          24.000 B/cell       3072.0 MiB = 3.00 GiB
+  VelocityDiagnostics when diagnostics.velocity_field (3 ScalarField)    24.000 B/cell       3072.0 MiB 
+
+== section 4: reconciliation with the measured peaks (512^3, nvidia-smi, 200 ms, MiB) ==
+  model: SF-19 plateau 25173.1 MiB; one cuFFT plan work area 1028.0 MiB; two plans 2056.0 MiB; exact stage peak 27231.1 MiB
+  model + CONTEXT_MIB = 25673.1 MiB (planning text: 25716, not reproduced)
+  SF-37 modal value 25921 MiB (50/72 runs) - plateau = implied unmodeled overhead 747.9 MiB
+  plateau    predicted   25921.0 MiB; observed [25921, 25925, 25929]; delta [0.0, 4.0, 8.0]
+  one plan   predicted   26949.0 MiB; observed [26951, 26953]; delta [2.0, 4.0]
+  two plans  predicted   27977.0 MiB; observed [27981]; delta [4.0]
+  max observed 27981 MiB = 218.6 B/cell incl. context (canonical 218.6); model exact peak 212.7 B/cell + overhead 5.8 B/cell
+  field phase: model 14340.0 MiB (spectral vertex evaluation, no Z2Z work area); SF-35 measured max 14825 -> difference 485.0 MiB
+  tracking plateau: model 10256.0 MiB; driver PhaseLog (cudaMemGetInfo, phase edges) 11113.0 MiB (11652825088 B) -> difference 857.0 MiB
+  256^3: model SF-19 plateau 3146.6 MiB; SF-35 J2a measured stage max 3769 (SF-36 G: 3771) -> implied overhead 622.4 MiB
+  two-point overhead model (indicative, 2 points): 604.4 MiB + 1.121 B/cell x cells -> 1128.8 MiB at 3328x384x384
+  host RSS (/usr/bin/time -v, SF-37 v2 512^3): 25824868 kB = 197.0 B/cell; v3b (keep_face_fluxes): 28977484 kB = 221.1 B/cell; src host arrays cell_ + vtx_ + vgrad_[3] = 40.1 B/cell
+  host RSS scaled linearly to 3328x384x384 at 197.0 B/cell: 90.0 GiB (host RAM of the V100 machine is not recorded in the repository)
+
+== section 8: bitwise memory levels (device B/cell at the SF-19 PCG peak, context excluded) ==
+  current nominal: workspace 156.57 + K 8 + lnK 8 + u,v,w 24 = 196.57 (coarse tail for 7 levels = 4.5714)
+  O1  =  92.571 B/cell  K 8 + MG L0 coefficient copy of K 8 + MG L0 x,b,r 24 + MG coarse levels 4.57141 + PCG r,z,p,Ap 32 + b_hat 8 + active corrector 8
+  O2  =  84.571 B/cell  K as MG L0 coefficient 8 + MG L0 x,b,r 24 + MG coarse levels 4.57141 + PCG r,z,p,Ap 32 + b_hat 8 + active corrector 8
+  S   =  68.571 B/cell  K as MG L0 coefficient 8 + MG L0 x,r 16 + shared buffer z / Ap / MG L0 b 8 + MG coarse levels 4.57141 + PCG r,p 16 + b_hat 8 + active corrector 8
+  S+  =  60.571 B/cell  K as MG L0 coefficient 8 + MG L0 x,r 16 + shared buffer z / Ap / MG L0 b 8 + MG coarse levels 4.57141 + PCG r,p 16 + active corrector 8 + b_hat (pinned mapped host memory) 0
+  max cells within LIMIT_MIB with CONTEXT_MIB of context:
+    current, exact peak (~212.7)    212.743 B/cell -> 1.4540e+08 cells
+    current, SF-19 phase (196.7)    196.665 B/cell -> 1.5729e+08 cells
+    O1                               92.571 B/cell -> 3.3415e+08 cells
+    O2                               84.571 B/cell -> 3.6576e+08 cells
+    S                                68.571 B/cell -> 4.5111e+08 cells
+    S+                               60.571 B/cell -> 5.1069e+08 cells
+  b_hat touches per corrector (pcg.cuh:321-324,325-331,411,455): copy(write) 1 + project(sum read 1, subtract read+write 2) + recompute_true_residual reads (1 initial + one per check_every = 10 iterations)
+     20 PCG iterations: 3 recomputes -> 7 array traffic passes per corrector; 3 correctors move   82.4 GB over PCIe at 3328x384x384 ->   6.9 s at 12 GB/s,   8.2 s at 10 GB/s (assumed, not measured)
+     30 PCG iterations: 4 recomputes -> 8 array traffic passes per corrector; 3 correctors move   94.2 GB over PCIe at 3328x384x384 ->   7.9 s at 12 GB/s,   9.4 s at 10 GB/s (assumed, not measured)
+    200 PCG iterations: 21 recomputes -> 25 array traffic passes per corrector; 3 correctors move  294.4 GB over PCIe at 3328x384x384 ->  24.5 s at 12 GB/s,  29.4 s at 10 GB/s (assumed, not measured)
+
+== section 9: feasibility at 3328x384x384 (MiB = cells x B/cell / 2^20 + CONTEXT_MIB) ==
+  current, exact stage peak     212.743 B/cell:    99563.9 MiB + 500 =   100063.9 MiB  (does not fit in 30000)
+  current, SF-19 phase          196.665 B/cell:    92039.3 MiB + 500 =    92539.3 MiB  (does not fit in 30000)
+  O1                             92.571 B/cell:    43323.4 MiB + 500 =    43823.4 MiB  (does not fit in 30000)
+  O2                             84.571 B/cell:    39579.4 MiB + 500 =    40079.4 MiB  (does not fit in 30000)
+  S                              68.571 B/cell:    32091.4 MiB + 500 =    32591.4 MiB  (does not fit in 30000)
+  S+                             60.571 B/cell:    28347.4 MiB + 500 =    28847.4 MiB  (fits in 30000)
+  S+ sensitivity to the unmodeled overhead:
+    overhead    500.0 MiB ->   28847.4 MiB (margin to 30000:   1152.6 MiB)
+    overhead    750.0 MiB ->   29097.4 MiB (margin to 30000:    902.6 MiB)
+    overhead   1000.0 MiB ->   29347.4 MiB (margin to 30000:    652.6 MiB)
+    overhead   1128.8 MiB ->   29476.3 MiB (margin to 30000:    523.7 MiB)
+  lambda extents of 3328x384x384 (cells / (lambda/h)):
+    lambda/h  8 (sigma^2    1):  416.0 x  48.0 x  48.0 lambda
+    lambda/h 16 (sigma^2 2.25):  208.0 x  24.0 x  24.0 lambda
+    lambda/h 32 (sigma^2    4):  104.0 x  12.0 x  12.0 lambda
+  Beaudoin & de Dreuzy domain 204.8 x 25.6 x 25.6 lambda:
+    lambda/h 16: 5.4976e+08 cells; S+ needs      32256.9 MiB (= 31.0 GiB) vs 30000; 1.08x the S+ max cell count
+    lambda/h 32: 4.3980e+09 cells; S+ needs     254554.9 MiB (= 248.1 GiB) vs 30000; 8.61x the S+ max cell count
+  FFT phases (transient, additive to the persistent arrays of the phase):
+    SF-28 prefilter of one field: coefficients 8 + half-spectrum 8.031 + 2 work areas 16.062 = 32.094 B/cell
+    SF-18 generator: y_out 8 + half-spectrum 8.031 + work area 8.031 = 24.062 B/cell
+    lean second prefilter (SF-19 workspace freed, sh spectrum freed): lnK 8 + sh coefficients 8 + sy_ws 16.031 + 2 work areas 16.062 = 48.094 B/cell (< S+ 60.57)
+    lean second prefilter with the sh spectrum kept: 56.125 B/cell
+    post-PCG velocity phase if PCG/MG buffers are released: K 8 + h_tilde 8 + upload scratch 8 + u,v,w 24 + divergence 8 = 56 B/cell (< S+)
+    same phase if nothing is released (PCG 32 + b_hat 8 + MG incl. K 36.57 + h_tilde 8 + scratch 8 + u,v,w 24 + divergence 8): 124.57 B/cell (> S+; releasing or reusing the dead buffers is a design condition)

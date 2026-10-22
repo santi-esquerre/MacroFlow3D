@@ -1,0 +1,11 @@
+source: lh10.txt; interpolation point lambda/h = 56.4/5 = 11.28
+sigma^2   quantity                       err(10)     err(20)   slope(log-log)   err(11.28)
+      1   sigma_T^2(x1=16) error [%]           1.90        0.50          -1.926         1.51
+      1   transverse-rate error [lambda]  5.800e-04   1.500e-04          -1.951    4.585e-04
+      1   longitudinal-rate error [%]         12.00        2.90          -2.049         9.38
+   2.25   sigma_T^2(x1=16) error [%]           9.20        2.40          -1.939         7.28
+   2.25   transverse-rate error [lambda]  4.400e-03   1.200e-03          -1.874    3.511e-03
+   2.25   longitudinal-rate error [%]         44.20       11.70          -1.918        35.08
+      4   sigma_T^2(x1=16) error [%]          19.20        6.10          -1.654        15.73
+      4   transverse-rate error [lambda]  1.000e-02   3.200e-03          -1.644    8.204e-03
+      4   longitudinal-rate error [%]         73.90       26.70          -1.469        61.92
