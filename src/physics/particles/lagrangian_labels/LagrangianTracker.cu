@@ -292,6 +292,48 @@ void LagrangianTracker::prepare(CudaContext& ctx, const sl::ProductionStage& sta
     impl_->core.prepare(ctx, f, inj, opt, labels);
 }
 
+void LagrangianTracker::prepare(CudaContext& ctx, const DeviceSplineFlow& flow,
+                                const InjectionSpec& inj, const TrackOptions& opt) {
+    const bool fused = opt.fused_splines;
+    if (fused ? flow.coef_interleaved == nullptr
+              : (flow.coef_pot == nullptr || flow.coef_logk == nullptr)) {
+        throw std::logic_error(
+            "LagrangianTracker::prepare: DeviceSplineFlow lacks the coefficient array(s) needed "
+            "by TrackOptions::fused_splines");
+    }
+    if (flow.labels != nullptr && !flow.labels->device_prepared()) {
+        throw std::logic_error("LagrangianTracker::prepare: DeviceSplineFlow labels not "
+                               "device-prepared");
+    }
+    // Geometry only in the fused case (make_fused_field ignores the coefficient pointers).
+    const real* geom_ptr =
+        fused ? reinterpret_cast<const real*>(flow.coef_interleaved) : flow.coef_pot;
+    SplineLagrangianField f;
+    f.potential = interpolation::make_host_view(flow.grid, geom_ptr);
+    f.log_conductivity = interpolation::make_host_view(flow.grid, geom_ptr);
+    for (int d = 0; d < 3; ++d)
+        f.G[d] = flow.G[d];
+    impl_->fused = fused;
+    if (fused) {
+        impl_->core_fused.prepare(ctx, make_fused_field(f, flow.coef_interleaved), inj, opt,
+                                  flow.labels);
+        return;
+    }
+    f.potential.coeff = flow.coef_pot;
+    f.log_conductivity.coeff = flow.coef_logk;
+    impl_->core.prepare(ctx, f, inj, opt, flow.labels);
+}
+
+std::vector<std::pair<std::string, std::size_t>> LagrangianTracker::device_buffer_bytes() const {
+    if (!impl_ || !prepared())
+        return {};
+    auto v = impl_->fused ? impl_->core_fused.device_buffer_bytes()
+                          : impl_->core.device_buffer_bytes();
+    v.emplace_back("prepare_transient", impl_->fused ? impl_->core_fused.prepare_transient_bytes()
+                                                     : impl_->core.prepare_transient_bytes());
+    return v;
+}
+
 const LagrangianTrackResult& LagrangianTracker::track(CudaContext& ctx, int block) {
     return impl_->fused ? impl_->core_fused.track(ctx, block) : impl_->core.track(ctx, block);
 }

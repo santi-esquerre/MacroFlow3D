@@ -382,6 +382,9 @@ struct AffinePeriodicFlowLeanMemoryReport {
     std::size_t pcg_red_temp_bytes{}; // capacity of the PCG ReductionWorkspace::temp (expected 0)
     AffinePeriodicFlowMemoryReport categories{};
     std::size_t device_used_at_peak{}; // cudaMemGetInfo total - free right after the S2 allocations
+    // cudaMemGetInfo total - free right after the three corrector solves (SF-40 L3): lazy library
+    // allocations (e.g. the cuBLAS workspace) appear only after the first calls.
+    std::size_t device_used_after_solve{};
     double seconds{};                  // wall time of the whole solve
 };
 

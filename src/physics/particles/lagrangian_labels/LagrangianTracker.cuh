@@ -42,10 +42,23 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace macroflow3d {
 namespace lagrangian_labels {
+
+/// SF-40 L3: non-owning view of a spline flow whose coefficient arrays live on the device
+/// (LongBoxStage). Exactly one of {coef_pot + coef_logk, coef_interleaved} is needed, according to
+/// TrackOptions::fused_splines; `labels` (nullable) must be device-prepared.
+struct DeviceSplineFlow {
+    Grid3D grid;
+    const real* coef_pot = nullptr;
+    const real* coef_logk = nullptr;
+    const double2* coef_interleaved = nullptr; ///< {pot, logk} per cell (fused_splines)
+    double G[3] = {0.0, 0.0, 0.0};
+    const streamfunctions::inlet_slab::InletLabels* labels = nullptr;
+};
 
 class LagrangianTracker {
   public:
@@ -63,6 +76,13 @@ class LagrangianTracker {
     void prepare(CudaContext& ctx, const streamfunctions::inlet_slab::ProductionStage& stage,
                  const InjectionSpec& inj, const TrackOptions& opt);
 
+    /// SF-40 L3: same tracker over device coefficient arrays owned by the caller (non-owning; the
+    /// arrays and `flow.labels` must outlive track()). The spline geometry is built exactly as in
+    /// the ProductionStage overload (interpolation::make_host_view(flow.grid, ...)). Throws
+    /// std::logic_error if the arrays needed by `opt.fused_splines` are missing.
+    void prepare(CudaContext& ctx, const DeviceSplineFlow& flow, const InjectionSpec& inj,
+                 const TrackOptions& opt);
+
     /// Runs both passes and the host reductions. `block` > 0 overrides TrackOptions::block. The
     /// returned reference is valid until the next track()/destruction. No device allocation.
     const LagrangianTrackResult& track(CudaContext& ctx, int block = 0);
@@ -70,6 +90,9 @@ class LagrangianTracker {
     bool prepared() const;
     /// Data pointers of every owned device buffer (stable between prepare and track).
     std::vector<const void*> device_storage_pointers() const;
+    /// SF-40 L3: owned device buffers (name, capacity bytes), without the coefficient arrays, plus
+    /// {"prepare_transient", largest transient allocated inside prepare()}. Empty if not prepared.
+    std::vector<std::pair<std::string, std::size_t>> device_buffer_bytes() const;
 
   private:
     struct Impl;

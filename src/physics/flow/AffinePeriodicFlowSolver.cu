@@ -1161,6 +1161,12 @@ AffinePeriodicFlowLeanResult solve_affine_periodic_flow_lean(
         }
     }
 
+    {
+        std::size_t free_b = 0, total_b = 0;
+        MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&free_b, &total_b));
+        mem.device_used_after_solve = total_b - free_b;
+    }
+
     lean_host_tensor_part(report, config.qbar);
 
     // h_tilde = sum_d G_d w_d accumulated in pcg_p in the order d = 0, 1, 2.

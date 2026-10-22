@@ -25,6 +25,8 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace macroflow3d {
@@ -92,6 +94,7 @@ template <class Field> class LagrangianTrackerT {
         MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 
         // ---- injection weights: flux k g1 at the seeds
+        transient_bytes_ = Np * sizeof(double); // SF-40 L3: largest prepare-internal transient
         {
             DeviceBuffer<double> d_flux(Np);
             const int blk = 64;
@@ -118,6 +121,7 @@ template <class Field> class LagrangianTrackerT {
                 hy[p] = r.seeds[3 * p + 1];
                 hz[p] = r.seeds[3 * p + 2];
             }
+            transient_bytes_ = std::max(transient_bytes_, 4 * Np * sizeof(double));
             DeviceBuffer<double> dy(Np), dz(Np), p1(Np), p2(Np);
             MACROFLOW3D_CUDA_CHECK(
                 cudaMemcpy(dy.data(), hy.data(), Np * sizeof(double), cudaMemcpyHostToDevice));
@@ -263,7 +267,32 @@ template <class Field> class LagrangianTrackerT {
                 d_times_I_.data(),     d_planes_cov_.data(), d_times_cov_.data()};
     }
 
+    /// SF-40 L3: owned device buffers by name (capacity bytes, empty ones omitted).
+    std::vector<std::pair<std::string, std::size_t>> device_buffer_bytes() const {
+        std::vector<std::pair<std::string, std::size_t>> v;
+        const auto add = [&v](const char* name, std::size_t cap_bytes) {
+            if (cap_bytes > 0)
+                v.emplace_back(name, cap_bytes);
+        };
+        add("seeds", d_seeds_.capacity() * sizeof(double));
+        add("planes", d_planes_.capacity() * sizeof(double));
+        add("times", d_times_.capacity() * sizeof(double));
+        add("stats_plane", d_stats_plane_.capacity() * sizeof(PassStats));
+        add("stats_time", d_stats_time_.capacity() * sizeof(PassStats));
+        add("planes_x23", d_planes_x23_.capacity() * sizeof(double));
+        add("planes_tau", d_planes_tau_.capacity() * sizeof(double));
+        add("planes_I", d_planes_I_.capacity() * sizeof(double));
+        add("times_x", d_times_x_.capacity() * sizeof(double));
+        add("times_I", d_times_I_.capacity() * sizeof(double));
+        add("planes_cov", d_planes_cov_.capacity() * sizeof(double));
+        add("times_cov", d_times_cov_.capacity() * sizeof(double));
+        return v;
+    }
+    /// SF-40 L3: bytes of the largest transient allocated (and freed) inside prepare().
+    std::size_t prepare_transient_bytes() const { return transient_bytes_; }
+
   private:
+    std::size_t transient_bytes_ = 0;
     bool prepared_ = false;
     bool covectors_ = false;
     bool single_launch_ = false;
