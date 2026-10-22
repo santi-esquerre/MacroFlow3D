@@ -1,0 +1,7 @@
+              total        used        free      shared  buff/cache   available
+Mem:    134590115840  3180457984 30173683712   209899520 101235974144 130558734336
+Swap:    4294963200   426287104  3868676096
+80
+index, name, memory.total [MiB], pcie.link.gen.max, pcie.link.width.max
+0, Tesla V100-PCIE-32GB, 32510 MiB, 3, 16
+1, Tesla V100-PCIE-32GB, 32510 MiB, 3, 16

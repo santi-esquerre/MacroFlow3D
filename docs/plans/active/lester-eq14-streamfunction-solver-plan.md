@@ -144,6 +144,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-37 — Verification of the Lagrangian consumer on the cube at sigma^2 <= 4, with blind O3](lester-eq14/increments/SF-37-lagrangian-cube-verification.md)
 - [ ] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
 - [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
+- [ ] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -162,7 +163,10 @@ re-specified in place to accept the SF-35 labels). Re-sequencing 2026-10-17
 `docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`): SF-35 closed with the validity envelope `sigma_Y <= 1` of
 the gridded labels; the production consumer at `sigma^2 >= 4` is Lagrangian (labels carried by forward-traced
 particles). SF-34 (re-specified in place as the O1 arm, off the critical path) and SF-36 follow SF-35 in parallel;
-SF-37 and SF-38 follow SF-36 (in parallel); SF-39 follows SF-37 and SF-38. Disposition of the open decisions D1-D7 of
+SF-37 and SF-38 follow SF-36 (in parallel); SF-39 follows SF-37 and SF-38. Re-sequencing 2026-10-22
+(`docs/decisions/2026-10-22-lean-lagrangian-stage.md`; audit `docs/experiments/2026-10-22-lagrangian-memory-audit.md`):
+SF-40 (lean parametric stage at memory level S+) follows SF-37; SF-38 follows SF-36 and SF-40; the provisional
+non-periodic spline is renumbered SF-41. Disposition of the open decisions D1-D7 of
 `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
 D5 are moot (they tune a system whose solution is not the target); D2 is retired
 with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
@@ -394,7 +398,7 @@ above governs the frozen periodic stack only.
 4. `ctest` holds fast contract tests only; science runs are experiment notes run
    as detached V100 jobs.
 
-## Later phases (rewritten 2026-10-17; items 1-5 specified, item 6 prose)
+## Later phases (rewritten 2026-10-17; amended 2026-10-22; items 1-5 specified, item 6 prose)
 
 Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requirement: the study reaches
 `sigma_Y^2 >= 4`; final amplitudes {1, 2.25, 4}, 6.25 exploratory).
@@ -416,10 +420,12 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    [SF-37](lester-eq14/increments/SF-37-lagrangian-cube-verification.md) (done: plume statistics converge in `h` at
    order ~2, production `lambda/h` 8 / 16 / 32 at `sigma^2` 1 / 2.25 / 4, study value 32; V1 met but vacuous at the
    `h/8` cap; V3b `discordant` from the comparator seed weighting; `docs/experiments/2026-10-19-sf37-lagrangian-cube-verification.md`,
-   `docs/experiments/2026-10-22-sf37-posthoc-review-and-mecom-feasibility.md`); long-domain infrastructure (non-cubic
-   stage at 2048x256x256, medium A/B affine-periodic vs Dirichlet in `x`, ensemble runner, Par2 baseline):
-   [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md). If SF-38 selects the Dirichlet medium, a
-   spline non-periodic in `x1` (provisional SF-40) is specified before the study.
+   `docs/experiments/2026-10-22-sf37-posthoc-review-and-mecom-feasibility.md`); lean `Grid3D` stage at memory level S+
+   for 3328x384x384 within 30000 MiB, bitwise, with tracker speedups and Par2 dead-buffer cleanup:
+   [SF-40](lester-eq14/increments/SF-40-lean-lagrangian-stage.md) (decision 2026-10-22); long-domain infrastructure
+   (non-cubic stage on the SF-40 lean stage, medium A/B affine-periodic vs Dirichlet in `x`, ensemble runner, Par2
+   baseline): [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md). If SF-38 selects the Dirichlet
+   medium, a spline non-periodic in `x1` (provisional SF-41) is specified before the study.
 5. The study: `alpha_L`, `alpha_T` at `sigma^2` in {1, 2.25, 4} with `lambda/h`, `tol` and `N_R` convergence by
    confidence intervals; `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
    physical / numerical / unresolved without presupposing its value (Gate 4):

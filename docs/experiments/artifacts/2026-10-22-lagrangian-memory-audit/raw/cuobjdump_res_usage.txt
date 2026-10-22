@@ -1,0 +1,31 @@
+  REG:30 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:440 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function __nv_static_59__46_tmpxft_0002e38c_00000000_7_SlabMetrics_cpp1_ii_7ff2635a__ZN11macroflow3d15streamfunctions10inlet_slab70_GLOBAL__N__46_tmpxft_0002e38c_00000000_7_SlabMetrics_cpp1_ii_7ff2635a20metrics_plane_kernelENS1_13InletSlabGridENS1_15SlabStencilViewEPKdS6_S6_S6_S6_S6_S6_S6_S6_S6_Pd:
+  REG:96 STACK:0 SHARED:18432 LOCAL:0 CONSTANT[0]:472 TEXTURE:0 SURFACE:0 SAMPLER:0
+--
+  REG:28 STACK:0 SHARED:0 LOCAL:0 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev9time_passILi5ENS0_21SplineLagrangianFieldEEEvRKT0_PKdS8_iRKNS0_11PassOptionsENS1_7TimeOutERNS0_9PassStatsE:
+  REG:255 STACK:0 SHARED:0 LOCAL:0 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev11time_kernelILi5ENS0_21SplineLagrangianFieldEEEvT0_NS1_10KernelArgsE:
+  REG:255 STACK:1336 SHARED:0 LOCAL:0 CONSTANT[0]:672 CONSTANT[2]:624 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev11time_kernelILi11ENS0_21SplineLagrangianFieldEEEvT0_NS1_10KernelArgsE:
+  REG:255 STACK:1888 SHARED:0 LOCAL:0 CONSTANT[0]:672 CONSTANT[2]:624 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev10plane_passILi5ENS0_21SplineLagrangianFieldEEEvRKT0_PKdS8_iRKNS0_11PassOptionsENS1_8PlaneOutERNS0_9PassStatsE:
+  REG:255 STACK:0 SHARED:0 LOCAL:0 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev12plane_kernelILi5ENS0_21SplineLagrangianFieldEEEvT0_NS1_10KernelArgsE:
+  REG:255 STACK:1376 SHARED:0 LOCAL:0 CONSTANT[0]:672 CONSTANT[2]:624 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev12plane_kernelILi11ENS0_21SplineLagrangianFieldEEEvT0_NS1_10KernelArgsE:
+  REG:255 STACK:2024 SHARED:0 LOCAL:0 CONSTANT[0]:672 CONSTANT[2]:624 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function _ZN11macroflow3d17lagrangian_labels4ldev11flux_kernelINS0_21SplineLagrangianFieldEEEvT_iPKdPd:
+  REG:64 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:544 CONSTANT[2]:96 TEXTURE:0 SURFACE:0 SAMPLER:0
+--
+  REG:24 STACK:0 SHARED:0 LOCAL:0 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function __nv_static_62__49_tmpxft_0002e3a6_00000000_7_FaceFluxRepack_cpp1_ii_bade3e42__ZN11macroflow3d17lagrangian_labels73_GLOBAL__N__49_tmpxft_0002e3a6_00000000_7_FaceFluxRepack_cpp1_ii_bade3e4223repack_component_kernelEPKdPdiiiii:
+  REG:28 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:388 TEXTURE:0 SURFACE:0 SAMPLER:0
+--
+  REG:28 STACK:0 SHARED:0 LOCAL:0 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function __nv_static_65__52_tmpxft_0002e3a8_00000000_7_PollockComparator_cpp1_ii_bade3e42__ZN11macroflow3d17lagrangian_labels76_GLOBAL__N__52_tmpxft_0002e3a8_00000000_7_PollockComparator_cpp1_ii_bade3e4219pollock_time_kernelENS_7physics9particles18streamline_tracker20PeriodicFaceFluxViewENS4_13PollockParamsEPKdiS8_iPhPiPdPm:
+  REG:87 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:512 CONSTANT[2]:224 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function __nv_static_65__52_tmpxft_0002e3a8_00000000_7_PollockComparator_cpp1_ii_bade3e42__ZN11macroflow3d17lagrangian_labels76_GLOBAL__N__52_tmpxft_0002e3a8_00000000_7_PollockComparator_cpp1_ii_bade3e4220pollock_plane_kernelENS_7physics9particles18streamline_tracker20PeriodicFaceFluxViewENS4_13PollockParamsEPKdiS8_iPhPiPdSB_Pm:
+  REG:88 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:520 CONSTANT[2]:224 TEXTURE:0 SURFACE:0 SAMPLER:0
+ Function __nv_static_65__52_tmpxft_0002e3a8_00000000_7_PollockComparator_cpp1_ii_bade3e42__ZN11macroflow3d17lagrangian_labels76_GLOBAL__N__52_tmpxft_0002e3a8_00000000_7_PollockComparator_cpp1_ii_bade3e4226pollock_seed_weight_kernelENS_7physics9particles18streamline_tracker20PeriodicFaceFluxViewEPKdiPd:
+  REG:48 STACK:0 SHARED:0 LOCAL:0 CONSTANT[0]:464 CONSTANT[2]:136 TEXTURE:0 SURFACE:0 SAMPLER:0
