@@ -40,6 +40,13 @@
  *                             residual diagnostic, optional --ladder / --solve (SF-33 NK
  *                             cross-construction) / --save-labels.
  *
+ *   --track forward --stage lean   SF-40 L4: lean parametric stage (LongBoxStage, memory level S+/S) in
+ *                             place of the full ProductionStage: `--grid nx,ny,nz` boxes, MEM_GEOM /
+ *                             MEM_PHASE lines; outputs byte-identical to `--stage full` on cubes
+ *                             (preregistration RR2/RR4).
+ *   --context-probe SECONDS [--warm]   SF-40 D/E: prints the device context footprint of this process
+ *                             (CONTEXT_PROBE line), sleeps, exits; allocates nothing else.
+ *
  * SF-33 N7c also adds `--coarse off|add|mult --coarse-profiles 1|2` (Galerkin coarse correction
  * on top of P-A in the Newton solves; SlabCoarseCorrection.cuh).
  *
@@ -64,6 +71,7 @@
 #include "src/external/nlohmann/json.hpp"
 #include "src/physics/particles/lagrangian_labels/FaceFluxRepack.cuh"
 #include "src/physics/particles/lagrangian_labels/LagrangianTracker.cuh"
+#include "src/physics/particles/lagrangian_labels/LongBoxStage.cuh"
 #include "src/physics/particles/lagrangian_labels/PollockComparator.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletLabels.cuh"
 #include "src/physics/streamfunctions/inlet_slab/InletSlabGrid.cuh"
@@ -83,6 +91,8 @@
 #include <algorithm>
 #include <array>
 #include <cerrno>
+#include <cublas_v2.h>
+#include <cufft.h>
 #include <chrono>
 #include <cmath>
 #include <cstdarg>
@@ -98,6 +108,7 @@
 #include <stdexcept>
 #include <string>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <thread>
 #include <vector>
 
@@ -189,7 +200,16 @@ class StageBuildFailure : public std::runtime_error {
 // Configuration
 // ================================================================================================
 
-enum class Mode { none, proto, production, crosscheck, linear_probe, construct_trace, track_forward };
+enum class Mode {
+    none,
+    proto,
+    production,
+    crosscheck,
+    linear_probe,
+    construct_trace,
+    track_forward,
+    context_probe
+};
 
 struct DriverConfig {
     Mode mode = Mode::none;
@@ -275,6 +295,16 @@ struct DriverConfig {
     bool covectors = false;
     bool fused_splines = false; ///< SF-40 L6: --fused-splines (bitwise-identical outputs)
     bool single_launch = false; ///< SF-40 L6: --single-launch (bitwise-identical outputs)
+    // SF-40 L4: lean stage / context probe
+    bool stage_given = false;
+    bool stage_lean = false;          ///< --stage lean
+    bool has_grid = false;            ///< --grid nx,ny,nz (lean only)
+    int grid_nx = 0, grid_ny = 0, grid_nz = 0;
+    std::string bhat = "mapped";      ///< --bhat mapped|device (lean only)
+    bool bhat_given = false;
+    bool n_given = false;
+    double context_probe_seconds = 0.0; ///< --context-probe SECONDS
+    bool warm = false;                ///< --warm (with --context-probe)
     std::string window = "0,1,0,1";
     std::string save_particles_dir;
     bool fwd_opts_given = false; ///< any of the forward-only options was given
@@ -336,6 +366,15 @@ inline const char* usage_text() {
            "             [--save-seed-velocity] seed_v.npy (Np,3) = k g at the seeds in the "
            "--save-particles dir (requires\n"
            "                 --save-particles); prints SEEDV\n"
+           "             [--stage full|lean] SF-40 L4: lean = parametric lean stage (default full); lean needs\n"
+           "                 --track forward, rejects --analytic / --save-vd / --save-seed-velocity, prints\n"
+           "                 MEM_GEOM / MEM_PHASE lines; on cubes every output equals the full stage byte for byte\n"
+           "             [--grid nx,ny,nz] lean only, exclusive with --n: box [0,nx h]x[0,1]^2, h = 1/ny; ny == nz,\n"
+           "                 all even and >= 4; --cells then needs nx*ny*nz samples\n"
+           "             [--bhat mapped|device] lean only (default mapped = memory level S+; device = level S)\n"
+           "  inlet_slab --context-probe SECONDS [--warm] [--device D]  prints CONTEXT_PROBE pid= device= driver=\n"
+           "             runtime= device_used= seconds= warm=, sleeps SECONDS, exits 0; --warm first creates one\n"
+           "             tiny cuFFT D2Z/Z2D plan pair and one cublasDdot, then frees them\n"
            "  inlet_slab --sf19-crosscheck <crosscheck_dir> [--pcg-rtol 1e-10] [--summary <json>]\n"
            "  inlet_slab --linear-probe <case_dir> --eps-stage E --newton-steps k [--eps-from A]\n"
            "             [--probe-ladder 0.25,0.375] [--probe-precs pa,mult1,mult2,add1]\n"
@@ -425,7 +464,7 @@ inline DriverConfig parse_args(int argc, char** argv) {
     auto set_mode = [&](Mode m) {
         if (c.mode != Mode::none)
             throw UsageError("exactly one of --proto, --production, --sf19-crosscheck, "
-                             "--linear-probe, --construct trace, --track forward");
+                             "--linear-probe, --construct trace, --track forward, --context-probe");
         c.mode = m;
     };
     for (int i = 1; i < argc; ++i) {
@@ -473,6 +512,10 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.fwd_opts_given = true;
             continue;
         }
+        if (opt == "--warm") {
+            c.warm = true;
+            continue;
+        }
         if (opt == "--save-seed-velocity") {
             c.save_seed_velocity = true;
             c.sf37_opts_given = true;
@@ -498,6 +541,35 @@ inline DriverConfig parse_args(int argc, char** argv) {
             if (val != "forward")
                 throw UsageError("--track: only 'forward' exists");
             set_mode(Mode::track_forward);
+        } else if (opt == "--context-probe") {
+            set_mode(Mode::context_probe);
+            c.context_probe_seconds = parse_double(opt, val);
+        } else if (opt == "--stage") {
+            if (val != "full" && val != "lean")
+                throw UsageError("--stage: full | lean");
+            c.stage_given = true;
+            c.stage_lean = val == "lean";
+        } else if (opt == "--bhat") {
+            if (val != "mapped" && val != "device")
+                throw UsageError("--bhat: mapped | device");
+            c.bhat = val;
+            c.bhat_given = true;
+        } else if (opt == "--grid") {
+            std::vector<int> g;
+            std::size_t a = 0;
+            for (;;) {
+                const std::size_t b = val.find(',', a);
+                g.push_back(parse_int(opt, val.substr(a, b == std::string::npos ? b : b - a)));
+                if (b == std::string::npos)
+                    break;
+                a = b + 1;
+            }
+            if (g.size() != 3)
+                throw UsageError("--grid nx,ny,nz requires exactly three integers (got '" + val + "')");
+            c.has_grid = true;
+            c.grid_nx = g[0];
+            c.grid_ny = g[1];
+            c.grid_nz = g[2];
         } else if (opt == "--np-side") {
             c.np_side = parse_int(opt, val);
             c.fwd_opts_given = true;
@@ -586,6 +658,7 @@ inline DriverConfig parse_args(int argc, char** argv) {
             c.summary_path = val;
         } else if (opt == "--n") {
             c.n = parse_int(opt, val);
+            c.n_given = true;
         } else if (opt == "--eps") {
             c.eps = parse_double(opt, val);
             c.has_eps = true;
@@ -646,9 +719,12 @@ inline DriverConfig parse_args(int argc, char** argv) {
             throw UsageError("unknown option " + opt);
         }
     }
+    if (c.stage_given && c.mode != Mode::track_forward)
+        throw UsageError(c.stage_lean ? "--stage lean requires --track forward"
+                                      : "--stage requires --track forward");
     if (c.mode == Mode::none)
         throw UsageError("one of --proto, --production, --sf19-crosscheck, --linear-probe, "
-                         "--construct trace, --track forward is required");
+                         "--construct trace, --track forward, --context-probe is required");
     if (c.mode == Mode::track_forward && c.trace_opts_given)
         throw UsageError("--ladder / --solve / --max-roundtrip / --tracer / --save-labels are "
                          "--construct trace options, not valid with --track forward");
@@ -662,6 +738,33 @@ inline DriverConfig parse_args(int argc, char** argv) {
                          "require --track forward");
     if (c.sf37_opts_given && c.mode != Mode::track_forward)
         throw UsageError("--comparator / --save-vd / --save-seed-velocity require --track forward");
+    if (!c.stage_lean && c.has_grid)
+        throw UsageError("--grid requires --stage lean");
+    if (!c.stage_lean && c.bhat_given)
+        throw UsageError("--bhat requires --stage lean");
+    if (c.warm && c.mode != Mode::context_probe)
+        throw UsageError("--warm requires --context-probe SECONDS");
+    if (c.mode == Mode::context_probe &&
+        !(c.context_probe_seconds >= 0.0 && std::isfinite(c.context_probe_seconds)))
+        throw UsageError("--context-probe SECONDS must be finite and >= 0");
+    if (c.stage_lean) {
+        if (!c.analytic.empty())
+            throw UsageError("--analytic is not available with --stage lean");
+        if (!c.save_vd_dir.empty())
+            throw UsageError("--save-vd is not available with --stage lean");
+        if (c.save_seed_velocity)
+            throw UsageError("--save-seed-velocity is not available with --stage lean");
+        if (c.has_grid && c.n_given)
+            throw UsageError("--grid and --n are exclusive (--stage lean)");
+        if (c.has_grid) {
+            auto ok = [](int v) { return v >= 4 && v % 2 == 0; };
+            if (!ok(c.grid_nx) || !ok(c.grid_ny) || !ok(c.grid_nz))
+                throw UsageError("--grid nx,ny,nz: all extents must be even and >= 4");
+            if (c.grid_ny != c.grid_nz)
+                throw UsageError("--grid nx,ny,nz: ny must equal nz (InletLabels takes one "
+                                 "transverse N)");
+        }
+    }
     if (c.save_seed_velocity && c.save_particles_dir.empty())
         throw UsageError("--save-seed-velocity requires --save-particles <dir>");
     if (c.prec != "pa")
@@ -738,8 +841,10 @@ inline DriverConfig parse_args(int argc, char** argv) {
         if (!c.cells_path.empty() && !c.analytic.empty())
             throw UsageError("--cells and --analytic are exclusive");
     } else if (c.mode == Mode::track_forward) {
-        if (c.n < 8 || c.n % 2 != 0)
-            throw UsageError("--track forward requires --n N (even, >= 8)");
+        if (!(c.stage_lean && c.has_grid) && (c.n < 8 || c.n % 2 != 0))
+            throw UsageError(c.stage_lean ? "--track forward --stage lean requires --n N (even, >= 8) "
+                                            "or --grid nx,ny,nz"
+                                          : "--track forward requires --n N (even, >= 8)");
         if (!c.has_eps || !(c.eps > 0.0))
             throw UsageError("--track forward requires --eps E > 0");
         if (c.trace_hmax_div < 1)
@@ -2399,20 +2504,19 @@ inline json pollock_hist_json(const PollockHist& h) {
 /// lattice / planes / times as the Lagrangian tracker. Prints PTRACK / PPLANE / PTIME / PSTATUS,
 /// writes the pollock_* files when `save_dir` is non-empty, fills `pj` (summary object). Returns the
 /// number of weighted (positive weight) particles that are not active (code != 0) in either pass.
-inline long long run_pollock_comparator(CudaContext& ctx, const sl::ProductionStage& st,
-                                        const lagrangian_labels::InjectionSpec& inj,
-                                        const std::vector<double>& planes,
-                                        const std::vector<double>& times,
-                                        const std::vector<double>& tracker_seeds,
-                                        const std::string& field, double eps,
-                                        const std::string& save_dir, json& pj) {
+inline long long run_pollock_comparator_faces(
+    CudaContext& ctx, const std::vector<real>& face_u, const std::vector<real>& face_v,
+    const std::vector<real>& face_w, int nx, int ny, int nz, real h,
+    const lagrangian_labels::InjectionSpec& inj, const std::vector<double>& planes,
+    const std::vector<double>& times, const std::vector<double>& tracker_seeds,
+    const std::string& field, double eps, const std::string& save_dir, json& pj) {
     namespace ll = lagrangian_labels;
-    if (!st.faces_available())
+    if (face_u.empty() || face_v.empty() || face_w.empty())
         throw std::runtime_error("--comparator pollock: the stage face fluxes are not available");
-    const int N = st.grid.n;
+    const int N = nx; // printed N (= the cube N; nx of a --stage lean box)
     const auto t_rep = std::chrono::steady_clock::now();
-    ll::PeriodicFaceFluxes faces = ll::PeriodicFaceFluxes::upload_and_repack(
-        ctx, st.face_flux_u, st.face_flux_v, st.face_flux_w, N, N, N, st.grid.h);
+    ll::PeriodicFaceFluxes faces =
+        ll::PeriodicFaceFluxes::upload_and_repack(ctx, face_u, face_v, face_w, nx, ny, nz, h);
     const double seconds_repack = seconds_since(t_rep);
     physics::particles::streamline_tracker::PollockParams prm;
     prm.max_cells_per_call = 10000000; // the SF-32 documented default
@@ -2422,7 +2526,7 @@ inline long long run_pollock_comparator(CudaContext& ctx, const sl::ProductionSt
 
     out_line(fmt("PTRACK field=%s eps=%g N=%d h=%.10g x0=%.10g M=%d Np=%d planes=%s times=%s "
                  "seed_nonpos=%lld max_cells_per_call=%d seeds_equal_tracker=%d weights=rt0_v1_at_seed",
-                 field.c_str(), eps, N, static_cast<double>(st.grid.h), inj.X0, inj.M, Q.Np,
+                 field.c_str(), eps, N, static_cast<double>(h), inj.X0, inj.M, Q.Np,
                  join_list(Q.planes).c_str(), join_list(Q.times).c_str(), Q.seed_nonpos,
                  Q.max_cells_per_call, seeds_equal ? 1 : 0));
     json mp = json::array(), mt = json::array();
@@ -2525,7 +2629,7 @@ inline long long run_pollock_comparator(CudaContext& ctx, const sl::ProductionSt
         j["field"] = field;
         j["eps"] = eps;
         j["N"] = N;
-        j["h"] = st.grid.h;
+        j["h"] = h;
         j["M"] = Q.injection.M;
         j["X0"] = Q.injection.X0;
         j["window"] = {Q.injection.w2a, Q.injection.w2b, Q.injection.w3a, Q.injection.w3b};
@@ -2548,6 +2652,19 @@ inline long long run_pollock_comparator(CudaContext& ctx, const sl::ProductionSt
                  "pollock_moments_{time,planes}.csv, pollock.json)");
     }
     return n_fail;
+}
+
+/// SF-37 V3b on the full ProductionStage (thin wrapper; outputs unchanged).
+inline long long run_pollock_comparator(CudaContext& ctx, const sl::ProductionStage& st,
+                                        const lagrangian_labels::InjectionSpec& inj,
+                                        const std::vector<double>& planes,
+                                        const std::vector<double>& times,
+                                        const std::vector<double>& tracker_seeds,
+                                        const std::string& field, double eps,
+                                        const std::string& save_dir, json& pj) {
+    return run_pollock_comparator_faces(ctx, st.face_flux_u, st.face_flux_v, st.face_flux_w,
+                                        st.grid.n, st.grid.n, st.grid.n, st.grid.h, inj, planes,
+                                        times, tracker_seeds, field, eps, save_dir, pj);
 }
 
 /// SF-37 --save-vd: exports the stage reference vertex velocity vD (idx = m3 + N (m2 + N j), shape
@@ -2634,7 +2751,324 @@ inline void save_seed_velocity(const std::string& dir, const sl::ProductionStage
                  Np, wmax > 0.0 ? dev / wmax : std::nan(""), nonpos, wzero, set_equal ? 1 : 0));
 }
 
+/// What the tail of --track forward needs from either stage (full ProductionStage or LongBoxStage).
+struct TrackStageView {
+    std::string field;
+    int N = 0, nx = 0, ny = 0, nz = 0;
+    real h = 0.0;
+    bool labels_available = false;
+    real inlet_vmin = 0.0;
+    std::string status;
+};
+
+/// Injection / tracker options of --track forward (identical for both stages; `h` = stage spacing).
+inline void make_track_inputs(const DriverConfig& c, real h, lagrangian_labels::InjectionSpec& inj,
+                              lagrangian_labels::TrackOptions& topt) {
+    inj.X0 = c.x0;
+    inj.M = c.np_side;
+    {
+        const std::vector<double> w = detail::parse_list("--window", c.window);
+        inj.w2a = w[0];
+        inj.w2b = w[1];
+        inj.w3a = w[2];
+        inj.w3b = w[3];
+    }
+    topt.tol = c.trace_tol;
+    topt.h_max = h / static_cast<double>(c.trace_hmax_div);
+    topt.min_step = c.min_step;
+    topt.max_arclength = c.max_arclength;
+    if (!c.planes_list.empty())
+        topt.planes = detail::parse_list("--planes", c.planes_list);
+    if (!c.times_list.empty())
+        topt.times = detail::parse_list("--times", c.times_list);
+    topt.covectors = c.covectors;
+    topt.fused_splines = c.fused_splines;
+    topt.single_launch = c.single_launch;
+}
+
+/// Runs the prepared tracker and reports (TRACK / BACKFLOW / TPLANE / TTIME / TSTATUS, outputs,
+/// Pollock). Exactly one of `st` (full) / `lean` is non-null.
+inline int track_forward_tail(CudaContext& ctx, const DriverConfig& c, json& J, PhaseLog& pl,
+                              std::chrono::steady_clock::time_point t_all,
+                              lagrangian_labels::LagrangianTracker& tracker, const TrackStageView& sv,
+                              const lagrangian_labels::InjectionSpec& inj,
+                              const lagrangian_labels::TrackOptions& topt,
+                              const sl::ProductionStage* st,
+                              const lagrangian_labels::LongBoxStage* lean) {
+    namespace ll = lagrangian_labels;
+    pl.begin("track");
+    const ll::LagrangianTrackResult& R = tracker.track(ctx);
+    pl.end();
+
+    out_line(fmt("TRACK field=%s eps=%g N=%d h=%.10g x0=%.10g M=%d Np=%d planes=%s times=%s "
+                 "tol=%.1e h_max=%.6e (h/%d) min_step=%.1e max_arclength=%g covectors=%d "
+                 "labels_available=%d inlet_vmin=%.6e",
+                 sv.field.c_str(), c.eps, sv.N, static_cast<double>(sv.h), inj.X0, inj.M, R.Np,
+                 join_list(R.planes).c_str(), join_list(R.times).c_str(), R.tol, R.h_max,
+                 c.trace_hmax_div, R.min_step, R.max_arclength, R.covectors ? 1 : 0,
+                 sv.labels_available ? 1 : 0, sv.inlet_vmin));
+    J["track"] = {{"h", sv.h},
+                  {"x0", inj.X0},
+                  {"M", inj.M},
+                  {"Np", R.Np},
+                  {"window", {inj.w2a, inj.w2b, inj.w3a, inj.w3b}},
+                  {"planes", R.planes},
+                  {"times", R.times},
+                  {"tol", R.tol},
+                  {"h_max", R.h_max},
+                  {"hmax_div", c.trace_hmax_div},
+                  {"min_step", R.min_step},
+                  {"max_arclength", R.max_arclength},
+                  {"covectors", R.covectors},
+                  {"labels_available", sv.labels_available}};
+
+    out_line(fmt("BACKFLOW field=%s eps=%g N=%d inlet_vmin=%.6e labels_available=%d "
+                 "seed_backflow=%lld backflow_enc_plane=%lld backflow_enc_time=%lld "
+                 "(inlet backflow is recorded, not an exit condition)",
+                 sv.field.c_str(), c.eps, sv.N, sv.inlet_vmin, sv.labels_available ? 1 : 0,
+                 R.seed_backflow, R.totals_plane.backflow_encounters,
+                 R.totals_time.backflow_encounters));
+    J["backflow"] = {{"inlet_vmin", jnum(sv.inlet_vmin)},
+                     {"stage_status", sv.status},
+                     {"seed_backflow", R.seed_backflow},
+                     {"backflow_enc_plane", R.totals_plane.backflow_encounters},
+                     {"backflow_enc_time", R.totals_time.backflow_encounters}};
+
+    json pj = json::array(), tj = json::array();
+    for (std::size_t m = 0; m < R.moments_planes.size(); ++m) {
+        const ll::PlaneMoments& q = R.moments_planes[m];
+        out_line(fmt("TPLANE m=%zu x1=%.10g n_ok=%d mean2=%.12e mean3=%.12e var2=%.12e var3=%.12e "
+                     "mean_tau=%.12e var_tau=%.12e ev_rms=%.6e ev_max=%.6e",
+                     m, q.x1, q.contributing, q.mean_x2, q.mean_x3, q.var_x2, q.var_x3, q.mean_tau,
+                     q.var_tau, q.rms_ev, q.max_ev));
+        pj.push_back({{"m", m},
+                      {"x1", jnum(q.x1)},
+                      {"n_ok", q.contributing},
+                      {"non_ok", q.non_ok},
+                      {"mean2", jnum(q.mean_x2)},
+                      {"mean3", jnum(q.mean_x3)},
+                      {"var2", jnum(q.var_x2)},
+                      {"var3", jnum(q.var_x3)},
+                      {"mean_tau", jnum(q.mean_tau)},
+                      {"var_tau", jnum(q.var_tau)},
+                      {"ev_rms", jnum(q.rms_ev)},
+                      {"ev_max", jnum(q.max_ev)}});
+    }
+    for (std::size_t n = 0; n < R.moments_time.size(); ++n) {
+        const auto& q = R.moments_time[n];
+        out_line(fmt("TTIME n=%zu t=%.10g active=%d mean1=%.12e mean2=%.12e mean3=%.12e "
+                     "var1=%.12e var2=%.12e var3=%.12e",
+                     n, q.time, q.active, q.mean[0], q.mean[1], q.mean[2], q.var[0], q.var[1],
+                     q.var[2]));
+        tj.push_back({{"n", n},
+                      {"t", jnum(q.time)},
+                      {"active", q.active},
+                      {"mean", {jnum(q.mean[0]), jnum(q.mean[1]), jnum(q.mean[2])}},
+                      {"var", {jnum(q.var[0]), jnum(q.var[1]), jnum(q.var[2])}}});
+    }
+    J["moments_planes"] = pj;
+    J["moments_time"] = tj;
+    out_line(tstatus_line("plane", R.totals_plane));
+    out_line(tstatus_line("time", R.totals_time));
+    J["plane_pass"] = pass_totals_json(R.totals_plane);
+    J["time_pass"] = pass_totals_json(R.totals_time);
+    J["tracker_timings_s"] = {{"plane_kernel", R.seconds_plane_kernel},
+                              {"time_kernel", R.seconds_time_kernel},
+                              {"download", R.seconds_download},
+                              {"moments", R.seconds_moments}};
+    if (R.single_launch) // SF-40 L6: only with --single-launch
+        J["tracker_timings_s"]["single_kernel"] = R.seconds_single_kernel;
+
+    long long fails = 0;
+    for (int s = 2; s < 7; ++s)
+        fails += R.totals_plane.status_hist[static_cast<std::size_t>(s)] +
+                 R.totals_time.status_hist[static_cast<std::size_t>(s)];
+    J["track_failures"] = fails;
+
+    if (!c.save_particles_dir.empty()) {
+        pl.begin("write");
+        ll::TrackMeta meta;
+        meta.field = sv.field;
+        meta.eps = c.eps;
+        meta.N = sv.N;
+        meta.h = sv.h;
+        meta.commit = "unknown";
+        ll::write_track_outputs(c.save_particles_dir, R, meta);
+        pl.end();
+        out_line("SAVED_PARTICLES " + c.save_particles_dir +
+                 " (seeds / weights / labels / status_* / planes_* / times_* .npy, "
+                 "moments_{time,planes}.csv, track.json)");
+    }
+    if (c.save_seed_velocity) { // rejected with --stage lean (parse_args): st is set
+        pl.begin("seed_velocity");
+        save_seed_velocity(c.save_particles_dir, *st, R);
+        pl.end();
+    }
+    long long pollock_fail = 0;
+    if (c.comparator == "pollock") {
+        pl.begin("pollock");
+        json pj;
+        pollock_fail =
+            st != nullptr
+                ? run_pollock_comparator(ctx, *st, inj, topt.planes, topt.times, R.seeds, sv.field,
+                                         c.eps, c.save_particles_dir, pj)
+                : run_pollock_comparator_faces(ctx, lean->face_flux_u, lean->face_flux_v,
+                                               lean->face_flux_w, sv.nx, sv.ny, sv.nz, sv.h, inj,
+                                               topt.planes, topt.times, R.seeds, sv.field, c.eps,
+                                               c.save_particles_dir, pj);
+        pl.end();
+        J["pollock"] = pj;
+    }
+    print_timing_memory(pl, 0, seconds_since(t_all), J);
+    // exit-code rules: track_fail first (unchanged), then comparator_fail, else ok
+    return finish(fails != 0 ? "track_fail" : (pollock_fail != 0 ? "comparator_fail" : "ok"), J, c);
+}
+
+
+/// SF-40 L4: --track forward --stage lean. Same options and outputs as the full-stage path (the tail
+/// is shared); the stage is the lean parametric LongBoxStage (no vertex vD / host stage fields).
+inline int run_track_forward_lean(CudaContext& ctx, const DriverConfig& c) {
+    namespace ll = lagrangian_labels;
+    const auto t_all = std::chrono::steady_clock::now();
+    json J;
+    J["mode"] = "track_forward";
+    J["command"] = c.command_line;
+    PhaseLog pl;
+
+    ll::LongBoxSpec spec;
+    spec.nx = c.has_grid ? c.grid_nx : c.n;
+    spec.ny = c.has_grid ? c.grid_ny : c.n;
+    spec.nz = c.has_grid ? c.grid_nz : c.n;
+    const bool cube = spec.nx == spec.ny && spec.ny == spec.nz;
+    const std::size_t n_cells =
+        static_cast<std::size_t>(spec.nx) * static_cast<std::size_t>(spec.ny) * spec.nz;
+    const std::string grid_txt = fmt("%dx%dx%d", spec.nx, spec.ny, spec.nz);
+    if (!c.cells_path.empty()) {
+        const sl::NpyArray a = sl::read_npy(c.cells_path);
+        if (a.count() != n_cells)
+            throw std::runtime_error("--cells: " + c.cells_path + " has " + a.shape_string() +
+                                     ", expected " + (cube ? "N^3" : "nx*ny*nz") + " = " +
+                                     std::to_string(n_cells) + " samples");
+        spec.source = ll::LongBoxSourceKind::cells;
+        spec.cells = a.data;
+        spec.field_name = "cells";
+    } else {
+        spec.source = ll::LongBoxSourceKind::gaussian;
+        spec.sigma2 = c.sigma2;
+        spec.ell = c.ell;
+        spec.seed = c.seed;
+        spec.normalize_variance = true;
+        spec.field_name = "gaussian";
+    }
+    spec.eps = c.eps;
+    spec.pcg_rtol = c.pcg_rtol;
+    spec.bhat_mapped_host = c.bhat != "device";
+    spec.keep_face_fluxes = c.comparator == "pollock";
+    spec.fused_coefficients = c.fused_splines;
+
+    pl.begin("stage");
+    const auto t_stage = std::chrono::steady_clock::now();
+    ll::LongBoxStage stage = ll::build_long_box_stage(ctx, spec);
+    pl.end();
+    const double stage_seconds = seconds_since(t_stage);
+    const sl::ProductionStageReport& rep = stage.report;
+
+    const std::string box_txt = cube ? "" : " grid=" + grid_txt;
+    if (spec.source == ll::LongBoxSourceKind::cells) {
+        out_line(fmt("FIELD cells %s (N^3 cell samples, x1 fastest; spectral vertex values) N=%d%s "
+                     "| stage field k = exp(eps Y), eps = %g",
+                     c.cells_path.c_str(), spec.nx, box_txt.c_str(), c.eps));
+        J["field_spec"] = {{"kind", "cells"}, {"path", c.cells_path}};
+    } else {
+        out_line(fmt("FIELD gaussian (SF-18) N=%d%s sigma2=%g ell=%g seed=%llu normalize_variance=1 "
+                     "applied_scale=%.12e raw_variance=%.12e final_variance=%.12e "
+                     "active_modes=%zu | stage field k = exp(eps Y), eps = %g",
+                     spec.nx, box_txt.c_str(), c.sigma2, c.ell, c.seed, rep.sf18.applied_scale,
+                     rep.sf18.raw_variance, rep.sf18.final_variance, rep.sf18.active_mode_count,
+                     c.eps));
+        J["field_spec"] = {{"kind", "gaussian"},
+                           {"sigma2", c.sigma2},
+                           {"ell", c.ell},
+                           {"seed", c.seed},
+                           {"applied_scale", jnum(rep.sf18.applied_scale)},
+                           {"raw_variance", jnum(rep.sf18.raw_variance)},
+                           {"final_variance", jnum(rep.sf18.final_variance)}};
+    }
+    const std::string field = spec.field_name;
+    J["field"] = field;
+    J["eps"] = c.eps;
+    J["N"] = spec.nx;
+    J["grid"] = {spec.nx, spec.ny, spec.nz};
+
+    // SETUP block: the full-stage summary with its two vertex-vD lines replaced by explicit lean lines
+    {
+        std::string block;
+        const std::string sum = rep.summary();
+        std::size_t a = 0;
+        while (a < sum.size()) {
+            std::size_t b = sum.find('\n', a);
+            if (b == std::string::npos)
+                b = sum.size();
+            const std::string line = sum.substr(a, b - a);
+            if (line.rfind("  inlet:", 0) == 0)
+                block += fmt("  inlet: vmin=%.6e mean(U plane 0)=%.15f (mean-1=%.3e) Q0-1=%.3e "
+                             "v_rms=n/a (lean stage: vertex vD not built)\n",
+                             rep.inlet_vmin, rep.inlet_mean, rep.inlet_mean - 1.0, rep.Q0 - 1.0);
+            else if (line.rfind("  v1(U-face)", 0) == 0)
+                block += "  v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU "
+                         "vs host prefilter: n/a\n";
+            else
+                block += line + "\n";
+            a = b + 1;
+        }
+        out_block("SETUP ", block);
+    }
+    out_line(fmt("SETUP stage eps=%g built in %.3fs (lean stage, Grid3D %dx%dx%d, bhat=%s)", c.eps,
+                 stage_seconds, spec.nx, spec.ny, spec.nz, c.bhat.c_str()));
+    J["stage"] = {{"stage", "lean"},
+                  {"grid", {spec.nx, spec.ny, spec.nz}},
+                  {"bhat", c.bhat},
+                  {"status", sl::to_string(rep.status)},
+                  {"darcy_converged", rep.darcy_converged},
+                  {"labels_available", stage.labels_available},
+                  {"flow_ready", stage.flow_ready()},
+                  {"inlet_vmin", jnum(rep.inlet_vmin)},
+                  {"inlet_mean", jnum(rep.inlet_mean)},
+                  {"Q0", jnum(rep.Q0)},
+                  {"v_rms", nullptr},
+                  {"mg_levels", rep.mg_levels},
+                  {"G", {jnum(rep.darcy.G[0]), jnum(rep.darcy.G[1]), jnum(rep.darcy.G[2])}}};
+    if (!stage.flow_ready()) {
+        for (const std::string& l : ll::mem_lines(stage, nullptr))
+            out_line(l);
+        const std::string status = "darcy_failed";
+        out_line(fmt("STAGE_FAILED status=%s eps=%g inlet_vmin=%.6e: the SF-19 flow did not "
+                     "converge or the splines were not built (stage status %s)",
+                     status.c_str(), c.eps, rep.inlet_vmin, sl::to_string(rep.status)));
+        J["stage_failure"] = {{"status", status}};
+        print_timing_memory(pl, 0, seconds_since(t_all), J);
+        return finish(status, J, c);
+    }
+
+    ll::InjectionSpec inj;
+    ll::TrackOptions topt;
+    make_track_inputs(c, stage.grid.dx, inj, topt);
+    ll::LagrangianTracker tracker;
+    pl.begin("prepare");
+    const auto t_prep = std::chrono::steady_clock::now();
+    tracker.prepare(ctx, stage.device_flow(), inj, topt);
+    const double prepare_seconds = seconds_since(t_prep);
+    pl.end();
+    for (const std::string& l : ll::mem_lines(stage, &tracker, prepare_seconds))
+        out_line(l);
+    const TrackStageView sv{field, spec.nx, spec.nx, spec.ny, spec.nz, stage.grid.dx,
+                            stage.labels_available, rep.inlet_vmin, sl::to_string(rep.status)};
+    return track_forward_tail(ctx, c, J, pl, t_all, tracker, sv, inj, topt, nullptr, &stage);
+}
+
 inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
+    if (c.stage_lean)
+        return run_track_forward_lean(ctx, c);
     namespace ll = lagrangian_labels;
     const auto t_all = std::chrono::steady_clock::now();
     json J;
@@ -2695,152 +3129,16 @@ inline int run_track_forward(CudaContext& ctx, const DriverConfig& c) {
     }
 
     ll::InjectionSpec inj;
-    inj.X0 = c.x0;
-    inj.M = c.np_side;
-    {
-        const std::vector<double> w = detail::parse_list("--window", c.window);
-        inj.w2a = w[0];
-        inj.w2b = w[1];
-        inj.w3a = w[2];
-        inj.w3b = w[3];
-    }
     ll::TrackOptions topt;
-    topt.tol = c.trace_tol;
-    topt.h_max = st.grid.h / static_cast<double>(c.trace_hmax_div);
-    topt.min_step = c.min_step;
-    topt.max_arclength = c.max_arclength;
-    if (!c.planes_list.empty())
-        topt.planes = detail::parse_list("--planes", c.planes_list);
-    if (!c.times_list.empty())
-        topt.times = detail::parse_list("--times", c.times_list);
-    topt.covectors = c.covectors;
-    topt.fused_splines = c.fused_splines;
-    topt.single_launch = c.single_launch;
+    make_track_inputs(c, st.grid.h, inj, topt);
 
     ll::LagrangianTracker tracker;
     pl.begin("prepare");
     tracker.prepare(ctx, st, inj, topt);
     pl.end();
-    pl.begin("track");
-    const ll::LagrangianTrackResult& R = tracker.track(ctx);
-    pl.end();
-
-    out_line(fmt("TRACK field=%s eps=%g N=%d h=%.10g x0=%.10g M=%d Np=%d planes=%s times=%s "
-                 "tol=%.1e h_max=%.6e (h/%d) min_step=%.1e max_arclength=%g covectors=%d "
-                 "labels_available=%d inlet_vmin=%.6e",
-                 field.c_str(), c.eps, N, static_cast<double>(st.grid.h), inj.X0, inj.M, R.Np,
-                 join_list(R.planes).c_str(), join_list(R.times).c_str(), R.tol, R.h_max,
-                 c.trace_hmax_div, R.min_step, R.max_arclength, R.covectors ? 1 : 0,
-                 st.labels_available ? 1 : 0, st.report.inlet_vmin));
-    J["track"] = {{"h", st.grid.h},
-                  {"x0", inj.X0},
-                  {"M", inj.M},
-                  {"Np", R.Np},
-                  {"window", {inj.w2a, inj.w2b, inj.w3a, inj.w3b}},
-                  {"planes", R.planes},
-                  {"times", R.times},
-                  {"tol", R.tol},
-                  {"h_max", R.h_max},
-                  {"hmax_div", c.trace_hmax_div},
-                  {"min_step", R.min_step},
-                  {"max_arclength", R.max_arclength},
-                  {"covectors", R.covectors},
-                  {"labels_available", st.labels_available}};
-
-    out_line(fmt("BACKFLOW field=%s eps=%g N=%d inlet_vmin=%.6e labels_available=%d "
-                 "seed_backflow=%lld backflow_enc_plane=%lld backflow_enc_time=%lld "
-                 "(inlet backflow is recorded, not an exit condition)",
-                 field.c_str(), c.eps, N, st.report.inlet_vmin, st.labels_available ? 1 : 0,
-                 R.seed_backflow, R.totals_plane.backflow_encounters,
-                 R.totals_time.backflow_encounters));
-    J["backflow"] = {{"inlet_vmin", jnum(st.report.inlet_vmin)},
-                     {"stage_status", sl::to_string(st.report.status)},
-                     {"seed_backflow", R.seed_backflow},
-                     {"backflow_enc_plane", R.totals_plane.backflow_encounters},
-                     {"backflow_enc_time", R.totals_time.backflow_encounters}};
-
-    json pj = json::array(), tj = json::array();
-    for (std::size_t m = 0; m < R.moments_planes.size(); ++m) {
-        const ll::PlaneMoments& q = R.moments_planes[m];
-        out_line(fmt("TPLANE m=%zu x1=%.10g n_ok=%d mean2=%.12e mean3=%.12e var2=%.12e var3=%.12e "
-                     "mean_tau=%.12e var_tau=%.12e ev_rms=%.6e ev_max=%.6e",
-                     m, q.x1, q.contributing, q.mean_x2, q.mean_x3, q.var_x2, q.var_x3, q.mean_tau,
-                     q.var_tau, q.rms_ev, q.max_ev));
-        pj.push_back({{"m", m},
-                      {"x1", jnum(q.x1)},
-                      {"n_ok", q.contributing},
-                      {"non_ok", q.non_ok},
-                      {"mean2", jnum(q.mean_x2)},
-                      {"mean3", jnum(q.mean_x3)},
-                      {"var2", jnum(q.var_x2)},
-                      {"var3", jnum(q.var_x3)},
-                      {"mean_tau", jnum(q.mean_tau)},
-                      {"var_tau", jnum(q.var_tau)},
-                      {"ev_rms", jnum(q.rms_ev)},
-                      {"ev_max", jnum(q.max_ev)}});
-    }
-    for (std::size_t n = 0; n < R.moments_time.size(); ++n) {
-        const auto& q = R.moments_time[n];
-        out_line(fmt("TTIME n=%zu t=%.10g active=%d mean1=%.12e mean2=%.12e mean3=%.12e "
-                     "var1=%.12e var2=%.12e var3=%.12e",
-                     n, q.time, q.active, q.mean[0], q.mean[1], q.mean[2], q.var[0], q.var[1],
-                     q.var[2]));
-        tj.push_back({{"n", n},
-                      {"t", jnum(q.time)},
-                      {"active", q.active},
-                      {"mean", {jnum(q.mean[0]), jnum(q.mean[1]), jnum(q.mean[2])}},
-                      {"var", {jnum(q.var[0]), jnum(q.var[1]), jnum(q.var[2])}}});
-    }
-    J["moments_planes"] = pj;
-    J["moments_time"] = tj;
-    out_line(tstatus_line("plane", R.totals_plane));
-    out_line(tstatus_line("time", R.totals_time));
-    J["plane_pass"] = pass_totals_json(R.totals_plane);
-    J["time_pass"] = pass_totals_json(R.totals_time);
-    J["tracker_timings_s"] = {{"plane_kernel", R.seconds_plane_kernel},
-                              {"time_kernel", R.seconds_time_kernel},
-                              {"download", R.seconds_download},
-                              {"moments", R.seconds_moments}};
-    if (R.single_launch) // SF-40 L6: only with --single-launch
-        J["tracker_timings_s"]["single_kernel"] = R.seconds_single_kernel;
-
-    long long fails = 0;
-    for (int s = 2; s < 7; ++s)
-        fails += R.totals_plane.status_hist[static_cast<std::size_t>(s)] +
-                 R.totals_time.status_hist[static_cast<std::size_t>(s)];
-    J["track_failures"] = fails;
-
-    if (!c.save_particles_dir.empty()) {
-        pl.begin("write");
-        ll::TrackMeta meta;
-        meta.field = field;
-        meta.eps = c.eps;
-        meta.N = N;
-        meta.h = st.grid.h;
-        meta.commit = "unknown";
-        ll::write_track_outputs(c.save_particles_dir, R, meta);
-        pl.end();
-        out_line("SAVED_PARTICLES " + c.save_particles_dir +
-                 " (seeds / weights / labels / status_* / planes_* / times_* .npy, "
-                 "moments_{time,planes}.csv, track.json)");
-    }
-    if (c.save_seed_velocity) {
-        pl.begin("seed_velocity");
-        save_seed_velocity(c.save_particles_dir, st, R);
-        pl.end();
-    }
-    long long pollock_fail = 0;
-    if (c.comparator == "pollock") {
-        pl.begin("pollock");
-        json pj;
-        pollock_fail = run_pollock_comparator(ctx, st, inj, topt.planes, topt.times, R.seeds, field,
-                                              c.eps, c.save_particles_dir, pj);
-        pl.end();
-        J["pollock"] = pj;
-    }
-    print_timing_memory(pl, 0, seconds_since(t_all), J);
-    // exit-code rules: track_fail first (unchanged), then comparator_fail, else ok
-    return finish(fails != 0 ? "track_fail" : (pollock_fail != 0 ? "comparator_fail" : "ok"), J, c);
+    const TrackStageView sv{field, N, N, N, N, st.grid.h, st.labels_available, st.report.inlet_vmin,
+                            sl::to_string(st.report.status)};
+    return track_forward_tail(ctx, c, J, pl, t_all, tracker, sv, inj, topt, &st, nullptr);
 }
 
 // ================================================================================================
@@ -3207,6 +3505,50 @@ inline int run_linear_probe(CudaContext& ctx, const DriverConfig& c) {
 }
 
 // ================================================================================================
+// --context-probe (SF-40 D/E): device footprint of the bare context
+// ================================================================================================
+
+inline int run_context_probe(CudaContext& ctx, const DriverConfig& c) {
+    if (c.warm) { // one tiny cuFFT D2Z/Z2D plan pair + one cublasDdot, all freed before the line
+        constexpr int m = 8;
+        constexpr std::size_t nr = static_cast<std::size_t>(m) * m * m;
+        constexpr std::size_t nc = static_cast<std::size_t>(m) * m * (m / 2 + 1);
+        double* r = nullptr;
+        cufftDoubleComplex* z = nullptr;
+        MACROFLOW3D_CUDA_CHECK(cudaMalloc(&r, nr * sizeof(double)));
+        MACROFLOW3D_CUDA_CHECK(cudaMalloc(&z, nc * sizeof(cufftDoubleComplex)));
+        MACROFLOW3D_CUDA_CHECK(cudaMemset(r, 0, nr * sizeof(double)));
+        auto fft_ok = [](cufftResult st, const char* what) {
+            if (st != CUFFT_SUCCESS)
+                throw std::runtime_error(std::string("--context-probe --warm: ") + what + " failed (" +
+                                         std::to_string(static_cast<int>(st)) + ")");
+        };
+        cufftHandle pf = 0, pb = 0;
+        fft_ok(cufftPlan3d(&pf, m, m, m, CUFFT_D2Z), "cufftPlan3d D2Z");
+        fft_ok(cufftPlan3d(&pb, m, m, m, CUFFT_Z2D), "cufftPlan3d Z2D");
+        fft_ok(cufftExecD2Z(pf, r, z), "cufftExecD2Z");
+        fft_ok(cufftExecZ2D(pb, z, r), "cufftExecZ2D");
+        double dot = 0.0;
+        MACROFLOW3D_CUBLAS_CHECK(cublasDdot(ctx.cublas_handle(), m, r, 1, r, 1, &dot));
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+        fft_ok(cufftDestroy(pf), "cufftDestroy");
+        fft_ok(cufftDestroy(pb), "cufftDestroy");
+        MACROFLOW3D_CUDA_CHECK(cudaFree(r));
+        MACROFLOW3D_CUDA_CHECK(cudaFree(z));
+    }
+    std::size_t fr = 0, tot = 0;
+    MACROFLOW3D_CUDA_CHECK(cudaMemGetInfo(&fr, &tot));
+    int drv = 0, rt = 0;
+    MACROFLOW3D_CUDA_CHECK(cudaDriverGetVersion(&drv));
+    MACROFLOW3D_CUDA_CHECK(cudaRuntimeGetVersion(&rt));
+    out_line(fmt("CONTEXT_PROBE pid=%ld device=%d driver=%d runtime=%d device_used=%zu seconds=%g warm=%d",
+                 static_cast<long>(getpid()), ctx.device(), drv, rt, tot - fr, c.context_probe_seconds,
+                 c.warm ? 1 : 0));
+    std::this_thread::sleep_for(std::chrono::duration<double>(c.context_probe_seconds));
+    return kExitConverged;
+}
+
+// ================================================================================================
 // entry
 // ================================================================================================
 
@@ -3238,6 +3580,8 @@ inline int run(int argc, char** argv) {
             return run_trace_construct(ctx, c);
         case Mode::track_forward:
             return run_track_forward(ctx, c);
+        case Mode::context_probe:
+            return run_context_probe(ctx, c);
         case Mode::none:
             break;
         }
