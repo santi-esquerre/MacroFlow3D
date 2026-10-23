@@ -429,7 +429,7 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    baseline): [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md). If SF-38 selects the Dirichlet
    medium, a spline non-periodic in `x1` (provisional SF-41) is specified before the study.
 5. The study: `alpha_L`, `alpha_T` at `sigma^2` in {1, 2.25, 4} with `lambda/h`, `tol` and `N_R` convergence by
-   confidence intervals; `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
+   confidence intervals (`tol` via the `h_max` ladder and equivalence tests, decision 2026-10-23); `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
    physical / numerical / unresolved without presupposing its value (Gate 4):
    [SF-39](lester-eq14/increments/SF-39-macrodispersion-study.md).
 6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
