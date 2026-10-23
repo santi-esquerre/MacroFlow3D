@@ -17,9 +17,11 @@
  *  4. F1-F4 (RR6 of the pre-registration) on non-cubic boxes: fast subset by default, the stated
  *     sizes with --full (V100 part `controls`).
  *
- * Usage: long_box_tests [--full] [--only levels|cube|mem|F1|F2|F3|F4] [--cufft-size nx,ny,nz]
+ * Usage: long_box_tests [--full] [--only levels|cube|mem|F1|F2|F3|F4|A] [--cufft-size nx,ny,nz]
  * `--cufft-size` only creates cuFFT plans without work-area allocation and prints the predicted
  * exact bytes of F, S1, S2, S3 at that geometry (used by the campaign at 3328,384,384).
+ * `--only A` runs threshold A of SF-38 (RR10): F1 at 64x16x16 and 128x16x16, F2 at 64x32x32 and
+ * 128x32x32, F3 at 64x16x16 and 128x16x16, then prints `A_VERDICT all_pass=<0|1> checks_pass=<n> checks_fail=<n>`.
  * Prints `CHECK <name> PASS|FAIL` and `ALL_PASS` / `FAILED n`; exit 0 iff all pass.
  * Compiled with --fmad=false (CMakeLists.txt) like the other lagrangian tests.
  */
@@ -62,6 +64,7 @@ namespace {
 constexpr double kTwoPi = 6.283185307179586476925286766559;
 
 int g_failed = 0;
+int g_checks = 0;
 bool g_full = false;
 std::set<std::string> g_only;
 
@@ -73,6 +76,7 @@ void check(const std::string& name, bool ok, const std::string& detail = "") {
     std::printf("CHECK %s %s%s%s\n", name.c_str(), ok ? "PASS" : "FAIL", detail.empty() ? "" : "  ",
                 detail.c_str());
     std::fflush(stdout);
+    ++g_checks;
     if (!ok)
         ++g_failed;
 }
@@ -1262,7 +1266,7 @@ int main(int argc, char** argv) {
             cufft_arg = argv[++i];
         else {
             std::fprintf(stderr,
-                         "usage: %s [--full] [--only levels|cube|api|mem|F1|F2|F3|F4] [--cufft-size nx,ny,nz]\n",
+                         "usage: %s [--full] [--only levels|cube|api|mem|F1|F2|F3|F4|A] [--cufft-size nx,ny,nz]\n",
                          argv[0]);
             return 2;
         }
@@ -1323,9 +1327,11 @@ int main(int argc, char** argv) {
         }
     }
     if (run_case("F3")) {
-        if (g_full)
+        if (g_full) {
             case_F3(ctx, 128, 32, 4096);
-        else
+            case_F3(ctx, 64, 16, 4096); // SF-38 threshold A sizes (full is a superset of A)
+            case_F3(ctx, 128, 16, 4096);
+        } else
             case_F3(ctx, 64, 32, 512);
     }
     if (run_case("F4")) {
@@ -1333,6 +1339,19 @@ int main(int argc, char** argv) {
             case_F4(ctx, 64, 64);
         else
             case_F4(ctx, 32, 16);
+    }
+    if (run_case("A")) {
+        // SF-38 threshold A (RR10; owner decision D21): k = 1 / K_eff = I / mean flux e1 / x2,x3 shift at
+        // h = 1/16, layered A2 (transverse + covectors 1e-12, tau 1e-9 rel, I recorded) at h = 1/32.
+        const int c0 = g_checks, f0 = g_failed;
+        case_F1(ctx, 64, 16, 16);
+        case_F1(ctx, 128, 16, 16);
+        case_F2(ctx, 64, 32, 16);
+        case_F2(ctx, 128, 32, 16);
+        case_F3(ctx, 64, 16, 4096);
+        case_F3(ctx, 128, 16, 4096);
+        std::printf("A_VERDICT all_pass=%d checks_pass=%d checks_fail=%d\n", g_failed == f0 ? 1 : 0,
+                    (g_checks - c0) - (g_failed - f0), g_failed - f0);
     }
     std::printf("  total %.1f s (%s tier)\n", now_s() - t_all, g_full ? "full" : "fast");
     if (g_failed == 0) {
