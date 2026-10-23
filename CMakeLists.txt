@@ -247,6 +247,9 @@ set(LAGRANGIAN_LABELS_SOURCES
     src/physics/particles/lagrangian_labels/PollockComparator.cu
     # SF-40 L3: lean parametric stage (host orchestration; includes only LagrangianTracker.cuh)
     src/physics/particles/lagrangian_labels/LongBoxStage.cu
+    # SF-38 N2: medium (b) (solve_head, Dirichlet in x) and the Eulerian face statistics E1
+    src/physics/particles/lagrangian_labels/DirichletMedium.cu
+    src/physics/particles/lagrangian_labels/EulerianFaceStats.cpp
 )
 set_source_files_properties(src/physics/particles/lagrangian_labels/LagrangianTracker.cu
     PROPERTIES COMPILE_OPTIONS "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false>")
@@ -787,6 +790,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(long_box_tests PRIVATE macroflow3d_lib)
     target_compile_options(long_box_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_long_box COMMAND long_box_tests)
+
+    # SF-38 N2: DirichletMedium (medium (b), C-DIRICHLET) + EulerianFaceStats (E1): k = 1, layered exact
+    # 1-D flux, periodic repack, workspace release, E1 exact (fast <= 60 s; --full is the V100 mode).
+    add_executable(dirichlet_medium_tests tests/lagrangian_labels/dirichlet_medium_tests.cu)
+    target_link_libraries(dirichlet_medium_tests PRIVATE macroflow3d_lib)
+    target_compile_options(dirichlet_medium_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_dirichlet_medium COMMAND dirichlet_medium_tests)
 
     # SF-37 N3: CompactMAC -> periodic face repack (bitwise), Pollock lattice tracker on k = 1 and a smooth K
     add_executable(face_flux_repack_tests tests/lagrangian_labels/face_flux_repack_tests.cu)
