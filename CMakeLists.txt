@@ -814,6 +814,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(lagrangian_ensemble_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_ensemble
         COMMAND lagrangian_ensemble_tests $<TARGET_FILE:lagrangian_ensemble> $<TARGET_FILE:macroflow3d_pipeline>)
+    # SF-38 N4: medium A/B application (determinism, crash/restart, k = 1 equivalence, primary statistics
+    # recomputed independently, ab_primary.csv, usage/seed-face exits) on a 128x16x16 box. Fast tier <= 60 s.
+    add_executable(lagrangian_medium_ab_tests tests/lagrangian_labels/lagrangian_medium_ab_tests.cu)
+    target_link_libraries(lagrangian_medium_ab_tests PRIVATE macroflow3d_lib)
+    target_compile_options(lagrangian_medium_ab_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_medium_ab
+        COMMAND lagrangian_medium_ab_tests $<TARGET_FILE:lagrangian_medium_ab>)
     # SF-36 N2: ProductionStageOptions::require_inlet_labels / flow_ready (fast tier; N = 16)
     add_executable(inlet_slab_stage_options_tests tests/inlet_slab/slab_stage_options_tests.cu)
     target_link_libraries(inlet_slab_stage_options_tests PRIVATE macroflow3d_lib)
@@ -847,6 +854,12 @@ if(MACROFLOW3D_BUILD_APPS)
     add_executable(par2_field_stats apps/par2_field_stats/par2_field_stats_main.cu)
     target_link_libraries(par2_field_stats PRIVATE macroflow3d_lib)
     target_compile_options(par2_field_stats PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
+    # SF-38 N4: medium A/B application (contract C-AB): affine-periodic (a) vs Dirichlet-in-x (b) on the same K;
+    # production instrument (V100 jobs); its fast ctest drives it as a subprocess.
+    add_executable(lagrangian_medium_ab apps/lagrangian_medium_ab/lagrangian_medium_ab_main.cu)
+    target_link_libraries(lagrangian_medium_ab PRIVATE macroflow3d_lib)
+    target_compile_options(lagrangian_medium_ab PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
 
     # PETSc/SLEPc apps (only when backend is enabled)
     if(MACROFLOW3D_ENABLE_PETSC)
