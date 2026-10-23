@@ -16,8 +16,11 @@
  *  4. crash/restart: --test-abort-after (hidden) exits 99 at every phase (tmp, rename at r = 0;
  *     partial, tmp, rename at r = 1) of the same directory in turn; rerunning the normal command gives a
  *     tree byte-identical to the uninterrupted run; a restart under different options is refused (exit 7).
- *  5. macroflow3d_pipeline (analysis_only) accepts analysis_config.yaml and reproduces
- *     analysis/macrodispersion.csv and ensemble/ensemble_timeseries.csv.
+ *  5. `cd DIR && macroflow3d_pipeline analysis_config.yaml` (analysis_only, output_dir ".") accepts the
+ *     written config on a copy of the directory and reproduces analysis/macrodispersion.csv and
+ *     ensemble/ensemble_timeseries.csv; analysis_config.yaml is byte-identical across directories.
+ *  5b. particles with non-ok tracker statuses (--max-arclength 1) are recorded in status.json and the
+ *      STATUS line; the realization is written with DONE and the exit code is 0.
  *  6. seed-face assertion fires through the executable (exit 3, names the seed); --field-only writes
  *     field.json and no flow outputs; usage errors exit 2 naming the option.
  *
@@ -124,7 +127,7 @@ std::map<std::string, std::string> tree_files(const fs::path& root) {
 }
 
 /// Byte-compares two output trees: same file set; every file equal except timings.json (must exist)
-/// and analysis_config.yaml (equal after replacing the directory name).
+/// (analysis_config.yaml is compared byte for byte: output_dir is ".").
 std::string compare_trees(const fs::path& a, const fs::path& b) {
     const auto fa = tree_files(a), fb = tree_files(b);
     for (const auto& kv : fa)
@@ -137,16 +140,7 @@ std::string compare_trees(const fs::path& a, const fs::path& b) {
         const std::string& rel = kv.first;
         if (fs::path(rel).filename() == "timings.json")
             continue;
-        std::string x = slurp(kv.second), y = slurp(fb.at(rel));
-        if (fs::path(rel).filename() == "analysis_config.yaml") {
-            auto repl = [](std::string s, const std::string& from) {
-                for (std::size_t p; (p = s.find(from)) != std::string::npos;)
-                    s.replace(p, from.size(), "<DIR>");
-                return s;
-            };
-            x = repl(x, a.string());
-            y = repl(y, b.string());
-        }
+        const std::string x = slurp(kv.second), y = slurp(fb.at(rel));
         if (x != y)
             return "differs: " + rel;
     }
@@ -400,18 +394,16 @@ int main(int argc, char** argv) {
                  g_base / "mismatch.log");
     check("restart_different_options_exit7", rc == ll::kExitConfigMismatch, strf("rc=%d", rc));
 
-    // ---- macroflow3d_pipeline accepts analysis_config.yaml ------------------------------------
+    // ---- macroflow3d_pipeline accepts analysis_config.yaml (cd DIR && pipeline analysis_config.yaml) -----
     {
         const fs::path P = g_base / "P";
         fs::copy(A, P, fs::copy_options::recursive);
-        std::string cfg = slurp(P / "analysis_config.yaml");
-        for (std::size_t p; (p = cfg.find(A.string())) != std::string::npos;)
-            cfg.replace(p, A.string().size(), P.string());
-        const fs::path cfgp = g_base / "analysis_config_P.yaml";
-        std::ofstream(cfgp) << cfg;
+        check("analysis_config_relative_output_dir",
+              slurp(P / "analysis_config.yaml").find("output_dir: \".\"") != std::string::npos &&
+                  slurp(P / "analysis_config.yaml").find("cd DIR && macroflow3d_pipeline analysis_config.yaml") != std::string::npos);
         fs::remove(P / "analysis/macrodispersion.csv");
         fs::remove(P / "ensemble/ensemble_timeseries.csv");
-        rc = run_cmd(g_pipe, cfgp.string(), g_base / "pipeline.log");
+        rc = run_cmd("cd " + P.string() + " && " + g_pipe, "analysis_config.yaml", g_base / "pipeline.log");
         check("pipeline_analysis_only_exit0", rc == 0, strf("rc=%d", rc));
         std::string why;
         check("pipeline_macrodispersion_reproduced",
@@ -420,6 +412,36 @@ int main(int argc, char** argv) {
               csv_close(P / "ensemble/ensemble_timeseries.csv", A / "ensemble/ensemble_timeseries.csv", 1e-12, &why), why);
         check("pipeline_macrodispersion_bytes_equal",
               slurp(P / "analysis/macrodispersion.csv") == slurp(A / "analysis/macrodispersion.csv"));
+    }
+
+    // ---- non-ok particles are recorded, never an exit condition -------------------------------------
+    {
+        const fs::path N = g_base / "N";
+        // an arclength cap of 1 box unit stops particles before the far planes / late times
+        rc = run_cmd(g_ens, "--grid 64,16,16 --ell 0.25 --eps 1 --seed0 4001 --nr 1 --np-side 10 --pollock-bridge on --max-arclength 1.0 --out " + N.string(),
+                     g_base / "nonok.log");
+        check("nonok_exit0", rc == 0, strf("rc=%d", rc));
+        const fs::path rd = N / "realizations/r_0000";
+        check("nonok_realization_written", fs::exists(rd / "DONE") && fs::exists(rd / "status.json") &&
+                                               fs::exists(N / "stats/realization_0000_timeseries.csv") &&
+                                               fs::exists(N / "analysis/macrodispersion.csv"));
+        const json sj = json::parse(slurp(rd / "status.json"));
+        const long long ge2p = sj["tracker_plane_pass"]["status_ge2"].get<long long>();
+        const long long ge2t = sj["tracker_time_pass"]["status_ge2"].get<long long>();
+        long long hist_ge2 = 0;
+        for (int k = 2; k < 7; ++k)
+            hist_ge2 += sj["tracker_plane_pass"]["status_hist"][static_cast<std::size_t>(k)].get<long long>();
+        check("nonok_counts_in_status_json", ge2p > 0 && ge2t > 0 && hist_ge2 == ge2p && sj.contains("pollock") &&
+                                                 sj["pollock"]["weighted_not_active"].get<long long>() == 0,
+              strf("plane>=2 %lld time>=2 %lld", ge2p, ge2t));
+        const std::string log = slurp(g_base / "nonok.log");
+        check("nonok_status_line_reports_counts",
+              log.find(strf("STATUS ok tracker_non_ok_plane=%lld tracker_non_ok_time=%lld", ge2p, ge2t)) != std::string::npos);
+        check("nonok_dropped_particles_reduce_active", [&] {
+            const auto s2 = analysis::read_timeseries_csv<double>((N / "stats/realization_0000_timeseries.csv").string());
+            return !s2.empty() && s2.back().active < 100;
+        }());
+        check("nonok_no_failure_exit_in_log", log.find("TRACK_FAILED") == std::string::npos);
     }
 
     // ---- seed-face assertion, field-only, usage ------------------------------------------------

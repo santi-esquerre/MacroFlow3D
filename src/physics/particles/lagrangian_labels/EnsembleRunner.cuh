@@ -15,7 +15,7 @@
  *   stats_twin/realization_%04d_timeseries.csv   twin (uniform weights) moments_time
  *   realizations/r_%04d/                         write_track_outputs files (track.json WITHOUT
  *                                                timings_s), twin/{moments_planes,moments_time}.csv,
- *                                                pollock/ (bridge), field.json, timings.json, DONE
+ *                                                pollock/ (bridge), field.json, status.json, timings.json, DONE
  *   ensemble/ensemble_timeseries.csv, analysis/macrodispersion.csv, analysis_config.yaml
  *
  * Wall-clock values (timings, commit hash of the build) go ONLY to timings.json and stdout; every
@@ -24,11 +24,11 @@
  * are skipped, stale *.tmp and r_%04d directories without DONE are deleted. DONE holds the
  * canonical option signature, so a restart under different options is refused (exit 7).
  *
- * Exit codes: 0 ok; 1 unexpected exception; 2 usage error (unknown/contradictory/invalid option);
- * 3 seed-face assertion (RR12); 4 stage failure (SF-19 not converged / splines not built); 5 track
- * failure (some particle with status >= 2 in a pass); 6 comparator failure (a positive-weight
- * Pollock particle not active); 7 DONE realization produced under different options;
- * 99 test-only abort (--test-abort-after).
+ * Exit codes: 0 ok (every realization completed; particles with a non-ok status are RECORDED in
+ * status.json and the STATUS line, never an exit condition); 1 unexpected exception; 2 usage error
+ * (unknown/contradictory/invalid option); 3 seed-face assertion (RR12); 4 stage failure (SF-19 not
+ * converged / splines not built); 7 DONE realization produced under different options; 99 test-only
+ * abort (--test-abort-after). Codes 5 and 6 of the first version were removed.
  */
 
 #include "../../../runtime/CudaContext.cuh"
@@ -47,8 +47,6 @@ enum EnsembleExit : int {
     kExitUsage = 2,
     kExitSeedFace = 3,
     kExitStageFailed = 4,
-    kExitTrackFailed = 5,
-    kExitComparatorFailed = 6,
     kExitConfigMismatch = 7,
     kExitTestAbort = 99
 };
@@ -68,6 +66,7 @@ struct EnsembleConfig {
     std::vector<double> planes, times; ///< resolved (auto rules applied by parse_ensemble_args)
     bool planes_auto = true, times_auto = true;
     double tol = 1e-8;
+    double max_arclength = 0.0; ///< 0: tracker default
     int hmax_div = 8;
     double pcg_rtol = 1e-10;
     bool fused_splines = false, single_launch = false;

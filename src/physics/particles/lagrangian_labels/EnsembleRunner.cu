@@ -69,19 +69,6 @@ void out_line(const std::string& s) {
     std::fflush(stdout);
 }
 
-/// Prints every line of a multi-line block with a prefix.
-void out_block(const std::string& prefix, const std::string& block) {
-    std::size_t a = 0;
-    while (a < block.size()) {
-        std::size_t b = block.find('\n', a);
-        if (b == std::string::npos)
-            b = block.size();
-        if (b > a)
-            out_line(prefix + block.substr(a, b - a));
-        a = b + 1;
-    }
-}
-
 std::string join_list(const std::vector<double>& v) {
     std::string s;
     for (std::size_t i = 0; i < v.size(); ++i)
@@ -550,6 +537,7 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
     const InjectionSpec inj = make_injection(c);
     TrackOptions topt;
     topt.tol = c.tol;
+    topt.max_arclength = c.max_arclength;
     topt.h_max = h / static_cast<double>(c.hmax_div);
     topt.planes = c.planes;
     topt.times = c.times;
@@ -598,14 +586,12 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
               t.status_hist[3], t.status_hist[4], t.status_hist[5], t.status_hist[6],
               t.landings_discarded, t.backflow_encounters, t.nfev));
     }
-    long long track_fails = 0;
-    for (int s = 2; s < 7; ++s)
-        track_fails += res.totals_plane.status_hist[static_cast<std::size_t>(s)] +
-                       res.totals_time.status_hist[static_cast<std::size_t>(s)];
-    if (track_fails != 0) {
-        P(fmt("TRACK_FAILED failures=%lld (status >= 2 in a pass); the realization is not written",
-              track_fails));
-        return fail("track_fail", kExitTrackFailed);
+    // Non-ok particles are recorded (status.json, STATUS line), never an exit condition: the moments
+    // are already taken over the particles that reached each plane / time.
+    long long nonok_plane = 0, nonok_time = 0;
+    for (std::size_t s = 2; s < 7; ++s) {
+        nonok_plane += res.totals_plane.status_hist[s];
+        nonok_time += res.totals_time.status_hist[s];
     }
 
     // ---- release the stage and the tracker before the bridge (peak = max, not sum) -----------
@@ -643,6 +629,7 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
     std::vector<PollockPlaneMoments> pq_twin_planes;
     std::vector<io::TimeSeriesPoint<double>> pq_twin_time;
     double repack_s = 0.0;
+    long long n_fail = 0; // positive-weight Pollock particles not active in a pass (recorded)
     if (c.pollock_bridge) {
         const auto t_rep = Clock::now();
         {
@@ -658,7 +645,6 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
         } // periodic faces freed here
         if (c.twin)
             pollock_twin_moments(Q, pq_twin_planes, pq_twin_time);
-        long long n_fail = 0;
         for (int p = 0; p < Q.Np; ++p) {
             const std::size_t u = static_cast<std::size_t>(p);
             if (Q.weights[u] > 0.0 && (Q.status_plane[u] != 0 || Q.status_time[u] != 0))
@@ -671,12 +657,6 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
               pollock_hist_string(Q.status_hist_plane).c_str(),
               pollock_hist_string(Q.status_hist_time).c_str(), Q.cells_plane, Q.cells_time, n_fail,
               repack_s));
-        if (n_fail > 0) {
-            P(fmt("PFAIL weighted_particles_not_active=%lld (positive weight, status != 0 in a "
-                  "pass); the realization is not written",
-                  n_fail));
-            return fail("comparator_fail", kExitComparatorFailed);
-        }
     }
 
     // ---- write into the temporary directory ---------------------------------------------------
@@ -691,6 +671,24 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
     strip_track_timings(tmpdir + "/track.json");
     test_abort(c, r, "partial");
     write_json(tmpdir + "/field.json", field_j);
+    {   // deterministic per-realization status record (no wall-clock values)
+        auto pass_json = [](const PassTotals& t, long long ge2) {
+            return json{{"status_hist", std::vector<long long>(t.status_hist.begin(), t.status_hist.end())},
+                        {"status_ge2", ge2},
+                        {"backflow_encounters", t.backflow_encounters},
+                        {"landings_discarded", t.landings_discarded}};
+        };
+        json sj = {{"Np", res.Np},
+                   {"seed_backflow", res.seed_backflow},
+                   {"tracker_plane_pass", pass_json(res.totals_plane, nonok_plane)},
+                   {"tracker_time_pass", pass_json(res.totals_time, nonok_time)}};
+        if (c.pollock_bridge)
+            sj["pollock"] = {{"seed_nonpos", Q.seed_nonpos},
+                             {"status_hist_plane", Q.status_hist_plane},
+                             {"status_hist_time", Q.status_hist_time},
+                             {"weighted_not_active", n_fail}};
+        write_json(tmpdir + "/status.json", sj);
+    }
     if (c.twin) {
         fs::create_directories(tmpdir + "/twin");
         write_tracker_planes_csv(tmpdir + "/twin/moments_planes.csv", twin_planes);
@@ -764,7 +762,9 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, const io::
         sum->twin_weights[static_cast<std::size_t>(r)] = twin_weights;
         sum->computed[static_cast<std::size_t>(r)] = true;
     }
-    P("STATUS ok");
+    P(fmt("STATUS ok tracker_non_ok_plane=%lld tracker_non_ok_time=%lld seed_backflow=%lld "
+          "pollock_weighted_not_active=%lld",
+          nonok_plane, nonok_time, res.seed_backflow, n_fail));
     out_line(fmt("TIMING r=%d seconds=%.3f", r, since(t_all)));
     return kExitOk;
 }
@@ -794,10 +794,11 @@ int run_analysis_outputs(const EnsembleConfig& c, const io::OutputLayout& L) {
     {
         std::ofstream f(c.out + "/analysis_config.yaml", std::ios::trunc);
         f << "# written by lagrangian_ensemble (SF-38 C-RUNNER); box units: lambda = ell, qbar = 1.\n"
-          << "# macroflow3d_pipeline <this file> reads stats/ and rewrites ensemble/ and analysis/.\n"
+          << "# output_dir is relative: run as  cd DIR && macroflow3d_pipeline analysis_config.yaml\n"
+          << "# (reads stats/, rewrites ensemble/ and analysis/ in DIR; byte-identical for any DIR).\n"
           << "run_mode: analysis_only\n"
           << "output:\n"
-          << "  output_dir: \"" << c.out << "\"\n"
+          << "  output_dir: \".\"\n"
           << "analysis:\n"
           << "  macrodispersion:\n"
           << "    enabled: true\n"
@@ -835,13 +836,17 @@ std::string ensemble_usage() {
            "  --tol T                integrator tolerance (default 1e-8)\n"
            "  --hmax-div D           h_max = h/D (default 8)\n"
            "  --pcg-rtol R           SF-19 PCG relative tolerance (default 1e-10)\n"
+           "  --max-arclength A      cap on the arclength per pass (default: tracker rule); particles\n"
+           "                         exceeding it get a non-ok status (recorded, never an exit)\n"
            "  --fused-splines | --single-launch\n"
            "  --twin on|off          uniform-weight twin series (default on)\n"
            "  --pollock-bridge on|off  Pollock comparator on the SF-19 faces (default off)\n"
            "  --field-only           SF-18 only: FIELD line + field.json per realization\n"
            "  --out DIR              output directory\n"
-           "exit codes: 0 ok, 1 exception, 2 usage, 3 seed on a cell face, 4 stage failure, 5 track\n"
-           "            failure, 6 comparator failure, 7 DONE realization under different options\n";
+           "exit codes: 0 ok (every realization completed; non-ok particles are recorded in status.json\n"
+           "            and the STATUS line, not an exit condition), 1 exception, 2 usage, 3 seed on a\n"
+           "            cell face, 4 stage failure, 7 DONE realization under different options\n"
+           "analysis_config.yaml (written in DIR, output_dir \".\"): cd DIR && macroflow3d_pipeline analysis_config.yaml\n";
 }
 
 std::vector<double> auto_planes(double x0, double L1, double lambda) {
@@ -895,10 +900,10 @@ bool find_seed_on_face(const InjectionSpec& inj, int n_transverse, std::string* 
 std::string ensemble_signature(const EnsembleConfig& c) {
     return fmt("grid=%dx%dx%d sigma2=%.17g ell=%.17g eps=%.17g seed0=%llu x0=%.17g "
                "window=%.17g,%.17g,%.17g,%.17g M=%d planes=%s times=%s tol=%.17g hmax_div=%d "
-               "pcg_rtol=%.17g fused=%d single_launch=%d twin=%d bridge=%d field_only=%d",
+               "max_arclength=%.17g pcg_rtol=%.17g fused=%d single_launch=%d twin=%d bridge=%d field_only=%d",
                c.nx, c.ny, c.nz, c.sigma2, c.ell, c.eps, c.seed0, c.x0, c.window[0], c.window[1],
                c.window[2], c.window[3], c.np_side, join_list17(c.planes).c_str(),
-               join_list17(c.times).c_str(), c.tol, c.hmax_div, c.pcg_rtol, c.fused_splines ? 1 : 0,
+               join_list17(c.times).c_str(), c.tol, c.hmax_div, c.max_arclength, c.pcg_rtol, c.fused_splines ? 1 : 0,
                c.single_launch ? 1 : 0, c.twin ? 1 : 0, c.pollock_bridge ? 1 : 0,
                c.field_only ? 1 : 0);
 }
@@ -907,7 +912,7 @@ EnsembleConfig parse_ensemble_args(int argc, const char* const* argv) {
     static const std::set<std::string> value_opts = {
         "--grid",   "--sigma2",  "--ell",     "--eps",      "--seed0",           "--nr",
         "--x0",     "--window",  "--np-side", "--planes",   "--times",           "--tol",
-        "--hmax-div", "--twin",  "--pollock-bridge", "--out", "--pcg-rtol",     "--test-abort-after"};
+        "--hmax-div", "--twin",  "--pollock-bridge", "--out", "--pcg-rtol", "--max-arclength", "--test-abort-after"};
     static const std::set<std::string> flag_opts = {"--fused-splines", "--single-launch",
                                                     "--field-only", "--help"};
     EnsembleConfig c;
@@ -937,7 +942,7 @@ EnsembleConfig parse_ensemble_args(int argc, const char* const* argv) {
     c.single_launch = flags.count("--single-launch") != 0;
     if (c.field_only) {
         for (const char* o : {"--eps", "--x0", "--window", "--np-side", "--planes", "--times", "--tol",
-                              "--hmax-div", "--twin", "--pollock-bridge", "--pcg-rtol",
+                              "--hmax-div", "--twin", "--pollock-bridge", "--pcg-rtol", "--max-arclength",
                               "--fused-splines", "--single-launch"})
             if (val.count(o) || flags.count(o))
                 throw UsageError(std::string("--field-only contradicts ") + o +
@@ -1006,6 +1011,11 @@ EnsembleConfig parse_ensemble_args(int argc, const char* const* argv) {
         if (d < 1)
             throw UsageError("--hmax-div: must be >= 1");
         c.hmax_div = static_cast<int>(d);
+    }
+    if (val.count("--max-arclength")) {
+        c.max_arclength = parse_double("--max-arclength", val["--max-arclength"]);
+        if (!(c.max_arclength > 0.0))
+            throw UsageError("--max-arclength: must be > 0 (omit for the tracker default)");
     }
     if (val.count("--pcg-rtol"))
         c.pcg_rtol = parse_double("--pcg-rtol", val["--pcg-rtol"]);

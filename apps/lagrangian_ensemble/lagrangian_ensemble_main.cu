@@ -4,9 +4,9 @@
  *        (medium (a), contract C-RUNNER). Logic in src/physics/particles/lagrangian_labels/
  *        EnsembleRunner.{cuh,cu}; options and exit codes: `lagrangian_ensemble --help`.
  *
- * Exit codes: 0 ok; 1 exception; 2 usage; 3 seed-face assertion (RR12); 4 stage failure (darcy
- * not converged); 5 track failure; 6 comparator failure; 7 DONE realization under different
- * options; 99 test-only abort.
+ * Exit codes: 0 ok (non-ok particles are recorded in status.json, not an exit condition); 1 exception;
+ * 2 usage; 3 seed-face assertion (RR12); 4 stage failure (darcy not converged); 7 DONE realization
+ * under different options; 99 test-only abort.
  */
 
 #include "src/physics/particles/lagrangian_labels/EnsembleRunner.cuh"
