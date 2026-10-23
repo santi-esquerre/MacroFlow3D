@@ -149,8 +149,13 @@ std::vector<io::TimeSeriesPoint<T>> read_timeseries_csv(const std::string& filen
         return pts;
 
     std::string line;
-    // Skip header
-    if (!std::getline(ifs, line))
+    // Format contract (CsvTimeSeriesWriter): leading '#' comment lines, one column-header line, rows.
+    while (std::getline(ifs, line)) {
+        const auto first = line.find_first_not_of(" \t\r");
+        if (first == std::string::npos || line[first] != '#')
+            break; // `line` is the column header (or EOF: empty series)
+    }
+    if (!ifs)
         return pts;
 
     while (std::getline(ifs, line)) {

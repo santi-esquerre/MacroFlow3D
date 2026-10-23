@@ -338,17 +338,9 @@ void run_case_I(TestReport& rep, CudaContext& ctx, const std::string& name,
     meta.N = N;
     meta.h = grid.h;
     ll::write_track_outputs(dir.string(), A, meta);
-    const std::vector<io::TimeSeriesPoint<double>> raw =
+    const std::vector<io::TimeSeriesPoint<double>> rd =
         analysis::read_timeseries_csv<double>((dir / "moments_time.csv").string());
-    // Pre-existing behaviour of the reader (not changed here): it skips ONE header line, but
-    // CsvTimeSeriesWriter writes "# format_version=N" and then the column header, so the column
-    // header line is parsed as an all-zero row 0. Drop exactly that artifact row (verified).
-    const bool artifact = raw.size() == A.moments_time.size() + 1 && raw[0].time == 0.0 &&
-                          raw[0].active == 0;
-    std::vector<io::TimeSeriesPoint<double>> rd;
-    if (artifact)
-        rd.assign(raw.begin() + 1, raw.end());
-    bool csv_ok = artifact && rd.size() == A.moments_time.size() && !rd.empty();
+    bool csv_ok = rd.size() == A.moments_time.size() && !rd.empty();
     double maxrel = 0.0;
     for (std::size_t n = 0; csv_ok && n < rd.size(); ++n) {
         csv_ok = csv_ok && rd[n].active == A.moments_time[n].active;
@@ -363,8 +355,8 @@ void run_case_I(TestReport& rep, CudaContext& ctx, const std::string& name,
     }
     rep.check(csv_ok && maxrel <= 1e-14,
               tag + "moments_time.csv read back by analysis::read_timeseries_csv reproduces the "
-                    "in-memory moments (rows 1..T; row 0 = reader's header artifact)",
-              fmt("max rel %.3e", maxrel) + ", raw rows " + std::to_string(raw.size()));
+                    "in-memory moments (exactly T rows)",
+              fmt("max rel %.3e", maxrel) + ", rows " + std::to_string(rd.size()));
     const auto rows = analysis::compute_macrodispersion<double>({rd}, 0.25, 1.0);
     rep.check(rows.size() == rd.size(), tag + "compute_macrodispersion runs on the read series",
               "rows " + std::to_string(rows.size()));
