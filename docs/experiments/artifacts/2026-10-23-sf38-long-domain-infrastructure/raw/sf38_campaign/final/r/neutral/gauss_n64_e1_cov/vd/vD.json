@@ -1,0 +1,16 @@
+{
+  "N": 64,
+  "commit": "unknown",
+  "eps": 1.0,
+  "field": "gaussian",
+  "h": 0.015625,
+  "layout": "idx = m3 + N (m2 + N j)",
+  "shape": [
+    65,
+    64,
+    64
+  ],
+  "v_rms": 1.3072922112334646,
+  "v_rms_export_ld": 1.3072922112334628,
+  "x": "m/N"
+}

@@ -1,0 +1,62 @@
+B_VERDICT run=B1 grid=2048x256x256 exit=0 correctors=x:converged,20,3.294e-14;y:converged,20,2.592e-14;z:converged,20,2.804e-14 sf19_converged=1 mg_levels=7 stage_mg_levels=7 auto_levels=7 pid_peak_mib=8257 limit_mib=30000 mem=OK PASS
+RECORDED run=B1 exit=0 wall_s=53.93 host_max_rss_kb=9021988 free_b_before=[Mem: 134590115840 3191140352 24875208704 214040576 106523766784 130543923200]
+RECORDED run=B1 R=0 MEM_GEOM pid=261521 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=B1 R=0 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2666528768 seconds=0.873793
+RECORDED run=B1 R=0 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3740270592 seconds=4.241701
+RECORDED run=B1 R=0 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8664383488 seconds=28.361181
+RECORDED run=B1 R=0 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4952424448 seconds=4.307281
+RECORDED run=B1 R=0 MEM_PHASE phase=T exact_bytes=2418951048 cufft_work=0 device_used=2937061376 seconds=0.073570
+RECORDED run=B1 pid_peak_mib=8257 dev_peak_mib=8263 samples=262 max_exact_mib=7769.268 tree_pid=261521 status=OK reasons=-
+RECORDED run=B1 R=0 STAGE status=ok grid=2048x256x256 mg_levels=7 G=8.472712316555e-01,3.399036804483e-04,-1.357315314752e-03 darcy_converged=1 flow_ready=1 seconds=38.786
+RECORDED run=B1 R=0 BACKFLOW field=gaussian eps=1 N=2048 inlet_vmin=4.054640e-02 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+RECORDED run=B1 R=0 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1046362146
+RECORDED run=B1 R=0 TSTATUS pass=time hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1088482388
+RECORDED run=B1 R=0 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=10 times=410
+RECORDED run=B1 R=0 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=10 times=410 hist_plane=0:10000 hist_time=0:10000 cells_plane=28797502 cells_time=28669324 weighted_not_active=0 repack_seconds=1.535 weights=rt0_v1_at_seed
+RECORDED run=B1 R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+RECORDED run=B1 TIMING r=0 seconds=52.088
+RECORDED run=B1 ANALYSIS nr=1 rows=410 lambda=0.0390625 vmean_norm=1 wrote /home/sesquerre/sf38_campaign/prodgrid/B1/ensemble/ensemble_timeseries.csv /home/sesquerre/sf38_campaign/prodgrid/B1/analysis/macrodispersion.csv
+RECORDED run=B1 RUN_DONE nr=1
+RECORDED run=B1 outputs: RUN_DONE=1 TWIN_line=1 POLLOCK_line=1
+B_VERDICT run=B2 grid=3328x384x384 exit=0 correctors=x:converged,30,8.367e-14;y:converged,30,6.495e-14;z:converged,30,7.528e-14 sf19_converged=1 mg_levels=7 stage_mg_levels=7 auto_levels=7 pid_peak_mib=28885 limit_mib=30000 mem=OK PASS
+RECORDED run=B2 exit=0 wall_s=209.11 host_max_rss_kb=31325308 free_b_before=[Mem: 134590115840 3191734272 24637550592 214040576 106760830976 130543337472]
+RECORDED run=B2 R=0 MEM_GEOM pid=261915 nx=3328 ny=384 nz=384 n=490733568 levels=7 coarsest=52x6x6 face_max=492011520 bhat=mapped bhat_host_bytes=3925868544 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=B2 R=0 MEM_PHASE phase=F exact_bytes=11782326280 cufft_work=3928227840 device_used=8372879360 seconds=3.595685
+RECORDED run=B2 R=0 MEM_PHASE phase=S1 exact_bytes=19636420608 cufft_work=7856455680 device_used=12298747904 seconds=17.724351
+RECORDED run=B2 R=0 MEM_PHASE phase=S2 exact_bytes=29765452393 cufft_work=0 device_used=30298603520 seconds=128.284927
+RECORDED run=B2 R=0 MEM_PHASE phase=S3 exact_bytes=23775677416 cufft_work=7856455680 device_used=16440623104 seconds=21.863574
+RECORDED run=B2 R=0 MEM_PHASE phase=T exact_bytes=8193545144 cufft_work=0 device_used=8712617984 seconds=0.083368
+RECORDED run=B2 pid_peak_mib=28885 dev_peak_mib=28895 samples=1022 max_exact_mib=28386.547 tree_pid=261915 status=OK reasons=-
+RECORDED run=B2 R=0 STAGE status=ok grid=3328x384x384 mg_levels=7 G=6.910724104955e-01,-2.384750082888e-04,-2.758685846119e-03 darcy_converged=1 flow_ready=1 seconds=175.256
+RECORDED run=B2 R=0 BACKFLOW field=gaussian eps=1.5 N=3328 inlet_vmin=5.043988e-03 labels_available=1 seed_backflow=0 backflow_enc_plane=72 backflow_enc_time=75 (inlet backflow is recorded, not an exit condition)
+RECORDED run=B2 R=0 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=72 nfev=1814046474
+RECORDED run=B2 R=0 TSTATUS pass=time hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=75 nfev=1841416910
+RECORDED run=B2 R=0 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=10 times=416
+RECORDED run=B2 R=0 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=10 times=416 hist_plane=0:10000 hist_time=0:10000 cells_plane=53295249 cells_time=52746652 weighted_not_active=0 repack_seconds=9.947 weights=rt0_v1_at_seed
+RECORDED run=B2 R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+RECORDED run=B2 TIMING r=0 seconds=207.139
+RECORDED run=B2 ANALYSIS nr=1 rows=416 lambda=0.041666666666666664 vmean_norm=1 wrote /home/sesquerre/sf38_campaign/prodgrid/B2/ensemble/ensemble_timeseries.csv /home/sesquerre/sf38_campaign/prodgrid/B2/analysis/macrodispersion.csv
+RECORDED run=B2 RUN_DONE nr=1
+RECORDED run=B2 outputs: RUN_DONE=1 TWIN_line=1 POLLOCK_line=1
+B_VERDICT run=B3 grid=3328x384x384 exit=0 correctors=x:converged,30,8.941e-12;y:converged,30,8.486e-12;z:converged,30,4.614e-12 sf19_converged=1 mg_levels=7 stage_mg_levels=7 auto_levels=7 pid_peak_mib=28885 limit_mib=30000 mem=OK PASS
+RECORDED run=B3 exit=0 wall_s=200.71 host_max_rss_kb=31325124 free_b_before=[Mem: 134590115840 3075829760 32402747392 179441664 99111538688 130693816320]
+RECORDED run=B3 R=0 MEM_GEOM pid=262588 nx=3328 ny=384 nz=384 n=490733568 levels=7 coarsest=52x6x6 face_max=492011520 bhat=mapped bhat_host_bytes=3925868544 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=B3 R=0 MEM_PHASE phase=F exact_bytes=11782326280 cufft_work=3928227840 device_used=8372879360 seconds=3.797751
+RECORDED run=B3 R=0 MEM_PHASE phase=S1 exact_bytes=19636420608 cufft_work=7856455680 device_used=12298747904 seconds=17.907992
+RECORDED run=B3 R=0 MEM_PHASE phase=S2 exact_bytes=29765452393 cufft_work=0 device_used=30298603520 seconds=126.386810
+RECORDED run=B3 R=0 MEM_PHASE phase=S3 exact_bytes=23572512768 cufft_work=7856455680 device_used=16235102208 seconds=15.751644
+RECORDED run=B3 R=0 MEM_PHASE phase=T exact_bytes=7923258824 cufft_work=0 device_used=8439988224 seconds=0.037765
+RECORDED run=B3 pid_peak_mib=28885 dev_peak_mib=28895 samples=976 max_exact_mib=28386.547 tree_pid=262588 status=OK reasons=-
+RECORDED run=B3 R=0 STAGE status=inlet_backflow grid=3328x384x384 mg_levels=7 G=5.289836709515e-01,-2.414639831579e-03,-6.931413789823e-03 darcy_converged=1 flow_ready=1 seconds=166.465
+RECORDED run=B3 R=0 BACKFLOW field=gaussian eps=2 N=3328 inlet_vmin=-4.297129e-02 labels_available=0 seed_backflow=0 backflow_enc_plane=1117 backflow_enc_time=1011 (inlet backflow is recorded, not an exit condition)
+RECORDED run=B3 R=0 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=1117 nfev=1956222982
+RECORDED run=B3 R=0 TSTATUS pass=time hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=1011 nfev=1877279130
+RECORDED run=B3 R=0 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=9 times=208
+RECORDED run=B3 R=0 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=9 times=208 hist_plane=0:10000 hist_time=0:10000 cells_plane=59704881 cells_time=56558457 weighted_not_active=0 repack_seconds=9.571 weights=rt0_v1_at_seed
+RECORDED run=B3 R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+RECORDED run=B3 TIMING r=0 seconds=198.898
+RECORDED run=B3 ANALYSIS nr=1 rows=208 lambda=0.083333333333333329 vmean_norm=1 wrote /home/sesquerre/sf38_campaign/prodgrid/B3/ensemble/ensemble_timeseries.csv /home/sesquerre/sf38_campaign/prodgrid/B3/analysis/macrodispersion.csv
+RECORDED run=B3 RUN_DONE nr=1
+RECORDED run=B3 outputs: RUN_DONE=1 TWIN_line=1 POLLOCK_line=1
+B_ALL PASS (B1=PASS,B2=PASS,B3=PASS)
+RECORDED part_seconds=494 part_runs_seconds=469 part=prodgrid (D16: this invocation / sum of the recorded run walls)

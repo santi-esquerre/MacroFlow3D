@@ -1,0 +1,23 @@
+RECORDED D_INVOCATION DA: /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/lagrangian_ensemble --grid 3328,384,384 --eps 2 --ell 0.08333333333333333 --seed0 4001 --nr 3 --x0 0 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf38_campaign/ensemble/DA
+RECORDED D_INVOCATION DB_run1 (SIGKILL after '^R=1 STAGE '): /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/lagrangian_ensemble --grid 3328,384,384 --eps 2 --ell 0.08333333333333333 --seed0 4001 --nr 3 --x0 0 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf38_campaign/ensemble/DB
+RECORDED D_INVOCATION DB_run2 (restart, identical command): /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/lagrangian_ensemble --grid 3328,384,384 --eps 2 --ell 0.08333333333333333 --seed0 4001 --nr 3 --x0 0 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf38_campaign/ensemble/DB
+RECORDED D_INVOCATION DC: /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/lagrangian_ensemble --grid 3328,384,384 --eps 2 --ell 0.08333333333333333 --seed0 4001 --nr 1 --x0 0 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf38_campaign/ensemble/DC
+RECORDED D_INVOCATIONS DA rc=0; DB_run1 (killed) rc=9 killed_by_script=1; DB_run2 (restart, identical command) rc=0; DC rc=0; DA_analysis rc=0
+D_KILL run=DB_run1 rc=9 killed_by_script=1 r0_status_ok=1 r1_stage_line=1 r1_status_line=0 CONFIRMED
+D_BYTES name=DB_vs_DA files_ref=99 files_cand=99 identical=99 diff=0 missing=0 extra=0 excluded=3/3 IDENTICAL
+D_BYTES name=DC_vs_DA_r0000 files_ref=32 files_cand=32 identical=32 diff=0 missing=0 extra=0 excluded=3/1 IDENTICAL
+D_CSV name=analysis_only_vs_in_process:analysis/macrodispersion.csv ref=/home/sesquerre/sf38_campaign/ensemble/DA/analysis/macrodispersion.csv cand=/home/sesquerre/sf38_campaign/ensemble/DA_analysis_copy/analysis/macrodispersion.csv rows=208/208 cols=7 max_rel=0.000e+00 max_abs_at_zero=0.000e+00 byte_equal=1 within=1 PASS
+D_CSV name=analysis_only_vs_in_process:ensemble/ensemble_timeseries.csv ref=/home/sesquerre/sf38_campaign/ensemble/DA/ensemble/ensemble_timeseries.csv cand=/home/sesquerre/sf38_campaign/ensemble/DA_analysis_copy/ensemble/ensemble_timeseries.csv rows=208/208 cols=8 max_rel=0.000e+00 max_abs_at_zero=0.000e+00 byte_equal=1 within=1 PASS
+D_TTIME name=DA_stats_vs_TTIME realizations=3 rows=624 max_rel_moments=4.859e-13 max_rel_t=3.200e-10 active_equal=1 PASS
+RECORDED D_WALL name=DA r=0 total_s=196.468 stage_s=164.822 prepare_s=0.038 track_s=20.989 bridge_repack_s=8.816 bridge_track_s=0.283 write_s=0.165
+RECORDED D_WALL name=DA r=1 total_s=194.111 stage_s=161.502 prepare_s=0.035 track_s=20.551 bridge_repack_s=10.117 bridge_track_s=0.284 write_s=0.195
+RECORDED D_WALL name=DA r=2 total_s=194.881 stage_s=166.631 prepare_s=0.035 track_s=20.539 bridge_repack_s=6.158 bridge_track_s=0.285 write_s=0.164
+RECORDED D_WALL name=DB r=0 total_s=194.839 stage_s=164.518 prepare_s=0.037 track_s=21.012 bridge_repack_s=7.547 bridge_track_s=0.273 write_s=0.177
+RECORDED D_WALL name=DB r=1 total_s=195.749 stage_s=167.530 prepare_s=0.036 track_s=20.616 bridge_repack_s=6.039 bridge_track_s=0.279 write_s=0.165
+RECORDED D_WALL name=DB r=2 total_s=194.713 stage_s=161.602 prepare_s=0.035 track_s=20.628 bridge_repack_s=10.672 bridge_track_s=0.293 write_s=0.165
+RECORDED D_WALL name=DC r=0 total_s=197.617 stage_s=165.687 prepare_s=0.049 track_s=21.051 bridge_repack_s=9.105 bridge_track_s=0.280 write_s=0.179
+D_VERDICT PASS (D-A, D-B restart, D-C, analysis_only reproduction all met)
+RECORDED run=DA exit=0 wall_s=589 host_max_rss_kb=31355600
+RECORDED run=DB_run2 exit=0 wall_s=394 host_max_rss_kb=31355300
+RECORDED run=DC exit=0 wall_s=201 host_max_rss_kb=31325176
+RECORDED part_seconds=1573 part_runs_seconds=1546 part=ensemble (D16: this invocation / sum of the recorded run walls)

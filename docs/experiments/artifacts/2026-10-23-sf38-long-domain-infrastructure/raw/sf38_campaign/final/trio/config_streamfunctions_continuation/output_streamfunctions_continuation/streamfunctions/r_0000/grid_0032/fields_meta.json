@@ -1,0 +1,13 @@
+{
+  "byte_order": "little-endian",
+  "dtype": "float64",
+  "fields": [
+    "u1 (psi1 periodic fluctuation)",
+    "u2 (psi2 periodic fluctuation)"
+  ],
+  "n": 32768,
+  "nx": 32,
+  "ny": 32,
+  "nz": 32,
+  "order": "x-fastest, idx = i + nx*(j + ny*k)"
+}

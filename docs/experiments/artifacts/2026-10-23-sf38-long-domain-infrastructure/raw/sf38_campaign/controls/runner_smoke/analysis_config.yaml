@@ -1,0 +1,12 @@
+# written by lagrangian_ensemble (SF-38 C-RUNNER); box units: lambda = ell, qbar = 1.
+# output_dir is relative: run as  cd DIR && macroflow3d_pipeline analysis_config.yaml
+# (reads stats/, rewrites ensemble/ and analysis/ in DIR; byte-identical for any DIR).
+run_mode: analysis_only
+output:
+  output_dir: "."
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 2
+    lambda: 0.25
+    vmean_norm: 1

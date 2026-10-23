@@ -1,0 +1,97 @@
+Test project /home/sesquerre/MacroFlow3D-SF-38/build/v100-release
+      Start  1: operator_tests
+ 1/46 Test  #1: operator_tests .........................   Passed    3.31 sec
+      Start  2: streamfunction_operator_tests
+ 2/46 Test  #2: streamfunction_operator_tests ..........   Passed  1335.05 sec
+      Start  3: streamfunction_exact_pair
+ 3/46 Test  #3: streamfunction_exact_pair ..............   Passed   11.39 sec
+      Start  4: streamfunction_homogeneous
+ 4/46 Test  #4: streamfunction_homogeneous .............   Passed    3.52 sec
+      Start  5: streamfunction_picard_fixed
+ 5/46 Test  #5: streamfunction_picard_fixed ............   Passed  419.31 sec
+      Start  6: streamfunction_picard_adaptive
+ 6/46 Test  #6: streamfunction_picard_adaptive .........   Passed  120.32 sec
+      Start  7: streamfunction_continuation
+ 7/46 Test  #7: streamfunction_continuation ............   Passed  159.59 sec
+      Start  8: streamfunction_anderson
+ 8/46 Test  #8: streamfunction_anderson ................   Passed  141.79 sec
+      Start  9: streamfunction_heterogeneity_unit
+ 9/46 Test  #9: streamfunction_heterogeneity_unit ......   Passed   20.67 sec
+      Start 10: streamfunction_jvp
+10/46 Test #10: streamfunction_jvp .....................   Passed   35.31 sec
+      Start 11: streamfunction_gmres
+11/46 Test #11: streamfunction_gmres ...................   Passed  261.46 sec
+      Start 12: streamfunction_newton
+12/46 Test #12: streamfunction_newton ..................   Passed  138.65 sec
+      Start 13: streamfunction_terminal_unit
+13/46 Test #13: streamfunction_terminal_unit ...........   Passed   25.21 sec
+      Start 14: periodic_gaussian
+14/46 Test #14: periodic_gaussian ......................   Passed    3.61 sec
+      Start 15: stochastic_baseline_gaussian
+15/46 Test #15: stochastic_baseline_gaussian ...........   Passed    3.67 sec
+      Start 16: affine_periodic_flow
+16/46 Test #16: affine_periodic_flow ...................   Passed    8.49 sec
+      Start 17: affine_periodic_flow_lean
+17/46 Test #17: affine_periodic_flow_lean ..............   Passed   16.30 sec
+      Start 18: projected_pcg_external
+18/46 Test #18: projected_pcg_external .................   Passed    7.06 sec
+      Start 19: flow_workspace_bytes
+19/46 Test #19: flow_workspace_bytes ...................   Passed    2.95 sec
+      Start 20: interpolation_periodic_tricubic
+20/46 Test #20: interpolation_periodic_tricubic ........   Passed    3.85 sec
+      Start 21: interpolation_hessian
+21/46 Test #21: interpolation_hessian ..................   Passed    3.11 sec
+      Start 22: streamline_tracker_pseudo_symplectic
+22/46 Test #22: streamline_tracker_pseudo_symplectic ...   Passed    4.85 sec
+      Start 23: streamline_tracker_reference_rk
+23/46 Test #23: streamline_tracker_reference_rk ........   Passed    3.94 sec
+      Start 24: streamline_tracker_face_flux
+24/46 Test #24: streamline_tracker_face_flux ...........   Passed    4.49 sec
+      Start 25: streamline_tracker_pollock
+25/46 Test #25: streamline_tracker_pollock .............   Passed    4.81 sec
+      Start 26: streamline_closure_integrator
+26/46 Test #26: streamline_closure_integrator ..........   Passed    5.89 sec
+      Start 27: spurious_spreading_controls16
+27/46 Test #27: spurious_spreading_controls16 ..........   Passed    4.37 sec
+      Start 28: streamline_closure_controls16
+28/46 Test #28: streamline_closure_controls16 ..........   Passed   12.14 sec
+      Start 29: inlet_slab_contracts
+29/46 Test #29: inlet_slab_contracts ...................   Passed    3.50 sec
+      Start 30: inlet_slab_jvp
+30/46 Test #30: inlet_slab_jvp .........................   Passed    3.55 sec
+      Start 31: inlet_slab_newton
+31/46 Test #31: inlet_slab_newton ......................   Passed   15.79 sec
+      Start 32: inlet_slab_coarse
+32/46 Test #32: inlet_slab_coarse ......................   Passed    4.92 sec
+      Start 33: inlet_slab_production16
+33/46 Test #33: inlet_slab_production16 ................   Passed   11.67 sec
+      Start 34: inlet_slab_trace16
+34/46 Test #34: inlet_slab_trace16 .....................   Passed   10.50 sec
+      Start 35: inlet_slab_controls
+35/46 Test #35: inlet_slab_controls ....................   Passed   10.35 sec
+      Start 36: inlet_slab_trace_gpu
+36/46 Test #36: inlet_slab_trace_gpu ...................   Passed   33.09 sec
+      Start 37: lagrangian_tracker_gpu_host
+37/46 Test #37: lagrangian_tracker_gpu_host ............   Passed   13.79 sec
+      Start 38: lagrangian_tracker_controls
+38/46 Test #38: lagrangian_tracker_controls ............   Passed   18.77 sec
+      Start 39: lagrangian_tracker_l6
+39/46 Test #39: lagrangian_tracker_l6 ..................   Passed   10.01 sec
+      Start 40: lagrangian_long_box
+40/46 Test #40: lagrangian_long_box ....................   Passed   33.50 sec
+      Start 41: lagrangian_dirichlet_medium
+41/46 Test #41: lagrangian_dirichlet_medium ............   Passed    4.30 sec
+      Start 42: lagrangian_face_flux_repack
+42/46 Test #42: lagrangian_face_flux_repack ............   Passed    4.18 sec
+      Start 43: lagrangian_ensemble
+43/46 Test #43: lagrangian_ensemble ....................   Passed   47.68 sec
+      Start 44: lagrangian_medium_ab
+44/46 Test #44: lagrangian_medium_ab ...................   Passed   56.66 sec
+      Start 45: inlet_slab_stage_options
+45/46 Test #45: inlet_slab_stage_options ...............   Passed   13.99 sec
+      Start 46: inlet_slab_npy
+46/46 Test #46: inlet_slab_npy .........................   Passed    3.62 sec
+
+100% tests passed, 0 tests failed out of 46
+
+Total Test time (real) = 3065.06 sec

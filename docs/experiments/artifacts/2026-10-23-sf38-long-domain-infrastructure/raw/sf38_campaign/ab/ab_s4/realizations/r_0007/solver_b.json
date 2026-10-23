@@ -1,0 +1,22 @@
+{
+  "G1": 0.5396556749030317,
+  "Q_in": 1.0031618377273264,
+  "Q_out": 1.0031618377287077,
+  "balance": 1.3769856819594123e-12,
+  "cg_max_iter": 2000,
+  "cg_rtol": 1e-10,
+  "converged": true,
+  "fallback": false,
+  "fallback_tolerance": 1e-08,
+  "final_residual": 7.95965405104796e-06,
+  "head_drop": 7.015523773739412,
+  "initial_residual": 6910138.280323193,
+  "iterations": 50,
+  "max_div": 2.859193832157956e-08,
+  "mg_levels": 7,
+  "qbar": 1.0031618377273264,
+  "r": 7,
+  "rel": 1.1518805743313837e-12,
+  "seed": 4008,
+  "verdict": "converged"
+}

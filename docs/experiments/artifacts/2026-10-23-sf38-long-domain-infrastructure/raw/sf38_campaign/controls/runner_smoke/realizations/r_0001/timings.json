@@ -1,0 +1,36 @@
+{
+  "commit": "unknown",
+  "mem_lines": [
+    "MEM_GEOM pid=261265 nx=64 ny=16 nz=16 n=16384 levels=3 level_cells=16384,2048,256 coarsest=16x4x4 face_max=17408 bhat=mapped bhat_host_bytes=131072 cub_sum_bytes=16383,1,1",
+    "MEM_PHASE phase=F exact_bytes=401928 cufft_work=135168 cufft_gen=135168 device_used=575668224 seconds=0.009620 items=y:131072,sf18_spectrum:135168,sf18_mode_counter:8,sf18_reduce_blocks:512",
+    "MEM_PHASE phase=S1 exact_bytes=667648 cufft_work=270336 cufft_prefilter_logk=270336 device_used=575668224 seconds=0.012572 items=lnk:131072,coef_logk:131072,prefilter_spectrum:135168",
+    "MEM_PHASE phase=S2 exact_bytes=1075279 cufft_work=0 device_used=575668224 seconds=0.860195 categories=correctors:278528,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:155663,mg_hierarchy:606208,mg_preconditioner:16409 items=mg_l0_x:139264,mg_l0_b:131072,mg_l0_r:131072,mg_l0_coef:131072,mg_l1_x:16384,mg_l1_b:16384,mg_l1_r:16384,mg_l1_coef:16384,mg_l2_x:2048,mg_l2_b:2048,mg_l2_r:2048,mg_l2_coef:2048,pcg_r:139264,pcg_p:139264,corrector:139264,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:9,scratch_mg_mean_zero_l2:9,scratch_reduce_blocks:2048",
+    "MEM_PHASE phase=S3 exact_bytes=8675432 cufft_work=270336 cufft_prefilter_pot=270336 device_used=584056832 seconds=0.016144 items=h_tilde:139264,coef_logk:131072,labels_device:7868520,coef_pot:131072,prefilter_spectrum:135168",
+    "MEM_PHASE phase=T exact_bytes=8275768 cufft_work=0 device_used=584056832 seconds=0.000275 items=coef_pot:131072,coef_logk:131072,labels_device:7868520,tracker_seeds:2400,tracker_planes:48,tracker_times:256,tracker_stats_plane:8800,tracker_stats_time:8800,tracker_planes_x23:9600,tracker_planes_tau:4800,tracker_planes_I:4800,tracker_times_x:76800,tracker_times_I:25600,tracker_prepare_transient:3200"
+  ],
+  "pollock_timings_s": {
+    "download": 0.000110546,
+    "moments": 3.6854e-05,
+    "plane_kernel": 0.000587698,
+    "time_kernel": 0.001539737
+  },
+  "r": 1,
+  "seconds": {
+    "bridge_repack": 0.000226938,
+    "bridge_track": 0.002127435,
+    "prepare": 0.000275367,
+    "stage": 0.898675156,
+    "total": 1.10376953,
+    "track": 0.198531043,
+    "write": 0.002559755
+  },
+  "seed": 4002,
+  "stage_status": "ok",
+  "tracker_timings_s": {
+    "download": 8.6858e-05,
+    "moments": 4.9871e-05,
+    "plane_kernel": 0.05580402,
+    "single_kernel": 0.0,
+    "time_kernel": 0.142571289
+  }
+}

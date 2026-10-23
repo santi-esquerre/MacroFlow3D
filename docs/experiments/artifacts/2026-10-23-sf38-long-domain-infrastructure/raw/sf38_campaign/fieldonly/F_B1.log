@@ -1,0 +1,31 @@
+R=0 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4001 normalize_variance=1 applied_scale=9.995754295126e-01 raw_variance=1.000849682061e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=0 STATUS ok
+TIMING r=0 seconds=0.114
+R=1 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4002 normalize_variance=1 applied_scale=9.990623964022e-01 raw_variance=1.001877847798e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=1 STATUS ok
+TIMING r=1 seconds=0.099
+R=2 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4003 normalize_variance=1 applied_scale=9.960211989412e-01 raw_variance=1.008005347902e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=2 STATUS ok
+TIMING r=2 seconds=0.096
+R=3 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4004 normalize_variance=1 applied_scale=9.996642274563e-01 raw_variance=1.000671883468e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=3 STATUS ok
+TIMING r=3 seconds=0.094
+R=4 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4005 normalize_variance=1 applied_scale=9.979458621309e-01 raw_variance=1.004120968944e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=4 STATUS ok
+TIMING r=4 seconds=0.099
+R=5 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4006 normalize_variance=1 applied_scale=1.001085602498e+00 raw_variance=9.978323254919e-01 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=5 STATUS ok
+TIMING r=5 seconds=0.092
+R=6 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4007 normalize_variance=1 applied_scale=1.000918202616e+00 raw_variance=9.981661209624e-01 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=6 STATUS ok
+TIMING r=6 seconds=0.092
+R=7 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4008 normalize_variance=1 applied_scale=9.958955795244e-01 raw_variance=1.008259657756e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=7 STATUS ok
+TIMING r=7 seconds=0.092
+R=8 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4009 normalize_variance=1 applied_scale=9.989823065200e-01 raw_variance=1.002038498281e+00 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=8 STATUS ok
+TIMING r=8 seconds=0.092
+R=9 FIELD gaussian (SF-18) N=2048 grid=2048x256x256 sigma2=1 ell=0.0390625 seed=4010 normalize_variance=1 applied_scale=1.001503421818e+00 raw_variance=9.969999236280e-01 final_variance=1.000000000000e+00 active_modes=66585599 (field-only: no flow)
+R=9 STATUS ok
+TIMING r=9 seconds=0.091
+RUN_DONE nr=10

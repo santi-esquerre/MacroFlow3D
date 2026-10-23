@@ -1,0 +1,9 @@
+C0_VERDICT run=bpilot exit=0 solver_converged=1 iters=50 rel=9.705149e-11 balance=2.404573e-10 max_div=1.034116e-07 pid_peak_mib=19745 limit_mib=30000 mem=OK mode=primary PASS
+RECORDED run=bpilot exit=0 wall_s=153.4 host_max_rss_kb=15974088 free_b_before=[Mem: 134590115840 3075481600 32506789888 176492544 99007844352 130697117696]
+RECORDED run=bpilot R=0 MEM_GEOM pid=263565 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=bpilot R=0 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4008706048 seconds=1.756990
+RECORDED run=bpilot R=0 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5753536512 seconds=7.119112
+RECORDED run=bpilot R=0 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13766754304 seconds=55.680471
+RECORDED run=bpilot R=0 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7640973312 seconds=1.262365
+RECORDED run=bpilot pid_peak_mib=19745 dev_peak_mib=19749 samples=752 max_exact_mib=12624.981 tree_pid=263565 status=OK reasons=-
+RECORDED part_seconds=170 part_runs_seconds=155 part=bpilot (D16: this invocation / sum of the recorded run walls)

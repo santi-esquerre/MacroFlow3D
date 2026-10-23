@@ -1,0 +1,9 @@
+run_mode: analysis_only
+output:
+  output_dir: "."
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 3
+    lambda: 60.0
+    vmean_norm: 0.009765625

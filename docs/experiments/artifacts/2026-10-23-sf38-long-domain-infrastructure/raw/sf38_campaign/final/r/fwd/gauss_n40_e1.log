@@ -1,0 +1,23 @@
+command: /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 40 --eps 1 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf38_campaign/final/r/fwd/gauss_n40_e1 --summary /home/sesquerre/sf38_campaign/final/r/fwd/gauss_n40_e1.json
+FIELD gaussian (SF-18) N=40 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=30419 | stage field k = exp(eps Y), eps = 1
+SETUP STAGE field=gaussian eps=1 N=40 status=ok
+SETUP   SF-18: raw_mean=1.731948e-17 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=30419
+SETUP   SF-19: mg_levels=3 converged=1 G=(8.683044451327e-01, -3.539908185959e-03, 6.294843469155e-02) mean_flux=(1.000e+00, -1.332e-18, 3.836e-17) div_max=7.750e-10 div_rms=3.830e-11
+SETUP   SF-19 corrector x: status=converged its=10 rel_residual=3.047e-12 final_residual=1.114e-08
+SETUP   SF-19 corrector y: status=converged its=10 rel_residual=3.160e-12 final_residual=1.394e-08
+SETUP   SF-19 corrector z: status=converged its=10 rel_residual=2.440e-12 final_residual=1.004e-08
+SETUP   inlet: vmin=4.822154e-02 mean(U plane 0)=1.000000000000085 (mean-1=8.460e-14) Q0-1=8.549e-14 v_rms=1.309685e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=4.261045e-03 max_rel=1.369772e-02; spline potential GPU vs host prefilter rel=2.697e-15
+SETUP stage eps=1 built in 1.034s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+TRACK field=gaussian eps=1 N=40 h=0.025 x0=0 M=32 Np=1024 planes=0.5,1 times=1 tol=1.0e-08 h_max=3.125000e-03 (h/8) min_step=1.0e-13 max_arclength=14 covectors=0 labels_available=1 inlet_vmin=4.822154e-02
+BACKFLOW field=gaussian eps=1 N=40 inlet_vmin=4.822154e-02 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+TPLANE m=0 x1=0.5 n_ok=1024 mean2=4.977936546560e-01 mean3=5.697116594215e-01 var2=6.702475469609e-02 var3=1.013033337245e-01 mean_tau=4.969712424797e-01 var_tau=1.740305349429e-01 ev_rms=1.405669e-02 ev_max=8.013546e-02
+TPLANE m=1 x1=1 n_ok=1024 mean2=5.084730202024e-01 mean3=5.574750475575e-01 var2=8.848539355747e-02 var3=7.395248076553e-02 mean_tau=9.947958470896e-01 var_tau=3.937241959442e-01 ev_rms=1.695477e-02 ev_max=6.689300e-02
+TTIME n=0 t=1 active=1024 mean1=1.245777583814e+00 mean2=5.079653980714e-01 mean3=5.515198286735e-01 var1=2.447188897602e-01 var2=8.231852146335e-02 var3=9.831990990808e-02
+TSTATUS pass=plane hist=1024,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=2123804
+TSTATUS pass=time hist=1024,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=2118852
+SAVED_PARTICLES /home/sesquerre/sf38_campaign/final/r/fwd/gauss_n40_e1 (seeds / weights / labels / status_* / planes_* / times_* .npy, moments_{time,planes}.csv, track.json)
+TIMING field=0.080s prepare=0.001s stage=1.034s track=0.113s write=0.001s total=1.229s
+MEMORY peak_device_bytes=607125504 free_min=33482604544 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf38_campaign/final/r/fwd/gauss_n40_e1.json
+STATUS ok

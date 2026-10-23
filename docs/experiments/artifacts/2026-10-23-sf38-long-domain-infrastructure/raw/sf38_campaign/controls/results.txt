@@ -1,0 +1,9 @@
+A_VERDICT run=long_box_only_A exit=0 all_pass=1 checks_pass=30 checks_fail=0 reported=[A_VERDICT all_pass=1 checks_pass=30 checks_fail=0] PASS
+CONTROL_VERDICT run=long_box_full exit=0 checks_pass=175 checks_fail=0 all_pass=1 PASS
+CONTROL_VERDICT run=dirichlet_medium_full exit=0 checks_pass=26 checks_fail=0 all_pass=1 PASS
+CONTROL_VERDICT run=dirichlet_medium_fast exit=0 checks_pass=24 checks_fail=0 all_pass=1 PASS
+CONTROL_VERDICT run=lagrangian_ensemble_fast exit=0 checks_pass=71 checks_fail=0 all_pass=1 PASS
+SMOKE_VERDICT run=runner_smoke exit=0 status_ok=2/2 done_files=2/2 PASS
+SMOKE_VERDICT run=sampler_smoke exit=0 status_ok=1/1 done_files=1/1 PASS
+SAMPLER_SMOKE run=sampler_smoke PID_PEAK pid=261330 samples=17 pid_peak_mib=565 dev_peak_mib=569 max_exact_mib=27.625 tree_pid=261330 status=OK reasons=- OK
+RECORDED part_seconds=144 part_runs_seconds=126 part=controls (D16: this invocation / sum of the recorded run walls)
