@@ -164,3 +164,16 @@ otherwise).
 | Items 1-20 of the Decision | accepted scope |
 | Runner, twin series, Pollock bridge, (b) solve wiring | proposed architecture (SF-38 DAG) |
 | Medium choice, boundary-layer thickness of (b), Par2 `dt` sensitivity, `alpha_L`, `alpha_T` | open question (SF-38 C/E, SF-39) |
+
+## Addendum D21 (owner, 2026-10-23, after PR #60 and before activation)
+
+- **Finding (orchestrator, before any run).** Threshold A of SF-38 asked the layered `k(x1)` control to reproduce SF-36 A2
+  with `tau`, `I` `<= 1e-9` at `h = 1/16`. SF-36 A2 was amended by the owner on 2026-10-17: the passive `I` carries an
+  `O(h_max^~2)` error on the C^2 spline (SF-36 measured 7.4e-4 at 64^3; recorded, no threshold) and `tau <= 1e-9` is
+  evaluated at `N >= 32` (SF-36 measured 4.6e-9 at 16^3). As written, A would fail for these established causes, and A not
+  met is BLOCKING.
+- **Decision D21.** Threshold A is amended to SF-36 A2 as amended: the layered control runs on 64x32x32 and 128x32x32
+  (`h = 1/32`, the sizes SF-40 F2 passed with `tau` 4.771e-10) with transverse positions and covectors `<= 1e-12`, `tau`
+  `<= 1e-9` relative and `I` recorded without threshold; the `k = 1`, `K_eff` and transverse-shift controls stay on
+  64x16x16 and 128x16x16 as written. Delivered as a docs-only governance PR before activation.
+- Classification: SF-36 A2 amendment and measured values — confirmed in runs (SF-36, SF-40); item D21 — accepted scope.
