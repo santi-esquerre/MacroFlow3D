@@ -1,0 +1,90 @@
+# Post-hoc, not pre-registered. Inputs (sha256):
+#   lambda_h_cells.csv 147c7c3e8bfa71835b9a34678be07e255bbd0f345e83fd519c48f6fb26f28b6f
+#   v2_cells.csv 1876f2b01372f6fcbd2f6266bc8fb5c513eb23808e7cadfc50f26499625da1e2
+#   d8_shadow_lambda_h.csv 8d01ecc09b24e2b112a1c283fda96762515661f0d5546551e385439d3ec10514
+
+## 1. Exact field statistics (lognormal identity MC check at s2=1, r=0.5 lambda: MC 0.6872 vs formula 0.6861, SE 0.0155: OK)
+s2    sigma  rms(dY/dx_i)*lambda  K_efold/lambda  K_microscale/Y_microscale  K(+2s)/K(-2s)
+1.0   1.000  1.414                0.845           0.795                      55
+2.25  1.500  2.121                0.680           0.631                      403
+4.0   2.000  2.828                0.527           0.495                      2981
+6.25  2.500  3.536                0.417           0.400                      22026
+
+## 2. SF-37 lambda/h cells: 756 cells, every SF-37 verdict reproduced from |D| <= max(thr_rel, thr_2se)
+
+### 2a. Relative error |Q(N)-Q(512)|/|Q(512)| by sigma^2 and lambda/h (42 cells each: 3 seeds x 2 Q x 7 planes)
+s2    lambda/h  worst    median   seed-mean(max)  sigma_T2 cells with D<0  var_tau cells with D<0  SF-37 fails
+1.0   8         0.0292   0.0050   0.0182          19/21                   13/21                  0
+1.0   10        0.0188   0.0032   0.0116          19/21                   13/21                  0
+1.0   16        0.0075   0.0012   0.0046          19/21                   13/21                  0
+1.0   20        0.0049   0.0008   0.0029          19/21                   13/21                  0
+1.0   32        0.0018   0.0003   0.0011          19/21                   13/21                  0
+1.0   64        0.0004   0.0001   0.0002          19/21                   13/21                  0
+2.25  8         0.1418   0.0121   0.0641          18/21                   10/21                  2
+2.25  10        0.0916   0.0082   0.0419          18/21                   10/21                  1
+2.25  16        0.0376   0.0030   0.0171          17/21                   10/21                  0
+2.25  20        0.0241   0.0020   0.0108          17/21                   10/21                  0
+2.25  32        0.0109   0.0008   0.0048          17/21                   10/21                  0
+2.25  64        0.0030   0.0001   0.0012          17/21                   10/21                  0
+4.0   8         0.2813   0.0188   0.1197          18/21                   11/21                  4
+4.0   10        0.1921   0.0123   0.0831          17/21                   12/21                  2
+4.0   16        0.1011   0.0058   0.0427          17/21                   13/21                  1
+4.0   20        0.0608   0.0034   0.0252          17/21                   11/21                  1
+4.0   32        0.0281   0.0015   0.0113          17/21                   12/21                  0
+4.0   64        0.0101   0.0003   0.0053          17/21                   11/21                  0
+
+### 2b. Worst relative error per seed (all Q, planes) by lambda/h
+s2 1.0   seed 3101  8:0.0257 10:0.0163 16:0.0064 20:0.0040 32:0.0015 64:0.0003
+s2 1.0   seed 3102  8:0.0292 10:0.0188 16:0.0075 20:0.0049 32:0.0018 64:0.0004
+s2 1.0   seed 3103  8:0.0089 10:0.0056 16:0.0022 20:0.0014 32:0.0005 64:0.0001
+s2 2.25  seed 3101  8:0.0533 10:0.0362 16:0.0146 20:0.0089 32:0.0038 64:0.0005
+s2 2.25  seed 3102  8:0.1418 10:0.0916 16:0.0376 20:0.0241 32:0.0109 64:0.0030
+s2 2.25  seed 3103  8:0.0178 10:0.0115 16:0.0046 20:0.0030 32:0.0011 64:0.0002
+s2 4.0   seed 3101  8:0.0839 10:0.0619 16:0.0290 20:0.0161 32:0.0063 64:0.0045
+s2 4.0   seed 3102  8:0.2813 10:0.1921 16:0.1011 20:0.0608 32:0.0281 64:0.0101
+s2 4.0   seed 3103  8:0.1057 10:0.0738 16:0.0320 20:0.0203 32:0.0071 64:0.0014
+
+### 2c. Worst cell location (seed, Q, plane x1; x1 = 16 is 64 lambda) at lambda/h 16 and 32
+s2 1.0   lambda/h 16  seed 3102 sigma_T2 x1 16   rel -0.0075
+s2 1.0   lambda/h 32  seed 3102 sigma_T2 x1 16   rel -0.0018
+s2 2.25  lambda/h 16  seed 3102 sigma_T2 x1 16   rel -0.0376
+s2 2.25  lambda/h 32  seed 3102 sigma_T2 x1 16   rel -0.0109
+s2 4.0   lambda/h 16  seed 3102 sigma_T2 x1 16   rel -0.1011
+s2 4.0   lambda/h 32  seed 3102 sigma_T2 x1 16   rel -0.0281
+
+### 2d. Median |relative error| of sigma_T2 over seeds by plane at lambda/h 16 (growth with travel distance)
+s2    x1=0.25   x1=0.5    x1=1      x1=2      x1=4      x1=8      x1=16     slope d ln(err)/d ln(x1) over x1 2..16
+1.0   0.0001    0.0003    0.0004    0.0009    0.0019    0.0035    0.0048    0.80
+2.25  0.0003    0.0010    0.0016    0.0034    0.0057    0.0090    0.0146    0.70
+4.0   0.0008    0.0018    0.0041    0.0074    0.0114    0.0184    0.0290    0.66
+
+### 2e. Continuous lambda/h at which the worst relative error reaches 5 % (det branch of the SF-37 rule) and gamma = sqrt(2) sigma h / lambda there
+s2 1.0   lambda/h_req   6.07 (extrapolated below 8); gamma 0.233
+s2 2.25  lambda/h_req  13.76 (between 10 and 16); gamma 0.154
+s2 4.0   lambda/h_req  22.53 (between 20 and 32); gamma 0.126
+SF-37 production value s2 1.0   lambda/h 8   gamma 0.177
+SF-37 production value s2 2.25  lambda/h 16  gamma 0.133
+SF-37 production value s2 4.0   lambda/h 32  gamma 0.088
+
+### 2f. Threshold-free exponent beta in lambda/h_req ~ sigma^beta: beta = ln(err(s2=4)/err(s2=a)) / (p ln(2/sqrt(a))), p = 2
+worst      lambda/h 16: beta(1->4) 1.88, beta(2.25->4) 1.72 | lambda/h 32: beta(1->4) 1.97, beta(2.25->4) 1.64
+seed-mean  lambda/h 16: beta(1->4) 1.61, beta(2.25->4) 1.59 | lambda/h 32: beta(1->4) 1.69, beta(2.25->4) 1.47
+median     lambda/h 16: beta(1->4) 1.11, beta(2.25->4) 1.16 | lambda/h 32: beta(1->4) 1.16, beta(2.25->4) 1.13
+
+### 2g. Cell-level ordering in sigma^2 (same seed, Q, plane, lambda/h; 126 cells per Q)
+sigma_T2 err(1) < err(2.25) < err(4): 102/126   err(1) < err(4): 114/126
+var_tau  err(1) < err(2.25) < err(4): 71/126   err(1) < err(4): 116/126
+
+## 3. V2 observed order p (triple 128/256/512) per sigma^2 and Q
+s2 1.0   sigma_T2 n 21  median 2.00  min 1.86  max 2.01  in [1.5, 2.5]: 21/21
+s2 1.0   var_tau  n 21  median 2.00  min 1.97  max 2.16  in [1.5, 2.5]: 21/21
+s2 2.25  sigma_T2 n 21  median 2.00  min 1.41  max 2.58  in [1.5, 2.5]: 19/21
+s2 2.25  var_tau  n 21  median 2.00  min 1.47  max 4.81  in [1.5, 2.5]: 19/21
+s2 4.0   sigma_T2 n 21  median 2.00  min 1.26  max 2.69  in [1.5, 2.5]: 19/21
+s2 4.0   var_tau  n 18  median 2.00  min -0.14  max 2.25  in [1.5, 2.5]: 15/18
+
+## 4. D8 shadow lambda/h (monotone: smallest candidate passing with every larger one), same RR5 rule
+s2    var_x1         dvar_x1_dt     var_x2         var_x3         dvar_x2_dt     dvar_x3_dt     dsigma_T2_dx1 
+1     16             16             8              8              16             16             16            
+2.25  32             32             16             10             32             64             20            
+4     64             64             32             16             32             64             32            
