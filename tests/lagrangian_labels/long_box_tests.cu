@@ -1340,7 +1340,7 @@ int main(int argc, char** argv) {
         else
             case_F4(ctx, 32, 16);
     }
-    if (run_case("A")) {
+    if (g_only.count("A") > 0) { // explicit only: run_case() is true for every name in the default mode
         // SF-38 threshold A (RR10; owner decision D21): k = 1 / K_eff = I / mean flux e1 / x2,x3 shift at
         // h = 1/16, layered A2 (transverse + covectors 1e-12, tau 1e-9 rel, I recorded) at h = 1/32.
         const int c0 = g_checks, f0 = g_failed;
