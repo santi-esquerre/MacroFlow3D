@@ -245,8 +245,6 @@ Inputs: ten paired realizations (seeds 4001-4010) per amplitude, `C_INPUT amp=1 
 `C_AMP amp=1 equivalent=4/5 non_equivalent=0 inconclusive=1`
 `C_AMP amp=4 equivalent=1/5 non_equivalent=0 inconclusive=4`
 
-`C_VERDICT selected=b equivalent=5/10 non_equivalent=0 inconclusive=5`
-
 `C_VERDICT selected=b equivalent=5/10 non_equivalent=0 inconclusive=5`. How the verdict follows the rule: medium (a) is selected iff all ten primary statistics are equivalent; here five are equivalent (`S_T`, `V1`,
 `theta_2`, `theta_3` at `sigma^2 = 1`; `V1` at `sigma^2 = 4`), **none is non-equivalent**, and five are inconclusive (`S_tau` at `sigma^2 = 1`; `S_T`, `S_tau`, `theta_2`, `theta_3` at `sigma^2 = 4`); the rule sends any inconclusive
 statistic to medium (b) (owner decision D7: "a medium whose equivalence was not shown is not used"). The selection of (b) is therefore the pre-registered outcome of an equivalence test that did not show equivalence; it is **not**
@@ -475,8 +473,10 @@ Paired `dt` vs `dt/2` differences (`RECORDED E_PAIRED`, first 3 realizations; di
 
 Notes (measured): the realized variance of `ln K` averaged over the ten realizations is 0.9977 / 2.2442 / 3.9803 (sd 0.0160 / 0.0372 / 0.0957) for `s1` / `s225` / `s4`, against the nominal `sigma2` 1 / 2.25 / 4 (Par2's generator is not
 variance-normalized, recorded). The `alpha(t)` series (`analysis/macrodispersion.csv`, `ensemble/ensemble_timeseries.csv` and the ten `stats/` CSVs of each config) and the Par2 snapshots are preserved on the V100 host under
-`~/sf38_campaign/par2pilot/run_<c>/output/sf38_par2_<c>/`; **they are not in the imported evidence**, whose `raw/` holds only their sha256 lines (`R:sf38_campaign/par2pilot/sha256.txt`, e.g. `analysis/macrodispersion.csv` of `s1`:
-`ea4f86e1add7a1da2d3774fb81132212ffa5278c525081626bafb49fc60df7bd`) and the logs; no `alpha` series is reported or interpreted in this note. The `E_PAIRED` columns are differences of the pipeline's analysis columns between the two time
+`~/sf38_campaign/par2pilot/run_<c>/output/sf38_par2_<c>/`. The aggregate series (`analysis/macrodispersion.csv`, `ensemble/ensemble_timeseries.csv`), `manifest.json` and `effective_config.yaml` of every run
+(`run_*`, `dt2_*`, `ks_*`) were imported afterwards by the orchestrator (evidence addendum `sf38_par2_agg.tar.gz`, sha256 `4519456bc938fbd642f1d0d54773d610a82ca10148afd000ae77a6f84075356f`, 36 files; e.g.
+`R:sf38_campaign/par2pilot/run_s1/output/sf38_par2_s1/analysis/macrodispersion.csv`, sha256 `ea4f86e1add7a1da2d3774fb81132212ffa5278c525081626bafb49fc60df7bd`, equal to its line in `R:sf38_campaign/par2pilot/sha256.txt`);
+the per-realization `stats/` CSVs (69 files, 67 MB) and the snapshots stay on the host, with the sha256 of the former in `R:sf38_campaign/par2pilot/realization_series.sha256`; no `alpha` series is reported or interpreted in this note. The `E_PAIRED` columns are differences of the pipeline's analysis columns between the two time
 steps (the file `series/<c>_paired_dt_minus_dt2.csv` of the campaign tooling, `dt` minus `dt/2`; also not imported); they are recorded numbers without threshold and without interpretation. `t_b` has the resolution of the snapshot
 interval (957 / 1167 / 1108 steps, i.e. 11962.5 / 14587.5 / 13850 time units, derived `every * dt`).
 
@@ -637,7 +637,7 @@ pre-registered equivalence test selected medium (b) because five statistics did 
 - **B3 seed 4001 has inlet backflow**, so its D-1 labels are unavailable; of the three seeds run at this geometry (4001-4003) only seed 4001 has inlet backflow (D-A realizations 1 and 2 have positive `inlet_vmin` 7.067288e-04 and 3.040961e-03, `R:sf38_campaign/ensemble/DA.log`).
 - **Medium (b) tilts and `qbar`**: `qbar_b` differs from 1 by up to 0.013 (A/B `sigma^2 = 4`, table in section C); every statistic is normalized by its own medium's `qbar` as pre-registered.
 - **Eulerian `var_i(v1)` profiles** are recorded with ten realizations; their SE is large near the faces at `sigma^2 = 4`; the literal boundary-layer reading is not a measurement (section C).
-- **Par2 pilot**: the generator differs from SF-18 (random spectral, not periodic, variance not normalized); the pilot's `alpha(t)` outputs are not in the imported evidence; `t_b` resolution is the snapshot interval; the first per-realization time includes setup.
+- **Par2 pilot**: the generator differs from SF-18 (random spectral, not periodic, variance not normalized); the pilot's aggregate `alpha(t)` series are imported (addendum) and recorded only, the per-realization series and snapshots stay on the host; `t_b` resolution is the snapshot interval; the first per-realization time includes setup.
 - The `dt/2` check covers three realizations per config and is recorded only. The `max_rel_diff` entries of `E_PAIRED` are dominated by near-zero denominators (values up to 8.958e+04) and are not a measure of agreement.
 - The J0a attempt 1 log, the dry runs and the Par2 output files are not imported; `ctest -N` of the base build (43) is known from the J0a log only.
 - No `alpha` claim: the B/D/E series and the C statistics are recorded as pre-registered inputs only, never interpreted (Rule 1).

@@ -197,6 +197,13 @@ the Par2 `stats/`, `analysis/` and `ensemble/` CSVs and `cfg/*.yaml`. **Excluded
 D byte-comparison verdicts (`D_BYTES`, `D_CSV`, `D_TTIME`) are in `results.txt`; the compared trees themselves stay on the host. Re-verification:
 `for d in <part dirs>; do (cd raw/$d && sha256sum -c --ignore-missing sha256.txt | grep -vc ': OK'); done` gives 0 for each part.
 
+Imported (orchestrator, 2026-10-23): `sf38_evidence.tar.gz` sha256 `3cc527af3297b57dfd7044cd58895af13c36559e54c10b00df2e3e9f7278957e`
+(1129 files, none excluded as large; the pack excluded `*.npy`, `sf38_base_refs/bin/*`, `*/snapshots/*` and `*/output/*`), and the
+addendum `sf38_par2_agg.tar.gz` sha256 `4519456bc938fbd642f1d0d54773d610a82ca10148afd000ae77a6f84075356f` (36 files): the Par2 runs'
+`output/*/analysis/macrodispersion.csv`, `output/*/ensemble/ensemble_timeseries.csv`, `manifest.json`, `effective_config.yaml`, plus
+`par2pilot/realization_series.sha256` (sha256 of the 69 per-realization `stats/` CSVs kept on the host). Transfer: base64 through
+`scripts/remote --increment SF-38 exec`, sha256 equal on both hosts.
+
 ## Notes and readings (reported to the orchestrator)
 
 * **dt/2 copies**: RR8 lists `dt = 6.25`, `n_steps` doubled, snapshot interval doubled, `NR = 3`, own output directory. The script also
