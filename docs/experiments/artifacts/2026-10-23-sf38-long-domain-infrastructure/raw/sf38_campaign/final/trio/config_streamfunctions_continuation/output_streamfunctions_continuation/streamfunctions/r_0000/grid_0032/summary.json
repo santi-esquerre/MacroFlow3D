@@ -1,0 +1,76 @@
+{
+  "config": {
+    "adaptive_enabled": true,
+    "affine_mean_velocity_mode": "fixed",
+    "epsilon": 0.01,
+    "eta": 1.0,
+    "linear_check_every": 10,
+    "linear_max_iter": 1000,
+    "linear_rtol": 1e-10,
+    "mg_num_levels": 4,
+    "picard_max_iter": 500,
+    "picard_omega": 0.25,
+    "picard_tolerance": 1e-06,
+    "vbar_used": 1.0
+  },
+  "continuation": {
+    "final_epsilon": 1e-06,
+    "final_eta": 1.0,
+    "num_stages": 12,
+    "snapshot_bytes": 524288,
+    "status": "reached_target"
+  },
+  "diagnostics": {
+    "angle_excluded_count": 0,
+    "angle_included_count": 32768,
+    "c_max": 1.0,
+    "c_mean": 1.0,
+    "c_min": 1.0,
+    "e_div": 0.0,
+    "e_v": 0.0,
+    "invariance_e_psi1": 0.0,
+    "invariance_e_psi2": 0.0,
+    "linf_magnitude": 0.0,
+    "max_theta": 0.0,
+    "rms_magnitude": 0.0,
+    "rms_theta": 0.0,
+    "v_d_rms": 1.0
+  },
+  "exit_reason": "converged",
+  "final_omega": 0.25,
+  "grid": {
+    "dx": 1.0,
+    "dy": 1.0,
+    "dz": 1.0,
+    "nx": 32,
+    "ny": 32,
+    "nz": 32
+  },
+  "memory": {
+    "diagnostics_path_bytes": 7094687,
+    "fields_bytes": 524288,
+    "fine_grid_equivalent_fields": 70.11970138549805,
+    "solve_path_bytes": 10762484,
+    "total_bytes": 18381459
+  },
+  "picard_iterations": 0,
+  "residual": {
+    "L_ref": 32.0,
+    "linf_f1": 0.0,
+    "linf_f2": 0.0,
+    "nonfinite_s1": 0,
+    "nonfinite_s2": 0,
+    "projected_rhs_mean_psi1": 0.0,
+    "projected_rhs_mean_psi2": 0.0,
+    "q_rms": 1.0,
+    "r1": 0.0,
+    "r2": 0.0,
+    "r_F": 0.0,
+    "raw_rhs_mean_psi1": 0.0,
+    "raw_rhs_mean_psi2": 0.0,
+    "rms_f1": 0.0,
+    "rms_f2": 0.0,
+    "v_rms": 1.0
+  },
+  "status": "converged"
+}

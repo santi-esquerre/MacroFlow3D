@@ -1,0 +1,33 @@
+CHECK e1_profiles_exact PASS
+CHECK e1_interior_ranges PASS
+CHECK e1_primary PASS  V1=0.28125 vs 0.28125 th2=0.875 vs 0.875 th3=-0.4375 vs -0.4375
+CHECK e1_throws PASS
+CHECK inputs_invalid_argument PASS
+CHECK k1_converged PASS  iters=0 r0=0.000e+00 rf=0.000e+00
+CHECK k1_U_is_1 PASS  max|U-1|=0.000e+00
+CHECK k1_V_W_zero PASS  max|V|=0.000e+00 max|W|=0.000e+00
+CHECK k1_balance PASS  balance=0.000e+00 qbar=1.000000000000 max_div=0.000e+00
+CHECK k1_E1 PASS  V1=0.000e+00 qbar-1=0.000e+00 th2=0.000e+00 th3=0.000e+00
+CHECK layered_converged PASS  rel=6.607e-21
+CHECK layered_U_exact_1d PASS  q=0.940306193319 max rel err=4.735e-14
+CHECK layered_V_W_zero PASS  max|V|=4.616e-14 max|W|=4.616e-14
+CHECK layered_qbar PASS  qbar=0.940306193319
+CHECK repack_available PASS
+CHECK repack_bitwise PASS
+CHECK repack_view_geometry PASS
+CHECK mem_phases PASS
+CHECK mem_workspace_bytes_exact PASS  ws=40140800 expect=40140800 (76.56 B/cell)
+CHECK mem_workspace_freed PASS  solve=563085312 after_release=523239424 ws=40140800
+CHECK mem_back_to_K_head PASS  after_release=523239424 K_phase=523239424
+CHECK mem_faces_after_release PASS  velocity start=523239424 after_release=523239424
+CHECK mem_faces_phase_exact PASS  faces exact=25436160 B/cell=48.516
+CHECK mem_final_only_periodic PASS  after-base=12582912 periodic=12582912
+MEM_PHASE_B phase=K exact_bytes=8388608 device_used_start=514850816 device_used=523239424 seconds=0.011655 items=K:4194304,head:4194304
+MEM_PHASE_B phase=solve exact_bytes=48529408 device_used_start=523239424 device_used=563085312 seconds=0.360441 items=K:4194304,head:4194304,rhs:4194304,mg_level0:16777216,mg_level1:2097152,mg_level2:262144,mg_level3:32768,pcg_r_z_p_Ap:16777216
+MEM_PHASE_B phase=release exact_bytes=8388608 device_used_start=563085312 device_used=523239424 seconds=0.000775 items=K:4194304,head:4194304
+MEM_PHASE_B phase=velocity exact_bytes=21266432 device_used_start=523239424 device_used=542113792 seconds=0.000751 items=K:4194304,head:4194304,U:4202496,V:4325376,W:4325376,planes:16384,div_block_max:8192
+MEM_PHASE_B phase=faces exact_bytes=25436160 device_used_start=533725184 device_used=546308096 seconds=0.000385 items=U:4202496,V:4325376,W:4325376,periodic_u:4194304,periodic_v:4194304,periodic_w:4194304
+CHECK full_converged PASS  levels=5 iters=20 rel=2.274e-18
+CHECK full_balance PASS  balance=5.898e-15 max_div=6.211e-12 qbar=1.317695
+total_seconds=4.40
+ALL_PASS

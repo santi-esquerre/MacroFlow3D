@@ -1,0 +1,3 @@
+RECORDED base_binaries_md5 88526e87410416e2b5e91038e8406f76 f5f5204efff7c923f3e85e07e93cfda4 
+BASEREFS_RECORDED r_runs=20 trio_runs=3 recorded_in_exit_codes=23 unexpected_exit_codes=0
+RECORDED part_seconds=177 part_runs_seconds=164 part=baserefs (D16: this invocation / sum of the recorded run walls)

@@ -1,0 +1,182 @@
+-- The CUDA compiler identification is NVIDIA 11.4.152 with host compiler GNU 9.3.1
+-- The CXX compiler identification is GNU 9.3.1
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda-11.4/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/rh/devtoolset-9/root/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CUDAToolkit: /usr/local/cuda-11.4/targets/x86_64-linux/include (found version "11.4.152")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (6.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-38/build/v100-diag
+[0/2] Re-checking globbed directories...
+[1/129] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/EulerianFaceStats.cpp.o
+[2/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/preconditioner.cu.o
+[3/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/transfer/restrict_3d.cu.o
+[4/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/fill.cu.o
+[5/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/axpy.cu.o
+[6/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/axpby.cu.o
+[7/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/mg_preconditioner.cu.o
+[8/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/constraints/MeanZeroProjector.cu.o
+[9/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/scal.cu.o
+[10/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/CudaContext.cu.o
+[11/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/projected_positive_mg_preconditioner.cu.o
+[12/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/cycle/v_cycle.cu.o
+[13/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/operators/poisson3d_operator.cu.o
+[14/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/cycle/projected_positive_v_cycle.cu.o
+[15/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu.o
+[16/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/rhs_head.cu.o
+[17/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/cg_kernels.cu.o
+[18/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/invariants/EigensolverBackend.cu.o
+[19/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/invariants/GaugeFixer.cu.o
+[20/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/nrm2.cu.o
+[21/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/DifferentialOperators.cu.o
+[22/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/NonlinearSources.cu.o
+[23/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/coefficient_hierarchy.cu.o
+[24/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/dot.cu.o
+[25/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ShiftedJacobianOperator.cu.o
+[26/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/operators/varcoeff_laplacian.cu.o
+[27/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/CoupledGmres.cu.o
+[28/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/copy.cu.o
+[29/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/binary.cpp.o
+[30/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/affine_periodic_rhs.cu.o
+[31/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/JacobianVectorProduct.cu.o
+[32/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/directives.cpp.o
+[33/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/FaceFluxRepack.cu.o
+[34/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabStencils4.cu.o
+[35/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/BlockDiagonalMGPreconditioner.cu.o
+[36/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/depthguard.cpp.o
+[37/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/null.cpp.o
+[38/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/exceptions.cpp.o
+[39/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/transfer/prolong_3d.cu.o
+/home/sesquerre/MacroFlow3D-SF-38/src/multigrid/transfer/prolong_3d.cu(107): warning: variable "NZ" was declared but never referenced
+
+[40/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/invariants/RefinementAC.cu.o
+[41/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/node.cpp.o
+[42/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/ostream_wrapper.cpp.o
+[43/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2SnapshotAdapter.cu.o
+[44/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/AndersonAccelerator.cu.o
+[45/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/stochastic/PeriodicGaussianField.cu.o
+[46/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2TransportAdapter.cu.o
+[47/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitfromevents.cpp.o
+[48/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emit.cpp.o
+[49/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/exp.cpp.o
+[50/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/pipeline/PipelineRunner.cu.o
+[51/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/parser.cpp.o
+[52/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2StatsAdapter.cu.o
+[53/129] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/runtime/analysis/AnalysisRunner.cpp.o
+[54/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/regex_yaml.cpp.o
+[55/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/tag.cpp.o
+[56/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ResidualEvaluator.cu.o
+[57/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitterstate.cpp.o
+[58/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/invariants/PsptaInvariantField.cu.o
+[59/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/memory.cpp.o
+[60/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/simplekey.cpp.o
+[61/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/stream.cpp.o
+[62/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/nodeevents.cpp.o
+[63/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitter.cpp.o
+[64/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/convert.cpp.o
+[65/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/NewtonKrylovSolver.cu.o
+[66/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/nodebuilder.cpp.o
+[67/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/PollockTracker.cu.o
+[68/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/Diagnostics.cu.o
+/home/sesquerre/MacroFlow3D-SF-38/src/physics/streamfunctions/Diagnostics.cu(300): warning: parameter "nz" was declared but never referenced
+
+[69/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabResidual.cu.o
+[70/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/velocity_from_head.cu.o
+[71/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/PsptaPsiField.cu.o
+[72/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/parse.cpp.o
+[73/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabOracle.cu.o
+[74/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/interpolation/PeriodicTricubicBSpline.cu.o
+[75/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/InletLabels.cu.o
+[76/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scantag.cpp.o
+[77/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/StreamfunctionSolver.cu.o
+[78/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/node_data.cpp.o
+[79/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/PsptaEngine.cu.o
+[80/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabGmres.cu.o
+[81/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scanscalar.cpp.o
+[82/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/StreamfunctionWorkspace.cu.o
+[83/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/velocity_diagnostics.cu.o
+[84/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/singledocparser.cpp.o
+[85/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cu.o
+[86/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scanner.cpp.o
+[87/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/stochastic/stochastic.cu.o
+[88/129] Building CUDA object CMakeFiles/macroflow3d_pipeline.dir/apps/macroflow3d_pipeline.cu.o
+[89/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/smoothers/residual_3d.cu.o
+[90/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/StokesFaceVelocity.cu.o
+[91/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/sum.cu.o
+[92/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/kernels/drift_correction.cu.o
+[93/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/kernels/cornerfield.cu.o
+[94/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cu.o
+[95/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/legacy/LegacyMarchingInvariantBuilder.cu.o
+[96/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ContinuationController.cu.o
+[97/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabModePreconditioner.cu.o
+[98/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabJacobianVectorProduct.cu.o
+[99/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu.o
+[100/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scantoken.cpp.o
+[101/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/smoothers/gsrb_3d.cu.o
+[102/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/solve_head.cu.o
+[103/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/PollockComparator.cu.o
+[104/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/invariants/TransportOperator3D.cu.o
+[105/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/AffinePeriodicFlowSolver.cu.o
+[106/129] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitterutils.cpp.o
+[107/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/io.cu.o
+[108/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/DirichletMedium.cu.o
+[109/129] Linking CXX static library src/external/yaml-cpp-0.8.0/libyaml-cpp.a
+[110/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/pspta/invariants/OperatorTestHarness.cu.o
+[111/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/LongBoxStage.cu.o
+[112/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/transport_engine.cu.o
+[113/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/injectors.cu.o
+[114/129] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/io/config/ConfigYaml.cpp.o
+[115/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/kernels/move_particles.cu.o
+[116/129] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/stats.cu.o
+[117/129] Linking CUDA static library src/external/Par2_Core/libpar2_core.a
+[118/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu.o
+[119/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabMetrics.cu.o
+[120/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabLabelTransport.cu.o
+[121/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/ProtoCase.cu.o
+[122/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/ReferenceRkTracker.cu.o
+[123/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/ensemble/EnsembleRunner.cu.o
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/EnsembleRunner.cu: In instantiation of ‘macroflow3d::ensemble::run_ensemble(const macroflow3d::io::AppConfig&, macroflow3d::CudaContext&, macroflow3d::StageProfiler&)::<lambda(auto:1&)> [with auto:1 = macroflow3d::physics::particles::pspta::PsptaEngine]’:
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/EnsembleRunner.cu:899:26:   required from here
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/../../io/writers/CsvTimeSeriesWriter.hpp:25:27: note: ‘struct macroflow3d::io::TimeSeriesPoint<double>’ has no user-provided default constructor
+   25 | template <typename T> struct TimeSeriesPoint {
+      |                           ^~~~~~~~~~~~~~~
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/../../io/writers/CsvTimeSeriesWriter.hpp:26:3: note: and the implicitly-defined constructor does not initialize ‘double macroflow3d::io::TimeSeriesPoint<double>::time’
+   26 |     T time;
+      |   ^ ~~
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/EnsembleRunner.cu: In instantiation of ‘macroflow3d::ensemble::run_ensemble(const macroflow3d::io::AppConfig&, macroflow3d::CudaContext&, macroflow3d::StageProfiler&)::<lambda(auto:1&)> [with auto:1 = macroflow3d::physics::particles::Par2TransportAdapter]’:
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/EnsembleRunner.cu:916:17:   required from here
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/../../io/writers/CsvTimeSeriesWriter.hpp:25:27: note: ‘struct macroflow3d::io::TimeSeriesPoint<double>’ has no user-provided default constructor
+   25 | template <typename T> struct TimeSeriesPoint {
+      |                           ^~~~~~~~~~~~~~~
+/home/sesquerre/MacroFlow3D-SF-38/src/runtime/ensemble/../../io/writers/CsvTimeSeriesWriter.hpp:26:3: note: and the implicitly-defined constructor does not initialize ‘double macroflow3d::io::TimeSeriesPoint<double>::time’
+   26 |     T time;
+      |   ^ ~~
+[124/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/EnsembleRunner.cu.o
+[125/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabTraceGpu.cu.o
+[126/129] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/LagrangianTracker.cu.o
+[127/129] Linking CXX static library libmacroflow3d_lib.a
+[128/129] Linking CXX executable CMakeFiles/macroflow3d_pipeline.dir/cmake_device_link.o
+[129/129] Linking CXX executable macroflow3d_pipeline

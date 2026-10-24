@@ -1,0 +1,19 @@
+[1] Loading config: analysis_config.yaml
+[mode] analysis_only — skipping GPU init
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        64 × 64 × 64  (dx=1.000000)
+  Domain:      [0, 64.0000] × [0, 64.0000] × [0, 64.0000]
+  Stochastic:  σ²=1.00  λ=1.0000  modes=1000  seed=12345
+  Solver:      mg  rtol=1.0e-06
+  Transport:   N=10000  dt=1.0000e-02  steps=1000  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    NR=3  λ_macro=60.0000  ||<v>||=0.0098  sample_every=10  estimator=biased
+  Output:      .
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+[analysis_only] Reading 3 realization CSVs from ./stats
+       Loaded 3 / 3
+       Wrote ./ensemble/ensemble_timeseries.csv
+       Wrote ./analysis/macrodispersion.csv
+[analysis_only] Done. NR=3, 11678 time-points, output=.

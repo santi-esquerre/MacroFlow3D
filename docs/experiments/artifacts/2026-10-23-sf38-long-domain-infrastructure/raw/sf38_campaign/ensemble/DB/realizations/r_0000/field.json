@@ -1,0 +1,17 @@
+{
+  "active_modes": 244090495,
+  "applied_scale": 0.9932143098850642,
+  "ell": 0.08333333333333333,
+  "final_variance": 1.0,
+  "grid": [
+    3328,
+    384,
+    384
+  ],
+  "kind": "gaussian",
+  "normalize_variance": true,
+  "raw_mean": 5.115210249675201e-19,
+  "raw_variance": 1.0137107774933007,
+  "seed": 4001,
+  "sigma2": 1.0
+}

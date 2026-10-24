@@ -1,0 +1,51 @@
+[1] Loading config: /home/sesquerre/MacroFlow3D-SF-38/apps/config_streamfunctions_continuation.yaml
+[2] Initializing CUDA context
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        32 × 32 × 32  (dx=1.000000)
+  Domain:      [0, 32.0000] × [0, 32.0000] × [0, 32.0000]
+  Stochastic:  σ²=0.00  λ=8.0000  modes=8  seed=42
+  Solver:      mg_cg  rtol=1.0e-10
+  Transport:   N=50  dt=1.0000e+00  steps=20  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    macrodispersion OFF (single realization)
+  Output:      ./output_streamfunctions_continuation
+  Diagnostics: velocity_field ON (div/|ω|/helicity per realization)
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+[3] Allocating fields and workspaces
+       Fields: K=32768  head=32768  vel=3×35937  particles=50
+  [4] K generation (seed=42)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=0  res=0.00e+00 → 0.00e+00
+  [6] Computing velocity (compact)
+  [6] Computing velocity (padded)
+       [diag] r=0  div:  min=0.0000e+00  max=0.0000e+00  mean=0.0000e+00
+       [diag] r=0  |w|:  min=0.0000e+00  max=0.0000e+00  mean=0.0000e+00  (incl. border=0)
+       [diag] r=0  h:    min=0.0000e+00  max=0.0000e+00  mean=0.0000e+00  (incl. border=0)
+  [6b] Solving streamfunctions (Lester eq. 14, continuation)
+       [streamfunctions] continuation status=reached_target final_eta=1.000e+00 final_epsilon=1.000e-06 stages=12
+  [7] Transport (Par2_Core)
+       Stepping 50 × 20 (dt=1.0000e+00) ...
+           step    20/20  t=2.000e+01
+       Transport complete (r=0).
+────────────────────────────────────────────────────────
+
+╔═══════════════════════════════════════════════════════════════╗
+║                   STAGE PROFILING REPORT                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Stage                     │ Total(ms) │ Count │  Avg(ms) │     % ║
+╠═══════════════════════════════════════════════════════════════╣
+║ K_generation              │     0.18 │     1 │     0.18 │   0.6 ║
+║ solve_head                │     0.27 │     1 │     0.27 │   0.9 ║
+║ velocity                  │     0.08 │     1 │     0.08 │   0.3 ║
+║ streamfunctions           │    25.09 │     1 │    25.09 │  86.3 ║
+║ transport                 │     3.46 │     1 │     3.46 │  11.9 ║
+╠═══════════════════════════════════════════════════════════════╣
+║ TOTAL                     │    29.08 │     - │        - │  100% ║
+╠═══════════════════════════════════════════════════════════════╣
+║ GPU Memory: 527.0 MB used / 32510.5 MB total (1.6% used)      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.

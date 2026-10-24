@@ -142,7 +142,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-35 — Label transport by backward streamline tracing as the production constructor](lester-eq14/increments/SF-35-label-transport-constructor.md)
 - [x] [SF-36 — Lagrangian-label tracker core on the cube production stage](lester-eq14/increments/SF-36-lagrangian-tracker-core.md)
 - [x] [SF-37 — Verification of the Lagrangian consumer on the cube at sigma^2 <= 4, with blind O3](lester-eq14/increments/SF-37-lagrangian-cube-verification.md)
-- [ ] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
+- [x] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
 - [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
 - [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 

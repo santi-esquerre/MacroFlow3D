@@ -1,0 +1,13 @@
+axis,param_start,param_attempted,step_attempted,accepted,failure,exit_reason,picard_iterations,final_omega,r_F,r1,r2,unexplained_fraction,c_percentile_p001,psi1_iterations,psi2_iterations
+eta,0,0,0,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0,0.1,0.1,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0.1,0.2,0.1,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0.2,0.35,0.15,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0.35,0.5,0.15,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0.5,0.725,0.225,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0.725,0.95,0.225,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+eta,0.95,1,0.25,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+epsilon,0.01,0.001,1,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+epsilon,0.001,0.0001,1,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+epsilon,0.0001,1e-05,1,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0
+epsilon,1e-05,1e-06,1,1,none,converged,0,0.25,0,0,0,0,1.01815,0,0

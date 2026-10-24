@@ -1,0 +1,129 @@
+RESOLVED grid=64x16x16 L1=4 lambda=0.25 planes(auto)=0.25,0.5,1,1.5,2,4 times(auto)=0.125,0.25,0.375,0.5,0.625,0.75,0.875,1,1.125,1.25,1.375,1.5,1.625,1.75,1.875,2,2.125,2.25,2.375,2.5,2.625,2.75,2.875,3,3.125,3.25,3.375,3.5,3.625,3.75,3.875,4
+R=0 FIELD gaussian (SF-18) N=64 grid=64x16x16 sigma2=1 ell=0.25 seed=4001 normalize_variance=1 applied_scale=1.003988091942e+00 raw_variance=9.920712782860e-01 final_variance=1.000000000000e+00 active_modes=7199 | stage field k = exp(eps Y), eps = 1
+R=0 SETUP STAGE field=gaussian eps=1 N=64 status=ok
+R=0 SETUP   SF-18: raw_mean=9.107298e-18 raw_variance=9.920712782860e-01 applied_scale=1.003988091942e+00 final_variance=1.000000000000e+00 active_modes=7199
+R=0 SETUP   SF-19: mg_levels=3 converged=1 G=(9.137415345570e-01, 1.339113940116e-02, -7.899945340384e-03) mean_flux=(1.000e+00, -2.819e-18, 4.716e-18) div_max=1.304e-12 div_rms=4.554e-14
+R=0 SETUP   SF-19 corrector x: status=converged its=20 rel_residual=2.855e-15 final_residual=5.536e-12
+R=0 SETUP   SF-19 corrector y: status=converged its=20 rel_residual=1.869e-15 final_residual=2.758e-12
+R=0 SETUP   SF-19 corrector z: status=converged its=20 rel_residual=2.141e-15 final_residual=3.737e-12
+R=0 SETUP   inlet: vmin=1.043559e-01 mean(U plane 0)=1.000000000000000 (mean-1=4.441e-16) Q0-1=-4.441e-16 v_rms=n/a (lean stage: vertex vD not built)
+R=0 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=0 SETUP stage eps=1 built in 1.801s (lean stage, Grid3D 64x16x16, bhat=mapped)
+R=0 STAGE status=ok grid=64x16x16 mg_levels=3 G=9.137415345570e-01,1.339113940116e-02,-7.899945340384e-03 darcy_converged=1 flow_ready=1 seconds=1.801
+R=0 MEM_GEOM pid=261265 nx=64 ny=16 nz=16 n=16384 levels=3 level_cells=16384,2048,256 coarsest=16x4x4 face_max=17408 bhat=mapped bhat_host_bytes=131072 cub_sum_bytes=16383,1,1
+R=0 MEM_PHASE phase=F exact_bytes=401928 cufft_work=135168 cufft_gen=135168 device_used=516947968 seconds=0.031268 items=y:131072,sf18_spectrum:135168,sf18_mode_counter:8,sf18_reduce_blocks:512
+R=0 MEM_PHASE phase=S1 exact_bytes=667648 cufft_work=270336 cufft_prefilter_logk=270336 device_used=516947968 seconds=0.014111 items=lnk:131072,coef_logk:131072,prefilter_spectrum:135168
+R=0 MEM_PHASE phase=S2 exact_bytes=1075279 cufft_work=0 device_used=516947968 seconds=1.742468 categories=correctors:278528,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:155663,mg_hierarchy:606208,mg_preconditioner:16409 items=mg_l0_x:139264,mg_l0_b:131072,mg_l0_r:131072,mg_l0_coef:131072,mg_l1_x:16384,mg_l1_b:16384,mg_l1_r:16384,mg_l1_coef:16384,mg_l2_x:2048,mg_l2_b:2048,mg_l2_r:2048,mg_l2_coef:2048,pcg_r:139264,pcg_p:139264,corrector:139264,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:9,scratch_mg_mean_zero_l2:9,scratch_reduce_blocks:2048
+R=0 MEM_PHASE phase=S3 exact_bytes=8675432 cufft_work=270336 cufft_prefilter_pot=270336 device_used=525336576 seconds=0.013069 items=h_tilde:139264,coef_logk:131072,labels_device:7868520,coef_pot:131072,prefilter_spectrum:135168
+R=0 MEM_PHASE phase=T exact_bytes=8275768 cufft_work=0 device_used=525336576 seconds=0.000570 items=coef_pot:131072,coef_logk:131072,labels_device:7868520,tracker_seeds:2400,tracker_planes:48,tracker_times:256,tracker_stats_plane:8800,tracker_stats_time:8800,tracker_planes_x23:9600,tracker_planes_tau:4800,tracker_planes_I:4800,tracker_times_x:76800,tracker_times_I:25600,tracker_prepare_transient:3200
+R=0 TRACK field=gaussian eps=1 N=64 h=0.0625 x0=0 M=10 Np=100 planes=0.25,0.5,1,1.5,2,4 times=0.125,0.25,0.375,0.5,0.625,0.75,0.875,1,1.125,1.25,1.375,1.5,1.625,1.75,1.875,2,2.125,2.25,2.375,2.5,2.625,2.75,2.875,3,3.125,3.25,3.375,3.5,3.625,3.75,3.875,4 tol=1.0e-08 h_max=7.812500e-03 (h/8) min_step=1.0e-13 max_arclength=26 covectors=0 labels_available=1 inlet_vmin=1.043559e-01
+R=0 BACKFLOW field=gaussian eps=1 N=64 inlet_vmin=1.043559e-01 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+R=0 TPLANE m=0 x1=0.25 n_ok=100 mean2=5.141437861012e-01 mean3=4.649155508862e-01 var2=6.217134028663e-02 var3=9.413992002449e-02 mean_tau=4.243791162185e-01 var_tau=1.770119635539e-01 ev_rms=5.897857e-02 ev_max=2.180873e-01
+R=0 TPLANE m=1 x1=0.5 n_ok=100 mean2=5.268402391199e-01 mean3=4.723892105571e-01 var2=5.321540032637e-02 var3=7.034281940685e-02 mean_tau=8.220993522151e-01 var_tau=5.060597145195e-01 ev_rms=5.320101e-02 ev_max=1.187518e-01
+R=0 TPLANE m=2 x1=1 n_ok=100 mean2=5.379253646255e-01 mean3=4.757171160330e-01 var2=2.915384309635e-02 var3=2.229214863707e-02 mean_tau=1.416376870339e+00 var_tau=6.591375443374e-01 ev_rms=9.507140e-02 ev_max=2.290665e-01
+R=0 TPLANE m=3 x1=1.5 n_ok=100 mean2=4.933968381677e-01 mean3=4.745288014333e-01 var2=2.768201891746e-02 var3=2.940290851007e-02 mean_tau=1.824921764031e+00 var_tau=7.336689771947e-01 ev_rms=1.063956e-01 ev_max=2.665510e-01
+R=0 TPLANE m=4 x1=2 n_ok=100 mean2=4.886364403158e-01 mean3=4.178324587260e-01 var2=6.378648571078e-02 var3=2.119632121193e-02 mean_tau=2.240520765612e+00 var_tau=7.092200737369e-01 ev_rms=1.139988e-01 ev_max=2.477470e-01
+R=0 TPLANE m=5 x1=4 n_ok=100 mean2=4.709435750008e-01 mean3=4.237577309703e-01 var2=5.525491350183e-02 var3=8.829039373241e-02 mean_tau=4.100321829969e+00 var_tau=8.682548804737e-01 ev_rms=1.644697e-01 ev_max=4.528054e-01
+R=0 TTIME n=0 t=0.125 active=100 mean1=1.297751938304e-01 mean2=5.114555575820e-01 mean3=4.620819012779e-01 var1=6.835695889473e-03 var2=6.548270163879e-02 var3=9.373759566476e-02
+R=0 TTIME n=1 t=0.25 active=100 mean1=2.604993153693e-01 mean2=5.235363416132e-01 mean3=4.737199259771e-01 var1=2.515827898548e-02 var2=6.079427943215e-02 var3=9.152166761605e-02
+R=0 TTIME n=2 t=0.375 active=100 mean1=3.674610652899e-01 mean2=5.331492747510e-01 mean3=4.826448505136e-01 var1=4.340142000996e-02 var2=5.556442722022e-02 var3=7.821782720392e-02
+R=0 TTIME n=3 t=0.5 active=100 mean1=4.672558174440e-01 mean2=5.344577883834e-01 mean3=4.909661076350e-01 var1=6.818719408105e-02 var2=5.106998520483e-02 var3=6.280649301614e-02
+R=0 TTIME n=4 t=0.625 active=100 mean1=5.730457926625e-01 mean2=5.213025222403e-01 mean3=4.879725091348e-01 var1=1.099590838754e-01 var2=4.441515852921e-02 var3=5.522060818598e-02
+R=0 TTIME n=5 t=0.75 active=100 mean1=6.765398353688e-01 mean2=5.172408788977e-01 mean3=4.856602184246e-01 var1=1.543278138245e-01 var2=4.146667865380e-02 var3=4.768844575766e-02
+R=0 TTIME n=6 t=0.875 active=100 mean1=7.819368340525e-01 mean2=5.117797692800e-01 mean3=4.855357859641e-01 var1=1.998594923495e-01 var2=3.786680854724e-02 var3=4.161978470391e-02
+R=0 TTIME n=7 t=1 active=100 mean1=8.774510995180e-01 mean2=5.116389635209e-01 mean3=4.840553796821e-01 var1=2.399391688935e-01 var2=3.699537206810e-02 var3=3.873973163759e-02
+R=0 TTIME n=8 t=1.125 active=100 mean1=9.772460127027e-01 mean2=5.115200653362e-01 mean3=4.839033712502e-01 var1=2.821164229342e-01 var2=3.647015917177e-02 var3=3.557890623778e-02
+R=0 TTIME n=9 t=1.25 active=100 mean1=1.091915809002e+00 mean2=5.104686845551e-01 mean3=4.816281061235e-01 var1=3.475404232370e-01 var2=3.694238439367e-02 var3=3.376407583566e-02
+R=0 TTIME n=10 t=1.375 active=100 mean1=1.200161561168e+00 mean2=5.118454645954e-01 mean3=4.797826588831e-01 var1=4.043869066488e-01 var2=3.733449806313e-02 var3=3.148079402887e-02
+R=0 TTIME n=11 t=1.5 active=100 mean1=1.311771299018e+00 mean2=5.119730870867e-01 mean3=4.710873081889e-01 var1=4.513517922188e-01 var2=3.803799780158e-02 var3=3.129614734040e-02
+R=0 TTIME n=12 t=1.625 active=100 mean1=1.422057128716e+00 mean2=5.099221806203e-01 mean3=4.616048612064e-01 var1=4.837405315251e-01 var2=3.962496262202e-02 var3=3.022556328329e-02
+R=0 TTIME n=13 t=1.75 active=100 mean1=1.534784897879e+00 mean2=5.076352689170e-01 mean3=4.539829349814e-01 var1=5.045997977313e-01 var2=3.940370583461e-02 var3=2.954222218974e-02
+R=0 TTIME n=14 t=1.875 active=100 mean1=1.653117872776e+00 mean2=5.048623083028e-01 mean3=4.508971874101e-01 var1=5.200994357645e-01 var2=3.946139587899e-02 var3=2.908830596126e-02
+R=0 TTIME n=15 t=2 active=100 mean1=1.776423078023e+00 mean2=5.095866403664e-01 mean3=4.550974146629e-01 var1=5.322452000578e-01 var2=4.060764512633e-02 var3=2.734740822890e-02
+R=0 TTIME n=16 t=2.125 active=100 mean1=1.901009321314e+00 mean2=5.161562377941e-01 mean3=4.558678963305e-01 var1=5.512664656299e-01 var2=4.378869800856e-02 var3=2.610660882835e-02
+R=0 TTIME n=17 t=2.25 active=100 mean1=2.037598431606e+00 mean2=5.120653919863e-01 mean3=4.522608454805e-01 var1=5.989894361707e-01 var2=4.284237046413e-02 var3=2.484318955279e-02
+R=0 TTIME n=18 t=2.375 active=100 mean1=2.183062213642e+00 mean2=5.161982499988e-01 mean3=4.489691363138e-01 var1=6.412761808577e-01 var2=4.334334255155e-02 var3=2.642277765322e-02
+R=0 TTIME n=19 t=2.5 active=100 mean1=2.339952312225e+00 mean2=5.128707488719e-01 mean3=4.473848798832e-01 var1=6.857264686902e-01 var2=4.377844064211e-02 var3=2.776061694107e-02
+R=0 TTIME n=20 t=2.625 active=100 mean1=2.484423732906e+00 mean2=5.121992017796e-01 mean3=4.366945144363e-01 var1=7.278942670947e-01 var2=4.529518072086e-02 var3=3.058445415402e-02
+R=0 TTIME n=21 t=2.75 active=100 mean1=2.640439639752e+00 mean2=5.106061105847e-01 mean3=4.231072330143e-01 var1=8.079217126235e-01 var2=4.476324374631e-02 var3=3.693062011398e-02
+R=0 TTIME n=22 t=2.875 active=100 mean1=2.814694885369e+00 mean2=5.070178017057e-01 mean3=4.137492012212e-01 var1=9.237394570850e-01 var2=4.338590208137e-02 var3=4.360348766704e-02
+R=0 TTIME n=23 t=3 active=100 mean1=3.001041855405e+00 mean2=5.063888806777e-01 mean3=4.122797771596e-01 var1=1.033437509667e+00 var2=4.125919262654e-02 var3=4.764417116025e-02
+R=0 TTIME n=24 t=3.125 active=100 mean1=3.175987741889e+00 mean2=5.041785772416e-01 mean3=4.211839176306e-01 var1=1.110499836120e+00 var2=4.198753186829e-02 var3=4.844607622908e-02
+R=0 TTIME n=25 t=3.25 active=100 mean1=3.342196846531e+00 mean2=4.890873410642e-01 mean3=4.281977525719e-01 var1=1.173827937038e+00 var2=4.017024655208e-02 var3=5.131361916151e-02
+R=0 TTIME n=26 t=3.375 active=100 mean1=3.500550424441e+00 mean2=4.800784040134e-01 mean3=4.308803585952e-01 var1=1.223756037005e+00 var2=3.888343668765e-02 var3=6.168886488234e-02
+R=0 TTIME n=27 t=3.5 active=100 mean1=3.634417902454e+00 mean2=4.858516419924e-01 mean3=4.299304772695e-01 var1=1.249604099017e+00 var2=4.055009837976e-02 var3=7.156347802052e-02
+R=0 TTIME n=28 t=3.625 active=100 mean1=3.758291738312e+00 mean2=4.892108131553e-01 mean3=4.225463002533e-01 var1=1.247270237239e+00 var2=4.305911787352e-02 var3=7.897000053459e-02
+R=0 TTIME n=29 t=3.75 active=100 mean1=3.878587547069e+00 mean2=4.884993269869e-01 mean3=4.063193041701e-01 var1=1.243972162634e+00 var2=4.409520764968e-02 var3=8.857426894968e-02
+R=0 TTIME n=30 t=3.875 active=100 mean1=4.006845075538e+00 mean2=4.951153159279e-01 mean3=3.977040286653e-01 var1=1.239555497289e+00 var2=5.024960929517e-02 var3=9.790446261677e-02
+R=0 TTIME n=31 t=4 active=100 mean1=4.120576494307e+00 mean2=5.023725567242e-01 mean3=4.008777535828e-01 var1=1.218015895141e+00 var2=5.570728167272e-02 var3=9.928425710594e-02
+R=0 TSTATUS pass=plane hist=100,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=330724
+R=0 TSTATUS pass=time hist=100,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=316442
+R=0 TWIN Np=100 weights=1/Np (every particle, backflow seeds included) planes=6 times=32
+R=0 POLLOCK Np=100 seed_nonpos=0 seeds_equal_tracker=1 planes=6 times=32 hist_plane=0:100 hist_time=0:100 cells_plane=8795 cells_time=7488 weighted_not_active=0 repack_seconds=0.000 weights=rt0_v1_at_seed
+R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+TIMING r=0 seconds=1.988
+R=1 FIELD gaussian (SF-18) N=64 grid=64x16x16 sigma2=1 ell=0.25 seed=4002 normalize_variance=1 applied_scale=9.908785228662e-01 raw_variance=1.018495628975e+00 final_variance=1.000000000000e+00 active_modes=7199 | stage field k = exp(eps Y), eps = 1
+R=1 SETUP STAGE field=gaussian eps=1 N=64 status=ok
+R=1 SETUP   SF-18: raw_mean=7.806256e-18 raw_variance=1.018495628975e+00 applied_scale=9.908785228662e-01 final_variance=1.000000000000e+00 active_modes=7199
+R=1 SETUP   SF-19: mg_levels=3 converged=1 G=(9.065861936043e-01, -2.434079431381e-03, -1.870099308078e-02) mean_flux=(1.000e+00, -1.016e-18, 9.243e-18) div_max=1.276e-08 div_rms=8.932e-10
+R=1 SETUP   SF-19 corrector x: status=converged its=10 rel_residual=8.089e-11 final_residual=1.260e-07
+R=1 SETUP   SF-19 corrector y: status=converged its=10 rel_residual=8.938e-11 final_residual=1.368e-07
+R=1 SETUP   SF-19 corrector z: status=converged its=10 rel_residual=6.650e-11 final_residual=9.603e-08
+R=1 SETUP   inlet: vmin=1.336607e-01 mean(U plane 0)=1.000000000009321 (mean-1=9.321e-12) Q0-1=9.322e-12 v_rms=n/a (lean stage: vertex vD not built)
+R=1 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=1 SETUP stage eps=1 built in 0.899s (lean stage, Grid3D 64x16x16, bhat=mapped)
+R=1 STAGE status=ok grid=64x16x16 mg_levels=3 G=9.065861936043e-01,-2.434079431381e-03,-1.870099308078e-02 darcy_converged=1 flow_ready=1 seconds=0.899
+R=1 MEM_GEOM pid=261265 nx=64 ny=16 nz=16 n=16384 levels=3 level_cells=16384,2048,256 coarsest=16x4x4 face_max=17408 bhat=mapped bhat_host_bytes=131072 cub_sum_bytes=16383,1,1
+R=1 MEM_PHASE phase=F exact_bytes=401928 cufft_work=135168 cufft_gen=135168 device_used=575668224 seconds=0.009620 items=y:131072,sf18_spectrum:135168,sf18_mode_counter:8,sf18_reduce_blocks:512
+R=1 MEM_PHASE phase=S1 exact_bytes=667648 cufft_work=270336 cufft_prefilter_logk=270336 device_used=575668224 seconds=0.012572 items=lnk:131072,coef_logk:131072,prefilter_spectrum:135168
+R=1 MEM_PHASE phase=S2 exact_bytes=1075279 cufft_work=0 device_used=575668224 seconds=0.860195 categories=correctors:278528,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:155663,mg_hierarchy:606208,mg_preconditioner:16409 items=mg_l0_x:139264,mg_l0_b:131072,mg_l0_r:131072,mg_l0_coef:131072,mg_l1_x:16384,mg_l1_b:16384,mg_l1_r:16384,mg_l1_coef:16384,mg_l2_x:2048,mg_l2_b:2048,mg_l2_r:2048,mg_l2_coef:2048,pcg_r:139264,pcg_p:139264,corrector:139264,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:9,scratch_mg_mean_zero_l2:9,scratch_reduce_blocks:2048
+R=1 MEM_PHASE phase=S3 exact_bytes=8675432 cufft_work=270336 cufft_prefilter_pot=270336 device_used=584056832 seconds=0.016144 items=h_tilde:139264,coef_logk:131072,labels_device:7868520,coef_pot:131072,prefilter_spectrum:135168
+R=1 MEM_PHASE phase=T exact_bytes=8275768 cufft_work=0 device_used=584056832 seconds=0.000275 items=coef_pot:131072,coef_logk:131072,labels_device:7868520,tracker_seeds:2400,tracker_planes:48,tracker_times:256,tracker_stats_plane:8800,tracker_stats_time:8800,tracker_planes_x23:9600,tracker_planes_tau:4800,tracker_planes_I:4800,tracker_times_x:76800,tracker_times_I:25600,tracker_prepare_transient:3200
+R=1 TRACK field=gaussian eps=1 N=64 h=0.0625 x0=0 M=10 Np=100 planes=0.25,0.5,1,1.5,2,4 times=0.125,0.25,0.375,0.5,0.625,0.75,0.875,1,1.125,1.25,1.375,1.5,1.625,1.75,1.875,2,2.125,2.25,2.375,2.5,2.625,2.75,2.875,3,3.125,3.25,3.375,3.5,3.625,3.75,3.875,4 tol=1.0e-08 h_max=7.812500e-03 (h/8) min_step=1.0e-13 max_arclength=26 covectors=0 labels_available=1 inlet_vmin=1.336607e-01
+R=1 BACKFLOW field=gaussian eps=1 N=64 inlet_vmin=1.336607e-01 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+R=1 TPLANE m=0 x1=0.25 n_ok=100 mean2=5.447187521592e-01 mean3=4.784677207232e-01 var2=6.863041354913e-02 var3=5.687966687369e-02 mean_tau=2.813080890448e-01 var_tau=4.486235046597e-02 ev_rms=4.510664e-02 ev_max=1.545104e-01
+R=1 TPLANE m=1 x1=0.5 n_ok=100 mean2=5.498278305314e-01 mean3=4.830372687002e-01 var2=6.251610703223e-02 var3=7.424220244336e-02 mean_tau=5.537982944591e-01 var_tau=1.622977074551e-01 ev_rms=6.376460e-02 ev_max=1.838759e-01
+R=1 TPLANE m=2 x1=1 n_ok=100 mean2=5.321021472652e-01 mean3=4.996247513378e-01 var2=6.891423524881e-02 var3=6.066862211261e-02 mean_tau=1.170295956277e+00 var_tau=6.846616084134e-01 ev_rms=9.458301e-02 ev_max=2.888737e-01
+R=1 TPLANE m=3 x1=1.5 n_ok=100 mean2=5.639195506145e-01 mean3=4.627581625648e-01 var2=6.971431222266e-02 var3=4.640441276046e-02 mean_tau=1.753732083622e+00 var_tau=1.240482316335e+00 ev_rms=9.992417e-02 ev_max=3.249500e-01
+R=1 TPLANE m=4 x1=2 n_ok=100 mean2=5.804611732070e-01 mean3=4.594074186526e-01 var2=5.786505999569e-02 var3=4.190458387751e-02 mean_tau=2.278061801140e+00 var_tau=1.538059653218e+00 ev_rms=1.012108e-01 ev_max=3.548475e-01
+R=1 TPLANE m=5 x1=4 n_ok=100 mean2=5.391352571872e-01 mean3=4.731174872833e-01 var2=7.651559605704e-02 var3=5.348093611775e-02 mean_tau=4.069219710760e+00 var_tau=3.063060841179e+00 ev_rms=1.714819e-01 ev_max=5.330596e-01
+R=1 TTIME n=0 t=0.125 active=100 mean1=1.545841434991e-01 mean2=5.460463871716e-01 mean3=4.765275380512e-01 var1=5.038143905890e-03 var2=7.301903708018e-02 var3=5.373905228911e-02
+R=1 TTIME n=1 t=0.25 active=100 mean1=2.972671839115e-01 mean2=5.555517851485e-01 mean3=4.769747000865e-01 var1=1.582930897060e-02 var2=6.663996717235e-02 var3=5.806710293702e-02
+R=1 TTIME n=2 t=0.375 active=100 mean1=4.510380095614e-01 mean2=5.554108965247e-01 mean3=4.774061358110e-01 var1=3.856590401205e-02 var2=6.364561773822e-02 var3=6.672916983198e-02
+R=1 TTIME n=3 t=0.5 active=100 mean1=6.075560001970e-01 mean2=5.371465310734e-01 mean3=4.789881495408e-01 var1=7.175596535304e-02 var2=7.091733168745e-02 var3=6.653335874242e-02
+R=1 TTIME n=4 t=0.625 active=100 mean1=7.287530305327e-01 mean2=5.207770324652e-01 mean3=4.821445040703e-01 var1=9.582393854800e-02 var2=6.966396107161e-02 var3=6.665386296144e-02
+R=1 TTIME n=5 t=0.75 active=100 mean1=8.476697574451e-01 mean2=5.183262775464e-01 mean3=4.874710057020e-01 var1=1.244132288451e-01 var2=6.853057113210e-02 var3=6.649088598006e-02
+R=1 TTIME n=6 t=0.875 active=100 mean1=9.877709165544e-01 mean2=5.302463163391e-01 mean3=4.726293713215e-01 var1=1.746551380983e-01 var2=7.380236236842e-02 var3=6.374514500035e-02
+R=1 TTIME n=7 t=1 active=100 mean1=1.115574764407e+00 mean2=5.484010563487e-01 mean3=4.748010509555e-01 var1=2.184195280396e-01 var2=8.219321012403e-02 var3=6.108117938495e-02
+R=1 TTIME n=8 t=1.125 active=100 mean1=1.237650196831e+00 mean2=5.543644721991e-01 mean3=4.763298096836e-01 var1=2.589115366902e-01 var2=8.155397322060e-02 var3=5.873209348515e-02
+R=1 TTIME n=9 t=1.25 active=100 mean1=1.355914242074e+00 mean2=5.541567966498e-01 mean3=4.777628583411e-01 var1=2.954027689893e-01 var2=7.496134995725e-02 var3=5.573140219226e-02
+R=1 TTIME n=10 t=1.375 active=100 mean1=1.485668911673e+00 mean2=5.612274529382e-01 mean3=4.742902464450e-01 var1=3.594301801201e-01 var2=7.137924851526e-02 var3=4.960467000112e-02
+R=1 TTIME n=11 t=1.5 active=100 mean1=1.657567755889e+00 mean2=5.789807896363e-01 mean3=4.757623452133e-01 var1=4.933786150617e-01 var2=7.256890382268e-02 var3=4.443745262142e-02
+R=1 TTIME n=12 t=1.625 active=100 mean1=1.806970365661e+00 mean2=5.642074469519e-01 mean3=4.960955041564e-01 var1=6.044829486905e-01 var2=6.523965325184e-02 var3=4.379027095349e-02
+R=1 TTIME n=13 t=1.75 active=100 mean1=1.931254455726e+00 mean2=5.608845642861e-01 mean3=4.994923567932e-01 var1=6.760899567861e-01 var2=6.397898964580e-02 var3=4.464532952840e-02
+R=1 TTIME n=14 t=1.875 active=100 mean1=2.054232078709e+00 mean2=5.622654377725e-01 mean3=5.004515599245e-01 var1=7.466170488011e-01 var2=6.285841391970e-02 var3=4.419595492172e-02
+R=1 TTIME n=15 t=2 active=100 mean1=2.175610089211e+00 mean2=5.623953589395e-01 mean3=4.995393375015e-01 var1=8.130718375668e-01 var2=6.383815325218e-02 var3=4.423840303449e-02
+R=1 TTIME n=16 t=2.125 active=100 mean1=2.308046667724e+00 mean2=5.578573324639e-01 mean3=4.979186155649e-01 var1=9.006952824699e-01 var2=6.391116212041e-02 var3=4.399724401873e-02
+R=1 TTIME n=17 t=2.25 active=100 mean1=2.436071598596e+00 mean2=5.534603131018e-01 mean3=4.953038672488e-01 var1=9.915637638172e-01 var2=6.030099411886e-02 var3=4.487621288076e-02
+R=1 TTIME n=18 t=2.375 active=100 mean1=2.565175092795e+00 mean2=5.599789348371e-01 mean3=4.899955564825e-01 var1=1.100271225831e+00 var2=5.744323511902e-02 var3=4.488773073503e-02
+R=1 TTIME n=19 t=2.5 active=100 mean1=2.699908371496e+00 mean2=5.577306137964e-01 mean3=4.879721045016e-01 var1=1.219195412177e+00 var2=5.438614755888e-02 var3=4.579534561387e-02
+R=1 TTIME n=20 t=2.625 active=100 mean1=2.845422078786e+00 mean2=5.611685639916e-01 mean3=4.878513983851e-01 var1=1.330088954631e+00 var2=5.625342652399e-02 var3=4.657200657143e-02
+R=1 TTIME n=21 t=2.75 active=100 mean1=2.997593893516e+00 mean2=5.592295270136e-01 mean3=4.846040677708e-01 var1=1.450576105790e+00 var2=6.232197365544e-02 var3=4.612295440351e-02
+R=1 TTIME n=22 t=2.875 active=100 mean1=3.150351718871e+00 mean2=5.568177144569e-01 mean3=4.777187260448e-01 var1=1.579528919968e+00 var2=6.318726480923e-02 var3=4.504851197723e-02
+R=1 TTIME n=23 t=3 active=100 mean1=3.295528954204e+00 mean2=5.520091787827e-01 mean3=4.761959913132e-01 var1=1.703426306900e+00 var2=6.173237188123e-02 var3=4.315660722879e-02
+R=1 TTIME n=24 t=3.125 active=100 mean1=3.433330299631e+00 mean2=5.477959557577e-01 mean3=4.813150834625e-01 var1=1.805843275746e+00 var2=5.981220948048e-02 var3=4.262859455161e-02
+R=1 TTIME n=25 t=3.25 active=100 mean1=3.570188614130e+00 mean2=5.438451879420e-01 mean3=4.765461067742e-01 var1=1.935245169946e+00 var2=5.662671648161e-02 var3=4.102123493646e-02
+R=1 TTIME n=26 t=3.375 active=100 mean1=3.720837902843e+00 mean2=5.427041513390e-01 mean3=4.724972873005e-01 var1=2.083559269894e+00 var2=5.855090465271e-02 var3=4.324441136909e-02
+R=1 TTIME n=27 t=3.5 active=100 mean1=3.874393117717e+00 mean2=5.520465826324e-01 mean3=4.748059276925e-01 var1=2.209900305854e+00 var2=6.359305144230e-02 var3=4.589459976282e-02
+R=1 TTIME n=28 t=3.625 active=100 mean1=4.024691193808e+00 mean2=5.567662114350e-01 mean3=4.731273975103e-01 var1=2.311901980862e+00 var2=6.805549180944e-02 var3=4.497324616919e-02
+R=1 TTIME n=29 t=3.75 active=100 mean1=4.161368294005e+00 mean2=5.535059706865e-01 mean3=4.730838573692e-01 var1=2.406730021492e+00 var2=6.902300514233e-02 var3=4.447092972910e-02
+R=1 TTIME n=30 t=3.875 active=100 mean1=4.297779370625e+00 mean2=5.547511076411e-01 mean3=4.671187860639e-01 var1=2.566025677718e+00 var2=6.709486254814e-02 var3=4.513784178583e-02
+R=1 TTIME n=31 t=4 active=100 mean1=4.457149553466e+00 mean2=5.551990173965e-01 mean3=4.716537178773e-01 var1=2.794946031388e+00 var2=6.500460953707e-02 var3=4.743801698145e-02
+R=1 TSTATUS pass=plane hist=100,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=329578
+R=1 TSTATUS pass=time hist=100,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=333254
+R=1 TWIN Np=100 weights=1/Np (every particle, backflow seeds included) planes=6 times=32
+R=1 POLLOCK Np=100 seed_nonpos=0 seeds_equal_tracker=1 planes=6 times=32 hist_plane=0:100 hist_time=0:100 cells_plane=8686 cells_time=7728 weighted_not_active=0 repack_seconds=0.000 weights=rt0_v1_at_seed
+R=1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+TIMING r=1 seconds=1.104
+ANALYSIS nr=2 rows=32 lambda=0.25 vmean_norm=1 wrote /home/sesquerre/sf38_campaign/controls/runner_smoke/ensemble/ensemble_timeseries.csv /home/sesquerre/sf38_campaign/controls/runner_smoke/analysis/macrodispersion.csv
+RUN_DONE nr=2

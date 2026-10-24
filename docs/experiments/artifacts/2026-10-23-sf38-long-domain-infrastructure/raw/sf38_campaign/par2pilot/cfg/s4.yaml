@@ -1,0 +1,117 @@
+# ==============================================================================
+# MacroFlow3D — Par2 RWPT baseline pilot, SF-38 (s4)
+# ==============================================================================
+#
+# Propósito: línea base Par2 RWPT en el mismo dominio físico que el estudio
+# lagrangiano (SF-38 / SF-39), piloto N_R = 10. Decisión 2026-10-23 D10-D12
+# (docs/decisions/2026-10-23-sf38-activation-decisions.md), D17 (estadística
+# del campo con la herramienta par2_field_stats); especificación
+# docs/plans/active/lester-eq14/increments/SF-38-long-domain-infrastructure.md
+# (cláusula "Par2 RWPT baseline") y C-PAR2 de la preinscripción
+# docs/experiments/artifacts/2026-10-23-sf38-long-domain-infrastructure/preregistration.md.
+# Derivada de apps/config_pipeline_par2.yaml (que no se modifica); la semántica
+# de las claves está comentada en ese archivo.
+#
+# Dominio: 2496x288x288, dx = 5 -> Lx = 12480; corr_length = 120 (lambda/h = 24);
+# dominio 104 x 12 x 12 lambda.
+# Gradiente medio de carga J = 100/10240 (la carga oeste escala con Lx:
+# 121.875/12480 = 100/10240), K_g = 1 -> velocidad de Darcy nominal K_g J.
+# n_steps = ceil(1.2 (Lx - 10 lambda) / (J dt)) con dt = 12.5.
+# Campo K: semillas K 7001-7010 (stochastic.seed + r), NR = 10 en un proceso.
+# No se escribe K ni la carga (save_K/save_head false; los defaults del código
+# son true). Memoria de dispositivo Par2 ~124.8 B/celda con diagnósticos de
+# velocidad apagados.
+#
+# Uso: ./macroflow3d_pipeline apps/config_pipeline_par2_sf38_s4.yaml
+# ==============================================================================
+
+# ensemble: ejecuta las NR = analysis.macrodispersion.NR realizaciones en un
+# proceso (single_run y ensemble toman el mismo camino: NR = mac.enabled ?
+# mac.NR : 1 en EnsembleRunner); se elige ensemble por ser explícito.
+run_mode: ensemble
+
+grid:
+  nx: 2496
+  ny: 288
+  nz: 288
+  dx: 5.0
+
+# Covarianza gaussiana C(r) = sigma2 exp(-(r/lambda)^2) (decisión 2026-10-07).
+stochastic:
+  sigma2: 4.0
+  corr_length: 120.0
+  n_modes: 10000
+  covariance_type: 1
+  seed: 7001
+  K_mean: 1.0
+
+flow:
+  solver: mg_cg
+  mg_levels: 5
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.0e-6
+  cg_check_every: 10
+  rtol: 1.0e-6
+
+  pin:
+    mode: off   # Dirichlet en west/east -> sistema no singular
+
+  bc:
+    west:   { type: dirichlet, value: 121.875 }  # J Lx, J = 100/10240
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+
+# Advección pura; inyección uniforme en el plano x = 5 lambda sobre todo Y x Z.
+transport:
+  n_particles: 10000
+  dt: 12.5
+  n_steps: 110887
+  porosity: 1.0
+  diffusion: 0.0
+  alpha_l: 0.0
+  alpha_t: 0.0
+  seed: 123456789
+  output_every: 369          # ~n_steps/300 (como la base)
+  snapshot_every: 0
+  inject_x: 600.0              # 5 lambda
+
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 10
+    lambda: 120.0           # = stochastic.corr_length
+    vmean_norm: 0.009765625     # J = 100/10240
+    sample_every: 10
+    var_estimator: biased
+
+  # Snapshots de posiciones (precision 15): se usan para t_b = primer snapshot
+  # con alguna partícula en x >= Lx - 5 lambda; cada floor(n_steps/100) pasos.
+  snapshots:
+    enabled: true
+    every: 1108
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+diagnostics:
+  velocity_field: false
+
+output:
+  output_dir: ./output/sf38_par2_s4
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary
