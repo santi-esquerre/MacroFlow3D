@@ -145,6 +145,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
 - [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
 - [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
+- [ ] [SF-41 — Medium (b) for the Lagrangian consumer: lean Dirichlet stage, non-periodic-in-x1 spline and x-exit handling](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -166,7 +167,9 @@ particles). SF-34 (re-specified in place as the O1 arm, off the critical path) a
 SF-37 and SF-38 follow SF-36 (in parallel); SF-39 follows SF-37 and SF-38. Re-sequencing 2026-10-22
 (`docs/decisions/2026-10-22-lean-lagrangian-stage.md`; audit `docs/experiments/2026-10-22-lagrangian-memory-audit.md`):
 SF-40 (lean parametric stage at memory level S+) follows SF-37; SF-38 follows SF-36 and SF-40; the provisional
-non-periodic spline is renumbered SF-41. Disposition of the open decisions D1-D7 of
+non-periodic spline is renumbered SF-41. Re-sequencing 2026-10-24
+(`docs/decisions/2026-10-24-sf41-sf39-planning-decisions.md`): SF-38 selected medium (b) (R4); SF-41 (lean medium (b) stage,
+non-periodic-in-`x1` spline, `x`-exit handling, runner integration) follows SF-38; SF-39 follows SF-37, SF-38 and SF-41. Disposition of the open decisions D1-D7 of
 `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
 D5 are moot (they tune a system whose solution is not the target); D2 is retired
 with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
@@ -426,8 +429,9 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    measured peak of 28885 MiB, outputs byte-identical to the cube stage, tracker speedup 1.55x bitwise, capacity ~5.1e8
    cells, `docs/experiments/2026-10-22-sf40-lean-lagrangian-stage.md`); long-domain infrastructure
    (non-cubic stage on the SF-40 lean stage, medium A/B affine-periodic vs Dirichlet in `x`, ensemble runner, Par2
-   baseline): [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md). If SF-38 selects the Dirichlet
-   medium, a spline non-periodic in `x1` (provisional SF-41) is specified before the study.
+   baseline): [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md) (medium (b), Dirichlet in `x`, selected by the
+   pre-registered equivalence test); medium (b) for the Lagrangian consumer (lean Dirichlet stage, non-periodic-in-`x1` spline, `x`-exit
+   handling, decision 2026-10-24): [SF-41](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md).
 5. The study: `alpha_L`, `alpha_T` at `sigma^2` in {1, 2.25, 4} with `lambda/h`, `tol` and `N_R` convergence by
    confidence intervals (`tol` via the `h_max` ladder and equivalence tests, decision 2026-10-23); `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
    physical / numerical / unresolved without presupposing its value (Gate 4):
