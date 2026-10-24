@@ -243,3 +243,16 @@ Lean non-projected (b) flow solve: 68.57 B/cell (memory audit 2026-10-22 section
 Reference levels at the same box (measured, SF-38 B2): the lean periodic stage with the SF-19 flow and the spline reaches exact 60.655 B/cell (`MEM_PHASE phase=S2`, `prodgrid/B2.log`) and a PID peak of 28885 MiB = 61.72 B/cell with context; the ceiling 30000 MiB corresponds to 64.10 B/cell with context.
 
 Conclusion (derived): medium (b) as measured (44426 MiB extrapolated from `ab_s4`, 45107 MiB from `ab_s1`) does not fit 3328x384x384 in 30000 MiB; even the lean non-projected estimate (32091 MiB, before the spline) exceeds it. A lean (b) flow stage together with the non-periodic spline would have to come in at or below the level of the SF-40 stage (~61 B/cell, 60.655 exact; PID peak 28885 MiB) to fit; otherwise stop rule R3 (domain reduction by owner decision) applies at `sigma^2 >= 2.25`.
+
+## P6 Pollock plane pass of medium (b): recorded `non_ok` and x-exit handling (derived, post-hoc)
+
+Counts over the `e2_{a,b}.csv` plane rows of the 20 realizations (10 per amplitude) of each medium: planes with `contributing = 10000` and planes with `non_ok != 0`.
+
+| run | medium | realizations | plane rows | rows with contributing = 10000 | rows with non_ok != 0 |
+|---|---|---|---|---|---|
+| ab_s1 | a | 10 | 80 | 80 | 0 |
+| ab_s1 | b | 10 | 80 | 80 | 0 |
+| ab_s4 | a | 10 | 70 | 70 | 0 |
+| ab_s4 | b | 10 | 70 | 70 | 0 |
+
+Total (both media): 300 plane rows, 300 with `contributing = 10000`, 0 with `non_ok != 0`. No per-particle wrap counter and no minimum `x1` is written to `raw/`, so the number of particles that reached `x1 < 0` from the injection plane `X0 = 5 lambda` is not in the imported evidence.

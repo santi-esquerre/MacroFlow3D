@@ -7,7 +7,7 @@
 Stdlib only; deterministic (a rerun on the same raw/ regenerates a byte-identical file). Nothing here changes a pre-registered verdict,
 threshold or analysis file. No alpha statement: S_T and S_tau appear only as the rule's statistics. 1 MiB = 1048576 B.
 Sections: P1 pairing efficiency, P2 point estimates vs margins, P3 paired boundary-layer profile, P4 mean-flow forcing and tilt,
-P5 memory of medium (b) at the production grid.
+P5 memory of medium (b) at the production grid, P6 recorded Pollock non_ok / x-exit evidence.
 """
 import csv
 import json
@@ -335,6 +335,31 @@ def p5(raw):
     return out
 
 
+# ---------------------------------------------------------------------------------------------------------------- P6
+def p6(raw):
+    """E2 plane rows of both media: contributing / non_ok counts (the Pollock plane pass records no x1 < 0 excursion)."""
+    rows = []
+    for amp, d in AMPS:
+        base = os.path.join(raw, "sf38_campaign", "ab", d, "realizations")
+        for m in "ab":
+            nfiles = nplanes = nfull = nnonok = 0
+            for r in range(10):
+                with open(os.path.join(base, "r_%04d" % r, "e2_%s.csv" % m)) as f:
+                    for x in csv.DictReader(f):
+                        nplanes += 1
+                        nfull += int(x["contributing"]) == 10000
+                        nnonok += int(x["non_ok"]) != 0
+                nfiles += 1
+            rows.append((d, m, nfiles, nplanes, nfull, nnonok))
+    tot = (sum(r[3] for r in rows), sum(r[4] for r in rows), sum(r[5] for r in rows))
+    out = ("## P6 Pollock plane pass of medium (b): recorded `non_ok` and x-exit handling (derived, post-hoc)\n\n"
+           "Counts over the `e2_{a,b}.csv` plane rows of the 20 realizations (10 per amplitude) of each medium: planes with `contributing = 10000` and planes with `non_ok != 0`.\n\n")
+    out += table(("run", "medium", "realizations", "plane rows", "rows with contributing = 10000", "rows with non_ok != 0"), rows)
+    out += ("\nTotal (both media): %d plane rows, %d with `contributing = 10000`, %d with `non_ok != 0`. No per-particle wrap counter and no minimum `x1` is written to `raw/`, so the number "
+            "of particles that reached `x1 < 0` from the injection plane `X0 = 5 lambda` is not in the imported evidence.\n" % tot)
+    return out
+
+
 # ---------------------------------------------------------------------------------------------------------------- driver
 def main(argv):
     if argv[1:] == ["--selftest"]:
@@ -353,7 +378,7 @@ def main(argv):
             "**Post-hoc, NOT pre-registered.** Derived by `scripts/posthoc_ab.py` from `raw/sf38_campaign/ab/` (and `raw/sf38_campaign/prodgrid/B2.log`) after FINAL_AUDIT, at the "
             "owner's request. Exploratory (forking-paths risk): none of these readings changes any pre-registered verdict, threshold or analysis file, and the "
             "medium decision stands as the rule's outcome. No `alpha_L` / `alpha_T` statement; `S_T` and `S_tau` appear only as the rule's statistics.\n\n")
-    text = head + "\n".join([p1(data), p2(raw), p3(raw, data), p4(raw, data), p5(raw)])
+    text = head + "\n".join([p1(data), p2(raw), p3(raw, data), p4(raw, data), p5(raw), p6(raw)])
     os.makedirs(outd, exist_ok=True)
     with open(os.path.join(outd, "posthoc_ab.md"), "w") as f:
         f.write(text)

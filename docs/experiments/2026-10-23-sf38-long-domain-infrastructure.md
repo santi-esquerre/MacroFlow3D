@@ -604,6 +604,13 @@ Applied scale (as printed):
   `stats_twin/`), because run-level aggregates of a one-realization run differ by construction; exit code 0 means the run completed, non-ok particles are recorded with counts and never an exit condition; the `dt/2` copies also double
   `sample_every` and `output_every`; D-C excludes `timings.json` like D-B; the `TTIME` time column is compared at `1e-9`, moments at `1e-12`; "inside the margin" is the closed interval; `S_T`, its floor trigger `0.05 lambda` and its margin `2.5e-3 lambda`
   are in box units; the `analysis_only` reproduction runs on a copy of D-A reduced to `stats/` and `analysis_config.yaml`; the `git diff` item of F is checked by the orchestrator; the `ab` part refuses to start without a C0 PASS.
+- **Spec-vs-code discrepancy, MINOR, unquantified (found by the orchestrator's code reconnaissance after FINAL_AUDIT; lines verified by the author of this note)**: the SPEC ("Medium A/B evaluation", line 73: a medium (b) Pollock particle leaving through `x = 0` by backflow "is counted
+  non-ok and recorded") and the N4 contract are not implemented. `pollock_plane_kernel` (`PollockComparator.cu:51-86`) calls `pollock_advance_to_x1` (`:72`) and `non_ok` is the count of tracker status codes different from `kStatusActive` (`PollockComparator.cu:318-322`);
+  neither it nor `lagrangian_medium_ab_main.cu` tests `x1 < 0`. The Pollock state wraps the cell index modulo `n_x` with an integer counter `w` (`PollockTracker.cuh:65-77`, `:317-323`), so the unwrapped coordinate stays consistent, but while `x_u < 0` the particle is advected by the
+  repacked faces of cell `n_x - 1`: the repack drops the outlet plane (`U[nx]`; `FaceFluxRepack.cuh:14-19,46-51`) and `eval_cell` reads the upper x-face of cell `n_x - 1` as `u[0]` (`PollockTracker.cuh:241-244`); it then re-enters at `x = 0`. In the imported evidence every E2 plane
+  row of both media in both A/B runs has `contributing = 10000` and `non_ok = 0` (300 of 300 rows over 20 realizations x 2 media; 150 of 150 for medium (b); `ANA/posthoc_ab.md` P6); no per-particle wrap counter or minimum `x1` is written, so the number of particles that reached `x1 < 0` from the injection plane
+  `X0 = 5 lambda` (an upstream travel of `5 lambda`) is not in the imported evidence (*plausibly zero, not measured*). Decision invariance (*derived*): medium (a) is selected only if all ten primary statistics are equivalent; at `sigma^2 = 4` the CI widths of `S_T` and `S_tau` are 2.970 and 6.154 times the full
+  equivalence window (table in section C), so a correction affecting a few particles of `1e4` could not plausibly make every statistic equivalent; the selection of (b) is not affected, while the recorded E2 moments of (b) could include such particles. No verdict is changed.
 - **Dry runs** (`SF38_DRYRUN=1`, tiny settings, local, listed in the bitacora) are not evidence and are not imported.
 - **RR4 and the pilot log**: the pilot's `bpilot.log` also contains the E1/E2 and `PRIMARY` lines of realization 4001; the author of this note saw them while reading the log for the solver record and quotes none of them as C0 evidence. Seed 4001 enters
   the A/B identically (byte-equal outputs, `AB_DETERMINISM_4001`), so no information beyond the A/B's own `C_D` lines exists in the pilot.
@@ -647,7 +654,7 @@ pre-registered equivalence test selected medium (b) because five statistics did 
 
 ## Post-hoc readings (not pre-registered; added 2026-10-24 after FINAL_AUDIT at the owner's request)
 
-Five readings of the same ten paired realizations per amplitude, computed by `A/scripts/posthoc_ab.py` from `R:sf38_campaign/ab/` (and `R:sf38_campaign/prodgrid/B2.log`) into `ANA/posthoc_ab.md`
+Six readings (P1-P6) of the same ten paired realizations per amplitude, computed by `A/scripts/posthoc_ab.py` from `R:sf38_campaign/ab/` (and `R:sf38_campaign/prodgrid/B2.log`) into `ANA/posthoc_ab.md`
 (`python3 A/scripts/posthoc_ab.py A/raw A/analysis`; a rerun is byte-identical; `note_tables.py` still regenerates every other `ANA` file byte-identically). Every number below is copied from `posthoc_ab.md`
 and is *derived (post-hoc)*. **None of these readings changes any pre-registered verdict, threshold or analysis file; they are exploratory (forking-paths risk: several readings of one ten-realization sample, none specified before the data, no
 multiplicity control); the medium decision stands as the rule's outcome (`C_VERDICT selected=b`).** No `alpha_L` / `alpha_T` statement is made; `S_T` and `S_tau` appear only as the rule's statistics.
@@ -709,6 +716,9 @@ against the 30000 MiB ceiling (64.10 B/cell with context). The lean non-projecte
 box is 60.655 B/cell exact (`B2` phase `S2`), PID peak 28885 MiB = 61.72 B/cell. Conclusion: medium (b) as measured does not fit 3328x384x384; a lean (b) flow stage plus the spline would have to come in at or below the SF-40 level (~61 B/cell) to fit;
 otherwise stop rule R3 (domain reduction by owner decision) applies at `sigma^2 >= 2.25`.
 
+**P6 Pollock x-exit evidence** (*derived (post-hoc)*): all 300 E2 plane rows (20 realizations x 2 media, 150 for medium (b)) have `contributing = 10000` and `non_ok = 0`; this is consistent with, but does not test, the absence of `x1 < 0` excursions, because the code
+records no such event (disclosure "Spec-vs-code discrepancy"); the number of particles that reached `x1 < 0` is not measured (plausibly zero).
+
 These readings do not alter the C verdict (5 equivalent, 0 non-equivalent, 5 inconclusive), the selection of (b) by the rule, or any other criterion of "Result".
 
 ## Next step
@@ -723,5 +733,7 @@ Risks exposed by the post-hoc readings, for the owner (not decisions):
   94.93 B/cell (44426 MiB extrapolated) and even the lean estimate (68.57 B/cell, 32091 MiB, estimate not measured) exceeds the ceiling before the spline. Otherwise stop rule R3 (domain reduction by owner decision) applies at `sigma^2 >= 2.25`.
 - **SF-39 pairing and `N_R` (P1, P2)**: at `sigma^2 = 4` the pairing efficiency of `S_T`, `S_tau` and the tilts is 0.55-1.10, so paired ladders gain little variance reduction there (unlike `V1`, 0.010), and the rough `N_R` to resolve the
   `theta_3` margin from its current point estimate is of the order of hundreds (about 362), not ten.
+- **x-exit handling (P6, disclosure "Spec-vs-code discrepancy")**: SF-41 must implement explicit x-exit handling for medium (b), inlet backflow and outlet, for both the spline tracker and the Pollock comparator (today the Pollock comparator wraps
+  periodically in `x` and records no `x1 < 0` event).
 - **Tilt of (b) in fixed axes (P4)**: the per-realization tilt of (b) at `sigma^2 = 4` has rms `|theta|` = 0.0227, 3.2 times the D19 vector bound; transverse moments measured in fixed axes pick up `theta^2 sigma_L^2` from it, which SF-39's design
   has to account for (how is not decided here).
