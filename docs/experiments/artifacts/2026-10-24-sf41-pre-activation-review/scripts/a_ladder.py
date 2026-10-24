@@ -289,7 +289,7 @@ def section_b():
     print()
     if passing:
         rec = max(passing, key=lambda r: r[4])
-        print(f"RECOMMENDED (passing candidate with the largest minimum margin): {rec[0]}   (minimum margin {rec[4]:+.4f})")
+        print(f"LARGEST-MARGIN PICK under CRIT-1/CRIT-2 (the original rule; NOT the recorded recommendation, see below): {rec[0]}   (minimum margin {rec[4]:+.4f})")
     else:
         rec = max(results, key=lambda r: r[4])
         print("NO CANDIDATE PASSED both criteria.  Stand-in for (c)-(f) (largest minimum margin, passing or not): "
@@ -301,7 +301,42 @@ def section_b():
     print("error values per level (h = 1/16, 1/32, 1/64):")
     for k in GATES:
         print(f"   {k:9s} {errs[0][k]:.6e} {errs[1][k]:.6e} {errs[2][k]:.6e}")
-    return rec
+    rec_e11 = select_e11(results, rec)
+    return rec, rec_e11
+
+
+def select_e11(results, rule_pick):
+    """Recorded recommendation (owner decision E11): a passing candidate whose x-closure share of the finest-level value and
+    Hessian error is >= 0.9.  Tie-breaker among those: largest minimum margin.  The shares are the (b2) diagnostic, computed after
+    the CRIT-1/CRIT-2 orders were seen (disclosed)."""
+    print()
+    print("RECORDED RECOMMENDATION")
+    print("  selected by the orchestrator per owner decision E11: the passing candidate whose x-closure share of the finest-level value and")
+    print("  Hessian error is >= 0.9; C1 was the largest-margin pick under CRIT-1/CRIT-2, which did not test the share; the share diagnostic b2")
+    print("  was computed after the orders were seen and this is disclosed.")
+    qual = []
+    for r in results:
+        if not r[3]:
+            continue
+        e0, _, _ = eval_candidate(r[1], 0.0)
+        sv = e0[-1]["val_max"] / r[5][-1]["val_max"]
+        sh = e0[-1]["hess_max"] / r[5][-1]["hess_max"]
+        ok = sv >= 0.9 and sh >= 0.9
+        print(f"  passing candidate {r[0]:34s} x share value {sv:.3f} Hessian {sh:.3f}  -> {'qualifies' if ok else 'does not qualify'}")
+        if ok:
+            qual.append(r)
+    pick = max(qual, key=lambda r: r[4])
+    print(f"  qualifying: {', '.join(r[0].split()[0] for r in qual)}; tie-breaker (largest minimum margin) and the orchestrator's selection: {pick[0]}"
+          f"   (minimum margin {pick[4]:+.4f})")
+    name, gfun, a, ok, mm, errs, o, mins, locs = pick
+    print(f"  predicted orders of {name} (6 significant digits), all five norms:")
+    for k in GATES:
+        print(f"   {k:9s} 16->32 {o[k][0]:.6g}   32->64 {o[k][1]:.6g}   min {mins[k]:.6g}   gate+0.05 {GATES[k] + MARGIN_PAD:.2f}")
+    print("  error values per level (h = 1/16, 1/32, 1/64; 6 significant digits):")
+    for k in GATES:
+        print(f"   {k:9s} {errs[0][k]:.5e} {errs[1][k]:.5e} {errs[2][k]:.5e}")
+    print(f"  finest-level argmax location: value at x1={locs[-1][0]:.5f}, Hessian at x1={locs[-1][1]:.5f}")
+    return pick
 
 
 def section_b2():
@@ -342,10 +377,10 @@ def section_c(rec):
     errs = np.array(errs)
     labels = ["val_max", "val_rms", "grad_max", "grad_rms", "hess_max"]
     for cpu, row in zip(cells, errs):
-        print(f"   {cpu:4d} cells/unit  " + " ".join(f"{lab}={v:.4e}" for lab, v in zip(labels, row)))
+        print(f"   {cpu:4d} cells/unit  " + " ".join(f"{lab}={v:.5e}" for lab, v in zip(labels, row)))
     o = np.log2(errs[:-1] / errs[1:])
     for i, pair in enumerate(("16->32", "32->64", "64->128")):
-        print(f"   orders {pair:8s}: " + " ".join(f"{lab}={v:.4f}" for lab, v in zip(labels, o[i])))
+        print(f"   orders {pair:8s}: " + " ".join(f"{lab}={v:.6g}" for lab, v in zip(labels, o[i])))
     print("   (recorded quantity; no gate)")
 
 
@@ -413,8 +448,7 @@ def section_e():
 
 
 # ------------------------------------------------------------------ (f) CPU vs GPU surrogate
-def section_f(rec):
-    name, gfun, a = rec[0], rec[1], rec[2]
+def section_f(recs):
     hdr("(f) CPU-vs-GPU surrogate: y/z FFT (reference, 'GPU-like') vs cyclic tridiagonal ('CPU-mirror-like'); same reduced not-a-knot x solve")
     print("full pipeline = prefilter + evaluation; differences relative to the max of the reference (gradient Euclidean, Hessian component max)")
     print("point set: ladder points inside [0,L1] + fixed-x/h margin points; gate (SF-41 A): <= 1e-13")
@@ -426,12 +460,14 @@ def section_f(rec):
         gain = np.sqrt((C**2).mean(axis=1)) / np.sqrt((e**2).mean())
         print(f"   n={n:5d}: k=-2..3: " + " ".join(f"{g:.2f}" for g in gain[:6]) + f" | k=n-4..n+1: " + " ".join(f"{g:.2f}" for g in gain[-6:])
               + f" | middle {gain[n // 2]:.3f}")
-    for label in (f"recommended field {name}", "stress: Gaussian field lambda/h = 8, seed 6001"):
+    fields = [(f"field {r[0]}", r[1], r[2]) for r in recs] + [("stress: Gaussian field lambda/h = 8, seed 6001", None, None)]
+    for label, gfun, a in fields:
         print(f"-- {label}")
+        dco = []
         for (nx, ny, nz) in BOXES:
             h = 1.0 / ny
             L1 = nx * h
-            if label.startswith("recommended"):
+            if gfun is not None:
                 f = samples3(gfun, a, nx, ny, nz, h)
             else:
                 f = gaussian_field(nx, ny, nz, h, 8 * h, 6001)
@@ -441,6 +477,7 @@ def section_f(rec):
             eg = evaluate3(cg, pts, h, nx, False)
             ec = evaluate3(cc, pts, h, nx, False)
             dcoef = np.abs(cc - cg).max() / np.abs(cg).max()
+            dco.append((ny, dcoef))
             xp = pts[:, 0]
             regions = {"interior(0.5<=x<=L1-0.5)": (xp >= 0.5) & (xp <= L1 - 0.5),
                        "near-face(<=1/16)": ((xp >= 0) & (xp <= COARSE)) | ((xp >= L1 - COARSE) & (xp <= L1)),
@@ -459,18 +496,21 @@ def section_f(rec):
             qg = np.linalg.norm(epc[1] - ep[1], axis=1).max() / np.linalg.norm(ep[1], axis=1).max()
             qH = np.abs(epc[2] - ep[2]).max() / np.abs(ep[2]).max()
             print(f"            periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value {qv:.2e} gradient {qg:.2e} Hessian {qH:.2e}")
+        print("   coefficient difference (yz cyc vs yz fft; same x solve) / max|c|: " + "  ".join(f"h=1/{n}: {d:.3e}" for n, d in dco)
+              + "   (host-style vs device-style evaluation of the same coefficients is the identical numpy code; not separable here)")
 
 
 def main():
     print("# SF-41 pre-activation, threshold A design emulations (numpy; NOT SF-41 evidence)")
     section0()
     section_a()
-    rec = section_b()
+    rec, rec_e11 = section_b()
     section_b2()
     section_c(rec)
+    section_c(rec_e11)
     section_d()
     section_e()
-    section_f(rec)
+    section_f([rec, rec_e11])
 
 
 if __name__ == "__main__":

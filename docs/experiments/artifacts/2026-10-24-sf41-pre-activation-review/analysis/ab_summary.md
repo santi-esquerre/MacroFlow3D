@@ -93,25 +93,51 @@ value and Hessian error within 1/16 of an x face. CRIT-2: min orders (16->32, 32
 | C5 `exp(0.7 x1)(1+0.01 S)` | 3.9995 / 4.0548 / 3.0252 / 3.0977 / 1.9845 | +0.1345 | PASS | PASS | 0.455 / 0.294 |
 | C6 `natural1D(x1)(1+0.01 S)` | 3.7884 / 4.5074 / 2.8015 / 3.5226 / 1.8309 | -0.0616 | PASS | FAIL | 0.991 / 0.991 |
 
-**Recommended by the stated rule (largest minimum margin among passing candidates): C1** (C5 ties at +0.1345). Predicted orders (4 decimals):
-value max 4.0062 / 4.0615 (16->32 / 32->64), value RMS 4.0594 / 4.0148, gradient max 3.0065 / 3.0512, gradient RMS 3.0612 / 3.0169, Hessian max 1.9845 / 2.0341.
-Errors at h = 1/16, 1/32, 1/64: value max 1.457354e-04, 9.069405e-06, 5.431978e-07; value RMS 2.890388e-05, 1.733620e-06, 1.072462e-07; gradient max 5.242634e-03,
-6.523718e-04, 7.870193e-05; gradient RMS 1.245374e-03, 1.492027e-04, 1.843283e-05; Hessian max 5.711422e-01, 1.443310e-01, 3.524033e-02.
+**Recorded recommendation: C3 `exp(x1) sin(3 x1) (1 + 0.05 S)`** — selected by the orchestrator per owner decision E11: the passing candidate whose x-closure share
+of the finest-level value and Hessian error is >= 0.9. Qualifying candidates: C3 (shares 0.952 / 0.954) and C4 (0.991 / 0.991); C3 has the larger minimum margin
+(+0.0524 against +0.0506). **C1 is kept as the largest-margin candidate under the original criterion** (CRIT-1/CRIT-2 maximum of the minimum margin, +0.1345; C5 ties):
+that criterion did not test the x-closure share, and C1 passes CRIT-1 only because the y/z factor (`0.3 S`) is multiplied by `exp(0.7 x1)`, which grows toward the east face
+(its 3-D error is 98% / 99% the periodic y/z spline error). The share diagnostic "(b2)" was computed after the CRIT-1/CRIT-2 orders were seen; this is disclosed here and in
+`a_ladder.txt`, and the original pick is still printed there unchanged.
 
-**Caveat found after the orders were seen (post-hoc diagnostic "(b2)", does not change the rule's pick):** C1 passes CRIT-1 only because the y/z
-factor (`0.3 S`) is multiplied by `exp(0.7 x1)`, which grows toward the east face; the 3-D error of C1 is 98% (value) / 99% (Hessian) the periodic y/z spline error, so
-its 3-D ladder says almost nothing about the new x closure. The x closure alone (same `g(x1)`, `a = 0`) has min orders 3.9567 / 4.4305 / 2.9583 / 3.4477 / 1.9623 (passes
-gate+0.05). If the owner wants the 3-D ladder itself to exercise the closure, C3 is the candidate that does so and still passes (x share 0.95, margin +0.0524; value max
-3.9024 against the raw gate 3.8, i.e. +0.10); otherwise C1 should be paired with (c). Candidates C2-C4 share the same x-only orders (3.8998 / 4.3670 / 2.9045 / 3.3864 / 1.9153),
-so their margin is the x closure's own and is small (+0.05 over gate+0.05) by construction of that profile.
+C3 predicted orders (6 significant digits; 16->32 / 32->64 / min; gate + 0.05 in brackets):
 
-### (c) x-only near-face sub-ladder for C1's `g(x1) = exp(0.7 x1)` (1-D, L1 = 2, 4000 points within 1/16 of the faces; recorded quantity, no gate)
+| norm | 16->32 | 32->64 | min | gate + 0.05 |
+|---|---|---|---|---|
+| value max | 3.90237 | 3.95834 | 3.90237 | 3.85 |
+| value RMS | 4.36588 | 4.46611 | 4.36588 | 3.85 |
+| gradient max | 2.90415 | 2.96190 | 2.90415 | 2.85 |
+| gradient RMS | 3.38584 | 3.44600 | 3.38584 | 2.85 |
+| Hessian max | 1.91541 | 1.96567 | 1.91541 | 1.85 |
 
-| pair | value max | value RMS | grad max | grad RMS | Hess max |
+C3 errors at h = 1/16, 1/32, 1/64: value max 2.17569e-03, 1.45501e-04, 9.36022e-06; value RMS 2.95180e-04, 1.43162e-05, 6.47728e-07; gradient max 1.20161e-01,
+1.60518e-02, 2.06018e-03; gradient RMS 2.04793e-02, 1.95918e-03, 1.79773e-04; Hessian max 4.02263e+00, 1.06638e+00, 2.73016e-01. The finest-level argmax of value and Hessian is at
+`x1 = 1.99999` (the east face). The margin over the raw gates (3.8 / 2.8 / 1.8) is +0.102 / +0.104 / +0.115 on the max norms.
+
+For reference, the largest-margin candidate C1: min orders 4.0062 / 4.0148 / 3.0065 / 3.0169 / 1.9845 (value max / value RMS / gradient max / gradient RMS / Hessian max; 16->32 and 32->64 in
+`a_ladder.txt`); errors at h = 1/16, 1/32, 1/64: value max 1.457354e-04, 9.069405e-06, 5.431978e-07; Hessian max 5.711422e-01, 1.443310e-01, 3.524033e-02. The x closure alone (same `g(x1)`, `a = 0`)
+has min orders 3.9567 / 4.4305 / 2.9583 / 3.4477 / 1.9623. C2-C4 share the x-only orders 3.8998 / 4.3670 / 2.9045 / 3.3864 / 1.9153, so their margin is the closure's own and is small
+(+0.05 over gate + 0.05) by construction of that profile.
+
+### (c) x-only near-face sub-ladder (1-D profile `g(x1)`, L1 = 2, 4000 points within 1/16 of the faces; recorded quantity, no gate)
+
+C3, `g(x1) = exp(x1) sin(3 x1)` (recorded recommendation); errors per level (value max / value RMS / gradient max / gradient RMS / Hessian max):
+
+| cells/unit | val max | val RMS | grad max | grad RMS | Hess max |
 |---|---|---|---|---|---|
-| 16->32 | 3.9569 | 4.4460 | 2.9584 | 3.4881 | 1.9624 |
-| 32->64 | 3.9789 | 4.4740 | 2.9795 | 3.4842 | 1.9813 |
-| 64->128 | 3.9905 | 4.4371 | 2.9904 | 3.4687 | 1.9910 |
+| 16 | 2.07039e-03 | 4.83947e-04 | 1.14702e-01 | 3.43744e-02 | 3.83816e+00 |
+| 32 | 1.38694e-04 | 2.31930e-05 | 1.53185e-02 | 3.19219e-03 | 1.01750e+00 |
+| 64 | 8.91131e-06 | 1.05910e-06 | 1.96647e-03 | 2.89229e-04 | 2.60528e-01 |
+| 128 | 5.63361e-07 | 4.92605e-08 | 2.48606e-04 | 2.62800e-05 | 6.58108e-02 |
+
+| pair | val max | val RMS | grad max | grad RMS | Hess max |
+|---|---|---|---|---|---|
+| 16->32 | 3.89992 | 4.38309 | 2.90454 | 3.42872 | 1.91539 |
+| 32->64 | 3.96013 | 4.45278 | 2.96160 | 3.46426 | 1.96552 |
+| 64->128 | 3.98350 | 4.42627 | 2.98367 | 3.46018 | 1.98504 |
+
+C1, `g(x1) = exp(0.7 x1)` (largest-margin candidate): 16->32 3.9569 / 4.4460 / 2.9584 / 3.4881 / 1.9624; 32->64 3.9789 / 4.4740 / 2.9795 / 3.4842 / 1.9813;
+64->128 3.9905 / 4.4371 / 2.9904 / 3.4687 / 1.9910 (errors in the file).
 
 ### (d) Polynomial reproduction through the prefilter (boxes 64x16x16 and 128x16x16, h = 1/16; 10000 random + 2 x 2000 near-face + 256 margin points)
 
@@ -135,13 +161,25 @@ Value max abs error: dense LU 4.4e-15..5.3e-15 on `[0,L1]` (14000 points) and 7.
 
 ### (f) CPU-vs-GPU surrogate (y/z FFT vs cyclic tridiagonal; same reduced x solve; relative to the max of the reference)
 
-Recommended field C1, full pipeline (value / gradient / Hessian):
+Largest-margin candidate C1, full pipeline (value / gradient / Hessian):
 
 | h | interior (0.5 <= x <= L1 - 0.5) | within 1/16 of a face | margins `[-h/2,0)`, `[L1, L1+h/2)` (= ALL) | periodic SF-28 pair, interior |
 |---|---|---|---|---|
 | 1/16 | 5.0e-16 / 8.2e-15 / 5.9e-14 | 2.7e-15 / 7.3e-14 / 2.9e-13 | 3.7e-15 / 8.6e-14 / 5.3e-13 | 7.2e-16 / 1.1e-14 / 9.6e-14 |
 | 1/32 | 4.2e-16 / 1.8e-14 / 2.4e-13 | 1.5e-15 / 9.8e-14 / 8.4e-13 | 4.7e-15 / 1.9e-13 / 1.6e-12 | 8.4e-16 / 2.3e-14 / 3.2e-13 |
 | 1/64 | 5.9e-16 / 3.6e-14 / 1.1e-12 | 1.7e-15 / 1.7e-13 / 3.3e-12 | 5.6e-15 / 4.6e-13 / 8.2e-12 | 8.4e-16 / 5.1e-14 / 1.4e-12 |
+
+C3 (recorded recommendation), full pipeline (value / gradient / Hessian), same regions:
+
+| h | interior (0.5 <= x <= L1 - 0.5) | within 1/16 of a face | margins (= ALL) | periodic SF-28 pair, interior | coefficient diff / max abs(c) |
+|---|---|---|---|---|---|
+| 1/16 | 6.7e-16 / 3.0e-15 / 4.8e-14 | 1.3e-15 / 1.5e-14 / 1.4e-13 | 3.7e-15 / 2.6e-14 / 2.4e-13 | 7.8e-16 / 6.4e-15 / 7.3e-14 | 3.647e-14 |
+| 1/32 | 5.8e-16 / 5.7e-15 / 1.6e-13 | 1.3e-15 / 3.5e-14 / 6.0e-13 | 2.9e-15 / 4.6e-14 / 7.1e-13 | 7.8e-16 / 1.3e-14 / 3.6e-13 | 3.740e-14 |
+| 1/64 | 1.0e-15 / 2.3e-14 / 8.3e-13 | 1.2e-15 / 5.4e-14 / 1.9e-12 | 3.5e-15 / 1.1e-13 / 3.1e-12 | 1.2e-15 / 4.1e-14 / 2.0e-12 | 4.843e-14 |
+
+For C3 the CPU-vs-GPU difference at h = 1/16 and 1/32 is below 1e-13 for value and gradient everywhere (gradient <= 4.6e-14), while the Hessian exceeds 1e-13 beyond the interior at h = 1/16 (near faces 1.4e-13) and in every
+region at h = 1/32 (1.6e-13 interior, 7.1e-13 margins). The coefficient difference is 3.6e-14 / 3.7e-14 (C3) and 4.8e-14 / 4.5e-14 (Gaussian stress field) at h = 1/16 / 1/32, below 1e-13. Host-style and
+device-style evaluation of the same coefficients are the identical numpy code in this emulation, so an evaluation-only difference cannot be separated here.
 
 Stress field (Gaussian, lambda/h = 8, seed 6001): ALL = 3.1e-15 / 3.1e-14 / 2.0e-13 (h = 1/16), 1.8e-15 / 2.1e-14 / 1.7e-13 (1/32), 4.1e-15 / 3.5e-14 / 2.1e-13 (1/64); interior Hessian 2.5e-14..2.9e-14.
 Noise gain of the x line solve for white noise on the samples (rms): `c_{-2}` 33, `c_{-1}` 8, `c_0..c_3` 1.3-1.9, middle 1.85 (same at both faces, n = 32, 128, 1664): the near-face and margin points inherit

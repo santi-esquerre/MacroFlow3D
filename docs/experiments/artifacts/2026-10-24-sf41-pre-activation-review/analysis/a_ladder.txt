@@ -118,7 +118,7 @@ candidate C6 natural1D(x1)*(1+0.01 S)
    finest-level argmax location: value at x1=1.99999 (distance to nearest face 0.00001), Hessian at x1=1.99999 (distance 0.00001)
    CRIT-1 PASS   CRIT-2 FAIL   minimum margin -0.0616   => does not pass
 
-RECOMMENDED (passing candidate with the largest minimum margin): C1 exp(0.7 x1)*(1+0.3 S)   (minimum margin +0.1345)
+LARGEST-MARGIN PICK under CRIT-1/CRIT-2 (the original rule; NOT the recorded recommendation, see below): C1 exp(0.7 x1)*(1+0.3 S)   (minimum margin +0.1345)
 predicted orders of C1 exp(0.7 x1)*(1+0.3 S) (4 decimals):
    val_max   16->32 4.0062   32->64 4.0615   min 4.0062
    val_rms   16->32 4.0594   32->64 4.0148   min 4.0148
@@ -131,6 +131,30 @@ error values per level (h = 1/16, 1/32, 1/64):
    grad_max  5.242634e-03 6.523718e-04 7.870193e-05
    grad_rms  1.245374e-03 1.492027e-04 1.843283e-05
    hess_max  5.711422e-01 1.443310e-01 3.524033e-02
+
+RECORDED RECOMMENDATION
+  selected by the orchestrator per owner decision E11: the passing candidate whose x-closure share of the finest-level value and
+  Hessian error is >= 0.9; C1 was the largest-margin pick under CRIT-1/CRIT-2, which did not test the share; the share diagnostic b2
+  was computed after the orders were seen and this is disclosed.
+  passing candidate C1 exp(0.7 x1)*(1+0.3 S)           x share value 0.022 Hessian 0.010  -> does not qualify
+  passing candidate C2 exp(x1) sin(3 x1)*(1+0.3 S)     x share value 0.766 Hessian 0.776  -> does not qualify
+  passing candidate C3 exp(x1) sin(3 x1)*(1+0.05 S)    x share value 0.952 Hessian 0.954  -> qualifies
+  passing candidate C4 exp(x1) sin(3 x1)*(1+0.01 S)    x share value 0.991 Hessian 0.991  -> qualifies
+  passing candidate C5 exp(0.7 x1)*(1+0.01 S)          x share value 0.455 Hessian 0.294  -> does not qualify
+  qualifying: C3, C4; tie-breaker (largest minimum margin) and the orchestrator's selection: C3 exp(x1) sin(3 x1)*(1+0.05 S)   (minimum margin +0.0524)
+  predicted orders of C3 exp(x1) sin(3 x1)*(1+0.05 S) (6 significant digits), all five norms:
+   val_max   16->32 3.90237   32->64 3.95834   min 3.90237   gate+0.05 3.85
+   val_rms   16->32 4.36588   32->64 4.46611   min 4.36588   gate+0.05 3.85
+   grad_max  16->32 2.90415   32->64 2.9619   min 2.90415   gate+0.05 2.85
+   grad_rms  16->32 3.38584   32->64 3.446   min 3.38584   gate+0.05 2.85
+   hess_max  16->32 1.91541   32->64 1.96567   min 1.91541   gate+0.05 1.85
+  error values per level (h = 1/16, 1/32, 1/64; 6 significant digits):
+   val_max   2.17569e-03 1.45501e-04 9.36022e-06
+   val_rms   2.95180e-04 1.43162e-05 6.47728e-07
+   grad_max  1.20161e-01 1.60518e-02 2.06018e-03
+   grad_rms  2.04793e-02 1.95918e-03 1.79773e-04
+   hess_max  4.02263e+00 1.06638e+00 2.73016e-01
+  finest-level argmax location: value at x1=1.99999, Hessian at x1=1.99999
 
 ####################################################################################################
 # (b2) POST-HOC DIAGNOSTIC (added after the CRIT-1/CRIT-2 results were seen; does not alter the selection above)
@@ -153,13 +177,25 @@ C6 natural1D(x1)*(1+0.01 S)        finest val_max total 2.853e-05 x-only 2.828e-
 ####################################################################################################
 # (c) x-only near-face sub-ladder for C1 exp(0.7 x1)*(1+0.3 S): 1-D profile g(x1), L1 = 2, 4000 points within 1/16 of the faces (2000 each), 16/32/64/128 cells/unit
 ####################################################################################################
-     16 cells/unit  val_max=2.9002e-06 val_rms=7.0078e-07 grad_max=1.6017e-04 grad_rms=4.9606e-05 hess_max=5.3216e-03
-     32 cells/unit  val_max=1.8676e-07 val_rms=3.2151e-08 grad_max=2.0607e-05 grad_rms=4.4209e-06 hess_max=1.3656e-03
-     64 cells/unit  val_max=1.1844e-08 val_rms=1.4467e-09 grad_max=2.6127e-06 grad_rms=3.9505e-07 hess_max=3.4584e-04
-    128 cells/unit  val_max=7.4514e-10 val_rms=6.6784e-11 grad_max=3.2877e-07 grad_rms=3.5683e-08 hess_max=8.7001e-05
-   orders 16->32  : val_max=3.9569 val_rms=4.4460 grad_max=2.9584 grad_rms=3.4881 hess_max=1.9624
-   orders 32->64  : val_max=3.9789 val_rms=4.4740 grad_max=2.9795 grad_rms=3.4842 hess_max=1.9813
-   orders 64->128 : val_max=3.9905 val_rms=4.4371 grad_max=2.9904 grad_rms=3.4687 hess_max=1.9910
+     16 cells/unit  val_max=2.90024e-06 val_rms=7.00776e-07 grad_max=1.60173e-04 grad_rms=4.96056e-05 hess_max=5.32159e-03
+     32 cells/unit  val_max=1.86763e-07 val_rms=3.21513e-08 grad_max=2.06068e-05 grad_rms=4.42092e-06 hess_max=1.36557e-03
+     64 cells/unit  val_max=1.18443e-08 val_rms=1.44670e-09 grad_max=2.61271e-06 grad_rms=3.95048e-07 hess_max=3.45844e-04
+    128 cells/unit  val_max=7.45144e-10 val_rms=6.67836e-11 grad_max=3.28775e-07 grad_rms=3.56833e-08 hess_max=8.70014e-05
+   orders 16->32  : val_max=3.95689 val_rms=4.446 grad_max=2.95844 grad_rms=3.48809 hess_max=1.96235
+   orders 32->64  : val_max=3.97895 val_rms=4.47404 grad_max=2.9795 grad_rms=3.48424 hess_max=1.98131
+   orders 64->128 : val_max=3.99053 val_rms=4.43713 grad_max=2.99038 grad_rms=3.46871 hess_max=1.99101
+   (recorded quantity; no gate)
+
+####################################################################################################
+# (c) x-only near-face sub-ladder for C3 exp(x1) sin(3 x1)*(1+0.05 S): 1-D profile g(x1), L1 = 2, 4000 points within 1/16 of the faces (2000 each), 16/32/64/128 cells/unit
+####################################################################################################
+     16 cells/unit  val_max=2.07039e-03 val_rms=4.83947e-04 grad_max=1.14702e-01 grad_rms=3.43744e-02 hess_max=3.83816e+00
+     32 cells/unit  val_max=1.38694e-04 val_rms=2.31930e-05 grad_max=1.53185e-02 grad_rms=3.19219e-03 hess_max=1.01750e+00
+     64 cells/unit  val_max=8.91131e-06 val_rms=1.05910e-06 grad_max=1.96647e-03 grad_rms=2.89229e-04 hess_max=2.60528e-01
+    128 cells/unit  val_max=5.63361e-07 val_rms=4.92605e-08 grad_max=2.48606e-04 grad_rms=2.62800e-05 hess_max=6.58108e-02
+   orders 16->32  : val_max=3.89992 val_rms=4.38309 grad_max=2.90454 grad_rms=3.42872 hess_max=1.91539
+   orders 32->64  : val_max=3.96013 val_rms=4.45278 grad_max=2.9616 grad_rms=3.46426 hess_max=1.96552
+   orders 64->128 : val_max=3.9835 val_rms=4.42627 grad_max=2.98367 grad_rms=3.46018 hess_max=1.98504
    (recorded quantity; no gate)
 
 ####################################################################################################
@@ -224,13 +260,22 @@ noise gain of the x line solve: rms(C_k) / rms(e) for unit white noise e on the 
    n=   32: k=-2..3: 32.90 7.90 1.63 1.37 1.77 1.85 | k=n-4..n+1: 1.85 1.77 1.37 1.60 8.11 33.53 | middle 1.858
    n=  128: k=-2..3: 33.77 8.19 1.60 1.40 1.75 1.83 | k=n-4..n+1: 1.87 1.75 1.34 1.61 7.96 32.99 | middle 1.841
    n= 1664: k=-2..3: 32.62 7.85 1.62 1.32 1.76 1.86 | k=n-4..n+1: 1.88 1.73 1.36 1.60 7.99 32.96 | middle 1.851
--- recommended field C1 exp(0.7 x1)*(1+0.3 S)
+-- field C1 exp(0.7 x1)*(1+0.3 S)
    h=1/16  NP (coefficients 4.58e-14): interior(0.5<=x<=L1-0.5): v 5.0e-16 g 8.2e-15 H 5.9e-14 | near-face(<=1/16): v 2.7e-15 g 7.3e-14 H 2.9e-13 | margin: v 3.7e-15 g 8.6e-14 H 5.3e-13 | ALL: v 3.7e-15 g 8.6e-14 H 5.3e-13
             periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 7.19e-16 gradient 1.11e-14 Hessian 9.58e-14
    h=1/32  NP (coefficients 5.03e-14): interior(0.5<=x<=L1-0.5): v 4.2e-16 g 1.8e-14 H 2.4e-13 | near-face(<=1/16): v 1.5e-15 g 9.8e-14 H 8.4e-13 | margin: v 4.7e-15 g 1.9e-13 H 1.6e-12 | ALL: v 4.7e-15 g 1.9e-13 H 1.6e-12
             periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 8.39e-16 gradient 2.31e-14 Hessian 3.22e-13
    h=1/64  NP (coefficients 6.53e-14): interior(0.5<=x<=L1-0.5): v 5.9e-16 g 3.6e-14 H 1.1e-12 | near-face(<=1/16): v 1.7e-15 g 1.7e-13 H 3.3e-12 | margin: v 5.6e-15 g 4.6e-13 H 8.2e-12 | ALL: v 5.6e-15 g 4.6e-13 H 8.2e-12
             periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 8.39e-16 gradient 5.06e-14 Hessian 1.44e-12
+   coefficient difference (yz cyc vs yz fft; same x solve) / max|c|: h=1/16: 4.579e-14  h=1/32: 5.035e-14  h=1/64: 6.529e-14   (host-style vs device-style evaluation of the same coefficients is the identical numpy code; not separable here)
+-- field C3 exp(x1) sin(3 x1)*(1+0.05 S)
+   h=1/16  NP (coefficients 3.65e-14): interior(0.5<=x<=L1-0.5): v 6.7e-16 g 3.0e-15 H 4.8e-14 | near-face(<=1/16): v 1.3e-15 g 1.5e-14 H 1.4e-13 | margin: v 3.7e-15 g 2.6e-14 H 2.4e-13 | ALL: v 3.7e-15 g 2.6e-14 H 2.4e-13
+            periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 7.76e-16 gradient 6.38e-15 Hessian 7.26e-14
+   h=1/32  NP (coefficients 3.74e-14): interior(0.5<=x<=L1-0.5): v 5.8e-16 g 5.7e-15 H 1.6e-13 | near-face(<=1/16): v 1.3e-15 g 3.5e-14 H 6.0e-13 | margin: v 2.9e-15 g 4.6e-14 H 7.1e-13 | ALL: v 2.9e-15 g 4.6e-14 H 7.1e-13
+            periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 7.76e-16 gradient 1.33e-14 Hessian 3.63e-13
+   h=1/64  NP (coefficients 4.84e-14): interior(0.5<=x<=L1-0.5): v 1.0e-15 g 2.3e-14 H 8.3e-13 | near-face(<=1/16): v 1.2e-15 g 5.4e-14 H 1.9e-12 | margin: v 3.5e-15 g 1.1e-13 H 3.1e-12 | ALL: v 3.5e-15 g 1.1e-13 H 3.1e-12
+            periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 1.16e-15 gradient 4.11e-14 Hessian 2.02e-12
+   coefficient difference (yz cyc vs yz fft; same x solve) / max|c|: h=1/16: 3.647e-14  h=1/32: 3.740e-14  h=1/64: 4.843e-14   (host-style vs device-style evaluation of the same coefficients is the identical numpy code; not separable here)
 -- stress: Gaussian field lambda/h = 8, seed 6001
    h=1/16  NP (coefficients 4.76e-14): interior(0.5<=x<=L1-0.5): v 7.8e-16 g 3.6e-15 H 2.5e-14 | near-face(<=1/16): v 1.3e-15 g 1.3e-14 H 6.4e-14 | margin: v 3.1e-15 g 3.1e-14 H 2.0e-13 | ALL: v 3.1e-15 g 3.1e-14 H 2.0e-13
             periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 5.92e-16 gradient 3.36e-15 Hessian 2.60e-14
@@ -238,3 +283,4 @@ noise gain of the x line solve: rms(C_k) / rms(e) for unit white noise e on the 
             periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 4.55e-16 gradient 3.23e-15 Hessian 3.17e-14
    h=1/64  NP (coefficients 4.13e-14): interior(0.5<=x<=L1-0.5): v 5.3e-16 g 2.9e-15 H 2.9e-14 | near-face(<=1/16): v 9.3e-16 g 1.3e-14 H 7.1e-14 | margin: v 4.1e-15 g 3.5e-14 H 2.1e-13 | ALL: v 4.1e-15 g 3.5e-14 H 2.1e-13
             periodic control (SF-28 pair, FFT vs cyclic tridiagonal, interior points 0.5<=x<=L1-0.5): value 6.69e-16 gradient 3.27e-15 Hessian 2.59e-14
+   coefficient difference (yz cyc vs yz fft; same x solve) / max|c|: h=1/16: 4.762e-14  h=1/32: 4.459e-14  h=1/64: 4.127e-14   (host-style vs device-style evaluation of the same coefficients is the identical numpy code; not separable here)
