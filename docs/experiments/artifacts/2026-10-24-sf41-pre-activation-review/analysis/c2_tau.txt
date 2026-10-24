@@ -1,0 +1,103 @@
+=== (i) SF-38 F2 reproduction: periodic medium (a), ln k = 0.5 cos(2 pi x1), periodic splines
+    measured on V100 (SF-38 F2): tau rel 4.771e-10 at 64x32x32 and 128x32x32 (h = 1/32);
+    SF-36 A2: 4.6e-9 at 16^3 (h = 1/16), 4.77e-10 at 32^3.   Cube L1 = 1 (16, 32 cells) added.
+F2 periodic, periodic splines                                  n=  16 h=1/16  planes=[0.25, 0.5, 1.0, 2.0, 3.0]
+    q=0.940306  v1 range [0.9343, 0.9463]  accepted_steps=381
+    tau rel per plane: 4.620e-09 2.301e-09 1.150e-09 5.752e-10 3.835e-10
+    MAX tau rel = 4.620e-09   (gate 1e-9: FAIL)
+F2 periodic, periodic splines                                  n=  32 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0]
+    q=0.940306  v1 range [0.9388, 0.9418]  accepted_steps=765
+    tau rel per plane: 4.771e-10 2.383e-10 1.192e-10 5.958e-11 3.972e-11
+    MAX tau rel = 4.771e-10   (gate 1e-9: PASS)
+F2 periodic, periodic splines                                  n=  64 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0]
+    q=0.940306  v1 range [0.9388, 0.9418]  accepted_steps=765
+    tau rel per plane: 4.771e-10 2.383e-10 1.192e-10 5.958e-11 3.972e-11
+    MAX tau rel = 4.771e-10   (gate 1e-9: PASS)
+F2 periodic, periodic splines                                  n= 128 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0]
+    q=0.940306  v1 range [0.9388, 0.9418]  accepted_steps=765
+    tau rel per plane: 4.771e-10 2.383e-10 1.192e-10 5.958e-11 3.972e-11
+    MAX tau rel = 4.771e-10   (gate 1e-9: PASS)
+
+=== (ii) C2 candidate: medium (b), ln k = 0.5 cos(2 pi 0.6 x1 + 0.3), not-a-knot f and ln k
+C2 cand L1=2                                                   n=  64 h=1/32  planes=[0.25, 0.5, 1.0, 1.5, 1.75]
+    q=0.986774  v1 range [0.9862, 0.9874]  accepted_steps=445
+    tau rel per plane: 5.023e-11 2.511e-11 1.255e-11 8.367e-12 7.172e-12
+    MAX tau rel = 5.023e-11   (gate 1e-9: PASS)
+C2 cand L1=4                                                   n= 128 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0, 3.75]
+    q=0.943349  v1 range [0.9428, 0.9440]  accepted_steps=956
+    tau rel per plane: 5.023e-11 2.511e-11 1.255e-11 6.276e-12 4.183e-12 3.346e-12
+    MAX tau rel = 5.023e-11   (gate 1e-9: PASS)
+
+=== (iii) variants
+V1 PERIODIC ln k spline, nak f, 0.6-profile L1=2               n=  64 h=1/32  planes=[0.25, 0.5, 1.0, 1.5, 1.75]
+    q=0.986774  v1 range [0.7860, 1.2466]  accepted_steps=445
+    tau rel per plane: 9.323e-10 4.670e-10 2.336e-10 1.558e-10 1.336e-10
+    MAX tau rel = 9.323e-10   (gate 1e-9: PASS)
+V1 PERIODIC ln k spline, nak f, 0.6-profile L1=4               n= 128 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0, 3.75]
+    q=0.943349  v1 range [0.5869, 1.4645]  accepted_steps=956
+    tau rel per plane: 1.347e-09 6.769e-10 3.392e-10 1.698e-10 1.133e-10 9.063e-11
+    MAX tau rel = 1.347e-09   (gate 1e-9: FAIL)
+V2 profile 0.5cos(2 pi x1+0.3), nak/nak L1=2                   n=  64 h=1/32  planes=[0.25, 0.5, 1.0, 1.5, 1.75]
+    q=0.940306  v1 range [0.9388, 0.9422]  accepted_steps=445
+    tau rel per plane: 2.442e-09 1.219e-09 6.099e-10 4.065e-10 3.484e-10
+    MAX tau rel = 2.442e-09   (gate 1e-9: FAIL)
+V2 profile 0.5cos(2 pi x1+0.3), nak/nak L1=4                   n= 128 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0, 3.75]
+    q=0.940306  v1 range [0.9388, 0.9422]  accepted_steps=956
+    tau rel per plane: 2.442e-09 1.219e-09 6.099e-10 3.049e-10 2.033e-10 1.626e-10
+    MAX tau rel = 2.442e-09   (gate 1e-9: FAIL)
+V3 h=1/16 candidate L1=2                                       n=  32 h=1/16  planes=[0.25, 0.5, 1.0, 1.5, 1.75]
+    q=0.986865  v1 range [0.9846, 0.9897]  accepted_steps=221
+    tau rel per plane: 1.981e-10 9.899e-11 4.942e-11 3.296e-11 2.826e-11
+    MAX tau rel = 1.981e-10   (gate 1e-9: PASS)
+V3 h=1/16 candidate L1=4                                       n=  64 h=1/16  planes=[0.25, 0.5, 1.0, 2.0, 3.0, 3.75]
+    q=0.943366  v1 range [0.9412, 0.9465]  accepted_steps=476
+    tau rel per plane: 1.981e-10 9.899e-11 4.942e-11 2.473e-11 1.648e-11 1.319e-11
+    MAX tau rel = 1.981e-10   (gate 1e-9: PASS)
+V4 F2 profile 0.5cos(2 pi x1), medium (b), nak/nak L1=2        n=  64 h=1/32  planes=[0.25, 0.5, 1.0, 1.5, 1.75]
+    q=0.940306  v1 range [0.9388, 0.9420]  accepted_steps=445
+    tau rel per plane: 6.334e-10 3.164e-10 1.582e-10 1.055e-10 9.038e-11
+    MAX tau rel = 6.334e-10   (gate 1e-9: PASS)
+V4 F2 profile 0.5cos(2 pi x1), medium (b), nak/nak L1=4        n= 128 h=1/32  planes=[0.25, 0.5, 1.0, 2.0, 3.0, 3.75]
+    q=0.940306  v1 range [0.9388, 0.9420]  accepted_steps=956
+    tau rel per plane: 6.334e-10 3.164e-10 1.582e-10 7.909e-11 5.273e-11 4.218e-11
+    MAX tau rel = 6.334e-10   (gate 1e-9: PASS)
+
+=== (iv) sensitivity of the candidate to frequency nu and phase phi (ln k = 0.5 cos(2 pi nu x1 + phi)),
+    h = 1/32, L1 = 2, not-a-knot f and ln k, planes of C2 (L1 = 2); MAX tau rel only
+    nu=0.3 phi=0.3: 2.971e-11
+    nu=0.3 phi=1.0: 6.013e-11
+    nu=0.6 phi=0.3: 5.023e-11
+    nu=0.6 phi=1.0: 1.051e-09
+    nu=0.9 phi=0.3: 1.227e-09
+    nu=0.9 phi=1.0: 4.956e-09
+    nu=1.5 phi=0.3: 1.793e-08
+    nu=1.5 phi=1.0: 1.831e-08
+
+=== (v) amplitude of the scan profile (h = 1/32, L1 = 2, nak/nak, C2 planes): MAX tau rel
+    amp=0.50 nu=0.6 phi=0.3: 5.023e-11
+    amp=0.50 nu=0.6 phi=1.0: 1.051e-09
+    amp=0.50 nu=0.9 phi=1.0: 4.956e-09
+    amp=0.25 nu=0.6 phi=0.3: 2.700e-10
+    amp=0.25 nu=0.6 phi=1.0: 6.449e-10
+    amp=0.25 nu=0.9 phi=1.0: 2.422e-09
+
+=== (v-b) phase neighbourhood of the candidate (nu = 0.6, amp 0.5, h = 1/32, L1 = 2 and L1 = 4): MAX tau rel
+    phi=0.1: L1=2 1.731e-10   L1=4 1.731e-10
+    phi=0.2: L1=2 1.246e-10   L1=4 1.246e-10
+    phi=0.3: L1=2 5.023e-11   L1=4 5.023e-11
+    phi=0.4: L1=2 4.993e-11   L1=4 4.993e-11
+    phi=0.5: L1=2 1.749e-10   L1=4 1.749e-10
+
+=== (vi) alignment dependence: ONE plane list (C2 candidate, L1 = 2, h = 1/32): signed tau - tau_quad
+    (the arclength grid is 0.1, 0.5, 1, 1, .. x h_max from the seed, i.e. offset 0.6 h_max from the
+    spline knots at multiples of h/2 = 4 h_max; a landing re-aligns the grid; hence the error is a
+    sum of knot-straddling DP5 errors whose sign/size varies with the plane list)
+    planes=[0.2]            -2.88e-11
+    planes=[0.25]           -1.27e-11
+    planes=[0.3]            +3.77e-11
+    planes=[0.5]            +4.06e-10
+    planes=[0.6]            +6.36e-10
+    planes=[1.0]            +4.25e-10
+    planes=[0.0625, 0.25]   +6.94e-17 +3.33e-16
+    planes=[0.125, 0.25]    -2.09e-11 -2.09e-11
+    planes=[0.25, 0.5]      -1.27e-11 -1.27e-11

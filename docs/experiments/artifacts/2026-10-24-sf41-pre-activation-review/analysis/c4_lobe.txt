@@ -1,0 +1,141 @@
+C4 design emulation (numpy/scipy), NOT SF-41 evidence.  G1 = 1, X0 = 0.1, h = 1/32, grids 64x32x32 (L1 = 2) and 128x32x32 (L1 = 4).
+a = 0.5: stagnation point x1s = ln(2 pi a / G1)/(2 pi) = 0.18219 (a > 1/(2 pi) = 0.15915); inlet backflow lobe on |x2| < arccos(e^(2 pi x1)/(2 pi a))/(2 pi) at x1 = 0: 0.1984
+a = 0.4: stagnation point x1s = ln(2 pi a / G1)/(2 pi) = 0.14668 (a > 1/(2 pi) = 0.15915); inlet backflow lobe on |x2| < arccos(e^(2 pi x1)/(2 pi a))/(2 pi) at x1 = 0: 0.1849
+
+=== (1) fine scan lattice (x2 = (m+1/2)/Ms - 1/2, Ms = 512): every disagreement with A and its margin
+  scan a=0.5 grid 64x32x32: Ms=512; analytic v1<=0 at the seed: 152; A: {'exit_inlet': 120, 'exit_outlet': 240, 'seed_backflow': 152}
+    B_nak: 0 disagreements vs A among v1>0 seeds
+    C Pollock: 0 disagreements vs A among v1>0 seeds
+  scan a=0.5 grid 128x32x32: Ms=512; analytic v1<=0 at the seed: 152; A: {'exit_inlet': 120, 'exit_outlet': 240, 'seed_backflow': 152}
+    B_nak: 0 disagreements vs A among v1>0 seeds
+    C Pollock: 0 disagreements vs A among v1>0 seeds
+  scan a=0.4 grid 64x32x32: Ms=512; analytic v1<=0 at the seed: 118; A: {'exit_inlet': 92, 'exit_outlet': 302, 'seed_backflow': 118}
+    B_nak: 0 disagreements vs A among v1>0 seeds
+    C Pollock: 0 disagreements vs A among v1>0 seeds
+  scan a=0.4 grid 128x32x32: Ms=512; analytic v1<=0 at the seed: 118; A: {'exit_inlet': 92, 'exit_outlet': 302, 'seed_backflow': 118}
+    B_nak: 0 disagreements vs A among v1>0 seeds
+    C Pollock: 0 disagreements vs A among v1>0 seeds
+
+=== (2) candidate injection lattices x2 = (m+1/2)/M, m = 0..M-1 (the M x M injection lattice of the unit
+    section has these M distinct x2 values, each repeated M times in x3): counts and disagreements
+  a=0.5 M= 32  64x32x32 delta=0.01 v1min=0.05: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 14}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 32  64x32x32 delta=0.02 v1min=0.05: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 14}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 32  64x32x32 delta=0.03 v1min=0.10: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 14}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 32 128x32x32 delta=0.01 v1min=0.05: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 14}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 32 128x32x32 delta=0.02 v1min=0.05: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 14}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 32 128x32x32 delta=0.03 v1min=0.10: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 14}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 48  64x32x32 delta=0.01 v1min=0.05: included  32 of 48 x2 values = 1536 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 22}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 48  64x32x32 delta=0.02 v1min=0.05: included  30 of 48 x2 values = 1440 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 20}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 48  64x32x32 delta=0.03 v1min=0.10: included  26 of 48 x2 values = 1248 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 20}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 48 128x32x32 delta=0.01 v1min=0.05: included  32 of 48 x2 values = 1536 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 22}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 48 128x32x32 delta=0.02 v1min=0.05: included  30 of 48 x2 values = 1440 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 20}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 48 128x32x32 delta=0.03 v1min=0.10: included  26 of 48 x2 values = 1248 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 20}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 64  64x32x32 delta=0.01 v1min=0.05: included  40 of 64 x2 values = 2560 3-D seeds (A {'exit_inlet': 12, 'exit_outlet': 28}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 64  64x32x32 delta=0.02 v1min=0.05: included  40 of 64 x2 values = 2560 3-D seeds (A {'exit_inlet': 12, 'exit_outlet': 28}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 64  64x32x32 delta=0.03 v1min=0.10: included  38 of 64 x2 values = 2432 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 28}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 64 128x32x32 delta=0.01 v1min=0.05: included  40 of 64 x2 values = 2560 3-D seeds (A {'exit_inlet': 12, 'exit_outlet': 28}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 64 128x32x32 delta=0.02 v1min=0.05: included  40 of 64 x2 values = 2560 3-D seeds (A {'exit_inlet': 12, 'exit_outlet': 28}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M= 64 128x32x32 delta=0.03 v1min=0.10: included  38 of 64 x2 values = 2432 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 28}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M=128  64x32x32 delta=0.01 v1min=0.05: included  84 of 128 x2 values = 10752 3-D seeds (A {'exit_inlet': 26, 'exit_outlet': 58}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M=128  64x32x32 delta=0.02 v1min=0.05: included  80 of 128 x2 values = 10240 3-D seeds (A {'exit_inlet': 24, 'exit_outlet': 56}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M=128  64x32x32 delta=0.03 v1min=0.10: included  74 of 128 x2 values = 9472 3-D seeds (A {'exit_inlet': 20, 'exit_outlet': 54}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M=128 128x32x32 delta=0.01 v1min=0.05: included  84 of 128 x2 values = 10752 3-D seeds (A {'exit_inlet': 26, 'exit_outlet': 58}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M=128 128x32x32 delta=0.02 v1min=0.05: included  80 of 128 x2 values = 10240 3-D seeds (A {'exit_inlet': 24, 'exit_outlet': 56}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.5 M=128 128x32x32 delta=0.03 v1min=0.10: included  74 of 128 x2 values = 9472 3-D seeds (A {'exit_inlet': 20, 'exit_outlet': 54}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 32  64x32x32 delta=0.01 v1min=0.05: included  22 of 32 x2 values = 704 3-D seeds (A {'exit_inlet': 4, 'exit_outlet': 18}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 32  64x32x32 delta=0.02 v1min=0.05: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 2, 'exit_outlet': 18}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 32  64x32x32 delta=0.03 v1min=0.10: included  16 of 32 x2 values = 512 3-D seeds (A {'exit_outlet': 16}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 32 128x32x32 delta=0.01 v1min=0.05: included  22 of 32 x2 values = 704 3-D seeds (A {'exit_inlet': 4, 'exit_outlet': 18}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 32 128x32x32 delta=0.02 v1min=0.05: included  20 of 32 x2 values = 640 3-D seeds (A {'exit_inlet': 2, 'exit_outlet': 18}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 32 128x32x32 delta=0.03 v1min=0.10: included  16 of 32 x2 values = 512 3-D seeds (A {'exit_outlet': 16}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 48  64x32x32 delta=0.01 v1min=0.05: included  32 of 48 x2 values = 1536 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 26}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 48  64x32x32 delta=0.02 v1min=0.05: included  30 of 48 x2 values = 1440 3-D seeds (A {'exit_inlet': 4, 'exit_outlet': 26}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 48  64x32x32 delta=0.03 v1min=0.10: included  24 of 48 x2 values = 1152 3-D seeds (A {'exit_outlet': 24}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 48 128x32x32 delta=0.01 v1min=0.05: included  32 of 48 x2 values = 1536 3-D seeds (A {'exit_inlet': 6, 'exit_outlet': 26}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 48 128x32x32 delta=0.02 v1min=0.05: included  30 of 48 x2 values = 1440 3-D seeds (A {'exit_inlet': 4, 'exit_outlet': 26}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 48 128x32x32 delta=0.03 v1min=0.10: included  24 of 48 x2 values = 1152 3-D seeds (A {'exit_outlet': 24}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 64  64x32x32 delta=0.01 v1min=0.05: included  44 of 64 x2 values = 2816 3-D seeds (A {'exit_inlet': 8, 'exit_outlet': 36}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 64  64x32x32 delta=0.02 v1min=0.05: included  38 of 64 x2 values = 2432 3-D seeds (A {'exit_inlet': 4, 'exit_outlet': 34}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 64  64x32x32 delta=0.03 v1min=0.10: included  32 of 64 x2 values = 2048 3-D seeds (A {'exit_outlet': 32}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 64 128x32x32 delta=0.01 v1min=0.05: included  44 of 64 x2 values = 2816 3-D seeds (A {'exit_inlet': 8, 'exit_outlet': 36}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 64 128x32x32 delta=0.02 v1min=0.05: included  38 of 64 x2 values = 2432 3-D seeds (A {'exit_inlet': 4, 'exit_outlet': 34}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M= 64 128x32x32 delta=0.03 v1min=0.10: included  32 of 64 x2 values = 2048 3-D seeds (A {'exit_outlet': 32}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M=128  64x32x32 delta=0.01 v1min=0.05: included  88 of 128 x2 values = 11264 3-D seeds (A {'exit_inlet': 16, 'exit_outlet': 72}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M=128  64x32x32 delta=0.02 v1min=0.05: included  78 of 128 x2 values = 9984 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 68}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M=128  64x32x32 delta=0.03 v1min=0.10: included  66 of 128 x2 values = 8448 3-D seeds (A {'exit_outlet': 66}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M=128 128x32x32 delta=0.01 v1min=0.05: included  88 of 128 x2 values = 11264 3-D seeds (A {'exit_inlet': 16, 'exit_outlet': 72}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M=128 128x32x32 delta=0.02 v1min=0.05: included  78 of 128 x2 values = 9984 3-D seeds (A {'exit_inlet': 10, 'exit_outlet': 68}); disagreements {'B_nak': 0, 'C Pollock': 0}
+  a=0.4 M=128 128x32x32 delta=0.03 v1min=0.10: included  66 of 128 x2 values = 8448 3-D seeds (A {'exit_outlet': 66}); disagreements {'B_nak': 0, 'C Pollock': 0}
+
+=== (3) recommended setting, full report
+  a=0.5 grid 64x32x32 (L1=2): M=64  total x2 seeds 64  included 40 (v1 >= 0.05, |psi0-psi_sep| >= 0.02); excluded 24
+    min |psi0 - psi_sep| over included = 2.4235e-02   min v1 included = 1.3836e-01
+    DOP853 max |psi_end - psi0| = 8.40e-14;  Pollock max |div_cell| = 1.42e-14
+    A analytic  plane pass {'exit_inlet': 12, 'plane': 28}   time pass(T=3.0) {'exit_inlet': 12, 'exit_outlet': 28}
+    B_nak       plane pass {'exit_inlet': 12, 'plane': 28}   time pass(T=3.0) {'exit_inlet': 12, 'exit_outlet': 28}
+    C Pollock   plane pass {'exit_inlet': 12, 'plane': 28}   time pass(T=3.0) {'exit_inlet': 12, 'exit_outlet': 28}
+    disagreements B_nak vs A (included seeds): 0
+    disagreements C Pollock vs A (included seeds): 0
+    exit time (A) of included outlet seeds: max 2.1600   (recommended T = 3.0)
+    max exit tau over included outlet seeds: A 2.1600  B_nak 2.1629  C 2.1586
+  a=0.5 grid 128x32x32 (L1=4): M=64  total x2 seeds 64  included 40 (v1 >= 0.05, |psi0-psi_sep| >= 0.02); excluded 24
+    min |psi0 - psi_sep| over included = 2.4235e-02   min v1 included = 1.3836e-01
+    DOP853 max |psi_end - psi0| = 8.08e-14;  Pollock max |div_cell| = 1.42e-14
+    A analytic  plane pass {'exit_inlet': 12, 'plane': 28}   time pass(T=5.5) {'exit_inlet': 12, 'exit_outlet': 28}
+    B_nak       plane pass {'exit_inlet': 12, 'plane': 28}   time pass(T=5.5) {'exit_inlet': 12, 'exit_outlet': 28}
+    C Pollock   plane pass {'exit_inlet': 12, 'plane': 28}   time pass(T=5.5) {'exit_inlet': 12, 'exit_outlet': 28}
+    disagreements B_nak vs A (included seeds): 0
+    disagreements C Pollock vs A (included seeds): 0
+    exit time (A) of included outlet seeds: max 4.1601   (recommended T = 5.5)
+    max exit tau over included outlet seeds: A 4.1601  B_nak 4.1629  C 4.1586
+  a=0.4 grid 64x32x32 (L1=2): M=64  total x2 seeds 64  included 38 (v1 >= 0.05, |psi0-psi_sep| >= 0.02); excluded 26
+    min |psi0 - psi_sep| over included = 2.2963e-02   min v1 included = 9.9573e-02
+    DOP853 max |psi_end - psi0| = 6.87e-14;  Pollock max |div_cell| = 1.42e-14
+    A analytic  plane pass {'exit_inlet': 4, 'plane': 34}   time pass(T=3.0) {'exit_inlet': 4, 'exit_outlet': 34}
+    B_nak       plane pass {'exit_inlet': 4, 'plane': 34}   time pass(T=3.0) {'exit_inlet': 4, 'exit_outlet': 34}
+    C Pollock   plane pass {'exit_inlet': 4, 'plane': 34}   time pass(T=3.0) {'exit_inlet': 4, 'exit_outlet': 34}
+    disagreements B_nak vs A (included seeds): 0
+    disagreements C Pollock vs A (included seeds): 0
+    exit time (A) of included outlet seeds: max 2.1714   (recommended T = 3.0)
+    max exit tau over included outlet seeds: A 2.1714  B_nak 2.1720  C 2.1700
+  a=0.4 grid 128x32x32 (L1=4): M=64  total x2 seeds 64  included 38 (v1 >= 0.05, |psi0-psi_sep| >= 0.02); excluded 26
+    min |psi0 - psi_sep| over included = 2.2963e-02   min v1 included = 9.9573e-02
+    DOP853 max |psi_end - psi0| = 6.58e-14;  Pollock max |div_cell| = 1.42e-14
+    A analytic  plane pass {'exit_inlet': 4, 'plane': 34}   time pass(T=5.5) {'exit_inlet': 4, 'exit_outlet': 34}
+    B_nak       plane pass {'exit_inlet': 4, 'plane': 34}   time pass(T=5.5) {'exit_inlet': 4, 'exit_outlet': 34}
+    C Pollock   plane pass {'exit_inlet': 4, 'plane': 34}   time pass(T=5.5) {'exit_inlet': 4, 'exit_outlet': 34}
+    disagreements B_nak vs A (included seeds): 0
+    disagreements C Pollock vs A (included seeds): 0
+    exit time (A) of included outlet seeds: max 4.1714   (recommended T = 5.5)
+    max exit tau over included outlet seeds: A 4.1714  B_nak 4.1720  C 4.1700
+
+=== (4) dense scans: where do the representations start to disagree with the analytic classification?
+  a=0.5 grid 64x32x32, dense scan through the separatrix branch (psi0 = 0 at x2 = +0.265483): 401 seeds, A {'exit_inlet': 200, 'exit_outlet': 201}
+    B_nak: 1 disagreements; |psi0-psi_sep| of disagreeing seeds in [2.776e-16, 2.776e-16], v1 in [1.163e+00, 1.163e+00]; kinds {('exit_outlet', 'exit_inlet'): 1}
+    C Pollock: 8 disagreements; |psi0-psi_sep| of disagreeing seeds in [5.813e-05, 4.643e-04], v1 in [1.159e+00, 1.162e+00]; kinds {('exit_inlet', 'exit_outlet'): 8}
+  a=0.5 grid 64x32x32, dense scan through the v1 = 0 curve at the seed (x2 = +0.148247): 400 seeds, A {'exit_inlet': 400}
+    B_nak: 0 disagreements
+    C Pollock: 0 disagreements
+  a=0.5 grid 128x32x32, dense scan through the separatrix branch (psi0 = 0 at x2 = +0.265483): 401 seeds, A {'exit_inlet': 200, 'exit_outlet': 201}
+    B_nak: 1 disagreements; |psi0-psi_sep| of disagreeing seeds in [2.776e-16, 2.776e-16], v1 in [1.163e+00, 1.163e+00]; kinds {('exit_outlet', 'exit_inlet'): 1}
+    C Pollock: 8 disagreements; |psi0-psi_sep| of disagreeing seeds in [5.813e-05, 4.643e-04], v1 in [1.159e+00, 1.162e+00]; kinds {('exit_inlet', 'exit_outlet'): 8}
+  a=0.5 grid 128x32x32, dense scan through the v1 = 0 curve at the seed (x2 = +0.148247): 400 seeds, A {'exit_inlet': 400}
+    B_nak: 0 disagreements
+    C Pollock: 0 disagreements
+  a=0.4 grid 64x32x32, dense scan through the separatrix branch (psi0 = 0 at x2 = +0.204875): 401 seeds, A {'exit_inlet': 200, 'exit_outlet': 201}
+    B_nak: 1 disagreements; |psi0-psi_sep| of disagreeing seeds in [0.000e+00, 0.000e+00], v1 in [6.249e-01, 6.249e-01]; kinds {('exit_outlet', 'exit_inlet'): 1}
+    C Pollock: 12 disagreements; |psi0-psi_sep| of disagreeing seeds in [3.124e-05, 3.735e-04], v1 in [6.201e-01, 6.245e-01]; kinds {('exit_inlet', 'exit_outlet'): 12}
+  a=0.4 grid 64x32x32, dense scan through the v1 = 0 curve at the seed (x2 = +0.116028): 400 seeds, A {'exit_inlet': 400}
+    B_nak: 0 disagreements
+    C Pollock: 0 disagreements
+  a=0.4 grid 128x32x32, dense scan through the separatrix branch (psi0 = 0 at x2 = +0.204875): 401 seeds, A {'exit_inlet': 200, 'exit_outlet': 201}
+    B_nak: 1 disagreements; |psi0-psi_sep| of disagreeing seeds in [0.000e+00, 0.000e+00], v1 in [6.249e-01, 6.249e-01]; kinds {('exit_outlet', 'exit_inlet'): 1}
+    C Pollock: 12 disagreements; |psi0-psi_sep| of disagreeing seeds in [3.124e-05, 3.735e-04], v1 in [6.201e-01, 6.245e-01]; kinds {('exit_inlet', 'exit_outlet'): 12}
+  a=0.4 grid 128x32x32, dense scan through the v1 = 0 curve at the seed (x2 = +0.116028): 400 seeds, A {'exit_inlet': 400}
+    B_nak: 0 disagreements
+    C Pollock: 0 disagreements
+
+=== (5) diagnostic: the PERIODIC (SF-28) closure in x1 for the same f samples (B_per), a = 0.5, M = 64,
+    same inclusion rule; capped at 5 L1 arclength or 20000 accepted steps
+  grid 64x32x32: included 40: A {'exit_inlet': 12, 'exit_outlet': 28}  B_per {'cap_exceeded': 36, 'exit_outlet': 4}  disagreements 36
+  grid 128x32x32: included 40: A {'exit_inlet': 12, 'exit_outlet': 28}  B_per {'cap_exceeded': 36, 'exit_outlet': 4}  disagreements 36
