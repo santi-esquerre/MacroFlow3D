@@ -1,0 +1,39 @@
+CHECK F1_64x16x16_M16_stage_ready PASS  ok
+CHECK F1_64x16x16_M16_Keff_equals_I PASS  max 0.000e+00
+CHECK F1_64x16x16_M16_mean_flux_equals_e1 PASS  max 0.000e+00
+CHECK F1_64x16x16_M16_all_particles_ok PASS
+CHECK F1_64x16x16_M16_transverse_displacement_le_1e-12 PASS  max 0.000e+00 over 2048 records
+CHECK F1_64x16x16_M16_tau_equals_X_rel_le_1e-12 PASS  max rel 0.000e+00
+CHECK F1_64x16x16_M16_covectors_equal_initial_le_1e-12 PASS  max 0.000e+00
+CHECK F1_64x16x16_M16_abs_I_le_1e-14 PASS  max 0.000e+00
+  F1_64x16x16_M16 INFO max |x1(t) - (X0 + t)| at snapshots 0.000e+00  [0.1 s]
+CHECK F1_128x16x16_M16_stage_ready PASS  ok
+CHECK F1_128x16x16_M16_Keff_equals_I PASS  max 0.000e+00
+CHECK F1_128x16x16_M16_mean_flux_equals_e1 PASS  max 0.000e+00
+CHECK F1_128x16x16_M16_all_particles_ok PASS
+CHECK F1_128x16x16_M16_transverse_displacement_le_1e-12 PASS  max 0.000e+00 over 2048 records
+CHECK F1_128x16x16_M16_tau_equals_X_rel_le_1e-12 PASS  max rel 0.000e+00
+CHECK F1_128x16x16_M16_covectors_equal_initial_le_1e-12 PASS  max 0.000e+00
+CHECK F1_128x16x16_M16_abs_I_le_1e-14 PASS  max 0.000e+00
+  F1_128x16x16_M16 INFO max |x1(t) - (X0 + t)| at snapshots 0.000e+00  [0.1 s]
+CHECK F2_64x32x32_M16_stage_ready PASS  ok
+CHECK F2_64x32x32_M16_all_particles_ok PASS
+CHECK F2_64x32x32_M16_transverse_positions_constant_le_1e-12 PASS  max 4.614e-16
+CHECK F2_64x32x32_M16_covectors_constant_le_1e-12 PASS  max 2.985e-14
+CHECK F2_64x32x32_M16_tau_vs_quadrature_rel_le_1e-9 PASS  max rel 4.771e-10
+[RECORD] F2_64x32x32_M16 I vs independent quadrature (no threshold): max abs err 2.046e-06, max |I_ref| 3.208e-03 over 2048 records  [1.9 s]
+CHECK F2_128x32x32_M16_stage_ready PASS  ok
+CHECK F2_128x32x32_M16_all_particles_ok PASS
+CHECK F2_128x32x32_M16_transverse_positions_constant_le_1e-12 PASS  max 4.441e-16
+CHECK F2_128x32x32_M16_covectors_constant_le_1e-12 PASS  max 2.962e-14
+CHECK F2_128x32x32_M16_tau_vs_quadrature_rel_le_1e-9 PASS  max rel 4.771e-10
+[RECORD] F2_128x32x32_M16 I vs independent quadrature (no threshold): max abs err 2.046e-06, max |I_ref| 3.208e-03 over 2048 records  [1.9 s]
+CHECK F3_64x16x16_4096pts_stage_ready PASS  ok
+CHECK F3_64x16x16_4096pts_shift_plus_1_in_x2_x3_le_1e-14 PASS  max abs 4.774e-15 max rel 1.770e-15 violating 0
+  F3_64x16x16_4096pts [0.9 s]
+CHECK F3_128x16x16_4096pts_stage_ready PASS  ok
+CHECK F3_128x16x16_4096pts_shift_plus_1_in_x2_x3_le_1e-14 PASS  max abs 6.384e-15 max rel 3.691e-15 violating 0
+  F3_128x16x16_4096pts [1.8 s]
+A_VERDICT all_pass=1 checks_pass=30 checks_fail=0
+  total 9.5 s (fast tier)
+ALL_PASS

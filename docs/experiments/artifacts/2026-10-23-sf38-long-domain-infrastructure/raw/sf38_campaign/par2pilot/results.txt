@@ -1,0 +1,164 @@
+RECORDED par2 configs: s1 s225 s4 (dt2 copies: dt halved, n_steps / snapshots.every / sample_every / output_every doubled, NR 3; see par2_pilot.py)
+E_LNK cfg=s1 r=0 seed=7001 mean_lnK=-8.066402986892e-04 var_lnK=9.925601093118e-01 Kmin=1.0411e-02 Kmax=2.0857e+02 Kmean=1.6441e+00
+E_LNK cfg=s1 r=1 seed=7002 mean_lnK=2.522974934341e-03 var_lnK=1.010450582424e+00 Kmin=6.2143e-03 Kmax=1.8566e+02 Kmean=1.6621e+00
+E_LNK cfg=s1 r=2 seed=7003 mean_lnK=-2.753560043891e-03 var_lnK=1.020287540668e+00 Kmin=8.0866e-03 Kmax=1.6235e+02 Kmean=1.6586e+00
+E_LNK cfg=s1 r=3 seed=7004 mean_lnK=9.215458068452e-03 var_lnK=1.015348266122e+00 Kmin=5.2716e-03 Kmax=1.4488e+02 Kmean=1.6781e+00
+E_LNK cfg=s1 r=4 seed=7005 mean_lnK=1.642263975679e-03 var_lnK=1.001317021269e+00 Kmin=5.8532e-03 Kmax=1.6725e+02 Kmean=1.6478e+00
+E_LNK cfg=s1 r=5 seed=7006 mean_lnK=-1.017104110202e-02 var_lnK=1.004236754564e+00 Kmin=6.6980e-03 Kmax=1.1502e+02 Kmean=1.6341e+00
+E_LNK cfg=s1 r=6 seed=7007 mean_lnK=4.786689806091e-03 var_lnK=9.668610669391e-01 Kmin=6.0281e-03 Kmax=1.7975e+02 Kmean=1.6319e+00
+E_LNK cfg=s1 r=7 seed=7008 mean_lnK=1.649756215123e-02 var_lnK=9.852075029047e-01 Kmin=6.0397e-03 Kmax=1.7298e+02 Kmean=1.6649e+00
+E_LNK cfg=s1 r=8 seed=7009 mean_lnK=2.905974655452e-03 var_lnK=9.942606575509e-01 Kmin=3.2320e-03 Kmax=1.7773e+02 Kmean=1.6516e+00
+E_LNK cfg=s1 r=9 seed=7010 mean_lnK=2.408321600717e-02 var_lnK=9.862951826414e-01 Kmin=6.2209e-03 Kmax=1.2284e+02 Kmean=1.6749e+00
+E_LNK_SUMMARY cfg=s1 n=10 mean_lnK_mean=4.792289815381e-03 var_lnK_mean=9.976824684395e-01 var_lnK_sd=1.603975706379e-02
+E_LNK cfg=s225 r=0 seed=7001 mean_lnK=-2.110129619389e-03 var_lnK=2.229930519036e+00 Kmin=1.0590e-03 Kmax=3.0915e+03 Kmean=3.0611e+00
+E_LNK cfg=s225 r=1 seed=7002 mean_lnK=6.009870311477e-03 var_lnK=2.272477274511e+00 Kmin=5.0361e-04 Kmax=2.5018e+03 Kmean=3.1368e+00
+E_LNK cfg=s225 r=2 seed=7003 mean_lnK=-1.519657369143e-03 var_lnK=2.300654249531e+00 Kmin=7.2373e-04 Kmax=2.1122e+03 Kmean=3.1461e+00
+E_LNK cfg=s225 r=3 seed=7004 mean_lnK=1.366577728260e-02 var_lnK=2.283341048932e+00 Kmin=3.8400e-04 Kmax=1.7779e+03 Kmean=3.1911e+00
+E_LNK cfg=s225 r=4 seed=7005 mean_lnK=6.288371755949e-03 var_lnK=2.256280776199e+00 Kmin=5.1791e-04 Kmax=2.1857e+03 Kmean=3.0843e+00
+E_LNK cfg=s225 r=5 seed=7006 mean_lnK=-1.774260163758e-02 var_lnK=2.257440178858e+00 Kmin=5.4729e-04 Kmax=1.2236e+03 Kmean=3.0375e+00
+E_LNK cfg=s225 r=6 seed=7007 mean_lnK=4.172413108482e-03 var_lnK=2.176068890932e+00 Kmin=4.7799e-04 Kmax=1.9165e+03 Kmean=2.9882e+00
+E_LNK cfg=s225 r=7 seed=7008 mean_lnK=2.453278352860e-02 var_lnK=2.214024968129e+00 Kmin=4.6052e-04 Kmax=2.2843e+03 Kmean=3.1005e+00
+E_LNK cfg=s225 r=8 seed=7009 mean_lnK=3.316898788900e-03 var_lnK=2.235445653498e+00 Kmin=5.8490e-04 Kmax=2.4062e+03 Kmean=3.0973e+00
+E_LNK cfg=s225 r=9 seed=7010 mean_lnK=4.335105568587e-02 var_lnK=2.216596588085e+00 Kmin=4.8917e-04 Kmax=1.3474e+03 Kmean=3.1426e+00
+E_LNK_SUMMARY cfg=s225 n=10 mean_lnK_mean=7.996478183577e-03 var_lnK_mean=2.244226014771e+00 var_lnK_sd=3.717008140922e-02
+E_LNK cfg=s4 r=0 seed=7001 mean_lnK=7.016872210331e-03 var_lnK=3.993288327637e+00 Kmin=1.0706e-04 Kmax=4.4953e+04 Kmean=7.8104e+00
+E_LNK cfg=s4 r=1 seed=7002 mean_lnK=1.885182074019e-02 var_lnK=4.101289128302e+00 Kmin=8.9090e-05 Kmax=1.1706e+04 Kmean=8.1111e+00
+E_LNK cfg=s4 r=2 seed=7003 mean_lnK=2.163832494023e-02 var_lnK=3.928940980824e+00 Kmin=1.3882e-04 Kmax=1.2521e+04 Kmean=7.3382e+00
+E_LNK cfg=s4 r=3 seed=7004 mean_lnK=9.339072367533e-02 var_lnK=4.185434652230e+00 Kmin=6.8477e-05 Kmax=1.8820e+04 Kmean=8.5727e+00
+E_LNK cfg=s4 r=4 seed=7005 mean_lnK=-2.868004386932e-02 var_lnK=3.989543402504e+00 Kmin=1.5077e-04 Kmax=5.3018e+03 Kmean=6.8224e+00
+E_LNK cfg=s4 r=5 seed=7006 mean_lnK=2.633311961194e-02 var_lnK=3.955639056051e+00 Kmin=1.0741e-04 Kmax=3.8393e+03 Kmean=7.1316e+00
+E_LNK cfg=s4 r=6 seed=7007 mean_lnK=9.969182292981e-03 var_lnK=3.881278957112e+00 Kmin=1.7482e-04 Kmax=2.4228e+04 Kmean=7.0490e+00
+E_LNK cfg=s4 r=7 seed=7008 mean_lnK=7.698206112416e-02 var_lnK=3.883999791621e+00 Kmin=3.5046e-05 Kmax=6.5693e+03 Kmean=7.2729e+00
+E_LNK cfg=s4 r=8 seed=7009 mean_lnK=7.543238039122e-02 var_lnK=3.948124306689e+00 Kmin=1.8108e-04 Kmax=1.6193e+04 Kmean=8.2454e+00
+E_LNK cfg=s4 r=9 seed=7010 mean_lnK=7.668080155787e-02 var_lnK=3.935226451893e+00 Kmin=9.4146e-05 Kmax=1.2075e+04 Kmean=7.5040e+00
+E_LNK_SUMMARY cfg=s4 n=10 mean_lnK_mean=3.776152426749e-02 var_lnK_mean=3.980276505486e+00 var_lnK_sd=9.566401528973e-02
+E_OUTPUTS cfg=s1 stats=10/10 macrodispersion=1 ensemble=1 snapshot_files=1010 realizations_with_snapshots=10/10 ok=1
+RECORDED run=run_s1 exit=0 wall_s=334 time_per_realization_mean_s=33.400 (total wall / 10, includes setup)
+RECORDED E_RTIME cfg=s1 r=0 finished_at_s=37.812 seconds_since_previous=37.812
+RECORDED E_RTIME cfg=s1 r=1 finished_at_s=70.550 seconds_since_previous=32.738
+RECORDED E_RTIME cfg=s1 r=2 finished_at_s=103.286 seconds_since_previous=32.736
+RECORDED E_RTIME cfg=s1 r=3 finished_at_s=135.994 seconds_since_previous=32.708
+RECORDED E_RTIME cfg=s1 r=4 finished_at_s=168.713 seconds_since_previous=32.719
+RECORDED E_RTIME cfg=s1 r=5 finished_at_s=201.430 seconds_since_previous=32.717
+RECORDED E_RTIME cfg=s1 r=6 finished_at_s=234.145 seconds_since_previous=32.714
+RECORDED E_RTIME cfg=s1 r=7 finished_at_s=266.845 seconds_since_previous=32.700
+RECORDED E_RTIME cfg=s1 r=8 finished_at_s=299.568 seconds_since_previous=32.723
+RECORDED E_RTIME cfg=s1 r=9 finished_at_s=332.347 seconds_since_previous=32.779
+E_TB cfg=s1 r=0 step=47850 t_b=598125 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=1 step=47850 t_b=598125 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=2 step=47850 t_b=598125 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=3 step=42108 t_b=526350 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=4 step=45936 t_b=574200 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=5 step=46893 t_b=586162.5 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=6 step=45936 t_b=574200 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=7 step=43065 t_b=538312.5 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=8 step=46893 t_b=586162.5 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB cfg=s1 r=9 step=44979 t_b=562237.5 n_snapshots=101 Lx=10240 threshold_x=9990 dt=12.5
+E_TB_SUMMARY cfg=s1 found=10/10 t_b_min=526350 t_b_max=598125
+RECORDED PAR2_PEAK run_s1: PID_PEAK pid=282166 samples=1647 pid_peak_mib=16495 dev_peak_mib=16499 max_exact_mib=- tree_pid=282166 status=OK reasons=-
+E_OUTPUTS cfg=s225 stats=10/10 macrodispersion=1 ensemble=1 snapshot_files=1010 realizations_with_snapshots=10/10 ok=1
+RECORDED run=run_s225 exit=0 wall_s=571 time_per_realization_mean_s=57.100 (total wall / 10, includes setup)
+RECORDED E_RTIME cfg=s225 r=0 finished_at_s=61.651 seconds_since_previous=61.651
+RECORDED E_RTIME cfg=s225 r=1 finished_at_s=117.984 seconds_since_previous=56.333
+RECORDED E_RTIME cfg=s225 r=2 finished_at_s=174.342 seconds_since_previous=56.358
+RECORDED E_RTIME cfg=s225 r=3 finished_at_s=230.678 seconds_since_previous=56.336
+RECORDED E_RTIME cfg=s225 r=4 finished_at_s=287.021 seconds_since_previous=56.343
+RECORDED E_RTIME cfg=s225 r=5 finished_at_s=343.399 seconds_since_previous=56.378
+RECORDED E_RTIME cfg=s225 r=6 finished_at_s=399.768 seconds_since_previous=56.369
+RECORDED E_RTIME cfg=s225 r=7 finished_at_s=456.127 seconds_since_previous=56.359
+RECORDED E_RTIME cfg=s225 r=8 finished_at_s=512.487 seconds_since_previous=56.360
+RECORDED E_RTIME cfg=s225 r=9 finished_at_s=568.819 seconds_since_previous=56.332
+E_TB cfg=s225 r=0 step=37344 t_b=466800 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=1 step=38511 t_b=481387.5 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=2 step=39678 t_b=495975 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=3 step=30342 t_b=379275 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=4 step=37344 t_b=466800 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=5 step=39678 t_b=495975 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=6 step=36177 t_b=452212.5 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=7 step=33843 t_b=423037.5 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=8 step=38511 t_b=481387.5 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB cfg=s225 r=9 step=36177 t_b=452212.5 n_snapshots=101 Lx=12480 threshold_x=12180 dt=12.5
+E_TB_SUMMARY cfg=s225 found=10/10 t_b_min=379275 t_b_max=495975
+RECORDED PAR2_PEAK run_s225: PID_PEAK pid=283722 samples=2823 pid_peak_mib=25169 dev_peak_mib=25173 max_exact_mib=- tree_pid=283722 status=OK reasons=-
+E_OUTPUTS cfg=s4 stats=10/10 macrodispersion=1 ensemble=1 snapshot_files=1010 realizations_with_snapshots=10/10 ok=1
+RECORDED run=run_s4 exit=0 wall_s=622 time_per_realization_mean_s=62.200 (total wall / 10, includes setup)
+RECORDED E_RTIME cfg=s4 r=0 finished_at_s=66.698 seconds_since_previous=66.698
+RECORDED E_RTIME cfg=s4 r=1 finished_at_s=128.313 seconds_since_previous=61.615
+RECORDED E_RTIME cfg=s4 r=2 finished_at_s=189.865 seconds_since_previous=61.552
+RECORDED E_RTIME cfg=s4 r=3 finished_at_s=251.398 seconds_since_previous=61.532
+RECORDED E_RTIME cfg=s4 r=4 finished_at_s=312.997 seconds_since_previous=61.599
+RECORDED E_RTIME cfg=s4 r=5 finished_at_s=374.589 seconds_since_previous=61.592
+RECORDED E_RTIME cfg=s4 r=6 finished_at_s=436.067 seconds_since_previous=61.478
+RECORDED E_RTIME cfg=s4 r=7 finished_at_s=497.531 seconds_since_previous=61.463
+RECORDED E_RTIME cfg=s4 r=8 finished_at_s=559.069 seconds_since_previous=61.538
+RECORDED E_RTIME cfg=s4 r=9 finished_at_s=620.538 seconds_since_previous=61.469
+E_TB cfg=s4 r=0 step=14404 t_b=180050 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=1 step=15512 t_b=193900 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=2 step=18836 t_b=235450 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=3 step=15512 t_b=193900 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=4 step=15512 t_b=193900 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=5 step=17728 t_b=221600 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=6 step=14404 t_b=180050 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=7 step=15512 t_b=193900 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=8 step=15512 t_b=193900 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB cfg=s4 r=9 step=16620 t_b=207750 n_snapshots=101 Lx=12480 threshold_x=11880 dt=12.5
+E_TB_SUMMARY cfg=s4 found=10/10 t_b_min=180050 t_b_max=235450
+RECORDED PAR2_PEAK run_s4: PID_PEAK pid=285869 samples=3080 pid_peak_mib=25169 dev_peak_mib=25173 max_exact_mib=- tree_pid=285869 status=OK reasons=-
+RECORDED run=dt2_s1 exit=0 wall_s=110 time_per_realization_mean_s=36.667
+RECORDED E_PAIRED cfg=s1 col=alpha_x rows=9574 unmatched=0 max_abs_diff=2.697648e-01 max_rel_diff=2.754778e+03 rms_diff=5.853068e-02
+RECORDED E_PAIRED cfg=s1 col=alpha_y rows=9574 unmatched=0 max_abs_diff=6.086619e-02 max_rel_diff=4.876252e+03 rms_diff=1.269577e-02
+RECORDED E_PAIRED cfg=s1 col=alpha_z rows=9574 unmatched=0 max_abs_diff=6.000865e-02 max_rel_diff=3.355047e+03 rms_diff=1.335137e-02
+RECORDED E_PAIRED cfg=s1 col=dvar_dt_x rows=9574 unmatched=0 max_abs_diff=2.634421e-01 max_rel_diff=2.754778e+03 rms_diff=5.715886e-02
+RECORDED E_PAIRED cfg=s1 col=dvar_dt_y rows=9574 unmatched=0 max_abs_diff=5.943964e-02 max_rel_diff=4.876252e+03 rms_diff=1.239822e-02
+RECORDED E_PAIRED cfg=s1 col=dvar_dt_z rows=9574 unmatched=0 max_abs_diff=5.860220e-02 max_rel_diff=3.355047e+03 rms_diff=1.303845e-02
+RECORDED run=dt2_s225 exit=0 wall_s=182 time_per_realization_mean_s=60.667
+RECORDED E_PAIRED cfg=s225 col=alpha_x rows=11678 unmatched=0 max_abs_diff=1.227682e+00 max_rel_diff=8.102349e+00 rms_diff=2.324526e-01
+RECORDED E_PAIRED cfg=s225 col=alpha_y rows=11678 unmatched=0 max_abs_diff=1.557756e-01 max_rel_diff=5.111451e+03 rms_diff=3.510236e-02
+RECORDED E_PAIRED cfg=s225 col=alpha_z rows=11678 unmatched=0 max_abs_diff=1.996946e-01 max_rel_diff=3.676275e+03 rms_diff=3.356462e-02
+RECORDED E_PAIRED cfg=s225 col=dvar_dt_x rows=11678 unmatched=0 max_abs_diff=1.438690e+00 max_rel_diff=8.102349e+00 rms_diff=2.724054e-01
+RECORDED E_PAIRED cfg=s225 col=dvar_dt_y rows=11678 unmatched=0 max_abs_diff=1.825495e-01 max_rel_diff=5.111451e+03 rms_diff=4.113558e-02
+RECORDED E_PAIRED cfg=s225 col=dvar_dt_z rows=11678 unmatched=0 max_abs_diff=2.340171e-01 max_rel_diff=3.676275e+03 rms_diff=3.933354e-02
+RECORDED run=dt2_s4 exit=0 wall_s=196 time_per_realization_mean_s=65.333
+RECORDED E_PAIRED cfg=s4 col=alpha_x rows=11088 unmatched=0 max_abs_diff=1.898548e+00 max_rel_diff=4.060116e+01 rms_diff=3.282713e-01
+RECORDED E_PAIRED cfg=s4 col=alpha_y rows=11088 unmatched=0 max_abs_diff=2.019993e-01 max_rel_diff=1.768714e+03 rms_diff=3.597006e-02
+RECORDED E_PAIRED cfg=s4 col=alpha_z rows=11088 unmatched=0 max_abs_diff=1.883933e-01 max_rel_diff=8.957962e+04 rms_diff=3.319669e-02
+RECORDED E_PAIRED cfg=s4 col=dvar_dt_x rows=11088 unmatched=0 max_abs_diff=4.449721e+00 max_rel_diff=4.060116e+01 rms_diff=7.693859e-01
+RECORDED E_PAIRED cfg=s4 col=dvar_dt_y rows=11088 unmatched=0 max_abs_diff=4.734358e-01 max_rel_diff=1.768714e+03 rms_diff=8.430483e-02
+RECORDED E_PAIRED cfg=s4 col=dvar_dt_z rows=11088 unmatched=0 max_abs_diff=4.415468e-01 max_rel_diff=8.957962e+04 rms_diff=7.780474e-02
+RECORDED diag_build: configuring and building /home/sesquerre/MacroFlow3D-SF-38/build/v100-diag (bare -j allowed on the V100)
+RECORDED diag_pipeline=/home/sesquerre/MacroFlow3D-SF-38/build/v100-diag/macroflow3d_pipeline md5=f7c8c0cd382052d5b8a056dc28af56af
+E_KSTATS cfg=s1 r=0 agree=1 tool=1.0411e-02,2.0857e+02,1.6441e+00 pipeline=1.0411e-02,2.0857e+02,1.6441e+00
+E_KSTATS cfg=s1 r=1 agree=1 tool=6.2143e-03,1.8566e+02,1.6621e+00 pipeline=6.2143e-03,1.8566e+02,1.6621e+00
+E_KSTATS cfg=s1 r=2 agree=1 tool=8.0866e-03,1.6235e+02,1.6586e+00 pipeline=8.0866e-03,1.6235e+02,1.6586e+00
+E_KSTATS cfg=s1 r=3 agree=1 tool=5.2716e-03,1.4488e+02,1.6781e+00 pipeline=5.2716e-03,1.4488e+02,1.6781e+00
+E_KSTATS cfg=s1 r=4 agree=1 tool=5.8532e-03,1.6725e+02,1.6478e+00 pipeline=5.8532e-03,1.6725e+02,1.6478e+00
+E_KSTATS cfg=s1 r=5 agree=1 tool=6.6980e-03,1.1502e+02,1.6341e+00 pipeline=6.6980e-03,1.1502e+02,1.6341e+00
+E_KSTATS cfg=s1 r=6 agree=1 tool=6.0281e-03,1.7975e+02,1.6319e+00 pipeline=6.0281e-03,1.7975e+02,1.6319e+00
+E_KSTATS cfg=s1 r=7 agree=1 tool=6.0397e-03,1.7298e+02,1.6649e+00 pipeline=6.0397e-03,1.7298e+02,1.6649e+00
+E_KSTATS cfg=s1 r=8 agree=1 tool=3.2320e-03,1.7773e+02,1.6516e+00 pipeline=3.2320e-03,1.7773e+02,1.6516e+00
+E_KSTATS cfg=s1 r=9 agree=1 tool=6.2209e-03,1.2284e+02,1.6749e+00 pipeline=6.2209e-03,1.2284e+02,1.6749e+00
+E_KSTATS_ALL cfg=s1 agree=10/10 pipeline_lines=10
+E_KSTATS cfg=s225 r=0 agree=1 tool=1.0590e-03,3.0915e+03,3.0611e+00 pipeline=1.0590e-03,3.0915e+03,3.0611e+00
+E_KSTATS cfg=s225 r=1 agree=1 tool=5.0361e-04,2.5018e+03,3.1368e+00 pipeline=5.0361e-04,2.5018e+03,3.1368e+00
+E_KSTATS cfg=s225 r=2 agree=1 tool=7.2373e-04,2.1122e+03,3.1461e+00 pipeline=7.2373e-04,2.1122e+03,3.1461e+00
+E_KSTATS cfg=s225 r=3 agree=1 tool=3.8400e-04,1.7779e+03,3.1911e+00 pipeline=3.8400e-04,1.7779e+03,3.1911e+00
+E_KSTATS cfg=s225 r=4 agree=1 tool=5.1791e-04,2.1857e+03,3.0843e+00 pipeline=5.1791e-04,2.1857e+03,3.0843e+00
+E_KSTATS cfg=s225 r=5 agree=1 tool=5.4729e-04,1.2236e+03,3.0375e+00 pipeline=5.4729e-04,1.2236e+03,3.0375e+00
+E_KSTATS cfg=s225 r=6 agree=1 tool=4.7799e-04,1.9165e+03,2.9882e+00 pipeline=4.7799e-04,1.9165e+03,2.9882e+00
+E_KSTATS cfg=s225 r=7 agree=1 tool=4.6052e-04,2.2843e+03,3.1005e+00 pipeline=4.6052e-04,2.2843e+03,3.1005e+00
+E_KSTATS cfg=s225 r=8 agree=1 tool=5.8490e-04,2.4062e+03,3.0973e+00 pipeline=5.8490e-04,2.4062e+03,3.0973e+00
+E_KSTATS cfg=s225 r=9 agree=1 tool=4.8917e-04,1.3474e+03,3.1426e+00 pipeline=4.8917e-04,1.3474e+03,3.1426e+00
+E_KSTATS_ALL cfg=s225 agree=10/10 pipeline_lines=10
+E_KSTATS cfg=s4 r=0 agree=1 tool=1.0706e-04,4.4953e+04,7.8104e+00 pipeline=1.0706e-04,4.4953e+04,7.8104e+00
+E_KSTATS cfg=s4 r=1 agree=1 tool=8.9090e-05,1.1706e+04,8.1111e+00 pipeline=8.9090e-05,1.1706e+04,8.1111e+00
+E_KSTATS cfg=s4 r=2 agree=1 tool=1.3882e-04,1.2521e+04,7.3382e+00 pipeline=1.3882e-04,1.2521e+04,7.3382e+00
+E_KSTATS cfg=s4 r=3 agree=1 tool=6.8477e-05,1.8820e+04,8.5727e+00 pipeline=6.8477e-05,1.8820e+04,8.5727e+00
+E_KSTATS cfg=s4 r=4 agree=1 tool=1.5077e-04,5.3018e+03,6.8224e+00 pipeline=1.5077e-04,5.3018e+03,6.8224e+00
+E_KSTATS cfg=s4 r=5 agree=1 tool=1.0741e-04,3.8393e+03,7.1316e+00 pipeline=1.0741e-04,3.8393e+03,7.1316e+00
+E_KSTATS cfg=s4 r=6 agree=1 tool=1.7482e-04,2.4228e+04,7.0490e+00 pipeline=1.7482e-04,2.4228e+04,7.0490e+00
+E_KSTATS cfg=s4 r=7 agree=1 tool=3.5046e-05,6.5693e+03,7.2729e+00 pipeline=3.5046e-05,6.5693e+03,7.2729e+00
+E_KSTATS cfg=s4 r=8 agree=1 tool=1.8108e-04,1.6193e+04,8.2454e+00 pipeline=1.8108e-04,1.6193e+04,8.2454e+00
+E_KSTATS cfg=s4 r=9 agree=1 tool=9.4146e-05,1.2075e+04,7.5040e+00 pipeline=9.4146e-05,1.2075e+04,7.5040e+00
+E_KSTATS_ALL cfg=s4 agree=10/10 pipeline_lines=10
+E_VERDICT PASS (the three N_R = 10 runs exit 0 with outputs present)
+RECORDED part_seconds=4474 part_runs_seconds=4215 part=par2pilot (D16: this invocation / sum of the recorded run walls)

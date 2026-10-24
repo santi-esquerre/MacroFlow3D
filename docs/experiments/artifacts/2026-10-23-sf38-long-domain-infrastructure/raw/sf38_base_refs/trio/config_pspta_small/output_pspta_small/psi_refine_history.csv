@@ -1,0 +1,5 @@
+realization_id,iter,omega_init,omega_accepted,backtracks,step_status,rms_r1_before,rms_r2_before,rms_r1_after,rms_r2_after,max_r1_after,max_r2_after,vx_clamped_frac,converged_flag
+0,1,0.5,0.00195312,8,accepted_backtrack,0.907816,0.667064,0.907806,0.667031,25.2952,21.1976,0,0
+0,2,0.5,0.000976562,9,accepted_backtrack,0.907806,0.667031,0.907801,0.667027,25.2952,21.1975,0,0
+0,3,0.5,0.00012207,12,accepted_backtrack,0.907801,0.667027,0.9078,0.667026,25.2951,21.1975,0,0
+0,4,0.5,3.05176e-05,14,accepted_backtrack,0.9078,0.667026,0.9078,0.667026,25.2951,21.1975,0,0

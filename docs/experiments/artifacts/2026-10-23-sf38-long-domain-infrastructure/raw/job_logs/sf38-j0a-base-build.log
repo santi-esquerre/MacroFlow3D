@@ -1,0 +1,22 @@
+[2026-10-23T16:22:53Z] job=sf38-j0a-base-build session=macroflow3d-SF-38-sf38-j0a-base-build started
+[2026-10-23T16:22:53Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=0)
+[2026-10-23T16:22:53Z] cwd=/home/sesquerre/MacroFlow3D-SF-38
+[2026-10-23T16:22:53Z] command=set -o pipefail; echo TREE=e4da02b BASE_EQUIV=d8ffa7c; cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 3; echo BUILD_EXIT=$?; mkdir -p ~/sf38_base_refs/bin && cp build/v100-release/inlet_slab build/v100-release/macroflow3d_pipeline ~/sf38_base_refs/bin/ && md5sum ~/sf38_base_refs/bin/*; ctest --test-dir build/v100-release -N | tail -1
+TREE=e4da02b BASE_EQUIV=d8ffa7c
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[260/262] Linking CXX executable spurious_spreading
+[261/262] Linking CXX executable streamfunction_operator_tests
+[262/262] Linking CXX executable spurious_spreading_controls_tests
+BUILD_EXIT=0
+88526e87410416e2b5e91038e8406f76  /home/sesquerre/sf38_base_refs/bin/inlet_slab
+f5f5204efff7c923f3e85e07e93cfda4  /home/sesquerre/sf38_base_refs/bin/macroflow3d_pipeline
+Total Tests: 43
+[2026-10-23T16:25:40Z] job=sf38-j0a-base-build finished exit=0

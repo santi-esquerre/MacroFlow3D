@@ -1,0 +1,62 @@
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4001 raw_mean=-6.234162491792e-19 raw_variance=1.000849682061e+00 applied_scale=9.995754295126e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4002 raw_mean=-1.002887009549e-18 raw_variance=1.001877847798e+00 applied_scale=9.990623964022e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4003 raw_mean=-1.649173148304e-18 raw_variance=1.008005347902e+00 applied_scale=9.960211989412e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4004 raw_mean=-1.016439536705e-18 raw_variance=1.000671883468e+00 applied_scale=9.996642274563e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4005 raw_mean=6.640738306474e-19 raw_variance=1.004120968944e+00 applied_scale=9.979458621309e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4006 raw_mean=3.049318610115e-19 raw_variance=9.978323254919e-01 applied_scale=1.001085602498e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4007 raw_mean=1.240056234780e-18 raw_variance=9.981661209624e-01 applied_scale=1.000918202616e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4008 raw_mean=-2.168404344971e-19 raw_variance=1.008259657756e+00 applied_scale=9.958955795244e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4009 raw_mean=6.911788849595e-19 raw_variance=1.002038498281e+00 applied_scale=9.989823065200e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B1 grid=2048x256x256 ell=3.906250000000e-02 seed=4010 raw_mean=5.421010862428e-19 raw_variance=9.969999236280e-01 applied_scale=1.001503421818e+00 final_variance=1.000000000000e+00
+G_SUMMARY name=B1 n=10 raw_variance_mean=1.001882225629e+00 raw_variance_sd=3.940949561948e-03 applied_scale_mean=9.990654227420e-01 applied_scale_sd=1.962197492521e-03
+G_COMPLETE name=B1 expected=4001-4010 found=10 missing=- OK
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4001 raw_mean=-1.686536712755e-19 raw_variance=1.000472424273e+00 applied_scale=9.997638715250e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4002 raw_mean=-4.892809804037e-19 raw_variance=1.002177713400e+00 applied_scale=9.989129184922e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4003 raw_mean=-1.927470528863e-19 raw_variance=1.008283872366e+00 applied_scale=9.958836209042e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4004 raw_mean=4.781609581218e-19 raw_variance=1.000288872820e+00 applied_scale=9.998555948755e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4005 raw_mean=4.448008912761e-19 raw_variance=1.003937696861e+00 applied_scale=9.980369471013e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4006 raw_mean=1.252855843761e-18 raw_variance=9.979174061456e-01 applied_scale=1.001042926204e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4007 raw_mean=2.200837743293e-19 raw_variance=9.976123629351e-01 applied_scale=1.001195960599e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4008 raw_mean=1.482669637587e-19 raw_variance=1.007850763465e+00 applied_scale=9.960975810199e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4009 raw_mean=7.413348187935e-20 raw_variance=1.002377265159e+00 applied_scale=9.988134825018e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B2 grid=3328x384x384 ell=4.166666666667e-02 seed=4010 raw_mean=1.186135710070e-19 raw_variance=9.966083837448e-01 applied_scale=1.001700134004e+00 final_variance=1.000000000000e+00
+G_SUMMARY name=B2 n=10 raw_variance_mean=1.001752676117e+00 raw_variance_sd=4.045371503988e-03 applied_scale_mean=9.991303037227e-01 applied_scale_sd=2.014888009501e-03
+G_COMPLETE name=B2 expected=4001-4010 found=10 missing=- OK
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4001 raw_mean=5.115210249675e-19 raw_variance=1.013710777493e+00 applied_scale=9.932143098851e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4002 raw_mean=-4.299741949002e-19 raw_variance=1.013526676053e+00 applied_scale=9.933045116956e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4003 raw_mean=7.413348187935e-19 raw_variance=9.967340011691e-01 applied_scale=1.001637010364e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4004 raw_mean=-4.077341503364e-20 raw_variance=1.015162456778e+00 applied_scale=9.925039090765e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4005 raw_mean=0.000000000000e+00 raw_variance=1.002416806449e+00 applied_scale=9.987937827310e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4006 raw_mean=-3.261873202691e-19 raw_variance=9.902132664170e-01 applied_scale=1.004929579810e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4007 raw_mean=2.705872088596e-19 raw_variance=9.925404217751e-01 applied_scale=1.003750786671e+00 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4008 raw_mean=1.630936601346e-18 raw_variance=1.010782801839e+00 applied_scale=9.946518117648e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4009 raw_mean=-2.965339275174e-19 raw_variance=1.019774224208e+00 applied_scale=9.902571451652e-01 final_variance=1.000000000000e+00
+G_FIELD set=geom name=B3 grid=3328x384x384 ell=8.333333333333e-02 seed=4010 raw_mean=1.690243386849e-18 raw_variance=9.910394056755e-01 applied_scale=1.004510633367e+00 final_variance=1.000000000000e+00
+G_SUMMARY name=B3 n=10 raw_variance_mean=1.004590083786e+00 raw_variance_sd=1.128264134230e-02 applied_scale_mean=9.977553480529e-01 applied_scale_sd=5.608109023274e-03
+G_COMPLETE name=B3 expected=4001-4010 found=10 missing=- OK
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4001 raw_mean=-6.234162491792e-19 raw_variance=1.000849682061e+00 applied_scale=9.995754295126e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4002 raw_mean=-1.002887009549e-18 raw_variance=1.001877847798e+00 applied_scale=9.990623964022e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4003 raw_mean=-1.649173148304e-18 raw_variance=1.008005347902e+00 applied_scale=9.960211989412e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4004 raw_mean=-1.016439536705e-18 raw_variance=1.000671883468e+00 applied_scale=9.996642274563e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4005 raw_mean=6.640738306474e-19 raw_variance=1.004120968944e+00 applied_scale=9.979458621309e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4006 raw_mean=3.049318610115e-19 raw_variance=9.978323254919e-01 applied_scale=1.001085602498e+00 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4007 raw_mean=1.240056234780e-18 raw_variance=9.981661209624e-01 applied_scale=1.000918202616e+00 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4008 raw_mean=-2.168404344971e-19 raw_variance=1.008259657756e+00 applied_scale=9.958955795244e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4009 raw_mean=6.911788849595e-19 raw_variance=1.002038498281e+00 applied_scale=9.989823065200e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s1 grid=2048x256x256 ell=3.906250000000e-02 seed=4010 raw_mean=5.421010862428e-19 raw_variance=9.969999236280e-01 applied_scale=1.001503421818e+00 final_variance=1.000000000000e+00
+G_SUMMARY name=AB_s1 n=10 raw_variance_mean=1.001882225629e+00 raw_variance_sd=3.940949561948e-03 applied_scale_mean=9.990654227420e-01 applied_scale_sd=1.962197492521e-03
+G_COMPLETE name=AB_s1 expected=4001-4010 found=10 missing=- OK
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4001 raw_mean=2.293504595642e-20 raw_variance=1.029846025311e+00 applied_scale=9.854029348541e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4002 raw_mean=1.534563074903e-18 raw_variance=1.008658721436e+00 applied_scale=9.956985529864e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4003 raw_mean=5.337610695313e-19 raw_variance=9.963490933282e-01 applied_scale=1.001830467012e+00 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4004 raw_mean=-7.297514622499e-19 raw_variance=1.027264749279e+00 applied_scale=9.866402016433e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4005 raw_mean=-6.672013369142e-19 raw_variance=1.026544461707e+00 applied_scale=9.869862850738e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4006 raw_mean=2.068324144434e-18 raw_variance=9.834415596061e-01 applied_scale=1.008383478052e+00 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4007 raw_mean=5.337610695313e-19 raw_variance=9.862548141695e-01 applied_scale=1.006944263123e+00 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4008 raw_mean=1.668003342285e-20 raw_variance=1.005404055591e+00 applied_scale=9.973088745497e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4009 raw_mean=-5.921411865113e-19 raw_variance=1.034869926950e+00 applied_scale=9.830081458082e-01 final_variance=1.000000000000e+00
+G_FIELD set=ab name=AB_s4 grid=3328x256x256 ell=1.250000000000e-01 seed=4010 raw_mean=1.668003342285e-19 raw_variance=9.756854764218e-01 applied_scale=1.012383550098e+00 final_variance=1.000000000000e+00
+G_SUMMARY name=AB_s4 n=10 raw_variance_mean=1.007431888380e+00 raw_variance_sd=2.153590520219e-02 applied_scale_mean=9.964586753200e-01 applied_scale_sd=1.067281917795e-02
+G_COMPLETE name=AB_s4 expected=4001-4010 found=10 missing=- OK
+G_VERDICT RECORDED_COMPLETE (10 seeds at each of the three production geometries; G has no threshold)
+RECORDED part_seconds=38 part_runs_seconds=19 part=fieldonly (D16: this invocation / sum of the recorded run walls)

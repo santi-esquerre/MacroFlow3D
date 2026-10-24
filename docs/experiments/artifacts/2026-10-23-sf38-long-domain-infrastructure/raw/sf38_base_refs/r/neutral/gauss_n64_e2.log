@@ -1,0 +1,44 @@
+command: /home/sesquerre/sf38_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --comparator pollock --save-vd /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2/vd --save-seed-velocity --save-particles /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2 --summary /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2.json
+FIELD gaussian (SF-18) N=64 sigma2=1 ell=0.25 seed=3001 normalize_variance=1 applied_scale=1.602888711251e+00 raw_variance=3.892183071637e-01 final_variance=1.000000000000e+00 active_modes=127007 | stage field k = exp(eps Y), eps = 2
+SETUP STAGE field=gaussian eps=2 N=64 status=ok
+SETUP   SF-18: raw_mean=0.000000e+00 raw_variance=3.892183071637e-01 applied_scale=1.602888711251e+00 final_variance=1.000000000000e+00 active_modes=127007
+SETUP   SF-19: mg_levels=5 converged=1 G=(6.256651977733e-01, -3.115577610403e-02, 1.747265302963e-01) mean_flux=(1.000e+00, -1.202e-17, 1.454e-16) div_max=3.041e-10 div_rms=4.573e-12
+SETUP   SF-19 corrector x: status=converged its=20 rel_residual=3.040e-14 final_residual=3.182e-09
+SETUP   SF-19 corrector y: status=converged its=20 rel_residual=1.929e-14 final_residual=2.821e-09
+SETUP   SF-19 corrector z: status=converged its=20 rel_residual=1.943e-14 final_residual=2.517e-09
+SETUP   inlet: vmin=1.342234e-03 mean(U plane 0)=0.999999999999999 (mean-1=-1.221e-15) Q0-1=-1.443e-15 v_rms=2.194157e+00
+SETUP   v1(U-face) vs spline flow k g1: rms_rel=4.033036e-03 max_rel=2.203469e-02; spline potential GPU vs host prefilter rel=3.756e-15
+SETUP stage eps=2 built in 2.139s (grad_lnk=spectral (band-limited cell samples, cuFFT))
+SAVED_VD /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2/vd (vD1.npy, vD2.npy, vD3.npy, vD.json)
+TRACK field=gaussian eps=2 N=64 h=0.015625 x0=0 M=64 Np=4096 planes=0.25,0.5,1,2,4 times=0.5,1,2,4 tol=1.0e-08 h_max=1.953125e-03 (h/8) min_step=1.0e-13 max_arclength=26 covectors=0 labels_available=1 inlet_vmin=1.342234e-03
+BACKFLOW field=gaussian eps=2 N=64 inlet_vmin=1.342234e-03 labels_available=1 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+TPLANE m=0 x1=0.25 n_ok=4096 mean2=4.258637990450e-01 mean3=6.425892421452e-01 var2=9.096654571819e-02 var3=8.875755041203e-02 mean_tau=2.491559668876e-01 var_tau=1.093432521902e+00 ev_rms=2.063522e-02 ev_max=2.047630e-01
+TPLANE m=1 x1=0.5 n_ok=4096 mean2=4.180031705064e-01 mean3=6.866235765514e-01 var2=9.022620927612e-02 var3=1.127841076985e-01 mean_tau=5.100839398462e-01 var_tau=1.958417180828e+00 ev_rms=2.494041e-02 ev_max=2.310409e-01
+TPLANE m=2 x1=1 n_ok=4096 mean2=4.865249624575e-01 mean3=6.025477962015e-01 var2=1.395227576229e-01 var3=1.164296271621e-01 mean_tau=1.026469628223e+00 var_tau=3.482196512452e+00 ev_rms=2.861936e-02 ev_max=2.369977e-01
+TPLANE m=3 x1=2 n_ok=4096 mean2=4.873024606578e-01 mean3=6.009131459757e-01 var2=1.936518359965e-01 var3=1.861017940172e-01 mean_tau=2.026262043327e+00 var_tau=8.254592544080e+00 ev_rms=4.206126e-02 ev_max=3.727705e-01
+TPLANE m=4 x1=4 n_ok=4096 mean2=4.908430832939e-01 mean3=5.984836106621e-01 var2=2.625818917545e-01 var3=2.570436762485e-01 mean_tau=4.048674926670e+00 var_tau=2.293846296347e+01 ev_rms=6.230847e-02 ev_max=5.570138e-01
+TTIME n=0 t=0.5 active=4096 mean1=8.532396212816e-01 mean2=4.517135406591e-01 mean3=6.271842018954e-01 var1=1.856932698134e-01 var2=1.222314889764e-01 var3=1.193335732037e-01
+TTIME n=1 t=1 active=4096 mean1=1.558047398477e+00 mean2=4.658123505145e-01 mean3=6.167596211797e-01 var1=5.776394972893e-01 var2=1.535467421013e-01 var3=1.466077053008e-01
+TTIME n=2 t=2 active=4096 mean1=2.746716025481e+00 mean2=4.572510587273e-01 mean3=6.260402388263e-01 var1=1.546194409674e+00 var2=1.826309608580e-01 var3=1.953463895648e-01
+TTIME n=3 t=4 active=4096 mean1=4.876630541694e+00 mean2=4.427400442864e-01 mean3=6.265654980172e-01 var1=3.567273183602e+00 var2=2.133929422743e-01 var3=2.506407362903e-01
+TSTATUS pass=plane hist=4096,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=63099992
+TSTATUS pass=time hist=4096,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=64934520
+SAVED_PARTICLES /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2 (seeds / weights / labels / status_* / planes_* / times_* .npy, moments_{time,planes}.csv, track.json)
+SEEDV Np=4096 max_rel_weight_dev=1.448017e-16 nonpos=0 weights_zero=0 set_equal=1 (seed_v.npy = k g at the seeds; dev = max_p |max(v1_p,0)/S - w_p| / max_p w_p)
+PTRACK field=gaussian eps=2 N=64 h=0.015625 x0=0 M=64 Np=4096 planes=0.25,0.5,1,2,4 times=0.5,1,2,4 seed_nonpos=0 max_cells_per_call=10000000 seeds_equal_tracker=1 weights=rt0_v1_at_seed
+PPLANE m=0 x1=0.25 contributing=4096 mean2=4.254694242584e-01 var2=9.103304139158e-02 mean3=6.429962610950e-01 var3=8.866549112675e-02 mean_t=2.486909057327e-01 var_t=1.078054812320e+00
+PPLANE m=1 x1=0.5 contributing=4096 mean2=4.173167553586e-01 var2=9.031218519617e-02 mean3=6.876425579714e-01 var3=1.125330324934e-01 mean_t=5.029957651943e-01 var_t=1.851510938240e+00
+PPLANE m=2 x1=1 contributing=4096 mean2=4.855248646989e-01 var2=1.395537354858e-01 mean3=6.034437608310e-01 var3=1.161924874516e-01 mean_t=1.012890923870e+00 var_t=3.172171468741e+00
+PPLANE m=3 x1=2 contributing=4096 mean2=4.857638399180e-01 var2=1.937816771573e-01 mean3=6.031958673778e-01 var3=1.863171763686e-01 mean_t=1.999670164440e+00 var_t=6.046630703165e+00
+PPLANE m=4 x1=4 contributing=4096 mean2=4.877934262821e-01 var2=2.611683763550e-01 mean3=6.020763119938e-01 var3=2.545656862432e-01 mean_t=3.979810197297e+00 var_t=1.212040695559e+01
+PTIME n=0 t=0.5 active=4096 mean1=8.496522512340e-01 mean2=4.511111875353e-01 mean3=6.282863234503e-01 var1=1.828860631701e-01 var2=1.221657920690e-01 var3=1.186319736905e-01
+PTIME n=1 t=1 active=4096 mean1=1.552243730456e+00 mean2=4.645449881290e-01 mean3=6.186574958189e-01 var1=5.722379067976e-01 var2=1.534826925559e-01 var3=1.461457282567e-01
+PTIME n=2 t=2 active=4096 mean1=2.737444367409e+00 mean2=4.540296361311e-01 mean3=6.317004126628e-01 var1=1.515631895748e+00 var2=1.834944676365e-01 var3=1.945832075349e-01
+PTIME n=3 t=4 active=4096 mean1=4.888104216034e+00 mean2=4.393597996613e-01 mean3=6.322235619597e-01 var1=3.663972032326e+00 var2=2.103845657683e-01 var3=2.523093198719e-01
+PSTATUS pass=plane hist=0:4096 cells=1909210
+PSTATUS pass=time hist=0:4096 cells=1971351
+SAVED_POLLOCK /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2 (pollock_{weights,status_plane,status_time,planes_x23,planes_t,times_x,cells}.npy, pollock_moments_{time,planes}.csv, pollock.json)
+TIMING field=0.089s pollock=0.016s prepare=0.002s save_vd=0.011s seed_velocity=0.002s stage=2.139s track=0.804s write=0.002s total=3.064s
+MEMORY peak_device_bytes=649068544 free_min=33440661504 total_device=34089730048 workspaces_bytes=0 (peak/free: cudaMemGetInfo polls before/after every phase, device-wide)
+SUMMARY_JSON /home/sesquerre/sf38_base_refs/r/neutral/gauss_n64_e2.json
+STATUS ok

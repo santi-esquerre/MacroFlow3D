@@ -1,0 +1,2 @@
+realization_id,enabled,iters_done,converged,stop_reason,seed_rms_r1,seed_rms_r2,final_rms_r1,final_rms_r2
+0,1,4,0,max_iters,0.907816,0.667064,0.9078,0.667026

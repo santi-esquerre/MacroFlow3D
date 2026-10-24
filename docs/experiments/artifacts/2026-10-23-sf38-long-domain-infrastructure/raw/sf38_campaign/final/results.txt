@@ -1,0 +1,448 @@
+RECORDED binaries md5: e18fc3034ee3034cc9ab7ba146c6da15  /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/macroflow3d_pipeline 51ba3cee3e439f81fee83dde302e44b0  /home/sesquerre/MacroFlow3D-SF-38/build/v100-release/inlet_slab 
+RECORDED ctest_per_test_times written (/home/sesquerre/sf38_campaign/final/ctest_times.tsv, 46 tests: name<TAB>status<TAB>seconds)
+F_CTEST exit=0 tests=46 failed=0 wall_s=3065 PASS (expected content change: lagrangian_tracker_gpu_host only; summary: 100% tests passed, 0 tests failed out of 46)
+IDENTICAL trio:config_pspta_small:output_pspta_small/effective_config.yaml
+IDENTICAL trio:config_pspta_small:output_pspta_small/manifest.json(drop timestamp build.git_hash)
+IDENTICAL trio:config_pspta_small:output_pspta_small/psi_refine_history.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/psi_refine_summary.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/r_0000/step_00000100.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/r_0000/step_00000200.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/r_0000/step_00000300.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/r_0000/step_00000400.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/r_0000/step_00000500.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000005.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000010.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000015.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000020.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000025.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000030.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000035.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000040.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000045.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000050.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000055.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000060.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000065.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000070.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000075.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000080.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000085.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000090.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000095.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000100.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000105.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000110.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000115.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000120.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000125.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000130.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000135.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000140.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000145.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000150.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000155.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000160.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000165.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000170.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000175.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000180.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000185.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000190.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000195.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000200.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000205.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000210.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000215.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000220.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000225.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000230.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000235.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000240.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000245.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000250.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000255.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000260.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000265.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000270.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000275.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000280.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000285.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000290.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000295.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000300.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000305.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000310.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000315.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000320.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000325.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000330.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000335.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000340.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000345.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000350.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000355.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000360.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000365.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000370.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000375.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000380.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000385.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000390.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000395.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000400.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000405.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000410.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000415.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000420.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000425.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000430.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000435.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000440.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000445.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000450.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000455.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000460.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000465.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000470.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000475.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000480.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000485.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000490.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000495.csv
+IDENTICAL trio:config_pspta_small:output_pspta_small/snapshots/step_00000500.csv
+IDENTICAL trio:config_pspta_small:fileset
+IDENTICAL trio:config_pspta_small:rc base=0 head=0
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/effective_config.yaml
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/manifest.json(drop timestamp build.git_hash)
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000001.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000002.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000003.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000004.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000005.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000006.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000007.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000008.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000009.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000010.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000011.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000012.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000013.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000014.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000015.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000016.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000017.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000018.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000019.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/snapshots/step_00000020.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/streamfunctions/r_0000/grid_0032/fields_meta.json
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/streamfunctions/r_0000/grid_0032/iteration_history.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/streamfunctions/r_0000/grid_0032/summary.json
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/streamfunctions/r_0000/grid_0032/trial_history.csv
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/streamfunctions/r_0000/grid_0032/u1.raw
+IDENTICAL trio:config_streamfunctions_homogeneous:output_streamfunctions_homogeneous/streamfunctions/r_0000/grid_0032/u2.raw
+IDENTICAL trio:config_streamfunctions_homogeneous:fileset
+IDENTICAL trio:config_streamfunctions_homogeneous:rc base=0 head=0
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/effective_config.yaml
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/manifest.json(drop timestamp build.git_hash)
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000001.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000002.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000003.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000004.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000005.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000006.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000007.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000008.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000009.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000010.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000011.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000012.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000013.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000014.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000015.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000016.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000017.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000018.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000019.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/snapshots/step_00000020.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/fields_meta.json
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/iteration_history.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/stage_history.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/summary.json
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/trial_history.csv
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/u1.raw
+IDENTICAL trio:config_streamfunctions_continuation:output_streamfunctions_continuation/streamfunctions/r_0000/grid_0032/u2.raw
+IDENTICAL trio:config_streamfunctions_continuation:fileset
+IDENTICAL trio:config_streamfunctions_continuation:rc base=0 head=0
+F_TRIO IDENTICAL (SF-27 trio byte-compare clean vs /home/sesquerre/sf38_base_refs/trio; manifest keys timestamp build.git_hash dropped)
+IDENTICAL r:trace:N32_e0.5_host:labels.json
+IDENTICAL r:trace:N32_e0.5_host:psi1.npy
+IDENTICAL r:trace:N32_e0.5_host:psi2.npy
+IDENTICAL r:trace:N32_e0.5_host:fileset
+IDENTICAL r:trace:N32_e0.5_host:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e0.5_host:rc base=0 head=0
+IDENTICAL r:trace:N32_e0.5_gpu:labels.json
+IDENTICAL r:trace:N32_e0.5_gpu:psi1.npy
+IDENTICAL r:trace:N32_e0.5_gpu:psi2.npy
+IDENTICAL r:trace:N32_e0.5_gpu:fileset
+IDENTICAL r:trace:N32_e0.5_gpu:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e0.5_gpu:rc base=0 head=0
+IDENTICAL r:trace:N32_e1.0_host:labels.json
+IDENTICAL r:trace:N32_e1.0_host:psi1.npy
+IDENTICAL r:trace:N32_e1.0_host:psi2.npy
+IDENTICAL r:trace:N32_e1.0_host:fileset
+IDENTICAL r:trace:N32_e1.0_host:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e1.0_host:rc base=21 head=21
+IDENTICAL r:trace:N32_e1.0_gpu:labels.json
+IDENTICAL r:trace:N32_e1.0_gpu:psi1.npy
+IDENTICAL r:trace:N32_e1.0_gpu:psi2.npy
+IDENTICAL r:trace:N32_e1.0_gpu:fileset
+IDENTICAL r:trace:N32_e1.0_gpu:lines: IDENTICAL 39
+IDENTICAL r:trace:N32_e1.0_gpu:rc base=21 head=21
+IDENTICAL r:trace:N64_e0.5_host:labels.json
+IDENTICAL r:trace:N64_e0.5_host:psi1.npy
+IDENTICAL r:trace:N64_e0.5_host:psi2.npy
+IDENTICAL r:trace:N64_e0.5_host:fileset
+IDENTICAL r:trace:N64_e0.5_host:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e0.5_host:rc base=0 head=0
+IDENTICAL r:trace:N64_e0.5_gpu:labels.json
+IDENTICAL r:trace:N64_e0.5_gpu:psi1.npy
+IDENTICAL r:trace:N64_e0.5_gpu:psi2.npy
+IDENTICAL r:trace:N64_e0.5_gpu:fileset
+IDENTICAL r:trace:N64_e0.5_gpu:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e0.5_gpu:rc base=0 head=0
+IDENTICAL r:trace:N64_e1.0_host:labels.json
+IDENTICAL r:trace:N64_e1.0_host:psi1.npy
+IDENTICAL r:trace:N64_e1.0_host:psi2.npy
+IDENTICAL r:trace:N64_e1.0_host:fileset
+IDENTICAL r:trace:N64_e1.0_host:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e1.0_host:rc base=0 head=0
+IDENTICAL r:trace:N64_e1.0_gpu:labels.json
+IDENTICAL r:trace:N64_e1.0_gpu:psi1.npy
+IDENTICAL r:trace:N64_e1.0_gpu:psi2.npy
+IDENTICAL r:trace:N64_e1.0_gpu:fileset
+IDENTICAL r:trace:N64_e1.0_gpu:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e1.0_gpu:rc base=0 head=0
+IDENTICAL r:trace:N64_e2.0_gpu:labels.json
+IDENTICAL r:trace:N64_e2.0_gpu:psi1.npy
+IDENTICAL r:trace:N64_e2.0_gpu:psi2.npy
+IDENTICAL r:trace:N64_e2.0_gpu:fileset
+IDENTICAL r:trace:N64_e2.0_gpu:lines: IDENTICAL 71
+IDENTICAL r:trace:N64_e2.0_gpu:rc base=21 head=21
+IDENTICAL r:prod32:lines: IDENTICAL 102
+IDENTICAL r:prod32:rc base=0 head=0
+IDENTICAL r:fwd:smoke_g3d_n16:labels.npy
+IDENTICAL r:fwd:smoke_g3d_n16:moments_planes.csv
+IDENTICAL r:fwd:smoke_g3d_n16:moments_time.csv
+IDENTICAL r:fwd:smoke_g3d_n16:planes_I.npy
+IDENTICAL r:fwd:smoke_g3d_n16:planes_cov.npy
+IDENTICAL r:fwd:smoke_g3d_n16:planes_tau.npy
+IDENTICAL r:fwd:smoke_g3d_n16:planes_x23.npy
+IDENTICAL r:fwd:smoke_g3d_n16:seeds.npy
+IDENTICAL r:fwd:smoke_g3d_n16:status_plane.npy
+IDENTICAL r:fwd:smoke_g3d_n16:status_time.npy
+IDENTICAL r:fwd:smoke_g3d_n16:times_I.npy
+IDENTICAL r:fwd:smoke_g3d_n16:times_cov.npy
+IDENTICAL r:fwd:smoke_g3d_n16:times_x.npy
+IDENTICAL r:fwd:smoke_g3d_n16:track.json
+IDENTICAL r:fwd:smoke_g3d_n16:weights.npy
+IDENTICAL r:fwd:smoke_g3d_n16:fileset
+IDENTICAL r:fwd:smoke_g3d_n16:lines: IDENTICAL 19
+IDENTICAL r:fwd:smoke_g3d_n16:rc base=0 head=0
+IDENTICAL r:fwd:g3d_n32_cov:labels.npy
+IDENTICAL r:fwd:g3d_n32_cov:moments_planes.csv
+IDENTICAL r:fwd:g3d_n32_cov:moments_time.csv
+IDENTICAL r:fwd:g3d_n32_cov:planes_I.npy
+IDENTICAL r:fwd:g3d_n32_cov:planes_cov.npy
+IDENTICAL r:fwd:g3d_n32_cov:planes_tau.npy
+IDENTICAL r:fwd:g3d_n32_cov:planes_x23.npy
+IDENTICAL r:fwd:g3d_n32_cov:seeds.npy
+IDENTICAL r:fwd:g3d_n32_cov:status_plane.npy
+IDENTICAL r:fwd:g3d_n32_cov:status_time.npy
+IDENTICAL r:fwd:g3d_n32_cov:times_I.npy
+IDENTICAL r:fwd:g3d_n32_cov:times_cov.npy
+IDENTICAL r:fwd:g3d_n32_cov:times_x.npy
+IDENTICAL r:fwd:g3d_n32_cov:track.json
+IDENTICAL r:fwd:g3d_n32_cov:weights.npy
+IDENTICAL r:fwd:g3d_n32_cov:fileset
+IDENTICAL r:fwd:g3d_n32_cov:lines: IDENTICAL 17
+IDENTICAL r:fwd:g3d_n32_cov:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n64_e1_cov:labels.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL r:fwd:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:seeds.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:status_time.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:times_I.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:times_x.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:track.json
+IDENTICAL r:fwd:gauss_n64_e1_cov:weights.npy
+IDENTICAL r:fwd:gauss_n64_e1_cov:fileset
+IDENTICAL r:fwd:gauss_n64_e1_cov:lines: IDENTICAL 22
+IDENTICAL r:fwd:gauss_n64_e1_cov:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n64_e2:labels.npy
+IDENTICAL r:fwd:gauss_n64_e2:moments_planes.csv
+IDENTICAL r:fwd:gauss_n64_e2:moments_time.csv
+IDENTICAL r:fwd:gauss_n64_e2:planes_I.npy
+IDENTICAL r:fwd:gauss_n64_e2:planes_tau.npy
+IDENTICAL r:fwd:gauss_n64_e2:planes_x23.npy
+IDENTICAL r:fwd:gauss_n64_e2:seeds.npy
+IDENTICAL r:fwd:gauss_n64_e2:status_plane.npy
+IDENTICAL r:fwd:gauss_n64_e2:status_time.npy
+IDENTICAL r:fwd:gauss_n64_e2:times_I.npy
+IDENTICAL r:fwd:gauss_n64_e2:times_x.npy
+IDENTICAL r:fwd:gauss_n64_e2:track.json
+IDENTICAL r:fwd:gauss_n64_e2:weights.npy
+IDENTICAL r:fwd:gauss_n64_e2:fileset
+IDENTICAL r:fwd:gauss_n64_e2:lines: IDENTICAL 24
+IDENTICAL r:fwd:gauss_n64_e2:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n64_e2_tol:labels.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL r:fwd:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL r:fwd:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:seeds.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:status_time.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:times_I.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:times_x.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:track.json
+IDENTICAL r:fwd:gauss_n64_e2_tol:weights.npy
+IDENTICAL r:fwd:gauss_n64_e2_tol:fileset
+IDENTICAL r:fwd:gauss_n64_e2_tol:lines: IDENTICAL 20
+IDENTICAL r:fwd:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n40_e1:labels.npy
+IDENTICAL r:fwd:gauss_n40_e1:moments_planes.csv
+IDENTICAL r:fwd:gauss_n40_e1:moments_time.csv
+IDENTICAL r:fwd:gauss_n40_e1:planes_I.npy
+IDENTICAL r:fwd:gauss_n40_e1:planes_tau.npy
+IDENTICAL r:fwd:gauss_n40_e1:planes_x23.npy
+IDENTICAL r:fwd:gauss_n40_e1:seeds.npy
+IDENTICAL r:fwd:gauss_n40_e1:status_plane.npy
+IDENTICAL r:fwd:gauss_n40_e1:status_time.npy
+IDENTICAL r:fwd:gauss_n40_e1:times_I.npy
+IDENTICAL r:fwd:gauss_n40_e1:times_x.npy
+IDENTICAL r:fwd:gauss_n40_e1:track.json
+IDENTICAL r:fwd:gauss_n40_e1:weights.npy
+IDENTICAL r:fwd:gauss_n40_e1:fileset
+IDENTICAL r:fwd:gauss_n40_e1:lines: IDENTICAL 18
+IDENTICAL r:fwd:gauss_n40_e1:rc base=0 head=0
+IDENTICAL r:fwd:gauss_n80_e2:labels.npy
+IDENTICAL r:fwd:gauss_n80_e2:moments_planes.csv
+IDENTICAL r:fwd:gauss_n80_e2:moments_time.csv
+IDENTICAL r:fwd:gauss_n80_e2:planes_I.npy
+IDENTICAL r:fwd:gauss_n80_e2:planes_tau.npy
+IDENTICAL r:fwd:gauss_n80_e2:planes_x23.npy
+IDENTICAL r:fwd:gauss_n80_e2:seeds.npy
+IDENTICAL r:fwd:gauss_n80_e2:status_plane.npy
+IDENTICAL r:fwd:gauss_n80_e2:status_time.npy
+IDENTICAL r:fwd:gauss_n80_e2:times_I.npy
+IDENTICAL r:fwd:gauss_n80_e2:times_x.npy
+IDENTICAL r:fwd:gauss_n80_e2:track.json
+IDENTICAL r:fwd:gauss_n80_e2:weights.npy
+IDENTICAL r:fwd:gauss_n80_e2:fileset
+IDENTICAL r:fwd:gauss_n80_e2:lines: IDENTICAL 18
+IDENTICAL r:fwd:gauss_n80_e2:rc base=0 head=0
+IDENTICAL r:neutral:gauss_n64_e1_cov:labels.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_I.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_cov.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_tau.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock.json
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_cells.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_planes_t.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_status_time.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_times_x.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:pollock_weights.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:seed_v.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:seeds.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:status_time.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:times_I.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:times_cov.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:times_x.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:track.json
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD.json
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD1.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD2.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:vd/vD3.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:weights.npy
+IDENTICAL r:neutral:gauss_n64_e1_cov:fileset
+IDENTICAL r:neutral:gauss_n64_e1_cov:lines: IDENTICAL 33
+IDENTICAL r:neutral:gauss_n64_e1_cov:rc base=0 head=0
+IDENTICAL r:neutral:gauss_n64_e2:labels.npy
+IDENTICAL r:neutral:gauss_n64_e2:moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2:moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2:planes_I.npy
+IDENTICAL r:neutral:gauss_n64_e2:planes_tau.npy
+IDENTICAL r:neutral:gauss_n64_e2:planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock.json
+IDENTICAL r:neutral:gauss_n64_e2:pollock_cells.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2:pollock_moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2:pollock_planes_t.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2:pollock_weights.npy
+IDENTICAL r:neutral:gauss_n64_e2:seed_v.npy
+IDENTICAL r:neutral:gauss_n64_e2:seeds.npy
+IDENTICAL r:neutral:gauss_n64_e2:status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2:status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2:times_I.npy
+IDENTICAL r:neutral:gauss_n64_e2:times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2:track.json
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD.json
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD1.npy
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD2.npy
+IDENTICAL r:neutral:gauss_n64_e2:vd/vD3.npy
+IDENTICAL r:neutral:gauss_n64_e2:weights.npy
+IDENTICAL r:neutral:gauss_n64_e2:fileset
+IDENTICAL r:neutral:gauss_n64_e2:lines: IDENTICAL 37
+IDENTICAL r:neutral:gauss_n64_e2:rc base=0 head=0
+IDENTICAL r:neutral:gauss_n64_e2_tol:labels.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:planes_I.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:planes_tau.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock.json
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_cells.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_moments_planes.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_moments_time.csv
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_planes_t.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_planes_x23.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:pollock_weights.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:seed_v.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:seeds.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:status_plane.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:status_time.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:times_I.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:times_x.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:track.json
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD.json
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD1.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD2.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:vd/vD3.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:weights.npy
+IDENTICAL r:neutral:gauss_n64_e2_tol:fileset
+IDENTICAL r:neutral:gauss_n64_e2_tol:lines: IDENTICAL 29
+IDENTICAL r:neutral:gauss_n64_e2_tol:rc base=0 head=0
+IDENTICAL binary:md5_differs head=51ba3cee3e439f81fee83dde302e44b0 base=88526e87410416e2b5e91038e8406f76
+F_RSET IDENTICAL (R set byte-identical to /home/sesquerre/sf38_base_refs/r; SF-40 compare rules)
+RECORDED part_seconds=3246 part_runs_seconds=3231 part=final (D16: this invocation / sum of the recorded run walls)

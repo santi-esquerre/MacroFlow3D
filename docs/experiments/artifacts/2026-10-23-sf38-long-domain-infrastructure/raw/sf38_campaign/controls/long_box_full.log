@@ -1,0 +1,207 @@
+CHECK box_levels_equal_cube_levels PASS  N = 4..1024 even
+CHECK box_levels_3328x384x384_is_7 PASS
+CHECK box_levels_3328x384x384_coarsest_52x6x6 PASS
+CHECK box_levels_min_extent_governs PASS
+CHECK cube16_eps1_stage_ready PASS
+CHECK cube16_eps1_report_status_fields PASS  status ok
+CHECK cube16_eps1_sf18_report_bitwise PASS
+CHECK cube16_eps1_sf19_report_bitwise PASS
+CHECK cube16_eps1_inlet_vmin_mean_Q0_bitwise PASS
+CHECK cube16_eps1_v1_diag_fields_remain_nan PASS
+CHECK cube16_eps1_summary_sf18_sf19_corrector_lines_identical PASS  5 lines
+CHECK cube16_eps1_G_bitwise PASS
+CHECK cube16_eps1_inlet_samples_bitwise PASS
+CHECK cube16_eps1_labels_bitwise PASS  labels available
+CHECK cube16_eps1_faces_bitwise PASS
+CHECK cube16_eps1_coefficients_bitwise PASS
+CHECK cube16_eps1_interleaved_coefficients_bitwise PASS
+CHECK cube16_eps1_nocov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_nocov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_nocov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_nocov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_cov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_cov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_cov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps1_cov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+  [cube16_eps1 3.8 s]
+CHECK cube16_eps2_stage_ready PASS
+CHECK cube16_eps2_report_status_fields PASS  status ok
+CHECK cube16_eps2_sf18_report_bitwise PASS
+CHECK cube16_eps2_sf19_report_bitwise PASS
+CHECK cube16_eps2_inlet_vmin_mean_Q0_bitwise PASS
+CHECK cube16_eps2_v1_diag_fields_remain_nan PASS
+CHECK cube16_eps2_summary_sf18_sf19_corrector_lines_identical PASS  5 lines
+CHECK cube16_eps2_G_bitwise PASS
+CHECK cube16_eps2_inlet_samples_bitwise PASS
+CHECK cube16_eps2_labels_bitwise PASS  labels available
+CHECK cube16_eps2_faces_bitwise PASS
+CHECK cube16_eps2_coefficients_bitwise PASS
+CHECK cube16_eps2_interleaved_coefficients_bitwise PASS
+CHECK cube16_eps2_nocov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_nocov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_nocov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_nocov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_cov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_cov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_cov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube16_eps2_cov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+  [cube16_eps2 6.6 s]
+CHECK cube32_eps1_stage_ready PASS
+CHECK cube32_eps1_report_status_fields PASS  status ok
+CHECK cube32_eps1_sf18_report_bitwise PASS
+CHECK cube32_eps1_sf19_report_bitwise PASS
+CHECK cube32_eps1_inlet_vmin_mean_Q0_bitwise PASS
+CHECK cube32_eps1_v1_diag_fields_remain_nan PASS
+CHECK cube32_eps1_summary_sf18_sf19_corrector_lines_identical PASS  5 lines
+CHECK cube32_eps1_G_bitwise PASS
+CHECK cube32_eps1_inlet_samples_bitwise PASS
+CHECK cube32_eps1_labels_bitwise PASS  labels available
+CHECK cube32_eps1_faces_bitwise PASS
+CHECK cube32_eps1_coefficients_bitwise PASS
+CHECK cube32_eps1_interleaved_coefficients_bitwise PASS
+CHECK cube32_eps1_nocov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_nocov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_nocov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_nocov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_cov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_cov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_cov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps1_cov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+  [cube32_eps1 4.5 s]
+CHECK cube32_eps2_stage_ready PASS
+CHECK cube32_eps2_report_status_fields PASS  status ok
+CHECK cube32_eps2_sf18_report_bitwise PASS
+CHECK cube32_eps2_sf19_report_bitwise PASS
+CHECK cube32_eps2_inlet_vmin_mean_Q0_bitwise PASS
+CHECK cube32_eps2_v1_diag_fields_remain_nan PASS
+CHECK cube32_eps2_summary_sf18_sf19_corrector_lines_identical PASS  5 lines
+CHECK cube32_eps2_G_bitwise PASS
+CHECK cube32_eps2_inlet_samples_bitwise PASS
+CHECK cube32_eps2_labels_bitwise PASS  labels available
+CHECK cube32_eps2_faces_bitwise PASS
+CHECK cube32_eps2_coefficients_bitwise PASS
+CHECK cube32_eps2_interleaved_coefficients_bitwise PASS
+CHECK cube32_eps2_nocov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_nocov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_nocov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_nocov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_cov_default_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_cov_fused_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_cov_single_tracker_bitwise PASS  ok plane 64/64 time 64
+CHECK cube32_eps2_cov_both_tracker_bitwise PASS  ok plane 64/64 time 64
+  [cube32_eps2 8.1 s]
+CHECK backflow_cube16_eps3_seed3108_stage_ready PASS
+CHECK backflow_cube16_eps3_seed3108_report_status_fields PASS  status inlet_backflow
+CHECK backflow_cube16_eps3_seed3108_inlet_backflow_recorded_not_fatal PASS  inlet_vmin -1.967e-01
+CHECK backflow_cube16_eps3_seed3108_sf18_report_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_sf19_report_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_inlet_vmin_mean_Q0_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_v1_diag_fields_remain_nan PASS
+CHECK backflow_cube16_eps3_seed3108_summary_sf18_sf19_corrector_lines_identical PASS  5 lines
+CHECK backflow_cube16_eps3_seed3108_G_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_inlet_samples_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_labels_bitwise PASS  inlet backflow: labels unavailable
+CHECK backflow_cube16_eps3_seed3108_faces_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_coefficients_bitwise PASS
+CHECK backflow_cube16_eps3_seed3108_nocov_default_tracker_bitwise PASS  ok plane 35/36 time 35
+CHECK backflow_cube16_eps3_seed3108_cov_single_tracker_bitwise PASS  ok plane 35/36 time 35
+  [backflow_cube16_eps3_seed3108 3.9 s]
+CHECK tracker_api_throws_when_arrays_missing PASS
+CHECK long_box_rejects_ny_ne_nz PASS
+CHECK long_box_rejects_odd_nx PASS
+CHECK long_box_phase_named_in_exception PASS
+CHECK darcy_failed_status_and_report PASS
+CHECK cube32_mem_stage_ready PASS
+CHECK cube32_mem_lines_present PASS  6 lines
+  MEM_GEOM pid=260578 nx=32 ny=32 nz=32 n=32768 levels=4 level_cells=32768,4096,512,64 coarsest=4x4x4 face_max=33792 bhat=mapped bhat_host_bytes=262144 cub_sum_bytes=16383,16383,1,1
+  MEM_PHASE phase=F exact_bytes=820232 cufft_work=278528 cufft_gen=278528 device_used=1202716672 seconds=0.009375 items=y:262144,sf18_spectrum:278528,sf18_mode_counter:8,sf18_reduce_blocks:1024
+  MEM_PHASE phase=S1 exact_bytes=1359872 cufft_work=557056 cufft_prefilter_logk=557056 device_used=1202716672 seconds=0.012890 items=lnk:262144,coef_logk:262144,prefilter_spectrum:278528
+  MEM_PHASE phase=S2 exact_bytes=2084950 cufft_work=0 device_used=1204813824 seconds=0.907209 categories=correctors:540672,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:286735,mg_hierarchy:1206272,mg_preconditioner:32800 items=mg_l0_x:270336,mg_l0_b:262144,mg_l0_r:262144,mg_l0_coef:262144,mg_l1_x:32768,mg_l1_b:32768,mg_l1_r:32768,mg_l1_coef:32768,mg_l2_x:4096,mg_l2_b:4096,mg_l2_r:4096,mg_l2_coef:4096,mg_l3_x:512,mg_l3_b:512,mg_l3_r:512,mg_l3_coef:512,pcg_r:270336,pcg_p:270336,corrector:270336,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:9,scratch_mg_mean_zero_l3:9,scratch_reduce_blocks:2048
+  MEM_PHASE phase=S3 exact_bytes=17899752 cufft_work=557056 cufft_prefilter_pot=557056 device_used=1221591040 seconds=0.012529 items=h_tilde:270336,coef_logk:262144,labels_device:16269544,coef_pot:262144,prefilter_spectrum:278528
+  MEM_PHASE phase=T exact_bytes=16799104 cufft_work=0 device_used=1221591040 seconds=0.000000 items=coef_pot:262144,coef_logk:262144,labels_device:16269544,tracker_seeds:384,tracker_planes:16,tracker_times:8,tracker_stats_plane:1408,tracker_stats_time:1408,tracker_planes_x23:512,tracker_planes_tau:256,tracker_planes_I:256,tracker_times_x:384,tracker_times_I:128,tracker_prepare_transient:512
+CHECK cube32_mem_exact_equals_cufft_plus_items PASS
+CHECK cube32_mem_line_keys PASS
+CHECK cube32_mem_geom PASS
+CHECK cube32_mem_F_items PASS
+CHECK cube32_mem_S1_items PASS
+CHECK cube32_mem_S3_items PASS
+CHECK cube32_mem_T_items PASS
+CHECK cube32_mem_S2_equals_Splus_closed_form PASS  reported 2084950 expected 2084950
+CHECK cube32_mem_S2_categories PASS  8 categories, sum 2084950
+CHECK cube32_mem_S2_item_names PASS
+CHECK cube32_mem_S2_is_largest_phase_excluding_label_tables PASS  S2 2084950 max other 1630208
+CHECK cube32_mem_prediction_equals_recorded PASS  F 820232/820232 S1 1359872/1359872 S3 17899752/17899752
+CHECK box64x16x16_levelS_fused_mem_stage_ready PASS
+CHECK box64x16x16_levelS_fused_mem_lines_present PASS  6 lines
+  MEM_GEOM pid=260578 nx=64 ny=16 nz=16 n=16384 levels=3 level_cells=16384,2048,256 coarsest=16x4x4 face_max=17408 bhat=device bhat_host_bytes=0 cub_sum_bytes=16383,1,1
+  MEM_PHASE phase=F exact_bytes=401928 cufft_work=135168 cufft_gen=135168 device_used=1202716672 seconds=0.009340 items=y:131072,sf18_spectrum:135168,sf18_mode_counter:8,sf18_reduce_blocks:512
+  MEM_PHASE phase=S1 exact_bytes=667648 cufft_work=270336 cufft_prefilter_logk=270336 device_used=1202716672 seconds=0.012469 items=lnk:131072,coef_logk:131072,prefilter_spectrum:135168
+  MEM_PHASE phase=S2 exact_bytes=1206351 cufft_work=0 device_used=1202716672 seconds=0.850586 categories=correctors:278528,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:286735,mg_hierarchy:606208,mg_preconditioner:16409 items=mg_l0_x:139264,mg_l0_b:131072,mg_l0_r:131072,mg_l0_coef:131072,mg_l1_x:16384,mg_l1_b:16384,mg_l1_r:16384,mg_l1_coef:16384,mg_l2_x:2048,mg_l2_b:2048,mg_l2_r:2048,mg_l2_coef:2048,pcg_r:139264,pcg_p:139264,corrector:139264,bhat_device:131072,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:9,scratch_mg_mean_zero_l2:9,scratch_reduce_blocks:2048
+  MEM_PHASE phase=S3 exact_bytes=8675432 cufft_work=270336 cufft_prefilter_pot=270336 device_used=1211105280 seconds=0.016267 items=h_tilde:139264,coef_logk:131072,labels_device:7868520,coef_pot:131072,prefilter_spectrum:135168
+  MEM_PHASE phase=T exact_bytes=8135936 cufft_work=0 device_used=1211105280 seconds=0.000000 items=coef_interleaved:262144,labels_device:7868520,tracker_seeds:384,tracker_planes:16,tracker_times:8,tracker_stats_plane:1408,tracker_stats_time:1408,tracker_planes_x23:512,tracker_planes_tau:256,tracker_planes_I:256,tracker_times_x:384,tracker_times_I:128,tracker_prepare_transient:512
+CHECK box64x16x16_levelS_fused_mem_exact_equals_cufft_plus_items PASS
+CHECK box64x16x16_levelS_fused_mem_line_keys PASS
+CHECK box64x16x16_levelS_fused_mem_geom PASS
+CHECK box64x16x16_levelS_fused_mem_F_items PASS
+CHECK box64x16x16_levelS_fused_mem_S1_items PASS
+CHECK box64x16x16_levelS_fused_mem_S3_items PASS
+CHECK box64x16x16_levelS_fused_mem_T_items PASS
+CHECK box64x16x16_levelS_fused_mem_S2_equals_Splus_closed_form PASS  reported 1206351 expected 1206351
+CHECK box64x16x16_levelS_fused_mem_S2_categories PASS  8 categories, sum 1206351
+CHECK box64x16x16_levelS_fused_mem_S2_item_names PASS
+CHECK box64x16x16_levelS_fused_mem_S2_is_largest_phase_excluding_label_tables PASS  S2 1206351 max other 806912
+CHECK box64x16x16_levelS_fused_mem_prediction_equals_recorded PASS  F 401928/401928 S1 667648/667648 S3 8675432/8675432
+CHECK mem_cells_source_F_phase_empty PASS
+CHECK s2_largest_predicted_512x512x512 PASS  S2 8138281074 (60.63 B/cell) max other 6729240552
+CHECK s2_largest_predicted_3328x384x384 PASS  S2 29765452393 (60.66 B/cell) max other 23775677416
+CHECK F1_64x16x16_M16_stage_ready PASS  ok
+CHECK F1_64x16x16_M16_Keff_equals_I PASS  max 0.000e+00
+CHECK F1_64x16x16_M16_mean_flux_equals_e1 PASS  max 0.000e+00
+CHECK F1_64x16x16_M16_all_particles_ok PASS
+CHECK F1_64x16x16_M16_transverse_displacement_le_1e-12 PASS  max 0.000e+00 over 2048 records
+CHECK F1_64x16x16_M16_tau_equals_X_rel_le_1e-12 PASS  max rel 0.000e+00
+CHECK F1_64x16x16_M16_covectors_equal_initial_le_1e-12 PASS  max 0.000e+00
+CHECK F1_64x16x16_M16_abs_I_le_1e-14 PASS  max 0.000e+00
+  F1_64x16x16_M16 INFO max |x1(t) - (X0 + t)| at snapshots 0.000e+00  [0.1 s]
+CHECK F1_128x16x16_M16_stage_ready PASS  ok
+CHECK F1_128x16x16_M16_Keff_equals_I PASS  max 0.000e+00
+CHECK F1_128x16x16_M16_mean_flux_equals_e1 PASS  max 0.000e+00
+CHECK F1_128x16x16_M16_all_particles_ok PASS
+CHECK F1_128x16x16_M16_transverse_displacement_le_1e-12 PASS  max 0.000e+00 over 2048 records
+CHECK F1_128x16x16_M16_tau_equals_X_rel_le_1e-12 PASS  max rel 0.000e+00
+CHECK F1_128x16x16_M16_covectors_equal_initial_le_1e-12 PASS  max 0.000e+00
+CHECK F1_128x16x16_M16_abs_I_le_1e-14 PASS  max 0.000e+00
+  F1_128x16x16_M16 INFO max |x1(t) - (X0 + t)| at snapshots 0.000e+00  [0.1 s]
+CHECK F2_64x32x32_M16_stage_ready PASS  ok
+CHECK F2_64x32x32_M16_all_particles_ok PASS
+CHECK F2_64x32x32_M16_transverse_positions_constant_le_1e-12 PASS  max 4.614e-16
+CHECK F2_64x32x32_M16_covectors_constant_le_1e-12 PASS  max 2.985e-14
+CHECK F2_64x32x32_M16_tau_vs_quadrature_rel_le_1e-9 PASS  max rel 4.771e-10
+[RECORD] F2_64x32x32_M16 I vs independent quadrature (no threshold): max abs err 2.046e-06, max |I_ref| 3.208e-03 over 2048 records  [1.8 s]
+CHECK F2_128x32x32_M16_stage_ready PASS  ok
+CHECK F2_128x32x32_M16_all_particles_ok PASS
+CHECK F2_128x32x32_M16_transverse_positions_constant_le_1e-12 PASS  max 4.441e-16
+CHECK F2_128x32x32_M16_covectors_constant_le_1e-12 PASS  max 2.962e-14
+CHECK F2_128x32x32_M16_tau_vs_quadrature_rel_le_1e-9 PASS  max rel 4.771e-10
+[RECORD] F2_128x32x32_M16 I vs independent quadrature (no threshold): max abs err 2.046e-06, max |I_ref| 3.208e-03 over 2048 records  [1.8 s]
+CHECK F3_128x32x32_4096pts_stage_ready PASS  ok
+CHECK F3_128x32x32_4096pts_shift_plus_1_in_x2_x3_le_1e-14 PASS  max abs 6.661e-15 max rel 4.256e-15 violating 0
+  F3_128x32x32_4096pts [1.9 s]
+CHECK F3_64x16x16_4096pts_stage_ready PASS  ok
+CHECK F3_64x16x16_4096pts_shift_plus_1_in_x2_x3_le_1e-14 PASS  max abs 4.774e-15 max rel 1.770e-15 violating 0
+  F3_64x16x16_4096pts [0.9 s]
+CHECK F3_128x16x16_4096pts_stage_ready PASS  ok
+CHECK F3_128x16x16_4096pts_shift_plus_1_in_x2_x3_le_1e-14 PASS  max abs 6.384e-15 max rel 3.691e-15 violating 0
+  F3_128x16x16_4096pts [1.8 s]
+CHECK F4_64cube_to_128x64x64_M64_stages_ready PASS
+CHECK F4_64cube_to_128x64x64_M64_G_normwise_rel_le_1e-8 PASS  2.669e-16 (entrywise max 1.273e-15)
+CHECK F4_64cube_to_128x64x64_M64_Keff_normwise_rel_le_1e-8 PASS  7.181e-16 (entrywise max 1.542e-15)
+  F4_64cube_to_128x64x64_M64 plane 0.25: sigma_T^2 8.463948098205e-02 / 8.463948098205e-02  mean_tau 2.498728640224e-01 / 2.498728640224e-01  var_tau 3.100101238752e-02 / 3.100101238752e-02  (box / cube)
+  F4_64cube_to_128x64x64_M64 plane 0.5: sigma_T^2 8.727087390719e-02 / 8.727087390719e-02  mean_tau 4.997599567382e-01 / 4.997599567382e-01  var_tau 1.330273516793e-01 / 1.330273516793e-01  (box / cube)
+  F4_64cube_to_128x64x64_M64 plane 1: sigma_T^2 7.928835930526e-02 / 7.928835930526e-02  mean_tau 9.997755995826e-01 / 9.997755995826e-01  var_tau 4.834125739508e-01 / 4.834125739508e-01  (box / cube)
+  F4_64cube_to_128x64x64_M64 plane 2: sigma_T^2 8.040569730849e-02 / 8.040569730849e-02  mean_tau 1.999898627226e+00 / 1.999898627226e+00  var_tau 1.885368918056e+00 / 1.885368918056e+00  (box / cube)
+  F4_64cube_to_128x64x64_M64 plane 4: sigma_T^2 8.426914518650e-02 / 8.426914518650e-02  mean_tau 4.001519761210e+00 / 4.001519761210e+00  var_tau 7.069937830803e+00 / 7.069937830803e+00  (box / cube)
+CHECK F4_64cube_to_128x64x64_M64_plane_stats_rel_le_1e-8 PASS  max rel 1.649e-15
+  F4_64cube_to_128x64x64_M64 [4.6 s]
+  total 46.1 s (full tier)
+ALL_PASS

@@ -1,0 +1,176 @@
+[1] Loading config: /home/sesquerre/sf38_campaign/par2pilot/cfg/ks_s1.yaml
+[2] Initializing CUDA context
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        2048 × 256 × 256  (dx=5.000000)
+  Domain:      [0, 10240.0000] × [0, 1280.0000] × [0, 1280.0000]
+  Stochastic:  σ²=1.00  λ=50.0000  modes=10000  seed=7001
+  Solver:      mg_cg  rtol=1.0e-06
+  Transport:   N=10000  dt=1.2500e+01  steps=1  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    NR=10  λ_macro=50.0000  ||<v>||=0.0098  sample_every=1  estimator=biased
+  Snapshots:   every=957  stride=1  unwrapped=no
+  Output:      ./output/sf38_par2_s1_kstats
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+[3] Allocating fields and workspaces
+       Fields: K=134217728  head=134217728  vel=3×135334401  particles=10000
+────────────────────────────────────────────────────────
+  Realization 1 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7001)
+       K stats: min=1.0411e-02  max=2.0857e+02  mean=1.6441e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.62e+00 → 4.32e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=0)
+       Transport complete (r=0).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0000_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 2 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7002)
+       K stats: min=6.2143e-03  max=1.8566e+02  mean=1.6621e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.79e+00 → 4.22e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=1)
+       Transport complete (r=1).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0001_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 3 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7003)
+       K stats: min=8.0866e-03  max=1.6235e+02  mean=1.6586e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.70e+00 → 8.12e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=2)
+       Transport complete (r=2).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0002_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 4 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7004)
+       K stats: min=5.2716e-03  max=1.4488e+02  mean=1.6781e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.88e+00 → 1.87e-09
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=3)
+       Transport complete (r=3).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0003_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 5 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7005)
+       K stats: min=5.8532e-03  max=1.6725e+02  mean=1.6478e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.38e+00 → 1.42e-07
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=4)
+       Transport complete (r=4).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0004_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 6 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7006)
+       K stats: min=6.6980e-03  max=1.1502e+02  mean=1.6341e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.45e+00 → 5.67e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=5)
+       Transport complete (r=5).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0005_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 7 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7007)
+       K stats: min=6.0281e-03  max=1.7975e+02  mean=1.6319e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.23e+00 → 1.05e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=6)
+       Transport complete (r=6).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0006_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 8 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7008)
+       K stats: min=6.0397e-03  max=1.7298e+02  mean=1.6649e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.73e+00 → 2.53e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=7)
+       Transport complete (r=7).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0007_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 9 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7009)
+       K stats: min=3.2320e-03  max=1.7773e+02  mean=1.6516e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.70e+00 → 3.09e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=8)
+       Transport complete (r=8).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0008_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Realization 10 / 10
+────────────────────────────────────────────────────────
+  [4] K generation (seed=7010)
+       K stats: min=6.2209e-03  max=1.2284e+02  mean=1.6749e+00
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=20  res=8.40e+00 → 3.37e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 1 (dt=1.2500e+01) ...
+           step     1/1  t=1.250e+01
+       Wrote final snapshot at step 1 (r=9)
+       Transport complete (r=9).
+       Wrote ./output/sf38_par2_s1_kstats/stats/realization_0009_timeseries.csv (1 samples)
+────────────────────────────────────────────────────────
+  Post-processing: macrodispersion (NR=10)
+       Wrote ./output/sf38_par2_s1_kstats/ensemble/ensemble_timeseries.csv
+       Wrote ./output/sf38_par2_s1_kstats/analysis/macrodispersion.csv
+────────────────────────────────────────────────────────
+
+┌─────────────────────────────────────────────┐
+│          RUN EVENT COUNTERS                 │
+├─────────────────────────────────────────────┤
+│  Realizations:            10                │
+│  Total steps:             10                │
+│  Stats samples:           10                │
+│  Snapshots:                0                │
+│  Flushes:                  0                │
+│  Bytes written:            0  (~0.0 MB)    │
+└─────────────────────────────────────────────┘
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.

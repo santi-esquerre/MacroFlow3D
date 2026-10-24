@@ -1,0 +1,27 @@
+[2026-10-23T18:33:17Z] job=sf38-j1a-head-build session=macroflow3d-SF-38-sf38-j1a-head-build started
+[2026-10-23T18:33:17Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=0)
+[2026-10-23T18:33:17Z] cwd=/home/sesquerre/MacroFlow3D-SF-38
+[2026-10-23T18:33:17Z] command=set -o pipefail; echo TREE=14af3f9 H1=ddbfc6e; cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 3; echo BUILD_EXIT=$?; md5sum build/v100-release/{inlet_slab,macroflow3d_pipeline,lagrangian_ensemble,lagrangian_medium_ab,par2_field_stats,long_box_tests,dirichlet_medium_tests}; ctest --test-dir build/v100-release -N | tail -1
+TREE=14af3f9 H1=ddbfc6e
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[100/102] Linking CXX executable streamfunction_ev_ladder
+[101/102] Linking CXX executable closure_gate
+[102/102] Linking CXX executable lagrangian_ensemble_tests
+BUILD_EXIT=0
+51ba3cee3e439f81fee83dde302e44b0  build/v100-release/inlet_slab
+e18fc3034ee3034cc9ab7ba146c6da15  build/v100-release/macroflow3d_pipeline
+d413f038089d50fc26c14efe56573f13  build/v100-release/lagrangian_ensemble
+40e588df2b4fba9fc3b5a139cbdacbd7  build/v100-release/lagrangian_medium_ab
+498ca561cdba7358ac018a285a9b9682  build/v100-release/par2_field_stats
+4e5df73b6ddedc0aaca274feb30a1a8b  build/v100-release/long_box_tests
+22eeb1ba1c84adc69937416731c92920  build/v100-release/dirichlet_medium_tests
+Total Tests: 46
+[2026-10-23T18:33:38Z] job=sf38-j1a-head-build finished exit=0
