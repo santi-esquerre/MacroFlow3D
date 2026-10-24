@@ -121,3 +121,60 @@ targets), not a prediction; SF-39's pilot fixes the number.
 | Items E1-E7 and the design items | accepted scope |
 | Lean (b) stage, non-periodic spline, exit handling, runner integration | proposed architecture (SF-41 DAG) |
 | Peak memory of the lean (b) stage, end-effect decay, `e_v` order on (b), `alpha_L`, `alpha_T` | open question (SF-41, SF-39) |
+
+## Addendum E8-E12 (owner, 2026-10-24, after the pre-activation review of SF-41 and before its activation)
+
+- **Finding (orchestrator, before any SF-41 run).** A review of every SF-41 threshold against the code at `a3d98ae` (five code-reading
+  reports, two independent adversarial reviews and design emulations in numpy; `docs/experiments/2026-10-24-sf41-pre-activation-review.md`
+  and its artifact) found two thresholds that cannot be met or measured as written and several readings that the activation row would
+  otherwise have had to supply:
+  - **C4** (reversed head drop ends `exit_inlet`): the forward tracker returns `seed_backflow` without tracing any seed with non-positive
+    flux in both passes (`LagrangianTrackerDevice.cuh:485-489, 639-642`), and both the tracker and the Pollock lattice API throw when no
+    seed has positive flux (`LagrangianTracker.cu:105-107`, `PollockComparator.cu:293`): with a reversed drop no status is produced at all
+    (*confirmed in code*);
+  - **D** (head byte for byte against `DirichletMedium`): the head is a local of `build_dirichlet_medium`, freed before return
+    (`DirichletMedium.cu:165, 294-295`), with no accessor, while the specification lists `DirichletMedium` read-only (*confirmed in code*);
+  - **A** (order ladder 16/32/64, min over both pairs): near the faces the not-a-knot convergence is pre-asymptotic and the verdict
+    depends on the field (a natural `x`-dominated field gives a Hessian order of about 1.77 against 1.8; *design emulation*).
+- **Decision E8 (C4).** C4 becomes two exact controls: C4a outlet exits with `k = 1`, `G1 = 1` (tracker plane and time passes, Pollock
+  non-periodic plane and time modes, all `exit_outlet`); C4b inlet exits on the harmonic `k = 1` field
+  `Phi = G1 x1 + a cos(2 pi x2) exp(-2 pi x1)` with its exact stream function, seeds with `v1 > 0` classified independently, the tracker
+  and the Pollock non-periodic mode giving the same statuses, counts exact. The reversed-drop behaviour (`seed_backflow`, error without a
+  positive seed) is recorded, not gated; the seed rule is not changed (rejected alternative: tracing non-positive seeds in non-periodic
+  mode, which would change the medium (b) production semantics of the twin series and the status histograms).
+- **Decision E9 (D).** `DirichletMedium` gains an additive opt-in `keep_host_head` (default off) that downloads the head before it is
+  freed; with the flag off its outputs are unchanged (threshold G). Rejected: a replica of the `solve_head` call tied by face bytes (face
+  equality does not prove head equality) and a faces-only comparison (weaker).
+- **Decision E10 (clarifications written into the specification).** D's two small sizes run on the V100 (the owner's rule: no local grid
+  above `32^3`); E's failure policy: a non-solve phase above the solve-phase peak or 30000 MiB is a placement defect corrected in SF-41, not
+  R3; C3 runs on a written field with transverse structure (on the C1/C2 fields the shift is trivially exact) with the SF-38 F3 method on
+  random and dyadic points, with small amplitudes (at amplitude 0.5 the per-point relative gate is predicted to fail where `|v|` is small); A's quantities, norms, boxes and the CPU-vs-GPU box condition `h >= 1/32`, and F's parameters (field, grids,
+  planes, `M = 100` (the RR12-safe runner default), weighting, order convention SF-37 RR4, `SE_D` blocks) are explicit; C2's profile, planes and `X0`; G's reading of the
+  A/B run (every output but `timings.json`) and of the runner (`DONE` files included); H's comparison against the committed SF-38 files
+  with `e2_a.csv` as environment control; the validation commands (base build and references from a clean tree at the increment base,
+  detached builds, local work limited to new cases `<= 32^3`). The owner asked that everything relevant be documented.
+- **Decision E11 (A ladder).** The ladder keeps 16/32/64 and its gates; its field is fixed before activation by a stated criterion (smooth,
+  non-periodic in `x1`, exercising the `x` closure: the finest-level max-norm errors lie near a face) with orders predicted by an exact
+  independent emulation; an `x`-only near-face sub-ladder to 128 and the measured-minus-emulated errors are recorded. Rejected: gating only
+  64->128 (a specification change that still depends on the field) and a `y/z`-dominated field (passes easily but hardly tests the `x`
+  closure).
+- **E12 (orchestrator design items fixed before activation; reviewed on the governance PR).** Not-a-knot closure on the raw samples, no ghost
+  samples, continuation padding and evaluation on `[-h/2, L1 + h/2)`; `ln k` on the same non-periodic geometry (C2 fails with a periodic
+  `ln k`; one geometry keeps the fused path); the device prefilter = the not-a-knot line solve in `x` with the SF-28 FFT in `y/z` (cyclic line solves leave transverse round-off on
+  `y/z`-constant data that C2's `1e-12` covector gate must not see; B's margin is larger), the CPU mirror with cyclic line solves in `y/z`;
+  new types, no template parameter on the read-only `PeriodicTricubicBSpline`; exit statuses
+  defined in `lagrangian_labels` and counted in separate fields (the tracker's 7-slot status histogram unchanged; Pollock exit codes in
+  `0..15`); an additive non-periodic Pollock face view keeping `U[nx]`; `G1 = 1` for medium (b) without an (a) solve, `cg_max_iter = 2000`;
+  `--times auto` for (b) up to `(L1 - 10 lambda) / qbar`; the lean stage reproduces `DirichletMedium`'s diagnostics and relative-residual
+  convention; its right-hand side lives in a dead MG level-0 buffer (`pcg_solve` reads it once; no `b_hat`).
+
+Classification of the addendum:
+
+| item | class |
+|---|---|
+| C4 and D unmeasurable as written; seed rule; histogram sizes; head lifetime; `pcg_solve` reads `b` once | confirmed in code |
+| Pollock exits through `x = 0` impossible on medium (b) up to solver error (M-matrix, RT0) | derivation (measured by H) |
+| A ladder pre-asymptotic near faces (1.77); C2 margins (periodic `ln k` fails, not-a-knot `ln k` passes by about 20); B Hessian floor 2.2e-12 (FFT in y/z) / 3.4e-12 (line solves) worst case; C3 relative-gate failure at amplitude 0.5 and its margin at 0.1; C4b classification agreement; CPU-vs-GPU end-row amplification | design emulation (numpy), not SF-41 evidence |
+| E8-E11 | accepted scope (owner) |
+| E12 | proposed architecture (SF-41 DAG), fixed before activation |
+| measured values of every SF-41 threshold | open question (SF-41) |
