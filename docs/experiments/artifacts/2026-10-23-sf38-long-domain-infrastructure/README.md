@@ -20,6 +20,7 @@ are modelled on the SF-40 campaign tooling (`../2026-10-22-sf40-lean-lagrangian-
 | `scripts/g_table.py` | threshold G (RR11): raw variance / applied scale per seed and geometry; `--selftest` |
 | `scripts/par2_pilot.py` | threshold E (RR8): dt/2 and K-stats config copies, `t_b`, field statistics, K-stats agreement, paired differences; `--selftest` |
 | `scripts/pid_peak.py`, `scripts/json_strip_cmp.py`, `scripts/lines_cmp.py` | SF-40 tools, copied **byte-identical** (below) |
+| `scripts/posthoc_ab.py` | N9, **post-hoc, not pre-registered** (added 2026-10-24 after FINAL_AUDIT at the owner's request): `python3 scripts/posthoc_ab.py raw analysis` writes `analysis/posthoc_ab.md` (P1 pairing efficiency, P2 point estimates vs margins, P3 paired boundary-layer profile, P4 mean-flow forcing and tilt, P5 memory of medium (b) at the production grid) from `raw/sf38_campaign/ab/` and `prodgrid/B2.log` only; stdlib only, deterministic (byte-identical rerun); `--selftest`. It changes no verdict, threshold or other `analysis/` file; `note_tables.py` is unmodified and still regenerates its ten files byte-identically |
 
 Provenance of the copied scripts (source `docs/experiments/artifacts/2026-10-22-sf40-lean-lagrangian-stage/scripts/`):
 
