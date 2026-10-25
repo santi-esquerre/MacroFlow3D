@@ -57,6 +57,7 @@
 #include "../../../core/Scalar.hpp"
 #include "../../../runtime/CudaContext.cuh"
 #include "../../../runtime/cuda_check.cuh"
+#include "../../stochastic/PeriodicGaussianField.cuh"
 #include "DirichletMedium.cuh"
 #include "LongBoxStage.cuh"
 
@@ -153,6 +154,9 @@ class DirichletLongBoxStage {
     int mg_levels = 0;
     bool head_mapped_host = false;
 
+    /// SF-18 report of phase F (source gaussian only; value-initialized otherwise). SF-41 N5 (runner field.json).
+    physics::PeriodicGaussianFieldReport sf18{};
+
     /// Potential fluctuation f (nx*ny*nz, device, layout i + nx (j + ny k)) after phase H; freed by S3.
     DeviceBuffer<real> f;
     /// eps * Y on the host (the ln k samples); released by S3.
@@ -188,6 +192,9 @@ class DirichletLongBoxStage {
     /// `MEM_PHASE phase=<p> exact_bytes=<B> cufft_work=<W> [cufft_*=<w>] device_used=<U> seconds=<t>
     /// [categories=..] items=name:bytes,...` (the LongBoxStage format) for every recorded phase, in order.
     std::vector<std::string> mem_lines() const;
+    /// SF-41 N5: `mem_lines()` plus, if `tracker` is a prepared tracker and the stage is ready, the T line of
+    /// LongBoxStage's `mem_lines` (coefficient arrays + `tracker_<name>` buffers; device_used sampled now).
+    std::vector<std::string> mem_lines(const LagrangianTracker* tracker, double tracker_prepare_seconds) const;
 };
 
 /// Exact bytes of phase S2 by the closed form of the file header. `scratch_bytes` = reduction scalar + CUB

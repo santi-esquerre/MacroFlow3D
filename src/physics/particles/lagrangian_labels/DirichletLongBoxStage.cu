@@ -8,6 +8,7 @@
 
 #include "DirichletLongBoxStage.cuh"
 
+#include "LagrangianTracker.cuh"
 #include "../../../multigrid/coefficient_hierarchy.cuh"
 #include "../../../multigrid/mg_types.hpp"
 #include "../../../numerics/interpolation/NonPeriodicXTricubicBSpline.cuh"
@@ -346,6 +347,28 @@ std::vector<std::string> DirichletLongBoxStage::mem_lines() const {
     return out;
 }
 
+std::vector<std::string> DirichletLongBoxStage::mem_lines(const LagrangianTracker* tracker,
+                                                          double tracker_prepare_seconds) const {
+    std::vector<std::string> out = mem_lines();
+    if (tracker != nullptr && tracker->prepared() && ready()) {
+        LongBoxPhaseRecord t;
+        t.phase = "T";
+        t.present = true;
+        if (fused_coefficients) {
+            t.items.emplace_back("coef_interleaved", coef_interleaved.capacity() * sizeof(double2));
+        } else {
+            t.items.emplace_back("coef_pot", coef_pot.capacity() * sizeof(real));
+            t.items.emplace_back("coef_logk", coef_logk.capacity() * sizeof(real));
+        }
+        for (const auto& it : tracker->device_buffer_bytes())
+            t.items.emplace_back("tracker_" + it.first, it.second);
+        t.device_used = device_used_now();
+        t.seconds = tracker_prepare_seconds;
+        out.push_back(phase_line(t));
+    }
+    return out;
+}
+
 // ---- the stage ---------------------------------------------------------------------------------------------
 
 DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const DirichletLongBoxSpec& spec) {
@@ -410,6 +433,7 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
                 DeviceBuffer<real> y(n);
                 physics::PeriodicGaussianFieldWorkspace ws;
                 const auto sf18 = physics::generate_periodic_gaussian_field(ctx, grid, cfg, y.span(), ws);
+                S.sf18 = sf18;
                 ctx.synchronize();
                 Y_gen = download(y.data(), n);
                 rec.items.emplace_back("y", y.capacity() * sizeof(real));
