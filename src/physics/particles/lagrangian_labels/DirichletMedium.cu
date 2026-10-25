@@ -291,6 +291,8 @@ DirichletMedium build_dirichlet_medium(CudaContext& ctx, const DirichletMediumSp
         rec.seconds = since(t0);
         M.phases.push_back(rec);
     }
+    if (spec.keep_host_head)
+        M.host_head = download(head.data.data(), n);
     Kf.data.reset(); // K and head are dead
     head.data.reset();
     MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());

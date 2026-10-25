@@ -26,6 +26,7 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
+#include <stdexcept>
 
 namespace macroflow3d {
 namespace solvers {
@@ -704,6 +705,119 @@ ProjectedPCGResult projected_pcg_solve_external(CudaContext& ctx, const Operator
         result.converged = false;
     }
     record_final_diagnostics();
+    return result;
+}
+
+/**
+ * Externally-owned vectors for pcg_solve_external (SF-41 lean medium (b) stage).
+ *
+ * Non-projected counterpart of ProjectedPCGExternalVectors.  The caller may alias `z` and `Ap` to the
+ * SAME span (exact identity) because pcg_solve's lifetimes never overlap: z is written by M.apply and is
+ * dead (copied into p) before A.apply writes Ap, and Ap is dead (last read by the r update) before the
+ * next M.apply writes z.  `b` is read exactly once, by the initial residual (`r = b - A x0`, before the
+ * first M.apply), so it may live in a buffer that M.apply later overwrites (e.g. an MG level-0 residual
+ * buffer), but not in the buffer shared by z/Ap (A.apply(x, Ap) precedes that read).  All spans must
+ * start at an allocation base (CUB/cuBLAS alignment assumptions).
+ */
+struct PCGExternalVectors {
+    DeviceSpan<real> r;
+    DeviceSpan<real> z;
+    DeviceSpan<real> p;
+    DeviceSpan<real> Ap;
+    blas::ReductionWorkspace* red = nullptr;
+};
+
+/**
+ * Same algorithm as pcg_solve with caller-owned vectors: a statement-for-statement transcription (same
+ * BLAS calls in the same sequence, same check_every logic, same return), hence bitwise the result of
+ * pcg_solve for identical inputs.  Only the vector sources and the guard differ.  Throws
+ * std::invalid_argument on a size mismatch, a missing reduction workspace, or any overlap among b, x, r,
+ * z, p, Ap and the reduction scalar other than the exact identity z == Ap.
+ */
+template <typename Operator, typename Preconditioner>
+PCGResult pcg_solve_external(CudaContext& ctx, const Operator& A, const Preconditioner& M,
+                             DeviceSpan<const real> b, DeviceSpan<real> x, const PCGConfig& cfg,
+                             PCGExternalVectors& v) {
+    PCGResult result;
+    const size_t n = x.size();
+
+    if (n == 0 || b.size() != n || v.r.size() != n || v.z.size() != n || v.p.size() != n ||
+        v.Ap.size() != n || v.red == nullptr || v.red->d_scalar.size() < 1) {
+        throw std::invalid_argument(
+            "pcg_solve_external: size mismatch or missing reduction workspace");
+    }
+    {
+        using CS = DeviceSpan<const real>;
+        const bool z_is_Ap = v.z.data() == v.Ap.data();
+        // Ap is last: it is left out of the pairwise test when it is exactly z.
+        const CS vec[7] = {CS(b), CS(x), CS(v.r), CS(v.p), CS(v.z), CS(v.red->d_scalar.span()), CS(v.Ap)};
+        const int count = z_is_Ap ? 6 : 7;
+        for (int i = 0; i < count; ++i) {
+            for (int j = i + 1; j < count; ++j) {
+                if (detail::spans_overlap(vec[i], vec[j])) {
+                    throw std::invalid_argument("pcg_solve_external: aliased vectors");
+                }
+            }
+        }
+    }
+
+    auto& red = *v.red;
+    auto r = v.r;
+    auto z = v.z;
+    auto p = v.p;
+    auto Ap = v.Ap;
+
+    // Initial residual: r0 = b - A*x0
+    A.apply(ctx, DeviceSpan<const real>(x), Ap);          // Ap = A*x (temporary use)
+    blas::copy(ctx, b, r);                                // r = b
+    blas::axpy(ctx, -1.0, DeviceSpan<const real>(Ap), r); // r = b - A*x
+
+    result.initial_residual = blas::nrm2_host(ctx, DeviceSpan<const real>(r), red);
+
+    if (result.initial_residual < 1e-15) {
+        result.converged = true;
+        result.final_residual = result.initial_residual;
+        return result;
+    }
+
+    M.apply(ctx, DeviceSpan<const real>(r), z);
+    blas::copy(ctx, DeviceSpan<const real>(z), p);
+    real rz_old = blas::dot_host(ctx, DeviceSpan<const real>(r), DeviceSpan<const real>(z), red);
+
+    for (int iter = 0; iter < cfg.max_iter; ++iter) {
+        result.iterations = iter + 1;
+
+        A.apply(ctx, DeviceSpan<const real>(p), Ap);
+
+        real pAp = blas::dot_host(ctx, DeviceSpan<const real>(p), DeviceSpan<const real>(Ap), red);
+        real alpha = rz_old / pAp;
+
+        blas::axpy(ctx, alpha, DeviceSpan<const real>(p), x);
+        blas::axpy(ctx, -alpha, DeviceSpan<const real>(Ap), r);
+
+        if ((iter + 1) % cfg.check_every == 0 || iter == cfg.max_iter - 1) {
+            result.final_residual = blas::nrm2_host(ctx, DeviceSpan<const real>(r), red);
+            real relative_res = result.final_residual / result.initial_residual;
+
+            if (relative_res < cfg.rtol) {
+                result.converged = true;
+                return result;
+            }
+        }
+
+        M.apply(ctx, DeviceSpan<const real>(r), z);
+
+        real rz_new =
+            blas::dot_host(ctx, DeviceSpan<const real>(r), DeviceSpan<const real>(z), red);
+
+        real beta = rz_new / rz_old;
+
+        blas::axpby(ctx, 1.0, DeviceSpan<const real>(z), beta, p);
+
+        rz_old = rz_new;
+    }
+
+    result.final_residual = blas::nrm2_host(ctx, DeviceSpan<const real>(r), red);
     return result;
 }
 
