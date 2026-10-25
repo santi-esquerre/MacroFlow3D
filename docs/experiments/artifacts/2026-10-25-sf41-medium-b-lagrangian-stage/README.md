@@ -103,7 +103,10 @@ job log (`~/.macroflow3d-remote/macroflow3d-SF-41/logs/*.log` -> `raw/job_logs/`
 and the list of excluded large files (`raw/sf41_evidence.excluded_large`). Selection: every regular file except `*.npy` and `sf41_base_refs/bin/*`,
 with size `<= 2048 KiB`; the list of larger non-`.npy` files is empty. **Excluded from `raw/`** (their sha256 are in the per-part `sha256.txt`
 manifests, the integrity record): 862 `*.npy` files (tracker, Pollock and SF-27 / R-set per-particle arrays) and the base binaries.
-The tarball was extracted unchanged into `raw/` (V100 relative layout: `raw/sf41_base_refs/`, `raw/sf41_campaign/<part>/`,
+The tarball was extracted unchanged into `raw/`; the first import commit (`f91ace2`) omitted the 346 files whose paths match the
+repository `.gitignore` (`build/`: the 14 files of `raw/sf41_campaign/build/`; `output*/`: the 332 trio output files of
+`raw/sf41_base_refs/trio/` and `raw/sf41_campaign/final/trio/`), which the next commit adds with `git add -f` (SF-38 precedent), so that `git ls-files raw`
+lists all 1861 files of the tarball (V100 relative layout: `raw/sf41_base_refs/`, `raw/sf41_campaign/<part>/`,
 `raw/sf41_campaign_superseded/build_attempt1_tmpfull/`, `raw/job_logs/`, `raw/job_status/`).
 
 Imported (orchestrator, 2026-10-25): `sf41_evidence.tar.gz` sha256 `2ef0ca6c2ab587639f507e1d36dfc2a15bb4ddfc1bc65e9b84a920091ae5a633`

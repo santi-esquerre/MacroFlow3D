@@ -1,0 +1,16 @@
+RECORDED build_tree git=absent src_digest=821e4feec2e8895d392c754c049da0a1044172a453097b5fb8f5c099f8168243 
+RECORDED build_commit SF41_COMMIT=269c658687816788fdaf65f9d5b1307d87376b6a preset=v100-release build_dir=/home/sesquerre/MacroFlow3D-SF-41/build/v100-release
+RECORDED ctest_N Total Tests: 52
+BUILD_BINARIES n=50 md5file=/home/sesquerre/sf41_campaign/build/binaries.md5 sha256=82751b5ebafa457d772421f559e6c052456a56184f36f64bb1438e48e6f2386e
+RECORDED binary_md5 dirichlet_controls_tests dce34ae54d23dff7a2becd7442fca778
+RECORDED binary_md5 dirichlet_long_box_stage_tests 13b99e8cf39e52134a1066a17cbaa9e0
+RECORDED binary_md5 inlet_slab ded79b8ad5ad019d81e0dc8bea1d980b
+RECORDED binary_md5 interpolation_nonperiodic_x_tests 7e37f248d7391bf9d23902df1b182240
+RECORDED binary_md5 lagrangian_ensemble 0c8caaf6b31c15fe9abf3558b6a8050d
+RECORDED binary_md5 lagrangian_medium_ab f5a80df650ab6d086dfc66a61e8a729c
+RECORDED binary_md5 macroflow3d_pipeline 516d516dc759a12bace29b0d50908e70
+RECORDED binary_md5 pollock_nonperiodic_tests e08de5d9cc2c39050a817a1a44e8b33e
+RECORDED binary_md5 sf41_cross_representation_tests d54b7f0c655b9f8eae2fa6b4194bcf3a
+BUILD_VERDICT PASS (binaries recorded; the head parts verify them)
+RECORDED part_seconds=325 part_runs_seconds=311 part=build (this invocation / sum of the recorded run walls)
+PART_DONE part=build rc=0
