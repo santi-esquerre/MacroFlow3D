@@ -17,6 +17,17 @@
  *     (report, phase bytes, faces) and no head.
  *  6. Input validation.
  *
+ *  7. SF-41 N4 (phase S3, non-periodic spline of f and ln k): the stage's coef_pot / coef_logk equal (memcmp) a
+ *     standalone N1 prefilter of the same f / ln k samples; the fused double2 array equals the separate arrays
+ *     element by element; S3 exact bytes == its closed form and every phase <= S2; the memory model equals every
+ *     measured phase; the N2 checks above run with `build_splines = false` (f and host_lnk kept).
+ *
+ * Memory planning (no large allocation; any grid): `--memory-model nx,ny,nz [--head-mapped-host] [--verify-cufft]` prints
+ * `MEM_MODEL phase=<p> exact_bytes=<B> mib=<M>` for F, S1, S2, V, H, S3a, S3b, S3c, S3, S3_fused, and
+ * `MEM_MODEL_PEAK fused=<0|1> ...` (PID peak = max phase + 487 MiB, the SF-40 measured CUDA context); exit 1
+ * if a non-solve phase exceeds S2. `--verify-cufft` makes the real cuFFT plans (their work areas only) and checks
+ * the estimate against `cufftGetSize` (the 3-D SF-18 plan of phase F may not fit a small local GPU: reported).
+ *
  * Modes (V100, run by the orchestrator): `--only D` (RR6: 128x32x32, 512x64x64 with G1 = 1 and 3328x256x256 with
  * G1 = G[0] of build_long_box_stage on the same Y; the mapped-host head at the two small sizes) and `--only C5`
  * (RR5: C1 on 64x16x16 and 128x16x16; C2 on 64x32x32 and 128x32x32).
@@ -37,6 +48,7 @@
 #include "src/numerics/blas/blas.cuh"
 #include "src/numerics/operators/varcoeff_laplacian.cuh"
 #include "src/numerics/solvers/mg_preconditioner.cuh"
+#include "src/numerics/interpolation/NonPeriodicXTricubicBSpline.cuh"
 #include "src/numerics/solvers/pcg.cuh"
 #include "src/physics/particles/lagrangian_labels/DirichletLongBoxStage.cuh"
 #include "src/physics/particles/lagrangian_labels/DirichletMedium.cuh"
@@ -50,6 +62,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cufft.h>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -169,6 +182,7 @@ ll::DirichletLongBoxSpec lean_spec(int nx, int ny, int nz, double eps, double G1
     s.cg_rtol = 1e-10;
     s.cg_max_iter = 2000;
     s.keep_host_head = true;
+    s.build_splines = false; // the N2 checks read f and host_lnk; the N4 checks (test_splines) build the splines
     return s;
 }
 
@@ -283,7 +297,7 @@ void check_exact_bytes(const std::string& tag, const ll::DirichletLongBoxStage& 
               fmt("%.3f", (double)s2 / (double)n) + " B/cell, scratch=" + std::to_string(scratch) + ")");
     bool le = true;
     std::string det;
-    for (const ll::LongBoxPhaseRecord* r : {&S.phase_F, &S.phase_S1, &S.phase_V, &S.phase_H}) {
+    for (const ll::LongBoxPhaseRecord* r : {&S.phase_F, &S.phase_S1, &S.phase_V, &S.phase_H, &S.phase_S3}) {
         if (!r->present)
             continue;
         le = le && r->exact_bytes() <= s2;
@@ -657,10 +671,162 @@ void run_diag(CudaContext& ctx, int nx, int ny, int nz, int levels_in) {
         cmp(("lean0_vs_lean" + std::to_string(q)).c_str(), L[0], L[q]);
 }
 
+// ---- 7. S3 (SF-41 N4) -------------------------------------------------------------------------------------
+
+std::string mib(std::size_t b) {
+    return fmt("%.3f", (double)b / 1048576.0);
+}
+
+void test_splines(CudaContext& ctx, int nx, int ny, int nz) {
+    const double eps = 1.5;
+    const std::size_t n = (std::size_t)nx * ny * nz;
+    const std::size_t ne = (std::size_t)(nx + 4) * ny * nz;
+    const std::string sz = size_str(nx, ny, nz);
+    ll::DirichletLongBoxSpec base = lean_spec(nx, ny, nz, eps, 1.0);
+    base.source = ll::LongBoxSourceKind::gaussian;
+    base.sigma2 = 1.0;
+    base.ell = 0.125;
+    base.seed = 4001ULL;
+    base.normalize_variance = true;
+
+    const ll::DirichletLongBoxStage R = ll::build_dirichlet_long_box_stage(ctx, base); // N2 outputs: f, ln k
+    ll::DirichletLongBoxSpec s_sep = base, s_fus = base;
+    s_sep.build_splines = true;
+    s_fus.build_splines = true;
+    s_fus.fused_coefficients = true;
+    const ll::DirichletLongBoxStage A = ll::build_dirichlet_long_box_stage(ctx, s_sep);
+    const ll::DirichletLongBoxStage B = ll::build_dirichlet_long_box_stage(ctx, s_fus);
+
+    // standalone N1 prefilters of the same samples
+    interpolation::NonPeriodicXTricubicBSplineWorkspace wp, wl;
+    DeviceBuffer<real> d_lnk(n);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(d_lnk.data(), R.host_lnk.data(), n * 8, cudaMemcpyHostToDevice));
+    const auto rp = interpolation::prefilter_nonperiodic_x_tricubic_bspline(
+        ctx, R.grid, DeviceSpan<const real>(R.f.data(), n), wp);
+    interpolation::prefilter_nonperiodic_x_tricubic_bspline(ctx, R.grid, DeviceSpan<const real>(d_lnk.data(), n), wl);
+    ctx.synchronize();
+    const std::vector<real> sp = download(wp.coefficients.data(), ne), sl = download(wl.coefficients.data(), ne);
+
+    check("S3_" + sz + "_flags",
+          A.ready() && B.ready() && A.coefficients_nonperiodic_x && B.coefficients_nonperiodic_x &&
+              !R.coefficients_nonperiodic_x && R.ready() && A.G[0] == 1.0 && A.G[1] == 0.0 && A.G[2] == 0.0 &&
+              A.coefficient_count() == ne && !A.fused_coefficients && B.fused_coefficients);
+    check("S3_" + sz + "_freed",
+          A.f.size() == 0 && A.host_lnk.empty() && B.f.size() == 0 && B.host_lnk.empty() &&
+              B.coef_pot.size() == 0 && B.coef_logk.size() == 0 && A.coef_interleaved.size() == 0);
+    check("S3_" + sz + "_coef_pot_vs_standalone",
+          A.coef_pot.size() == ne && same_bytes(download(A.coef_pot.data(), ne), sp));
+    check("S3_" + sz + "_coef_logk_vs_standalone",
+          A.coef_logk.size() == ne && same_bytes(download(A.coef_logk.data(), ne), sl));
+    bool fused_ok = B.coef_interleaved.size() == ne; // fused == separate, element by element, bitwise
+    if (fused_ok) {
+        std::vector<double2> hi(ne);
+        MACROFLOW3D_CUDA_CHECK(
+            cudaMemcpy(hi.data(), B.coef_interleaved.data(), ne * sizeof(double2), cudaMemcpyDeviceToHost));
+        for (std::size_t c = 0; c < ne && fused_ok; ++c)
+            fused_ok = std::memcmp(&hi[c].x, &sp[c], 8) == 0 && std::memcmp(&hi[c].y, &sl[c], 8) == 0;
+    }
+    check("S3_" + sz + "_fused_equals_separate", fused_ok);
+    check("S3_" + sz + "_solver_unchanged",
+          ll::format_b_solver(0, A.solver) == ll::format_b_solver(0, R.solver) &&
+              ll::format_b_solver(0, B.solver) == ll::format_b_solver(0, R.solver) &&
+              A.inlet_u_plane == R.inlet_u_plane);
+
+    // exact bytes: closed form, W == standalone report, every phase <= S2
+    const std::size_t W = A.phase_S3.cufft_work;
+    std::size_t sub[3];
+    const std::size_t c_sep = ll::dirichlet_s3_closed_form_bytes(nx, ny, nz, W, false, sub);
+    const std::size_t c_fus = ll::dirichlet_s3_closed_form_bytes(nx, ny, nz, W, true);
+    check("S3_" + sz + "_closed_form",
+          A.phase_S3.exact_bytes() == c_sep && B.phase_S3.exact_bytes() == c_fus && W == rp.cufft_work_area_bytes &&
+              B.phase_S3.cufft_work == W,
+          "S3=" + std::to_string(c_sep) + " S3_fused=" + std::to_string(c_fus) + " W=" + std::to_string(W) +
+              " S3a=" + std::to_string(sub[0]) + " S3b=" + std::to_string(sub[1]) + " S3c=" + std::to_string(sub[2]));
+    check_exact_bytes("S3_" + sz + "_sep", A, nx, ny, nz, true);
+    check_exact_bytes("S3_" + sz + "_fused", B, nx, ny, nz, true);
+
+    // the model equals every measured phase
+    const ll::DirichletStageMemoryModel M = ll::dirichlet_long_box_stage_memory_model(nx, ny, nz, 0, true);
+    check("S3_" + sz + "_model_equals_measured",
+          M.F == A.phase_F.exact_bytes() && M.S1 == 0 && M.S2 == A.phase_S2.exact_bytes() &&
+              M.V == A.phase_V.exact_bytes() && M.H == A.phase_H.exact_bytes() && M.cufft_prefilter == W &&
+              M.S3(false) == A.phase_S3.exact_bytes() && M.S3(true) == B.phase_S3.exact_bytes(),
+          "F=" + std::to_string(M.F) + "/" + std::to_string(A.phase_F.exact_bytes()) +
+              " S2=" + std::to_string(M.S2) + "/" + std::to_string(A.phase_S2.exact_bytes()) +
+              " V=" + std::to_string(M.V) + "/" + std::to_string(A.phase_V.exact_bytes()) +
+              " H=" + std::to_string(M.H) + " W=" + std::to_string(M.cufft_prefilter) + "/" + std::to_string(W));
+    for (const std::string& l : B.mem_lines())
+        std::printf("%s\n", l.c_str());
+}
+
+void test_splines_inputs(CudaContext& ctx) {
+    ll::DirichletLongBoxSpec s = lean_spec(4, 4, 4, 1.0, 1.0);
+    s.source = ll::LongBoxSourceKind::cells;
+    s.cells.assign(64, 0.0);
+    s.mg_levels = 1;
+    s.build_splines = true; // nx = 4 < 8
+    bool threw = false;
+    try {
+        ll::build_dirichlet_long_box_stage(ctx, s);
+    } catch (const std::invalid_argument&) {
+        threw = true;
+    }
+    check("S3_inputs_nx_lt_8", threw);
+}
+
+/// `--memory-model nx,ny,nz`: prediction only (cuFFT sizes from handles that never make a plan).
+int run_memory_model(int nx, int ny, int nz, bool head_on_device, bool verify_cufft) {
+    constexpr std::size_t kContext = 487ULL * 1048576ULL; // SF-40 measured CUDA context
+    const ll::DirichletStageMemoryModel M = ll::dirichlet_long_box_stage_memory_model(nx, ny, nz, 0, head_on_device);
+    std::printf("MEM_MODEL_GRID size=%s n=%zu mg_levels=%d head_on_device=%d cufft_prefilter_work=%zu "
+                "cufft_gen_work=%zu\n",
+                size_str(nx, ny, nz).c_str(), (std::size_t)nx * ny * nz, M.mg_levels, head_on_device ? 1 : 0,
+                M.cufft_prefilter, M.cufft_f);
+    const std::pair<const char*, std::size_t> rows[] = {
+        {"F", M.F},       {"S1", M.S1},         {"S2", M.S2},   {"V", M.V},
+        {"H", M.H},       {"S3a", M.S3a},       {"S3b", M.S3b}, {"S3c_interleave", M.S3c},
+        {"S3", M.S3(false)}, {"S3_fused", M.S3(true)}};
+    for (const auto& r : rows)
+        std::printf("MEM_MODEL phase=%s exact_bytes=%zu mib=%s\n", r.first, r.second, mib(r.second).c_str());
+    bool ok = true;
+    for (int fused = 0; fused < 2; ++fused) {
+        const std::size_t mx = M.max_phase(fused != 0);
+        const char* who = mx == M.S2 ? "S2" : mx == M.F ? "F" : mx == M.V ? "V" : mx == M.H ? "H" : "S3";
+        std::printf("MEM_MODEL_PEAK fused=%d max_phase=%s max_phase_bytes=%zu max_phase_mib=%s context_mib=487 "
+                    "pid_peak_mib=%s\n",
+                    fused, who, mx, mib(mx).c_str(), mib(mx + kContext).c_str());
+        ok = ok && M.F <= M.S2 && M.V <= M.S2 && M.H <= M.S2 && M.S3(fused != 0) <= M.S2;
+    }
+    std::printf("MEM_MODEL_CHECK non_solve_phases_le_S2=%d\n", ok ? 1 : 0);
+    if (verify_cufft) { // makes the real plans (allocates only their work areas) and compares with the estimate
+        const int nxe = nx + 4, hy = ny / 2 + 1;
+        int dims[2] = {nz, ny}, re[2] = {nz, ny}, ce[2] = {nz, hy};
+        cufftHandle p1 = 0, p2 = 0;
+        std::size_t w1 = 0, w2 = 0;
+        const bool made = cufftPlanMany(&p1, 2, dims, re, nxe, 1, ce, nxe, 1, CUFFT_D2Z, nxe) == CUFFT_SUCCESS &&
+                          cufftPlanMany(&p2, 2, dims, ce, nxe, 1, re, nxe, 1, CUFFT_Z2D, nxe) == CUFFT_SUCCESS &&
+                          cufftGetSize(p1, &w1) == CUFFT_SUCCESS && cufftGetSize(p2, &w2) == CUFFT_SUCCESS;
+        if (p1) cufftDestroy(p1);
+        if (p2) cufftDestroy(p2);
+        std::printf("MEM_MODEL_CUFFT_VERIFY plan=prefilter made=%d actual=%zu model=%zu equal=%d\n", made ? 1 : 0,
+                    w1 + w2, M.cufft_prefilter, (made && w1 + w2 == M.cufft_prefilter) ? 1 : 0);
+        cufftHandle p3 = 0;
+        std::size_t w3 = 0;
+        const bool made3 = cufftPlan3d(&p3, nz, ny, nx, CUFFT_Z2D) == CUFFT_SUCCESS && cufftGetSize(p3, &w3) == CUFFT_SUCCESS;
+        if (p3) cufftDestroy(p3);
+        std::printf("MEM_MODEL_CUFFT_VERIFY plan=sf18_3d made=%d actual=%zu model=%zu equal=%d\n", made3 ? 1 : 0, w3,
+                    M.cufft_f, (made3 && w3 == M.cufft_f) ? 1 : 0);
+        ok = ok && made && w1 + w2 == M.cufft_prefilter;
+    }
+    return ok ? 0 : 1;
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
     std::string only;
+    int mm[3] = {0, 0, 0};
+    bool model = false, head_mapped = false, verify = false;
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--only") == 0 && i + 1 < argc) {
             only = argv[++i];
@@ -670,9 +836,27 @@ int main(int argc, char** argv) {
             CudaContext dctx(0);
             run_diag(dctx, a, b, c, l);
             return 0;
+        } else if (std::strcmp(argv[i], "--memory-model") == 0 && i + 1 < argc) {
+            model = std::sscanf(argv[++i], "%d,%d,%d", &mm[0], &mm[1], &mm[2]) == 3;
+            if (!model) {
+                std::fprintf(stderr, "--memory-model needs nx,ny,nz\n");
+                return 2;
+            }
+        } else if (std::strcmp(argv[i], "--head-mapped-host") == 0) {
+            head_mapped = true;
+        } else if (std::strcmp(argv[i], "--verify-cufft") == 0) {
+            verify = true;
         } else {
-            std::fprintf(stderr, "usage: %s [--only D|C5]\n", argv[0]);
+            std::fprintf(stderr, "usage: %s [--only D|C5] [--diag nx,ny,nz,levels,seed] [--memory-model nx,ny,nz [--head-mapped-host] [--verify-cufft]]\n", argv[0]);
             return 2;
+        }
+    }
+    if (model) {
+        try {
+            return run_memory_model(mm[0], mm[1], mm[2], !head_mapped, verify);
+        } catch (const std::exception& e) {
+            std::fprintf(stderr, "memory model failed: %s\n", e.what());
+            return 1;
         }
     }
     if (!only.empty() && only != "D" && only != "C5") {
@@ -695,6 +879,9 @@ int main(int argc, char** argv) {
             test_pcg_external(ctx);
             test_inputs(ctx);
             test_flag_off(ctx);
+            test_splines_inputs(ctx);
+            test_splines(ctx, 32, 16, 16);
+            test_splines(ctx, 64, 16, 16);
             run_D_case(ctx, 64, 16, 16, 1.0, false, true, true);
             run_D_case(ctx, 32, 16, 16, 1.0, true, true, false);
             run_D_case(ctx, 32, 32, 32, 1.0, true, true, false); // 4 MG levels, the --only D path (cells, device then mapped)

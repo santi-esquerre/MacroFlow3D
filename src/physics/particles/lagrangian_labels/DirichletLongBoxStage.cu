@@ -10,6 +10,7 @@
 
 #include "../../../multigrid/coefficient_hierarchy.cuh"
 #include "../../../multigrid/mg_types.hpp"
+#include "../../../numerics/interpolation/NonPeriodicXTricubicBSpline.cuh"
 #include "../../../numerics/operators/varcoeff_laplacian.cuh"
 #include "../../../numerics/pin_spec.hpp"
 #include "../../../numerics/solvers/mg_preconditioner.cuh"
@@ -25,6 +26,7 @@
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
+#include <cufft.h>
 #include <exception>
 #include <stdexcept>
 
@@ -167,6 +169,14 @@ __global__ void kernel_head_to_f(real* __restrict__ a, int nx, std::size_t n, re
     }
 }
 
+/// S3c: {pot, logk} -> double2 (pure data movement).
+__global__ void kernel_interleave(const real* __restrict__ pot, const real* __restrict__ logk,
+                                  double2* __restrict__ out, std::size_t cnt) {
+    for (std::size_t c = blockIdx.x * (std::size_t)blockDim.x + threadIdx.x; c < cnt;
+         c += (std::size_t)gridDim.x * blockDim.x)
+        out[c] = make_double2(pot[c], logk[c]);
+}
+
 std::string fmt_items(const std::vector<std::pair<std::string, std::size_t>>& items) {
     if (items.empty())
         return "-";
@@ -249,9 +259,87 @@ std::size_t dirichlet_s2_closed_form_bytes(int nx, int ny, int nz, int mg_levels
     return sizeof(real) * ((head_on_device ? 7 : 6) * n + 4 * coarse) + scratch_bytes;
 }
 
+std::size_t dirichlet_s3_closed_form_bytes(int nx, int ny, int nz, std::size_t cufft_work, bool fused,
+                                           std::size_t sub[3]) {
+    const std::size_t n = (std::size_t)nx * ny * nz;
+    const std::size_t ne = (std::size_t)(nx + 4) * ny * nz;
+    const std::size_t sp = (std::size_t)(nx + 4) * (ny / 2 + 1) * nz;
+    const std::size_t table = (std::size_t)(nx - 4);
+    const std::size_t a = 8 * n + 8 * ne + 16 * sp + 8 * table + cufft_work;
+    const std::size_t b = 8 * ne + 8 * n + 8 * ne + 16 * sp + 8 * table + cufft_work;
+    const std::size_t c = 32 * ne;
+    if (sub != nullptr) {
+        sub[0] = a;
+        sub[1] = b;
+        sub[2] = c;
+    }
+    return std::max(std::max(a, b), fused ? c : std::size_t(0));
+}
+
+namespace {
+struct CufftHandleGuard {
+    cufftHandle h = 0;
+    CufftHandleGuard() {
+        if (cufftCreate(&h) != CUFFT_SUCCESS)
+            throw std::runtime_error("memory model: cufftCreate failed");
+    }
+    ~CufftHandleGuard() { cufftDestroy(h); }
+};
+} // namespace
+
+DirichletStageMemoryModel dirichlet_long_box_stage_memory_model(int nx, int ny, int nz, int mg_levels,
+                                                                bool head_on_device) {
+    if (nx < 8 || ny < 4 || nz < 4 || ny != nz)
+        throw std::invalid_argument("memory model: nx >= 8, ny == nz >= 4 required");
+    DirichletStageMemoryModel M;
+    M.nx = nx;
+    M.ny = ny;
+    M.nz = nz;
+    M.mg_levels = mg_levels == 0 ? box_auto_mg_levels(nx, ny, nz) : mg_levels;
+    M.head_on_device = head_on_device;
+    const std::size_t n = (std::size_t)nx * ny * nz;
+    const std::size_t nyz = (std::size_t)ny * nz;
+    const std::size_t R = sizeof(real);
+    auto blocks1d = [](std::size_t cnt, std::size_t cap) { return std::min<std::size_t>(cap, (cnt + 255) / 256); };
+
+    { // F: y, SF-18 half spectrum, mode counter, reduce blocks, 3-D Z2D work
+        CufftHandleGuard g;
+        std::size_t w = 0;
+        if (cufftGetSize3d(g.h, nz, ny, nx, CUFFT_Z2D, &w) != CUFFT_SUCCESS)
+            throw std::runtime_error("memory model: cufftGetSize3d failed");
+        M.cufft_f = w;
+        M.F = R * n + sizeof(cufftDoubleComplex) * (std::size_t)(nx / 2 + 1) * ny * nz +
+              sizeof(unsigned long long) + R * blocks1d(n, 256) + w;
+    }
+    M.S1 = 0; // host only
+    M.S2 = dirichlet_s2_closed_form_bytes(nx, ny, nz, M.mg_levels, head_on_device, R); // scratch = d_scalar only (no CUB: pcg_solve_external uses cuBLAS)
+    // V: K, head, U, V, W, planes, div_block_max
+    M.V = R * (2 * n + (std::size_t)(nx + 1) * nyz + (std::size_t)nx * (ny + 1) * nz +
+               (std::size_t)nx * ny * (nz + 1) + 2 * nyz + blocks1d(n, 1024));
+    M.H = R * n;
+    { // S3: W = D2Z + Z2D of the two batched rank-2 plans of N1 (nxe batches, stride nxe, distance 1)
+        const int nxe = nx + 4, hy = ny / 2 + 1;
+        int dims[2] = {nz, ny}, real_embed[2] = {nz, ny}, cplx_embed[2] = {nz, hy};
+        CufftHandleGuard g1, g2;
+        std::size_t w1 = 0, w2 = 0;
+        if (cufftGetSizeMany(g1.h, 2, dims, real_embed, nxe, 1, cplx_embed, nxe, 1, CUFFT_D2Z, nxe, &w1) !=
+                CUFFT_SUCCESS ||
+            cufftGetSizeMany(g2.h, 2, dims, cplx_embed, nxe, 1, real_embed, nxe, 1, CUFFT_Z2D, nxe, &w2) !=
+                CUFFT_SUCCESS)
+            throw std::runtime_error("memory model: cufftGetSizeMany failed");
+        M.cufft_prefilter = w1 + w2;
+        std::size_t sub[3];
+        dirichlet_s3_closed_form_bytes(nx, ny, nz, M.cufft_prefilter, true, sub);
+        M.S3a = sub[0];
+        M.S3b = sub[1];
+        M.S3c = sub[2];
+    }
+    return M;
+}
+
 std::vector<std::string> DirichletLongBoxStage::mem_lines() const {
     std::vector<std::string> out;
-    for (const LongBoxPhaseRecord* r : {&phase_F, &phase_S1, &phase_S2, &phase_V, &phase_H}) {
+    for (const LongBoxPhaseRecord* r : {&phase_F, &phase_S1, &phase_S2, &phase_V, &phase_H, &phase_S3}) {
         if (r->present)
             out.push_back(phase_line(*r));
     }
@@ -266,6 +354,8 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
         throw std::invalid_argument("build_dirichlet_long_box_stage: nx, ny, nz must be even and >= 4");
     if (ny != nz)
         throw std::invalid_argument("build_dirichlet_long_box_stage: ny must equal nz (h = 1/ny)");
+    if (spec.build_splines && nx < 8)
+        throw std::invalid_argument("build_dirichlet_long_box_stage: build_splines needs nx >= 8 (C-SPLINE)");
     if (!std::isfinite(spec.eps))
         throw std::invalid_argument("build_dirichlet_long_box_stage: eps must be finite");
     if (!(std::isfinite(spec.G1) && spec.G1 > 0.0))
@@ -289,6 +379,8 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
     S.grid = Grid3D(nx, ny, nz, S.h, S.h, S.h);
     S.G1 = spec.G1;
     S.head_drop = spec.G1 * S.L1;
+    S.G[0] = spec.G1;
+    S.fused_coefficients = spec.fused_coefficients;
     S.mg_levels = levels;
     S.head_mapped_host = spec.head_mapped_host;
     S.device_used_start = device_used_now();
@@ -566,7 +658,85 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
         });
         rec.seconds = since(t0);
     }
-    // SEAM(N4): host_lnk and f are the inputs of the non-periodic prefilters (phase S3 of N4).
+
+    // ---- S3: non-periodic spline coefficients of f and ln k ----------------------------------------------
+    if (spec.build_splines) {
+        LongBoxPhaseRecord& rec = S.phase_S3;
+        rec.phase = "S3";
+        rec.present = true;
+        const auto t0 = Clock::now();
+        in_phase("S3", [&] {
+            using Items = std::vector<std::pair<std::string, std::size_t>>;
+            const std::size_t ne = S.coefficient_count();
+            auto capR = [](const DeviceBuffer<real>& b) { return b.capacity() * sizeof(real); };
+            std::size_t sub_bytes[3] = {0, 0, 0}, used_peak = 0, work_peak = 0;
+            Items peak_items;
+            int peak_idx = -1;
+            auto consider = [&](int idx, const Items& it, std::size_t w) {
+                std::size_t b = w;
+                for (const auto& x : it)
+                    b += x.second;
+                sub_bytes[idx] = b;
+                if (peak_idx < 0 || b > sub_bytes[peak_idx]) {
+                    peak_idx = idx;
+                    peak_items = it;
+                    work_peak = w;
+                }
+                used_peak = std::max(used_peak, device_used_now());
+            };
+            auto prefilter_items = [&](Items head, const interpolation::NonPeriodicXTricubicBSplineReport& r,
+                                       const char* coef_name) {
+                head.emplace_back(coef_name, r.coefficient_bytes);
+                head.emplace_back("np_spectrum", r.spectrum_bytes);
+                head.emplace_back("np_line_table", r.line_table_bytes);
+                return head;
+            };
+            DeviceBuffer<real> pot, logk;
+            {
+                interpolation::NonPeriodicXTricubicBSplineWorkspace ws;
+                // S3a: f -> coef_pot (coefficient buffer moved out, f freed)
+                auto r = interpolation::prefilter_nonperiodic_x_tricubic_bspline(
+                    ctx, grid, DeviceSpan<const real>(S.f.data(), n), ws);
+                consider(0, prefilter_items({{"f", capR(S.f)}}, r, "coef_pot"), r.cufft_work_area_bytes);
+                pot = std::move(ws.coefficients);
+                S.f.reset();
+                // S3b: ln k samples -> coef_logk in the same workspace (spectrum and pivot table reused)
+                DeviceBuffer<real> d_lnk(n);
+                upload_sync(d_lnk.data(), S.host_lnk.data(), n);
+                r = interpolation::prefilter_nonperiodic_x_tricubic_bspline(
+                    ctx, grid, DeviceSpan<const real>(d_lnk.data(), n), ws);
+                consider(1, prefilter_items({{"coef_pot", capR(pot)}, {"lnk_samples", capR(d_lnk)}}, r, "coef_logk"),
+                         r.cufft_work_area_bytes);
+                logk = std::move(ws.coefficients);
+            } // lnk samples and the workspace (spectrum, table) freed
+            release(S.host_lnk);
+            if (pot.size() != ne || logk.size() != ne)
+                throw std::runtime_error("unexpected coefficient extent");
+            if (spec.fused_coefficients) { // S3c
+                DeviceBuffer<double2> inter(ne);
+                const int blk = (int)std::min<std::size_t>(65535, (ne + 255) / 256);
+                kernel_interleave<<<blk, 256, 0, ctx.cuda_stream()>>>(pot.data(), logk.data(), inter.data(), ne);
+                MACROFLOW3D_CUDA_CHECK(cudaGetLastError());
+                ctx.synchronize();
+                MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+                consider(2, {{"coef_pot", capR(pot)}, {"coef_logk", capR(logk)},
+                             {"coef_interleaved", inter.capacity() * sizeof(double2)}}, 0);
+                S.coef_interleaved = std::move(inter);
+            } else {
+                S.coef_pot = std::move(pot);
+                S.coef_logk = std::move(logk);
+            }
+            S.coefficients_nonperiodic_x = true;
+            rec.items = peak_items;
+            rec.cufft_work = work_peak;
+            rec.cufft_named.emplace_back("cufft_prefilter", work_peak);
+            rec.categories = fmt("S3a:%zu,S3b:%zu,S3c:%zu,peak:S3%c", sub_bytes[0], sub_bytes[1], sub_bytes[2],
+                                 "abc"[peak_idx]);
+            rec.device_used = used_peak;
+        });
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+        rec.seconds = since(t0);
+    }
     return S;
 }
 

@@ -27,9 +27,23 @@
  *        f_c = ((-H_c) - G1 x_i) + G1 L1,   x_i = (i + 1/2) h,   every operation rounded (no FMA),
  *      kept on the device (`f`).
  *
- * SEAM FOR N4 (spline phase): after `build_dirichlet_long_box_stage` returns, `host_lnk` (eps Y, host) and `f`
- * (device) are the two samples to be prefiltered by the non-periodic spline; N4 adds its own phase records
- * (S3/T) in its own code and does not touch the fields below.
+ *   S3 (SF-41 N4, `build_splines`, default on) the two samples are represented by the non-periodic-in-x1 spline
+ *      (`NonPeriodicXTricubicBSpline`, contract C-SPLINE; same geometry: stage grid, h = 1/ny, L1 = nx h):
+ *        S3a prefilter of f (the device samples already there) -> coefficients `pot` (the workspace
+ *            coefficient buffer is MOVED out); f freed.
+ *        S3b upload of host_lnk, prefilter -> coefficients `logk` (second buffer of the same workspace, which
+ *            keeps its spectrum and pivot table); the samples are freed, then the workspace.
+ *        S3c (fused only) device interleave of {pot, logk} into one `double2` array (pure data movement, bitwise
+ *            exact); pot and logk freed afterwards.
+ *      Coefficient layout: x-extended `(nx+4) ny nz`, `coef[(a + 2) + (nx+4)(j + ny k)]`, a = -2..nx+1 (N1).
+ *      With ne = (nx+4) ny nz, sp = (nx+4)(ny/2+1) nz, W = cuFFT work of the two batched plans of N1:
+ *        S3a = 8 n + 8 ne + 16 sp + 8 (nx-4) + W          (f, coefficients, spectrum, pivot table, work)
+ *        S3b = 8 ne + 8 n + 8 ne + 16 sp + 8 (nx-4) + W   (pot, ln k samples, logk, spectrum, table, work)
+ *        S3c = 8 ne + 8 ne + 16 ne = 32 ne                (pot, logk, interleaved; fused only)
+ *        S3  = max(S3a, S3b [, S3c])  (`dirichlet_s3_closed_form_bytes`); the record holds the items of the
+ *        peak sub-step and `categories` lists the sub-step values and the peak.
+ *      f and host_lnk are released at the end of S3 (the tracker needs only the coefficients).
+ *      `dirichlet_long_box_stage_memory_model` predicts every phase for any grid without allocating them.
  *
  * Bitwise rule: for the same host Y, eps, G1, grid, mg_levels, cg_rtol and cg_max_iter, the solved head (device
  * or mapped host) equals `DirichletMedium`'s head byte for byte and the `B_SOLVER` fields are identical: this
@@ -46,6 +60,7 @@
 #include "DirichletMedium.cuh"
 #include "LongBoxStage.cuh"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <string>
@@ -104,6 +119,8 @@ struct DirichletLongBoxSpec {
     bool keep_host_faces = false;   ///< host CompactMAC U V W (Pollock bridge / flow statistics)
     bool keep_host_head = false;    ///< host copy of the solved head H before it becomes f (tests)
     debug::Trace* debug_trace = nullptr; ///< non-owning; debug hashes of the solve (host syncs), see debug::
+    bool build_splines = true;      ///< phase S3; false: f (device) and host_lnk are kept as the N2 outputs
+    bool fused_coefficients = false; ///< S3: one interleaved double2 {pot, logk} array instead of two arrays
 };
 
 /// The `B_SOLVER` quantities of the A/B application (lagrangian_medium_ab_main.cu) and its verdict rule.
@@ -136,10 +153,20 @@ class DirichletLongBoxStage {
     int mg_levels = 0;
     bool head_mapped_host = false;
 
-    /// Potential fluctuation f (nx*ny*nz, device, layout i + nx (j + ny k)) after phase H.
+    /// Potential fluctuation f (nx*ny*nz, device, layout i + nx (j + ny k)) after phase H; freed by S3.
     DeviceBuffer<real> f;
-    /// eps * Y on the host (the N4 ln k samples).
+    /// eps * Y on the host (the ln k samples); released by S3.
     std::vector<real> host_lnk;
+    /// Mean potential gradient of the stage, G = {G1, 0, 0} (for the tracker).
+    real G[3] = {0.0, 0.0, 0.0};
+    /// S3 outputs, x-extended non-periodic layout ((nx+4) ny nz entries, see above): coef_pot / coef_logk, or
+    /// coef_interleaved (double2 {pot, logk}) iff fused_coefficients. coefficients_nonperiodic_x tells the
+    /// tracker side that they are NOT the SF-28 periodic layout.
+    DeviceBuffer<real> coef_pot, coef_logk;
+    DeviceBuffer<double2> coef_interleaved;
+    bool fused_coefficients = false;
+    bool coefficients_nonperiodic_x = false;
+    std::size_t coefficient_count() const { return static_cast<std::size_t>(grid.nx + 4) * grid.ny * grid.nz; }
     /// Solved head H (host) iff keep_host_head.
     std::vector<real> host_head;
     /// CompactMAC faces (U (nx+1) ny nz, V nx (ny+1) nz, W nx ny (nz+1)) iff keep_host_faces.
@@ -147,10 +174,16 @@ class DirichletLongBoxStage {
     /// Inlet face fluxes U[0, j, k], index j + ny k (host, always).
     std::vector<real> inlet_u_plane;
 
-    LongBoxPhaseRecord phase_F, phase_S1, phase_S2, phase_V, phase_H;
+    LongBoxPhaseRecord phase_F, phase_S1, phase_S2, phase_V, phase_H, phase_S3;
     std::size_t device_used_start = 0;
 
-    bool ready() const { return solver.usable && f.size() > 0; }
+    bool ready() const {
+        return solver.usable &&
+               (!coefficients_nonperiodic_x
+                    ? f.size() > 0
+                    : (fused_coefficients ? coef_interleaved.size() > 0
+                                          : coef_pot.size() > 0 && coef_logk.size() > 0));
+    }
 
     /// `MEM_PHASE phase=<p> exact_bytes=<B> cufft_work=<W> [cufft_*=<w>] device_used=<U> seconds=<t>
     /// [categories=..] items=name:bytes,...` (the LongBoxStage format) for every recorded phase, in order.
@@ -161,6 +194,28 @@ class DirichletLongBoxStage {
 /// temporary (the items `scratch_*` of the S2 record). `head_on_device` selects (6 + 1) n or 6 n.
 std::size_t dirichlet_s2_closed_form_bytes(int nx, int ny, int nz, int mg_levels, bool head_on_device,
                                            std::size_t scratch_bytes);
+
+/// Exact bytes of phase S3 by the closed form of the file header; `cufft_work` = W (the report's
+/// `cufft_work_area_bytes` of one N1 prefilter call). `sub` (optional) receives {S3a, S3b, S3c}.
+std::size_t dirichlet_s3_closed_form_bytes(int nx, int ny, int nz, std::size_t cufft_work, bool fused,
+                                           std::size_t sub[3] = nullptr);
+
+/// Predicted exact device bytes of every phase for any grid (nothing of that size is allocated; cuFFT work
+/// sizes by `cufftGetSizeMany` / `cufftGetSize3d` on handles that never make a plan). Needs a CUDA device.
+struct DirichletStageMemoryModel {
+    int nx = 0, ny = 0, nz = 0, mg_levels = 0;
+    bool head_on_device = true;
+    std::size_t F = 0, S1 = 0, S2 = 0, V = 0, H = 0, S3a = 0, S3b = 0, S3c = 0;
+    std::size_t cufft_f = 0;         ///< SF-18 3-D Z2D work (phase F)
+    std::size_t cufft_prefilter = 0; ///< W: the two batched N1 plans (phase S3)
+    std::size_t S3(bool fused) const { return std::max(std::max(S3a, S3b), fused ? S3c : std::size_t(0)); }
+    /// max over F, S2, V, H, S3 (device bytes of arrays and cuFFT work; excludes the CUDA context)
+    std::size_t max_phase(bool fused) const {
+        return std::max(std::max(std::max(F, S2), std::max(V, H)), S3(fused));
+    }
+};
+DirichletStageMemoryModel dirichlet_long_box_stage_memory_model(int nx, int ny, int nz, int mg_levels,
+                                                                bool head_on_device);
 
 /// Builds the stage. Solver non-convergence is reported (`solver`), not thrown; throws
 /// std::invalid_argument for invalid arguments and std::runtime_error naming `phase=<F|S1|S2|V|H>` for
