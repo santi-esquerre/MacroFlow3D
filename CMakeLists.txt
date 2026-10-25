@@ -823,6 +823,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(face_flux_repack_tests PRIVATE macroflow3d_lib)
     target_compile_options(face_flux_repack_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_face_flux_repack COMMAND face_flux_repack_tests)
+    # SF-41 N3a: Pollock core and comparator non-periodic in x (exit_inlet / exit_outlet), controls C4a/C4b (FAST
+    # tier; `--only C4` is the V100 form of RR5, not a ctest entry)
+    add_executable(pollock_nonperiodic_tests tests/lagrangian_labels/pollock_nonperiodic_tests.cu)
+    target_link_libraries(pollock_nonperiodic_tests PRIVATE macroflow3d_lib)
+    target_compile_options(pollock_nonperiodic_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_pollock_nonperiodic COMMAND pollock_nonperiodic_tests)
     # SF-38 N3: ensemble runner (determinism, restart after a simulated crash, CSV round trip, twin, seed-face
     # assertion, field-only) on a 64x16x16 box; drives the lagrangian_ensemble and macroflow3d_pipeline binaries
     # (build both targets first). Fast tier <= 60 s.
