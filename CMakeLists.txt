@@ -804,6 +804,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(long_box_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_long_box COMMAND long_box_tests)
 
+    # SF-41 N1b: P-CROSS (threshold B, RR4): non-periodic-x1 vs periodic spline on the SF-19 h_tilde and
+    # ln K samples (fast tier = smoke at 128x16x16; `--only B` is the V100 RR4 configuration).
+    add_executable(sf41_cross_representation_tests tests/lagrangian_labels/sf41_cross_representation_tests.cu)
+    target_link_libraries(sf41_cross_representation_tests PRIVATE macroflow3d_lib)
+    target_compile_options(sf41_cross_representation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_cross_representation COMMAND sf41_cross_representation_tests)
+
     # SF-38 N2: DirichletMedium (medium (b), C-DIRICHLET) + EulerianFaceStats (E1): k = 1, layered exact
     # 1-D flux, periodic repack, workspace release, E1 exact (fast <= 60 s; --full is the V100 mode).
     add_executable(dirichlet_medium_tests tests/lagrangian_labels/dirichlet_medium_tests.cu)
