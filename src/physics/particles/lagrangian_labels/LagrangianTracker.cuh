@@ -60,6 +60,20 @@ struct DeviceSplineFlow {
     const streamfunctions::inlet_slab::InletLabels* labels = nullptr;
 };
 
+/// SF-41 N3b: non-owning view of a spline flow that is NON-periodic in x1 (medium (b), x-extended
+/// coefficients of NonPeriodicXTricubicBSpline.cuh: (nx+4) ny nz entries, `(a+2) + (nx+4)(j + ny k)`).
+/// `grid` is the SAMPLE grid (L1 = nx hx). Exactly one of {coef_pot + coef_logk, coef_interleaved} is
+/// needed, according to TrackOptions::fused_splines. The tracker passes turn a crossing of x1 < 0 /
+/// x1 > L1 into the statuses kStatusExitInlet (7) / kStatusExitOutlet (8) (rules E1-E2 of
+/// LagrangianTrackerDevice.cuh); injection planes must satisfy 0 <= X0 <= L1.
+struct DeviceSplineFlowNonPeriodicX {
+    Grid3D grid;
+    const real* coef_pot = nullptr;
+    const real* coef_logk = nullptr;
+    const double2* coef_interleaved = nullptr; ///< {pot, logk} per entry (fused_splines)
+    double G[3] = {0.0, 0.0, 0.0};
+};
+
 class LagrangianTracker {
   public:
     LagrangianTracker();
@@ -83,6 +97,14 @@ class LagrangianTracker {
     void prepare(CudaContext& ctx, const DeviceSplineFlow& flow, const InjectionSpec& inj,
                  const TrackOptions& opt);
 
+    /// SF-41 N3b: same tracker over a non-periodic-in-x1 spline flow (fused per opt.fused_splines),
+    /// with the x-exit handling of DeviceSplineFlowNonPeriodicX. No D-1 labels (NaN). Throws
+    /// std::logic_error if the arrays needed by `opt.fused_splines` are missing and
+    /// std::invalid_argument if X0 lies outside [0, L1]; the result carries `nonperiodic_x = true`,
+    /// the exit totals and the per-plane / per-time exit counts.
+    void prepare(CudaContext& ctx, const DeviceSplineFlowNonPeriodicX& flow, const InjectionSpec& inj,
+                 const TrackOptions& opt);
+
     /// Runs both passes and the host reductions. `block` > 0 overrides TrackOptions::block. The
     /// returned reference is valid until the next track()/destruction. No device allocation.
     const LagrangianTrackResult& track(CudaContext& ctx, int block = 0);
@@ -103,6 +125,12 @@ class LagrangianTracker {
 /// seeds.npy, weights.npy, labels.npy, status_plane.npy, status_time.npy (uint8), planes_x23.npy,
 /// planes_tau.npy, planes_I.npy, times_x.npy, times_I.npy, [planes_cov.npy, times_cov.npy],
 /// moments_time.csv (CsvTimeSeriesWriter format), moments_planes.csv, track.json.
+/// Non-periodic-in-x1 results (result.nonperiodic_x) add, without changing any file above: track.json keys
+/// `nonperiodic_x` (true), `domain_L1`, `exit_status_codes` ({exit_inlet: 7, exit_outlet: 8}) and
+/// `plane_pass.exit_inlet/exit_outlet`, `time_pass.exit_inlet/exit_outlet` (totals; the 7-slot status_hist
+/// does not count them), and the files exits_planes.csv (`x1,exit_inlet,exit_outlet` per plane: particles that
+/// exited before reaching that plane, cumulative as in the Pollock comparator) and exits_time.csv
+/// (`t,exit_inlet,exit_outlet` per time, same convention).
 void write_track_outputs(const std::string& dir, const LagrangianTrackResult& result,
                          const TrackMeta& meta);
 

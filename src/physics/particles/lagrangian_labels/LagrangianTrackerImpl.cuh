@@ -54,6 +54,16 @@ template <class Field> class LagrangianTrackerT {
         r.max_arclength =
             opt.max_arclength > 0.0 ? opt.max_arclength : default_max_arclength(inj, opt);
         r.injection = inj;
+        if constexpr (ldev::IsNonPeriodicX<Field>::value) { // SF-41: seeds must lie in the box
+            const double L1 = field.length();
+            if (!(inj.X0 >= 0.0 && inj.X0 <= L1)) {
+                throw std::invalid_argument(
+                    "lagrangian_labels: injection X0 must lie in [0, L1] for a non-periodic-in-x1 "
+                    "field");
+            }
+            r.nonperiodic_x = true;
+            r.domain_L1 = L1;
+        }
         r.planes = opt.planes;
         r.times = opt.times;
         const std::size_t Np = static_cast<std::size_t>(inj.M) * static_cast<std::size_t>(inj.M);
