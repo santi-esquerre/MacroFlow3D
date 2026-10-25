@@ -33,6 +33,7 @@
 #include "../../../core/DeviceSpan.cuh"
 #include "../../../core/Scalar.hpp"
 #include "../../../runtime/CudaContext.cuh"
+#include "../streamline_tracker/PollockTracker.cuh"
 #include "../streamline_tracker/StokesFaceVelocity.cuh"
 
 #include <cstddef>
@@ -89,6 +90,42 @@ class PeriodicFaceFluxes {
     real h() const { return h_; }
     /// Persistent device bytes (3 nx ny nz doubles).
     std::size_t device_bytes() const { return u_.size() * 3 * sizeof(real); }
+
+  private:
+    DeviceBuffer<real> u_, v_, w_;
+    int nx_ = 0, ny_ = 0, nz_ = 0;
+    real h_ = 0;
+};
+
+/**
+ * SF-41 N3a: owner of the face fluxes of medium (b) (Dirichlet in x), for the non-periodic Pollock mode.
+ * U keeps its CompactMAC layout (nx+1 x-face planes, (nx+1) ny nz; the outlet plane U[nx] is kept), V and
+ * W drop their periodic y/z duplicate planes exactly like PeriodicFaceFluxes (nx ny nz each). Bitwise
+ * copies. Device memory: ((nx+1) ny nz + 2 nx ny nz) doubles persistent + one staging array of
+ * max(V, W) sizes freed before return (U is copied straight into its final buffer).
+ */
+class NonPeriodicXFaceFluxes {
+  public:
+    NonPeriodicXFaceFluxes() = default;
+    NonPeriodicXFaceFluxes(NonPeriodicXFaceFluxes&&) noexcept = default;
+    NonPeriodicXFaceFluxes& operator=(NonPeriodicXFaceFluxes&&) noexcept = default;
+    NonPeriodicXFaceFluxes(const NonPeriodicXFaceFluxes&) = delete;
+    NonPeriodicXFaceFluxes& operator=(const NonPeriodicXFaceFluxes&) = delete;
+
+    /// Blocking; same argument checks and exceptions as PeriodicFaceFluxes::upload_and_repack.
+    static NonPeriodicXFaceFluxes upload(CudaContext& ctx, const std::vector<real>& U,
+                                         const std::vector<real>& V, const std::vector<real>& W,
+                                         int nx, int ny, int nz, real h);
+
+    /// dx = dy = dz = h, Lx = nx h, Ly = ny h, Lz = nz h. Throws std::logic_error if empty.
+    physics::particles::streamline_tracker::NonPeriodicXFaceFluxView view() const;
+
+    bool empty() const { return nx_ == 0; }
+    int nx() const { return nx_; }
+    int ny() const { return ny_; }
+    int nz() const { return nz_; }
+    real h() const { return h_; }
+    std::size_t device_bytes() const { return (u_.size() + v_.size() + w_.size()) * sizeof(real); }
 
   private:
     DeviceBuffer<real> u_, v_, w_;

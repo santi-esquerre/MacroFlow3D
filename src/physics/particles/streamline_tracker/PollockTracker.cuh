@@ -147,6 +147,29 @@
  *  wrap_position, with the wrap counters of the SF-31 bookkeeping; the engine
  *  state (not the SoA) is authoritative between calls.
  *  No epsilon, threshold on A, regularization or fallback appears anywhere.
+ *
+ * ---------------------------------------------------------------------------
+ * 7) Non-periodic-in-x mode (SF-41 N3a, medium (b))
+ * ---------------------------------------------------------------------------
+ *
+ *  The core functions (everything except the GPU engine) are templates on the face-view
+ *  type F. F = PeriodicFaceFluxView is the code of sections 1-6, unchanged: every non-periodic
+ *  statement below sits in an `if constexpr (kNonPeriodicX<F>)` branch that the periodic
+ *  instantiation does not contain. F = NonPeriodicXFaceFluxView has U on nx + 1 x-face planes
+ *  (idx = i + (nx + 1)(j + ny k)); V, W are periodic in y/z exactly as before.
+ *
+ *    - no wrap in x (w[0] is carried through unchanged); the upper x-face of cell nx - 1 is
+ *      U[nx], not U[0];
+ *    - a step across the lower x-face of cell 0 ends with kStatusPollockExitInlet (8), a step
+ *      across the upper x-face of cell nx - 1 with kStatusPollockExitOutlet (9). The exit is
+ *      committed (r[0] = 0 resp. D of the last cell, clock advanced, other axes moved) and the
+ *      status returned; the exit position stays readable;
+ *    - pollock_advance_to_x1 whose target is exactly L1 and reached on the face of cell nx - 1
+ *      returns kStatusActive with the particle on the face (the plane is reached; the next call
+ *      exits at once if the face velocity is positive);
+ *    - pollock_init_state: x1 in [0, L1]; a seed on x1 = 0 belongs to cell 0 and a seed on
+ *      x1 = L1 to cell nx - 1 (r = D) irrespective of the face velocity; x1 < 0 returns the
+ *      inlet code, x1 > L1 the outlet code. Interior x faces follow the ownership rule above.
  */
 
 #include "../../../core/DeviceBuffer.cuh"
@@ -167,6 +190,27 @@ namespace streamline_tracker {
 
 /// No axis of the current RT0 cell has a finite exit time (header section 5).
 inline constexpr uint8_t kStatusPollockStagnation = 15;
+/// Non-periodic-in-x mode (header section 7): left through the lower x-face of cell 0 / the upper
+/// x-face of cell nx - 1. RR11 of SF-41.
+inline constexpr uint8_t kStatusPollockExitInlet = 8;
+inline constexpr uint8_t kStatusPollockExitOutlet = 9;
+
+/// Face fluxes non-periodic in x (SF-41 medium (b)): U on nx + 1 x-face planes
+/// (idx = i + (nx + 1)(j + ny k)), V and W as in PeriodicFaceFluxView (periodic in y/z),
+/// Lx = nx dx.
+struct NonPeriodicXFaceFluxView {
+    const real* u;
+    const real* v;
+    const real* w;
+    int nx, ny, nz;
+    real dx, dy, dz;
+    real Lx, Ly, Lz;
+};
+
+template <class F>
+inline constexpr bool kNonPeriodicX = false;
+template <>
+inline constexpr bool kNonPeriodicX<NonPeriodicXFaceFluxView> = true;
 
 // ============================================================================
 // Core types
@@ -194,22 +238,31 @@ __host__ __device__ inline real inf() {
     return static_cast<real>(INFINITY);
 }
 
-__host__ __device__ inline int axis_n(const PeriodicFaceFluxView& f, int a) {
+template <class F>
+__host__ __device__ inline int axis_n(const F& f, int a) {
     return a == 0 ? f.nx : (a == 1 ? f.ny : f.nz);
 }
 
-__host__ __device__ inline real axis_d(const PeriodicFaceFluxView& f, int a) {
+template <class F>
+__host__ __device__ inline real axis_d(const F& f, int a) {
     return a == 0 ? f.dx : (a == 1 ? f.dy : f.dz);
 }
 
-__host__ __device__ inline real axis_l(const PeriodicFaceFluxView& f, int a) {
+template <class F>
+__host__ __device__ inline real axis_l(const F& f, int a) {
     return a == 0 ? f.Lx : (a == 1 ? f.Ly : f.Lz);
 }
 
 /// Face value of axis a on the a-face at index c[a] (lower face of cell c).
-__host__ __device__ inline real face_value(const PeriodicFaceFluxView& f, int a, int i, int j,
-                                           int k) {
-    const size_t idx = stokes_detail::lin(i, j, k, f.nx, f.ny);
+template <class F>
+__host__ __device__ inline real face_value(const F& f, int a, int i, int j, int k) {
+    size_t idx;
+    if constexpr (kNonPeriodicX<F>) {
+        idx = (a == 0) ? stokes_detail::lin(i, j, k, f.nx + 1, f.ny)
+                       : stokes_detail::lin(i, j, k, f.nx, f.ny);
+    } else {
+        idx = stokes_detail::lin(i, j, k, f.nx, f.ny);
+    }
     return a == 0 ? f.u[idx] : (a == 1 ? f.v[idx] : f.w[idx]);
 }
 
@@ -231,8 +284,8 @@ struct CellEval {
 /// RT0 evaluation of the current cell (header sections 1-2). Returns
 /// kStatusNonFinite if a face value, velocity or exit time is not finite /
 /// is NaN, else kStatusActive.
-__host__ __device__ inline uint8_t eval_cell(const PeriodicFaceFluxView& f, const PollockState& st,
-                                             CellEval& ev) {
+template <class F>
+__host__ __device__ inline uint8_t eval_cell(const F& f, const PollockState& st, CellEval& ev) {
     const real INF = inf();
     ev.te = INF;
     for (int a = 0; a < 3; ++a) {
@@ -240,7 +293,11 @@ __host__ __device__ inline uint8_t eval_cell(const PeriodicFaceFluxView& f, cons
         const real D = axis_d(f, a);
         int c[3] = {st.cell[0], st.cell[1], st.cell[2]};
         const real um = face_value(f, a, c[0], c[1], c[2]);
-        c[a] = (c[a] + 1 == n) ? 0 : c[a] + 1;
+        if constexpr (kNonPeriodicX<F>) {
+            c[a] = (a != 0 && c[a] + 1 == n) ? 0 : c[a] + 1;
+        } else {
+            c[a] = (c[a] + 1 == n) ? 0 : c[a] + 1;
+        }
         const real up = face_value(f, a, c[0], c[1], c[2]);
         if (!isfinite(um) || !isfinite(up)) {
             return kStatusNonFinite;
@@ -309,9 +366,11 @@ __host__ __device__ inline real move_axis(const CellEval& ev, const PollockState
 /// Commit the full cell step of duration ev.te (te finite). Returns
 /// kStatusNonFinite (nothing committed) if a new coordinate or the clock is
 /// not finite.
-__host__ __device__ inline uint8_t commit_full(const PeriodicFaceFluxView& f, const CellEval& ev,
-                                               PollockState& st, PollockCounters& cnt) {
+template <class F>
+__host__ __device__ inline uint8_t commit_full(const F& f, const CellEval& ev, PollockState& st,
+                                               PollockCounters& cnt) {
     PollockState nx = st;
+    uint8_t exit_code = kStatusActive;
     for (int a = 0; a < 3; ++a) {
         if (ev.side[a] != 0 && ev.t[a] == ev.te) {
             const int n = axis_n(f, a);
@@ -319,15 +378,37 @@ __host__ __device__ inline uint8_t commit_full(const PeriodicFaceFluxView& f, co
                 nx.r[a] = static_cast<real>(0.0);
                 nx.cell[a] = st.cell[a] + 1;
                 if (nx.cell[a] == n) {
-                    nx.cell[a] = 0;
-                    nx.w[a] += 1;
+                    if constexpr (kNonPeriodicX<F>) {
+                        if (a == 0) {
+                            exit_code = kStatusPollockExitOutlet;
+                            nx.cell[a] = st.cell[a];
+                            nx.r[a] = ev.D[a];
+                        } else {
+                            nx.cell[a] = 0;
+                            nx.w[a] += 1;
+                        }
+                    } else {
+                        nx.cell[a] = 0;
+                        nx.w[a] += 1;
+                    }
                 }
             } else {
                 nx.r[a] = ev.D[a];
                 nx.cell[a] = st.cell[a] - 1;
                 if (nx.cell[a] < 0) {
-                    nx.cell[a] = n - 1;
-                    nx.w[a] -= 1;
+                    if constexpr (kNonPeriodicX<F>) {
+                        if (a == 0) {
+                            exit_code = kStatusPollockExitInlet;
+                            nx.cell[a] = st.cell[a];
+                            nx.r[a] = static_cast<real>(0.0);
+                        } else {
+                            nx.cell[a] = n - 1;
+                            nx.w[a] -= 1;
+                        }
+                    } else {
+                        nx.cell[a] = n - 1;
+                        nx.w[a] -= 1;
+                    }
                 }
             }
         } else {
@@ -340,7 +421,7 @@ __host__ __device__ inline uint8_t commit_full(const PeriodicFaceFluxView& f, co
     }
     st = nx;
     ++cnt.cells;
-    return kStatusActive;
+    return exit_code;
 }
 
 /// Commit a partial step of duration t (no face reached). Returns kStatusNonFinite
@@ -366,8 +447,9 @@ __host__ __device__ inline uint8_t commit_partial(const CellEval& ev, PollockSta
 // ============================================================================
 
 /// x_u[a] = fma(cell[a] + w[a] n_a, D_a, r[a]) (header section 3).
-__host__ __device__ inline void pollock_unwrapped_position(const PeriodicFaceFluxView& f,
-                                                           const PollockState& st, real x_u[3]) {
+template <class F>
+__host__ __device__ inline void pollock_unwrapped_position(const F& f, const PollockState& st,
+                                                           real x_u[3]) {
     for (int a = 0; a < 3; ++a) {
         const int n = pollock_detail::axis_n(f, a);
         x_u[a] =
@@ -383,9 +465,9 @@ __host__ __device__ inline void pollock_unwrapped_position(const PeriodicFaceFlu
  * finite (st is then unspecified), else kStatusActive (a zero face velocity
  * is not an error: the lower-index cell is chosen).
  */
-__host__ __device__ inline uint8_t pollock_init_state(const PeriodicFaceFluxView& f,
-                                                      const real xi[3], const int32_t w[3],
-                                                      PollockState& st) {
+template <class F>
+__host__ __device__ inline uint8_t pollock_init_state(const F& f, const real xi[3],
+                                                      const int32_t w[3], PollockState& st) {
     st.t = static_cast<real>(0.0);
     for (int a = 0; a < 3; ++a) {
         if (!isfinite(xi[a])) {
@@ -402,6 +484,24 @@ __host__ __device__ inline uint8_t pollock_init_state(const PeriodicFaceFluxView
         if (r >= D) {
             r -= D;
             q += static_cast<real>(1.0);
+        }
+        if constexpr (kNonPeriodicX<F>) {
+            if (a == 0) {
+                if (xi[0] < static_cast<real>(0.0)) {
+                    return kStatusPollockExitInlet;
+                }
+                if (xi[0] > static_cast<real>(n) * D) {
+                    return kStatusPollockExitOutlet;
+                }
+                if (q >= static_cast<real>(n)) { // x1 = L1: the last cell, on its upper face
+                    q = static_cast<real>(n - 1);
+                    r = D;
+                }
+                st.cell[0] = static_cast<int32_t>(q);
+                st.w[0] = w[0];
+                st.r[0] = r;
+                continue;
+            }
         }
         // q = cell index in the image of xi; split into [0, n) and periods.
         const real nn = static_cast<real>(n);
@@ -425,6 +525,11 @@ __host__ __device__ inline uint8_t pollock_init_state(const PeriodicFaceFluxView
         if (st.r[a] != static_cast<real>(0.0)) {
             continue;
         }
+        if constexpr (kNonPeriodicX<F>) {
+            if (a == 0 && st.cell[0] == 0) { // a seed on x1 = 0 belongs to cell 0
+                continue;
+            }
+        }
         const real fv = pollock_detail::face_value(f, a, st.cell[0], st.cell[1], st.cell[2]);
         if (!isfinite(fv)) {
             return kStatusNonFinite;
@@ -444,8 +549,9 @@ __host__ __device__ inline uint8_t pollock_init_state(const PeriodicFaceFluxView
 
 /// One cell step or stagnation (header section 3). Nothing is committed on a
 /// non-active return.
-__host__ __device__ inline uint8_t pollock_cell_exit(const PeriodicFaceFluxView& f,
-                                                     PollockState& st, PollockCounters& cnt) {
+template <class F>
+__host__ __device__ inline uint8_t pollock_cell_exit(const F& f, PollockState& st,
+                                                     PollockCounters& cnt) {
     pollock_detail::CellEval ev;
     const uint8_t code = pollock_detail::eval_cell(f, st, ev);
     if (code != kStatusActive) {
@@ -458,8 +564,9 @@ __host__ __device__ inline uint8_t pollock_cell_exit(const PeriodicFaceFluxView&
 }
 
 /// First crossing of the unwrapped x1 = x1_target from below (header section 4).
-__host__ __device__ inline uint8_t pollock_advance_to_x1(const PeriodicFaceFluxView& f,
-                                                         PollockState& st, real x1_target_unwrapped,
+template <class F>
+__host__ __device__ inline uint8_t pollock_advance_to_x1(const F& f, PollockState& st,
+                                                         real x1_target_unwrapped,
                                                          const PollockParams& prm,
                                                          PollockCounters& cnt) {
     const real target = x1_target_unwrapped;
@@ -490,7 +597,13 @@ __host__ __device__ inline uint8_t pollock_advance_to_x1(const PeriodicFaceFluxV
                 if (taken >= prm.max_cells_per_call) {
                     return kStatusSubstepLimit;
                 }
-                return pollock_detail::commit_full(f, ev, st, cnt);
+                const uint8_t lc = pollock_detail::commit_full(f, ev, st, cnt);
+                if constexpr (kNonPeriodicX<F>) {
+                    if (lc == kStatusPollockExitOutlet) {
+                        return kStatusActive; // target = L1: the plane is reached (section 7)
+                    }
+                }
+                return lc;
             }
             // Target strictly inside this cell along x (or the x-face is the
             // target but another axis exits first: then t* > t_e below).
@@ -538,9 +651,9 @@ __host__ __device__ inline uint8_t pollock_advance_to_x1(const PeriodicFaceFluxV
 }
 
 /// Advance to the clock t_target (header section 4). t_target <= st.t: no-op.
-__host__ __device__ inline uint8_t pollock_advance_to_time(const PeriodicFaceFluxView& f,
-                                                           PollockState& st, real t_target,
-                                                           const PollockParams& prm,
+template <class F>
+__host__ __device__ inline uint8_t pollock_advance_to_time(const F& f, PollockState& st,
+                                                           real t_target, const PollockParams& prm,
                                                            PollockCounters& cnt) {
     if (!isfinite(t_target)) {
         return kStatusNonFinite;

@@ -94,6 +94,14 @@ struct PollockLatticeResult {
     std::array<long long, kPollockStatusSlots> status_hist_plane{}, status_hist_time{};
     unsigned long long cells_plane = 0, cells_time = 0; ///< total cell steps per pass
 
+    // SF-41 non-periodic-in-x mode only (empty / 0 for the periodic comparator): particles that left through
+    // the inlet (status 8) / outlet (status 9) before reaching plane m (time n); totals per pass. A
+    // particle counts for every plane (time) from the first one it did not reach.
+    std::vector<long long> exit_inlet_plane, exit_outlet_plane; ///< P entries
+    std::vector<long long> exit_inlet_time, exit_outlet_time;   ///< T entries
+    long long exit_inlet_plane_total = 0, exit_outlet_plane_total = 0;
+    long long exit_inlet_time_total = 0, exit_outlet_time_total = 0;
+
     // timings [s]
     double seconds_plane_kernel = 0.0, seconds_time_kernel = 0.0, seconds_download = 0.0,
            seconds_moments = 0.0;
@@ -112,6 +120,28 @@ PollockLatticeResult track_pollock_lattice(CudaContext& ctx,
                                            const std::vector<double>& planes,
                                            const std::vector<double>& times,
                                            const physics::particles::streamline_tracker::PollockParams& prm);
+
+/// Options of the non-periodic overload.
+struct PollockNonPeriodicOptions {
+    /// TEST ONLY: do not throw when no seed has a positive raw weight (all weights 0, seed_nonpos = Np, the
+    /// moments are NaN); the per-particle statuses and records remain valid. Production keeps the throw.
+    bool allow_no_positive_weight = false;
+};
+
+/**
+ * SF-41 N3a: the same lattice tracker on face fluxes non-periodic in x (medium (b)); see PollockTracker.cuh
+ * section 7. A particle that leaves through the inlet (status 8) or the outlet (status 9) keeps that status
+ * in status_plane / status_time, has NaN records from the exit on, and is counted in the exit_* fields; the
+ * histograms keep their 16 slots; the moments are over the particles that reached the plane / time. The
+ * periodic overload above is unchanged. Throws as the periodic overload.
+ */
+PollockLatticeResult track_pollock_lattice(CudaContext& ctx,
+                                           const physics::particles::streamline_tracker::NonPeriodicXFaceFluxView& f,
+                                           const InjectionSpec& inj,
+                                           const std::vector<double>& planes,
+                                           const std::vector<double>& times,
+                                           const physics::particles::streamline_tracker::PollockParams& prm,
+                                           const PollockNonPeriodicOptions& opt = {});
 
 } // namespace lagrangian_labels
 } // namespace macroflow3d
