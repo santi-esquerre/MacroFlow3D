@@ -1,0 +1,23 @@
+	Command being timed: "/home/sesquerre/MacroFlow3D-SF-41/build/v100-release/inlet_slab --track forward --analytic generic3d --n 32 --eps 0.25 --np-side 32 --planes 0.5,1 --times 1 --covectors --save-particles /home/sesquerre/sf41_campaign/final/r/fwd/g3d_n32_cov --summary /home/sesquerre/sf41_campaign/final/r/fwd/g3d_n32_cov.json"
+	User time (seconds): 1.22
+	System time (seconds): 3.03
+	Percent of CPU this job got: 94%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.51
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 653932
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 145585
+	Voluntary context switches: 115
+	Involuntary context switches: 10
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 720
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

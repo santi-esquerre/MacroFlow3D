@@ -1,0 +1,462 @@
+RESOLVED grid=3328x256x256 L1=13 lambda=0.125 X0=0.625 mg_levels_b=7(auto) cg_rtol_b=1e-10 cg_max_iter_b=2000 m_star=64 planes=0.75,0.875,1.125,1.625,2.625,4.625,8.625 m=1,2,4,8,16,32,64
+R=0 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4001 normalize_variance=1 applied_scale=9.854029348541e-01 raw_variance=1.029846025311e+00 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=0 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=0 SETUP   SF-18: raw_mean=2.293505e-20 raw_variance=1.029846025311e+00 applied_scale=9.854029348541e-01 final_variance=1.000000000000e+00 active_modes=108201599
+R=0 SETUP   SF-19: mg_levels=7 converged=1 G=(5.363294275594e-01, 6.038966293960e-03, -6.011893324215e-04) mean_flux=(1.000e+00, 1.541e-17, 7.489e-18) div_max=3.577e-07 div_rms=8.790e-10
+R=0 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=1.919e-12 final_residual=2.406e-05
+R=0 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=1.426e-12 final_residual=1.685e-05
+R=0 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=1.588e-12 final_residual=1.905e-05
+R=0 SETUP   inlet: vmin=4.444255e-03 mean(U plane 0)=1.000000000000105 (mean-1=1.052e-13) Q0-1=1.033e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=0 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=0 SETUP stage eps=2 built in 69.272s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=0 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.363294275594e-01,6.038966293960e-03,-6.011893324215e-04 darcy_converged=1 flow_ready=1 seconds=69.272
+R=0 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=0 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.473306 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=0 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.960060 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=0 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=56.889948 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=0 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.103674 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=0 E1 medium=a qbar=1.000000000000e+00 V1=2.949888063147e+00 theta_2=-3.348559666072e-03 theta_3=2.897872395111e-03
+R=0 E2 medium=a planes=7 m_star=64
+R=0 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=6.912567465456e-02 var_t=6.555278524704e-01
+R=0 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=5.805628146859e-02 var_t=1.598906881699e+00
+R=0 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=4.684887003708e-02 var_t=2.750832805148e+00
+R=0 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=7.624646147275e-02 var_t=4.000474279426e+00
+R=0 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=5.581983041074e-02 var_t=6.512581923932e+00
+R=0 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.048582753618e-01 var_t=9.989660806501e+00
+R=0 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.778365921084e-01 var_t=2.995143576952e+01
+R=0 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=0 PRIMARY medium=a S_T=1.824457918665e-02 S_tau=4.990443740756e+00 V1=2.949888063147e+00 theta_2=-3.348559666072e-03 theta_3=2.897872395111e-03
+R=0 B_SOLVER r=0 converged=1 iterations=50 initial=6.724494e+06 final=6.526221e-04 rel=9.705149e-11 qbar=1.002469787644e+00 Q_in=1.002469787644e+00 Q_out=1.002469787885e+00 balance=2.404573e-10 max_div=1.034116e-07 fallback=0
+R=0 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=4.922420 items=K:1744830464,head:1744830464
+R=0 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.451180 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=0 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.018017 items=K:1744830464,head:1744830464
+R=0 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.044601 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=0 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.870787 items=U:1745354752,V:1751646208,W:1751646208
+R=0 E1 medium=b qbar=1.002469787644e+00 V1=2.948265022014e+00 theta_2=-1.505440271517e-02 theta_3=3.981623797011e-03
+R=0 E2 medium=b planes=7 m_star=64
+R=0 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=6.882505511127e-02 var_t=6.534233134305e-01
+R=0 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=5.726951492757e-02 var_t=1.575807774916e+00
+R=0 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=4.676522453838e-02 var_t=3.379957963166e+00
+R=0 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=7.561948615381e-02 var_t=4.907224737582e+00
+R=0 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=5.707360709317e-02 var_t=7.625851436482e+00
+R=0 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.007988866320e-01 var_t=1.209712714345e+01
+R=0 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.936304565662e-01 var_t=2.518997180204e+01
+R=0 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=0 PRIMARY medium=b S_T=2.320789248355e-02 S_tau=3.289399403730e+00 V1=2.948265022014e+00 theta_2=-1.505440271517e-02 theta_3=3.981623797011e-03
+R=0 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=0 seconds=158.691
+R=1 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4002 normalize_variance=1 applied_scale=9.956985529864e-01 raw_variance=1.008658721436e+00 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=1 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=1 SETUP   SF-18: raw_mean=1.534563e-18 raw_variance=1.008658721436e+00 applied_scale=9.956985529864e-01 final_variance=1.000000000000e+00 active_modes=108201599
+R=1 SETUP   SF-19: mg_levels=7 converged=1 G=(5.371615297397e-01, -1.481709583220e-03, -1.345267730936e-05) mean_flux=(1.000e+00, -4.595e-18, 2.952e-18) div_max=3.335e-06 div_rms=5.457e-09
+R=1 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=1.082e-11 final_residual=1.499e-04
+R=1 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=1.057e-11 final_residual=1.398e-04
+R=1 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=6.955e-12 final_residual=1.044e-04
+R=1 SETUP   inlet: vmin=7.909792e-04 mean(U plane 0)=1.000000000000925 (mean-1=9.248e-13) Q0-1=9.317e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=1 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=1 SETUP stage eps=2 built in 68.862s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=1 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.371615297397e-01,-1.481709583220e-03,-1.345267730936e-05 darcy_converged=1 flow_ready=1 seconds=68.862
+R=1 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=1 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.432411 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=1 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.282465 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=1 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=56.232412 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=1 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=2.138009 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=1 E1 medium=a qbar=1.000000000001e+00 V1=3.407108929263e+00 theta_2=-3.615843074042e-03 theta_3=-8.547889504871e-03
+R=1 E2 medium=a planes=7 m_star=64
+R=1 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.579153800768e-02 var_t=1.792111658074e-01
+R=1 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.664492456602e-02 var_t=5.835526387836e-01
+R=1 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=5.021453796764e-02 var_t=9.953430811188e-01
+R=1 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.936095584671e-02 var_t=1.955809328332e+00
+R=1 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=9.229068540764e-02 var_t=1.636423029197e+01
+R=1 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.123523592738e-01 var_t=2.228571309574e+01
+R=1 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.725275646790e-01 var_t=2.919648755455e+01
+R=1 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=1 PRIMARY medium=a S_T=1.504380135131e-02 S_tau=1.727693614706e+00 V1=3.407108929263e+00 theta_2=-3.615843074042e-03 theta_3=-8.547889504871e-03
+R=1 B_SOLVER r=1 converged=1 iterations=60 initial=7.440474e+06 final=2.796356e-04 rel=3.758303e-11 qbar=1.004021516873e+00 Q_in=1.004021516873e+00 Q_out=1.004021516901e+00 balance=2.864093e-11 max_div=8.504916e-08 fallback=0
+R=1 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.998223 items=K:1744830464,head:1744830464
+R=1 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=20.926091 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=1 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.018065 items=K:1744830464,head:1744830464
+R=1 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.045671 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=1 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.772447 items=U:1745354752,V:1751646208,W:1751646208
+R=1 E1 medium=b qbar=1.004021516873e+00 V1=3.407021725260e+00 theta_2=-7.437793280570e-04 theta_3=-8.526458478956e-03
+R=1 E2 medium=b planes=7 m_star=64
+R=1 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.581953984695e-02 var_t=1.783823381398e-01
+R=1 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.667145227451e-02 var_t=5.767076304343e-01
+R=1 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=5.021142255000e-02 var_t=9.791913515148e-01
+R=1 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.921820279679e-02 var_t=1.773802057761e+00
+R=1 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=9.229967717616e-02 var_t=2.724178690548e+01
+R=1 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.115818879568e-01 var_t=3.375489934679e+01
+R=1 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.730811111593e-01 var_t=4.202990841832e+01
+R=1 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=1 PRIMARY medium=b S_T=1.537480580062e-02 S_tau=2.085424769283e+00 V1=3.407021725260e+00 theta_2=-7.437793280570e-04 theta_3=-8.526458478956e-03
+R=1 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=1 seconds=164.772
+R=2 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4003 normalize_variance=1 applied_scale=1.001830467012e+00 raw_variance=9.963490933282e-01 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=2 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=2 SETUP   SF-18: raw_mean=5.337611e-19 raw_variance=9.963490933282e-01 applied_scale=1.001830467012e+00 final_variance=1.000000000000e+00 active_modes=108201599
+R=2 SETUP   SF-19: mg_levels=7 converged=1 G=(5.536432095238e-01, 2.254840390449e-03, -3.948900915544e-03) mean_flux=(1.000e+00, 2.202e-18, 4.737e-18) div_max=1.239e-06 div_rms=3.335e-09
+R=2 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=5.782e-12 final_residual=8.876e-05
+R=2 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=5.480e-12 final_residual=8.606e-05
+R=2 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=4.886e-12 final_residual=7.201e-05
+R=2 SETUP   inlet: vmin=4.579523e-03 mean(U plane 0)=0.999999999999368 (mean-1=-6.320e-13) Q0-1=-6.332e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=2 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=2 SETUP stage eps=2 built in 67.115s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=2 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.536432095238e-01,2.254840390449e-03,-3.948900915544e-03 darcy_converged=1 flow_ready=1 seconds=67.115
+R=2 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=2 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.422326 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=2 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.380010 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=2 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.667636 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=2 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.097622 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=2 E1 medium=a qbar=9.999999999994e-01 V1=3.420513743283e+00 theta_2=2.077622537693e-03 theta_3=1.907044297265e-03
+R=2 E2 medium=a planes=7 m_star=64
+R=2 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.477593580279e-02 var_t=5.529356720626e-02
+R=2 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.809822747198e-02 var_t=1.800086728112e-01
+R=2 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=6.073814661372e-02 var_t=5.416255720935e-01
+R=2 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=7.191684098468e-02 var_t=1.165628615369e+00
+R=2 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=7.711923697631e-02 var_t=5.655703580734e+00
+R=2 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.532298996986e-01 var_t=1.044134073104e+01
+R=2 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.794076116516e-01 var_t=1.712176819575e+01
+R=2 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=2 PRIMARY medium=a S_T=6.544427988262e-03 S_tau=1.670106866175e+00 V1=3.420513743283e+00 theta_2=2.077622537693e-03 theta_3=1.907044297265e-03
+R=2 B_SOLVER r=2 converged=1 iterations=50 initial=8.498173e+06 final=7.592427e-04 rel=8.934188e-11 qbar=1.006849077393e+00 Q_in=1.006849077393e+00 Q_out=1.006849077387e+00 balance=6.510609e-12 max_div=7.133667e-08 fallback=0
+R=2 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.126653 items=K:1744830464,head:1744830464
+R=2 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.454511 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=2 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.018226 items=K:1744830464,head:1744830464
+R=2 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.046466 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=2 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=4.548856 items=U:1745354752,V:1751646208,W:1751646208
+R=2 E1 medium=b qbar=1.006849077393e+00 V1=3.421929736515e+00 theta_2=-2.322551199896e-03 theta_3=9.257541340753e-03
+R=2 E2 medium=b planes=7 m_star=64
+R=2 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.463547395167e-02 var_t=5.481640425126e-02
+R=2 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.813297506752e-02 var_t=1.814460596383e-01
+R=2 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=6.099400076333e-02 var_t=5.581182387910e-01
+R=2 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=7.234113003980e-02 var_t=1.169424574345e+00
+R=2 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=7.722879933863e-02 var_t=4.239863966980e+00
+R=2 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.493215240690e-01 var_t=9.230031912452e+00
+R=2 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.826342466760e-01 var_t=1.696789432082e+01
+R=2 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=2 PRIMARY medium=b S_T=8.328180651740e-03 S_tau=1.961054956852e+00 V1=3.421929736515e+00 theta_2=-2.322551199896e-03 theta_3=9.257541340753e-03
+R=2 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=2 seconds=159.877
+R=3 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4004 normalize_variance=1 applied_scale=9.866402016433e-01 raw_variance=1.027264749279e+00 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=3 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=3 SETUP   SF-18: raw_mean=-7.297515e-19 raw_variance=1.027264749279e+00 applied_scale=9.866402016433e-01 final_variance=1.000000000000e+00 active_modes=108201599
+R=3 SETUP   SF-19: mg_levels=7 converged=1 G=(5.613296064453e-01, -1.463695744144e-02, 8.099925946423e-03) mean_flux=(1.000e+00, 3.127e-17, -1.266e-17) div_max=8.960e-07 div_rms=1.303e-09
+R=3 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=1.820e-12 final_residual=3.410e-05
+R=3 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=1.482e-12 final_residual=3.673e-05
+R=3 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=1.630e-12 final_residual=3.432e-05
+R=3 SETUP   inlet: vmin=3.765117e-03 mean(U plane 0)=0.999999999999881 (mean-1=-1.189e-13) Q0-1=-1.267e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=3 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=3 SETUP stage eps=2 built in 67.492s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=3 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.613296064453e-01,-1.463695744144e-02,8.099925946423e-03 darcy_converged=1 flow_ready=1 seconds=67.492
+R=3 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=3 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.424160 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=3 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.382556 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=3 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.614335 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=3 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.413641 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=3 E1 medium=a qbar=9.999999999999e-01 V1=2.904125670565e+00 theta_2=1.585043172683e-02 theta_3=-1.341302947251e-03
+R=3 E2 medium=a planes=7 m_star=64
+R=3 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.856311788312e-02 var_t=1.354245039006e-01
+R=3 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=5.292024117469e-02 var_t=3.732072882992e-01
+R=3 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=5.833014363416e-02 var_t=6.557164570130e-01
+R=3 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=5.368419585463e-02 var_t=1.165855709228e+00
+R=3 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.921380122271e-02 var_t=2.302566881141e+00
+R=3 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=9.262425010992e-02 var_t=9.116475503335e+00
+R=3 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.633659784159e-01 var_t=1.802008887092e+01
+R=3 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=3 PRIMARY medium=a S_T=1.768543207650e-02 S_tau=2.225903341895e+00 V1=2.904125670565e+00 theta_2=1.585043172683e-02 theta_3=-1.341302947251e-03
+R=3 B_SOLVER r=3 converged=1 iterations=50 initial=1.051968e+07 final=1.292518e-04 rel=1.228667e-11 qbar=1.005063049777e+00 Q_in=1.005063049777e+00 Q_out=1.005063049767e+00 balance=1.022004e-11 max_div=7.533400e-08 fallback=0
+R=3 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.570663 items=K:1744830464,head:1744830464
+R=3 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.455577 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=3 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.019092 items=K:1744830464,head:1744830464
+R=3 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.044629 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=3 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.859560 items=U:1745354752,V:1751646208,W:1751646208
+R=3 E1 medium=b qbar=1.005063049777e+00 V1=2.910376191426e+00 theta_2=4.584720088151e-02 theta_3=-1.686773741478e-02
+R=3 E2 medium=b planes=7 m_star=64
+R=3 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.807619702414e-02 var_t=1.354383558293e-01
+R=3 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=5.254912240899e-02 var_t=3.745418017843e-01
+R=3 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=5.811388504162e-02 var_t=6.886189910047e-01
+R=3 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=5.116752816519e-02 var_t=1.239517535613e+00
+R=3 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.210040931180e-02 var_t=2.859170294808e+00
+R=3 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=9.505276863280e-02 var_t=7.197712933480e+00
+R=3 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.733016491241e-01 var_t=1.562995889821e+01
+R=3 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=3 PRIMARY medium=b S_T=1.956222012282e-02 S_tau=2.129461970756e+00 V1=2.910376191426e+00 theta_2=4.584720088151e-02 theta_3=-1.686773741478e-02
+R=3 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=3 seconds=160.802
+R=4 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4005 normalize_variance=1 applied_scale=9.869862850738e-01 raw_variance=1.026544461707e+00 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=4 SETUP STAGE field=gaussian eps=2 N=3328 status=inlet_backflow
+R=4 SETUP   SF-18: raw_mean=-6.672013e-19 raw_variance=1.026544461707e+00 applied_scale=9.869862850738e-01 final_variance=1.000000000000e+00 active_modes=108201599
+R=4 SETUP   SF-19: mg_levels=7 converged=1 G=(5.470871274739e-01, -8.088875145729e-03, -4.933816262263e-03) mean_flux=(1.000e+00, 1.045e-17, 4.137e-18) div_max=2.000e-06 div_rms=4.317e-09
+R=4 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=4.795e-12 final_residual=1.161e-04
+R=4 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=5.279e-12 final_residual=1.151e-04
+R=4 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=5.241e-12 final_residual=1.039e-04
+R=4 SETUP   inlet: vmin=-9.244097e-02 mean(U plane 0)=0.999999999999911 (mean-1=-8.893e-14) Q0-1=nan v_rms=n/a (lean stage: vertex vD not built)
+R=4 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=4 SETUP stage eps=2 built in 68.277s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=4 STAGE status=inlet_backflow grid=3328x256x256 mg_levels=7 G=5.470871274739e-01,-8.088875145729e-03,-4.933816262263e-03 darcy_converged=1 flow_ready=1 seconds=68.277
+R=4 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=4 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.901465 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=4 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.481033 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=4 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=56.366940 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=4 MEM_PHASE phase=S3 exact_bytes=10478944256 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7517241344 seconds=1.156894 items=h_tilde:1751646208,coef_logk:1744830464,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=4 E1 medium=a qbar=9.999999999999e-01 V1=2.878282360013e+00 theta_2=-9.061528382991e-03 theta_3=-8.821028779020e-03
+R=4 E2 medium=a planes=7 m_star=64
+R=4 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=3.919398066947e-02 var_t=3.450882262741e-02
+R=4 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.345776535586e-02 var_t=1.055843840579e-01
+R=4 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=4.708570107140e-02 var_t=3.888266360662e-01
+R=4 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.464313128788e-02 var_t=9.795855366696e-01
+R=4 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=9.813293697177e-02 var_t=3.646833002168e+00
+R=4 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.177397121314e-01 var_t=7.896217694180e+00
+R=4 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.807707248485e-01 var_t=1.826205566585e+01
+R=4 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=4 PRIMARY medium=a S_T=1.575775317929e-02 S_tau=2.591459492917e+00 V1=2.878282360013e+00 theta_2=-9.061528382991e-03 theta_3=-8.821028779020e-03
+R=4 B_SOLVER r=4 converged=1 iterations=60 initial=1.324598e+07 final=8.389913e-05 rel=6.333934e-12 qbar=1.007852806599e+00 Q_in=1.007852806599e+00 Q_out=1.007852806596e+00 balance=2.411122e-12 max_div=1.085584e-07 fallback=0
+R=4 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.814318 items=K:1744830464,head:1744830464
+R=4 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=20.935424 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=4 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.043192 items=K:1744830464,head:1744830464
+R=4 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.058727 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=4 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=4.062142 items=U:1745354752,V:1751646208,W:1751646208
+R=4 E1 medium=b qbar=1.007852806599e+00 V1=2.878779108666e+00 theta_2=6.418969336822e-03 theta_3=8.029129850223e-04
+R=4 E2 medium=b planes=7 m_star=64
+R=4 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=3.923724651801e-02 var_t=3.476232726215e-02
+R=4 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.358610757328e-02 var_t=1.057945188340e-01
+R=4 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=4.724162417163e-02 var_t=4.685657141152e-01
+R=4 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.393127929511e-02 var_t=1.043934210197e+00
+R=4 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=9.849957119757e-02 var_t=2.627302036684e+00
+R=4 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.169073709008e-01 var_t=6.999644272702e+00
+R=4 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.733392462748e-01 var_t=1.641959830126e+01
+R=4 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=4 PRIMARY medium=b S_T=1.410796884351e-02 S_tau=2.392120269786e+00 V1=2.878779108666e+00 theta_2=6.418969336822e-03 theta_3=8.029129850223e-04
+R=4 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=4 seconds=164.741
+R=5 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4006 normalize_variance=1 applied_scale=1.008383478052e+00 raw_variance=9.834415596061e-01 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=5 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=5 SETUP   SF-18: raw_mean=2.068324e-18 raw_variance=9.834415596061e-01 applied_scale=1.008383478052e+00 final_variance=1.000000000000e+00 active_modes=108201599
+R=5 SETUP   SF-19: mg_levels=7 converged=1 G=(5.435413916844e-01, 2.605279715795e-03, 1.903176484053e-02) mean_flux=(1.000e+00, 8.106e-18, -4.333e-17) div_max=2.455e-07 div_rms=9.090e-10
+R=5 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=2.258e-12 final_residual=2.416e-05
+R=5 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=1.937e-12 final_residual=2.254e-05
+R=5 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=2.052e-12 final_residual=2.502e-05
+R=5 SETUP   inlet: vmin=7.783578e-03 mean(U plane 0)=1.000000000000386 (mean-1=3.864e-13) Q0-1=3.899e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=5 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=5 SETUP stage eps=2 built in 66.012s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=5 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.435413916844e-01,2.605279715795e-03,1.903176484053e-02 darcy_converged=1 flow_ready=1 seconds=66.012
+R=5 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=5 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.447583 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=5 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.281601 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=5 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=54.604340 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=5 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.112254 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=5 E1 medium=a qbar=1.000000000000e+00 V1=3.126010428203e+00 theta_2=2.673208367187e-03 theta_3=8.470792618444e-03
+R=5 E2 medium=a planes=7 m_star=64
+R=5 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=3.160555321824e-02 var_t=1.014579613534e-01
+R=5 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=2.979034234577e-02 var_t=2.333855960430e-01
+R=5 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=3.955266238820e-02 var_t=6.286442652199e-01
+R=5 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=1.036063777435e-01 var_t=1.439579586741e+00
+R=5 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.696916398957e-02 var_t=3.769928323260e+00
+R=5 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.130185353141e-01 var_t=9.189308219485e+00
+R=5 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.472742508891e-01 var_t=1.890468281255e+01
+R=5 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=5 PRIMARY medium=a S_T=8.563928893742e-03 S_tau=2.428843648268e+00 V1=3.126010428203e+00 theta_2=2.673208367187e-03 theta_3=8.470792618444e-03
+R=5 B_SOLVER r=5 converged=1 iterations=50 initial=5.815903e+06 final=9.535790e-05 rel=1.639606e-11 qbar=1.013060417316e+00 Q_in=1.013060417316e+00 Q_out=1.013060417326e+00 balance=1.032260e-11 max_div=2.657913e-08 fallback=0
+R=5 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.070105 items=K:1744830464,head:1744830464
+R=5 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.452267 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=5 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.017620 items=K:1744830464,head:1744830464
+R=5 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.044885 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=5 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.794184 items=U:1745354752,V:1751646208,W:1751646208
+R=5 E1 medium=b qbar=1.013060417316e+00 V1=3.126700879333e+00 theta_2=-2.308157003684e-03 theta_3=-2.705262079090e-02
+R=5 E2 medium=b planes=7 m_star=64
+R=5 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=3.180148111556e-02 var_t=9.919564282820e-02
+R=5 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=2.991617186435e-02 var_t=2.287972502537e-01
+R=5 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=3.838420021685e-02 var_t=6.146574238367e-01
+R=5 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=1.044012573879e-01 var_t=1.236047633889e+00
+R=5 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.576929677758e-02 var_t=2.979717186676e+00
+R=5 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.128388988056e-01 var_t=9.407767547451e+00
+R=5 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.900598882531e-01 var_t=1.596304810998e+01
+R=5 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=5 PRIMARY medium=b S_T=1.930524736189e-02 S_tau=1.681907031444e+00 V1=3.126700879333e+00 theta_2=-2.308157003684e-03 theta_3=-2.705262079090e-02
+R=5 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=5 seconds=157.847
+R=6 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4007 normalize_variance=1 applied_scale=1.006944263123e+00 raw_variance=9.862548141695e-01 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=6 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=6 SETUP   SF-18: raw_mean=5.337611e-19 raw_variance=9.862548141695e-01 applied_scale=1.006944263123e+00 final_variance=1.000000000000e+00 active_modes=108201599
+R=6 SETUP   SF-19: mg_levels=7 converged=1 G=(5.640322695332e-01, -1.437998697236e-03, 1.029530203478e-02) mean_flux=(1.000e+00, -6.739e-18, -3.336e-20) div_max=5.934e-07 div_rms=1.930e-09
+R=6 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=2.588e-12 final_residual=5.010e-05
+R=6 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=2.510e-12 final_residual=4.288e-05
+R=6 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=2.579e-12 final_residual=4.834e-05
+R=6 SETUP   inlet: vmin=7.263025e-03 mean(U plane 0)=1.000000000000584 (mean-1=5.835e-13) Q0-1=5.898e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=6 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=6 SETUP stage eps=2 built in 67.139s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=6 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.640322695332e-01,-1.437998697236e-03,1.029530203478e-02 darcy_converged=1 flow_ready=1 seconds=67.139
+R=6 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=6 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.446697 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=6 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.232580 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=6 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.678350 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=6 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.116769 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=6 E1 medium=a qbar=1.000000000001e+00 V1=3.083509995965e+00 theta_2=-2.085522697878e-03 theta_3=-1.000410981991e-03
+R=6 E2 medium=a planes=7 m_star=64
+R=6 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.043787035126e-02 var_t=5.359976844466e-02
+R=6 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.933826119302e-02 var_t=1.804211863892e-01
+R=6 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=5.253244472693e-02 var_t=6.984064972229e-01
+R=6 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=5.170316201131e-02 var_t=1.479713621801e+00
+R=6 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.781575336306e-02 var_t=3.665200488528e+00
+R=6 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.040271215426e-01 var_t=7.546560729183e+00
+R=6 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.759829261349e-01 var_t=1.262900296155e+01
+R=6 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=6 PRIMARY medium=a S_T=1.798895114810e-02 S_tau=1.270610558093e+00 V1=3.083509995965e+00 theta_2=-2.085522697878e-03 theta_3=-1.000410981991e-03
+R=6 B_SOLVER r=6 converged=1 iterations=50 initial=1.091752e+07 final=5.086735e-04 rel=4.659241e-11 qbar=1.011887705831e+00 Q_in=1.011887705831e+00 Q_out=1.011887705763e+00 balance=6.759726e-11 max_div=5.687026e-08 fallback=0
+R=6 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.203706 items=K:1744830464,head:1744830464
+R=6 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.452136 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=6 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.017569 items=K:1744830464,head:1744830464
+R=6 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.046911 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=6 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.786694 items=U:1745354752,V:1751646208,W:1751646208
+R=6 E1 medium=b qbar=1.011887705831e+00 V1=3.084656464116e+00 theta_2=1.105531172855e-03 theta_3=-2.178732958815e-02
+R=6 E2 medium=b planes=7 m_star=64
+R=6 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.026909345302e-02 var_t=5.228529408517e-02
+R=6 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.895446004399e-02 var_t=1.873146914899e-01
+R=6 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=5.182988934729e-02 var_t=8.047661995135e-01
+R=6 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=5.176274147221e-02 var_t=1.697844060034e+00
+R=6 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.832884113251e-02 var_t=4.283170679966e+00
+R=6 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.051149910045e-01 var_t=8.065622020236e+00
+R=6 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.724571930030e-01 var_t=1.368162911738e+01
+R=6 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=6 PRIMARY medium=b S_T=1.683555049962e-02 S_tau=1.437580904536e+00 V1=3.084656464116e+00 theta_2=1.105531172855e-03 theta_3=-2.178732958815e-02
+R=6 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=6 seconds=166.580
+R=7 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4008 normalize_variance=1 applied_scale=9.973088745497e-01 raw_variance=1.005404055591e+00 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=7 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=7 SETUP   SF-18: raw_mean=1.668003e-20 raw_variance=1.005404055591e+00 applied_scale=9.973088745497e-01 final_variance=1.000000000000e+00 active_modes=108201599
+R=7 SETUP   SF-19: mg_levels=7 converged=1 G=(5.396556749030e-01, -4.212789556556e-03, -6.410233039720e-03) mean_flux=(1.000e+00, 3.266e-18, -7.823e-18) div_max=2.472e-07 div_rms=6.166e-10
+R=7 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=1.245e-12 final_residual=1.595e-05
+R=7 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=8.838e-13 final_residual=1.064e-05
+R=7 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=8.897e-13 final_residual=1.199e-05
+R=7 SETUP   inlet: vmin=2.355708e-03 mean(U plane 0)=0.999999999999961 (mean-1=-3.886e-14) Q0-1=-4.374e-14 v_rms=n/a (lean stage: vertex vD not built)
+R=7 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=7 SETUP stage eps=2 built in 71.854s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=7 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.396556749030e-01,-4.212789556556e-03,-6.410233039720e-03 darcy_converged=1 flow_ready=1 seconds=71.854
+R=7 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=7 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.550369 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=7 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=7.854719 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=7 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=57.340734 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=7 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=2.114926 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=7 E1 medium=a qbar=1.000000000000e+00 V1=3.312638953182e+00 theta_2=4.954635367124e-03 theta_3=-3.151292114549e-03
+R=7 E2 medium=a planes=7 m_star=64
+R=7 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.779430435860e-02 var_t=7.882381423143e-01
+R=7 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.515647795184e-02 var_t=2.066395244262e+00
+R=7 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=3.668358302574e-02 var_t=3.188390628045e+00
+R=7 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=5.629464870972e-02 var_t=4.371440975723e+00
+R=7 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=7.689857229891e-02 var_t=7.226539761136e+00
+R=7 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.184906087008e-01 var_t=1.161000679509e+01
+R=7 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=2.030679272645e-01 var_t=2.008123324837e+01
+R=7 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=7 PRIMARY medium=a S_T=2.114432964091e-02 S_tau=2.117806613319e+00 V1=3.312638953182e+00 theta_2=4.954635367124e-03 theta_3=-3.151292114549e-03
+R=7 B_SOLVER r=7 converged=1 iterations=50 initial=6.910138e+06 final=7.959654e-06 rel=1.151881e-12 qbar=1.003161837727e+00 Q_in=1.003161837727e+00 Q_out=1.003161837729e+00 balance=1.376986e-12 max_div=2.859194e-08 fallback=0
+R=7 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.316156 items=K:1744830464,head:1744830464
+R=7 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.456974 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=7 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.021038 items=K:1744830464,head:1744830464
+R=7 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.047535 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=7 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.880224 items=U:1745354752,V:1751646208,W:1751646208
+R=7 E1 medium=b qbar=1.003161837727e+00 V1=3.309466884999e+00 theta_2=1.277211772310e-02 theta_3=9.147265634525e-03
+R=7 E2 medium=b planes=7 m_star=64
+R=7 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.767045609291e-02 var_t=7.927397751506e-01
+R=7 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.447638702037e-02 var_t=1.956059926239e+00
+R=7 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=3.481062904124e-02 var_t=2.997089268408e+00
+R=7 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=5.479774239995e-02 var_t=4.191423689116e+00
+R=7 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=7.386208016789e-02 var_t=7.257089449742e+00
+R=7 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.218696743965e-01 var_t=1.257243835365e+01
+R=7 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=2.021370038635e-01 var_t=2.191308704823e+01
+R=7 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=7 PRIMARY medium=b S_T=2.006683236675e-02 S_tau=2.349952326491e+00 V1=3.309466884999e+00 theta_2=1.277211772310e-02 theta_3=9.147265634525e-03
+R=7 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=7 seconds=157.004
+R=8 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4009 normalize_variance=1 applied_scale=9.830081458082e-01 raw_variance=1.034869926950e+00 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=8 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=8 SETUP   SF-18: raw_mean=-5.921412e-19 raw_variance=1.034869926950e+00 applied_scale=9.830081458082e-01 final_variance=1.000000000000e+00 active_modes=108201599
+R=8 SETUP   SF-19: mg_levels=7 converged=1 G=(5.642687565210e-01, -8.812953749446e-03, 8.090900277274e-03) mean_flux=(1.000e+00, 1.927e-18, 2.335e-19) div_max=3.225e-06 div_rms=5.194e-09
+R=8 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=5.890e-12 final_residual=1.358e-04
+R=8 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=4.848e-12 final_residual=1.384e-04
+R=8 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=3.833e-12 final_residual=1.026e-04
+R=8 SETUP   inlet: vmin=8.774039e-03 mean(U plane 0)=0.999999999999389 (mean-1=-6.114e-13) Q0-1=-6.151e-13 v_rms=n/a (lean stage: vertex vD not built)
+R=8 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=8 SETUP stage eps=2 built in 69.729s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=8 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.642687565210e-01,-8.812953749446e-03,8.090900277274e-03 darcy_converged=1 flow_ready=1 seconds=69.729
+R=8 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=8 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.730045 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=8 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=8.733212 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=8 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.527754 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=8 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.057358 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=8 E1 medium=a qbar=9.999999999994e-01 V1=3.409005120514e+00 theta_2=3.691260322052e-04 theta_3=7.466455036323e-03
+R=8 E2 medium=a planes=7 m_star=64
+R=8 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=3.939142305378e-02 var_t=1.871639864239e-01
+R=8 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.332974472339e-02 var_t=7.121223110150e-01
+R=8 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=6.245755253248e-02 var_t=1.408272621484e+00
+R=8 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.096497769909e-02 var_t=2.170512989695e+00
+R=8 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=7.557993733691e-02 var_t=3.484250256347e+00
+R=8 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.026747595410e-01 var_t=6.883552216442e+00
+R=8 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=2.063159935869e-01 var_t=1.506565042420e+01
+R=8 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=8 PRIMARY medium=a S_T=2.591030851146e-02 S_tau=2.045524551938e+00 V1=3.409005120514e+00 theta_2=3.691260322052e-04 theta_3=7.466455036323e-03
+R=8 B_SOLVER r=8 converged=1 iterations=50 initial=1.300593e+07 final=4.538768e-04 rel=3.489768e-11 qbar=1.005835258879e+00 Q_in=1.005835258879e+00 Q_out=1.005835258885e+00 balance=5.803466e-12 max_div=1.226371e-07 fallback=0
+R=8 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.017086 items=K:1744830464,head:1744830464
+R=8 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=17.451846 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=8 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.017564 items=K:1744830464,head:1744830464
+R=8 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.065056 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=8 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.942320 items=U:1745354752,V:1751646208,W:1751646208
+R=8 E1 medium=b qbar=1.005835258879e+00 V1=3.412505336139e+00 theta_2=1.737165240605e-02 theta_3=-8.145947909595e-03
+R=8 E2 medium=b planes=7 m_star=64
+R=8 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=3.947156573025e-02 var_t=1.818847561824e-01
+R=8 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=4.363862196105e-02 var_t=6.102574526073e-01
+R=8 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=6.211234604212e-02 var_t=1.015996766977e+00
+R=8 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.229920187648e-02 var_t=1.879803909621e+00
+R=8 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=7.880974862259e-02 var_t=3.271711535102e+00
+R=8 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.070559434709e-01 var_t=6.950104316835e+00
+R=8 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=2.011445617315e-01 var_t=1.384283143176e+01
+R=8 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=8 PRIMARY medium=b S_T=2.352215456514e-02 S_tau=1.743350877044e+00 V1=3.412505336139e+00 theta_2=1.737165240605e-02 theta_3=-8.145947909595e-03
+R=8 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=8 seconds=162.443
+R=9 FIELD gaussian (SF-18) N=3328 grid=3328x256x256 sigma2=1 ell=0.125 seed=4010 normalize_variance=1 applied_scale=1.012383550098e+00 raw_variance=9.756854764218e-01 final_variance=1.000000000000e+00 active_modes=108201599 | stage field k = exp(eps Y), eps = 2
+R=9 SETUP STAGE field=gaussian eps=2 N=3328 status=ok
+R=9 SETUP   SF-18: raw_mean=1.668003e-19 raw_variance=9.756854764218e-01 applied_scale=1.012383550098e+00 final_variance=1.000000000000e+00 active_modes=108201599
+R=9 SETUP   SF-19: mg_levels=7 converged=1 G=(5.429443650150e-01, -1.496776114551e-03, -1.313032236174e-02) mean_flux=(1.000e+00, 5.554e-18, 4.513e-18) div_max=1.484e-06 div_rms=4.529e-09
+R=9 SETUP   SF-19 corrector x: status=converged its=30 rel_residual=7.016e-12 final_residual=1.230e-04
+R=9 SETUP   SF-19 corrector y: status=converged its=30 rel_residual=1.090e-11 final_residual=1.784e-04
+R=9 SETUP   SF-19 corrector z: status=converged its=30 rel_residual=4.979e-12 final_residual=7.931e-05
+R=9 SETUP   inlet: vmin=1.864346e-03 mean(U plane 0)=0.999999999995902 (mean-1=-4.098e-12) Q0-1=-4.102e-12 v_rms=n/a (lean stage: vertex vD not built)
+R=9 SETUP   v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a
+R=9 SETUP stage eps=2 built in 66.244s (lean stage, Grid3D 3328x256x256, bhat=mapped, faces kept)
+R=9 STAGE status=ok grid=3328x256x256 mg_levels=7 G=5.429443650150e-01,-1.496776114551e-03,-1.313032236174e-02 darcy_converged=1 flow_ready=1 seconds=66.244
+R=9 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 level_cells=218103808,27262976,3407872,425984,53248,6656,832 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+R=9 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 cufft_gen=1745879040 device_used=4019191808 seconds=1.543603 items=y:1744830464,sf18_spectrum:1745879040,sf18_mode_counter:8,sf18_reduce_blocks:2048
+R=9 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 cufft_prefilter_logk=3491758080 device_used=5764022272 seconds=6.429803 items=lnk:1744830464,coef_logk:1744830464,prefilter_spectrum:1745879040
+R=9 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=54.551557 categories=correctors:3503292416,rhs_scratch:0,flux_scratch:0,reduction_scratch:2048,affine_rhs_workspace:16423,pcg_workspace:1751662607,mg_hierarchy:7983179776,mg_preconditioner:98355 items=mg_l0_x:1751646208,mg_l0_b:1744830464,mg_l0_r:1744830464,mg_l0_coef:1744830464,mg_l1_x:218103808,mg_l1_b:218103808,mg_l1_r:218103808,mg_l1_coef:218103808,mg_l2_x:27262976,mg_l2_b:27262976,mg_l2_r:27262976,mg_l2_coef:27262976,mg_l3_x:3407872,mg_l3_b:3407872,mg_l3_r:3407872,mg_l3_coef:3407872,mg_l4_x:425984,mg_l4_b:425984,mg_l4_r:425984,mg_l4_coef:425984,mg_l5_x:53248,mg_l5_b:53248,mg_l5_r:53248,mg_l5_coef:53248,mg_l6_x:6656,mg_l6_b:6656,mg_l6_r:6656,mg_l6_coef:6656,pcg_r:1751646208,pcg_p:1751646208,corrector:1751646208,scratch_pcg_d_scalar:8,scratch_pcg_mean_zero:16391,scratch_rhs_mean_zero:16391,scratch_rhs_means:32,scratch_mg_mean_zero_l0:16391,scratch_mg_mean_zero_l1:16391,scratch_mg_mean_zero_l2:16391,scratch_mg_mean_zero_l3:16391,scratch_mg_mean_zero_l4:16391,scratch_mg_mean_zero_l5:16391,scratch_mg_mean_zero_l6:9,scratch_reduce_blocks:2048
+R=9 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 cufft_prefilter_pot=3491758080 device_used=7651459072 seconds=1.060075 items=h_tilde:1751646208,coef_logk:1744830464,labels_device:134744040,coef_pot:1744830464,prefilter_spectrum:1745879040
+R=9 E1 medium=a qbar=9.999999999959e-01 V1=3.201965626327e+00 theta_2=-4.633941571177e-03 theta_3=-2.498482577274e-03
+R=9 E2 medium=a planes=7 m_star=64
+R=9 E2PLANE medium=a m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.893431658615e-02 var_t=4.500715210419e-02
+R=9 E2PLANE medium=a m=2 x1=0.875 contributing=10000 non_ok=0 var_T=5.165430406412e-02 var_t=1.203423275438e-01
+R=9 E2PLANE medium=a m=4 x1=1.125 contributing=10000 non_ok=0 var_T=6.841707295715e-02 var_t=5.974117840159e-01
+R=9 E2PLANE medium=a m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.974740563067e-02 var_t=1.091595877657e+00
+R=9 E2PLANE medium=a m=16 x1=2.625 contributing=10000 non_ok=0 var_T=9.060971472096e-02 var_t=2.767563910659e+00
+R=9 E2PLANE medium=a m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.125996696294e-01 var_t=6.114369835201e+00
+R=9 E2PLANE medium=a m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.776057408715e-01 var_t=1.705517985831e+01
+R=9 POLLOCK medium=a Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=9 PRIMARY medium=a S_T=1.625151781054e-02 S_tau=2.735202505755e+00 V1=3.201965626327e+00 theta_2=-4.633941571177e-03 theta_3=-2.498482577274e-03
+R=9 B_SOLVER r=9 converged=1 iterations=60 initial=9.515566e+06 final=2.736345e-05 rel=2.875652e-12 qbar=1.007472469972e+00 Q_in=1.007472469972e+00 Q_out=1.007472469971e+00 balance=4.286735e-13 max_div=4.003353e-08 fallback=0
+R=9 MEM_PHASE_B phase=K exact_bytes=3489660928 device_used_start=527433728 device_used=4017094656 seconds=5.376531 items=K:1744830464,head:1744830464
+R=9 MEM_PHASE_B phase=solve exact_bytes=20190177280 device_used_start=4017094656 device_used=20718813184 seconds=20.932026 items=K:1744830464,head:1744830464,rhs:1744830464,mg_level0:6979321856,mg_level1:872415232,mg_level2:109051904,mg_level3:13631488,mg_level4:1703936,mg_level5:212992,mg_level6:26624,pcg_r_z_p_Ap:6979321856
+R=9 MEM_PHASE_B phase=release exact_bytes=3489660928 device_used_start=20718813184 device_used=4017094656 seconds=0.021597 items=K:1744830464,head:1744830464
+R=9 MEM_PHASE_B phase=velocity exact_bytes=8739364864 device_used_start=4017094656 device_used=9270460416 seconds=0.045116 items=K:1744830464,head:1744830464,U:1745354752,V:1751646208,W:1751646208,planes:1048576,div_block_max:8192
+R=9 MEM_PHASE_B phase=faces exact_bytes=5248647168 device_used_start=5780799488 device_used=5780799488 seconds=3.876359 items=U:1745354752,V:1751646208,W:1751646208
+R=9 E1 medium=b qbar=1.007472469972e+00 V1=3.208681102809e+00 theta_2=-1.191803432914e-03 theta_3=2.209689617707e-02
+R=9 E2 medium=b planes=7 m_star=64
+R=9 E2PLANE medium=b m=1 x1=0.75 contributing=10000 non_ok=0 var_T=4.898649431022e-02 var_t=4.450524596961e-02
+R=9 E2PLANE medium=b m=2 x1=0.875 contributing=10000 non_ok=0 var_T=5.170859986625e-02 var_t=1.167196485625e-01
+R=9 E2PLANE medium=b m=4 x1=1.125 contributing=10000 non_ok=0 var_T=6.820505585485e-02 var_t=4.084826105723e-01
+R=9 E2PLANE medium=b m=8 x1=1.625 contributing=10000 non_ok=0 var_T=6.867173929988e-02 var_t=1.028571315397e+00
+R=9 E2PLANE medium=b m=16 x1=2.625 contributing=10000 non_ok=0 var_T=8.838330481650e-02 var_t=2.506102391229e+00
+R=9 E2PLANE medium=b m=32 x1=4.625 contributing=10000 non_ok=0 var_T=1.080395029864e-01 var_t=6.386004629066e+00
+R=9 E2PLANE medium=b m=64 x1=8.625 contributing=10000 non_ok=0 var_T=1.623439184982e-01 var_t=1.833803218793e+01
+R=9 POLLOCK medium=b Np=10000 seed_nonpos=0 hist_plane=0:10000
+R=9 PRIMARY medium=b S_T=1.357610387797e-02 S_tau=3.032829316986e+00 V1=3.208681102809e+00 theta_2=-1.191803432914e-03 theta_3=2.209689617707e-02
+R=9 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+TIMING r=9 seconds=160.981
+RUN_DONE nr=10

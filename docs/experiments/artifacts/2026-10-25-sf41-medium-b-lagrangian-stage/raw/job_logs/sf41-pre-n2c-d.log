@@ -1,0 +1,20 @@
+[2026-10-25T01:16:33Z] job=sf41-pre-n2c-d session=macroflow3d-SF-41-sf41-pre-n2c-d started
+[2026-10-25T01:16:33Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T01:16:33Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T01:16:33Z] command=echo PRECHECK_NOT_EVIDENCE TREE=d1b9ff8; ./build/v100-release/dirichlet_long_box_stage_tests --only D 2>&1 | grep -E 'D_CHECK|VERDICT|FAIL'; ./build/v100-release/dirichlet_long_box_stage_tests --diag 512,64,64,0 2>&1 | grep -E 'DIAG (ref1_vs_lean1|ref1_vs_ref2|replica)|DIAG_TRACE'
+PRECHECK_NOT_EVIDENCE TREE=d1b9ff8
+CHECK D_128x32x32_head_bitwise FAIL
+CHECK D_128x32x32_mapped_head_bsolver FAIL
+D_CHECK size=128x32x32 head_identical=0 bsolver_identical=1 mapped_identical=0
+CHECK D_512x64x64_head_bitwise FAIL
+CHECK D_512x64x64_mapped_head_bsolver FAIL
+D_CHECK size=512x64x64 head_identical=0 bsolver_identical=1 mapped_identical=0
+CHECK D_3328x256x256_head_bitwise FAIL
+D_CHECK size=3328x256x256 head_identical=0 bsolver_identical=1 mapped_identical=na
+VERDICT mode=D checks_pass=21 checks_fail=5
+FAILED 5
+DIAG replica_vs_DirichletMedium head_identical=0
+DIAG_TRACE replica_vs_lean identical entries=89
+DIAG ref1_vs_ref2 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG ref1_vs_lean1 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+[2026-10-25T01:18:49Z] job=sf41-pre-n2c-d finished exit=0

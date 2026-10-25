@@ -1,0 +1,12 @@
+# written by lagrangian_ensemble --medium b (SF-41 C-RUNNER-B); box units: lambda = ell; vmean_norm = mean over the realizations of qbar (flow_stats.json).
+# output_dir is relative: run as  cd DIR && macroflow3d_pipeline analysis_config.yaml
+# (reads stats/, rewrites ensemble/ and analysis/ in DIR; byte-identical for any DIR).
+run_mode: analysis_only
+output:
+  output_dir: "."
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 1
+    lambda: 0.25
+    vmean_norm: 1.4802333528853617

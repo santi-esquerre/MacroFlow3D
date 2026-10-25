@@ -1,0 +1,15 @@
+C5_CHECK case=C1 size=64x16x16 converged=1 iterations=0 initial=0.000000e+00 final=0.000000e+00 rel=0.000000e+00 balance=0.000000e+00 qbar=1.000000000000e+00 max_head_rel_diff=0.000000e+00 pass=1
+CHECK C5_C1_64x16x16 PASS  rel=0.000e+00 balance=0.000e+00 head_rel_diff=0.000e+00
+CHECK C5_C1_64x16x16_f_exactly_zero PASS
+CHECK C5_C1_64x16x16_head_exact PASS  max|H-H_exact|=0.000e+00
+C5_CHECK case=C1 size=128x16x16 converged=1 iterations=0 initial=0.000000e+00 final=0.000000e+00 rel=0.000000e+00 balance=0.000000e+00 qbar=1.000000000000e+00 max_head_rel_diff=0.000000e+00 pass=1
+CHECK C5_C1_128x16x16 PASS  rel=0.000e+00 balance=0.000e+00 head_rel_diff=0.000e+00
+CHECK C5_C1_128x16x16_f_exactly_zero PASS
+CHECK C5_C1_128x16x16_head_exact PASS  max|H-H_exact|=0.000e+00
+C5_CHECK case=C2 size=64x32x32 converged=1 iterations=10 initial=3.775619e+02 final=3.009352e-08 rel=7.970487e-11 balance=2.067940e-13 qbar=9.867740837596e-01 max_head_rel_diff=1.404551e-13 pass=1
+CHECK C5_C2_64x32x32 PASS  rel=7.970e-11 balance=2.068e-13 head_rel_diff=1.405e-13
+C5_CHECK case=C2 size=128x32x32 converged=1 iterations=20 initial=5.206390e+02 final=1.143529e-12 rel=2.196396e-15 balance=8.709027e-14 qbar=9.433488643984e-01 max_head_rel_diff=6.676744e-16 pass=1
+CHECK C5_C2_128x32x32 PASS  rel=2.196e-15 balance=8.709e-14 head_rel_diff=6.677e-16
+total_seconds=3.62
+VERDICT mode=C5 checks_pass=8 checks_fail=0
+ALL_PASS

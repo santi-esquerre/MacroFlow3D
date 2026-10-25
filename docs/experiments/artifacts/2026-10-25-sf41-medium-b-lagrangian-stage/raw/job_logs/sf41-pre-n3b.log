@@ -1,0 +1,69 @@
+[2026-10-25T00:52:43Z] job=sf41-pre-n3b session=macroflow3d-SF-41-sf41-pre-n3b started
+[2026-10-25T00:52:43Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T00:52:43Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T00:52:43Z] command=echo PRECHECK_NOT_EVIDENCE TREE=3d1bda8; cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target dirichlet_controls_tests pollock_nonperiodic_tests 2>&1 | tail -n 2; echo BUILD_EXIT=${PIPESTATUS[0]}; ./build/v100-release/dirichlet_controls_tests --full > ~/sf41_pre_n3b_C.log 2>&1; echo C_EXIT=$?; grep -E 'C_CHECK|C_VERDICT' ~/sf41_pre_n3b_C.log | grep -E 'FAIL|C_VERDICT|tau|exit|misclass|count' | head -40; ./build/v100-release/pollock_nonperiodic_tests --only C4 2>&1 | grep -E 'C4_CHECK|VERDICT'; echo C4_EXIT=$?
+PRECHECK_NOT_EVIDENCE TREE=3d1bda8
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[121/122] Linking CXX executable pollock_nonperiodic_tests
+[122/122] Linking CXX executable dirichlet_controls_tests
+BUILD_EXIT=0
+C_EXIT=0
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=64x16x16 path=unfused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=64x16x16 path=fused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=128x16x16 path=unfused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=128x16x16 path=fused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=64x32x32 path=unfused value=5.022843e-11 gate=<=1e-09 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=64x32x32 path=fused value=5.022843e-11 gate=<=1e-09 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=128x32x32 path=unfused value=5.022803e-11 gate=<=1e-09 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=128x32x32 path=fused value=5.022803e-11 gate=<=1e-09 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_track_json_and_exit_files grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_track_json_and_exit_files grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C4_CHECK grid=64x16x16 case=C4a method=pollock mode=plane exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+C4_CHECK grid=64x16x16 case=C4a method=pollock mode=time exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+C4_CHECK grid=128x16x16 case=C4a method=pollock mode=plane exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+C4_CHECK grid=128x16x16 case=C4a method=pollock mode=time exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+C4_CHECK grid=64x32x32 case=C4b method=pollock mode=plane exit_inlet=768 exit_outlet=0 reached=1792 expected=inlet:768,outlet:0,reached:1792 mismatches=0 verdict=PASS
+C4_CHECK grid=64x32x32 case=C4b method=pollock mode=time exit_inlet=768 exit_outlet=1792 reached=0 expected=inlet:768,outlet:1792,reached:0 mismatches=0 verdict=PASS
+C4_CHECK grid=128x32x32 case=C4b method=pollock mode=plane exit_inlet=768 exit_outlet=0 reached=1792 expected=inlet:768,outlet:0,reached:1792 mismatches=0 verdict=PASS
+C4_CHECK grid=128x32x32 case=C4b method=pollock mode=time exit_inlet=768 exit_outlet=1792 reached=0 expected=inlet:768,outlet:1792,reached:0 mismatches=0 verdict=PASS
+C4_VERDICT method=pollock PASS (22 checks, 0 failed)
+C4_EXIT=0
+[2026-10-25T00:57:52Z] job=sf41-pre-n3b finished exit=0

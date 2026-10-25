@@ -1,0 +1,23 @@
+	Command being timed: "timeout -k 60 43200 /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_ensemble --medium b --grid 2048,256,256 --eps 1 --ell 0.0390625 --seed0 4001 --nr 1 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf41_campaign/prodgrid/E1"
+	User time (seconds): 19.98
+	System time (seconds): 12.62
+	Percent of CPU this job got: 96%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:33.69
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 4858940
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 3588456
+	Voluntary context switches: 422
+	Involuntary context switches: 27
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 372432
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

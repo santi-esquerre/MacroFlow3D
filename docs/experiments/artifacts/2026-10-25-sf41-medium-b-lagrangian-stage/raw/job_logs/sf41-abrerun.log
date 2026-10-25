@@ -1,0 +1,187 @@
+[2026-10-25T02:39:21Z] job=sf41-abrerun session=macroflow3d-SF-41-sf41-abrerun started
+[2026-10-25T02:39:21Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T02:39:21Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T02:39:21Z] command=echo TREE=269c658687816788fdaf65f9d5b1307d87376b6a; TMPDIR=$HOME/sf41_tmp SF41_COMMIT=269c658687816788fdaf65f9d5b1307d87376b6a bash docs/experiments/artifacts/2026-10-25-sf41-medium-b-lagrangian-stage/scripts/run_sf41.sh build/v100-release abrerun; echo PART_SCRIPT_EXIT=$?
+TREE=269c658687816788fdaf65f9d5b1307d87376b6a
+run_sf41.sh: part=abrerun build_dir=/home/sesquerre/MacroFlow3D-SF-41/build/v100-release host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf41_campaign base_refs=/home/sesquerre/sf41_base_refs repo=/home/sesquerre/MacroFlow3D-SF-41 start=2026-10-25T02:39:22Z
+  env: BIN_MD5_dirichlet_long_box_stage_tests=13b99e8cf39e52134a1066a17cbaa9e0 BIN_MD5_lagrangian_ensemble=0c8caaf6b31c15fe9abf3558b6a8050d BIN_MD5_lagrangian_medium_ab=f5a80df650ab6d086dfc66a61e8a729c BIN_MD5_macroflow3d_pipeline=516d516dc759a12bace29b0d50908e70 BIN_MD5_inlet_slab=ded79b8ad5ad019d81e0dc8bea1d980b BINARIES_CHECK=ok(50 binaries, md5file_sha256=82751b5ebafa457d) DRYRUN=0 OUT_ROOT=/home/sesquerre/sf41_campaign BASE_REFS=/home/sesquerre/sf41_base_refs REPO=/home/sesquerre/MacroFlow3D-SF-41 TREE_git=absent TREE_src_digest=821e4feec2e8895d392c754c049da0a1044172a453097b5fb8f5c099f8168243 CUDA_VISIBLE_DEVICES=0 GPU_NAME=Tesla V100-PCIE-32GB NVIDIA_DRIVER=470.239.06 CUDA_VERSION_NVIDIA_SMI=11.4 NVCC=11.4 GCC=gcc (GCC) 9.3.1 20200408 (Red Hat 9.3.1-2) 
++ [ab_s1] .: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_medium_ab --grid 2048,256,256 --ell 0.0390625 --eps 1 --seed0 4001 --nr 10 --out /home/sesquerre/sf41_campaign/abrerun/ab_s1 > /home/sesquerre/sf41_campaign/abrerun/ab_s1.log 2>&1   (timeout=43200s flags=SX)
+  CASE_RESULT run=ab_s1 rc=0 wall=1110s end=2026-10-25T02:58:11Z
+    R=0 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=1 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=2 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=3 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=4 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=5 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=6 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=7 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=8 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=9 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    RUN_DONE nr=10
++ [ab_s4] .: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_medium_ab --grid 3328,256,256 --ell 0.125 --eps 2 --seed0 4001 --nr 10 --out /home/sesquerre/sf41_campaign/abrerun/ab_s4 > /home/sesquerre/sf41_campaign/abrerun/ab_s4.log 2>&1   (timeout=43200s flags=SX)
+  CASE_RESULT run=ab_s4 rc=0 wall=1618s end=2026-10-25T03:25:13Z
+    R=0 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=1 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=2 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=3 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=4 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=5 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=6 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=7 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=8 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=9 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    RUN_DONE nr=10
+RECORDED run=ab_s1 exit=0 wall_s=1108.16 host_max_rss_kb=10098044 free_b_before=[Mem: 134590115840 3150925824 20894040064 382087168 110545149952 130416070656]
+RECORDED run=ab_s1 R=0 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=0 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.913573
+RECORDED run=ab_s1 R=0 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=4.084669
+RECORDED run=ab_s1 R=0 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=28.705915
+RECORDED run=ab_s1 R=0 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.661729
+RECORDED run=ab_s1 R=1 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=1 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.897890
+RECORDED run=ab_s1 R=1 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=3.847373
+RECORDED run=ab_s1 R=1 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=27.686585
+RECORDED run=ab_s1 R=1 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.248658
+RECORDED run=ab_s1 R=2 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=2 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.898750
+RECORDED run=ab_s1 R=2 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=4.287914
+RECORDED run=ab_s1 R=2 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=29.424626
+RECORDED run=ab_s1 R=2 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.649083
+RECORDED run=ab_s1 R=3 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=3 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.892056
+RECORDED run=ab_s1 R=3 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=3.737570
+RECORDED run=ab_s1 R=3 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=27.581761
+RECORDED run=ab_s1 R=3 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.249829
+RECORDED run=ab_s1 R=4 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=4 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.894243
+RECORDED run=ab_s1 R=4 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=3.759100
+RECORDED run=ab_s1 R=4 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=27.612376
+RECORDED run=ab_s1 R=4 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.249174
+RECORDED run=ab_s1 R=5 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=5 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=1.207077
+RECORDED run=ab_s1 R=5 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=4.052587
+RECORDED run=ab_s1 R=5 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=28.168937
+RECORDED run=ab_s1 R=5 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.655424
+RECORDED run=ab_s1 R=6 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=6 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.885148
+RECORDED run=ab_s1 R=6 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=3.764193
+RECORDED run=ab_s1 R=6 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=28.078621
+RECORDED run=ab_s1 R=6 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.241886
+RECORDED run=ab_s1 R=7 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=7 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.996624
+RECORDED run=ab_s1 R=7 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=4.546213
+RECORDED run=ab_s1 R=7 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=29.329336
+RECORDED run=ab_s1 R=7 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=1.257549
+RECORDED run=ab_s1 R=8 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=8 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.889502
+RECORDED run=ab_s1 R=8 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=4.037579
+RECORDED run=ab_s1 R=8 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=28.711086
+RECORDED run=ab_s1 R=8 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.732831
+RECORDED run=ab_s1 R=9 MEM_GEOM pid=156903 nx=2048 ny=256 nz=256 n=134217728 levels=7 coarsest=32x4x4 face_max=134742016 bhat=mapped bhat_host_bytes=1073741824 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s1 R=9 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.897449
+RECORDED run=ab_s1 R=9 MEM_PHASE phase=S1 exact_bytes=5371854848 cufft_work=2149580800 device_used=3750756352 seconds=3.973141
+RECORDED run=ab_s1 R=9 MEM_PHASE phase=S2 exact_bytes=8146667625 cufft_work=0 device_used=8674869248 seconds=28.119391
+RECORDED run=ab_s1 R=9 MEM_PHASE phase=S3 exact_bytes=6584535016 cufft_work=2149580800 device_used=4962910208 seconds=0.471070
+RECORDED run=ab_s1 pid_peak_mib=12347 dev_peak_mib=12351 samples=5482 max_exact_mib=7769.268 tree_pid=156903 status=OK reasons=-
+RECORDED run=ab_s4 exit=0 wall_s=1615.76 host_max_rss_kb=16001508 free_b_before=[Mem: 134590115840 3123138560 20919595008 382021632 110547382272 130443948032]
+RECORDED run=ab_s4 R=0 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=0 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.473306
+RECORDED run=ab_s4 R=0 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.960060
+RECORDED run=ab_s4 R=0 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=56.889948
+RECORDED run=ab_s4 R=0 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.103674
+RECORDED run=ab_s4 R=1 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=1 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.432411
+RECORDED run=ab_s4 R=1 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.282465
+RECORDED run=ab_s4 R=1 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=56.232412
+RECORDED run=ab_s4 R=1 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=2.138009
+RECORDED run=ab_s4 R=2 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=2 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.422326
+RECORDED run=ab_s4 R=2 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.380010
+RECORDED run=ab_s4 R=2 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.667636
+RECORDED run=ab_s4 R=2 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.097622
+RECORDED run=ab_s4 R=3 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=3 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.424160
+RECORDED run=ab_s4 R=3 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.382556
+RECORDED run=ab_s4 R=3 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.614335
+RECORDED run=ab_s4 R=3 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.413641
+RECORDED run=ab_s4 R=4 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=4 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.901465
+RECORDED run=ab_s4 R=4 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.481033
+RECORDED run=ab_s4 R=4 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=56.366940
+RECORDED run=ab_s4 R=4 MEM_PHASE phase=S3 exact_bytes=10478944256 cufft_work=3491758080 device_used=7517241344 seconds=1.156894
+RECORDED run=ab_s4 R=5 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=5 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.447583
+RECORDED run=ab_s4 R=5 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.281601
+RECORDED run=ab_s4 R=5 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=54.604340
+RECORDED run=ab_s4 R=5 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.112254
+RECORDED run=ab_s4 R=6 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=6 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.446697
+RECORDED run=ab_s4 R=6 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.232580
+RECORDED run=ab_s4 R=6 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.678350
+RECORDED run=ab_s4 R=6 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.116769
+RECORDED run=ab_s4 R=7 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=7 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.550369
+RECORDED run=ab_s4 R=7 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=7.854719
+RECORDED run=ab_s4 R=7 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=57.340734
+RECORDED run=ab_s4 R=7 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=2.114926
+RECORDED run=ab_s4 R=8 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=8 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.730045
+RECORDED run=ab_s4 R=8 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=8.733212
+RECORDED run=ab_s4 R=8 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=55.527754
+RECORDED run=ab_s4 R=8 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.057358
+RECORDED run=ab_s4 R=9 MEM_GEOM pid=164275 nx=3328 ny=256 nz=256 n=218103808 levels=7 coarsest=52x4x4 face_max=218955776 bhat=mapped bhat_host_bytes=1744830464 cub_sum_bytes=16383,16383,16383,16383,16383,16383,1
+RECORDED run=ab_s4 R=9 MEM_PHASE phase=F exact_bytes=5236590600 cufft_work=1745879040 device_used=4019191808 seconds=1.543603
+RECORDED run=ab_s4 R=9 MEM_PHASE phase=S1 exact_bytes=8727298048 cufft_work=3491758080 device_used=5764022272 seconds=6.429803
+RECORDED run=ab_s4 R=9 MEM_PHASE phase=S2 exact_bytes=13238251625 cufft_work=0 device_used=13777240064 seconds=54.551557
+RECORDED run=ab_s4 R=9 MEM_PHASE phase=S3 exact_bytes=10613688296 cufft_work=3491758080 device_used=7651459072 seconds=1.060075
+RECORDED run=ab_s4 pid_peak_mib=19755 dev_peak_mib=19759 samples=7984 max_exact_mib=12624.981 tree_pid=164275 status=OK reasons=-
+RECORDED H_EXITS_BY_PLANE amp=s1 r=0 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=0 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=1 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=1 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=2 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=2 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=3 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=3 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=4 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=4 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=5 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=5 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=6 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=6 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=7 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=7 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=8 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=8 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s1 r=9 Np=10000 x1=0.234375,0.2734375,0.3515625,0.5078125,0.8203125,1.4453125,2.6953125,5.1953125 inlet=0,0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0,0
+H_REALIZATION amp=s1 r=9 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+H_VERDICT amp=s1 run_exit=0 realizations=10 e2_b_identical=10/10 e2_a_control_identical=10/10 exit_inlet_total=0 exit_outlet_total=0 class=OK_ZERO_EXITS_IDENTICAL
+RECORDED H_AB_PRIMARY amp=s1 ab_primary.csv_vs_SF38=IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=0 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=0 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=1 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=1 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=2 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=2 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=3 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=3 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=4 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=4 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=5 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=5 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=6 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=6 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=7 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=7 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=8 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=8 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+RECORDED H_EXITS_BY_PLANE amp=s4 r=9 Np=10000 x1=0.75,0.875,1.125,1.625,2.625,4.625,8.625 inlet=0,0,0,0,0,0,0 outlet=0,0,0,0,0,0,0
+H_REALIZATION amp=s4 r=9 exit_inlet_total=0 exit_outlet_total=0 planes_with_exits=0 e2_b=IDENTICAL e2_a_control=IDENTICAL OK_ZERO_EXITS_IDENTICAL
+H_VERDICT amp=s4 run_exit=0 realizations=10 e2_b_identical=10/10 e2_a_control_identical=10/10 exit_inlet_total=0 exit_outlet_total=0 class=OK_ZERO_EXITS_IDENTICAL
+RECORDED H_AB_PRIMARY amp=s4 ab_primary.csv_vs_SF38=IDENTICAL
+H_VERDICT ALL class=OK_ZERO_EXITS_IDENTICAL exits_inlet=0 exits_outlet=0 runs_exit_ok=1 OK
+RECORDED part_seconds=2751 part_runs_seconds=2728 part=abrerun (this invocation / sum of the recorded run walls)
+PART_DONE part=abrerun rc=0
+run_sf41.sh: part=abrerun end=2026-10-25T03:25:13Z blocking_failures=0
+PART_SCRIPT_EXIT=0
+[2026-10-25T03:25:13Z] job=sf41-abrerun finished exit=0

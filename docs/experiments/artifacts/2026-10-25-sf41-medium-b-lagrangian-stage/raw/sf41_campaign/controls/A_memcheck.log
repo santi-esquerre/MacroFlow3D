@@ -1,0 +1,23 @@
+========= COMPUTE-SANITIZER
+A_TIER tier=full only=domain
+# group domain
+A_CHECK name=domain_margin_nonfinite_or_outside box=32x16x16 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=32x16x16 side=host value=6.288545e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=32x16x16 side=host value=8.731457e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_nonfinite_or_outside box=32x16x16 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=32x16x16 side=device value=6.288545e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=32x16x16 side=device value=1.171115e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=32x16x16 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=32x16x16 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_half_open_violations box=32x16x16 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_nonfinite_or_outside box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=64x32x32 side=host value=8.318394e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=64x32x32 side=host value=1.431394e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_nonfinite_or_outside box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=64x32x32 side=device value=6.238796e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=64x32x32 side=device value=1.454062e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_half_open_violations box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_VERDICT all_pass=1 checks_pass=18 checks_fail=0
+========= ERROR SUMMARY: 0 errors

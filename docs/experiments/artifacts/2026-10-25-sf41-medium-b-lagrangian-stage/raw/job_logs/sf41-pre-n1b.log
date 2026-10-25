@@ -1,0 +1,44 @@
+[2026-10-25T00:41:29Z] job=sf41-pre-n1b session=macroflow3d-SF-41-sf41-pre-n1b started
+[2026-10-25T00:41:29Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T00:41:29Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T00:41:29Z] command=echo PRECHECK_NOT_EVIDENCE TREE=fab6414; cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target sf41_cross_representation_tests 2>&1 | tail -n 2; echo BUILD_EXIT=${PIPESTATUS[0]}; /usr/bin/time -v ./build/v100-release/sf41_cross_representation_tests --only B > ~/sf41_pre_n1b_B.log 2>&1; echo B_EXIT=$?; grep -E 'B_CONFIG|B_SOLVE|B_METRIC|B_DECAY|B_VERDICT|Maximum resident' ~/sf41_pre_n1b_B.log | grep -v 'B_DECAY.*hessian' | head -40
+PRECHECK_NOT_EVIDENCE TREE=fab6414
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[14/15] Linking CXX executable CMakeFiles/sf41_cross_representation_tests.dir/cmake_device_link.o
+[15/15] Linking CXX executable sf41_cross_representation_tests
+BUILD_EXIT=0
+B_EXIT=0
+B_CONFIG tier=RR4 grid=1664x128x128 ell=0.25 lambda_over_h=32 eps=2 seed=6001 L1=13
+B_SOLVE corrector=1 converged=1 status=0 iterations=30 initial=1.194356e+06 final=8.365622e-07 rel=7.004294e-13
+B_SOLVE corrector=2 converged=1 status=0 iterations=30 initial=1.075872e+06 final=2.996660e-07 rel=2.785331e-13
+B_SOLVE corrector=3 converged=1 status=0 iterations=30 initial=1.191288e+06 final=2.564746e-07 rel=2.152919e-13
+B_SOLVE G=7.187359468623e-01,2.459384430307e-02,2.171976215826e-02 mg_levels=6
+B_METRIC field=h_tilde quantity=value rel=9.936224e-16 gate=1e-11 verdict=PASS points=104608
+B_METRIC field=h_tilde quantity=gradient rel=2.112960e-14 gate=1e-11 verdict=PASS points=104608
+B_METRIC field=h_tilde quantity=hessian rel=9.723778e-13 gate=1e-11 verdict=PASS points=104608
+B_DECAY field=h_tilde line=0,0 face=west factor=0.267955 knots_used=9 quantity=gradient floor=3.404e-15
+B_DECAY field=h_tilde line=0,0 face=east factor=0.267947 knots_used=7 quantity=gradient floor=3.404e-15
+B_DECAY field=h_tilde line=64,32 face=west factor=0.267953 knots_used=11 quantity=gradient floor=2.975e-15
+B_DECAY field=h_tilde line=64,32 face=east factor=0.267955 knots_used=11 quantity=gradient floor=2.975e-15
+B_DECAY field=h_tilde line=37,101 face=west factor=0.267951 knots_used=11 quantity=gradient floor=3.349e-15
+B_DECAY field=h_tilde line=37,101 face=east factor=0.267952 knots_used=11 quantity=gradient floor=3.349e-15
+B_METRIC field=lnK quantity=value rel=7.595407e-16 gate=none verdict=RECORDED points=104608
+B_METRIC field=lnK quantity=gradient rel=1.568518e-14 gate=none verdict=RECORDED points=104608
+B_METRIC field=lnK quantity=hessian rel=9.189621e-13 gate=none verdict=RECORDED points=104608
+B_DECAY field=lnK line=0,0 face=west factor=0.267943 knots_used=13 quantity=gradient floor=2.718e-15
+B_DECAY field=lnK line=0,0 face=east factor=0.267944 knots_used=13 quantity=gradient floor=2.718e-15
+B_DECAY field=lnK line=64,32 face=west factor=0.267944 knots_used=13 quantity=gradient floor=2.304e-15
+B_DECAY field=lnK line=64,32 face=east factor=0.267949 knots_used=13 quantity=gradient floor=2.304e-15
+B_DECAY field=lnK line=37,101 face=west factor=0.267947 knots_used=13 quantity=gradient floor=2.389e-15
+B_DECAY field=lnK line=37,101 face=east factor=0.267955 knots_used=13 quantity=gradient floor=2.389e-15
+B_VERDICT all_pass=1
+	Maximum resident set size (kbytes): 1687148
+[2026-10-25T00:41:50Z] job=sf41-pre-n1b finished exit=0

@@ -1,0 +1,235 @@
+A_VERDICT run=A_full exit=0 program_all_pass=1 gated_pass=79 gated_fail=0 inconsistent=0 missing=0 memcheck_exit=0 memcheck_errors=0 PASS
+RECORDED A_TIER tier=full only=all
+RECORDED A_MEMORY box=32x16x16 coefficient_bytes=73728 spectrum_bytes=82944 line_table_bytes=224 cufft_work_area_bytes=165888 total_device_bytes=322784
+RECORDED A_CHECK name=pou_gradient_abs_ps box=32x16x16 side=host value=3.018908e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_value_abs_margin box=32x16x16 side=host value=1.776357e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_margin box=32x16x16 side=host value=2.142079e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_ps box=32x16x16 side=device value=1.068125e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_value_abs_margin box=32x16x16 side=device value=8.881784e-16 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_margin box=32x16x16 side=device value=5.652988e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_ps box=64x32x32 side=host value=5.633276e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_value_abs_margin box=64x32x32 side=host value=2.220446e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_margin box=64x32x32 side=host value=3.811017e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_ps box=64x32x32 side=device value=2.231315e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_value_abs_margin box=64x32x32 side=device value=1.332268e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_margin box=64x32x32 side=device value=1.229327e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_ps box=128x64x64 side=host value=1.075409e-13 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_value_abs_margin box=128x64x64 side=host value=1.776357e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_margin box=128x64x64 side=host value=8.096424e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_ps box=128x64x64 side=device value=4.347515e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_value_abs_margin box=128x64x64 side=device value=8.881784e-16 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=pou_gradient_abs_margin box=128x64x64 side=device value=2.439764e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_cubic_hessian_rel box=64x16x16 side=host value=7.139165e-13 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_cubic_hessian_rel box=64x16x16 side=device value=2.217208e-13 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_quad_hessian_rel box=64x16x16 side=host value=1.927680e-12 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_quad_hessian_rel box=64x16x16 side=device value=1.833311e-12 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_cubic_hessian_rel box=128x16x16 side=host value=2.517372e-12 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_cubic_hessian_rel box=128x16x16 side=device value=2.472632e-12 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_quad_hessian_rel box=128x16x16 side=host value=7.386425e-12 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=repro_quad_hessian_rel box=128x16x16 side=device value=7.274403e-12 gate=nan verdict=RECORDED
+RECORDED A_LADDER_ORDER kind=3d side=host pair=16->32 val_max=3.901686 val_rms=4.363914 grad_max=2.908731 grad_rms=3.373425 hess_max=1.917651
+RECORDED A_LADDER_ORDER kind=3d side=host pair=32->64 val_max=3.975464 val_rms=4.428238 grad_max=2.968985 grad_rms=3.435354 hess_max=1.970022
+RECORDED A_LADDER_ORDER kind=3d side=device pair=16->32 val_max=3.901686 val_rms=4.363914 grad_max=2.908731 grad_rms=3.373425 hess_max=1.917651
+RECORDED A_LADDER_ORDER kind=3d side=device pair=32->64 val_max=3.975464 val_rms=4.428238 grad_max=2.968985 grad_rms=3.435354 hess_max=1.970022
+RECORDED A_EMUL side=host level=1/16 quantity=val_max measured=2.147676e-03 emulated=2.175690e-03 measured_over_emulated=0.987124
+RECORDED A_EMUL side=host level=1/32 quantity=val_max measured=1.436959e-04 emulated=1.455010e-04 measured_over_emulated=0.987594
+RECORDED A_EMUL side=host level=1/64 quantity=val_max measured=9.135043e-06 emulated=9.360220e-06 measured_over_emulated=0.975943
+RECORDED A_EMUL side=host level=1/16 quantity=val_rms measured=3.141618e-04 emulated=2.951800e-04 measured_over_emulated=1.064306
+RECORDED A_EMUL side=host level=1/32 quantity=val_rms measured=1.525754e-05 emulated=1.431620e-05 measured_over_emulated=1.065753
+RECORDED A_EMUL side=host level=1/64 quantity=val_rms measured=7.086828e-07 emulated=6.477280e-07 measured_over_emulated=1.094106
+RECORDED A_EMUL side=host level=1/16 quantity=grad_max measured=1.191266e-01 emulated=1.201610e-01 measured_over_emulated=0.991392
+RECORDED A_EMUL side=host level=1/32 quantity=grad_max measured=1.586330e-02 emulated=1.605180e-02 measured_over_emulated=0.988257
+RECORDED A_EMUL side=host level=1/64 quantity=grad_max measured=2.026002e-03 emulated=2.060180e-03 measured_over_emulated=0.983410
+RECORDED A_EMUL side=host level=1/16 quantity=grad_rms measured=2.169646e-02 emulated=2.047930e-02 measured_over_emulated=1.059434
+RECORDED A_EMUL side=host level=1/32 quantity=grad_rms measured=2.093566e-03 emulated=1.959180e-03 measured_over_emulated=1.068593
+RECORDED A_EMUL side=host level=1/64 quantity=grad_rms measured=1.935272e-04 emulated=1.797730e-04 measured_over_emulated=1.076509
+RECORDED A_EMUL side=host level=1/16 quantity=hess_max measured=3.990829e+00 emulated=4.022630e+00 measured_over_emulated=0.992094
+RECORDED A_EMUL side=host level=1/32 quantity=hess_max measured=1.056313e+00 emulated=1.066380e+00 measured_over_emulated=0.990560
+RECORDED A_EMUL side=host level=1/64 quantity=hess_max measured=2.696230e-01 emulated=2.730160e-01 measured_over_emulated=0.987572
+RECORDED A_EMUL side=device level=1/16 quantity=val_max measured=2.147676e-03 emulated=2.175690e-03 measured_over_emulated=0.987124
+RECORDED A_EMUL side=device level=1/32 quantity=val_max measured=1.436959e-04 emulated=1.455010e-04 measured_over_emulated=0.987594
+RECORDED A_EMUL side=device level=1/64 quantity=val_max measured=9.135043e-06 emulated=9.360220e-06 measured_over_emulated=0.975943
+RECORDED A_EMUL side=device level=1/16 quantity=val_rms measured=3.141618e-04 emulated=2.951800e-04 measured_over_emulated=1.064306
+RECORDED A_EMUL side=device level=1/32 quantity=val_rms measured=1.525754e-05 emulated=1.431620e-05 measured_over_emulated=1.065753
+RECORDED A_EMUL side=device level=1/64 quantity=val_rms measured=7.086828e-07 emulated=6.477280e-07 measured_over_emulated=1.094106
+RECORDED A_EMUL side=device level=1/16 quantity=grad_max measured=1.191266e-01 emulated=1.201610e-01 measured_over_emulated=0.991392
+RECORDED A_EMUL side=device level=1/32 quantity=grad_max measured=1.586330e-02 emulated=1.605180e-02 measured_over_emulated=0.988257
+RECORDED A_EMUL side=device level=1/64 quantity=grad_max measured=2.026002e-03 emulated=2.060180e-03 measured_over_emulated=0.983410
+RECORDED A_EMUL side=device level=1/16 quantity=grad_rms measured=2.169646e-02 emulated=2.047930e-02 measured_over_emulated=1.059434
+RECORDED A_EMUL side=device level=1/32 quantity=grad_rms measured=2.093566e-03 emulated=1.959180e-03 measured_over_emulated=1.068593
+RECORDED A_EMUL side=device level=1/64 quantity=grad_rms measured=1.935272e-04 emulated=1.797730e-04 measured_over_emulated=1.076509
+RECORDED A_EMUL side=device level=1/16 quantity=hess_max measured=3.990829e+00 emulated=4.022630e+00 measured_over_emulated=0.992094
+RECORDED A_EMUL side=device level=1/32 quantity=hess_max measured=1.056313e+00 emulated=1.066380e+00 measured_over_emulated=0.990560
+RECORDED A_EMUL side=device level=1/64 quantity=hess_max measured=2.696230e-01 emulated=2.730160e-01 measured_over_emulated=0.987572
+RECORDED A_LADDER_ORDER kind=xonly side=host pair=16->32 val_max=3.900789 val_rms=4.372389 grad_max=2.905061 grad_rms=3.380338 hess_max=1.915694
+RECORDED A_LADDER_ORDER kind=xonly side=host pair=32->64 val_max=3.96186 val_rms=4.480636 grad_max=2.962639 grad_rms=3.458511 hess_max=1.966126
+RECORDED A_LADDER_ORDER kind=xonly side=host pair=64->128 val_max=3.98698 val_rms=4.517801 grad_max=2.985752 grad_rms=3.511095 hess_max=1.986263
+RECORDED A_LADDER_ORDER kind=xonly side=device pair=16->32 val_max=3.900789 val_rms=4.372389 grad_max=2.905061 grad_rms=3.380338 hess_max=1.915694
+RECORDED A_LADDER_ORDER kind=xonly side=device pair=32->64 val_max=3.96186 val_rms=4.480636 grad_max=2.962639 grad_rms=3.458511 hess_max=1.966126
+RECORDED A_LADDER_ORDER kind=xonly side=device pair=64->128 val_max=3.98698 val_rms=4.517801 grad_max=2.985752 grad_rms=3.511095 hess_max=1.986263
+RECORDED A_CHECK name=xonly_min_order_ge_val_max box=32x4x4..256x4x4 side=host value=3.900789e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_val_rms box=32x4x4..256x4x4 side=host value=4.372389e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_grad_max box=32x4x4..256x4x4 side=host value=2.905061e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_grad_rms box=32x4x4..256x4x4 side=host value=3.380338e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_hess_max box=32x4x4..256x4x4 side=host value=1.915694e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_val_max box=32x4x4..256x4x4 side=device value=3.900789e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_val_rms box=32x4x4..256x4x4 side=device value=4.372389e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_grad_max box=32x4x4..256x4x4 side=device value=2.905061e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_grad_rms box=32x4x4..256x4x4 side=device value=3.380338e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=xonly_min_order_ge_hess_max box=32x4x4..256x4x4 side=device value=1.915694e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_coeff_diff_rel box=32x16x16 side=both value=3.371081e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_gradient_rel_interior box=32x16x16 side=both value=1.964463e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_hessian_rel_interior box=32x16x16 side=both value=2.492771e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_gradient_rel_nearface box=32x16x16 side=both value=1.156421e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_hessian_rel_nearface box=32x16x16 side=both value=9.863520e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_gradient_rel_margin box=32x16x16 side=both value=1.553600e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_hessian_rel_margin box=32x16x16 side=both value=1.616066e-13 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_coeff_diff_rel box=64x32x32 side=both value=3.457840e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_gradient_rel_interior box=64x32x32 side=both value=5.238795e-15 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_hessian_rel_interior box=64x32x32 side=both value=1.796639e-13 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_gradient_rel_nearface box=64x32x32 side=both value=1.836101e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_hessian_rel_nearface box=64x32x32 side=both value=3.715991e-13 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_gradient_rel_margin box=64x32x32 side=both value=3.832506e-14 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=cpugpu_full_hessian_rel_margin box=64x32x32 side=both value=9.555117e-13 gate=nan verdict=RECORDED
+RECORDED A_NOALLOC free_before=33560199168 free_after=33560199168
+RECORDED A_CHECK name=shift_memcmp_mismatched_pairs box=32x16x16 side=host value=0.000000e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=shift_memcmp_mismatched_pairs box=32x16x16 side=device value=0.000000e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=shift_memcmp_mismatched_pairs box=64x32x32 side=host value=0.000000e+00 gate=nan verdict=RECORDED
+RECORDED A_CHECK name=shift_memcmp_mismatched_pairs box=64x32x32 side=device value=0.000000e+00 gate=nan verdict=RECORDED
+C1_VERDICT exit=0 gated_pass=36 PASS
+C2_VERDICT exit=0 gated_pass=18 PASS
+C3_VERDICT exit=0 gated_pass=18 PASS
+C4_VERDICT exit=0 gated_pass=72 PASS
+C5_VERDICT exit=0 rows=4 PASS
+C_VERDICT PASS
+RECORDED C_RECORD name=C2_I_vs_quadrature grid=64x32x32 path=unfused max_abs_err=1.466e-07 max_abs_Iref=8.659e-04 q_exact=0.98677408375415
+RECORDED C_RECORD name=C2_I_vs_quadrature grid=64x32x32 path=fused max_abs_err=1.466e-07 max_abs_Iref=8.659e-04 q_exact=0.98677408375415
+RECORDED C_RECORD name=C2_I_vs_quadrature grid=128x32x32 path=unfused max_abs_err=1.481e-06 max_abs_Iref=9.678e-04 q_exact=0.943348864398513
+RECORDED C_RECORD name=C2_I_vs_quadrature grid=128x32x32 path=fused max_abs_err=1.481e-06 max_abs_Iref=9.678e-04 q_exact=0.943348864398513
+RECORDED C_RECORD name=C3_random_shift grid=64x16x16 path=host max_abs=6.661e-16 max_rel=6.944e-16 bitwise_equal_points=918 of 4096
+RECORDED C_RECORD name=C3_random_shift grid=64x16x16 path=device max_abs=6.661e-16 max_rel=6.944e-16 bitwise_equal_points=918 of 4096
+RECORDED C_RECORD name=C3_random_shift grid=64x16x16 path=fused max_abs=6.661e-16 max_rel=6.944e-16 bitwise_equal_points=918 of 4096
+RECORDED C_RECORD name=C3_random_host_vs_device_v grid=64x16x16 path=device max_abs=4.441e-16
+RECORDED C_RECORD name=C3_dyadic_shift grid=64x16x16 path=host max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+RECORDED C_RECORD name=C3_dyadic_shift grid=64x16x16 path=device max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+RECORDED C_RECORD name=C3_dyadic_shift grid=64x16x16 path=fused max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+RECORDED C_RECORD name=C3_dyadic_host_vs_device_v grid=64x16x16 path=device max_abs=2.220e-16
+RECORDED C_RECORD name=C3_random_shift grid=128x16x16 path=host max_abs=8.882e-16 max_rel=6.360e-16 bitwise_equal_points=920 of 4096
+RECORDED C_RECORD name=C3_random_shift grid=128x16x16 path=device max_abs=8.882e-16 max_rel=6.360e-16 bitwise_equal_points=920 of 4096
+RECORDED C_RECORD name=C3_random_shift grid=128x16x16 path=fused max_abs=8.882e-16 max_rel=6.360e-16 bitwise_equal_points=920 of 4096
+RECORDED C_RECORD name=C3_random_host_vs_device_v grid=128x16x16 path=device max_abs=2.220e-16
+RECORDED C_RECORD name=C3_dyadic_shift grid=128x16x16 path=host max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+RECORDED C_RECORD name=C3_dyadic_shift grid=128x16x16 path=device max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+RECORDED C_RECORD name=C3_dyadic_shift grid=128x16x16 path=fused max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+RECORDED C_RECORD name=C3_dyadic_host_vs_device_v grid=128x16x16 path=device max_abs=2.220e-16
+RECORDED C_RECORD name=C4b_reference grid=64x32x32 path=reference included=2560 inlet=768 outlet=1792 plane_reaching=1792 T=3 psi_drift=1.95e-13
+RECORDED C_RECORD name=C4b_counts grid=64x32x32 path=unfused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+RECORDED C_RECORD name=C4b_counts grid=64x32x32 path=fused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+RECORDED C_RECORD name=C4b_reference grid=128x32x32 path=reference included=2560 inlet=768 outlet=1792 plane_reaching=1792 T=5.5 psi_drift=1.95e-13
+RECORDED C_RECORD name=C4b_counts grid=128x32x32 path=unfused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+RECORDED C_RECORD name=C4b_counts grid=128x32x32 path=fused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+RECORDED C_RECORD name=C4_reversed_head grid=64x16x16 path=unfused outcome="exception: lagrangian_labels: no injected seed has positive flux"
+RECORDED C_RECORD name=C4_reversed_head grid=64x16x16 path=fused outcome="exception: lagrangian_labels: no injected seed has positive flux"
+RECORDED C5 case=C1 size=64x16x16 iterations=0 initial=0.000000e+00 final=0.000000e+00 rel=0.000000e+00 balance=0.000000e+00 max_head_rel_diff=0.000000e+00
+RECORDED C5 case=C1 size=128x16x16 iterations=0 initial=0.000000e+00 final=0.000000e+00 rel=0.000000e+00 balance=0.000000e+00 max_head_rel_diff=0.000000e+00
+RECORDED C5 case=C2 size=64x32x32 iterations=10 initial=3.775619e+02 final=3.009352e-08 rel=7.970487e-11 balance=2.067940e-13 max_head_rel_diff=1.404551e-13
+RECORDED C5 case=C2 size=128x32x32 iterations=20 initial=5.206390e+02 final=1.143529e-12 rel=2.196396e-15 balance=8.709027e-14 max_head_rel_diff=6.676744e-16
+D_VERDICT run=D exit=0 sizes=[128x32x32:head=1,bsolver=1,lines_equal=1,mapped=1; 512x64x64:head=1,bsolver=1,lines_equal=1,mapped=1; 3328x256x256:head=1,bsolver=1,lines_equal=1,mapped=na] PASS
+RECORDED D_MEM run=D pid_peak_mib=19755 dev_peak_mib=19759 samples=631 sampler=OK reasons=- (recorded, not gated)
+RECORDED D_REF size=128x32x32 B_SOLVER r=0 converged=1 iterations=30 initial=1.434840e+05 final=6.496539e-08 rel=4.527710e-13 qbar=1.756410271345e+00 Q_in=1.756410271345e+00 Q_out=1.756410271344e+00 balance=6.552326e-13 max_div=1.888051e-10 fallback=0
+RECORDED D_LEAN size=128x32x32 B_SOLVER r=0 converged=1 iterations=30 initial=1.434840e+05 final=6.496539e-08 rel=4.527710e-13 qbar=1.756410271345e+00 Q_in=1.756410271345e+00 Q_out=1.756410271344e+00 balance=6.552326e-13 max_div=1.888051e-10 fallback=0
+RECORDED D_REF size=3328x256x256 B_SOLVER r=0 converged=1 iterations=50 initial=6.724494e+06 final=6.526221e-04 rel=9.705149e-11 qbar=1.002469787644e+00 Q_in=1.002469787644e+00 Q_out=1.002469787885e+00 balance=2.404573e-10 max_div=1.034116e-07 fallback=0
+RECORDED D_LEAN size=3328x256x256 B_SOLVER r=0 converged=1 iterations=50 initial=6.724494e+06 final=6.526221e-04 rel=9.705149e-11 qbar=1.002469787644e+00 Q_in=1.002469787644e+00 Q_out=1.002469787885e+00 balance=2.404573e-10 max_div=1.034116e-07 fallback=0
+RECORDED D_REF size=512x64x64 B_SOLVER r=0 converged=1 iterations=40 initial=9.307687e+05 final=1.604320e-05 rel=1.723651e-11 qbar=1.853115550126e+00 Q_in=1.853115550126e+00 Q_out=1.853115550200e+00 balance=4.027468e-11 max_div=1.336864e-08 fallback=0
+RECORDED D_LEAN size=512x64x64 B_SOLVER r=0 converged=1 iterations=40 initial=9.307687e+05 final=1.604320e-05 rel=1.723651e-11 qbar=1.853115550126e+00 Q_in=1.853115550126e+00 Q_out=1.853115550200e+00 balance=4.027468e-11 max_div=1.336864e-08 fallback=0
+RECORDED D_C0_COMPARE size=3328x256x256 identical_fields=11/11 differing=[-] (environment control vs SF-38 C0 line)
+RECORDED run=D exit=0 wall_s=128.26 host_max_rss_kb=10873636 free_b_before=[Mem: 134590115840 3132481536 22223757312 382025728 109233876992 130434596864]
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.002147
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=7938056 cufft_work=0 device_used=533725184 seconds=0.518559
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=5337088 cufft_work=0 device_used=533725184 seconds=0.001095
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=1048576 cufft_work=0 device_used=529530880 seconds=0.000032
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.002342
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=6889480 cufft_work=0 device_used=533725184 seconds=0.523277
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=5337088 cufft_work=0 device_used=533725184 seconds=0.001321
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=1048576 cufft_work=0 device_used=529530880 seconds=0.000025
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.050417
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=127025160 cufft_work=0 device_used=653262848 seconds=0.900074
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=84516864 cufft_work=0 device_used=617611264 seconds=0.009774
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=16777216 cufft_work=0 device_used=544210944 seconds=0.000079
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.038846
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=110247944 cufft_work=0 device_used=636485632 seconds=0.974264
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=84516864 cufft_work=0 device_used=617611264 seconds=0.010759
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=16777216 cufft_work=0 device_used=544210944 seconds=0.000079
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=5.346285
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=13210855432 cufft_work=0 device_used=13739491328 seconds=18.041064
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=8739364864 cufft_work=0 device_used=9270460416 seconds=1.329725
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=1744830464 cufft_work=0 device_used=2272264192 seconds=0.004964
+RECORDED run=D pid_peak_mib=19755 dev_peak_mib=19759 samples=631 max_exact_mib=12598.854 tree_pid=144387 status=OK reasons=-
+RECORDED MEMMODEL_a grid=3328,384,384 exit=0
+RECORDED MEMMODEL_a MEM_MODEL_GRID size=3328x384x384 n=490733568 mg_levels=7 head_on_device=1 cufft_prefilter_work=7902117888 cufft_gen_work=3928227840
+RECORDED MEMMODEL_a MEM_MODEL phase=F exact_bytes=11782326280 mib=11236.502
+RECORDED MEMMODEL_a MEM_MODEL phase=S1 exact_bytes=0 mib=0.000
+RECORDED MEMMODEL_a MEM_MODEL phase=S2 exact_bytes=29724424712 mib=28347.420
+RECORDED MEMMODEL_a MEM_MODEL phase=V exact_bytes=19653337088 mib=18742.883
+RECORDED MEMMODEL_a MEM_MODEL phase=H exact_bytes=3925868544 mib=3744.000
+RECORDED MEMMODEL_a MEM_MODEL phase=S3a exact_bytes=19709659104 mib=18796.596
+RECORDED MEMMODEL_a MEM_MODEL phase=S3b exact_bytes=23640246240 mib=22545.096
+RECORDED MEMMODEL_a MEM_MODEL phase=S3c_interleave exact_bytes=15722348544 mib=14994.000
+RECORDED MEMMODEL_a MEM_MODEL phase=S3 exact_bytes=23640246240 mib=22545.096
+RECORDED MEMMODEL_a MEM_MODEL phase=S3_fused exact_bytes=23640246240 mib=22545.096
+RECORDED MEMMODEL_a MEM_MODEL_PEAK fused=0 max_phase=S2 max_phase_bytes=29724424712 max_phase_mib=28347.420 context_mib=487 pid_peak_mib=28834.420
+RECORDED MEMMODEL_a MEM_MODEL_PEAK fused=1 max_phase=S2 max_phase_bytes=29724424712 max_phase_mib=28347.420 context_mib=487 pid_peak_mib=28834.420
+RECORDED MEMMODEL_a MEM_MODEL_CHECK non_solve_phases_le_S2=1
+RECORDED MEMMODEL_a MEM_MODEL_CUFFT_VERIFY plan=prefilter made=1 actual=7902117888 model=7902117888 equal=1
+RECORDED MEMMODEL_a MEM_MODEL_CUFFT_VERIFY plan=sf18_3d made=1 actual=3928227840 model=3928227840 equal=1
+RECORDED MEMMODEL_b grid=6656,256,256 exit=0
+RECORDED MEMMODEL_b MEM_MODEL_GRID size=6656x256x256 n=436207616 mg_levels=7 head_on_device=1 cufft_prefilter_work=7038074880 cufft_gen_work=3490709504
+RECORDED MEMMODEL_b MEM_MODEL phase=F exact_bytes=10471081992 mib=9986.002
+RECORDED MEMMODEL_b MEM_MODEL phase=S1 exact_bytes=0 mib=0.000
+RECORDED MEMMODEL_b MEM_MODEL phase=S2 exact_bytes=26421710856 mib=25197.707
+RECORDED MEMMODEL_b MEM_MODEL phase=V exact_bytes=17477148672 mib=16667.508
+RECORDED MEMMODEL_b MEM_MODEL phase=H exact_bytes=3489660928 mib=3328.000
+RECORDED MEMMODEL_b MEM_MODEL phase=S3a exact_bytes=17538584544 mib=16726.098
+RECORDED MEMMODEL_b MEM_MODEL phase=S3b exact_bytes=21030342624 mib=20056.098
+RECORDED MEMMODEL_b MEM_MODEL phase=S3c_interleave exact_bytes=13967032320 mib=13320.000
+RECORDED MEMMODEL_b MEM_MODEL phase=S3 exact_bytes=21030342624 mib=20056.098
+RECORDED MEMMODEL_b MEM_MODEL phase=S3_fused exact_bytes=21030342624 mib=20056.098
+RECORDED MEMMODEL_b MEM_MODEL_PEAK fused=0 max_phase=S2 max_phase_bytes=26421710856 max_phase_mib=25197.707 context_mib=487 pid_peak_mib=25684.707
+RECORDED MEMMODEL_b MEM_MODEL_PEAK fused=1 max_phase=S2 max_phase_bytes=26421710856 max_phase_mib=25197.707 context_mib=487 pid_peak_mib=25684.707
+RECORDED MEMMODEL_b MEM_MODEL_CHECK non_solve_phases_le_S2=1
+RECORDED MEMMODEL_b MEM_MODEL_CUFFT_VERIFY plan=prefilter made=1 actual=7038074880 model=7038074880 equal=1
+RECORDED MEMMODEL_b MEM_MODEL_CUFFT_VERIFY plan=sf18_3d made=1 actual=3490709504 model=3490709504 equal=1
+RECORDED run=D exit=0 wall_s=128.26 host_max_rss_kb=10873636 free_b_before=[Mem: 134590115840 3132481536 22223757312 382025728 109233876992 130434596864]
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.002147
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=7938056 cufft_work=0 device_used=533725184 seconds=0.518559
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=5337088 cufft_work=0 device_used=533725184 seconds=0.001095
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=1048576 cufft_work=0 device_used=529530880 seconds=0.000032
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.002342
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=6889480 cufft_work=0 device_used=533725184 seconds=0.523277
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=5337088 cufft_work=0 device_used=533725184 seconds=0.001321
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=1048576 cufft_work=0 device_used=529530880 seconds=0.000025
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.050417
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=127025160 cufft_work=0 device_used=653262848 seconds=0.900074
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=84516864 cufft_work=0 device_used=617611264 seconds=0.009774
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=16777216 cufft_work=0 device_used=544210944 seconds=0.000079
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.038846
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=110247944 cufft_work=0 device_used=636485632 seconds=0.974264
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=84516864 cufft_work=0 device_used=617611264 seconds=0.010759
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=16777216 cufft_work=0 device_used=544210944 seconds=0.000079
+RECORDED run=D R=- MEM_PHASE phase=F exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.000001
+RECORDED run=D R=- MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=5.346285
+RECORDED run=D R=- MEM_PHASE phase=S2 exact_bytes=13210855432 cufft_work=0 device_used=13739491328 seconds=18.041064
+RECORDED run=D R=- MEM_PHASE phase=V exact_bytes=8739364864 cufft_work=0 device_used=9270460416 seconds=1.329725
+RECORDED run=D R=- MEM_PHASE phase=H exact_bytes=1744830464 cufft_work=0 device_used=2272264192 seconds=0.004964
+RECORDED run=D pid_peak_mib=19755 dev_peak_mib=19759 samples=631 max_exact_mib=12598.854 tree_pid=144387 status=OK reasons=-
+RECORDED part_seconds=203 part_runs_seconds=172 part=controls (this invocation / sum of the recorded run walls)
+PART_DONE part=controls rc=0

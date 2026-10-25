@@ -1,0 +1,26 @@
+[2026-10-24T23:44:20Z] job=sf41-basebuild session=macroflow3d-SF-41-sf41-basebuild started
+[2026-10-24T23:44:20Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-24T23:44:20Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-24T23:44:20Z] command=echo TREE=2cf48c1 BASE=2cf48c19dac641e1ce8c823c5cf2d6165ac66757; cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j 2>&1 | tail -n 5; echo BUILD_EXIT=${PIPESTATUS[0]}; ctest --test-dir build/v100-release -N | tail -1; mkdir -p ~/sf41_base_refs/bin && for b in inlet_slab macroflow3d_pipeline lagrangian_ensemble lagrangian_medium_ab; do cp build/v100-release/$b ~/sf41_base_refs/bin/ && md5sum ~/sf41_base_refs/bin/$b; done
+TREE=2cf48c1 BASE=2cf48c19dac641e1ce8c823c5cf2d6165ac66757
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[279/283] Linking CXX executable streamline_tracker_ps_tests
+[280/283] Linking CXX executable dirichlet_medium_tests
+[281/283] Linking CXX executable affine_periodic_flow_tests
+[282/283] Linking CXX executable inlet_slab_controls_tests
+[283/283] Linking CXX executable macroflow3d_pipeline
+BUILD_EXIT=0
+Total Tests: 46
+aae63d2868be1627e80c16a3a41eb479  /home/sesquerre/sf41_base_refs/bin/inlet_slab
+fba69968c801cc651695c80b971da5a0  /home/sesquerre/sf41_base_refs/bin/macroflow3d_pipeline
+59ac27b53610b881b14fe730128080ba  /home/sesquerre/sf41_base_refs/bin/lagrangian_ensemble
+a53800587a2b5b75e5e289f6f5cf37ee  /home/sesquerre/sf41_base_refs/bin/lagrangian_medium_ab
+[2026-10-24T23:47:11Z] job=sf41-basebuild finished exit=0

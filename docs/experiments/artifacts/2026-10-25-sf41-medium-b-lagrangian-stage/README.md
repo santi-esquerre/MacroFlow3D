@@ -95,6 +95,32 @@ are not evidence; H and the `interpolation_*` entries of G are expected NOT_OK /
   class (`OK_ZERO_EXITS_IDENTICAL`, `EXITS_RECORDED`, `DEFECT_EXIT_AWARE_POLLOCK` = BLOCKING, `ENVIRONMENT_INVESTIGATE`, `MISSING`); with any exit the unchanged `ab_decision.py` recomputes the
   `C_STAT` lines on the head `ab_primary.csv` files (`RECORDED H_RECOMPUTED`) beside the originals (`RECORDED H_ORIGINAL`). The SF-38 decision is not re-decided.
 
+## Evidence import (by the orchestrator)
+
+Same scheme as SF-38. After the campaign (last job `sf41-final` finished 2026-10-25T04:22:44Z), one short `scripts/remote --increment SF-41 exec`
+packed the text subset of `~/sf41_campaign`, `~/sf41_base_refs` and `~/sf41_campaign_superseded` into `~/sf41_evidence.tar.gz`, together with every
+job log (`~/.macroflow3d-remote/macroflow3d-SF-41/logs/*.log` -> `raw/job_logs/`), every job status file (`.../status/*.env` -> `raw/job_status/`)
+and the list of excluded large files (`raw/sf41_evidence.excluded_large`). Selection: every regular file except `*.npy` and `sf41_base_refs/bin/*`,
+with size `<= 2048 KiB`; the list of larger non-`.npy` files is empty. **Excluded from `raw/`** (their sha256 are in the per-part `sha256.txt`
+manifests, the integrity record): 862 `*.npy` files (tracker, Pollock and SF-27 / R-set per-particle arrays) and the base binaries.
+The tarball was extracted unchanged into `raw/` (V100 relative layout: `raw/sf41_base_refs/`, `raw/sf41_campaign/<part>/`,
+`raw/sf41_campaign_superseded/build_attempt1_tmpfull/`, `raw/job_logs/`, `raw/job_status/`).
+
+Imported (orchestrator, 2026-10-25): `sf41_evidence.tar.gz` sha256 `2ef0ca6c2ab587639f507e1d36dfc2a15bb4ddfc1bc65e9b84a920091ae5a633`
+(12303574 B, 1861 files, none excluded as large). Transfer: base64 through `scripts/remote --increment SF-41 exec`, sha256 equal on both hosts;
+no absolute or `..` member, no link or device entry. Re-verification: `for d in raw/sf41_base_refs raw/sf41_campaign/*; do (cd $d && sha256sum -c
+--ignore-missing sha256.txt | grep -vc ': OK'); done` gives 0 for each of the eight part directories (565, 258, 8, 33, 4, 984, 572, 196 listed
+entries for baserefs, abrerun, build, controls, cross, evladder, final, prodgrid). The verdict commands of "Re-running a verdict from `raw/`"
+reproduce the campaign's lines (`A_VERDICT ... PASS`, `C_VERDICT PASS`, `D_VERDICT ... PASS`, `B_VERDICT ... PASS`, `E_VERDICT ALL PASS`,
+`F_VERDICT ALL MET`, `H_VERDICT ALL class=OK_ZERO_EXITS_IDENTICAL`, `G_VERDICT PASS`), all with exit 0.
+
+Not evidence, imported for disclosure only: `raw/job_logs/sf41-pre-*.log` (pre-checks on intermediate node trees before integration, some on
+incremental builds of the shared mirror that may have linked stale objects) and `raw/sf41_campaign_superseded/build_attempt1_tmpfull/` (head build
+attempt 1, failed because the V100 `/tmp` (2.0 GB) filled with the temporaries of parallel `nvcc -dlink` processes (`clean_build.log`: `fatal error: error writing to /tmp/....s: No queda espacio en el
+dispositivo`, `PART_EXIT` 1); every attempt-2 part ran
+with `TMPDIR=$HOME/sf41_tmp`, echoed in the job command of each `raw/job_logs/sf41-<part>.log`). The remote job log is one file per job name,
+so `raw/job_logs/sf41-build.log` is the attempt-2 log. Host-local clocks (`nvidia-smi`, sampler) are 3 h behind the UTC stamps.
+
 ## Re-running a verdict from `raw/`
 
 Each verdict reads only the files of its part directory (`raw/sf41_campaign/<part>/`):

@@ -1,0 +1,112 @@
+{
+  "a": {
+    "Np": 10000,
+    "non_active_particles": 0,
+    "planes": [
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 0.75
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 0.875
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 1.125
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 1.625
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 2.625
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 4.625
+      }
+    ],
+    "seed_nonpos": 0,
+    "status_hist_plane": [
+      10000,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "b": {
+    "Np": 10000,
+    "non_active_particles": 0,
+    "planes": [
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 0.75
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 0.875
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 1.125
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 1.625
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 2.625
+      },
+      {
+        "contributing": 10000,
+        "non_ok": 0,
+        "x1": 4.625
+      }
+    ],
+    "seed_nonpos": 0,
+    "status_hist_plane": [
+      10000,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "Np": 10000,
+  "pollock": {
+    "exit_inlet_plane": 0,
+    "exit_inlet_time": 0,
+    "exit_outlet_plane": 0,
+    "exit_outlet_time": 2203,
+    "seed_nonpos": 0,
+    "status_hist_plane": [
+      10000,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "status_hist_time": [
+      7797,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2203,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "weighted_not_active": 2203
+  },
+  "seed_backflow": 0,
+  "tracker_plane_pass": {
+    "backflow_encounters": 0,
+    "exit_inlet": 0,
+    "exit_outlet": 0,
+    "landings_discarded": 0,
+    "status_ge2": 0,
+    "status_hist": [
+      10000,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "tracker_time_pass": {
+    "backflow_encounters": 0,
+    "exit_inlet": 0,
+    "exit_outlet": 2204,
+    "landings_discarded": 0,
+    "status_ge2": 0,
+    "status_hist": [
+      7796,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

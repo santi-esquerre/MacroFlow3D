@@ -1,0 +1,30 @@
+[2026-10-25T02:10:44Z] job=sf41-build session=macroflow3d-SF-41-sf41-build started
+[2026-10-25T02:10:44Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T02:10:44Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T02:10:44Z] command=echo TREE=269c658687816788fdaf65f9d5b1307d87376b6a; TMPDIR=$HOME/sf41_tmp SF41_COMMIT=269c658687816788fdaf65f9d5b1307d87376b6a bash docs/experiments/artifacts/2026-10-25-sf41-medium-b-lagrangian-stage/scripts/run_sf41.sh build/v100-release build; echo PART_SCRIPT_EXIT=$?
+TREE=269c658687816788fdaf65f9d5b1307d87376b6a
+run_sf41.sh: part=build build_dir=/home/sesquerre/MacroFlow3D-SF-41/build/v100-release host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf41_campaign base_refs=/home/sesquerre/sf41_base_refs repo=/home/sesquerre/MacroFlow3D-SF-41 start=2026-10-25T02:10:45Z
+  env: SF41_COMMIT=269c658687816788fdaf65f9d5b1307d87376b6a DATE_UTC=2026-10-25T02:10:45Z HOST=localhost.localdomain PART=build BIN_DIR=/home/sesquerre/MacroFlow3D-SF-41/build/v100-release BINARIES_CHECK=not_applicable(build part) DRYRUN=0 OUT_ROOT=/home/sesquerre/sf41_campaign BASE_REFS=/home/sesquerre/sf41_base_refs REPO=/home/sesquerre/MacroFlow3D-SF-41 TREE_git=absent TREE_src_digest=821e4feec2e8895d392c754c049da0a1044172a453097b5fb8f5c099f8168243 CUDA_VISIBLE_DEVICES=0 GPU_NAME=Tesla V100-PCIE-32GB NVIDIA_DRIVER=470.239.06 CUDA_VERSION_NVIDIA_SMI=11.4 NVCC=11.4 GCC=gcc (GCC) 9.3.1 20200408 (Red Hat 9.3.1-2) 
+RECORDED build_tree git=absent src_digest=821e4feec2e8895d392c754c049da0a1044172a453097b5fb8f5c099f8168243 
+RECORDED build_commit SF41_COMMIT=269c658687816788fdaf65f9d5b1307d87376b6a preset=v100-release build_dir=/home/sesquerre/MacroFlow3D-SF-41/build/v100-release
++ [clean_build] .: bash -c cd "$1" && rm -rf "$2" && cmake --preset "$3" && cmake --build "$2" -j 2>&1 | tail -n 40; exit ${PIPESTATUS[0]} _ /home/sesquerre/MacroFlow3D-SF-41 /home/sesquerre/MacroFlow3D-SF-41/build/v100-release v100-release > /home/sesquerre/sf41_campaign/build/clean_build.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=clean_build rc=0 wall=311s end=2026-10-25T02:16:07Z
++ [ctest_N] .: ctest --test-dir /home/sesquerre/MacroFlow3D-SF-41/build/v100-release -N > /home/sesquerre/sf41_campaign/build/ctest_N.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=ctest_N rc=0 wall=0s end=2026-10-25T02:16:07Z
+RECORDED ctest_N Total Tests: 52
+BUILD_BINARIES n=50 md5file=/home/sesquerre/sf41_campaign/build/binaries.md5 sha256=82751b5ebafa457d772421f559e6c052456a56184f36f64bb1438e48e6f2386e
+RECORDED binary_md5 dirichlet_controls_tests dce34ae54d23dff7a2becd7442fca778
+RECORDED binary_md5 dirichlet_long_box_stage_tests 13b99e8cf39e52134a1066a17cbaa9e0
+RECORDED binary_md5 inlet_slab ded79b8ad5ad019d81e0dc8bea1d980b
+RECORDED binary_md5 interpolation_nonperiodic_x_tests 7e37f248d7391bf9d23902df1b182240
+RECORDED binary_md5 lagrangian_ensemble 0c8caaf6b31c15fe9abf3558b6a8050d
+RECORDED binary_md5 lagrangian_medium_ab f5a80df650ab6d086dfc66a61e8a729c
+RECORDED binary_md5 macroflow3d_pipeline 516d516dc759a12bace29b0d50908e70
+RECORDED binary_md5 pollock_nonperiodic_tests e08de5d9cc2c39050a817a1a44e8b33e
+RECORDED binary_md5 sf41_cross_representation_tests d54b7f0c655b9f8eae2fa6b4194bcf3a
+BUILD_VERDICT PASS (binaries recorded; the head parts verify them)
+RECORDED part_seconds=325 part_runs_seconds=311 part=build (this invocation / sum of the recorded run walls)
+PART_DONE part=build rc=0
+run_sf41.sh: part=build end=2026-10-25T02:16:10Z blocking_failures=0
+PART_SCRIPT_EXIT=0
+[2026-10-25T02:16:10Z] job=sf41-build finished exit=0

@@ -1,0 +1,175 @@
+dirichlet_controls_tests (full tier)
+C_CHECK name=C1_f_samples_zero_exactly grid=64x16x16 path=host value=0.000000e+00 gate=<=0e+00 verdict=PASS
+C_CHECK name=C1_coefficients_zero_exactly grid=64x16x16 path=host value=0.000000e+00 gate=<=0e+00 verdict=PASS
+C_CHECK name=C1_v_equals_G1_e1 grid=64x16x16 path=host value=0.000000e+00 gate=<=0e+00 verdict=PASS
+C_CHECK name=C1_particles_not_ok grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_transverse_displacement grid=64x16x16 path=unfused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=64x16x16 path=unfused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_x1_at_times_vs_X0_plus_G1_t_rel grid=64x16x16 path=unfused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_abs_I grid=64x16x16 path=unfused value=0.000000e+00 gate=<=1e-14 verdict=PASS
+C_CHECK name=C1_covectors_constant grid=64x16x16 path=unfused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_particles_not_ok grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_transverse_displacement grid=64x16x16 path=fused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=64x16x16 path=fused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_x1_at_times_vs_X0_plus_G1_t_rel grid=64x16x16 path=fused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_abs_I grid=64x16x16 path=fused value=0.000000e+00 gate=<=1e-14 verdict=PASS
+C_CHECK name=C1_covectors_constant grid=64x16x16 path=fused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_fused_equals_unfused_bitwise grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_f_samples_zero_exactly grid=128x16x16 path=host value=0.000000e+00 gate=<=0e+00 verdict=PASS
+C_CHECK name=C1_coefficients_zero_exactly grid=128x16x16 path=host value=0.000000e+00 gate=<=0e+00 verdict=PASS
+C_CHECK name=C1_v_equals_G1_e1 grid=128x16x16 path=host value=0.000000e+00 gate=<=0e+00 verdict=PASS
+C_CHECK name=C1_particles_not_ok grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_transverse_displacement grid=128x16x16 path=unfused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=128x16x16 path=unfused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_x1_at_times_vs_X0_plus_G1_t_rel grid=128x16x16 path=unfused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_abs_I grid=128x16x16 path=unfused value=0.000000e+00 gate=<=1e-14 verdict=PASS
+C_CHECK name=C1_covectors_constant grid=128x16x16 path=unfused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_particles_not_ok grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_transverse_displacement grid=128x16x16 path=fused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_tau_vs_dx1_over_G1_rel grid=128x16x16 path=fused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_x1_at_times_vs_X0_plus_G1_t_rel grid=128x16x16 path=fused value=0.000000e+00 gate=<=1e-09 verdict=PASS
+C_CHECK name=C1_abs_I grid=128x16x16 path=fused value=0.000000e+00 gate=<=1e-14 verdict=PASS
+C_CHECK name=C1_covectors_constant grid=128x16x16 path=fused value=0.000000e+00 gate=<=1e-12 verdict=PASS
+C_CHECK name=C1_exit_statuses grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C1_fused_equals_unfused_bitwise grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_particles_not_ok grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_transverse_positions_constant grid=64x32x32 path=unfused value=5.204170e-17 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_covectors_constant grid=64x32x32 path=unfused value=1.128772e-16 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=64x32x32 path=unfused value=5.022843e-11 gate=<=1e-09 verdict=PASS
+C_RECORD name=C2_I_vs_quadrature grid=64x32x32 path=unfused max_abs_err=1.466e-07 max_abs_Iref=8.659e-04 q_exact=0.98677408375415
+C_CHECK name=C2_particles_not_ok grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_transverse_positions_constant grid=64x32x32 path=fused value=5.204170e-17 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_covectors_constant grid=64x32x32 path=fused value=1.128772e-16 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=64x32x32 path=fused value=5.022843e-11 gate=<=1e-09 verdict=PASS
+C_RECORD name=C2_I_vs_quadrature grid=64x32x32 path=fused max_abs_err=1.466e-07 max_abs_Iref=8.659e-04 q_exact=0.98677408375415
+C_CHECK name=C2_fused_equals_unfused_bitwise grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_particles_not_ok grid=128x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_transverse_positions_constant grid=128x32x32 path=unfused value=5.551115e-17 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_covectors_constant grid=128x32x32 path=unfused value=7.493536e-16 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=128x32x32 path=unfused value=5.022803e-11 gate=<=1e-09 verdict=PASS
+C_RECORD name=C2_I_vs_quadrature grid=128x32x32 path=unfused max_abs_err=1.481e-06 max_abs_Iref=9.678e-04 q_exact=0.943348864398513
+C_CHECK name=C2_particles_not_ok grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C2_transverse_positions_constant grid=128x32x32 path=fused value=5.551115e-17 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_covectors_constant grid=128x32x32 path=fused value=7.493536e-16 gate=<=1e-12 verdict=PASS
+C_CHECK name=C2_tau_vs_quadrature_rel grid=128x32x32 path=fused value=5.022803e-11 gate=<=1e-09 verdict=PASS
+C_RECORD name=C2_I_vs_quadrature grid=128x32x32 path=fused max_abs_err=1.481e-06 max_abs_Iref=9.678e-04 q_exact=0.943348864398513
+C_CHECK name=C2_fused_equals_unfused_bitwise grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C3_random_shift_plus_1_violations_1e-14 grid=64x16x16 path=host value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_shift grid=64x16x16 path=host max_abs=6.661e-16 max_rel=6.944e-16 bitwise_equal_points=918 of 4096
+C_CHECK name=C3_random_shift_plus_1_violations_1e-14 grid=64x16x16 path=device value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_shift grid=64x16x16 path=device max_abs=6.661e-16 max_rel=6.944e-16 bitwise_equal_points=918 of 4096
+C_CHECK name=C3_random_shift_plus_1_violations_1e-14 grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_shift grid=64x16x16 path=fused max_abs=6.661e-16 max_rel=6.944e-16 bitwise_equal_points=918 of 4096
+C_CHECK name=C3_random_fused_equals_unfused_eval_bitwise grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_host_vs_device_v grid=64x16x16 path=device max_abs=4.441e-16
+C_CHECK name=C3_dyadic_shift_plus_1_violations_1e-14 grid=64x16x16 path=host value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_shift grid=64x16x16 path=host max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+C_CHECK name=C3_dyadic_shift_plus_1_violations_1e-14 grid=64x16x16 path=device value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_shift grid=64x16x16 path=device max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+C_CHECK name=C3_dyadic_shift_plus_1_violations_1e-14 grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_shift grid=64x16x16 path=fused max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+C_CHECK name=C3_dyadic_fused_equals_unfused_eval_bitwise grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_host_vs_device_v grid=64x16x16 path=device max_abs=2.220e-16
+C_CHECK name=C3_domain_report_outside_false_NaN_no_read grid=64x16x16 path=host+fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C3_random_shift_plus_1_violations_1e-14 grid=128x16x16 path=host value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_shift grid=128x16x16 path=host max_abs=8.882e-16 max_rel=6.360e-16 bitwise_equal_points=920 of 4096
+C_CHECK name=C3_random_shift_plus_1_violations_1e-14 grid=128x16x16 path=device value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_shift grid=128x16x16 path=device max_abs=8.882e-16 max_rel=6.360e-16 bitwise_equal_points=920 of 4096
+C_CHECK name=C3_random_shift_plus_1_violations_1e-14 grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_shift grid=128x16x16 path=fused max_abs=8.882e-16 max_rel=6.360e-16 bitwise_equal_points=920 of 4096
+C_CHECK name=C3_random_fused_equals_unfused_eval_bitwise grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_random_host_vs_device_v grid=128x16x16 path=device max_abs=2.220e-16
+C_CHECK name=C3_dyadic_shift_plus_1_violations_1e-14 grid=128x16x16 path=host value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_shift grid=128x16x16 path=host max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+C_CHECK name=C3_dyadic_shift_plus_1_violations_1e-14 grid=128x16x16 path=device value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_shift grid=128x16x16 path=device max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+C_CHECK name=C3_dyadic_shift_plus_1_violations_1e-14 grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_shift grid=128x16x16 path=fused max_abs=0.000e+00 max_rel=0.000e+00 bitwise_equal_points=2048 of 2048
+C_CHECK name=C3_dyadic_fused_equals_unfused_eval_bitwise grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C3_dyadic_host_vs_device_v grid=128x16x16 path=device max_abs=2.220e-16
+C_CHECK name=C3_domain_report_outside_false_NaN_no_read grid=128x16x16 path=host+fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_first_plane_time_not_reached_by_all grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_first_plane_time_not_reached_by_all grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_fused_equals_unfused_bitwise grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_first_plane_time_not_reached_by_all grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=64x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_straddle_statuses grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_straddle_statuses grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_on_L1_statuses grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_on_L1_statuses grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_just_beyond_statuses grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_just_beyond_statuses grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_stage_outside_domain_hmax_2h_statuses grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_stage_outside_domain_hmax_2h_statuses grid=64x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_stage_outside_domain_exercised_rejected_steps grid=64x16x16 path=fused+unfused value=3.072000e+03 gate=>0 verdict=PASS
+C_CHECK name=C4a_track_json_and_exit_files grid=64x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_first_plane_time_not_reached_by_all grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_first_plane_time_not_reached_by_all grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_fused_equals_unfused_bitwise grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_particles_not_exit_outlet grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_first_plane_time_not_reached_by_all grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_reached_records_nonfinite_or_after_exit_not_NaN grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_exit_counts_inexact grid=128x16x16 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_straddle_statuses grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_straddle_statuses grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_on_L1_statuses grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_on_L1_statuses grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_just_beyond_statuses grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_plane_just_beyond_statuses grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_stage_outside_domain_hmax_2h_statuses grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_stage_outside_domain_hmax_2h_statuses grid=128x16x16 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4a_stage_outside_domain_exercised_rejected_steps grid=128x16x16 path=fused+unfused value=3.072000e+03 gate=>0 verdict=PASS
+C_CHECK name=C4a_track_json_and_exit_files grid=128x16x16 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4b_reference grid=64x32x32 path=reference included=2560 inlet=768 outlet=1792 plane_reaching=1792 T=3 psi_drift=1.95e-13
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=64x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4b_counts grid=64x32x32 path=unfused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4b_counts grid=64x32x32 path=fused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+C_CHECK name=C4b_fused_equals_unfused_bitwise grid=64x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=64x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=64x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=64x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=64x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4b_reference grid=128x32x32 path=reference included=2560 inlet=768 outlet=1792 plane_reaching=1792 T=5.5 psi_drift=1.95e-13
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=128x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=128x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=128x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=128x32x32 path=unfused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4b_counts grid=128x32x32 path=unfused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4b_counts grid=128x32x32 path=fused included=2560 plane:inlet=768 reached=1792 outlet=0 time:inlet=768 outlet=1792
+C_CHECK name=C4b_fused_equals_unfused_bitwise grid=128x32x32 path=fused value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_pass_misclassified_seeds grid=128x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_pass_misclassified_seeds grid=128x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_plane_counts_inexact grid=128x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_CHECK name=C4b_time_counts_inexact grid=128x32x32 path=pollock value=0.000000e+00 gate===0 verdict=PASS
+C_RECORD name=C4_reversed_head grid=64x16x16 path=unfused outcome="exception: lagrangian_labels: no injected seed has positive flux"
+C_RECORD name=C4_reversed_head grid=64x16x16 path=fused outcome="exception: lagrangian_labels: no injected seed has positive flux"
+C_TIME seconds=11.7
+C_VERDICT all_pass=1

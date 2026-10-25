@@ -1,0 +1,99 @@
+[2026-10-25T01:47:25Z] job=sf41-baserefs session=macroflow3d-SF-41-sf41-baserefs started
+[2026-10-25T01:47:25Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T01:47:25Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T01:47:25Z] command=echo TREE=0256bb0 SCRIPTS_ONLY_FOR_BASEREFS BASE=2cf48c1; SF41_COMMIT=2cf48c19dac641e1ce8c823c5cf2d6165ac66757 bash docs/experiments/artifacts/2026-10-25-sf41-medium-b-lagrangian-stage/scripts/run_sf41.sh $HOME/sf41_base_refs/bin baserefs; echo BASEREFS_EXIT=$?
+TREE=0256bb0 SCRIPTS_ONLY_FOR_BASEREFS BASE=2cf48c1
+run_sf41.sh: part=baserefs build_dir=/home/sesquerre/sf41_base_refs/bin host=localhost.localdomain gpu_id=0 out_root=/home/sesquerre/sf41_campaign base_refs=/home/sesquerre/sf41_base_refs repo=/home/sesquerre/MacroFlow3D-SF-41 start=2026-10-25T01:47:26Z
+  env: BIN_DIR=/home/sesquerre/sf41_base_refs/bin BIN_MD5_lagrangian_ensemble=59ac27b53610b881b14fe730128080ba BIN_MD5_lagrangian_medium_ab=a53800587a2b5b75e5e289f6f5cf37ee BIN_MD5_macroflow3d_pipeline=fba69968c801cc651695c80b971da5a0 BIN_MD5_inlet_slab=aae63d2868be1627e80c16a3a41eb479 BINARIES_CHECK=base binaries: md5 recorded only DRYRUN=0 OUT_ROOT=/home/sesquerre/sf41_campaign BASE_REFS=/home/sesquerre/sf41_base_refs REPO=/home/sesquerre/MacroFlow3D-SF-41 TREE_git=absent TREE_src_digest=40df642ce23ef635d2cb0ac3e05c9b339ff5ec36c4fb1b29fd553b5be4175a01 CUDA_VISIBLE_DEVICES=0 GPU_NAME=Tesla V100-PCIE-32GB NVIDIA_DRIVER=470.239.06 CUDA_VERSION_NVIDIA_SMI=11.4 NVCC=11.4 GCC=gcc (GCC) 9.3.1 20200408 (Red Hat 9.3.1-2) 
+RECORDED base_binary_md5 inlet_slab aae63d2868be1627e80c16a3a41eb479
+RECORDED base_binary_md5 macroflow3d_pipeline fba69968c801cc651695c80b971da5a0
+RECORDED base_binary_md5 lagrangian_ensemble 59ac27b53610b881b14fe730128080ba
+RECORDED base_binary_md5 lagrangian_medium_ab a53800587a2b5b75e5e289f6f5cf37ee
+== R set (RR9: SF-35/36/37 default path) -> /home/sesquerre/sf41_base_refs/r
++ [r_trace_N32_e0.5_host] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf41_base_refs/r/trace/N32_e0.5_host --summary /home/sesquerre/sf41_base_refs/r/trace/N32_e0.5_host.json > /home/sesquerre/sf41_base_refs/r/trace/N32_e0.5_host.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e0.5_host rc=0 wall=6s end=2026-10-25T01:47:43Z
+    STATUS ok
++ [r_trace_N32_e0.5_gpu] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf41_base_refs/r/trace/N32_e0.5_gpu --summary /home/sesquerre/sf41_base_refs/r/trace/N32_e0.5_gpu.json > /home/sesquerre/sf41_base_refs/r/trace/N32_e0.5_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e0.5_gpu rc=0 wall=4s end=2026-10-25T01:47:47Z
+    STATUS ok
++ [r_trace_N32_e1.0_host] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf41_base_refs/r/trace/N32_e1.0_host --summary /home/sesquerre/sf41_base_refs/r/trace/N32_e1.0_host.json > /home/sesquerre/sf41_base_refs/r/trace/N32_e1.0_host.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e1.0_host rc=21 wall=6s end=2026-10-25T01:47:54Z
+    STATUS roundtrip_exceeded
++ [r_trace_N32_e1.0_gpu] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf41_base_refs/r/trace/N32_e1.0_gpu --summary /home/sesquerre/sf41_base_refs/r/trace/N32_e1.0_gpu.json > /home/sesquerre/sf41_base_refs/r/trace/N32_e1.0_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N32_e1.0_gpu rc=21 wall=5s end=2026-10-25T01:47:59Z
+    STATUS roundtrip_exceeded
++ [r_trace_N64_e0.5_host] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf41_base_refs/r/trace/N64_e0.5_host --summary /home/sesquerre/sf41_base_refs/r/trace/N64_e0.5_host.json > /home/sesquerre/sf41_base_refs/r/trace/N64_e0.5_host.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N64_e0.5_host rc=0 wall=16s end=2026-10-25T01:48:15Z
+    STATUS ok
++ [r_trace_N64_e0.5_gpu] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf41_base_refs/r/trace/N64_e0.5_gpu --summary /home/sesquerre/sf41_base_refs/r/trace/N64_e0.5_gpu.json > /home/sesquerre/sf41_base_refs/r/trace/N64_e0.5_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N64_e0.5_gpu rc=0 wall=7s end=2026-10-25T01:48:22Z
+    STATUS ok
++ [r_trace_N64_e1.0_host] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf41_base_refs/r/trace/N64_e1.0_host --summary /home/sesquerre/sf41_base_refs/r/trace/N64_e1.0_host.json > /home/sesquerre/sf41_base_refs/r/trace/N64_e1.0_host.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N64_e1.0_host rc=0 wall=18s end=2026-10-25T01:48:40Z
+    STATUS ok
++ [r_trace_N64_e1.0_gpu] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf41_base_refs/r/trace/N64_e1.0_gpu --summary /home/sesquerre/sf41_base_refs/r/trace/N64_e1.0_gpu.json > /home/sesquerre/sf41_base_refs/r/trace/N64_e1.0_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N64_e1.0_gpu rc=0 wall=7s end=2026-10-25T01:48:47Z
+    STATUS ok
++ [r_trace_N64_e2.0_gpu] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 2 --tracer gpu --save-labels /home/sesquerre/sf41_base_refs/r/trace/N64_e2.0_gpu --summary /home/sesquerre/sf41_base_refs/r/trace/N64_e2.0_gpu.json > /home/sesquerre/sf41_base_refs/r/trace/N64_e2.0_gpu.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_trace_N64_e2.0_gpu rc=21 wall=7s end=2026-10-25T01:48:54Z
+    STATUS roundtrip_exceeded
++ [r_prod] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder > /home/sesquerre/sf41_base_refs/r/prod32.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_prod rc=0 wall=17s end=2026-10-25T01:49:12Z
+    STATUS_DETAIL solver=converged oracle=ok
+    STATUS converged
++ [r_fwd_smoke_g3d_n16] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --analytic generic3d --n 16 --eps 0.25 --np-side 16 --planes 0.25,0.5,1 --times 0.5,1 --covectors --save-particles /home/sesquerre/sf41_base_refs/r/fwd/smoke_g3d_n16 --summary /home/sesquerre/sf41_base_refs/r/fwd/smoke_g3d_n16.json > /home/sesquerre/sf41_base_refs/r/fwd/smoke_g3d_n16.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_smoke_g3d_n16 rc=0 wall=4s end=2026-10-25T01:49:16Z
+    STATUS ok
++ [r_fwd_g3d_n32_cov] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --analytic generic3d --n 32 --eps 0.25 --np-side 32 --planes 0.5,1 --times 1 --covectors --save-particles /home/sesquerre/sf41_base_refs/r/fwd/g3d_n32_cov --summary /home/sesquerre/sf41_base_refs/r/fwd/g3d_n32_cov.json > /home/sesquerre/sf41_base_refs/r/fwd/g3d_n32_cov.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_g3d_n32_cov rc=0 wall=5s end=2026-10-25T01:49:21Z
+    STATUS ok
++ [r_fwd_gauss_n64_e1_cov] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --save-particles /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e1_cov --summary /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e1_cov.json > /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e1_cov.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_gauss_n64_e1_cov rc=0 wall=6s end=2026-10-25T01:49:27Z
+    STATUS ok
++ [r_fwd_gauss_n64_e2] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --save-particles /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e2 --summary /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e2.json > /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e2.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_gauss_n64_e2 rc=0 wall=7s end=2026-10-25T01:49:34Z
+    STATUS ok
++ [r_fwd_gauss_n64_e2_tol] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.5,1,2 --times 1,2 --tol 1e-10 --hmax-div 32 --max-arclength 1000 --save-particles /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e2_tol --summary /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e2_tol.json > /home/sesquerre/sf41_base_refs/r/fwd/gauss_n64_e2_tol.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_gauss_n64_e2_tol rc=0 wall=8s end=2026-10-25T01:49:42Z
+    STATUS ok
++ [r_fwd_gauss_n40_e1] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 40 --eps 1 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf41_base_refs/r/fwd/gauss_n40_e1 --summary /home/sesquerre/sf41_base_refs/r/fwd/gauss_n40_e1.json > /home/sesquerre/sf41_base_refs/r/fwd/gauss_n40_e1.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_gauss_n40_e1 rc=0 wall=4s end=2026-10-25T01:49:46Z
+    STATUS ok
++ [r_fwd_gauss_n80_e2] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 80 --eps 2 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf41_base_refs/r/fwd/gauss_n80_e2 --summary /home/sesquerre/sf41_base_refs/r/fwd/gauss_n80_e2.json > /home/sesquerre/sf41_base_refs/r/fwd/gauss_n80_e2.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_fwd_gauss_n80_e2 rc=0 wall=7s end=2026-10-25T01:49:53Z
+    STATUS ok
++ [r_neutral_gauss_n64_e1_cov] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --comparator pollock --save-vd /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e1_cov/vd --save-seed-velocity --save-particles /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e1_cov --summary /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e1_cov.json > /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e1_cov.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_neutral_gauss_n64_e1_cov rc=0 wall=6s end=2026-10-25T01:49:59Z
+    STATUS ok
++ [r_neutral_gauss_n64_e2] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --comparator pollock --save-vd /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2/vd --save-seed-velocity --save-particles /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2 --summary /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2.json > /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_neutral_gauss_n64_e2 rc=0 wall=7s end=2026-10-25T01:50:06Z
+    STATUS ok
++ [r_neutral_gauss_n64_e2_tol] .: /home/sesquerre/sf41_base_refs/bin/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.5,1,2 --times 1,2 --tol 1e-10 --hmax-div 32 --max-arclength 1000 --comparator pollock --save-vd /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2_tol/vd --save-seed-velocity --save-particles /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2_tol --summary /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2_tol.json > /home/sesquerre/sf41_base_refs/r/neutral/gauss_n64_e2_tol.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=r_neutral_gauss_n64_e2_tol rc=0 wall=7s end=2026-10-25T01:50:13Z
+    STATUS ok
+== SF-27 trio -> /home/sesquerre/sf41_base_refs/trio/<cfg> (each from its own empty working directory)
++ [trio_config_pspta_small] /home/sesquerre/sf41_base_refs/trio/config_pspta_small: /home/sesquerre/sf41_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-41/apps/config_pspta_small.yaml > /home/sesquerre/sf41_base_refs/trio/config_pspta_small.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=trio_config_pspta_small rc=0 wall=4s end=2026-10-25T01:50:18Z
++ [trio_config_streamfunctions_homogeneous] /home/sesquerre/sf41_base_refs/trio/config_streamfunctions_homogeneous: /home/sesquerre/sf41_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-41/apps/config_streamfunctions_homogeneous.yaml > /home/sesquerre/sf41_base_refs/trio/config_streamfunctions_homogeneous.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=trio_config_streamfunctions_homogeneous rc=0 wall=3s end=2026-10-25T01:50:21Z
++ [trio_config_streamfunctions_continuation] /home/sesquerre/sf41_base_refs/trio/config_streamfunctions_continuation: /home/sesquerre/sf41_base_refs/bin/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-41/apps/config_streamfunctions_continuation.yaml > /home/sesquerre/sf41_base_refs/trio/config_streamfunctions_continuation.log 2>&1   (timeout=0s flags=-)
+  CASE_RESULT run=trio_config_streamfunctions_continuation rc=0 wall=4s end=2026-10-25T01:50:25Z
+== G(ii) medium (a) lagrangian_ensemble run and G(iii) A/B run (base binaries)
+RECORDED G2_INVOCATION --grid 512,64,64 --eps 2 --ell 0.125 --seed0 4001 --nr 2 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on
+RECORDED G3_INVOCATION --grid 512,64,64 --ell 0.125 --eps 2 --seed0 4001 --nr 2
++ [g_runner_a] .: /home/sesquerre/sf41_base_refs/bin/lagrangian_ensemble --grid 512,64,64 --eps 2 --ell 0.125 --seed0 4001 --nr 2 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf41_base_refs/g_runner_a > /home/sesquerre/sf41_base_refs/g_runner_a.log 2>&1   (timeout=43200s flags=X)
+  CASE_RESULT run=g_runner_a rc=0 wall=17s end=2026-10-25T01:50:44Z
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+    R=1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=0
+    RUN_DONE nr=2
++ [g_ab] .: /home/sesquerre/sf41_base_refs/bin/lagrangian_medium_ab --grid 512,64,64 --ell 0.125 --eps 2 --seed0 4001 --nr 2 --out /home/sesquerre/sf41_base_refs/g_ab > /home/sesquerre/sf41_base_refs/g_ab.log 2>&1   (timeout=43200s flags=X)
+  CASE_RESULT run=g_ab rc=0 wall=14s end=2026-10-25T01:51:01Z
+    R=0 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    R=1 STATUS ok solver_b=converged fallback=0 non_active_a=0 non_active_b=0
+    RUN_DONE nr=2
+BASEREFS_RECORDED r_runs=20 trio_runs=3 g_runs=2 recorded_in_exit_codes=25 unexpected_exit_codes=0
+RECORDED part_seconds=215 part_runs_seconds=196 part=baserefs (this invocation / sum of the recorded run walls)
+PART_DONE part=baserefs rc=0
+run_sf41.sh: part=baserefs end=2026-10-25T01:51:01Z blocking_failures=0
+BASEREFS_EXIT=0
+[2026-10-25T01:51:01Z] job=sf41-baserefs finished exit=0

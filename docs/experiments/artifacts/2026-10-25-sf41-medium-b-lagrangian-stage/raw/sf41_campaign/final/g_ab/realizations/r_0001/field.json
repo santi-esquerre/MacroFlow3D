@@ -1,0 +1,33 @@
+{
+  "G": [
+    0.557267841096416,
+    0.004972722109715024,
+    -0.010100010649194932
+  ],
+  "active_modes": 1016063,
+  "applied_scale": 0.9893891994604321,
+  "ell": 0.125,
+  "final_variance": 1.0,
+  "grid": [
+    512,
+    64,
+    64
+  ],
+  "kind": "gaussian",
+  "mg_levels_a": 5,
+  "normalize_variance": true,
+  "raw_mean": 8.731215620297328e-18,
+  "raw_variance": 1.021564211183495,
+  "seed": 4002,
+  "sf19_lines": [
+    "STAGE field=gaussian eps=2 N=512 status=ok",
+    "  SF-18: raw_mean=8.731216e-18 raw_variance=1.021564211183e+00 applied_scale=9.893891994604e-01 final_variance=1.000000000000e+00 active_modes=1016063",
+    "  SF-19: mg_levels=5 converged=1 G=(5.572678410964e-01, 4.972722109715e-03, -1.010001064919e-02) mean_flux=(1.000e+00, 5.266e-18, 5.292e-18) div_max=5.249e-09 div_rms=3.391e-11",
+    "  SF-19 corrector x: status=converged its=30 rel_residual=6.906e-14 final_residual=8.500e-08",
+    "  SF-19 corrector y: status=converged its=30 rel_residual=5.708e-14 final_residual=6.965e-08",
+    "  SF-19 corrector z: status=converged its=30 rel_residual=4.663e-14 final_residual=6.713e-08",
+    "  inlet: vmin=6.031378e-04 mean(U plane 0)=1.000000000000006 (mean-1=6.217e-15) Q0-1=5.773e-15 v_rms=n/a (lean stage: vertex vD not built)",
+    "  v1(U-face) vs spline flow k g1: n/a (lean stage); spline potential GPU vs host prefilter: n/a"
+  ],
+  "sigma2": 1.0
+}

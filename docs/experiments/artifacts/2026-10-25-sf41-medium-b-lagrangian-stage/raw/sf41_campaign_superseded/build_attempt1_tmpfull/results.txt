@@ -1,0 +1,7 @@
+RECORDED build_tree git=absent src_digest=821e4feec2e8895d392c754c049da0a1044172a453097b5fb8f5c099f8168243 
+RECORDED build_commit SF41_COMMIT=269c658687816788fdaf65f9d5b1307d87376b6a preset=v100-release build_dir=/home/sesquerre/MacroFlow3D-SF-41/build/v100-release
+RECORDED ctest_N Total Tests: 52
+BUILD_BINARIES n=0 md5file=/home/sesquerre/sf41_campaign/build/binaries.md5 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+BUILD_VERDICT FAIL missing_binaries=[ interpolation_nonperiodic_x_tests sf41_cross_representation_tests dirichlet_controls_tests pollock_nonperiodic_tests dirichlet_long_box_stage_tests lagrangian_ensemble lagrangian_medium_ab macroflow3d_pipeline inlet_slab]
+RECORDED part_seconds=325 part_runs_seconds=314 part=build (this invocation / sum of the recorded run walls)
+PART_DONE part=build rc=1

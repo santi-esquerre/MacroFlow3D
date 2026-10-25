@@ -1,0 +1,72 @@
+-- The CUDA compiler identification is NVIDIA 11.4.152 with host compiler GNU 9.3.1
+-- The CXX compiler identification is GNU 9.3.1
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda-11.4/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/rh/devtoolset-9/root/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CUDAToolkit: /usr/local/cuda-11.4/targets/x86_64-linux/include (found version "11.4.152")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (6.5s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release
+  159 | #pragma GCC diagnostic pop
+      |                           ^
+compilation terminated.
+[244/303] Linking CXX executable CMakeFiles/inlet_slab_trace_tests.dir/cmake_device_link.o
+FAILED: CMakeFiles/inlet_slab_trace_tests.dir/cmake_device_link.o 
+/usr/local/cuda-11.4/bin/nvcc -forward-unknown-to-host-compiler -O3 -DNDEBUG "--generate-code=arch=compute_70,code=[compute_70,sm_70]"  -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/inlet_slab_trace_tests.dir/tests/inlet_slab/slab_trace_tests.cu.o -o CMakeFiles/inlet_slab_trace_tests.dir/cmake_device_link.o -L/usr/local/cuda-11.4/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda-11.4/targets/x86_64-linux/lib libmacroflow3d_lib.a  -lpthread -ldl /usr/local/cuda-11.4/targets/x86_64-linux/lib/libculibos.a src/external/yaml-cpp-0.8.0/libyaml-cpp.a src/external/Par2_Core/libpar2_core.a -lcudadevrt -lcudart_static -lrt
+/usr/local/cuda-11.4/bin/crt/link.stub:159:27: fatal error: error writing to /tmp/ccfPtlKf.s: No queda espacio en el dispositivo
+  159 | #pragma GCC diagnostic pop
+      |                           ^
+compilation terminated.
+[245/303] Linking CXX executable CMakeFiles/inlet_slab_npy_tests.dir/cmake_device_link.o
+FAILED: CMakeFiles/inlet_slab_npy_tests.dir/cmake_device_link.o 
+/usr/local/cuda-11.4/bin/nvcc -forward-unknown-to-host-compiler -O3 -DNDEBUG "--generate-code=arch=compute_70,code=[compute_70,sm_70]"  -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/inlet_slab_npy_tests.dir/tests/inlet_slab/slab_npy_tests.cu.o -o CMakeFiles/inlet_slab_npy_tests.dir/cmake_device_link.o -L/usr/local/cuda-11.4/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda-11.4/targets/x86_64-linux/lib libmacroflow3d_lib.a  -lpthread -ldl /usr/local/cuda-11.4/targets/x86_64-linux/lib/libculibos.a src/external/yaml-cpp-0.8.0/libyaml-cpp.a src/external/Par2_Core/libpar2_core.a -lcudadevrt -lcudart_static -lrt
+/usr/local/cuda-11.4/bin/crt/link.stub:159:27: fatal error: error writing to /tmp/ccORPy6q.s: No queda espacio en el dispositivo
+  159 | #pragma GCC diagnostic pop
+      |                           ^
+compilation terminated.
+[246/303] Linking CXX executable CMakeFiles/lagrangian_ensemble.dir/cmake_device_link.o
+FAILED: CMakeFiles/lagrangian_ensemble.dir/cmake_device_link.o 
+/usr/local/cuda-11.4/bin/nvcc -forward-unknown-to-host-compiler -O3 -DNDEBUG "--generate-code=arch=compute_70,code=[compute_70,sm_70]"  -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/lagrangian_ensemble.dir/apps/lagrangian_ensemble/lagrangian_ensemble_main.cu.o -o CMakeFiles/lagrangian_ensemble.dir/cmake_device_link.o -L/usr/local/cuda-11.4/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda-11.4/targets/x86_64-linux/lib libmacroflow3d_lib.a  -lpthread -ldl /usr/local/cuda-11.4/targets/x86_64-linux/lib/libculibos.a src/external/yaml-cpp-0.8.0/libyaml-cpp.a src/external/Par2_Core/libpar2_core.a -lcudadevrt -lcudart_static -lrt
+/usr/local/cuda-11.4/bin/crt/link.stub:159:27: fatal error: error writing to /tmp/ccEeB6ak.s: No queda espacio en el dispositivo
+  159 | #pragma GCC diagnostic pop
+      |                           ^
+compilation terminated.
+[247/303] Linking CXX executable CMakeFiles/long_box_tests.dir/cmake_device_link.o
+[248/303] Linking CXX executable CMakeFiles/dirichlet_medium_tests.dir/cmake_device_link.o
+[249/303] Linking CXX executable CMakeFiles/macroflow3d_pipeline.dir/cmake_device_link.o
+/tmp/ccT3dp56.s: Mensajes del ensamblador:
+/tmp/ccT3dp56.s:115930: Aviso: se asume cero para la expresión ausentente
+[250/303] Linking CXX executable CMakeFiles/par2_field_stats.dir/cmake_device_link.o
+/tmp/ccyUdI42.s: Mensajes del ensamblador:
+/tmp/ccyUdI42.s:38106: Aviso: se asume cero para la expresión ausentente
+[251/303] Linking CXX executable CMakeFiles/projected_pcg_external_tests.dir/cmake_device_link.o
+[252/303] Linking CXX executable CMakeFiles/inlet_slab_contract_tests.dir/cmake_device_link.o
+FAILED: CMakeFiles/inlet_slab_contract_tests.dir/cmake_device_link.o 
+/usr/local/cuda-11.4/bin/nvcc -forward-unknown-to-host-compiler -O3 -DNDEBUG "--generate-code=arch=compute_70,code=[compute_70,sm_70]"  -Xcompiler=-fPIC -Wno-deprecated-gpu-targets -shared -dlink CMakeFiles/inlet_slab_contract_tests.dir/tests/inlet_slab/slab_contract_tests.cu.o -o CMakeFiles/inlet_slab_contract_tests.dir/cmake_device_link.o -L/usr/local/cuda-11.4/targets/x86_64-linux/lib/stubs  -L/usr/local/cuda-11.4/targets/x86_64-linux/lib libmacroflow3d_lib.a  -lpthread -ldl /usr/local/cuda-11.4/targets/x86_64-linux/lib/libculibos.a src/external/yaml-cpp-0.8.0/libyaml-cpp.a src/external/Par2_Core/libpar2_core.a -lcudadevrt -lcudart_static -lrt
+/tmp/ccKi7hJ5.s: Mensajes del ensamblador:
+/tmp/ccKi7hJ5.s:128076: Error: pseudo-operador desconocido: «.qu»
+[253/303] Linking CXX executable CMakeFiles/spurious_spreading.dir/cmake_device_link.o
+ninja: build stopped: subcommand failed.
