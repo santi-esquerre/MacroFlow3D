@@ -30,7 +30,7 @@ then `wait`), `A=docs/experiments/artifacts/2026-10-25-sf41-medium-b-lagrangian-
 |---|---|---|---|
 | `build` | `<build_dir>` (head) | CLEAN build, `ctest -N`, md5 of every executable | `BUILD_BINARIES`, `BUILD_VERDICT` |
 | `baserefs` | `~/sf41_base_refs/bin` (base `2cf48c1`) | SF-27 trio, SF-38 20-run R set, G(ii) runner run, G(iii) A/B run | `BASEREFS_RECORDED` |
-| `controls` | head | A (`--full`, memcheck of the domain group), C1-C4, C5, D (sampler), memory models | `A_VERDICT`, `C1..C5_VERDICT`, `C_VERDICT`, `D_VERDICT`, `D_MEM` |
+| `controls` | head | A (`--full`, memcheck of the domain group), C1-C4, C5, D (sampler), memory models | `A_VERDICT`, `C1..C5_VERDICT`, `C_VERDICT`, `D_VERDICT`, `RECORDED D_MEM` |
 | `cross` | head | B (`--only B`) | `B_VERDICT` |
 | `prodgrid` | head | E1-E4 (sampler), mapped-host re-run iff PID peak > 30000 MiB | `E_RUN`, `E_VERDICT id=`, `E_VERDICT ALL` |
 | `evladder` | head | F: 24 runs | `F_CELL`, `F_VERDICT eps=`, `F_VERDICT ALL` (+ `RECORDED F_DP/F_V3B_SUMMARY`) |
@@ -79,7 +79,7 @@ are not evidence; H and the `interpolation_*` entries of G are expected NOT_OK /
   program and every `C4_CHECK` of `pollock_nonperiodic_tests --only C4` PASS with counts equal to `expected=`; C5: `converged=1`, `rel <= 1e-10`, `balance <= 1e-8` recomputed, and on the C1
   medium `initial = rel = 0`, 0 iterations. Recorded: `C_RECORD` lines (C2 `I` vs quadrature, reversed head), the C5 head differences.
 - **D (RR6)** `d_verdict.py`: `D_CHECK` identical head and B_SOLVER at 128x32x32, 512x64x64, 3328x256x256 (the `D_REF`/`D_LEAN` lines are compared again as strings), mapped-host identical at the two
-  small sizes; RR2: PID peak of the whole process <= 30000 MiB with the sampler gates (`D_MEM`). Recorded: the field-by-field comparison with SF-38's committed C0 line.
+  small sizes. D fails only on those comparisons or a non-zero exit. Recorded (not gated): the RR2 PID peak and device-wide peak of the whole process (`D_MEM`), the field-by-field comparison with SF-38's committed C0 line.
 - **E (RR7, RR2)** `e_verdict.py`: solve `primary` (converged, rel <= 1e-10) or the C0 `fallback` (rel <= 1e-8), balance <= 1e-8 from `Q_in`/`Q_out`, exit 0, stage grid, PID peak <= 30000 MiB, and
   the non-solve-phase rule from the exact `MEM_PHASE` bytes (every phase F, S1, V, H, S3, T, B <= S2 and <= 30000 MiB; violation = placement defect, BLOCKING). A device run whose PID
   peak exceeds 30000 MiB needs the `E<k>_mapped` re-run (`PASS_MAPPED_HEAD` if it meets everything, FAIL `peak_above_30000_after_fallback` = R3 for the owner otherwise).

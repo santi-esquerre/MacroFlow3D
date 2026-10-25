@@ -10,12 +10,13 @@ D is met iff
   * for every size 128x32x32, 512x64x64, 3328x256x256 a `D_CHECK size=` line has head_identical=1 and bsolver_identical=1, and the
     `D_REF` / `D_LEAN` B_SOLVER lines (compared HERE, string-equal after removing the trailing ` size=`) are identical;
   * the mapped-host head variant is identical at the two small sizes (mapped_identical=1) and not run (na) at 3328x256x256;
-  * RR2 memory of the whole process: the PID peak <= 30000 MiB with the sampler gates (>= 5 samples, PID <= device peak, PID
-    consistent with the process tree) -> `D_MEM`; a failing gate with everything else met is NOT_EVALUABLE.
+Memory (RR2 sampler, whole process) is RECORDED, not gated: `RECORDED D_MEM` carries the PID peak, the device-wide peak, the sample count
+and the sampler status; threshold D is the bitwise comparison only (the 30000 MiB gate belongs to E), so D fails only on an RR6 comparison
+or a non-zero exit.
 Recorded: every B_SOLVER line, the comparison of the 3328x256x256 line with SF-38's committed C0 line (`--c0-log`, default the
 committed bpilot.log; an environment control, no gate), the MEM_PHASE lines and wall/RSS.  `--dry` (local, not evidence) uses
-the fast-tier sizes found in the log (every size must have head/B_SOLVER identical; mapped identical where run), no memory gate.
-Output: D_VERDICT ... PASS|FAIL|NOT_EVALUABLE.  Exit 0 iff PASS.
+the fast-tier sizes found in the log (every size must have head/B_SOLVER identical; mapped identical where run), no D_MEM record.
+Output: D_VERDICT ... PASS|FAIL.  Exit 0 iff PASS.
 """
 import math
 import os
@@ -99,21 +100,15 @@ def report(d, run="D", c0_log=C0_LOG, dry=False):
         return ["D_VERDICT run=%s exit=%s FAIL (no log)" % (run, rc)], False
     ok, why, rows, ref, lean = evaluate(text, rc, dry)
     out = []
-    mem_state, mem_line = "SKIPPED_DRY", ""
+    # Memory is RECORDED, never gated: threshold D is the bitwise comparison only (the 30000 MiB gate belongs to E).
+    mem_txt = "SKIPPED_DRY"
     if not dry:
-        lines, mem_ok = mv.peak_line(d, run)
-        mem_line = lines[0]
-        within = lines[1].endswith("PASS")
-        mem_state = "OK" if (mem_ok and within) else ("FAIL" if (mem_ok and not within) else "NOT_EVALUABLE")
-        out.append("D_MEM run=%s %s | %s" % (run, lines[0], lines[1]))
-    if not ok or mem_state == "FAIL":
-        verdict = "FAIL"
-    elif mem_state == "NOT_EVALUABLE":
-        verdict = "NOT_EVALUABLE"
-    else:
-        verdict = "PASS"
-    out.insert(0, "D_VERDICT run=%s exit=%s sizes=[%s] mem=%s %s%s" % (
-        run, rc, "; ".join(rows), mem_state, verdict, "" if ok else " [%s]" % ",".join(why[:8])))
+        pk = mv.peak_of(d, run)
+        mem_txt = "pid_peak_mib=%s dev_peak_mib=%s samples=%s sampler=%s" % (pk["pid_peak"], pk["dev_peak"], pk["samples"], pk["status"])
+        out.append("RECORDED D_MEM run=%s %s reasons=%s (recorded, not gated)" % (run, mem_txt, ",".join(pk["reasons"]) or "-"))
+    verdict = "PASS" if ok else "FAIL"
+    out.insert(0, "D_VERDICT run=%s exit=%s sizes=[%s] %s%s" % (
+        run, rc, "; ".join(rows), verdict, "" if ok else " [%s]" % ",".join(why[:8])))
     for s in sorted(ref):
         out.append("RECORDED D_REF size=%s %s" % (s, ref[s]))
         out.append("RECORDED D_LEAN size=%s %s" % (s, lean.get(s, "-")))
@@ -185,16 +180,20 @@ def selftest():
             f.write("R=0 " + _line(50) + "\n")
         out, ok = report(d, c0_log=c0)
         expect("report_pass", ok and out[0].endswith("PASS") and any("D_C0_COMPARE size=3328x256x256 identical_fields=11/11" in x for x in out))
-        with open(os.path.join(d, "D.apps.csv"), "w") as f:  # PID peak above the limit
+        with open(os.path.join(d, "D.apps.csv"), "w") as f:  # PID peak above 30000 MiB: recorded, D still PASS
             f.write("".join("2026/10/25 10:00:%02d.000, 4242, %d\n" % (i, 31000) for i in range(12)))
         with open(os.path.join(d, "D.dev.csv"), "w") as f:
             f.write("".join("2026/10/25 10:00:%02d.000, %d\n" % (i, 31100) for i in range(12)))
         out, ok = report(d, c0_log=c0)
-        expect("report_mem_fail", not ok and "mem=FAIL" in out[0])
-        with open(os.path.join(d, "D.apps.csv"), "w") as f:  # too few samples
+        expect("mem_over_limit_not_gated", ok and out[0].endswith("PASS") and any("D_MEM" in x and "pid_peak_mib=31000" in x and "dev_peak_mib=31100" in x for x in out))
+        with open(os.path.join(d, "D.apps.csv"), "w") as f:  # sampler unusable (too few samples): recorded, D still PASS
             f.write("2026/10/25 10:00:00.000, 4242, 100\n")
         out, ok = report(d, c0_log=c0)
-        expect("report_mem_not_evaluable", not ok and "NOT_EVALUABLE" in out[0])
+        expect("mem_not_evaluable_not_gated", ok and any("D_MEM" in x and "sampler=NOT_EVALUABLE" in x for x in out))
+        with open(os.path.join(d, "exit_codes.tsv"), "w") as f:  # a non-zero exit still fails D
+            f.write("D\t1\n")
+        out, ok = report(d, c0_log=c0)
+        expect("exit_nonzero_fails", not ok and out[0].startswith("D_VERDICT run=D exit=1") and out[0].endswith("FAIL [exit=1]"))
     if fails:
         print("SELFTEST FAILED: %s" % ", ".join(fails))
         return 1
