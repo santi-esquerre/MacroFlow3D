@@ -829,6 +829,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(pollock_nonperiodic_tests PRIVATE macroflow3d_lib)
     target_compile_options(pollock_nonperiodic_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_pollock_nonperiodic COMMAND pollock_nonperiodic_tests)
+    # SF-41 N3b: exact controls C1-C4 of the Lagrangian consumer on medium (b) (non-periodic-in-x1 spline, x-exit
+    # handling of the tracker and of the Pollock comparator), heads written into the sample array, no solver
+    # (FAST tier <= 32^3, well under 60 s; `--full` is the RR5 form for the V100, not a ctest entry)
+    add_executable(dirichlet_controls_tests tests/lagrangian_labels/dirichlet_controls_tests.cu)
+    target_link_libraries(dirichlet_controls_tests PRIVATE macroflow3d_lib)
+    target_compile_options(dirichlet_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_dirichlet_controls COMMAND dirichlet_controls_tests)
     # SF-38 N3: ensemble runner (determinism, restart after a simulated crash, CSV round trip, twin, seed-face
     # assertion, field-only) on a 64x16x16 box; drives the lagrangian_ensemble and macroflow3d_pipeline binaries
     # (build both targets first). Fast tier <= 60 s.
