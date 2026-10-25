@@ -205,6 +205,7 @@ set(OPERATOR_SOURCES
 # SF-28: periodic tricubic B-spline interpolation (value + gradient, GPU + CPU mirror)
 set(INTERPOLATION_SOURCES
     src/numerics/interpolation/PeriodicTricubicBSpline.cu
+    src/numerics/interpolation/NonPeriodicXTricubicBSpline.cu
 )
 
 # SF-31: streamline-tracker shared label evaluator and particle bookkeeping
@@ -664,6 +665,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(interpolation_hessian_tests PRIVATE macroflow3d_lib)
     target_compile_options(interpolation_hessian_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME interpolation_hessian COMMAND interpolation_hessian_tests)
+
+    # SF-41 N1: non-periodic-in-x1 tricubic B-spline (threshold A program; ctest runs the fast tier,
+    # the full RR3 tier is `interpolation_nonperiodic_x_tests --full` on the V100)
+    add_executable(interpolation_nonperiodic_x_tests tests/interpolation/nonperiodic_x_bspline_tests.cu)
+    target_link_libraries(interpolation_nonperiodic_x_tests PRIVATE macroflow3d_lib)
+    target_compile_options(interpolation_nonperiodic_x_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME interpolation_nonperiodic_x COMMAND interpolation_nonperiodic_x_tests)
 
     # SF-31 N3: pseudo-symplectic streamline tracker contract tests (fast tier)
     add_executable(streamline_tracker_ps_tests tests/streamline_tracker/pseudo_symplectic_tracker_tests.cu)
