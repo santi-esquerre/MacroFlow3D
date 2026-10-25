@@ -250,6 +250,8 @@ set(LAGRANGIAN_LABELS_SOURCES
     src/physics/particles/lagrangian_labels/LongBoxStage.cu
     # SF-38 N2: medium (b) (solve_head, Dirichlet in x) and the Eulerian face statistics E1
     src/physics/particles/lagrangian_labels/DirichletMedium.cu
+    # SF-41 N2: lean medium (b) stage (flow part; default flags like DirichletMedium.cu / LongBoxStage.cu)
+    src/physics/particles/lagrangian_labels/DirichletLongBoxStage.cu
     src/physics/particles/lagrangian_labels/EulerianFaceStats.cpp
     # SF-38 N3: Lagrangian ensemble runner (host orchestration over the libraries above)
     src/physics/particles/lagrangian_labels/EnsembleRunner.cu
@@ -808,6 +810,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(dirichlet_medium_tests PRIVATE macroflow3d_lib)
     target_compile_options(dirichlet_medium_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_dirichlet_medium COMMAND dirichlet_medium_tests)
+
+    # SF-41 N2: lean medium (b) stage (C-STAGE flow part): bitwise vs DirichletMedium, C5 solver controls,
+    # exact-bytes closed form, external-vector PCG (fast tier <= 32^3 cells; --only D / --only C5 are the V100 modes).
+    add_executable(dirichlet_long_box_stage_tests tests/lagrangian_labels/dirichlet_long_box_stage_tests.cu)
+    target_link_libraries(dirichlet_long_box_stage_tests PRIVATE macroflow3d_lib)
+    target_compile_options(dirichlet_long_box_stage_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_dirichlet_long_box_stage COMMAND dirichlet_long_box_stage_tests)
 
     # SF-37 N3: CompactMAC -> periodic face repack (bitwise), Pollock lattice tracker on k = 1 and a smooth K
     add_executable(face_flux_repack_tests tests/lagrangian_labels/face_flux_repack_tests.cu)
