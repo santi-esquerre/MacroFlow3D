@@ -88,6 +88,38 @@ bool same_bytes(const std::vector<real>& a, const std::vector<real>& b) {
     return a.size() == b.size() && (a.empty() || std::memcmp(a.data(), b.data(), a.size() * sizeof(real)) == 0);
 }
 
+unsigned long long fnv1a_host(const std::vector<real>& v) {
+    unsigned long long x = 1469598103934665603ULL;
+    const unsigned char* b = reinterpret_cast<const unsigned char*>(v.data());
+    for (std::size_t i = 0; i < v.size() * sizeof(real); ++i)
+        x = (x ^ b[i]) * 1099511628211ULL;
+    return x;
+}
+
+/// Size-aware comparison of two host heads (x fastest): prints `<tag> sizes=a/b differing=.. first=(i,j,k)
+/// maxabs=..` and returns true iff both have `n` elements and are bitwise equal. A size mismatch is a failure
+/// (never a vacuous "no differing cell").
+bool describe_diff(const std::string& tag, const std::vector<real>& a, const std::vector<real>& b, int nx, int ny,
+                   std::size_t n) {
+    std::size_t cnt = 0, first = (std::size_t)-1;
+    double mx = 0;
+    if (a.size() == b.size())
+        for (std::size_t c = 0; c < a.size(); ++c)
+            if (std::memcmp(&a[c], &b[c], 8) != 0) {
+                ++cnt;
+                if (first == (std::size_t)-1)
+                    first = c;
+                mx = std::max(mx, std::abs(a[c] - b[c]));
+            }
+    const bool sized = a.size() == n && b.size() == n;
+    std::printf("DIAG %s sizes=%zu/%zu(expected %zu) differing=%zu first=%lld (i=%lld j=%lld k=%lld) maxabs=%.3e\n",
+                tag.c_str(), a.size(), b.size(), n, cnt, (long long)first,
+                first == (std::size_t)-1 ? -1LL : (long long)(first % nx),
+                first == (std::size_t)-1 ? -1LL : (long long)((first / nx) % ny),
+                first == (std::size_t)-1 ? -1LL : (long long)(first / ((std::size_t)nx * ny)), mx);
+    return sized && cnt == 0;
+}
+
 std::vector<real> download(const real* d, std::size_t n) {
     std::vector<real> h(n);
     MACROFLOW3D_CUDA_CHECK(cudaMemcpy(h.data(), d, n * sizeof(real), cudaMemcpyDeviceToHost));
@@ -285,9 +317,17 @@ DResult run_D_case(CudaContext& ctx, int nx, int ny, int nz, double G1_in, bool 
         std::printf("D_G1 size=%s G1=%.17g darcy_converged=%d\n", sz.c_str(), G1, LS.report.darcy_converged ? 1 : 0);
     }
 
+    const unsigned long long y_hash0 = fnv1a_host(Y);
     ll::DirichletMedium ref = ll::build_dirichlet_medium(ctx, ref_spec(nx, ny, nz, eps, G1, levels), Y);
     const std::string ref_line = ll::format_b_solver(0, ll::make_dirichlet_solver_record(ref.report));
     std::printf("D_REF %s size=%s\n", ref_line.c_str(), sz.c_str());
+    // A vacuous comparison (empty reference head) must never pass or be mistaken for a difference of the stage.
+    check("D_" + sz + "_ref_head_present", ref.host_head.size() == n,
+          "ref.host_head.size()=" + std::to_string(ref.host_head.size()) + " expected " + std::to_string(n) +
+              " sizeof(DirichletMedium) test=" + std::to_string(sizeof(ll::DirichletMedium)) + " lib=" +
+              std::to_string(ll::dirichlet_medium_object_bytes()));
+    check("D_" + sz + "_abi_dirichlet_medium", ll::dirichlet_medium_object_bytes() == sizeof(ll::DirichletMedium));
+    check("D_" + sz + "_Y_unchanged_by_ref", fnv1a_host(Y) == y_hash0);
 
     auto run_lean = [&](bool mapped, DResult* /*unused*/) {
         ll::DirichletLongBoxSpec s = lean_spec(nx, ny, nz, eps, G1);
@@ -313,8 +353,9 @@ DResult run_D_case(CudaContext& ctx, int nx, int ny, int nz, double G1_in, bool 
         ll::DirichletLongBoxStage L = run_lean(false, nullptr);
         const std::string lean_line = ll::format_b_solver(0, L.solver);
         std::printf("D_LEAN %s size=%s\n", lean_line.c_str(), sz.c_str());
-        out.head_identical = same_bytes(L.host_head, ref.host_head) && L.host_head.size() == n;
+        out.head_identical = describe_diff("D_" + sz + "_device_vs_ref", L.host_head, ref.host_head, nx, ny, n);
         out.bsolver_identical = lean_line == ref_line;
+        check("D_" + sz + "_Y_unchanged_by_device_lean", fnv1a_host(Y) == y_hash0);
         check("D_" + sz + "_head_bitwise", out.head_identical);
         check("D_" + sz + "_bsolver_text", out.bsolver_identical);
         check_exact_bytes("D_" + sz, L, nx, ny, nz, true);
@@ -346,7 +387,11 @@ DResult run_D_case(CudaContext& ctx, int nx, int ny, int nz, double G1_in, bool 
         out.mapped_run = true;
         ll::DirichletLongBoxStage L = run_lean(true, nullptr);
         const std::string lean_line = ll::format_b_solver(0, L.solver);
-        out.mapped_identical = same_bytes(L.host_head, ref.host_head) && lean_line == ref_line;
+        out.mapped_identical = describe_diff("D_" + sz + "_mapped_vs_ref", L.host_head, ref.host_head, nx, ny, n) &&
+                               lean_line == ref_line;
+        if (lean_line != ref_line)
+            std::printf("D_LEAN_MAPPED %s size=%s\n", lean_line.c_str(), sz.c_str());
+        check("D_" + sz + "_Y_unchanged_by_mapped_lean", fnv1a_host(Y) == y_hash0);
         check("D_" + sz + "_mapped_head_bsolver", out.mapped_identical);
         check_exact_bytes("D_" + sz + "_mapped", L, nx, ny, nz, false);
         if (print_mem)
@@ -588,18 +633,7 @@ void run_diag(CudaContext& ctx, int nx, int ny, int nz, int levels_in) {
         L.push_back(ll::build_dirichlet_long_box_stage(ctx, s).host_head);
     }
     auto cmp = [&](const char* nm, const std::vector<real>& a, const std::vector<real>& b) {
-        std::size_t cnt = 0, first = (std::size_t)-1;
-        double mx = 0;
-        for (std::size_t c = 0; c < a.size(); ++c)
-            if (std::memcmp(&a[c], &b[c], 8) != 0) {
-                ++cnt;
-                if (first == (std::size_t)-1) first = c;
-                mx = std::max(mx, std::abs(a[c] - b[c]));
-            }
-        std::printf("DIAG %s differing=%zu first=%lld (i=%lld j=%lld k=%lld) maxabs=%.3e\n", nm, cnt,
-                    (long long)first, first == (std::size_t)-1 ? -1LL : (long long)(first % nx),
-                    first == (std::size_t)-1 ? -1LL : (long long)((first / nx) % ny),
-                    first == (std::size_t)-1 ? -1LL : (long long)(first / ((std::size_t)nx * ny)), mx);
+        describe_diff(nm, a, b, nx, ny, (std::size_t)nx * ny * nz);
     };
     std::printf("DIAG size=%s levels=%d\n", size_str(nx, ny, nz).c_str(), levels);
     {
@@ -611,7 +645,7 @@ void run_diag(CudaContext& ctx, int nx, int ny, int nz, int levels_in) {
         s.mg_levels = levels_in;
         s.debug_trace = &tr_lean;
         const ll::DirichletLongBoxStage T = ll::build_dirichlet_long_box_stage(ctx, s);
-        std::printf("DIAG replica_vs_DirichletMedium head_identical=%d\n", same_bytes(hr, r1.host_head) ? 1 : 0);
+        describe_diff("replica_vs_DirichletMedium", hr, r1.host_head, nx, ny, (std::size_t)nx * ny * nz);
         std::printf("DIAG trace_entries ref=%zu lean=%zu\n", tr_ref.size(), tr_lean.size());
         print_first_trace_divergence("replica_vs_lean", tr_ref, tr_lean);
     }
@@ -663,7 +697,7 @@ int main(int argc, char** argv) {
             test_flag_off(ctx);
             run_D_case(ctx, 64, 16, 16, 1.0, false, true, true);
             run_D_case(ctx, 32, 16, 16, 1.0, true, true, false);
-            run_D_case(ctx, 32, 32, 32, 1.0, false, true, false); // 4 MG levels (regression of N2c)
+            run_D_case(ctx, 32, 32, 32, 1.0, true, true, false); // 4 MG levels, the --only D path (cells, device then mapped)
             c5_case(ctx, "C1", 64, 16, 16, false);
             c5_case(ctx, "C2", 32, 16, 16, true);
             c5_case(ctx, "C2", 64, 16, 16, true);

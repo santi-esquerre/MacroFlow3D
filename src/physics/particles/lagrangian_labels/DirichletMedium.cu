@@ -119,6 +119,10 @@ std::vector<std::string> DirichletMedium::mem_lines() const {
     return out;
 }
 
+std::size_t dirichlet_medium_object_bytes() {
+    return sizeof(DirichletMedium);
+}
+
 DirichletMedium build_dirichlet_medium(CudaContext& ctx, const DirichletMediumSpec& spec,
                                        const std::vector<real>& Y) {
     const int nx = spec.nx, ny = spec.ny, nz = spec.nz;

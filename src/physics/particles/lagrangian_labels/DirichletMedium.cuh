@@ -111,6 +111,10 @@ class DirichletMedium {
     DeviceBuffer<real> pu_, pv_, pw_;
 };
 
+/// sizeof(DirichletMedium) as compiled in DirichletMedium.cu. Tests compare it with their own sizeof to detect a
+/// stale library object (header changed, object not rebuilt: e.g. a sync that preserves older mtimes).
+std::size_t dirichlet_medium_object_bytes();
+
 /// Builds medium (b) from the host unit-amplitude `Y` (nx*ny*nz, x fastest). Throws
 /// std::invalid_argument for bad input; solver non-convergence is reported (report.converged), not thrown.
 DirichletMedium build_dirichlet_medium(CudaContext& ctx, const DirichletMediumSpec& spec,
