@@ -33,11 +33,17 @@
 
 #include "src/core/DeviceBuffer.cuh"
 #include "src/core/Scalar.hpp"
+#include "src/multigrid/coefficient_hierarchy.cuh"
 #include "src/numerics/blas/blas.cuh"
+#include "src/numerics/operators/varcoeff_laplacian.cuh"
+#include "src/numerics/solvers/mg_preconditioner.cuh"
 #include "src/numerics/solvers/pcg.cuh"
 #include "src/physics/particles/lagrangian_labels/DirichletLongBoxStage.cuh"
 #include "src/physics/particles/lagrangian_labels/DirichletMedium.cuh"
 #include "src/physics/particles/lagrangian_labels/LongBoxStage.cuh"
+#include "src/physics/common/fields.cuh"
+#include "src/physics/flow/rhs_head.cuh"
+#include "src/physics/flow/solve_head.cuh"
 #include "src/physics/stochastic/PeriodicGaussianField.cuh"
 #include "src/runtime/CudaContext.cuh"
 #include "src/runtime/cuda_check.cuh"
@@ -59,6 +65,7 @@ namespace {
 
 constexpr double kTwoPi = 6.283185307179586476925286766559;
 int g_failed = 0, g_passed = 0;
+unsigned long long g_diag_seed = 4001ULL; // --diag nx,ny,nz[,levels[,seed]]
 
 void check(const std::string& name, bool ok, const std::string& detail = "") {
     std::printf("CHECK %s %s%s%s\n", name.c_str(), ok ? "PASS" : "FAIL", detail.empty() ? "" : "  ",
@@ -473,6 +480,149 @@ void test_inputs(CudaContext& ctx) {
     check("inputs_invalid_argument", all);
 }
 
+
+/// Diagnostic (no gate): DirichletMedium twice and the lean stage twice on the same Y; pairwise head comparison
+/// and the first differing cell. Usage: --diag nx,ny,nz[,mg_levels]
+void poison_pool(std::size_t bytes, int byte) {
+    unsigned char* p = nullptr;
+    MACROFLOW3D_CUDA_CHECK(cudaMalloc(&p, bytes));
+    MACROFLOW3D_CUDA_CHECK(cudaMemset(p, byte, bytes));
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+    MACROFLOW3D_CUDA_CHECK(cudaFree(p));
+}
+
+
+/// Reference replica for the trace: DirichletMedium's K phase and solve_head's PCG_MG branch step by step
+/// (public APIs, the same order), with the same hashes/apply wrappers as the lean stage's debug trace.
+/// Returns the final head (host).
+std::vector<real> trace_reference(CudaContext& ctx, const std::vector<real>& Y, int nx, int ny, int nz, double eps,
+                                  double G1, int levels, ll::debug::Trace& tr) {
+    const double h = 1.0 / ny, L1 = nx * h;
+    const Grid3D grid(nx, ny, nz, h, h, h);
+    const std::size_t n = (std::size_t)nx * ny * nz;
+    BCSpec bc;
+    bc.xmin = BCFace(BCType::Dirichlet, G1 * L1);
+    bc.xmax = BCFace(BCType::Dirichlet, 0.0);
+    bc.ymin = bc.ymax = BCFace(BCType::Periodic, 0.0);
+    bc.zmin = bc.zmax = BCFace(BCType::Periodic, 0.0);
+    physics::KField Kf;
+    physics::HeadField head;
+    Kf.resize(grid);
+    head.resize(grid);
+    std::vector<real> K(n);
+    for (std::size_t c = 0; c < n; ++c) {
+        const real lnK = eps * Y[c];
+        K[c] = std::exp(lnK);
+    }
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(Kf.data.data(), K.data(), n * 8, cudaMemcpyHostToDevice));
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+    physics::HeadSolveConfig cfg;
+    cfg.solver_type = physics::HeadSolverType::PCG_MG;
+    cfg.mg_levels = levels;
+    cfg.cg_rtol = 1e-10;
+    cfg.cg_max_iter = 2000;
+    cfg.pin.mode = PinMode::Off;
+    multigrid::MGHierarchy hier(grid, levels);
+    multigrid::MGConfig mg_cfg;
+    mg_cfg.num_levels = hier.num_levels();
+    mg_cfg.pre_smooth = cfg.mg_pre_smooth;
+    mg_cfg.post_smooth = cfg.mg_post_smooth;
+    mg_cfg.coarse_solve_iters = cfg.mg_coarse_iters;
+    multigrid::populate_coefficient_hierarchy(ctx, hier, Kf.data.span());
+    for (std::size_t l = 0; l < hier.levels.size(); ++l)
+        tr.emplace_back("coef_l" + std::to_string(l), ll::debug::fnv1a_device(hier.levels[l].coefficient.data(),
+                                                                          hier.levels[l].coefficient.size()));
+    physics::build_rhs_head(DeviceSpan<real>(hier.levels[0].b.data(), n),
+                            DeviceSpan<const real>(hier.levels[0].coefficient.data(), n), grid, bc, ctx);
+    physics::init_head_guess(head.span(), grid, bc, ctx);
+    tr.emplace_back("rhs", ll::debug::fnv1a_device(hier.levels[0].b.data(), n));
+    tr.emplace_back("head_init", ll::debug::fnv1a_device(head.data.data(), n));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(hier.levels[0].x.data(), head.data.data(), n * 8, cudaMemcpyDeviceToDevice,
+                                           ctx.cuda_stream()));
+    const PinSpec pin_spec(pin_enabled(PinMode::Off, bc));
+    operators::VarCoeffLaplacian A(grid, Kf.data.span(), bc, pin_spec);
+    solvers::MultigridPreconditioner M(hier, bc, mg_cfg, pin_spec);
+    solvers::PCGWorkspace pws;
+    pws.ensure(n);
+    DeviceBuffer<real> rhs(n);
+    blas::copy(ctx, DeviceSpan<const real>(hier.levels[0].b.span()), rhs.span());
+    solvers::PCGConfig pc;
+    pc.max_iter = cfg.cg_max_iter;
+    pc.check_every = cfg.cg_check_every;
+    pc.rtol = cfg.cg_rtol;
+    const ll::debug::TracedOp<operators::VarCoeffLaplacian> tA{A, &tr, "A#", 0};
+    const ll::debug::TracedOp<solvers::MultigridPreconditioner> tM{M, &tr, "M#", 0};
+    solvers::pcg_solve(ctx, tA, tM, DeviceSpan<const real>(rhs.span()), head.span(), pc, pws);
+    ctx.synchronize();
+    tr.emplace_back("head_final", ll::debug::fnv1a_device(head.data.data(), n));
+    return download(head.data.data(), n);
+}
+
+void print_first_trace_divergence(const char* nm, const ll::debug::Trace& a, const ll::debug::Trace& b) {
+    std::size_t i = 0;
+    for (; i < a.size() && i < b.size(); ++i)
+        if (a[i].first != b[i].first || a[i].second != b[i].second)
+            break;
+    if (i == a.size() && i == b.size()) {
+        std::printf("DIAG_TRACE %s identical entries=%zu\n", nm, a.size());
+        return;
+    }
+    std::printf("DIAG_TRACE %s FIRST_DIFF index=%zu a=%s:%016llx b=%s:%016llx (sizes %zu/%zu)\n", nm, i,
+                i < a.size() ? a[i].first.c_str() : "-", i < a.size() ? a[i].second : 0ULL,
+                i < b.size() ? b[i].first.c_str() : "-", i < b.size() ? b[i].second : 0ULL, a.size(), b.size());
+}
+
+void run_diag(CudaContext& ctx, int nx, int ny, int nz, int levels_in) {
+    const int levels = levels_in > 0 ? levels_in : ll::box_auto_mg_levels(nx, ny, nz);
+    std::vector<real> Y = gaussian_Y(ctx, nx, ny, nz, 1.0, 0.125, g_diag_seed);
+    ll::DirichletMedium r1 = ll::build_dirichlet_medium(ctx, ref_spec(nx, ny, nz, 2.0, 1.0, levels), Y);
+    poison_pool(((std::size_t)nx * ny * nz * 80 + (1u << 20)), 0x7f); // recycled memory = garbage doubles
+    ll::DirichletMedium r2 = ll::build_dirichlet_medium(ctx, ref_spec(nx, ny, nz, 2.0, 1.0, levels), Y);
+    std::vector<std::vector<real>> L;
+    for (int rep = 0; rep < 6; ++rep) {
+        poison_pool(((std::size_t)nx * ny * nz * 80 + (1u << 20)), rep == 0 ? 0xff : 0x42);
+        ll::DirichletLongBoxSpec s = lean_spec(nx, ny, nz, 2.0, 1.0);
+        s.source = ll::LongBoxSourceKind::cells;
+        s.cells = Y;
+        s.mg_levels = levels_in;
+        L.push_back(ll::build_dirichlet_long_box_stage(ctx, s).host_head);
+    }
+    auto cmp = [&](const char* nm, const std::vector<real>& a, const std::vector<real>& b) {
+        std::size_t cnt = 0, first = (std::size_t)-1;
+        double mx = 0;
+        for (std::size_t c = 0; c < a.size(); ++c)
+            if (std::memcmp(&a[c], &b[c], 8) != 0) {
+                ++cnt;
+                if (first == (std::size_t)-1) first = c;
+                mx = std::max(mx, std::abs(a[c] - b[c]));
+            }
+        std::printf("DIAG %s differing=%zu first=%lld (i=%lld j=%lld k=%lld) maxabs=%.3e\n", nm, cnt,
+                    (long long)first, first == (std::size_t)-1 ? -1LL : (long long)(first % nx),
+                    first == (std::size_t)-1 ? -1LL : (long long)((first / nx) % ny),
+                    first == (std::size_t)-1 ? -1LL : (long long)(first / ((std::size_t)nx * ny)), mx);
+    };
+    std::printf("DIAG size=%s levels=%d\n", size_str(nx, ny, nz).c_str(), levels);
+    {
+        ll::debug::Trace tr_ref, tr_lean;
+        const std::vector<real> hr = trace_reference(ctx, Y, nx, ny, nz, 2.0, 1.0, levels, tr_ref);
+        ll::DirichletLongBoxSpec s = lean_spec(nx, ny, nz, 2.0, 1.0);
+        s.source = ll::LongBoxSourceKind::cells;
+        s.cells = Y;
+        s.mg_levels = levels_in;
+        s.debug_trace = &tr_lean;
+        const ll::DirichletLongBoxStage T = ll::build_dirichlet_long_box_stage(ctx, s);
+        std::printf("DIAG replica_vs_DirichletMedium head_identical=%d\n", same_bytes(hr, r1.host_head) ? 1 : 0);
+        std::printf("DIAG trace_entries ref=%zu lean=%zu\n", tr_ref.size(), tr_lean.size());
+        print_first_trace_divergence("replica_vs_lean", tr_ref, tr_lean);
+    }
+    cmp("ref1_vs_ref2", r1.host_head, r2.host_head);
+    cmp("lean1_vs_lean2", L[0], L[1]);
+    cmp("ref1_vs_lean1", r1.host_head, L[0]);
+    cmp("ref2_vs_lean1", r2.host_head, L[0]);
+    for (std::size_t q = 1; q < L.size(); ++q)
+        cmp(("lean0_vs_lean" + std::to_string(q)).c_str(), L[0], L[q]);
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -480,6 +630,12 @@ int main(int argc, char** argv) {
     for (int i = 1; i < argc; ++i) {
         if (std::strcmp(argv[i], "--only") == 0 && i + 1 < argc) {
             only = argv[++i];
+        } else if (std::strcmp(argv[i], "--diag") == 0 && i + 1 < argc) {
+            int a = 0, b = 0, c = 0, l = 0;
+            std::sscanf(argv[++i], "%d,%d,%d,%d,%llu", &a, &b, &c, &l, &g_diag_seed);
+            CudaContext dctx(0);
+            run_diag(dctx, a, b, c, l);
+            return 0;
         } else {
             std::fprintf(stderr, "usage: %s [--only D|C5]\n", argv[0]);
             return 2;
@@ -507,6 +663,7 @@ int main(int argc, char** argv) {
             test_flag_off(ctx);
             run_D_case(ctx, 64, 16, 16, 1.0, false, true, true);
             run_D_case(ctx, 32, 16, 16, 1.0, true, true, false);
+            run_D_case(ctx, 32, 32, 32, 1.0, false, true, false); // 4 MG levels (regression of N2c)
             c5_case(ctx, "C1", 64, 16, 16, false);
             c5_case(ctx, "C2", 32, 16, 16, true);
             c5_case(ctx, "C2", 64, 16, 16, true);

@@ -396,11 +396,21 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
                     DeviceSpan<real>(coarse.coefficient.data(), coarse.coefficient.size()));
             }
 
+            auto* trace = spec.debug_trace;
+            if (trace) {
+                for (std::size_t l = 0; l < hier.levels.size(); ++l)
+                    trace->emplace_back("coef_l" + std::to_string(l), debug::fnv1a_device(hier.levels[l].coefficient.data(),
+                                                                                       hier.levels[l].coefficient.size()));
+            }
             // right-hand side into the dead level-0 residual buffer
             physics::build_rhs_head(DeviceSpan<real>(lvl0.r.data(), n),
                                     DeviceSpan<const real>(lvl0.coefficient.data(), n), grid, bc, ctx);
             const DeviceSpan<real> x(head_ptr, n);
             physics::init_head_guess(x, grid, bc, ctx);
+            if (trace) {
+                trace->emplace_back("rhs", debug::fnv1a_device(lvl0.r.data(), n));
+                trace->emplace_back("head_init", debug::fnv1a_device(head_ptr, n));
+            }
 
             const PinSpec pin_spec(pin_enabled(PinMode::Off, bc));
             operators::VarCoeffLaplacian A(grid, DeviceSpan<const real>(lvl0.coefficient.data(), n), bc, pin_spec);
@@ -423,8 +433,15 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
             vec.z = DeviceSpan<real>(lvl0.b.data(), n);
             vec.Ap = DeviceSpan<real>(lvl0.b.data(), n); // z == Ap == level-0 b (disjoint lifetimes)
             vec.red = &red;
-            const solvers::PCGResult r =
-                solvers::pcg_solve_external(ctx, A, M, DeviceSpan<const real>(lvl0.r.data(), n), x, pcg_cfg, vec);
+            solvers::PCGResult r;
+            if (trace) {
+                const debug::TracedOp<operators::VarCoeffLaplacian> tA{A, trace, "A#", 0};
+                const debug::TracedOp<solvers::MultigridPreconditioner> tM{M, trace, "M#", 0};
+                r = solvers::pcg_solve_external(ctx, tA, tM, DeviceSpan<const real>(lvl0.r.data(), n), x, pcg_cfg, vec);
+                trace->emplace_back("head_final", debug::fnv1a_device(head_ptr, n));
+            } else {
+                r = solvers::pcg_solve_external(ctx, A, M, DeviceSpan<const real>(lvl0.r.data(), n), x, pcg_cfg, vec);
+            }
             ctx.synchronize();
             MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
 

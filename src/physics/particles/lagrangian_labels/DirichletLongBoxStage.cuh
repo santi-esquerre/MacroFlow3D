@@ -42,15 +42,48 @@
 #include "../../../core/Grid3D.hpp"
 #include "../../../core/Scalar.hpp"
 #include "../../../runtime/CudaContext.cuh"
+#include "../../../runtime/cuda_check.cuh"
 #include "DirichletMedium.cuh"
 #include "LongBoxStage.cuh"
 
 #include <cstddef>
+#include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace macroflow3d {
 namespace lagrangian_labels {
+
+/// Debug-only solve trace (SF-41 N2c): FNV-1a hashes of device buffers and of the output of every operator /
+/// preconditioner application, to localize the first divergence between two solves. Host syncs and D2H copies at
+/// every entry: never in production.
+namespace debug {
+using Trace = std::vector<std::pair<std::string, unsigned long long>>;
+
+inline unsigned long long fnv1a_device(const real* d, std::size_t n) {
+    std::vector<real> h(n);
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(h.data(), d, n * sizeof(real), cudaMemcpyDeviceToHost));
+    unsigned long long x = 1469598103934665603ULL;
+    const unsigned char* b = reinterpret_cast<const unsigned char*>(h.data());
+    for (std::size_t i = 0; i < n * sizeof(real); ++i)
+        x = (x ^ b[i]) * 1099511628211ULL;
+    return x;
+}
+
+/// Wraps an operator / preconditioner (`apply(ctx, in, out)`): the arithmetic is the wrapped one's.
+template <class Op> struct TracedOp {
+    const Op& op;
+    Trace* log;
+    const char* tag;
+    mutable int count;
+    void apply(CudaContext& ctx, DeviceSpan<const real> x, DeviceSpan<real> y) const {
+        op.apply(ctx, x, y);
+        log->emplace_back(std::string(tag) + std::to_string(count++), fnv1a_device(y.data(), y.size()));
+    }
+};
+} // namespace debug
 
 struct DirichletLongBoxSpec {
     int nx = 0, ny = 0, nz = 0; ///< ny == nz; divisible by 2^(mg_levels-1), coarsest extents >= 2
@@ -70,6 +103,7 @@ struct DirichletLongBoxSpec {
     bool head_mapped_host = false;  ///< pre-authorized fallback: PCG x in pinned mapped host memory (bitwise)
     bool keep_host_faces = false;   ///< host CompactMAC U V W (Pollock bridge / flow statistics)
     bool keep_host_head = false;    ///< host copy of the solved head H before it becomes f (tests)
+    debug::Trace* debug_trace = nullptr; ///< non-owning; debug hashes of the solve (host syncs), see debug::
 };
 
 /// The `B_SOLVER` quantities of the A/B application (lagrangian_medium_ab_main.cu) and its verdict rule.
