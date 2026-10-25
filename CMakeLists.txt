@@ -851,6 +851,14 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(lagrangian_ensemble_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_ensemble
         COMMAND lagrangian_ensemble_tests $<TARGET_FILE:lagrangian_ensemble> $<TARGET_FILE:macroflow3d_pipeline>)
+    # SF-41 N5: the same runner with --medium b (lean Dirichlet stage, exit-aware tracker and Pollock bridge,
+    # multi-pass h_max, flow_stats.json) on a 128x16x16 box; also unit-tests the medium (b) auto rules and the
+    # flow statistics. Links the library (in-process stage rebuild for the independent flow-stats check).
+    add_executable(lagrangian_ensemble_b_tests tests/lagrangian_labels/lagrangian_ensemble_b_tests.cu)
+    target_link_libraries(lagrangian_ensemble_b_tests PRIVATE macroflow3d_lib)
+    target_compile_options(lagrangian_ensemble_b_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_ensemble_medium_b
+        COMMAND lagrangian_ensemble_b_tests $<TARGET_FILE:lagrangian_ensemble>)
     # SF-38 N4: medium A/B application (determinism, crash/restart, k = 1 equivalence, primary statistics
     # recomputed independently, ab_primary.csv, usage/seed-face exits) on a 128x16x16 box. Fast tier <= 60 s.
     add_executable(lagrangian_medium_ab_tests tests/lagrangian_labels/lagrangian_medium_ab_tests.cu)
