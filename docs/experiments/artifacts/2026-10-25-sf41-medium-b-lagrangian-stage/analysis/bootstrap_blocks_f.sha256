@@ -1,0 +1,2 @@
+bf45a8cb390d691b7c83a8db72964919d498dd719f98d1e652c8327179e8d0fd  matrix: sha256 of m.astype('<i8').tobytes() for m = numpy.random.default_rng(20261025).integers(0, 4, size=(2000, 4)) (numpy 2.5.0); f_verdict.py verifies this value on load
+da85f40cb0842d64a0ec3d5ffdaf9073ec96dbc6f6036a6b43896408051d5a83  bootstrap_blocks_f.npy (the committed file, np.save of the int64 matrix)
