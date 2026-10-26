@@ -31,6 +31,7 @@
 #include <cuda_runtime.h>
 #include <filesystem>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -219,7 +220,8 @@ class IOScheduler {
     void end_realization() {
         if (cfg_.stats_every > 0 && !stats_series_.empty()) {
             std::string fname = layout_.realization_timeseries(current_r_);
-            io::CsvTimeSeriesWriter::write(fname, stats_series_);
+            if (!io::CsvTimeSeriesWriter::write(fname, stats_series_))
+                throw std::runtime_error("cannot write " + fname);
             std::printf("       Wrote %s (%d samples)\n", fname.c_str(), (int)stats_series_.size());
         }
     }

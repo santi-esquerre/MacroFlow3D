@@ -15,6 +15,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <exception>
 #include <string>
 
 #include "src/io/config/Config.hpp"
@@ -23,7 +24,7 @@
 
 using namespace macroflow3d;
 
-int main(int argc, char** argv) {
+static int run_main(int argc, char** argv) {
     // ── 1. Parse arguments ─────────────────────────────────────────────
     if (argc < 2) {
         std::fprintf(stderr, "Usage: %s <config.yaml>\n", argv[0]);
@@ -49,4 +50,13 @@ int main(int argc, char** argv) {
     // ── 4. Print summary & run ─────────────────────────────────────────
     pipeline::print_config_summary(cfg);
     return pipeline::run_pipeline(cfg, ctx, profiler);
+}
+
+int main(int argc, char** argv) {
+    try {
+        return run_main(argc, argv);
+    } catch (const std::exception& e) {
+        std::fprintf(stderr, "ERROR: %s\n", e.what());
+        return 1;
+    }
 }

@@ -285,8 +285,8 @@ struct ConfigSerializer {
         std::fprintf(f, "      delta_min: %.15e\n", (double)sf.newton.delta.delta_min);
         std::fprintf(f, "      delta_max: %.15e\n", (double)sf.newton.delta.delta_max);
 
-        std::fclose(f);
-        return true;
+        const bool bad = std::ferror(f) != 0; // fclose flushes: both must be clean
+        return std::fclose(f) == 0 && !bad;
     }
 };
 

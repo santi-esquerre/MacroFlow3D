@@ -56,8 +56,8 @@ class CsvTimeSeriesWriter {
                          (double)p.mean[0], (double)p.mean[1], (double)p.mean[2], (double)p.var[0],
                          (double)p.var[1], (double)p.var[2], p.active);
         }
-        std::fclose(f);
-        return true;
+        const bool bad = std::ferror(f) != 0; // fclose flushes: both must be clean
+        return std::fclose(f) == 0 && !bad;
     }
 
     /**
@@ -100,8 +100,8 @@ class CsvTimeSeriesWriter {
                          (double)m[0], (double)m[1], (double)m[2], (double)v[0], (double)v[1],
                          (double)v[2], (double)act);
         }
-        std::fclose(f);
-        return true;
+        const bool bad = std::ferror(f) != 0; // fclose flushes: both must be clean
+        return std::fclose(f) == 0 && !bad;
     }
 };
 

@@ -1,6 +1,6 @@
 #include "../../runtime/cuda_check.cuh"
 #include "dot.cuh"
-#include <cassert>
+#include <stdexcept>
 #include <climits>
 
 namespace macroflow3d {
@@ -17,7 +17,8 @@ void dot_device(CudaContext& ctx, DeviceSpan<const real> x, DeviceSpan<const rea
     }
 
     size_t n = (x.size() < y.size()) ? x.size() : y.size();
-    assert(n <= INT_MAX && "dot: size exceeds cuBLAS int limit");
+    if (n > static_cast<size_t>(INT_MAX))
+        throw std::length_error("dot: size exceeds cuBLAS int limit");
 
     // Use cuBLAS with device pointer mode (no host sync, no temp buffers)
     cublasHandle_t handle = ctx.cublas_handle();
