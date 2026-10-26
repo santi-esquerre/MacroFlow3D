@@ -40,7 +40,7 @@ TRACE_THREADS=32
 PROD_N=32
 PROD_EXTRA=()
 # heterogeneous/homogeneous pipeline configs (apps/<name>.yaml), one case each in its own empty cwd; edit to add or retire members
-PIPE_CASES=(config_par2_small config_streamfunctions_homogeneous config_streamfunctions_continuation config_pspta_small)
+PIPE_CASES=(config_par2_small config_streamfunctions_homogeneous config_streamfunctions_continuation)
 
 if [ "$LIST" = "0" ]; then
     for b in $BINS; do

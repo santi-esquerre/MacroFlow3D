@@ -34,4 +34,3 @@ They are part of the execution harness: agents must read the relevant note befor
 ## Cross-references
 
 - `docs/validation/acceptance-gates.md` — gates informed by these notes
-- `src/physics/particles/pspta/AGENTS.md` — legacy PSPTA migration rules

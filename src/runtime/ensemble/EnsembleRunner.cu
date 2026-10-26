@@ -49,18 +49,11 @@
 #include "../../physics/particles/par2_adapter/par2_views.hpp"
 #include "../../physics/particles/par2_adapter/Par2TransportAdapter.hpp"
 
-// PSPTA engine + precomputed ψ fields
-#include "../../physics/particles/pspta/PsptaEngine.hpp"
-#include "../../physics/particles/pspta/PsptaPsiField.cuh"
-
 // Streamfunction solver (Lester eq. 14) — observational stage (SF-16 T02)
 // and eta/epsilon continuation (SF-17 T03).
 #include "../../physics/streamfunctions/ContinuationController.hpp"
 #include "../../physics/streamfunctions/StreamfunctionSolver.cuh"
 #include "../../physics/streamfunctions/StreamfunctionWorkspace.cuh"
-
-// PSPTA runtime diagnostics writer
-#include "../../runtime/io/CsvDiagnosticsWriter.hpp"
 
 // Runtime — counters + NVTX + printing helpers
 #include "../../runtime/nvtx_range.cuh"
@@ -100,25 +93,6 @@ static StochasticConfig make_stochastic_cfg(const StochasticYamlConfig& y) {
 static bool bc_has_any_periodic(const BCSpec& bc) {
     return bc.xmin.type == BCType::Periodic || bc.ymin.type == BCType::Periodic ||
            bc.zmin.type == BCType::Periodic;
-}
-
-static macroflow3d::physics::particles::pspta::PsiRefineConfig
-make_pspta_refine_cfg(const TransportYamlConfig::PsptaRefineConfig& y) {
-    macroflow3d::physics::particles::pspta::PsiRefineConfig c;
-    c.enabled = y.enabled;
-    c.outer_iters = y.outer_iters;
-    c.omega = static_cast<double>(y.omega);
-    c.omega_min = static_cast<double>(y.omega_min);
-    c.max_backtracks = y.max_backtracks;
-    c.eps_vx = static_cast<double>(y.eps_vx);
-    c.source_clip_cells = static_cast<double>(y.source_clip_cells);
-    c.no_descent_patience = y.no_descent_patience;
-    c.stop_rel_rms = static_cast<double>(y.stop_rel_rms);
-    c.stop_abs_rms = static_cast<double>(y.stop_abs_rms);
-    c.print_every_iter = y.print_every_iter;
-    c.save_history_csv = y.save_history_csv;
-    c.eq13_diagnostics = y.eq13_diagnostics;
-    return c;
 }
 
 // ============================================================================
@@ -171,12 +145,11 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
     FlowWorkspace flow_ws;
     flow_ws.allocate(grid, head_cfg.mg_levels);
 
-    // Velocity (padded for Par2_Core; compact/CompactMAC for PSPTA and for the
+    // Velocity (padded for Par2_Core; compact/CompactMAC for the
     // streamfunction solver stage, which consumes CompactMAC exclusively)
     PaddedVelocityField vel(grid);
     VelocityField vel_compact; // default-constructed (no alloc); resized below if needed
-    const bool need_vel_compact =
-        (cfg.transport.method == "pspta") || cfg.streamfunction_solver.enabled;
+    const bool need_vel_compact = cfg.streamfunction_solver.enabled;
     if (need_vel_compact) {
         vel_compact = VelocityField(grid);
     }
@@ -275,19 +248,6 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
 
     runtime::IOScheduler scheduler(sched_cfg, layout);
 
-    // ── PSPTA objects — hoisted for reuse across realizations (Task 4) ─────
-    // PsptaPsiField and PsptaEngine are constructed once here and rebind each
-    // realization; only precompute_levelA() and bind*() are called per-r.
-    // This eliminates per-realization cudaMalloc/cudaFree of ψ buffers and
-    // engine workspace, keeping the GPU memory footprint stable.
-    std::unique_ptr<pspta::PsptaEngine> pspta_eng;
-    pspta::PsptaPsiField pspta_psi_field;
-    if (cfg.transport.method == "pspta") {
-        pspta_psi_field.resize(grid);
-        pspta_eng =
-            std::make_unique<pspta::PsptaEngine>(grid, ctx.cuda_stream(), cfg.transport.seed);
-    }
-
     // ================================================================
     // REALIZATION LOOP (NR loop lives ONLY here — Etapa 10)
     // ================================================================
@@ -357,29 +317,17 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             std::fprintf(stderr, "       WARNING: Head solve did NOT converge (r=%d)!\n", r);
 
         // ── Compute velocity ───────────────────────────────────────────
-        // need_vel_compact (hoisted above) also covers the streamfunction
-        // solver stage, which consumes CompactMAC exclusively; need_padded
-        // preserves the exact original per-method requirement (par2 always
-        // needs padded; pspta only needs it when velocity diagnostics run).
+        // need_vel_compact (hoisted above) covers the streamfunction solver
+        // stage, which consumes CompactMAC exclusively; Par2 always needs the
+        // padded velocity.
         MACROFLOW3D_NVTX_PUSH("velocity");
         profiler.start("velocity");
-        const bool need_padded =
-            (cfg.transport.method != "pspta") || cfg.diagnostics.velocity_field;
         if (need_vel_compact) {
             std::printf("  [6] Computing velocity (compact)\n");
             compute_velocity_from_head(vel_compact, head_field, K_field, grid, cfg.flow.bc, ctx);
         }
-        if (need_padded) {
-            // Baseline-stdout contract (T02-F1 fix): the pre-SF-16 pspta
-            // branch computed the diagnostics-only padded velocity silently
-            // (no print); only the non-pspta branch printed this line. Keep
-            // that exact console behavior while still computing padded
-            // velocity whenever it is actually needed.
-            if (cfg.transport.method != "pspta") {
-                std::printf("  [6] Computing velocity (padded)\n");
-            }
-            compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
-        }
+        std::printf("  [6] Computing velocity (padded)\n");
+        compute_velocity_from_head(vel, head_field, K_field, grid, cfg.flow.bc, ctx);
         profiler.stop();
 
         // ── Velocity diagnostics (optional, once per realization) ──────
@@ -765,10 +713,9 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             unwrap_view.capacity = NP;
         }
 
-        // Generic hot loop — templated on engine type; same interface for Par2 and
-        // PSPTA. Engine must expose: bind_particles, inject_box, ensure_tracking,
-        // prepare,
-        //                     step, particles(), compute_unwrapped, synchronize.
+        // Generic hot loop — templated on engine type. Engine must expose:
+        // bind_particles, inject_box, ensure_tracking, prepare, step,
+        // particles(), compute_unwrapped, synchronize.
         auto run_hot_loop = [&](auto& eng) {
             eng.bind_particles(pv);
             eng.inject_box(cfg.transport.inject_x, static_cast<real>(0.0), static_cast<real>(0.0),
@@ -788,7 +735,7 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
                 eng.step(dt);
                 counters.add_step();
 
-                // Progress printout (for both Par2 and PSPTA)
+                // Progress printout
                 const int out_every = cfg.transport.output_every;
                 if (out_every > 0 && step % out_every == 0) {
                     std::printf("           step %5d/%d  t=%.3e\n", step, n_steps,
@@ -852,72 +799,12 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             counters.add_realization();
         }; // end run_hot_loop
 
-        if (cfg.transport.method == "pspta") {
-            std::printf("  [7] Transport (PSPTA)\n");
-            // Per-realization: precompute ψ fields for this velocity field
-            // (overwrites existing buffers — no cudaMalloc/cudaFree per Task 4)
-            pspta::PsptaPrecomputeReport psi_rep =
-                pspta_psi_field.precompute_levelA(vel_compact, grid, ctx.cuda_stream());
-            if (psi_rep.n_vx_clamped > 0) {
-                std::printf("       [psi] vx_clamped=%lld / %lld\n",
-                            (long long)psi_rep.n_vx_clamped, (long long)psi_rep.n_total);
-            }
-
-            pspta::PsiQualityReport psi_final_quality;
-            bool has_psi_final_quality = false;
-
-            if (cfg.transport.pspta_refine.enabled) {
-                const auto refine_cfg = make_pspta_refine_cfg(cfg.transport.pspta_refine);
-                auto refine_rep =
-                    pspta_psi_field.refine_psi(vel_compact, grid, ctx.cuda_stream(), refine_cfg);
-                psi_final_quality = refine_rep.final_quality;
-                has_psi_final_quality = true;
-
-                if (refine_cfg.save_history_csv) {
-                    runtime::CsvDiagnosticsWriter::write_psi_refine_history(
-                        layout.base + "/psi_refine_history.csv", r, refine_rep);
-                    runtime::CsvDiagnosticsWriter::write_psi_refine_summary(
-                        layout.base + "/psi_refine_summary.csv", r, refine_rep);
-                }
-            }
-
-            if (!has_psi_final_quality && cfg.transport.pspta_diagnostics) {
-                psi_final_quality =
-                    pspta_psi_field.compute_psi_quality(vel_compact, grid, ctx.cuda_stream());
-                has_psi_final_quality = true;
-            }
-            if (cfg.transport.pspta_diagnostics && has_psi_final_quality) {
-                std::printf("       [psi_quality] rms_r1=%.3e max_r1=%.3e "
-                            "rms_r2=%.3e max_r2=%.3e  ncells=%lld\n",
-                            psi_final_quality.rms_r1, psi_final_quality.max_r1,
-                            psi_final_quality.rms_r2, psi_final_quality.max_r2,
-                            (long long)psi_final_quality.n_cells);
-                runtime::CsvDiagnosticsWriter::write_psi_quality_row(
-                    layout.base + "/psi_quality.csv", r, psi_rep, psi_final_quality);
-            }
-            // Rebind per-realization (engine workspace already allocated)
-            pspta_eng->set_inject_seed(cfg.transport.seed + static_cast<uint64_t>(r) * 100ULL);
-            pspta_eng->bind_velocity(&vel_compact);
-            pspta_eng->bind_psifield(&pspta_psi_field);
-            run_hot_loop(*pspta_eng);
-            // Post-transport PSPTA diagnostics
-            auto ts = pspta_eng->compute_transport_stats();
-            std::printf("       [pspta] active=%d  exited=%d  newton_stalls=%lld  "
-                        "nonzero_fail=%u  max_fail=%u  (NP=%d)\n",
-                        ts.n_active, ts.n_exited, (long long)ts.total_fail, ts.n_nonzero_fail,
-                        ts.max_fail_count, NP);
-            if (cfg.transport.pspta_diagnostics) {
-                runtime::CsvDiagnosticsWriter::write_newton_fail_row(
-                    layout.base + "/newton_fail_summary.csv", r, NP, ts);
-            }
-        } else {
-            std::printf("  [7] Transport (Par2_Core)\n");
-            TransportAdapterConfig r_cfg = ta_cfg;
-            r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
-            Par2TransportAdapter eng(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
-            eng.bind_velocity(vel);
-            run_hot_loop(eng);
-        }
+        std::printf("  [7] Transport (Par2_Core)\n");
+        TransportAdapterConfig r_cfg = ta_cfg;
+        r_cfg.rng_seed = cfg.transport.seed + static_cast<uint64_t>(r) * 1000ULL;
+        Par2TransportAdapter eng(grid, cfg.flow.bc, r_cfg, ctx.cuda_stream());
+        eng.bind_velocity(vel);
+        run_hot_loop(eng);
 
         // Store this realization's series for post-processing
         if (do_stats) {

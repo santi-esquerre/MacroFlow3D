@@ -4,7 +4,7 @@
 # Purpose (scripts/regress): exercises the random-field generator, the heterogeneous
 # MG-PCG head solve, the velocity reconstruction and the Par2 transport on a grid that
 # runs in seconds on the V100 and locally on a small GPU.  Flow/grid/stochastic blocks
-# are those of apps/config_pspta_small.yaml (64x32x32, dx=5, lambda/dx=10, sigma2=1,
+# are those of the retired legacy-transport smoke config (64x32x32, dx=5, lambda/dx=10, sigma2=1,
 # Gaussian covariance); transport is baseline Par2 (purely advective, deterministic seed).
 #
 #   ./build/macroflow3d_pipeline apps/config_par2_small.yaml

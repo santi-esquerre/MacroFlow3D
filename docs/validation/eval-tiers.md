@@ -23,7 +23,7 @@ entries. They are documented experiments in the heavy tier (see
 cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
 ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 ### Commands (remote — authoritative full suite, detached)
@@ -102,16 +102,16 @@ scripts/remote wait ctest-sf-operators
 
 ## Tier C — Physics / ensemble
 
-**Applies to:** Lester equation (14) invariant construction, legacy PSPTA compatibility/migration, macrodispersion output, ensemble statistics, or any change affecting the central scientific claim.
+**Applies to:** Lester equation (14) invariant construction, macrodispersion output, ensemble statistics, or any change affecting the central scientific claim.
 
-**Operational plan:** For new invariant construction, verify alignment with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`. Legacy PSPTA work is compatibility or migration only; use `docs/plans/archive/pspta-execution-plan.md` as historical context.
+**Operational plan:** For new invariant construction, verify alignment with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`. `docs/plans/archive/pspta-execution-plan.md` (retired PSPTA path) is historical context only.
 
 **Where:** local WSL for smoke. Remote V100 for production runs.
 
 ### Commands (local smoke)
 
 ```bash
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pipeline_par2.yaml
 ```
 
@@ -122,8 +122,6 @@ scripts/remote sync
 scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
 scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
 scripts/remote wait ctest-full
-scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
-scripts/remote wait pspta-prod
 scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
 scripts/remote wait par2-prod
 ```
@@ -158,11 +156,6 @@ the increment bitácora; a red outcome is a recorded science result, not a
 ### Pass criteria
 
 - All Tier A and Tier B criteria met
-- Legacy PSPTA diagnostics inspected when that path is touched:
-  - `v·∇ψ1`, `v·∇ψ2` residuals
-  - independence / degeneracy signal
-  - Newton failure counts and distribution
-  - particle status summary (active / exited / failed)
 - For Lester equation (14) solver work, Gate 3A metrics inspected:
   - coupled residual `r_F`
   - velocity reconstruction error `e_v`
@@ -185,7 +178,7 @@ the increment bitácora; a red outcome is a recorded science result, not a
 
 ### Maps to
 
-- Gate 3A (Lester equation (14) solver integrity), or Gate 3 only for legacy PSPTA compatibility
+- Gate 3A (Lester equation (14) solver integrity; Gate 3 is retired)
 - Gate 4 (helicity-free regime)
 - Gate 5 (ensemble/macrodispersion)
 
@@ -210,7 +203,7 @@ Is this docs / scripts / AGENTS only?
 Does it touch src/numerics/, src/multigrid/, or operator code?
   → Tier A + Tier B
 
-Does it touch src/physics/ or legacy PSPTA?
+Does it touch src/physics/?
   → Tier A + Tier B + Tier C
 
 Does it change macrodispersion output or ensemble stats?

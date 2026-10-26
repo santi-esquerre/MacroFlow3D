@@ -53,16 +53,16 @@ ctest --test-dir build/wsl-debug --output-on-failure -R '^(flow_workspace_bytes|
 '''
 
 [[actions]]
-name = "Smoke (PSPTA small)"
+name = "Smoke (Par2 small)"
 icon = "tool"
 command = '''
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 '''
 
 [[actions]]
-name = "Profile (PSPTA small)"
+name = "Profile (Par2 small)"
 icon = "tool"
 command = '''
 set -euo pipefail
@@ -79,6 +79,6 @@ cmake --build build/wsl-release -j
 
 nsys profile \
   --force-overwrite true \
-  -o profiles/pspta_small \
-  ./build/wsl-release/macroflow3d_pipeline apps/config_pspta_small.yaml
+  -o profiles/par2_small \
+  ./build/wsl-release/macroflow3d_pipeline apps/config_par2_small.yaml
 '''

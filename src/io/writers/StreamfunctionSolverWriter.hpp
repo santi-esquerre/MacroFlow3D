@@ -9,8 +9,7 @@
  * `io::StreamfunctionExportConfig` (`iteration_history`, `summary`,
  * `fields`) and are written once per realization, directly under
  * `OutputLayout::streamfunction_dir(r, nx)`. Each file is written fresh
- * (not appended): one solve report -> one directory -> one set of files,
- * unlike the append-mode PSPTA diagnostics writers.
+ * (not appended): one solve report -> one directory -> one set of files.
  *
  * `iteration_history.csv` and `trial_history.csv` are two separate files
  * (rather than one file with a blank-line-separated second header) because

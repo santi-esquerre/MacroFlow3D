@@ -15,7 +15,7 @@ Local WSL is for fast iteration and light validation.
 | Configure (release) | `cmake --preset wsl-release` |
 | Build | `cmake --build build/wsl-debug -j` |
 | Fast targeted unit test | `ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>` |
-| Smoke (PSPTA) | `./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml` |
+| Smoke (Par2 small) | `./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml` |
 | Smoke (Par2) | `./build/wsl-debug/macroflow3d_pipeline apps/config_pipeline_par2.yaml` |
 | Documentation | edit and review locally |
 | Script iteration | test locally before sync |
@@ -43,7 +43,6 @@ Remote V100 is for heavy validation and production-like runs.
 | Release build (short, bounded → `exec`) | `scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"` |
 | Full release `ctest` (long-duration → detached) | `scripts/remote run ctest-release -- "ctest --test-dir build/v100-release --output-on-failure"` then `scripts/remote wait ctest-release` |
 | Profiling build | Use preset `v100-prof` |
-| PSPTA production | `scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"` |
 | Par2 production | `scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"` |
 | Ensemble runs | remote only |
 

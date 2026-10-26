@@ -44,7 +44,7 @@ using namespace macroflow3d::physics::particles;
  * @brief Cadence + formatting configuration for the I/O scheduler.
  *
  * snap_writer mirrors SnapshotWriterConfig from par2_views.hpp, ensuring
- * identical snapshot options are available for both Par2 and PSPTA paths.
+ * identical snapshot options are available to the transport path.
  */
 struct SchedulerConfig {
     // Stats (moments) sampling cadence (transport steps)

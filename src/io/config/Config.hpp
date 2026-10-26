@@ -119,22 +119,6 @@ struct FlowYamlConfig {
  * @brief Particle transport configuration
  */
 struct TransportYamlConfig {
-    struct PsptaRefineConfig {
-        bool enabled = false;
-        int outer_iters = 5;
-        real omega = static_cast<real>(0.5);
-        real omega_min = static_cast<real>(1.0e-6);
-        int max_backtracks = 18;
-        real eps_vx = static_cast<real>(1.0e-10);
-        real source_clip_cells = static_cast<real>(0.1);
-        int no_descent_patience = 4;
-        real stop_rel_rms = static_cast<real>(0.25);
-        real stop_abs_rms = static_cast<real>(1.0e-6);
-        bool print_every_iter = true;
-        bool save_history_csv = true;
-        bool eq13_diagnostics = false;
-    };
-
     int n_particles = 10000;
     real dt = 0.01;
     int n_steps = 1000;
@@ -153,20 +137,13 @@ struct TransportYamlConfig {
     // Injection (default: x=0 plane spanning full YZ domain)
     real inject_x = 0.0;
 
-    // Velocity layout — DERIVED from method, NOT user-configurable.
-    // "par2"  → "padded";  "pspta" → "compact"
+    // Velocity layout — fixed to "padded" (Par2 is the only transport method);
+    // NOT user-configurable.
     std::string velocity_layout = "padded";
 
-    // Transport method: "par2" (default) | "pspta"
+    // Transport method: only "par2" is supported (the legacy transport engine was
+    // retired 2026-10-26); the key is kept and validated.
     std::string method = "par2";
-
-    // Enable PSPTA-specific diagnostics (ψ quality + Newton fail summary).
-    // Written to psi_quality.csv and newton_fail_summary.csv.
-    // Has no effect for method=="par2".  Default OFF.
-    bool pspta_diagnostics = false;
-
-    // Optional post-seed refinement of ψ invariants (method=="pspta" only).
-    PsptaRefineConfig pspta_refine;
 };
 
 /**

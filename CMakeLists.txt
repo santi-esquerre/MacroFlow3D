@@ -242,8 +242,6 @@ set(PHYSICS_SOURCES
     src/physics/particles/par2_adapter/Par2TransportAdapter.cu
     src/physics/particles/par2_adapter/Par2StatsAdapter.cu
     src/physics/particles/par2_adapter/Par2SnapshotAdapter.cu
-    src/physics/particles/pspta/PsptaPsiField.cu
-    src/physics/particles/pspta/PsptaEngine.cu
 )
 
 set(IO_SOURCES

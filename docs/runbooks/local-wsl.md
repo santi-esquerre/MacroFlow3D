@@ -116,10 +116,10 @@ long-duration computation (several registered `ctest` entries are multi-case
 solver/continuation sweeps) and belongs on V100 as a detached job — see
 `docs/runbooks/remote-v100.md` Section 0 and Section 7 below.
 
-### 4.4 Run the legacy PSPTA smoke case
+### 4.4 Run the Par2 smoke case
 
 ```bash
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 ---

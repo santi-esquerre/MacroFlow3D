@@ -253,29 +253,23 @@ it reliably completes in well under a minute; when in doubt, use `run` +
 
 ## 7. Remote runs
 
-### Legacy PSPTA smoke
+### Par2 smoke
 ```bash
-scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
-scripts/remote wait pspta-small
-```
-
-### Legacy PSPTA production-like config
-```bash
-scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
-scripts/remote tail pspta-prod
-scripts/remote wait pspta-prod
+scripts/remote run par2-small -- "./build/v100-release/macroflow3d_pipeline apps/config_par2_small.yaml"
+scripts/remote wait par2-small
 ```
 
 ### Baseline Par2 config
 ```bash
 scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
+scripts/remote tail par2-prod
 scripts/remote wait par2-prod
 ```
 
 ### Cancel a long job
 
 ```bash
-scripts/remote cancel pspta-prod
+scripts/remote cancel par2-prod
 ```
 
 ## 8. Profiling mode

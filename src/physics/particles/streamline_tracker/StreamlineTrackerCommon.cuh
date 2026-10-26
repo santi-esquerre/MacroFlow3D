@@ -87,7 +87,7 @@
  * ---------------------------------------------------------------------------
  *
  *  0 = active; any nonzero value = the particle is no longer advanced. The
- *  legacy PSPTA engine uses 2 for "exited"; codes 1 and 2 are not reused.
+ *  codes 1 and 2 are not reused (reserved by the retired legacy transport engine).
  *  See the kStatus* constants below.
  *
  * ---------------------------------------------------------------------------
