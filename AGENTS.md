@@ -4,7 +4,7 @@
 
 MacroFlow3D is scientific software for 3D macrodispersion in heterogeneous porous media. The current strategic goal is to measure macrodispersion (`alpha_L`, `alpha_T`) in smooth Gaussian lognormal fields up to `sigma_Y^2 = 4` with a verified Lagrangian-label consumer: particles traced forward with tolerance-controlled integration on the helicity-free spline Darcy flow, each carrying its own labels (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, SF-36..SF-39); the pseudo-symplectic tracker is future work, not a requirement. The inlet-anchored gridded Darcy labels (non-periodic in `x1`) are constructed by label transport along backward-traced streamlines (SF-35, `docs/decisions/2026-10-07-label-transport-constructor.md`) and are a diagnostic, verified for `sigma_Y <= 1` (at `ell = 1/4`, one realization); the Lester et al. equation (14) on the slab is a diagnostic of those labels (SF-33 showed its Newton-Krylov solve is not viable as production constructor); the periodic-fluctuation stack (SF-02..SF-26) is frozen verified infrastructure, because its periodic solution on generic Gaussian fields is not the Darcy flow (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`, `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`).
 
-The previous PSPTA transport-near-nullspace/eigensolver route (now removed from the build) is legacy compatibility and migration surface. It is no longer the authoritative invariant-construction strategy and should not be extended unless the task explicitly targets audit, migration, or removal.
+The previous PSPTA transport engine, its transport-near-nullspace/eigensolver invariant route and its `transport.method: pspta` configuration surface were retired on 2026-10-26 (code recoverable from the repository tag `archive/pre-cleanup-2026-10`). `transport.method` accepts only `par2`.
 
 Optimize in this order:
 
@@ -77,8 +77,7 @@ Top-level areas:
   - main binary: `macroflow3d_pipeline`
   - key configs:
     - `apps/config_pipeline_par2.yaml`
-    - `apps/config_pipeline_pspta.yaml`
-    - `apps/config_pspta_small.yaml`
+    - `apps/config_par2_small.yaml` (small smoke / regression case)
 - `src/core/`
   - scalar types, grids, spans, low-level containers
 - `src/runtime/`
@@ -95,8 +94,6 @@ Top-level areas:
   - stochastic conductivity generation
 - `src/physics/particles/par2_adapter/`
   - RWPT baseline transport path
-- `src/physics/particles/pspta/`
-  - legacy PSPTA transport/invariant infrastructure to audit, migrate, or retire
 - `src/external/`
   - external dependency area
   - tracked vendored source: `yaml-cpp`, `nlohmann`
@@ -114,16 +111,15 @@ Read next when relevant:
 Active execution plans (read before starting work in the relevant area):
 
 - `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` — **authoritative operational plan** for the Lester et al. equation (14) streamfunction solver, including mathematical scope, discretization work, nonlinear strategy, continuation, validation, and CPU/GPU staging. Required reading for any work touching invariant construction, `psi1`/`psi2` differential operators, streamfunction residuals, or flow reconstruction from invariants.
-- `docs/plans/archive/pspta-execution-plan.md` — archived historical plan for the old PSPTA transport-near-nullspace and eigensolver path. Read only when auditing or retiring legacy PSPTA code.
+- `docs/plans/archive/pspta-execution-plan.md` — archived historical plan for the old PSPTA transport-near-nullspace and eigensolver path. Historical context only; the PSPTA code it describes was retired 2026-10-26 (tag `archive/pre-cleanup-2026-10`).
 
-Scientific theory references (read before PSPTA, invariant, or macrodispersion work):
+Scientific theory references (read before invariant or macrodispersion work):
 
 - `docs/theory/lester-2023-key-claims.md` — kinematic constraints, helicity-free regime, Lester equation (14), two-streamfunction representation, the paper's zero-transverse claim and its project-verified limits (closure oracle; `alpha_T` not presupposed)
 - `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` — classical 3D macrodispersion baseline, Monte Carlo discipline, historical α_T expectations
 
 More specific local rules live in:
 
-- `src/physics/particles/pspta/AGENTS.md`
 - `src/numerics/AGENTS.md`
 - `docs/AGENTS.md`
 
@@ -148,7 +144,7 @@ cmake -S . -B build/wsl-debug -G Ninja \
 
 cmake --build build/wsl-debug -j
 ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 **The full local `ctest` suite is long-duration computation and must not be
@@ -184,8 +180,8 @@ scripts/remote sync
 scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
 scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
 scripts/remote wait ctest-full
-scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
-scripts/remote wait pspta-small
+scripts/remote run par2-small -- "./build/v100-release/macroflow3d_pipeline apps/config_par2_small.yaml"
+scripts/remote wait par2-small
 ```
 
 Do not assume local performance conclusions carry over to V100.
@@ -230,7 +226,7 @@ ctest --test-dir build/wsl-debug --output-on-failure -R '^(flow_workspace_bytes|
 ### Run the pipeline
 
 ```bash
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pipeline_par2.yaml
 ```
 
@@ -262,7 +258,7 @@ must include:
 3. the validation path,
 4. the likely regression surface.
 
-For legacy PSPTA transport, eigensolver, or refinement code: treat the code as frozen compatibility surface unless the task is explicitly about audit, migration, or removal. New invariant construction belongs to the Lester equation (14) path.
+New invariant construction belongs to the Lester equation (14) path.
 
 For any new invariant-construction work, read `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` first and confirm whether the change is in the operator-test, Picard, continuation, or Newton-Krylov phase. Do not jump directly to production grids.
 
@@ -317,7 +313,7 @@ For any new invariant-construction work, read `docs/plans/active/lester-eq14-str
 - Do **not** introduce silent behavior changes in configs.
 - Do **not** add fallback paths or compatibility layers unless explicitly requested.
 - Do **not** use the remote server as an editing environment; local WSL is the source of truth and remote is for synchronized build/run/measure.
-- Do **not** extend the old PSPTA invariant-construction architecture. It is legacy until replaced or intentionally retired.
+- Do **not** reintroduce the retired PSPTA invariant-construction architecture or transport engine (removed 2026-10-26; history under tag `archive/pre-cleanup-2026-10`).
 - Do **not** run long-duration computation — a full/near-full `ctest` suite, a
   multi-case solver sweep, a production/ensemble run, a benchmark, or a
   profiling run — locally, or via a long blocking `scripts/remote exec` call.

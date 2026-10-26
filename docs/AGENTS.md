@@ -86,7 +86,7 @@ Archived plans are historical evidence, not active authority:
 
 | Plan | When to read |
 |------|-------------|
-| `docs/plans/archive/pspta-execution-plan.md` | Auditing or retiring the old PSPTA transport-near-nullspace path, existing eigensolver code, or legacy Strategy A/C context |
+| `docs/plans/archive/pspta-execution-plan.md` | Historical context only: the old PSPTA transport-near-nullspace path (retired 2026-10-26, tag `archive/pre-cleanup-2026-10`) and legacy Strategy A/C |
 
 A good plan contains:
 

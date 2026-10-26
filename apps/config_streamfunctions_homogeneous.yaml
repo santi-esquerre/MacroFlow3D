@@ -44,8 +44,7 @@
 # Transport: minimal par2 smoke pass (few particles/steps) — this config is
 # about exercising the streamfunction stage and its exports, not about a
 # transport/macrodispersion study, so transport is deliberately small and
-# fast. method left at the default "par2" (no need for the legacy pspta
-# engine here).
+# fast. method left at the default "par2" (the only supported method).
 #
 # Run with:
 #   ./build/wsl-debug/macroflow3d_pipeline apps/config_streamfunctions_homogeneous.yaml

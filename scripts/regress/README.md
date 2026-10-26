@@ -23,7 +23,7 @@ Files:
 
 | case id | what |
 |---|---|
-| `pipe_<cfg>` | `macroflow3d_pipeline apps/<cfg>.yaml` in its own empty cwd, for `PIPE_CASES`: `config_par2_small` (random field + heterogeneous MG-PCG head + velocity + Par2), `config_streamfunctions_homogeneous`, `config_streamfunctions_continuation`, `config_pspta_small` (kept until a PR retires PSPTA) |
+| `pipe_<cfg>` | `macroflow3d_pipeline apps/<cfg>.yaml` in its own empty cwd, for `PIPE_CASES`: `config_par2_small` (random field + heterogeneous MG-PCG head + velocity + Par2), `config_streamfunctions_homogeneous`, `config_streamfunctions_continuation` |
 | `r_*` (20) | the `inlet_slab` R set (`r_items` / `r_args` / `r_expected` of SF-40/41) |
 | `g_runner_a` | `lagrangian_ensemble` medium (a), SF-41 G(ii) arguments |
 | `g_ab` | `lagrangian_medium_ab`, SF-41 G(iii) arguments |
@@ -70,7 +70,7 @@ R set and the runners exceed local limits.
 
 ## Declaring an expected difference
 
-A PR that intentionally changes bytes (e.g. retires `config_pspta_small`, changes a
+A PR that intentionally changes bytes (e.g. drops a retired config key from `effective_config.yaml`, changes a
 log line) declares it in its description and in the compare command via
 `--ref-filter '<glob>=<sed-expr>'` (repeatable). The sed expression is applied to
 every file whose path relative to the out dir matches the bash glob (`*` also

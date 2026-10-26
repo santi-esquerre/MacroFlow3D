@@ -121,29 +121,6 @@ struct ConfigSerializer {
         std::fprintf(f, "  snapshot_every: %d\n", cfg.transport.snapshot_every);
         std::fprintf(f, "  inject_x: %.15e\n", (double)cfg.transport.inject_x);
         std::fprintf(f, "  method: %s\n", cfg.transport.method.c_str());
-        std::fprintf(f, "  pspta_diagnostics: %s\n",
-                     cfg.transport.pspta_diagnostics ? "true" : "false");
-        std::fprintf(f, "  pspta_refine:\n");
-        std::fprintf(f, "    enabled: %s\n", cfg.transport.pspta_refine.enabled ? "true" : "false");
-        std::fprintf(f, "    outer_iters: %d\n", cfg.transport.pspta_refine.outer_iters);
-        std::fprintf(f, "    omega: %.15e\n", (double)cfg.transport.pspta_refine.omega);
-        std::fprintf(f, "    omega_min: %.15e\n", (double)cfg.transport.pspta_refine.omega_min);
-        std::fprintf(f, "    max_backtracks: %d\n", cfg.transport.pspta_refine.max_backtracks);
-        std::fprintf(f, "    eps_vx: %.15e\n", (double)cfg.transport.pspta_refine.eps_vx);
-        std::fprintf(f, "    source_clip_cells: %.15e\n",
-                     (double)cfg.transport.pspta_refine.source_clip_cells);
-        std::fprintf(f, "    no_descent_patience: %d\n",
-                     cfg.transport.pspta_refine.no_descent_patience);
-        std::fprintf(f, "    stop_rel_rms: %.15e\n",
-                     (double)cfg.transport.pspta_refine.stop_rel_rms);
-        std::fprintf(f, "    stop_abs_rms: %.15e\n",
-                     (double)cfg.transport.pspta_refine.stop_abs_rms);
-        std::fprintf(f, "    print_every_iter: %s\n",
-                     cfg.transport.pspta_refine.print_every_iter ? "true" : "false");
-        std::fprintf(f, "    save_history_csv: %s\n",
-                     cfg.transport.pspta_refine.save_history_csv ? "true" : "false");
-        std::fprintf(f, "    eq13_diagnostics: %s\n",
-                     cfg.transport.pspta_refine.eq13_diagnostics ? "true" : "false");
         std::fprintf(f, "  velocity_layout: %s\n\n", cfg.transport.velocity_layout.c_str());
 
         // Analysis

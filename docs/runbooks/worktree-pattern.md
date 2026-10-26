@@ -21,7 +21,6 @@ Use separate worktrees for independent work streams. Each worktree:
 ├── tooling/         # chore/tooling-*     — build, hooks, CI, scripts
 ├── docs/            # chore/docs-*        — documentation, AGENTS, runbooks
 ├── lester-eq14/     # science/lester-*    — equation (14) streamfunction solver
-├── legacy-pspta/    # science/legacy-pspta-* — PSPTA audit/migration/removal
 └── profiling/       # chore/profiling-*   — perf measurement, NVTX, benchmarks
 ```
 
@@ -74,7 +73,6 @@ scripts/remote sync
 | tooling | `chore/tooling-*` | Build, CI, hooks, scripts | High autonomy |
 | docs | `chore/docs-*` | Documentation, AGENTS, runbooks | High autonomy |
 | lester-eq14 | `science/lester-*` | Equation (14) streamfunction solver | Human review required |
-| legacy-pspta | `science/legacy-pspta-*` | PSPTA audit/migration/removal | Human review required |
 | profiling | `chore/profiling-*` | Perf, benchmarks, NVTX | High autonomy |
 
 ## Rules
