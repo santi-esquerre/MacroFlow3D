@@ -23,7 +23,7 @@ entries. They are documented experiments in the heavy tier (see
 cmake --preset wsl-debug
 cmake --build build/wsl-debug -j
 ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 ### Commands (remote — authoritative full suite, detached)
@@ -62,29 +62,25 @@ scripts/remote wait ctest-full
 
 ## Tier B — Operator / invariant integrity
 
-**Applies to:** changes in `src/numerics/`, `src/multigrid/`, operator algebra, eigensolver backend, invariant construction, or Lester equation (14) linear operators.
+**Applies to:** changes in `src/numerics/`, `src/multigrid/`, operator algebra, invariant construction, or Lester equation (14) linear operators.
 
-**Where:** local WSL for operator tests. Remote V100 for PETSc/SLEPc.
+**Where:** local WSL for the fast numerics subset. Remote V100 (detached) for the full operator registry.
 
 ### Commands (local)
 
 ```bash
-ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
-./build/wsl-debug/run_operator_tests
+ctest --test-dir build/wsl-debug --output-on-failure -R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'
 ```
 
-If `operator_tests` grows into a long-running multi-case sweep, treat it like
-Tier C's remote detached runs instead of running it locally as acceptance
-evidence.
+Never use an unanchored `-R operator_tests`: it also matches the long
+`streamfunction_operator_tests` registry sweep.
 
-### Commands (remote, if PETSc/SLEPc involved — detached, long-duration)
+### Commands (remote — detached, long-duration)
 
 ```bash
 scripts/remote sync
-scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
-scripts/remote wait ctest-petsc-smoke
-scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
-scripts/remote wait ctest-slepc-eigensolver
+scripts/remote run ctest-sf-operators -- "ctest --test-dir build/v100-release --output-on-failure -R '^streamfunction_operator_tests$'"
+scripts/remote wait ctest-sf-operators
 ```
 
 ### Pass criteria
@@ -92,13 +88,11 @@ scripts/remote wait ctest-slepc-eigensolver
 - Operator tests pass
 - Residual norms within expected tolerances
 - No new unexplained residual growth
-- If eigensolver touched: convergence succeeded, residuals small
 
 ### Artifacts
 
 - Operator test output
 - Residual norms
-- Eigensolver convergence log (if applicable)
 
 ### Maps to
 
@@ -108,16 +102,16 @@ scripts/remote wait ctest-slepc-eigensolver
 
 ## Tier C — Physics / ensemble
 
-**Applies to:** Lester equation (14) invariant construction, legacy PSPTA compatibility/migration, macrodispersion output, ensemble statistics, or any change affecting the central scientific claim.
+**Applies to:** Lester equation (14) invariant construction, macrodispersion output, ensemble statistics, or any change affecting the central scientific claim.
 
-**Operational plan:** For new invariant construction, verify alignment with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`. Legacy PSPTA work is compatibility or migration only; use `docs/plans/archive/pspta-execution-plan.md` as historical context.
+**Operational plan:** For new invariant construction, verify alignment with `docs/plans/active/lester-eq14-streamfunction-solver-plan.md`. `docs/plans/archive/pspta-execution-plan.md` (retired PSPTA path) is historical context only.
 
 **Where:** local WSL for smoke. Remote V100 for production runs.
 
 ### Commands (local smoke)
 
 ```bash
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ./build/wsl-debug/macroflow3d_pipeline apps/config_pipeline_par2.yaml
 ```
 
@@ -128,8 +122,6 @@ scripts/remote sync
 scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
 scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
 scripts/remote wait ctest-full
-scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
-scripts/remote wait pspta-prod
 scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
 scripts/remote wait par2-prod
 ```
@@ -164,11 +156,6 @@ the increment bitácora; a red outcome is a recorded science result, not a
 ### Pass criteria
 
 - All Tier A and Tier B criteria met
-- Legacy PSPTA diagnostics inspected when that path is touched:
-  - `v·∇ψ1`, `v·∇ψ2` residuals
-  - independence / degeneracy signal
-  - Newton failure counts and distribution
-  - particle status summary (active / exited / failed)
 - For Lester equation (14) solver work, Gate 3A metrics inspected:
   - coupled residual `r_F`
   - velocity reconstruction error `e_v`
@@ -191,7 +178,7 @@ the increment bitácora; a red outcome is a recorded science result, not a
 
 ### Maps to
 
-- Gate 3A (Lester equation (14) solver integrity), or Gate 3 only for legacy PSPTA compatibility
+- Gate 3A (Lester equation (14) solver integrity; Gate 3 is retired)
 - Gate 4 (helicity-free regime)
 - Gate 5 (ensemble/macrodispersion)
 
@@ -216,7 +203,7 @@ Is this docs / scripts / AGENTS only?
 Does it touch src/numerics/, src/multigrid/, or operator code?
   → Tier A + Tier B
 
-Does it touch src/physics/ or legacy PSPTA?
+Does it touch src/physics/?
   → Tier A + Tier B + Tier C
 
 Does it change macrodispersion output or ensemble stats?
@@ -230,4 +217,3 @@ Does it change macrodispersion output or ensemble stats?
 - `docs/validation/acceptance-gates.md` — gate definitions
 - `docs/validation/validation-loop.md` — the fixed loop
 - `docs/validation/local-remote-split.md` — where each tier runs
-- `skills/macroflow-evals/SKILL.md` — agent-facing skill

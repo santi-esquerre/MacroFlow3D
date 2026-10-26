@@ -46,7 +46,7 @@ Minimum commands:
 ```bash
 cmake --build <build-dir> -j
 ctest --test-dir <build-dir> --output-on-failure
-./<build-dir>/macroflow3d_pipeline apps/config_pspta_small.yaml
+./<build-dir>/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 The full `ctest --test-dir <build-dir> --output-on-failure` pass is
@@ -54,6 +54,12 @@ long-duration computation: local WSL runs only a fast targeted `-R` subset for
 iteration, and the authoritative full pass runs on V100 as a detached
 `scripts/remote run <job>` job, not locally and not via blocking
 `scripts/remote exec` — see `docs/runbooks/remote-v100.md` Section 0.
+
+Regression byte-compare: for a change that must not alter outputs (refactor,
+cleanup, performance), `scripts/regress` runs a fixed case set with a base and a
+head build and compares the outputs byte for byte (`compare.sh` last line
+`REGRESS IDENTICAL`); V100 detached jobs only, protocol in
+`scripts/regress/README.md`.
 
 #### Validation tiers in ctest
 
@@ -68,7 +74,6 @@ stays in `ctest` is a defect of the validation tier, not a gate.
 Use for changes touching:
 
 - operators
-- eigensolver backend
 - invariant construction algebra
 - Lester equation (14) linear operator `A psi = -div(q grad psi)`
 - adjoint/symmetry assumptions
@@ -83,13 +88,14 @@ Required:
 Minimum commands:
 
 ```bash
-ctest --test-dir <build-dir> --output-on-failure -R operator_tests
-ctest --test-dir <build-dir> --output-on-failure -R validate_slepc_eigensolver
+ctest --test-dir <build-dir> --output-on-failure -R '^streamfunction_operator_tests$'
 ```
 
-`validate_slepc_eigensolver` requires PETSc/SLEPc and runs on V100 as a
-detached job (`scripts/remote run` + `scripts/remote wait`), never locally —
-see `docs/runbooks/remote-v100.md` Section 0.
+`streamfunction_operator_tests` is the full operator registry (about 22 minutes
+on V100): it runs as a detached job (`scripts/remote run` + `scripts/remote
+wait`), never locally — see `docs/runbooks/remote-v100.md` Section 0. Fast
+local iteration uses the anchored subset
+`-R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'`.
 
 Required evidence:
 
@@ -100,45 +106,9 @@ Required evidence:
 
 For equation (14) operator work, required evidence also includes manufactured-solution checks for `k=1` and smooth variable `k` before any nonlinear solver claim.
 
-### Gate 3 — Legacy PSPTA compatibility integrity
+### Gate 3 — RETIRED (legacy PSPTA compatibility integrity)
 
-Use for changes touching:
-
-- `src/physics/particles/pspta/`
-- interpolation used by PSPTA
-- Newton projection
-- invariant sampling
-- transport/invariant coupling
-
-**Status:** legacy PSPTA compatibility gate. Use `docs/plans/archive/pspta-execution-plan.md` only as historical context. New invariant construction must use Gate 3A instead.
-
-Required:
-
-- Gate 1 and Gate 2
-- quality metrics for invariants and projection
-- no unexplained increase in failure modes
-
-Required metrics to inspect:
-
-- `v·∇ψ1` residual summary
-- `v·∇ψ2` residual summary
-- `||v - ∇ψ1 × ∇ψ2||` or equivalent reconstruction mismatch if available
-- independence / degeneracy signal
-- Newton failures:
-  - nonzero fail count
-  - max fail count
-  - histogram / summary
-- particle status summary:
-  - active
-  - exited
-  - other
-
-Reject if:
-
-- residuals materially worsen without a reasoned tradeoff,
-- independence collapses,
-- Newton failures explode,
-- particles cross behavior boundaries unexpectedly.
+The legacy PSPTA transport engine and invariant stack were retired on 2026-10-26, so this gate no longer applies to any code in the tree. Its former text (invariant/projection quality metrics, Newton failure accounting, particle status summary) is in the repository history under the tag `archive/pre-cleanup-2026-10`. The gate number is kept (not renumbered) because frozen increment specifications cite "Gate 3A"; new invariant construction uses Gate 3A.
 
 ### Gate 3A — Lester equation (14) streamfunction solver integrity
 
@@ -184,7 +154,7 @@ Use for changes that can affect the central scientific claim in the smooth, loca
 This is the most important gate.
 
 **Scientific basis:** `docs/theory/lester-2023-key-claims.md`
-**Operational plan:** use `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` for new invariant construction and `docs/plans/archive/pspta-execution-plan.md` for existing PSPTA transport validation.
+**Operational plan:** use `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` for new invariant construction; `docs/plans/archive/pspta-execution-plan.md` is historical context only.
 
 The target regime is:
 
@@ -274,15 +244,15 @@ Need:
 
 - Gate 1
 - Gate 2
-- if runtime behavior changed: Gate 3 or Gate 3A, depending on path
+- if runtime behavior changed: Gate 3A, depending on path
 
-### D. Legacy PSPTA / invariant / tracking compatibility change
+### D. Invariant / tracking change
 
 Need:
 
 - Gate 1
 - Gate 2
-- Gate 3 for legacy PSPTA compatibility, or Gate 3A for Lester equation (14) invariant construction
+- Gate 3A for Lester equation (14) invariant construction
 - likely Gate 4
 
 ### E. Macrodispersion / scientific output change
@@ -290,7 +260,7 @@ Need:
 Need:
 
 - Gate 1
-- Gate 3 or 4 as relevant
+- Gate 3A or 4 as relevant
 - Gate 5
 
 ---

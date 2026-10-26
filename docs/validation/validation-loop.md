@@ -50,7 +50,7 @@ detached job in the "Remote extension" section below.
 ## Step 4: Smoke
 
 ```bash
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 **Pass:** pipeline completes without crash or assertion failure.
@@ -63,7 +63,7 @@ Run the eval tier appropriate to the change:
 |-------------|------|
 | Docs / tooling | A (steps 1–4 are sufficient) |
 | Operators / numerics | A + B |
-| Physics / PSPTA | A + B + C |
+| Physics | A + B + C |
 | Macrodispersion output | A + B + C (with before/after) |
 
 See `docs/validation/eval-tiers.md` for exact commands per tier.
@@ -94,8 +94,8 @@ scripts/remote sync
 scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
 scripts/remote run ctest-full -- "ctest --test-dir build/v100-release --output-on-failure"
 scripts/remote wait ctest-full
-scripts/remote run pspta-small -- "./build/v100-release/macroflow3d_pipeline apps/config_pspta_small.yaml"
-scripts/remote wait pspta-small
+scripts/remote run par2-small -- "./build/v100-release/macroflow3d_pipeline apps/config_par2_small.yaml"
+scripts/remote wait par2-small
 ```
 
 ---
@@ -105,7 +105,7 @@ scripts/remote wait pspta-small
 - [ ] `cmake --preset wsl-debug` — configure OK
 - [ ] `cmake --build build/wsl-debug -j` — build OK
 - [ ] `ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>` — local fast-subset OK
-- [ ] `./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml` — smoke OK
+- [ ] `./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml` — smoke OK
 - [ ] remote detached full `ctest` job (`scripts/remote run <job> -- "ctest ..."` + `scripts/remote wait <job>`) — full suite OK
 - [ ] Eval tier (A/B/C) commands run and passed
 - [ ] PR created with evidence
@@ -117,4 +117,3 @@ scripts/remote wait pspta-small
 - `docs/validation/eval-tiers.md`
 - `docs/validation/acceptance-gates.md`
 - `docs/validation/local-remote-split.md`
-- `skills/macroflow-build/SKILL.md`

@@ -123,37 +123,11 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         warn("transport.alpha_t", "alpha_t > alpha_l is unusual");
     if (cfg.transport.output_every <= 0)
         err("transport.output_every", "must be > 0");
-    // transport.velocity_layout is now derived from method; no longer validated
-    // here.
-    if (cfg.transport.method != "par2" && cfg.transport.method != "pspta")
-        err("transport.method",
-            "'" + cfg.transport.method + "' unknown; expected 'par2' or 'pspta'");
-    if (cfg.transport.pspta_refine.enabled) {
-        if (cfg.transport.method != "pspta") {
-            warn("transport.pspta_refine.enabled",
-                 "enabled but transport.method!='pspta'; refinement will be ignored");
-        }
-        if (cfg.transport.pspta_refine.outer_iters <= 0)
-            err("transport.pspta_refine.outer_iters", "must be > 0 when enabled");
-        if (cfg.transport.pspta_refine.omega <= 0 || cfg.transport.pspta_refine.omega > 1)
-            err("transport.pspta_refine.omega", "must be in (0, 1]");
-        if (cfg.transport.pspta_refine.omega_min <= 0)
-            err("transport.pspta_refine.omega_min", "must be > 0");
-        if (cfg.transport.pspta_refine.omega_min > cfg.transport.pspta_refine.omega)
-            err("transport.pspta_refine.omega_min", "must be <= omega");
-        if (cfg.transport.pspta_refine.max_backtracks <= 0)
-            err("transport.pspta_refine.max_backtracks", "must be > 0");
-        if (cfg.transport.pspta_refine.eps_vx <= 0)
-            err("transport.pspta_refine.eps_vx", "must be > 0");
-        if (cfg.transport.pspta_refine.source_clip_cells <= 0)
-            err("transport.pspta_refine.source_clip_cells", "must be > 0");
-        if (cfg.transport.pspta_refine.no_descent_patience <= 0)
-            err("transport.pspta_refine.no_descent_patience", "must be > 0");
-        if (cfg.transport.pspta_refine.stop_rel_rms < 0)
-            err("transport.pspta_refine.stop_rel_rms", "must be >= 0");
-        if (cfg.transport.pspta_refine.stop_abs_rms < 0)
-            err("transport.pspta_refine.stop_abs_rms", "must be >= 0");
-    }
+    // transport.velocity_layout is fixed to "padded"; not validated
+    if (cfg.transport.method != "par2")
+        err("transport.method", "'" + cfg.transport.method +
+                                    "' unsupported; only 'par2' is available (the legacy 'pspta' "
+                                    "engine was retired 2026-10-26)");
 
     // ── Analysis / macrodispersion ───────────────────────────────────
     const auto& mac = cfg.analysis.macrodispersion;

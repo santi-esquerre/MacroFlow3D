@@ -70,8 +70,8 @@ validation records remain authoritative.
 
 **Mission:** 3D macrodispersion in heterogeneous porous media. Current focus:
 Lester equation (14) streamfunction solver for `psi1`, `psi2` in smooth, locally
-isotropic Darcy flow; existing PSPTA code is legacy compatibility/migration
-surface.
+isotropic Darcy flow; the legacy PSPTA transport engine was retired on
+2026-10-26 (tag `archive/pre-cleanup-2026-10`).
 
 **Optimization priority:** correctness -> reproducibility -> maintainability ->
 performance -> development speed.
@@ -82,10 +82,8 @@ performance -> development speed.
 |---|---|
 | Lester equation (14) / new invariant construction | `docs/plans/active/lester-eq14-streamfunction-solver-overview.md` + `docs/theory/lester-2023-key-claims.md` |
 | Active Lester increment | the READY increment's spec + `docs/runbooks/lester-increment-workflow.md` |
-| Legacy PSPTA audit / migration / removal | `docs/plans/archive/pspta-execution-plan.md` + `docs/theory/lester-2023-key-claims.md` |
 | Macrodispersion / ensemble statistics | `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` |
 | Numerics / operators / solvers | `src/numerics/AGENTS.md` |
-| PSPTA transport code | `src/physics/particles/pspta/AGENTS.md` |
 | Documentation changes | `docs/AGENTS.md` |
 | Validation / what tier to run | `docs/validation/acceptance-gates.md` + `docs/validation/eval-tiers.md` |
 | PR / branch workflow | `docs/runbooks/pr-workflow.md` + `docs/runbooks/autonomy-policy.md` |
@@ -97,28 +95,12 @@ performance -> development speed.
 - **Validate locally** only with a fast, targeted subset: configure, build,
   and one or a few quick `-R`-filtered `ctest` cases, plus a single smoke run.
 - **Long-duration computation is always a detached V100 job.** A full/near-full
-  `ctest` suite, a multi-case solver/continuation sweep, PETSc/SLEPc builds,
+  `ctest` suite, a multi-case solver/continuation sweep,
   production-like runs, ensembles, benchmarks, and profiling all run as
   `scripts/remote run <job> -- "..."` + `scripts/remote wait <job>` on the
   remote V100 host — never locally, and never as a long blocking
   `scripts/remote exec` call. See `docs/runbooks/remote-v100.md`.
 - **Never edit on the remote server.**
-
-### Claude-native helpers
-
-Existing project skills remain valid helpers when relevant:
-
-- `macroflow-build` — local configure / build / test
-- `macroflow-evals` — validation tier classification and execution
-- `macroflow-physics-review` — scientific change review workflow
-- `macroflow-pr-review` — branch / worktree / PR workflow
-- `macroflow-remote-v100` — remote V100 build / test / run
-
-Explicit commands remain available:
-
-- `/project:build`
-- `/project:validate`
-- `/project:sync-v100`
 
 ### Hard rules
 

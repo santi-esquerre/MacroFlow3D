@@ -1,41 +1,18 @@
 name: CI
 
+# GPU-free harness checks only; CUDA builds/tests run on the V100 host.
 on:
   push:
-    branches: [main, develop]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
-  build:
+  harness:
     runs-on: ubuntu-latest
-    container:
-      image: nvidia/cuda:12.2.2-devel-ubuntu22.04
-
     steps:
-      - name: Install build tools
-        run: |
-          apt-get update -qq
-          apt-get install -y -qq git cmake g++ make > /dev/null
-
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Configure (Release)
-        run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_CUDA_ARCHITECTURES=80
-
-      - name: Build
-        run: cmake --build build -j$(nproc)
-
-      - name: Verify binary exists
-        run: test -x build/macroflow3d_pipeline
-
-      - name: Smoke test (--help / no-args returns usage)
-        run: |
-          # Should print usage and return non-zero (no config given)
-          ! build/macroflow3d_pipeline 2>&1 | grep -q "Usage"
+      - uses: actions/checkout@v4
+      - run: bash scripts/hooks/check-lester-increments.sh
+      - run: bash scripts/hooks/check-required-docs.sh
+      - run: bash scripts/hooks/validate-cmake-presets.sh
+      - run: bash scripts/regress/selftest.sh

@@ -6,7 +6,7 @@
 #
 # Example:
 #   scripts/create-worktree.sh chore/add-sccache
-#   scripts/create-worktree.sh science/pspta-refinement
+#   scripts/create-worktree.sh science/lagrangian-refinement
 #
 # Creates:
 #   ~/src/MacroFlow3D/.agents/worktrees/<short-name>/

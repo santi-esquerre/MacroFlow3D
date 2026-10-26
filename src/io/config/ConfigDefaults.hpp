@@ -71,22 +71,8 @@ inline AppConfig make_default_config() {
     cfg.transport.output_every = 100;
     cfg.transport.snapshot_every = 0;
     cfg.transport.inject_x = 0.0;
-    cfg.transport.method = "par2"; // supported: "par2" | "pspta"
-    cfg.transport.pspta_diagnostics = false;
-    cfg.transport.pspta_refine.enabled = false;
-    cfg.transport.pspta_refine.outer_iters = 5;
-    cfg.transport.pspta_refine.omega = 0.5;
-    cfg.transport.pspta_refine.omega_min = 1.0e-6;
-    cfg.transport.pspta_refine.max_backtracks = 18;
-    cfg.transport.pspta_refine.eps_vx = 1.0e-10;
-    cfg.transport.pspta_refine.source_clip_cells = 0.1;
-    cfg.transport.pspta_refine.no_descent_patience = 4;
-    cfg.transport.pspta_refine.stop_rel_rms = 0.25;
-    cfg.transport.pspta_refine.stop_abs_rms = 1.0e-6;
-    cfg.transport.pspta_refine.print_every_iter = true;
-    cfg.transport.pspta_refine.save_history_csv = true;
-    cfg.transport.pspta_refine.eq13_diagnostics = false;
-    // velocity_layout is derived from method — not set here
+    cfg.transport.method = "par2"; // supported: "par2"
+    // velocity_layout is fixed to "padded" — not set here
 
     // Analysis — macrodispersion
     cfg.analysis.macrodispersion.enabled = false;

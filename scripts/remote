@@ -64,11 +64,11 @@ GPU arbitration:
 Canonical examples:
   scripts/remote sync
   scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j && ctest --test-dir build/v100-release --output-on-failure"
-  scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"
-  scripts/remote status pspta-prod
-  scripts/remote tail pspta-prod
-  scripts/remote wait pspta-prod
-  scripts/remote cancel pspta-prod
+  scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"
+  scripts/remote status par2-prod
+  scripts/remote tail par2-prod
+  scripts/remote wait par2-prod
+  scripts/remote cancel par2-prod
 
 Configuration:
   Repo defaults are defined in scripts/remote.env.
@@ -283,6 +283,10 @@ sync_command() {
   ensure_remote_repo
   echo "Syncing $repo_root -> ${REMOTE_HOST}:${REMOTE_REPO_DIR}"
   rsync_run
+  # The mirror has no .git (excluded); record the revision for cmake/git_rev.cmake.
+  # Written after rsync because --delete would remove it (it is not in the local tree).
+  write_remote_file "$REMOTE_REPO_DIR/.mf3d_source_rev" 644 \
+    "$(git -C "$repo_root" describe --always --dirty --abbrev=12 --exclude='*')"
 }
 
 exec_command() {

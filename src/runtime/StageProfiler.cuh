@@ -250,20 +250,4 @@ class ScopedStage {
     StageProfiler& profiler_;
 };
 
-// Token pasting helpers (guard against redefinition)
-#ifndef MACROFLOW3D_CAT
-#define MACROFLOW3D_CAT_INNER(a, b) a##b
-#define MACROFLOW3D_CAT(a, b) MACROFLOW3D_CAT_INNER(a, b)
-#endif
-
-// Convenience macro for scoped profiling
-#if MACROFLOW3D_ENABLE_PROFILING
-#define MACROFLOW3D_PROFILE_STAGE(profiler, name)                                                  \
-    ::macroflow3d::ScopedStage MACROFLOW3D_CAT(__stage_, __LINE__)(profiler, name)
-#else
-#define MACROFLOW3D_PROFILE_STAGE(profiler, name)                                                  \
-    do {                                                                                           \
-    } while (0)
-#endif
-
 } // namespace macroflow3d

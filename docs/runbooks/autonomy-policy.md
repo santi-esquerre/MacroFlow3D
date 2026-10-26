@@ -37,7 +37,6 @@ after the required automated checks without a mandatory scientific human review:
 - `docs/` — documentation, runbooks, plans, decisions, experiments;
 - `AGENTS.md` and `CLAUDE.md` files — agent instructions/context;
 - `.claude/` — Claude Code configuration and project agents;
-- `skills/` — skill definitions;
 - `CMakePresets.json` — build presets;
 - `.pre-commit-config.yaml` — pre-commit hooks;
 - `scripts/` — automation, hooks, helpers;
@@ -86,17 +85,6 @@ These areas require explicit human approval before the increment can be marked
 
 - any interpolation-affecting code in `src/physics/` or `src/numerics/`.
 
-### Legacy PSPTA tracking / migration
-
-- `src/physics/particles/pspta/`
-- all legacy invariants, transport, projection, Newton, and gauge code.
-
-### PETSc/SLEPc integration
-
-- `src/physics/particles/pspta/invariants/SLEPcBackend.*`
-- `src/runtime/PetscSlepcInit.*`
-- PETSc/SLEPc linking in `CMakeLists.txt`.
-
 ### Macrodispersion evaluation
 
 - `src/runtime/analysis/`
@@ -111,9 +99,8 @@ These areas require explicit human approval before the increment can be marked
 
 ### Application configs affecting physics
 
-- `apps/config_pipeline_pspta.yaml`
 - `apps/config_pipeline_par2.yaml`
-- `apps/config_pspta_small.yaml`
+- `apps/config_par2_small.yaml`
 - any new config whose values alter a scientific model or acceptance case.
 
 ### Why
@@ -206,6 +193,4 @@ SF-08 / PR #18 is the historical case that motivated this repair rule.
 - `docs/runbooks/pr-workflow.md`
 - `docs/runbooks/lester-increment-workflow.md`
 - `docs/runbooks/claude-increment-orchestration.md`
-- `skills/macroflow-pr-review/SKILL.md`
-- `src/physics/particles/pspta/AGENTS.md`
 - `src/numerics/AGENTS.md`

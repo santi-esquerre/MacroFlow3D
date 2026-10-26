@@ -17,6 +17,7 @@
 #include "../../io/writers/CsvTimeSeriesWriter.hpp"
 
 #include <cstdio>
+#include <exception>
 #include <cstdlib>
 #include <filesystem>
 #include <string>
@@ -48,7 +49,13 @@ int run_analysis(const io::AppConfig& cfg) {
             std::fprintf(stderr, "ERROR: missing %s\n", fname.c_str());
             return EXIT_FAILURE;
         }
-        auto pts = analysis::read_timeseries_csv<real>(fname);
+        std::vector<io::TimeSeriesPoint<real>> pts;
+        try {
+            pts = analysis::read_timeseries_csv<real>(fname);
+        } catch (const std::exception& e) {
+            std::fprintf(stderr, "ERROR: %s\n", e.what());
+            return EXIT_FAILURE;
+        }
         if (pts.empty()) {
             std::fprintf(stderr, "ERROR: empty or unparseable %s\n", fname.c_str());
             return EXIT_FAILURE;
@@ -64,14 +71,20 @@ int run_analysis(const io::AppConfig& cfg) {
 
     // ── Ensemble mean time-series ──────────────────────────────────
     std::string mean_path = layout.ensemble_timeseries();
-    io::CsvTimeSeriesWriter::write_ensemble_mean(mean_path, all_series);
+    if (!io::CsvTimeSeriesWriter::write_ensemble_mean(mean_path, all_series)) {
+        std::fprintf(stderr, "ERROR: cannot write %s\n", mean_path.c_str());
+        return EXIT_FAILURE;
+    }
     std::printf("       Wrote %s\n", mean_path.c_str());
 
     // ── Macrodispersivity α(t) ─────────────────────────────────────
     auto alpha_rows = analysis::compute_macrodispersion(all_series, mac.lambda, mac.vmean_norm);
 
     std::string alpha_path = layout.macrodispersion_csv();
-    analysis::write_macrodispersion_csv(alpha_path, alpha_rows);
+    if (!analysis::write_macrodispersion_csv(alpha_path, alpha_rows)) {
+        std::fprintf(stderr, "ERROR: cannot write %s\n", alpha_path.c_str());
+        return EXIT_FAILURE;
+    }
     std::printf("       Wrote %s\n", alpha_path.c_str());
 
     std::printf("[analysis_only] Done. NR=%d, %d time-points, output=%s\n", NR,

@@ -16,6 +16,7 @@
 #include "../../../core/Grid3D.hpp"
 #include "../../../external/nlohmann/json.hpp"
 #include "../../../io/output_layout.hpp"
+#include "../../../io/writers/BuildInfo.hpp"
 #include "../../../io/writers/CsvTimeSeriesWriter.hpp"
 #include "../../stochastic/PeriodicGaussianField.cuh"
 #include "../../streamfunctions/inlet_slab/NpyIo.hpp"
@@ -156,6 +157,7 @@ void write_json(const std::string& path, const json& j) {
     if (!f)
         throw std::runtime_error("cannot write " + path);
     f << j.dump(2) << "\n";
+    f.close(); // flush before the check: a full disk surfaces here, not in the destructor
     if (!f)
         throw std::runtime_error("write failed for " + path);
 }
@@ -201,6 +203,7 @@ void write_npy_raw(const std::string& path, const std::string& descr,
     f.write(out.data(), static_cast<std::streamsize>(out.size()));
     if (count > 0)
         f.write(static_cast<const char*>(data), static_cast<std::streamsize>(count * elem_bytes));
+    f.close();
     if (!f)
         throw std::runtime_error("write failed for " + path);
 }
@@ -208,6 +211,13 @@ void write_npy_raw(const std::string& path, const std::string& descr,
 void write_f8(const std::string& path, const std::vector<std::size_t>& shape,
               const std::vector<double>& v) {
     sl::write_npy(path, shape, v.data(), v.size());
+}
+
+/// Closes a FILE* written with fprintf and throws if any write or the final flush failed (ENOSPC).
+void close_or_throw(std::FILE* f, const std::string& path) {
+    const bool bad = std::ferror(f) != 0;
+    if (std::fclose(f) != 0 || bad)
+        throw std::runtime_error("write failed for " + path);
 }
 
 void write_tracker_planes_csv(const std::string& path, const std::vector<PlaneMoments>& pm) {
@@ -220,7 +230,7 @@ void write_tracker_planes_csv(const std::string& path, const std::vector<PlaneMo
         std::fprintf(f, "%.15e,%d,%d,%.15e,%.15e,%.15e,%.15e,%.15e,%.15e,%.15e,%.15e\n", m.x1,
                      m.contributing, m.non_ok, m.mean_x2, m.var_x2, m.mean_x3, m.var_x3,
                      m.mean_tau, m.var_tau, m.rms_ev, m.max_ev);
-    std::fclose(f);
+    close_or_throw(f, path);
 }
 
 void write_pollock_planes_csv(const std::string& path, const std::vector<PollockPlaneMoments>& pm) {
@@ -231,7 +241,7 @@ void write_pollock_planes_csv(const std::string& path, const std::vector<Pollock
     for (const PollockPlaneMoments& m : pm)
         std::fprintf(f, "%.15e,%d,%d,%.15e,%.15e,%.15e,%.15e,%.15e,%.15e\n", m.x1, m.contributing,
                      m.non_ok, m.mean_x2, m.var_x2, m.mean_x3, m.var_x3, m.mean_t, m.var_t);
-    std::fclose(f);
+    close_or_throw(f, path);
 }
 
 /// `<head>,exit_inlet,exit_outlet` rows (the format of the tracker's exits_planes.csv / exits_time.csv).
@@ -244,7 +254,7 @@ void write_exits_csv(const std::string& path, const char* head, const std::vecto
     for (std::size_t i = 0; i < axis.size(); ++i)
         std::fprintf(f, "%.15e,%lld,%lld\n", axis[i], i < in.size() ? in[i] : 0LL,
                      i < out.size() ? out[i] : 0LL);
-    std::fclose(f);
+    close_or_throw(f, path);
 }
 
 void write_series_csv(const std::string& path, const std::vector<io::TimeSeriesPoint<double>>& s) {
@@ -313,6 +323,7 @@ void commit_realization(const EnsembleConfig& c, int r, const std::string& tmpdi
     {
         std::ofstream f(done_tmp, std::ios::trunc);
         f << done_text(c, r);
+        f.close();
         if (!f)
             throw std::runtime_error("cannot write " + done_tmp);
     }
@@ -419,14 +430,6 @@ json field_json(const EnsembleConfig& c, unsigned long long seed,
             {"active_modes", f.active_mode_count}};
 }
 
-std::string build_commit() {
-#ifdef MACROFLOW3D_GIT_HASH
-    return MACROFLOW3D_GIT_HASH;
-#else
-    return "unknown";
-#endif
-}
-
 // ================================================================================================
 // One realization: --field-only
 // ================================================================================================
@@ -463,7 +466,7 @@ int run_field_only(CudaContext& ctx, const EnsembleConfig& c, int r) {
     test_abort(c, r, "stage");
     write_json(tmpdir + "/field.json", field_json(c, seed, rep));
     write_json(tmpdir + "/timings.json",
-               {{"r", r}, {"seed", seed}, {"commit", build_commit()},
+               {{"r", r}, {"seed", seed}, {"commit", io::BuildInfo::git_hash},
                 {"seconds", {{"field", field_s}, {"total", since(t_all)}}}});
     commit_realization(c, r, tmpdir, {});
     out_line(fmt("R=%d STATUS ok", r));
@@ -505,7 +508,7 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, EnsembleRu
     json TJ; // timings.json
     TJ["r"] = r;
     TJ["seed"] = seed;
-    TJ["commit"] = build_commit();
+    TJ["commit"] = io::BuildInfo::git_hash;
 
     // ---- stage ------------------------------------------------------------------------------
     std::unique_ptr<LongBoxStage> stage;            // medium (a)
@@ -971,6 +974,7 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, EnsembleRu
                     {"verdict", sv.verdict}});
         std::ofstream f(tmpdir + "/flow_stats.json", std::ios::trunc);
         f << flow_stats_text;
+        f.close();
         if (!f)
             throw std::runtime_error("cannot write " + tmpdir + "/flow_stats.json");
     }
@@ -1150,6 +1154,7 @@ int run_analysis_outputs(const EnsembleConfig& c, int d) {
           << "    NR: " << c.nr << "\n"
           << "    lambda: " << fmt("%.17g", c.ell) << "\n"
           << "    vmean_norm: " << vm_text << "\n";
+        f.close();
         if (!f)
             throw std::runtime_error("cannot write analysis_config.yaml");
     }

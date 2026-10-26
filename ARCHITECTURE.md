@@ -87,7 +87,6 @@ This is the science layer.
 #### Transport
 `src/physics/particles/`
 - `par2_adapter/`: baseline RWPT path
-- `pspta/`: legacy invariant/transport infrastructure to audit, migrate, or retire
 
 ### 3.4 Runtime / orchestration
 `src/runtime/`
@@ -129,24 +128,13 @@ The Par2 path is the current operational baseline.
 
 Use it when:
 - validating end-to-end pipeline behavior,
-- checking non-PSPTA regressions,
+- checking transport regressions (`scripts/regress`),
 - comparing statistics against legacy or known-good transport behavior.
 
 Do not casually change this path.
 
-### 4.2 Legacy PSPTA path
-The existing PSPTA path is legacy research infrastructure.
-
-It currently includes:
-- invariant field containers,
-- legacy x-marching invariant construction,
-- transport-near-nullspace operator machinery,
-- optional SLEPc eigensolver backend,
-- refinement skeletons,
-- pseudo-symplectic particle updates,
-- diagnostics and failure accounting.
-
-Do not extend the old PSPTA invariant-construction architecture. New invariant construction belongs to the Lester equation (14) streamfunction solver. Existing PSPTA code may still be useful as a compatibility surface, diagnostic source, or transport consumer while the new path is brought up.
+### 4.2 Retired: legacy PSPTA path
+The legacy PSPTA transport engine, its psi-field container, the transport-near-nullspace/eigensolver invariant stack (PETSc/SLEPc) and the `transport.method: pspta` configuration surface were retired on 2026-10-26. The code is recoverable from the repository tag `archive/pre-cleanup-2026-10`. New invariant construction belongs to the Lester equation (14) streamfunction solver; the Lagrangian consumer (section 4.3) replaces the pseudo-symplectic engine as production transport.
 
 ### 4.3 Darcy labels: tracing constructor and the Lester equation (14) diagnostic
 Status 2026-10-07 (`docs/decisions/2026-10-07-label-transport-constructor.md`): the production constructor of the inlet-anchored Darcy labels on the `x1`-slab is **label transport by backward streamline tracing** from every vertex to the inlet plane (`src/physics/streamfunctions/inlet_slab/`: SF-30 DP5(4) integrator with Hénon landing on the SF-28 spline of the SF-19 flow; D-1 inlet labels at the feet; SF-35). The coupled nonlinear Lester et al. equation (14) system is retained as the **diagnostic** of those labels (`r_F`, `r_out` evaluated at the constructed labels, 4th-order stencils) and as the contract of the frozen periodic stack; its slab Newton-Krylov solver (SF-33) is an instrument for cross-construction where it converges (`<= 64^3`, `eps <= 0.5`), not a producer.
@@ -183,7 +171,7 @@ This formulation keeps a variable-coefficient diffusion structure and avoids exp
 - the new target is the Darcy labels non-periodic in `x1` with inlet anchoring, prototyped on CPU (SF-29) before any GPU generalization (`docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`);
 - consumer (status 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`): the production consumer at `sigma_Y^2 >= 4` is **Lagrangian** — particles traced forward (SF-30 DP5(4) arclength integrator, tolerance-controlled) on the spline flow `v_s = k_s grad Phi_s` (SF-28 splines of the SF-19 potential and of `ln k`), each carrying its own labels, with covector transport and the accumulated divergence along the path (planned module `src/physics/particles/lagrangian_labels/`, SF-36). `v_s` is helicity-free pointwise by its form; its divergence (expected `O(h^2)`) and the integration error are measured (tolerance and grid ladders, Pollock comparator, SF-37), not guaranteed. The gridded labels are a diagnostic, verified for `sigma_Y <= 1` (SF-35 envelope, `ell = 1/4`, one realization; at `sigma_Y^2 = 4` refinement to 512^3 does not extend their convergent range); `src/physics/particles/streamline_tracker/` (SF-31/32: pseudo-symplectic tracker, RK and Pollock references) is verified infrastructure and the pseudo-symplectic consumer is future work;
 - the SF-30 return map is the flow-level oracle of the labels (SF-34); the tracing constructor is verified by checks that do not share its construction — grid FD metrics and the (14) residual, exact-label controls, cross-construction with the elliptic solution (decision 2026-10-07, item 3);
-- the legacy PSPTA engine is not part of the consumer path (decision 2026-10-17); its role remains to be re-evaluated (audit, migration or retirement).
+- the legacy PSPTA engine is not part of the consumer path (decision 2026-10-17) and has since been retired (2026-10-26).
 
 ---
 
@@ -219,7 +207,7 @@ For the smooth, locally isotropic Darcy regime, the theory motivating this proje
 
 The streamline integrator of the closure gate is an oracle independent of the gridded labels. It is **not** independent of the Lagrangian consumer, which shares its integrator and spline flow; the consumer's independent checks are listed in `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, item 4.
 
-So the software must not only “move particles”; it must defend those kinematic constraints — by construction where the representation allows it (helicity-free `v_s`; each particle's labels constant by definition) and by measured, refinement-converged evidence where it does not (the drift of the integrated trajectories off the true streamsurfaces, the divergence of `v_s`). The old PSPTA engine should not dictate the new invariant-construction or consumer architecture.
+So the software must not only “move particles”; it must defend those kinematic constraints — by construction where the representation allows it (helicity-free `v_s`; each particle's labels constant by definition) and by measured, refinement-converged evidence where it does not (the drift of the integrated trajectories off the true streamsurfaces, the divergence of `v_s`). The retired PSPTA engine does not dictate the invariant-construction or consumer architecture.
 
 ---
 
@@ -268,7 +256,6 @@ For the scientific core, evidence beats plausibility.
 
 ### 7.4 Baselines are preserved
 Par2 is a baseline, not dead weight.
-Legacy PSPTA is migration context, not a free rewrite license and not the new invariant-construction architecture.
 
 ---
 
@@ -281,11 +268,10 @@ Read:
 - `docs/theory/lester-2023-key-claims.md`
 - `docs/validation/acceptance-gates.md`
 
-### If you touch legacy PSPTA transport or macrodispersion
+### If you touch transport or macrodispersion
 Read:
 - `AGENTS.md`
 - `docs/validation/acceptance-gates.md`
-- `src/physics/particles/pspta/AGENTS.md`
 
 ### If you touch solvers or operators
 Read:
@@ -301,7 +287,7 @@ Read:
 ## 9. Minimal mental model for new contributors
 
 - The **baseline pipeline already works**.
-- The **scientific problem is not “make legacy PSPTA compile”**.
+- The **scientific problem is not “revive the legacy transport engine”**.
 - The scientific problem is:
   - preserve the correct kinematics,
   - separate physical transverse spreading from numerical leakage,

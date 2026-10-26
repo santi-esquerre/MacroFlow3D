@@ -115,7 +115,8 @@ struct ManifestWriter {
         if (!ofs)
             return false;
         ofs << j.dump(2) << "\n";
-        return true;
+        ofs.close(); // flush before the check so a full disk reports false
+        return !ofs.fail();
     }
 };
 

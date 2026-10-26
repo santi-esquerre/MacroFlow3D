@@ -426,6 +426,13 @@ std::vector<const void*> LagrangianTracker::device_storage_pointers() const {
 
 namespace {
 
+/// Closes a FILE* written with fprintf; throws if any write or the final flush failed (ENOSPC).
+void close_or_throw(std::FILE* f, const std::string& what) {
+    const bool bad = std::ferror(f) != 0;
+    if (std::fclose(f) != 0 || bad)
+        throw std::runtime_error("write_track_outputs: write failed for " + what);
+}
+
 void write_npy_u8(const std::string& path, const std::vector<std::size_t>& shape,
                   const std::uint8_t* data, std::size_t count) {
     sl::NpyArray tmp;
@@ -450,6 +457,7 @@ void write_npy_u8(const std::string& path, const std::vector<std::size_t>& shape
     f.write(out.data(), static_cast<std::streamsize>(out.size()));
     if (count > 0)
         f.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(count));
+    f.close();
     if (!f)
         throw std::runtime_error("write_track_outputs: write failed for " + path);
 }
@@ -520,7 +528,7 @@ void write_track_outputs(const std::string& dir, const LagrangianTrackResult& r,
                          m.contributing, m.non_ok, m.mean_x2, m.var_x2, m.mean_x3, m.var_x3,
                          m.mean_tau, m.var_tau, m.rms_ev, m.max_ev);
         }
-        std::fclose(f);
+        close_or_throw(f, "moments_planes.csv");
     }
 
     nlohmann::json j;
@@ -560,7 +568,7 @@ void write_track_outputs(const std::string& dir, const LagrangianTrackResult& r,
             for (std::size_t i = 0; i < axis.size(); ++i)
                 std::fprintf(f, "%.15e,%lld,%lld\n", axis[i], i < in.size() ? in[i] : 0LL,
                              i < out.size() ? out[i] : 0LL);
-            std::fclose(f);
+            close_or_throw(f, file);
         };
         write_exits("exits_planes.csv", "x1", r.planes, r.exit_inlet_plane, r.exit_outlet_plane);
         write_exits("exits_time.csv", "t", r.times, r.exit_inlet_time, r.exit_outlet_time);
@@ -575,6 +583,9 @@ void write_track_outputs(const std::string& dir, const LagrangianTrackResult& r,
     if (!jf)
         throw std::runtime_error("write_track_outputs: cannot write track.json");
     jf << j.dump(2) << "\n";
+    jf.close();
+    if (!jf)
+        throw std::runtime_error("write_track_outputs: write failed for track.json");
 }
 
 } // namespace lagrangian_labels

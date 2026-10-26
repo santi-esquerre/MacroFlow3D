@@ -81,12 +81,13 @@ Active plans are authoritative operational documents, not optional reading:
 |------|-------------|
 | `docs/plans/active/lester-eq14-streamfunction-solver-overview.md` | Scientific objective, equation (14), Lester reference case, and rationale for the Picard/Anderson/Newton-Krylov sequence |
 | `docs/plans/active/lester-eq14-streamfunction-solver-plan.md` | New invariant construction, Lester equation (14), streamfunction residuals, Picard/Newton strategy, continuation, solver validation |
+| `docs/plans/active/audit-cleanup-2026-10.md` | Codebase cleanup, retired code (PETSc/SLEPc, PSPTA, `legacy/`), regression byte-compare harness, bitwise performance work (decision 2026-10-26) |
 
 Archived plans are historical evidence, not active authority:
 
 | Plan | When to read |
 |------|-------------|
-| `docs/plans/archive/pspta-execution-plan.md` | Auditing or retiring the old PSPTA transport-near-nullspace path, existing eigensolver code, or legacy Strategy A/C context |
+| `docs/plans/archive/pspta-execution-plan.md` | Historical context only: the old PSPTA transport-near-nullspace path (retired 2026-10-26, tag `archive/pre-cleanup-2026-10`) and legacy Strategy A/C |
 
 A good plan contains:
 

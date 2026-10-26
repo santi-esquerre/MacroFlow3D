@@ -86,7 +86,7 @@ Do not start editing until the plan is complete.
 
 ## 4. Local configure/build/test
 
-### 4.1 Debug configure (no PETSc)
+### 4.1 Debug configure
 
 ```bash
 cmake -S . -B build/wsl-debug -G Ninja \
@@ -94,8 +94,7 @@ cmake -S . -B build/wsl-debug -G Ninja \
   -DCMAKE_CUDA_ARCHITECTURES=86 \
   -DMACROFLOW3D_ENABLE_DIAGNOSTICS=ON \
   -DMACROFLOW3D_ENABLE_PROFILING=OFF \
-  -DMACROFLOW3D_ENABLE_NVTX=OFF \
-  -DMACROFLOW3D_ENABLE_PETSC=OFF
+  -DMACROFLOW3D_ENABLE_NVTX=OFF
 ```
 
 Adjust `CMAKE_CUDA_ARCHITECTURES` if your local GPU is not `86`.
@@ -117,27 +116,24 @@ long-duration computation (several registered `ctest` entries are multi-case
 solver/continuation sweeps) and belongs on V100 as a detached job — see
 `docs/runbooks/remote-v100.md` Section 0 and Section 7 below.
 
-### 4.4 Run the legacy PSPTA smoke case
+### 4.4 Run the Par2 smoke case
 
 ```bash
-./build/wsl-debug/macroflow3d_pipeline apps/config_pspta_small.yaml
+./build/wsl-debug/macroflow3d_pipeline apps/config_par2_small.yaml
 ```
 
 ---
 
 ## 5. High-signal targeted checks
 
-### Operator tests
+### Fast numerics tests
 
 ```bash
-ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
+ctest --test-dir build/wsl-debug --output-on-failure -R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'
 ```
 
-### Direct execution
-
-```bash
-./build/wsl-debug/run_operator_tests
-```
+Do not use an unanchored `-R operator_tests`: it also matches the long
+`streamfunction_operator_tests` sweep.
 
 Use local WSL primarily for:
 

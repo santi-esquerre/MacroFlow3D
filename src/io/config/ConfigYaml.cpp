@@ -236,11 +236,9 @@ TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlC
     if (!node)
         return cfg;
 
-    static const std::set<std::string> known = {"n_particles",       "dt",          "n_steps",
-                                                "porosity",          "diffusion",   "alpha_l",
-                                                "alpha_t",           "seed",        "output_every",
-                                                "snapshot_every",    "inject_x",    "method",
-                                                "pspta_diagnostics", "pspta_refine"};
+    static const std::set<std::string> known = {
+        "n_particles", "dt",   "n_steps",      "porosity",       "diffusion", "alpha_l",
+        "alpha_t",     "seed", "output_every", "snapshot_every", "inject_x",  "method"};
     check_unknown_keys(node, known, "transport", errs);
 
     cfg.n_particles = get_or<int>(node, "n_particles", def.n_particles);
@@ -255,41 +253,7 @@ TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlC
     cfg.snapshot_every = get_or<int>(node, "snapshot_every", def.snapshot_every);
     cfg.inject_x = get_or<real>(node, "inject_x", def.inject_x);
     cfg.method = get_or<std::string>(node, "method", def.method);
-    cfg.pspta_diagnostics = get_or<bool>(node, "pspta_diagnostics", def.pspta_diagnostics);
-
-    if (node["pspta_refine"]) {
-        const auto& r = node["pspta_refine"];
-        static const std::set<std::string> refine_known = {
-            "enabled",           "outer_iters",         "omega",
-            "omega_min",         "max_backtracks",      "eps_vx",
-            "source_clip_cells", "no_descent_patience", "stop_rel_rms",
-            "stop_abs_rms",      "print_every_iter",    "save_history_csv",
-            "eq13_diagnostics"};
-        check_unknown_keys(r, refine_known, "transport.pspta_refine", errs);
-
-        cfg.pspta_refine.enabled = get_or<bool>(r, "enabled", def.pspta_refine.enabled);
-        cfg.pspta_refine.outer_iters = get_or<int>(r, "outer_iters", def.pspta_refine.outer_iters);
-        cfg.pspta_refine.omega = get_or<real>(r, "omega", def.pspta_refine.omega);
-        cfg.pspta_refine.omega_min = get_or<real>(r, "omega_min", def.pspta_refine.omega_min);
-        cfg.pspta_refine.max_backtracks =
-            get_or<int>(r, "max_backtracks", def.pspta_refine.max_backtracks);
-        cfg.pspta_refine.eps_vx = get_or<real>(r, "eps_vx", def.pspta_refine.eps_vx);
-        cfg.pspta_refine.source_clip_cells =
-            get_or<real>(r, "source_clip_cells", def.pspta_refine.source_clip_cells);
-        cfg.pspta_refine.no_descent_patience =
-            get_or<int>(r, "no_descent_patience", def.pspta_refine.no_descent_patience);
-        cfg.pspta_refine.stop_rel_rms =
-            get_or<real>(r, "stop_rel_rms", def.pspta_refine.stop_rel_rms);
-        cfg.pspta_refine.stop_abs_rms =
-            get_or<real>(r, "stop_abs_rms", def.pspta_refine.stop_abs_rms);
-        cfg.pspta_refine.print_every_iter =
-            get_or<bool>(r, "print_every_iter", def.pspta_refine.print_every_iter);
-        cfg.pspta_refine.save_history_csv =
-            get_or<bool>(r, "save_history_csv", def.pspta_refine.save_history_csv);
-        cfg.pspta_refine.eq13_diagnostics =
-            get_or<bool>(r, "eq13_diagnostics", def.pspta_refine.eq13_diagnostics);
-    }
-    // velocity_layout is derived after parsing (not user-configurable)
+    // velocity_layout stays "padded" (not user-configurable)
 
     return cfg;
 }
@@ -662,8 +626,6 @@ AppConfig load_config_yaml(const std::string& path) {
     cfg.stochastic = parse_stochastic(root["stochastic"], cfg.stochastic, unknown_errs);
     cfg.flow = parse_flow(root["flow"], cfg.flow, unknown_errs);
     cfg.transport = parse_transport(root["transport"], cfg.transport, unknown_errs);
-    // Derive velocity_layout from method — not user-configurable
-    cfg.transport.velocity_layout = (cfg.transport.method == "pspta") ? "compact" : "padded";
     cfg.analysis = parse_analysis(root["analysis"], cfg.analysis, unknown_errs);
     // Diagnostics section (simple — single bool)
     if (root["diagnostics"]) {
