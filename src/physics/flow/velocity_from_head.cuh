@@ -72,59 +72,5 @@ void compute_velocity_from_head(VelocityField& vel, const HeadField& head, const
 void compute_velocity_from_head(PaddedVelocityField& vel, const HeadField& head, const KField& K,
                                 const Grid3D& grid, const BCSpec& bc, CudaContext& ctx);
 
-// ============================================================================
-// Checksum/validation utilities
-// ============================================================================
-
-/**
- * @brief Compute L2 norm (sqrt of sum of squares) for a device array
- */
-real compute_norm2(DeviceSpan<const real> data, CudaContext& ctx);
-
-/**
- * @brief Check if any values are NaN in a device array
- * @return true if no NaNs found (all values are valid)
- */
-bool check_no_nans(DeviceSpan<const real> data, CudaContext& ctx);
-
-/**
- * @brief Compute sum of all elements in a device array
- */
-real compute_sum(DeviceSpan<const real> data, CudaContext& ctx);
-
-/**
- * @brief Compute mean of all elements in a device array
- */
-real compute_mean(DeviceSpan<const real> data, CudaContext& ctx);
-
-/**
- * @brief Compute and print checksums for velocity field
- *
- * Prints L2 norms and NaN status for U, V, W
- */
-void print_velocity_checksums(const VelocityField& vel, CudaContext& ctx);
-
-/**
- * @brief Verify mean U velocity against theoretical Darcy value
- *
- * For Dirichlet west-east with periodic elsewhere:
- *   u_theory = K_eff * (H_west - H_east) / Lx
- *
- * where K_eff is the effective (harmonic) conductivity in x-direction.
- *
- * This function computes:
- *   1. Mean U velocity from the computed field
- *   2. Theoretical velocity using harmonic mean K
- *   3. Relative error
- *
- * @param vel       Computed velocity field
- * @param K         Conductivity field
- * @param grid      Grid dimensions
- * @param bc        Boundary conditions
- * @param ctx       CUDA context
- */
-void verify_mean_velocity_darcy(const VelocityField& vel, const KField& K, const Grid3D& grid,
-                                const BCSpec& bc, CudaContext& ctx);
-
 } // namespace physics
 } // namespace macroflow3d

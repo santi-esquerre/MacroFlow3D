@@ -86,7 +86,6 @@ static constexpr bool profiling_enabled = (MACROFLOW3D_ENABLE_PROFILING != 0);
 
 // Alias for use in if statements (optimizer removes dead branches)
 #define MACROFLOW3D_DIAGNOSTICS_ENABLED ::macroflow3d::diag::diagnostics_enabled
-#define MACROFLOW3D_SYNC_CHECKS_ENABLED ::macroflow3d::diag::sync_checks_enabled
 #define MACROFLOW3D_PROFILING_ENABLED ::macroflow3d::diag::profiling_enabled
 
 // ============================================================================
