@@ -470,122 +470,13 @@ if(MACROFLOW3D_BUILD_APPS)
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
     add_test(NAME streamfunction_operator_tests COMMAND streamfunction_operator_tests)
-    # SF-26 T02: source-pairing correction Gate 2 contract cases (cheap
-    # tier): exact SAME-index Darcy pairs (roundoff-exact and O(h^2) general),
-    # the crossed-pairing mutant, and the analytic gauge-recombination
-    # invariance control. See coupled_residual_gpu_cases.cu /
-    # streamfunction_operator_tests.cpp (cases()) for the exact fixtures.
-    add_test(NAME streamfunction_exact_pair COMMAND streamfunction_operator_tests
-        --case coupled_residual_exact_pair_k1
-        --case coupled_residual_exact_pair_kx1
-        --case coupled_residual_exact_pair_general
-        --case coupled_residual_pairing_mutant
-        --case coupled_residual_gauge_recombination_analytic
-    )
-    add_test(NAME streamfunction_homogeneous COMMAND streamfunction_operator_tests
-        --case homogeneous_solver_exact_16
-        --case homogeneous_solver_exact_32
-        --case homogeneous_solver_exact_64
-        --case homogeneous_solver_repeated_reuse
-    )
-    add_test(NAME streamfunction_picard_fixed COMMAND streamfunction_operator_tests
-        --case picard_fixed_manufactured_16
-        --case picard_fixed_manufactured_32
-        --case picard_fixed_research_amplitude_05
-        --case picard_fixed_homogeneous_zero_iterations
-        --case picard_fixed_config_error_contract
-    )
-    add_test(NAME streamfunction_picard_adaptive COMMAND streamfunction_operator_tests
-        --case picard_adaptive_accept_growth
-        --case picard_adaptive_reject_to_floor
-        --case picard_adaptive_stagnation
-        --case picard_adaptive_degeneracy_rejection
-        --case picard_adaptive_fixed_mode_equivalence
-        --case picard_adaptive_config_error_contract
-    )
-    add_test(NAME streamfunction_continuation COMMAND streamfunction_operator_tests
-        --case continuation_stepper_eta_all_accept
-        --case continuation_stepper_epsilon_all_accept
-        --case continuation_stepper_reject_halve
-        --case continuation_stepper_floor
-        --case continuation_stepper_growth_streak_reset
-        --case continuation_config_validation_contract
-        --case continuation_warm_start_semantics
-        --case continuation_injected_failure_bitwise_restore
-        --case continuation_floor_exhaustion
-        --case continuation_invalid_problem_propagation
-        --case continuation_trig_control
-        --case continuation_homogeneous_control
-    )
-    add_test(NAME streamfunction_anderson COMMAND streamfunction_operator_tests
-        --case anderson_disabled_equivalence
-        --case anderson_non_regression_trig32
-        --case anderson_non_regression_homogeneous16
-        --case anderson_memory_bytes
-        --case anderson_config_validation
-        --case anderson_condition_reset_control
-        --case anderson_form_candidate_unit
-    )
-    # SF-21 (first built pre-re-sequencing as SF-20 T02): CoefficientState +
-    # lambda/eta-rescue contract cases, plus the SF-21 re-activation Anderson
-    # entry-clear proof (fast, 16^3, host+small-GPU). Kept in a separate
-    # ctest entry (rather than extended into streamfunction_continuation or
-    # streamfunction_anderson) so the two very different runtime profiles
-    # (fast unit cases vs. the tens-of-minutes 32^3 physical smokes, which
-    # since SF-27 are a documented experiment, not a ctest entry) are
-    # independently attributable.
-    add_test(NAME streamfunction_heterogeneity_unit COMMAND streamfunction_operator_tests
-        --case heterogeneity_coefficient_state_contract
-        --case heterogeneity_rescue_ordering
-        --case heterogeneity_rescue_failure_lambda_halving
-        --case heterogeneity_lambda_floor_exhaustion
-        --case heterogeneity_anderson_entry_clear
-    )
-    # SF-22 T02: matrix-free Jacobian-vector product (JvpWorkspace, SF-22 T01)
-    # acceptance cases. Cheap tier: see jvp_gpu_cases.cu / streamfunction_
-    # operator_tests.cpp (cases()) for the exact fixtures.
-    add_test(NAME streamfunction_jvp COMMAND streamfunction_operator_tests
-        --case jvp_delta_sweep_u_shape
-        --case jvp_fd_convergence_order
-        --case jvp_eta0_linearity_oracle
-        --case jvp_converged_picard_base
-        --case jvp_contract_fail_fast
-        --case jvp_cache_and_determinism
-        --case jvp_memory_accounting
-        --case jvp_repeated_apply_stress
-    )
-    # SF-23 T02: restarted, right-preconditioned coupled GMRES (CoupledGmres,
-    # SF-23 T01) and BlockDiagonalMGPreconditioner acceptance cases. Cheap
-    # tier: see gmres_gpu_cases.cu / streamfunction_operator_tests.cpp
-    # (cases()) for the exact fixtures.
-    add_test(NAME streamfunction_gmres COMMAND streamfunction_operator_tests
-        --case gmres_preconditioner_fixed_linear
-        --case gmres_eta0_pcg_cross_check
-        --case gmres_dense_lu_oracle
-        --case gmres_iteration_reduction
-        --case gmres_residual_agreement
-        --case gmres_determinism
-        --case gmres_memory_accounting
-        --case gmres_restart15_path
-        --case gmres_fail_fast_contracts
-    )
-    # SF-24 T03: globalized Newton-Krylov (NewtonKrylovSolver, SF-24 T01)
-    # PRESPECIFIED-gate acceptance cases (G1/G2/G3/G6/G7). Cheap tier: see
-    # newton_gpu_cases.cu / streamfunction_operator_tests.cpp (cases()) for
-    # the exact fixtures.
-    add_test(NAME streamfunction_newton COMMAND streamfunction_operator_tests
-        --case newton_equivalence
-        --case newton_activation_semantics
-        --case newton_forced_failure_preservation
-        --case newton_memory_accounting
-        --case newton_fail_fast
-    )
-    # SF-25 T02: ShiftedJacobianOperator (SF-25 T01) cheap enabler unit case.
-    # Cheap tier: see terminal_solver_gpu_cases.cu / streamfunction_operator_
-    # tests.cpp (cases()) for the exact fixture.
-    add_test(NAME streamfunction_terminal_unit COMMAND streamfunction_operator_tests
-        --case terminal_shifted_apply_unit
-    )
+    # AUD-02: the umbrella entry above runs every case in the fast registry
+    # (cases(): the no-argument default). The eleven per-group `--case` subset
+    # entries that used to follow (streamfunction_exact_pair, _homogeneous,
+    # _picard_fixed, _picard_adaptive, _continuation, _anderson,
+    # _heterogeneity_unit, _jvp, _gmres, _newton, _terminal_unit) re-ran strict
+    # subsets of it and were removed; run one group with
+    # `streamfunction_operator_tests --case <name>`.
     # SF-27 (process rule: ctest holds fast contract tests only): the heavy
     # tier is deliberately NOT registered in ctest. The eight heavy cases
     #   anderson_stall_fixture_a, anderson_stall_fixture_b,
