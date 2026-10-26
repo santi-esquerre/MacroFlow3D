@@ -283,6 +283,10 @@ sync_command() {
   ensure_remote_repo
   echo "Syncing $repo_root -> ${REMOTE_HOST}:${REMOTE_REPO_DIR}"
   rsync_run
+  # The mirror has no .git (excluded); record the revision for cmake/git_rev.cmake.
+  # Written after rsync because --delete would remove it (it is not in the local tree).
+  write_remote_file "$REMOTE_REPO_DIR/.mf3d_source_rev" 644 \
+    "$(git -C "$repo_root" describe --always --dirty --abbrev=12 --exclude='*')"
 }
 
 exec_command() {

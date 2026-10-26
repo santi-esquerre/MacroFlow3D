@@ -5,7 +5,7 @@
  * @brief GPU and build metadata for manifest enrichment (Etapa 8).
  *
  * Queries CUDA runtime for device info. Build flags are injected
- * via CMake compile definitions (MACROFLOW3D_GIT_HASH, MACROFLOW3D_BUILD_TYPE, etc.).
+ * via CMake compile definitions (MACROFLOW3D_BUILD_TYPE, etc.); the git revision is a generated symbol.
  */
 
 #include <cuda_runtime.h>
@@ -13,6 +13,8 @@
 
 namespace macroflow3d {
 namespace io {
+
+extern const char mf3d_git_rev[]; // defined in the generated <build>/generated/git_rev.cpp
 
 /**
  * @brief GPU device information snapshot.
@@ -63,11 +65,9 @@ struct GPUInfo {
  * sensible fallbacks are used.
  */
 struct BuildInfo {
-#ifdef MACROFLOW3D_GIT_HASH
-    static constexpr const char* git_hash = MACROFLOW3D_GIT_HASH;
-#else
-    static constexpr const char* git_hash = "unknown";
-#endif
+    /// Source revision generated at build time (cmake/git_rev.cmake): `git describe
+    /// --always --dirty --abbrev=12 --exclude=*`, or `.mf3d_source_rev`, or "unknown".
+    static constexpr const char* git_hash = mf3d_git_rev;
 
 #ifdef MACROFLOW3D_BUILD_TYPE
     static constexpr const char* build_type = MACROFLOW3D_BUILD_TYPE;

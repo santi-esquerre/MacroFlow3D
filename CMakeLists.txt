@@ -71,17 +71,15 @@ add_subdirectory(src/external/yaml-cpp-0.8.0 EXCLUDE_FROM_ALL)
 # ============================================================================
 # Build metadata: git hash, build type, CUDA architectures (Etapa 8)
 # ============================================================================
-execute_process(
-    COMMAND git rev-parse --short HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE MACROFLOW3D_GIT_HASH_RAW
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-    RESULT_VARIABLE GIT_RESULT
-)
-if(NOT GIT_RESULT EQUAL 0)
-    set(MACROFLOW3D_GIT_HASH_RAW "unknown")
-endif()
+# The source revision is generated at BUILD time (cmake/git_rev.cmake) into one TU, so a
+# new commit recompiles only that file (and works on the git-less V100 mirror).
+set(MF3D_GIT_REV_CPP "${CMAKE_BINARY_DIR}/generated/git_rev.cpp")
+add_custom_target(mf3d_git_rev
+    BYPRODUCTS ${MF3D_GIT_REV_CPP}
+    COMMAND ${CMAKE_COMMAND} -DSRC=${CMAKE_SOURCE_DIR} -DOUT=${MF3D_GIT_REV_CPP}
+            -P ${CMAKE_SOURCE_DIR}/cmake/git_rev.cmake
+    COMMENT "Generating source revision"
+    VERBATIM)
 
 # Stringify CUDA architectures list for embedding
 string(REPLACE ";" " " MACROFLOW3D_CUDA_ARCH_STR "${CMAKE_CUDA_ARCHITECTURES}")
@@ -352,8 +350,11 @@ add_library(macroflow3d_lib STATIC
     ${MULTIGRID_SOURCES}
     ${PHYSICS_SOURCES}
     ${IO_SOURCES}
+    ${MF3D_GIT_REV_CPP}
 )
 
+set_source_files_properties(${MF3D_GIT_REV_CPP} PROPERTIES GENERATED TRUE)
+add_dependencies(macroflow3d_lib mf3d_git_rev)
 target_include_directories(macroflow3d_lib PUBLIC ${CMAKE_SOURCE_DIR})
 
 # Link dependencies — curand is needed by stochastic.cu (in the lib)
@@ -389,7 +390,6 @@ target_compile_options(macroflow3d_lib
 #   Injected so BuildInfo.hpp can read them at compile time.
 # ============================================================================
 target_compile_definitions(macroflow3d_lib PUBLIC
-    MACROFLOW3D_GIT_HASH="${MACROFLOW3D_GIT_HASH_RAW}"
     MACROFLOW3D_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
     MACROFLOW3D_CUDA_ARCHITECTURES="${MACROFLOW3D_CUDA_ARCH_STR}"
 )

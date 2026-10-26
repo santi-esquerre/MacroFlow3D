@@ -51,6 +51,7 @@
 #include "src/core/DeviceBuffer.cuh"
 #include "src/core/Grid3D.hpp"
 #include "src/external/nlohmann/json.hpp"
+#include "src/io/writers/BuildInfo.hpp"
 #include "src/physics/particles/lagrangian_labels/DirichletMedium.cuh"
 #include "src/physics/particles/lagrangian_labels/EnsembleRunner.cuh" // find_seed_on_face, UsageError
 #include "src/physics/particles/lagrangian_labels/EulerianFaceStats.hpp"
@@ -400,14 +401,6 @@ void commit_realization(const AbConfig& c, int r, const std::string& tmpdir) {
     fs::rename(done_tmp, fin + "/DONE");
 }
 
-std::string build_commit() {
-#ifdef MACROFLOW3D_GIT_HASH
-    return MACROFLOW3D_GIT_HASH;
-#else
-    return "unknown";
-#endif
-}
-
 // ================================================================================================
 // Per-medium results and output writers
 // ================================================================================================
@@ -551,7 +544,7 @@ int run_realization(CudaContext& ctx, const AbConfig& c, int r) {
     json TJ;
     TJ["r"] = r;
     TJ["seed"] = seed;
-    TJ["commit"] = build_commit();
+    TJ["commit"] = io::BuildInfo::git_hash;
     const ll::InjectionSpec inj = [&] {
         ll::InjectionSpec s;
         s.X0 = c.X0;
