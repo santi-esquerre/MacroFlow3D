@@ -22,8 +22,7 @@ Use separate worktrees for independent work streams. Each worktree:
 ├── docs/            # chore/docs-*        — documentation, AGENTS, runbooks
 ├── lester-eq14/     # science/lester-*    — equation (14) streamfunction solver
 ├── legacy-pspta/    # science/legacy-pspta-* — PSPTA audit/migration/removal
-├── profiling/       # chore/profiling-*   — perf measurement, NVTX, benchmarks
-└── petsc/           # feat/petsc-*        — PETSc/SLEPc integration work
+└── profiling/       # chore/profiling-*   — perf measurement, NVTX, benchmarks
 ```
 
 ## Creating worktrees
@@ -77,7 +76,6 @@ scripts/remote sync
 | lester-eq14 | `science/lester-*` | Equation (14) streamfunction solver | Human review required |
 | legacy-pspta | `science/legacy-pspta-*` | PSPTA audit/migration/removal | Human review required |
 | profiling | `chore/profiling-*` | Perf, benchmarks, NVTX | High autonomy |
-| petsc | `feat/petsc-*` | PETSc/SLEPc integration | Human review required |
 
 ## Rules
 

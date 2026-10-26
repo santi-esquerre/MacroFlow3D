@@ -138,13 +138,10 @@ Do not casually change this path.
 The existing PSPTA path is legacy research infrastructure.
 
 It currently includes:
-- invariant field containers,
-- legacy x-marching invariant construction,
-- transport-near-nullspace operator machinery,
-- optional SLEPc eigensolver backend,
-- refinement skeletons,
-- pseudo-symplectic particle updates,
+- the psi-field container (`PsptaPsiField`) and the pseudo-symplectic transport engine (`PsptaEngine`),
 - diagnostics and failure accounting.
+
+The legacy invariant-construction stack (transport-near-nullspace operator, PETSc/SLEPc eigensolver backend, x-marching builder, refinement skeletons) has been removed from the build.
 
 Do not extend the old PSPTA invariant-construction architecture. New invariant construction belongs to the Lester equation (14) streamfunction solver. Existing PSPTA code may still be useful as a compatibility surface, diagnostic source, or transport consumer while the new path is brought up.
 

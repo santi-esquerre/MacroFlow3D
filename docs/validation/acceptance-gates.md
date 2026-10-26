@@ -74,7 +74,6 @@ stays in `ctest` is a defect of the validation tier, not a gate.
 Use for changes touching:
 
 - operators
-- eigensolver backend
 - invariant construction algebra
 - Lester equation (14) linear operator `A psi = -div(q grad psi)`
 - adjoint/symmetry assumptions
@@ -89,13 +88,14 @@ Required:
 Minimum commands:
 
 ```bash
-ctest --test-dir <build-dir> --output-on-failure -R operator_tests
-ctest --test-dir <build-dir> --output-on-failure -R validate_slepc_eigensolver
+ctest --test-dir <build-dir> --output-on-failure -R '^streamfunction_operator_tests$'
 ```
 
-`validate_slepc_eigensolver` requires PETSc/SLEPc and runs on V100 as a
-detached job (`scripts/remote run` + `scripts/remote wait`), never locally —
-see `docs/runbooks/remote-v100.md` Section 0.
+`streamfunction_operator_tests` is the full operator registry (about 22 minutes
+on V100): it runs as a detached job (`scripts/remote run` + `scripts/remote
+wait`), never locally — see `docs/runbooks/remote-v100.md` Section 0. Fast
+local iteration uses the anchored subset
+`-R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'`.
 
 Required evidence:
 

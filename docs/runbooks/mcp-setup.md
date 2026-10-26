@@ -10,7 +10,7 @@ This project uses three MCP servers (configured in `.mcp.json`):
 
 1. **GitHub** — issue/PR operations, code search
 2. **Fetch** — web page fetching
-3. **Context7** — up-to-date library/framework documentation (CUDA, PETSc, SLEPc, CMake, etc.)
+3. **Context7** — up-to-date library/framework documentation (CUDA, CMake, etc.)
 
 The project `.mcp.json` is committed and shared. Auth tokens are provided via environment variables — never hardcoded in tracked files.
 
@@ -42,7 +42,7 @@ export CONTEXT7_API_KEY="<your-context7-key>"
 ### Context7 API key
 
 - Get a key at: <https://context7.com>
-- Enables documentation lookups for CUDA, PETSc, SLEPc, CMake, MPI, and other HPC libraries
+- Enables documentation lookups for CUDA, CMake, and other HPC libraries
 
 ---
 
@@ -63,7 +63,7 @@ export CONTEXT7_API_KEY="<your-context7-key>"
 ### Context7 MCP
 
 - Query up-to-date documentation for libraries and frameworks
-- Particularly useful for CUDA runtime API, PETSc/SLEPc API, CMake modules
+- Particularly useful for CUDA runtime API, CMake modules
 - `DEFAULT_MINIMUM_TOKENS` is set to `10000` for sufficient context
 
 ---
