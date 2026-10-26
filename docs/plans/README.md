@@ -28,4 +28,6 @@ Each plan should include:
   dependency-ordered increment specifications and their append-only work logs.
   At most two increments may be nonterminal at once; the checker
   (`scripts/hooks/check-lester-increments.sh`) reports the READY set.
+- `active/audit-cleanup-2026-10.md` is the maintenance plan of the 2026-10 codebase audit and cleanup
+  (decision `docs/decisions/2026-10-26-audit-cleanup.md`); it is not a Lester increment.
 - `archive/pspta-execution-plan.md` and `archive/deep-research-report.md` are historical context only. They are not active implementation plans.
