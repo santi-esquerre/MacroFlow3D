@@ -55,6 +55,12 @@ iteration, and the authoritative full pass runs on V100 as a detached
 `scripts/remote run <job>` job, not locally and not via blocking
 `scripts/remote exec` — see `docs/runbooks/remote-v100.md` Section 0.
 
+Regression byte-compare: for a change that must not alter outputs (refactor,
+cleanup, performance), `scripts/regress` runs a fixed case set with a base and a
+head build and compares the outputs byte for byte (`compare.sh` last line
+`REGRESS IDENTICAL`); V100 detached jobs only, protocol in
+`scripts/regress/README.md`.
+
 #### Validation tiers in ctest
 
 `ctest` holds fast contract tests only. Multi-case solver sweeps and science
