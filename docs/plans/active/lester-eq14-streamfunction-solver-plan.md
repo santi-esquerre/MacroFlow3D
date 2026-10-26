@@ -145,7 +145,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
 - [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
 - [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
-- [ ] [SF-41 — Medium (b) for the Lagrangian consumer: lean Dirichlet stage, non-periodic-in-x1 spline and x-exit handling](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md)
+- [x] [SF-41 — Medium (b) for the Lagrangian consumer: lean Dirichlet stage, non-periodic-in-x1 spline and x-exit handling](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -431,7 +431,9 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    (non-cubic stage on the SF-40 lean stage, medium A/B affine-periodic vs Dirichlet in `x`, ensemble runner, Par2
    baseline): [SF-38](lester-eq14/increments/SF-38-long-domain-infrastructure.md) (medium (b), Dirichlet in `x`, selected by the
    pre-registered equivalence test); medium (b) for the Lagrangian consumer (lean Dirichlet stage, non-periodic-in-`x1` spline, `x`-exit
-   handling, decision 2026-10-24): [SF-41](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md).
+   handling, decision 2026-10-24): [SF-41](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md) (done: head bit for bit
+   SF-38's, measured peak 28855 MiB at 3328x384x384 and 25701 MiB at 6656x256x256, `e_v` order ~2 at `sigma^2` 1 and 4, periodic
+   paths byte-identical, zero `x = 0` exits in the SF-38 A/B re-run, `docs/experiments/2026-10-25-sf41-medium-b-lagrangian-stage.md`).
 5. The study: `alpha_L`, `alpha_T` at `sigma^2` in {1, 2.25, 4} with `lambda/h`, `tol` and `N_R` convergence by
    confidence intervals (`tol` via the `h_max` ladder and equivalence tests, decision 2026-10-23); `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
    physical / numerical / unresolved without presupposing its value (Gate 4):
