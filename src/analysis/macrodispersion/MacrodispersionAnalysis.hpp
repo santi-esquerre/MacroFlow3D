@@ -24,6 +24,7 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -128,8 +129,8 @@ bool write_macrodispersion_csv(const std::string& filename,
                      (double)row.alpha[0], (double)row.alpha[1], (double)row.alpha[2],
                      (double)row.dvar_dt[0], (double)row.dvar_dt[1], (double)row.dvar_dt[2]);
     }
-    std::fclose(f);
-    return true;
+    const bool bad = std::ferror(f) != 0; // fclose flushes: both must be clean
+    return std::fclose(f) == 0 && !bad;
 }
 
 /**
@@ -163,25 +164,31 @@ std::vector<io::TimeSeriesPoint<T>> read_timeseries_csv(const std::string& filen
             continue;
 
         io::TimeSeriesPoint<T> p;
-        // Parse: t,mean_x,mean_y,mean_z,var_x,var_y,var_z,active
+        // Parse: t,mean_x,mean_y,mean_z,var_x,var_y,var_z,active; a malformed field throws (never a silent 0)
         char* end = nullptr;
         const char* s = line.c_str();
+        const auto bad = [&] {
+            throw std::runtime_error("malformed numeric field in " + filename + ": '" + line + "'");
+        };
+        const auto next = [&]() -> T {
+            const double v = std::strtod(s, &end);
+            if (end == s || *end != ',')
+                bad();
+            s = end + 1;
+            return static_cast<T>(v);
+        };
 
-        p.time = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
-        p.mean[0] = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
-        p.mean[1] = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
-        p.mean[2] = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
-        p.var[0] = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
-        p.var[1] = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
-        p.var[2] = static_cast<T>(std::strtod(s, &end));
-        s = end + 1;
+        p.time = next();
+        p.mean[0] = next();
+        p.mean[1] = next();
+        p.mean[2] = next();
+        p.var[0] = next();
+        p.var[1] = next();
+        p.var[2] = next();
         p.active = static_cast<int>(std::strtol(s, &end, 10));
+        if (end == s || line.find_first_not_of(" \t\r", static_cast<std::size_t>(end - line.c_str())) !=
+                            std::string::npos)
+            bad();
 
         pts.push_back(p);
     }

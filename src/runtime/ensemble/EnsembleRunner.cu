@@ -71,6 +71,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -137,11 +138,13 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
     layout.ensure_all_dirs();
 
     // Write effective config (Etapa 7)
-    ConfigSerializer::write(layout, cfg);
+    if (!ConfigSerializer::write(layout, cfg))
+        throw std::runtime_error("cannot write " + layout.effective_config());
 
     // Write enriched manifest (Etapa 8)
     GPUInfo gpu = GPUInfo::query();
-    ManifestWriter::write(layout, cfg, gpu);
+    if (!ManifestWriter::write(layout, cfg, gpu))
+        throw std::runtime_error("cannot write " + layout.manifest());
 
     // ── Event counters (Etapa 9) ─────────────────────────────────────
     runtime::RunCounters counters;
@@ -930,14 +933,16 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
 
         // Ensemble mean time-series
         std::string mean_path = layout.ensemble_timeseries();
-        io::CsvTimeSeriesWriter::write_ensemble_mean(mean_path, all_series);
+        if (!io::CsvTimeSeriesWriter::write_ensemble_mean(mean_path, all_series))
+            throw std::runtime_error("cannot write " + mean_path);
         std::printf("       Wrote %s\n", mean_path.c_str());
 
         // Macrodispersivity α(t)
         auto alpha_rows = analysis::compute_macrodispersion(all_series, mac.lambda, mac.vmean_norm);
 
         std::string alpha_path = layout.macrodispersion_csv();
-        analysis::write_macrodispersion_csv(alpha_path, alpha_rows);
+        if (!analysis::write_macrodispersion_csv(alpha_path, alpha_rows))
+            throw std::runtime_error("cannot write " + alpha_path);
         std::printf("       Wrote %s\n", alpha_path.c_str());
     }
 

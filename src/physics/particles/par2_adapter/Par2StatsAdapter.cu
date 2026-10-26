@@ -90,8 +90,8 @@ bool Par2StatsAdapter::write_csv(const std::string& filename) const {
                      (double)s.mean[0], (double)s.mean[1], (double)s.mean[2], (double)s.var[0],
                      (double)s.var[1], (double)s.var[2], s.active);
     }
-    std::fclose(f);
-    return true;
+    const bool bad = std::ferror(f) != 0; // fclose flushes: both must be clean
+    return std::fclose(f) == 0 && !bad;
 }
 
 } // namespace particles

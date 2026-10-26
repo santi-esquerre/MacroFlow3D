@@ -328,6 +328,7 @@ inline void write_npy(const std::string& path, const std::vector<std::size_t>& s
     if (!f)
         throw NpyError(NpyErrorKind::io, "npy: cannot write " + path);
     f.write(img.data(), static_cast<std::streamsize>(img.size()));
+    f.close(); // flush before the check so ENOSPC is reported, not swallowed by the destructor
     if (!f)
         throw NpyError(NpyErrorKind::io, "npy: cannot write " + path + " (write failed)");
 }
