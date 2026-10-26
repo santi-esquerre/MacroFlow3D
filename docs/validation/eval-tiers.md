@@ -230,4 +230,3 @@ Does it change macrodispersion output or ensemble stats?
 - `docs/validation/acceptance-gates.md` — gate definitions
 - `docs/validation/validation-loop.md` — the fixed loop
 - `docs/validation/local-remote-split.md` — where each tier runs
-- `skills/macroflow-evals/SKILL.md` — agent-facing skill

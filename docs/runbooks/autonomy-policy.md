@@ -37,7 +37,6 @@ after the required automated checks without a mandatory scientific human review:
 - `docs/` — documentation, runbooks, plans, decisions, experiments;
 - `AGENTS.md` and `CLAUDE.md` files — agent instructions/context;
 - `.claude/` — Claude Code configuration and project agents;
-- `skills/` — skill definitions;
 - `CMakePresets.json` — build presets;
 - `.pre-commit-config.yaml` — pre-commit hooks;
 - `scripts/` — automation, hooks, helpers;
@@ -206,6 +205,5 @@ SF-08 / PR #18 is the historical case that motivated this repair rule.
 - `docs/runbooks/pr-workflow.md`
 - `docs/runbooks/lester-increment-workflow.md`
 - `docs/runbooks/claude-increment-orchestration.md`
-- `skills/macroflow-pr-review/SKILL.md`
 - `src/physics/particles/pspta/AGENTS.md`
 - `src/numerics/AGENTS.md`
