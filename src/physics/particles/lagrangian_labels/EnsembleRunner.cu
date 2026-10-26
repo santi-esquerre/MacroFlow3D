@@ -16,6 +16,7 @@
 #include "../../../core/Grid3D.hpp"
 #include "../../../external/nlohmann/json.hpp"
 #include "../../../io/output_layout.hpp"
+#include "../../../io/writers/BuildInfo.hpp"
 #include "../../../io/writers/CsvTimeSeriesWriter.hpp"
 #include "../../stochastic/PeriodicGaussianField.cuh"
 #include "../../streamfunctions/inlet_slab/NpyIo.hpp"
@@ -419,14 +420,6 @@ json field_json(const EnsembleConfig& c, unsigned long long seed,
             {"active_modes", f.active_mode_count}};
 }
 
-std::string build_commit() {
-#ifdef MACROFLOW3D_GIT_HASH
-    return MACROFLOW3D_GIT_HASH;
-#else
-    return "unknown";
-#endif
-}
-
 // ================================================================================================
 // One realization: --field-only
 // ================================================================================================
@@ -463,7 +456,7 @@ int run_field_only(CudaContext& ctx, const EnsembleConfig& c, int r) {
     test_abort(c, r, "stage");
     write_json(tmpdir + "/field.json", field_json(c, seed, rep));
     write_json(tmpdir + "/timings.json",
-               {{"r", r}, {"seed", seed}, {"commit", build_commit()},
+               {{"r", r}, {"seed", seed}, {"commit", io::BuildInfo::git_hash},
                 {"seconds", {{"field", field_s}, {"total", since(t_all)}}}});
     commit_realization(c, r, tmpdir, {});
     out_line(fmt("R=%d STATUS ok", r));
@@ -505,7 +498,7 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, EnsembleRu
     json TJ; // timings.json
     TJ["r"] = r;
     TJ["seed"] = seed;
-    TJ["commit"] = build_commit();
+    TJ["commit"] = io::BuildInfo::git_hash;
 
     // ---- stage ------------------------------------------------------------------------------
     std::unique_ptr<LongBoxStage> stage;            // medium (a)
