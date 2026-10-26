@@ -4,7 +4,6 @@ This runbook defines the canonical remote workflow.
 
 The server is used for:
 - release builds,
-- PETSc/SLEPc builds,
 - heavy tests,
 - profiling,
 - production-like runs,
@@ -26,12 +25,11 @@ call.**
 This explicitly includes, but is not limited to:
 
 - a full or near-full `ctest` run (as opposed to one fast `-R`-filtered case);
-- any test binary that internally sweeps many cases (operator tests,
+- any test binary that internally sweeps many cases (multi-case
   streamfunction Picard/Anderson/continuation ladders, mesh refinement
   studies, etc.);
 - production-like pipeline runs, ensemble runs, benchmarks, and profiling
-  runs;
-- PETSc/SLEPc builds and their test suites.
+  runs.
 
 `scripts/remote exec` is reserved for short, bounded steps only: configure, a
 single compile, a quick single-command smoke check — work that reliably
@@ -120,12 +118,9 @@ scripts/remote remove-mirror SF-NN    # delete ~/MacroFlow3D-SF-NN and its state
   `macroflow3d-SF-NN-` is alive. It never removes the shared `~/MacroFlow3D`.
 - Remove an increment's mirror once its PR is merged (copy out any logs or
   outputs that the increment record cites first).
-- A new per-increment mirror contains only what `sync` copies: it has **no**
-  remote-only PETSc/SLEPc trees (`src/external/petsc`, `src/external/slepc`)
-  and no build directories. `v100-release` builds work after a normal
-  configure/build; `v100-petsc` builds need the shared mirror (no
-  `--increment`) or a manual copy of the PETSc/SLEPc trees into the
-  per-increment mirror.
+- A new per-increment mirror contains only what `sync` copies: it has no
+  build directories. `v100-release` builds work after a normal
+  configure/build.
 
 ---
 
@@ -145,7 +140,6 @@ Remote repo model:
 - Do not expect `.git/` to exist on the remote mirror.
 - Do not run `git` commands there as part of the normal harness flow.
 - `Par2_Core` must already be populated in the local worktree before sync; the remote mirror cannot materialize a missing submodule on its own.
-- Remote-only PETSc/SLEPc trees under `src/external/petsc` and `src/external/slepc` are preserved across syncs and managed separately from the local worktree.
 
 Canonical pattern:
 1. edit locally,
@@ -170,7 +164,6 @@ Recommended remote location:
 Recommended build directories:
 ```bash
 ~/MacroFlow3D/build/v100-release
-~/MacroFlow3D/build/v100-petsc
 ~/MacroFlow3D/build/v100-prof
 ```
 
@@ -230,14 +223,9 @@ scripts/remote exec -- "pwd && ls"
 
 ## 5. Remote configure/build
 
-### 4.1 Release build without PETSc
+### 4.1 Release build
 ```bash
 scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"
-```
-
-### 4.2 Release build with PETSc/SLEPc
-```bash
-scripts/remote exec -- "cmake --preset v100-petsc && cmake --build build/v100-petsc -j"
 ```
 
 ## 6. Remote tests
@@ -249,17 +237,6 @@ launch them detached and wait, do not run them as a blocking `exec` call.
 ```bash
 scripts/remote run ctest-release -- "ctest --test-dir build/v100-release --output-on-failure"
 scripts/remote wait ctest-release
-```
-
-### PETSc/SLEPc targeted tests (detached)
-```bash
-scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
-scripts/remote wait ctest-petsc-smoke
-```
-
-```bash
-scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
-scripts/remote wait ctest-slepc-eigensolver
 ```
 
 A single, genuinely fast, narrowly `-R`-filtered case may still use `exec` if
@@ -327,7 +304,6 @@ If a run changes scientific conclusions, preserve the output directory and summa
 Check:
 - CUDA version / compiler
 - `CMAKE_CUDA_ARCHITECTURES`
-- PETSc/SLEPc paths
 - missing `ninja`
 
 ### Build failure

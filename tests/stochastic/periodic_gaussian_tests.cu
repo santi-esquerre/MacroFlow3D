@@ -4,8 +4,8 @@
  *        generator (`PeriodicGaussianField.cuh`) plus a 256^3 memory/runtime
  *        record.
  *
- * Standalone ctest-friendly runner (mirrors `apps/run_operator_tests.cu`'s
- * single-executable, printed-checks style) rather than the heavier
+ * Standalone ctest-friendly runner (single-executable,
+ * printed-checks style) rather than the heavier
  * `tests/streamfunctions/*` case-registry framework: `PeriodicGaussianField`
  * is not part of the streamfunctions namespace/registry and does not share
  * its CPU long-double reference-operator infrastructure, so reusing that

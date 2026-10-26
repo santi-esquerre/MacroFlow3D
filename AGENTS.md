@@ -4,7 +4,7 @@
 
 MacroFlow3D is scientific software for 3D macrodispersion in heterogeneous porous media. The current strategic goal is to measure macrodispersion (`alpha_L`, `alpha_T`) in smooth Gaussian lognormal fields up to `sigma_Y^2 = 4` with a verified Lagrangian-label consumer: particles traced forward with tolerance-controlled integration on the helicity-free spline Darcy flow, each carrying its own labels (`docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, SF-36..SF-39); the pseudo-symplectic tracker is future work, not a requirement. The inlet-anchored gridded Darcy labels (non-periodic in `x1`) are constructed by label transport along backward-traced streamlines (SF-35, `docs/decisions/2026-10-07-label-transport-constructor.md`) and are a diagnostic, verified for `sigma_Y <= 1` (at `ell = 1/4`, one realization); the Lester et al. equation (14) on the slab is a diagnostic of those labels (SF-33 showed its Newton-Krylov solve is not viable as production constructor); the periodic-fluctuation stack (SF-02..SF-26) is frozen verified infrastructure, because its periodic solution on generic Gaussian fields is not the Darcy flow (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`, `docs/decisions/2026-10-02-roadmap-audit-and-foundational-redesign.md`).
 
-The previous PSPTA transport-near-nullspace/eigensolver route is legacy compatibility and migration surface. It is no longer the authoritative invariant-construction strategy and should not be extended unless the task explicitly targets audit, migration, or removal.
+The previous PSPTA transport-near-nullspace/eigensolver route (now removed from the build) is legacy compatibility and migration surface. It is no longer the authoritative invariant-construction strategy and should not be extended unless the task explicitly targets audit, migration, or removal.
 
 Optimize in this order:
 
@@ -101,7 +101,6 @@ Top-level areas:
   - external dependency area
   - tracked vendored source: `yaml-cpp`, `nlohmann`
   - required git submodule: `Par2_Core`
-  - optional local/remote-managed trees: PETSc/SLEPc
 - `docs/`
   - runbooks, validation rules, decisions, plans, experiments
 
@@ -111,7 +110,6 @@ Read next when relevant:
 - `docs/validation/acceptance-gates.md`
 - `docs/runbooks/local-wsl.md`
 - `docs/runbooks/remote-v100.md`
-- `docs/runbooks/petsc-slepc.md`
 
 Active execution plans (read before starting work in the relevant area):
 
@@ -146,8 +144,7 @@ cmake -S . -B build/wsl-debug -G Ninja \
   -DCMAKE_CUDA_ARCHITECTURES=86 \
   -DMACROFLOW3D_ENABLE_DIAGNOSTICS=ON \
   -DMACROFLOW3D_ENABLE_PROFILING=OFF \
-  -DMACROFLOW3D_ENABLE_NVTX=OFF \
-  -DMACROFLOW3D_ENABLE_PETSC=OFF
+  -DMACROFLOW3D_ENABLE_NVTX=OFF
 
 cmake --build build/wsl-debug -j
 ctest --test-dir build/wsl-debug --output-on-failure -R <fast-targeted-case>
@@ -163,7 +160,7 @@ detached job, never to a local blocking call.
 
 ### 2. Remote V100 validation — long-duration computation is always a detached job
 
-Use the remote server for heavy builds, profiling, PETSc/SLEPc, production-like
+Use the remote server for heavy builds, profiling, production-like
 runs, and **any computation whose duration is not short and bounded**. This
 explicitly includes:
 
@@ -206,25 +203,10 @@ execution — see `docs/runbooks/remote-v100.md`.
 
 ## Build, test, and run commands
 
-### Configure without PETSc/SLEPc
+### Configure
 
 ```bash
-cmake -S . -B build/wsl-debug -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CUDA_ARCHITECTURES=86 \
-  -DMACROFLOW3D_ENABLE_PETSC=OFF
-```
-
-### Configure with PETSc/SLEPc
-
-```bash
-cmake -S . -B build/v100-petsc -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_CUDA_ARCHITECTURES=70 \
-  -DMACROFLOW3D_ENABLE_PETSC=ON \
-  -DPETSC_DIR=$HOME/MacroFlow3D/src/external/petsc \
-  -DPETSC_ARCH=arch-cuda \
-  -DSLEPC_DIR=$HOME/MacroFlow3D/src/external/slepc
+cmake --preset wsl-debug
 ```
 
 ### Build
@@ -242,9 +224,7 @@ ctest --test-dir build/wsl-debug --output-on-failure
 ### Targeted tests
 
 ```bash
-ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
-ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc
-ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver
+ctest --test-dir build/wsl-debug --output-on-failure -R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'
 ```
 
 ### Run the pipeline
@@ -257,9 +237,7 @@ ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensol
 ### Useful direct executables
 
 ```bash
-./build/wsl-debug/run_operator_tests
-./build/v100-petsc/smoke_test_petsc
-./build/v100-petsc/validate_slepc_eigensolver
+./build/wsl-debug/streamfunction_operator_tests --list
 ```
 
 ---

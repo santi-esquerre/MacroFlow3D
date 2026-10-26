@@ -25,8 +25,7 @@
                 "CMAKE_CUDA_ARCHITECTURES": "86",
                 "MACROFLOW3D_ENABLE_DIAGNOSTICS": "ON",
                 "MACROFLOW3D_ENABLE_PROFILING": "OFF",
-                "MACROFLOW3D_ENABLE_NVTX": "OFF",
-                "MACROFLOW3D_ENABLE_PETSC": "OFF"
+                "MACROFLOW3D_ENABLE_NVTX": "OFF"
             }
         },
         {
@@ -38,24 +37,7 @@
                 "CMAKE_CUDA_ARCHITECTURES": "86",
                 "MACROFLOW3D_ENABLE_DIAGNOSTICS": "OFF",
                 "MACROFLOW3D_ENABLE_PROFILING": "OFF",
-                "MACROFLOW3D_ENABLE_NVTX": "OFF",
-                "MACROFLOW3D_ENABLE_PETSC": "OFF"
-            }
-        },
-        {
-            "name": "wsl-petsc-debug",
-            "inherits": "base",
-            "displayName": "WSL Debug + PETSc/SLEPc",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_CUDA_ARCHITECTURES": "86",
-                "MACROFLOW3D_ENABLE_DIAGNOSTICS": "ON",
-                "MACROFLOW3D_ENABLE_PROFILING": "OFF",
-                "MACROFLOW3D_ENABLE_NVTX": "OFF",
-                "MACROFLOW3D_ENABLE_PETSC": "ON",
-                "PETSC_DIR": "${sourceDir}/src/external/petsc",
-                "PETSC_ARCH": "arch-cuda",
-                "SLEPC_DIR": "${sourceDir}/src/external/slepc"
+                "MACROFLOW3D_ENABLE_NVTX": "OFF"
             }
         },
         {
@@ -67,8 +49,7 @@
                 "CMAKE_CUDA_ARCHITECTURES": "70",
                 "MACROFLOW3D_ENABLE_DIAGNOSTICS": "OFF",
                 "MACROFLOW3D_ENABLE_PROFILING": "ON",
-                "MACROFLOW3D_ENABLE_NVTX": "ON",
-                "MACROFLOW3D_ENABLE_PETSC": "OFF"
+                "MACROFLOW3D_ENABLE_NVTX": "ON"
             }
         },
         {
@@ -80,24 +61,7 @@
                 "CMAKE_CUDA_ARCHITECTURES": "70",
                 "MACROFLOW3D_ENABLE_DIAGNOSTICS": "OFF",
                 "MACROFLOW3D_ENABLE_PROFILING": "ON",
-                "MACROFLOW3D_ENABLE_NVTX": "ON",
-                "MACROFLOW3D_ENABLE_PETSC": "OFF"
-            }
-        },
-        {
-            "name": "v100-petsc",
-            "inherits": "base",
-            "displayName": "V100 Release + PETSc/SLEPc",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_CUDA_ARCHITECTURES": "70",
-                "MACROFLOW3D_ENABLE_DIAGNOSTICS": "OFF",
-                "MACROFLOW3D_ENABLE_PROFILING": "ON",
-                "MACROFLOW3D_ENABLE_NVTX": "ON",
-                "MACROFLOW3D_ENABLE_PETSC": "ON",
-                "PETSC_DIR": "${sourceDir}/src/external/petsc",
-                "PETSC_ARCH": "arch-cuda",
-                "SLEPC_DIR": "${sourceDir}/src/external/slepc"
+                "MACROFLOW3D_ENABLE_NVTX": "ON"
             }
         }
     ],
@@ -113,11 +77,6 @@
             "jobs": 0
         },
         {
-            "name": "wsl-petsc-debug",
-            "configurePreset": "wsl-petsc-debug",
-            "jobs": 0
-        },
-        {
             "name": "v100-release",
             "configurePreset": "v100-release",
             "jobs": 0
@@ -126,24 +85,12 @@
             "name": "v100-prof",
             "configurePreset": "v100-prof",
             "jobs": 0
-        },
-        {
-            "name": "v100-petsc",
-            "configurePreset": "v100-petsc",
-            "jobs": 0
         }
     ],
     "testPresets": [
         {
             "name": "wsl-debug",
             "configurePreset": "wsl-debug",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "wsl-petsc-debug",
-            "configurePreset": "wsl-petsc-debug",
             "output": {
                 "outputOnFailure": true
             }
@@ -165,13 +112,6 @@
         {
             "name": "v100-prof",
             "configurePreset": "v100-prof",
-            "output": {
-                "outputOnFailure": true
-            }
-        },
-        {
-            "name": "v100-petsc",
-            "configurePreset": "v100-petsc",
             "output": {
                 "outputOnFailure": true
             }

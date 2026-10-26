@@ -22,7 +22,7 @@ data = json.load(open(sys.argv[1]))
 assert 'version' in data, 'Missing version field'
 assert 'configurePresets' in data, 'Missing configurePresets'
 presets = {p['name'] for p in data['configurePresets']}
-required = {'wsl-debug', 'wsl-release', 'v100-release', 'v100-petsc'}
+required = {'wsl-debug', 'wsl-release', 'v100-release'}
 missing = required - presets
 if missing:
     print(f'ERROR: Missing required presets: {missing}', file=sys.stderr)

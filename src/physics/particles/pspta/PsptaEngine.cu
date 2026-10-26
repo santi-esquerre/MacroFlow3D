@@ -713,25 +713,6 @@ void PsptaEngine::bind_psifield(const PsptaPsiField* psi) {
     }
 }
 
-void PsptaEngine::bind_invariants(const PsptaInvariantField* inv) {
-    // Populate unified binding struct from new interface
-    if (inv && inv->is_valid()) {
-        psi_bind_.psi1 = inv->psi1_ptr();
-        psi_bind_.psi2 = inv->psi2_ptr();
-        psi_bind_.nx = inv->nx();
-        psi_bind_.ny = inv->ny();
-        psi_bind_.nz = inv->nz();
-        psi_bind_.dx = inv->dx();
-        psi_bind_.dy = inv->dy();
-        psi_bind_.dz = inv->dz();
-        psi_bind_.valid = true;
-    } else {
-        psi_bind_ = PsiBinding{};
-    }
-    // Clear legacy pointer when using new interface
-    psi_ = nullptr;
-}
-
 void PsptaEngine::bind_particles(ParticlesSoA<real>& p) {
     parts_ = p;
 }

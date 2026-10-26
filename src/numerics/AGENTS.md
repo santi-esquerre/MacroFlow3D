@@ -76,14 +76,10 @@ Do not introduce a separate ad hoc diffusion operator if the existing operator c
 For operator or solver changes, run:
 
 ```bash
-ctest --test-dir <build-dir> --output-on-failure -R operator_tests
+ctest --test-dir <build-dir> --output-on-failure -R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'
 ```
 
-If PETSc/SLEPc-related code is touched, also run:
-
-```bash
-ctest --test-dir <build-dir> --output-on-failure -R validate_slepc_eigensolver
-```
+The full operator registry (`-R '^streamfunction_operator_tests$'`, about 22 minutes on V100) is a detached V100 job, never a local run.
 
 If runtime behavior is affected downstream, run a smoke pipeline case too.
 

@@ -9,7 +9,6 @@ REQUIRED_DOCS=(
     "docs/validation/acceptance-gates.md"
     "docs/runbooks/local-wsl.md"
     "docs/runbooks/remote-v100.md"
-    "docs/runbooks/petsc-slepc.md"
     "docs/AGENTS.md"
 )
 

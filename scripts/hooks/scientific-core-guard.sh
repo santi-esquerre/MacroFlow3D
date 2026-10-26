@@ -49,7 +49,7 @@ echo ""
 if $PSPTA; then
     echo "  *** PSPTA CHANGE: read src/physics/particles/pspta/AGENTS.md ***"
     echo "  Minimum validation:"
-    echo "    ctest --test-dir <build-dir> --output-on-failure -R operator_tests"
+    echo "    ctest --test-dir <build-dir> --output-on-failure -R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'"
     echo "    ./<build-dir>/macroflow3d_pipeline apps/config_pspta_small.yaml"
     echo ""
 fi

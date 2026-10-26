@@ -91,12 +91,6 @@ These areas require explicit human approval before the increment can be marked
 - `src/physics/particles/pspta/`
 - all legacy invariants, transport, projection, Newton, and gauge code.
 
-### PETSc/SLEPc integration
-
-- `src/physics/particles/pspta/invariants/SLEPcBackend.*`
-- `src/runtime/PetscSlepcInit.*`
-- PETSc/SLEPc linking in `CMakeLists.txt`.
-
 ### Macrodispersion evaluation
 
 - `src/runtime/analysis/`

@@ -42,7 +42,6 @@
 #include "../../../core/Grid3D.hpp"
 #include "../../common/fields.cuh"            // VelocityField (CompactMAC)
 #include "../par2_adapter/par2_views.hpp"     // ParticlesSoA / ConstParticlesSoA / UnwrappedSoA
-#include "invariants/PsptaInvariantField.cuh" // PsptaInvariantField
 #include "PsptaPsiField.cuh"                  // PsptaPsiField, PsptaPrecomputeReport
 #include <cstdint>
 #include <cuda_runtime.h>
@@ -117,8 +116,6 @@ class PsptaEngine {
     /**
      * @brief Bind ψ fields (must already have precompute_levelA called).
      *
-     * @deprecated Use bind_invariants() for new code.
-     *
      * ## Legacy Assumptions (still active in this binding)
      *
      * The engine's Newton projection uses trilinear sampling with periodic
@@ -138,23 +135,10 @@ class PsptaEngine {
      * the engine's sample_psi_and_partials() must be updated to accept
      * custom L_self values from the invariant field metadata.
      *
-     * Current workaround: apply inlet gauge normalization after eigensolver
+     * Current workaround: apply inlet gauge normalization after invariant construction
      * to ensure ψ1~y, ψ2~z structure is preserved.
      */
     void bind_psifield(const PsptaPsiField* psi);
-
-    /**
-     * @brief Bind invariant field from new interface (PsptaInvariantField).
-     *
-     * This is the preferred method for new code. Internally extracts the
-     * same information as bind_psifield() but from the new container.
-     *
-     * The invariant field must already be populated (e.g., via
-     * LegacyMarchingInvariantBuilder or future Strategy A/C builders).
-     *
-     * @param inv  Valid PsptaInvariantField with is_valid() == true.
-     */
-    void bind_invariants(const PsptaInvariantField* inv);
 
     /// Bind particle arrays (device SoA, non-owning view).
     void bind_particles(ParticlesSoA<real>& p);
@@ -276,7 +260,7 @@ class PsptaEngine {
     const VelocityField* vel_ = nullptr;
     const PsptaPsiField* psi_ = nullptr; ///< Legacy binding (deprecated)
 
-    /// Unified psi binding info — populated by either bind_psifield or bind_invariants
+    /// Unified psi binding info — populated by bind_psifield
     struct PsiBinding {
         const float* psi1 = nullptr;
         const float* psi2 = nullptr;

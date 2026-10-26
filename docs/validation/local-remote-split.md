@@ -24,7 +24,6 @@ Local WSL is for fast iteration and light validation.
 
 - Performance conclusions
 - Production-like runs
-- PETSc/SLEPc builds (unless externals are built locally)
 - Ensemble runs
 - Benchmarks
 - **The full `ctest` suite, or any other long-duration computation** — it is
@@ -43,13 +42,9 @@ Remote V100 is for heavy validation and production-like runs.
 | Sync | `scripts/remote sync` |
 | Release build (short, bounded → `exec`) | `scripts/remote exec -- "cmake --preset v100-release && cmake --build build/v100-release -j"` |
 | Full release `ctest` (long-duration → detached) | `scripts/remote run ctest-release -- "ctest --test-dir build/v100-release --output-on-failure"` then `scripts/remote wait ctest-release` |
-| PETSc build (short, bounded → `exec`) | `scripts/remote exec -- "cmake --preset v100-petsc && cmake --build build/v100-petsc -j"` |
-| PETSc smoke (detached) | `scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"` then `scripts/remote wait ctest-petsc-smoke` |
-| SLEPc validation (detached) | `scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"` then `scripts/remote wait ctest-slepc-eigensolver` |
 | Profiling build | Use preset `v100-prof` |
 | PSPTA production | `scripts/remote run pspta-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_pspta.yaml"` |
 | Par2 production | `scripts/remote run par2-prod -- "./build/v100-release/macroflow3d_pipeline apps/config_pipeline_par2.yaml"` |
-| Benchmarks | `scripts/remote run eig-bench -- "./build/v100-petsc/benchmark_eigensolver"` |
 | Ensemble runs | remote only |
 
 Every row above except configure/compile is long-duration computation: it runs
@@ -75,7 +70,7 @@ while another job is still `RUNNING` against it.
 | Tier | Local WSL | Remote V100 |
 |------|-----------|-------------|
 | A (build + unit + smoke) | **primary** | secondary (release build) |
-| B (operator / invariants) | operator tests | PETSc/SLEPc tests |
+| B (operator / invariants) | fast numerics subset | full operator registry (detached) |
 | C (physics / ensemble) | smoke only | **primary** (production runs) |
 
 ---
