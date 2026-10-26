@@ -7,7 +7,9 @@ CudaContext::CudaContext(int device_id)
     : device_id_(device_id), stream_(nullptr), cublas_(nullptr) {
 
     MACROFLOW3D_CUDA_CHECK(cudaSetDevice(device_id_));
-    MACROFLOW3D_CUDA_CHECK(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking));
+    // Must stay BLOCKING (cudaStreamDefault): kernels launched with <<<g,b>>> and pageable cudaMemcpy/Memset use the
+    // legacy default stream, and only a blocking stream is implicitly ordered with it (synchronize() relies on that).
+    MACROFLOW3D_CUDA_CHECK(cudaStreamCreateWithFlags(&stream_, cudaStreamDefault));
     MACROFLOW3D_CUBLAS_CHECK(cublasCreate(&cublas_));
     MACROFLOW3D_CUBLAS_CHECK(cublasSetStream(cublas_, stream_));
 }
