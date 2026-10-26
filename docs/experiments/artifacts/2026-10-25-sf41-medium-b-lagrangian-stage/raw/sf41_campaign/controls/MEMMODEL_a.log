@@ -1,0 +1,16 @@
+MEM_MODEL_GRID size=3328x384x384 n=490733568 mg_levels=7 head_on_device=1 cufft_prefilter_work=7902117888 cufft_gen_work=3928227840
+MEM_MODEL phase=F exact_bytes=11782326280 mib=11236.502
+MEM_MODEL phase=S1 exact_bytes=0 mib=0.000
+MEM_MODEL phase=S2 exact_bytes=29724424712 mib=28347.420
+MEM_MODEL phase=V exact_bytes=19653337088 mib=18742.883
+MEM_MODEL phase=H exact_bytes=3925868544 mib=3744.000
+MEM_MODEL phase=S3a exact_bytes=19709659104 mib=18796.596
+MEM_MODEL phase=S3b exact_bytes=23640246240 mib=22545.096
+MEM_MODEL phase=S3c_interleave exact_bytes=15722348544 mib=14994.000
+MEM_MODEL phase=S3 exact_bytes=23640246240 mib=22545.096
+MEM_MODEL phase=S3_fused exact_bytes=23640246240 mib=22545.096
+MEM_MODEL_PEAK fused=0 max_phase=S2 max_phase_bytes=29724424712 max_phase_mib=28347.420 context_mib=487 pid_peak_mib=28834.420
+MEM_MODEL_PEAK fused=1 max_phase=S2 max_phase_bytes=29724424712 max_phase_mib=28347.420 context_mib=487 pid_peak_mib=28834.420
+MEM_MODEL_CHECK non_solve_phases_le_S2=1
+MEM_MODEL_CUFFT_VERIFY plan=prefilter made=1 actual=7902117888 model=7902117888 equal=1
+MEM_MODEL_CUFFT_VERIFY plan=sf18_3d made=1 actual=3928227840 model=3928227840 equal=1

@@ -49,6 +49,9 @@ struct DirichletMediumSpec {
     int cg_max_iter = 1000;
     bool keep_host_faces = false;     ///< download CompactMAC U V W to the host (E1)
     bool build_periodic_faces = false; ///< device periodic repack (Pollock (b))
+    /// SF-41 (owner decision E9), opt-in: download the solved head to `host_head` right before it is freed
+    /// (the bitwise reference of the lean stage). Off: no download, no allocation, outputs unchanged.
+    bool keep_host_head = false;
 };
 
 struct DirichletPhaseRecord {
@@ -89,6 +92,8 @@ class DirichletMedium {
     std::vector<DirichletPhaseRecord> phases;
     /// Host CompactMAC faces (U (nx+1) ny nz, V nx (ny+1) nz, W nx ny (nz+1)) iff keep_host_faces.
     std::vector<real> face_u, face_v, face_w;
+    /// Solved head (nx*ny*nz, x fastest) iff keep_host_head.
+    std::vector<real> host_head;
 
     bool periodic_available() const { return pu_.size() > 0; }
     /// Device view for the SF-32 Pollock core (outlet plane dropped); valid while this object lives.
@@ -105,6 +110,10 @@ class DirichletMedium {
                                                   const std::vector<real>&);
     DeviceBuffer<real> pu_, pv_, pw_;
 };
+
+/// sizeof(DirichletMedium) as compiled in DirichletMedium.cu. Tests compare it with their own sizeof to detect a
+/// stale library object (header changed, object not rebuilt: e.g. a sync that preserves older mtimes).
+std::size_t dirichlet_medium_object_bytes();
 
 /// Builds medium (b) from the host unit-amplitude `Y` (nx*ny*nz, x fastest). Throws
 /// std::invalid_argument for bad input; solver non-convergence is reported (report.converged), not thrown.

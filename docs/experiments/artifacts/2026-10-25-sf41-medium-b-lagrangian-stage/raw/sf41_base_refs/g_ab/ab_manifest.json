@@ -1,0 +1,48 @@
+{
+  "L1": 8.0,
+  "X0": 0.625,
+  "cg_max_iter_b": 2000,
+  "cg_rtol_b": 1e-10,
+  "command_line_without_out": "lagrangian_medium_ab --grid 512,64,64 --ell 0.125 --eps 2 --seed0 4001 --nr 2",
+  "ell": 0.125,
+  "eps": 2.0,
+  "grid": [
+    512,
+    64,
+    64
+  ],
+  "lambda": 0.125,
+  "mg_levels_b": 5,
+  "np_side": 100,
+  "nr": 2,
+  "plane_m": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "planes": [
+    0.75,
+    0.875,
+    1.125,
+    1.625,
+    2.625,
+    4.625
+  ],
+  "seed0": 4001,
+  "seeds": [
+    4001,
+    4002
+  ],
+  "sigma2": 1.0,
+  "signature": "grid=512x64x64 sigma2=1 ell=0.125 eps=2 seed0=4001 M=100 window=0.10000000000000001,0.90000000000000002,0.10000000000000001,0.90000000000000002 x0_lambda=5 mg_levels_b=5 cg_rtol_b=1e-10 cg_max_iter_b=2000 planes=0.75,0.875,1.125,1.625,2.625,4.625",
+  "tool": "lagrangian_medium_ab",
+  "window": [
+    0.1,
+    0.9,
+    0.1,
+    0.9
+  ]
+}

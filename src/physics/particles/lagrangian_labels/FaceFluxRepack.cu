@@ -153,5 +153,66 @@ physics::particles::streamline_tracker::PeriodicFaceFluxView PeriodicFaceFluxes:
     return f;
 }
 
+NonPeriodicXFaceFluxes NonPeriodicXFaceFluxes::upload(CudaContext& ctx, const std::vector<real>& U,
+                                                      const std::vector<real>& V,
+                                                      const std::vector<real>& W, int nx, int ny,
+                                                      int nz, real h) {
+    check_dims(nx, ny, nz);
+    check_size(U.size(), compact_mac_u_size(nx, ny, nz), "U");
+    check_size(V.size(), compact_mac_v_size(nx, ny, nz), "V");
+    check_size(W.size(), compact_mac_w_size(nx, ny, nz), "W");
+    if (!(std::isfinite(h) && h > 0.0)) {
+        throw std::invalid_argument("lagrangian_labels::repack: h must be finite and > 0");
+    }
+    const std::size_t n = static_cast<std::size_t>(nx) * static_cast<std::size_t>(ny) *
+                          static_cast<std::size_t>(nz);
+    NonPeriodicXFaceFluxes out;
+    out.u_ = DeviceBuffer<real>(U.size());
+    out.v_ = DeviceBuffer<real>(n);
+    out.w_ = DeviceBuffer<real>(n);
+    out.nx_ = nx;
+    out.ny_ = ny;
+    out.nz_ = nz;
+    out.h_ = h;
+
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(out.u_.data(), U.data(), U.size() * sizeof(real),
+                                      cudaMemcpyHostToDevice));
+    DeviceBuffer<real> stage(std::max(V.size(), W.size()));
+    struct Comp {
+        const std::vector<real>* host;
+        real* dst;
+        int rowlen, rows;
+    };
+    const Comp comps[2] = {{&V, out.v_.data(), nx, ny + 1}, {&W, out.w_.data(), nx, ny}};
+    for (const Comp& c : comps) {
+        MACROFLOW3D_CUDA_CHECK(cudaMemcpy(stage.data(), c.host->data(),
+                                          c.host->size() * sizeof(real), cudaMemcpyHostToDevice));
+        // SF-33 C2: the legacy-stream copies (U included) must land before ctx-stream work.
+        MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+        launch_component(ctx, stage.data(), c.dst, nx, ny, nz, c.rowlen, c.rows);
+        ctx.synchronize();
+    }
+    return out;
+}
+
+physics::particles::streamline_tracker::NonPeriodicXFaceFluxView
+NonPeriodicXFaceFluxes::view() const {
+    if (empty()) {
+        throw std::logic_error("NonPeriodicXFaceFluxes::view: empty");
+    }
+    physics::particles::streamline_tracker::NonPeriodicXFaceFluxView f{};
+    f.u = u_.data();
+    f.v = v_.data();
+    f.w = w_.data();
+    f.nx = nx_;
+    f.ny = ny_;
+    f.nz = nz_;
+    f.dx = f.dy = f.dz = h_;
+    f.Lx = static_cast<real>(nx_) * h_;
+    f.Ly = static_cast<real>(ny_) * h_;
+    f.Lz = static_cast<real>(nz_) * h_;
+    return f;
+}
+
 } // namespace lagrangian_labels
 } // namespace macroflow3d

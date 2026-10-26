@@ -1,0 +1,46 @@
+[2026-10-25T01:30:22Z] job=sf41-pre-e session=macroflow3d-SF-41-sf41-pre-e started
+[2026-10-25T01:30:22Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T01:30:22Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T01:30:22Z] command=echo PRECHECK_NOT_EVIDENCE TREE=7ce48f4 CLEAN_BUILD; rm -rf build/v100-release && bash ~/sf41_pre_e.sh
+PRECHECK_NOT_EVIDENCE TREE=7ce48f4 CLEAN_BUILD
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[131/131] Linking CXX executable lagrangian_ensemble
+E2 PIDPEAK_MIB=9113 RC=0
+RESOLVED grid=3328x384x384 L1=8.666666667 lambda=0.04166666667 planes(auto)=0.25,0.2916666667,0.375,0.5416666667,0.875,1.541666667,2.875,5.541666667,8.458333333 times(auto)=n*lambda/2 up to (L1-10 lambda)/qbar, qbar measured per r
+R=0 B_SOLVER r=0 converged=1 iterations=40 initial=1.087097e+07 final=1.875456e-04 rel=1.725197e-11 qbar=1.449649782898e+00 Q_in=1.449649782898e+00 Q_out=1.449649782890e+00 balance=5.513091e-12 max_div=1.522198e-08 fallback=0
+R=0 MEM_PHASE phase=S2 exact_bytes=29724424712 cufft_work=0 device_used=30260854784 seconds=32.976532 items=mg_l0_x:3925868544,mg_l0_b:3925868544,mg_l0_r:3925868544,mg_l0_coef:3925868544,mg_l1_x:490733568,mg_l1_b:490733568,mg_l1_r
+R=0 MEM_PHASE phase=V exact_bytes=19653337088 cufft_work=0 device_used=20184039424 seconds=11.421430 items=K:3925868544,head:3925868544,U:3927048192,V:3936092160,W:3936092160,planes:2359296,div_block_max:8192
+R=0 MEM_PHASE phase=S3 exact_bytes=23640246240 cufft_work=7902117888 cufft_prefilter=7902117888 device_used=16270753792 seconds=8.885220 categories=S3a:19709659104,S3b:23640246240,S3c:15722348544,peak:S3b items=coef_pot:3930587136
+R=0 RESOLVED_TIMES qbar=1.449649782898e+00 n=273 times=0.02083333333,0.04166666667,0.0625,0.08333333333,0.1041666667,0.125,0.1458333333,0.1666666667,0.1875,0.2083333333,0.2291666667,0.25,0.2708333333,0.2916666667,0.3125,0.33333333
+R=0 MEM_PHASE phase=T exact_bytes=7953496528 cufft_work=0 device_used=8484028416 seconds=0.799657 items=coef_interleaved:7861174272,tracker_seeds:240000,tracker_planes:72,tracker_times:2184,tracker_stats_plane:880000,tracker_stats
+R=0 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=78 nfev=1726645522
+R=0 TSTATUS pass=time hist=5858,0,0,0,0,0,0 landings_discarded=0 backflow_enc=72 nfev=1638601640
+R=0 TEXIT pass=plane exit_inlet=0 exit_outlet=0 (statuses 7 / 8, outside the TSTATUS histogram)
+R=0 TEXIT pass=time exit_inlet=0 exit_outlet=4142 (statuses 7 / 8, outside the TSTATUS histogram)
+R=0 MEM_PHASE phase=B exact_bytes=15714877440 persistent_faces=11778785280 upload_peak=15714877440 lattice_buffers=68342256 (closed form: max(upload_peak, persistent_faces + lattice_buffers))
+R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4157 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4142
+TIMING r=0 seconds=138.655
+E4 PIDPEAK_MIB=8229 RC=0
+RESOLVED grid=6656x256x256 L1=26 lambda=0.25 planes(auto)=1.5,1.75,2.25,3.25,5.25,9.25,17.25,24.75 times(auto)=n*lambda/2 up to (L1-10 lambda)/qbar, qbar measured per realization medium=b x0=1.25
+R=0 B_SOLVER r=0 converged=1 iterations=90 initial=8.095414e+06 final=1.023224e-04 rel=1.263955e-11 qbar=1.480233352885e+00 Q_in=1.480233352885e+00 Q_out=1.480233352947e+00 balance=4.164330e-11 max_div=6.374646e-08 fallback=0
+R=0 MEM_PHASE phase=S2 exact_bytes=26421710856 cufft_work=0 device_used=26953646080 seconds=64.816692 items=mg_l0_x:3489660928,mg_l0_b:3489660928,mg_l0_r:3489660928,mg_l0_coef:3489660928,mg_l1_x:436207616,mg_l1_b:436207616,mg_l1_r
+R=0 MEM_PHASE phase=V exact_bytes=17477148672 cufft_work=0 device_used=18007195648 seconds=13.764580 items=K:3489660928,head:3489660928,U:3490185216,V:3503292416,W:3503292416,planes:1048576,div_block_max:8192
+R=0 MEM_PHASE phase=S3 exact_bytes=21030342624 cufft_work=7038074880 cufft_prefilter=7038074880 device_used=14521729024 seconds=5.872696 categories=S3a:17538584544,S3b:21030342624,S3c:13967032320,peak:S3b items=coef_pot:3491758080
+R=0 RESOLVED_TIMES qbar=1.480233352885e+00 n=127 times=0.125,0.25,0.375,0.5,0.625,0.75,0.875,1,1.125,1.25,1.375,1.5,1.625,1.75,1.875,2,2.125,2.25,2.375,2.5,2.625,2.75,2.875,3,3.125,3.25,3.375,3.5,3.625,3.75,3.875,4,4.125,4.25,4.37
+R=0 MEM_PHASE phase=T exact_bytes=7028797240 cufft_work=0 device_used=7557087232 seconds=0.051298 items=coef_interleaved:6983516160,tracker_seeds:240000,tracker_planes:64,tracker_times:1016,tracker_stats_plane:880000,tracker_stats
+R=0 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=3313668494
+R=0 TSTATUS pass=time hist=8090,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1794659698
+R=0 TEXIT pass=plane exit_inlet=0 exit_outlet=0 (statuses 7 / 8, outside the TSTATUS histogram)
+R=0 TEXIT pass=time exit_inlet=0 exit_outlet=1910 (statuses 7 / 8, outside the TSTATUS histogram)
+R=0 MEM_PHASE phase=B exact_bytes=13972799488 persistent_faces=10469507072 upload_peak=13972799488 lattice_buffers=33061080 (closed form: max(upload_peak, persistent_faces + lattice_buffers))
+R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=1896 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=1910
+TIMING r=0 seconds=170.936
+[2026-10-25T01:40:58Z] job=sf41-pre-e finished exit=0

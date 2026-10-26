@@ -8,6 +8,7 @@
 #include "LagrangianTracker.cuh"
 #include "FusedSplineLagrangianField.cuh"
 #include "LagrangianTrackerImpl.cuh"
+#include "NonPeriodicSplineLagrangianField.cuh"
 
 #include "../../../external/nlohmann/json.hpp"
 #include "../../streamfunctions/inlet_slab/NpyIo.hpp"
@@ -118,7 +119,12 @@ void summarize_pass(const std::vector<PassStats>& st, PassTotals& t) {
     t = PassTotals{};
     t.min_g1_hat = std::numeric_limits<double>::infinity();
     for (const PassStats& s : st) {
-        ++t.status_hist[static_cast<std::size_t>(s.status >= 0 && s.status < 7 ? s.status : 6)];
+        if (s.status == kStatusExitInlet) // SF-41: not in the 7-slot histogram
+            ++t.exit_inlet;
+        else if (s.status == kStatusExitOutlet)
+            ++t.exit_outlet;
+        else
+            ++t.status_hist[static_cast<std::size_t>(s.status >= 0 && s.status < 7 ? s.status : 6)];
         t.nfev += s.nfev;
         t.accepted_steps += s.accepted_steps;
         t.rejected_steps += s.rejected_steps;
@@ -228,6 +234,21 @@ void finalize_track_result(LagrangianTrackResult& r) {
                 ++non_ok;
         pm.non_ok = non_ok;
     }
+
+    if (r.nonperiodic_x) { // SF-41: exits before each plane (time), as the Pollock comparator
+        const auto count = [&](const std::vector<PassStats>& st, std::size_t n, int code) {
+            std::vector<long long> c(n, 0);
+            for (const PassStats& s : st)
+                if (s.status == code)
+                    for (std::size_t m = static_cast<std::size_t>(s.n_reached); m < n; ++m)
+                        ++c[m]; // counted from the first plane (time) not reached
+            return c;
+        };
+        r.exit_inlet_plane = count(r.stats_plane, P, kStatusExitInlet);
+        r.exit_outlet_plane = count(r.stats_plane, P, kStatusExitOutlet);
+        r.exit_inlet_time = count(r.stats_time, T, kStatusExitInlet);
+        r.exit_outlet_time = count(r.stats_time, T, kStatusExitOutlet);
+    }
 }
 
 // ================================================================================================
@@ -241,7 +262,25 @@ struct LagrangianTracker::Impl {
     // separate arrays above are not created in that mode.
     DeviceBuffer<double2> coef_fused;
     LagrangianTrackerT<FusedSplineLagrangianField> core_fused;
-    bool fused = false;
+    // SF-41 N3b: non-periodic-in-x1 flows (non-owning: the caller owns the coefficient arrays)
+    LagrangianTrackerT<NonPeriodicSplineLagrangianField> core_np;
+    LagrangianTrackerT<FusedNonPeriodicSplineLagrangianField> core_np_fused;
+    enum class Kind { plain, fused, np, np_fused };
+    Kind kind = Kind::plain;
+
+    /// Calls fn on the tracker core selected by the last prepare().
+    template <class Self, class Fn> static decltype(auto) visit(Self& self, Fn&& fn) {
+        switch (self.kind) {
+        case Kind::fused:
+            return fn(self.core_fused);
+        case Kind::np:
+            return fn(self.core_np);
+        case Kind::np_fused:
+            return fn(self.core_np_fused);
+        default:
+            return fn(self.core);
+        }
+    }
 };
 
 LagrangianTracker::LagrangianTracker() : impl_(std::make_unique<Impl>()) {}
@@ -266,7 +305,7 @@ void LagrangianTracker::prepare(CudaContext& ctx, const sl::ProductionStage& sta
         f.G[d] = hf.G[d];
     const sl::InletLabels* labels =
         (stage.labels_available && stage.labels.device_prepared()) ? &stage.labels : nullptr;
-    impl_->fused = opt.fused_splines;
+    impl_->kind = opt.fused_splines ? Impl::Kind::fused : Impl::Kind::plain;
     if (opt.fused_splines) {
         const std::vector<double2> inter = interleave_coefficients(
             stage.potential_coefficients.data(), stage.logk_coefficients.data(), nc);
@@ -313,7 +352,7 @@ void LagrangianTracker::prepare(CudaContext& ctx, const DeviceSplineFlow& flow,
     f.log_conductivity = interpolation::make_host_view(flow.grid, geom_ptr);
     for (int d = 0; d < 3; ++d)
         f.G[d] = flow.G[d];
-    impl_->fused = fused;
+    impl_->kind = fused ? Impl::Kind::fused : Impl::Kind::plain;
     if (fused) {
         impl_->core_fused.prepare(ctx, make_fused_field(f, flow.coef_interleaved), inj, opt,
                                   flow.labels);
@@ -324,33 +363,60 @@ void LagrangianTracker::prepare(CudaContext& ctx, const DeviceSplineFlow& flow,
     impl_->core.prepare(ctx, f, inj, opt, flow.labels);
 }
 
+void LagrangianTracker::prepare(CudaContext& ctx, const DeviceSplineFlowNonPeriodicX& flow,
+                                const InjectionSpec& inj, const TrackOptions& opt) {
+    const bool fused = opt.fused_splines;
+    if (fused ? flow.coef_interleaved == nullptr
+              : (flow.coef_pot == nullptr || flow.coef_logk == nullptr)) {
+        throw std::logic_error(
+            "LagrangianTracker::prepare: DeviceSplineFlowNonPeriodicX lacks the coefficient "
+            "array(s) needed by TrackOptions::fused_splines");
+    }
+    // Geometry (and grid validation) from the same call in both modes; the coefficient pointers
+    // are set below.
+    NonPeriodicSplineLagrangianField f;
+    f.potential = interpolation::make_nonperiodic_x_view(
+        flow.grid, fused ? reinterpret_cast<const real*>(flow.coef_interleaved) : flow.coef_pot);
+    f.log_conductivity = f.potential;
+    for (int d = 0; d < 3; ++d)
+        f.G[d] = flow.G[d];
+    impl_->kind = fused ? Impl::Kind::np_fused : Impl::Kind::np;
+    if (fused) {
+        impl_->core_np_fused.prepare(ctx, make_fused_np_field(f, flow.coef_interleaved), inj, opt,
+                                     nullptr);
+        return;
+    }
+    f.log_conductivity.coeff = flow.coef_logk;
+    impl_->core_np.prepare(ctx, f, inj, opt, nullptr);
+}
+
 std::vector<std::pair<std::string, std::size_t>> LagrangianTracker::device_buffer_bytes() const {
     if (!impl_ || !prepared())
         return {};
-    auto v = impl_->fused ? impl_->core_fused.device_buffer_bytes()
-                          : impl_->core.device_buffer_bytes();
-    v.emplace_back("prepare_transient", impl_->fused ? impl_->core_fused.prepare_transient_bytes()
-                                                     : impl_->core.prepare_transient_bytes());
+    auto v = Impl::visit(*impl_, [](const auto& c) { return c.device_buffer_bytes(); });
+    v.emplace_back("prepare_transient",
+                   Impl::visit(*impl_, [](const auto& c) { return c.prepare_transient_bytes(); }));
     return v;
 }
 
 const LagrangianTrackResult& LagrangianTracker::track(CudaContext& ctx, int block) {
-    return impl_->fused ? impl_->core_fused.track(ctx, block) : impl_->core.track(ctx, block);
+    return Impl::visit(
+        *impl_, [&](auto& c) -> const LagrangianTrackResult& { return c.track(ctx, block); });
 }
 
 bool LagrangianTracker::prepared() const {
-    return impl_ && (impl_->fused ? impl_->core_fused.prepared() : impl_->core.prepared());
+    return impl_ && Impl::visit(*impl_, [](const auto& c) { return c.prepared(); });
 }
 
 std::vector<const void*> LagrangianTracker::device_storage_pointers() const {
-    if (impl_->fused) {
-        std::vector<const void*> v = impl_->core_fused.device_storage_pointers();
+    std::vector<const void*> v =
+        Impl::visit(*impl_, [](const auto& c) { return c.device_storage_pointers(); });
+    if (impl_->kind == Impl::Kind::fused) {
         v.push_back(impl_->coef_fused.data());
-        return v;
+    } else if (impl_->kind == Impl::Kind::plain) {
+        v.push_back(impl_->coef_pot.data());
+        v.push_back(impl_->coef_logk.data());
     }
-    std::vector<const void*> v = impl_->core.device_storage_pointers();
-    v.push_back(impl_->coef_pot.data());
-    v.push_back(impl_->coef_logk.data());
     return v;
 }
 
@@ -477,6 +543,28 @@ void write_track_outputs(const std::string& dir, const LagrangianTrackResult& r,
     j["seed_backflow"] = r.seed_backflow;
     j["plane_pass"] = totals_json(r.totals_plane);
     j["time_pass"] = totals_json(r.totals_time);
+    if (r.nonperiodic_x) { // SF-41: new keys / files only for non-periodic-in-x1 runs
+        j["nonperiodic_x"] = true;
+        j["domain_L1"] = r.domain_L1;
+        j["exit_status_codes"] = {{"exit_inlet", kStatusExitInlet}, {"exit_outlet", kStatusExitOutlet}};
+        j["plane_pass"]["exit_inlet"] = r.totals_plane.exit_inlet;
+        j["plane_pass"]["exit_outlet"] = r.totals_plane.exit_outlet;
+        j["time_pass"]["exit_inlet"] = r.totals_time.exit_inlet;
+        j["time_pass"]["exit_outlet"] = r.totals_time.exit_outlet;
+        const auto write_exits = [&](const char* file, const char* head, const std::vector<double>& axis,
+                                     const std::vector<long long>& in, const std::vector<long long>& out) {
+            std::FILE* f = std::fopen((dir + "/" + file).c_str(), "w");
+            if (!f)
+                throw std::runtime_error(std::string("write_track_outputs: cannot write ") + file);
+            std::fprintf(f, "%s,exit_inlet,exit_outlet\n", head);
+            for (std::size_t i = 0; i < axis.size(); ++i)
+                std::fprintf(f, "%.15e,%lld,%lld\n", axis[i], i < in.size() ? in[i] : 0LL,
+                             i < out.size() ? out[i] : 0LL);
+            std::fclose(f);
+        };
+        write_exits("exits_planes.csv", "x1", r.planes, r.exit_inlet_plane, r.exit_outlet_plane);
+        write_exits("exits_time.csv", "t", r.times, r.exit_inlet_time, r.exit_outlet_time);
+    }
     j["timings_s"] = {{"plane_kernel", r.seconds_plane_kernel},
                       {"time_kernel", r.seconds_time_kernel},
                       {"download", r.seconds_download},

@@ -1,0 +1,34 @@
+pollock_nonperiodic_tests --only C4 (RR5, V100 sizes)
+[PASS] C4a 64x16x16: every particle exit_outlet in both passes
+[PASS] C4a 64x16x16: exit totals and histogram slot 9 exact (256)
+[PASS] C4a 64x16x16: per-plane / per-time exit counts {0, Np}
+[PASS] C4a 64x16x16: the first plane / time is reached by all, the second by none
+[PASS] C4a 64x16x16: reached records finite, records after the exit NaN
+[PASS] C4a 64x16x16: reached records are the straight line (x2, x3 bitwise, t = x1 - X0)
+[PASS] C4a 64x16x16: no non-positive seed, no substep-limit / non-finite status
+C4_CHECK grid=64x16x16 case=C4a method=pollock mode=plane exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+C4_CHECK grid=64x16x16 case=C4a method=pollock mode=time exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+[PASS] C4a 128x16x16: every particle exit_outlet in both passes
+[PASS] C4a 128x16x16: exit totals and histogram slot 9 exact (256)
+[PASS] C4a 128x16x16: per-plane / per-time exit counts {0, Np}
+[PASS] C4a 128x16x16: the first plane / time is reached by all, the second by none
+[PASS] C4a 128x16x16: reached records finite, records after the exit NaN
+[PASS] C4a 128x16x16: reached records are the straight line (x2, x3 bitwise, t = x1 - X0)
+[PASS] C4a 128x16x16: no non-positive seed, no substep-limit / non-finite status
+C4_CHECK grid=128x16x16 case=C4a method=pollock mode=plane exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+C4_CHECK grid=128x16x16 case=C4a method=pollock mode=time exit_inlet=0 exit_outlet=256 reached=256 expected=inlet:0,outlet:256,reached:256 verdict=PASS
+  C4b 64x32x32: L1 2, included 40 of 64 x2-values (inlet 12, outlet 28, plane-reaching 28), T 3, stream-function drift 1.95e-13, max |div cell| 1.42e-14
+[PASS] C4b 64x32x32: reference sane (psi drift < 1e-9, face fluxes divergence-free, both exit kinds present)
+[PASS] C4b 64x32x32: no status other than active / exit_inlet / exit_outlet over the whole lattice
+[PASS] C4b 64x32x32: plane pass L1/2 classifies every included seed as the reference  included 2560 mismatches 0
+[PASS] C4b 64x32x32: time pass T classifies every included seed as the reference  included 2560 mismatches 0 T 3
+C4_CHECK grid=64x32x32 case=C4b method=pollock mode=plane exit_inlet=768 exit_outlet=0 reached=1792 expected=inlet:768,outlet:0,reached:1792 mismatches=0 verdict=PASS
+C4_CHECK grid=64x32x32 case=C4b method=pollock mode=time exit_inlet=768 exit_outlet=1792 reached=0 expected=inlet:768,outlet:1792,reached:0 mismatches=0 verdict=PASS
+  C4b 128x32x32: L1 4, included 40 of 64 x2-values (inlet 12, outlet 28, plane-reaching 28), T 5.5, stream-function drift 1.95e-13, max |div cell| 1.42e-14
+[PASS] C4b 128x32x32: reference sane (psi drift < 1e-9, face fluxes divergence-free, both exit kinds present)
+[PASS] C4b 128x32x32: no status other than active / exit_inlet / exit_outlet over the whole lattice
+[PASS] C4b 128x32x32: plane pass L1/2 classifies every included seed as the reference  included 2560 mismatches 0
+[PASS] C4b 128x32x32: time pass T classifies every included seed as the reference  included 2560 mismatches 0 T 5.5
+C4_CHECK grid=128x32x32 case=C4b method=pollock mode=plane exit_inlet=768 exit_outlet=0 reached=1792 expected=inlet:768,outlet:0,reached:1792 mismatches=0 verdict=PASS
+C4_CHECK grid=128x32x32 case=C4b method=pollock mode=time exit_inlet=768 exit_outlet=1792 reached=0 expected=inlet:768,outlet:1792,reached:0 mismatches=0 verdict=PASS
+C4_VERDICT method=pollock PASS (22 checks, 0 failed)

@@ -42,6 +42,33 @@
  * arclength and the time landing, 2 for the plane landing), exactly as SF-30; tau, I, s and the
  * covectors ride passively, so positions, tau and statuses are bitwise independent of D (the
  * per-component stage expressions are those of `trace_dev::dp5_step`).
+ *
+ * ## Non-periodic-in-x1 fields and x exits (SF-41, contract C-EXIT)
+ *
+ * A Field with `static constexpr bool kNonPeriodicX = true` (NonPeriodicSplineLagrangianField.cuh) is
+ * defined only on the evaluation domain x1 in [-m, L1 + m), m = margin() (half a cell), and provides
+ * `length() = L1`, `margin()`, `in_domain(x)` and `bool eval / eval_ext` (false outside the domain:
+ * g, k, grad_lnk, H NaN, no coefficient read). Everything below is selected at compile time
+ * (`if constexpr` on `ldev::IsNonPeriodicX<Field>`); the periodic instantiations contain none of it.
+ *
+ *   Exit statuses (LagrangianTrackerTypes.hpp): kStatusExitInlet = 7 (x1 < 0), kStatusExitOutlet = 8
+ *   (x1 > L1). Seeds must lie in [0, L1] (validated by LagrangianTrackerT::prepare).
+ *   Rule E1  An ACCEPTED arclength step whose end point has x1 < 0 (x1 > L1) ends the pass with
+ *            exit_inlet (exit_outlet); the records already written stay, later ones stay NaN.
+ *            Plane pass: a plane X <= L1 is landed on first if this very step crosses it (the landing
+ *            stages lie between x1 and X, inside the box); planes X > L1 can only be left through
+ *            the outlet. Time pass: a step that ends outside the box and has not reached the next
+ *            time ends the pass (exit); a step that ends outside the box AND reaches the next time
+ *            is refined (h halved, state unchanged) until it resolves; at h < min_step the exit
+ *            wins (tie: the face and the snapshot coincide within min_step).
+ *   Rule E2  A trial stage (or end point) outside the evaluation domain never reaches the spline: the
+ *            step is rejected and h halved (counted in rejected_steps). The step start lies in
+ *            [0, L1] (inside the domain), so the stages converge into the domain; if h < min_step
+ *            is reached anyway, the particle exits through the face it is within margin() of and
+ *            moves towards (dx1/ds = g1/|g| > 0 near L1: outlet, < 0 near 0: inlet), otherwise
+ *            step_underflow as usual.
+ *   The seed rule (g1 <= 0 at the seed: seed_backflow, not traced) and `backflow_encounter` are
+ *   unchanged.
  */
 
 #include "../../../numerics/interpolation/PeriodicTricubicBSpline.cuh"
@@ -49,6 +76,7 @@
 #include "LagrangianTrackerTypes.hpp"
 
 #include <cstdint>
+#include <type_traits>
 
 namespace macroflow3d {
 namespace lagrangian_labels {
@@ -94,6 +122,23 @@ struct SplineLagrangianField {
 };
 
 namespace ldev {
+
+/// SF-41: true for fields that are non-periodic in x1 (kNonPeriodicX); false for every other field.
+template <class F, class = void> struct IsNonPeriodicX : std::false_type {};
+template <class F>
+struct IsNonPeriodicX<F, std::void_t<decltype(F::kNonPeriodicX)>>
+    : std::bool_constant<F::kNonPeriodicX> {};
+
+/// Exit status of the face a particle at x1 moving with direction cosine `dir` is leaving through
+/// (Rule E2 fallback), or step_underflow.
+template <class Field>
+__device__ inline int exit_or_underflow_status(const Field& field, double x1, double dir) {
+    if (dir > 0.0 && x1 >= field.length() - field.margin())
+        return kStatusExitOutlet;
+    if (dir < 0.0 && x1 <= field.margin())
+        return kStatusExitInlet;
+    return static_cast<int>(tdev::StreamlineStatus::step_underflow);
+}
 
 __device__ inline double dnan() {
     return __longlong_as_double(0x7ff8000000000000LL);
@@ -173,9 +218,16 @@ template <class Field, int D> struct ArclengthRhs {
     long long& nfev;
     double last_g1 = 0.0;
     double last_g1_hat = 0.0;
+    bool outside = false; ///< SF-41: set (non-periodic fields only) when x is outside the domain
 
     __device__ EvalCode operator()(double /*s*/, const double y[D], double dy[D]) {
         const double x[3] = {y[0], y[1], y[2]};
+        if constexpr (IsNonPeriodicX<Field>::value) {
+            if (!field.in_domain(x)) {
+                outside = true;
+                return EvalCode::invalid_direction;
+            }
+        }
         double g[3], k, gl[3], H[6], gn;
         const EvalCode c = eval_checked(field, x, g, k, gl, H, gn);
         ++nfev;
@@ -496,6 +548,19 @@ __device__ void plane_pass(const Field& field, const double seed[3], const doubl
         double y5[D], k7[D], err = 0.0;
         code = dp5_step<D>(rhs, s, s + h, y, f, h, 3, opt.tol, y5, k7, err);
         if (code != EvalCode::good) {
+            if constexpr (IsNonPeriodicX<Field>::value) {
+                if (rhs.outside) { // Rule E2: a trial stage left the evaluation domain
+                    rhs.outside = false;
+                    ++st.rejected_steps;
+                    h = 0.5 * h;
+                    if (h < opt.min_step) {
+                        st.status = exit_or_underflow_status(field, y[0], f[0]);
+                        st.final_s = s;
+                        return;
+                    }
+                    continue;
+                }
+            }
             st.status = tdev::status_from(code);
             st.final_s = s;
             return;
@@ -513,6 +578,16 @@ __device__ void plane_pass(const Field& field, const double seed[3], const doubl
                 return;
             }
             continue;
+        }
+
+        if constexpr (IsNonPeriodicX<Field>::value) {
+            // Rule E1 (plane pass): x1 < 0 is an inlet exit; x1 > L1 an outlet exit unless this step
+            // crosses a plane X <= L1 (landed on below).
+            if (y5[0] < 0.0 || (y5[0] > field.length() && X > field.length())) {
+                st.status = y5[0] < 0.0 ? kStatusExitInlet : kStatusExitOutlet;
+                st.final_s = s + h;
+                return;
+            }
         }
 
         const bool crossing = 1.0 * (y5[0] - X) >= 0.0;
@@ -649,6 +724,19 @@ __device__ void time_pass(const Field& field, const double seed[3], const double
         double y5[D], k7[D], err = 0.0;
         code = dp5_step<D>(rhs, s, s + h, y, f, h, 3, opt.tol, y5, k7, err);
         if (code != EvalCode::good) {
+            if constexpr (IsNonPeriodicX<Field>::value) {
+                if (rhs.outside) { // Rule E2: a trial stage left the evaluation domain
+                    rhs.outside = false;
+                    ++st.rejected_steps;
+                    h = 0.5 * h;
+                    if (h < opt.min_step) {
+                        st.status = exit_or_underflow_status(field, y[0], f[0]);
+                        st.final_s = s;
+                        return;
+                    }
+                    continue;
+                }
+            }
             st.status = tdev::status_from(code);
             st.final_s = s;
             return;
@@ -666,6 +754,28 @@ __device__ void time_pass(const Field& field, const double seed[3], const double
                 return;
             }
             continue;
+        }
+
+        if constexpr (IsNonPeriodicX<Field>::value) {
+            // Rule E1 (time pass): the step ends outside the box. If it has not reached the next
+            // time, the particle exited; if it also reaches the time, refine (halve h, state
+            // unchanged) until the step resolves; at h < min_step the exit wins.
+            if (y5[0] < 0.0 || y5[0] > field.length()) {
+                const int exit_status = y5[0] < 0.0 ? kStatusExitInlet : kStatusExitOutlet;
+                if (!(y5[3] >= Tn)) {
+                    st.status = exit_status;
+                    st.final_s = s + h;
+                    return;
+                }
+                ++st.rejected_steps;
+                h = 0.5 * h;
+                if (h < opt.min_step) {
+                    st.status = exit_status;
+                    st.final_s = s;
+                    return;
+                }
+                continue;
+            }
         }
 
         const bool crossing = y5[3] >= Tn;

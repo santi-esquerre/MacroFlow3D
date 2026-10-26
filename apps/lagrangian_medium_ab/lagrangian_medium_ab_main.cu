@@ -7,7 +7,8 @@
  *   (a) the affine-periodic medium: LongBoxStage (SF-18 -> SF-19, faces kept) -> E1 (eulerian_face_stats)
  *       -> periodic repack -> Pollock plane pass (E2);
  *   (b) the Dirichlet-in-x medium: build_dirichlet_medium(Y, eps, G1 = G[0] of (a)) -> E1 -> Pollock plane
- *       pass on periodic_view() (E2), with the C0 solver record and the fallback rule (D8).
+ *       pass (E2) on the faces NON-periodic in x (SF-41 N6: NonPeriodicXFaceFluxes, outlet plane U[nx] kept,
+ *       exit through x = 0 / x = L1 = status 8 / 9), with the C0 solver record and the fallback rule (D8).
  * Primary statistics per medium (Implementation 3 of the specification, RR5):
  *   S_T   = [sigma_T^2(X_ms) - sigma_T^2(X_ms/2)] / ((ms/2) lambda), ms = m* (largest m),  sigma_T^2 = (var_x2 + var_x3)/2
  *   S_tau = qbar^2 [var_t(X_ms) - var_t(X_ms/2)] / ((ms/2) lambda)
@@ -27,6 +28,10 @@
  *     e2_a.csv, e2_b.csv                 x1,contributing,non_ok,mean_x2,var_x2,mean_x3,var_x3,mean_t,var_t
  *     primary.json                       per medium the five primary statistics (+ qbar), m*, planes used
  *     solver_b.json                      the C0 record of medium (b) incl. the fallback flag
+ *     exits_b.csv                        SF-41 N6, medium (b) only: header x1,exit_inlet,exit_outlet; one row per
+ *                                        plane (x1 %.17g; integers: particles that left through x = 0 / x = L1
+ *                                        before reaching that plane, cumulative); then comment lines
+ *                                        '# Np=N', '# exit_inlet_total=N', '# exit_outlet_total=N'
  *     status.json                        per medium Pollock status histogram, seed_nonpos, per-plane counts
  *     field.json                         SF-18 raw variance / applied scale / final variance and G, SF-19 lines
  *     timings.json                       wall-clock values, build commit, memory lines (non-deterministic)
@@ -124,6 +129,7 @@ struct AbConfig {
     std::string out;
     std::string command_line; ///< without --out and --test-abort-after
     int test_abort_r = -1;
+    bool test_b_periodic_view = false; ///< TEST ONLY: medium (b) Pollock on the pre-SF-41 periodic view
     std::string test_abort_phase;
     // derived
     double L1 = 0.0, X0 = 0.0;
@@ -185,7 +191,8 @@ AbConfig parse_args(int argc, const char* const* argv) {
     static const std::set<std::string> value_opts = {
         "--grid",  "--ell",       "--eps",         "--sigma2",         "--seed0", "--nr",
         "--np-side", "--window",  "--x0-lambda",   "--mg-levels-b",    "--cg-rtol-b",
-        "--cg-max-iter-b", "--out", "--test-abort-after"};
+        "--cg-max-iter-b", "--out", "--test-abort-after",
+        "--test-b-periodic-view"};
     AbConfig c;
     std::map<std::string, std::string> val;
     for (int i = 1; i < argc; ++i) {
@@ -197,7 +204,7 @@ AbConfig parse_args(int argc, const char* const* argv) {
         if (i + 1 >= argc || std::string(argv[i + 1]).rfind("--", 0) == 0)
             throw ll::UsageError("option " + a + " needs a value");
         val[a] = argv[++i];
-        if (a != "--out" && a != "--test-abort-after")
+        if (a != "--out" && a != "--test-abort-after" && a != "--test-b-periodic-view")
             c.command_line += (c.command_line.empty() ? "" : " ") + a + " " + val[a];
     }
     for (const char* o : {"--grid", "--ell", "--eps", "--seed0", "--nr", "--out"})
@@ -293,6 +300,11 @@ AbConfig parse_args(int argc, const char* const* argv) {
     c.out = val["--out"];
     if (c.out.empty())
         throw ll::UsageError("--out: empty");
+    if (val.count("--test-b-periodic-view")) {
+        if (val["--test-b-periodic-view"] != "1")
+            throw ll::UsageError("--test-b-periodic-view: expected 1");
+        c.test_b_periodic_view = true;
+    }
     if (val.count("--test-abort-after")) {
         const std::string& s = val["--test-abort-after"];
         const std::size_t comma = s.find(',');
@@ -467,6 +479,19 @@ void write_e2_csv(const std::string& path, const std::vector<ll::PollockPlaneMom
     std::fclose(f);
 }
 
+void write_exits_csv(const std::string& path, const ll::PollockLatticeResult& Q) {
+    std::FILE* f = std::fopen(path.c_str(), "w");
+    if (!f)
+        throw std::runtime_error("cannot write " + path);
+    std::fprintf(f, "x1,exit_inlet,exit_outlet\n");
+    for (std::size_t m = 0; m < Q.moments_planes.size(); ++m)
+        std::fprintf(f, "%.17g,%lld,%lld\n", Q.moments_planes[m].x1, Q.exit_inlet_plane.at(m),
+                     Q.exit_outlet_plane.at(m));
+    std::fprintf(f, "# Np=%d\n# exit_inlet_total=%lld\n# exit_outlet_total=%lld\n", Q.Np,
+                 Q.exit_inlet_plane_total, Q.exit_outlet_plane_total);
+    std::fclose(f);
+}
+
 json status_json(const ll::PollockLatticeResult& Q) {
     long long nonactive = 0;
     for (std::size_t k = 1; k < Q.status_hist_plane.size(); ++k)
@@ -482,8 +507,9 @@ json status_json(const ll::PollockLatticeResult& Q) {
 }
 
 /// Pollock plane pass (empty time list), the SF-32 documented cells-per-call default.
-ll::PollockLatticeResult pollock_planes(CudaContext& ctx, const stt::PeriodicFaceFluxView& view,
-                                        const ll::InjectionSpec& inj, const std::vector<double>& planes) {
+template <class FaceView> // PeriodicFaceFluxView (a) or NonPeriodicXFaceFluxView (b)
+ll::PollockLatticeResult pollock_planes(CudaContext& ctx, const FaceView& view, const ll::InjectionSpec& inj,
+                                        const std::vector<double>& planes) {
     stt::PollockParams prm;
     prm.max_cells_per_call = 10000000;
     return ll::track_pollock_lattice(ctx, view, inj, planes, {}, prm);
@@ -673,7 +699,7 @@ int run_realization(CudaContext& ctx, const AbConfig& c, int r) {
     bs.cg_rtol = c.cg_rtol_b;
     bs.cg_max_iter = c.cg_max_iter_b;
     bs.keep_host_faces = true;
-    bs.build_periodic_faces = true;
+    bs.build_periodic_faces = c.test_b_periodic_view; // production: non-periodic upload below
     const auto t_b = Clock::now();
     auto med = std::make_unique<ll::DirichletMedium>(ll::build_dirichlet_medium(ctx, bs, Y));
     const double b_s = since(t_b);
@@ -735,13 +761,23 @@ int run_realization(CudaContext& ctx, const AbConfig& c, int r) {
     const ll::EulerianFaceStatsResult e1b =
         ll::eulerian_face_stats(med->face_u, med->face_v, med->face_w, c.nx, c.ny, c.nz, c.L1, c.ell);
     const double e1b_s = since(t_e1b);
-    std::vector<real>().swap(med->face_u);
-    std::vector<real>().swap(med->face_v);
-    std::vector<real>().swap(med->face_w);
     P(fmt("E1 medium=b qbar=%.12e V1=%.12e theta_2=%.12e theta_3=%.12e", e1b.qbar, e1b.V1, e1b.theta_2,
           e1b.theta_3));
     const auto t_e2b = Clock::now();
-    const ll::PollockLatticeResult Qb = pollock_planes(ctx, med->periodic_view(), inj, c.planes);
+    ll::PollockLatticeResult Qb;
+    if (c.test_b_periodic_view) {
+        std::vector<real>().swap(med->face_u);
+        std::vector<real>().swap(med->face_v);
+        std::vector<real>().swap(med->face_w);
+        Qb = pollock_planes(ctx, med->periodic_view(), inj, c.planes);
+    } else {
+        ll::NonPeriodicXFaceFluxes faces = ll::NonPeriodicXFaceFluxes::upload(
+            ctx, med->face_u, med->face_v, med->face_w, c.nx, c.ny, c.nz, h);
+        std::vector<real>().swap(med->face_u); // host faces of (b) are dead
+        std::vector<real>().swap(med->face_v);
+        std::vector<real>().swap(med->face_w);
+        Qb = pollock_planes(ctx, faces.view(), inj, c.planes);
+    } // device faces of (b) freed here
     const double e2b_s = since(t_e2b);
     med.reset();
     P(fmt("E2 medium=b planes=%zu m_star=%lld", c.planes.size(), c.plane_m.back()));
@@ -776,6 +812,8 @@ int run_realization(CudaContext& ctx, const AbConfig& c, int r) {
                 {"a", primary_json(pa)},
                 {"b", primary_json(pb)}});
     write_json(tmpdir + "/solver_b.json", solver_j);
+    if (!c.test_b_periodic_view)
+        write_exits_csv(tmpdir + "/exits_b.csv", Qb);
     write_json(tmpdir + "/status.json", {{"a", status_json(Qa)}, {"b", status_json(Qb)}});
     write_json(tmpdir + "/field.json", field_j);
     TJ["seconds"] = {{"stage_a", stage_s},   {"e1_a", e1a_s},        {"repack_a", repack_a_s},

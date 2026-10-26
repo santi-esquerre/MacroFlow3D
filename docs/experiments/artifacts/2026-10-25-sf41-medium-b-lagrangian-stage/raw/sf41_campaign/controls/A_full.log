@@ -1,0 +1,201 @@
+A_TIER tier=full only=all
+# group memory
+A_MEMORY box=32x16x16 coefficient_bytes=73728 spectrum_bytes=82944 line_table_bytes=224 cufft_work_area_bytes=165888 total_device_bytes=322784
+A_CHECK name=memory_report_formula_mismatch box=32x16x16 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+# group node
+A_CHECK name=node_interp_rel box=32x16x16 side=host value=1.776482e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=node_interp_rel box=32x16x16 side=device value=1.110301e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=node_interp_rel box=64x16x16 side=host value=1.443392e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=node_interp_rel box=64x16x16 side=device value=1.276846e-15 gate=1.000e-12 verdict=PASS
+# group pou
+A_CHECK name=pou_value_abs box=32x16x16 side=host value=3.108624e-15 gate=1.000e-14 verdict=PASS
+A_CHECK name=pou_gradient_abs_ps box=32x16x16 side=host value=3.018908e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs_margin box=32x16x16 side=host value=1.776357e-15 gate=nan verdict=RECORDED
+A_CHECK name=pou_gradient_abs_margin box=32x16x16 side=host value=2.142079e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs box=32x16x16 side=device value=2.220446e-15 gate=1.000e-14 verdict=PASS
+A_CHECK name=pou_gradient_abs_ps box=32x16x16 side=device value=1.068125e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs_margin box=32x16x16 side=device value=8.881784e-16 gate=nan verdict=RECORDED
+A_CHECK name=pou_gradient_abs_margin box=32x16x16 side=device value=5.652988e-15 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs box=64x32x32 side=host value=2.664535e-15 gate=1.000e-14 verdict=PASS
+A_CHECK name=pou_gradient_abs_ps box=64x32x32 side=host value=5.633276e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs_margin box=64x32x32 side=host value=2.220446e-15 gate=nan verdict=RECORDED
+A_CHECK name=pou_gradient_abs_margin box=64x32x32 side=host value=3.811017e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs box=64x32x32 side=device value=2.220446e-15 gate=1.000e-14 verdict=PASS
+A_CHECK name=pou_gradient_abs_ps box=64x32x32 side=device value=2.231315e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs_margin box=64x32x32 side=device value=1.332268e-15 gate=nan verdict=RECORDED
+A_CHECK name=pou_gradient_abs_margin box=64x32x32 side=device value=1.229327e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs box=128x64x64 side=host value=2.220446e-15 gate=1.000e-14 verdict=PASS
+A_CHECK name=pou_gradient_abs_ps box=128x64x64 side=host value=1.075409e-13 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs_margin box=128x64x64 side=host value=1.776357e-15 gate=nan verdict=RECORDED
+A_CHECK name=pou_gradient_abs_margin box=128x64x64 side=host value=8.096424e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs box=128x64x64 side=device value=2.220446e-15 gate=1.000e-14 verdict=PASS
+A_CHECK name=pou_gradient_abs_ps box=128x64x64 side=device value=4.347515e-14 gate=nan verdict=RECORDED
+A_CHECK name=pou_value_abs_margin box=128x64x64 side=device value=8.881784e-16 gate=nan verdict=RECORDED
+A_CHECK name=pou_gradient_abs_margin box=128x64x64 side=device value=2.439764e-14 gate=nan verdict=RECORDED
+# group repro
+A_CHECK name=repro_cubic_value_rel box=64x16x16 side=host value=9.841984e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_gradient_rel box=64x16x16 side=host value=2.537309e-14 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_hessian_rel box=64x16x16 side=host value=7.139165e-13 gate=nan verdict=RECORDED
+A_CHECK name=repro_cubic_value_rel box=64x16x16 side=device value=8.201653e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_gradient_rel box=64x16x16 side=device value=4.543493e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_hessian_rel box=64x16x16 side=device value=2.217208e-13 gate=nan verdict=RECORDED
+A_CHECK name=repro_quad_value_rel box=64x16x16 side=host value=1.722948e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_gradient_rel box=64x16x16 side=host value=4.967360e-14 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_hessian_rel box=64x16x16 side=host value=1.927680e-12 gate=nan verdict=RECORDED
+A_CHECK name=repro_quad_value_rel box=64x16x16 side=device value=1.938317e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_gradient_rel box=64x16x16 side=device value=4.942644e-14 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_hessian_rel box=64x16x16 side=device value=1.833311e-12 gate=nan verdict=RECORDED
+A_CHECK name=repro_cubic_value_rel box=128x16x16 side=host value=1.330825e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_gradient_rel box=128x16x16 side=host value=5.291384e-14 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_hessian_rel box=128x16x16 side=host value=2.517372e-12 gate=nan verdict=RECORDED
+A_CHECK name=repro_cubic_value_rel box=128x16x16 side=device value=1.219923e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_gradient_rel box=128x16x16 side=device value=5.273753e-14 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_cubic_hessian_rel box=128x16x16 side=device value=2.472632e-12 gate=nan verdict=RECORDED
+A_CHECK name=repro_quad_value_rel box=128x16x16 side=host value=1.749347e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_gradient_rel box=128x16x16 side=host value=1.005313e-13 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_hessian_rel box=128x16x16 side=host value=7.386425e-12 gate=nan verdict=RECORDED
+A_CHECK name=repro_quad_value_rel box=128x16x16 side=device value=1.749347e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_gradient_rel box=128x16x16 side=device value=1.000480e-13 gate=1.000e-12 verdict=PASS
+A_CHECK name=repro_quad_hessian_rel box=128x16x16 side=device value=7.274403e-12 gate=nan verdict=RECORDED
+# group ladder
+A_LADDER_ERR kind=3d side=host cells_per_unit=16 val_max=2.147676e-03 val_rms=3.141618e-04 grad_max=1.191266e-01 grad_rms=2.169646e-02 hess_max=3.990829e+00
+A_LADDER_ERR kind=3d side=host cells_per_unit=32 val_max=1.436959e-04 val_rms=1.525754e-05 grad_max=1.586330e-02 grad_rms=2.093566e-03 hess_max=1.056313e+00
+A_LADDER_ERR kind=3d side=host cells_per_unit=64 val_max=9.135043e-06 val_rms=7.086828e-07 grad_max=2.026002e-03 grad_rms=1.935272e-04 hess_max=2.696230e-01
+A_LADDER_ORDER kind=3d side=host pair=16->32 val_max=3.901686 val_rms=4.363914 grad_max=2.908731 grad_rms=3.373425 hess_max=1.917651
+A_LADDER_ORDER kind=3d side=host pair=32->64 val_max=3.975464 val_rms=4.428238 grad_max=2.968985 grad_rms=3.435354 hess_max=1.970022
+A_LADDER_ERR kind=3d side=device cells_per_unit=16 val_max=2.147676e-03 val_rms=3.141618e-04 grad_max=1.191266e-01 grad_rms=2.169646e-02 hess_max=3.990829e+00
+A_LADDER_ERR kind=3d side=device cells_per_unit=32 val_max=1.436959e-04 val_rms=1.525754e-05 grad_max=1.586330e-02 grad_rms=2.093566e-03 hess_max=1.056313e+00
+A_LADDER_ERR kind=3d side=device cells_per_unit=64 val_max=9.135043e-06 val_rms=7.086828e-07 grad_max=2.026002e-03 grad_rms=1.935272e-04 hess_max=2.696230e-01
+A_LADDER_ORDER kind=3d side=device pair=16->32 val_max=3.901686 val_rms=4.363914 grad_max=2.908731 grad_rms=3.373425 hess_max=1.917651
+A_LADDER_ORDER kind=3d side=device pair=32->64 val_max=3.975464 val_rms=4.428238 grad_max=2.968985 grad_rms=3.435354 hess_max=1.970022
+A_CHECK name=ladder_min_order_ge_val_max box=32x16x16..64x32x32..128x64x64 side=host value=3.901686e+00 gate=3.800e+00 verdict=PASS
+A_EMUL side=host level=1/16 quantity=val_max measured=2.147676e-03 emulated=2.175690e-03 measured_over_emulated=0.987124
+A_EMUL side=host level=1/32 quantity=val_max measured=1.436959e-04 emulated=1.455010e-04 measured_over_emulated=0.987594
+A_EMUL side=host level=1/64 quantity=val_max measured=9.135043e-06 emulated=9.360220e-06 measured_over_emulated=0.975943
+A_CHECK name=ladder_min_order_ge_val_rms box=32x16x16..64x32x32..128x64x64 side=host value=4.363914e+00 gate=3.800e+00 verdict=PASS
+A_EMUL side=host level=1/16 quantity=val_rms measured=3.141618e-04 emulated=2.951800e-04 measured_over_emulated=1.064306
+A_EMUL side=host level=1/32 quantity=val_rms measured=1.525754e-05 emulated=1.431620e-05 measured_over_emulated=1.065753
+A_EMUL side=host level=1/64 quantity=val_rms measured=7.086828e-07 emulated=6.477280e-07 measured_over_emulated=1.094106
+A_CHECK name=ladder_min_order_ge_grad_max box=32x16x16..64x32x32..128x64x64 side=host value=2.908731e+00 gate=2.800e+00 verdict=PASS
+A_EMUL side=host level=1/16 quantity=grad_max measured=1.191266e-01 emulated=1.201610e-01 measured_over_emulated=0.991392
+A_EMUL side=host level=1/32 quantity=grad_max measured=1.586330e-02 emulated=1.605180e-02 measured_over_emulated=0.988257
+A_EMUL side=host level=1/64 quantity=grad_max measured=2.026002e-03 emulated=2.060180e-03 measured_over_emulated=0.983410
+A_CHECK name=ladder_min_order_ge_grad_rms box=32x16x16..64x32x32..128x64x64 side=host value=3.373425e+00 gate=2.800e+00 verdict=PASS
+A_EMUL side=host level=1/16 quantity=grad_rms measured=2.169646e-02 emulated=2.047930e-02 measured_over_emulated=1.059434
+A_EMUL side=host level=1/32 quantity=grad_rms measured=2.093566e-03 emulated=1.959180e-03 measured_over_emulated=1.068593
+A_EMUL side=host level=1/64 quantity=grad_rms measured=1.935272e-04 emulated=1.797730e-04 measured_over_emulated=1.076509
+A_CHECK name=ladder_min_order_ge_hess_max box=32x16x16..64x32x32..128x64x64 side=host value=1.917651e+00 gate=1.800e+00 verdict=PASS
+A_EMUL side=host level=1/16 quantity=hess_max measured=3.990829e+00 emulated=4.022630e+00 measured_over_emulated=0.992094
+A_EMUL side=host level=1/32 quantity=hess_max measured=1.056313e+00 emulated=1.066380e+00 measured_over_emulated=0.990560
+A_EMUL side=host level=1/64 quantity=hess_max measured=2.696230e-01 emulated=2.730160e-01 measured_over_emulated=0.987572
+A_CHECK name=ladder_min_order_ge_val_max box=32x16x16..64x32x32..128x64x64 side=device value=3.901686e+00 gate=3.800e+00 verdict=PASS
+A_EMUL side=device level=1/16 quantity=val_max measured=2.147676e-03 emulated=2.175690e-03 measured_over_emulated=0.987124
+A_EMUL side=device level=1/32 quantity=val_max measured=1.436959e-04 emulated=1.455010e-04 measured_over_emulated=0.987594
+A_EMUL side=device level=1/64 quantity=val_max measured=9.135043e-06 emulated=9.360220e-06 measured_over_emulated=0.975943
+A_CHECK name=ladder_min_order_ge_val_rms box=32x16x16..64x32x32..128x64x64 side=device value=4.363914e+00 gate=3.800e+00 verdict=PASS
+A_EMUL side=device level=1/16 quantity=val_rms measured=3.141618e-04 emulated=2.951800e-04 measured_over_emulated=1.064306
+A_EMUL side=device level=1/32 quantity=val_rms measured=1.525754e-05 emulated=1.431620e-05 measured_over_emulated=1.065753
+A_EMUL side=device level=1/64 quantity=val_rms measured=7.086828e-07 emulated=6.477280e-07 measured_over_emulated=1.094106
+A_CHECK name=ladder_min_order_ge_grad_max box=32x16x16..64x32x32..128x64x64 side=device value=2.908731e+00 gate=2.800e+00 verdict=PASS
+A_EMUL side=device level=1/16 quantity=grad_max measured=1.191266e-01 emulated=1.201610e-01 measured_over_emulated=0.991392
+A_EMUL side=device level=1/32 quantity=grad_max measured=1.586330e-02 emulated=1.605180e-02 measured_over_emulated=0.988257
+A_EMUL side=device level=1/64 quantity=grad_max measured=2.026002e-03 emulated=2.060180e-03 measured_over_emulated=0.983410
+A_CHECK name=ladder_min_order_ge_grad_rms box=32x16x16..64x32x32..128x64x64 side=device value=3.373425e+00 gate=2.800e+00 verdict=PASS
+A_EMUL side=device level=1/16 quantity=grad_rms measured=2.169646e-02 emulated=2.047930e-02 measured_over_emulated=1.059434
+A_EMUL side=device level=1/32 quantity=grad_rms measured=2.093566e-03 emulated=1.959180e-03 measured_over_emulated=1.068593
+A_EMUL side=device level=1/64 quantity=grad_rms measured=1.935272e-04 emulated=1.797730e-04 measured_over_emulated=1.076509
+A_CHECK name=ladder_min_order_ge_hess_max box=32x16x16..64x32x32..128x64x64 side=device value=1.917651e+00 gate=1.800e+00 verdict=PASS
+A_EMUL side=device level=1/16 quantity=hess_max measured=3.990829e+00 emulated=4.022630e+00 measured_over_emulated=0.992094
+A_EMUL side=device level=1/32 quantity=hess_max measured=1.056313e+00 emulated=1.066380e+00 measured_over_emulated=0.990560
+A_EMUL side=device level=1/64 quantity=hess_max measured=2.696230e-01 emulated=2.730160e-01 measured_over_emulated=0.987572
+A_LADDER_ERR kind=xonly side=host cells_per_unit=16 val_max=2.069138e-03 val_rms=5.338073e-04 grad_max=1.146603e-01 grad_rms=3.704909e-02 hess_max=3.837330e+00
+A_LADDER_ERR kind=xonly side=host cells_per_unit=32 val_max=1.385271e-04 val_rms=2.577296e-05 grad_max=1.530744e-02 grad_rms=3.557905e-03 hess_max=1.017062e+00
+A_LADDER_ERR kind=xonly side=host cells_per_unit=64 val_max=8.889883e-06 val_rms=1.154405e-06 grad_max=1.963628e-03 grad_rms=3.236523e-04 hess_max=2.603063e-01
+A_LADDER_ERR kind=xonly side=host cells_per_unit=128 val_max=5.606548e-07 val_rms=5.039236e-08 grad_max=2.478896e-04 grad_rms=2.838792e-05 hess_max=6.569917e-02
+A_LADDER_ORDER kind=xonly side=host pair=16->32 val_max=3.900789 val_rms=4.372389 grad_max=2.905061 grad_rms=3.380338 hess_max=1.915694
+A_LADDER_ORDER kind=xonly side=host pair=32->64 val_max=3.96186 val_rms=4.480636 grad_max=2.962639 grad_rms=3.458511 hess_max=1.966126
+A_LADDER_ORDER kind=xonly side=host pair=64->128 val_max=3.98698 val_rms=4.517801 grad_max=2.985752 grad_rms=3.511095 hess_max=1.986263
+A_LADDER_ERR kind=xonly side=device cells_per_unit=16 val_max=2.069138e-03 val_rms=5.338073e-04 grad_max=1.146603e-01 grad_rms=3.704909e-02 hess_max=3.837330e+00
+A_LADDER_ERR kind=xonly side=device cells_per_unit=32 val_max=1.385271e-04 val_rms=2.577296e-05 grad_max=1.530744e-02 grad_rms=3.557905e-03 hess_max=1.017062e+00
+A_LADDER_ERR kind=xonly side=device cells_per_unit=64 val_max=8.889883e-06 val_rms=1.154405e-06 grad_max=1.963628e-03 grad_rms=3.236523e-04 hess_max=2.603063e-01
+A_LADDER_ERR kind=xonly side=device cells_per_unit=128 val_max=5.606548e-07 val_rms=5.039236e-08 grad_max=2.478896e-04 grad_rms=2.838792e-05 hess_max=6.569917e-02
+A_LADDER_ORDER kind=xonly side=device pair=16->32 val_max=3.900789 val_rms=4.372389 grad_max=2.905061 grad_rms=3.380338 hess_max=1.915694
+A_LADDER_ORDER kind=xonly side=device pair=32->64 val_max=3.96186 val_rms=4.480636 grad_max=2.962639 grad_rms=3.458511 hess_max=1.966126
+A_LADDER_ORDER kind=xonly side=device pair=64->128 val_max=3.98698 val_rms=4.517801 grad_max=2.985752 grad_rms=3.511095 hess_max=1.986263
+A_CHECK name=xonly_min_order_ge_val_max box=32x4x4..256x4x4 side=host value=3.900789e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_val_rms box=32x4x4..256x4x4 side=host value=4.372389e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_grad_max box=32x4x4..256x4x4 side=host value=2.905061e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_grad_rms box=32x4x4..256x4x4 side=host value=3.380338e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_hess_max box=32x4x4..256x4x4 side=host value=1.915694e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_val_max box=32x4x4..256x4x4 side=device value=3.900789e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_val_rms box=32x4x4..256x4x4 side=device value=4.372389e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_grad_max box=32x4x4..256x4x4 side=device value=2.905061e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_grad_rms box=32x4x4..256x4x4 side=device value=3.380338e+00 gate=nan verdict=RECORDED
+A_CHECK name=xonly_min_order_ge_hess_max box=32x4x4..256x4x4 side=device value=1.915694e+00 gate=nan verdict=RECORDED
+# group cpugpu
+A_CHECK name=cpugpu_full_value_rel box=32x16x16 side=both value=1.834113e-15 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_evalonly_value_rel box=32x16x16 side=both value=5.002127e-16 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_evalonly_gradient_rel box=32x16x16 side=both value=1.537475e-15 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_evalonly_hessian_rel box=32x16x16 side=both value=1.685040e-14 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_coeff_diff_rel box=32x16x16 side=both value=3.371081e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_gradient_rel_interior box=32x16x16 side=both value=1.964463e-15 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_hessian_rel_interior box=32x16x16 side=both value=2.492771e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_gradient_rel_nearface box=32x16x16 side=both value=1.156421e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_hessian_rel_nearface box=32x16x16 side=both value=9.863520e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_gradient_rel_margin box=32x16x16 side=both value=1.553600e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_hessian_rel_margin box=32x16x16 side=both value=1.616066e-13 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_value_rel box=64x32x32 side=both value=2.125892e-15 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_evalonly_value_rel box=64x32x32 side=both value=5.002100e-16 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_evalonly_gradient_rel box=64x32x32 side=both value=3.366147e-15 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_evalonly_hessian_rel box=64x32x32 side=both value=6.020812e-14 gate=1.000e-13 verdict=PASS
+A_CHECK name=cpugpu_coeff_diff_rel box=64x32x32 side=both value=3.457840e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_gradient_rel_interior box=64x32x32 side=both value=5.238795e-15 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_hessian_rel_interior box=64x32x32 side=both value=1.796639e-13 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_gradient_rel_nearface box=64x32x32 side=both value=1.836101e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_hessian_rel_nearface box=64x32x32 side=both value=3.715991e-13 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_gradient_rel_margin box=64x32x32 side=both value=3.832506e-14 gate=nan verdict=RECORDED
+A_CHECK name=cpugpu_full_hessian_rel_margin box=64x32x32 side=both value=9.555117e-13 gate=nan verdict=RECORDED
+# group bitwise
+A_CHECK name=hessian_path_bitwise_mismatches box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=hessian_path_bitwise_mismatches box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+# group noalloc
+A_NOALLOC free_before=33560199168 free_after=33560199168
+A_CHECK name=noalloc_eval_free_bytes_delta box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=prefilter_repeat_workspace_reallocations box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+# group shift
+A_CHECK name=shift_value_maxabs box=32x16x16 side=host value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_gradient_maxabs box=32x16x16 side=host value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_hessian_maxabs box=32x16x16 side=host value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_memcmp_mismatched_pairs box=32x16x16 side=host value=0.000000e+00 gate=nan verdict=RECORDED
+A_CHECK name=shift_value_maxabs box=32x16x16 side=device value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_gradient_maxabs box=32x16x16 side=device value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_hessian_maxabs box=32x16x16 side=device value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_memcmp_mismatched_pairs box=32x16x16 side=device value=0.000000e+00 gate=nan verdict=RECORDED
+A_CHECK name=shift_value_maxabs box=64x32x32 side=host value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_gradient_maxabs box=64x32x32 side=host value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_hessian_maxabs box=64x32x32 side=host value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_memcmp_mismatched_pairs box=64x32x32 side=host value=0.000000e+00 gate=nan verdict=RECORDED
+A_CHECK name=shift_value_maxabs box=64x32x32 side=device value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_gradient_maxabs box=64x32x32 side=device value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_hessian_maxabs box=64x32x32 side=device value=0.000000e+00 gate=1.000e-14 verdict=PASS
+A_CHECK name=shift_memcmp_mismatched_pairs box=64x32x32 side=device value=0.000000e+00 gate=nan verdict=RECORDED
+# group domain
+A_CHECK name=domain_margin_nonfinite_or_outside box=32x16x16 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=32x16x16 side=host value=6.288545e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=32x16x16 side=host value=8.731457e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_nonfinite_or_outside box=32x16x16 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=32x16x16 side=device value=6.288545e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=32x16x16 side=device value=1.171115e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=32x16x16 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=32x16x16 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_half_open_violations box=32x16x16 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_nonfinite_or_outside box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=64x32x32 side=host value=8.318394e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=64x32x32 side=host value=1.431394e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_nonfinite_or_outside box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_value_rel box=64x32x32 side=device value=6.238796e-16 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_margin_vs_independent_gradient_rel box=64x32x32 side=device value=1.454062e-15 gate=1.000e-12 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_outside_reported_without_read box=64x32x32 side=device value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_CHECK name=domain_half_open_violations box=64x32x32 side=host value=0.000000e+00 gate=0.000e+00 verdict=PASS
+A_VERDICT all_pass=1 checks_pass=79 checks_fail=0

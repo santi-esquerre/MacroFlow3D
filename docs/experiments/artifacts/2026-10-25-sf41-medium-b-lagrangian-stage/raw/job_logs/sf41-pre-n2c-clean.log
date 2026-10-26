@@ -1,0 +1,28 @@
+[2026-10-25T01:24:11Z] job=sf41-pre-n2c-clean session=macroflow3d-SF-41-sf41-pre-n2c-clean started
+[2026-10-25T01:24:11Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T01:24:11Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T01:24:11Z] command=echo PRECHECK_NOT_EVIDENCE TREE=164682d CLEAN_BUILD; rm -rf build/v100-release && cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target dirichlet_long_box_stage_tests 2>&1 | tail -n 2; echo BUILD_EXIT=${PIPESTATUS[0]}; ./build/v100-release/dirichlet_long_box_stage_tests --only D 2>&1 | grep -E 'D_CHECK|VERDICT|FAIL|present|abi'
+PRECHECK_NOT_EVIDENCE TREE=164682d CLEAN_BUILD
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[129/130] Linking CXX executable CMakeFiles/dirichlet_long_box_stage_tests.dir/cmake_device_link.o
+[130/130] Linking CXX executable dirichlet_long_box_stage_tests
+BUILD_EXIT=0
+CHECK D_128x32x32_ref_head_present PASS  ref.host_head.size()=131072 expected 131072 sizeof(DirichletMedium) test=336 lib=336
+CHECK D_128x32x32_abi_dirichlet_medium PASS
+D_CHECK size=128x32x32 head_identical=1 bsolver_identical=1 mapped_identical=1
+CHECK D_512x64x64_ref_head_present PASS  ref.host_head.size()=2097152 expected 2097152 sizeof(DirichletMedium) test=336 lib=336
+CHECK D_512x64x64_abi_dirichlet_medium PASS
+D_CHECK size=512x64x64 head_identical=1 bsolver_identical=1 mapped_identical=1
+CHECK D_3328x256x256_ref_head_present PASS  ref.host_head.size()=218103808 expected 218103808 sizeof(DirichletMedium) test=336 lib=336
+CHECK D_3328x256x256_abi_dirichlet_medium PASS
+D_CHECK size=3328x256x256 head_identical=1 bsolver_identical=1 mapped_identical=na
+VERDICT mode=D checks_pass=40 checks_fail=0
+[2026-10-25T01:28:59Z] job=sf41-pre-n2c-clean finished exit=0

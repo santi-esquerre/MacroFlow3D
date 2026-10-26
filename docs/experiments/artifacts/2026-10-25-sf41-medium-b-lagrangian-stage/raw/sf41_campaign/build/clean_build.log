@@ -1,0 +1,72 @@
+-- The CUDA compiler identification is NVIDIA 11.4.152 with host compiler GNU 9.3.1
+-- The CXX compiler identification is GNU 9.3.1
+-- Detecting CUDA compiler ABI info
+-- Detecting CUDA compiler ABI info - done
+-- Check for working CUDA compiler: /usr/local/cuda-11.4/bin/nvcc - skipped
+-- Detecting CUDA compile features
+-- Detecting CUDA compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/rh/devtoolset-9/root/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CUDAToolkit: /usr/local/cuda-11.4/targets/x86_64-linux/include (found version "11.4.152")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (6.4s)
+-- Generating done (0.2s)
+-- Build files have been written to: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release
+[264/303] Linking CXX executable projected_pcg_external_tests
+[265/303] Linking CXX executable closure_gate
+[266/303] Linking CXX executable CMakeFiles/inlet_slab_newton_tests.dir/cmake_device_link.o
+[267/303] Linking CXX executable lagrangian_controls_tests
+[268/303] Linking CXX executable par2_field_stats
+[269/303] Linking CXX executable lagrangian_gpu_host_tests
+[270/303] Linking CXX executable inlet_slab
+[271/303] Linking CXX executable dirichlet_controls_tests
+[272/303] Linking CXX executable lagrangian_medium_ab
+[273/303] Linking CXX executable affine_periodic_flow_tests
+[274/303] Linking CXX executable interpolation_nonperiodic_x_tests
+[275/303] Linking CXX executable dirichlet_medium_tests
+[276/303] Linking CXX executable periodic_gaussian_tests
+[277/303] Linking CXX executable inlet_slab_contract_tests
+[278/303] Linking CXX executable tracker_l6_tests
+[279/303] Linking CXX executable streamline_tracker_rk_tests
+[280/303] Linking CXX executable spurious_spreading
+[281/303] Linking CXX executable inlet_slab_coarse_tests
+[282/303] Linking CXX executable lagrangian_ensemble_tests
+[283/303] Linking CXX executable face_flux_repack_tests
+[284/303] Linking CXX executable inlet_slab_trace_gpu_tests
+[285/303] Linking CXX executable interpolation_tests
+[286/303] Linking CXX executable lagrangian_ensemble_b_tests
+[287/303] Linking CXX executable streamline_closure_integrator_tests
+[288/303] Linking CXX executable affine_periodic_flow_lean_tests
+[289/303] Linking CXX executable macroflow3d_pipeline
+[290/303] Linking CXX executable pollock_nonperiodic_tests
+[291/303] Linking CXX executable inlet_slab_trace_tests
+[292/303] Linking CXX executable dirichlet_long_box_stage_tests
+[293/303] Linking CXX executable streamfunction_operator_tests
+[294/303] Linking CXX executable inlet_slab_stage_options_tests
+[295/303] Linking CXX executable lagrangian_medium_ab_tests
+[296/303] Linking CXX executable inlet_slab_production_tests
+[297/303] Linking CXX executable interpolation_hessian_tests
+[298/303] Linking CXX executable spurious_spreading_controls_tests
+[299/303] Linking CXX executable streamline_tracker_face_flux_tests
+[300/303] Linking CXX executable long_box_tests
+[301/303] Linking CXX executable stochastic_baseline_tests
+[302/303] Linking CXX executable streamline_tracker_pollock_tests
+[303/303] Linking CXX executable inlet_slab_newton_tests

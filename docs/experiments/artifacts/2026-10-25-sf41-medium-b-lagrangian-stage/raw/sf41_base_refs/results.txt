@@ -1,0 +1,9 @@
+RECORDED base_binary_md5 inlet_slab aae63d2868be1627e80c16a3a41eb479
+RECORDED base_binary_md5 macroflow3d_pipeline fba69968c801cc651695c80b971da5a0
+RECORDED base_binary_md5 lagrangian_ensemble 59ac27b53610b881b14fe730128080ba
+RECORDED base_binary_md5 lagrangian_medium_ab a53800587a2b5b75e5e289f6f5cf37ee
+RECORDED G2_INVOCATION --grid 512,64,64 --eps 2 --ell 0.125 --seed0 4001 --nr 2 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on
+RECORDED G3_INVOCATION --grid 512,64,64 --ell 0.125 --eps 2 --seed0 4001 --nr 2
+BASEREFS_RECORDED r_runs=20 trio_runs=3 g_runs=2 recorded_in_exit_codes=25 unexpected_exit_codes=0
+RECORDED part_seconds=215 part_runs_seconds=196 part=baserefs (this invocation / sum of the recorded run walls)
+PART_DONE part=baserefs rc=0

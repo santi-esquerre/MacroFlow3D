@@ -1,0 +1,411 @@
+{
+ "N": 64,
+ "backflow": {
+  "backflow_enc_plane": 0,
+  "backflow_enc_time": 0,
+  "inlet_vmin": 0.04807310691257493,
+  "seed_backflow": 0,
+  "stage_status": "ok"
+ },
+ "command": "/home/sesquerre/MacroFlow3D-SF-41/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --comparator pollock --save-vd /home/sesquerre/sf41_campaign/final/r/neutral/gauss_n64_e1_cov/vd --save-seed-velocity --save-particles /home/sesquerre/sf41_campaign/final/r/neutral/gauss_n64_e1_cov --summary /home/sesquerre/sf41_campaign/final/r/neutral/gauss_n64_e1_cov.json",
+ "eps": 1.0,
+ "exit_code": 0,
+ "field": "gaussian",
+ "field_spec": {
+  "applied_scale": 1.6028887112506884,
+  "ell": 0.25,
+  "final_variance": 1.0,
+  "kind": "gaussian",
+  "raw_variance": 0.3892183071637489,
+  "seed": 3001,
+  "sigma2": 1.0
+ },
+ "memory": {
+  "free_min": 33323220992,
+  "peak_device_bytes": 766509056,
+  "total_device": 34089730048,
+  "workspaces_bytes": 0
+ },
+ "mode": "track_forward",
+ "moments_planes": [
+  {
+   "ev_max": 0.0230956077847978,
+   "ev_rms": 0.0051635889458982575,
+   "m": 0,
+   "mean2": 0.4993372329165003,
+   "mean3": 0.562668228820712,
+   "mean_tau": 0.2493818099617333,
+   "n_ok": 4096,
+   "non_ok": 0,
+   "var2": 0.07084571294269079,
+   "var3": 0.08503743595373692,
+   "var_tau": 0.06415374138012564,
+   "x1": 0.25
+  },
+  {
+   "ev_max": 0.03180851685445418,
+   "ev_rms": 0.005489618196029312,
+   "m": 1,
+   "mean2": 0.4975756337762537,
+   "mean3": 0.5698088261981078,
+   "mean_tau": 0.4990216986855857,
+   "n_ok": 4096,
+   "non_ok": 0,
+   "var2": 0.06720587831420884,
+   "var3": 0.1013953447979271,
+   "var_tau": 0.17655093321033508,
+   "x1": 0.5
+  },
+  {
+   "ev_max": 0.026864892738915458,
+   "ev_rms": 0.006648960572695546,
+   "m": 2,
+   "mean2": 0.508154864440678,
+   "mean3": 0.5576656035672525,
+   "mean_tau": 0.9982334078606485,
+   "n_ok": 4096,
+   "non_ok": 0,
+   "var2": 0.08855540929429827,
+   "var3": 0.07399289484588348,
+   "var_tau": 0.39872234702944437,
+   "x1": 1.0
+  },
+  {
+   "ev_max": 0.05063642795782908,
+   "ev_rms": 0.012051509628554197,
+   "m": 3,
+   "mean2": 0.5083564803374911,
+   "mean3": 0.5574479357929973,
+   "mean_tau": 1.9964107551857582,
+   "n_ok": 4096,
+   "non_ok": 0,
+   "var2": 0.09260087756085339,
+   "var3": 0.08865432706918577,
+   "var_tau": 1.3791772729115166,
+   "x1": 2.0
+  }
+ ],
+ "moments_time": [
+  {
+   "active": 4096,
+   "mean": [
+    0.6325457387689931,
+    0.5079883579967766,
+    0.5661064956346902
+   ],
+   "n": 0,
+   "t": 0.5,
+   "var": [
+    0.061030450748882116,
+    0.0817267501088875,
+    0.09927488093298824
+   ]
+  },
+  {
+   "active": 4096,
+   "mean": [
+    1.2433628291282013,
+    0.5073980160306035,
+    0.551470577199476
+   ],
+   "n": 1,
+   "t": 1.0,
+   "var": [
+    0.2445922321622854,
+    0.08250066454033803,
+    0.0983020832668679
+   ]
+  },
+  {
+   "active": 4096,
+   "mean": [
+    2.441278384978442,
+    0.5143193932269959,
+    0.5461342544196504
+   ],
+   "n": 2,
+   "t": 2.0,
+   "var": [
+    0.881711788614012,
+    0.08905875437082317,
+    0.11033363644901166
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "free_after": 33562296320,
+   "free_before": 33564393472,
+   "phase": "field",
+   "seconds": 0.086809251
+  },
+  {
+   "free_after": 33495187456,
+   "free_before": 33562296320,
+   "phase": "stage",
+   "seconds": 2.131119541
+  },
+  {
+   "free_after": 33495187456,
+   "free_before": 33495187456,
+   "phase": "save_vd",
+   "seconds": 0.010360583
+  },
+  {
+   "free_after": 33488896000,
+   "free_before": 33495187456,
+   "phase": "prepare",
+   "seconds": 0.002050495
+  },
+  {
+   "free_after": 33323220992,
+   "free_before": 33488896000,
+   "phase": "track",
+   "seconds": 0.440143655
+  },
+  {
+   "free_after": 33323220992,
+   "free_before": 33323220992,
+   "phase": "write",
+   "seconds": 0.002463288
+  },
+  {
+   "free_after": 33323220992,
+   "free_before": 33323220992,
+   "phase": "seed_velocity",
+   "seconds": 0.001793353
+  },
+  {
+   "free_after": 33323220992,
+   "free_before": 33323220992,
+   "phase": "pollock",
+   "seconds": 0.007785239
+  }
+ ],
+ "plane_pass": {
+  "accepted_steps": 4465346,
+  "backflow_encounters": 0,
+  "landing_rejected": 0,
+  "landing_steps": 16384,
+  "landings_discarded": 0,
+  "min_g1_hat": 0.658064143275575,
+  "nfev": 27025548,
+  "recrossings": 0,
+  "rejected_steps": 0,
+  "status_hist": [
+   4096,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "pollock": {
+  "Np": 4096,
+  "cells_plane": 739677,
+  "cells_time": 725839,
+  "comparator": "pollock",
+  "max_cells_per_call": 10000000,
+  "moments_planes": [
+   {
+    "contributing": 4096,
+    "m": 0,
+    "mean2": 0.49928167309085797,
+    "mean3": 0.5625989028641397,
+    "mean_t": 0.24961824025843818,
+    "non_ok": 0,
+    "var2": 0.07087897067247824,
+    "var3": 0.08506238618976493,
+    "var_t": 0.06395055607475038,
+    "x1": 0.25
+   },
+   {
+    "contributing": 4096,
+    "m": 1,
+    "mean2": 0.4974578494151962,
+    "mean3": 0.569835493176451,
+    "mean_t": 0.4993373272129575,
+    "non_ok": 0,
+    "var2": 0.06723817718256889,
+    "var3": 0.10138518177847833,
+    "var_t": 0.17569418407466947,
+    "x1": 0.5
+   },
+   {
+    "contributing": 4096,
+    "m": 2,
+    "mean2": 0.5079838276588579,
+    "mean3": 0.5577562055495798,
+    "mean_t": 0.9989566507527585,
+    "non_ok": 0,
+    "var2": 0.08853268719503872,
+    "var3": 0.07394578277349047,
+    "var_t": 0.3976603047657795,
+    "x1": 1.0
+   },
+   {
+    "contributing": 4096,
+    "m": 3,
+    "mean2": 0.5079866141497622,
+    "mean3": 0.5577430743241315,
+    "mean_t": 1.9980762257763558,
+    "non_ok": 0,
+    "var2": 0.09251765421678905,
+    "var3": 0.08848250034489706,
+    "var_t": 1.3750435062792508,
+    "x1": 2.0
+   }
+  ],
+  "moments_time": [
+   {
+    "active": 4096,
+    "mean": [
+     0.6317541639752942,
+     0.507819840967092,
+     0.5661913309652961
+    ],
+    "n": 0,
+    "t": 0.5,
+    "var": [
+     0.06065570779694067,
+     0.08170628488453135,
+     0.09925043719846503
+    ]
+   },
+   {
+    "active": 4096,
+    "mean": [
+     1.2418000215602225,
+     0.5070374808001925,
+     0.5517819841207741
+    ],
+    "n": 1,
+    "t": 1.0,
+    "var": [
+     0.24336465589423723,
+     0.08248513715881503,
+     0.09821110450654791
+    ]
+   },
+   {
+    "active": 4096,
+    "mean": [
+     2.4378960180994804,
+     0.5138502742106023,
+     0.546724963247392
+    ],
+    "n": 2,
+    "t": 2.0,
+    "var": [
+     0.8781812355001165,
+     0.08901053001260716,
+     0.11007813353920952
+    ]
+   }
+  ],
+  "seed_nonpos": 0,
+  "seeds_equal_tracker": true,
+  "status_hist_plane": {
+   "0": 4096
+  },
+  "status_hist_time": {
+   "0": 4096
+  },
+  "timings_s": {
+   "download": 0.000354493,
+   "moments": 0.00026534,
+   "plane_kernel": 0.001174176,
+   "repack": 0.002284008,
+   "time_kernel": 0.001876355
+  },
+  "weighted_particles_not_active": 0,
+  "weights": "rt0_v1_at_seed"
+ },
+ "stage": {
+  "G": [
+   0.8670703546805328,
+   -0.0036188931517998697,
+   0.06312758996621666
+  ],
+  "Q0": 1.0000000000000002,
+  "darcy_converged": true,
+  "flow_ready": true,
+  "inlet_mean": 0.999999999999997,
+  "inlet_vmin": 0.04807310691257493,
+  "labels_available": true,
+  "mg_levels": 5,
+  "status": "ok",
+  "v_rms": 1.3072922112334646
+ },
+ "status": "ok",
+ "time_pass": {
+  "accepted_steps": 4431764,
+  "backflow_encounters": 0,
+  "landing_rejected": 0,
+  "landing_steps": 12303,
+  "landings_discarded": 0,
+  "min_g1_hat": 0.6580661078005359,
+  "nfev": 26766802,
+  "recrossings": 0,
+  "rejected_steps": 0,
+  "status_hist": [
+   4096,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "timing": {
+  "field": 0.086809251,
+  "pollock": 0.007785239,
+  "prepare": 0.002050495,
+  "save_vd": 0.010360583,
+  "seed_velocity": 0.001793353,
+  "stage": 2.131119541,
+  "total": 2.683169345,
+  "track": 0.440143655,
+  "write": 0.002463288
+ },
+ "track": {
+  "M": 64,
+  "Np": 4096,
+  "covectors": true,
+  "h": 0.015625,
+  "h_max": 0.001953125,
+  "hmax_div": 8,
+  "labels_available": true,
+  "max_arclength": 18.0,
+  "min_step": 1e-13,
+  "planes": [
+   0.25,
+   0.5,
+   1.0,
+   2.0
+  ],
+  "times": [
+   0.5,
+   1.0,
+   2.0
+  ],
+  "tol": 1e-08,
+  "window": [
+   0.0,
+   1.0,
+   0.0,
+   1.0
+  ],
+  "x0": 0.0
+ },
+ "track_failures": 0,
+ "tracker_timings_s": {
+  "download": 0.000785918,
+  "moments": 0.000662112,
+  "plane_kernel": 0.176333451,
+  "time_kernel": 0.262352615
+ }
+}

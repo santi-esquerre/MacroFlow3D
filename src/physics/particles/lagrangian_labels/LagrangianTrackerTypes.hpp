@@ -18,6 +18,14 @@
 namespace macroflow3d {
 namespace lagrangian_labels {
 
+/// SF-41 (medium (b)): statuses of a particle that leaves the box [0, L1] through an x face. They extend
+/// the closure_gate::StreamlineStatus values 0..6 (a frozen enum) in the `PassStats::status` int and in
+/// the `status_plane` / `status_time` arrays; they occur only with a non-periodic field functor
+/// (kNonPeriodicX) and are NOT counted in the 7-slot `PassTotals::status_hist` but in
+/// `PassTotals::exit_inlet` / `exit_outlet`. Pollock uses its own codes (8 / 9, PollockComparator.cuh).
+inline constexpr int kStatusExitInlet = 7;  ///< crossed x1 = 0 moving upstream
+inline constexpr int kStatusExitOutlet = 8; ///< crossed x1 = L1
+
 /// Per-particle, per-pass statistics (POD, copied from the device as is).
 struct PassStats {
     long long nfev = 0; ///< every field evaluation inside the pass (as SF-30 field_evaluations)
@@ -86,6 +94,9 @@ struct PassTotals {
               landing_rejected = 0, landings_discarded = 0, recrossings = 0;
     long long backflow_encounters = 0; ///< particles with a backflow encounter
     double min_g1_hat = 0.0;
+    /// SF-41: particles whose pass ended with kStatusExitInlet / kStatusExitOutlet (always 0 and not
+    /// printed for periodic fields; excluded from status_hist, which keeps its 7 slots).
+    long long exit_inlet = 0, exit_outlet = 0;
 };
 
 struct LagrangianTrackResult {
@@ -123,6 +134,14 @@ struct LagrangianTrackResult {
            seconds_moments = 0.0;
     bool single_launch = false;         ///< SF-40 L6: the passes ran in one launch
     double seconds_single_kernel = 0.0; ///< SF-40 L6: launch time iff single_launch (else 0)
+
+    // SF-41 (non-periodic-in-x1 field functors only; empty / false / 0 for the periodic ones)
+    bool nonperiodic_x = false;
+    double domain_L1 = 0.0; ///< box length L1 (exit faces x1 = 0 and x1 = L1)
+    /// Particles that exited before reaching plane m (time n), as the Pollock comparator: a particle
+    /// counts for every plane (time) from the first one it did not reach (P (T) entries each; the
+    /// last entry is the pass total).
+    std::vector<long long> exit_inlet_plane, exit_outlet_plane, exit_inlet_time, exit_outlet_time;
 };
 
 /// Run metadata for track.json (everything the tracker itself does not know).

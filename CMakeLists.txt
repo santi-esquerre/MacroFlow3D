@@ -205,6 +205,7 @@ set(OPERATOR_SOURCES
 # SF-28: periodic tricubic B-spline interpolation (value + gradient, GPU + CPU mirror)
 set(INTERPOLATION_SOURCES
     src/numerics/interpolation/PeriodicTricubicBSpline.cu
+    src/numerics/interpolation/NonPeriodicXTricubicBSpline.cu
 )
 
 # SF-31: streamline-tracker shared label evaluator and particle bookkeeping
@@ -249,6 +250,8 @@ set(LAGRANGIAN_LABELS_SOURCES
     src/physics/particles/lagrangian_labels/LongBoxStage.cu
     # SF-38 N2: medium (b) (solve_head, Dirichlet in x) and the Eulerian face statistics E1
     src/physics/particles/lagrangian_labels/DirichletMedium.cu
+    # SF-41 N2: lean medium (b) stage (flow part; default flags like DirichletMedium.cu / LongBoxStage.cu)
+    src/physics/particles/lagrangian_labels/DirichletLongBoxStage.cu
     src/physics/particles/lagrangian_labels/EulerianFaceStats.cpp
     # SF-38 N3: Lagrangian ensemble runner (host orchestration over the libraries above)
     src/physics/particles/lagrangian_labels/EnsembleRunner.cu
@@ -665,6 +668,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(interpolation_hessian_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
     add_test(NAME interpolation_hessian COMMAND interpolation_hessian_tests)
 
+    # SF-41 N1: non-periodic-in-x1 tricubic B-spline (threshold A program; ctest runs the fast tier,
+    # the full RR3 tier is `interpolation_nonperiodic_x_tests --full` on the V100)
+    add_executable(interpolation_nonperiodic_x_tests tests/interpolation/nonperiodic_x_bspline_tests.cu)
+    target_link_libraries(interpolation_nonperiodic_x_tests PRIVATE macroflow3d_lib)
+    target_compile_options(interpolation_nonperiodic_x_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+    add_test(NAME interpolation_nonperiodic_x COMMAND interpolation_nonperiodic_x_tests)
+
     # SF-31 N3: pseudo-symplectic streamline tracker contract tests (fast tier)
     add_executable(streamline_tracker_ps_tests tests/streamline_tracker/pseudo_symplectic_tracker_tests.cu)
     target_link_libraries(streamline_tracker_ps_tests PRIVATE macroflow3d_lib)
@@ -794,6 +804,13 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(long_box_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_long_box COMMAND long_box_tests)
 
+    # SF-41 N1b: P-CROSS (threshold B, RR4): non-periodic-x1 vs periodic spline on the SF-19 h_tilde and
+    # ln K samples (fast tier = smoke at 128x16x16; `--only B` is the V100 RR4 configuration).
+    add_executable(sf41_cross_representation_tests tests/lagrangian_labels/sf41_cross_representation_tests.cu)
+    target_link_libraries(sf41_cross_representation_tests PRIVATE macroflow3d_lib)
+    target_compile_options(sf41_cross_representation_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_cross_representation COMMAND sf41_cross_representation_tests)
+
     # SF-38 N2: DirichletMedium (medium (b), C-DIRICHLET) + EulerianFaceStats (E1): k = 1, layered exact
     # 1-D flux, periodic repack, workspace release, E1 exact (fast <= 60 s; --full is the V100 mode).
     add_executable(dirichlet_medium_tests tests/lagrangian_labels/dirichlet_medium_tests.cu)
@@ -801,11 +818,31 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(dirichlet_medium_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_dirichlet_medium COMMAND dirichlet_medium_tests)
 
+    # SF-41 N2: lean medium (b) stage (C-STAGE flow part): bitwise vs DirichletMedium, C5 solver controls,
+    # exact-bytes closed form, external-vector PCG (fast tier <= 32^3 cells; --only D / --only C5 are the V100 modes).
+    add_executable(dirichlet_long_box_stage_tests tests/lagrangian_labels/dirichlet_long_box_stage_tests.cu)
+    target_link_libraries(dirichlet_long_box_stage_tests PRIVATE macroflow3d_lib)
+    target_compile_options(dirichlet_long_box_stage_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_dirichlet_long_box_stage COMMAND dirichlet_long_box_stage_tests)
+
     # SF-37 N3: CompactMAC -> periodic face repack (bitwise), Pollock lattice tracker on k = 1 and a smooth K
     add_executable(face_flux_repack_tests tests/lagrangian_labels/face_flux_repack_tests.cu)
     target_link_libraries(face_flux_repack_tests PRIVATE macroflow3d_lib)
     target_compile_options(face_flux_repack_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_face_flux_repack COMMAND face_flux_repack_tests)
+    # SF-41 N3a: Pollock core and comparator non-periodic in x (exit_inlet / exit_outlet), controls C4a/C4b (FAST
+    # tier; `--only C4` is the V100 form of RR5, not a ctest entry)
+    add_executable(pollock_nonperiodic_tests tests/lagrangian_labels/pollock_nonperiodic_tests.cu)
+    target_link_libraries(pollock_nonperiodic_tests PRIVATE macroflow3d_lib)
+    target_compile_options(pollock_nonperiodic_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_pollock_nonperiodic COMMAND pollock_nonperiodic_tests)
+    # SF-41 N3b: exact controls C1-C4 of the Lagrangian consumer on medium (b) (non-periodic-in-x1 spline, x-exit
+    # handling of the tracker and of the Pollock comparator), heads written into the sample array, no solver
+    # (FAST tier <= 32^3, well under 60 s; `--full` is the RR5 form for the V100, not a ctest entry)
+    add_executable(dirichlet_controls_tests tests/lagrangian_labels/dirichlet_controls_tests.cu)
+    target_link_libraries(dirichlet_controls_tests PRIVATE macroflow3d_lib)
+    target_compile_options(dirichlet_controls_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_dirichlet_controls COMMAND dirichlet_controls_tests)
     # SF-38 N3: ensemble runner (determinism, restart after a simulated crash, CSV round trip, twin, seed-face
     # assertion, field-only) on a 64x16x16 box; drives the lagrangian_ensemble and macroflow3d_pipeline binaries
     # (build both targets first). Fast tier <= 60 s.
@@ -814,6 +851,14 @@ if(MACROFLOW3D_BUILD_APPS)
     target_compile_options(lagrangian_ensemble_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME lagrangian_ensemble
         COMMAND lagrangian_ensemble_tests $<TARGET_FILE:lagrangian_ensemble> $<TARGET_FILE:macroflow3d_pipeline>)
+    # SF-41 N5: the same runner with --medium b (lean Dirichlet stage, exit-aware tracker and Pollock bridge,
+    # multi-pass h_max, flow_stats.json) on a 128x16x16 box; also unit-tests the medium (b) auto rules and the
+    # flow statistics. Links the library (in-process stage rebuild for the independent flow-stats check).
+    add_executable(lagrangian_ensemble_b_tests tests/lagrangian_labels/lagrangian_ensemble_b_tests.cu)
+    target_link_libraries(lagrangian_ensemble_b_tests PRIVATE macroflow3d_lib)
+    target_compile_options(lagrangian_ensemble_b_tests PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME lagrangian_ensemble_medium_b
+        COMMAND lagrangian_ensemble_b_tests $<TARGET_FILE:lagrangian_ensemble>)
     # SF-38 N4: medium A/B application (determinism, crash/restart, k = 1 equivalence, primary statistics
     # recomputed independently, ab_primary.csv, usage/seed-face exits) on a 128x16x16 box. Fast tier <= 60 s.
     add_executable(lagrangian_medium_ab_tests tests/lagrangian_labels/lagrangian_medium_ab_tests.cu)

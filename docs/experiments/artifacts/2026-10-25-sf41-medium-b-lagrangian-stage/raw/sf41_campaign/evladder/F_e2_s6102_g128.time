@@ -1,0 +1,23 @@
+	Command being timed: "timeout -k 60 43200 /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_ensemble --medium b --grid 1536,128,128 --eps 2 --ell 0.5 --seed0 6102 --nr 1 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin off --pollock-bridge on --out /home/sesquerre/sf41_campaign/evladder/F_e2_s6102_g128"
+	User time (seconds): 5.96
+	System time (seconds): 6.12
+	Percent of CPU this job got: 97%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:12.40
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1446268
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 719625
+	Voluntary context switches: 190
+	Involuntary context switches: 22
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 89368
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

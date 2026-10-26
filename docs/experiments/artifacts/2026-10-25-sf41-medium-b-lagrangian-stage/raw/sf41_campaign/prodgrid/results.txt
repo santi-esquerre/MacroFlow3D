@@ -1,0 +1,119 @@
+RECORDED E_INVOCATION E1: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_ensemble --medium b --grid 2048,256,256 --eps 1 --ell 0.0390625 --seed0 4001 --nr 1 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf41_campaign/prodgrid/E1
+RECORDED E_INVOCATION E2: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_ensemble --medium b --grid 3328,384,384 --eps 1.5 --ell 0.041666666666666664 --seed0 4001 --nr 1 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf41_campaign/prodgrid/E2
+RECORDED E_INVOCATION E3: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_ensemble --medium b --grid 3328,384,384 --eps 2 --ell 0.08333333333333333 --seed0 4001 --nr 1 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf41_campaign/prodgrid/E3
+RECORDED E_INVOCATION E4: /home/sesquerre/MacroFlow3D-SF-41/build/v100-release/lagrangian_ensemble --medium b --grid 6656,256,256 --eps 2 --ell 0.25 --seed0 4001 --nr 1 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf41_campaign/prodgrid/E4
+E_RUN run=E1 exit=0 solve=primary rel=3.409160e-11 balance=2.370176e-11 pid_peak_mib=8251 limit_mib=30000 mem=OK phases_le_S2=1 state=PASS
+E_VERDICT id=E1 grid=2048x256x256 PASS (device_head)
+RECORDED run=E1 exit=0 wall_s=33.69 host_max_rss_kb=4858940 free_b_before=[Mem: 134590115840 3129733120 22224482304 382025728 109235900416 130437324800]
+RECORDED run=E1 R=0 MEM_PHASE phase=F exact_bytes=3223324680 cufft_work=1074790400 device_used=2677014528 seconds=0.904218
+RECORDED run=E1 R=0 MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=3.640386
+RECORDED run=E1 R=0 MEM_PHASE phase=S2 exact_bytes=8129757192 cufft_work=0 device_used=8655994880 seconds=5.698274
+RECORDED run=E1 R=0 MEM_PHASE phase=V exact_bytes=5378678784 cufft_work=0 device_used=5906628608 seconds=2.419726
+RECORDED run=E1 R=0 MEM_PHASE phase=H exact_bytes=1073741824 cufft_work=0 device_used=1601175552 seconds=0.003045
+RECORDED run=E1 R=0 MEM_PHASE phase=S3 exact_bytes=6478168032 cufft_work=2168487936 device_used=4839178240 seconds=1.204752
+RECORDED run=E1 R=0 MEM_PHASE phase=T exact_bytes=2261920656 cufft_work=0 device_used=2790260736 seconds=0.054155
+RECORDED run=E1 R=0 MEM_PHASE phase=B exact_bytes=4299685888 cufft_work=- device_used=- seconds=-
+RECORDED run=E1 pid_peak_mib=8251 dev_peak_mib=8255 samples=160 max_exact_mib=7753.141 tree_pid=147526 status=OK reasons=-
+RECORDED run=E1 phase_exact_bytes B=4299685888 F=3223324680 H=1073741824 S1=0 S2=8129757192 S3=6478168032 T=2261920656 V=5378678784
+RECORDED run=E1 STAGE medium=b status=converged grid=2048x256x256 mg_levels=7 G=1.000000000000e+00,0.000000000000e+00,0.000000000000e+00 solver_converged=1 solver_usable=1 flow_ready=1 seconds=13.870
+RECORDED run=E1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=3560 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=3695
+RECORDED run=E1 TEXIT pass=plane exit_inlet=0 exit_outlet=0 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E1 TEXIT pass=time exit_inlet=0 exit_outlet=3695 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E1 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=995113678
+RECORDED run=E1 TSTATUS pass=time hist=6305,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=994221658
+RECORDED run=E1 FLOWSTATS qbar=1.181348938810e+00 x_faces_nonpositive=0/134283264 speed_pct(0,0.1,1,50)=1.818938e-02,7.232117e-02,1.337163e-01,8.356550e-01 interior_planes=50..1998 mean_u=1.181348938834e+00 mean_v=-1.135347269871e-03 mean_w=2.249141258075e-03 theta_2=-9.610597538112e-04 theta_3=1.903873162811e-03
+RECORDED run=E1 RESOLVED_TIMES qbar=1.181348938810e+00 n=329 times=0.01953125,0.0390625,0.05859375,0.078125,0.09765625,0.1171875,0.13671875,0.15625,0.17578125,0.1953125,0.21484375,0.234375,0.25390625,0.2734375,0.29296875,0.3125,0.33203125,0.3515625,0.37109375,0.390625,0.41015625,0.4296875,0.44921875,0.46875,0.48828125,0.5078125,0.52734375,0.546875,0.56640625,0.5859375,0.605
+RECORDED run=E1 TIMING r=0 seconds=31.734
+RECORDED run=E1 BACKFLOW field=gaussian eps=1 N=2048 inlet_vmin=3.441734e-02 labels_available=0 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+RECORDED run=E1 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=9 times=329 hist_plane=0:10000 hist_time=0:6440,9:3560 cells_plane=27380501 cells_time=26363468 weighted_not_active=3560 repack_seconds=1.073 weights=rt0_v1_at_seed exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=3560
+RECORDED run=E1 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=9 times=329
+RECORDED run=E1 solver_b.json {"G1": 1.0, "Q_in": 1.181348938809969, "Q_out": 1.1813489388377076, "balance": 2.348053086973369e-11, "cg_max_iter": 2000, "cg_rtol": 1e-10, "converged": true, "fallback": false, "final_residual": 3.8517426238116075e-05, "head_mapped_host": false, "initial_residual": 1129821.6262369622, "iterations": 20, "max_div": 3.922634661414344e-09, "mg_levels": 7, "qbar": 1.181348938809969, "r": 0, "rel": 3.409159936724176e-11, "seed": 4001, "usable": true, "verdict": "converged"}
+RECORDED run=E1 status.json {"Np": 10000, "pollock": {"exit_inlet_plane": 0, "exit_inlet_time": 0, "exit_outlet_plane": 0, "exit_outlet_time": 3560, "seed_nonpos": 0, "status_hist_plane": [10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "status_hist_time": [6440, 0, 0, 0, 0, 0, 0, 0, 0, 3560, 0, 0, 0, 0, 0, 0], "weighted_not_active": 3560}, "seed_backflow": 0, "tracker_plane_pass": {"backflow_encounters": 0, "exit_inlet": 0, "exit_outlet": 0, "landings_discarded": 0, "status_ge2": 0, "status_hist": [10000, 0, 0, 0, 0, 0, 0]}, "tracker_time_pass": {"backflow_encounters": 0, "exit_inlet": 0, "exit_outlet": 3695, "land
+RECORDED run=E1 flow_stats.json {"L1": 8, "h": 0.00390625, "interior": {"layer_hi": 1997, "layer_lo": 50, "mean_u": 1.1813489388344582, "mean_v": -0.0011353472698705505, "mean_w": 0.0022491412580748107, "plane_hi": 1998, "plane_lo": 50, "theta_2": -0.0009610597538112128, "theta_3": 0.0019038731628108142, "x1_hi": 7.8046875, "x1_lo": 0.1953125}, "lambda": 0.0390625, "qbar": 1.181348938809969, "speed_over_qbar_percentiles": {"p0": 0.0181893813908298, "p0.1": 0.07232117124426553, "p1": 0.133716281783115, "p50": 0.8356550121669503}, "x_faces": 134283264, "x_faces_nonpositive": 0, "x_nonpositive_fraction": 0}
+E_RUN run=E2 exit=0 solve=primary rel=1.725197e-11 balance=5.518605e-12 pid_peak_mib=28855 limit_mib=30000 mem=OK phases_le_S2=1 state=PASS
+E_VERDICT id=E2 grid=3328x384x384 PASS (device_head)
+RECORDED run=E2 exit=0 wall_s=110.28 host_max_rss_kb=16021444 free_b_before=[Mem: 134590115840 3127889920 22035709952 382021632 109426515968 130439172096]
+RECORDED run=E2 R=0 MEM_PHASE phase=F exact_bytes=11782326280 cufft_work=3928227840 device_used=8383365120 seconds=3.671877
+RECORDED run=E2 R=0 MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=15.920663
+RECORDED run=E2 R=0 MEM_PHASE phase=S2 exact_bytes=29724424712 cufft_work=0 device_used=30260854784 seconds=32.838700
+RECORDED run=E2 R=0 MEM_PHASE phase=V exact_bytes=19653337088 cufft_work=0 device_used=20184039424 seconds=9.843290
+RECORDED run=E2 R=0 MEM_PHASE phase=H exact_bytes=3925868544 cufft_work=0 device_used=4453302272 seconds=0.011475
+RECORDED run=E2 R=0 MEM_PHASE phase=S3 exact_bytes=23640246240 cufft_work=7902117888 device_used=16270753792 seconds=5.225884
+RECORDED run=E2 R=0 MEM_PHASE phase=T exact_bytes=7953496528 cufft_work=0 device_used=8484028416 seconds=0.048888
+RECORDED run=E2 R=0 MEM_PHASE phase=B exact_bytes=15714877440 cufft_work=- device_used=- seconds=-
+RECORDED run=E2 pid_peak_mib=28855 dev_peak_mib=28859 samples=536 max_exact_mib=28347.420 tree_pid=147768 status=OK reasons=-
+RECORDED run=E2 phase_exact_bytes B=15714877440 F=11782326280 H=3925868544 S1=0 S2=29724424712 S3=23640246240 T=7953496528 V=19653337088
+RECORDED run=E2 STAGE medium=b status=converged grid=3328x384x384 mg_levels=7 G=1.000000000000e+00,0.000000000000e+00,0.000000000000e+00 solver_converged=1 solver_usable=1 flow_ready=1 seconds=67.512
+RECORDED run=E2 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4157 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4142
+RECORDED run=E2 TEXIT pass=plane exit_inlet=0 exit_outlet=0 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E2 TEXIT pass=time exit_inlet=0 exit_outlet=4142 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E2 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=78 nfev=1726645522
+RECORDED run=E2 TSTATUS pass=time hist=5858,0,0,0,0,0,0 landings_discarded=0 backflow_enc=72 nfev=1638601640
+RECORDED run=E2 FLOWSTATS qbar=1.449649782898e+00 x_faces_nonpositive=2230/490881024 speed_pct(0,0.1,1,50)=1.995558e-03,1.497091e-02,3.909465e-02,6.689606e-01 interior_planes=80..3248 mean_u=1.449649782893e+00 mean_v=-1.365187113382e-03 mean_w=6.605289720408e-03 theta_2=-9.417355322050e-04 theta_3=4.556441208865e-03
+RECORDED run=E2 RESOLVED_TIMES qbar=1.449649782898e+00 n=273 times=0.02083333333,0.04166666667,0.0625,0.08333333333,0.1041666667,0.125,0.1458333333,0.1666666667,0.1875,0.2083333333,0.2291666667,0.25,0.2708333333,0.2916666667,0.3125,0.3333333333,0.3541666667,0.375,0.3958333333,0.4166666667,0.4375,0.4583333333,0.4791666667,0.5,0.5208333333,0.5416666667,0.5625,0.5833333333,0.6
+RECORDED run=E2 TIMING r=0 seconds=108.466
+RECORDED run=E2 BACKFLOW field=gaussian eps=1.5 N=3328 inlet_vmin=5.287898e-03 labels_available=0 seed_backflow=0 backflow_enc_plane=78 backflow_enc_time=72 (inlet backflow is recorded, not an exit condition)
+RECORDED run=E2 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=9 times=273 hist_plane=0:10000 hist_time=0:5843,9:4157 cells_plane=50751222 cells_time=47307377 weighted_not_active=4157 repack_seconds=3.865 weights=rt0_v1_at_seed exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4157
+RECORDED run=E2 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=9 times=273
+RECORDED run=E2 solver_b.json {"G1": 1.0, "Q_in": 1.4496497828980015, "Q_out": 1.4496497828900095, "balance": 5.513091202683248e-12, "cg_max_iter": 2000, "cg_rtol": 1e-10, "converged": true, "fallback": false, "final_residual": 0.00018754563032136564, "head_mapped_host": false, "initial_residual": 10870970.80651808, "iterations": 40, "max_div": 1.5221975507241307e-08, "mg_levels": 7, "qbar": 1.4496497828980015, "r": 0, "rel": 1.7251967065251978e-11, "seed": 4001, "usable": true, "verdict": "converged"}
+RECORDED run=E2 status.json {"Np": 10000, "pollock": {"exit_inlet_plane": 0, "exit_inlet_time": 0, "exit_outlet_plane": 0, "exit_outlet_time": 4157, "seed_nonpos": 0, "status_hist_plane": [10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "status_hist_time": [5843, 0, 0, 0, 0, 0, 0, 0, 0, 4157, 0, 0, 0, 0, 0, 0], "weighted_not_active": 4157}, "seed_backflow": 0, "tracker_plane_pass": {"backflow_encounters": 78, "exit_inlet": 0, "exit_outlet": 0, "landings_discarded": 0, "status_ge2": 0, "status_hist": [10000, 0, 0, 0, 0, 0, 0]}, "tracker_time_pass": {"backflow_encounters": 72, "exit_inlet": 0, "exit_outlet": 4142, "la
+RECORDED run=E2 flow_stats.json {"L1": 8.666666666666666, "h": 0.0026041666666666665, "interior": {"layer_hi": 3247, "layer_lo": 80, "mean_u": 1.4496497828925141, "mean_v": -0.0013651871133824427, "mean_w": 0.006605289720408177, "plane_hi": 3248, "plane_lo": 80, "theta_2": -0.0009417355322050103, "theta_3": 0.004556441208865052, "x1_hi": 8.458333333333332, "x1_lo": 0.20833333333333331}, "lambda": 0.041666666666666664, "qbar": 1.4496497828980015, "speed_over_qbar_percentiles": {"p0": 0.0019955575933648557, "p0.1": 0.014970909520251553, "p1": 0.03909464819409728, "p50": 0.6689606418216625}, "x_faces": 490881024, "x_faces_nonpo
+E_RUN run=E3 exit=0 solve=primary rel=1.607008e-12 balance=6.317254e-12 pid_peak_mib=28855 limit_mib=30000 mem=OK phases_le_S2=1 state=PASS
+E_VERDICT id=E3 grid=3328x384x384 PASS (device_head)
+RECORDED run=E3 exit=0 wall_s=129.16 host_max_rss_kb=16021512 free_b_before=[Mem: 134590115840 3128004608 21875712000 382021632 109586399232 130439041024]
+RECORDED run=E3 R=0 MEM_PHASE phase=F exact_bytes=11782326280 cufft_work=3928227840 device_used=8383365120 seconds=3.748758
+RECORDED run=E3 R=0 MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=15.431232
+RECORDED run=E3 R=0 MEM_PHASE phase=S2 exact_bytes=29724424712 cufft_work=0 device_used=30260854784 seconds=40.558360
+RECORDED run=E3 R=0 MEM_PHASE phase=V exact_bytes=19653337088 cufft_work=0 device_used=20184039424 seconds=9.835371
+RECORDED run=E3 R=0 MEM_PHASE phase=H exact_bytes=3925868544 cufft_work=0 device_used=4453302272 seconds=0.011506
+RECORDED run=E3 R=0 MEM_PHASE phase=S3 exact_bytes=23640246240 cufft_work=7902117888 device_used=16270753792 seconds=5.238452
+RECORDED run=E3 R=0 MEM_PHASE phase=T exact_bytes=7897175120 cufft_work=0 device_used=8427405312 seconds=0.029692
+RECORDED run=E3 R=0 MEM_PHASE phase=B exact_bytes=15714877440 cufft_work=- device_used=- seconds=-
+RECORDED run=E3 pid_peak_mib=28855 dev_peak_mib=28859 samples=627 max_exact_mib=28347.420 tree_pid=148505 status=OK reasons=-
+RECORDED run=E3 phase_exact_bytes B=15714877440 F=11782326280 H=3925868544 S1=0 S2=29724424712 S3=23640246240 T=7897175120 V=19653337088
+RECORDED run=E3 STAGE medium=b status=converged grid=3328x384x384 mg_levels=7 G=1.000000000000e+00,0.000000000000e+00,0.000000000000e+00 solver_converged=1 solver_usable=1 flow_ready=1 seconds=74.824
+RECORDED run=E3 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=3961 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=3957
+RECORDED run=E3 TEXIT pass=plane exit_inlet=0 exit_outlet=0 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E3 TEXIT pass=time exit_inlet=0 exit_outlet=3957 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E3 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=843 nfev=1765361522
+RECORDED run=E3 TSTATUS pass=time hist=6043,0,0,0,0,0,0 landings_discarded=0 backflow_enc=674 nfev=1482967448
+RECORDED run=E3 FLOWSTATS qbar=1.899552783704e+00 x_faces_nonpositive=173142/490881024 speed_pct(0,0.1,1,50)=3.666271e-04,2.540001e-03,9.565589e-03,4.944097e-01 interior_planes=160..3168 mean_u=1.899552783710e+00 mean_v=6.483659625399e-03 mean_w=2.938580790799e-02 theta_2=3.413242581245e-03 theta_3=1.546862205015e-02
+RECORDED run=E3 RESOLVED_TIMES qbar=1.899552783704e+00 n=98 times=0.04166666667,0.08333333333,0.125,0.1666666667,0.2083333333,0.25,0.2916666667,0.3333333333,0.375,0.4166666667,0.4583333333,0.5,0.5416666667,0.5833333333,0.625,0.6666666667,0.7083333333,0.75,0.7916666667,0.8333333333,0.875,0.9166666667,0.9583333333,1,1.041666667,1.083333333,1.125,1.166666667,1.208333333,1.25,1
+RECORDED run=E3 TIMING r=0 seconds=127.062
+RECORDED run=E3 BACKFLOW field=gaussian eps=2 N=3328 inlet_vmin=2.267710e-03 labels_available=0 seed_backflow=0 backflow_enc_plane=843 backflow_enc_time=674 (inlet backflow is recorded, not an exit condition)
+RECORDED run=E3 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=8 times=98 hist_plane=0:10000 hist_time=0:6039,9:3961 cells_plane=53817250 cells_time=45033450 weighted_not_active=3961 repack_seconds=7.235 weights=rt0_v1_at_seed exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=3961
+RECORDED run=E3 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=8 times=98
+RECORDED run=E3 solver_b.json {"G1": 1.0, "Q_in": 1.899552783704399, "Q_out": 1.8995527837162935, "balance": 6.261729338959528e-12, "cg_max_iter": 2000, "cg_rtol": 1e-10, "converged": true, "fallback": false, "final_residual": 5.0842373142118094e-05, "head_mapped_host": false, "initial_residual": 31637915.226730548, "iterations": 50, "max_div": 1.112806240639332e-07, "mg_levels": 7, "qbar": 1.8995527837043993, "r": 0, "rel": 1.607007692439921e-12, "seed": 4001, "usable": true, "verdict": "converged"}
+RECORDED run=E3 status.json {"Np": 10000, "pollock": {"exit_inlet_plane": 0, "exit_inlet_time": 0, "exit_outlet_plane": 0, "exit_outlet_time": 3961, "seed_nonpos": 0, "status_hist_plane": [10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "status_hist_time": [6039, 0, 0, 0, 0, 0, 0, 0, 0, 3961, 0, 0, 0, 0, 0, 0], "weighted_not_active": 3961}, "seed_backflow": 0, "tracker_plane_pass": {"backflow_encounters": 843, "exit_inlet": 0, "exit_outlet": 0, "landings_discarded": 0, "status_ge2": 0, "status_hist": [10000, 0, 0, 0, 0, 0, 0]}, "tracker_time_pass": {"backflow_encounters": 674, "exit_inlet": 0, "exit_outlet": 3957, "
+RECORDED run=E3 flow_stats.json {"L1": 8.666666666666666, "h": 0.0026041666666666665, "interior": {"layer_hi": 3167, "layer_lo": 160, "mean_u": 1.899552783710377, "mean_v": 0.006483659625399206, "mean_w": 0.029385807907988976, "plane_hi": 3168, "plane_lo": 160, "theta_2": 0.003413242581244618, "theta_3": 0.015468622050149691, "x1_hi": 8.25, "x1_lo": 0.41666666666666663}, "lambda": 0.08333333333333333, "qbar": 1.8995527837043993, "speed_over_qbar_percentiles": {"p0": 0.0003666271236252048, "p0.1": 0.0025400011220544317, "p1": 0.009565589179147634, "p50": 0.4944097463046147}, "x_faces": 490881024, "x_faces_nonpositive": 173142
+E_RUN run=E4 exit=0 solve=primary rel=1.263955e-11 balance=4.188526e-11 pid_peak_mib=25701 limit_mib=30000 mem=OK phases_le_S2=1 state=PASS
+E_VERDICT id=E4 grid=6656x256x256 PASS (device_head)
+RECORDED run=E4 exit=0 wall_s=143.81 host_max_rss_kb=14314552 free_b_before=[Mem: 134590115840 3133005824 21810028544 382021632 109647081472 130434019328]
+RECORDED run=E4 R=0 MEM_PHASE phase=F exact_bytes=10471081992 cufft_work=3490709504 device_used=7508852736 seconds=3.234312
+RECORDED run=E4 R=0 MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=11.687527
+RECORDED run=E4 R=0 MEM_PHASE phase=S2 exact_bytes=26421710856 cufft_work=0 device_used=26953646080 seconds=62.087775
+RECORDED run=E4 R=0 MEM_PHASE phase=V exact_bytes=17477148672 cufft_work=0 device_used=18007195648 seconds=8.291852
+RECORDED run=E4 R=0 MEM_PHASE phase=H exact_bytes=3489660928 cufft_work=0 device_used=4017094656 seconds=0.010072
+RECORDED run=E4 R=0 MEM_PHASE phase=S3 exact_bytes=21030342624 cufft_work=7038074880 device_used=14521729024 seconds=5.002102
+RECORDED run=E4 R=0 MEM_PHASE phase=T exact_bytes=7028797240 cufft_work=0 device_used=7557087232 seconds=0.028594
+RECORDED run=E4 R=0 MEM_PHASE phase=B exact_bytes=13972799488 cufft_work=- device_used=- seconds=-
+RECORDED run=E4 pid_peak_mib=25701 dev_peak_mib=25705 samples=703 max_exact_mib=25197.707 tree_pid=149396 status=OK reasons=-
+RECORDED run=E4 phase_exact_bytes B=13972799488 F=10471081992 H=3489660928 S1=0 S2=26421710856 S3=21030342624 T=7028797240 V=17477148672
+RECORDED run=E4 STAGE medium=b status=converged grid=6656x256x256 mg_levels=7 G=1.000000000000e+00,0.000000000000e+00,0.000000000000e+00 solver_converged=1 solver_usable=1 flow_ready=1 seconds=90.314
+RECORDED run=E4 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=1896 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=1910
+RECORDED run=E4 TEXIT pass=plane exit_inlet=0 exit_outlet=0 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E4 TEXIT pass=time exit_inlet=0 exit_outlet=1910 (statuses 7 / 8, outside the TSTATUS histogram)
+RECORDED run=E4 TSTATUS pass=plane hist=10000,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=3313668494
+RECORDED run=E4 TSTATUS pass=time hist=8090,0,0,0,0,0,0 landings_discarded=0 backflow_enc=0 nfev=1794659698
+RECORDED run=E4 FLOWSTATS qbar=1.480233352885e+00 x_faces_nonpositive=0/436273152 speed_pct(0,0.1,1,50)=4.282347e-04,1.667436e-03,7.329138e-03,5.343201e-01 interior_planes=320..6336 mean_u=1.480233352925e+00 mean_v=-4.711448413967e-02 mean_w=-4.585585028417e-02 theta_2=-3.181835032224e-02 theta_3=-3.096889389965e-02
+RECORDED run=E4 RESOLVED_TIMES qbar=1.480233352885e+00 n=127 times=0.125,0.25,0.375,0.5,0.625,0.75,0.875,1,1.125,1.25,1.375,1.5,1.625,1.75,1.875,2,2.125,2.25,2.375,2.5,2.625,2.75,2.875,3,3.125,3.25,3.375,3.5,3.625,3.75,3.875,4,4.125,4.25,4.375,4.5,4.625,4.75,4.875,5,5.125,5.25,5.375,5.5,5.625,5.75,5.875,6,6.125,6.25,6.375,6.5,6.625,6.75,6.875,7,7.125,7.25,7.375,7.5,7.625,7.
+RECORDED run=E4 TIMING r=0 seconds=141.763
+RECORDED run=E4 BACKFLOW field=gaussian eps=2 N=6656 inlet_vmin=1.023875e-02 labels_available=0 seed_backflow=0 backflow_enc_plane=0 backflow_enc_time=0 (inlet backflow is recorded, not an exit condition)
+RECORDED run=E4 POLLOCK Np=10000 seed_nonpos=0 seeds_equal_tracker=1 planes=8 times=127 hist_plane=0:10000 hist_time=0:8104,9:1896 cells_plane=98662729 cells_time=52863985 weighted_not_active=1896 repack_seconds=4.932 weights=rt0_v1_at_seed exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=1896
+RECORDED run=E4 TWIN Np=10000 weights=1/Np (every particle, backflow seeds included) planes=8 times=127
+RECORDED run=E4 solver_b.json {"G1": 1.0, "Q_in": 1.4802333528853617, "Q_out": 1.4802333529470035, "balance": 4.164330080326994e-11, "cg_max_iter": 2000, "cg_rtol": 1e-10, "converged": true, "fallback": false, "final_residual": 0.0001023223618857117, "head_mapped_host": false, "initial_residual": 8095413.565408159, "iterations": 90, "max_div": 6.374645662172108e-08, "mg_levels": 7, "qbar": 1.4802333528853617, "r": 0, "rel": 1.2639547202744146e-11, "seed": 4001, "usable": true, "verdict": "converged"}
+RECORDED run=E4 status.json {"Np": 10000, "pollock": {"exit_inlet_plane": 0, "exit_inlet_time": 0, "exit_outlet_plane": 0, "exit_outlet_time": 1896, "seed_nonpos": 0, "status_hist_plane": [10000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "status_hist_time": [8104, 0, 0, 0, 0, 0, 0, 0, 0, 1896, 0, 0, 0, 0, 0, 0], "weighted_not_active": 1896}, "seed_backflow": 0, "tracker_plane_pass": {"backflow_encounters": 0, "exit_inlet": 0, "exit_outlet": 0, "landings_discarded": 0, "status_ge2": 0, "status_hist": [10000, 0, 0, 0, 0, 0, 0]}, "tracker_time_pass": {"backflow_encounters": 0, "exit_inlet": 0, "exit_outlet": 1910, "land
+RECORDED run=E4 flow_stats.json {"L1": 26, "h": 0.00390625, "interior": {"layer_hi": 6335, "layer_lo": 320, "mean_u": 1.4802333529254115, "mean_v": -0.04711448413967486, "mean_w": -0.04585585028416972, "plane_hi": 6336, "plane_lo": 320, "theta_2": -0.031818350322236975, "theta_3": -0.030968893899650365, "x1_hi": 24.75, "x1_lo": 1.25}, "lambda": 0.25, "qbar": 1.4802333528853617, "speed_over_qbar_percentiles": {"p0": 0.00042823471784811357, "p0.1": 0.0016674362329724573, "p1": 0.007329138119574981, "p50": 0.5343200547312159}, "x_faces": 436273152, "x_faces_nonpositive": 0, "x_nonpositive_fraction": 0}
+E_VERDICT ALL PASS (E1=PASS,E2=PASS,E3=PASS,E4=PASS)
+RECORDED part_seconds=456 part_runs_seconds=424 part=prodgrid (this invocation / sum of the recorded run walls)
+PART_DONE part=prodgrid rc=0

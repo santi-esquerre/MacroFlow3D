@@ -1,0 +1,47 @@
+{
+  "commit": "unknown",
+  "flow_stats_seconds": 4.995738531,
+  "mem_line_bridge": "MEM_PHASE phase=B exact_bytes=6449266688 persistent_faces=4832362496 upload_peak=6449266688 lattice_buffers=12180384 (closed form: max(upload_peak, persistent_faces + lattice_buffers))",
+  "mem_lines": [
+    "MEM_PHASE phase=F exact_bytes=4833937416 cufft_work=1611661312 cufft_gen=1611661312 device_used=3750756352 seconds=1.356314 items=y:1610612736,sf18_spectrum:1611661312,sf18_mode_counter:8,sf18_reduce_blocks:2048",
+    "MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=5.015143 items=-",
+    "MEM_PHASE phase=S2 exact_bytes=12194635784 cufft_work=0 device_used=12724469760 seconds=17.000305 items=mg_l0_x:1610612736,mg_l0_b:1610612736,mg_l0_r:1610612736,mg_l0_coef:1610612736,mg_l1_x:201326592,mg_l1_b:201326592,mg_l1_r:201326592,mg_l1_coef:201326592,mg_l2_x:25165824,mg_l2_b:25165824,mg_l2_r:25165824,mg_l2_coef:25165824,mg_l3_x:3145728,mg_l3_b:3145728,mg_l3_r:3145728,mg_l3_coef:3145728,mg_l4_x:393216,mg_l4_b:393216,mg_l4_r:393216,mg_l4_coef:393216,mg_l5_x:49152,mg_l5_b:49152,mg_l5_r:49152,mg_l5_coef:49152,mg_l6_x:6144,mg_l6_b:6144,mg_l6_r:6144,mg_l6_coef:6144,head:1610612736,pcg_r:1610612736,pcg_p:1610612736,scratch_pcg_d_scalar:8,scratch_pcg_red_temp:0",
+    "MEM_PHASE phase=V exact_bytes=8067227648 cufft_work=0 device_used=8595177472 seconds=3.580504 items=K:1610612736,head:1610612736,U:1611137024,V:1616904192,W:1616904192,planes:1048576,div_block_max:8192",
+    "MEM_PHASE phase=H exact_bytes=1610612736 cufft_work=0 device_used=2138046464 seconds=0.004598 items=f:1610612736",
+    "MEM_PHASE phase=S3 exact_bytes=9711984608 cufft_work=3250618368 cufft_prefilter=3250618368 device_used=6990856192 seconds=1.832536 categories=S3a:8099274720,S3b:9711984608,S3c:6450839552,peak:S3b items=coef_pot:1612709888,lnk_samples:1610612736,coef_logk:1612709888,np_spectrum:1625309184,np_line_table:24544",
+    "MEM_PHASE phase=T exact_bytes=3242860160 cufft_work=0 device_used=3773825024 seconds=0.007857 items=coef_interleaved:3225419776,tracker_seeds:240000,tracker_planes:112,tracker_times:272,tracker_stats_plane:880000,tracker_stats_time:880000,tracker_planes_x23:2240000,tracker_planes_tau:1120000,tracker_planes_I:1120000,tracker_times_x:8160000,tracker_times_I:2720000,tracker_prepare_transient:80000"
+  ],
+  "mem_lines_stage": [
+    "MEM_PHASE phase=F exact_bytes=4833937416 cufft_work=1611661312 cufft_gen=1611661312 device_used=3750756352 seconds=1.356314 items=y:1610612736,sf18_spectrum:1611661312,sf18_mode_counter:8,sf18_reduce_blocks:2048",
+    "MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=5.015143 items=-",
+    "MEM_PHASE phase=S2 exact_bytes=12194635784 cufft_work=0 device_used=12724469760 seconds=17.000305 items=mg_l0_x:1610612736,mg_l0_b:1610612736,mg_l0_r:1610612736,mg_l0_coef:1610612736,mg_l1_x:201326592,mg_l1_b:201326592,mg_l1_r:201326592,mg_l1_coef:201326592,mg_l2_x:25165824,mg_l2_b:25165824,mg_l2_r:25165824,mg_l2_coef:25165824,mg_l3_x:3145728,mg_l3_b:3145728,mg_l3_r:3145728,mg_l3_coef:3145728,mg_l4_x:393216,mg_l4_b:393216,mg_l4_r:393216,mg_l4_coef:393216,mg_l5_x:49152,mg_l5_b:49152,mg_l5_r:49152,mg_l5_coef:49152,mg_l6_x:6144,mg_l6_b:6144,mg_l6_r:6144,mg_l6_coef:6144,head:1610612736,pcg_r:1610612736,pcg_p:1610612736,scratch_pcg_d_scalar:8,scratch_pcg_red_temp:0",
+    "MEM_PHASE phase=V exact_bytes=8067227648 cufft_work=0 device_used=8595177472 seconds=3.580504 items=K:1610612736,head:1610612736,U:1611137024,V:1616904192,W:1616904192,planes:1048576,div_block_max:8192",
+    "MEM_PHASE phase=H exact_bytes=1610612736 cufft_work=0 device_used=2138046464 seconds=0.004598 items=f:1610612736",
+    "MEM_PHASE phase=S3 exact_bytes=9711984608 cufft_work=3250618368 cufft_prefilter=3250618368 device_used=6990856192 seconds=1.832536 categories=S3a:8099274720,S3b:9711984608,S3c:6450839552,peak:S3b items=coef_pot:1612709888,lnk_samples:1610612736,coef_logk:1612709888,np_spectrum:1625309184,np_line_table:24544"
+  ],
+  "pollock_timings_s": {
+    "download": 0.00383714,
+    "moments": 0.009133665,
+    "plane_kernel": 0.014216884,
+    "time_kernel": 0.021057209
+  },
+  "r": 0,
+  "seconds": {
+    "bridge_repack": 1.464282419,
+    "bridge_track": 0.035274093,
+    "prepare": 0.007856545,
+    "stage": 28.789485245,
+    "total": 43.855537307,
+    "track": 8.184704010999999,
+    "write": 0.028462935
+  },
+  "seed": 6101,
+  "stage_status": "converged",
+  "tracker_timings_s": {
+    "download": 0.003970767,
+    "moments": 0.018405555,
+    "plane_kernel": null,
+    "single_kernel": 8.150406348,
+    "time_kernel": null
+  }
+}

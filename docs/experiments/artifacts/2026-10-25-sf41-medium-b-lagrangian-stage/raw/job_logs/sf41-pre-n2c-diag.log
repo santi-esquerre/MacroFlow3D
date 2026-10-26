@@ -1,0 +1,32 @@
+[2026-10-25T01:12:30Z] job=sf41-pre-n2c-diag session=macroflow3d-SF-41-sf41-pre-n2c-diag started
+[2026-10-25T01:12:30Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-25T01:12:30Z] cwd=/home/sesquerre/MacroFlow3D-SF-41
+[2026-10-25T01:12:30Z] command=echo PRECHECK_NOT_EVIDENCE TREE=d1b9ff8; cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target dirichlet_long_box_stage_tests 2>&1 | tail -n 2; echo BUILD_EXIT=${PIPESTATUS[0]}; ./build/v100-release/dirichlet_long_box_stage_tests --diag 128,32,32,0 > ~/sf41_diag_128.log 2>&1; echo DIAG_EXIT=$?; grep -vE '^DIAG_TRACE_ENTRY' ~/sf41_diag_128.log | head -60
+PRECHECK_NOT_EVIDENCE TREE=d1b9ff8
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[5/6] Linking CXX executable CMakeFiles/dirichlet_long_box_stage_tests.dir/cmake_device_link.o
+[6/6] Linking CXX executable dirichlet_long_box_stage_tests
+BUILD_EXIT=0
+DIAG_EXIT=0
+DIAG size=128x32x32 levels=4
+DIAG replica_vs_DirichletMedium head_identical=0
+DIAG trace_entries ref=68 lean=68
+DIAG_TRACE replica_vs_lean identical entries=68
+DIAG ref1_vs_ref2 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG lean1_vs_lean2 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG ref1_vs_lean1 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG ref2_vs_lean1 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG lean0_vs_lean1 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG lean0_vs_lean2 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG lean0_vs_lean3 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG lean0_vs_lean4 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+DIAG lean0_vs_lean5 differing=0 first=-1 (i=-1 j=-1 k=-1) maxabs=0.000e+00
+[2026-10-25T01:15:07Z] job=sf41-pre-n2c-diag finished exit=0

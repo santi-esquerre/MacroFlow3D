@@ -20,6 +20,10 @@
  *     solver_b.json; --cg-max-iter-b 1 -> exit 8, failure_r_0000.json holds the
  *     record and no DONE is written.
  *  7. exits: usage errors -> 2 (naming the option; too few planes), seed-face assertion -> 3.
+ *  8. SF-41 N6 (medium (b) Pollock non-periodic in x): on the exit-free run A, e2_b.csv / status.json of the new
+ *     path equal byte for byte those of the pre-SF-41 periodic view (--test-b-periodic-view 1), exits_b.csv
+ *     reports zeros. A non-zero exit count is covered at lattice level by ctest lagrangian_pollock_nonperiodic;
+ *     no field reaching an inlet/outlet exit was found through this application (random Y, eps <= 2 solvable).
  *
  * Usage: lagrangian_medium_ab_tests <lagrangian_medium_ab exe>
  */
@@ -29,6 +33,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <array>
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
@@ -233,7 +238,8 @@ int main(int argc, char** argv) {
         const fs::path rd = A / strf("realizations/r_%04d", r);
         bool all = !fs::exists(rd.string() + ".tmp");
         for (const char* f : {"e1_a.csv", "e1_b.csv", "e1.json", "e2_a.csv", "e2_b.csv", "primary.json",
-                              "solver_b.json", "status.json", "field.json", "timings.json", "DONE"})
+                              "solver_b.json", "status.json", "field.json", "timings.json", "DONE",
+                              "exits_b.csv"})
             all = all && fs::exists(rd / f);
         check(strf("r%d_files", r), all);
     }
@@ -410,6 +416,51 @@ int main(int argc, char** argv) {
         const std::string l5 = slurp(g_base / "u5.log");
         check("seed_face_exit3", rc == 3 && l5.find("SEED_FACE_FAILED") != std::string::npos, strf("rc=%d", rc));
         check("seed_face_before_tracking", !fs::exists(U / "realizations/r_0000"));
+    }
+
+    // ---- 8. SF-41 N6: medium (b) Pollock non-periodic in x ------------------------------------------
+    {
+        auto read_exits = [](const fs::path& p, std::vector<std::array<long long, 2>>* rows,
+                             std::array<long long, 3>* tot, std::string* head) {
+            std::ifstream f(p);
+            std::string ln;
+            std::getline(f, *head);
+            *tot = {-1, -1, -1};
+            while (std::getline(f, ln)) {
+                if (ln.rfind("# Np=", 0) == 0)
+                    (*tot)[0] = std::atoll(ln.c_str() + 5);
+                else if (ln.rfind("# exit_inlet_total=", 0) == 0)
+                    (*tot)[1] = std::atoll(ln.c_str() + 19);
+                else if (ln.rfind("# exit_outlet_total=", 0) == 0)
+                    (*tot)[2] = std::atoll(ln.c_str() + 20);
+                else {
+                    const std::size_t c1 = ln.find(','), c2 = ln.find(',', c1 + 1);
+                    rows->push_back({std::atoll(ln.c_str() + c1 + 1), std::atoll(ln.c_str() + c2 + 1)});
+                }
+            }
+        };
+        const fs::path rdA = A / "realizations/r_0000";
+        std::vector<std::array<long long, 2>> rows;
+        std::array<long long, 3> tot{};
+        std::string head;
+        read_exits(rdA / "exits_b.csv", &rows, &tot, &head);
+        bool zeros = rows.size() == 5 && tot == std::array<long long, 3>({100, 0, 0});
+        for (const auto& r : rows)
+            zeros = zeros && r[0] == 0 && r[1] == 0;
+        check("exits_b_header", head == "x1,exit_inlet,exit_outlet", head);
+        check("exits_b_zero_without_exits", zeros);
+
+        const fs::path P = g_base / "Pv";
+        const int rcP = run_cmd(kBox + " --eps 0.5 --nr 1 --test-b-periodic-view 1 --out " + P.string(),
+                                g_base / "Pv.log");
+        check("periodic_view_run_exit0", rcP == 0, strf("rc=%d", rcP));
+        if (rcP == 0) {
+            const fs::path rdP = P / "realizations/r_0000";
+            check("e2_b_new_equals_periodic_view", slurp(rdA / "e2_b.csv") == slurp(rdP / "e2_b.csv"));
+            check("e2_a_unchanged", slurp(rdA / "e2_a.csv") == slurp(rdP / "e2_a.csv"));
+            check("status_json_new_equals_periodic_view", slurp(rdA / "status.json") == slurp(rdP / "status.json"));
+            check("primary_json_new_equals_periodic_view", slurp(rdA / "primary.json") == slurp(rdP / "primary.json"));
+        }
     }
 
     fs::remove_all(g_base);

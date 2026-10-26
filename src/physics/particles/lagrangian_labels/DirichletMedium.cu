@@ -119,6 +119,10 @@ std::vector<std::string> DirichletMedium::mem_lines() const {
     return out;
 }
 
+std::size_t dirichlet_medium_object_bytes() {
+    return sizeof(DirichletMedium);
+}
+
 DirichletMedium build_dirichlet_medium(CudaContext& ctx, const DirichletMediumSpec& spec,
                                        const std::vector<real>& Y) {
     const int nx = spec.nx, ny = spec.ny, nz = spec.nz;
@@ -291,6 +295,8 @@ DirichletMedium build_dirichlet_medium(CudaContext& ctx, const DirichletMediumSp
         rec.seconds = since(t0);
         M.phases.push_back(rec);
     }
+    if (spec.keep_host_head)
+        M.host_head = download(head.data.data(), n);
     Kf.data.reset(); // K and head are dead
     head.data.reset();
     MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());

@@ -29,8 +29,8 @@ __device__ inline double nan_d() {
 }
 
 /// Raw weight: x1 velocity of the RT0 interpolant at the seed, in the cell chosen by the core.
-__global__ void pollock_seed_weight_kernel(stt::PeriodicFaceFluxView f, const double* seeds, int Np,
-                                           double* weight_raw) {
+template <class F>
+__global__ void pollock_seed_weight_kernel(F f, const double* seeds, int Np, double* weight_raw) {
     const int p = static_cast<int>(blockIdx.x) * blockDim.x + static_cast<int>(threadIdx.x);
     if (p >= Np)
         return;
@@ -48,9 +48,10 @@ __global__ void pollock_seed_weight_kernel(stt::PeriodicFaceFluxView f, const do
 }
 
 /// PLANE pass: pollock_advance_to_x1 for each plane in turn; records unwrapped (x2, x3) and the clock.
-__global__ void pollock_plane_kernel(stt::PeriodicFaceFluxView f, stt::PollockParams prm,
-                                     const double* seeds, int Np, const double* planes, int P,
-                                     std::uint8_t* status, int* reached, double* x23, double* tt,
+template <class F>
+__global__ void pollock_plane_kernel(F f, stt::PollockParams prm, const double* seeds, int Np,
+                                     const double* planes, int P, std::uint8_t* status,
+                                     int* reached, double* x23, double* tt,
                                      std::uint64_t* cells) {
     const int p = static_cast<int>(blockIdx.x) * blockDim.x + static_cast<int>(threadIdx.x);
     if (p >= Np)
@@ -86,10 +87,10 @@ __global__ void pollock_plane_kernel(stt::PeriodicFaceFluxView f, stt::PollockPa
 }
 
 /// TIME pass: fresh init, pollock_advance_to_time for each time in turn; records unwrapped (x1, x2, x3).
-__global__ void pollock_time_kernel(stt::PeriodicFaceFluxView f, stt::PollockParams prm,
-                                    const double* seeds, int Np, const double* times, int T,
-                                    std::uint8_t* status, int* reached, double* xs,
-                                    std::uint64_t* cells) {
+template <class F>
+__global__ void pollock_time_kernel(F f, stt::PollockParams prm, const double* seeds, int Np,
+                                    const double* times, int T, std::uint8_t* status,
+                                    int* reached, double* xs, std::uint64_t* cells) {
     const int p = static_cast<int>(blockIdx.x) * blockDim.x + static_cast<int>(threadIdx.x);
     if (p >= Np)
         return;
@@ -199,13 +200,14 @@ void validate(const InjectionSpec& inj, const std::vector<double>& planes,
     }
 }
 
-} // namespace
-
-PollockLatticeResult track_pollock_lattice(CudaContext& ctx, const stt::PeriodicFaceFluxView& f,
-                                           const InjectionSpec& inj,
-                                           const std::vector<double>& planes,
-                                           const std::vector<double>& times,
-                                           const stt::PollockParams& prm) {
+/// Shared body; F = PeriodicFaceFluxView is the SF-37 periodic comparator (code path unchanged),
+/// F = NonPeriodicXFaceFluxView the SF-41 medium (b) mode (exit counts, optional zero-weight lattice).
+template <class F>
+PollockLatticeResult track_pollock_lattice_impl(CudaContext& ctx, const F& f, const InjectionSpec& inj,
+                                                const std::vector<double>& planes,
+                                                const std::vector<double>& times,
+                                                const stt::PollockParams& prm,
+                                                bool allow_no_positive_weight) {
     validate(inj, planes, times, prm);
     PollockLatticeResult r;
     r.injection = inj;
@@ -290,7 +292,18 @@ PollockLatticeResult track_pollock_lattice(CudaContext& ctx, const stt::Periodic
 
     // ---- reductions (host, index order) ----------------------------------------------------
     t0 = std::chrono::steady_clock::now();
-    normalize_flux_weights(r.weight_raw, r.weights, r.seed_nonpos);
+    auto none_positive = [&] {
+        for (double w : r.weight_raw)
+            if (std::isfinite(w) && w > 0.0)
+                return false;
+        return true;
+    };
+    if (allow_no_positive_weight && none_positive()) {
+        r.weights.assign(Np, 0.0); // test-only path: no flux-weighted moments exist (NaN)
+        r.seed_nonpos = static_cast<long long>(Np);
+    } else {
+        normalize_flux_weights(r.weight_raw, r.weights, r.seed_nonpos);
+    }
     for (std::size_t p = 0; p < Np; ++p) {
         ++r.status_hist_plane[r.status_plane[p] < kPollockStatusSlots ? r.status_plane[p]
                                                                       : kPollockStatusSlots - 1];
@@ -298,6 +311,30 @@ PollockLatticeResult track_pollock_lattice(CudaContext& ctx, const stt::Periodic
                                                                     : kPollockStatusSlots - 1];
         r.cells_plane += r.cells[2 * p];
         r.cells_time += r.cells[2 * p + 1];
+    }
+    if constexpr (stt::kNonPeriodicX<F>) {
+        // Exits through the box faces: per plane / time, the particles that left before reaching it.
+        r.exit_inlet_plane.assign(P, 0);
+        r.exit_outlet_plane.assign(P, 0);
+        r.exit_inlet_time.assign(T, 0);
+        r.exit_outlet_time.assign(T, 0);
+        for (std::size_t p = 0; p < Np; ++p) {
+            const std::uint8_t sp = r.status_plane[p], st = r.status_time[p];
+            if (P > 0 && (sp == stt::kStatusPollockExitInlet || sp == stt::kStatusPollockExitOutlet)) {
+                auto& v = (sp == stt::kStatusPollockExitInlet) ? r.exit_inlet_plane : r.exit_outlet_plane;
+                ++(sp == stt::kStatusPollockExitInlet ? r.exit_inlet_plane_total
+                                                      : r.exit_outlet_plane_total);
+                for (std::size_t m = static_cast<std::size_t>(r.reached_plane[p]); m < P; ++m)
+                    ++v[m];
+            }
+            if (T > 0 && (st == stt::kStatusPollockExitInlet || st == stt::kStatusPollockExitOutlet)) {
+                auto& v = (st == stt::kStatusPollockExitInlet) ? r.exit_inlet_time : r.exit_outlet_time;
+                ++(st == stt::kStatusPollockExitInlet ? r.exit_inlet_time_total
+                                                      : r.exit_outlet_time_total);
+                for (std::size_t n = static_cast<std::size_t>(r.reached_time[p]); n < T; ++n)
+                    ++v[n];
+            }
+        }
     }
     r.moments_planes.assign(P, PollockPlaneMoments{});
     for (std::size_t m = 0; m < P; ++m) {
@@ -339,6 +376,25 @@ PollockLatticeResult track_pollock_lattice(CudaContext& ctx, const stt::Periodic
     }
     r.seconds_moments = seconds_since(t0);
     return r;
+}
+
+} // namespace
+
+PollockLatticeResult track_pollock_lattice(CudaContext& ctx, const stt::PeriodicFaceFluxView& f,
+                                           const InjectionSpec& inj,
+                                           const std::vector<double>& planes,
+                                           const std::vector<double>& times,
+                                           const stt::PollockParams& prm) {
+    return track_pollock_lattice_impl(ctx, f, inj, planes, times, prm, false);
+}
+
+PollockLatticeResult track_pollock_lattice(CudaContext& ctx, const stt::NonPeriodicXFaceFluxView& f,
+                                           const InjectionSpec& inj,
+                                           const std::vector<double>& planes,
+                                           const std::vector<double>& times,
+                                           const stt::PollockParams& prm,
+                                           const PollockNonPeriodicOptions& opt) {
+    return track_pollock_lattice_impl(ctx, f, inj, planes, times, prm, opt.allow_no_positive_weight);
 }
 
 } // namespace lagrangian_labels

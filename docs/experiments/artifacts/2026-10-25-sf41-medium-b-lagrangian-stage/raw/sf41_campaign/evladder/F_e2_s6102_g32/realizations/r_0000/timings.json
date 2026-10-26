@@ -1,0 +1,47 @@
+{
+  "commit": "unknown",
+  "flow_stats_seconds": 0.00755614,
+  "mem_line_bridge": "MEM_PHASE phase=B exact_bytes=29546024 persistent_faces=9445376 upload_peak=12689408 lattice_buffers=20100648 (closed form: max(upload_peak, persistent_faces + lattice_buffers))",
+  "mem_lines": [
+    "MEM_PHASE phase=F exact_bytes=9472008 cufft_work=3162112 cufft_gen=3162112 device_used=535822336 seconds=0.043056 items=y:3145728,sf18_spectrum:3162112,sf18_mode_counter:8,sf18_reduce_blocks:2048",
+    "MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.006827 items=-",
+    "MEM_PHASE phase=S2 exact_bytes=23814152 cufft_work=0 device_used=556793856 seconds=0.731320 items=mg_l0_x:3145728,mg_l0_b:3145728,mg_l0_r:3145728,mg_l0_coef:3145728,mg_l1_x:393216,mg_l1_b:393216,mg_l1_r:393216,mg_l1_coef:393216,mg_l2_x:49152,mg_l2_b:49152,mg_l2_r:49152,mg_l2_coef:49152,mg_l3_x:6144,mg_l3_b:6144,mg_l3_r:6144,mg_l3_coef:6144,head:3145728,pcg_r:3145728,pcg_p:3145728,scratch_pcg_d_scalar:8,scratch_pcg_red_temp:0",
+    "MEM_PHASE phase=V exact_bytes=15958016 cufft_work=0 device_used=548405248 seconds=0.004032 items=K:3145728,head:3145728,U:3153920,V:3244032,W:3244032,planes:16384,div_block_max:8192",
+    "MEM_PHASE phase=H exact_bytes=3145728 cufft_work=0 device_used=531628032 seconds=0.000045 items=f:3145728",
+    "MEM_PHASE phase=S3 exact_bytes=19637216 cufft_work=6754304 cufft_prefilter=6754304 device_used=544210944 seconds=0.044003 categories=S3a:16458720,S3b:19637216,S3c:12713984,peak:S3b items=coef_pot:3178496,lnk_samples:3145728,coef_logk:3178496,np_spectrum:3377152,np_line_table:3040",
+    "MEM_PHASE phase=T exact_bytes=34357640 cufft_work=0 device_used=567279616 seconds=0.007213 items=coef_interleaved:6356992,tracker_seeds:240000,tracker_planes:112,tracker_times:536,tracker_stats_plane:880000,tracker_stats_time:880000,tracker_planes_x23:2240000,tracker_planes_tau:1120000,tracker_planes_I:1120000,tracker_times_x:16080000,tracker_times_I:5360000,tracker_prepare_transient:80000"
+  ],
+  "mem_lines_stage": [
+    "MEM_PHASE phase=F exact_bytes=9472008 cufft_work=3162112 cufft_gen=3162112 device_used=535822336 seconds=0.043056 items=y:3145728,sf18_spectrum:3162112,sf18_mode_counter:8,sf18_reduce_blocks:2048",
+    "MEM_PHASE phase=S1 exact_bytes=0 cufft_work=0 device_used=527433728 seconds=0.006827 items=-",
+    "MEM_PHASE phase=S2 exact_bytes=23814152 cufft_work=0 device_used=556793856 seconds=0.731320 items=mg_l0_x:3145728,mg_l0_b:3145728,mg_l0_r:3145728,mg_l0_coef:3145728,mg_l1_x:393216,mg_l1_b:393216,mg_l1_r:393216,mg_l1_coef:393216,mg_l2_x:49152,mg_l2_b:49152,mg_l2_r:49152,mg_l2_coef:49152,mg_l3_x:6144,mg_l3_b:6144,mg_l3_r:6144,mg_l3_coef:6144,head:3145728,pcg_r:3145728,pcg_p:3145728,scratch_pcg_d_scalar:8,scratch_pcg_red_temp:0",
+    "MEM_PHASE phase=V exact_bytes=15958016 cufft_work=0 device_used=548405248 seconds=0.004032 items=K:3145728,head:3145728,U:3153920,V:3244032,W:3244032,planes:16384,div_block_max:8192",
+    "MEM_PHASE phase=H exact_bytes=3145728 cufft_work=0 device_used=531628032 seconds=0.000045 items=f:3145728",
+    "MEM_PHASE phase=S3 exact_bytes=19637216 cufft_work=6754304 cufft_prefilter=6754304 device_used=544210944 seconds=0.044003 categories=S3a:16458720,S3b:19637216,S3c:12713984,peak:S3b items=coef_pot:3178496,lnk_samples:3145728,coef_logk:3178496,np_spectrum:3377152,np_line_table:3040"
+  ],
+  "pollock_timings_s": {
+    "download": 0.00500091,
+    "moments": 0.019340155,
+    "plane_kernel": 0.001854877,
+    "time_kernel": 0.005591772
+  },
+  "r": 0,
+  "seconds": {
+    "bridge_repack": 0.003354166,
+    "bridge_track": 0.007446649,
+    "prepare": 0.007212625,
+    "stage": 0.829347089,
+    "total": 1.911516797,
+    "track": 0.98449426,
+    "write": 0.045017419
+  },
+  "seed": 6102,
+  "stage_status": "converged",
+  "tracker_timings_s": {
+    "download": 0.005351714,
+    "moments": 0.030370974,
+    "plane_kernel": null,
+    "single_kernel": 0.928318218,
+    "time_kernel": null
+  }
+}
