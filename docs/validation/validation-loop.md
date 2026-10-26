@@ -117,4 +117,3 @@ scripts/remote wait pspta-small
 - `docs/validation/eval-tiers.md`
 - `docs/validation/acceptance-gates.md`
 - `docs/validation/local-remote-split.md`
-- `skills/macroflow-build/SKILL.md`

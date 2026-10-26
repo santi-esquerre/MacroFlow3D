@@ -823,7 +823,4 @@ if(MACROFLOW3D_BUILD_APPS)
             PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
         )
     endif()
-
-    # add_executable(verify_stochastic apps/verify_stochastic.cu)
-    # target_link_libraries(verify_stochastic PRIVATE macroflow3d_lib)
 endif()

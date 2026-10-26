@@ -97,16 +97,10 @@ VS Code Copilot indexes the workspace directly and has its own MCP configuration
 
 ## Codex App
 
-The `.codex/config.toml` handles web search via the `web_search` setting:
-
-- `"cached"` for normal work
-- `"live"` for research profiles
-
-No additional MCP configuration is needed for Codex.
+No MCP configuration is needed for Codex.
 
 ---
 
 ## Related
 
-- `.codex/config.toml` — Codex profiles
 - `.vscode/` is gitignored — MCP config stays local

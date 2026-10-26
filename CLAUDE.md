@@ -104,22 +104,6 @@ performance -> development speed.
   `scripts/remote exec` call. See `docs/runbooks/remote-v100.md`.
 - **Never edit on the remote server.**
 
-### Claude-native helpers
-
-Existing project skills remain valid helpers when relevant:
-
-- `macroflow-build` — local configure / build / test
-- `macroflow-evals` — validation tier classification and execution
-- `macroflow-physics-review` — scientific change review workflow
-- `macroflow-pr-review` — branch / worktree / PR workflow
-- `macroflow-remote-v100` — remote V100 build / test / run
-
-Explicit commands remain available:
-
-- `/project:build`
-- `/project:validate`
-- `/project:sync-v100`
-
 ### Hard rules
 
 - Read the closest `AGENTS.md` before editing any file.
