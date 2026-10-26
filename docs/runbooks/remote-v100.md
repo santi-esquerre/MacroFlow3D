@@ -127,6 +127,14 @@ scripts/remote remove-mirror SF-NN    # delete ~/MacroFlow3D-SF-NN and its state
   `--increment`) or a manual copy of the PETSc/SLEPc trees into the
   per-increment mirror.
 
+#### Regression byte-compare
+
+Cleanup / refactor / performance PRs prove byte-identical outputs against a
+build of their merge-base with `scripts/regress` (`run.sh` for the base and the
+head build as detached `scripts/remote run` jobs, then `compare.sh`; references
+cached under `~/regress/refs/<base-short-sha>/out`). Protocol:
+`scripts/regress/README.md`.
+
 ---
 
 ## 1. Model
