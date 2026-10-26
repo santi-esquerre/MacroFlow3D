@@ -24,26 +24,27 @@ memory, time.
    per-process device peak.
 4. PRs touching `src/physics`, `src/numerics`, `src/multigrid`, `src/runtime/ensemble`, `src/runtime/analysis` or
    physics configs need human review (`docs/runbooks/autonomy-policy.md`).
-5. PRs do not edit this plan (parallel PRs would conflict on the log). The orchestrator ticks a line and appends
-   its log row (append-only) in a bookkeeping commit after the PR is merged, batched when several merge together.
+5. The pre-SF-39 items are delivered in ONE pull request (owner request, 2026-10-26), one commit per AUD item so each
+   item stays reviewable on its own; that PR ticks their lines and appends the log rows. Later items tick their line
+   and append their row in their own PR. The log is append-only.
 
 ## Checklist
 
 Before SF-39:
 
-- [ ] AUD-00 — this plan and decision record
-- [ ] AUD-01 — CI: GPU-free harness-hooks job on `master`
-- [ ] AUD-02 — remove the 11 duplicate `streamfunction_operator_tests` subset ctest entries
-- [ ] AUD-03 — regression harness `scripts/regress` + `apps/config_par2_small.yaml`
-- [ ] AUD-04 — no silent failures: writer/reader error checks, cuBLAS size check
-- [ ] AUD-05 — blocking context stream (legacy-stream ordering race)
-- [ ] AUD-06 — threaded host `exp` in the medium (b) stage S1 (bitwise)
-- [ ] AUD-10 — junk files, shim scripts, `skills/`
-- [ ] AUD-11 — `legacy/` archived (tag `archive/pre-cleanup-2026-10`, branch `archive/legacy`)
-- [ ] AUD-12 — PETSc/SLEPc + PSPTA invariants/eigensolver retired (no output change)
-- [ ] AUD-13 — PSPTA engine and config surface retired (expected diff A6)
-- [ ] AUD-14 — dead code and vendored yaml-cpp tests removed
-- [ ] AUD-20 — build-time revision (`git describe --dirty`), V100 source revision
+- [x] AUD-00 — this plan and decision record
+- [x] AUD-01 — CI: GPU-free harness-hooks job on `master`
+- [x] AUD-02 — remove the 11 duplicate `streamfunction_operator_tests` subset ctest entries
+- [x] AUD-03 — regression harness `scripts/regress` + `apps/config_par2_small.yaml`
+- [x] AUD-04 — no silent failures: writer/reader error checks, cuBLAS size check
+- [x] AUD-05 — blocking context stream (legacy-stream ordering race)
+- [x] AUD-06 — threaded host `exp` in the medium (b) stage S1 (bitwise)
+- [x] AUD-10 — junk files, shim scripts, `skills/`
+- [x] AUD-11 — `legacy/` archived (tag `archive/pre-cleanup-2026-10`, branch `archive/legacy`)
+- [x] AUD-12 — PETSc/SLEPc + PSPTA invariants/eigensolver retired (no output change)
+- [x] AUD-13 — PSPTA engine and config surface retired (expected diff A6)
+- [x] AUD-14 — dead code and vendored yaml-cpp tests removed
+- [x] AUD-20 — build-time revision (`git describe --dirty`), V100 source revision
 
 After SF-39:
 
@@ -85,3 +86,5 @@ Append rows; do not rewrite prior rows.
 | UTC | AUD id | Commit / PR | Action | Evidence | Next |
 |---|---|---|---|---|---|
 | 2026-10-26T16:30Z | AUD-00 | branch `chore/aud-00-audit-governance` | Plan and decision record written after the read-only audit at `3452a7d` (owner decisions of 2026-10-26). Archive refs created locally: tag `archive/pre-cleanup-2026-10` -> `3452a7d`, branch `archive/legacy` (subtree split, tree equal to `3452a7d:legacy`). | `check-lester-increments.sh`, `check-required-docs.sh` | Publish the archive refs with the owner's confirmation; open the AUD PRs. |
+| 2026-10-26T17:45Z | AUD-01..AUD-20 | branch `integration/aud-pre-sf39` (`a0a2dd8`) | Every pre-SF-39 item implemented in an isolated worktree, audited by the orchestrator (correctives: AUD-03 README `TMPDIR`; AUD-04 Par2 pipeline writer returns; AUD-10 theory README links; AUD-11 README wording; AUD-12 `.gitignore` CRLF; AUD-13 no edits to files AUD-10 deletes; AUD-20 `--exclude=*` and CRLF) and validated per item on the V100; one integrator composed the 13 commits (4 textual conflicts resolved keeping both intents; CI selftest step added). | Per item: `scripts/regress` 28 cases `REGRESS IDENTICAL` vs `3452a7d` (AUD-13: 27 cases with the A6 filter; without it exactly the 3 pipeline `effective_config.yaml` differ). AUD-02 ctest 41/41 in 1649 s (was 3182 s / 52 tests). AUD-05 ctest 52/52; production E2 byte-identical. AUD-06 production E2 byte-identical, S1 15.4/16.7 s -> 6.1/6.4 s. AUD-20 V100 builds record the commit (was `unknown`). Integrated `a0a2dd8`: composition check (single-owner files identical to their item), build 292/292, ctest 40/40 in 1646 s, regress 27 cases IDENTICAL (A6 filter), production E2 3328x384x384 byte-identical vs base (2 repetitions), S1 16.9/12.8 s -> 6.7/5.9 s, `commit` = `a0a2dd87881e`. | Single delivery PR. |
+| 2026-10-26T18:00Z | AUD-00..AUD-20 | branch `refactor/audit-cleanup-pre-sf39` | Owner asked for one PR with everything: the per-item PRs #67-#79 are closed in favour of this branch (`integration/aud-pre-sf39` + this bookkeeping commit; docs only on top of the validated tree). Pre-SF-39 checklist ticked. | Evidence of the previous row applies unchanged (no compiled or compared file changes after `a0a2dd8`). | Owner review and merge; then SF-39 activates. Post-SF-39 items AUD-30..AUD-36 remain open. |
