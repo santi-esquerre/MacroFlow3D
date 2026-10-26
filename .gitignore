@@ -15,8 +15,6 @@ compile_commands.json
 .claude/settings.local.json
 .claude/agent-memory-local/
 CLAUDE.local.md
-src/external/petsc/
-src/external/slepc/
 
 # OS junk
 .DS_Store

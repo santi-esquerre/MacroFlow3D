@@ -17,11 +17,10 @@ Treat the existing PSPTA code as a frozen compatibility and migration surface.
 
 It contains:
 
-- legacy x-marching invariant construction;
-- transport-near-nullspace operator/eigensolver infrastructure;
-- refinement skeletons;
-- a pseudo-symplectic transport engine;
+- a pseudo-symplectic transport engine (`PsptaEngine`) and its psi-field container (`PsptaPsiField`);
 - diagnostics and failure accounting.
+
+The legacy invariant-construction stack (x-marching builder, transport-near-nullspace operator, eigensolver backends, refinement skeletons) has been removed from the build.
 
 Do not extend the old invariant-construction architecture. Do not add new Strategy A/C features. Do not make PSPTA the owner of the Lester equation (14) nonlinear solver.
 
@@ -37,8 +36,7 @@ Allowed:
 
 Not allowed without explicit user direction:
 
-- new transport-near-nullspace invariant recovery;
-- new eigensolver-based invariant construction;
+- new transport-near-nullspace invariant recovery or eigensolver-based invariant construction (the old stack is removed; do not reintroduce it);
 - new Strategy A/C refinement work;
 - silent changes to projection semantics;
 - treating PSPTA smoke success as evidence that equation (14) invariants are correct.
@@ -66,7 +64,6 @@ Read `docs/plans/archive/pspta-execution-plan.md` only for historical context wh
 For legacy PSPTA compatibility changes, run the existing compatibility checks:
 
 ```bash
-ctest --test-dir <build-dir> --output-on-failure -R operator_tests
 ./<build-dir>/macroflow3d_pipeline apps/config_pspta_small.yaml
 ```
 

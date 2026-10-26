@@ -97,7 +97,7 @@ performance -> development speed.
 - **Validate locally** only with a fast, targeted subset: configure, build,
   and one or a few quick `-R`-filtered `ctest` cases, plus a single smoke run.
 - **Long-duration computation is always a detached V100 job.** A full/near-full
-  `ctest` suite, a multi-case solver/continuation sweep, PETSc/SLEPc builds,
+  `ctest` suite, a multi-case solver/continuation sweep,
   production-like runs, ensembles, benchmarks, and profiling all run as
   `scripts/remote run <job> -- "..."` + `scripts/remote wait <job>` on the
   remote V100 host — never locally, and never as a long blocking

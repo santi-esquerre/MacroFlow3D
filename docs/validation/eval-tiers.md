@@ -62,29 +62,25 @@ scripts/remote wait ctest-full
 
 ## Tier B — Operator / invariant integrity
 
-**Applies to:** changes in `src/numerics/`, `src/multigrid/`, operator algebra, eigensolver backend, invariant construction, or Lester equation (14) linear operators.
+**Applies to:** changes in `src/numerics/`, `src/multigrid/`, operator algebra, invariant construction, or Lester equation (14) linear operators.
 
-**Where:** local WSL for operator tests. Remote V100 for PETSc/SLEPc.
+**Where:** local WSL for the fast numerics subset. Remote V100 (detached) for the full operator registry.
 
 ### Commands (local)
 
 ```bash
-ctest --test-dir build/wsl-debug --output-on-failure -R operator_tests
-./build/wsl-debug/run_operator_tests
+ctest --test-dir build/wsl-debug --output-on-failure -R '^(flow_workspace_bytes|interpolation_hessian|interpolation_periodic_tricubic|projected_pcg_external)$'
 ```
 
-If `operator_tests` grows into a long-running multi-case sweep, treat it like
-Tier C's remote detached runs instead of running it locally as acceptance
-evidence.
+Never use an unanchored `-R operator_tests`: it also matches the long
+`streamfunction_operator_tests` registry sweep.
 
-### Commands (remote, if PETSc/SLEPc involved — detached, long-duration)
+### Commands (remote — detached, long-duration)
 
 ```bash
 scripts/remote sync
-scripts/remote run ctest-petsc-smoke -- "ctest --test-dir build/v100-petsc --output-on-failure -R smoke_test_petsc"
-scripts/remote wait ctest-petsc-smoke
-scripts/remote run ctest-slepc-eigensolver -- "ctest --test-dir build/v100-petsc --output-on-failure -R validate_slepc_eigensolver"
-scripts/remote wait ctest-slepc-eigensolver
+scripts/remote run ctest-sf-operators -- "ctest --test-dir build/v100-release --output-on-failure -R '^streamfunction_operator_tests$'"
+scripts/remote wait ctest-sf-operators
 ```
 
 ### Pass criteria
@@ -92,13 +88,11 @@ scripts/remote wait ctest-slepc-eigensolver
 - Operator tests pass
 - Residual norms within expected tolerances
 - No new unexplained residual growth
-- If eigensolver touched: convergence succeeded, residuals small
 
 ### Artifacts
 
 - Operator test output
 - Residual norms
-- Eigensolver convergence log (if applicable)
 
 ### Maps to
 
