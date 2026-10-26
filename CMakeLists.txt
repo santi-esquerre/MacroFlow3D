@@ -692,7 +692,4 @@ if(MACROFLOW3D_BUILD_APPS)
     add_executable(lagrangian_medium_ab apps/lagrangian_medium_ab/lagrangian_medium_ab_main.cu)
     target_link_libraries(lagrangian_medium_ab PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_medium_ab PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
-
-    # add_executable(verify_stochastic apps/verify_stochastic.cu)
-    # target_link_libraries(verify_stochastic PRIVATE macroflow3d_lib)
 endif()
