@@ -30,6 +30,7 @@
 #include <cufft.h>
 #include <exception>
 #include <stdexcept>
+#include <thread>
 
 namespace macroflow3d {
 namespace lagrangian_labels {
@@ -462,11 +463,28 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
         in_phase("S1", [&] {
             K.resize(n);
             S.host_lnk.resize(n);
-            for (std::size_t c = 0; c < n; ++c) { // DirichletMedium K phase / LongBoxStage S1 expression
-                const real lnK = spec.eps * Y[c];
-                S.host_lnk[c] = lnK;
-                K[c] = std::exp(lnK);
-            }
+            // Static contiguous chunks over host threads. Every element is the same scalar expression as
+            // DirichletMedium K phase / LongBoxStage S1 (libm std::exp, no fast-math/SIMD/OpenMP), so the
+            // result is bitwise independent of the thread count.
+            const std::size_t nt = std::max<std::size_t>(
+                1, std::min<std::size_t>({std::thread::hardware_concurrency(), 32, n}));
+            real* const lnk = S.host_lnk.data();
+            real* const Kd = K.data();
+            const real* const Yd = Y.data();
+            const real eps = spec.eps;
+            auto chunk = [&](std::size_t t) {
+                for (std::size_t c = n * t / nt, e = n * (t + 1) / nt; c < e; ++c) {
+                    const real lnK = eps * Yd[c];
+                    lnk[c] = lnK;
+                    Kd[c] = std::exp(lnK);
+                }
+            };
+            std::vector<std::thread> pool;
+            for (std::size_t t = 1; t < nt; ++t)
+                pool.emplace_back(chunk, t);
+            chunk(0);
+            for (auto& th : pool)
+                th.join();
             rec.device_used = device_used_now();
         });
         release(Y_gen);
