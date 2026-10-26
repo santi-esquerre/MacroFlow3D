@@ -198,7 +198,6 @@ set(CONSTRAINT_SOURCES
 )
 
 set(OPERATOR_SOURCES
-    src/numerics/operators/poisson3d_operator.cu
     src/numerics/operators/varcoeff_laplacian.cu
 )
 

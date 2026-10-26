@@ -12,7 +12,6 @@
  *   - Optional: diag(), metadata for preconditioners/smoothers
  *
  * Current implementations:
- *   - Poisson3DOperator: constant-coefficient -Δ (for CG)
  *   - MGOperator: variable-coefficient -∇·(K∇) (for MG)
  *
  * Future: unify both under this concept so CG and MG can share operators.
@@ -67,9 +66,6 @@ struct MGOperator {
     const BCSpec& get_bc() const { return bc; }
 };
 */
-
-// Note: Poisson3DOperator already exists in numerics/operators/poisson3d_operator.cuh
-// It needs minor refactoring to fit this concept (currently has apply_add, not apply)
 
 } // namespace operators
 } // namespace macroflow3d
