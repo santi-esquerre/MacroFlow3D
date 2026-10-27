@@ -25,7 +25,8 @@ A reduction (`reduce.reduce_methods`: all methods flux, unif, expI, full, polloc
 Outputs under `dest/`: `reduced/<set>.csv` (one row per realization and method, every documented reducer column; sets `<amp>_prod`
 (pooled A+B, g < N_R), `<amp>_prod_twinpairs` (g < N_twin at the pair-set U), narrow rungs `<arm>`, `<amp>_tw`, `<amp>_A_hmax<d>`, `s4_w24`,
 `s4_w12`, `s4_tw_first30`, `s4_n16_first30`), `reduced/sigma_series_<set>.csv` (sigma_T^2(x1), per plane over its contributors),
-`reduced/rho_<amp>.csv` (F8 rows, directory A), `summary.json` (every number with CI, n, BCa, verdict/label; sorted keys, %.17g; NaN -> null,
+`reduced/rho_<amp>.csv` (F8 rows, directory A), `series/alpha_t_<amp>.csv` (threshold E: alpha(t) and sigma_T^2(t) series of the
+production estimate set, B&dD eq. 4 convention, see `alpha_series_rows`; recorded, non-gating), `summary.json` (every number with CI, n, BCa, verdict/label; sorted keys, %.17g; NaN -> null,
 infinite one-sided bounds -> "inf"/"-inf"), `decisions.csv`, `decisions.md` (preregistration section 10; tiers primary / key secondary /
 estimation / exploratory / process), `manifest.txt` (sha256sum format of every other file).
 """
@@ -142,7 +143,7 @@ class Ctx:
     def __init__(self, out, art, dest, frz, eff, n_pilot, partial):
         self.out, self.art, self.dest, self.frz, self.eff = out, art, dest, frz, eff
         self.n_pilot, self.partial = n_pilot, partial
-        self.cache, self.csv, self.rows = {}, {}, []
+        self.cache, self.csv, self.rows, self.series = {}, {}, [], {}
 
     def tau(self, amp):
         return float(self.frz["amplitudes"][amp]["tau_b_star"])
@@ -317,6 +318,86 @@ def reduce_named(C, amp, name, recs, div, U):
     res = reduce_set(C, amp, recs, div, U)
     add_csv(C, name, recs, res, div)
     return res
+
+
+# ------------------------------------------------------------------------------------------------
+# alpha(t) and sigma_T^2(t) series (threshold E; B&dD eq. 4 as in src/analysis/macrodispersion/MacrodispersionAnalysis.hpp)
+# ------------------------------------------------------------------------------------------------
+SERIES_MODES = ("flux", "unif", "pollock", "pollock_unif")
+SERIES_COLS = ("alpha_L_fixed", "alpha_T_fixed", "alpha_L_aligned", "alpha_TAM", "sigma_T2_fixed")
+
+
+def variance_series(real, mode):
+    """(times, V) of one realization: V[j] = projected variances (e1, e2, e3, e_L, e_T1, e_T2) at snapshot j of the biased weighted
+    covariance of the particles with a record at j (flux: weights.npy, unif: uniform, pollock: pollock_weights.npy over Pollock
+    records, pollock_unif: uniform over Pollock records).  An empty set or a zero total weight raises (`reduce.wmoments3`)."""
+    P = real.pass_
+    if mode.startswith("pollock"):
+        Q = real.pollock
+        if Q is None:
+            raise sio.MissingData("no Pollock bridge in %s" % real.rdir)
+        tx, w = Q.times_x, np.asarray(Q.weights, dtype=float)
+    else:
+        tx, w = P.times_x, np.asarray(P.weights, dtype=float)
+    unif = mode in ("unif", "pollock_unif")
+    q = (real.flow["interior"]["mean_u"], real.flow["interior"]["mean_v"], real.flow["interior"]["mean_w"])
+    E = np.vstack([np.eye(3), np.vstack(red.aligned_frame(q))])
+    times = np.asarray(P.times, dtype=float)
+    V = np.empty((len(times), 6))
+    for j in range(len(times)):
+        X = np.asarray(tx[:, j, :], dtype=float)
+        idx = np.flatnonzero(np.isfinite(X).all(axis=1))
+        _, Cv = red.wmoments3(X[idx], np.ones(len(idx)) if unif else w[idx])
+        V[j] = np.einsum("ik,kl,il->i", E, Cv, E)
+    return times, V
+
+
+def time_derivative(t, V):
+    """dV/dt per snapshot: central differences, one-sided at the first and last snapshot (the runner's convention)."""
+    if len(t) < 2:
+        raise sio.ReduceError("a series needs at least two snapshots")
+    d = np.empty_like(V)
+    d[0] = (V[1] - V[0]) / (t[1] - t[0])
+    d[-1] = (V[-1] - V[-2]) / (t[-1] - t[-2])
+    d[1:-1] = (V[2:] - V[:-2]) / (t[2:] - t[:-2])[:, None]
+    return d
+
+
+def alpha_series_rows(recs, U):
+    """Long-format rows (mode, j, t, tau, n_real, <col>_mean/_se) of the ensemble series of a set of realizations (h/8 pass) with one U.
+
+    Per realization: alpha_e(t_j) = dV_e/dt / (2 ell U) with the derivative taken over that realization's own snapshots; the ensemble is
+    taken at the common snapshot index over the common prefix of the snapshot counts, whose times must agree within 1e-12 relative
+    (`ReduceError` otherwise).  Columns: alpha_L_fixed (e1), alpha_T_fixed ((e2+e3)/2), alpha_L_aligned (e_L), alpha_TAM ((e_T1+e_T2)/2),
+    sigma_T2_fixed = (V_e2 + V_e3)/2; tau = U t / ell.  Returns (rows, n_real, n_snapshots).
+    """
+    per = {m: [] for m in SERIES_MODES}
+    times, ell = [], None
+    for x in recs:  # one realization at a time (arrays are mmapped)
+        real = cp.realization(x, cp.PROD_DIV)
+        ell = real.ell if ell is None else ell
+        for m in SERIES_MODES:
+            t, V = variance_series(real, m)
+            a = time_derivative(t, V) / (2.0 * real.ell * U)
+            cols = np.column_stack([a[:, 0], 0.5 * (a[:, 1] + a[:, 2]), a[:, 3], 0.5 * (a[:, 4] + a[:, 5]), 0.5 * (V[:, 1] + V[:, 2])])
+            per[m].append(cols)
+            if m == SERIES_MODES[0]:
+                times.append(t)
+    n = min(len(t) for t in times)
+    for x, t in zip(recs, times):
+        if np.any(np.abs(t[:n] - times[0][:n]) > 1e-12 * np.maximum(1.0, np.abs(times[0][:n]))):
+            raise sio.ReduceError("%s r=%d: snapshot times differ from the first realization within the common prefix" % (x.arm, x.r))
+    rows = []
+    for m in SERIES_MODES:
+        A = np.stack([c[:n] for c in per[m]])  # (n_real, n, 5)
+        for j in range(n):
+            row = {"mode": m, "j": j, "t": float(times[0][j]), "tau": float(U * times[0][j] / ell), "n_real": len(recs)}
+            for k, name in enumerate(SERIES_COLS):
+                v = A[:, j, k]
+                row[name + "_mean"] = float(v.mean())
+                row[name + "_se"] = float(v.std(ddof=1) / np.sqrt(v.size)) if v.size > 1 else float("nan")
+            rows.append(row)
+    return rows, len(recs), n
 
 
 # ------------------------------------------------------------------------------------------------
@@ -496,6 +577,10 @@ def analyze_amp(C, amp):
     S["frozen"] = {"tau_b_star": C.tau(amp), "t_b_min": C.frz["amplitudes"][amp]["t_b_min"], "U_prod_pilot": C.frz["amplitudes"][amp]["U_prod"]}
     # ---- reductions
     R_prod = reduce_named(C, amp, amp + "_prod", prod, cp.PROD_DIV, U_prod)
+    srows, n_real, n_snap = alpha_series_rows(sorted(prod, key=lambda x: x.seed), U_prod)
+    C.series["alpha_t_" + amp] = srows
+    S["alpha_t"] = {"file": "series/alpha_t_%s.csv" % amp, "n_real": n_real, "n_snapshots": n_snap, "modes": list(SERIES_MODES),
+                    "recorded_non_gating": True}
     R_ptw = reduce_named(C, amp, amp + "_prod_twinpairs", prod_tw, cp.PROD_DIV, U_ptw)
     R_tw = reduce_named(C, amp, amp + "_tw", tw, cp.PROD_DIV, U_tw)
     R_n = [reduce_named(C, amp, arm, r_, cp.PROD_DIV, u) for arm, r_, u in zip(a["narrow"], rungs, U_rung)]
@@ -758,6 +843,10 @@ def write_outputs(C, summary):
     os.makedirs(os.path.join(dest, "reduced"), exist_ok=True)
     for name in sorted(C.csv):
         red.write_csv(os.path.join(dest, "reduced", name + ".csv"), C.csv[name])
+    shutil.rmtree(os.path.join(dest, "series"), ignore_errors=True)
+    os.makedirs(os.path.join(dest, "series"), exist_ok=True)
+    for name in sorted(C.series):
+        red.write_csv(os.path.join(dest, "series", name + ".csv"), C.series[name])
     rows = C.rows + process_rows(C)
     rows.sort(key=lambda tr: TIERS.index(tr[0]))  # stable: keeps the generation order inside a tier
     table = decide.decision_table_rows([r_ for _, r_ in rows])

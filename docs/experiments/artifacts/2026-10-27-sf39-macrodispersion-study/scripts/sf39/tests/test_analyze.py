@@ -459,6 +459,28 @@ class Study(unittest.TestCase):
         nr = self.S["amplitudes"]["s225"]["A"]["alpha_TAM"]["narrow_rung_vs_production"]
         self.assertEqual((nr["n_a"], nr["n_b"]), (B["s225"]["N_narrow"], B["s225"]["N_R"]))
 
+    def test_series_in_main_run(self):
+        for amp in cp.AMPS:
+            ptr = self.S["amplitudes"][amp]["alpha_t"]
+            self.assertEqual((ptr["file"], ptr["n_real"], ptr["n_snapshots"]), ("series/alpha_t_%s.csv" % amp, B[amp]["N_R"], len(fx.TIMES)))
+            rows = read_csv(os.path.join(self.dest, ptr["file"]))
+            self.assertEqual(len(rows), 4 * len(fx.TIMES))
+            self.assertEqual({r["mode"] for r in rows}, set(an.SERIES_MODES))
+            U = float(np.mean([qb(g) for g in range(B[amp]["N_R"])]))
+            fl = [r for r in rows if r["mode"] == "flux"]
+            for j, r in enumerate(fl):
+                close(self, float(r["t"]), fx.TIMES[j], 1e-14)
+                close(self, float(r["tau"]), U * fx.TIMES[j] / fx.ELL, 1e-12)
+                self.assertEqual(int(r["n_real"]), B[amp]["N_R"])
+            last = []
+            for g in range(B[amp]["N_R"]):
+                gg = fx.gen(g)
+                idx = [i for i in range(fx.NP) if gg["t_end"][i] > fx.TIMES[-1]]
+                last.append(fc._wvar([gg["c1"][i] for i in idx], [gg["w"][i] for i in idx]) / (2 * fx.ELL * U))
+            close(self, float(fl[-1]["alpha_L_fixed_mean"]), float(np.mean(last)), 1e-9)
+        # the series are in the manifest
+        self.assertIn("series/alpha_t_s1.csv", slurp(os.path.join(self.dest, "manifest.txt")))
+
     # -- decision table, serialization, manifest, determinism ----------------------------------------------------------------
     def test_decision_table(self):
         rows = read_csv(os.path.join(self.dest, "decisions.csv"))
@@ -588,6 +610,126 @@ class Study(unittest.TestCase):
         from sf39 import io as sio
         with self.assertRaises(sio.WindowError):
             an.analyze_amp(C, "s1")
+
+
+class Series(unittest.TestCase):
+    """alpha(t) / sigma_T^2(t) series on small single-arm trees (linear variance growth: closed forms at snapshots with a constant set)."""
+
+    ARM, AMP, NR, U = "s225_n16", "s225", 3, 0.9
+    J0 = 32  # t = 8.25 > every exit time of the fixture: the particle set is constant from snapshot 31 on
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.out = self.tmp.name
+        fa.build_single(self.out, self.ARM, self.AMP, self.NR, 0, 5001)
+        self.tf = fc.arm_factors(self.ARM, self.AMP)[0]
+
+    def recs(self):
+        return cp.done_records(self.out, self.ARM)
+
+    def expected(self, j, mode, tf=None, theta=0.0):
+        """Closed-form (L_fixed, T_fixed, L_aligned, TAM, sigma_T2) ensemble means at snapshot j (set = records at j)."""
+        tf = self.tf if tf is None else tf
+        rows = []
+        for r in range(self.NR):
+            g = fx.gen(r, theta)
+            pol = mode.startswith("pollock")
+            end = g["p_end"] if pol else g["t_end"]
+            idx = [i for i in range(fx.NP) if end[i] > fx.TIMES[j]]
+            c2, c3 = (g["pc2"], g["pc3"]) if pol else (tf * g["c2"], tf * g["c3"])
+            w = [1.0] * len(idx) if mode in ("unif", "pollock_unif") else [float((g["pw"] if pol else g["w"])[i]) for i in idx]
+            v = lambda a: fc._wvar([float(a[i]) for i in idx], w)  # noqa: E731
+            c1 = g["c1"]
+            f = 2.0 * fx.ELL * self.U
+            if theta == 0.0:
+                vf = (v(c1), v(c2), v(c3))
+                vt = (v(c1), v(c2), v(c3))
+            else:
+                th = theta
+                vf = (v(np.cos(th) * c1 - np.sin(th) * c2), v(np.sin(th) * c1 + np.cos(th) * c2), v(c3))
+                vt = (v(c1), v(c2), v(c3))
+            rows.append([vf[0] / f, 0.5 * (vf[1] + vf[2]) / f, vt[0] / f, 0.5 * (vt[1] + vt[2]) / f, fx.TIMES[j] * 0.5 * (vf[1] + vf[2])])
+        return np.array(rows)
+
+    def rows_of(self, rows, mode):
+        return [r for r in rows if r["mode"] == mode]
+
+    def check(self, rows, mode, j, theta=0.0, tf=None):
+        want = self.expected(j, mode, tf, theta)
+        r = self.rows_of(rows, mode)[j]
+        for k, name in enumerate(an.SERIES_COLS):
+            close(self, r[name + "_mean"], float(want[:, k].mean()), 1e-9, 1e-12, "%s j=%d %s" % (mode, j, name))
+            close(self, r[name + "_se"], float(want[:, k].std(ddof=1) / np.sqrt(self.NR)), 1e-7, 1e-12, "%s j=%d %s se" % (mode, j, name))
+
+    def test_linear_growth_gives_constant_alpha_interior_and_one_sided_ends(self):
+        rows, n_real, n = an.alpha_series_rows(self.recs(), self.U)
+        self.assertEqual((n_real, n), (self.NR, len(fx.TIMES)))
+        self.assertEqual(len(rows), 4 * n)
+        for mode in an.SERIES_MODES:
+            for j in list(range(self.J0, n - 1)):  # interior, constant set: central differences
+                self.check(rows, mode, j)
+            self.check(rows, mode, n - 1)  # last snapshot: one-sided
+            self.check(rows, mode, 0)      # first snapshot: one-sided (same set at snapshots 0 and 1)
+            r0 = self.rows_of(rows, mode)[0]
+            self.assertEqual((r0["j"], r0["n_real"]), (0, self.NR))
+            close(self, r0["t"], fx.TIMES[0], 1e-14)
+            close(self, r0["tau"], self.U * fx.TIMES[0] / fx.ELL, 1e-14)
+        # constant in time where the set is constant (interior values equal the last one)
+        fl = self.rows_of(rows, "flux")
+        close(self, fl[self.J0]["alpha_L_fixed_mean"], fl[-1]["alpha_L_fixed_mean"], 1e-9)
+        # the modes differ (flux vs uniform weights; Pollock positions)
+        self.assertNotAlmostEqual(fl[-1]["alpha_T_fixed_mean"], self.rows_of(rows, "unif")[-1]["alpha_T_fixed_mean"], places=6)
+        self.assertNotAlmostEqual(fl[-1]["alpha_T_fixed_mean"], self.rows_of(rows, "pollock")[-1]["alpha_T_fixed_mean"], places=6)
+
+    def test_aligned_frame_differs_from_fixed_when_tilted(self):
+        arm2 = "s1_n10"
+        fx.build_run(cp.arm_dir(self.out, arm2), nr=2, theta=0.3, pollock=True)
+        recs = cp.done_records(self.out, arm2)
+        self.NR_save, self.NR = self.NR, 2
+        try:
+            rows, _, n = an.alpha_series_rows(recs, self.U)
+            for j in (self.J0, n - 1):
+                self.check(rows, "flux", j, theta=0.3, tf=1.0)
+            r = self.rows_of(rows, "flux")[-1]
+            self.assertGreater(abs(r["alpha_T_fixed_mean"] - r["alpha_TAM_mean"]), 1e-4)
+            self.assertGreater(abs(r["alpha_L_fixed_mean"] - r["alpha_L_aligned_mean"]), 1e-4)
+        finally:
+            self.NR = self.NR_save
+
+    def edit_times(self, r, fn):
+        R = os.path.join(cp.arm_dir(self.out, self.ARM), "realizations", "r_%04d" % r)
+        for path in (os.path.join(R, "track.json"), os.path.join(R, "pollock", "pollock.json")):
+            with open(path) as f:
+                d = json.load(f)
+            d["times"] = fn(d["times"])
+            with open(path, "w") as f:
+                json.dump(d, f)
+
+    def test_common_prefix_truncation(self):
+        self.edit_times(1, lambda t: t[:40])  # realization 1 has only 40 snapshots
+        rows, n_real, n = an.alpha_series_rows(self.recs(), self.U)
+        self.assertEqual((n_real, n), (self.NR, 40))
+        for mode in an.SERIES_MODES:
+            sel = self.rows_of(rows, mode)
+            self.assertEqual([r["j"] for r in sel], list(range(40)))
+            self.assertEqual({r["n_real"] for r in sel}, {self.NR})
+            close(self, sel[-1]["t"], fx.TIMES[39], 1e-14)
+            self.check(rows, mode, 39)  # constant set from snapshot 31 on: the one-sided end of realization 1 gives the same value
+            self.check(rows, mode, self.J0)
+
+    def test_times_mismatch_raises(self):
+        from sf39 import io as sio
+
+        def bump(t):
+            t = list(t)
+            t[10] *= 1.0 + 1e-6
+            return t
+
+        self.edit_times(1, bump)
+        with self.assertRaises(sio.ReduceError) as cm:
+            an.alpha_series_rows(self.recs(), self.U)
+        self.assertIn("snapshot times differ", str(cm.exception))
 
 
 if __name__ == "__main__":
