@@ -40,7 +40,7 @@ Usage:
 
   scripts/remote sync
   scripts/remote exec -- "<shell-command>"
-  scripts/remote run <job> [--gpu auto|0|1] -- "<shell-command>"
+  scripts/remote run <job> [--gpu auto|<n>] -- "<shell-command>"
   scripts/remote status <job>
   scripts/remote tail <job> [--lines N] [--no-follow]
   scripts/remote wait <job> [--interval SEC]
@@ -54,12 +54,20 @@ Per-increment isolation:
   macroflow3d-<id>. Without an id the legacy shared mirror is used.
   The option goes before the subcommand name.
 
-GPU arbitration:
-  `run` takes an exclusive flock on gpu-<n>.lock (n in {0,1}) for the whole
-  job and exports CUDA_VISIBLE_DEVICES=<n>. REMOTE_GPU_WAIT=<sec> (default 0)
-  controls how long to wait when no GPU is free (state waiting_gpu); if none
-  becomes free the job fails with exit code 75. `cancel` kills the job's whole
-  process group, releasing its lock. `exec` takes no lock.
+GPU arbitration (owner rule 2026-10-27: this project uses ONE GPU at a time,
+the least loaded one; the host is shared with users who do not use our locks):
+  `run` takes ONE host-wide flock (gpu.lock, all mirrors/increments) for the
+  whole job; gpu.holder names the holder and its chosen GPU. REMOTE_GPU_WAIT=<sec>
+  (default 0) is how long to wait in state waiting_gpu (for the slot, then for an
+  eligible GPU); on timeout the job fails with exit code 75 (= no GPU now,
+  resubmit). With the slot held, nvidia-smi is sampled 5 times (~1 s apart) and
+  --gpu auto (default) picks, among GPUs whose minimum free memory is
+  >= REMOTE_GPU_MIN_FREE_MIB (default 0), the lowest mean utilization (tie: more
+  free memory, then lower index). --gpu <n> pins GPU n (must be listed by
+  nvidia-smi; same memory threshold). The log records per-GPU load and the
+  choice; the job gets CUDA_VISIBLE_DEVICES=<chosen>. nvidia-smi failure fails
+  the job (exit 70), never a blind pick. `cancel` kills the job's whole process
+  group, releasing the slot. `exec` takes no lock.
 
 Canonical examples:
   scripts/remote sync
@@ -78,6 +86,7 @@ Configuration:
     REMOTE_REPO_DIR
     REMOTE_STATE_ROOT
     REMOTE_GPU_WAIT
+    REMOTE_GPU_MIN_FREE_MIB
     REMOTE_LOCK_ROOT
     REMOTE_WAIT_INTERVAL
     REMOTE_SSH_RETRIES
@@ -295,6 +304,38 @@ exec_command() {
   ssh_run "cd $REMOTE_REPO_DIR && $command"
 }
 
+# GPU selection rule (single source of truth; embedded in the launcher via
+# `declare -f` and exercised by scripts/tests/remote_gpu_select_test.sh).
+# stdin: nvidia-smi CSV samples "index,memory.used,memory.total,utilization.gpu"
+# (nounits, any number of samples, all GPUs). args: <min_free_mib> <auto|index>.
+# stdout: "GPU <idx> <mean_util> <min_free_mib> <total_mib>" per GPU, then
+# "CHOSEN <idx>" | "CHOSEN none" | "ERROR <why>".
+# exit: 0 chosen, 1 none eligible (retry later), 2 unparseable input / unknown pin.
+gpu_select() {
+  awk -F, -v minfree="$1" -v req="${2:-auto}" '
+    { gsub(/[ \t\r]/, "") }
+    $0 == "" { next }
+    NF != 4 || $1 !~ /^[0-9]+$/ || $2 !~ /^[0-9]+$/ || $3 !~ /^[0-9]+$/ || $4 !~ /^[0-9]+$/ { bad = 1; next }
+    { i = $1 + 0; c[i]++; su[i] += $4; tot[i] = $3
+      f = $3 - $2; if (!(i in mf) || f < mf[i]) mf[i] = f }
+    END {
+      if (bad || length(c) == 0) { print "ERROR unparseable or empty nvidia-smi output"; exit 2 }
+      for (i in c) idx[++m] = i + 0
+      for (a = 2; a <= m; a++) { v = idx[a]; for (b = a - 1; b >= 1 && idx[b] > v; b--) idx[b + 1] = idx[b]; idx[b + 1] = v }
+      best = ""
+      for (a = 1; a <= m; a++) {
+        i = idx[a]; u = su[i] / c[i]
+        printf "GPU %d %.1f %d %d\n", i, u, mf[i], tot[i]
+        if (req != "auto" && i != req + 0) continue
+        if (mf[i] < minfree + 0) continue
+        if (best == "" || u < bu || (u == bu && mf[i] > bf)) { best = i; bu = u; bf = mf[i] }
+      }
+      if (req != "auto" && !((req + 0) in c)) { print "ERROR pinned GPU " req " not listed by nvidia-smi"; exit 2 }
+      if (best == "") { print "CHOSEN none"; exit 1 }
+      print "CHOSEN " best
+    }'
+}
+
 run_command() {
   local job="$1"
   local gpu_req="$2"
@@ -302,8 +343,14 @@ run_command() {
   local session_name log_path status_path command_path launcher_path launcher_body
 
   validate_job_name "$job"
-  [[ "$gpu_req" =~ ^(auto|0|1)$ ]] || die "--gpu must be auto, 0 or 1"
+  [[ "$gpu_req" =~ ^(auto|[0-9]+)$ ]] || die "--gpu must be auto or a non-negative integer"
   [[ "$REMOTE_GPU_WAIT" =~ ^[0-9]+$ ]] || die "REMOTE_GPU_WAIT must be a non-negative integer (seconds)"
+  [[ "$REMOTE_GPU_MIN_FREE_MIB" =~ ^[0-9]+$ ]] || die "REMOTE_GPU_MIN_FREE_MIB must be a non-negative integer (MiB)"
+  if [[ "$gpu_req" != auto ]]; then
+    local listed
+    listed="$(ssh_run_capture "nvidia-smi --query-gpu=index --format=csv,noheader")" || die "cannot query nvidia-smi on $REMOTE_HOST to validate --gpu $gpu_req"
+    printf '%s\n' "$listed" | tr -d ' \r' | grep -qx -- "$((10#$gpu_req))" || die "--gpu $gpu_req is not a GPU listed by nvidia-smi on $REMOTE_HOST (listed: $(printf '%s' "$listed" | tr -d ' \r' | paste -sd, -))"
+  fi
   ensure_remote_repo
   ensure_remote_state_dirs
 
@@ -327,6 +374,7 @@ status_file=$status_path
 log_file=$log_path
 gpu_req=$gpu_req
 gpu_wait=$REMOTE_GPU_WAIT
+min_free=$REMOTE_GPU_MIN_FREE_MIB
 lock_root=$REMOTE_LOCK_ROOT
 increment=$(printf '%q' "$REMOTE_INCREMENT")
 gpu=
@@ -352,67 +400,115 @@ write_status() {
 # process holding the fd dies). The holder file is informational only: each new
 # acquirer overwrites it, so a stale file never blocks anyone.
 cleanup_holder() {
-  local h="\$lock_root/gpu-\$gpu.holder"
-  if [[ -n "\$gpu" && -f "\$h" ]] && grep -qxF "HOLDER_SESSION=\$session_name" "\$h" 2>/dev/null; then
+  local h="\$lock_root/gpu.holder"
+  if [[ -f "\$h" ]] && grep -qxF "HOLDER_SESSION=\$session_name" "\$h" 2>/dev/null; then
     rm -f "\$h"
   fi
 }
 
+write_holder() {
+  {
+    printf 'HOLDER_JOB=%q\n' "\$job_name"
+    printf 'HOLDER_SESSION=%q\n' "\$session_name"
+    printf 'HOLDER_INCREMENT=%q\n' "\$increment"
+    printf 'HOLDER_SINCE=%q\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'HOLDER_GPU=%q\n' "\${gpu:-pending}"
+  } >"\$lock_root/gpu.holder"
+}
+
 describe_holders() {
-  local n h
-  for n in 0 1; do
-    h="\$lock_root/gpu-\$n.holder"
-    if [[ -f "\$h" ]]; then
-      (
-        HOLDER_JOB=; HOLDER_SESSION=; HOLDER_SINCE=; HOLDER_INCREMENT=
-        # shellcheck disable=SC1090
-        source "\$h"
-        if [[ -n "\$HOLDER_SESSION" ]] && tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- "\$HOLDER_SESSION"; then
-          alive=alive
-        else
-          alive="session not alive (stale holder file or surviving child process)"
-        fi
-        printf '  gpu %s: job=%s session=%s increment=%s since=%s [%s]\n' "\$n" "\$HOLDER_JOB" "\$HOLDER_SESSION" "\${HOLDER_INCREMENT:-none}" "\$HOLDER_SINCE" "\$alive"
-      )
-    else
-      printf '  gpu %s: no holder file\n' "\$n"
-    fi
+  local h="\$lock_root/gpu.holder"
+  if [[ -f "\$h" ]]; then
+    (
+      HOLDER_JOB=; HOLDER_SESSION=; HOLDER_SINCE=; HOLDER_INCREMENT=; HOLDER_GPU=
+      # shellcheck disable=SC1090
+      source "\$h"
+      if [[ -n "\$HOLDER_SESSION" ]] && tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- "\$HOLDER_SESSION"; then
+        alive=alive
+      else
+        alive="session not alive (stale holder file or surviving child process)"
+      fi
+      printf '  gpu slot: job=%s session=%s increment=%s gpu=%s since=%s [%s]\n' "\$HOLDER_JOB" "\$HOLDER_SESSION" "\${HOLDER_INCREMENT:-none}" "\${HOLDER_GPU:-?}" "\$HOLDER_SINCE" "\$alive"
+    )
+  else
+    printf '  gpu slot: no holder file\n'
+  fi
+}
+
+$(declare -f gpu_select)
+
+ts() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+# Takes the single project slot (fd 9), waiting up to the shared deadline.
+acquire_slot() {
+  local remaining=\$((deadline - SECONDS))
+  mkdir -p "\$lock_root"
+  exec 9>"\$lock_root/gpu.lock"
+  if (( remaining > 0 )); then
+    write_status waiting_gpu
+    flock -w "\$remaining" 9
+  else
+    flock -n 9
+  fi
+}
+
+# 5 samples ~1 s apart, all GPUs, to stdout.
+sample_gpus() {
+  local i
+  for i in 1 2 3 4 5; do
+    nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits || return 1
+    if (( i < 5 )); then sleep 1; fi
   done
 }
 
-try_gpu() {
-  local n="\$1"
-  exec 9>"\$lock_root/gpu-\$n.lock"
-  if flock -n 9; then
-    gpu="\$n"
-    return 0
-  fi
-  return 1
+# Per-GPU number of compute processes (uuid -> index); informational only.
+gpu_procs() {
+  local uuids apps
+  uuids=\$(nvidia-smi --query-gpu=index,uuid --format=csv,noheader 2>/dev/null) || { echo "?"; return 0; }
+  apps=\$(nvidia-smi --query-compute-apps=gpu_uuid --format=csv,noheader 2>/dev/null) || { echo "?"; return 0; }
+  awk -F', *' 'NR==FNR { u[\$2] = \$1; n[\$1] = 0; next } (\$1 in u) { n[u[\$1]]++ } END { for (i in n) print i, n[i] }' \
+    <(printf '%s\n' "\$uuids") <(printf '%s\n' "\$apps")
 }
 
-acquire_gpu() {
-  local n deadline
-  mkdir -p "\$lock_root"
-  if [[ "\$gpu_req" == auto ]]; then
-    deadline=\$((SECONDS + gpu_wait))
-    while true; do
-      for n in 0 1; do
-        if try_gpu "\$n"; then return 0; fi
-      done
-      if (( SECONDS >= deadline )); then return 1; fi
-      write_status waiting_gpu
-      sleep 2
-    done
-  else
-    exec 9>"\$lock_root/gpu-\$gpu_req.lock"
-    if (( gpu_wait > 0 )); then
-      write_status waiting_gpu
-      if flock -w "\$gpu_wait" 9; then gpu="\$gpu_req"; return 0; fi
-    else
-      if flock -n 9; then gpu="\$gpu_req"; return 0; fi
+fail_gpu() {
+  printf '[%s] job=%s ERROR: %s\n' "\$(ts)" "\$job_name" "\$1" >>"\$log_file"
+  write_status failed "\$2"
+  exit "\$2"
+}
+
+# With the slot held: sample, choose, retry every 30 s until the shared deadline.
+choose_gpu() {
+  local csv sel rc procs line i u f t p reason
+  if [[ "\$gpu_req" == auto ]]; then reason="auto: least-loaded"; else reason="pinned"; fi
+  while true; do
+    csv=\$(sample_gpus 2>>"\$log_file") || fail_gpu "nvidia-smi sampling failed; no GPU chosen (not a retryable 'no GPU now')" 70
+    rc=0
+    sel=\$(gpu_select "\$min_free" "\$gpu_req" <<<"\$csv") || rc=\$?
+    if (( rc == 2 )); then
+      fail_gpu "GPU selection input invalid: \$(printf '%s' "\$sel" | tr '\n' ' ')" 70
     fi
-    return 1
-  fi
+    procs=\$(gpu_procs)
+    {
+      printf '[%s] job=%s GPU snapshot (5 samples, min_free_required=%s MiB, request=%s):\n' "\$(ts)" "\$job_name" "\$min_free" "\$gpu_req"
+      while read -r line; do
+        [[ "\$line" == GPU\ * ]] || continue
+        read -r _ i u f t <<<"\$line"
+        p=\$(awk -v i="\$i" '\$1 == i { print \$2 }' <<<"\$procs")
+        printf '  gpu %s: mean_util=%s%% min_free=%s/%s MiB compute_procs=%s\n' "\$i" "\$u" "\$f" "\$t" "\${p:-?}"
+      done <<<"\$sel"
+    } >>"\$log_file"
+    if (( rc == 0 )); then
+      gpu=\$(awk '\$1 == "CHOSEN" { print \$2 }' <<<"\$sel")
+      printf '[%s] job=%s chose GPU %s (%s)\n' "\$(ts)" "\$job_name" "\$gpu" "\$reason" >>"\$log_file"
+      return 0
+    fi
+    if (( SECONDS >= deadline )); then return 1; fi
+    printf '[%s] job=%s no eligible GPU (min_free_required=%s MiB); re-sampling in <=30 s\n' "\$(ts)" "\$job_name" "\$min_free" >>"\$log_file"
+    write_status waiting_gpu
+    i=\$((deadline - SECONDS))
+    if (( i > 30 )); then i=30; fi
+    sleep "\$i"
+  done
 }
 
 handle_cancel() {
@@ -428,22 +524,24 @@ trap cleanup_holder EXIT
 
 : >"\$log_file"
 write_status waiting_gpu
+deadline=\$((SECONDS + gpu_wait))
 
-if ! acquire_gpu; then
+if ! acquire_slot; then
   {
-    printf '[%s] job=%s ERROR: no GPU available (request=%s, REMOTE_GPU_WAIT=%s). Current holders:\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name" "\$gpu_req" "\$gpu_wait"
+    printf '[%s] job=%s ERROR: GPU slot busy (single project slot, REMOTE_GPU_WAIT=%s). Current holder:\n' "\$(ts)" "\$job_name" "\$gpu_wait"
     describe_holders
   } >>"\$log_file" 2>&1
   write_status failed 75
   exit 75
 fi
+write_holder
 
-{
-  printf 'HOLDER_JOB=%q\n' "\$job_name"
-  printf 'HOLDER_SESSION=%q\n' "\$session_name"
-  printf 'HOLDER_INCREMENT=%q\n' "\$increment"
-  printf 'HOLDER_SINCE=%q\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-} >"\$lock_root/gpu-\$gpu.holder"
+if ! choose_gpu; then
+  printf '[%s] job=%s ERROR: no eligible GPU within REMOTE_GPU_WAIT=%s (request=%s, REMOTE_GPU_MIN_FREE_MIB=%s)\n' "\$(ts)" "\$job_name" "\$gpu_wait" "\$gpu_req" "\$min_free" >>"\$log_file"
+  write_status failed 75
+  exit 75
+fi
+write_holder
 export CUDA_VISIBLE_DEVICES="\$gpu"
 write_status running
 
@@ -631,8 +729,8 @@ list_mirrors_command() {
     for d in ~/MacroFlow3D*; do [[ -d "$d" ]] && du -sh "$d"; done
     echo "State roots (~/.macroflow3d-remote/macroflow3d*):"
     for d in ~/.macroflow3d-remote/macroflow3d*; do [[ -d "$d" ]] && du -sh "$d"; done
-    echo "GPU holder files (~/.macroflow3d-remote/gpu-*.holder):"
-    for f in ~/.macroflow3d-remote/gpu-*.holder; do echo "$f:"; sed "s/^/  /" "$f"; done
+    echo "GPU slot holder file (~/.macroflow3d-remote/gpu.holder; legacy gpu-*.holder):"
+    for f in ~/.macroflow3d-remote/gpu*.holder; do echo "$f:"; sed "s/^/  /" "$f"; done
     true
   '
 }
@@ -681,7 +779,7 @@ main() {
         case "$1" in
           --gpu)
             shift
-            [[ $# -gt 0 ]] || die "--gpu requires a value (auto|0|1)"
+            [[ $# -gt 0 ]] || die "--gpu requires a value (auto|<n>)"
             gpu_req="$1"
             ;;
           *) die "unknown run option: $1" ;;
@@ -727,4 +825,4 @@ main() {
   esac
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then main "$@"; fi
