@@ -440,7 +440,8 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    [SF-39](lester-eq14/increments/SF-39-macrodispersion-study.md) (pre-activation governance 2026-10-27,
    `docs/decisions/2026-10-27-sf39-pre-activation-decisions.md`: executable estimator definitions, a plane-based conjunctive
    co-primary for `alpha_T`, a production `h` verdict without the ratio rule, rule D on measured direction, bounded-value reporting,
-   pathwise drift, a width check and the method contrast; `sigma^2 = 6.25` deferred).
+   pathwise drift, a width check and the method contrast; `sigma^2 = 6.25` deferred; compute on one GPU, the least-loaded,
+   `docs/decisions/2026-10-27-remote-single-gpu.md`).
 6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
    SF-31 pseudo-symplectic tracker on gridded labels (deferred: future work, not a requirement).
 
