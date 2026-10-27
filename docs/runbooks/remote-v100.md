@@ -32,8 +32,10 @@ This explicitly includes, but is not limited to:
   runs.
 
 `scripts/remote exec` is reserved for short, bounded steps only: configure, a
-single compile, a quick single-command smoke check — work that reliably
-finishes in roughly under a minute. If a command's duration is unknown or
+single compile, a quick single-command check that launches no CUDA work —
+work that reliably finishes in roughly under a minute. Anything that runs on
+a GPU, even for seconds, goes through `scripts/remote run`, so that it takes
+the project's single GPU slot (Section 0, "Concurrency"). If a command's duration is unknown or
 could plausibly run longer, treat it as long-duration and use `scripts/remote
 run` + `scripts/remote wait`, not `exec`.
 
@@ -44,10 +46,13 @@ not representative. Claude Code subagents (`increment-worker`,
 through this mechanism rather than executing them synchronously inside their
 own isolated worktree.
 
-### Concurrency: one increment, one mirror; one job per GPU
+### Concurrency: one increment, one mirror; one GPU for the whole project
 
-The V100 host has two GPUs and is shared by every agent. `scripts/remote`
-isolates concurrent work in two ways:
+The V100 host has two GPUs and is shared with colleagues outside this project,
+whose jobs do not use our locks. Owner rule (decision
+`docs/decisions/2026-10-27-remote-single-gpu.md`): **this project uses one GPU
+at a time, always the least-loaded one.** `scripts/remote` isolates and
+arbitrates in two ways:
 
 1. **Per-increment mirrors.** `scripts/remote --increment SF-NN <subcommand>`
    (or `REMOTE_INCREMENT=SF-NN` in the environment) selects a private mirror
@@ -59,64 +64,77 @@ isolates concurrent work in two ways:
    `~/.macroflow3d-remote/macroflow3d` and prefix `macroflow3d` are used,
    exactly as before. Explicit `REMOTE_REPO_DIR` / `REMOTE_STATE_ROOT` /
    `REMOTE_SESSION_PREFIX` overrides still win over the derived paths.
-2. **Host-wide GPU locks.** Every `scripts/remote run` job takes an exclusive
-   `flock` on `~/.macroflow3d-remote/gpu-<n>.lock` (n = 0 or 1) for its whole
-   lifetime and exports `CUDA_VISIBLE_DEVICES=<n>` to the command. The locks are
-   shared by all mirrors (including the legacy one), so two jobs can never
-   share a GPU, and at most two `run` jobs execute on the host at once.
+2. **One host-wide GPU slot, least-loaded GPU.** Every `scripts/remote run`
+   job takes an exclusive `flock` on `~/.macroflow3d-remote/gpu.lock` for its
+   whole lifetime. The lock is shared by all mirrors (including the legacy
+   one), so at most one `run` job of this project executes on the host at a
+   time, across every increment and session. Once it holds the slot, the job
+   samples `nvidia-smi` (5 samples about 1 s apart) and takes the GPU with the
+   lowest mean utilization among those whose free memory (minimum over the
+   samples) is at least `REMOTE_GPU_MIN_FREE_MIB`; ties go to more free
+   memory, then to the lower index. It exports `CUDA_VISIBLE_DEVICES=<n>` to
+   the command and writes the snapshot and the choice to its log.
 
 The rule is therefore:
 
 - **one increment, one mirror** — always pass `--increment SF-NN` (or set
   `REMOTE_INCREMENT=SF-NN`) for increment work; never share a mirror between
   increments;
-- **one job per GPU at a time** — enforced by the lock;
-- **two jobs maximum across the host** — enforced by the two locks.
+- **one `run` job of this project on the host at a time** — enforced by the
+  slot; when two increments are active their jobs queue on it;
+- **the least-loaded GPU at start** — chosen by `scripts/remote`; do not pin
+  `--gpu <n>` except to reproduce a GPU-specific result, and record why.
+
+The choice is made once, when the job starts: a colleague may later start
+work on the same GPU, and the job does not move. Jobs whose peak device memory
+is known set `REMOTE_GPU_MIN_FREE_MIB` to that peak plus a margin, so that
+they wait rather than start on a GPU a colleague has partly filled (memory is
+a hard limit, utilization only slows both jobs). Long jobs set
+`REMOTE_GPU_WAIT` so that a slot held by another session, or no eligible GPU,
+makes them wait instead of failing. On exit 75 nothing ran: resubmit the same
+command (restart-safe where the runner keeps `DONE` files).
 
 Within one increment the mirror is still single-flight: do not
 `scripts/remote --increment SF-NN sync` while a job of that same increment is
 `running` or `waiting_gpu`, because the sync overwrites the tree the job
-executes against. Two DAG nodes of the same increment that both need remote
-execution must still be serialized.
+executes against. DAG nodes that need remote execution are serialized; the
+slot enforces this for `run` jobs. There is no multi-GPU exception: the
+two-GPU rule of decisions 2026-10-24 E6 and 2026-10-27 F13 is withdrawn.
 
-**Exception: two GPUs within one increment** (decisions 2026-10-24 E6 and
-2026-10-27 F13, written for SF-39). Two jobs of the same increment may run
-concurrently, one per GPU, iff (1) both run the same synced build, (2) they
-write disjoint output directories, and (3) no `sync` of that increment's mirror
-happens while either is `running` or `waiting_gpu`. Such jobs set
-`REMOTE_GPU_WAIT` (SF-39: `7200`) so that a GPU held by another increment's
-session makes them wait instead of failing with exit 75; each job checks that
-its own GPU has no compute process before starting (`nvidia-smi -i <gpu>`). On
-exit 75 nothing ran: resubmit the same command (restart-safe through the
-runner's `DONE` files).
-
-`scripts/remote exec` takes **no** GPU lock; it is only for short, bounded
-configure/compile/smoke steps.
+`scripts/remote exec` takes **no** GPU lock and selects no GPU; it is only for
+short, bounded configure/compile/check steps that launch no CUDA work.
 
 #### GPU selection and waiting
 
 ```bash
-scripts/remote --increment SF-NN run <job> -- "<cmd>"            # --gpu auto (default): first free GPU
-scripts/remote --increment SF-NN run <job> --gpu 1 -- "<cmd>"    # pin GPU 1
-REMOTE_GPU_WAIT=1800 scripts/remote --increment SF-NN run <job> -- "<cmd>"
+scripts/remote --increment SF-NN run <job> -- "<cmd>"            # --gpu auto (default): least-loaded GPU
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=31000 \
+  scripts/remote --increment SF-NN run <job> -- "<cmd>"          # wait up to 2 h for the slot and >= 31000 MiB free
+scripts/remote --increment SF-NN run <job> --gpu 1 -- "<cmd>"    # pin (exceptional); still takes the slot
 ```
 
-- `REMOTE_GPU_WAIT=<seconds>` (default `0`) is how long a job waits for a free
-  GPU. While waiting, its state is `waiting_gpu` (`status` shows it;
-  `wait` keeps polling through it).
+- `REMOTE_GPU_WAIT=<seconds>` (default `0`) is how long a job waits, under
+  one deadline, for the slot and then for an eligible GPU. While waiting, its
+  state is `waiting_gpu` (`status` shows it; `wait` keeps polling through it).
+- `REMOTE_GPU_MIN_FREE_MIB=<MiB>` (default `0`) is the minimum free memory for
+  a GPU to be eligible. A pinned GPU must meet it too.
 - With `REMOTE_GPU_WAIT=0`, or when the wait expires, the job does not run:
   its state becomes `failed` with **exit code 75**, and its log lists the
-  current holders of both GPUs (job, session, increment, start time, whether
-  the session is alive). `scripts/remote wait <job>` returns 75.
+  current slot holder (job, session, increment, GPU, start time, whether the
+  session is alive) or the last GPU snapshot. `scripts/remote wait <job>`
+  returns 75.
+- If `nvidia-smi` fails or returns nothing usable, the job fails with
+  **exit code 70**; there is no blind fallback to a fixed GPU.
 - `status` reports the assigned GPU in the `gpu:` line and the mirror in the
-  `working_dir:` line; the log records `GPU=<n> (CUDA_VISIBLE_DEVICES=<n>, ...)`.
+  `working_dir:` line; the log records the per-GPU snapshot, the choice and
+  its reason, and `GPU=<n> (CUDA_VISIBLE_DEVICES=<n>, ...)`.
 - `cancel` terminates the job's whole process group (launcher, command and
-  children), so its GPU lock is released immediately. Processes that detach
-  themselves with `setsid`/`nohup &` escape the group and keep the lock until
+  children), so the slot is released immediately. Processes that detach
+  themselves with `setsid`/`nohup &` escape the group and keep the slot until
   they exit.
-- The holder files `~/.macroflow3d-remote/gpu-<n>.holder` are informational
-  only; the kernel `flock` is the authority. A stale holder file never blocks
-  a new job.
+- The holder file `~/.macroflow3d-remote/gpu.holder` is informational only;
+  the kernel `flock` is the authority. A stale holder file never blocks a new
+  job.
 
 #### Mirror lifecycle
 
@@ -195,7 +213,7 @@ Everything goes through one repo-local entry point:
 ```bash
 scripts/remote [--increment <id>] sync
 scripts/remote [--increment <id>] exec -- "<shell-command>"
-scripts/remote [--increment <id>] run <job> [--gpu auto|0|1] -- "<shell-command>"
+scripts/remote [--increment <id>] run <job> [--gpu auto|<n>] -- "<shell-command>"
 scripts/remote [--increment <id>] status <job>
 scripts/remote [--increment <id>] tail <job> [--lines N] [--no-follow]
 scripts/remote [--increment <id>] wait <job> [--interval SEC]
@@ -208,7 +226,8 @@ scripts/remote remove-mirror <id>
 is a global option and must come **before** the subcommand. Use the same id
 for every call of one increment (sync, exec, run, status, tail, wait, cancel);
 job names are scoped to that id. Job states are `waiting_gpu`, `running`,
-`succeeded`, `failed` (exit 75 = no GPU available), `cancelled` (130) and
+`succeeded`, `failed` (exit 75 = slot busy or no eligible GPU, resubmit; 70 = `nvidia-smi`
+unusable), `cancelled` (130) and
 `unknown`. See Section 0 for GPU locking and mirror lifecycle.
 
 Remote defaults live in:
@@ -221,7 +240,8 @@ That file defines:
 - remote host alias
 - remote repo path (derived per increment when an id is given)
 - remote state root (derived per increment when an id is given)
-- GPU lock root (`REMOTE_LOCK_ROOT`, host-wide) and `REMOTE_GPU_WAIT`
+- GPU slot lock root (`REMOTE_LOCK_ROOT`, host-wide), `REMOTE_GPU_WAIT` and
+  `REMOTE_GPU_MIN_FREE_MIB`
 - log / status / command / launcher directories
 - tmux session prefix
 - rsync exclusions
@@ -258,9 +278,8 @@ scripts/remote run ctest-release -- "ctest --test-dir build/v100-release --outpu
 scripts/remote wait ctest-release
 ```
 
-A single, genuinely fast, narrowly `-R`-filtered case may still use `exec` if
-it reliably completes in well under a minute; when in doubt, use `run` +
-`wait`.
+Every `ctest` case that launches CUDA work uses `run` + `wait`, however fast,
+so that it takes the project's single GPU slot.
 
 ## 7. Remote runs
 
@@ -352,15 +371,13 @@ Avoid:
   benchmark locally in WSL instead of as a detached V100 job
 - running a long-duration remote command with blocking `scripts/remote exec`
   instead of `scripts/remote run` + `scripts/remote wait`
-- running `scripts/remote sync` or a new `scripts/remote run` job while another
-  job is still `running`/`waiting_gpu` against the same mirror (the only
-  exception is the two-GPU rule of section "Exception: two GPUs within one
-  increment": a second `run` of the same build on the other GPU with disjoint
-  outputs; a `sync` is never allowed while a job of the mirror is active)
+- running `scripts/remote sync` while a job is still `running`/`waiting_gpu`
+  against the same mirror
 - sharing one remote mirror between two increments (always use
   `--increment SF-NN` / `REMOTE_INCREMENT=SF-NN` for increment work)
-- running two heavy jobs on one GPU: do not bypass the GPU lock with
-  `scripts/remote exec`, `CUDA_VISIBLE_DEVICES` overrides inside the command,
-  or detached (`setsid`/`nohup &`) processes that outlive their job
+- using more than one GPU, or a GPU not chosen by the slot: do not bypass it
+  with CUDA work under `scripts/remote exec`, `CUDA_VISIBLE_DEVICES` overrides
+  inside the command, multi-GPU programs, or detached (`setsid`/`nohup &`)
+  processes that outlive their job
 - leaving per-increment mirrors on the host after the increment's PR is merged
   (`scripts/remote remove-mirror SF-NN`)

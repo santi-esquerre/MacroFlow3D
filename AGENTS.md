@@ -170,8 +170,8 @@ detached background job, polled with `scripts/remote wait <job>`. It must
 never run inside a subagent's local isolated worktree, and it must never run
 as a long blocking `scripts/remote exec` call that ties up the calling agent
 turn for the whole duration. Reserve `scripts/remote exec` for short, bounded
-steps (configure, compile, a single fast smoke command) that finish in
-roughly under a minute.
+steps that launch no CUDA work (configure, compile, a quick check) and finish
+in roughly under a minute.
 
 Canonical flow:
 
@@ -194,6 +194,13 @@ jobs against it at the same time; a second sync overwrites the tree a prior
 job is still executing against. DAG nodes that both need remote execution must
 be serialized even if their local write scopes would otherwise allow parallel
 execution — see `docs/runbooks/remote-v100.md`.
+
+**One GPU, least loaded:** the V100 host is shared with colleagues outside the
+project. This project uses one GPU at a time, the least-loaded one:
+`scripts/remote run` holds a single host-wide slot and picks the GPU itself
+(decision `docs/decisions/2026-10-27-remote-single-gpu.md`). Every command that
+runs on a GPU goes through `run`; never pin GPUs or set `CUDA_VISIBLE_DEVICES`
+by hand.
 
 ---
 

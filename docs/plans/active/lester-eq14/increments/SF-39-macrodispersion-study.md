@@ -20,8 +20,9 @@ Decision records `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, item
 `docs/decisions/2026-10-23-sf38-activation-decisions.md` (D1, D3, D11, D14, D15: production geometry, the `sigma^2 = 4`
 estimator caveat, the Gate 5 protocol, the full-length ladders and the equivalence form of the criteria, frozen before
 SF-38 produced any plume statistic or `alpha(t)` series at `sigma^2 = 4`), `docs/decisions/2026-10-24-sf41-sf39-planning-decisions.md`
-(E4-E7: drift-aligned transverse moments, ladder `N_R` by an internal pilot rule, two GPUs with a checkpoint after the pilot,
-`normalize_variance` on; medium (b), selected by SF-38, through SF-41) and `docs/decisions/2026-10-27-sf39-pre-activation-decisions.md`
+(E4-E7: drift-aligned transverse moments, ladder `N_R` by an internal pilot rule, a checkpoint after the pilot,
+`normalize_variance` on; medium (b), selected by SF-38, through SF-41), `docs/decisions/2026-10-27-remote-single-gpu.md` (one GPU,
+the least-loaded, for all remote work; withdraws the two-GPU parts of E6 and F13) and `docs/decisions/2026-10-27-sf39-pre-activation-decisions.md`
 (F1-F14, after the pre-activation review `docs/experiments/2026-10-27-sf39-pre-activation-review.md`: executable estimator definitions,
 a plane-based conjunctive co-primary for `alpha_T`, a production `h` verdict without the ratio rule, rule D on measured direction,
 bounded-value reporting, pathwise drift, power realism, a width check and the method contrast). The study the project exists for:
@@ -124,11 +125,14 @@ the long domain built in SF-38/SF-41. It is allowed to establish, per `sigma^2` 
   (12 `lambda`, 9.6 `lambda` source, first 30 realizations); (ii) 12 `lambda` (1664x192x192, `--window 0.36666666666666664,
   0.63333333333333336,0.36666666666666664,0.63333333333333336` = 3.2 `lambda`, seeds 7201-7230) vs the narrow 1/2 rung (4 `lambda`, 3.2
   `lambda` source, first 30 realizations). Both transverse estimators reported.
-- **Compute** (E6, F13). Two GPUs: independent detached jobs on GPU 0 and GPU 1 (`scripts/remote --increment SF-39 run <job> --gpu 0|1`,
-  host-wide GPU locks, `REMOTE_GPU_WAIT=7200`) from one synced build, disjoint output directories, no `sync` while any SF-39 job runs, a
-  no-compute-process precheck of the job's own GPU. After the pilot the checkpoint (F9) reports `N`, GPU-seconds per realization,
-  projected GPU-hours and bytes on the host; the owner fixes the budget before any further run (rough estimate, decision 2026-10-24:
-  ~19 GPU-h typical, ~91 worst case, plus the Pollock bridge on the ladders and < 1 GPU-h for the width check).
+- **Compute** (E6 checkpoint; decision 2026-10-27 remote single GPU). One GPU, the least-loaded, chosen by `scripts/remote run` (single
+  host-wide project slot): SF-39 jobs run one at a time from one synced build, never pin `--gpu`, set `REMOTE_GPU_WAIT=7200`, and parts
+  that launch CUDA work set `REMOTE_GPU_MIN_FREE_MIB=30000` (SF-41 measured peak 28855 MiB at 3328x384^2 plus a margin), so they wait
+  instead of starting on a GPU a colleague has partly filled; no `sync` while any SF-39 job is `running` or `waiting_gpu`. Long parts may
+  be split into restart-safe sub-jobs (runner `DONE` files). After the pilot the checkpoint (F9) reports `N`, GPU-seconds per realization,
+  projected GPU-hours, projected wall time on one shared GPU and bytes on the host; the owner fixes the budget before any further run
+  (rough estimate, decision 2026-10-24: ~19 GPU-h typical, ~91 worst case, plus the Pollock bridge on the ladders and < 1 GPU-h for the
+  width check; on one GPU the wall time is about the GPU-hours, longer when a colleague shares the GPU).
 - Experiment note with the Gate 5 comparison statement (covariance model, `sigma^2`, boundary conditions, injection protocol, tracking
   method, estimation procedure) and the single table of every decision point (primary: the Gate 4 classification and the Gate 5
   verdict per amplitude; key secondary: the `alpha_LAM` ladder verdicts and B; estimation: F7, F8, F11; exploratory: F10).
@@ -143,7 +147,7 @@ the long domain built in SF-38/SF-41. It is allowed to establish, per `sigma^2` 
 ## Files and symbols
 
 - Scripts and configs only (runner from SF-38/SF-41), under `docs/experiments/artifacts/<date>-sf39-macrodispersion-study/`:
-  `scripts/run_sf39.sh` (parts `checks`, `pilot <gpu>`, `checkpoint`, `extend <gpu>`, `width`, `analysis`), `scripts/nr_rule.py`, the
+  `scripts/run_sf39.sh` (parts `checks`, `pilot`, `checkpoint`, `extend`, `width`, `analysis`), `scripts/nr_rule.py`, the
   analysis package (planes list, `t_b` and `tau_b*`, window estimator, aligned frame, `alpha_TP`, intervals, TOST, F4 production verdict,
   rule D/F6 classifier, F7 decay, F8 `rho`, F11 contrast, Gate 5 with `U_c` and ANCOVA, decision-point table), `configs/par2_s{1,225,4}.yaml`,
   `preregistration.md`; `logs/`, `raw/` (reduced per-realization CSVs; per-particle arrays stay on the V100 host), `analysis/`;
@@ -154,15 +158,15 @@ the long domain built in SF-38/SF-41. It is allowed to establish, per `sigma^2` 
 1. Fix in the activation row, before any run, verbatim: the base commit; medium, grids, `lambda/h`, `normalize_variance`, seeds (5001
    upward, width 7101/7201, Par2 9001), `N_p`, window, the planes list per geometry, times, `tol`, `h_max` list and runner flags; the
    estimator definitions (F2, F3, E4), the interval method and bootstrap seed (F6), the production `h` verdict (F4), rule D (F5, F6),
-   F7, the F8 thresholds, the `N_R` rules, cap and checkpoint content (F9), F10, F11, the GPU assignment (E6, F13), the anticipated
+   F7, the F8 thresholds, the `N_R` rules, cap and checkpoint content (F9), F10, F11, the single-GPU rule and `REMOTE_GPU_MIN_FREE_MIB`, the anticipated
    outcome at `sigma^2 = 4` (F9) and thresholds A-E.
 2. Checks on the V100 at the activation base, before the pilot: build; `scripts/regress` (set v2) reproduces its references; one
    realization per narrow size verifies the medium (b) solve; one realization run with `--hmax-div 8,16,32` and with `--hmax-div 8` is
    compared byte for byte (F12 file list; `DONE`, `timings.json` excluded); the analysis scripts reproduce known answers on synthetic
    inputs and run on existing SF-41 outputs.
-3. Pilot (two GPUs) -> `tau_b*` per amplitude and Par2 `tau_b*` frozen -> `nr_rule.py` and the checkpoint report (F9: `N`, GPU-s per
-   realization, GPU-h, bytes; no means, margins or verdicts) -> owner budget -> every `N` recorded in the bitácora before further runs.
-4. Extension (two GPUs): production directories A and B, narrow ladders, coarse twins, Par2 extension, width arms.
+3. Pilot (one GPU) -> `tau_b*` per amplitude and Par2 `tau_b*` frozen -> `nr_rule.py` and the checkpoint report (F9: `N`, GPU-s per
+   realization, GPU-h, projected wall time, bytes; no means, margins or verdicts) -> owner budget -> every `N` recorded in the bitácora before further runs.
+4. Extension (one GPU): production directories A and B, narrow ladders, coarse twins, Par2 extension, width arms.
 5. Analysis -> classification -> experiment note -> PR `awaiting_review`.
 6. Every run records statuses (including the SF-41 exit statuses), non-ok counts by type, backflow counters, Lagrangian `e_v`
    percentiles and `flow_stats.json`; moments over the stated particle sets with the counts.
@@ -180,20 +184,19 @@ A=docs/experiments/artifacts/<date>-sf39-macrodispersion-study/scripts
 B=build/v100-release
 scripts/remote --increment SF-39 sync
 scripts/remote --increment SF-39 exec -- "cmake --preset v100-release && cmake --build $B -j"
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checks --gpu 0 -- "bash $A/run_sf39.sh $B checks"
+G="REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000"   # one GPU, least-loaded, chosen by scripts/remote (never --gpu)
+env $G scripts/remote --increment SF-39 run sf39-checks -- "bash $A/run_sf39.sh $B checks"
 scripts/remote --increment SF-39 wait sf39-checks
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-pilot-g0 --gpu 0 -- "bash $A/run_sf39.sh $B pilot 0"
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-pilot-g1 --gpu 1 -- "bash $A/run_sf39.sh $B pilot 1"
-scripts/remote --increment SF-39 wait sf39-pilot-g0; scripts/remote --increment SF-39 wait sf39-pilot-g1
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checkpoint --gpu auto -- "bash $A/run_sf39.sh $B checkpoint"
+env $G scripts/remote --increment SF-39 run sf39-pilot -- "bash $A/run_sf39.sh $B pilot"
+scripts/remote --increment SF-39 wait sf39-pilot
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checkpoint -- "bash $A/run_sf39.sh $B checkpoint"
 scripts/remote --increment SF-39 wait sf39-checkpoint
 # STOP: owner budget (F9); every N recorded in the bitácora before any further run
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-extend-g0 --gpu 0 -- "bash $A/run_sf39.sh $B extend 0"
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-extend-g1 --gpu 1 -- "bash $A/run_sf39.sh $B extend 1"
-scripts/remote --increment SF-39 wait sf39-extend-g0; scripts/remote --increment SF-39 wait sf39-extend-g1
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-width --gpu auto -- "bash $A/run_sf39.sh $B width"
+env $G scripts/remote --increment SF-39 run sf39-extend -- "bash $A/run_sf39.sh $B extend"
+scripts/remote --increment SF-39 wait sf39-extend
+env $G scripts/remote --increment SF-39 run sf39-width -- "bash $A/run_sf39.sh $B width"
 scripts/remote --increment SF-39 wait sf39-width
-REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-analysis --gpu auto -- "bash $A/run_sf39.sh $B analysis"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-analysis -- "bash $A/run_sf39.sh $B analysis"
 scripts/remote --increment SF-39 wait sf39-analysis
 ```
 
@@ -299,3 +302,4 @@ artifacts or experiment notes and link them here.
 | 2026-10-24T06:00Z | not started | Amended on the docs-only governance PR (branch `docs/lester-sf41-sf39-planning`) by the owner decisions of 2026-10-24 (`docs/decisions/2026-10-24-sf41-sf39-planning-decisions.md`) after SF-38 selected medium (b): Depends on adds SF-41; medium (b) through the SF-41 stage, injection at `5 lambda`, measurement up to `L1 - 5 lambda`; transverse moments in the frame of each realization's mean Darcy flux for Gate 4, fixed axes reported (E4); ladder `N_R` by an internal-pilot rule on the sd of the paired differences, at least 20 (E5, refines D15a); two GPUs with an owner checkpoint after the pilot (E6, refines D16 for SF-39); `normalize_variance` on (E7); narrow-size solve check for medium (b); `h_max` ladder by SF-41 multi-pass; recorded flow-reversal statistics, exit counts, tilt, per-realization ladder tails and the B&dD comparison conditions. Margins, branch order and the Gate 5 rule frozen by D15 are unchanged. The previous text is in git history at `d8ffa7c`. | Docs only; no run. | Activate only when the checker reports it READY (SF-37, SF-38, SF-41 `done`); the activation row fixes the items of "Implementation specification" 1 before any run. |
 | 2026-10-26T16:30Z | not started | Precondition added on the codebase-audit governance PR (branch `chore/aud-00-audit-governance`) by the owner decisions of 2026-10-26 (`docs/decisions/2026-10-26-audit-cleanup.md`): SF-39 activates after the pre-SF-39 audit items are merged (writers checked before `DONE`, blocking context stream, V100 build provenance, regression set v2 replacing the SF-27 trio, PETSc/PSPTA/`legacy/` retired). No change to Goal, scope, thresholds or the frozen rules. | Decision record A1-A10; plan `docs/plans/active/audit-cleanup-2026-10.md` | Activate SF-39 once AUD-00..06, AUD-10..14 and AUD-20 are merged. |
 | 2026-10-27T15:00Z | not started | Amended on the docs-only pre-activation governance PR (branch `docs/lester-sf39-pre-activation-governance`) by decision 2026-10-27 (`docs/decisions/2026-10-27-sf39-pre-activation-decisions.md`, F1-F14; owner delegation, ratified by merge) after the pre-activation review `docs/experiments/2026-10-27-sf39-pre-activation-review.md` (five reader reports, four adversarial reviews, two red-team reviews of the decisions, own calculations): executable estimator definitions (per-realization window estimator, `tau_b*` frozen in normalized time from the pilot, normalization velocities, particle sets, Gate 5 window) (F2); plane-based `alpha_TP` as a conjunctive co-primary for Gate 4 (F3); the production `h` verdict without the ratio rule (F4: narrow verdict + twin bound `2^1.5 m` + order contrast); rule D on measured direction with symmetric branches and agreement of both estimators (F5); `physical (positive / negative / bounded)` with Student `t` intervals replacing "zero within resolution" (F6); no asymptotic claim, `Delta_half` (F7); pathwise drift `rho` from the `h_max` passes (F8); `N` from the transverse estimators with the upper 80 % sd limit, blinded checkpoint, budget rule, anticipated inconclusive outcome at `sigma^2 = 4` (F9); exploratory width check (F10); method contrast as estimation (F11); covectors dropped, `sigma^2 = 6.25` deferred, Par2 configs, `h_max` ladder from production directory A, byte check, disk (F12); two-GPU rule in the runbook (F13); theory notes and Gate 4 corrected (F14). Date of knowledge stated in the thresholds header (F1). Goal, D15 margins and CI targets, D1 geometry and medium unchanged. The previous text is in git history at `782c9d9`. | Docs only; no run; no `alpha` claimed. | Activate when the checker reports SF-39 READY with this PR merged; the activation row copies the thresholds verbatim and fixes the base commit (this PR's merge) before any run. |
+| 2026-10-27T16:00Z | not started | Amended on the docs-only/tooling PR (branch `docs/remote-single-gpu`) by the owner decision of 2026-10-27 (`docs/decisions/2026-10-27-remote-single-gpu.md`): the V100 host is shared with colleagues, so the project uses one GPU at a time, the least-loaded, chosen by `scripts/remote run` (single host-wide slot, `nvidia-smi` sampling, `REMOTE_GPU_MIN_FREE_MIB`). Compute paragraph, `run_sf39.sh` parts (`pilot`/`extend` without a GPU argument), implementation items 1, 3, 4 and validation commands rewritten (one job at a time, never `--gpu`, `REMOTE_GPU_MIN_FREE_MIB=30000` for parts with CUDA work, `REMOTE_GPU_WAIT=7200`); the checkpoint adds projected wall time. Withdraws the two-GPU parts of E6 and F13. Goal, thresholds, estimators, margins and the scientific design unchanged. | Docs and `scripts/remote` arbitration only; no run. | Activate when the checker reports SF-39 READY with this PR merged; the activation row fixes the base commit (this PR's merge). |
