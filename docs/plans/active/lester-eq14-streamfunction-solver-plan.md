@@ -437,7 +437,10 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
 5. The study: `alpha_L`, `alpha_T` at `sigma^2` in {1, 2.25, 4} with `lambda/h`, `tol` and `N_R` convergence by
    confidence intervals (`tol` via the `h_max` ladder and equivalence tests, decision 2026-10-23); `alpha_L` against Par2 RWPT with the same configuration (Gate 5); `alpha_T` classified
    physical / numerical / unresolved without presupposing its value (Gate 4):
-   [SF-39](lester-eq14/increments/SF-39-macrodispersion-study.md).
+   [SF-39](lester-eq14/increments/SF-39-macrodispersion-study.md) (pre-activation governance 2026-10-27,
+   `docs/decisions/2026-10-27-sf39-pre-activation-decisions.md`: executable estimator definitions, a plane-based conjunctive
+   co-primary for `alpha_T`, a production `h` verdict without the ratio rule, rule D on measured direction, bounded-value reporting,
+   pathwise drift, a width check and the method contrast; `sigma^2 = 6.25` deferred).
 6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
    SF-31 pseudo-symplectic tracker on gridded labels (deferred: future work, not a requirement).
 

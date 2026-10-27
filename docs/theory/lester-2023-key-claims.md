@@ -14,7 +14,8 @@ This paper is the main scientific basis for the current Lester equation (14) str
 
 Its core claim is not merely that some numerical methods are inaccurate. It is stronger:
 
-- for **steady 3D Darcy flow with smooth, locally isotropic scalar conductivity** and **no stagnation points**, the flow is **helicity-free**,
+- for **steady 3D Darcy flow with smooth, locally isotropic scalar conductivity**, the flow is **helicity-free** (L23 eq. 10, p. 5: `h = k grad(phi) . (grad(k) x grad(phi)) = 0`; this follows from local isotropy and smoothness alone and needs no condition on stagnation points),
+- the separate **stagnation-free** condition (eq. 11, `v != 0`, pp. 5-6) is what gives `grad(psi_i) != 0` and excludes knots/braids; it holds for pressure-driven Darcy flow and can fail for source-driven flow,
 - such flows admit **two invariants / streamfunctions**,
 - those invariants constrain trajectories to 2D streamsurfaces,
 - therefore, **under the paper's assumptions (bounded label fluctuations, §4 of the paper)**, purely advective transverse macrodispersion is zero in that regime,
@@ -74,6 +75,8 @@ In the paper this is the conceptual bridge between:
 - helicity-free Darcy flow,
 - integrability,
 - and the absence of purely advective transverse macrodispersion.
+
+**Inconsistency in the sources (recorded, not resolved).** L23 p. 6 states "all steady 3D helicity-free flows admit the dual streamfunctions" (via the Clebsch/Euler-potential argument with Yoshida 2009 and Arnol'd 1997), and Lester et al. 2021 (JFM 918 A27, p. A27-8) calls the helicity-free condition "a necessary and sufficient condition for the existence of a pair of 2-D streamfunctions". L23 itself says on p. 11 (§5.1) that "the helicity-free condition is a necessary but not sufficient condition for the existence of streamfunctions". The project does not rely on either reading: local existence is the Euler-potential statement below, and the existence of the target object is checked independently of the solver.
 
 **Verified / refuted in this project** (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; limits: CPU probes, smooth Gaussian-covariance field, amplitude <= 1, `L/ell = 4`, one realization; the production-stack repeat is pending in SF-30).
 - Two invariants exist **locally**: Euler potentials exist locally for any divergence-free field, so §1 (helicity-free) and local existence stand.
@@ -170,6 +173,15 @@ the asymptotic transverse macrodispersion coefficients vanish in the purely adve
 D^m_{22} = D^m_{33} = 0
 ```
 
+**Assumptions the argument uses (locators in L23; the paper's own words where quoted).**
+- statistical stationarity and ergodicity of `K` (§3, p. 4: "we assume that these random fields [...] are statistically stationary and ergodic"); Lester et al. 2021 argues stationarity of the streamfunction fluctuation `psi~` from that of `v~` (A27-20), asserted, not proven;
+- the purely advective limit `Pe -> infinity` (eqs. 6-7, p. 4);
+- the infinite-volume coarse-graining (eqs. 3, 27: the macrodispersion coefficient is the `V -> infinity` limit of a volume average);
+- bounded fluctuations of `psi~` are an explicit assumption (p. 8: "we assume that the fluctuations `psi~_i` are also bounded"); the bounded gradients of eq. 20 are presented as following from the stagnation-free condition (p. 8), which is logically weak: eq. 20 `|grad psi~_i| < |grad psi_i|` bounds gradients pointwise and does not by itself bound `psi~_i` over an unbounded domain;
+- the argument has the form `D^m_22 = lim (1/V) \oint n . f d^2x` with `f` finite (eq. 26-27): the surface integral scales as `L^2` and `1/V` as `L^-3`, hence `D^m_22 -> 0` (p. 9).
+
+**First-order context (derived in this project, `docs/experiments/2026-10-27-sf39-pre-activation-review.md`; not a claim of the paper).** For Gaussian covariance, first-order theory gives `alpha_T(tau) = sqrt(pi) sigma^2 lambda / (8 tau^2) + O(tau^-4)` with `tau = U t / lambda`, positive at every finite time. A finite-time positive `alpha_T` is therefore expected even if its asymptote is zero.
+
 **Verified / refuted in this project** (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; limits: CPU probes, smooth Gaussian-covariance field, amplitude <= 1, `L/ell = 4`, one realization; the production-stack repeat is pending in SF-30).
 - In the periodic cell the bounded-fluctuation assumption fails: the transverse displacement of the Darcy streamlines grows without bound over many periods (finding 3 of the note), because the streamlines do not close.
 - The paper's `D_T = 0` for the periodic surrogate is a property of the surrogate (closed streamlines by construction), not a measurement on the Darcy flow.
@@ -189,20 +201,26 @@ The paper identifies **two distinct numerical failure sources**:
 ### A. Velocity reconstruction errors
 A reconstruction may preserve divergence but fail to preserve the helicity-free / invariant structure.
 
-Example discussed in the paper:
-- Pollock-like / linearly reconstructed cellwise velocity fields.
+Example discussed in the paper (§5.2, pp. 11-13):
+- Pollock-like / linearly reconstructed cellwise velocity fields (zero-order Raviart-Thomas-Nédélec space on cuboid cells; exact integration within the cell, so all error is the reconstruction).
+- Scaling: the variance of the transverse position error grows as `(Delta/Delta0)^2` (Fig. 3c, p. 13); if that variance grows linearly in time the spurious coefficient is `D^m_22 = sigma_x2^2 / (2 <tau_Omega>)` (eq. 36, p. 13; the linear-growth assumption is the paper's).
 
 The message is:
 
 > divergence-free interpolation is not enough.
 
+Source inconsistency: L23 p. 11 says the RTN reconstruction enforces the divergence-free condition, whereas Lester et al. 2021 (A27-15) says linear interpolation yields a velocity field that is not globally divergence free (discontinuous gradients at cell faces). Either way both state that the curl/helicity is not captured.
+
 ### B. Streamline integration errors
 Even if the velocity field is exact or structure-consistent, a time integrator can still drift off the invariant surfaces if it does not preserve the invariants.
 
-Example discussed in the paper:
-- Runge–Kutta tracking without explicit invariant preservation.
+Example discussed in the paper (§5.3, p. 13):
+- Runge–Kutta tracking (4th order, adaptive, `tol` in `1e-4 .. 1e-8`) of the exact streamfunction velocity, without explicit invariant preservation.
+- Scaling: the error variance grows as `sqrt(tol)` (Fig. 4b, p. 14).
 
-The paper shows that both kinds of error can mimic Brownian-like transverse spreading and thus be falsely interpreted as macrodispersion.
+The paper shows that both kinds of error can mimic Brownian-like transverse spreading ("in a manner that mimics Brownian motion", p. 21) and thus be falsely interpreted as macrodispersion.
+
+Caveats on what the paper reports: no numerical `alpha_T` value is given for any method in pure advection (the figures show error variances, not dispersivities); p. 13 doubts that a refinement ladder removes the error ("even highly resolved grids [...] can impart significant spatial errors") while p. 21 says the true coefficients can be obtained by rigorous convergence studies. The project treats refinement evidence as necessary, not sufficient (Rule 3).
 
 ---
 
@@ -216,10 +234,15 @@ The paper shows that both kinds of error can mimic Brownian-like transverse spre
 Its argument is that both failure sources of §5 (A: a reconstruction that breaks the helicity-free structure; B: an integrator that drifts off the invariant surfaces) can mimic transverse macrodispersion, so geometric preservation must be prioritized over generic ODE integration.
 
 **Status in this project (owner decision 2026-10-17, `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`).** The pseudo-symplectic tracker (SF-31) is verified infrastructure and **future work, not a requirement** of the macrodispersion study. It needs gridded labels of the Darcy flow, and those are verified only for `sigma_Y <= 1` (SF-35); on the one realization probed at `sigma_Y^2 = 4` their derivatives do not converge beyond about one correlation length even at 512^3, although the labels converge in RMS (`docs/experiments/2026-10-17-sf35-sigma4-feasibility.md`). If the reading of that probe holds (unresolved label layers; a hypothesis), the structural guarantee would refer to under-resolved surfaces exactly where the flow is most sensitive. The production consumer is Lagrangian: particles traced forward on the spline flow `v_s = k_s grad Phi_s`, each carrying its own labels. With respect to §5:
-- source (A): `v_s` is helicity-free pointwise by its form (`curl(k grad Phi) = grad k x grad Phi`); its divergence is expected to be `O(h^2)` and is measured along each path through `grad psi1 x grad psi2 = v_s exp(-int div v_s dt)`;
+- source (A): the helicity-breaking part is absent by construction — `v_s` is helicity-free pointwise by its form (`curl(k grad Phi) = grad k x grad Phi`); this does not make `v_s` divergence-free: `div v_s = O(h^2)` is expected, and is measured along each path through `grad psi1 x grad psi2 = v_s exp(-int div v_s dt)`;
 - source (B): there is no structural guarantee; the drift is controlled by the integration tolerance and must be **measured** (paired tolerance and grid ladders, an independent face-flux comparator) — Rule 3 puts the burden of proof on the method.
 
 The paper's message still sets what must be measured; it no longer fixes which tracker the project uses.
+
+Further locators and limits found on a full reading (2026-10-27):
+- L23 p. 11 (§5.2) explicitly recommends interpolating `phi` and `k` separately and forming `v = -k grad(phi)` analytically: helicity-free "even if the potential field contains small numerical errors and the resultant velocity is not strictly divergence-free". This is the Lagrangian consumer's construction.
+- The pseudo-symplectic tracker was never run in pure advection (p. 15: "We do not implement this algorithm to transverse dispersion in the purely advective case as the results are trivial"); the paper's zero there holds by construction (§4 argument, p. 10; the 1D integral eq. 38, p. 14, keeps `x2, x3` on the label surfaces), not by measurement. Eq. 38 implicitly needs `v1 > 0` (the label inverse functions `X2, X3` are parametrized by `x1`).
+- Lester et al. (2025, JFM 1018, A35, doi:10.1017/jfm.2025.10551, arXiv:2412.05419; not in `docs/references`, read via arXiv HTML, App. D) avoided Runge-Kutta on a spline `k grad(phi)` for the isotropic case, citing spurious transverse dispersion (L23). That group therefore regards the consumer's construction as insufficient without drift evidence; this is why SF-39 records pathwise drift (decision 2026-10-27 F8).
 
 ---
 
@@ -234,6 +257,8 @@ Main point:
 Interpretation (**what the paper states**, under its bounded-label-fluctuation assumption; not verified by this project, and see §4 for the limits found in the periodic cell):
 - the limit is **regular**, not singular, in the non-chaotic isotropic Darcy case,
 - the project measures `D_T(Pe)` in a later phase instead of assuming this scaling.
+
+What the local-dispersion result rests on: first-order truncation of the velocity field about a streamline (eqs. 40, 44, p. 15), Markovian decorrelation of `v` and `m` along streamlines (eq. 52, p. 16), a waiting-time index `beta > 1` (eq. 53, p. 17), and periodic random re-injection of streamlines in the numerical test (p. 18); eq. 68 holds only for `t < t_d` (`t_d = l^2/D_0`, p. 18).
 
 ---
 
@@ -258,6 +283,8 @@ This distinction is critical. The repository must never overgeneralize the Leste
 
 For MacroFlow3D validation, Gaussian-covariance log-conductivity fields are the main smooth benchmark for invariant existence and equation (14) solver development.
 
+Project inference, not a claim of either Lester paper: Lester et al. 2021 and 2023 define smooth as "not discontinuous" (L21 A27-27; L23 pp. 7, 22), so neither says anything about exponential covariance. The statement below is the project's own reading.
+
 Exponential-covariance fields are not automatically equivalent. Their reduced smoothness can violate the classical hypotheses needed for a global two-streamfunction representation. If they are used after regularization, the run must state:
 
 - smoothing scale;
@@ -278,7 +305,7 @@ Do not assume two global invariants exist for locally anisotropic tensor conduct
 ## A. Scientific interpretation rules
 
 ### Rule 1
-For smooth, locally isotropic, purely advective Darcy cases, positive asymptotic transverse macrodispersion is **not** accepted as physical by default, **nor is zero presupposed**. Classify every observed growth as physical / numerical / unresolved with grid and tolerance refinement evidence, and compare against the streamline-closure oracle (SF-30).
+For smooth, locally isotropic, purely advective Darcy cases, positive asymptotic transverse macrodispersion is **not** accepted as physical by default, **nor is zero presupposed**. Classify every observed growth as physical / numerical / unresolved with grid and tolerance refinement evidence, and compare against the streamline-closure oracle (SF-30). For a Lagrangian-label consumer, which shares its integrator with the SF-30 closure oracle, the comparison is against the independent checks listed in Gate 4 (`docs/validation/acceptance-gates.md`), as Gate 4 already states.
 
 ### Rule 2
 A method is not validated just because it is:

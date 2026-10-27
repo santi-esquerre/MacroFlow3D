@@ -79,6 +79,17 @@ Within one increment the mirror is still single-flight: do not
 executes against. Two DAG nodes of the same increment that both need remote
 execution must still be serialized.
 
+**Exception: two GPUs within one increment** (decisions 2026-10-24 E6 and
+2026-10-27 F13, written for SF-39). Two jobs of the same increment may run
+concurrently, one per GPU, iff (1) both run the same synced build, (2) they
+write disjoint output directories, and (3) no `sync` of that increment's mirror
+happens while either is `running` or `waiting_gpu`. Such jobs set
+`REMOTE_GPU_WAIT` (SF-39: `7200`) so that a GPU held by another increment's
+session makes them wait instead of failing with exit 75; each job checks that
+its own GPU has no compute process before starting (`nvidia-smi -i <gpu>`). On
+exit 75 nothing ran: resubmit the same command (restart-safe through the
+runner's `DONE` files).
+
 `scripts/remote exec` takes **no** GPU lock; it is only for short, bounded
 configure/compile/smoke steps.
 
@@ -342,7 +353,10 @@ Avoid:
 - running a long-duration remote command with blocking `scripts/remote exec`
   instead of `scripts/remote run` + `scripts/remote wait`
 - running `scripts/remote sync` or a new `scripts/remote run` job while another
-  job is still `running`/`waiting_gpu` against the same mirror
+  job is still `running`/`waiting_gpu` against the same mirror (the only
+  exception is the two-GPU rule of section "Exception: two GPUs within one
+  increment": a second `run` of the same build on the other GPU with disjoint
+  outputs; a `sync` is never allowed while a job of the mirror is active)
 - sharing one remote mirror between two increments (always use
   `--increment SF-NN` / `REMOTE_INCREMENT=SF-NN` for increment work)
 - running two heavy jobs on one GPU: do not bypass the GPU lock with

@@ -166,7 +166,7 @@ The target regime is:
 
 Required:
 
-- Gate 1-3, or Gate 3A for the Lester equation (14) solver path
+- Gate 1-2, and Gate 3A for the Lester equation (14) solver path
 - controlled pure-advection test case
 - careful interpretation of transverse spreading
 - explicit statement whether any observed transverse growth is:
