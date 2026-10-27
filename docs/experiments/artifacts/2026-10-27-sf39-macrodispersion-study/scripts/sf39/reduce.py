@@ -45,6 +45,10 @@ Columns of the per-realization common dict (`flatten` prefixes methods as `<meth
   S_r = sigma_T^2(X_b)/(ell (X_b-X_a)) (flux, T_r), split.<est>.A / split.<est>.B (est in alpha_TAM, alpha_TP, alpha_LAM; flux;
   halves by (m2+m3) parity of the lattice index p = m2 M + m3), skipped (';'-joined reasons for tolerated missing data).
 
+Smoke cross-check: `crosscheck_pass/run` compare `sigma_series_rows` and the per-snapshot moments with the runner's
+moments_planes.csv / moments_time.csv (flux) and twin/moments_*.csv (uniform): `contributing`/`active` equal, mean/var within
+|a-b| <= 1e-9 max(|a|,|b|) + 1e-15, x1 within 1e-12; `max_rel` = max |a-b|/max(|a|,|b|,1e-6).  Any FAIL -> smoke exit 1.
+
 Long tables: `sigma_series_rows` (x1, n_contrib, n_noncross, wfrac, mean/var x2,x3, sigma_T2: each plane over its own contributors,
 flux weights) and `rho_rows` (F8: pair, plane, n, sigma_T, rho = sqrt(sum w |dx_T|^2/sum w)/sigma_T, rho_c = centred per-component
 variant sqrt(sum w[(d2-d2bar)^2+(d3-d3bar)^2]/(2 sum w))/sigma_T, S_r, rho_S = rho S_r; weights and sigma_T from the first
@@ -409,9 +413,9 @@ def half_masks(P):
 # ------------------------------------------------------------------------------------------------
 # long tables
 # ------------------------------------------------------------------------------------------------
-def sigma_series_rows(P):
-    """One row per plane: each plane over its own contributors, consumer flux weights."""
-    w = np.asarray(P.weights, dtype=float)
+def sigma_series_rows(P, uniform=False):
+    """One row per plane: each plane over its own contributors, consumer flux weights (uniform=True: uniform weights)."""
+    w = np.ones(len(P.weights)) if uniform else np.asarray(P.weights, dtype=float)
     traced = w > 0.0
     rows = []
     for p, x1 in enumerate(P.planes):
@@ -614,6 +618,117 @@ def signtable(evladder, out=None):
 
 
 # ------------------------------------------------------------------------------------------------
+# cross-check of the reducer's moments against the runner's own C++ moments (smoke, RR3 (iv))
+# ------------------------------------------------------------------------------------------------
+XC_RTOL, XC_ATOL, XC_FLOOR = 1e-9, 1e-15, 1e-6  # |a-b| <= RTOL max(|a|,|b|) + ATOL; max_rel scale floor ATOL/RTOL
+
+
+def _near(a, b):
+    if math.isnan(a) or math.isnan(b):
+        return math.isnan(a) and math.isnan(b)
+    return abs(a - b) <= XC_RTOL * max(abs(a), abs(b)) + XC_ATOL
+
+
+def _rel(a, b):
+    if math.isnan(a) or math.isnan(b):
+        return 0.0 if (math.isnan(a) and math.isnan(b)) else math.inf
+    return abs(a - b) / max(abs(a), abs(b), XC_FLOOR)
+
+
+def _mean_var(x, w):
+    """Biased weighted mean and variance (NaN, NaN if empty or sum w <= 0: the runner's rule)."""
+    x, w = np.asarray(x, dtype=float), np.asarray(w, dtype=float)
+    if x.size == 0 or not (w.sum() > 0.0):
+        return NAN, NAN
+    m = float(np.sum(w * x) / w.sum())
+    return m, float(np.sum(w * (x - m) ** 2) / w.sum())
+
+
+def _compare(pairs):
+    """(ok, max_rel) of a list of (mine, runner) float pairs."""
+    return all(_near(a, b) for a, b in pairs), max([_rel(a, b) for a, b in pairs] + [0.0])
+
+
+def crosscheck_planes(P, csv_path, uniform=False):
+    """(n_bad_rows, max_rel): sigma_series_rows vs the runner's moments_planes.csv (x1, contributing, mean/var x2, x3)."""
+    mine, ref = sigma_series_rows(P, uniform), sio.read_csv_rows(csv_path)
+    if len(mine) != len(ref):
+        return abs(len(mine) - len(ref)) or 1, math.inf
+    bad, mx = 0, 0.0
+    for m, r in zip(mine, ref):
+        ok, rel = _compare([(m[k], r[k]) for k in ("mean_x2", "var_x2", "mean_x3", "var_x3")])
+        ok = ok and int(r["contributing"]) == m["n_contrib"] and abs(r["x1"] - m["x1"]) <= 1e-12 * max(1.0, abs(m["x1"]))
+        bad += not ok
+        mx = max(mx, rel)
+    return bad, mx
+
+
+def crosscheck_times(P, csv_path, uniform=False):
+    """(n_bad_rows, max_rel): per-snapshot weighted mean/biased variance of x1,x2,x3 over the records at j vs moments_time.csv."""
+    ref = sio.read_csv_rows(csv_path)
+    if len(ref) != len(P.times):
+        return abs(len(ref) - len(P.times)) or 1, math.inf
+    w = np.ones(len(P.weights)) if uniform else np.asarray(P.weights, dtype=float)
+    bad, mx = 0, 0.0
+    for j, r in enumerate(ref):
+        X = np.asarray(P.times_x[:, j, :], dtype=float)
+        f = _fin(X)
+        pairs = []
+        for k, (mk, vk) in enumerate((("mean_x", "var_x"), ("mean_y", "var_y"), ("mean_z", "var_z"))):
+            m, v = _mean_var(X[f, k], w[f])
+            pairs += [(m, r[mk]), (v, r[vk])]
+        ok, rel = _compare(pairs)
+        ok = ok and int(r["active"]) == int(f.sum()) and abs(r["t"] - P.times[j]) <= 1e-12 * max(1.0, abs(P.times[j]))
+        bad += not ok
+        mx = max(mx, rel)
+    return bad, mx
+
+
+def crosscheck_pass(root):
+    """{'planes': (n_bad, max_rel), 'times': (...), 'twin': (...) or None} for one pass root (twin: uniform weights, absent
+    twin/ directory -> None).  Missing moments CSVs raise MissingData."""
+    P = Pass(root)
+    out = {"planes": crosscheck_planes(P, os.path.join(root, "moments_planes.csv")),
+           "times": crosscheck_times(P, os.path.join(root, "moments_time.csv")), "twin": None}
+    if os.path.isdir(os.path.join(root, "twin")):
+        a = crosscheck_planes(P, os.path.join(root, "twin", "moments_planes.csv"), uniform=True)
+        b = crosscheck_times(P, os.path.join(root, "twin", "moments_time.csv"), uniform=True)
+        out["twin"] = (a[0] + b[0], max(a[1], b[1]))
+    return out
+
+
+def crosscheck_run(rdirs):
+    """Aggregate crosscheck_pass over every pass of every realization directory; missing CSVs count as 1 bad."""
+    agg = {"planes": [0, 0.0], "times": [0, 0.0], "twin": None}
+    for rdir in rdirs:
+        for root in sio.pass_roots(rdir):
+            try:
+                res = crosscheck_pass(root)
+            except MissingData:
+                agg["planes"][0] += 1
+                agg["times"][0] += 1
+                continue
+            for k, v in res.items():
+                if v is None:
+                    continue
+                if agg[k] is None:
+                    agg[k] = [0, 0.0]
+                agg[k][0] += v[0]
+                agg[k][1] = max(agg[k][1], v[1])
+    return agg
+
+
+def crosscheck_line(name, agg):
+    st = lambda v: "absent" if v is None else ("ok" if v[0] == 0 else "FAIL %d" % v[0])
+    mx = max([v[1] for v in agg.values() if v is not None] + [0.0])
+    return "CROSSCHECK run=%s planes=%s times=%s twin=%s max_rel=%.3g" % (name, st(agg["planes"]), st(agg["times"]), st(agg["twin"]), mx)
+
+
+def crosscheck_ok(agg):
+    return all(v is None or v[0] == 0 for v in agg.values())
+
+
+# ------------------------------------------------------------------------------------------------
 # CLI
 # ------------------------------------------------------------------------------------------------
 def _iter_realizations(out_dir, subset, div):
@@ -696,6 +811,13 @@ def cmd_smoke(a):
             n_fail += 1
             notes.append("FAILED %s: %s" % (type(e).__name__, e))
         print("%-28s %s" % (name, "; ".join(notes)))
+        try:
+            agg = crosscheck_run([p for _, p, done in sio.list_realizations(run) if done])
+            print(crosscheck_line(name, agg))
+            n_fail += not crosscheck_ok(agg)
+        except Exception as e:
+            n_fail += 1
+            print("CROSSCHECK run=%s FAILED %s: %s" % (name, type(e).__name__, e))
     print("SMOKE runs=%d failed=%d (NOT EVIDENCE)" % (n_run, n_fail))
     return 0 if n_run > 0 and n_fail == 0 else 1
 

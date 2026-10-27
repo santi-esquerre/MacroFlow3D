@@ -134,6 +134,16 @@ def pass_root(rdir, div=None):
     raise MissingData("cannot choose a pass root in %s (candidates %s); pass the divisor" % (rdir, cands))
 
 
+def pass_roots(rdir):
+    """Every pass root of a realization: [R] (single pass) or the sorted R/hmax_<d> directories."""
+    if os.path.exists(os.path.join(rdir, "track.json")):
+        return [rdir]
+    roots = sorted(os.path.join(rdir, d) for d in os.listdir(rdir) if re.fullmatch(r"hmax_\d+", d)) if os.path.isdir(rdir) else []
+    if not roots:
+        raise MissingData("no pass root in %s" % rdir)
+    return roots
+
+
 class Pass:
     """Per-pass tracker files (lazy)."""
 

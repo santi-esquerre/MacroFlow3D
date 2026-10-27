@@ -144,7 +144,37 @@ def write_series(path, X):
                                          ",".join("%.17g" % v for v in Y.var(axis=0)), a.sum()))
 
 
-def write_pass(root, g, planes, shift=(0.0, 0.0)):
+def _loop_mv(vals, ws):
+    """Weighted mean and biased variance by plain loops (independent of the reducer); (nan, nan) if empty."""
+    W = sum(ws)
+    if not vals or not W > 0:
+        return float("nan"), float("nan")
+    m = sum(w * v for v, w in zip(vals, ws)) / W
+    return m, sum(w * (v - m) ** 2 for v, w in zip(vals, ws)) / W
+
+
+def write_moments(root, planes, x23, tx, w, flux=True):
+    """The runner's moments_planes.csv / moments_time.csv (flux weights) or twin/ variants (uniform), by plain loops.
+    Columns not read by the cross-check (tau, ev, non_ok) are written as 0."""
+    ww = [float(v) for v in w] if flux else [1.0] * len(w)
+    d = root if flux else root + "/twin"
+    os.makedirs(d, exist_ok=True)
+    with open(d + "/moments_planes.csv", "w") as f:
+        f.write("x1,contributing,non_ok,mean_x2,var_x2,mean_x3,var_x3,mean_tau,var_tau,rms_ev,max_ev\n")
+        for p, x1 in enumerate(planes):
+            sel = [i for i in range(len(ww)) if not np.isnan(x23[i, p, 0])]
+            m2, v2 = _loop_mv([float(x23[i, p, 0]) for i in sel], [ww[i] for i in sel])
+            m3, v3 = _loop_mv([float(x23[i, p, 1]) for i in sel], [ww[i] for i in sel])
+            f.write("%.15e,%d,0,%.15e,%.15e,%.15e,%.15e,0,0,0,0\n" % (x1, len(sel), m2, v2, m3, v3))
+    with open(d + "/moments_time.csv", "w") as f:
+        f.write("# format_version=1\nt,mean_x,mean_y,mean_z,var_x,var_y,var_z,active\n")
+        for j, t in enumerate(TIMES):
+            sel = [i for i in range(len(ww)) if not np.isnan(tx[i, j, 0])]
+            mv = [_loop_mv([float(tx[i, j, k]) for i in sel], [ww[i] for i in sel]) for k in range(3)]
+            f.write("%.15e,%s,%s,%s,%s,%s,%s,%d\n" % ((t,) + tuple(m for m, _ in mv) + tuple(v for _, v in mv) + (len(sel),)))
+
+
+def write_pass(root, g, planes, shift=(0.0, 0.0), twin=True):
     P = len(planes)
     tx = times_x(g)
     x23, tau, Ipl = _planes_subset(g, planes, shift)
@@ -165,6 +195,9 @@ def write_pass(root, g, planes, shift=(0.0, 0.0)):
     _exits_csv(root + "/exits_time.csv", "t", TIMES,
                [int(((st < t) & (g["status_time"] == 7)).sum()) for t in TIMES],
                [int(((st < t) & (g["status_time"] == 8)).sum()) for t in TIMES])
+    write_moments(root, planes, x23, tx, g["w"], flux=True)
+    if twin:
+        write_moments(root, planes, x23, tx, g["w"], flux=False)
     _exits_csv(root + "/exits_planes.csv", "x1", planes, [0] * P, [0] * P)
     _wjson(root + "/track.json", {"planes": [float(x) for x in planes], "times": [float(t) for t in TIMES], "X0": X0, "M": M,
                                   "window": [0.1, 0.9, 0.1, 0.9], "Np": NP, "h": 1.0 / 256, "domain_L1": L1,
@@ -193,7 +226,7 @@ def write_pollock(root, g, planes=PLANES):
                                     "times": [float(t) for t in TIMES]})
 
 
-def build_run(out, *, multi=False, nr=2, divs=(8, 16, 32), pollock=True, key_planes=True, theta=0.0, done=True, twin_series=True):
+def build_run(out, *, multi=False, nr=2, divs=(8, 16, 32), pollock=True, key_planes=True, theta=0.0, done=True, twin_series=True, twin=True):
     """Write `out/realizations/r_0000..` (+ stats_twin series); returns {'gens': [...], 'out': out}."""
     gens = []
     for r in range(nr):
@@ -203,9 +236,9 @@ def build_run(out, *, multi=False, nr=2, divs=(8, 16, 32), pollock=True, key_pla
         planes = PLANES if key_planes else PLANES_NO_KEY
         if multi:
             for d in divs:
-                tx = write_pass("%s/hmax_%d" % (R, d), g, planes, DISP[d])
+                tx = write_pass("%s/hmax_%d" % (R, d), g, planes, DISP[d], twin)
         else:
-            tx = write_pass(R, g, planes)
+            tx = write_pass(R, g, planes, twin=twin)
         _wjson(R + "/field.json", {"kind": "gaussian", "sigma2": 1.0, "ell": ELL, "seed": 5001 + r, "applied_scale": 0.9 + 0.01 * r,
                                    "raw_variance": 1.2 + 0.01 * r, "final_variance": 1.0})
         _wjson(R + "/flow_stats.json", {"qbar": g["qbar"], "h": 1.0 / 256, "L1": L1, "lambda": ELL,

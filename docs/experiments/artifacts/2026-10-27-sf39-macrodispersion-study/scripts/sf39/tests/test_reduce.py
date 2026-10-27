@@ -436,6 +436,90 @@ class TestRho(unittest.TestCase):
             shutil.rmtree(d, ignore_errors=True)
 
 
+class TestCrosscheck(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="sf39_xc_")
+        self.out = self.tmp + "/run"
+        fx.build_run(self.out, nr=2)
+        self.R = [self.out + "/realizations/r_%04d" % r for r in range(2)]
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def edit(self, path, fn):
+        with open(path) as f:
+            lines = f.read().split("\n")
+        lines = fn(lines)
+        with open(path, "w") as f:
+            f.write("\n".join(lines))
+
+    def test_matching_moments_pass(self):
+        agg = rd.crosscheck_run(self.R)
+        self.assertTrue(rd.crosscheck_ok(agg), agg)
+        self.assertEqual(agg["planes"][0], 0)
+        self.assertLess(agg["planes"][1], 1e-12)
+        self.assertLess(agg["times"][1], 1e-12)
+        self.assertLess(agg["twin"][1], 1e-12)
+        line = rd.crosscheck_line("run", agg)
+        self.assertTrue(line.startswith("CROSSCHECK run=run planes=ok times=ok twin=ok max_rel="), line)
+
+    def test_multipass_and_twin_absent(self):
+        d = self.tmp + "/multi"
+        fx.build_run(d, multi=True, nr=1, twin=False)
+        agg = rd.crosscheck_run([d + "/realizations/r_0000"])
+        self.assertTrue(rd.crosscheck_ok(agg))
+        self.assertIsNone(agg["twin"])
+        self.assertIn("twin=absent", rd.crosscheck_line("m", agg))
+
+    def test_perturbed_planes_times_twin_fail(self):
+        def bump_col(col, rel, skip=0):
+            def fn(lines):
+                head = [i for i, l in enumerate(lines) if l.startswith("x1,") or l.startswith("t,")][0]
+                cols = lines[head].split(",")
+                row = lines[head + 1 + 3].split(",")
+                row[cols.index(col)] = "%.15e" % (float(row[cols.index(col)]) * (1 + rel))
+                lines[head + 1 + 3] = ",".join(row)
+                return lines
+            return fn
+        cases = (("moments_planes.csv", "var_x3", "planes"), ("moments_time.csv", "mean_y", "times"),
+                 ("twin/moments_planes.csv", "mean_x2", "twin"), ("twin/moments_time.csv", "var_z", "twin"),
+                 ("moments_planes.csv", "contributing", "planes"))
+        for name, col, key in cases:
+            shutil.rmtree(self.out)
+            fx.build_run(self.out, nr=2)
+            rel = 1e-6 if col != "contributing" else 1.0 / 90  # 91 -> 92 style change of the count
+            self.edit(self.R[1] + "/" + name, bump_col(col, rel))
+            agg = rd.crosscheck_run(self.R)
+            self.assertFalse(rd.crosscheck_ok(agg), name + col)
+            self.assertGreaterEqual(agg[key][0], 1)
+            self.assertIn("FAIL", rd.crosscheck_line("run", agg))
+        # a perturbation below the tolerance is accepted
+        shutil.rmtree(self.out)
+        fx.build_run(self.out, nr=2)
+        self.edit(self.R[0] + "/moments_planes.csv", bump_col("var_x2", 1e-11))
+        self.assertTrue(rd.crosscheck_ok(rd.crosscheck_run(self.R)))
+
+    def test_missing_csv_and_plane_x1_mismatch_fail(self):
+        os.remove(self.R[0] + "/moments_time.csv")
+        agg = rd.crosscheck_run(self.R)
+        self.assertFalse(rd.crosscheck_ok(agg))
+        fx.build_run(self.out, nr=2)
+        self.edit(self.R[0] + "/moments_planes.csv", lambda L: [l.replace("3.000000000000000e+00", "3.100000000000000e+00") for l in L])
+        self.assertFalse(rd.crosscheck_ok(rd.crosscheck_run(self.R)))
+
+    def test_smoke_reports_and_fails_on_perturbation(self):
+        camp = self.tmp + "/camp"
+        fx.build_run(camp + "/prodgrid/E1", nr=1)
+        code, out, _ = run_cli("smoke", camp)
+        self.assertEqual(code, 0, out)
+        self.assertIn("CROSSCHECK run=prodgrid/E1 planes=ok times=ok twin=ok", out)
+        p = camp + "/prodgrid/E1/realizations/r_0000/moments_time.csv"
+        self.edit(p, lambda L: [l.replace(l.split(",")[4], "%.15e" % (float(l.split(",")[4]) * 1.001), 1) if l[:1].isdigit() and l.startswith("5.0") else l for l in L])
+        code, out, _ = run_cli("smoke", camp)
+        self.assertEqual(code, 1, out)
+        self.assertIn("times=FAIL", out)
+
+
 def run_cli(*argv):
     out, err = stdio.StringIO(), stdio.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
