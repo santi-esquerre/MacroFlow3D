@@ -67,7 +67,7 @@ This was one of the numerical pillars supporting the “3D implies positive tran
 
 A major numerical result is that the transverse macrodispersivity increases strongly with `σ_Y^2`.
 
-The paper characterizes this increase as steep and approximately quadratic in the heterogeneity range they analyze at moderate/high heterogeneity.
+The paper characterizes this increase as steep: `alpha_TAM ~ alpha_TAM(1) sigma_Y^4` for `sigma_Y^2 >= 1` (eq. 7, p. 2493), i.e. proportional to `sigma_Y^4` and quadratic in `sigma_Y^2` (not "approximately quadratic in `sigma_Y`"). At `sigma_Y^2 = 4`, `alpha_TAM ~ 0.11` (read from Fig. 4b, p. 2493; approximate, the paper tabulates `alpha_TA` only up to `sigma_Y^2 = 2.25`).
 
 Interpretation:
 - stronger heterogeneity produces stronger streamline deflection and braiding,
@@ -124,6 +124,8 @@ Their study relies on:
 These are not side details.
 They shape the inferred macrodispersion.
 
+**Tracking scheme (p. 2490, [6]).** Transport is "restricted to the sole advection process and is simulated by a first-order explicit particle tracking method", `x(t + dt) = x(t) + v[x(t)] dt`, with the velocity "obtained with a linear interpolation in each direction from its grid values [Pollock, 1988]", the time step adapted to about 10 steps per cell, and no local dispersion. In Lester et al. 2023's terms (`docs/theory/lester-2023-key-claims.md` §5) both error sources are present: (A) a linearly interpolated velocity that is not helicity-free, and (B) a first-order integrator with no invariant preservation. The paper never considers numerical artefacts as a cause of `alpha_T`.
+
 For MacroFlow3D, this means any comparison to Beaudoin & de Dreuzy must respect:
 - geometry,
 - injection protocol,
@@ -133,6 +135,27 @@ For MacroFlow3D, this means any comparison to Beaudoin & de Dreuzy must respect:
 - tracking algorithm.
 
 Otherwise the comparison is weak.
+
+### Protocol and numbers (read from the paper, 2026-10-27)
+
+Locators are journal pages of WRR 49 (2489-2496).
+
+- Covariance (eq. 1, p. 2489): `<Y'(x) Y'(x')> = sigma_Y^2 exp(-(|x - x'|/lambda)^2)`.
+- First-order predictions (eqs. 2-3, pp. 2489-2490): `D_LA = (sqrt(pi)/2) <v> lambda sigma_Y^2`; `D_TA = 0` (first order, no local diffusion).
+- Variances: `sigma_Y^2` in {0.25, 1, 2.25, 4, 6.25, 7.56, 9}; `lambda/Delta = 10`.
+- Domain: `L_T = 25.6 lambda` (Fig. 1 caption, p. 2491); `L_L` up to 1638.4 `lambda` (p. 2492). Fixed heads on the `L` faces, periodic transverse faces; finite volume with harmonic-mean `K`; HYPRE AMG (p. 2490).
+- Injection: flux-weighted over `0.8 L_T x 0.8 L_T`, at least 5 `lambda` from the inlet (p. 2490). `N_p = 1e4`, `N_R = 500` (p. 2491).
+- Estimator (eq. 4, p. 2490): `alpha_k(t) = (1/(2 lambda |<v>|)) (1/N_R) sum_i d/dt [ (1/N_p) sum_j x_k^{j,i}(t)^2 - ((1/N_p) sum_j x_k^{j,i}(t))^2 ]`, centred per realization in fixed axes; time normalized by `lambda/|<v>|`.
+- Asymptotic value (eq. 5, p. 2492): the mean of `alpha_k(t)` over `[0.75 t_b, t_b]`, with `t_b` "the time at which the first particle steps out of the simulation domain" (p. 2492, [9]).
+- Table 1 (p. 2492), longitudinal fit `alpha_LAF / t_LF / a_LF`: 0.25: 0.24 / 1.35 / 1; 1: 1.27 / 2.21 / 0.80; 2.25: 4.35 / 4.83 / 0.63; 4: 12.7 / 20.5 / 0.49; "6.52" (printed so; probably 6.25): 58.6 / 41.9 / 0.40; 7.56: 131 / 208 / 0.39.
+- Table 2 (p. 2493), `alpha_TA` this study: `< 1e-3` / 0.01 / 0.044 at `sigma_Y^2` = 0.25 / 1 / 2.25. The Dentz (0.007, 0.028) and Schwarze (0.009) non-zero values came from first-order synthetic (linearized) velocity fields, not from a full Darcy solve.
+- Eq. 7 (p. 2493): `alpha_TAM ~ alpha_TAM(1) sigma_Y^4` for `sigma_Y^2 >= 1`.
+
+Reading cautions:
+- `alpha_T(t)` is not monotone (Fig. 2b, p. 2491): it rises, peaks near `t ~ 1-3`, and reaches a plateau at `t ~ 10-30`. This is in tension with the statement that the transverse asymptotic regime is reached "around the advection time" ([9], p. 2491).
+- The only resolution / `N_p` / `N_R` check is at `sigma_Y^2 = 6.25` (Fig. 1 and [7], pp. 2490-2491): `alpha_LAM` and `alpha_TAM` change by at most 2 % (longitudinal) and 4 % (transverse). "Smaller `sigma_Y^2` cases lead to similar conclusions" is asserted, not shown.
+- No error bars are reported.
+- Numerical artefacts are never considered as a cause of the non-zero `alpha_T`.
 
 ---
 
@@ -265,7 +288,7 @@ These should remain part of the acceptance and experiment design culture of the 
 
 If MacroFlow3D compares itself to this paper, comparisons should state explicitly:
 
-- covariance model, including the correlation-length convention: here `C(r)=σ² exp(-(r/λ)²)`; the legacy code used `exp(-π r²/(4λ²))`,
+- covariance model, including the correlation-length convention: here `C(r)=σ² exp(-(r/λ)²)` (the paper's eq. 1); the legacy code used `exp(-π r²/(4λ²))` (a code fact, not in the paper),
 - variance of log-conductivity,
 - dimensionality,
 - boundary conditions,
