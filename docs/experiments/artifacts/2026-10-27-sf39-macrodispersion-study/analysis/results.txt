@@ -1,0 +1,4 @@
+PART_BEGIN part=analysis selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
+RUN id=analysis rc=0 wall=902s dest=/home/sesquerre/sf39_campaign/analysis
+RECORDED part_seconds=909 part_runs_seconds=902 part=analysis (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=analysis rc=0

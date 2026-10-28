@@ -1,0 +1,234 @@
+{
+ "N": {
+  "s1": {
+   "N_A": 20,
+   "N_R": 50,
+   "N_hmax": 20,
+   "N_narrow": 20,
+   "N_run": 50,
+   "N_twin": 20,
+   "par2_NR": 50
+  },
+  "s225": {
+   "N_A": 20,
+   "N_R": 62,
+   "N_hmax": 20,
+   "N_narrow": 20,
+   "N_run": 62,
+   "N_twin": 26,
+   "par2_NR": 62
+  },
+  "s4": {
+   "N_A": 20,
+   "N_R": 71,
+   "N_hmax": 20,
+   "N_narrow": 20,
+   "N_run": 71,
+   "N_twin": 20,
+   "par2_NR": 71
+  }
+ },
+ "N_capped_at_500": {
+  "s1": [],
+  "s225": [],
+  "s4": []
+ },
+ "bytes_per_realization": {
+  "s1_A": {
+   "kind": "measured",
+   "value": 635004651
+  },
+  "s1_B": {
+   "kind": "estimate",
+   "value": 296300847
+  },
+  "s1_n05": {
+   "kind": "measured",
+   "value": 297665990
+  },
+  "s1_n10": {
+   "kind": "measured",
+   "value": 296628882
+  },
+  "s1_n20": {
+   "kind": "measured",
+   "value": 296376788
+  },
+  "s1_par2": {
+   "kind": "measured",
+   "value": 72070026
+  },
+  "s1_tw": {
+   "kind": "measured",
+   "value": 297330628
+  },
+  "s225_A": {
+   "kind": "measured",
+   "value": 570260434
+  },
+  "s225_B": {
+   "kind": "estimate",
+   "value": 266085545
+  },
+  "s225_n08": {
+   "kind": "measured",
+   "value": 269739288
+  },
+  "s225_n16": {
+   "kind": "measured",
+   "value": 269094692
+  },
+  "s225_n32": {
+   "kind": "measured",
+   "value": 268870646
+  },
+  "s225_par2": {
+   "kind": "measured",
+   "value": 72894831
+  },
+  "s225_tw": {
+   "kind": "measured",
+   "value": 266694729
+  },
+  "s4_A": {
+   "kind": "measured",
+   "value": 236041073
+  },
+  "s4_B": {
+   "kind": "estimate",
+   "value": 110105437
+  },
+  "s4_n16": {
+   "kind": "measured",
+   "value": 127194745
+  },
+  "s4_n32": {
+   "kind": "measured",
+   "value": 127110858
+  },
+  "s4_n64": {
+   "kind": "measured",
+   "value": 127055017
+  },
+  "s4_par2": {
+   "kind": "measured",
+   "value": 72886850
+  },
+  "s4_tw": {
+   "kind": "measured",
+   "value": 110181928
+  },
+  "s4_w12": {
+   "kind": "measured",
+   "value": 110181928
+  },
+  "s4_w24": {
+   "kind": "estimate",
+   "value": 110105437
+  }
+ },
+ "gpu_s_per_realization": {
+  "s1_A": {
+   "kind": "measured",
+   "value": 100.16834175724999
+  },
+  "s1_B": {
+   "kind": "estimate",
+   "value": 35.4110078581
+  },
+  "s1_n05": {
+   "kind": "measured",
+   "value": 8.817584290850002
+  },
+  "s1_n10": {
+   "kind": "measured",
+   "value": 18.015902893499998
+  },
+  "s1_n20": {
+   "kind": "measured",
+   "value": 69.4641764435
+  },
+  "s1_par2": {
+   "kind": "measured",
+   "value": 53.12013640905681
+  },
+  "s1_tw": {
+   "kind": "measured",
+   "value": 10.52013675225
+  },
+  "s225_A": {
+   "kind": "measured",
+   "value": 233.09616291060001
+  },
+  "s225_B": {
+   "kind": "estimate",
+   "value": 107.81373185105
+  },
+  "s225_n08": {
+   "kind": "measured",
+   "value": 13.199088680350002
+  },
+  "s225_n16": {
+   "kind": "measured",
+   "value": 32.42254855214999
+  },
+  "s225_n32": {
+   "kind": "measured",
+   "value": 131.546683486
+  },
+  "s225_par2": {
+   "kind": "measured",
+   "value": 87.52140558895312
+  },
+  "s225_tw": {
+   "kind": "measured",
+   "value": 22.287558403600002
+  },
+  "s4_A": {
+   "kind": "measured",
+   "value": 243.50983537974997
+  },
+  "s4_B": {
+   "kind": "estimate",
+   "value": 120.02506693385001
+  },
+  "s4_n16": {
+   "kind": "measured",
+   "value": 10.860130685799998
+  },
+  "s4_n32": {
+   "kind": "measured",
+   "value": 31.500230030150004
+  },
+  "s4_n64": {
+   "kind": "measured",
+   "value": 144.0617051986
+  },
+  "s4_par2": {
+   "kind": "measured",
+   "value": 92.4709601050929
+  },
+  "s4_tw": {
+   "kind": "measured",
+   "value": 21.885342984
+  },
+  "s4_w12": {
+   "kind": "measured",
+   "value": 21.885342984
+  },
+  "s4_w24": {
+   "kind": "estimate",
+   "value": 60.01253346692501
+  }
+ },
+ "n_pilot": 20,
+ "pilot_wall_over_gpu_busy": 1.0010029469072292,
+ "projected_bytes": 133465505793,
+ "projected_gpu_h": 6.8376177389245205,
+ "projected_wall_h": 6.844475506488591,
+ "tau_b_star": {
+  "s1": 125.55371908566319,
+  "s225": 93.33412238306535,
+  "s4": 23.223126780765817
+ }
+}

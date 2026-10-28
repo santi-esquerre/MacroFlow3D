@@ -1,0 +1,168 @@
+tier,amplitude,estimator,decision_point,verdict,ci_lo,ci_hi,n,note
+primary,s1,alpha_TAM,Gate 4 label (D),physical (positive),0.0074474664230867894,0.011582850002929823,50,branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.00951516
+primary,s1,alpha_TP,Gate 4 label (D),physical (positive),0.0067542027480896067,0.0097268461483966933,50,branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.00824052
+primary,s1,alpha_TAM+alpha_TP,Gate 4 amplitude label (D),physical (positive),,,50,alpha_TAM: physical (positive); alpha_TP: physical (positive)
+primary,s1,alpha_LAM,Gate 5 (C) Lagrangian twin vs Par2,inconclusive,-0.14597344878588361,-0.05427212904817854,50/50,diff=-0.100123 margin=0.113816; late Par2 beyond pilot 2/30
+primary,s1,alpha_LAM,Gate 5 sensitivity FV qbar,inconclusive,-0.14425561893659072,-0.052262390859759422,50/50,diff=-0.098259 margin=0.113816
+primary,s1,alpha_LAM,Gate 5 sensitivity ANCOVA,inconclusive,-0.14672976309545083,-0.0546056674255989,50/50,diff=-0.100668 margin=0.11387 adjusted Par2 mean=1.1387
+primary,s225,alpha_TAM,Gate 4 label (D),physical (positive),0.02618372788205018,0.031256681130612675,62,branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.0287202
+primary,s225,alpha_TP,Gate 4 label (D),physical (positive),0.02865890571022154,0.032904089205812538,62,branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.0307815
+primary,s225,alpha_TAM+alpha_TP,Gate 4 amplitude label (D),physical (positive),,,62,alpha_TAM: physical (positive); alpha_TP: physical (positive)
+primary,s225,alpha_LAM,Gate 5 (C) Lagrangian twin vs Par2,agree,-0.12676326348190109,0.041119135858933523,62/62,diff=-0.0428221 margin=0.320774; late Par2 beyond pilot 1/42
+primary,s225,alpha_LAM,Gate 5 sensitivity FV qbar,agree,-0.12155435657373875,0.046427547457244922,62/62,diff=-0.0375634 margin=0.320774
+primary,s225,alpha_LAM,Gate 5 sensitivity ANCOVA,agree,-0.12240316469366982,0.042395969866392685,62/62,diff=-0.0400036 margin=0.320492 adjusted Par2 mean=3.20492
+primary,s4,alpha_TAM,Gate 4 label (D),physical (positive),0.064970662484524155,0.075349828626294607,71,branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.0701602
+primary,s4,alpha_TP,Gate 4 label (D),physical (positive),0.06218773241309665,0.07110728512093982,71,branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.0666475
+primary,s4,alpha_TAM+alpha_TP,Gate 4 amplitude label (D),physical (positive),,,71,alpha_TAM: physical (positive); alpha_TP: physical (positive)
+primary,s4,alpha_LAM,Gate 5 (C) Lagrangian twin vs Par2,agree,-0.32262050288411143,0.18984616831359308,71/71,diff=-0.0663872 margin=0.568072; late Par2 beyond pilot 1/51
+primary,s4,alpha_LAM,Gate 5 sensitivity FV qbar,agree,-0.28888066959339953,0.22393080450549918,71/71,diff=-0.0324749 margin=0.568072
+primary,s4,alpha_LAM,Gate 5 sensitivity ANCOVA,agree,-0.3233691978738889,0.18855521583818874,71/71,diff=-0.067407 margin=0.568174 adjusted Par2 mean=5.68174
+key secondary,s1,alpha_TAM,B half-width (95 %),met,0.0070367471885516529,0.01199356923746496,50,halfwidth=0.00247841 target=0.0025
+key secondary,s1,alpha_TAM,A h narrow verdict (D_f),converged,-0.00016796643801872377,3.9209050587115047e-05,20,m=0.00125 mean D_f=-6.43787e-05
+key secondary,s1,alpha_TAM,A h production verdict (F4),converged,0.00010254326454183795,0.001039747195139031,20,CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True)
+key secondary,s1,alpha_TAM,A h order contrast,monotone order >= 1.5 not rejected,-0.00056140215631691125,0.00018397947078205366,20,"CI of s(2^1.5 D_f - D_c), s=+1"
+key secondary,s1,alpha_TAM,A h_max verdict (h/16 - h/8),converged,-1.5601469124614583e-10,5.3986752101959423e-10,20,m=0.00125 mean=1.91926e-10
+key secondary,s1,alpha_TP,B half-width (95 %),met,0.0064589648824001575,0.010022084014086143,50,halfwidth=0.00178156 target=0.0025
+key secondary,s1,alpha_TP,A h narrow verdict (D_f),converged,-3.2037385321201268e-05,4.0219112035683054e-05,20,m=0.00125 mean D_f=4.09086e-06
+key secondary,s1,alpha_TP,A h production verdict (F4),converged,-0.00017012826194171926,0.00013576952226893231,20,CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True)
+key secondary,s1,alpha_TP,A h order contrast,monotone order >= 1.5 not rejected,-0.00013861798208127143,6.6228351910483762e-05,20,"CI of s(2^1.5 D_f - D_c), s=-1"
+key secondary,s1,alpha_TP,A h_max verdict (h/16 - h/8),converged,-7.581951209593618e-11,4.0571867725639081e-11,20,m=0.00125 mean=-1.76238e-11
+key secondary,s1,alpha_LAM,B half-width (95 %),met,1.0019518813241035,1.07377609327223,50,halfwidth=0.0359121 target=0.0518932
+key secondary,s1,alpha_LAM,A h narrow verdict (D_f),converged,-0.0057121404798383653,0.0039592480167249559,20,m=0.0243512 mean D_f=-0.000876446
+key secondary,s1,alpha_LAM,A h production verdict (F4),converged,-0.018504322264422036,0.0083646459767539386,20,CI of D_tw vs +-2^1.5 m=0.0688756 (inside=True)
+key secondary,s1,alpha_LAM,A h order contrast,monotone order >= 1.5 not rejected,-0.029705698215928299,-0.0023642053739515324,20,"CI of s(2^1.5 D_f - D_c), s=-1"
+key secondary,s1,alpha_LAM,A h_max verdict (h/16 - h/8),converged,-5.6719277906222877e-09,4.7571399007393149e-09,20,m=0.0263506 mean=-4.57394e-10
+key secondary,s225,alpha_TAM,B half-width (95 %),not met,0.025683478777495272,0.031756930235167583,62,halfwidth=0.00303673 target=0.00287202
+key secondary,s225,alpha_TAM,A h narrow verdict (D_f),converged,-0.00039830741174225968,0.00073668763469295962,20,m=0.00125 mean D_f=0.00016919
+key secondary,s225,alpha_TAM,A h production verdict (F4),converged,-0.002636347966186006,0.0005918536990028539,26,CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True)
+key secondary,s225,alpha_TAM,A h order contrast,monotone order >= 1.5 not rejected,-0.0031154247170545385,0.0012037287725154156,20,"CI of s(2^1.5 D_f - D_c), s=-1"
+key secondary,s225,alpha_TAM,A h_max verdict (h/16 - h/8),converged,-1.5390076119429123e-08,8.2067057736533586e-09,20,m=0.00142575 mean=-3.59169e-09
+key secondary,s225,alpha_TP,B half-width (95 %),met,0.028240283827013282,0.033322711089020796,62,halfwidth=0.00254121 target=0.00307815
+key secondary,s225,alpha_TP,A h narrow verdict (D_f),converged,-0.00033167937430703484,0.00022564613820050383,20,m=0.00129241 mean D_f=-5.30166e-05
+key secondary,s225,alpha_TP,A h production verdict (F4),converged,-0.00030727348915116759,0.0009325216167985009,26,CI of D_tw vs +-2^1.5 m=0.00365547 (inside=True)
+key secondary,s225,alpha_TP,A h order contrast,monotone order >= 1.5 not rejected,-0.0013057223848855078,0.00070835612373773798,20,"CI of s(2^1.5 D_f - D_c), s=-1"
+key secondary,s225,alpha_TP,A h_max verdict (h/16 - h/8),converged,-5.1414207551071865e-07,4.7537300202636013e-07,20,m=0.00147528 mean=-1.93845e-08
+key secondary,s225,alpha_LAM,B half-width (95 %),met,3.0712947483470812,3.2098997114139145,62,halfwidth=0.0693025 target=0.15703
+key secondary,s225,alpha_LAM,A h narrow verdict (D_f),inconclusive,-0.082129193608293294,0.0062874049727853279,20,m=0.0739047 mean D_f=-0.0379209
+key secondary,s225,alpha_LAM,A h production verdict (F4),inconclusive,-0.10778577893373295,0.038894147672538203,26,CI of D_tw vs +-2^1.5 m=0.209034 (inside=True)
+key secondary,s225,alpha_LAM,A h order contrast,monotone order >= 1.5 not rejected,-0.2752678466670021,0.03465449492412126,20,"CI of s(2^1.5 D_f - D_c), s=+1"
+key secondary,s225,alpha_LAM,A h_max verdict (h/16 - h/8),converged,-3.597303704407668e-07,6.9930753381550223e-08,20,m=0.0785595 mean=-1.449e-07
+key secondary,s4,alpha_TAM,B half-width (95 %),met,0.063950990551822365,0.076369500558996398,71,halfwidth=0.00620926 target=0.00701602
+key secondary,s4,alpha_TAM,A h narrow verdict (D_f),converged,-0.00031800359045807943,0.00011818618297118873,20,m=0.00146704 mean D_f=-9.99087e-05
+key secondary,s4,alpha_TAM,A h production verdict (F4),converged,0.00047613890508970834,0.0037009489943016132,20,CI of D_tw vs +-2^1.5 m=0.00414942 (inside=True)
+key secondary,s4,alpha_TAM,A h order contrast,monotone order >= 1.5 not rejected,-0.001506864400894811,-0.0001741898717491343,20,"CI of s(2^1.5 D_f - D_c), s=+1"
+key secondary,s4,alpha_TAM,A h_max verdict (h/16 - h/8),converged,-3.3861513278403872e-10,2.3316157231683292e-10,20,m=0.00374365 mean=-5.27268e-11
+key secondary,s4,alpha_TP,B half-width (95 %),met,0.061311456089525762,0.071983561444510707,71,halfwidth=0.00533605 target=0.00666475
+key secondary,s4,alpha_TP,A h narrow verdict (D_f),converged,-0.00033262032376430687,4.5937023111945074e-05,20,m=0.00125 mean D_f=-0.000143342
+key secondary,s4,alpha_TP,A h production verdict (F4),converged,-0.0010579419527355738,0.0017874234320453689,20,CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True)
+key secondary,s4,alpha_TP,A h order contrast,monotone order >= 1.5 not rejected,-0.0013274293493912457,4.0624159937664522e-05,20,"CI of s(2^1.5 D_f - D_c), s=+1"
+key secondary,s4,alpha_TP,A h_max verdict (h/16 - h/8),converged,-7.2734799374077233e-08,2.6500726204080617e-09,20,m=0.00320762 mean=-3.50424e-08
+key secondary,s4,alpha_LAM,B half-width (95 %),met,4.5057763635890069,4.8030735449531381,71,halfwidth=0.148649 target=0.232721
+key secondary,s4,alpha_LAM,A h narrow verdict (D_f),converged,-0.030135565954653408,0.00073843860695894589,20,m=0.0960066 mean D_f=-0.0146986
+key secondary,s4,alpha_LAM,A h production verdict (F4),converged,-0.019902248849114443,0.087409688438115848,20,CI of D_tw vs +-2^1.5 m=0.271548 (inside=True)
+key secondary,s4,alpha_LAM,A h order contrast,monotone order >= 1.5 not rejected,-0.014563257281607428,0.057837815803348333,20,"CI of s(2^1.5 D_f - D_c), s=-1"
+key secondary,s4,alpha_LAM,A h_max verdict (h/16 - h/8),converged,1.8215462912779461e-09,1.1816096013053673e-08,20,m=0.120875 mean=6.81882e-09
+estimation,s1,alpha_TP,F7 Delta_half,not shown decreasing,-0.0064351932804934302,0.0011529187944458001,50,mean Delta_half=-0.00264114
+estimation,s1,"rho(X_b), pair 8-16",F8 readings,pathwise resolved,,,20,"median=5.37004e-08 p95=8.31056e-08 (m=0.00125, S=0.387342)"
+estimation,s1,alpha_TAM,F11 Delta_P production,Delta_P includes 0,-0.00018637520543537674,0.00010251608214458803,50,mean Delta_P=-4.19296e-05
+estimation,s1,alpha_TP,F11 Delta_P production,Delta_P includes 0,-7.8321665888883514e-05,2.6015985543388971e-05,50,mean Delta_P=-2.61528e-05
+estimation,s1,alpha_Tfixed,F11 Delta_P production,Delta_P includes 0,-0.00018746634441593683,0.00010139863101609324,50,mean Delta_P=-4.30339e-05
+estimation,s1,alpha_TAM,F11 Delta_P narrow_half,Delta_P includes 0,-0.00043516394456474269,0.00015746905266632506,20,mean Delta_P=-0.000138847
+estimation,s1,alpha_TP,F11 Delta_P narrow_half,Delta_P below 0,-0.00042684277780381759,-3.1824251154001905e-05,20,mean Delta_P=-0.000229334
+estimation,s1,alpha_Tfixed,F11 Delta_P narrow_half,Delta_P includes 0,-0.00044773690268996272,0.00015210382253516314,20,mean Delta_P=-0.000147817
+estimation,s1,alpha_TAM,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00018536760576787616,6.2761567621791845e-05,20,mean Delta_P=-6.1303e-05
+estimation,s1,alpha_TP,F11 Delta_P narrow_1x,Delta_P below 0,-0.00012733926603701465,-1.8850709534870302e-05,20,mean Delta_P=-7.3095e-05
+estimation,s1,alpha_Tfixed,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00018533953766216904,6.2082507263872962e-05,20,mean Delta_P=-6.16285e-05
+estimation,s1,alpha_TAM,F11 Delta_P narrow_2x,Delta_P includes 0,-7.8021500175287992e-05,8.6715381541890298e-05,20,mean Delta_P=4.34694e-06
+estimation,s1,alpha_TP,F11 Delta_P narrow_2x,Delta_P includes 0,-3.0490221216564992e-05,2.6007833433468219e-06,20,mean Delta_P=-1.39447e-05
+estimation,s1,alpha_Tfixed,F11 Delta_P narrow_2x,Delta_P includes 0,-7.8286838550798151e-05,8.6873598867282472e-05,20,mean Delta_P=4.29338e-06
+estimation,s1,alpha_TAM,F11 Delta_P twin,Delta_P includes 0,-0.00035312015610352882,0.00050443370255722842,20,mean Delta_P=7.56568e-05
+estimation,s1,alpha_TP,F11 Delta_P twin,Delta_P below 0,-0.00039057958532580958,-9.4299947970584571e-08,20,mean Delta_P=-0.000195337
+estimation,s1,alpha_Tfixed,F11 Delta_P twin,Delta_P includes 0,-0.0003536395381283895,0.00050491724861423859,20,mean Delta_P=7.56389e-05
+estimation,s1,alpha_TAM,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.00039808164568299936,0.00024299279193066596,20,mean=-7.75444e-05
+estimation,s1,alpha_TP,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.00031433483340050517,1.857780014570613e-06,20,mean=-0.000156239
+estimation,s1,alpha_Tfixed,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.00040985238387989119,0.00023747633412338768,20,mean=-8.6188e-05
+estimation,s1,alpha_TAM,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00020239602897480989,7.109610946212327e-05,20,mean=-6.565e-05
+estimation,s1,alpha_TP,F11 difference in differences narrow_1x_minus_2x,difference below 0,-0.00010796212048896976,-1.0338417209697049e-05,20,mean=-5.91503e-05
+estimation,s1,alpha_Tfixed,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00020183639860133694,6.9992607886556525e-05,20,mean=-6.59219e-05
+estimation,s1,alpha_TAM,F11 difference in differences twin_minus_production,difference includes 0,-0.00027344707995912478,0.0006524808838961301,20,mean=0.000189517
+estimation,s1,alpha_TP,F11 difference in differences twin_minus_production,difference below 0,-0.00038576188872442856,-5.2294237081164309e-05,20,mean=-0.000219028
+estimation,s1,alpha_Tfixed,F11 difference in differences twin_minus_production,difference includes 0,-0.00027203297940161131,0.0006563303032883017,20,mean=0.000192149
+estimation,s225,alpha_TP,F7 Delta_half,not shown decreasing,-0.0067130295060881381,0.0033617220033733434,62,mean Delta_half=-0.00167565
+estimation,s225,"rho(X_b), pair 8-16",F8 readings,intermediate (none of the three readings),,,20,"median=0.000141543 p95=0.000725131 (m=0.00147528, S=0.428558)"
+estimation,s225,alpha_TAM,F11 Delta_P production,Delta_P includes 0,-0.00042467504916191955,0.00034099428365028052,62,mean Delta_P=-4.18404e-05
+estimation,s225,alpha_TP,F11 Delta_P production,Delta_P includes 0,-0.00033278896321875501,9.5327556591357236e-05,62,mean Delta_P=-0.000118731
+estimation,s225,alpha_Tfixed,F11 Delta_P production,Delta_P includes 0,-0.00043493098412103476,0.00033581732516155992,62,mean Delta_P=-4.95568e-05
+estimation,s225,alpha_TAM,F11 Delta_P narrow_half,Delta_P includes 0,-0.0012845317777066467,0.00030380521471701065,20,mean Delta_P=-0.000490363
+estimation,s225,alpha_TP,F11 Delta_P narrow_half,Delta_P includes 0,-0.00064686276822692912,8.9148787150062736e-05,20,mean Delta_P=-0.000278857
+estimation,s225,alpha_Tfixed,F11 Delta_P narrow_half,Delta_P includes 0,-0.0014022958813259181,0.00020061174336582089,20,mean Delta_P=-0.000600842
+estimation,s225,alpha_TAM,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00043683490021970779,0.00038313579111987333,20,mean Delta_P=-2.68496e-05
+estimation,s225,alpha_TP,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00013406075309297641,0.00032766483427884211,20,mean Delta_P=9.6802e-05
+estimation,s225,alpha_Tfixed,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00041747894933271139,0.00041266580881701097,20,mean Delta_P=-2.40657e-06
+estimation,s225,alpha_TAM,F11 Delta_P narrow_2x,Delta_P includes 0,-0.0002779325737115507,0.00016629748502535805,20,mean Delta_P=-5.58175e-05
+estimation,s225,alpha_TP,F11 Delta_P narrow_2x,Delta_P includes 0,-0.00019141369221487904,0.00014569473841666557,20,mean Delta_P=-2.28595e-05
+estimation,s225,alpha_Tfixed,F11 Delta_P narrow_2x,Delta_P includes 0,-0.00030604377443779849,0.00014338091483957535,20,mean Delta_P=-8.13314e-05
+estimation,s225,alpha_TAM,F11 Delta_P twin,Delta_P includes 0,-0.0014632012044358959,0.00064592487257026537,26,mean Delta_P=-0.000408638
+estimation,s225,alpha_TP,F11 Delta_P twin,Delta_P includes 0,-0.00065284160207871537,0.00058353167775164558,26,mean Delta_P=-3.4655e-05
+estimation,s225,alpha_Tfixed,F11 Delta_P twin,Delta_P includes 0,-0.0014603229383898719,0.0006596789333491327,26,mean Delta_P=-0.000400322
+estimation,s225,alpha_TAM,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.0012764146039529775,0.00034938715006317586,20,mean=-0.000463514
+estimation,s225,alpha_TP,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.00080266618787535986,5.1348125612627827e-05,20,mean=-0.000375659
+estimation,s225,alpha_Tfixed,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.0014155887923691262,0.00021871779492472956,20,mean=-0.000598435
+estimation,s225,alpha_TAM,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00041526335138588108,0.00047319933097223925,20,mean=2.8968e-05
+estimation,s225,alpha_TP,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00012785803768692509,0.00036718107267100426,20,mean=0.000119662
+estimation,s225,alpha_Tfixed,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00036316254862237354,0.00052101226770489618,20,mean=7.89249e-05
+estimation,s225,alpha_TAM,F11 difference in differences twin_minus_production,difference includes 0,-0.0017533311178112125,0.00069144334020440959,26,mean=-0.000530944
+estimation,s225,alpha_TP,F11 difference in differences twin_minus_production,difference includes 0,-0.00079077248375069556,0.00061690679367033916,26,mean=-8.69328e-05
+estimation,s225,alpha_Tfixed,F11 difference in differences twin_minus_production,difference includes 0,-0.001730255834018033,0.00072610908024287654,26,mean=-0.000502073
+estimation,s4,alpha_TP,F7 Delta_half,not shown decreasing,-0.0085863583096189803,0.0067601852263113101,71,mean Delta_half=-0.000913087
+estimation,s4,"rho(X_b), pair 8-16",F8 readings,pathwise resolved,,,20,"median=1.3892e-05 p95=0.000143805 (m=0.00320762, S=0.435013)"
+estimation,s4,alpha_TAM,F11 Delta_P production,Delta_P includes 0,-0.00047011398659672411,6.870792310308352e-05,71,mean Delta_P=-0.000200703
+estimation,s4,alpha_TP,F11 Delta_P production,Delta_P includes 0,-0.00015047965557480432,0.00037593017030573752,71,mean Delta_P=0.000112725
+estimation,s4,alpha_Tfixed,F11 Delta_P production,Delta_P includes 0,-0.00050368986953931098,4.339451259485801e-05,71,mean Delta_P=-0.000230148
+estimation,s4,alpha_TAM,F11 Delta_P narrow_half,Delta_P above 0,8.9098221244916721e-05,0.0010487132878352974,20,mean Delta_P=0.000568906
+estimation,s4,alpha_TP,F11 Delta_P narrow_half,Delta_P includes 0,-0.00039689865203574692,7.7205671101544592e-05,20,mean Delta_P=-0.000159846
+estimation,s4,alpha_Tfixed,F11 Delta_P narrow_half,Delta_P above 0,0.00016359056134785592,0.0010821287296830333,20,mean Delta_P=0.00062286
+estimation,s4,alpha_TAM,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00014517253927428145,0.00017829857092060083,20,mean Delta_P=1.6563e-05
+estimation,s4,alpha_TP,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00028720352857819091,3.8506154721375631e-05,20,mean Delta_P=-0.000124349
+estimation,s4,alpha_Tfixed,F11 Delta_P narrow_1x,Delta_P includes 0,-0.00012018392885961341,0.00016715998463663167,20,mean Delta_P=2.3488e-05
+estimation,s4,alpha_TAM,F11 Delta_P narrow_2x,Delta_P includes 0,-5.4731002025897586e-05,0.00011964191535015769,20,mean Delta_P=3.24555e-05
+estimation,s4,alpha_TP,F11 Delta_P narrow_2x,Delta_P includes 0,-7.0345176213237231e-05,0.00016832469446264583,20,mean Delta_P=4.89898e-05
+estimation,s4,alpha_Tfixed,F11 Delta_P narrow_2x,Delta_P includes 0,-7.1834661128794509e-05,0.00010170024620469075,20,mean Delta_P=1.49328e-05
+estimation,s4,alpha_TAM,F11 Delta_P twin,Delta_P above 0,0.00042043983076537174,0.0029917382300124725,20,mean Delta_P=0.00170609
+estimation,s4,alpha_TP,F11 Delta_P twin,Delta_P below 0,-0.0011444016372682251,-3.479440600904376e-05,20,mean Delta_P=-0.000589598
+estimation,s4,alpha_Tfixed,F11 Delta_P twin,Delta_P above 0,0.00040643654024617487,0.003018800128008133,20,mean Delta_P=0.00171262
+estimation,s4,alpha_TAM,F11 difference in differences narrow_half_minus_1x,difference above 0,0.000163688503831028,0.00094099697360286645,20,mean=0.000552343
+estimation,s4,alpha_TP,F11 difference in differences narrow_half_minus_1x,difference includes 0,-0.00032895237709391559,0.00025795677001652851,20,mean=-3.54978e-05
+estimation,s4,alpha_Tfixed,F11 difference in differences narrow_half_minus_1x,difference above 0,0.00022087052906824025,0.00097787270618563066,20,mean=0.000599372
+estimation,s4,alpha_TAM,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00016167919268145523,0.00012989431100351447,20,mean=-1.58924e-05
+estimation,s4,alpha_TP,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00037610569212936338,2.9428800023139495e-05,20,mean=-0.000173338
+estimation,s4,alpha_Tfixed,F11 difference in differences narrow_1x_minus_2x,difference includes 0,-0.00012547079425223194,0.00014258126495335393,20,mean=8.55524e-06
+estimation,s4,alpha_TAM,F11 difference in differences twin_minus_production,difference above 0,0.00041577114243476678,0.002874885194615782,20,mean=0.00164533
+estimation,s4,alpha_TP,F11 difference in differences twin_minus_production,difference includes 0,-0.00091834710675382705,0.00042886690927543123,20,mean=-0.00024474
+estimation,s4,alpha_Tfixed,F11 difference in differences twin_minus_production,difference above 0,0.00042346242023467225,0.0029393497702008215,20,mean=0.00168141
+exploratory,s4,alpha_TAM,F10 width check w24_vs_tw,inconclusive,-0.019079800222708613,0.0057628606469437883,30/30,diff=-0.00665847 margin=0.0068662
+exploratory,s4,alpha_TP,F10 width check w24_vs_tw,inconclusive,-0.0069770485019955263,0.013979888702023475,30/30,diff=0.00350142 margin=0.0067672
+exploratory,s4,alpha_TAM,F10 width check w12_vs_n16,disagree,0.021552609012413571,0.047203646108809783,30/30,"diff=0.0343781 margin=0.00635197; wide = s4_w12+s4_w12c; seed 7214 excluded (s4_w12 halted, owner decision 2026-10-28)"
+exploratory,s4,alpha_TP,F10 width check w12_vs_n16,disagree,0.03866019724685997,0.054104832062219707,30/30,"diff=0.0463825 margin=0.00678013; wide = s4_w12+s4_w12c; seed 7214 excluded (s4_w12 halted, owner decision 2026-10-28)"
+process,all,,CHECK_unittest,ok,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_geometry,ok,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_regress_refs,reused(/home/sesquerre/regress/refs/1e40cfe/out/REGRESS_DONE),,,,rc=NA (from checks/results.txt)
+process,all,,CHECK_regress_head,REGRESS_DONE,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_regress,REGRESS,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s1_n05,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s1_n10,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s1_n20,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s1_tw,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s225_n08,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s225_n16,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s225_n32,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s225_tw,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s4_n16,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s4_n32,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s4_n64,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s4_tw,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s4_w24,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_solve_chk_s4_w12,converged,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_bytecheck,BYTECHECK,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_smoke_reduce,SMOKE,,,,rc=0 (from checks/results.txt)
+process,all,,CHECK_signtable,SIGNTABLE,,,,rc=0 (from checks/results.txt)

@@ -1,0 +1,4 @@
+PART_BEGIN part=checkpoint selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
+RUN id=checkpoint rc=0 wall=89s
+RECORDED part_seconds=96 part_runs_seconds=89 part=checkpoint (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=checkpoint rc=0

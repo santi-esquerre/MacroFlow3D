@@ -133,6 +133,28 @@ sha256sum <name>.tgz     # must equal the remote value
 
 Before the budget only the RR4 list above (and the checkpoint report) may be imported.
 
+### Imported evidence (orchestrator, 2026-10-28)
+
+After the `analysis` part, one short `exec` packed the text subset of `$SF39_OUT_ROOT` into `sf39_evidence.tar.gz` (sha256
+`ac379180386073ebc9e21fc960831c4e1a48e517debcdf5193ac0d7cea724f22`, 17.4 MB, identical on both hosts; not committed), extracted into:
+
+| path in `A/` | content |
+|---|---|
+| `analysis/` | the `analysis` part output unchanged: `summary.json`, `decisions.md`, `decisions.csv`, `reduced/`, `series/`, `manifest.txt`, and the part bookkeeping |
+| `raw/campaign/<part>/` | bookkeeping of `build`, `checks`, `pilot`, `checkpoint` (with `sealed/`), `extend`, `width`; `raw/campaign/halted_arms.txt` |
+| `raw/par2_s{c}[_ext]/` | Par2 aggregate outputs (`analysis/`, `ensemble/`, `manifest.json`, `effective_config.yaml`; R27) |
+| `raw/field_stats_par2_s{c}[_ext].txt` | `par2_field_stats` lines (realized `sigma^2` per realization) |
+| `raw/par2_realization_series.sha256` | sha256 of the 183 per-realization Par2 `stats/` CSVs used by Gate 5 (kept on the host) |
+| `raw/sf39_evidence.excluded_large` | sha256, size and path of the 14 runner logs larger than 2 MB (kept on the host) |
+| `logs/job_logs/`, `logs/job_status/` | `scripts/remote` job logs and status files of every SF-39 job |
+
+Not imported (hashes only, in the per-part `sha256.txt` or the lists above): every `*.npy`, the runner output trees `runs/`,
+`checks/runs/`, `checks/regress_head/`, the Par2 `snapshots/` and `stats/` trees, the logs above 2 MB. Re-verification:
+`for d in raw/campaign/{checks,pilot,checkpoint,extend,width} analysis; do (cd $d && sha256sum -c --ignore-missing sha256.txt | grep -vc ': OK$'); done`
+prints 0 for each. `analysis/manifest.txt` also lists `logs/analysis.log`, `logs/analysis.time` and `results.txt`, which `run_sf39.sh`
+completes after the manifest is written: `sha256sum -c manifest.txt` reports those three FAILED by construction; every analysis output
+verifies. The `build/` files are force-added (`.gitignore` ignores `build/`).
+
 ## Restart rules
 
 * A runner id whose recorded rc is final (0 ok; 2 usage; 3 seed on a face; 4 unusable solve; 7 option mismatch: deterministic

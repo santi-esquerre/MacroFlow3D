@@ -1,0 +1,55 @@
++ [pipe_config_par2_small] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-39/apps/config_par2_small.yaml
+  CASE_RESULT run=pipe_config_par2_small rc=0 wall=1s
++ [pipe_config_streamfunctions_homogeneous] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-39/apps/config_streamfunctions_homogeneous.yaml
+  CASE_RESULT run=pipe_config_streamfunctions_homogeneous rc=0 wall=1s
++ [pipe_config_streamfunctions_continuation] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-39/apps/config_streamfunctions_continuation.yaml
+  CASE_RESULT run=pipe_config_streamfunctions_continuation rc=0 wall=1s
++ [r_trace_N32_e0.5_host] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e0.5_host --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e0.5_host.json
+  CASE_RESULT run=r_trace_N32_e0.5_host rc=0 wall=3s
++ [r_trace_N32_e0.5_gpu] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e0.5_gpu --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e0.5_gpu.json
+  CASE_RESULT run=r_trace_N32_e0.5_gpu rc=0 wall=2s
++ [r_trace_N32_e1.0_host] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e1.0_host --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e1.0_host.json
+  CASE_RESULT run=r_trace_N32_e1.0_host rc=21 wall=3s
++ [r_trace_N32_e1.0_gpu] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 32 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e1.0_gpu --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N32_e1.0_gpu.json
+  CASE_RESULT run=r_trace_N32_e1.0_gpu rc=21 wall=3s
++ [r_trace_N64_e0.5_host] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer host --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e0.5_host --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e0.5_host.json
+  CASE_RESULT run=r_trace_N64_e0.5_host rc=0 wall=14s
++ [r_trace_N64_e0.5_gpu] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 0.5 --tracer gpu --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e0.5_gpu --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e0.5_gpu.json
+  CASE_RESULT run=r_trace_N64_e0.5_gpu rc=0 wall=3s
++ [r_trace_N64_e1.0_host] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer host --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e1.0_host --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e1.0_host.json
+  CASE_RESULT run=r_trace_N64_e1.0_host rc=0 wall=16s
++ [r_trace_N64_e1.0_gpu] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 1.0 --tracer gpu --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e1.0_gpu --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e1.0_gpu.json
+  CASE_RESULT run=r_trace_N64_e1.0_gpu rc=0 wall=5s
++ [r_trace_N64_e2.0_gpu] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --construct trace --sigma2 1 --ell 0.25 --seed 3001 --threads 32 --n 64 --eps 2 --tracer gpu --save-labels /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e2.0_gpu --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/trace/N64_e2.0_gpu.json
+  CASE_RESULT run=r_trace_N64_e2.0_gpu rc=21 wall=4s
++ [r_prod] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --production --n 32 --eps 0.25 --sigma2 1 --ell 0.25 --seed 3001 --oracle-ladder
+  CASE_RESULT run=r_prod rc=0 wall=14s
++ [r_fwd_smoke_g3d_n16] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --analytic generic3d --n 16 --eps 0.25 --np-side 16 --planes 0.25,0.5,1 --times 0.5,1 --covectors --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/smoke_g3d_n16 --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/smoke_g3d_n16.json
+  CASE_RESULT run=r_fwd_smoke_g3d_n16 rc=0 wall=2s
++ [r_fwd_g3d_n32_cov] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --analytic generic3d --n 32 --eps 0.25 --np-side 32 --planes 0.5,1 --times 1 --covectors --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/g3d_n32_cov --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/g3d_n32_cov.json
+  CASE_RESULT run=r_fwd_g3d_n32_cov rc=0 wall=2s
++ [r_fwd_gauss_n64_e1_cov] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n64_e1_cov --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n64_e1_cov.json
+  CASE_RESULT run=r_fwd_gauss_n64_e1_cov rc=0 wall=4s
++ [r_fwd_gauss_n64_e2] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n64_e2 --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n64_e2.json
+  CASE_RESULT run=r_fwd_gauss_n64_e2 rc=0 wall=4s
++ [r_fwd_gauss_n64_e2_tol] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.5,1,2 --times 1,2 --tol 1e-10 --hmax-div 32 --max-arclength 1000 --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n64_e2_tol --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n64_e2_tol.json
+  CASE_RESULT run=r_fwd_gauss_n64_e2_tol rc=0 wall=4s
++ [r_fwd_gauss_n40_e1] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 40 --eps 1 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n40_e1 --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n40_e1.json
+  CASE_RESULT run=r_fwd_gauss_n40_e1 rc=0 wall=2s
++ [r_fwd_gauss_n80_e2] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 80 --eps 2 --np-side 32 --planes 0.5,1 --times 1 --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n80_e2 --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/fwd/gauss_n80_e2.json
+  CASE_RESULT run=r_fwd_gauss_n80_e2 rc=0 wall=4s
++ [r_neutral_gauss_n64_e1_cov] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 1 --np-side 64 --planes 0.25,0.5,1,2 --times 0.5,1,2 --covectors --comparator pollock --save-vd /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e1_cov/vd --save-seed-velocity --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e1_cov --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e1_cov.json
+  CASE_RESULT run=r_neutral_gauss_n64_e1_cov rc=0 wall=4s
++ [r_neutral_gauss_n64_e2] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.25,0.5,1,2,4 --times 0.5,1,2,4 --comparator pollock --save-vd /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e2/vd --save-seed-velocity --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e2 --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e2.json
+  CASE_RESULT run=r_neutral_gauss_n64_e2 rc=0 wall=3s
++ [r_neutral_gauss_n64_e2_tol] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/inlet_slab --track forward --sigma2 1 --ell 0.25 --seed 3001 --n 64 --eps 2 --np-side 64 --planes 0.5,1,2 --times 1,2 --tol 1e-10 --hmax-div 32 --max-arclength 1000 --comparator pollock --save-vd /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e2_tol/vd --save-seed-velocity --save-particles /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e2_tol --summary /home/sesquerre/sf39_campaign/checks/regress_head/out/r/neutral/gauss_n64_e2_tol.json
+  CASE_RESULT run=r_neutral_gauss_n64_e2_tol rc=0 wall=5s
++ [g_runner_a] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --grid 512,64,64 --eps 2 --ell 0.125 --seed0 4001 --nr 2 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf39_campaign/checks/regress_head/out/g_runner_a
+  CASE_RESULT run=g_runner_a rc=0 wall=14s
++ [g_ab] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_medium_ab --grid 512,64,64 --ell 0.125 --eps 2 --seed0 4001 --nr 2 --out /home/sesquerre/sf39_campaign/checks/regress_head/out/g_ab
+  CASE_RESULT run=g_ab rc=0 wall=11s
++ [runner_b] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 512,64,64 --eps 1 --ell 0.125 --seed0 4001 --nr 2 --window 0.1,0.9,0.1,0.9 --np-side 30 --planes auto --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --out /home/sesquerre/sf39_campaign/checks/regress_head/out/runner_b
+  CASE_RESULT run=runner_b rc=0 wall=4s
++ [runner_b_analysis] /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline analysis_config.yaml
+  CASE_RESULT run=runner_b_analysis rc=0 wall=0s
+REGRESS_DONE unexpected_rc=0 wall_s=134

@@ -1,0 +1,86 @@
+FREEZE tau_b_star.json written
+CHECKPOINT_DONE
+SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=20 per arm)
+
+FROZEN tau_b* (F2 pilot record; the other frozen times are in tau_b_star.json)
+TAU_B_STAR s1=125.553719086
+TAU_B_STAR s225=93.3341223831
+TAU_B_STAR s4=23.2231267808
+
+N values printed by nr_rule (>500: cap reached without meeting the target, 500 used)
+NR s1 N_narrow=20
+NR s1 N_twin=20
+NR s1 N_hmax=20
+NR s1 N_R=50
+NR s1 N_A=20
+NR s1 N_run=50
+NR s1 par2_NR=50
+NR s225 N_narrow=20
+NR s225 N_twin=26
+NR s225 N_hmax=20
+NR s225 N_R=62
+NR s225 N_A=20
+NR s225 N_run=62
+NR s225 par2_NR=62
+NR s4 N_narrow=20
+NR s4 N_twin=20
+NR s4 N_hmax=20
+NR s4 N_R=71
+NR s4 N_A=20
+NR s4 N_run=71
+NR s4 par2_NR=71
+
+GPU-seconds per realization (kind: measured | estimate)
+GPU_S s1_A 100.168 measured
+GPU_S s1_B 35.411 estimate
+GPU_S s1_n05 8.81758 measured
+GPU_S s1_n10 18.0159 measured
+GPU_S s1_n20 69.4642 measured
+GPU_S s1_par2 53.1201 measured
+GPU_S s1_tw 10.5201 measured
+GPU_S s225_A 233.096 measured
+GPU_S s225_B 107.814 estimate
+GPU_S s225_n08 13.1991 measured
+GPU_S s225_n16 32.4225 measured
+GPU_S s225_n32 131.547 measured
+GPU_S s225_par2 87.5214 measured
+GPU_S s225_tw 22.2876 measured
+GPU_S s4_A 243.51 measured
+GPU_S s4_B 120.025 estimate
+GPU_S s4_n16 10.8601 measured
+GPU_S s4_n32 31.5002 measured
+GPU_S s4_n64 144.062 measured
+GPU_S s4_par2 92.471 measured
+GPU_S s4_tw 21.8853 measured
+GPU_S s4_w12 21.8853 measured
+GPU_S s4_w24 60.0125 estimate
+
+PROJECTED_GPU_H 6.83762 (realizations still to run, N values above, GPU-s per realization above)
+PILOT_WALL_OVER_GPU_BUSY 1.001 (sum of pilot runner walls / sum of pilot timings.json seconds.total)
+PROJECTED_WALL_H 6.84448 (one shared GPU: projected GPU-h x that ratio)
+
+BYTES per realization (kind: measured | estimate)
+BYTES s1_A 635004651 measured
+BYTES s1_B 296300847 estimate
+BYTES s1_n05 297665990 measured
+BYTES s1_n10 296628882 measured
+BYTES s1_n20 296376788 measured
+BYTES s1_par2 72070026 measured
+BYTES s1_tw 297330628 measured
+BYTES s225_A 570260434 measured
+BYTES s225_B 266085545 estimate
+BYTES s225_n08 269739288 measured
+BYTES s225_n16 269094692 measured
+BYTES s225_n32 268870646 measured
+BYTES s225_par2 72894831 measured
+BYTES s225_tw 266694729 measured
+BYTES s4_A 236041073 measured
+BYTES s4_B 110105437 estimate
+BYTES s4_n16 127194745 measured
+BYTES s4_n32 127110858 measured
+BYTES s4_n64 127055017 measured
+BYTES s4_par2 72886850 measured
+BYTES s4_tw 110181928 measured
+BYTES s4_w12 110181928 measured
+BYTES s4_w24 110105437 estimate
+PROJECTED_BYTES 133465505793 (final counts x bytes per realization, all arms)

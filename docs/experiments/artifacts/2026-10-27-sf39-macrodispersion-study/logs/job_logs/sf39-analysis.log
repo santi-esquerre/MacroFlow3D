@@ -1,0 +1,17 @@
+[2026-10-28T21:30:03Z] job=sf39-analysis GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-28T21:30:03Z] job=sf39-analysis chose GPU 0 (auto: least-loaded)
+[2026-10-28T21:30:03Z] job=sf39-analysis session=macroflow3d-SF-39-sf39-analysis started
+[2026-10-28T21:30:03Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-28T21:30:03Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-28T21:30:03Z] command=echo TREE=$(cat .mf3d_source_rev); bash docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts/run_sf39.sh build/v100-release analysis; echo ANALYSIS_SCRIPT_EXIT=$?
+TREE=40f5996c2a1e
+PART_BEGIN part=analysis selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
++ [analysis] .: python3 -m sf39.analyze --out-root /home/sesquerre/sf39_campaign --artifact /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study --dest /home/sesquerre/sf39_campaign/analysis > /home/sesquerre/sf39_campaign/analysis/logs/analysis.log 2>&1
+  CASE_RESULT run=analysis rc=0 wall=902s end=2026-10-28T21:45:12Z
+RUN id=analysis rc=0 wall=902s dest=/home/sesquerre/sf39_campaign/analysis
+RECORDED part_seconds=909 part_runs_seconds=902 part=analysis (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=analysis rc=0
+ANALYSIS_SCRIPT_EXIT=0
+[2026-10-28T21:45:12Z] job=sf39-analysis finished exit=0
