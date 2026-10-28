@@ -65,13 +65,15 @@ def _build():
         _arm("s4_tw", 1664, 192, 16, "2", "0.083333333333333329", "P3"),
         _arm("s4_w24", 1664, 384, 16, "2", "0.041666666666666664", "P7", window=W24),
         _arm("s4_w12", 1664, 192, 16, "2", "0.083333333333333329", "P3", window=W12),
+        # continuation of the halted s4_w12 (owner decision 2026-10-28): same settings, seeds 7215-7231; never a check arm
+        _arm("s4_w12c", 1664, 192, 16, "2", "0.083333333333333329", "P3", window=W12),
     ]
     for a in rows:
         t[a.id] = a
     # check arms (never data): every narrow size, twin and width geometry, hmax 8; the s4_A grid with the multi-pass list
     # (chk_s4_A) and with the single pass (chk_s4_A1) for the byte check
     for a in rows:
-        if a.id.endswith("_A") and a.id != "s4_A" or a.id.endswith("_B"):
+        if a.id.endswith("_A") and a.id != "s4_A" or a.id.endswith("_B") or a.id == "s4_w12c":
             continue
         h = a.hmax if a.id == "s4_A" else "8"
         t["chk_" + a.id] = a._replace(id="chk_" + a.id, hmax=h)

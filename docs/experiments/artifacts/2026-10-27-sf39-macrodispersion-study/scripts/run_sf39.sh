@@ -9,7 +9,8 @@
 #   bash run_sf39.sh <build_dir> pilot [s1|s225|s4|par2]     20-realization pilot (directory A, narrow rungs, twin; Par2 pilot + field stats)
 #   bash run_sf39.sh <build_dir> checkpoint        python3 -m sf39.checkpoint (no CUDA)
 #   bash run_sf39.sh <build_dir> extend [s1|s225|s4|par2]    raise every arm to the budget (configs/budget.json) + directory B; Par2 extension
-#   bash run_sf39.sh <build_dir> width             s4_w24 and s4_w12 (30 realizations each)
+#   bash run_sf39.sh <build_dir> width             s4_w24 and s4_w12 (30 realizations each), then s4_w12c (17: seeds 7215-7231, continuation of
+#                                                  the halted s4_w12, owner decision 2026-10-28; s4_w12 itself is never released)
 #   bash run_sf39.sh <build_dir> analysis          python3 -m sf39.analyze (no CUDA)
 #
 # <build_dir> holds lagrangian_ensemble, lagrangian_medium_ab, macroflow3d_pipeline, inlet_slab, par2_field_stats (the clean build of RR1).
@@ -76,6 +77,8 @@ SEED_PROD=5001
 SEED_CHECK=4901
 SEED_W24=7101
 SEED_W12=7201
+SEED_W12C=7215 # s4_w12 halted at r=13 (seed 7214 skipped); s4_w12c = seeds 7215-7231
+N_W12C=17
 PILOT_NR=20
 BASE_REV=1e40cfe
 REG_HOME=${SF39_REGRESS_HOME:-$HOME} # override only for local tests of this script
@@ -614,6 +617,7 @@ part_width() {
     mk "$OUT_ROOT/runs"
     run_arm "$PD" s4_w24 "$SEED_W24" 30 "$OUT_ROOT/runs/s4_w24"
     run_arm "$PD" s4_w12 "$SEED_W12" 30 "$OUT_ROOT/runs/s4_w12"
+    run_arm "$PD" s4_w12c "$SEED_W12C" "$N_W12C" "$OUT_ROOT/runs/s4_w12c"
 }
 
 # budget.json (written after the owner's budget): {"s1": {...}, "s225": {...}, "s4": {...}}, each with the integer keys

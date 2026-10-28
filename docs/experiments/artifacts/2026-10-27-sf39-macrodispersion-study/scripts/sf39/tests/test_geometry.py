@@ -22,7 +22,7 @@ ELL = {
     "s225_n32": "0.125", "s225_tw": "0.041666666666666664",
     "s4_A": "0.083333333333333329", "s4_B": "0.083333333333333329", "s4_n16": "0.25", "s4_n32": "0.25",
     "s4_n64": "0.25", "s4_tw": "0.083333333333333329", "s4_w24": "0.041666666666666664",
-    "s4_w12": "0.083333333333333329",
+    "s4_w12": "0.083333333333333329", "s4_w12c": "0.083333333333333329",
 }
 GRID = {
     "s1_A": "2048,256,256", "s1_B": "2048,256,256", "s1_n05": "1024,64,64", "s1_n10": "2048,128,128",
@@ -30,6 +30,7 @@ GRID = {
     "s225_n08": "1664,64,64", "s225_n16": "3328,128,128", "s225_n32": "6656,256,256", "s225_tw": "1664,192,192",
     "s4_A": "3328,384,384", "s4_B": "3328,384,384", "s4_n16": "1664,64,64", "s4_n32": "3328,128,128",
     "s4_n64": "6656,256,256", "s4_tw": "1664,192,192", "s4_w24": "1664,384,384", "s4_w12": "1664,192,192",
+    "s4_w12c": "1664,192,192",
 }
 
 
@@ -51,7 +52,7 @@ class TestArmTable(unittest.TestCase):
             self.assertEqual(opt(a, "--sigma2"), "1")
         lh = {"s1_A": 10, "s1_n05": 5, "s1_n10": 10, "s1_n20": 20, "s1_tw": 5, "s225_A": 16, "s225_n08": 8,
               "s225_n16": 16, "s225_n32": 32, "s225_tw": 8, "s4_A": 32, "s4_n16": 16, "s4_n32": 32, "s4_n64": 64,
-              "s4_tw": 16, "s4_w24": 16, "s4_w12": 16}
+              "s4_tw": 16, "s4_w24": 16, "s4_w12": 16, "s4_w12c": 16}
         for a, v in lh.items():
             self.assertEqual(G.ARMS[a].lh, v, a)
             self.assertEqual(float(opt(a, "--ell")) * G.ARMS[a].grid[1], v, a)
@@ -61,9 +62,10 @@ class TestArmTable(unittest.TestCase):
             self.assertEqual(opt(a, "--hmax-div"), "8,16,32" if a.endswith("_A") else "8", a)
         self.assertEqual(opt("s4_w24", "--window"), "0.3,0.7,0.3,0.7")
         self.assertEqual(opt("s4_w12", "--window"), G.W12)
+        self.assertEqual(opt("s4_w12c", "--window"), G.W12)
         self.assertEqual([float(x) for x in G.W12.split(",")], [0.36666666666666664, 0.6333333333333334] * 2)
         for a in ELL:
-            if a not in ("s4_w24", "s4_w12"):
+            if a not in ("s4_w24", "s4_w12", "s4_w12c"):
                 self.assertEqual(opt(a, "--window"), "0.1,0.9,0.1,0.9")
 
     def test_common_flags_and_excluded(self):
@@ -81,7 +83,7 @@ class TestArmTable(unittest.TestCase):
 
     def test_planes_per_arm_and_check_arms(self):
         want = {"s1_A": "P1", "s1_B": "P1", "s1_tw": "P1", "s225_A": "P2", "s225_B": "P2", "s225_tw": "P2",
-                "s4_A": "P3", "s4_B": "P3", "s4_tw": "P3", "s4_w12": "P3", "s1_n05": "P4", "s1_n10": "P4",
+                "s4_A": "P3", "s4_B": "P3", "s4_tw": "P3", "s4_w12": "P3", "s4_w12c": "P3", "s1_n05": "P4", "s1_n10": "P4",
                 "s1_n20": "P4", "s225_n08": "P5", "s225_n16": "P5", "s225_n32": "P5", "s4_n16": "P6",
                 "s4_n32": "P6", "s4_n64": "P6", "s4_w24": "P7"}
         for a, p in want.items():
@@ -90,6 +92,9 @@ class TestArmTable(unittest.TestCase):
             self.assertEqual(hashlib.sha256(s.encode()).hexdigest(), G.PLANE_SHA256[p], a)
             self.assertEqual(opt(a, "--planes"), s)
         self.assertEqual(len(G.SOLVE_CHECK_ARMS), 14)
+        # the continuation arm is never a check arm (the checks part already ran)
+        self.assertNotIn("chk_s4_w12c", G.ARMS)
+        self.assertEqual(G.ARMS["s4_w12c"], G.ARMS["s4_w12"]._replace(id="s4_w12c"))
         self.assertEqual(G.ARMS["chk_s4_A"].hmax, "8,16,32")
         self.assertEqual(G.ARMS["chk_s4_A1"].hmax, "8")
         for a in G.SOLVE_CHECK_ARMS:

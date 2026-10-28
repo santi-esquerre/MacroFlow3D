@@ -1,8 +1,10 @@
 """End-to-end tests of sf39.analyze on a fake complete campaign (fixtures_analysis; known answers from the closed forms of fixtures_runner).
 
 Run (about two minutes): `cd A/scripts && python3 -m unittest discover -s . -t . -p 'test_analyze*.py'`.
-The F10 reference/width counts (30 in the campaign) are patched to 9 (`power.REF_FLOOR`, `power.WIDTH_ARMS`) to keep the fixture small.
+The F10 reference/width counts (30 in the campaign) are patched to 9 (`power.REF_FLOOR`, `power.WIDTH_ARMS`, and the s4_w12 + s4_w12c split
+`analyze.W12_PARTS`, 13 + 17 in the campaign, 5 + 4 here) to keep the fixture small.
 """
+import contextlib
 import csv
 import hashlib
 import io
@@ -24,6 +26,7 @@ from sf39.tests import fixtures_par2 as fp
 from sf39.tests import fixtures_runner as fx
 
 N = fa.N_PILOT
+REAL_W12 = an.W12_PARTS     # captured at import, before the Study patches it with the small fixture split
 B = fa.BUDGET
 SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # .../A/scripts
 
@@ -69,7 +72,8 @@ class Study(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.patches = [mock.patch.object(power, "REF_FLOOR", fa.REF_FLOOR),
-                       mock.patch.dict(power.WIDTH_ARMS, {"s4_w24": fa.REF_FLOOR, "s4_w12": fa.REF_FLOOR})]
+                       mock.patch.dict(power.WIDTH_ARMS, {"s4_w24": fa.REF_FLOOR, "s4_w12": fa.REF_FLOOR}),
+                       mock.patch.object(an, "W12_PARTS", fa.W12_PARTS)]
         for p in cls.patches:
             p.start()
         cls.tmp = tempfile.TemporaryDirectory()
@@ -149,7 +153,7 @@ class Study(unittest.TestCase):
         # F10 sets: s4 only, each arm its own standalone U
         b = B["s4"]
         for name, seeds, gens, arm in (("s4_w24", [7101 + r for r in range(9)], [fa.WIDTH_G0 + r for r in range(9)], "s4_tw"),
-                                       ("s4_w12", [7201 + r for r in range(9)], [fa.WIDTH_G0 + 50 + r for r in range(9)], "s4_tw"),
+                                       ("s4_w12", [7201 + r for r in range(5)] + [7215 + r for r in range(4)], [fa.WIDTH_G0 + 50 + r for r in range(9)], "s4_tw"),
                                        ("s4_tw_first30", [5001 + g for g in range(9)], list(range(9)), "s4_tw"),
                                        ("s4_n16_first30", [5001 + g for g in range(9)], list(range(9)), "s4_n16")):
             rows = self.csv(name)
@@ -160,6 +164,7 @@ class Study(unittest.TestCase):
         self.assertNotIn("F10", self.S["amplitudes"]["s1"])
         self.assertEqual(self.S["amplitudes"]["s4"]["F10"]["w24_vs_tw"]["n_wide"], 9)
         self.assertEqual(self.S["amplitudes"]["s4"]["F10"]["w12_vs_n16"]["n_reference"], 9)
+        self.assertEqual(self.S["amplitudes"]["s4"]["F10"]["w12_vs_n16"]["n_wide"], 9)
         self.assertEqual(b["N_R"], self.S["amplitudes"]["s4"]["n"]["N_R"])
 
     def test_known_answers_per_realization(self):
@@ -600,6 +605,94 @@ class Study(unittest.TestCase):
         # the partial analysis of the complete part equals the full one
         a1 = S["amplitudes"]["s1"]["A"]["alpha_TAM"]["trend"]["D_f"]["ci"]["mean"]
         self.assertEqual(a1, self.S["amplitudes"]["s1"]["A"]["alpha_TAM"]["trend"]["D_f"]["ci"]["mean"])
+
+    # -- F10 (ii): s4_w12 + s4_w12c wide set (owner decision 2026-10-28) ------------------------------------------------------------
+    @contextlib.contextmanager
+    def w12_layout(self, n12, n12c, seeds12c=None):
+        """The REAL W12_PARTS split with minimal DONE realizations (field.json, flow_stats.json, DONE) in s4_w12 (n12) and s4_w12c (n12c);
+        the fixture's own s4_w12 / s4_w12c directories are moved aside and restored."""
+        moved = []
+        try:
+            for arm, n, s0s in (("s4_w12", n12, None), ("s4_w12c", n12c, seeds12c)):
+                d = cp.arm_dir(self.out, arm)
+                if os.path.isdir(d):
+                    os.rename(d, d + ".bak")
+                    moved.append(d)
+                for r in range(n):
+                    R = os.path.join(d, "realizations", "r_%04d" % r)
+                    os.makedirs(R)
+                    seed = (s0s[r] if s0s else {"s4_w12": 7201, "s4_w12c": 7215}[arm] + r)
+                    for name, body in (("field.json", {"seed": seed}), ("flow_stats.json", {"qbar": 1.0})):
+                        with open(os.path.join(R, name), "w") as f:
+                            json.dump(body, f)
+                    open(os.path.join(R, "DONE"), "w").close()
+            with mock.patch.object(an, "W12_PARTS", REAL_W12):
+                yield an.Ctx(self.out, self.art, None, self.frz, None, N, False)
+        finally:
+            for arm in ("s4_w12", "s4_w12c"):
+                d = cp.arm_dir(self.out, arm)
+                shutil.rmtree(d, ignore_errors=True)
+                if d in moved:
+                    os.rename(d + ".bak", d)
+
+    def test_w12_real_split_constants(self):
+        self.assertEqual(REAL_W12, (("s4_w12", 7201, 13), ("s4_w12c", 7215, 17)))
+        self.assertEqual(sum(n for _, _, n in REAL_W12), 30)
+        self.assertEqual(an.W12_EXCLUDED_SEEDS, [7214])
+
+    def test_w12_split_complete_is_not_refused(self):
+        bud = an.load_budget(self.art)
+        with self.w12_layout(13, 17) as C:
+            self.assertEqual(an.missing_items(C, bud), [])
+            seeds = [x.seed for x in an.w12_records(C)]
+            self.assertEqual(seeds, list(range(7201, 7214)) + list(range(7215, 7232)))
+            self.assertNotIn(7214, seeds)
+            self.assertEqual(an.effective_counts(C, bud)["s4"]["n_w12"], 30)
+
+    def test_w12_split_refusals_are_precise(self):
+        bud = an.load_budget(self.art)
+        with self.w12_layout(12, 17) as C:  # s4_w12 only 12 DONE
+            self.assertEqual(an.missing_items(C, bud), ["s4_w12: realizations not DONE: 12"])
+        with self.w12_layout(13, 16) as C:  # s4_w12c short by one
+            self.assertEqual(an.missing_items(C, bud), ["s4_w12c: realizations not DONE: 16"])
+        wrong = [7215 + r for r in range(17)]
+        wrong[2] = 7214  # the excluded seed must not be accepted in the continuation arm
+        with self.w12_layout(13, 17, wrong) as C:
+            self.assertEqual(an.missing_items(C, bud), ["s4_w12c: seed != 7215 + r for r = 2"])
+        with self.w12_layout(13, 16):  # through run(): refused, nothing written
+            dest = os.path.join(self.tmp.name, "d_w12c_short")
+            rc, err = run_quiet(self.out, self.art, dest)
+            self.assertEqual(rc, 2)
+            self.assertIn("MISSING s4_w12c: realizations not DONE: 16", err)
+            self.assertFalse(os.path.exists(dest))
+
+    def test_w12_split_partial_prefixes(self):
+        bud = an.load_budget(self.art)
+        with self.w12_layout(11, 3) as C:
+            C.partial = True
+            self.assertEqual(an.effective_counts(C, bud)["s4"]["n_w12"], 14)
+            self.assertEqual([x.seed for x in an.w12_records(C)], list(range(7201, 7212)) + [7215, 7216, 7217])
+
+    def test_w12_exclusion_is_disclosed_and_not_partial(self):
+        F = self.S["amplitudes"]["s4"]["F10"]
+        w = F["w12_vs_n16"]
+        self.assertEqual(w["n_wide"], 9)
+        self.assertEqual(w["wide_arms"], ["s4_w12", "s4_w12c"])
+        self.assertEqual(w["wide_seeds"], [7201 + r for r in range(5)] + [7215 + r for r in range(4)])
+        self.assertEqual(w["excluded_seeds"], [7214])
+        self.assertIn("owner decision 2026-10-28", w["excluded_reason"])
+        self.assertIn("s4_w12c seeds 7215-7231", w["excluded_reason"])
+        self.assertNotIn("excluded_seeds", F["w24_vs_tw"])
+        dec = read_csv(os.path.join(self.dest, "decisions.csv"))
+        self.assertEqual(sum(r["decision_point"].startswith("F10 width") for r in dec), 2 * 2)  # 2 checks x (TAM, TP)
+        for r in dec:
+            if r["decision_point"] == "F10 width check w12_vs_n16":
+                self.assertIn("seed 7214 excluded", r["note"])
+            if r["decision_point"].startswith("F10 width"):
+                self.assertFalse(r["note"].startswith("PARTIAL"))
+            if r["decision_point"] == "F10 width check w24_vs_tw":
+                self.assertNotIn("7214", r["note"])
+        self.assertFalse(self.S["partial"])
 
     def test_window_error_is_a_failure_not_a_clip(self):
         frz = json.loads(json.dumps(self.frz))

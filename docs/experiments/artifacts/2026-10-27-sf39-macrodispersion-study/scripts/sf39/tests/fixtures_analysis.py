@@ -3,7 +3,8 @@
 Built on `fixtures_campaign` (pilot of every arm, Par2 pilots) and `fixtures_runner`: the pilot is built and checkpointed first (the frozen
 `tau_b_star.json` is the real checkpoint output), then every arm is extended to the budget counts of BUDGET, directory B, the s4 width arms
 and the Par2 extensions are added, and `A/configs/budget.json` is written.  Global realization index g: directory A r = g, directory B
-r = g - N_A (seed 5001 + g), narrow / twin arms r = g, width arms seed 7101/7201 + r (generating index WIDTH_G0 + r).  The content of
+r = g - N_A (seed 5001 + g), narrow / twin arms r = g, width arms seed 7101/7201 + r (generating index WIDTH_G0 + r; the s4_w12 wide set
+is split in `W12_PARTS`, s4_w12 + s4_w12c, generating index WIDTH_G0 + 50 + i over the combined index i).  The content of
 global realization g is `fx.gen(g)` scaled per arm role (`fc.arm_factors`), so every window / plane value has a closed form
 (`fc.expected_alpha_TAM`, `fc.expected_alpha_TP`).  s1 is built with identity role factors: every rung and the twin equal the production
 content (converged ladders by construction); s225 and s4 keep the fixture's role factors (not converged by construction).
@@ -26,6 +27,7 @@ BUDGET = {"s1": {"N_narrow": 8, "N_twin": 7, "N_hmax": 7, "N_R": 10, "N_A": 7, "
           "s4": {"N_narrow": 8, "N_twin": 7, "N_hmax": 7, "N_R": 10, "N_A": 7, "N_run": 10, "par2_NR": 10}}
 REF_FLOOR = 9        # tests patch power.REF_FLOOR / WIDTH_ARMS to this (the real values are 30) to keep the fixture small
 WIDTH_G0 = 100       # generating index of width arm realization r
+W12_PARTS = (("s4_w12", 7201, 5), ("s4_w12c", 7215, 4))  # small stand-in for analyze.W12_PARTS (13 + 17); s4_w12 index i = WIDTH_G0 + 50 + i
 IDENT = {k: (1.0, 1.0) for k in fc.ROLE_F}
 
 
@@ -114,7 +116,10 @@ def build_complete(out_root, artifact, real_scripts, n_pilot=N_PILOT, bud=BUDGET
                 build_single(out_root, a["B"], amp, b["N_run"] - b["N_A"], b["N_A"], cp.PILOT_SEED0 + b["N_A"], role_arm=a["A"])
             if amp == "s4":
                 build_single(out_root, "s4_w24", amp, REF_FLOOR, WIDTH_G0, 7101, role_arm=a["tw"])
-                build_single(out_root, "s4_w12", amp, REF_FLOOR, WIDTH_G0 + 50, 7201, role_arm=a["tw"])
+                i0 = 0
+                for w_arm, w_seed0, w_n in W12_PARTS:
+                    build_single(out_root, w_arm, amp, w_n, WIDTH_G0 + 50 + i0, w_seed0, role_arm=a["tw"])
+                    i0 += w_n
         build_par2_ext(out_root, amp, n_pilot, b["par2_NR"] - n_pilot)
     write_budget(artifact, bud)
     return rc

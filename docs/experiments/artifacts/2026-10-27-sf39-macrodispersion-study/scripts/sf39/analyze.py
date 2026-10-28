@@ -19,12 +19,13 @@ F7, F10, F11 and Gate 5; the recorded sensitivities of E carry Student intervals
   twin         first N_twin seeds paired with the production realizations of the same seeds; production side U = mean qbar of the production
                realizations g < N_twin, twin side U = mean qbar of the twin over the same seeds (`campaign.u_paired` through `pair_u`)
   h_max        directory A, first N_hmax seeds; passes 8/16/32 share one U = mean qbar of that set
-  F10          s4_w24 / s4_w12 and the first 30 of s4_tw / s4_n16, each arm its own standalone U
+  F10          s4_w24 / s4_w12 and the first 30 of s4_tw / s4_n16, each arm its own standalone U; the s4_w12 wide set is `W12_PARTS`
+               (s4_w12 seeds 7201-7213 + continuation arm s4_w12c seeds 7215-7231 = 30, seed 7214 excluded: owner decision 2026-10-28)
 A reduction (`reduce.reduce_methods`: all methods flux, unif, expI, full, pollock, ixc, ixp) is cached per (set, pass, U).
 
 Outputs under `dest/`: `reduced/<set>.csv` (one row per realization and method, every documented reducer column; sets `<amp>_prod`
 (pooled A+B, g < N_R), `<amp>_prod_twinpairs` (g < N_twin at the pair-set U), narrow rungs `<arm>`, `<amp>_tw`, `<amp>_A_hmax<d>`, `s4_w24`,
-`s4_w12`, `s4_tw_first30`, `s4_n16_first30`), `reduced/sigma_series_<set>.csv` (sigma_T^2(x1), per plane over its contributors),
+`s4_w12` (the combined 30 of `W12_PARTS`), `s4_tw_first30`, `s4_n16_first30`), `reduced/sigma_series_<set>.csv` (sigma_T^2(x1), per plane over its contributors),
 `reduced/rho_<amp>.csv` (F8 rows, directory A), `series/alpha_t_<amp>.csv` (threshold E: alpha(t) and sigma_T^2(t) series of the
 production estimate set, B&dD eq. 4 convention, see `alpha_series_rows`; recorded, non-gating), `summary.json` (every number with CI, n, BCa, verdict/label; sorted keys, %.17g; NaN -> null,
 infinite one-sided bounds -> "inf"/"-inf"), `decisions.csv`, `decisions.md` (preregistration section 10; tiers primary / key secondary /
@@ -58,6 +59,13 @@ BD_BOUND = {"s1": 0.01, "s225": 0.044}                  # B&dD fixed-axis alpha_
 BUDGET_KEYS = ("N_narrow", "N_twin", "N_hmax", "N_R", "N_A", "N_run", "par2_NR")
 TIERS = ("primary", "key secondary", "estimation", "exploratory", "process")
 L90, L95 = 0.90, 0.95
+# F10 (ii) wide set (owner decision 2026-10-28; preregistration unchanged, `power.WIDTH_ARMS` keeps the preregistered projection of 30 for
+# s4_w12): s4_w12 was halted at r = 13 (runner exit 4, seed 7214 never completed), so the wide set is (arm, first seed, realizations) =
+# s4_w12 r = 0..12 + the continuation arm s4_w12c r = 0..16.  The ONE Python source of truth for the split (tests patch it with small counts).
+W12_PARTS = (("s4_w12", 7201, 13), ("s4_w12c", 7215, 17))
+W12_EXCLUDED_SEEDS = [7214]
+W12_EXCLUDED_REASON = ("runner exit 4 (medium (b) solve not converged) at s4_w12 r=13; owner decision 2026-10-28: continuation arm "
+                       "s4_w12c seeds 7215-7231")
 TWO_P15 = 2.0 ** 1.5
 
 
@@ -181,7 +189,7 @@ def expected_seed0(arm, b):
     """First field seed of an arm (preregistration section 1)."""
     if arm.endswith("_B"):
         return cp.PILOT_SEED0 + b["N_A"]
-    return {"s4_w24": 7101, "s4_w12": 7201}.get(arm, cp.PILOT_SEED0)
+    return {"s4_w24": 7101, **{a: s0 for a, s0, _ in W12_PARTS}}.get(arm, cp.PILOT_SEED0)
 
 
 def par2_files(out, amp):
@@ -214,12 +222,26 @@ def available(out, arm):
     return n
 
 
+def w12_counts(C):
+    """[(arm, n)] realizations of the F10 (ii) wide set: `W12_PARTS` (full mode) or their complete prefixes (--allow-partial)."""
+    return [(arm, min(cnt, available(C.out, arm)) if C.partial else cnt) for arm, _, cnt in W12_PARTS]
+
+
+def w12_records(C):
+    """Realizations of the F10 (ii) wide set: r < n of each part, in part order (seeds ascending)."""
+    return [x for arm, n in w12_counts(C) for x in cp.done_records(C.out, arm)[:n]]
+
+
 def missing_items(C, bud):
     """Strings describing every realization/file the budget asks for and cannot be found (empty = complete)."""
     miss = []
     for amp in cp.AMPS:
         b = bud[amp]
-        for arm, cnt in power.arm_counts(b, amp).items():
+        counts = power.arm_counts(b, amp)
+        if amp == "s4":  # the preregistered s4_w12 count is replaced by its two parts
+            counts.pop("s4_w12", None)
+            counts.update({arm: cnt for arm, _, cnt in W12_PARTS})
+        for arm, cnt in counts.items():
             if arm.endswith("_par2") or cnt <= 0:
                 continue
             recs = {x.r: x for x in cp.done_records(C.out, arm)}
@@ -258,7 +280,7 @@ def effective_counts(C, bud):
     for amp in cp.AMPS:
         b, a = bud[amp], cp.arm_ids(amp)
         e = {k: b[k] for k in ("N_narrow", "N_twin", "N_hmax", "N_R")}
-        e["n_w24"], e["n_w12"] = power.WIDTH_ARMS["s4_w24"], power.WIDTH_ARMS["s4_w12"]
+        e["n_w24"], e["n_w12"] = power.WIDTH_ARMS["s4_w24"], sum(cnt for _, _, cnt in W12_PARTS)
         e["n_ref"] = power.REF_FLOOR
         if C.partial:
             prod = cp.production_records(C.out, amp)
@@ -275,7 +297,7 @@ def effective_counts(C, bud):
             e["N_twin"] = min(b["N_twin"], available(C.out, a["tw"]), n_prod)
             e["N_hmax"] = min(b["N_hmax"], available(C.out, a["A"]))
             if amp == "s4":
-                e["n_w24"], e["n_w12"] = (min(e[k], available(C.out, arm)) for k, arm in (("n_w24", "s4_w24"), ("n_w12", "s4_w12")))
+                e["n_w24"], e["n_w12"] = min(e["n_w24"], available(C.out, "s4_w24")), sum(n for _, n in w12_counts(C))
                 e["n_ref"] = min(e["n_ref"], available(C.out, "s4_tw"), available(C.out, "s4_n16"))
         eff[amp] = e
     return eff
@@ -743,10 +765,17 @@ def f10_block(C, amp):
              "w12_vs_n16": ("s4_w12", a["narrow"][0], e["n_w12"], e["n_ref"], "s4_n16_first30")}
     res_out = {}
     for label, (wide_arm, ref_arm, nw, nref, ref_name) in pairs.items():
-        wide, ref = cp.done_records(out, wide_arm)[:nw], cp.done_records(out, ref_arm)[:nref]
+        wide = w12_records(C) if wide_arm == "s4_w12" else cp.done_records(out, wide_arm)[:nw]
+        ref = cp.done_records(out, ref_arm)[:nref]
         Rw = reduce_named(C, amp, wide_arm, wide, cp.PROD_DIV, cp.u_standalone(wide))
         Rr = reduce_named(C, amp, ref_name, ref, cp.PROD_DIV, cp.u_standalone(ref))
         res_out[label] = {"U_wide": cp.u_standalone(wide), "U_reference": cp.u_standalone(ref), "n_wide": len(wide), "n_reference": len(ref)}
+        note = ""
+        if wide_arm == "s4_w12":  # disclosure of the owner-decided split
+            res_out[label].update(wide_arms=[arm for arm, _, _ in W12_PARTS], wide_seeds=[x.seed for x in wide],
+                                  excluded_seeds=W12_EXCLUDED_SEEDS, excluded_reason=W12_EXCLUDED_REASON)
+            note = "; wide = %s; seed %s excluded (s4_w12 halted, owner decision 2026-10-28)" % (
+                "+".join(arm for arm, _, _ in W12_PARTS), ",".join(str(q) for q in W12_EXCLUDED_SEEDS))
         for est in TRANSVERSE:
             vw, vr = values(Rw, est), values(Rr, est)
             wc = stats.width_check(vw, vr, L90)
@@ -754,7 +783,7 @@ def f10_block(C, amp):
             wc.update(bca_lo=bl, bca_hi=bh, bca_degenerate=deg, mean_wide=float(vw.mean()), mean_reference=float(vr.mean()))
             res_out[label][est] = wc
             row(C, "exploratory", amp, est, "F10 width check %s" % label, wc["label"], (wc["lo"], wc["hi"]), "%d/%d" % (len(vw), len(vr)),
-                "diff=%.6g margin=%.6g" % (wc["diff"], wc["margin"]))
+                "diff=%.6g margin=%.6g%s" % (wc["diff"], wc["margin"], note))
     return res_out
 
 

@@ -25,7 +25,7 @@ Geometry CLI (needs `PYTHONPATH=<A>/scripts`): `python3 -m sf39.geometry flags <
 `--seed0`, `--nr`), `planes <P1..P7|arm>`, `arms`, `check` (the seven sha256 values of section 2 and every arm against the
 runner's usage checks: grid even and >= 4, `ny == nz`, planes strictly increasing, `> x0 = 5 ell`, last `< L1`, window order,
 RR12 seed-on-face for the `M = 100` lattice, `--hmax-div` list). Arm ids: `s{1,225,4}_A`, `_B`, narrow rungs `s1_n05 s1_n10
-s1_n20 / s225_n08 s225_n16 s225_n32 / s4_n16 s4_n32 s4_n64`, twins `s{c}_tw`, width arms `s4_w24`, `s4_w12`, and check arms
+s1_n20 / s225_n08 s225_n16 s225_n32 / s4_n16 s4_n32 s4_n64`, twins `s{c}_tw`, width arms `s4_w24`, `s4_w12`, `s4_w12c` (continuation of the halted `s4_w12`, same settings; no check arm), and check arms
 `chk_<arm>` for the 14 narrow/twin/width geometries plus `chk_s4_A` (`--hmax-div 8,16,32`) and `chk_s4_A1` (`8`).
 
 Local tests (seconds): `cd A/scripts && python3 -m unittest discover -s . -t .` (or `-p 'test_geometry*.py'`, `-p 'test_bytecheck*.py'`);
@@ -45,8 +45,17 @@ governed by the `scripts/remote` slot and `REMOTE_GPU_MIN_FREE_MIB`.
 | `pilot` | `s1` `s225` `s4` `par2` (none = all four in this order) | per amplitude `s{c}_A`, the three narrow rungs and the twin, each `--seed0 5001 --nr 20` in `runs/<arm>`; `par2`: `macroflow3d_pipeline configs/par2_s{c}.yaml` (cwd `$SF39_OUT_ROOT/par2`) and `par2_field_stats <cfg> --nr 20` | yes |
 | `checkpoint` | | `python3 -m sf39.checkpoint --out-root $SF39_OUT_ROOT --artifact A` (freeze, sealed pilot estimates, `nr_rule`, blinded report); a recorded rc 0 is never re-run | no |
 | `extend` | `s1` `s225` `s4` `par2` | needs `configs/budget.json` (refuses with exit 2 and a message if absent or invalid, before anything is written); raises `--nr` in the same directories (A to `N_A`, narrow rungs to `N_narrow` with `s4_n16` at least 30, twin to `N_twin` with `s4_tw` at least 30), creates directory B (`s{c}_B`, `--seed0 5001+N_A --nr N_run-N_A`, only if `N_run > N_A`); `par2`: needs `configs/par2_s{c}_ext.yaml` equal to the output of `python3 -m sf39.par2 mkext configs/par2_s{c}.yaml <par2_NR>` (refuses otherwise) and runs it plus `par2_field_stats` on it; skipped for `par2_NR <= 20` | yes |
-| `width` | | `s4_w24` (`--seed0 7101 --nr 30`), `s4_w12` (`--seed0 7201 --nr 30`) | yes |
+| `width` | | `s4_w24` (`--seed0 7101 --nr 30`), `s4_w12` (`--seed0 7201 --nr 30`), `s4_w12c` (`--seed0 7215 --nr 17`; see below) | yes |
 | `analysis` | | `python3 -m sf39.analyze --out-root $SF39_OUT_ROOT --artifact A --dest $SF39_OUT_ROOT/analysis`; re-run on every invocation (deterministic, idempotent) | no |
+
+`s4_w12c` (owner decision 2026-10-28, a recorded deviation of one exploratory item; the preregistration is unchanged): `s4_w12` exited 4
+(medium (b) solve not converged) at `r = 13`, seed 7214, after `r = 0..12` (seeds 7201-7213) were DONE, so it is halted (RR6) and stays
+in `halted_arms.txt` (a `width` invocation prints `ARM_HALTED arm=s4_w12`, skips it and ends with part rc 1; it is never released because
+that would repeat seed 7214). `s4_w12c` has the geometry and runner flags of `s4_w12` (planes P3, window W12, `--hmax-div 8`) and runs the
+17 seeds 7215-7231 into `runs/s4_w12c`. The analysis builds the F10 (ii) wide set as `s4_w12` `r = 0..12` + `s4_w12c` `r = 0..16` = 30
+realizations (one standalone U), reduced under the set name `s4_w12`; seed 7214 is excluded and disclosed in `summary.json`
+(`F10.w12_vs_n16.excluded_seeds`, `wide_seeds`) and in the F10 `w12_vs_n16` decision notes. The split is the constant `W12_PARTS` in
+`sf39/analyze.py`; `power.WIDTH_ARMS` and the checkpoint projection keep the preregistered count 30 for `s4_w12`.
 
 Every runner invocation is `lagrangian_ensemble $(python3 -m sf39.geometry flags <arm>) --seed0 S --nr N --out DIR` under
 `/usr/bin/time -v`, stdout and stderr to `<part>/logs/<id>.log`; id = `<arm>:s<seed0>:n<nr>` (check arms `chk_...`, byte-check
