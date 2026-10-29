@@ -67,6 +67,13 @@ def _build():
         _arm("s4_w12", 1664, 192, 16, "2", "0.083333333333333329", "P3", window=W12),
         # continuation of the halted s4_w12 (owner decision 2026-10-28): same settings, seeds 7215-7231; never a check arm
         _arm("s4_w12c", 1664, 192, 16, "2", "0.083333333333333329", "P3", window=W12),
+        # s025 (sigma^2 = 0.25, addendum 2026-10-29): the s1 geometry with --eps 0.5; appended last so every earlier table order is unchanged
+        _arm("s025_A", 2048, 256, 10, "0.5", "0.0390625", "P1", "8,16,32"),
+        _arm("s025_B", 2048, 256, 10, "0.5", "0.0390625", "P1"),
+        _arm("s025_n05", 1024, 64, 5, "0.5", "0.078125", "P4"),
+        _arm("s025_n10", 2048, 128, 10, "0.5", "0.078125", "P4"),
+        _arm("s025_n20", 4096, 256, 20, "0.5", "0.078125", "P4"),
+        _arm("s025_tw", 1024, 128, 5, "0.5", "0.0390625", "P1"),
     ]
     for a in rows:
         t[a.id] = a

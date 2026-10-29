@@ -8,8 +8,8 @@ and the Gate 5 frozen times (section 4 C).  No statistics beyond means of `qbar`
 Layout read (README "Outputs layout"; `$OUT` = `SF39_OUT_ROOT`):
   runner arms   `$OUT/runs/<arm>/realizations/r_%04d/` (single pass) or `.../r_%04d/hmax_<d>/` (directory A, `s{c}_A`, d in 8,16,32);
                 run-level uniform-weight series `runs/<arm>/stats_twin/` (single pass) or `runs/s{c}_A/hmax_8/stats_twin/`
-  Par2          `$OUT/par2/raw/par2_s{1,225,4}/`, configs `<A>/configs/par2_s{c}.yaml`, `$OUT/par2/field_stats_par2_s{c}.txt`
-Amplitude ids are `s1`, `s225`, `s4`; Par2 ids are `1`, `225`, `4`.  Seeds are `5001 + g` (production, narrow, twin).
+  Par2          `$OUT/par2/raw/par2_s{025,1,225,4}/`, configs `<A>/configs/par2_s{c}.yaml`, `$OUT/par2/field_stats_par2_s{c}.txt`
+Amplitude ids are `s025`, `s1`, `s225`, `s4`; Par2 ids are `025`, `1`, `225`, `4`.  Seeds are `5001 + g` (production, narrow, twin).
 
 U rules (section 3), in this module:
   standalone value of an arm        U = mean qbar_r over the realizations in that value                  (`u_standalone`)
@@ -30,8 +30,8 @@ from . import power
 from . import reduce as red
 from . import stats
 
-AMPS = power.AMPLITUDES                                   # ("s1", "s225", "s4")
-PAR2_ID = {"s1": "1", "s225": "225", "s4": "4"}
+AMPS = power.AMPLITUDES                                   # ("s025", "s1", "s225", "s4")
+PAR2_ID = {"s025": "025", "s1": "1", "s225": "225", "s4": "4"}
 PILOT_SEED0 = 5001
 PROD_DIV = 8                                              # production pass: h_max = h/8
 HMAX_DIVS = (8, 16, 32)                                   # directory A passes
@@ -52,9 +52,9 @@ def pilot_arms(amp):
     return (a["A"],) + tuple(a["narrow"]) + (a["tw"],)
 
 
-def all_pilot_arms():
-    """The 15 pilot runner arms over the three amplitudes."""
-    return tuple(arm for amp in AMPS for arm in pilot_arms(amp))
+def all_pilot_arms(amps=None):
+    """The pilot runner arms (5 per amplitude) over `amps` (default: every amplitude of `AMPS`, 20 arms)."""
+    return tuple(arm for amp in (AMPS if amps is None else amps) for arm in pilot_arms(amp))
 
 
 def check_tables():

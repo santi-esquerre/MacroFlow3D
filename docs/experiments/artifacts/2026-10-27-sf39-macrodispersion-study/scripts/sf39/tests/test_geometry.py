@@ -23,6 +23,9 @@ ELL = {
     "s4_A": "0.083333333333333329", "s4_B": "0.083333333333333329", "s4_n16": "0.25", "s4_n32": "0.25",
     "s4_n64": "0.25", "s4_tw": "0.083333333333333329", "s4_w24": "0.041666666666666664",
     "s4_w12": "0.083333333333333329", "s4_w12c": "0.083333333333333329",
+    # s025 (addendum 2026-10-29, A1): the s1 geometry
+    "s025_A": "0.0390625", "s025_B": "0.0390625", "s025_n05": "0.078125", "s025_n10": "0.078125", "s025_n20": "0.078125",
+    "s025_tw": "0.0390625",
 }
 GRID = {
     "s1_A": "2048,256,256", "s1_B": "2048,256,256", "s1_n05": "1024,64,64", "s1_n10": "2048,128,128",
@@ -31,6 +34,8 @@ GRID = {
     "s4_A": "3328,384,384", "s4_B": "3328,384,384", "s4_n16": "1664,64,64", "s4_n32": "3328,128,128",
     "s4_n64": "6656,256,256", "s4_tw": "1664,192,192", "s4_w24": "1664,384,384", "s4_w12": "1664,192,192",
     "s4_w12c": "1664,192,192",
+    "s025_A": "2048,256,256", "s025_B": "2048,256,256", "s025_n05": "1024,64,64", "s025_n10": "2048,128,128",
+    "s025_n20": "4096,256,256", "s025_tw": "1024,128,128",
 }
 
 
@@ -48,11 +53,12 @@ class TestArmTable(unittest.TestCase):
     def test_amplitudes_and_lambda_over_h(self):
         for a in ELL:
             c = a.split("_")[0]
-            self.assertEqual(opt(a, "--eps"), {"s1": "1", "s225": "1.5", "s4": "2"}[c])
+            self.assertEqual(opt(a, "--eps"), {"s025": "0.5", "s1": "1", "s225": "1.5", "s4": "2"}[c])
             self.assertEqual(opt(a, "--sigma2"), "1")
         lh = {"s1_A": 10, "s1_n05": 5, "s1_n10": 10, "s1_n20": 20, "s1_tw": 5, "s225_A": 16, "s225_n08": 8,
               "s225_n16": 16, "s225_n32": 32, "s225_tw": 8, "s4_A": 32, "s4_n16": 16, "s4_n32": 32, "s4_n64": 64,
-              "s4_tw": 16, "s4_w24": 16, "s4_w12": 16, "s4_w12c": 16}
+              "s4_tw": 16, "s4_w24": 16, "s4_w12": 16, "s4_w12c": 16,
+              "s025_A": 10, "s025_n05": 5, "s025_n10": 10, "s025_n20": 20, "s025_tw": 5}
         for a, v in lh.items():
             self.assertEqual(G.ARMS[a].lh, v, a)
             self.assertEqual(float(opt(a, "--ell")) * G.ARMS[a].grid[1], v, a)
@@ -85,13 +91,23 @@ class TestArmTable(unittest.TestCase):
         want = {"s1_A": "P1", "s1_B": "P1", "s1_tw": "P1", "s225_A": "P2", "s225_B": "P2", "s225_tw": "P2",
                 "s4_A": "P3", "s4_B": "P3", "s4_tw": "P3", "s4_w12": "P3", "s4_w12c": "P3", "s1_n05": "P4", "s1_n10": "P4",
                 "s1_n20": "P4", "s225_n08": "P5", "s225_n16": "P5", "s225_n32": "P5", "s4_n16": "P6",
-                "s4_n32": "P6", "s4_n64": "P6", "s4_w24": "P7"}
+                "s4_n32": "P6", "s4_n64": "P6", "s4_w24": "P7",
+                "s025_A": "P1", "s025_B": "P1", "s025_tw": "P1", "s025_n05": "P4", "s025_n10": "P4", "s025_n20": "P4"}
         for a, p in want.items():
             pid, s = G.plane_list_of(a)
             self.assertEqual(pid, p)
             self.assertEqual(hashlib.sha256(s.encode()).hexdigest(), G.PLANE_SHA256[p], a)
             self.assertEqual(opt(a, "--planes"), s)
-        self.assertEqual(len(G.SOLVE_CHECK_ARMS), 14)
+        self.assertEqual(len(G.SOLVE_CHECK_ARMS), 18)
+        # the s025 arms are appended last: the order of every earlier check arm is unchanged; s025 adds chk_{n05,n10,n20,tw} (no _A / _B)
+        self.assertEqual(G.SOLVE_CHECK_ARMS[-4:], ["chk_s025_n05", "chk_s025_n10", "chk_s025_n20", "chk_s025_tw"])
+        self.assertEqual(G.SOLVE_CHECK_ARMS[:14], ["chk_s1_n05", "chk_s1_n10", "chk_s1_n20", "chk_s1_tw", "chk_s225_n08", "chk_s225_n16",
+                                                    "chk_s225_n32", "chk_s225_tw", "chk_s4_n16", "chk_s4_n32", "chk_s4_n64", "chk_s4_tw",
+                                                    "chk_s4_w24", "chk_s4_w12"])
+        for a in ("chk_s025_A", "chk_s025_B"):
+            self.assertNotIn(a, G.ARMS)
+        self.assertEqual(G.plane_list_of("P1")[0], "P1")
+        self.assertEqual(next(a for a in G.ARMS.values() if a.plist == "P1" and not a.id.startswith("chk_")).id, "s1_A")
         # the continuation arm is never a check arm (the checks part already ran)
         self.assertNotIn("chk_s4_w12c", G.ARMS)
         self.assertEqual(G.ARMS["s4_w12c"], G.ARMS["s4_w12"]._replace(id="s4_w12c"))
@@ -180,6 +196,14 @@ class TestCli(unittest.TestCase):
 
 
 class TestPar2Configs(unittest.TestCase):
+    def test_s025_config_is_the_generator_output_for_the_s1_source(self):
+        from sf39 import par2
+        src = (REPO / "apps" / "config_pipeline_par2_sf38_s1.yaml").read_text(encoding="utf-8")
+        new = (ART / "configs" / "par2_s025.yaml").read_text(encoding="utf-8")
+        self.assertEqual(new, par2.make_pilot_config(src, "025"))
+        self.assertEqual(par2.cfg_values(new)["sigma2"], 0.25)
+        self.assertFalse((REPO / "apps" / "config_pipeline_par2_sf38_s025.yaml").exists())  # no apps/ file is added
+
     def test_only_declared_lines_differ(self):
         for c in ("1", "225", "4"):
             orig = (REPO / "apps" / ("config_pipeline_par2_sf38_s%s.yaml" % c)).read_text(encoding="utf-8").split("\n")

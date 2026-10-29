@@ -1,9 +1,10 @@
 """SF-39 checkpoint part (contract C-GLUE, preregistration sections 4 C, 6, 7 RR4): freeze, sealed pilot estimates, `nr_rule`, blinded report.
 
     python3 -m sf39.checkpoint --out-root $OUT --artifact A
+    python3 -m sf39.checkpoint --out-root $OUT --artifact A --amps s025 --subdir s025      (the separate s025 case, see below)
 
 Steps (all under `$OUT/checkpoint/`):
-  1. completeness: every pilot runner arm (15) has realizations r = 0..19 DONE (+ `timings.json`, + the three passes in directory A),
+  1. completeness: every pilot runner arm of the amplitudes of the case (5 per amplitude) has realizations r = 0..19 DONE (+ `timings.json`, + the three passes in directory A),
      the Par2 pilot has 20 series, snapshots and FIELDSTAT lines per amplitude, `pilot/walls.tsv` has the ids needed; else exit 2
      listing what is missing (no partial checkpoint).
   2. freeze (write-once): `tau_b_star.json` = per amplitude t_b,r (h/8 pass), t_b,min, U_prod, ell, tau_b* = U_prod t_b,min/ell and the
@@ -28,6 +29,13 @@ Bytes per realization = size of the arm's `realizations/r_*` directories / count
 bytes = A minus the hmax_16 and hmax_32 pass directories (estimate); `s4_w24` bytes = the `s4_B` estimate (same particles/planes,
 shorter box: an upper bound); `s4_w12` = measured `s4_tw`.
 
+The s025 case (addendum 2026-10-29, A5): without options the checkpoint is exactly the one of the three original amplitudes
+(`BASE_AMPS`, never a four-amplitude freeze).  `--amps s025 --subdir s025` runs the same steps for s025 alone and writes EVERYTHING under
+`checkpoint/s025/`: the write-once `tau_b_star_s025.json` (same schema and content rules), `sealed/`, `costs.json`, `bytes.json`,
+`checkpoint_report.txt/.json`.  The files of the original case are never touched; the s4-only width cost/byte lines apply only when
+s4 is in the case.  The two cases refuse to mix (`Refused`, exit 2): no `--subdir` needs the three original amplitudes, a `--subdir`
+needs amplitudes outside them.
+
 Exit codes: 0 done, 2 refused (incomplete pilot, or write-once conflict), 1 failure (window/data error, nr_rule failure).
 The pilot count is 20; `run(..., n_pilot=)` exists for tests only (the CLI has no option for it).
 """
@@ -46,6 +54,7 @@ from . import par2, power
 from . import reduce as red
 
 N_PILOT = 20
+BASE_AMPS = ("s1", "s225", "s4")  # the amplitudes of checkpoint/tau_b_star.json (write-once); s025 is a separate case (checkpoint/s025/)
 NR_LINE = re.compile(r"^s\d+ [A-Za-z0-9_]+=(>500|\d+)$")
 
 
@@ -83,11 +92,11 @@ def dir_bytes(path):
 # ------------------------------------------------------------------------------------------------
 # 1. completeness
 # ------------------------------------------------------------------------------------------------
-def missing_items(out_root, artifact, n_pilot):
-    """List of strings describing everything the checkpoint needs and cannot find (empty list = complete)."""
+def missing_items(out_root, artifact, n_pilot, amps=BASE_AMPS):
+    """List of strings describing everything the checkpoint of `amps` needs and cannot find (empty list = complete)."""
     miss = []
     walls = read_walls(out_root)
-    for arm in cp.all_pilot_arms():
+    for arm in cp.all_pilot_arms(amps):
         recs = {x.r: x for x in cp.done_records(out_root, arm)}
         absent = [r for r in range(n_pilot) if r not in recs]
         if absent:
@@ -104,7 +113,7 @@ def missing_items(out_root, artifact, n_pilot):
                         miss.append("%s: r_%04d has no hmax_%d pass" % (arm, r, d))
         if cp.pilot_walls_id(arm, n_pilot) not in walls:
             miss.append("pilot/walls.tsv: no record for %s" % cp.pilot_walls_id(arm, n_pilot))
-    for amp in cp.AMPS:
+    for amp in amps:
         raw, cfg, fsf = cp.par2_paths(out_root, artifact, amp)
         c = cp.PAR2_ID[amp]
         if not os.path.isfile(cfg):
@@ -135,10 +144,10 @@ def missing_items(out_root, artifact, n_pilot):
 # ------------------------------------------------------------------------------------------------
 # 2. freeze
 # ------------------------------------------------------------------------------------------------
-def freeze(out_root, artifact, n_pilot):
-    """The content of `tau_b_star.json` (pure computation from the pilot files; deterministic)."""
-    amps = {}
-    for amp in cp.AMPS:
+def freeze(out_root, artifact, n_pilot, amps=BASE_AMPS):
+    """The content of the frozen file (`tau_b_star.json`, or `tau_b_star_<case>.json`) for `amps` (pure computation from the pilot files)."""
+    entries = {}
+    for amp in amps:
         recs = cp.pilot_records(out_root, cp.arm_ids(amp)["A"], n_pilot)
         tb = cp.breakthrough_times(recs)
         tbm = float(min(tb))
@@ -147,8 +156,8 @@ def freeze(out_root, artifact, n_pilot):
         entry = {"seeds": [x.seed for x in recs], "t_b_r": [float(t) for t in tb], "t_b_min": tbm, "U_prod": u_prod,
                  "ell": float(ell), "tau_b_star": u_prod * tbm / ell}
         entry["gate5"] = cp.gate5_frozen(out_root, artifact, amp, recs, tbm, ell, n_pilot)
-        amps[amp] = entry
-    return {"schema": "sf39-tau_b_star-v1", "n_pilot": n_pilot, "amplitudes": amps}
+        entries[amp] = entry
+    return {"schema": "sf39-tau_b_star-v1", "n_pilot": n_pilot, "amplitudes": entries}
 
 
 def dumps(obj):
@@ -175,11 +184,11 @@ def write_once(path, text):
 # ------------------------------------------------------------------------------------------------
 # 3. sealed pilot estimates and nr_rule input
 # ------------------------------------------------------------------------------------------------
-def sealed_estimates(out_root, frz, n_pilot):
+def sealed_estimates(out_root, frz, n_pilot, amps=BASE_AMPS):
     """(rows, nr_input): per amplitude and arm the estimates of every pilot realization (production h/8 and h/16 passes, three narrow
     rungs, twin; flux weights; U = mean qbar of the arm's own pilot seeds, the pilot being the pair set) and the nr_rule input."""
     rows, nr_in = [], {}
-    for amp in cp.AMPS:
+    for amp in amps:
         tau = frz["amplitudes"][amp]["tau_b_star"]
         a = cp.arm_ids(amp)
         recs = {arm: cp.pilot_records(out_root, arm, n_pilot) for arm in cp.pilot_arms(amp)}
@@ -249,13 +258,13 @@ def _par2_cost(out_root, amp, n_pilot, walls):
     return per + walls["fs_par2_s" + c] / n_pilot, "%s + fs wall / %d" % (src, n_pilot)
 
 
-def costs_and_bytes(out_root, n_pilot):
+def costs_and_bytes(out_root, n_pilot, amps=BASE_AMPS):
     """(costs, kinds, nbytes, byte_kinds, ratio_parts): {arm: GPU-s}, {arm: 'measured'|'estimate'}, {arm: bytes}, kinds, and
     (sum of runner walls, sum of runner timings totals) for the wall/GPU-busy ratio."""
     walls = read_walls(out_root)
     costs, kinds, nbytes, bkinds = {}, {}, {}, {}
     wall_sum = busy_sum = 0.0
-    for amp in cp.AMPS:
+    for amp in amps:
         a = cp.arm_ids(amp)
         for arm in cp.pilot_arms(amp):
             recs = cp.pilot_records(out_root, arm, n_pilot)
@@ -278,50 +287,52 @@ def costs_and_bytes(out_root, n_pilot):
         costs[amp + "_par2"], kinds[amp + "_par2"] = c2, "measured"
         raw = os.path.join(out_root, "par2", "raw", "par2_s" + cp.PAR2_ID[amp])
         nbytes[amp + "_par2"], bkinds[amp + "_par2"] = int(round(dir_bytes(raw) / n_pilot)), "measured"
-    ratio = cp.cell_count("s4_w24") / cp.cell_count("s4_B")
-    costs["s4_w24"], kinds["s4_w24"] = costs["s4_B"] * ratio, "estimate"
-    costs["s4_w12"], kinds["s4_w12"] = costs["s4_tw"], "measured"
-    nbytes["s4_w24"], bkinds["s4_w24"] = nbytes["s4_B"], "estimate"
-    nbytes["s4_w12"], bkinds["s4_w12"] = nbytes["s4_tw"], "measured"
+    if "s4" in amps:  # the width arms exist at s4 only
+        ratio = cp.cell_count("s4_w24") / cp.cell_count("s4_B")
+        costs["s4_w24"], kinds["s4_w24"] = costs["s4_B"] * ratio, "estimate"
+        costs["s4_w12"], kinds["s4_w12"] = costs["s4_tw"], "measured"
+        nbytes["s4_w24"], bkinds["s4_w24"] = nbytes["s4_B"], "estimate"
+        nbytes["s4_w12"], bkinds["s4_w12"] = nbytes["s4_tw"], "measured"
     return costs, kinds, nbytes, bkinds, (wall_sum, busy_sum)
 
 
 # ------------------------------------------------------------------------------------------------
 # 5-6. projections and report
 # ------------------------------------------------------------------------------------------------
-def done_counts(n_pilot):
+def done_counts(n_pilot, amps=BASE_AMPS):
     """Realizations already run: n_pilot for every directory A, narrow, twin and Par2 arm; 0 (absent) for B and the width arms."""
     d = {}
-    for amp in cp.AMPS:
+    for amp in amps:
         for arm in cp.pilot_arms(amp) + (amp + "_par2",):
             d[arm] = n_pilot
     return d
 
 
-def projections(nr_out, costs, nbytes, ratio_parts, n_pilot):
+def projections(nr_out, costs, nbytes, ratio_parts, n_pilot, amps=BASE_AMPS):
     """dict(projected_gpu_h, pilot_wall_over_gpu_busy, projected_wall_h, projected_bytes) from the nr_rule N values."""
-    N = {amp: nr_out[amp] for amp in cp.AMPS}
-    gpu_h = power.projected_gpu_h(N, costs, done_counts(n_pilot))
+    N = {amp: nr_out[amp] for amp in amps}
+    gpu_h = power.projected_gpu_h(N, costs, done_counts(n_pilot, amps))
     ratio = ratio_parts[0] / ratio_parts[1]
     nb = 0
-    for amp in cp.AMPS:
+    for amp in amps:
         for arm, cnt in power.arm_counts(N[amp], amp).items():
             nb += cnt * nbytes[arm]
     return {"projected_gpu_h": gpu_h, "pilot_wall_over_gpu_busy": ratio, "projected_wall_h": gpu_h * ratio, "projected_bytes": int(nb)}
 
 
-def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot):
+def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot, amps=BASE_AMPS):
     """(text, json dict) of the blinded report."""
-    tau = {amp: frz["amplitudes"][amp]["tau_b_star"] for amp in cp.AMPS}
-    n_vals = {amp: {k: nr_out[amp][k] for k in ("N_narrow", "N_twin", "N_hmax", "N_R", "N_A", "N_run", "par2_NR")} for amp in cp.AMPS}
-    capped = {amp: list(nr_out[amp]["capped"]) for amp in cp.AMPS}
+    tau = {amp: frz["amplitudes"][amp]["tau_b_star"] for amp in amps}
+    n_vals = {amp: {k: nr_out[amp][k] for k in ("N_narrow", "N_twin", "N_hmax", "N_R", "N_A", "N_run", "par2_NR")} for amp in amps}
+    capped = {amp: list(nr_out[amp]["capped"]) for amp in amps}
     js = {"n_pilot": n_pilot, "tau_b_star": tau, "N": n_vals, "N_capped_at_500": capped,
           "gpu_s_per_realization": {k: {"value": costs[k], "kind": kinds[k]} for k in sorted(costs)},
           "bytes_per_realization": {k: {"value": nbytes[k], "kind": bkinds[k]} for k in sorted(nbytes)}}
     js.update(proj)
-    t = ["SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=%d per arm)" % n_pilot, "",
+    t = ["SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=%d per arm%s)" % (n_pilot, "" if tuple(amps) == BASE_AMPS else "; amplitudes: " + ",".join(amps)),
+         "",
          "FROZEN tau_b* (F2 pilot record; the other frozen times are in tau_b_star.json)"]
-    t += ["TAU_B_STAR %s=%.12g" % (amp, tau[amp]) for amp in cp.AMPS]
+    t += ["TAU_B_STAR %s=%.12g" % (amp, tau[amp]) for amp in amps]
     t += ["", "N values printed by nr_rule (>500: cap reached without meeting the target, 500 used)"] + ["NR %s" % ln for ln in nr_lines]
     t += ["", "GPU-seconds per realization (kind: measured | estimate)"]
     t += ["GPU_S %s %.6g %s" % (k, costs[k], kinds[k]) for k in sorted(costs)]
@@ -337,27 +348,49 @@ def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pi
 # ------------------------------------------------------------------------------------------------
 # driver
 # ------------------------------------------------------------------------------------------------
-def run(out_root, artifact, n_pilot=N_PILOT, out=None):
-    """Run the checkpoint; returns the exit code.  `n_pilot` is a test hook (the CLI always uses 20)."""
+def check_case(amps, subdir):
+    """Refuse a mix of the two cases (`Refused`): no subdir = exactly `BASE_AMPS`; a subdir = amplitudes outside `BASE_AMPS` only."""
+    if subdir and not re.fullmatch(r"[A-Za-z0-9_]+", subdir):
+        raise Refused("--subdir %r is not a plain directory name" % subdir)
+    bad = [a for a in amps if a not in cp.AMPS]
+    if bad:
+        raise Refused("unknown amplitude(s) %s (known: %s)" % (bad, ",".join(cp.AMPS)))
+    if not subdir and tuple(amps) != BASE_AMPS:
+        raise Refused("without --subdir the checkpoint is the original case %s; got --amps %s" % (",".join(BASE_AMPS), ",".join(amps)))
+    if subdir and (not amps or set(amps) & set(BASE_AMPS)):
+        raise Refused("--subdir %s needs amplitudes outside the original case %s; got --amps %s" % (subdir, ",".join(BASE_AMPS), ",".join(amps)))
+
+
+def run(out_root, artifact, n_pilot=N_PILOT, out=None, amps=BASE_AMPS, subdir=""):
+    """Run the checkpoint; returns the exit code.  `n_pilot` is a test hook (the CLI always uses 20).  `amps` / `subdir`: the original
+    case (defaults; files directly under `checkpoint/`) or a separate case (e.g. s025 in `checkpoint/s025/`, frozen file
+    `tau_b_star_s025.json`), see the module docstring."""
     out = out or sys.stdout
-    miss = missing_items(out_root, artifact, n_pilot)
+    amps = tuple(amps)
+    try:
+        check_case(amps, subdir)
+    except Refused as e:
+        print("CHECKPOINT_REFUSED: %s" % e, file=sys.stderr)
+        return 2
+    miss = missing_items(out_root, artifact, n_pilot, amps)
     if miss:
         print("CHECKPOINT_INCOMPLETE: %d item(s) missing; no partial checkpoint is written" % len(miss), file=sys.stderr)
         for m in miss:
             print("  MISSING " + m, file=sys.stderr)
         return 2
-    ck = os.path.join(out_root, "checkpoint")
+    ck = os.path.join(out_root, "checkpoint", subdir)
+    frz_name = "tau_b_star_%s.json" % subdir if subdir else "tau_b_star.json"
     os.makedirs(ck, exist_ok=True)
     try:
-        frz = freeze(out_root, artifact, n_pilot)
-        state = write_once(os.path.join(ck, "tau_b_star.json"), dumps(frz))
+        frz = freeze(out_root, artifact, n_pilot, amps)
+        state = write_once(os.path.join(ck, frz_name), dumps(frz))
     except Refused as e:
         print("CHECKPOINT_REFUSED: %s" % e, file=sys.stderr)
         return 2
-    print("FREEZE tau_b_star.json %s" % state, file=sys.stderr)
+    print("FREEZE %s %s" % (frz_name, state), file=sys.stderr)
     sealed = os.path.join(ck, "sealed")
     os.makedirs(sealed, exist_ok=True)
-    rows, nr_in = sealed_estimates(out_root, frz, n_pilot)
+    rows, nr_in = sealed_estimates(out_root, frz, n_pilot, amps)
     red.write_csv(os.path.join(sealed, "estimates.csv"), rows)
     nr_in_path, nr_out_path = os.path.join(sealed, "nr_input.json"), os.path.join(sealed, "nr_out.json")
     with open(nr_in_path, "w") as f:
@@ -367,12 +400,12 @@ def run(out_root, artifact, n_pilot=N_PILOT, out=None):
         f.write("\n".join(nr_lines) + "\n")
     with open(nr_out_path) as f:
         nr_out = json.load(f)
-    costs, kinds, nbytes, bkinds, ratio_parts = costs_and_bytes(out_root, n_pilot)
+    costs, kinds, nbytes, bkinds, ratio_parts = costs_and_bytes(out_root, n_pilot, amps)
     for name, obj in (("costs.json", costs), ("bytes.json", nbytes)):
         with open(os.path.join(ck, name), "w") as f:
             f.write(dumps(obj))
-    proj = projections(nr_out, costs, nbytes, ratio_parts, n_pilot)
-    text, js = build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot)
+    proj = projections(nr_out, costs, nbytes, ratio_parts, n_pilot, amps)
+    text, js = build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot, amps)
     with open(os.path.join(ck, "checkpoint_report.txt"), "w") as f:
         f.write(text)
     with open(os.path.join(ck, "checkpoint_report.json"), "w") as f:
@@ -386,9 +419,11 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="python3 -m sf39.checkpoint", description=__doc__.split("\n")[0])
     ap.add_argument("--out-root", required=True, help="$SF39_OUT_ROOT")
     ap.add_argument("--artifact", required=True, help="the artifact root A (configs/, scripts/nr_rule.py)")
+    ap.add_argument("--amps", default=",".join(BASE_AMPS), help="comma-separated amplitudes of the case (default: the original three)")
+    ap.add_argument("--subdir", default="", help="separate case: write everything under checkpoint/<subdir>/ (e.g. --amps s025 --subdir s025)")
     a = ap.parse_args(argv)
     try:
-        return run(a.out_root, a.artifact)
+        return run(a.out_root, a.artifact, amps=tuple(x for x in a.amps.split(",") if x), subdir=a.subdir)
     except (sio.ReduceError, ValueError, RuntimeError, OSError) as e:
         print("CHECKPOINT_FAILED %s: %s" % (type(e).__name__, e), file=sys.stderr)
         return 1

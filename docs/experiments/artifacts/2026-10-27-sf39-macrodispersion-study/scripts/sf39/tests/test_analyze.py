@@ -85,8 +85,7 @@ class Study(unittest.TestCase):
         cls.rc, cls.err = run_quiet(cls.out, cls.art, cls.dest)
         with open(os.path.join(cls.dest, "summary.json")) as f:
             cls.S = json.load(f)
-        with open(os.path.join(cls.out, "checkpoint", "tau_b_star.json")) as f:
-            cls.frz = json.load(f)
+        cls.frz = an.load_frozen(cls.out)  # the original freeze merged with checkpoint/s025/tau_b_star_s025.json
 
     @classmethod
     def tearDownClass(cls):
@@ -438,6 +437,55 @@ class Study(unittest.TestCase):
             self.assertEqual(ub["alpha_Tfixed"]["sided"], "upper")
             self.assertEqual(ub["BdD_value"], an.BD_BOUND.get(amp))
 
+    def test_s025_nominal_variance_and_the_one_sided_lower_limit(self):
+        self.assertEqual((an.SIGMA2_NOMINAL["s025"], an.BD_BOUND["s025"]), (0.25, 1e-3))
+        self.assertEqual(self.S["amplitudes"]["s025"]["C"]["par2"]["var_lnK"]["nominal"], 0.25)
+        for amp in cp.AMPS:
+            ub = self.S["amplitudes"][amp]["F11"]["upper_bound_fixed_axis_alpha_T"]
+            if amp != "s025":  # the summary subtrees of the existing amplitudes get no new key
+                self.assertEqual(sorted(ub), ["BdD_value", "alpha_Tfixed", "below_BdD", "conditions"], amp)
+                continue
+            self.assertEqual(sorted(ub), ["BdD_value", "alpha_Tfixed", "alpha_Tfixed_lower", "below_BdD", "conditions", "exceeds_BdD"])
+            self.assertEqual(ub["BdD_value"], 1e-3)
+            fx_ = [float(r["win.alpha_Tfixed"]) for _, r in sorted(self.flux("s025_prod").items())]
+            _, lo, hi, n, _ = stats.t_interval(fx_, 0.95, "lower")
+            lw = ub["alpha_Tfixed_lower"]
+            self.assertEqual((lw["sided"], lw["level"], lw["n"], lw["hi"]), ("lower", 0.95, B["s025"]["N_R"], "inf"))
+            close(self, lw["lo"], lo, 1e-12)
+            self.assertEqual(ub["exceeds_BdD"], bool(lo > 1e-3))
+            # the existing upper-limit entry is the one-sided 95 % upper limit, as at the other amplitudes
+            self.assertEqual((ub["alpha_Tfixed"]["sided"], ub["alpha_Tfixed"]["level"]), ("upper", 0.95))
+            self.assertEqual(ub["below_BdD"], bool(stats.t_interval(fx_, 0.95, "upper")[2] < 1e-3))
+
+    def test_existing_amplitudes_are_reproduced_without_s025(self):
+        """Addendum A6 at fixture level: the analysis over four amplitudes reproduces, per `regress_existing`, the s1 / s225 / s4 outputs
+        of the analysis over the three original ones (same data, same budget file; only the amplitude registry differs)."""
+        from sf39 import regress_existing as rg
+        ref = os.path.join(self.tmp.name, "analysis_three")
+        with mock.patch.object(cp, "AMPS", ("s1", "s225", "s4")):
+            rc, err = run_quiet(self.out, self.art, ref)
+        self.assertEqual(rc, 0, err)
+        self.assertEqual(sorted(json.loads(slurp(os.path.join(ref, "summary.json")))["amplitudes"]), ["s1", "s225", "s4"])
+        fails, adds, notes = rg.compare(ref, self.dest, ("s1", "s225", "s4"))
+        self.assertEqual(fails, [])
+        self.assertTrue(any("s025" in a for a in adds), adds)  # the additions are the s025 rows / files
+        self.assertTrue(os.path.isfile(os.path.join(self.dest, "reduced", "s025_prod.csv")))
+        self.assertFalse(os.path.exists(os.path.join(ref, "reduced", "s025_prod.csv")))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self.assertEqual(rg.main(["--ref", ref, "--new", self.dest]), 0)
+        self.assertIn("IDENTICAL", out.getvalue())
+        # and the comparison is not vacuous: one changed value in an s1 file of the new analysis is found
+        bad = os.path.join(self.tmp.name, "analysis_bad")
+        shutil.copytree(self.dest, bad)
+        pth = os.path.join(bad, "reduced", "s1_prod.csv")
+        with open(pth) as f:
+            t = f.read()
+        with open(pth, "w") as f:
+            f.write(t + "x")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertNotEqual(rg.main(["--ref", ref, "--new", bad]), 0)
+
     def test_recorded_E(self):
         for amp in cp.AMPS:
             E = self.S["amplitudes"][amp]["E"]
@@ -500,7 +548,9 @@ class Study(unittest.TestCase):
             self.assertEqual(cnt("exploratory"), 4 if amp == "s4" else 0)
         self.assertEqual(sum(1 for r in rows if r["tier"] == "process"), 1)
         lab = [r for r in rows if r["decision_point"] == "Gate 4 amplitude label (D)"]
-        self.assertEqual([r["verdict"] for r in lab], ["physical (positive)"] + ["unresolved (grid-limited, lower bound)"] * 2)
+        self.assertEqual([r["amplitude"] for r in lab], list(cp.AMPS))  # s025 first: rows of the existing amplitudes keep their order
+        self.assertEqual([r["verdict"] for r in lab], ["unresolved (grid-limited, lower bound)", "physical (positive)"]
+                         + ["unresolved (grid-limited, lower bound)"] * 2)
         md = slurp(os.path.join(self.dest, "decisions.md"))
         for t in an.TIERS:
             self.assertIn("## " + t, md)
@@ -569,6 +619,15 @@ class Study(unittest.TestCase):
         rc, err = run_quiet(empty, self.art, dest)
         self.assertEqual(rc, 2)
         self.assertIn("frozen", err)
+        self.assertFalse(os.path.exists(dest))
+
+    def test_refuses_budget_without_s025(self):
+        art = self.art_copy(lambda b: b.pop("s025"))
+        dest = os.path.join(self.tmp.name, "d_nos025")
+        rc, err = run_quiet(self.out, art, dest)
+        self.assertEqual(rc, 2)
+        self.assertIn("ANALYSIS_REFUSED", err)
+        self.assertIn("s025.N_narrow=None", err)
         self.assertFalse(os.path.exists(dest))
 
     def inflate(self, b):
@@ -823,6 +882,76 @@ class Series(unittest.TestCase):
         with self.assertRaises(sio.ReduceError) as cm:
             an.alpha_series_rows(self.recs(), self.U)
         self.assertIn("snapshot times differ", str(cm.exception))
+
+
+class LoadFrozen(unittest.TestCase):
+    """`load_frozen`: the original freeze merged with checkpoint/<amp>/tau_b_star_<amp>.json; refusals (exit 2 in `run`)."""
+
+    @staticmethod
+    def frz(amps, schema="sf39-tau_b_star-v1", n_pilot=20):
+        return {"schema": schema, "n_pilot": n_pilot, "amplitudes": {a: {"tau_b_star": 1.0 + i} for i, a in enumerate(amps)}}
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.out = self.tmp.name
+
+    def put(self, rel, obj):
+        p = os.path.join(self.out, "checkpoint", rel)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "w") as f:
+            json.dump(obj, f)
+
+    def test_merge(self):
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025",)))
+        f = an.load_frozen(self.out)
+        self.assertEqual(sorted(f["amplitudes"]), ["s025", "s1", "s225", "s4"])
+        self.assertEqual(f["amplitudes"]["s025"], {"tau_b_star": 1.0})
+        self.assertEqual((f["schema"], f["n_pilot"]), ("sf39-tau_b_star-v1", 20))
+
+    def test_refuses_schema_mismatch_in_either_file(self):
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025",), schema="sf39-tau_b_star-v2"))
+        with self.assertRaises(an.Refused) as cm:
+            an.load_frozen(self.out)
+        self.assertIn("unexpected schema 'sf39-tau_b_star-v2'", str(cm.exception))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025",)))
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4"), schema="x"))
+        with self.assertRaises(an.Refused):
+            an.load_frozen(self.out)
+
+    def test_refuses_an_amplitude_present_in_both(self):
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025", "s1")))
+        with self.assertRaises(an.Refused) as cm:
+            an.load_frozen(self.out)
+        self.assertIn("present in both", str(cm.exception))
+        self.assertIn("s1", str(cm.exception))
+        # the four-amplitude original file plus an s025 file is the same refusal
+        self.put("tau_b_star.json", self.frz(("s025", "s1", "s225", "s4")))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025",)))
+        with self.assertRaises(an.Refused):
+            an.load_frozen(self.out)
+
+    def test_refuses_without_the_original_file_or_without_s025(self):
+        with self.assertRaises(an.Refused) as cm:
+            an.load_frozen(self.out)
+        self.assertIn("no frozen file", str(cm.exception))
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        with self.assertRaises(an.Refused) as cm:
+            an.load_frozen(self.out)
+        self.assertIn("no frozen entry for s025", str(cm.exception))
+        with mock.patch.object(cp, "AMPS", ("s1", "s225", "s4")):  # a three-amplitude registry needs no s025 file
+            self.assertEqual(sorted(an.load_frozen(self.out)["amplitudes"]), ["s1", "s225", "s4"])
+
+    def test_run_exits_2_on_a_refusal(self):
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025", "s4")))
+        err = io.StringIO()
+        rc = an.run(self.out, self.out, os.path.join(self.out, "dest"), err=err)
+        self.assertEqual(rc, 2)
+        self.assertIn("ANALYSIS_REFUSED", err.getvalue())
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 """Tests of sf39.campaign and the blinded checkpoint (sf39.checkpoint) on a fake campaign (pilot count 6 through the private `n_pilot` hook;
 the CLI default is 20).  Run (tens of seconds): `cd A/scripts && python3 -m unittest discover -s . -t . -p 'test_checkpoint*.py'`."""
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -22,6 +23,7 @@ from sf39.tests import fixtures_par2 as fp
 from sf39.tests import fixtures_runner as fx
 
 N = 6
+BASE = ck.BASE_AMPS  # the amplitudes of the original checkpoint case (s025 is a separate case)
 SCRIPTS = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # .../A/scripts
 FORBIDDEN = re.compile(r"\b(mean|sd|std|margin|verdict|alpha\w*|qbar|U_c|variance)\b", re.I)
 
@@ -47,6 +49,22 @@ def run_quiet(*a, **k):
     return rc, err.getvalue()
 
 
+def run_s025(out, art):
+    """The separate s025 case (what `run_sf39.sh <bin> checkpoint s025` runs)."""
+    return run_quiet(out, art, n_pilot=N, amps=("s025",), subdir="s025")
+
+
+def tree_hashes(root):
+    """{relative path: sha256} of every regular file under root."""
+    h = {}
+    for a, _, fs in os.walk(root):
+        for f in fs:
+            p = os.path.join(a, f)
+            with open(p, "rb") as fh:
+                h[os.path.relpath(p, root)] = hashlib.sha256(fh.read()).hexdigest()
+    return h
+
+
 class Campaign(unittest.TestCase):
     """One fake pilot, one checkpoint run, shared by the read-only tests."""
 
@@ -59,6 +77,9 @@ class Campaign(unittest.TestCase):
         fc.build_campaign(cls.out, cls.art, N, SCRIPTS)
         cls.rc, cls.err = run_quiet(cls.out, cls.art, n_pilot=N)
         cls.ckd = os.path.join(cls.out, "checkpoint")
+        cls.base_before = tree_hashes(cls.ckd)  # the original case, before the s025 case runs
+        cls.rc25, cls.err25 = run_s025(cls.out, cls.art)
+        cls.ck25 = os.path.join(cls.ckd, "s025")
 
     @classmethod
     def tearDownClass(cls):
@@ -91,13 +112,17 @@ class Campaign(unittest.TestCase):
             self.assertTrue(os.path.isfile(os.path.join(self.ckd, f)), f)
         # nothing outside checkpoint/ was written by the checkpoint
         self.assertEqual(sorted(os.listdir(self.out)), ["checkpoint", "par2", "pilot", "runs"])
+        # the original case freezes exactly the three original amplitudes, never four, and writes nothing for s025
+        self.assertEqual(sorted(load(os.path.join(self.ckd, "tau_b_star.json"))["amplitudes"]), ["s1", "s225", "s4"])
+        self.assertEqual(sorted(load(os.path.join(self.ckd, "checkpoint_report.json"))["tau_b_star"]), ["s1", "s225", "s4"])
+        self.assertFalse([f for f in self.base_before if "s025" in f])
 
     # -- freeze ------------------------------------------------------------------------------------
     def test_freeze_known_values(self):
         frz = load(os.path.join(self.ckd, "tau_b_star.json"))
         tbm, u_prod, tau = self.tau()
         tb0 = (fx.XB - fx.X0) / fx.U0
-        for amp in cp.AMPS:
+        for amp in BASE:
             e = frz["amplitudes"][amp]
             self.assertEqual(e["seeds"], [5001 + r for r in range(N)])
             for r, t in enumerate(e["t_b_r"]):
@@ -110,7 +135,7 @@ class Campaign(unittest.TestCase):
     def test_gate5_frozen_times(self):
         frz = load(os.path.join(self.ckd, "tau_b_star.json"))
         tbm = self.tau()[0]
-        for amp in cp.AMPS:
+        for amp in BASE:
             g5 = frz["amplitudes"][amp]["gate5"]
             # Lagrangian twin: independent mean_x(t) of the uniform series, np.interp at t_b,min, anchor x0 = 5 ell
             us = []
@@ -137,7 +162,7 @@ class Campaign(unittest.TestCase):
     # -- sealed estimates and nr_rule ----------------------------------------------------------------
     def test_nr_input_known_paired_differences(self):
         nr_in = load(os.path.join(self.ckd, "sealed", "nr_input.json"))
-        for amp in cp.AMPS:
+        for amp in BASE:
             a = cp.arm_ids(amp)
             n05, n10, n20 = a["narrow"]
             e8, e16 = self.expected_est(a["A"], amp, 8), self.expected_est(a["A"], amp, 16)
@@ -163,12 +188,12 @@ class Campaign(unittest.TestCase):
             rows = list(csv.DictReader(f))
         got = {(r["arm"], int(r["hmax_div"]), int(r["r"])) for r in rows}
         want = set()
-        for arm in cp.all_pilot_arms():
+        for arm in cp.all_pilot_arms(BASE):
             for d in ((8, 16) if cp.is_multipass(arm) else (8,)):
                 want |= {(arm, d, r) for r in range(N)}
         self.assertEqual(got, want)
         for r in rows:  # U rule: A passes share U_prod; every other arm its own pilot mean
-            amp = [a for a in cp.AMPS if r["arm"].startswith(a + "_")][0]
+            amp = [a for a in BASE if r["arm"].startswith(a + "_")][0]
             close(self, float(r["U"]), self.U(r["arm"], amp), 1e-12)
             for k in ("alpha_TAM", "alpha_TP", "alpha_LAM"):
                 self.assertTrue(np.isfinite(float(r[k])))
@@ -176,7 +201,7 @@ class Campaign(unittest.TestCase):
     def test_nr_out_matches_power(self):
         nr_in = load(os.path.join(self.ckd, "sealed", "nr_input.json"))
         out = load(os.path.join(self.ckd, "sealed", "nr_out.json"))
-        for amp in cp.AMPS:
+        for amp in BASE:
             n, capped = power.amplitude_ns(nr_in[amp])
             self.assertEqual({k: out[amp][k] for k in n}, n)
             self.assertEqual(out[amp]["capped"], capped)
@@ -188,9 +213,9 @@ class Campaign(unittest.TestCase):
     # -- costs, bytes, projections -------------------------------------------------------------------
     def expected_costs(self):
         c = {}
-        for i, arm in enumerate(cp.all_pilot_arms()):
+        for i, arm in enumerate(cp.all_pilot_arms(BASE)):
             c[arm] = fc.arm_total_s(arm, N) / N
-        for amp in cp.AMPS:
+        for amp in BASE:
             a = cp.arm_ids(amp)
             c[a["B"]] = fc.A_TOTAL0 + (N - 1) / 2.0 - (fc.P16 + fc.P32)
             c[amp + "_par2"] = fc.PAR2_STEP_S + fc.FS_WALL
@@ -222,10 +247,10 @@ class Campaign(unittest.TestCase):
 
     def test_bytes(self):
         got = load(os.path.join(self.ckd, "bytes.json"))
-        for arm in cp.all_pilot_arms():
+        for arm in cp.all_pilot_arms(BASE):
             tot = sum(fc.tree_bytes(os.path.join(cp.arm_dir(self.out, arm), "realizations", "r_%04d" % r)) for r in range(N))
             self.assertEqual(got[arm], int(round(tot / N)), arm)
-        for amp in cp.AMPS:
+        for amp in BASE:
             a = cp.arm_ids(amp)
             ex = []
             for r in range(N):
@@ -242,11 +267,11 @@ class Campaign(unittest.TestCase):
         out = load(os.path.join(self.ckd, "sealed", "nr_out.json"))
         costs, by = load(os.path.join(self.ckd, "costs.json")), load(os.path.join(self.ckd, "bytes.json"))
         done = {}
-        for amp in cp.AMPS:
+        for amp in BASE:
             for arm in cp.pilot_arms(amp) + (amp + "_par2",):
                 done[arm] = N
         gpu_h, nb = 0.0, 0
-        for amp in cp.AMPS:
+        for amp in BASE:
             for arm, cnt in power.arm_counts(out[amp], amp).items():
                 gpu_h += max(0, cnt - done.get(arm, 0)) * costs[arm] / 3600.0
                 nb += cnt * by[arm]
@@ -260,7 +285,7 @@ class Campaign(unittest.TestCase):
         self.assertEqual(rep["gpu_s_per_realization"]["s4_w12"]["kind"], "measured")
         self.assertEqual(rep["gpu_s_per_realization"]["s1_A"]["kind"], "measured")
         tbm, u_prod, tau = self.tau()
-        for amp in cp.AMPS:
+        for amp in BASE:
             close(self, rep["tau_b_star"][amp], tau, 1e-12)
             self.assertEqual(rep["N"][amp]["N_run"], out[amp]["N_run"])
 
@@ -288,7 +313,7 @@ class Campaign(unittest.TestCase):
         # no sealed or frozen plume number leaks: tokens of the text never equal U, U_prod, U_c, qbar or any pilot estimate at 6 digits
         frz = load(os.path.join(self.ckd, "tau_b_star.json"))
         secret = []
-        for amp in cp.AMPS:
+        for amp in BASE:
             e = frz["amplitudes"][amp]
             secret += [e["U_prod"], e["gate5"]["twin"]["U_c"], e["gate5"]["par2"]["U_c"], e["t_b_min"], e["gate5"]["tau_c"],
                        e["gate5"]["twin"]["tau_b_star"], e["gate5"]["par2"]["tau_b_star"]]
@@ -366,6 +391,139 @@ class Campaign(unittest.TestCase):
         self.assertEqual(len(miss), 3)
         self.assertEqual(ck.missing_items(self.out, self.art, N), [])
 
+    # -- the separate s025 case (addendum 2026-10-29, A5) ---------------------------------------------------
+    def test_s025_case_files_and_original_files_untouched(self):
+        self.assertEqual(self.rc25, 0, self.err25)
+        self.assertIn("FREEZE tau_b_star_s025.json written", self.err25)
+        want = {"tau_b_star_s025.json", "costs.json", "bytes.json", "checkpoint_report.txt", "checkpoint_report.json",
+                "sealed/estimates.csv", "sealed/nr_input.json", "sealed/nr_out.json", "sealed/nr_stdout.txt"}
+        self.assertEqual(set(tree_hashes(self.ck25)), want)
+        # every file of the original case is byte-identical after the s025 case, and nothing was added to it but s025/
+        after = tree_hashes(self.ckd)
+        self.assertEqual({f: h for f, h in after.items() if not f.startswith("s025" + os.sep)}, self.base_before)
+        self.assertEqual(sorted(os.listdir(self.ckd)), ["bytes.json", "checkpoint_report.json", "checkpoint_report.txt", "costs.json",
+                                                         "s025", "sealed", "tau_b_star.json"])
+        self.assertEqual(sorted(os.listdir(self.out)), ["checkpoint", "par2", "pilot", "runs"])
+
+    def test_s025_freeze_same_schema_and_content_rules(self):
+        frz = load(os.path.join(self.ck25, "tau_b_star_s025.json"))
+        self.assertEqual((frz["schema"], frz["n_pilot"], sorted(frz["amplitudes"])), ("sf39-tau_b_star-v1", N, ["s025"]))
+        tbm, u_prod, tau = self.tau()
+        e = frz["amplitudes"]["s025"]
+        self.assertEqual(e["seeds"], [5001 + r for r in range(N)])
+        close(self, e["t_b_min"], tbm)
+        close(self, e["U_prod"], u_prod)
+        close(self, e["tau_b_star"], tau)
+        g5 = e["gate5"]
+        self.assertEqual(sorted(g5), ["par2", "tau_c", "twin"])
+        tbp = min(fc.PAR2_TB_STEPS[:N]) * fp.DT
+        ucp = float(np.mean([fc.PAR2_U[g] * (1.0 + 0.1 * fc.AMP_F["s025"]) for g in range(N)]))
+        close(self, g5["par2"]["U_c"], ucp)
+        close(self, g5["par2"]["t_b_min"], tbp)
+        close(self, g5["par2"]["tau_b_star"], ucp * tbp / fp.LAM)
+        close(self, g5["tau_c"], min(g5["twin"]["tau_b_star"], g5["par2"]["tau_b_star"]))
+        # the same content rules as the original case: the s025 entry is what the original freeze computes for it
+        self.assertEqual(ck.dumps(ck.freeze(self.out, self.art, N, ("s025",))), rd(os.path.join(self.ck25, "tau_b_star_s025.json")))
+
+    def test_s025_nr_costs_bytes_and_report(self):
+        nr_in = load(os.path.join(self.ck25, "sealed", "nr_input.json"))
+        nr_out = load(os.path.join(self.ck25, "sealed", "nr_out.json"))
+        self.assertEqual((sorted(nr_in), sorted(nr_out)), (["s025"], ["s025"]))
+        n, capped = power.amplitude_ns(nr_in["s025"])
+        self.assertEqual({k: nr_out["s025"][k] for k in n}, n)
+        lines = [ln for ln in rd(os.path.join(self.ck25, "sealed", "nr_stdout.txt")).split("\n") if ln]
+        self.assertEqual(len(lines), 7)
+        self.assertTrue(all(ck.NR_LINE.match(ln) and ln.startswith("s025 ") for ln in lines))
+        # costs / bytes: the s025 arms and Par2 only (no s4-only width arm), values from the closed forms
+        costs, nb = load(os.path.join(self.ck25, "costs.json")), load(os.path.join(self.ck25, "bytes.json"))
+        a = cp.arm_ids("s025")
+        arms = set(cp.pilot_arms("s025")) | {a["B"], "s025_par2"}
+        self.assertEqual((set(costs), set(nb)), (arms, arms))
+        for arm in cp.pilot_arms("s025"):
+            close(self, costs[arm], fc.arm_total_s(arm, N) / N, 1e-12)
+        close(self, costs[a["B"]], fc.A_TOTAL0 + (N - 1) / 2.0 - (fc.P16 + fc.P32), 1e-12)
+        close(self, costs["s025_par2"], fc.PAR2_STEP_S + fc.FS_WALL, 1e-12)
+        rep = load(os.path.join(self.ck25, "checkpoint_report.json"))
+        done = {arm: N for arm in cp.pilot_arms("s025") + ("s025_par2",)}
+        counts = power.arm_counts(nr_out["s025"], "s025")
+        gpu_h = sum(max(0, cnt - done.get(arm, 0)) * costs[arm] / 3600.0 for arm, cnt in counts.items())
+        close(self, rep["projected_gpu_h"], gpu_h, 1e-12)
+        self.assertEqual(rep["projected_bytes"], sum(cnt * nb[arm] for arm, cnt in counts.items()))
+        close(self, rep["pilot_wall_over_gpu_busy"], fc.WALL_FACTOR, 1e-12)
+        self.assertEqual((sorted(rep["tau_b_star"]), sorted(rep["N"])), (["s025"], ["s025"]))
+        self.assertEqual(rep["n_pilot"], N)
+        # blinded exactly like the original report (RR4): tau_b*, N, GPU-s, GPU-h, wall, bytes only
+        text = rd(os.path.join(self.ck25, "checkpoint_report.txt"))
+        self.assertIsNone(FORBIDDEN.search(text), FORBIDDEN.search(text))
+        self.assertIsNone(FORBIDDEN.search(json.dumps(rep)))
+        self.assertIn("TAU_B_STAR s025=%.12g" % rep["tau_b_star"]["s025"], text)
+        self.assertNotIn("TAU_B_STAR s1=", text)
+        self.assertNotIn("s4_w24", text)
+
+    def test_s025_write_once_and_identical_rerun(self):
+        path = os.path.join(self.ck25, "tau_b_star_s025.json")
+        orig = rd(path)
+        rc, err = run_s025(self.out, self.art)
+        self.assertEqual((rc, rd(path)), (0, orig))
+        self.assertIn("identical", err)
+        frz = json.loads(orig)
+        frz["amplitudes"]["s025"]["tau_b_star"] *= 1.0000001
+        altered = ck.dumps(frz)
+        try:
+            with open(path, "w") as f:
+                f.write(altered)
+            before = tree_hashes(self.ckd)
+            rc, err = run_s025(self.out, self.art)
+            self.assertEqual(rc, 2)
+            self.assertIn("CHECKPOINT_REFUSED", err)
+            self.assertEqual(rd(path), altered)  # never overwritten
+            self.assertEqual(tree_hashes(self.ckd), before)  # and nothing else was rewritten
+        finally:
+            with open(path, "w") as f:
+                f.write(orig)
+
+    def test_cases_do_not_mix(self):
+        before = tree_hashes(self.ckd)
+        for kw in ({"amps": ("s025",)}, {"amps": ("s025", "s1"), "subdir": "s025"}, {"amps": ("s1",), "subdir": "s1"},
+                   {"amps": ("s025",), "subdir": "../x"}, {"amps": ("s9",), "subdir": "s9"}, {"amps": ("s1", "s225"), "subdir": ""}):
+            rc, err = run_quiet(self.out, self.art, n_pilot=N, **kw)
+            self.assertEqual(rc, 2, kw)
+            self.assertIn("CHECKPOINT_REFUSED", err)
+        self.assertEqual(tree_hashes(self.ckd), before)
+        self.assertEqual(sorted(os.listdir(self.out)), ["checkpoint", "par2", "pilot", "runs"])
+
+    def test_s025_incomplete_listed_and_original_unaffected(self):
+        done = os.path.join(cp.arm_dir(self.out, "s025_n10"), "realizations", "r_0003", "DONE")
+        os.rename(done, done + ".off")
+        try:
+            miss25 = ck.missing_items(self.out, self.art, N, ("s025",))
+            miss_base = ck.missing_items(self.out, self.art, N)
+            rc, err = run_s025(self.out, self.art)
+        finally:
+            os.rename(done + ".off", done)
+        self.assertEqual(miss25, ["s025_n10: realizations not DONE: 3"])
+        self.assertEqual(miss_base, [])
+        self.assertEqual(rc, 2)
+        self.assertIn("MISSING s025_n10: realizations not DONE: 3", err)
+
+    def test_s025_par2_pilot_and_fieldstats_required(self):
+        raw = os.path.join(self.out, "par2", "raw", "par2_s025", "stats", "realization_0002_timeseries.csv")
+        fs = os.path.join(self.out, "par2", "field_stats_par2_s025.txt")
+        txt = rd(fs)
+        os.rename(raw, raw + ".off")
+        try:
+            with open(fs, "w") as f:
+                f.write("\n".join(txt.splitlines()[:-2]) + "\n")
+            miss = ck.missing_items(self.out, self.art, N, ("s025",))
+        finally:
+            os.rename(raw + ".off", raw)
+            with open(fs, "w") as f:
+                f.write(txt)
+        joined = "\n".join(miss)
+        self.assertIn("par2_s025: series missing for r = 2", joined)
+        self.assertIn("4 FIELDSTAT lines, expected 6", joined)
+        self.assertEqual(ck.missing_items(self.out, self.art, N, ("s025",)), [])
+
 
 class DefaultPilotCount(unittest.TestCase):
     def test_cli_default_is_20_and_empty_root_writes_nothing(self):
@@ -414,7 +572,9 @@ class CampaignHelpers(unittest.TestCase):
 
     def test_tables(self):
         cp.check_tables()
-        self.assertEqual(len(cp.all_pilot_arms()), 15)
+        self.assertEqual(len(cp.all_pilot_arms()), 20)  # four amplitudes x five pilot arms
+        self.assertEqual(len(cp.all_pilot_arms(BASE)), 15)
+        self.assertEqual(cp.pilot_arms("s025"), ("s025_A", "s025_n05", "s025_n10", "s025_n20", "s025_tw"))
         self.assertEqual(cp.pilot_arms("s4"), ("s4_A", "s4_n16", "s4_n32", "s4_n64", "s4_tw"))
         self.assertTrue(cp.is_multipass("s225_A") and not cp.is_multipass("s225_B") and not cp.is_multipass("s4_tw"))
         self.assertEqual(cp.pilot_walls_id("s1_A", 20), "s1_A:s5001:n20")

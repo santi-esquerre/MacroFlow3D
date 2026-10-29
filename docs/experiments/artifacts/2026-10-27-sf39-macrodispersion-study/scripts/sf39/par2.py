@@ -25,7 +25,9 @@ FIELD_SEED_EXT = 9021
 TRANSPORT_SEED_PILOT = 123456789
 TRANSPORT_SEED_EXT = TRANSPORT_SEED_PILOT + 1000 * N_PILOT  # 123476789
 INJ_STRIDE = 1000  # injection seed = transport.seed + 1000 r (pipeline)
-AMPLITUDES = ("1", "225", "4")
+AMPLITUDES = ("025", "1", "225", "4")
+SOURCE_OF = {"025": "1"}  # Par2 amplitudes whose pilot derives from another amplitude's SF-38 config (s025: the s1 config, variance 0.25)
+SIGMA2_OF = {"025": 0.25}  # stochastic.sigma2 written by make_pilot_config for those
 WINDOW_FRAC = 0.75
 SERIES_COLS = ("t", "mean_x", "mean_y", "mean_z", "var_x", "var_y", "var_z")
 
@@ -95,27 +97,42 @@ def set_cfg_key(text, path, value):
 
 
 def _pilot_header(text, c):
+    src = SOURCE_OF.get(c, c)
     lines = text.split("\n")
-    if not (len(lines) > 3 and lines[1].startswith("# MacroFlow3D") and "SF-38 (s%s)" % c in lines[1]):
-        raise ValueError("unexpected SF-38 config header (expected a title line naming SF-38 (s%s))" % c)
+    if not (len(lines) > 3 and lines[1].startswith("# MacroFlow3D") and "SF-38 (s%s)" % src in lines[1]):
+        raise ValueError("unexpected SF-38 config header (expected a title line naming SF-38 (s%s))" % src)
     lines[1] = "# MacroFlow3D — Par2 RWPT baseline, SF-39 pilot (s%s)" % c
-    note = [
-        "# SF-39 (docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/preregistration.md, sec. 1): copia de",
-        "# apps/config_pipeline_par2_sf38_s%s.yaml generada por `python3 -m sf39.par2 mkpilot`; solo cambian" % c,
-        "# stochastic.seed (7001 -> %d), analysis.macrodispersion.NR (10 -> %d, piloto) y output.output_dir (-> raw/par2_s%s)." % (
-            FIELD_SEED_PILOT, N_PILOT, c),
-        "# El texto SF-38 que sigue (semillas 7001-7010, NR = 10, piloto N_R = 10) es heredado y queda superado por esas claves.",
-        "#",
-    ]
+    if c in SOURCE_OF:
+        note = [
+            "# SF-39 (docs/decisions/2026-10-29-sf39-sigma025-addendum.md; preregistration-addendum-s025.md, A3): copia de",
+            "# apps/config_pipeline_par2_sf38_s%s.yaml generada por `python3 -m sf39.par2 mkpilot`; solo cambian" % src,
+            "# stochastic.sigma2 (1.0 -> %s, la varianza), stochastic.seed (7001 -> %d), analysis.macrodispersion.NR" % (
+                SIGMA2_OF[c], FIELD_SEED_PILOT),
+            "# (10 -> %d, piloto) y output.output_dir (-> raw/par2_s%s)." % (N_PILOT, c),
+            "# El texto SF-38 que sigue (sigma2 = 1, semillas 7001-7010, NR = 10, piloto N_R = 10) es heredado y queda superado por esas claves.",
+            "#",
+        ]
+    else:
+        note = [
+            "# SF-39 (docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/preregistration.md, sec. 1): copia de",
+            "# apps/config_pipeline_par2_sf38_s%s.yaml generada por `python3 -m sf39.par2 mkpilot`; solo cambian" % c,
+            "# stochastic.seed (7001 -> %d), analysis.macrodispersion.NR (10 -> %d, piloto) y output.output_dir (-> raw/par2_s%s)." % (
+                FIELD_SEED_PILOT, N_PILOT, c),
+            "# El texto SF-38 que sigue (semillas 7001-7010, NR = 10, piloto N_R = 10) es heredado y queda superado por esas claves.",
+            "#",
+        ]
     return "\n".join(lines[:3] + note + lines[3:])
 
 
 def make_pilot_config(sf38_cfg_text, c):
-    """SF-39 pilot config: stochastic.seed 9001, NR 20, output_dir raw/par2_s{c}, updated header; everything else byte-identical."""
+    """SF-39 pilot config: stochastic.seed 9001, NR 20, output_dir raw/par2_s{c}, updated header; everything else byte-identical.
+    s025 (`SOURCE_OF`) is built from the s1 SF-38 config text and also sets stochastic.sigma2 to 0.25 (the only other change)."""
     c = str(c)
     if c not in AMPLITUDES:
         raise ValueError("c must be one of %s" % (AMPLITUDES,))
     t = _pilot_header(sf38_cfg_text, c)
+    if c in SIGMA2_OF:
+        t = set_cfg_key(t, "stochastic.sigma2", SIGMA2_OF[c])
     t = set_cfg_key(t, "stochastic.seed", FIELD_SEED_PILOT)
     t = set_cfg_key(t, "analysis.macrodispersion.NR", N_PILOT)
     return set_cfg_key(t, "output.output_dir", "raw/par2_s%s" % c)
@@ -127,9 +144,9 @@ def make_ext_config(pilot_cfg_text, n_r):
     if n_r <= N_PILOT:
         raise ValueError("extension needs n_r > %d (got %d)" % (N_PILOT, n_r))
     out = parse_cfg(pilot_cfg_text).get("output.output_dir", "")
-    m = re.fullmatch(r"raw/par2_s(1|225|4)", out)
+    m = re.fullmatch(r"raw/par2_s(025|1|225|4)", out)
     if not m:
-        raise ValueError("pilot output_dir %r is not raw/par2_s{1,225,4}" % out)
+        raise ValueError("pilot output_dir %r is not raw/par2_s{025,1,225,4}" % out)
     c = m.group(1)
     t = set_cfg_key(pilot_cfg_text, "stochastic.seed", FIELD_SEED_EXT)
     t = set_cfg_key(t, "transport.seed", TRANSPORT_SEED_EXT)

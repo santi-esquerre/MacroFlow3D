@@ -2,7 +2,8 @@
 
 Built on `fixtures_campaign` (pilot of every arm, Par2 pilots) and `fixtures_runner`: the pilot is built and checkpointed first (the frozen
 `tau_b_star.json` is the real checkpoint output), then every arm is extended to the budget counts of BUDGET, directory B, the s4 width arms
-and the Par2 extensions are added, and `A/configs/budget.json` is written.  Global realization index g: directory A r = g, directory B
+and the Par2 extensions are added, and `A/configs/budget.json` is written.  The pilot is checkpointed in two cases: the original three
+amplitudes (`checkpoint/tau_b_star.json`) and s025 (`checkpoint/s025/tau_b_star_s025.json`).  Global realization index g: directory A r = g, directory B
 r = g - N_A (seed 5001 + g), narrow / twin arms r = g, width arms seed 7101/7201 + r (generating index WIDTH_G0 + r; the s4_w12 wide set
 is split in `W12_PARTS`, s4_w12 + s4_w12c, generating index WIDTH_G0 + 50 + i over the combined index i).  The content of
 global realization g is `fx.gen(g)` scaled per arm role (`fc.arm_factors`), so every window / plane value has a closed form
@@ -22,7 +23,8 @@ from sf39.tests import fixtures_par2 as fp
 from sf39.tests import fixtures_runner as fx
 
 N_PILOT = 6
-BUDGET = {"s1": {"N_narrow": 8, "N_twin": 7, "N_hmax": 7, "N_R": 10, "N_A": 7, "N_run": 10, "par2_NR": 10},
+BUDGET = {"s025": {"N_narrow": 7, "N_twin": 6, "N_hmax": 6, "N_R": 8, "N_A": 6, "N_run": 8, "par2_NR": 8},
+          "s1": {"N_narrow": 8, "N_twin": 7, "N_hmax": 7, "N_R": 10, "N_A": 7, "N_run": 10, "par2_NR": 10},
           "s225": {"N_narrow": 7, "N_twin": 6, "N_hmax": 6, "N_R": 8, "N_A": 6, "N_run": 8, "par2_NR": 8},
           "s4": {"N_narrow": 8, "N_twin": 7, "N_hmax": 7, "N_R": 10, "N_A": 7, "N_run": 10, "par2_NR": 10}}
 REF_FLOOR = 9        # tests patch power.REF_FLOOR / WIDTH_ARMS to this (the real values are 30) to keep the fixture small
@@ -102,7 +104,8 @@ def build_complete(out_root, artifact, real_scripts, n_pilot=N_PILOT, bud=BUDGET
     import io
     with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(io.StringIO()):
         rc = ck.run(out_root, artifact, n_pilot=n_pilot)
-    assert rc == 0, rc
+        rc25 = ck.run(out_root, artifact, n_pilot=n_pilot, amps=("s025",), subdir="s025")  # the separate s025 checkpoint case
+    assert rc == 0 and rc25 == 0, (rc, rc25)
     for amp in cp.AMPS:
         b, a = bud[amp], cp.arm_ids(amp)
         ctx = mock.patch.dict(fc.ROLE_F, IDENT) if amp == "s1" else mock.patch.dict(fc.ROLE_F, {})

@@ -3,7 +3,7 @@ and the decision-point table.
 
     python3 -m sf39.analyze --out-root $OUT --artifact A --dest $OUT/analysis [--allow-partial]
 
-Inputs: `$OUT/checkpoint/tau_b_star.json` (frozen), `A/configs/budget.json` (final N per amplitude), runner arms `$OUT/runs/<arm>`, Par2
+Inputs: `$OUT/checkpoint/tau_b_star.json` (frozen) merged with `$OUT/checkpoint/s025/tau_b_star_s025.json`, `A/configs/budget.json` (final N per amplitude), runner arms `$OUT/runs/<arm>`, Par2
 `$OUT/par2/raw/par2_s{c}[_ext]` + `field_stats_par2_s{c}[_ext].txt`, Par2 configs `A/configs/par2_s{c}.yaml`.  Everything is read through
 `sf39.campaign` / `sf39.reduce` / `sf39.par2`; the statistics through `sf39.stats` / `sf39.decide` (nothing is re-implemented here).
 
@@ -54,8 +54,8 @@ EST = cp.ESTIMATORS                      # alpha_TAM, alpha_TP, alpha_LAM
 TRANSVERSE = ("alpha_TAM", "alpha_TP")
 KIND = {"alpha_TAM": "TAM", "alpha_TP": "TP", "alpha_LAM": "LAM"}
 KEY = {"alpha_TAM": "win.alpha_TAM", "alpha_LAM": "win.alpha_e1", "alpha_TP": "tp.alpha_TP", "alpha_Tfixed": "win.alpha_Tfixed"}
-SIGMA2_NOMINAL = {"s1": 1.0, "s225": 2.25, "s4": 4.0}   # eps^2 (preregistration section 1: --eps 1, 1.5, 2 with --sigma2 1)
-BD_BOUND = {"s1": 0.01, "s225": 0.044}                  # B&dD fixed-axis alpha_T (F11, descriptive)
+SIGMA2_NOMINAL = {"s025": 0.25, "s1": 1.0, "s225": 2.25, "s4": 4.0}   # eps^2 (preregistration section 1: --eps 1, 1.5, 2 with --sigma2 1; s025: --eps 0.5)
+BD_BOUND = {"s025": 1e-3, "s1": 0.01, "s225": 0.044}    # B&dD fixed-axis alpha_T (F11, descriptive; s025: their Table 2 upper bound alpha_TA < 1e-3)
 BUDGET_KEYS = ("N_narrow", "N_twin", "N_hmax", "N_R", "N_A", "N_run", "par2_NR")
 TIERS = ("primary", "key secondary", "estimation", "exploratory", "process")
 L90, L95 = 0.90, 0.95
@@ -175,13 +175,34 @@ def load_budget(art):
     return bud
 
 
-def load_frozen(out):
-    path = os.path.join(out, "checkpoint", "tau_b_star.json")
-    if not os.path.isfile(path):
-        raise Refused("no frozen file %s (run the checkpoint part first)" % path)
+def _read_frozen(path):
     frz = read_json(path)
     if frz.get("schema") != "sf39-tau_b_star-v1":
         raise Refused("%s: unexpected schema %r" % (path, frz.get("schema")))
+    return frz
+
+
+def load_frozen(out):
+    """`checkpoint/tau_b_star.json` merged with every separate-case file `checkpoint/<amp>/tau_b_star_<amp>.json` (s025, addendum
+    2026-10-29).  `Refused` on a schema mismatch, on an amplitude present in two files, or on an amplitude of `cp.AMPS` with no entry."""
+    path = os.path.join(out, "checkpoint", "tau_b_star.json")
+    if not os.path.isfile(path):
+        raise Refused("no frozen file %s (run the checkpoint part first)" % path)
+    frz = _read_frozen(path)
+    where = {amp: path for amp in frz["amplitudes"]}
+    for amp in cp.AMPS:
+        extra_path = os.path.join(out, "checkpoint", amp, "tau_b_star_%s.json" % amp)
+        if not os.path.isfile(extra_path):
+            continue
+        extra = _read_frozen(extra_path)
+        dup = sorted(set(extra["amplitudes"]) & set(where))
+        if dup:
+            raise Refused("amplitude(s) %s present in both %s and %s" % (",".join(dup), where[dup[0]], extra_path))
+        frz["amplitudes"].update(extra["amplitudes"])
+        where.update({a: extra_path for a in extra["amplitudes"]})
+    absent = [amp for amp in cp.AMPS if amp not in frz["amplitudes"]]
+    if absent:
+        raise Refused("no frozen entry for %s (run the checkpoint part%s first)" % (",".join(absent), " (selector s025)" if "s025" in absent else ""))
     return frz
 
 
@@ -719,6 +740,9 @@ def f11_block(C, amp, R_prod, R_n, R_tw, R_ptw):
     out["upper_bound_fixed_axis_alpha_T"] = {"alpha_Tfixed": ci(fx, L95, "upper"), "BdD_value": bound,
                                               "below_BdD": None if bound is None else bool(stats.t_interval(fx, L95, "upper")[2] < bound),
                                               "conditions": "descriptive; B&dD: fixed axes, 5 lambda injection buffer, N_R = 500, Euler stepping"}
+    if amp == "s025":  # addendum A4.3: a disagreement with B&dD's bound is stated only if the one-sided 95 % LOWER limit exceeds it
+        lower = ci(fx, L95, "lower")
+        out["upper_bound_fixed_axis_alpha_T"].update(alpha_Tfixed_lower=lower, exceeds_BdD=bool(lower["lo"] > bound))
     return out
 
 

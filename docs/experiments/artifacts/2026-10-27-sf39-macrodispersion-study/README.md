@@ -16,17 +16,20 @@ which `sync --delete` would erase).
 | `scripts/run_sf39.sh` | C-RUN | the six parts below; bookkeeping, md5 gate, restart rules |
 | `scripts/sf39/geometry.py` | C-GEOM | arm table (section 1), plane algorithm (section 2), mirror of the runner's parser checks |
 | `scripts/sf39/bytecheck.py` | RR3 (iii) | `--hmax-div 8,16,32` vs `8` byte comparison per F12 |
-| `scripts/sf39/tests/test_geometry.py`, `test_bytecheck.py` | | synthetic known answers, seconds |
+| `scripts/sf39/regress_existing.py` | addendum A6 | regression of the existing amplitudes: `python3 -m sf39.regress_existing --ref <old analysis dir> --new <new analysis dir> [--amps s1,s225,s4]` (see "s025") |
+| `scripts/sf39/tests/test_geometry.py`, `test_bytecheck.py`, `test_runner_script.py`, `test_runner_functional.py` | | synthetic known answers; dry runs and fake-binary restarts of `run_sf39.sh`; seconds |
 | `configs/par2_s{1,225,4}.yaml` | C-PAR2 inputs | Par2 pilot configs (copies of the SF-38 configs; only `stochastic.seed: 9001`, `NR: 20`, `output_dir: raw/par2_s{c}` and the header differ) |
-| `configs/par2_s{c}_ext.yaml` | | Par2 extension, written by `python3 -m sf39.par2 mkext` after the budget |
+| `configs/par2_s025.yaml` | | Par2 pilot of `s025`: `python3 -m sf39.par2 mkpilot apps/config_pipeline_par2_sf38_s1.yaml 025`, a copy of the `s1` config with only `stochastic.sigma2: 0.25`, `stochastic.seed: 9001`, `NR: 20`, `output_dir: raw/par2_s025` and the header changed (no `apps/` file) |
+| `configs/par2_s{c}_ext.yaml` | | Par2 extension (`c` = `s025`, `s1`, `s225`, `s4`), written by `python3 -m sf39.par2 mkext` after the budget |
 | `configs/budget.json` | | final counts, created after the owner's budget (schema below) |
 
 Geometry CLI (needs `PYTHONPATH=<A>/scripts`): `python3 -m sf39.geometry flags <arm>` (runner arguments of an arm except `--out`,
 `--seed0`, `--nr`), `planes <P1..P7|arm>`, `arms`, `check` (the seven sha256 values of section 2 and every arm against the
 runner's usage checks: grid even and >= 4, `ny == nz`, planes strictly increasing, `> x0 = 5 ell`, last `< L1`, window order,
 RR12 seed-on-face for the `M = 100` lattice, `--hmax-div` list). Arm ids: `s{1,225,4}_A`, `_B`, narrow rungs `s1_n05 s1_n10
-s1_n20 / s225_n08 s225_n16 s225_n32 / s4_n16 s4_n32 s4_n64`, twins `s{c}_tw`, width arms `s4_w24`, `s4_w12`, `s4_w12c` (continuation of the halted `s4_w12`, same settings; no check arm), and check arms
-`chk_<arm>` for the 14 narrow/twin/width geometries plus `chk_s4_A` (`--hmax-div 8,16,32`) and `chk_s4_A1` (`8`).
+s1_n20 / s225_n08 s225_n16 s225_n32 / s4_n16 s4_n32 s4_n64`, twins `s{c}_tw`, the `s025` arms (`s025_A`, `s025_B`, `s025_n05 s025_n10 s025_n20`, `s025_tw`:
+the `s1` geometry with `--eps 0.5`, plane lists P1 / P4; appended to the table, so every earlier order is unchanged), width arms `s4_w24`, `s4_w12`, `s4_w12c` (continuation of the halted `s4_w12`, same settings; no check arm), and check arms
+`chk_<arm>` for the 18 narrow/twin/width geometries (14 + `chk_s025_n05`, `_n10`, `_n20`, `_tw`; none for `s025_A` / `_B`) plus `chk_s4_A` (`--hmax-div 8,16,32`) and `chk_s4_A1` (`8`).
 
 Local tests (seconds): `cd A/scripts && python3 -m unittest discover -s . -t .` (or `-p 'test_geometry*.py'`, `-p 'test_bytecheck*.py'`);
 `bash -n scripts/run_sf39.sh`; `shellcheck -s bash scripts/run_sf39.sh`; `SF39_DRYRUN=1 bash scripts/run_sf39.sh build/v100-release <part>`
@@ -41,10 +44,10 @@ governed by the `scripts/remote` slot and `REMOTE_GPU_MIN_FREE_MIB`.
 
 | part | selector | what it runs | CUDA |
 |---|---|---|---|
-| `checks` | | (i) whole unit-test suite; (ii) `sf39.geometry check`; (iii) RR2 regression (`scripts/regress` reference into `$HOME/regress/refs/1e40cfe/out`, reused iff `REGRESS_DONE`, a directory without it stops this check; head into `checks/regress_head/out`; `compare.sh`, last line must be `REGRESS IDENTICAL`; `TMPDIR=$HOME/.cache/mf3d-tmp`); (iv) RR3(ii) solve checks, seed 4901, `--nr 1`, the 14 check arms, verdict from `solver_b.json` (`converged` or `fallback` accepted) or the `B_SOLVER` line on exit 4; (v) RR3(iii) byte check at the `s4_A` geometry (`chk_s4_A` vs `chk_s4_A1`); (vi) `sf39.reduce smoke $HOME/sf41_campaign` and `sf39.reduce signtable $HOME/sf41_campaign/evladder` | yes |
-| `pilot` | `s1` `s225` `s4` `par2` (none = all four in this order) | per amplitude `s{c}_A`, the three narrow rungs and the twin, each `--seed0 5001 --nr 20` in `runs/<arm>`; `par2`: `macroflow3d_pipeline configs/par2_s{c}.yaml` (cwd `$SF39_OUT_ROOT/par2`) and `par2_field_stats <cfg> --nr 20` | yes |
-| `checkpoint` | | `python3 -m sf39.checkpoint --out-root $SF39_OUT_ROOT --artifact A` (freeze, sealed pilot estimates, `nr_rule`, blinded report); a recorded rc 0 is never re-run | no |
-| `extend` | `s1` `s225` `s4` `par2` | needs `configs/budget.json` (refuses with exit 2 and a message if absent or invalid, before anything is written); raises `--nr` in the same directories (A to `N_A`, narrow rungs to `N_narrow` with `s4_n16` at least 30, twin to `N_twin` with `s4_tw` at least 30), creates directory B (`s{c}_B`, `--seed0 5001+N_A --nr N_run-N_A`, only if `N_run > N_A`); `par2`: needs `configs/par2_s{c}_ext.yaml` equal to the output of `python3 -m sf39.par2 mkext configs/par2_s{c}.yaml <par2_NR>` (refuses otherwise) and runs it plus `par2_field_stats` on it; skipped for `par2_NR <= 20` | yes |
+| `checks` | | (i) whole unit-test suite; (ii) `sf39.geometry check`; (i), (ii), (vi) and `signtable` have ids tied to the scripts revision (`unittest:<rev>`, see "s025"); (iii) RR2 regression (`scripts/regress` reference into `$HOME/regress/refs/1e40cfe/out`, reused iff `REGRESS_DONE`, a directory without it stops this check; head into `checks/regress_head/out`; `compare.sh`, last line must be `REGRESS IDENTICAL`; `TMPDIR=$HOME/.cache/mf3d-tmp`); (iv) RR3(ii) solve checks, seed 4901, `--nr 1`, the 18 check arms, verdict from `solver_b.json` (`converged` or `fallback` accepted) or the `B_SOLVER` line on exit 4; (v) RR3(iii) byte check at the `s4_A` geometry (`chk_s4_A` vs `chk_s4_A1`); (vi) `sf39.reduce smoke $HOME/sf41_campaign` and `sf39.reduce signtable $HOME/sf41_campaign/evladder` | yes |
+| `pilot` | `s025` `s1` `s225` `s4` `par2` (none = all five in this order) | per amplitude `s{c}_A`, the three narrow rungs and the twin, each `--seed0 5001 --nr 20` in `runs/<arm>`; `par2`: `macroflow3d_pipeline configs/par2_s{c}.yaml` (cwd `$SF39_OUT_ROOT/par2`) and `par2_field_stats <cfg> --nr 20` for every amplitude (recorded cases are skipped, and a skipped case never rewrites `par2/field_stats_*.txt`) | yes |
+| `checkpoint` | none, `s025` | none: `python3 -m sf39.checkpoint --out-root $SF39_OUT_ROOT --artifact A` (case id `checkpoint`; freeze of `s1` `s225` `s4`, sealed pilot estimates, `nr_rule`, blinded report; never the four amplitudes). `s025`: case id `checkpoint_s025`, `--amps s025 --subdir s025`, everything under `checkpoint/s025/`. A recorded rc 0 is never re-run | no |
+| `extend` | `s025` `s1` `s225` `s4` `par2` | needs `configs/budget.json` (refuses with exit 2 and a message if absent or invalid, before anything is written; the amplitude selected, or every amplitude without selector / with `par2`, needs a complete entry, and every entry present is validated); raises `--nr` in the same directories (A to `N_A`, narrow rungs to `N_narrow` with `s4_n16` at least 30, twin to `N_twin` with `s4_tw` at least 30), creates directory B (`s{c}_B`, `--seed0 5001+N_A --nr N_run-N_A`, only if `N_run > N_A`); `par2`: needs `configs/par2_s{c}_ext.yaml` equal to the output of `python3 -m sf39.par2 mkext configs/par2_s{c}.yaml <par2_NR>` (refuses otherwise) and runs it plus `par2_field_stats` on it; skipped for `par2_NR <= 20`; the floor of 30 of `s4_n16` / `s4_tw` is `s4` only | yes |
 | `width` | | `s4_w24` (`--seed0 7101 --nr 30`), `s4_w12` (`--seed0 7201 --nr 30`), `s4_w12c` (`--seed0 7215 --nr 17`; see below) | yes |
 | `analysis` | | `python3 -m sf39.analyze --out-root $SF39_OUT_ROOT --artifact A --dest $SF39_OUT_ROOT/analysis`; re-run on every invocation (deterministic, idempotent) | no |
 
@@ -73,7 +76,7 @@ scripts/remote --increment SF-39 wait sf39-<part>
 env REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checkpoint -- "PYTHONPATH=... bash .../run_sf39.sh build/v100-release checkpoint"
 ```
 
-Job names: `sf39-checks`, `sf39-pilot-s1` ... `sf39-pilot-par2`, `sf39-checkpoint`, `sf39-extend-<sel>`, `sf39-width`,
+Job names: `sf39-checks`, `sf39-pilot-s025`, `sf39-pilot-s1` ... `sf39-pilot-par2`, `sf39-checkpoint`, `sf39-checkpoint-s025`, `sf39-extend-<sel>`, `sf39-width`,
 `sf39-analysis`. Never `--gpu`, never `CUDA_VISIBLE_DEVICES`, no GPU work under `exec`, no `sync` while an SF-39 job is `running`
 or `waiting_gpu`; later syncs carry scripts only (RR1). The run script prepends `<A>/scripts` to `PYTHONPATH` itself.
 
@@ -103,19 +106,50 @@ Created by the orchestrator after the owner's budget (checkpoint report, preregi
 also recorded in the bitacora before any further run. One object per amplitude, positive integers (extra keys are ignored):
 
 ```json
-{ "s1":   {"N_narrow": 24, "N_twin": 22, "N_hmax": 20, "N_R": 40, "N_A": 20, "N_run": 40, "par2_NR": 40},
+{ "s025": {"N_narrow": 20, "N_twin": 20, "N_hmax": 20, "N_R": 20, "N_A": 20, "N_run": 20, "par2_NR": 20},
+  "s1":   {"N_narrow": 24, "N_twin": 22, "N_hmax": 20, "N_R": 40, "N_A": 20, "N_run": 40, "par2_NR": 40},
   "s225": {"N_narrow": 20, "N_twin": 20, "N_hmax": 20, "N_R": 20, "N_A": 20, "N_run": 20, "par2_NR": 20},
   "s4":   {"N_narrow": 20, "N_twin": 20, "N_hmax": 20, "N_R": 30, "N_A": 20, "N_run": 30, "par2_NR": 30} }
 ```
 
 Meaning (section 1): `N_A = max(20, N_hmax)` realizations in directory A, `N_run = max(N_R, N_A, N_twin)`, directory B holds
 `N_A <= g < N_run`, `par2_NR = N_R` (Par2 extension runs `par2_NR - 20`). `extend` checks only: all keys present, `N_narrow`, `N_twin`,
-`N_R`, `N_A`, `par2_NR >= 20`, `N_A >= N_hmax`, `N_run >= max(N_A, N_R, N_twin)`. The example above is illustrative, not a budget.
+`N_R`, `N_A`, `par2_NR >= 20`, `N_A >= N_hmax`, `N_run >= max(N_A, N_R, N_twin)`, for every amplitude of the file that is one of `s025 s1 s225 s4`; the
+amplitude it runs (every amplitude without selector or with `par2`) must be present. The example above is illustrative, not a budget.
+
+## `s025` (sigma^2 = 0.25; `docs/decisions/2026-10-29-sf39-sigma025-addendum.md`, `preregistration-addendum-s025.md`)
+
+Mechanics only; the settings and readings are in the addendum. `s025` is the first amplitude of `power.AMPLITUDES` (`("s025", "s1", "s225", "s4")`,
+ascending), with the `s1` geometry, `--eps 0.5`, the `s1` seeds and the Par2 config above. Nothing that `s1`, `s225` or `s4` produce changes.
+
+* **Tree-tied check ids.** The `checks` ids whose outcome depends on the scripts tree are `unittest:<rev>`, `geometry:<rev>`, `smoke_reduce:<rev>` and
+  `signtable:<rev>`, `<rev>` = the revision recorded in `run.env` (`SF39_COMMIT`, else the mirror's `.mf3d_source_rev`, else git HEAD) reduced to
+  file-name characters and at most 24 of them; their logs are `logs/<id with : as _>.log`. A new tree re-runs them (an unknown revision refuses with
+  exit 2) and the old records (`unittest`, `geometry`, ...) stay. The RR2 regression and the RR3 (iii) byte check records are reused, the existing
+  `chk_s1..s4` ids are skipped as recorded, and the four `chk_s025_*` solve checks run as new ids.
+* **Checkpoint.** `run_sf39.sh <bin> checkpoint s025` writes only under `checkpoint/s025/`: the write-once `tau_b_star_s025.json` (schema
+  `sf39-tau_b_star-v1`, same content rules; a different content is refused), `sealed/` (`estimates.csv`, `nr_input.json`, `nr_out.json`,
+  `nr_stdout.txt`), `costs.json`, `bytes.json` and the blinded `checkpoint_report.txt/.json`. `checkpoint/tau_b_star.json`, `sealed/`, `costs.json`,
+  `bytes.json` and `checkpoint_report.*` are never touched. `sf39.checkpoint` refuses to mix the cases (no `--subdir` needs exactly the three original
+  amplitudes; a `--subdir` needs amplitudes outside them).
+* **Budget.** `configs/budget.json` gets the `s025` entry (same schema, below) only after the `s025` checkpoint. Until then the analysis refuses
+  (`load_budget` requires every amplitude of `power.AMPLITUDES`) and `extend` works for the selected amplitudes that have an entry.
+* **Analysis.** `analyze.load_frozen` merges `checkpoint/tau_b_star.json` with `checkpoint/<amp>/tau_b_star_<amp>.json` and refuses (exit 2) on a schema
+  mismatch, an amplitude present in both files, or an amplitude without an entry. `summary.json` `amplitudes.s025.F11.upper_bound_fixed_axis_alpha_T`
+  also holds `alpha_Tfixed_lower` (one-sided 95 % lower limit) and `exceeds_BdD`; no key is added to the `s1` / `s225` / `s4` subtrees.
+* **Regression of the existing amplitudes** (addendum A6), the new analysis output against the committed `analysis/` of evidence commit `4dbf31f2`:
+  `python3 -m sf39.regress_existing --ref <old analysis dir> --new <new analysis dir> [--amps s1,s225,s4]` compares (a) the parsed JSON of
+  `summary.json` `amplitudes.<amp>` and `budget.<amp>`, (b) the bytes of every `reduced/*.csv` of `--ref` and of `series/alpha_t_<amp>.csv`, (c) the
+  ordered `decisions.csv` lines of the listed amplitudes and the reference `all` rows in order. It lists additions, exits 0 iff identical, 1 on any
+  difference, 2 on unreadable input. A difference is a defect, never accepted as new.
+* **Import layout.** New bookkeeping is imported beside the committed one, never over it: `raw/campaign_s025/<part>/`, `raw/par2_s025[_ext]/` and
+  `raw/field_stats_par2_s025[_ext].txt`. `analysis/` is replaced only after the regression above passes.
 
 ## Blinding (RR4)
 
 Until the owner's budget is recorded nobody reads pilot plume statistics. Allowed to read: `DONE`, `status.json`, `solver_b.json`,
-`flow_stats.json`, `timings.json`, `tau_b_star.json`, job logs, the part bookkeeping above and the checkpoint report. Not read nor
+`flow_stats.json`, `timings.json`, `tau_b_star.json`, job logs, the part bookkeeping above and the checkpoint report (for `s025`:
+`checkpoint/s025/tau_b_star_s025.json` and its report; `checkpoint/s025/sealed/` stays sealed). Not read nor
 imported: runner `analysis/`, `ensemble/`, `stats*/`, per-realization moment CSVs and arrays of pilot arms, Par2 `stats/`, `analysis/`,
 `ensemble/`, `checkpoint/sealed/`. The scripts echo only `STATUS`, `RUN_DONE`, `B_SOLVER`, `STAGE_FAILED`, `SEED_FACE_FAILED`
 lines of a log. The `par2/field_stats_*.txt` files are field statistics (`var_lnK`), not plume statistics.

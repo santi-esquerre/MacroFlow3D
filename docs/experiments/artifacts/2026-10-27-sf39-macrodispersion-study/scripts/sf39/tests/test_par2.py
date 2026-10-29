@@ -77,6 +77,61 @@ class Generators(unittest.TestCase):
             self.assertEqual(len(a), len(b))
             self.assertEqual(sum(x != y for x, y in zip(a, b)), 3)
 
+    def test_original_amplitudes_header_is_byte_unchanged(self):
+        # the generation for s1 / s225 / s4 is the one that produced the committed configs: a golden of the inserted header block
+        for c, name in REAL.items():
+            src = fx.find_apps_cfg(name)
+            out = par2.make_pilot_config(src, c).split("\n")
+            self.assertEqual(out[3:9], [
+                "# SF-39 (docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/preregistration.md, sec. 1): copia de",
+                "# apps/config_pipeline_par2_sf38_s%s.yaml generada por `python3 -m sf39.par2 mkpilot`; solo cambian" % c,
+                "# stochastic.seed (7001 -> 9001), analysis.macrodispersion.NR (10 -> 20, piloto) y output.output_dir (-> raw/par2_s%s)." % c,
+                "# El texto SF-38 que sigue (semillas 7001-7010, NR = 10, piloto N_R = 10) es heredado y queda superado por esas claves.",
+                "#", src.split("\n")[3]])
+            self.assertEqual(out[1], "# MacroFlow3D \u2014 Par2 RWPT baseline, SF-39 pilot (s%s)" % c)
+
+    def test_pilot_s025_from_the_s1_source_only_intended_lines_change(self):
+        src = fx.find_apps_cfg(REAL["1"])
+        out = par2.make_pilot_config(src, "025")
+        rem, add = line_diff(src, out)
+        self.assertEqual(len(rem), 5)  # title + four keys
+        self.assertTrue(rem[0].startswith("# MacroFlow3D") and "SF-38 (s1)" in rem[0])
+        self.assertEqual(rem[1:], ["  sigma2: 1.0", "  seed: 7001", "    NR: 10", "  output_dir: ./output/sf38_par2_s1"])
+        self.assertEqual([a for a in add if not a.startswith("#")],
+                         ["  sigma2: 0.25", "  seed: 9001", "    NR: 20", "  output_dir: raw/par2_s025"])
+        head = "\n".join(a for a in add if a.startswith("#"))
+        self.assertIn("SF-39 pilot (s025)", head)
+        self.assertIn("apps/config_pipeline_par2_sf38_s1.yaml", head)  # names the s1 source
+        self.assertIn("stochastic.sigma2 (1.0 -> 0.25", head)  # and the variance change
+        v = par2.cfg_values(out)
+        self.assertEqual((v["sigma2"], v["field_seed"], v["nr"], v["output_dir"], v["transport_seed"]), (0.25, 9001, 20, "raw/par2_s025", 123456789))
+        a = [l for l in src.split("\n") if not l.lstrip().startswith("#")]
+        b = [l for l in out.split("\n") if not l.lstrip().startswith("#")]
+        self.assertEqual(len(a), len(b))
+        self.assertEqual(sum(x != y for x, y in zip(a, b)), 4)  # everything else byte-identical (domain, dt, injection, snapshots)
+
+    def test_ext_s025(self):
+        pilot = par2.make_pilot_config(fx.find_apps_cfg(REAL["1"]), "025")
+        ext = par2.make_ext_config(pilot, 57)
+        rem, add = line_diff(pilot, ext)
+        self.assertEqual(rem, ["  seed: 9001", "  seed: 123456789", "    NR: 20", "  output_dir: raw/par2_s025"])
+        self.assertEqual([a for a in add if not a.startswith("#")],
+                         ["  seed: 9021", "  seed: 123476789", "    NR: 37", "  output_dir: raw/par2_s025_ext"])
+        self.assertEqual(par2.check_ext_consistency(pilot, ext), [])
+        v = par2.cfg_values(ext)
+        self.assertEqual((v["sigma2"], v["field_seed"], v["transport_seed"], v["nr"], v["output_dir"]),
+                         (0.25, 9021, 123476789, 37, "raw/par2_s025_ext"))
+
+    def test_s025_rules(self):
+        self.assertEqual(par2.AMPLITUDES, ("025", "1", "225", "4"))
+        with self.assertRaises(ValueError):  # the s025 source is the s1 config only
+            par2.make_pilot_config(fx.find_apps_cfg(REAL["225"]), "025")
+        with self.assertRaises(ValueError):  # and s1 still needs its own title
+            par2.make_pilot_config(fx.find_apps_cfg(REAL["225"]), "1")
+        pilot = par2.make_pilot_config(fx.find_apps_cfg(REAL["1"]), "025")
+        with self.assertRaises(ValueError):
+            par2.make_ext_config(pilot.replace("raw/par2_s025", "raw/par2_s0250"), 30)
+
     def test_ext_from_real_pilot(self):
         for c, name in REAL.items():
             pilot = par2.make_pilot_config(fx.find_apps_cfg(name), c)
@@ -304,6 +359,13 @@ class Cli(TmpCase):
         with open(pf, "w") as f:
             f.write(pil)
         self.assertEqual(self.run_cli("mkext", pf, "100"), par2.make_ext_config(pil, 100))
+        pil25 = self.run_cli("mkpilot", src, "025")  # s025 is generated from the s1 source file
+        self.assertEqual(pil25, par2.make_pilot_config(fx.find_apps_cfg(REAL["1"]), "025"))
+        pf25 = os.path.join(self.d, "pilot25.yaml")
+        with open(pf25, "w") as f:
+            f.write(pil25)
+        self.assertEqual(self.run_cli("mkext", pf25, "100"), par2.make_ext_config(pil25, 100))
+        self.assertIn("raw/par2_s025_ext", self.run_cli("mkext", pf25, "100"))
         fl = os.path.join(self.d, "fs.log")
         with open(fl, "w") as f:
             f.write("FIELDSTAT r=0 seed=9001 n=8 mean_lnK=1.0e-03 var_lnK=9.9e-01 Kmin=1.0e-01 Kmax=9.0e+00 Kmean=1.4e+00\n")

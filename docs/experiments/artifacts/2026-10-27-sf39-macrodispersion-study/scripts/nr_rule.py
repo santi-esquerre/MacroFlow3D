@@ -8,7 +8,7 @@ Usage::
 
 ``pilot.json`` (produced by the checkpoint node)::
 
-    {"s1": {"alpha_TAM": {...}, "alpha_TP": {...}}, "s225": {...}, "s4": {...}}
+    {"s1": {"alpha_TAM": {...}, "alpha_TP": {...}}, "s225": {...}, "s4": {...}}      (any subset of power.AMPLITUDES, e.g. {"s025": ...})
 
 each estimator object holding the pilot arrays (length n = 20, one entry per pilot realization, units of lambda) and scalars:
 
@@ -60,8 +60,11 @@ def main(argv=None):
         ap.error("--budget-gpu-h and --costs go together")
     with open(a.pilot) as f:
         pilot = json.load(f)
+    unknown = [amp for amp in pilot if amp not in power.AMPLITUDES]
+    if unknown:
+        ap.error("unknown amplitude(s) %s (expected a subset of %s)" % (unknown, power.AMPLITUDES))
     ns, capped = {}, {}
-    for amp in power.AMPLITUDES:
+    for amp in (a_ for a_ in power.AMPLITUDES if a_ in pilot):  # the amplitudes present in the input, in registry order
         ns[amp], capped[amp] = power.amplitude_ns(pilot[amp])
     out = {amp: {**ns[amp], "capped": capped[amp]} for amp in ns}
     if a.budget_gpu_h is None:

@@ -5,16 +5,19 @@
 # binaries md5 gate, results.txt / PART_DONE) WITHOUT its exclusive-GPU precheck and WITHOUT any GPU selection: the V100 is shared and
 # `scripts/remote` (slot, REMOTE_GPU_WAIT, REMOTE_GPU_MIN_FREE_MIB) governs.
 #
-#   bash run_sf39.sh <build_dir> checks            unit tests, geometry check, RR2 regression, RR3 (ii) solve checks, (iii) byte check, (iv) smoke
-#   bash run_sf39.sh <build_dir> pilot [s1|s225|s4|par2]     20-realization pilot (directory A, narrow rungs, twin; Par2 pilot + field stats)
-#   bash run_sf39.sh <build_dir> checkpoint        python3 -m sf39.checkpoint (no CUDA)
-#   bash run_sf39.sh <build_dir> extend [s1|s225|s4|par2]    raise every arm to the budget (configs/budget.json) + directory B; Par2 extension
+#   bash run_sf39.sh <build_dir> checks            unit tests, geometry check, RR2 regression, RR3 (ii) solve checks, (iii) byte check, (iv) smoke;
+#                                                  the checks that depend on the scripts tree (unittest, geometry, smoke_reduce, signtable) carry
+#                                                  the scripts revision in their id (`unittest:<rev>`), so a new tree re-runs them and old records stay
+#   bash run_sf39.sh <build_dir> pilot [s025|s1|s225|s4|par2]     20-realization pilot (directory A, narrow rungs, twin; Par2 pilot + field stats)
+#   bash run_sf39.sh <build_dir> checkpoint [s025]  python3 -m sf39.checkpoint (no CUDA); without selector the original case (s1 s225 s4, case id
+#                                                  `checkpoint`); `s025` = the separate case `checkpoint_s025` (everything under checkpoint/s025/)
+#   bash run_sf39.sh <build_dir> extend [s025|s1|s225|s4|par2]    raise every arm to the budget (configs/budget.json) + directory B; Par2 extension
 #   bash run_sf39.sh <build_dir> width             s4_w24 and s4_w12 (30 realizations each), then s4_w12c (17: seeds 7215-7231, continuation of
 #                                                  the halted s4_w12, owner decision 2026-10-28; s4_w12 itself is never released)
 #   bash run_sf39.sh <build_dir> analysis          python3 -m sf39.analyze (no CUDA)
 #
 # <build_dir> holds lagrangian_ensemble, lagrangian_medium_ab, macroflow3d_pipeline, inlet_slab, par2_field_stats (the clean build of RR1).
-# Without a selector, pilot/extend run s1, s225, s4 and par2 in that order.
+# Without a selector, pilot/extend run s025, s1, s225, s4 and par2 in that order.
 #
 # Environment (all optional):
 #   SF39_OUT_ROOT  output root, NOT in the mirror (a `sync --delete` would erase it)       (default $HOME/sf39_campaign)
@@ -86,10 +89,10 @@ REFS_DIR=$REG_HOME/regress/refs/$BASE_REV/out
 TMP_BUILD=$REG_HOME/.cache/mf3d-tmp
 FINAL_RUNNER=" 0 2 3 4 7 "
 BINARIES="lagrangian_ensemble lagrangian_medium_ab macroflow3d_pipeline inlet_slab par2_field_stats"
-AMPS="s1 s225 s4"
+AMPS="s025 s1 s225 s4"
 
 usage() {
-    echo "usage: run_sf39.sh <build_dir> <part> [selector]   (parts: checks pilot checkpoint extend width analysis; selector s1|s225|s4|par2 for pilot/extend)" >&2
+    echo "usage: run_sf39.sh <build_dir> <part> [selector]   (parts: checks pilot checkpoint extend width analysis; selector s025|s1|s225|s4|par2 for pilot/extend, s025 for checkpoint)" >&2
 }
 
 # helpers ------------------------------------------------------------------------------------------------------------------
@@ -416,25 +419,37 @@ res_block() {
     done
 }
 
+# An unknown amplitude fails (rc 1); callers capture with `x=$(amp_arms "$s") || exit 2` (an exit inside $(...) would only end the subshell and
+# leave an empty loop that finishes PART_DONE rc 0).
 amp_arms() { # amp_arms <amp>: production A, the narrow rungs, the twin (pilot order)
     case "$1" in
+    s025) echo "s025_A s025_n05 s025_n10 s025_n20 s025_tw" ;;
     s1) echo "s1_A s1_n05 s1_n10 s1_n20 s1_tw" ;;
     s225) echo "s225_A s225_n08 s225_n16 s225_n32 s225_tw" ;;
     s4) echo "s4_A s4_n16 s4_n32 s4_n64 s4_tw" ;;
+    *)
+        echo "run_sf39.sh: amp_arms: unknown amplitude '$1'" >&2
+        return 1
+        ;;
     esac
 }
 
 amp_narrow() {
     case "$1" in
+    s025) echo "s025_n05 s025_n10 s025_n20" ;;
     s1) echo "s1_n05 s1_n10 s1_n20" ;;
     s225) echo "s225_n08 s225_n16 s225_n32" ;;
     s4) echo "s4_n16 s4_n32 s4_n64" ;;
+    *)
+        echo "run_sf39.sh: amp_narrow: unknown amplitude '$1'" >&2
+        return 1
+        ;;
     esac
 }
 
 sels() { # sels <selector|empty> -> the list of selectors to run
     if [ -z "$1" ]; then
-        echo "s1 s225 s4 par2"
+        echo "s025 s1 s225 s4 par2"
     else
         echo "$1"
     fi
@@ -458,9 +473,11 @@ par2_run() {
     case_run "$pd" "fs_$id" " 0 " "$w" - -- "$BIN_DIR/par2_field_stats" "$cfg" --nr "$nr"
     if [ "$CASE_STATE" != "dry" ]; then
         rc=$CASE_RC
-        grep '^FIELDSTAT' "$pd/logs/fs_${id//:/_}.log" > "$w/field_stats_$id.txt" 2> /dev/null
-        n=$(wc -l < "$w/field_stats_$id.txt" | tr -d ' ')
-        res "RUN id=fs_$id rc=$rc wall=${CASE_WALL:-na}s fieldstat_lines=$n/$nr saved=$w/field_stats_$id.txt sha256=$(sha256sum "$w/field_stats_$id.txt" | cut -c1-64)"
+        # a skipped case (recorded rc 0) never re-derives the analysis input from its log
+        [ "$CASE_STATE" = "ran" ] && grep '^FIELDSTAT' "$pd/logs/fs_${id//:/_}.log" > "$w/field_stats_$id.txt" 2> /dev/null
+        n=$(wc -l < "$w/field_stats_$id.txt" 2> /dev/null | tr -d ' ')
+        n=${n:-0}
+        res "RUN id=fs_$id rc=$rc wall=${CASE_WALL:-na}s fieldstat_lines=$n/$nr saved=$w/field_stats_$id.txt sha256=$(sha256sum "$w/field_stats_$id.txt" 2> /dev/null | cut -c1-64)"
         if [ "$rc" != "0" ] || [ "$n" -ne "$nr" ]; then
             res "FIELDSTAT_FAILED id=fs_$id (rc=$rc, $n of $nr lines)"
             BAD=$((BAD + 1))
@@ -483,26 +500,40 @@ solver_verdict() { # solver_verdict <out> -> verdict of realization 0 (solver_b.
     echo "no_solver_b_json ${v:-no_B_SOLVER_line}"
 }
 
+# tree_rev: the scripts revision that ties the ids of the tree-dependent checks (the revision source of run.env: SF39_COMMIT, else the
+# mirror's .mf3d_source_rev, else git HEAD), reduced to file-name characters and 24 characters (a full hash keeps its first 24; the
+# `<12 hex>-dirty` of .mf3d_source_rev is kept whole)
+tree_rev() {
+    printf '%s' "$(src_rev)" | tr -c 'A-Za-z0-9._-' '_' | cut -c1-24
+}
+
 part_checks() {
-    local arm out rc v ok refs_state head_out
+    local arm out rc v ok refs_state head_out rev tid
     mk "$PD"
-    # (i) unit tests of the package (whole suite)
-    case_run "$PD" unittest " 0 " - - -- "$PY" -m unittest discover -s "$SCRIPTS" -t "$SCRIPTS"
+    rev=$(tree_rev)
+    if [ "$rev" = "unknown" ] && [ "$DRY" != "1" ]; then
+        echo "run_sf39.sh: checks: the scripts revision is unknown (no SF39_COMMIT, .mf3d_source_rev or git HEAD), so the ids of the tree-dependent checks cannot be tied to the tree; refusing" >&2
+        exit 2
+    fi
+    # (i) unit tests of the package (whole suite); the id carries the scripts revision and the log is read from the id-derived name
+    tid=unittest:$rev
+    case_run "$PD" "$tid" " 0 " - - -- "$PY" -m unittest discover -s "$SCRIPTS" -t "$SCRIPTS"
     if [ "$CASE_STATE" != "dry" ]; then
         rc=$CASE_RC
         v=FAILED
         ok=0
         [ "$rc" = "0" ] && v=ok && ok=1
-        chk_line unittest "$rc" "$v $(grep -E '^(Ran |OK|FAILED)' "$PD/logs/unittest.log" 2> /dev/null | tr '\n' ' ' | cut -c1-200)" "$ok"
+        chk_line unittest "$rc" "$v $(grep -E '^(Ran |OK|FAILED)' "$PD/logs/${tid//:/_}.log" 2> /dev/null | tr '\n' ' ' | cut -c1-200)" "$ok"
     fi
     # (ii) plane lists
-    case_run "$PD" geometry " 0 " - - -- "$PY" -m sf39.geometry check
+    tid=geometry:$rev
+    case_run "$PD" "$tid" " 0 " - - -- "$PY" -m sf39.geometry check
     if [ "$CASE_STATE" != "dry" ]; then
         rc=$CASE_RC
         v=FAILED
         ok=0
         [ "$rc" = "0" ] && v=ok && ok=1
-        chk_line geometry "$rc" "$v $(tail -n 1 "$PD/logs/geometry.log" 2> /dev/null)" "$ok"
+        chk_line geometry "$rc" "$v $(tail -n 1 "$PD/logs/${tid//:/_}.log" 2> /dev/null)" "$ok"
     fi
     # (iii) RR2 regression: reference (reused iff REGRESS_DONE), head, compare
     mk "$TMP_BUILD"
@@ -566,19 +597,21 @@ part_checks() {
         v=$(tail -n 1 "$PD/logs/bytecheck.log" 2> /dev/null)
         chk_line bytecheck "$CASE_RC" "${v:-no_output}" "$([ "$CASE_RC" = 0 ] && echo 1 || echo 0)"
     fi
-    # (vi) RR3(iv) smoke of the reducer on the SF-41 outputs (not evidence)
-    case_run "$PD" smoke_reduce " 0 " - - -- "$PY" -m sf39.reduce smoke "$HOME/sf41_campaign"
+    # (vi) RR3(iv) smoke of the reducer on the SF-41 outputs (not evidence); tied to the scripts revision like (i) and (ii)
+    tid=smoke_reduce:$rev
+    case_run "$PD" "$tid" " 0 " - - -- "$PY" -m sf39.reduce smoke "$HOME/sf41_campaign"
     if [ "$CASE_STATE" != "dry" ]; then
-        chk_line smoke_reduce "$CASE_RC" "$(tail -n 1 "$PD/logs/smoke_reduce.log" 2> /dev/null | cut -c1-200)" "$([ "$CASE_RC" = 0 ] && echo 1 || echo 0)"
+        chk_line smoke_reduce "$CASE_RC" "$(tail -n 1 "$PD/logs/${tid//:/_}.log" 2> /dev/null | cut -c1-200)" "$([ "$CASE_RC" = 0 ] && echo 1 || echo 0)"
     fi
-    case_run "$PD" signtable " 0 " - - -- "$PY" -m sf39.reduce signtable "$HOME/sf41_campaign/evladder"
+    tid=signtable:$rev
+    case_run "$PD" "$tid" " 0 " - - -- "$PY" -m sf39.reduce signtable "$HOME/sf41_campaign/evladder"
     if [ "$CASE_STATE" != "dry" ]; then
-        chk_line signtable "$CASE_RC" "$(tail -n 1 "$PD/logs/signtable.log" 2> /dev/null | cut -c1-200)" "$([ "$CASE_RC" = 0 ] && echo 1 || echo 0)"
+        chk_line signtable "$CASE_RC" "$(tail -n 1 "$PD/logs/${tid//:/_}.log" 2> /dev/null | cut -c1-200)" "$([ "$CASE_RC" = 0 ] && echo 1 || echo 0)"
     fi
 }
 
 part_pilot() {
-    local s c arm
+    local s c arm arms
     mk "$OUT_ROOT/runs"
     for s in $(sels "$SEL"); do
         if [ "$s" = "par2" ]; then
@@ -586,7 +619,8 @@ part_pilot() {
                 par2_run "$PD" "par2_$c" "$ART/configs/par2_$c.yaml" "par2_$c" "$PILOT_NR"
             done
         else
-            for arm in $(amp_arms "$s"); do
+            arms=$(amp_arms "$s") || exit 2
+            for arm in $arms; do
                 run_arm "$PD" "$arm" "$SEED_PROD" "$PILOT_NR" "$OUT_ROOT/runs/$arm"
             done
         fi
@@ -594,11 +628,19 @@ part_pilot() {
 }
 
 part_checkpoint() {
+    local id=checkpoint
     mk "$OUT_ROOT/checkpoint"
-    # the freeze is write-once: a recorded rc 0 is never re-run
-    case_run "$PD" checkpoint " 0 " - - -- "$PY" -m sf39.checkpoint --out-root "$OUT_ROOT" --artifact "$ART"
+    # the freezes are write-once: a recorded rc 0 is never re-run
+    if [ -z "$SEL" ]; then
+        # the original case: s1 s225 s4 (the default --amps of sf39.checkpoint; never the four amplitudes of $AMPS)
+        case_run "$PD" checkpoint " 0 " - - -- "$PY" -m sf39.checkpoint --out-root "$OUT_ROOT" --artifact "$ART"
+    else
+        # the separate s025 case (addendum 2026-10-29): everything under checkpoint/s025/, its own write-once tau_b_star_s025.json
+        id=checkpoint_$SEL
+        case_run "$PD" "$id" " 0 " - - -- "$PY" -m sf39.checkpoint --out-root "$OUT_ROOT" --artifact "$ART" --amps "$SEL" --subdir "$SEL"
+    fi
     if [ "$CASE_STATE" != "dry" ]; then
-        res "RUN id=checkpoint rc=$CASE_RC wall=${CASE_WALL:-na}s"
+        res "RUN id=$id rc=$CASE_RC wall=${CASE_WALL:-na}s"
         [ "$CASE_RC" = "0" ] || BAD=$((BAD + 1))
     fi
 }
@@ -620,23 +662,28 @@ part_width() {
     run_arm "$PD" s4_w12c "$SEED_W12C" "$N_W12C" "$OUT_ROOT/runs/s4_w12c"
 }
 
-# budget.json (written after the owner's budget): {"s1": {...}, "s225": {...}, "s4": {...}}, each with the integer keys
+# budget.json (written after the owner's budget): {"s025": {...}, "s1": {...}, "s225": {...}, "s4": {...}}, each with the integer keys
 # N_narrow N_twin N_hmax N_R N_A N_run par2_NR (README documents the schema).  Extra keys are ignored.
+# budget_check <required amplitude...>: every amplitude of $AMPS present in the file must be valid; the listed ones must be present
+# (the s025 entry exists only after the s025 checkpoint, so an `extend` of the other amplitudes does not need it).
 budget_check() {
-    "$PY" - "$BUDGET" << 'EOF'
+    "$PY" - "$BUDGET" "$AMPS" "$*" << 'EOF'
 import json, sys
 d = json.load(open(sys.argv[1]))
+amps, required = sys.argv[2].split(), sys.argv[3].split()
 keys = ("N_narrow", "N_twin", "N_hmax", "N_R", "N_A", "N_run", "par2_NR")
 bad = []
-for a in ("s1", "s225", "s4"):
+for a in amps:
     if a not in d:
-        bad.append("amplitude %s missing" % a)
+        if a in required:
+            bad.append("amplitude %s missing" % a)
         continue
+    n0 = len(bad)
     b = d[a]
     for k in keys:
         if not isinstance(b.get(k), int) or isinstance(b.get(k), bool) or b[k] < 1:
             bad.append("%s.%s must be a positive integer" % (a, k))
-    if bad:
+    if len(bad) > n0:
         continue
     for k in ("N_narrow", "N_twin", "N_R", "N_A", "par2_NR"):
         if b[k] < 20:
@@ -657,7 +704,7 @@ bud() { # bud <amp> <key>
 
 # extend_precheck: everything `extend` needs, verified BEFORE the part starts (a refusal leaves the part directory untouched).
 extend_precheck() {
-    local s c nR cfg
+    local s c nR cfg req
     if [ ! -s "$BUDGET" ]; then
         echo "run_sf39.sh: extend: $BUDGET is absent: it is created only after the owner's budget (README, budget.json schema); refusing" >&2
         if [ "$DRY" = "1" ]; then
@@ -666,8 +713,11 @@ extend_precheck() {
         fi
         exit 2
     fi
-    if ! budget_check; then
-        echo "run_sf39.sh: extend: $BUDGET is invalid (see above); refusing" >&2
+    # the amplitudes this invocation runs need a complete entry: the selected one, else (no selector, par2) every amplitude of $AMPS
+    case " $AMPS " in *" $SEL "*) req=$SEL ;; *) req=$AMPS ;; esac
+    # shellcheck disable=SC2086  # $req is a list of amplitude ids
+    if ! budget_check $req; then
+        echo "run_sf39.sh: extend: $BUDGET is invalid or lacks an amplitude this invocation runs (see above); refusing" >&2
         exit 2
     fi
     for s in $(sels "$SEL"); do
@@ -693,7 +743,7 @@ extend_precheck() {
 }
 
 part_extend() {
-    local s c arm nA nN nT nR nRun out
+    local s c arm narrow nA nN nT nR nRun out
     mk "$OUT_ROOT/runs"
     for s in $(sels "$SEL"); do
         if [ "$s" = "par2" ]; then
@@ -708,6 +758,7 @@ part_extend() {
             continue
         fi
         c=$s
+        narrow=$(amp_narrow "$c") || exit 2
         nA=$(bud "$c" N_A)
         nN=$(bud "$c" N_narrow)
         nT=$(bud "$c" N_twin)
@@ -716,7 +767,7 @@ part_extend() {
         if [ "$nRun" -gt "$nA" ]; then
             run_arm "$PD" "${c}_B" "$((SEED_PROD + nA))" "$((nRun - nA))" "$OUT_ROOT/runs/${c}_B"
         fi
-        for arm in $(amp_narrow "$c"); do
+        for arm in $narrow; do
             out=$nN
             [ "$arm" = "s4_n16" ] && [ "$out" -lt 30 ] && out=30
             run_arm "$PD" "$arm" "$SEED_PROD" "$out" "$OUT_ROOT/runs/$arm"
@@ -729,14 +780,21 @@ part_extend() {
 
 # main ----------------------------------------------------------------------------------------------------------------------
 case "$ARG_PART" in
-checks | checkpoint | width | analysis)
+checks | width | analysis)
     if [ -n "$SEL" ]; then
         usage
         exit 2
     fi
     ;;
+checkpoint)
+    case "$SEL" in "" | s025) ;; *)
+        usage
+        exit 2
+        ;;
+    esac
+    ;;
 pilot | extend)
-    case "$SEL" in "" | s1 | s225 | s4 | par2) ;; *)
+    case "$SEL" in "" | s025 | s1 | s225 | s4 | par2) ;; *)
         usage
         exit 2
         ;;

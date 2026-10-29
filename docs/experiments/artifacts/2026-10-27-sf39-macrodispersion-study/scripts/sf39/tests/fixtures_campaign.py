@@ -15,7 +15,7 @@ from sf39 import campaign as cp
 from sf39.tests import fixtures_par2 as fp
 from sf39.tests import fixtures_runner as fx
 
-AMP_F = {"s1": 1.0, "s225": 1.2, "s4": 1.5}  # transverse scale of every arm of the amplitude
+AMP_F = {"s025": 0.7, "s1": 1.0, "s225": 1.2, "s4": 1.5}  # transverse scale of every arm of the amplitude
 # (tf, qf) per arm role; the three narrow rungs in the order (1/2, 1, 2); A is the unscaled base
 ROLE_F = {"tw": (0.9, 1.01), "n0": (0.8, 0.98), "n1": (1.0, 0.99), "n2": (1.1, 1.02)}
 A_TOTAL0, P8, P16, P32 = 200.0, 30.0, 33.0, 36.0  # timings: A total_r = 200 + r; passes prepare+track
@@ -106,7 +106,7 @@ def build_par2(out_root, artifact, amp, n_pilot, utime0=1.0e9):
 
 
 def build_campaign(out_root, artifact, n_pilot, real_scripts):
-    """Complete fake pilot of all 15 runner arms, three Par2 pilots, walls.tsv; the artifact gets configs/ and scripts/nr_rule.py."""
+    """Complete fake pilot of all 20 runner arms, four Par2 pilots, walls.tsv; the artifact gets configs/ and scripts/nr_rule.py."""
     for amp in cp.AMPS:
         for arm in cp.pilot_arms(amp):
             build_arm(out_root, arm, amp, n_pilot)

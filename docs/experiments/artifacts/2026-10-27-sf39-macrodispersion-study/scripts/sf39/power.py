@@ -8,12 +8,12 @@ import numpy as np
 from scipy import integrate, stats
 
 N_MIN, N_MAX, POWER_TARGET = 20, 500, 0.80
-AMPLITUDES = ("s1", "s225", "s4")
+AMPLITUDES = ("s025", "s1", "s225", "s4")  # ascending sigma^2; s025 added by the 2026-10-29 addendum
 ESTIMATORS = ("alpha_TAM", "alpha_TP")
 LADDER_KEYS = ("N_narrow", "N_twin", "N_hmax", "N_R")
 # narrow rungs (1/2, 1, 2 x production lambda/h) per amplitude, preregistration section 1
-NARROW_ARMS = {"s1": ("s1_n05", "s1_n10", "s1_n20"), "s225": ("s225_n08", "s225_n16", "s225_n32"),
-               "s4": ("s4_n16", "s4_n32", "s4_n64")}
+NARROW_ARMS = {"s025": ("s025_n05", "s025_n10", "s025_n20"), "s1": ("s1_n05", "s1_n10", "s1_n20"),
+               "s225": ("s225_n08", "s225_n16", "s225_n32"), "s4": ("s4_n16", "s4_n32", "s4_n64")}
 WIDTH_ARMS = {"s4_w24": 30, "s4_w12": 30}  # F10; never scaled
 REF_FLOOR = 30  # s4_tw and s4_n16 run max(N, 30) (R25)
 

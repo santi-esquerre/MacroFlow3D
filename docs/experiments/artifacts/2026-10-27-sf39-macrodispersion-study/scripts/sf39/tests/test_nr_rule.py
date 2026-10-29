@@ -233,10 +233,13 @@ class Allocate(unittest.TestCase):
         self.assertEqual(P._scale(dict(N_narrow=100, N_twin=100, N_hmax=100, N_R=500), 57)["N_hmax"], 57)
 
 
-def synth_pilot(seed=3, scale=0.01):
+BASE3 = ("s1", "s225", "s4")  # the amplitudes of the original three-amplitude input
+
+
+def synth_pilot(seed=3, scale=0.01, amps=BASE3):
     rng = np.random.default_rng(seed)
     out = {}
-    for i, amp in enumerate(P.AMPLITUDES):
+    for i, amp in enumerate(amps):
         out[amp] = {}
         for e in P.ESTIMATORS:
             out[amp][e] = {"D_f": (scale * rng.normal(size=20)).tolist(), "D_tw": (scale * rng.normal(size=20)).tolist(),
@@ -247,7 +250,7 @@ def synth_pilot(seed=3, scale=0.01):
 
 
 FORBIDDEN = re.compile(r"mean|sd|std|margin|verdict|alpha|pilot_|D_f|D_tw", re.I)
-LINE_N = re.compile(r"^(s1|s225|s4) (N_narrow|N_twin|N_hmax|N_R|N_A|N_run|par2_NR)=(\d+|>500)$")
+LINE_N = re.compile(r"^(s025|s1|s225|s4) (N_narrow|N_twin|N_hmax|N_R|N_A|N_run|par2_NR)=(\d+|>500)$")
 
 
 def run_cli(argv):
@@ -284,11 +287,55 @@ class Cli(unittest.TestCase):
             self.assertRegex(ln, LINE_N)
         self.assertIsNone(FORBIDDEN.search(re.sub(r"N_narrow|N_twin|N_hmax|N_R|N_A|N_run|par2_NR", "", text)), text)
         res = self.load()
-        for amp in P.AMPLITUDES:
+        self.assertEqual(sorted(res), sorted(BASE3))
+        for amp in BASE3:
             for k in nr_rule.KEYS:
                 self.assertIsInstance(res[amp][k], int)
                 self.assertIn(f"{amp} {k}={res[amp][k]}", text)
             self.assertEqual(res[amp]["N_run"], max(res[amp]["N_R"], res[amp]["N_A"], res[amp]["N_twin"]))
+
+    def test_original_three_amplitude_input_gives_the_original_output(self):
+        # reference: what the loop over ("s1", "s225", "s4") always produced (P.amplitude_ns per amplitude, in that order)
+        pilot = synth_pilot()
+        self.write("pilot.json", pilot)
+        rc, text = run_cli([self.pilot, "--out", self.out])
+        self.assertEqual(rc, 0)
+        want_lines, want_json = [], {}
+        for amp in BASE3:
+            n, capped = P.amplitude_ns(pilot[amp])
+            want_lines += [f"{amp} {k}={'>500' if k in capped else n[k]}" for k in nr_rule.KEYS]
+            want_json[amp] = {**n, "capped": capped}
+        self.assertEqual(text.strip().splitlines(), want_lines)
+        self.assertEqual(self.load(), want_json)
+        # the registry order is used whatever the key order of the file
+        self.write("pilot.json", {amp: pilot[amp] for amp in reversed(BASE3)})
+        rc, text2 = run_cli([self.pilot, "--out", self.out])
+        self.assertEqual((rc, text2), (0, text))
+
+    def test_s025_alone_and_four_amplitudes(self):
+        full = synth_pilot(amps=("s025", *BASE3))
+        self.write("pilot.json", {"s025": full["s025"]})
+        rc, text = run_cli([self.pilot, "--out", self.out])
+        self.assertEqual(rc, 0)
+        lines = text.strip().splitlines()
+        self.assertEqual(len(lines), 7)
+        self.assertTrue(all(ln.startswith("s025 ") for ln in lines))
+        self.assertEqual(sorted(self.load()), ["s025"])
+        n, _ = P.amplitude_ns(full["s025"])
+        self.assertEqual(self.load()["s025"]["N_R"], n["N_R"])
+        # the amplitudes are independent: s025 in a four-amplitude input gets the N of its own pilot, the others are unchanged
+        self.write("pilot.json", full)
+        rc, text4 = run_cli([self.pilot, "--out", self.out])
+        self.assertEqual(rc, 0)
+        self.assertEqual(text4.strip().splitlines()[:7], lines)
+        self.assertEqual(sorted(self.load()), ["s025", "s1", "s225", "s4"])
+        self.assertEqual([ln.split(" ")[0] for ln in text4.strip().splitlines()], ["s025"] * 7 + ["s1"] * 7 + ["s225"] * 7 + ["s4"] * 7)
+
+    def test_unknown_amplitude_is_refused(self):
+        self.write("pilot.json", {"s9": synth_pilot(amps=("s1",))["s1"]})
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            nr_rule.main([self.pilot, "--out", self.out])
+        self.assertFalse(os.path.exists(self.out))
 
     def test_cap_marker(self):
         pilot = synth_pilot(scale=1.0)  # sd >> margins
