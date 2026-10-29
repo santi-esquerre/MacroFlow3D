@@ -3,7 +3,7 @@
 - State: `awaiting_review`
 - Goal: `Medir alpha_L y alpha_T en el dominio largo a sigma^2 en {0.25, 1, 2.25, 4} con el tracker lagrangiano, con convergencia en lambda/h, en tolerancia y en número de realizaciones evaluada por intervalos de confianza, alpha_L contrastado con Par2 RWPT en la misma configuración y cada crecimiento transversal clasificado como físico, numérico o no resuelto.`
 - Depends on: `SF-37, SF-38, SF-41`
-- Unlocks: `SF-43` (with SF-42; planned by decision `2026-10-29-sf39-remediation-sf42-sf43`, governance PR after this one)
+- Unlocks: `SF-42, SF-43` (planned by decision `2026-10-29-sf39-remediation-sf42-sf43`, governance PR after this one; SF-42 also depends on SF-38 and SF-41, SF-43 on SF-42)
 - Branch: `science/lester-sf39-macrodispersion-study`
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 4 + Gate 5`
@@ -299,8 +299,8 @@ forms and margins frozen by decision 2026-10-23 (D15) were fixed before SF-38 pr
 ## Advancement rule
 
 Owner decision 2026-10-29 (decision record `docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md`, added by the governance PR that
-follows this one): SF-39 is the exploratory pilot. Its acceptance (`done` on the default branch), together with SF-42 `done`, makes
-SF-43 (the confirmatory Monte Carlo study) eligible. The finite-Péclet phase follows SF-43.
+follows this one): SF-39 is the exploratory pilot. Its acceptance (`done` on the default branch) makes SF-42 (tooling and verification, which reads
+SF-39's evidence) eligible, and, with SF-42 `done`, SF-43 (the confirmatory Monte Carlo study). The finite-Péclet phase follows SF-43.
 
 ## Bitácora
 
