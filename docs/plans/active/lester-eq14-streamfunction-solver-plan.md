@@ -146,6 +146,8 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-39 — Macrodispersion study at sigma_Y^2 in {0.25, 1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
 - [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 - [x] [SF-41 — Medium (b) for the Lagrangian consumer: lean Dirichlet stage, non-periodic-in-x1 spline and x-exit handling](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md)
+- [ ] [SF-42 — Tooling and verification for the confirmatory macrodispersion study](lester-eq14/increments/SF-42-confirmatory-tooling-verification.md)
+- [ ] [SF-43 — Confirmatory Monte Carlo study of macrodispersion with quantified error budgets](lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
@@ -169,7 +171,11 @@ SF-37 and SF-38 follow SF-36 (in parallel); SF-39 follows SF-37 and SF-38. Re-se
 SF-40 (lean parametric stage at memory level S+) follows SF-37; SF-38 follows SF-36 and SF-40; the provisional
 non-periodic spline is renumbered SF-41. Re-sequencing 2026-10-24
 (`docs/decisions/2026-10-24-sf41-sf39-planning-decisions.md`): SF-38 selected medium (b) (R4); SF-41 (lean medium (b) stage,
-non-periodic-in-`x1` spline, `x`-exit handling, runner integration) follows SF-38; SF-39 follows SF-37, SF-38 and SF-41. Disposition of the open decisions D1-D7 of
+non-periodic-in-`x1` spline, `x`-exit handling, runner integration) follows SF-38; SF-39 follows SF-37, SF-38 and SF-41. Re-sequencing 2026-10-29
+(`docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md`): SF-39 is the exploratory pilot; SF-42 (tooling and verification:
+Par2 on the SF-18 field, window and plane crossings, MMS order of the Dirichlet solve, pseudo-spectral cross-check, statistics and
+error-budget library, design pilots) follows SF-38, SF-39 and SF-41; SF-43 (confirmatory Monte Carlo study on control planes with error
+budgets) follows SF-39 and SF-42. Disposition of the open decisions D1-D7 of
 `docs/decisions/2026-10-01-eta1-residual-floor-gauge-degeneracy.md`: D1, D3, and
 D5 are moot (they tune a system whose solution is not the target); D2 is retired
 with the 2026-10-02 record as the reason; D4 is resolved by cancelling the
