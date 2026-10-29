@@ -1,0 +1,7 @@
+s025 N_narrow=20
+s025 N_twin=20
+s025 N_hmax=20
+s025 N_R=25
+s025 N_A=20
+s025 N_run=25
+s025 par2_NR=25

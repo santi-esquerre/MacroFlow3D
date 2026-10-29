@@ -1,0 +1,91 @@
+[2026-10-29T15:17:06Z] job=sf39-checks-s025b GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-29T15:17:06Z] job=sf39-checks-s025b chose GPU 0 (auto: least-loaded)
+[2026-10-29T15:17:06Z] job=sf39-checks-s025b session=macroflow3d-SF-39-sf39-checks-s025b started
+[2026-10-29T15:17:06Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-29T15:17:06Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-29T15:17:06Z] command=echo TREE=$(cat .mf3d_source_rev); bash docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts/run_sf39.sh build/v100-release checks; echo PART_SCRIPT_EXIT=$?
+TREE=28ddeadd3af5
+PART_BEGIN part=checks selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
++ [unittest:28ddeadd3af5] .: python3 -m unittest discover -s /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts -t /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts > /home/sesquerre/sf39_campaign/checks/logs/unittest_28ddeadd3af5.log 2>&1
+  CASE_RESULT run=unittest:28ddeadd3af5 rc=0 wall=248s end=2026-10-29T15:21:21Z
+CHECK_unittest rc=0 verdict=ok Ran 311 tests in 247.552s OK 
++ [geometry:28ddeadd3af5] .: python3 -m sf39.geometry check > /home/sesquerre/sf39_campaign/checks/logs/geometry_28ddeadd3af5.log 2>&1
+  CASE_RESULT run=geometry:28ddeadd3af5 rc=0 wall=1s end=2026-10-29T15:21:22Z
+CHECK_geometry rc=0 verdict=ok GEOMETRY_CHECK OK
+CHECK_regress_refs rc=NA verdict=reused(/home/sesquerre/regress/refs/1e40cfe/out/REGRESS_DONE)
+SKIP_DONE run=regress_head rc=0
+CHECK_regress_head rc=0 verdict=REGRESS_DONE
+SKIP_DONE run=regress_compare rc=0
+CHECK_regress rc=0 verdict=REGRESS IDENTICAL
+SKIP_DONE run=chk_s1_n05:s4901:n1 rc=0
+RUN id=chk_s1_n05:s4901:n1 rc=0 wall=9s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_n05
+CHECK_solve_chk_s1_n05 rc=0 verdict=converged
+SKIP_DONE run=chk_s1_n10:s4901:n1 rc=0
+RUN id=chk_s1_n10:s4901:n1 rc=0 wall=20s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_n10
+CHECK_solve_chk_s1_n10 rc=0 verdict=converged
+SKIP_DONE run=chk_s1_n20:s4901:n1 rc=0
+RUN id=chk_s1_n20:s4901:n1 rc=0 wall=69s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_n20
+CHECK_solve_chk_s1_n20 rc=0 verdict=converged
+SKIP_DONE run=chk_s1_tw:s4901:n1 rc=0
+RUN id=chk_s1_tw:s4901:n1 rc=0 wall=11s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_tw
+CHECK_solve_chk_s1_tw rc=0 verdict=converged
+SKIP_DONE run=chk_s225_n08:s4901:n1 rc=0
+RUN id=chk_s225_n08:s4901:n1 rc=0 wall=14s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_n08
+CHECK_solve_chk_s225_n08 rc=0 verdict=converged
+SKIP_DONE run=chk_s225_n16:s4901:n1 rc=0
+RUN id=chk_s225_n16:s4901:n1 rc=0 wall=33s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_n16
+CHECK_solve_chk_s225_n16 rc=0 verdict=converged
+SKIP_DONE run=chk_s225_n32:s4901:n1 rc=0
+RUN id=chk_s225_n32:s4901:n1 rc=0 wall=133s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_n32
+CHECK_solve_chk_s225_n32 rc=0 verdict=converged
+SKIP_DONE run=chk_s225_tw:s4901:n1 rc=0
+RUN id=chk_s225_tw:s4901:n1 rc=0 wall=23s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_tw
+CHECK_solve_chk_s225_tw rc=0 verdict=converged
+SKIP_DONE run=chk_s4_n16:s4901:n1 rc=0
+RUN id=chk_s4_n16:s4901:n1 rc=0 wall=12s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_n16
+CHECK_solve_chk_s4_n16 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_n32:s4901:n1 rc=0
+RUN id=chk_s4_n32:s4901:n1 rc=0 wall=31s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_n32
+CHECK_solve_chk_s4_n32 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_n64:s4901:n1 rc=0
+RUN id=chk_s4_n64:s4901:n1 rc=0 wall=143s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_n64
+CHECK_solve_chk_s4_n64 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_tw:s4901:n1 rc=0
+RUN id=chk_s4_tw:s4901:n1 rc=0 wall=23s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_tw
+CHECK_solve_chk_s4_tw rc=0 verdict=converged
+SKIP_DONE run=chk_s4_w24:s4901:n1 rc=0
+RUN id=chk_s4_w24:s4901:n1 rc=0 wall=48s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_w24
+CHECK_solve_chk_s4_w24 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_w12:s4901:n1 rc=0
+RUN id=chk_s4_w12:s4901:n1 rc=0 wall=21s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_w12
+CHECK_solve_chk_s4_w12 rc=0 verdict=converged
+SKIP_DONE run=chk_s025_n05:s4901:n1 rc=0
+RUN id=chk_s025_n05:s4901:n1 rc=0 wall=13s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_n05
+CHECK_solve_chk_s025_n05 rc=0 verdict=converged
+SKIP_DONE run=chk_s025_n10:s4901:n1 rc=0
+RUN id=chk_s025_n10:s4901:n1 rc=0 wall=22s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_n10
+CHECK_solve_chk_s025_n10 rc=0 verdict=converged
+SKIP_DONE run=chk_s025_n20:s4901:n1 rc=0
+RUN id=chk_s025_n20:s4901:n1 rc=0 wall=73s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_n20
+CHECK_solve_chk_s025_n20 rc=0 verdict=converged
+SKIP_DONE run=chk_s025_tw:s4901:n1 rc=0
+RUN id=chk_s025_tw:s4901:n1 rc=0 wall=13s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_tw
+CHECK_solve_chk_s025_tw rc=0 verdict=converged
+SKIP_DONE run=byte_multi rc=0
+RUN id=byte_multi rc=0 wall=240s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/byte_multi
+SKIP_DONE run=byte_single rc=0
+RUN id=byte_single rc=0 wall=112s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/byte_single
+SKIP_DONE run=bytecheck rc=0
+CHECK_bytecheck rc=0 verdict=BYTECHECK IDENTICAL items=41
++ [smoke_reduce:28ddeadd3af5] .: python3 -m sf39.reduce smoke /home/sesquerre/sf41_campaign > /home/sesquerre/sf39_campaign/checks/logs/smoke_reduce_28ddeadd3af5.log 2>&1
+  CASE_RESULT run=smoke_reduce:28ddeadd3af5 rc=0 wall=5s end=2026-10-29T15:21:29Z
+CHECK_smoke_reduce rc=0 verdict=SMOKE runs=28 failed=0 (NOT EVIDENCE)
++ [signtable:28ddeadd3af5] .: python3 -m sf39.reduce signtable /home/sesquerre/sf41_campaign/evladder > /home/sesquerre/sf39_campaign/checks/logs/signtable_28ddeadd3af5.log 2>&1
+  CASE_RESULT run=signtable:28ddeadd3af5 rc=0 wall=1s end=2026-10-29T15:21:30Z
+CHECK_signtable rc=0 verdict=SIGNTABLE EQUAL
+RECORDED part_seconds=263 part_runs_seconds=1772 part=checks (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=checks rc=0
+PART_SCRIPT_EXIT=0
+[2026-10-29T15:21:30Z] job=sf39-checks-s025b finished exit=0

@@ -1,0 +1,19 @@
+eps=1 seed=6101 lh= 16 sigmaT2<ref  1/14 rel first/last +5.73e-04/+1.55e-03 expected  1/14 OK
+eps=1 seed=6101 lh= 32 sigmaT2<ref  1/14 rel first/last +1.36e-04/+3.71e-04 expected  1/14 OK
+eps=1 seed=6101 lh= 64 sigmaT2<ref  1/14 rel first/last +2.73e-05/+7.43e-05 expected  1/14 OK
+eps=1 seed=6102 lh= 16 sigmaT2<ref  1/14 rel first/last -1.32e-04/+2.71e-03 expected  1/14 OK
+eps=1 seed=6102 lh= 32 sigmaT2<ref  1/14 rel first/last -3.11e-05/+6.43e-04 expected  1/14 OK
+eps=1 seed=6102 lh= 64 sigmaT2<ref  1/14 rel first/last -6.22e-06/+1.29e-04 expected  1/14 OK
+eps=1 seed=6103 lh= 16 sigmaT2<ref 14/14 rel first/last -4.51e-04/-2.47e-04 expected 14/14 OK
+eps=1 seed=6103 lh= 32 sigmaT2<ref 14/14 rel first/last -1.08e-04/-5.91e-05 expected 14/14 OK
+eps=1 seed=6103 lh= 64 sigmaT2<ref 14/14 rel first/last -2.15e-05/-1.18e-05 expected 14/14 OK
+eps=2 seed=6101 lh= 16 sigmaT2<ref  3/14 rel first/last +1.76e-03/+1.77e-03 expected  3/14 OK
+eps=2 seed=6101 lh= 32 sigmaT2<ref  3/14 rel first/last +4.18e-04/+4.27e-04 expected  3/14 OK
+eps=2 seed=6101 lh= 64 sigmaT2<ref  3/14 rel first/last +8.36e-05/+8.57e-05 expected  3/14 OK
+eps=2 seed=6102 lh= 16 sigmaT2<ref  0/14 rel first/last +4.81e-04/+7.75e-03 expected  0/14 OK
+eps=2 seed=6102 lh= 32 sigmaT2<ref  0/14 rel first/last +1.16e-04/+1.84e-03 expected  0/14 OK
+eps=2 seed=6102 lh= 64 sigmaT2<ref  0/14 rel first/last +2.32e-05/+3.67e-04 expected  0/14 OK
+eps=2 seed=6103 lh= 16 sigmaT2<ref  5/14 rel first/last -9.19e-04/+3.40e-03 expected  5/14 OK
+eps=2 seed=6103 lh= 32 sigmaT2<ref  5/14 rel first/last -2.18e-04/+8.13e-04 expected  5/14 OK
+eps=2 seed=6103 lh= 64 sigmaT2<ref  5/14 rel first/last -4.35e-05/+1.63e-04 expected  5/14 OK
+SIGNTABLE EQUAL

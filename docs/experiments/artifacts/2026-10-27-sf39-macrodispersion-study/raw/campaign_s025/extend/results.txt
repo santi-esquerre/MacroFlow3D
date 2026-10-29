@@ -1,0 +1,35 @@
+PART_BEGIN part=extend selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
+RUN id=s025_A:s5001:n20 rc=0 wall=1s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_A
+RUN id=s025_B:s5021:n5 rc=0 wall=161s realizations_done=5/5 out=/home/sesquerre/sf39_campaign/runs/s025_B
+RUN id=s025_n05:s5001:n20 rc=0 wall=1s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_n05
+RUN id=s025_n10:s5001:n20 rc=0 wall=1s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_n10
+RUN id=s025_n20:s5001:n20 rc=0 wall=1s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_n20
+RUN id=s025_tw:s5001:n20 rc=0 wall=1s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_tw
+RUN id=s1_A:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_A
+RUN id=s1_B:s5021:n30 rc=0 wall=1033s realizations_done=30/30 out=/home/sesquerre/sf39_campaign/runs/s1_B
+RUN id=s1_n05:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_n05
+RUN id=s1_n10:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_n10
+RUN id=s1_n20:s5001:n20 rc=0 wall=3s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_n20
+RUN id=s1_tw:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_tw
+RUN id=s225_A:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_A
+RUN id=s225_B:s5021:n42 rc=0 wall=4288s realizations_done=42/42 out=/home/sesquerre/sf39_campaign/runs/s225_B
+RUN id=s225_n08:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_n08
+RUN id=s225_n16:s5001:n20 rc=0 wall=3s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_n16
+RUN id=s225_n32:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_n32
+RUN id=s225_tw:s5001:n26 rc=0 wall=132s realizations_done=26/26 out=/home/sesquerre/sf39_campaign/runs/s225_tw
+RUN id=s4_A:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_A
+RUN id=s4_B:s5021:n51 rc=0 wall=7211s realizations_done=51/51 out=/home/sesquerre/sf39_campaign/runs/s4_B
+RUN id=s4_n16:s5001:n30 rc=0 wall=110s realizations_done=30/30 out=/home/sesquerre/sf39_campaign/runs/s4_n16
+RUN id=s4_n32:s5001:n20 rc=0 wall=4s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n32
+RUN id=s4_n64:s5001:n20 rc=0 wall=3s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n64
+RUN id=s4_tw:s5001:n30 rc=0 wall=422s realizations_done=30/30 out=/home/sesquerre/sf39_campaign/runs/s4_tw
+RUN id=par2_s025_ext rc=0 wall=168s par2_series=5/5 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s025_ext
+RUN id=fs_par2_s025_ext rc=0 wall=100s fieldstat_lines=5/5 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s025_ext.txt sha256=1d8267bae2175b044a63a9f1cd16b1865ab7bf48096ac6cd96b6ed22d9ca14e4
+RUN id=par2_s1_ext rc=0 wall=994s par2_series=30/30 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s1_ext
+RUN id=fs_par2_s1_ext rc=0 wall=604s fieldstat_lines=30/30 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s1_ext.txt sha256=2783d61873e453f9353c4bb016fa428fa67df8f8f56f2c8202acbe5090e2e441
+RUN id=par2_s225_ext rc=0 wall=2370s par2_series=42/42 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s225_ext
+RUN id=fs_par2_s225_ext rc=0 wall=1295s fieldstat_lines=42/42 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s225_ext.txt sha256=292aa43f1e4d5328cd7c085c76874b0d7f9495df486c6c562b37c9f59f350631
+RUN id=par2_s4_ext rc=0 wall=3146s par2_series=51/51 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s4_ext
+RUN id=fs_par2_s4_ext rc=0 wall=1566s fieldstat_lines=51/51 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s4_ext.txt sha256=12b1907f1df3a2a60deca73a5bf5794b2ef8aff8a9813ce8b4e3c4a9a76bd95e
+RECORDED part_seconds=438 part_runs_seconds=23650 part=extend (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=extend rc=0

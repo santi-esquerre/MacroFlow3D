@@ -206,11 +206,35 @@ After the `analysis` part, one short `exec` packed the text subset of `$SF39_OUT
 | `logs/job_logs/`, `logs/job_status/` | `scripts/remote` job logs and status files of every SF-39 job |
 
 Not imported (hashes only, in the per-part `sha256.txt` or the lists above): every `*.npy`, the runner output trees `runs/`,
-`checks/runs/`, `checks/regress_head/`, the Par2 `snapshots/` and `stats/` trees, the logs above 2 MB. Re-verification:
-`for d in raw/campaign/{checks,pilot,checkpoint,extend,width} analysis; do (cd $d && sha256sum -c --ignore-missing sha256.txt | grep -vc ': OK$'); done`
-prints 0 for each. `analysis/manifest.txt` also lists `logs/analysis.log`, `logs/analysis.time` and `results.txt`, which `run_sf39.sh`
-completes after the manifest is written: `sha256sum -c manifest.txt` reports those three FAILED by construction; every analysis output
-verifies. The `build/` files are force-added (`.gitignore` ignores `build/`).
+`checks/runs/`, `checks/regress_head/`, the Par2 `snapshots/` and `stats/` trees, the logs above 2 MB. Re-verification (the paths in a
+part's `sha256.txt` are relative to `$SF39_OUT_ROOT`, so the check runs from the directory that holds the part directories; corrected
+2026-10-29: the command first recorded here ran inside each part directory, where `--ignore-missing` finds no file and prints 0
+vacuously): `cd raw/campaign && for p in checks pilot checkpoint extend width; do echo "$p $(LC_ALL=C sha256sum -c --ignore-missing
+$p/sha256.txt | grep -vc ': OK$') $(LC_ALL=C sha256sum -c --ignore-missing $p/sha256.txt | grep -c ': OK$')"; done` prints 0 failures
+and 49 / 34 / 14 / 48 / 9 verified entries; the same from `raw/campaign_s025` for `checks pilot checkpoint extend` prints 0 failures
+and 73 / 12 / 16 / 19. `analysis/manifest.txt` also lists bookkeeping files that `run_sf39.sh` completes after the manifest is
+written (`logs/analysis.log`, `logs/analysis.time`, `results.txt`, and, since the four-amplitude analysis ran in the directory of the
+first one, `exit_codes.tsv`, `sha256.txt`, `walls.tsv`): `cd analysis && sha256sum -c manifest.txt` reports those six FAILED by
+construction and the 77 others OK, every analysis output among them. The `build/` files are force-added (`.gitignore` ignores `build/`).
+
+### Imported evidence, `s025` addendum (orchestrator, 2026-10-29)
+
+After the four-amplitude `analysis` (job `sf39-analysis-2`) and the regression of the existing amplitudes (`python3 -m
+sf39.regress_existing`: `REGRESS_EXISTING IDENTICAL (s1,s225,s4)` against `git archive 4dbf31f2`), one short `exec` packed
+`sf39_evidence_s025.tar.gz` (sha256 `f4918f0a6e93131638b70102c3abf06ff26792f41872eabd4c274be4f41a5317`, 12 MB, identical on both hosts;
+not committed), extracted into:
+
+| path in `A/` | content |
+|---|---|
+| `analysis/` | replaced by the four-amplitude `analysis` part output (the `s1`, `s225`, `s4` content is byte-identical to `4dbf31f2`) |
+| `raw/campaign_s025/<part>/` | bookkeeping of the `s025` invocations of `checks`, `pilot`, `checkpoint` (with `s025/`: `tau_b_star_s025.json`, the blinded report, `costs.json`, `bytes.json`, `sealed/`) and `extend`, copied on the host right after each invocation (`$SF39_OUT_ROOT/export/s025_bk/<part>/`), with the `s025` runner logs of 2 MB or less |
+| `raw/par2_s025[_ext]/` | Par2 aggregate outputs (`analysis/`, `ensemble/`, `manifest.json`, `effective_config.yaml`) |
+| `raw/field_stats_par2_s025[_ext].txt` | `par2_field_stats` lines |
+| `raw/par2_realization_series_s025.sha256` | sha256 of the 25 per-realization Par2 `stats/` CSVs of `s025` (kept on the host) |
+| `raw/sf39_evidence_s025.excluded_large` | sha256, size and host path of the 5 `s025` runner logs larger than 2 MB |
+| `logs/job_logs/`, `logs/job_status/` | the jobs `sf39-analysis-repro`, `sf39-checks-s025`, `sf39-checks-s025b`, `sf39-pilot-s025`, `sf39-checkpoint-s025`, `sf39-extend-s025`, `sf39-analysis-2` |
+
+Nothing under `raw/campaign/`, `raw/par2_s{1,225,4}*`, or the existing `logs/` files was changed.
 
 ## Restart rules
 

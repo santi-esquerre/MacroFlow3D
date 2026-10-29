@@ -1,0 +1,31 @@
+PART_BEGIN part=pilot selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
+RUN id=s025_A:s5001:n20 rc=0 wall=1887s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_A
+RUN id=s025_n05:s5001:n20 rc=0 wall=168s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_n05
+RUN id=s025_n10:s5001:n20 rc=0 wall=358s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_n10
+RUN id=s025_n20:s5001:n20 rc=0 wall=1382s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_n20
+RUN id=s025_tw:s5001:n20 rc=0 wall=203s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s025_tw
+RUN id=s1_A:s5001:n20 rc=0 wall=2005s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_A
+RUN id=s1_n05:s5001:n20 rc=0 wall=178s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_n05
+RUN id=s1_n10:s5001:n20 rc=0 wall=362s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_n10
+RUN id=s1_n20:s5001:n20 rc=0 wall=1391s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_n20
+RUN id=s1_tw:s5001:n20 rc=0 wall=212s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s1_tw
+RUN id=s225_A:s5001:n20 rc=0 wall=4664s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_A
+RUN id=s225_n08:s5001:n20 rc=0 wall=265s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_n08
+RUN id=s225_n16:s5001:n20 rc=0 wall=650s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_n16
+RUN id=s225_n32:s5001:n20 rc=0 wall=2633s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s225_n32
+RUN id=s225_tw:s5001:n20 rc=0 wall=447s realizations_done=26/20 out=/home/sesquerre/sf39_campaign/runs/s225_tw
+RUN id=s4_A:s5001:n20 rc=0 wall=4872s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_A
+RUN id=s4_n16:s5001:n20 rc=0 wall=218s realizations_done=30/20 out=/home/sesquerre/sf39_campaign/runs/s4_n16
+RUN id=s4_n32:s5001:n20 rc=0 wall=631s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n32
+RUN id=s4_n64:s5001:n20 rc=0 wall=2882s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n64
+RUN id=s4_tw:s5001:n20 rc=0 wall=439s realizations_done=30/20 out=/home/sesquerre/sf39_campaign/runs/s4_tw
+RUN id=par2_s025 rc=0 wall=832s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s025
+RUN id=fs_par2_s025 rc=0 wall=499s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s025.txt sha256=754536746d5ce2cddf279897a9b04381bfca7d9d095f2be79cc01897116ea33a
+RUN id=par2_s1 rc=0 wall=663s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s1
+RUN id=fs_par2_s1 rc=0 wall=406s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s1.txt sha256=48b4e21c896cc4e890ef754f972902bc9e4b2f243e3d3adfd177466284dbaa43
+RUN id=par2_s225 rc=0 wall=1135s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s225
+RUN id=fs_par2_s225 rc=0 wall=623s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s225.txt sha256=12a6899859e211a79ef98c5fb1d114dc895eddbfef7334c19f06a40e9c159e8c
+RUN id=par2_s4 rc=0 wall=1238s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s4
+RUN id=fs_par2_s4 rc=0 wall=619s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s4.txt sha256=c6c5ee9aa5aa7d86d7002252e06609c642c34dbaf24cab77edd1b5d87f8d9560
+RECORDED part_seconds=5337 part_runs_seconds=31862 part=pilot (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=pilot rc=0

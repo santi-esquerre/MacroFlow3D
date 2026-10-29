@@ -4,6 +4,12 @@
 
 | amplitude | estimator | decision point | verdict | CI | n | note |
 |---|---|---|---|---|---|---|
+| s025 | alpha_TAM | Gate 4 label (D) | physical (bounded) | [-0.00180066, 0.00155315] | 25 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=-0.000123753; refinement trend detected: d16_8: -2.74e-06 % [-5.38e-06, -9.76e-08] |
+| s025 | alpha_TP | Gate 4 label (D) | physical (bounded) | [-0.000547463, 0.00191332] | 25 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.000682929; refinement trend detected: D_tw/2^1.5: -0.56 % [-1.11, -0.0138] |
+| s025 | alpha_TAM+alpha_TP | Gate 4 amplitude label (D) | physical (bounded) |  | 25 | alpha_TAM: physical (bounded); alpha_TP: physical (bounded) |
+| s025 | alpha_LAM | Gate 5 (C) Lagrangian twin vs Par2 | inconclusive | [-0.0754664, -0.0265599] | 25/25 | diff=-0.0510132 margin=0.0270195; late Par2 beyond pilot 0/5 |
+| s025 | alpha_LAM | Gate 5 sensitivity FV qbar | inconclusive | [-0.0749753, -0.0260681] | 25/25 | diff=-0.0505217 margin=0.0270195 |
+| s025 | alpha_LAM | Gate 5 sensitivity ANCOVA | inconclusive | [-0.0765806, -0.0262464] | 25/25 | diff=-0.0514135 margin=0.0270595 adjusted Par2 mean=0.270595 |
 | s1 | alpha_TAM | Gate 4 label (D) | physical (positive) | [0.00744747, 0.0115829] | 50 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.00951516 |
 | s1 | alpha_TP | Gate 4 label (D) | physical (positive) | [0.0067542, 0.00972685] | 50 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.00824052 |
 | s1 | alpha_TAM+alpha_TP | Gate 4 amplitude label (D) | physical (positive) |  | 50 | alpha_TAM: physical (positive); alpha_TP: physical (positive) |
@@ -27,6 +33,21 @@
 
 | amplitude | estimator | decision point | verdict | CI | n | note |
 |---|---|---|---|---|---|---|
+| s025 | alpha_TAM | B half-width (95 %) | met | [-0.00214667, 0.00189916] | 25 | halfwidth=0.00202291 target=0.0025 |
+| s025 | alpha_TAM | A h narrow verdict (D_f) | converged | [-1.1887e-05, 3.34125e-06] | 20 | m=0.00125 mean D_f=-4.27286e-06 |
+| s025 | alpha_TAM | A h production verdict (F4) | converged | [-8.82288e-05, 3.84826e-05] | 20 | CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True) |
+| s025 | alpha_TAM | A h order contrast | monotone order >= 1.5 not rejected | [-1.14125e-05, 9.06838e-06] | 20 | CI of s(2^1.5 D_f - D_c), s=-1 |
+| s025 | alpha_TAM | A h_max verdict (h/16 - h/8) | converged | [1.20829e-13, 6.65552e-12] | 20 | m=0.00125 mean=3.38817e-12 |
+| s025 | alpha_TP | B half-width (95 %) | met | [-0.000801337, 0.00216719] | 25 | halfwidth=0.00148427 target=0.0025 |
+| s025 | alpha_TP | A h narrow verdict (D_f) | converged | [-4.02883e-06, 1.97855e-06] | 20 | m=0.00125 mean D_f=-1.02514e-06 |
+| s025 | alpha_TP | A h production verdict (F4) | converged | [-2.13484e-05, -2.67101e-07] | 20 | CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True) |
+| s025 | alpha_TP | A h order contrast | monotone order >= 1.5 not rejected | [-5.70056e-06, 9.26329e-07] | 20 | CI of s(2^1.5 D_f - D_c), s=-1 |
+| s025 | alpha_TP | A h_max verdict (h/16 - h/8) | converged | [-1.6905e-13, 9.45267e-13] | 20 | m=0.00125 mean=3.88109e-13 |
+| s025 | alpha_LAM | B half-width (95 %) | not met | [0.206459, 0.233919] | 25 | halfwidth=0.0137301 target=0.0110095 |
+| s025 | alpha_LAM | A h narrow verdict (D_f) | converged | [-0.000216888, 0.000300698] | 20 | m=0.00503004 mean D_f=4.19047e-05 |
+| s025 | alpha_LAM | A h production verdict (F4) | converged | [-0.00117759, 3.3864e-05] | 20 | CI of D_tw vs +-2^1.5 m=0.0142271 (inside=True) |
+| s025 | alpha_LAM | A h order contrast | monotone order >= 1.5 not rejected | [-0.000371473, 0.000218061] | 20 | CI of s(2^1.5 D_f - D_c), s=+1 |
+| s025 | alpha_LAM | A h_max verdict (h/16 - h/8) | converged | [-4.12448e-11, 1.98941e-11] | 20 | m=0.00560406 mean=-1.06753e-11 |
 | s1 | alpha_TAM | B half-width (95 %) | met | [0.00703675, 0.0119936] | 50 | halfwidth=0.00247841 target=0.0025 |
 | s1 | alpha_TAM | A h narrow verdict (D_f) | converged | [-0.000167966, 3.92091e-05] | 20 | m=0.00125 mean D_f=-6.43787e-05 |
 | s1 | alpha_TAM | A h production verdict (F4) | converged | [0.000102543, 0.00103975] | 20 | CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True) |
@@ -77,6 +98,32 @@
 
 | amplitude | estimator | decision point | verdict | CI | n | note |
 |---|---|---|---|---|---|---|
+| s025 | alpha_TP | F7 Delta_half | not shown decreasing | [-0.00371841, 0.00104937] | 25 | mean Delta_half=-0.00133452 |
+| s025 | rho(X_b), pair 8-16 | F8 readings | pathwise resolved |  | 20 | median=6.79164e-10 p95=6.93762e-10 (m=0.00125, S=0.360456) |
+| s025 | alpha_TAM | F11 Delta_P production | Delta_P below 0 | [-7.01444e-05, -9.50143e-06] | 25 | mean Delta_P=-3.98229e-05 |
+| s025 | alpha_TP | F11 Delta_P production | Delta_P below 0 | [-1.17339e-05, -6.90432e-07] | 25 | mean Delta_P=-6.21218e-06 |
+| s025 | alpha_Tfixed | F11 Delta_P production | Delta_P below 0 | [-7.01486e-05, -9.52468e-06] | 25 | mean Delta_P=-3.98367e-05 |
+| s025 | alpha_TAM | F11 Delta_P narrow_half | Delta_P includes 0 | [-7.76813e-05, 2.49804e-05] | 20 | mean Delta_P=-2.63504e-05 |
+| s025 | alpha_TP | F11 Delta_P narrow_half | Delta_P includes 0 | [-2.8619e-05, 5.30864e-06] | 20 | mean Delta_P=-1.16552e-05 |
+| s025 | alpha_Tfixed | F11 Delta_P narrow_half | Delta_P includes 0 | [-7.77135e-05, 2.51322e-05] | 20 | mean Delta_P=-2.62906e-05 |
+| s025 | alpha_TAM | F11 Delta_P narrow_1x | Delta_P includes 0 | [-2.62843e-05, 1.31843e-05] | 20 | mean Delta_P=-6.55002e-06 |
+| s025 | alpha_TP | F11 Delta_P narrow_1x | Delta_P includes 0 | [-8.56731e-06, 5.26695e-08] | 20 | mean Delta_P=-4.25732e-06 |
+| s025 | alpha_Tfixed | F11 Delta_P narrow_1x | Delta_P includes 0 | [-2.62733e-05, 1.31759e-05] | 20 | mean Delta_P=-6.54873e-06 |
+| s025 | alpha_TAM | F11 Delta_P narrow_2x | Delta_P includes 0 | [-3.27619e-06, 5.87662e-06] | 20 | mean Delta_P=1.30022e-06 |
+| s025 | alpha_TP | F11 Delta_P narrow_2x | Delta_P includes 0 | [-2.27074e-06, 3.88399e-07] | 20 | mean Delta_P=-9.41172e-07 |
+| s025 | alpha_Tfixed | F11 Delta_P narrow_2x | Delta_P includes 0 | [-3.2623e-06, 5.88597e-06] | 20 | mean Delta_P=1.31184e-06 |
+| s025 | alpha_TAM | F11 Delta_P twin | Delta_P includes 0 | [-0.000145029, 5.55133e-05] | 20 | mean Delta_P=-4.47578e-05 |
+| s025 | alpha_TP | F11 Delta_P twin | Delta_P below 0 | [-3.81225e-05, -1.53903e-05] | 20 | mean Delta_P=-2.67564e-05 |
+| s025 | alpha_Tfixed | F11 Delta_P twin | Delta_P includes 0 | [-0.000144991, 5.54058e-05] | 20 | mean Delta_P=-4.47926e-05 |
+| s025 | alpha_TAM | F11 difference in differences narrow_half_minus_1x | difference includes 0 | [-6.24796e-05, 2.28788e-05] | 20 | mean=-1.98004e-05 |
+| s025 | alpha_TP | F11 difference in differences narrow_half_minus_1x | difference includes 0 | [-2.07533e-05, 5.95767e-06] | 20 | mean=-7.39784e-06 |
+| s025 | alpha_Tfixed | F11 difference in differences narrow_half_minus_1x | difference includes 0 | [-6.25438e-05, 2.306e-05] | 20 | mean=-1.97419e-05 |
+| s025 | alpha_TAM | F11 difference in differences narrow_1x_minus_2x | difference includes 0 | [-2.47922e-05, 9.09177e-06] | 20 | mean=-7.85023e-06 |
+| s025 | alpha_TP | F11 difference in differences narrow_1x_minus_2x | difference includes 0 | [-6.64431e-06, 1.20168e-08] | 20 | mean=-3.31615e-06 |
+| s025 | alpha_Tfixed | F11 difference in differences narrow_1x_minus_2x | difference includes 0 | [-2.47951e-05, 9.07393e-06] | 20 | mean=-7.86057e-06 |
+| s025 | alpha_TAM | F11 difference in differences twin_minus_production | difference includes 0 | [-8.49247e-05, 8.30462e-05] | 20 | mean=-9.39265e-07 |
+| s025 | alpha_TP | F11 difference in differences twin_minus_production | difference below 0 | [-2.78738e-05, -1.15191e-05] | 20 | mean=-1.96964e-05 |
+| s025 | alpha_Tfixed | F11 difference in differences twin_minus_production | difference includes 0 | [-8.49008e-05, 8.29729e-05] | 20 | mean=-9.63955e-07 |
 | s1 | alpha_TP | F7 Delta_half | not shown decreasing | [-0.00643519, 0.00115292] | 50 | mean Delta_half=-0.00264114 |
 | s1 | rho(X_b), pair 8-16 | F8 readings | pathwise resolved |  | 20 | median=5.37004e-08 p95=8.31056e-08 (m=0.00125, S=0.387342) |
 | s1 | alpha_TAM | F11 Delta_P production | Delta_P includes 0 | [-0.000186375, 0.000102516] | 50 | mean Delta_P=-4.19296e-05 |
@@ -188,6 +235,10 @@
 | all |  | CHECK_solve_chk_s4_tw | converged |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_solve_chk_s4_w24 | converged |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_solve_chk_s4_w12 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_n05 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_n10 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_n20 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_tw | converged |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_bytecheck | BYTECHECK |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_smoke_reduce | SMOKE |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_signtable | SIGNTABLE |  |  | rc=0 (from checks/results.txt) |
