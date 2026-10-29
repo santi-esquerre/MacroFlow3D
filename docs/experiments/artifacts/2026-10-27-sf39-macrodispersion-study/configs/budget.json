@@ -1,5 +1,7 @@
 {
   "_source": "SF-39 checkpoint 2026-10-28 (job sf39-checkpoint, tree b0be775db0f4, report sha256 2fc104ddbf563af704efd3a408f900a58b5a7c542570066d657f08c944389f71): N printed by nr_rule; owner budget 2026-10-28 'uso libre del servidor; hasta varios dias de computo; una gpu a la vez' >= projected 6.83762 GPU-h, so the budget rule is not applied (f = 1)",
+  "_source_s025": "SF-39 checkpoint s025 2026-10-29 (job sf39-checkpoint-s025, tree 28ddeadd3af5, report checkpoint/s025/checkpoint_report.txt sha256 0184affbac8da474a94f0019b1e58204a175dff6f0d7b4c0b513953b3fd062db): N printed by nr_rule; owner budget 2026-10-28 (decision 2026-10-29, item 4) >= projected 0.13931 GPU-h and 42.80 GB, so the budget rule is not applied (f = 1)",
+  "s025": {"N_narrow": 20, "N_twin": 20, "N_hmax": 20, "N_R": 25, "N_A": 20, "N_run": 25, "par2_NR": 25},
   "s1":   {"N_narrow": 20, "N_twin": 20, "N_hmax": 20, "N_R": 50, "N_A": 20, "N_run": 50, "par2_NR": 50},
   "s225": {"N_narrow": 20, "N_twin": 26, "N_hmax": 20, "N_R": 62, "N_A": 20, "N_run": 62, "par2_NR": 62},
   "s4":   {"N_narrow": 20, "N_twin": 20, "N_hmax": 20, "N_R": 71, "N_A": 20, "N_run": 71, "par2_NR": 71}
