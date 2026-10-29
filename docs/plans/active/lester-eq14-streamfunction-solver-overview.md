@@ -573,7 +573,8 @@ dashboard):
   baseline Par2 (←SF-36).
 - SF-41: medio (b) para el consumidor lagrangiano: stage austero de Dirichlet en x, spline no
   periódico en `x1` y salida por las caras x (←SF-38; decisión 2026-10-24).
-- SF-39: estudio de macrodispersión a `sigma^2` en {1, 2.25, 4} (←SF-37, SF-38, SF-41).
+- SF-39: estudio de macrodispersión a `sigma^2` en {0.25, 1, 2.25, 4} (←SF-37, SF-38, SF-41; 0.25 por la adenda del
+  2026-10-29, `docs/decisions/2026-10-29-sf39-sigma025-addendum.md`).
 
 Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29, SF-35 por el
 cierre de SF-33, SF-36..SF-39 por el cierre de SF-35; el resto en prosa): las etiquetas en

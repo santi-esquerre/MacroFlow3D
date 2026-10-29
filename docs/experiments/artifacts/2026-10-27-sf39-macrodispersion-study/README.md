@@ -163,7 +163,8 @@ ascending), with the `s1` geometry, `--eps 0.5`, the `s1` seeds and the Par2 con
   exits 0 iff identical, 1 on any difference, 2 when it refuses or cannot read. It refuses (nothing compared) if `--ref` and `--new` are the same
   directory (realpath); if the reference does not verify against its own `manifest.txt` (every entry under `reduced/` and `series/`, `summary.json`
   and `decisions.csv`; the bookkeeping entries completed after the manifest are not checked, and a compared file that is not listed is refused);
-  or if the number of `reduced/*.csv` is 0 or differs from the number of `reduced/` entries of the manifest (53 for the evidence). The report prints
+  or if the number of `reduced/*.csv` is 0 or differs from the number of `reduced/` entries of the manifest (53 for the evidence of
+  `4dbf31f2`, 68 for the four-amplitude evidence). The report prints
   the sha256 of the reference manifest. A difference is a defect, never accepted as new.
 * **Import layout.** New bookkeeping is imported beside the committed one, never over it: `raw/campaign_s025/<part>/`, `raw/par2_s025[_ext]/` and
   `raw/field_stats_par2_s025[_ext].txt`. `analysis/` is replaced only after the regression above passes.
@@ -232,7 +233,7 @@ not committed), extracted into:
 | `raw/field_stats_par2_s025[_ext].txt` | `par2_field_stats` lines |
 | `raw/par2_realization_series_s025.sha256` | sha256 of the 25 per-realization Par2 `stats/` CSVs of `s025` (kept on the host) |
 | `raw/sf39_evidence_s025.excluded_large` | sha256, size and host path of the 5 `s025` runner logs larger than 2 MB |
-| `logs/job_logs/`, `logs/job_status/` | the jobs `sf39-analysis-repro`, `sf39-checks-s025`, `sf39-checks-s025b`, `sf39-pilot-s025`, `sf39-checkpoint-s025`, `sf39-extend-s025`, `sf39-analysis-2` |
+| `logs/job_logs/`, `logs/job_status/` | the jobs `sf39-analysis-repro`, `sf39-checks-s025`, `sf39-checks-s025b`, `sf39-pilot-s025`, `sf39-checkpoint-s025`, `sf39-extend-s025`, `sf39-analysis-2`; after W9, `sf39-unittest-final` (its unittest summary was lost to output buffering) and `sf39-unittest-final2` (with `sf39-unittest-final2.output.txt`: 311 tests OK on tree `d54db6d8`) |
 
 Nothing under `raw/campaign/`, `raw/par2_s{1,225,4}*`, or the existing `logs/` files was changed.
 

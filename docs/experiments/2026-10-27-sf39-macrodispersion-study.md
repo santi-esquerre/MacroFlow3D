@@ -1,4 +1,4 @@
-# SF-39: macrodispersion study at `sigma_Y^2` in {1, 2.25, 4} with the Lagrangian consumer
+# SF-39: macrodispersion study at `sigma_Y^2` in {0.25, 1, 2.25, 4} with the Lagrangian consumer
 
 - What this is: the run record and result of increment SF-39
   (`docs/plans/active/lester-eq14/increments/SF-39-macrodispersion-study.md`): `alpha_L`, `alpha_T` on the long domain with
@@ -6,7 +6,10 @@
 - What it is not: an asymptotic statement, a test of the Lester et al. (2023) zero-transverse claim at `t -> infinity`, or a
   statement about other covariance models, media or domains.
 - Normative contract: `docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/preregistration.md` (sha256
-  `88fe1fa67eab28a209778cf5a240e270ab4ed1e5f44777c3d0f7cecc89ad7cb7`, fixed in the activation row before any run). Campaign mechanics:
+  `88fe1fa67eab28a209778cf5a240e270ab4ed1e5f44777c3d0f7cecc89ad7cb7`, fixed in the activation row before any run). For `sigma^2 = 0.25`
+  (`s025`), added on 2026-10-29 after the results at 1, 2.25 and 4 were known (`docs/decisions/2026-10-29-sf39-sigma025-addendum.md`):
+  `A/preregistration-addendum-s025.md` (sha256 `845a08301b3a306e753377a2e51c70a2fc342bd9ae6d428d148e8b7ae5aa82fc`, fixed in the bitácora
+  before any `s025` code, check or run). Campaign mechanics:
   the artifact `README.md`. Theory: `docs/theory/lester-2023-key-claims.md` (helicity-free regime, the zero-transverse claim and its
   assumption of bounded label fluctuations), `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` (classical 3D baseline, context only).
 - Artifact root `A = docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/`: `analysis/` (the analysis part output:
@@ -15,7 +18,7 @@
 
 ## Question
 
-Per `sigma_Y^2` in {1, 2.25, 4}, in smooth Gaussian-covariance log-conductivity fields (`C(r) = sigma^2 exp(-(r/lambda)^2)`) and
+Per `sigma_Y^2` in {0.25, 1, 2.25, 4}, in smooth Gaussian-covariance log-conductivity fields (`C(r) = sigma^2 exp(-(r/lambda)^2)`) and
 purely advective transport traced by the Lagrangian consumer on the long domain:
 
 1. What are `alpha_L` and `alpha_T` (window estimator over `[0.75, 1] tau_b*`; for `alpha_T` also the plane estimator `alpha_TP`), with
@@ -29,6 +32,14 @@ No result was predicted (specification, "Expected numerical effect"), except the
 `sigma^2 = 4` the verdicts were expected `inconclusive` for power reasons. That outcome was **not** observed: the paired ladder
 differences were small enough that every transverse ladder verdict is `converged` at every amplitude.
 
+At `sigma^2 = 0.25` the addendum (A4.2) pre-stated, as an extrapolation, `N_R` of about 20, a 90 % half-width comparable to `alpha_T`,
+and `physical (positive)`, `physical (bounded)` or `unresolved (estimator-discordant)` as each plausible from sampling alone. Observed:
+`N_R = 25`; half-widths of about 1.7e-3 / 1.2e-3 `lambda` against production means of -1.2e-4 / 6.8e-4 `lambda` (`alpha_TAM` /
+`alpha_TP`); `physical (bounded)` for both estimators, with an `alpha_TP` refinement trend of -0.56 % detected (twin); the label does
+not exclude a mostly numerical `alpha_T` (A4.1). A4.4 anticipated Gate 5 `inconclusive` if the `s1` offset persisted: observed
+`inconclusive`. The owner, shown before any `s025` run that `N_R` 200 or 500 would be more informative, kept `nr_rule`; `N` was not
+raised after any `s025` result.
+
 Hypotheses recorded, not presupposed:
 
 - Lester et al. (2023): `alpha_T = 0` asymptotically in the helicity-free regime, under bounded label fluctuations (an assumption this
@@ -36,8 +47,8 @@ Hypotheses recorded, not presupposed:
   a finite travel distance.
 - Lester et al. (2023) §5.2, F11: the face-flux representation (Pollock bridge) shows more transverse spreading than the consumer
   (`Delta_P > 0`), shrinking under refinement.
-- B&dD (2013): positive `alpha_TA` (0.01 / 0.044 at `sigma^2` 1 / 2.25, Table 2), with Euler stepping on linearly interpolated
-  velocities and fixed axes; context only.
+- B&dD (2013): positive `alpha_TA` (0.01 / 0.044 at `sigma^2` 1 / 2.25, Table 2) and `alpha_TA < 1e-3` at 0.25, with Euler stepping
+  on linearly interpolated velocities and fixed axes; context only.
 
 ## Build / environment
 
@@ -47,9 +58,14 @@ Hypotheses recorded, not presupposed:
 - Later commits touched scripts and docs only (`git diff --quiet 1e40cfe9 HEAD -- src apps tests cmake CMakeLists.txt CMakePresets.json
   scripts/regress scripts/remote` is empty on the delivery branch). Scripts tree per part (`.mf3d_source_rev` of the mirror):
   checks `dd5799c11454`; pilot and checkpoint `b0be775db0f4`; extend and the first width invocation `6630cc27d3f3`; the second width
-  invocation (`s4_w12c`) and analysis `40f5996c2a1e`.
+  invocation (`s4_w12c`) and analysis `40f5996c2a1e`. `s025`: checks `61a019e0bb82` (unit tests failed on the host's git 1.8.3, see
+  Deviations) and `28ddeadd3af5`; pilot and checkpoint `28ddeadd3af5`; extend and the four-amplitude analysis `c155a9b69f2d`.
 - Host analysis stack: Python 3.11.7, numpy 1.26.4, scipy 1.11.4 (`A/raw/campaign/*/run.env`); the 232 unit tests of the analysis
-  package pass on that stack and on Python 3.13 / numpy 2.5 / scipy 1.18.
+  package pass on that stack and on Python 3.13 / numpy 2.5 / scipy 1.18 (311 tests with the `s025` scripts, host and local).
+- Reproducibility: before any `s025` GPU time, job `sf39-analysis-repro` (tree `40f5996c2a1e`) re-ran the three-amplitude analysis on the
+  host; its 59 output entries equal the committed `analysis/manifest.txt` (sha256).
+- Final tree `d54db6d8` (after the test-only corrective W9, below): 311 unit tests OK on the host stack (job `sf39-unittest-final2`;
+  Python 3.11.7, numpy 1.26.4, scipy 1.11.4, git 1.8.3.1) and locally.
 - One GPU at a time, the least loaded, chosen by `scripts/remote run` (decision `docs/decisions/2026-10-27-remote-single-gpu.md`);
   `REMOTE_GPU_WAIT=7200`, `REMOTE_GPU_MIN_FREE_MIB=30000` for CUDA parts; never `--gpu`, never `CUDA_VISIBLE_DEVICES`.
 
@@ -62,16 +78,23 @@ Fixed in `preregistration.md` section 1 (arm table) and section 2 (plane lists P
 
 | `sigma^2` | production (`lambda/h`, box) | narrow rungs 1/2, 1, 2 x (section) | coarse twin | Par2 (SF-38 copies) |
 |---|---|---|---|---|
+| 0.25 | 2048x256x256 (10; 204.8 x 25.6^2 `lambda`) | 1024x64^2, 2048x128^2, 4096x256^2 (12.8 `lambda`) | 1024x128^2 (5) | `configs/par2_s025[_ext].yaml` |
 | 1 | 2048x256x256 (10; 204.8 x 25.6^2 `lambda`) | 1024x64^2, 2048x128^2, 4096x256^2 (12.8 `lambda`) | 1024x128^2 (5) | `configs/par2_s1[_ext].yaml` |
 | 2.25 | 3328x384x384 (16; 208 x 24^2) | 1664x64^2, 3328x128^2, 6656x256^2 (8 `lambda`) | 1664x192^2 (8) | `configs/par2_s225[_ext].yaml` |
 | 4 | 3328x384x384 (32; 104 x 12^2) | 1664x64^2, 3328x128^2, 6656x256^2 (4 `lambda`) | 1664x192^2 (16) | `configs/par2_s4[_ext].yaml` |
 
 Seeds: production, rungs and twins from 5001 (directory A `r < 20` with `--hmax-div 8,16,32`, directory B from `5001 + N_A` with
 `--hmax-div 8`); width arms 7101 (`s4_w24`) and 7201 (`s4_w12`) plus the continuation `s4_w12c` 7215 (below); Par2 field seeds 9001
-(pilot) and 9021 (extension, `transport.seed` 123476789, R15). Final counts (`A/configs/budget.json`, bitácora 2026-10-28):
+(pilot) and 9021 (extension, `transport.seed` 123476789, R15). `s025` is the `sigma^2 = 1` geometry with `--eps 0.5` and the same
+seeds (so the preregistration's "seeds 5001+ unused by earlier runs" does not hold for it), so each `s025` field is exactly 0.5 times
+the `s1` field of the same seed and every cross-amplitude statement is descriptive. The per-seed correlation of the estimates with `s1`
+is 0.95 for `alpha_TP` and about 0 (-0.006) for `alpha_TAM` (window estimator; `tau_b*` 159.5 at 0.25 against 125.6 at 1). Its Par2
+config is the SF-38 `s1` config with `stochastic.sigma2: 0.25` (addendum A3), same seeds; that the Par2 fields scale the same way is
+expected, not verified. Final counts (`A/configs/budget.json`, bitácora 2026-10-28 and, for `s025`, 2026-10-29):
 
 | `sigma^2` | `N_R` = `N_run` = Par2 `NR` | `N_narrow` | `N_twin` | `N_hmax` = `N_A` |
 |---|---|---|---|---|
+| 0.25 | 25 | 20 | 20 | 20 |
 | 1 | 50 | 20 | 20 | 20 |
 | 2.25 | 62 | 20 | 26 | 20 |
 | 4 | 71 | 20 (`s4_n16` 30) | 20 (`s4_tw` 30) | 20 |
@@ -89,6 +112,14 @@ REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checkpoint -- "ba
 env ... run sf39-extend -- "bash $A/scripts/run_sf39.sh build/v100-release extend; bash $A/scripts/run_sf39.sh build/v100-release width"
 env ... run sf39-width  -- "bash $A/scripts/run_sf39.sh build/v100-release width"     # s4_w12c after the owner decision
 REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-analysis -- "bash $A/scripts/run_sf39.sh build/v100-release analysis"
+# s025 addendum (2026-10-29): one invocation per part, no selector unless stated; recorded ids of 1, 2.25, 4 are skipped
+env ... run sf39-checks-s025 -- "bash $A/scripts/run_sf39.sh build/v100-release checks"      # tree 61a019e0: unit tests failed (git 1.8.3)
+env ... run sf39-checks-s025b -- "bash $A/scripts/run_sf39.sh build/v100-release checks"
+env ... run sf39-pilot-s025 -- "bash $A/scripts/run_sf39.sh build/v100-release pilot"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checkpoint-s025 -- "bash $A/scripts/run_sf39.sh build/v100-release checkpoint s025"
+# no stop (owner budget pre-authorized, decision 2026-10-29 item 4); s025 N in the bitácora (commit c155a9b6)
+env ... run sf39-extend-s025 -- "bash $A/scripts/run_sf39.sh build/v100-release extend"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-analysis-2 -- "bash $A/scripts/run_sf39.sh build/v100-release analysis"
 ```
 
 | part (job) | scripts tree | part seconds | outcome |
@@ -99,37 +130,58 @@ REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-analysis -- "bash
 | extend (`sf39-extend`, first half) | `6630cc27` | 23225 | every arm at its count, rc 0; Par2 extension 30/42/51 |
 | width (`sf39-extend`, second half) | `6630cc27` | 2201 | `s4_w24` 30/30; `s4_w12` runner exit 4 at seed 7214 after 13 (RR6 halt) |
 | width (`sf39-width`) | `40f5996c` | 348 | `s4_w12` ARM_HALTED (by design); `s4_w12c` 17/17 rc 0; part rc 1 (the halted arm) |
-| analysis (`sf39-analysis`) | `40f5996c` | 909 | rc 0; `A/analysis/` |
+| analysis (`sf39-analysis`) | `40f5996c` | 909 | rc 0; analysis of 1, 2.25, 4 (evidence commit `4dbf31f2`) |
+| checks (`sf39-checks-s025`) | `61a019e0` | 391 | unit tests 2 errors (`git -C` absent in the host's git 1.8.3); geometry, smoke, sign table passed; the 4 `chk_s025_*` solve checks ran and converged; corrective W8-d |
+| checks (`sf39-checks-s025b`) | `28ddeadd` | 263 | 311 unit tests OK; GEOMETRY_CHECK OK; smoke 28/28; SIGNTABLE EQUAL (tree-tied checks re-run); solve checks (`chk_s025_*` of the first run), REGRESS IDENTICAL and BYTECHECK IDENTICAL (41 items) are recorded verdicts reused, not re-run (README, "s025") |
+| pilot (`sf39-pilot-s025`) | `28ddeadd` | 5337 | 5 `s025` arms 20/20 rc 0; Par2 `s025` 20/20 series and field-stat lines |
+| checkpoint (`sf39-checkpoint-s025`) | `28ddeadd` | 25 | blinded report (sha256 `0184affb...62db`): projected 0.139 GPU-h, 42.8 GB; existing checkpoint files unchanged |
+| extend (`sf39-extend-s025`) | `c155a9b6` | 438 | `s025_B` 5/5 rc 0; Par2 `s025` extension 5/5; 24 recorded ids skipped |
+| analysis (`sf39-analysis-2`) | `c155a9b6` | 1081 | rc 0; `A/analysis/` (four amplitudes) |
 
-Total recorded part time about 54 400 s (15.1 h) on one shared GPU, plus the base build and the regression references.
+Total recorded part time about 54 400 s (15.1 h) on one shared GPU for 1, 2.25, 4 and about 7 500 s (2.1 h) for the `s025` addendum,
+plus the base build and the regression references.
+
+**Regression of the existing amplitudes (addendum A6).** `python3 -m sf39.regress_existing --ref <git archive 4dbf31f2 analysis> --new
+A/analysis`: `REGRESS_EXISTING IDENTICAL (s1,s225,s4)` (reference manifest sha256 `1ad6f009...537e` verified; `summary.json`
+`amplitudes` and `budget` subtrees of the three amplitudes; 53 reduced and 3 series CSVs byte-identical; 145 decision rows and the 22
+process rows in order). Only `s025` content was added (15 reduced CSVs, `series/alpha_t_s025.csv`, 47 decision rows, 4 process rows).
+Every number of 1, 2.25 and 4 below is therefore the one reviewed at `adbe92cd`.
 
 ## Outputs inspected
 
 ### 0. Completeness, statuses and exclusions
 
-Every arm reached its budget count; no realization was skipped except seed 7214 of `s4_w12` (below). Medium (b) solves: all converged
-except one `s4_w12` realization accepted through the SF-38 C0 fallback (rel 9.88e-10, balance met) and seed 7214 (not usable). Tracker
-statuses at the planes (mean per realization of `1e4` particles): `sigma^2` 1: all `ok`; 2.25: 0.19 `seed_backflow` (status 1: the `x` velocity at
-the seed is `<= 0`, so the particle is not integrated); 4: 6.5 `seed_backflow` (0.065 %). No exits through the inlet, no seed fallbacks, no unplaced
-particles in any production window. Fraction of `x`-faces with `u <= 0`: 0 / 8.5e-6 / 6.7e-4.
+Every arm reached its budget count (including every `s025` arm); no realization was skipped except seed 7214 of `s4_w12` (below). Medium (b)
+solves: all converged except one `s4_w12` realization accepted through the SF-38 C0 fallback (rel 9.88e-10, balance met) and seed 7214 (not
+usable). Tracker statuses at the planes (mean per realization of `1e4` particles): `sigma^2` 0.25 and 1: all `ok`; 2.25: 0.19
+`seed_backflow` (status 1: the `x` velocity at the seed is `<= 0`, so the particle is not integrated); 4: 6.5 `seed_backflow` (0.065 %). No
+exits through the inlet, no seed fallbacks, no unplaced particles in any production window. Fraction of `x`-faces with `u <= 0`: 0 / 0 /
+8.5e-6 / 6.7e-4 (0.25 / 1 / 2.25 / 4).
 
 ### 1. Production estimates (90 % Student intervals, units of `lambda`; `tau_b*` in `ell / U`)
 
 | `sigma^2` | geometry | `N_R` | `tau_b*` | `U` | `alpha_LAM` | `alpha_TAM` | `alpha_TP` | `alpha_T` fixed axes |
 |---|---|---|---|---|---|---|---|---|
+| 0.25 | 2048x256x256, `lambda/h` 10, 204.8 x 25.6 x 25.6 `lambda` | 25 | 159.5 | 1.042 | 0.2202 [0.2088, 0.2316] | -0.0001238 [-0.001801, 0.001553] | 0.0006829 [-0.0005475, 0.001913] | -0.0001259 [-0.001802, 0.00155] |
 | 1 | 2048x256x256, `lambda/h` 10, 204.8 x 25.6 x 25.6 `lambda` | 50 | 125.6 | 1.179 | 1.038 [1.008, 1.068] | 0.009515 [0.007447, 0.01158] | 0.008241 [0.006754, 0.009727] | 0.009502 [0.007435, 0.01157] |
 | 2.25 | 3328x384x384, `lambda/h` 16, 208 x 24 x 24 `lambda` | 62 | 93.33 | 1.443 | 3.141 [3.083, 3.198] | 0.02872 [0.02618, 0.03126] | 0.03078 [0.02866, 0.0329] | 0.02873 [0.02618, 0.03127] |
 | 4 | 3328x384x384, `lambda/h` 32, 104 x 12 x 12 `lambda` | 71 | 23.22 | 1.873 | 4.654 [4.53, 4.779] | 0.07016 [0.06497, 0.07535] | 0.06665 [0.06219, 0.07111] | 0.07096 [0.06561, 0.0763] |
 
 BCa intervals (`B = 5000`, seed 20261027) beside each Student interval are in `summary.json`; they are close to the Student intervals
-(largest shift: `sigma^2 = 1` `alpha_TAM`, BCa [0.00764, 0.01166]).
+at 1, 2.25 and 4 (largest shift: `sigma^2 = 1` `alpha_TAM`, BCa [0.00764, 0.01166]) and at 0.25 (largest shift `alpha_LAM`, BCa [0.2106,
+0.2317], lower limit moved by 0.16 half-widths). They change one reading of the study: Gate 5 at 0.25 (section 3).
 
 **B (ensemble size, 95 % half-widths).** Met for every estimator and amplitude except `alpha_TAM` at `sigma^2 = 2.25`: achieved 0.003037
-against the target 0.002872 (6 % over). `N_R = 62` came from the pre-registered rule (target met with probability 0.91-0.997 at the
-chosen `N`); it is reported, not extended after the fact.
+against the target 0.002872 (6 % over), and `alpha_LAM` at `sigma^2 = 0.25`: achieved 0.01373 against the target 0.01101 (25 % over).
+`N_R` 62 and 25 came from the pre-registered rule (at 2.25 the target was met with probability 0.91-0.997 at the chosen `N`); they are
+reported, not extended after the fact (at 0.25 also by addendum A4.2). At 0.25 "B met" for `alpha_TAM` and `alpha_TP` is the absolute
+floor 2.5e-3 and does not mean that the sign of `alpha_T` is resolved.
 
 | `sigma^2` | estimator | 95 % half-width | target | met |
 |---|---|---|---|---|
+| 0.25 | `alpha_TAM` | 0.002023 | 0.0025 | yes |
+| 0.25 | `alpha_TP` | 0.001484 | 0.0025 | yes |
+| 0.25 | `alpha_LAM` | 0.01373 | 0.01101 | **no** |
 | 1 | `alpha_TAM` | 0.002478 | 0.0025 | yes |
 | 1 | `alpha_TP` | 0.001782 | 0.0025 | yes |
 | 1 | `alpha_LAM` | 0.03591 | 0.05189 | yes |
@@ -144,6 +196,9 @@ chosen `N`); it is reported, not extended after the fact.
 
 | `sigma^2` | estimator | narrow `D_f` 90 % CI (margin `m`) | narrow | twin `D_tw` 90 % CI (band `2^1.5 m`) | order contrast CI | F4 `h` | `h/16 - h/8` 90 % CI | `h_max` | narrow 1x rung minus production (Welch 90 %) |
 |---|---|---|---|---|---|---|---|---|---|
+| 0.25 | `alpha_TAM` | [-1.189e-05, 3.341e-06] (0.00125) | converged | [-8.823e-05, 3.848e-05] (0.003536) | [-1.141e-05, 9.068e-06] | converged | [1.208e-13, 6.656e-12] | converged | 4.418e-05 [-0.001853, 0.001942] |
+| 0.25 | `alpha_TP` | [-4.029e-06, 1.979e-06] (0.00125) | converged | [-2.135e-05, -2.671e-07] (0.003536) | [-5.701e-06, 9.263e-07] | converged | [-1.69e-13, 9.453e-13] | converged | -0.0007232 [-0.002183, 0.0007363] |
+| 0.25 | `alpha_LAM` | [-0.0002169, 0.0003007] (0.00503) | converged | [-0.001178, 3.386e-05] (0.01423) | [-0.0003715, 0.0002181] | converged | [-4.124e-11, 1.989e-11] | converged | -0.01903 [-0.04558, 0.00752] |
 | 1 | `alpha_TAM` | [-0.000168, 3.921e-05] (0.00125) | converged | [0.0001025, 0.00104] (0.003536) | [-0.0005614, 0.000184] | converged | [-1.56e-10, 5.399e-10] | converged | -0.000923 [-0.003431, 0.001585] |
 | 1 | `alpha_TP` | [-3.204e-05, 4.022e-05] (0.00125) | converged | [-0.0001701, 0.0001358] (0.003536) | [-0.0001386, 6.623e-05] | converged | [-7.582e-11, 4.057e-11] | converged | -0.002019 [-0.004331, 0.0002933] |
 | 1 | `alpha_LAM` | [-0.005712, 0.003959] (0.02435) | converged | [-0.0185, 0.008365] (0.06888) | [-0.02971, -0.002364] | converged | [-5.672e-09, 4.757e-09] | converged | -0.06294 [-0.1421, 0.01618] |
@@ -157,14 +212,11 @@ chosen `N`); it is reported, not extended after the fact.
 `D_f` = 2x rung minus production rung (narrow section), `D_tw` = production minus coarse twin (production domain), both paired by seed,
 finer minus coarser. No Richardson correction is applied (`|Delta Q|` is the bound where the order condition fails; `summary.json`).
 
-**Rule D result (both transverse estimators, every amplitude): `physical (positive)`, branch 4** — both ladder verdicts (`h` by F4 and
-`h_max`) are `converged`, so branches 1-3 cannot fire, and the production 90 % lower limit is above 0. Amplitude label: `physical
-(positive)` at `sigma^2` 1, 2.25 and 4 (identical label of `alpha_TAM` and `alpha_TP`).
+**Rule D result at `sigma^2` 1, 2.25 and 4 (both transverse estimators): `physical (positive)`, branch 4** — both ladder verdicts (`h`
+by F4 and `h_max`) are `converged`, so branches 1-3 cannot fire, and the production 90 % lower limit is above 0. Amplitude label:
+`physical (positive)` at `sigma^2` 1, 2.25 and 4 (identical label of `alpha_TAM` and `alpha_TP`).
 
-The orchestrator recomputed the production intervals, `D_f`, `D_tw`, the order contrast, the `h_max` differences, the margins, the
-verdicts and the branch from `A/analysis/reduced/*.csv` with an independent script (no `sf39` import): every value above is reproduced.
-
-What the label means and does not mean:
+What the label at `sigma^2` 1, 2.25 and 4 means and does not mean:
 
 - It is a statement **within this model, medium and domain, at the measured distance**: Gaussian-covariance `ln K` from the SF-18
   normalized periodic generator, medium (b) (`solve_head`, Dirichlet in `x`, periodic `y`/`z`), the consumer's DP5(4) traces on the C^2
@@ -175,24 +227,73 @@ What the label means and does not mean:
 - The `h_max` ladder is the integration-error ladder (decision 2026-10-23 D15: the `tol` ladder is vacuous at the `h/8` cap, SF-37
   RR15, where `h_max` is the binding step limiter). Its differences are 1e-10..1e-7, i.e. the integration error is negligible at `h/8`.
 - Checks that do not share the consumer's representation give the same transverse growth: the Pollock bridge on the FV face fluxes
-  (F11: `Delta_P` includes 0 at production for every estimator and amplitude) and the `exp(-I)` weights that compensate the
+  (F11: `Delta_P` includes 0 at production for every estimator at 1, 2.25 and 4) and the `exp(-I)` weights that compensate the
   representation's divergence (change below 0.3 %; section 5). The growth is therefore a property of the discrete Darcy flow that both
   representations share, and it is stable under the flow's own refinement.
 - It is not asymptotic: F7 (`Delta_half`, second minus first half of the window) is not shown decreasing at any amplitude, so the
   approach to an asymptote is not characterized. It does not test Lester et al.'s `t -> infinity` claim.
 
-**Transverse-domain effect (stated with the classification, specification D).** The narrow sections are 12.8 / 8 / 4 `lambda` wide. The
-narrow 1x rung is below the production domain by 0.0009 (not resolved) / 0.0067 (23 %) / 0.041 (58 %) in `alpha_TAM`, and at
-`sigma^2 = 4` the narrow section is a different flow regime (`U` 1.45 against 1.87). F4's stated assumption ("the production-domain error
-is represented by the narrow ladder or by `|D_tw| / 2^1.5`") therefore rests, at `sigma^2` 2.25 and especially 4, on the coarse twin,
-which is the only `lambda/h` evidence on the production domain: `D_tw` inside `+-2^1.5 m` for both estimators (at `sigma^2 = 4`:
-`alpha_TAM` +3.0 %, `alpha_TP` +0.5 % from `lambda/h` 16 to 32). The width check (F10, section 4) shows `alpha_T` at `sigma^2 = 4` still
-depends on the width between 4 and 12 `lambda`; between 12 and 24 `lambda` it is unresolved at `+-10 %`.
+**Rule D result at `sigma^2 = 0.25` (both transverse estimators): `physical (bounded)`, branch 4** — both ladder verdicts are
+`converged`, the production 90 % interval includes 0, and its upper limit `U` (1.553e-3 `lambda` for `alpha_TAM`, 1.913e-3 for
+`alpha_TP`) is below 2.5e-3 (F6). Amplitude label: `physical (bounded)`; `alpha_TP` refinement trend of -0.56 % detected (twin);
+`alpha_TAM` `h_max` difference of order 1e-12 `lambda` detected; the label does not exclude a mostly numerical `alpha_T` (A4.1).
+Addendum A4.1 readings (fractions of the production mean; mean [90 % CI]; `summary.json` `amplitudes.s025.A4_readings`):
+
+| estimator | production mean | `m / \|alpha\|` (twin band) | `D_f / alpha` | `(D_tw / 2^1.5) / alpha` | `(h/16 - h/8) / alpha` | refinement CI excluding 0 |
+|---|---|---|---|---|---|---|
+| `alpha_TAM` | -1.238e-4 | 10.1 (28.6) | 3.5 % [-2.7, 9.6] | 7.1 % [-11.0, 25.2] | -2.7e-6 % [-5.4e-6, -9.8e-8] | `h_max` (absolute 1.2e-13..6.7e-12 `lambda`) |
+| `alpha_TP` | 6.829e-4 | 1.83 (5.18) | -0.15 % [-0.59, 0.29] | -0.56 % [-1.11, -0.014] | 5.7e-8 % [-2.5e-8, 1.4e-7] | twin (`D_tw` -2.1e-5..-2.7e-7 `lambda`) |
+| `alpha_LAM` | 0.2202 | 0.023 (0.065) | 0.019 % [-0.099, 0.137] | -0.092 % [-0.189, 0.005] | ~0 | none |
+
+What the 0.25 label means and does not mean (addendum A4.1, A4.2):
+
+- `alpha_T` at 0.25 is bounded, not resolved: with `N_R = 25` its sign is not determined, and the label could have been
+  `physical (positive)` or `unresolved (estimator-discordant)` from sampling alone (A4.2). It says `alpha_T <= 1.6e-3` (`alpha_TAM`) and
+  `<= 1.9e-3 lambda` (`alpha_TP`) at the 90 % two-sided upper limit, within this model, medium, domain and distance.
+- `converged` there means a grid effect below the absolute floors (1.25e-3 `lambda` narrow, 3.54e-3 twin), not agreement within 5 %;
+  `numerical` (branch 2) is practically unreachable at this amplitude, so the label alone does not exclude a mostly numerical
+  `alpha_T` (A4.1). The measured refinement differences are far below the floors in absolute terms (`|D_f| <= 1.2e-5`, `D_tw` within
+  [-8.8e-5, 3.8e-5] `lambda`, `h_max` differences <= 7e-12 `lambda`); they measure the sensitivity to one refinement level, not the
+  absolute numerical error. `alpha_LAM` keeps its relative margin, the only A verdict whose meaning is unchanged at 0.25. The `sigma^2 = 1`
+  geometry is conservative for the absolute error in `lambda`; the relative error of `alpha_T` is not bounded by that argument (A4.5).
+- The fractions divide by the production mean as a fixed number, and neither transverse mean is resolved from 0 (`|mean|` is 0.07
+  (`alpha_TAM`) and 0.56 (`alpha_TP`) of the 90 % half-width), so the absolute differences are the meaningful reading for both
+  estimators; the fraction intervals understate the uncertainty. `alpha_TP`: no narrow-ladder trend (`D_f` [-4.0e-6, 2.0e-6] `lambda`);
+  the production-domain twin difference `D_tw` (production minus coarse twin) is small and negative, [-2.1e-5, -2.7e-7] `lambda`
+  (`refinement trend detected`: -0.56 % of the mean after the F4 scaling by `2^-1.5`). `alpha_TAM`: the mean is negative, so its
+  fractions in `decisions.md` have the opposite sign of the absolute differences (the `h/16 - h/8` difference, [1.2e-13, 6.7e-12]
+  `lambda`, is printed -2.74e-6 %); that `h_max` "trend" is of order 1e-12 `lambda`, detected only because the 20 paired differences
+  are very consistent.
+- Descriptive, post hoc, outside the range in which B&dD state eq. 7 (`sigma_Y^2 >= 1`): paired by seed (5001-5025), `alpha` at 0.25
+  minus `alpha(sigma^2 = 1) / 16` (a `sigma^4` scaling) has the 90 % CI [-2.5e-3, 9.0e-4] (`alpha_TAM`) and [-9.1e-4, 1.3e-3]
+  (`alpha_TP`), including 0; minus `alpha(sigma^2 = 1) / 4` (a `sigma^2` scaling): [-4.6e-3, -9.4e-4] and [-2.0e-3, -6.5e-4], below 0.
+  Between 1, 2.25 and 4 the measured `alpha_TAM` ratios (3.0, 7.4) follow neither scaling (`sigma^2`: 2.25, 4; `sigma^4`: 5.1, 16).
+
+The orchestrator recomputed the production intervals, `D_f`, `D_tw`, the order contrast, the `h_max` differences, the margins, the verdicts
+and the branch from `A/analysis/reduced/*.csv` with an independent script (no `sf39` import) for 1, 2.25 and 4: every value above is
+reproduced. For 0.25 the same quantities, the A4.1 fractions and the Gate 5 interval were recomputed by an independent agent (no `sf39`
+import, calibrated on `s1`): all 119 recomputed values agree to 1.8e-13 relative or better, and every verdict, branch and label follows the
+pre-registered rules. Values built on some Student quantiles of the host's scipy 1.11.4 (some 95 % half-widths, the Gate 5 Welch interval)
+differ from exact ones by about 1e-10..1e-9 relative (all amplitudes; no verdict affected). The per-realization Gate 5 series are not in the
+repository: the Welch interval, its degrees of freedom, the margin and the verdict were recomputed from the summary statistics, and the Par2
+mean, `U_c`, `tau_b*`, `tau_c` and windows from the Par2 aggregate outputs; the Lagrangian Gate 5 arm and the BCa intervals (so also the BCa
+reading of Gate 5 in section 3) are the analysis output's, not independently recomputed.
+
+**Transverse-domain effect (stated with the classification, specification D).** The narrow sections are 12.8 / 8 / 4 `lambda` wide (12.8
+also at 0.25, where the narrow 1x rung minus production is +4.4e-5 [-1.9e-3, 1.9e-3] in `alpha_TAM` and -7.2e-4 [-2.2e-3, 7.4e-4] in
+`alpha_TP`, neither resolved, with `U` 1.0417 on the rung against 1.0422). The narrow 1x rung is below the production domain by 0.0009 (not
+resolved) / 0.0067 (23 %) / 0.041 (58 %) in `alpha_TAM`, and at `sigma^2 = 4` the narrow section is a different flow regime (`U` 1.45
+against 1.87). F4's stated assumption ("the production-domain error is represented by the narrow ladder or by `|D_tw| / 2^1.5`") therefore
+rests, at `sigma^2` 2.25 and especially 4, on the coarse twin, which is the only `lambda/h` evidence on the production domain: `D_tw` inside
+`+-2^1.5 m` for both estimators (at `sigma^2 = 4`: `alpha_TAM` +3.0 %, `alpha_TP` +0.5 % from `lambda/h` 16 to 32). The width check (F10,
+section 4) shows `alpha_T` at `sigma^2 = 4` still depends on the width between 4 and 12 `lambda`; between 12 and 24 `lambda` it is
+unresolved at `+-10 %`.
 
 ### 3. Gate 5 (C): `alpha_LAM` of the Lagrangian twin against Par2 RWPT
 
 | `sigma^2` | `tau_c` | window `[0.75, 1] tau_c` (box time) | Lagrangian twin `alpha_LAM` (`U_c`) | Par2 `alpha_x` (`U_c`) | difference 90 % CI (Welch) | margin | verdict | FV `qbar` | ANCOVA | Par2 `alpha_T` fixed (descriptive) |
 |---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 148.7 | [4.174, 5.565] | 0.2192 [0.2068, 0.2316] (1.044) | 0.2702 [0.2487, 0.2917] (0.01019) | -0.05101 [-0.07547, -0.02656] | 0.02702 | inconclusive | inconclusive | inconclusive | 0.001512 [5.53e-05, 0.002969] |
 | 1 | 124.5 | [3.086, 4.114] | 1.038 [1.006, 1.07] (1.182) | 1.138 [1.105, 1.171] (0.01157) | -0.1001 [-0.146, -0.05427] | 0.1138 | inconclusive | inconclusive | inconclusive | 0.006752 [0.004572, 0.008932] |
 | 2.25 | 92.95 | [2.01, 2.68] | 3.165 [3.103, 3.226] (1.445) | 3.208 [3.15, 3.266] (0.01418) | -0.04282 [-0.1268, 0.04112] | 0.3208 | agree | agree | agree | 0.02541 [0.02322, 0.0276] |
 | 4 | 23.75 | [0.7847, 1.046] | 5.614 [5.409, 5.82] (1.892) | 5.681 [5.525, 5.836] (0.0188) | -0.06639 [-0.3226, 0.1898] | 0.5681 | agree | agree | agree | 0.05721 [0.05198, 0.06243] |
@@ -206,28 +307,49 @@ depends on the width between 4 and 12 `lambda`; between 12 and 24 `lambda` it is
   `-0.114`; the ANCOVA on Par2's realized `sigma^2` (adjusted Par2 mean 1.139) and the FV-`qbar` normalization do not change it. An
   inconclusive verdict needs no attribution under C (only `disagree` does); the stated differences that could contribute are listed
   below.
-- Comparison statement (Gate 5): covariance model Gaussian `C(r) = sigma^2 exp(-(r/lambda)^2)` in both arms; `sigma^2` 1 / 2.25 / 4
-  (Lagrangian: SF-18 periodic generator, `normalize_variance` on, realized variance exactly `sigma^2`; Par2: random-spectral,
-  non-periodic, not normalized, realized `sigma^2` recorded per realization in `raw/field_stats_par2_*.txt` and used in the ANCOVA);
-  boundary conditions: head-driven, Dirichlet in `x`, periodic `y`/`z` in both (Par2's non-periodic field makes a seam at the periodic
-  faces); same physical domains (`lambda/h` 10 / 12 / 24 for Par2); injection: Lagrangian window `[0.1, 0.9]^2` of the plane `x = 5
-  lambda`, 100 x 100 lattice, uniform weights for the twin series used here; Par2 uniform over the full plane at `x = 5 lambda`; tracking:
-  DP5(4) on the C^2 spline flow (`tol` 1e-8, `h_max = h/8`) against Par2's explicit Euler stepping (`dt/2` sensitivity of SF-38 E),
-  purely advective in both; estimation: `alpha = [Var(t_hi) - Var(t_lo)] / (2 lambda U_c (t_hi - t_lo))` in the common normalized window
-  `[0.75, 1] tau_c`, `tau = U_c t / lambda`, `U_c` the centroid slope of each arm, `tau_c = min(tau_b*(twin), tau_b*(Par2))`, Welch
-  interval, margin `+-10 %` of the Par2 mean.
+- `inconclusive` at `sigma^2 = 0.25`, as addendum A4.4 anticipated if the `s1` offset persisted. It persisted (descriptive and
+  unpaired across amplitudes): the Lagrangian `alpha_LAM` is 18.9 % below Par2 (absolute -0.051 `lambda`; at `sigma^2 = 1` 8.8 %,
+  -0.100 `lambda`). The difference CI `[-0.0755, -0.0266]` excludes 0 and overlaps the equivalence band only by 4.6e-4 (1.7 % of the
+  margin 0.0270): the verdict is `inconclusive`, at the edge of `disagree`. The FV-`qbar` normalization (`[-0.0750, -0.0261]`) and the
+  ANCOVA on Par2's realized `sigma^2` (mean 0.2495, sd 0.0031: little leverage, A4.4; `[-0.0766, -0.0262]`, margin 0.0271) give the
+  same verdict. **The BCa sensitivity intervals (`B = 5000`, beside each Student interval) of the three comparisons lie entirely below
+  the lower margin** (upper limits -0.0296, -0.0291, -0.0285 against -0.0270 / -0.0271): read with BCa, Gate 5 at 0.25 would be
+  `disagree`. The pre-registration makes Student `t` primary and BCa a sensitivity (bootstrap intervals tend to under-cover at `n =
+  25`), so the verdict is `inconclusive`. This is the only reading of the study that BCa changes (checked for every Gate 5, ladder and
+  production interval at the four amplitudes). Whether Gate 5 at 0.25 calls for the explanation that C requires of a `disagree`
+  (Pollock bridge: representation vs generator, medium, time stepping) is left to the human review.
+- Gate 5 at 0.25 is not sized for its margin (`n = N_R = 25`, A4.4), and the Par2 `dt/2` sensitivity (SF-38 E) does not exist at 0.25;
+  at `sigma^2 = 1` SF-38 E recorded the paired `dt` minus `dt/2` series without threshold or interpretation. The Lagrangian-minus-Par2
+  offsets are -18.9 / -8.8 / -1.3 / -1.2 % (-0.051 / -0.100 / -0.043 / -0.066 `lambda`) at 0.25 / 1 / 2.25 / 4: unpaired, with
+  different seed counts and, at 2.25 and 4, other geometries. The listed differences between the arms (generator, stepping, injection)
+  are not separated by this study.
+- Comparison statement (Gate 5): covariance model Gaussian `C(r) = sigma^2 exp(-(r/lambda)^2)` in both arms; `sigma^2` 0.25 / 1 / 2.25 / 4
+  (Lagrangian: SF-18 periodic generator, `normalize_variance` on, realized variance exactly `sigma^2`; Par2: random-spectral, non-periodic,
+  not normalized, realized `sigma^2` recorded per realization in `raw/field_stats_par2_*.txt` and used in the ANCOVA); boundary conditions:
+  head-driven, Dirichlet in `x`, periodic `y`/`z` in both (Par2's non-periodic field makes a seam at the periodic faces); same physical
+  domains (`lambda/h` 10 / 10 / 12 / 24 for Par2); injection: Lagrangian window `[0.1, 0.9]^2` of the plane `x = 5 lambda`, 100 x 100
+  lattice, uniform weights for the twin series used here; Par2 uniform over the full plane at `x = 5 lambda`; tracking: DP5(4) on the C^2
+  spline flow (`tol` 1e-8, `h_max = h/8`) against Par2's explicit Euler stepping (`dt/2` sensitivity of SF-38 E, at 1, 2.25 and 4 only; not
+  available at 0.25), purely advective in both; estimation: `alpha = [Var(t_hi) - Var(t_lo)] / (2 lambda U_c (t_hi - t_lo))` in the common
+  normalized window `[0.75, 1] tau_c`, `tau = U_c t / lambda`, `U_c` the centroid slope of each arm, `tau_c = min(tau_b*(twin),
+  tau_b*(Par2))`, Welch interval, margin `+-10 %` of the Par2 mean.
 
 ### 4. Estimation and exploratory items
 
-- **F7 `Delta_half`** (`alpha_TP`): not shown decreasing at any amplitude (90 % CIs `[-0.0064, 0.0012]`, `[-0.0067, 0.0034]`,
-  `[-0.0086, 0.0068]`).
-- **F8 `rho(X_b)`** (pathwise drift between the `h/8` and `h/16` passes): `pathwise resolved` at `sigma^2` 1 and 4; at 2.25 none of the
+- **F7 `Delta_half`** (`alpha_TP`): not shown decreasing at any amplitude (90 % CIs `[-0.0037, 0.0010]` at 0.25, `[-0.0064, 0.0012]`,
+  `[-0.0067, 0.0034]`, `[-0.0086, 0.0068]`).
+- **F8 `rho(X_b)`** (pathwise drift between the `h/8` and `h/16` passes): `pathwise resolved` at `sigma^2` 0.25 (median 6.8e-10), 1
+  and 4; at 2.25 none of the
   three readings applies (median 1.4e-4, p95 7.3e-4 against the margin 1.5e-3).
 - **F11 method contrast** (`Delta_P = alpha(Pollock) - alpha(consumer)`, uniform-weight series): at production `Delta_P` includes 0 for
-  `alpha_TAM`, `alpha_TP` and the fixed-axis `alpha_T` at every amplitude (largest magnitude 2.3e-4). On the coarse settings at `sigma^2 =
+  `alpha_TAM`, `alpha_TP` and the fixed-axis `alpha_T` at 1, 2.25 and 4 (largest magnitude 2.3e-4). On the coarse settings at `sigma^2 =
   4`, `Delta_P > 0` for `alpha_TAM` (narrow 1/2 rung +5.7e-4, twin +1.7e-3) and it shrinks under refinement (difference in differences
   above 0), as Lester et al. §5.2 hypothesize, at 1-2 % of `alpha_TAM`; `alpha_TP` does not show it, and at `sigma^2 = 1` `Delta_P` of
-  `alpha_TP` is slightly below 0 on the narrow 1/2, 1x and twin settings. Estimation only.
+  `alpha_TP` is slightly below 0 on the narrow 1/2, 1x and twin settings. At `sigma^2 = 0.25`, `Delta_P` at production is slightly below
+  0 for `alpha_TAM`, `alpha_TP` and the fixed-axis `alpha_T` (means -4.0e-5, -6.2e-6, -4.0e-5 `lambda`; the face-flux bridge spreads
+  less than the consumer, opposite to the §5.2 hypothesis, at a size far below every margin); on the coarse settings it includes 0
+  except `alpha_TP` on the twin (-2.7e-5), and the `alpha_TP` difference in differences twin minus production is below 0 ([-2.8e-5,
+  -1.2e-5]). Estimation only.
 - **F10 width check** (`sigma^2 = 4`, `lambda/h = 16`, 30 realizations per arm, `+-10 %` of the wider arm):
 
   | comparison | estimator | wide | reference | difference 90 % CI (Welch) | margin | reading |
@@ -240,25 +362,33 @@ depends on the width between 4 and 12 `lambda`; between 12 and 24 `lambda` it is
   Exploratory, non-gating. The 12-`lambda` arm (ii) uses seeds 7201-7213 and 7215-7231: seed 7214 is excluded because its medium (b)
   solve did not converge (runner exit 4, 2000 iterations, rel 3.4e-7); owner decision of 2026-10-28 (bitácora), disclosed in
   `summary.json` (`F10.w12_vs_n16.excluded_seeds`). This is a selection of one field out of 31.
-- **Fixed-axis `alpha_T` against B&dD** (one-sided 95 % upper limits, hypothesis-generating): `sigma^2 = 1`: 0.01157, not below B&dD's
-  0.01; `sigma^2 = 2.25`: 0.03127, below B&dD's 0.044. Conditions differ: B&dD use fixed axes, a 5 `lambda` injection buffer, `N_R = 500`,
-  first-order Euler stepping on linearly interpolated velocities (`docs/theory/beaudoin-de-dreuzy-2013-key-claims.md`), and domains,
-  generator and boundary conditions of their own. Context: B&dD Table 1 longitudinal fit `alpha_LAF` 1.27 / 4.35 / 12.7 at `sigma^2` 1 /
-  2.25 / 4 (asymptotic, `t_LF` 2.21 / 4.83 / 20.5); the window values here (1.04 / 3.14 / 4.65) are pre-asymptotic, increasingly so with
-  `sigma^2`. B&dD eq. 7 (`alpha_TAM ~ sigma^4`) would give ratios 5.1 and 16 between the amplitudes; the measured `alpha_TAM` ratios are
-  3.0 and 7.4.
+- **Fixed-axis `alpha_T` against B&dD** (one-sided 95 % upper limits, hypothesis-generating): `sigma^2 = 0.25`: 0.00155, not below B&dD's
+  bound `< 1e-3`, read as uninformative (addendum A4.3); the one-sided 95 % lower limit (-0.0018) does not exceed 1e-3, so no disagreement
+  is stated; `sigma^2 = 1`: 0.01157, not below B&dD's 0.01; `sigma^2 = 2.25`: 0.03127, below B&dD's 0.044. Conditions differ: B&dD use fixed
+  axes, a 5 `lambda` injection buffer, `N_R = 500`, first-order Euler stepping on linearly interpolated velocities
+  (`docs/theory/beaudoin-de-dreuzy-2013-key-claims.md`), and domains, generator and boundary conditions of their own. Context: B&dD Table 1
+  longitudinal fit `alpha_LAF` 0.24 / 1.27 / 4.35 / 12.7 at `sigma^2` 0.25 / 1 / 2.25 / 4 (asymptotic, `t_LF` 1.35 / 2.21 / 4.83 / 20.5);
+  the window values here (1.04 / 3.14 / 4.65 at 1 / 2.25 / 4) are pre-asymptotic, increasingly so with `sigma^2`; at 0.25 the window value
+  is 0.220 and the window (about 120-160 advection times) spans about 90-120 `t_LF`. B&dD eq. 7 (`alpha_TAM ~ sigma^4`) would give ratios
+  5.1 and 16 between the amplitudes 1, 2.25 and 4; the measured `alpha_TAM` ratios are 3.0 and 7.4.
+- **Longitudinal context at 0.25** (descriptive, post hoc, not evidence for either Gate 5 arm, no attribution): the first-order
+  prediction `alpha_L = (sqrt(pi)/2) sigma^2 lambda` (B&dD eq. 2, same covariance definition; the small-`sigma^2`, long-time limit,
+  which also gives `D_TA = 0`) is 0.2216 `lambda`; B&dD's fit is 0.24. The Lagrangian production value 0.2202 [0.2088, 0.2316] and twin
+  value 0.2192 [0.2068, 0.2316] contain the former and lie below the latter; Par2's 0.2702 [0.2487, 0.2917] lies above both.
 
 ### 5. Recorded context (E)
 
 | `sigma^2` | plane statuses (mean per realization of 1e4) | `e_v` median of p50 / p99 / p100 | `x`-faces `u <= 0` (mean) | tilt mean (rad) | drift tilt mean | split-half fraction TAM / TP / LAM | `alpha_TAM` flux / `exp(-I)` / Pollock / uniform | `alpha_TP` flux / `exp(-I)` / Pollock / uniform |
 |---|---|---|---|---|---|---|---|---|
+| 0.25 | ok 1e+04, status 1 0 | 0.01465 / 0.05604 / 0.08724 | 0 | 0.0005339 | 0.001224 | 0.0009892 / 1.246e-06 / 0.001938 | -0.0001238 / -0.0001154 / -0.0001741 / -0.0001084 | 0.0006829 / 0.0006867 / 0.0006723 / 0.0007057 |
 | 1 | ok 1e+04, status 1 0 | 0.05524 / 0.2194 / 0.3769 | 0 | 0.001735 | 0.003432 | 0.01166 / 0.003746 / 0.1095 | 0.009515 / 0.009539 / 0.009577 / 0.00919 | 0.008241 / 0.008256 / 0.008244 / 0.007938 |
 | 2.25 | ok 1e+04, status 1 0.1935 | 0.05019 / 0.1988 / 0.3463 | 8.539e-06 | 0.003745 | 0.006738 | 0.08309 / 0.02366 / 0.3356 | 0.02872 / 0.02873 / 0.02835 / 0.02806 | 0.03078 / 0.03075 / 0.03006 / 0.03048 |
 | 4 | ok 9994, status 1 6.465 | 0.01631 / 0.06499 / 0.107 | 0.0006681 | 0.01607 | 0.0236 | 0.0896 / 0.0229 / 0.1497 | 0.07016 / 0.0701 / 0.0694 / 0.06449 | 0.06665 / 0.06665 / 0.06694 / 0.06717 |
 
 - The Lagrangian `e_v = 1 - exp(-int div v_s dt)` is not small at `lambda/h` 10 and 16 (median per-realization p50 5.5 % and 5.0 %) and
-  drops at `lambda/h = 32` (1.6 %); `alpha_T` with the compensating `exp(-I)` weights differs from the flux-weighted value by less than
-  0.3 % at every amplitude, and the `lambda/h` ladders do not move `alpha_T` while `e_v` changes, so the divergence of `v_s` is not what
+  drops at `lambda/h = 32` (1.6 %); at 0.25 (`lambda/h` 10) it is 1.5 %. `alpha_T` with the compensating `exp(-I)` weights differs from
+  the flux-weighted value by less than 0.3 % at 1, 2.25 and 4; at 0.25 by 8.3e-6 `lambda` (`alpha_TAM`, whose mean is near 0) and 0.6 %
+  (`alpha_TP`). At 1, 2.25 and 4 the `lambda/h` ladders do not move `alpha_T` while `e_v` changes, so the divergence of `v_s` is not what
   produces the transverse growth.
 - Recorded per realization in `A/analysis/reduced/<set>.csv`: statuses and exits by type, excluded fractions, `active` counts, `t_b,r`,
   `e_v` percentiles, `flow_stats.json` fields, realized/applied variance, tilt, the fixed-minus-aligned difference, `alpha_TD` in the
@@ -270,13 +400,20 @@ depends on the width between 4 and 12 `lambda`; between 12 and 24 `lambda` it is
 
 Within this model, medium and domain, at the measured travel distance:
 
-- `alpha_L` (fixed axes, window `[0.75, 1] tau_b*`): 1.038 [1.008, 1.068], 3.141 [3.083, 3.198], 4.654 [4.530, 4.779] `lambda` at
-  `sigma^2` 1, 2.25, 4 (90 %); converged in `lambda/h` and `h_max` at 1 and 4, inconclusive in `lambda/h` at 2.25 (`h_max` converged).
+- `alpha_L` (fixed axes, window `[0.75, 1] tau_b*`): 0.2202 [0.2088, 0.2316], 1.038 [1.008, 1.068], 3.141 [3.083, 3.198], 4.654
+  [4.530, 4.779] `lambda` at `sigma^2` 0.25, 1, 2.25, 4 (90 %); converged in `lambda/h` and `h_max` at 0.25, 1 and 4, inconclusive in
+  `lambda/h` at 2.25 (`h_max` converged).
 - `alpha_T`: `alpha_TAM` 0.0095 [0.0074, 0.0116], 0.0287 [0.0262, 0.0313], 0.0702 [0.0650, 0.0754]; `alpha_TP` 0.0082 [0.0068, 0.0097],
-  0.0308 [0.0287, 0.0329], 0.0666 [0.0622, 0.0711] `lambda`. Gate 4 classification by rule D: **`physical (positive)` at every
-  amplitude, both estimators**, with the transverse-domain qualification above (at `sigma^2 = 4` the value depends on the transverse
-  width up to at least 12 `lambda`; whether 12 `lambda` is width-converged is unresolved).
-- Gate 5: `agree` at `sigma^2` 2.25 and 4, `inconclusive` at 1 (Lagrangian 8.8 % below Par2).
+  0.0308 [0.0287, 0.0329], 0.0666 [0.0622, 0.0711] `lambda`. Gate 4 classification by rule D: **`physical (positive)` at `sigma^2` 1, 2.25
+  and 4, both estimators**, with the transverse-domain qualification above (at `sigma^2 = 4` the value depends on the transverse width up to
+  at least 12 `lambda`; whether 12 `lambda` is width-converged is unresolved).
+- At `sigma^2 = 0.25`: `alpha_TAM` -0.0001 [-0.0018, 0.0016], `alpha_TP` 0.0007 [-0.0005, 0.0019] `lambda` (`N_R = 25`); rule D:
+  **`physical (bounded)`**, both estimators: the transverse growth is not resolved from 0 and is at most about 1.6e-3 / 1.9e-3
+  `lambda` (90 % upper limits); `alpha_TP` refinement trend of -0.56 % detected (twin); the label does not exclude a mostly numerical
+  `alpha_T` (A4.1). With the floors and `N_R` of the addendum the label is largely set by sampling; the addendum's anticipated outcomes
+  (`N_R` near 20, a sampling-set label, Gate 5 `inconclusive`) occurred (A4.2, A4.4).
+- Gate 5: `agree` at `sigma^2` 2.25 and 4, `inconclusive` at 1 (Lagrangian 8.8 % below Par2) and at 0.25 (18.9 % below Par2, at the
+  edge of `disagree`; the BCa sensitivity intervals read `disagree`).
 - The pre-registered anticipated outcome at `sigma^2 = 4` (inconclusive) did not occur.
 
 The classification follows the pre-registered refinement protocol and independent comparators (Pollock bridge, `exp(-I)` weights,
@@ -290,13 +427,19 @@ an assumption the project does not presuppose.
 - At `sigma^2 = 4` (and less so at 2.25) the narrow-section ladder measures a domain-restricted object; the production-domain `lambda/h`
   evidence is the coarse twin (one factor of 2, band `+-2^1.5 m`). The width dependence up to 12 `lambda` and the unresolved 12-to-24
   comparison qualify the `sigma^2 = 4` value.
-- B not met for `alpha_TAM` at `sigma^2 = 2.25` (6 % over the half-width target).
+- B not met for `alpha_TAM` at `sigma^2 = 2.25` (6 % over the half-width target) and for `alpha_LAM` at 0.25 (25 % over).
+- `sigma^2 = 0.25` was added after the other results were known (decision 2026-10-29); its settings were fixed before its first run and
+  equal those of `s1` except `--eps` and the Par2 `sigma^2`. There is no SF-37-type verification of the consumer at 0.25: its convergence
+  evidence is this study's own `lambda/h` and `h_max` ladders. Its fields are the `s1` fields scaled by 0.5 (same seeds), so the two
+  amplitudes are correlated. At 0.25 the absolute floors decide the transverse ladder verdicts and `numerical` is practically unreachable
+  (A4.1).
 - One field (seed 7214) of the exploratory width arm (ii) was excluded after a non-converged solve (owner decision, disclosed); the
   primary arms had no failure.
-- Gate 5 at `sigma^2 = 1` is inconclusive; the arms differ in generator (periodic normalized vs random-spectral not normalized), in
+- Gate 5 at `sigma^2` 1 and 0.25 is inconclusive (at 0.25 at the edge of `disagree`, `disagree` under the BCa sensitivity, not sized
+  for its margin, no Par2 `dt/2` sensitivity); the arms differ in generator (periodic normalized vs random-spectral not normalized), in
   stepping (DP5(4) on the spline vs Euler) and in injection (window vs full plane).
 - Single model: Gaussian covariance, scalar isotropic `K`, medium (b), purely advective; nothing here extends to exponential covariance,
-  anisotropic tensors, finite Péclet or `sigma^2 > 4` (6.25 deferred, F12).
+  anisotropic tensors, finite Péclet or `sigma^2 > 4` (6.25 deferred, F12), nor to `sigma^2 < 0.25`.
 
 ## Deviations recorded for the human review
 
@@ -307,17 +450,36 @@ an assumption the project does not presuppose.
 - Rule D branch 3 is applied as written (no "other's point estimate" clause); it did not fire.
 - `s4_w12c`: continuation arm of the halted `s4_w12` (RR6), owner decision 2026-10-28; the preregistration is unchanged.
 - `extend` and the first `width` ran in one detached job (`sf39-extend`), with the commands and order of the specification's two jobs.
-- `A/analysis/manifest.txt` also lists three bookkeeping files that `run_sf39.sh` completes after the manifest is written
-  (`logs/analysis.log`, `logs/analysis.time`, `results.txt`); their sha256 there are of the empty/partial files, so `sha256sum -c` reports
-  them FAILED by construction. Every analysis output (`summary.json`, `decisions.*`, `reduced/`, `series/`) verifies.
+- `A/analysis/manifest.txt` also lists bookkeeping files that `run_sf39.sh` completes after the manifest is written; their sha256 there
+  are of the empty, partial or previous files, so `sha256sum -c` reports them FAILED by construction: `logs/analysis.log`,
+  `logs/analysis.time`, `results.txt`, and, since the four-amplitude analysis ran in the directory of the first one, also
+  `exit_codes.tsv`, `sha256.txt` and `walls.tsv` (6 FAILED, 77 OK). Every analysis output (`summary.json`, `decisions.*`, `reduced/`,
+  `series/`) verifies.
+- `s025` addendum (decision 2026-10-29): the Goal was amended (amplitude set) after the results at 1, 2.25 and 4 were known, and the
+  increment returned from `awaiting_review` to `active`; the post-pilot budget stop was pre-authorized for `s025` (no stop; `N` recorded
+  before the extension, commit `c155a9b6`).
+- `s025` checks: the first run (tree `61a019e0`) failed two unit tests because the host's git 1.8.3 has no `git -C`; corrective W8-d
+  (`28ddeadd`, no `git -C` in the scripts or their tests), audited, then the checks passed (`sf39-checks-s025b`). In the first run the
+  four `chk_s025_*` solve checks ran and converged and geometry, smoke and sign table passed; the regression and the byte check are the
+  recorded verdicts of 2026-10-27 in both runs (reused by design, README "s025").
+- W9 (`d54db6d8`, after the evidence import): test-only corrective. The committed-evidence test of `sf39.regress_existing` hard-coded
+  the 53 `reduced/` entries of the three-amplitude evidence and failed once the four-amplitude analysis (68 entries) was committed; it
+  now derives the count from the committed manifest. No script behavior changed; no run depends on it.
+- `s025` part bookkeeping (`results.txt`, `run.env`, ... are rewritten by each invocation of a part) was copied on the host after each
+  `s025` invocation and is imported under `A/raw/campaign_s025/<part>/`, beside the committed `A/raw/campaign/`.
 
 ## Decision points (preregistration section 10; `A/analysis/decisions.md` verbatim, headings one level down)
-
 
 ### primary
 
 | amplitude | estimator | decision point | verdict | CI | n | note |
 |---|---|---|---|---|---|---|
+| s025 | alpha_TAM | Gate 4 label (D) | physical (bounded) | [-0.00180066, 0.00155315] | 25 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=-0.000123753; refinement trend detected: d16_8: -2.74e-06 % [-5.38e-06, -9.76e-08] |
+| s025 | alpha_TP | Gate 4 label (D) | physical (bounded) | [-0.000547463, 0.00191332] | 25 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.000682929; refinement trend detected: D_tw/2^1.5: -0.56 % [-1.11, -0.0138] |
+| s025 | alpha_TAM+alpha_TP | Gate 4 amplitude label (D) | physical (bounded) |  | 25 | alpha_TAM: physical (bounded); alpha_TP: physical (bounded) |
+| s025 | alpha_LAM | Gate 5 (C) Lagrangian twin vs Par2 | inconclusive | [-0.0754664, -0.0265599] | 25/25 | diff=-0.0510132 margin=0.0270195; late Par2 beyond pilot 0/5 |
+| s025 | alpha_LAM | Gate 5 sensitivity FV qbar | inconclusive | [-0.0749753, -0.0260681] | 25/25 | diff=-0.0505217 margin=0.0270195 |
+| s025 | alpha_LAM | Gate 5 sensitivity ANCOVA | inconclusive | [-0.0765806, -0.0262464] | 25/25 | diff=-0.0514135 margin=0.0270595 adjusted Par2 mean=0.270595 |
 | s1 | alpha_TAM | Gate 4 label (D) | physical (positive) | [0.00744747, 0.0115829] | 50 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.00951516 |
 | s1 | alpha_TP | Gate 4 label (D) | physical (positive) | [0.0067542, 0.00972685] | 50 | branch 4; ladder=None difference=None; h=converged hmax=converged; production mean=0.00824052 |
 | s1 | alpha_TAM+alpha_TP | Gate 4 amplitude label (D) | physical (positive) |  | 50 | alpha_TAM: physical (positive); alpha_TP: physical (positive) |
@@ -341,6 +503,21 @@ an assumption the project does not presuppose.
 
 | amplitude | estimator | decision point | verdict | CI | n | note |
 |---|---|---|---|---|---|---|
+| s025 | alpha_TAM | B half-width (95 %) | met | [-0.00214667, 0.00189916] | 25 | halfwidth=0.00202291 target=0.0025 |
+| s025 | alpha_TAM | A h narrow verdict (D_f) | converged | [-1.1887e-05, 3.34125e-06] | 20 | m=0.00125 mean D_f=-4.27286e-06 |
+| s025 | alpha_TAM | A h production verdict (F4) | converged | [-8.82288e-05, 3.84826e-05] | 20 | CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True) |
+| s025 | alpha_TAM | A h order contrast | monotone order >= 1.5 not rejected | [-1.14125e-05, 9.06838e-06] | 20 | CI of s(2^1.5 D_f - D_c), s=-1 |
+| s025 | alpha_TAM | A h_max verdict (h/16 - h/8) | converged | [1.20829e-13, 6.65552e-12] | 20 | m=0.00125 mean=3.38817e-12 |
+| s025 | alpha_TP | B half-width (95 %) | met | [-0.000801337, 0.00216719] | 25 | halfwidth=0.00148427 target=0.0025 |
+| s025 | alpha_TP | A h narrow verdict (D_f) | converged | [-4.02883e-06, 1.97855e-06] | 20 | m=0.00125 mean D_f=-1.02514e-06 |
+| s025 | alpha_TP | A h production verdict (F4) | converged | [-2.13484e-05, -2.67101e-07] | 20 | CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True) |
+| s025 | alpha_TP | A h order contrast | monotone order >= 1.5 not rejected | [-5.70056e-06, 9.26329e-07] | 20 | CI of s(2^1.5 D_f - D_c), s=-1 |
+| s025 | alpha_TP | A h_max verdict (h/16 - h/8) | converged | [-1.6905e-13, 9.45267e-13] | 20 | m=0.00125 mean=3.88109e-13 |
+| s025 | alpha_LAM | B half-width (95 %) | not met | [0.206459, 0.233919] | 25 | halfwidth=0.0137301 target=0.0110095 |
+| s025 | alpha_LAM | A h narrow verdict (D_f) | converged | [-0.000216888, 0.000300698] | 20 | m=0.00503004 mean D_f=4.19047e-05 |
+| s025 | alpha_LAM | A h production verdict (F4) | converged | [-0.00117759, 3.3864e-05] | 20 | CI of D_tw vs +-2^1.5 m=0.0142271 (inside=True) |
+| s025 | alpha_LAM | A h order contrast | monotone order >= 1.5 not rejected | [-0.000371473, 0.000218061] | 20 | CI of s(2^1.5 D_f - D_c), s=+1 |
+| s025 | alpha_LAM | A h_max verdict (h/16 - h/8) | converged | [-4.12448e-11, 1.98941e-11] | 20 | m=0.00560406 mean=-1.06753e-11 |
 | s1 | alpha_TAM | B half-width (95 %) | met | [0.00703675, 0.0119936] | 50 | halfwidth=0.00247841 target=0.0025 |
 | s1 | alpha_TAM | A h narrow verdict (D_f) | converged | [-0.000167966, 3.92091e-05] | 20 | m=0.00125 mean D_f=-6.43787e-05 |
 | s1 | alpha_TAM | A h production verdict (F4) | converged | [0.000102543, 0.00103975] | 20 | CI of D_tw vs +-2^1.5 m=0.00353553 (inside=True) |
@@ -391,6 +568,32 @@ an assumption the project does not presuppose.
 
 | amplitude | estimator | decision point | verdict | CI | n | note |
 |---|---|---|---|---|---|---|
+| s025 | alpha_TP | F7 Delta_half | not shown decreasing | [-0.00371841, 0.00104937] | 25 | mean Delta_half=-0.00133452 |
+| s025 | rho(X_b), pair 8-16 | F8 readings | pathwise resolved |  | 20 | median=6.79164e-10 p95=6.93762e-10 (m=0.00125, S=0.360456) |
+| s025 | alpha_TAM | F11 Delta_P production | Delta_P below 0 | [-7.01444e-05, -9.50143e-06] | 25 | mean Delta_P=-3.98229e-05 |
+| s025 | alpha_TP | F11 Delta_P production | Delta_P below 0 | [-1.17339e-05, -6.90432e-07] | 25 | mean Delta_P=-6.21218e-06 |
+| s025 | alpha_Tfixed | F11 Delta_P production | Delta_P below 0 | [-7.01486e-05, -9.52468e-06] | 25 | mean Delta_P=-3.98367e-05 |
+| s025 | alpha_TAM | F11 Delta_P narrow_half | Delta_P includes 0 | [-7.76813e-05, 2.49804e-05] | 20 | mean Delta_P=-2.63504e-05 |
+| s025 | alpha_TP | F11 Delta_P narrow_half | Delta_P includes 0 | [-2.8619e-05, 5.30864e-06] | 20 | mean Delta_P=-1.16552e-05 |
+| s025 | alpha_Tfixed | F11 Delta_P narrow_half | Delta_P includes 0 | [-7.77135e-05, 2.51322e-05] | 20 | mean Delta_P=-2.62906e-05 |
+| s025 | alpha_TAM | F11 Delta_P narrow_1x | Delta_P includes 0 | [-2.62843e-05, 1.31843e-05] | 20 | mean Delta_P=-6.55002e-06 |
+| s025 | alpha_TP | F11 Delta_P narrow_1x | Delta_P includes 0 | [-8.56731e-06, 5.26695e-08] | 20 | mean Delta_P=-4.25732e-06 |
+| s025 | alpha_Tfixed | F11 Delta_P narrow_1x | Delta_P includes 0 | [-2.62733e-05, 1.31759e-05] | 20 | mean Delta_P=-6.54873e-06 |
+| s025 | alpha_TAM | F11 Delta_P narrow_2x | Delta_P includes 0 | [-3.27619e-06, 5.87662e-06] | 20 | mean Delta_P=1.30022e-06 |
+| s025 | alpha_TP | F11 Delta_P narrow_2x | Delta_P includes 0 | [-2.27074e-06, 3.88399e-07] | 20 | mean Delta_P=-9.41172e-07 |
+| s025 | alpha_Tfixed | F11 Delta_P narrow_2x | Delta_P includes 0 | [-3.2623e-06, 5.88597e-06] | 20 | mean Delta_P=1.31184e-06 |
+| s025 | alpha_TAM | F11 Delta_P twin | Delta_P includes 0 | [-0.000145029, 5.55133e-05] | 20 | mean Delta_P=-4.47578e-05 |
+| s025 | alpha_TP | F11 Delta_P twin | Delta_P below 0 | [-3.81225e-05, -1.53903e-05] | 20 | mean Delta_P=-2.67564e-05 |
+| s025 | alpha_Tfixed | F11 Delta_P twin | Delta_P includes 0 | [-0.000144991, 5.54058e-05] | 20 | mean Delta_P=-4.47926e-05 |
+| s025 | alpha_TAM | F11 difference in differences narrow_half_minus_1x | difference includes 0 | [-6.24796e-05, 2.28788e-05] | 20 | mean=-1.98004e-05 |
+| s025 | alpha_TP | F11 difference in differences narrow_half_minus_1x | difference includes 0 | [-2.07533e-05, 5.95767e-06] | 20 | mean=-7.39784e-06 |
+| s025 | alpha_Tfixed | F11 difference in differences narrow_half_minus_1x | difference includes 0 | [-6.25438e-05, 2.306e-05] | 20 | mean=-1.97419e-05 |
+| s025 | alpha_TAM | F11 difference in differences narrow_1x_minus_2x | difference includes 0 | [-2.47922e-05, 9.09177e-06] | 20 | mean=-7.85023e-06 |
+| s025 | alpha_TP | F11 difference in differences narrow_1x_minus_2x | difference includes 0 | [-6.64431e-06, 1.20168e-08] | 20 | mean=-3.31615e-06 |
+| s025 | alpha_Tfixed | F11 difference in differences narrow_1x_minus_2x | difference includes 0 | [-2.47951e-05, 9.07393e-06] | 20 | mean=-7.86057e-06 |
+| s025 | alpha_TAM | F11 difference in differences twin_minus_production | difference includes 0 | [-8.49247e-05, 8.30462e-05] | 20 | mean=-9.39265e-07 |
+| s025 | alpha_TP | F11 difference in differences twin_minus_production | difference below 0 | [-2.78738e-05, -1.15191e-05] | 20 | mean=-1.96964e-05 |
+| s025 | alpha_Tfixed | F11 difference in differences twin_minus_production | difference includes 0 | [-8.49008e-05, 8.29729e-05] | 20 | mean=-9.63955e-07 |
 | s1 | alpha_TP | F7 Delta_half | not shown decreasing | [-0.00643519, 0.00115292] | 50 | mean Delta_half=-0.00264114 |
 | s1 | rho(X_b), pair 8-16 | F8 readings | pathwise resolved |  | 20 | median=5.37004e-08 p95=8.31056e-08 (m=0.00125, S=0.387342) |
 | s1 | alpha_TAM | F11 Delta_P production | Delta_P includes 0 | [-0.000186375, 0.000102516] | 50 | mean Delta_P=-4.19296e-05 |
@@ -502,6 +705,10 @@ an assumption the project does not presuppose.
 | all |  | CHECK_solve_chk_s4_tw | converged |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_solve_chk_s4_w24 | converged |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_solve_chk_s4_w12 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_n05 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_n10 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_n20 | converged |  |  | rc=0 (from checks/results.txt) |
+| all |  | CHECK_solve_chk_s025_tw | converged |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_bytecheck | BYTECHECK |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_smoke_reduce | SMOKE |  |  | rc=0 (from checks/results.txt) |
 | all |  | CHECK_signtable | SIGNTABLE |  |  | rc=0 (from checks/results.txt) |

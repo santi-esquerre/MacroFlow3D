@@ -1,0 +1,19 @@
+[2026-10-29T18:02:29Z] job=sf39-unittest-final GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-29T18:02:29Z] job=sf39-unittest-final chose GPU 0 (auto: least-loaded)
+[2026-10-29T18:02:29Z] job=sf39-unittest-final session=macroflow3d-SF-39-sf39-unittest-final started
+[2026-10-29T18:02:29Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-29T18:02:29Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-29T18:02:29Z] command=echo TREE=$(cat .mf3d_source_rev); cd docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts && python3 --version && python3 -c 'import numpy, scipy; print(numpy.__version__, scipy.__version__)' && git --version; python3 -W error -m unittest discover -s . -t . 2>&1 | tail -4; python3 -m sf39.geometry check | tail -1; echo UNITTEST_FINAL_DONE
+TREE=d54db6d81d16
+Python 3.11.7
+1.26.4 1.11.4
+git version 1.8.3.1
+P4 s1_n05,s1_n10,s1_n20,s025_n05,s025_n10,s025_n20 P=197 sha256=b03effae1b1c6172d6a13d12efca504a93a2ec2939c1a9dde7690615d953059f OK
+P5 s225_n08,s225_n16,s225_n32 P=199 sha256=592dee43813642071a4e92173b02be03c718afb66b8916e5c60a31dc7a90bcd1 OK
+P6 s4_n16,s4_n32,s4_n64 P=95 sha256=2f0d0048c93883df69448f5d59a0ed981f384d589261c6091848865da2e696a3 OK
+P7 s4_w24 P=95 sha256=fb48abd16a4fc39aa6217e99360357c869053d7b44acd645ba94c90b62b7ff83 OK
+GEOMETRY_CHECK OK
+UNITTEST_FINAL_DONE
+[2026-10-29T18:06:41Z] job=sf39-unittest-final finished exit=0
