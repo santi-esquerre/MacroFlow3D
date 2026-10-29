@@ -265,7 +265,7 @@ class Refusals(Fixture):
 
 
 class CommittedEvidence(unittest.TestCase):
-    """The real committed analysis: it verifies against its own manifest (53 reduced/ entries) and an exact copy is reproduced."""
+    """The committed analysis, whatever its amplitude set: it verifies against its own manifest and an exact copy is reproduced."""
 
     def test_committed_analysis_against_a_copy(self):
         with tempfile.TemporaryDirectory() as t:
@@ -273,8 +273,11 @@ class CommittedEvidence(unittest.TestCase):
             shutil.copytree(ANALYSIS, new)
             rc, out, err = run(str(ANALYSIS), new)
             self.assertEqual((rc, err), (0, ""), out)
-            self.assertIn("53 reduced/ entries", out)
-            self.assertIn("csv files: 53 reduced + 3 series compared", out)
+            entries, _ = rg.read_manifest(str(ANALYSIS))
+            n = sum(1 for p in entries if p.startswith("reduced/"))  # the notion of regress_existing.verify_reference
+            self.assertGreaterEqual(n, 53)  # the three-amplitude evidence (commit 4dbf31f2) is a subset
+            self.assertIn("%d reduced/ entries" % n, out)
+            self.assertIn("csv files: %d reduced + 3 series compared" % n, out)
             self.assertIn("reference manifest sha256 %s" % sha(str(ANALYSIS / "manifest.txt")), out)
             with open(os.path.join(new, "reduced", "s1_prod.csv"), "a") as f:
                 f.write("x")

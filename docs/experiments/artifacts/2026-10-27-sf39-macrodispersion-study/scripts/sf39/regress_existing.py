@@ -13,7 +13,7 @@ Guards against a vacuous pass (each refuses with exit 2 and compares nothing):
   * the reference has no `manifest.txt`, or a file it lists under `reduced/`, `series/` or as `summary.json` / `decisions.csv` is missing or
     does not match its sha256 (the bookkeeping entries completed after the manifest - `logs/`, `results.txt`, `run.env`, `exit_codes.tsv`,
     `walls.tsv`, `sha256.txt`, `PART_EXIT`, `.build_digest` - are not checked), or a file compared below is not listed;
-  * the number of `reduced/*.csv` of the reference is 0 or differs from the number of `reduced/` entries of its manifest (53 for the evidence).
+  * the number of `reduced/*.csv` of the reference is 0 or differs from the number of `reduced/` entries of its manifest (53 for the evidence of commit 4dbf31f2, 68 for the four-amplitude evidence).
 The report prints the sha256 of the reference manifest.
 
 Checks (stdlib only):
