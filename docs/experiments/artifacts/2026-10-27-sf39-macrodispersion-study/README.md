@@ -129,7 +129,8 @@ ascending), with the `s1` geometry, `--eps 0.5`, the `s1` seeds and the Par2 con
   refuses with exit 2, before the part starts (results.txt, PART_EXIT and run.env are left as they were), a revision that is empty or blank,
   `unknown`, or ends in `-dirty` (after an edit a dirty tree keeps its revision, so the tied checks would not re-run); a dry run only prints.
   The RR2 regression and the RR3 (iii) byte check records are reused, the existing `chk_s1..s4` ids are skipped as recorded, and the four
-  `chk_s025_*` solve checks run as new ids.
+  `chk_s025_*` solve checks run as new ids. The host's git is 1.8.3 (no `git -C`): the script and its tests enter the repository with `cd` / a working
+  directory and use no git feature newer than 1.7.2 (`-c`); the git tests skip with a stated reason below that.
 * **Checkpoint.** `run_sf39.sh <bin> checkpoint s025` writes only under `checkpoint/s025/`: the write-once `tau_b_star_s025.json` (schema
   `sf39-tau_b_star-v1`, same content rules; a different content is refused), `sealed/` (`estimates.csv`, `nr_input.json`, `nr_out.json`,
   `nr_stdout.txt`), `costs.json`, `bytes.json` and the blinded `checkpoint_report.txt/.json`. `checkpoint/tau_b_star.json`, `sealed/`, `costs.json`,

@@ -244,14 +244,15 @@ check_binaries() { # BIN_CHECK = ok(...) | ABSENT | MISMATCH(...) | INCOMPLETE(.
 }
 
 # src_rev: the scripts revision.  The repository fallback is used only when $REPO itself is the top level of its repository (an enclosing
-# repository's HEAD says nothing about this tree); `rev-parse --verify` prints the hash and fails on an unborn HEAD.
+# repository's HEAD says nothing about this tree); `rev-parse --verify` prints the hash and fails on an unborn HEAD.  The V100 host has
+# git 1.8.3, which has no `git -C <dir>`: the repository is entered with `cd` instead.
 src_rev() {
     if [ -n "${SF39_COMMIT:-}" ]; then
         echo "$SF39_COMMIT"
     elif [ -s "$REPO/.mf3d_source_rev" ]; then
         cat "$REPO/.mf3d_source_rev"
-    elif [ "$(git -C "$REPO" rev-parse --show-toplevel 2> /dev/null)" = "$(cd "$REPO" && pwd -P)" ] \
-        && git -C "$REPO" rev-parse --verify -q HEAD 2> /dev/null; then
+    elif [ "$(cd "$REPO" 2> /dev/null && git rev-parse --show-toplevel 2> /dev/null)" = "$(cd "$REPO" && pwd -P)" ] \
+        && (cd "$REPO" && git rev-parse --verify -q HEAD) 2> /dev/null; then
         :
     else
         echo unknown

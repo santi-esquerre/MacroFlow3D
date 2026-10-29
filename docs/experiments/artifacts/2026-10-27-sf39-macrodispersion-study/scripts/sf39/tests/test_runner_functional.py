@@ -17,11 +17,31 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from sf39 import geometry
 
 SCRIPTS = Path(__file__).resolve().parents[2]
 SH = SCRIPTS / "run_sf39.sh"
+
+GIT_MIN = (1, 7, 2)  # `git -c` (the oldest feature used here); exercised against git 1.8.3.1, the version of the V100 host
+
+
+def git_support():
+    """(ok, why not): git is installed and at least GIT_MIN.  The tests that need it are skipped, with this reason, otherwise."""
+    exe = shutil.which("git")
+    if not exe:
+        return False, "needs git (not found)"
+    out = subprocess.run([exe, "--version"], capture_output=True, text=True).stdout
+    m = re.search(r"(\d+)\.(\d+)\.(\d+)", out)
+    if not m:
+        return False, "needs git >= %s; cannot read its version from %r" % (".".join(map(str, GIT_MIN)), out.strip())
+    if tuple(int(x) for x in m.groups()) < GIT_MIN:
+        return False, "needs git >= %s, found %s" % (".".join(map(str, GIT_MIN)), ".".join(m.groups()))
+    return True, ""
+
+
+GIT_OK, GIT_WHY = git_support()
 
 RUNNER = """#!/usr/bin/env bash
 out=""; nr=0; s0=0
@@ -176,10 +196,11 @@ class Fake(unittest.TestCase):
         self.assertEqual((rc, self.ran(out3)), (0, ["unittest:2222222222bb", "geometry:2222222222bb", "smoke_reduce:2222222222bb",
                                                     "signtable:2222222222bb"]))
 
-    def git(self, *args):
+    def git(self, cwd, *args):
+        """Run git in `cwd` (a working directory, never `git -C`: the V100 host has git 1.8.3).  Only features of git 1.7.2 and older are used (an unknown `-c` key such as commit.gpgsign is ignored by old git)."""
         env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
-        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", *args], capture_output=True,
-                              text=True, env=env, check=True).stdout.strip()
+        return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", *args], capture_output=True, text=True, env=env,
+                              check=True, cwd=str(cwd)).stdout.strip()
 
     def assertRefusedUntouched(self, rc, out, err, needle="does not identify the tree"):
         self.assertEqual(rc, 2, out + err)
@@ -225,27 +246,27 @@ class Fake(unittest.TestCase):
         self.assertEqual(rc, 0, out + err)
         self.assertIn("unittest:0123456789ab", self.ran(out))
 
-    @unittest.skipUnless(shutil.which("git"), "needs git")
+    @unittest.skipUnless(GIT_OK, GIT_WHY)
     def test_an_enclosing_repository_is_not_this_tree(self):
         self.seed_part_files()
         outer = Path(self.tmp.name) / "outer"
         outer.mkdir()
-        self.git("-C", str(outer), "init", "-q")
-        self.git("-C", str(outer), "commit", "-q", "--allow-empty", "-m", "x")
+        self.git(outer, "init", "-q")
+        self.git(outer, "commit", "-q", "--allow-empty", "-m", "x")
         script = self.copy_tree(outer / "inner")  # REPO = outer/inner: inside a repository whose top level is outer
         self.assertRefusedUntouched(*self.run_script(script, None, "checks"))
 
-    @unittest.skipUnless(shutil.which("git"), "needs git")
+    @unittest.skipUnless(GIT_OK, GIT_WHY)
     def test_the_repository_head_is_used_when_the_tree_is_the_top_level(self):
         repo = Path(self.tmp.name) / "repo"
         repo.mkdir()
-        self.git("-C", str(repo), "init", "-q")
+        self.git(repo, "init", "-q")
         script = self.copy_tree(repo)
         self.seed_part_files()
         # no commit yet: HEAD is unborn, there is no revision
         self.assertRefusedUntouched(*self.run_script(script, None, "checks"))
-        self.git("-C", str(repo), "commit", "-q", "--allow-empty", "-m", "x")
-        head = self.git("-C", str(repo), "rev-parse", "HEAD")
+        self.git(repo, "commit", "-q", "--allow-empty", "-m", "x")
+        head = self.git(repo, "rev-parse", "HEAD")
         rc, out, err = self.run_script(script, None, "checks")
         self.assertEqual(rc, 0, out + err)
         self.assertIn("unittest:" + head[:24], self.ran(out))
@@ -288,6 +309,34 @@ class Fake(unittest.TestCase):
             f = self.root / "par2" / ("field_stats_par2_s%s.txt" % c)
             self.assertEqual(len(f.read_text().splitlines()), 20, c)
         self.assertEqual(self.ran(out), ["par2_s025", "fs_par2_s025", "par2_s225", "fs_par2_s225", "par2_s4", "fs_par2_s4"])
+
+
+class GitSupport(unittest.TestCase):
+    """`git_support`: the git-dependent tests are skipped, with a stated reason, when git is absent or too old for them."""
+
+    def fake_git(self, banner):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, True)
+        if banner is not None:
+            put(Path(d) / "git", "#!/bin/sh\necho '%s'\n" % banner, exe=True)
+        return d
+
+    def support(self, banner):
+        with mock.patch.dict(os.environ, {"PATH": self.fake_git(banner)}):
+            return git_support()
+
+    def test_versions(self):
+        self.assertEqual(self.support("git version 1.8.3.1"), (True, ""))  # the V100 host
+        self.assertEqual(self.support("git version 1.7.2"), (True, ""))
+        self.assertEqual(self.support("git version 2.39.5 (Apple Git-154)"), (True, ""))
+        ok, why = self.support("git version 1.6.5.2")
+        self.assertFalse(ok)
+        self.assertIn("needs git >= 1.7.2, found 1.6.5", why)
+        ok, why = self.support("git: not a version")
+        self.assertFalse(ok)
+        self.assertIn("cannot read its version", why)
+        ok, why = self.support(None)
+        self.assertEqual((ok, why), (False, "needs git (not found)"))
 
 
 if __name__ == "__main__":
