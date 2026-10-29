@@ -1,7 +1,7 @@
-# SF-39 — Macrodispersion study at sigma_Y^2 in {1, 2.25, 4} with the Lagrangian consumer
+# SF-39 — Macrodispersion study at sigma_Y^2 in {0.25, 1, 2.25, 4} with the Lagrangian consumer
 
-- State: `awaiting_review`
-- Goal: `Medir alpha_L y alpha_T en el dominio largo a sigma^2 en {1, 2.25, 4} con el tracker lagrangiano, con convergencia en lambda/h, en tolerancia y en número de realizaciones evaluada por intervalos de confianza, alpha_L contrastado con Par2 RWPT en la misma configuración y cada crecimiento transversal clasificado como físico, numérico o no resuelto.`
+- State: `active`
+- Goal: `Medir alpha_L y alpha_T en el dominio largo a sigma^2 en {0.25, 1, 2.25, 4} con el tracker lagrangiano, con convergencia en lambda/h, en tolerancia y en número de realizaciones evaluada por intervalos de confianza, alpha_L contrastado con Par2 RWPT en la misma configuración y cada crecimiento transversal clasificado como físico, numérico o no resuelto.`
 - Depends on: `SF-37, SF-38, SF-41`
 - Unlocks: `none`
 - Branch: `science/lester-sf39-macrodispersion-study`
@@ -11,7 +11,7 @@
 - Owner: `Claude Opus 5.5 orchestrator (session 2026-10-27)`
 - Started: `2026-10-27T16:06Z on base 1e40cfe`
 - Completed: `not completed`
-- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/83` (opened 2026-10-28 from `science/lester-sf39-macrodispersion-study`, FINAL_AUDIT head `adbe92cd`; human review pending; merge by the owner)
+- PR: `https://github.com/santi-esquerre/MacroFlow3D/pull/83` (opened 2026-10-28 from `science/lester-sf39-macrodispersion-study`, FINAL_AUDIT head `adbe92cd`; human review pending; merge by the owner); reopened 2026-10-29 for the `sigma^2 = 0.25` addendum (State `active`), a new source-bearing head will be recorded
 - Commit: `40f5996c2a1ea3111bd03fc47d2880ee24437e3a` (source-bearing audited head = integration I1c); docs/evidence/metadata only above it: evidence `4dbf31f2`, note and FINAL_AUDIT `adbe92cd`, PR record (the commit that set this field)
 
 ## Scientific or engineering intent
@@ -55,9 +55,20 @@ the long domain built in SF-38/SF-41. It is allowed to establish, per `sigma^2` 
   ordered context stream, V100 build provenance, and the regression set v2 (`scripts/regress`, decision A4).
 - The pre-activation governance PR (decision 2026-10-27, F1-F14) is merged on the default branch; its merge commit is the
   increment base.
+- `sigma^2 = 0.25` (addendum 2026-10-29): no SF-37 verification exists at that amplitude (V1/V2/V4 ran at 1, 2.25, 4); SF-39's own
+  ladders (narrow `lambda/h`, coarse twin, `h_max`) are the only convergence evidence there.
 
 ## In scope
 
+- **Addendum 2026-10-29: `sigma^2 = 0.25` (`s025`)** (owner decision `docs/decisions/2026-10-29-sf39-sigma025-addendum.md`;
+  settings and rules in `docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/preregistration-addendum-s025.md`, fixed
+  before any `s025` run). Geometry, `lambda/h`, ladders, twin and plane lists identical to `sigma^2 = 1` (`--eps 0.5`); Par2 = the SF-38
+  `s1` configuration with `sigma2: 0.25`; thresholds A-E, rule D and every margin unchanged; no F10 arms at 0.25; own write-once
+  checkpoint file under `checkpoint/s025/`; the owner budget of 2026-10-28 applies (f = 1 if within it; `N` recorded before extension).
+  `s025` reuses the `s1` seeds on the `s1` geometry: each `s025` field is 0.5 x the `s1` field of the same seed (correlated amplitudes,
+  disclosed). Every section of this specification written for `sigma^2` in {1, 2.25, 4} applies to 0.25 through that addendum, which
+  also pre-states how the verdicts are read where the absolute floors govern; nothing about 1, 2.25 and 4 changes (their outputs must
+  be reproduced identically).
 - **Production ensemble** (D1, F2, F3, F12). Medium (b) through the SF-41 stage (`lagrangian_ensemble --medium b`); grids:
   `sigma^2 = 1`: 2048x256x256 at `lambda/h = 10` (204.8 x 25.6 x 25.6 `lambda`); `sigma^2 = 2.25`: 3328x384x384 at 16 (208 x 24 x 24
   `lambda`); `sigma^2 = 4`: 3328x384x384 at 32 (104 x 12 x 12 `lambda`). Injection plane `x0 = 5 lambda`; window `[0.1, 0.9]^2`
@@ -191,7 +202,7 @@ env $G scripts/remote --increment SF-39 run sf39-pilot -- "bash $A/run_sf39.sh $
 scripts/remote --increment SF-39 wait sf39-pilot
 REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-39 run sf39-checkpoint -- "bash $A/run_sf39.sh $B checkpoint"
 scripts/remote --increment SF-39 wait sf39-checkpoint
-# STOP: owner budget (F9); every N recorded in the bitácora before any further run
+# STOP: owner budget (F9); every N recorded in the bitácora before any further run (s025: addendum A5)
 env $G scripts/remote --increment SF-39 run sf39-extend -- "bash $A/run_sf39.sh $B extend"
 scripts/remote --increment SF-39 wait sf39-extend
 env $G scripts/remote --increment SF-39 run sf39-width -- "bash $A/run_sf39.sh $B width"
@@ -276,12 +287,12 @@ forms and margins frozen by decision 2026-10-23 (D15) were fixed before SF-38 pr
 ## Completion checklist
 
 <!-- completion-checklist:start -->
-- [x] Implementation matches the scope and contains no unrelated changes.
-- [x] Targeted validation passes and its evidence is recorded.
+- [ ] Implementation matches the scope and contains no unrelated changes.
+- [ ] Targeted validation passes and its evidence is recorded.
 - [x] Required regression tests pass.
-- [x] Scientific or engineering findings are appended to the bitácora.
+- [ ] Scientific or engineering findings are appended to the bitácora.
 - [ ] Required human review is recorded.
-- [x] PR and commit identifiers are recorded.
+- [ ] PR and commit identifiers are recorded.
 - [ ] The master checklist entry is checked in this branch and `check-lester-increments.sh` passes.
 <!-- completion-checklist:end -->
 
@@ -308,3 +319,4 @@ artifacts or experiment notes and link them here.
 | 2026-10-28T21:07Z | `active`; delivery branch at `6630cc27` + this commit | **Extension and width done; width arm `s4_w12` halted (RR6); owner decision recorded before any further run or analysis.** Correction of the previous row (append-only): its UTC stamp 13:50Z is the drafting estimate; commit `6630cc27` (final `N`, `budget.json`) is 2026-10-28T13:44:15Z, before `sf39-extend` started at 13:46:06Z. Job `sf39-extend` (one detached job running `extend` then `width`: the commands and order of the specification's two jobs; GPU 0 chosen by `scripts/remote`; mirror tree `6630cc27d3f3`; binaries md5 gate ok): `extend` PART_DONE rc 0 (23225 s): `s1_B` 30/30, `s225_B` 42/42, `s4_B` 51/51, `s225_tw` 26/26, `s4_tw` 30/30, `s4_n16` 30/30, every other arm already complete; Par2 extension 30/42/51 realizations and `par2_field_stats` 30/42/51 lines, all rc 0. `width` PART_DONE rc 1 (2201 s): `s4_w24` 30/30 rc 0; `s4_w12` runner exit 4 at r = 13 (seed 7214) after r = 0..12 (seeds 7201-7213) DONE: medium (b) solve not converged (2000 iterations, rel 3.386e-7, balance 2.644e-7, max_div 9.15e-4, no fallback; the 13 other `s4_w12` solves converged in 50-60 iterations) -> arm halted, listed in `halted_arms.txt`. Measured extension + width 7.06 GPU-h (projected 6.84). Primary arms (production A/B, narrow rungs, twins, `h_max`, Par2): no failure. | Owner decision (2026-10-28, RR6; asked before any analysis was run): skip seed 7214 and complete F10 arm (ii) to 30 with a continuation arm `s4_w12c` (geometry and flags of `s4_w12`, `--seed0 7215 --nr 17`: seeds 7215-7231). F10 (ii) uses seeds 7201-7213 and 7215-7231; seed 7214 is excluded and disclosed (a selection: one field whose solve was not usable). `s4_w12` stays listed in `halted_arms.txt` (releasing it would repeat seed 7214). Preregistration unchanged; exploratory item only. | Corrective W7 (worker): `s4_w12c` in `run_sf39.sh` and `geometry.py`; the analysis combines the two directories for F10 (ii) and records the exclusion; audit; integrate; sync; run `width`; then `analysis`. |
 | 2026-10-28T21:59Z | `awaiting_review`; source-bearing audited head `40f5996c` (integration I1c: W7 corrective for the RR6 halt); evidence `4dbf31f2`; experiment note and this row in the next commit | **Campaign complete, analysis, FINAL_AUDIT positive; review-ready.** `width` re-run (job `sf39-width`, tree `40f5996c2a1e`): `s4_w12` ARM_HALTED by design, `s4_w12c` 17/17 rc 0 (seeds 7215-7231; all solves converged, max rel 9.8e-11); part rc 1 (the halted arm). `analysis` (job `sf39-analysis`, 909 s) rc 0. Evidence imported as text (`sf39_evidence.tar.gz` sha256 `ac379180386073ebc9e21fc960831c4e1a48e517debcdf5193ac0d7cea724f22`, equal on both hosts) into `A/analysis/`, `A/raw/`, `A/logs/`; per-part `sha256.txt` 0 failures. Results (90 %, units of `lambda`): `alpha_LAM` 1.038 [1.008, 1.068] / 3.141 [3.083, 3.198] / 4.654 [4.530, 4.779]; `alpha_TAM` 0.0095 [0.0074, 0.0116] / 0.0287 [0.0262, 0.0313] / 0.0702 [0.0650, 0.0754]; `alpha_TP` 0.0082 [0.0068, 0.0097] / 0.0308 [0.0287, 0.0329] / 0.0666 [0.0622, 0.0711] at `sigma^2` 1 / 2.25 / 4 (`N_R` 50 / 62 / 71). A: `alpha_TAM`, `alpha_TP` narrow, F4 production and `h_max` verdicts `converged` at every amplitude; `alpha_LAM` `inconclusive` in `lambda/h` at 2.25, `converged` otherwise. B met except `alpha_TAM` at 2.25 (0.003037 against 0.002872; reported, not extended). C (Gate 5): `inconclusive` at 1 (Lagrangian 8.8 % below Par2, CI [-0.146, -0.054], margin 0.114), `agree` at 2.25 and 4; FV-`qbar` and ANCOVA give the same verdicts. D (Gate 4, rule D): **`physical (positive)` for `alpha_TAM` and `alpha_TP` at every amplitude (branch 4)**; amplitude labels `physical (positive)`. The F9 anticipated outcome (inconclusive at 4) did not occur. Stated with D: narrow 1x rung minus production `alpha_TAM` -0.0009 (n.s.) / -0.0067 / -0.041 (narrow sections 12.8 / 8 / 4 `lambda`; at 4 the narrow section has `U` 1.45 against 1.87), so at 2.25 and 4 the production-domain `lambda/h` evidence is the coarse twin (`D_tw` inside `+-2^1.5 m`); F10 at 4: 12 vs 4 `lambda` `disagree` (both estimators), 24 vs 12 `lambda` `inconclusive`. F7 not shown decreasing at any amplitude; F8 pathwise resolved at 1 and 4, intermediate at 2.25; F11 `Delta_P` includes 0 at production everywhere. `exp(-I)` weights change `alpha_T` by < 0.3 % although `e_v` medians reach 5 %. Orchestrator FINAL_AUDIT: diff from base only the artifact, the spec and the note (no compiled source; regression = `scripts/regress` set v2 IDENTICAL at checks); every approved commit present; production CIs, ladder differences, margins, verdicts and branch recomputed independently from `A/analysis/reduced/` and reproduced. MINOR: `analysis/manifest.txt` lists three bookkeeping files completed after it (documented). | `docs/experiments/2026-10-27-sf39-macrodispersion-study.md` (question, configs, commands, all outputs, decision-point table, caveats, deviations R15, R27, R30, `s4_w12c`, combined `extend`+`width` job). Human review of the source-bearing head and of the classification required before `done`. | Push; open the PR (State `awaiting_review`); record the PR. Do not set `done`, do not check the master-checklist entry, do not merge. |
 | 2026-10-28T22:00Z | `awaiting_review`; PR #83 opened at FINAL_AUDIT head `adbe92cd`; source-bearing audited head `40f5996c` | PR record: branch `science/lester-sf39-macrodispersion-study` pushed over HTTPS (master `1e40cfe` is an ancestor; no rebase); PR https://github.com/santi-esquerre/MacroFlow3D/pull/83 opened against `master`. Metadata-only commit (PR and Commit fields, checklist item "PR and commit identifiers"). | Remaining checklist items open by design: human review, master-checklist entry. | Await explicit human approval of the source-bearing head `40f5996c` and of the classification; then only the closure metadata commit on this PR (`done`, review fact, dashboard entry). No merge by any agent. |
+| 2026-10-29T13:40Z | `awaiting_review` -> `active`; source-bearing head `40f5996c` unchanged; this commit docs only | **Owner decision 2026-10-29: `sigma^2 = 0.25` (`s025`) added to SF-39.** Decision `docs/decisions/2026-10-29-sf39-sigma025-addendum.md` (sha256 `35c99ba18dfd65c96398880b3a56b17325458575d87f2de67d2bc6cf8c771b46`); pre-registration addendum `preregistration-addendum-s025.md` (sha256 `845a08301b3a306e753377a2e51c70a2fc342bd9ae6d428d148e8b7ae5aa82fc`), fixed before any `s025` code, check or run (none exists). Goal amended for the amplitude set only (previous text, commit `3742eb75`: "a sigma^2 en {1, 2.25, 4}"); title and dashboard text likewise; checklist items 1, 2, 4 and 6 reopened. `s025` = the `sigma^2 = 1` geometry with `--eps 0.5` and the `s1` seeds (each `s025` field is 0.5 x the `s1` field: correlated, disclosed); Par2 = the SF-38 `s1` config with `sigma2: 0.25`; rules A-E, rule D and margins unchanged; no F10 at 0.25; own checkpoint under `checkpoint/s025/`; owner budget of 2026-10-28 applies. Three independent reviews of the draft (governance fidelity, executability against the scripts, statistics) were incorporated as wording, disclosures, pre-stated readings and implementation requirements. The statistics review estimated (extrapolation, not measurement) `alpha_T` ~1e-3 at 0.25, `N_R` ~20 by `nr_rule`, a 90 % half-width comparable to `alpha_T` and a label largely driven by sampling; the owner, shown this and the options `N_R` 200 or 500, chose `nr_rule` unchanged. | Docs only; no setting, threshold, margin, run or result of 1, 2.25, 4 changed. | W8 (worker): `s025` scripts per the addendum (separate checkpoint case, `nr_rule` on the amplitudes present, frozen-file merge, Par2 `s025` config from the `s1` source, run-script lists, checks re-running the unit tests and geometry for the new tree, committed regression-comparison command); audit; integration; then `s025` checks, pilot, checkpoint. |
