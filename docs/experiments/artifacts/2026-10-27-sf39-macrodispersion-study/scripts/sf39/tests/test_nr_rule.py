@@ -201,6 +201,26 @@ class Allocate(unittest.TestCase):
                      for kk in P.LADDER_KEYS} for a in n}.items()}
         self.assertGreater(P.projected_gpu_h(n_up, costs, done), p_s4 * 0.5)
 
+    def test_s4_ladders_flag_is_true_only_where_s4_is(self):
+        n, costs = big_n(), flat_costs()
+        # without s4 there is no step (1): the flag stays False however far over budget the allocation is
+        no_s4 = {a: v for a, v in n.items() if a != "s4"}
+        full = P.projected_gpu_h({a: P.derive(no_s4[a]) for a in no_s4}, costs, {})
+        for budget in (full * 0.5, 0.0):
+            r = P.allocate(no_s4, costs, {}, budget)
+            self.assertFalse(r["s4_ladders_to_20"], budget)
+            self.assertNotIn("s4", r["N"])
+            self.assertLess(r["f"], 1.0)
+        r = P.allocate({"s025": n["s025"]}, costs, {}, 0.0)
+        self.assertEqual((r["s4_ladders_to_20"], r["owner"]), (False, True))
+        self.assertEqual(P.allocate(no_s4, costs, {}, 1e9)["s4_ladders_to_20"], False)  # within budget: False as always
+        # with s4 present the flag and the s4 reduction are exactly as before
+        full4 = P.projected_gpu_h({a: P.derive(n[a]) for a in n}, costs, {})
+        r = P.allocate(n, costs, {}, full4 * 0.9)
+        self.assertTrue(r["s4_ladders_to_20"])
+        self.assertEqual([r["N"]["s4"][k] for k in ("N_narrow", "N_twin", "N_hmax")], [20, 20, 20])
+        self.assertFalse(P.allocate(n, costs, {}, 1e9)["s4_ladders_to_20"])
+
     def test_width_arms_and_reference_floor_untouched(self):
         n = big_n()
         r = P.allocate(n, flat_costs(), {}, 1.0)

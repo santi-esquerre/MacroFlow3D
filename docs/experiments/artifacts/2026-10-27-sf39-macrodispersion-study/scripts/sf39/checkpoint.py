@@ -33,8 +33,8 @@ The s025 case (addendum 2026-10-29, A5): without options the checkpoint is exact
 (`BASE_AMPS`, never a four-amplitude freeze).  `--amps s025 --subdir s025` runs the same steps for s025 alone and writes EVERYTHING under
 `checkpoint/s025/`: the write-once `tau_b_star_s025.json` (same schema and content rules), `sealed/`, `costs.json`, `bytes.json`,
 `checkpoint_report.txt/.json`.  The files of the original case are never touched; the s4-only width cost/byte lines apply only when
-s4 is in the case.  The two cases refuse to mix (`Refused`, exit 2): no `--subdir` needs the three original amplitudes, a `--subdir`
-needs amplitudes outside them.
+s4 is in the case.  The cases refuse to mix (`Refused`, exit 2): no `--subdir` needs the three original amplitudes, a `--subdir`
+needs exactly one amplitude, named like it, outside them.
 
 Exit codes: 0 done, 2 refused (incomplete pilot, or write-once conflict), 1 failure (window/data error, nr_rule failure).
 The pilot count is 20; `run(..., n_pilot=)` exists for tests only (the CLI has no option for it).
@@ -320,8 +320,8 @@ def projections(nr_out, costs, nbytes, ratio_parts, n_pilot, amps=BASE_AMPS):
     return {"projected_gpu_h": gpu_h, "pilot_wall_over_gpu_busy": ratio, "projected_wall_h": gpu_h * ratio, "projected_bytes": int(nb)}
 
 
-def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot, amps=BASE_AMPS):
-    """(text, json dict) of the blinded report."""
+def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot, amps=BASE_AMPS, frz_name="tau_b_star.json"):
+    """(text, json dict) of the blinded report; `frz_name` is the frozen file of the case (named in the report)."""
     tau = {amp: frz["amplitudes"][amp]["tau_b_star"] for amp in amps}
     n_vals = {amp: {k: nr_out[amp][k] for k in ("N_narrow", "N_twin", "N_hmax", "N_R", "N_A", "N_run", "par2_NR")} for amp in amps}
     capped = {amp: list(nr_out[amp]["capped"]) for amp in amps}
@@ -331,7 +331,7 @@ def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pi
     js.update(proj)
     t = ["SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=%d per arm%s)" % (n_pilot, "" if tuple(amps) == BASE_AMPS else "; amplitudes: " + ",".join(amps)),
          "",
-         "FROZEN tau_b* (F2 pilot record; the other frozen times are in tau_b_star.json)"]
+         "FROZEN tau_b* (F2 pilot record; the other frozen times are in %s)" % frz_name]
     t += ["TAU_B_STAR %s=%.12g" % (amp, tau[amp]) for amp in amps]
     t += ["", "N values printed by nr_rule (>500: cap reached without meeting the target, 500 used)"] + ["NR %s" % ln for ln in nr_lines]
     t += ["", "GPU-seconds per realization (kind: measured | estimate)"]
@@ -349,7 +349,8 @@ def build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pi
 # driver
 # ------------------------------------------------------------------------------------------------
 def check_case(amps, subdir):
-    """Refuse a mix of the two cases (`Refused`): no subdir = exactly `BASE_AMPS`; a subdir = amplitudes outside `BASE_AMPS` only."""
+    """Refuse a mix of the cases (`Refused`): no subdir = exactly `BASE_AMPS`; a subdir = exactly one amplitude, named like the subdir,
+    outside `BASE_AMPS`."""
     if subdir and not re.fullmatch(r"[A-Za-z0-9_]+", subdir):
         raise Refused("--subdir %r is not a plain directory name" % subdir)
     bad = [a for a in amps if a not in cp.AMPS]
@@ -357,8 +358,10 @@ def check_case(amps, subdir):
         raise Refused("unknown amplitude(s) %s (known: %s)" % (bad, ",".join(cp.AMPS)))
     if not subdir and tuple(amps) != BASE_AMPS:
         raise Refused("without --subdir the checkpoint is the original case %s; got --amps %s" % (",".join(BASE_AMPS), ",".join(amps)))
-    if subdir and (not amps or set(amps) & set(BASE_AMPS)):
-        raise Refused("--subdir %s needs amplitudes outside the original case %s; got --amps %s" % (subdir, ",".join(BASE_AMPS), ",".join(amps)))
+    if subdir and tuple(amps) != (subdir,):
+        raise Refused("--subdir %s needs exactly --amps %s; got --amps %s" % (subdir, subdir, ",".join(amps)))
+    if subdir and subdir in BASE_AMPS:
+        raise Refused("--subdir %s is an amplitude of the original case %s" % (subdir, ",".join(BASE_AMPS)))
 
 
 def run(out_root, artifact, n_pilot=N_PILOT, out=None, amps=BASE_AMPS, subdir=""):
@@ -405,7 +408,7 @@ def run(out_root, artifact, n_pilot=N_PILOT, out=None, amps=BASE_AMPS, subdir=""
         with open(os.path.join(ck, name), "w") as f:
             f.write(dumps(obj))
     proj = projections(nr_out, costs, nbytes, ratio_parts, n_pilot, amps)
-    text, js = build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot, amps)
+    text, js = build_report(frz, nr_lines, nr_out, costs, kinds, nbytes, bkinds, proj, n_pilot, amps, frz_name)
     with open(os.path.join(ck, "checkpoint_report.txt"), "w") as f:
         f.write(text)
     with open(os.path.join(ck, "checkpoint_report.json"), "w") as f:

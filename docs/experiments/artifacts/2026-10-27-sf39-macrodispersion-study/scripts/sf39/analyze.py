@@ -1,11 +1,15 @@
 """SF-39 analysis part (contract C-GLUE part 2; preregistration sections 3-5, 10): all reductions, criteria A-E, F7, F8, F10, F11
 and the decision-point table.
 
-    python3 -m sf39.analyze --out-root $OUT --artifact A --dest $OUT/analysis [--allow-partial]
+    python3 -m sf39.analyze --out-root $OUT --artifact A --dest $OUT/analysis [--allow-partial] [--amps s1,s225,s4]
 
 Inputs: `$OUT/checkpoint/tau_b_star.json` (frozen) merged with `$OUT/checkpoint/s025/tau_b_star_s025.json`, `A/configs/budget.json` (final N per amplitude), runner arms `$OUT/runs/<arm>`, Par2
 `$OUT/par2/raw/par2_s{c}[_ext]` + `field_stats_par2_s{c}[_ext].txt`, Par2 configs `A/configs/par2_s{c}.yaml`.  Everything is read through
 `sf39.campaign` / `sf39.reduce` / `sf39.par2`; the statistics through `sf39.stats` / `sf39.decide` (nothing is re-implemented here).
+
+`--amps` (default: every amplitude of `campaign.AMPS`, i.e. s025 s1 s225 s4) restricts every per-amplitude step, the budget / frozen-entry
+requirements and every output to the listed amplitudes.  It is a manual contingency (not exposed in `run_sf39.sh`): with `--amps s1,s225,s4`
+the outputs are those of the analysis before s025 existed (an s025 arm that halts does not block the original three).
 
 Exit codes: 0 done, 2 refused (no frozen file, no/invalid budget, realizations missing relative to the budget: they are listed and nothing
 is analysed or written), 1 failure (window/data error: the reducer never clips).  `--allow-partial` analyses what exists (effective N =
@@ -148,24 +152,37 @@ def read_json(path):
 class Ctx:
     """Run context: paths, frozen file, effective counts, reduction cache, CSV tables, decision rows."""
 
-    def __init__(self, out, art, dest, frz, eff, n_pilot, partial):
+    def __init__(self, out, art, dest, frz, eff, n_pilot, partial, amps=None):
         self.out, self.art, self.dest, self.frz, self.eff = out, art, dest, frz, eff
         self.n_pilot, self.partial = n_pilot, partial
+        self.amps = tuple(cp.AMPS if amps is None else amps)
         self.cache, self.csv, self.rows, self.series = {}, {}, [], {}
 
     def tau(self, amp):
         return float(self.frz["amplitudes"][amp]["tau_b_star"])
 
 
-def load_budget(art):
-    """The validated `A/configs/budget.json` ({amp: {key: int}}); `Refused` if absent or invalid."""
+def check_amps(amps):
+    """The amplitudes to analyse in registry order (`Refused` if empty, repeated or unknown); None = every amplitude of `cp.AMPS`."""
+    if amps is None:
+        return tuple(cp.AMPS)
+    amps = tuple(amps)
+    bad = [a for a in amps if a not in cp.AMPS]
+    if not amps or bad or len(set(amps)) != len(amps):
+        raise Refused("--amps %s: needs a non-empty list of distinct amplitudes of %s%s" % (",".join(amps), ",".join(cp.AMPS),
+                                                                                        " (unknown: %s)" % ",".join(bad) if bad else ""))
+    return tuple(a for a in cp.AMPS if a in amps)
+
+
+def load_budget(art, amps=None):
+    """The validated `A/configs/budget.json` ({amp: {key: int}}) for `amps` (default `cp.AMPS`); `Refused` if absent or invalid."""
     path = os.path.join(art, "configs", "budget.json")
     if not os.path.isfile(path):
         raise Refused("no budget file %s (the final N per amplitude are fixed after the owner's budget)" % path)
     with open(path) as f:
         bud = json.load(f)
     bad = []
-    for amp in cp.AMPS:
+    for amp in (cp.AMPS if amps is None else amps):
         for k in BUDGET_KEYS:
             v = bud.get(amp, {}).get(k)
             if not (isinstance(v, int) and not isinstance(v, bool) and v > 0):
@@ -182,25 +199,29 @@ def _read_frozen(path):
     return frz
 
 
-def load_frozen(out):
+def load_frozen(out, amps=None):
     """`checkpoint/tau_b_star.json` merged with every separate-case file `checkpoint/<amp>/tau_b_star_<amp>.json` (s025, addendum
-    2026-10-29).  `Refused` on a schema mismatch, on an amplitude present in two files, or on an amplitude of `cp.AMPS` with no entry."""
+    2026-10-29) of the amplitudes `amps` (default `cp.AMPS`).  `Refused` on a schema mismatch, a different `n_pilot`, an amplitude present
+    in two files, or an amplitude of `amps` with no entry."""
+    amps = tuple(cp.AMPS if amps is None else amps)
     path = os.path.join(out, "checkpoint", "tau_b_star.json")
     if not os.path.isfile(path):
         raise Refused("no frozen file %s (run the checkpoint part first)" % path)
     frz = _read_frozen(path)
     where = {amp: path for amp in frz["amplitudes"]}
-    for amp in cp.AMPS:
+    for amp in amps:
         extra_path = os.path.join(out, "checkpoint", amp, "tau_b_star_%s.json" % amp)
         if not os.path.isfile(extra_path):
             continue
         extra = _read_frozen(extra_path)
+        if extra.get("n_pilot") != frz.get("n_pilot"):
+            raise Refused("%s: n_pilot %r differs from %r of %s" % (extra_path, extra.get("n_pilot"), frz.get("n_pilot"), path))
         dup = sorted(set(extra["amplitudes"]) & set(where))
         if dup:
             raise Refused("amplitude(s) %s present in both %s and %s" % (",".join(dup), where[dup[0]], extra_path))
         frz["amplitudes"].update(extra["amplitudes"])
         where.update({a: extra_path for a in extra["amplitudes"]})
-    absent = [amp for amp in cp.AMPS if amp not in frz["amplitudes"]]
+    absent = [amp for amp in amps if amp not in frz["amplitudes"]]
     if absent:
         raise Refused("no frozen entry for %s (run the checkpoint part%s first)" % (",".join(absent), " (selector s025)" if "s025" in absent else ""))
     return frz
@@ -256,7 +277,7 @@ def w12_records(C):
 def missing_items(C, bud):
     """Strings describing every realization/file the budget asks for and cannot be found (empty = complete)."""
     miss = []
-    for amp in cp.AMPS:
+    for amp in C.amps:
         b = bud[amp]
         counts = power.arm_counts(b, amp)
         if amp == "s4":  # the preregistered s4_w12 count is replaced by its two parts
@@ -298,7 +319,7 @@ def missing_items(C, bud):
 def effective_counts(C, bud):
     """Per amplitude the counts the analysis uses: the budget (full mode) or the complete prefixes capped by it (--allow-partial)."""
     eff = {}
-    for amp in cp.AMPS:
+    for amp in C.amps:
         b, a = bud[amp], cp.arm_ids(amp)
         e = {k: b[k] for k in ("N_narrow", "N_twin", "N_hmax", "N_R")}
         e["n_w24"], e["n_w12"] = power.WIDTH_ARMS["s4_w24"], sum(cnt for _, _, cnt in W12_PARTS)
@@ -508,6 +529,9 @@ def gate5_block(C, amp, prod):
     v = par2.cfg_values(read_text(cfg_path))
     if abs(v["lam"] - p2["corr_length"]) > 1e-12 * v["lam"] or abs(v["inject_x"] - p2["inject_x"]) > 1e-12 * abs(v["inject_x"]):
         raise sio.ReduceError("Par2 config of s%s disagrees with the frozen corr_length / inject_x" % amp)
+    if abs(v["sigma2"] - SIGMA2_NOMINAL[amp]) > 1e-12:  # the nominal variance of the ANCOVA sensitivity is the config's
+        raise sio.ReduceError("Par2 config of %s: stochastic.sigma2 %r differs from the nominal variance %r of the amplitude" % (
+            amp, v["sigma2"], SIGMA2_NOMINAL[amp]))
     ents = par2_entries(C, amp)[:n2]
     if len(ents) < n2:
         raise sio.MissingData("Par2 s%s: %d realizations, need %d" % (amp, len(ents), n2))
@@ -596,6 +620,41 @@ def f8_block(C, amp, hm, m_tp_hmax, S):
 
 
 # ------------------------------------------------------------------------------------------------
+# s025: the pre-stated readings of addendum A4.1 (computed from the A block; nothing is recomputed)
+# ------------------------------------------------------------------------------------------------
+def _frac(c, denom):
+    """{mean, lo, hi} of a CI dict divided by `denom` (the signed production mean times a scale); NaN for a zero `denom`; the ends are
+    reordered when `denom` is negative."""
+    if denom == 0.0:
+        return {"mean": float("nan"), "lo": float("nan"), "hi": float("nan")}
+    a, b = c["lo"] / denom, c["hi"] / denom
+    lo, hi = (a, b) if denom > 0 else (b, a)
+    return {"mean": c["mean"] / denom, "lo": lo, "hi": hi}
+
+
+def a4_readings(blk):
+    """Addendum A4.1 readings of one estimator from its A block `blk` (its margins and its 90 % Student trend CIs; nothing recomputed):
+    `m_over_alpha` (narrow margin m and twin band 2^1.5 m over |production mean|), `D_f_frac`, `D_tw_frac` (D_tw / 2^1.5) and `d16_8_frac`
+    (mean, lo, hi of each divided by the signed production mean, in the same unit as alpha), and `trend_detected`: one string
+    "<name>: <mean> % [<lo>, <hi>]" (percent of the production mean) for every refinement CI that excludes 0."""
+    mp, m = blk["margins"]["mean_production"], blk["margins"]["m_h"]
+    c_f, c_tw, c_h = (blk["trend"][k]["ci"] for k in ("D_f", "D_tw", "d16_8"))
+    out = {"production_mean": mp,
+           "m_over_alpha": {"m": m / abs(mp) if mp else float("nan"), "twin_band": TWO_P15 * m / abs(mp) if mp else float("nan")},
+           "D_f_frac": _frac(c_f, mp), "D_tw_frac": _frac(c_tw, TWO_P15 * mp), "d16_8_frac": _frac(c_h, mp), "trend_detected": []}
+    for name, c, key in (("D_f", c_f, "D_f_frac"), ("D_tw/2^1.5", c_tw, "D_tw_frac"), ("d16_8", c_h, "d16_8_frac")):
+        if c["lo"] > 0 or c["hi"] < 0:
+            f = out[key]
+            out["trend_detected"].append("%s: %.3g %% [%.3g, %.3g]" % (name, 100.0 * f["mean"], 100.0 * f["lo"], 100.0 * f["hi"]))
+    return out
+
+
+def a4_note(trend_detected):
+    """The text appended to the note of an s025 Gate 4 row."""
+    return "; refinement trend detected: " + "; ".join(trend_detected) if trend_detected else "; no refinement trend detected"
+
+
+# ------------------------------------------------------------------------------------------------
 # one amplitude
 # ------------------------------------------------------------------------------------------------
 def analyze_amp(C, amp):
@@ -665,13 +724,18 @@ def analyze_amp(C, amp):
         if rd is not None:
             D[est] = rd
     S["A"], S["B"] = A, B
+    a4 = None
+    if amp == "s025":  # addendum A4.1; the subtrees and rows of s1 / s225 / s4 are untouched
+        a4 = {est: a4_readings(A[est]) for est in EST}
+        S["A4_readings"] = a4
     lab = decide.amplitude_label(D["alpha_TAM"]["label"], D["alpha_TP"]["label"])
     S["D"] = {"alpha_TAM": D["alpha_TAM"], "alpha_TP": D["alpha_TP"], "amplitude_label": lab}
     for est in TRANSVERSE:
         d = D[est]
         row(C, "primary", amp, est, "Gate 4 label (D)", d["label"], (d["prod_ci"]["lo"], d["prod_ci"]["hi"]), d["prod_ci"]["n"],
             "branch %d; ladder=%s difference=%s; h=%s hmax=%s; production mean=%.6g" % (
-                d["branch"], d["ladder"], d["difference"], A[est]["F4_verdict"], A[est]["hmax_verdict"], d["prod_ci"]["mean"]))
+                d["branch"], d["ladder"], d["difference"], A[est]["F4_verdict"], A[est]["hmax_verdict"], d["prod_ci"]["mean"])
+            + (a4_note(a4[est]["trend_detected"]) if a4 else ""))
     row(C, "primary", amp, "alpha_TAM+alpha_TP", "Gate 4 amplitude label (D)", lab, None, e["N_R"],
         "alpha_TAM: %s; alpha_TP: %s" % (D["alpha_TAM"]["label"], D["alpha_TP"]["label"]))
     # ---- C (Gate 5)
@@ -687,8 +751,10 @@ def analyze_amp(C, amp):
         S["F7"] = d7
         row(C, "estimation", amp, "alpha_TP", "F7 Delta_half", "decreasing" if d7["decreasing"] else "not shown decreasing", (d7["lo"], d7["hi"]),
             d7["n"], "mean Delta_half=%.6g" % d7["mean"])
-    else:
+    else:  # listed, not silently dropped (section 10 lists the inconclusive / unavailable items)
         S["F7"] = {"available": False}
+        row(C, "estimation", amp, "alpha_TP", "F7 Delta_half", "not available", None, int(dh.size),
+            "Delta_half is not finite in %d of %d realizations; no F7 statement" % (int((~np.isfinite(dh)).sum()), int(dh.size)))
     # ---- F8
     S["F8"] = f8_block(C, amp, hm, A["alpha_TP"]["margins"]["m_hmax"], float(np.mean(column(R_h[8], "S_r"))))
     row(C, "estimation", amp, "rho(X_b), pair 8-16", "F8 readings", S["F8"]["gating_label"], None, len(hm),
@@ -929,13 +995,15 @@ def write_outputs(C, summary):
 # ------------------------------------------------------------------------------------------------
 # driver
 # ------------------------------------------------------------------------------------------------
-def run(out_root, artifact, dest, allow_partial=False, n_pilot=N_PILOT, err=None):
-    """Run the analysis; returns the exit code.  `n_pilot` (Par2 pooling offset) is a test hook: the CLI always uses 20."""
+def run(out_root, artifact, dest, allow_partial=False, n_pilot=N_PILOT, err=None, amps=None):
+    """Run the analysis; returns the exit code.  `n_pilot` (Par2 pooling offset) is a test hook: the CLI always uses 20.  `amps`: the
+    amplitudes to analyse (None = every amplitude of `cp.AMPS`), see the module docstring."""
     err = err or sys.stderr
     try:
-        frz = load_frozen(out_root)
-        bud = load_budget(artifact)
-        C = Ctx(out_root, artifact, dest, frz, None, n_pilot, allow_partial)
+        amps = check_amps(amps)
+        frz = load_frozen(out_root, amps)
+        bud = load_budget(artifact, amps)
+        C = Ctx(out_root, artifact, dest, frz, None, n_pilot, allow_partial, amps)
         miss = missing_items(C, bud)
         if miss and not allow_partial:
             print("ANALYSIS_INCOMPLETE: %d item(s) missing; nothing is analysed" % len(miss), file=err)
@@ -944,8 +1012,8 @@ def run(out_root, artifact, dest, allow_partial=False, n_pilot=N_PILOT, err=None
             return 2
         C.eff = effective_counts(C, bud)
         summary = {"schema": "sf39-analysis-v1", "partial": allow_partial, "missing": miss if allow_partial else [], "n_pilot": n_pilot,
-                   "budget": {amp: {k: bud[amp][k] for k in BUDGET_KEYS} for amp in cp.AMPS}, "amplitudes": {}}
-        for amp in cp.AMPS:
+                   "budget": {amp: {k: bud[amp][k] for k in BUDGET_KEYS} for amp in amps}, "amplitudes": {}}
+        for amp in amps:
             summary["amplitudes"][amp] = analyze_amp(C, amp)
     except Refused as e:
         print("ANALYSIS_REFUSED: %s" % e, file=err)
@@ -965,8 +1033,10 @@ def main(argv=None):
     ap.add_argument("--artifact", required=True, help="the artifact root A (configs/budget.json, configs/par2_s*.yaml)")
     ap.add_argument("--dest", required=True, help="output directory (rewritten on every run)")
     ap.add_argument("--allow-partial", action="store_true", help="analyse the complete prefixes and label every output PARTIAL")
+    ap.add_argument("--amps", default=None, help="comma-separated amplitudes to analyse (default: all of %s); manual contingency, e.g. s1,s225,s4"
+                    % ",".join(cp.AMPS))
     a = ap.parse_args(argv)
-    return run(a.out_root, a.artifact, a.dest, a.allow_partial)
+    return run(a.out_root, a.artifact, a.dest, a.allow_partial, amps=None if a.amps is None else tuple(x for x in a.amps.split(",") if x))
 
 
 if __name__ == "__main__":

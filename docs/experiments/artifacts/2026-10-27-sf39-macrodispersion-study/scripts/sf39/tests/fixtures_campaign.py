@@ -20,6 +20,7 @@ AMP_F = {"s025": 0.7, "s1": 1.0, "s225": 1.2, "s4": 1.5}  # transverse scale of 
 ROLE_F = {"tw": (0.9, 1.01), "n0": (0.8, 0.98), "n1": (1.0, 0.99), "n2": (1.1, 1.02)}
 A_TOTAL0, P8, P16, P32 = 200.0, 30.0, 33.0, 36.0  # timings: A total_r = 200 + r; passes prepare+track
 TB_R, TB_FACTOR = 2, 0.9  # realization of the earliest breakthrough in directory A
+SIGMA2_NOMINAL = {"s025": 0.25, "s1": 1.0, "s225": 2.25, "s4": 4.0}  # the Par2 config variance of an amplitude (tests assert it equals analyze's)
 PAR2_STEP_S, FS_WALL, WALL_FACTOR = 10.0, 40.0, 1.25
 PAR2_TB_STEPS = [30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220]  # t_b = step dt
 PAR2_U = [0.5 + 0.01 * g for g in range(20)]
@@ -102,7 +103,7 @@ def build_par2(out_root, artifact, amp, n_pilot, utime0=1.0e9):
             f.write("FIELDSTAT r=%d seed=%d n=1024 mean_lnK=1.0e-03 var_lnK=%.6e Kmin=0.1 Kmax=9.0 Kmean=1.2\n" % (r, 9001 + r, 1.0 + 0.01 * r))
     os.makedirs(os.path.join(artifact, "configs"), exist_ok=True)
     with open(os.path.join(artifact, "configs", "par2_s%s.yaml" % c), "w") as f:
-        f.write(fp.SYN_CFG)
+        f.write(fp.SYN_CFG.replace("  sigma2: 1.0\n", "  sigma2: %r\n" % SIGMA2_NOMINAL[amp]))  # the analysis checks it against its nominal variance
 
 
 def build_campaign(out_root, artifact, n_pilot, real_scripts):

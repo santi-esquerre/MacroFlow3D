@@ -243,13 +243,16 @@ check_binaries() { # BIN_CHECK = ok(...) | ABSENT | MISMATCH(...) | INCOMPLETE(.
     return 0
 }
 
+# src_rev: the scripts revision.  The repository fallback is used only when $REPO itself is the top level of its repository (an enclosing
+# repository's HEAD says nothing about this tree); `rev-parse --verify` prints the hash and fails on an unborn HEAD.
 src_rev() {
     if [ -n "${SF39_COMMIT:-}" ]; then
         echo "$SF39_COMMIT"
     elif [ -s "$REPO/.mf3d_source_rev" ]; then
         cat "$REPO/.mf3d_source_rev"
-    elif git -C "$REPO" rev-parse HEAD > /dev/null 2>&1; then
-        git -C "$REPO" rev-parse HEAD
+    elif [ "$(git -C "$REPO" rev-parse --show-toplevel 2> /dev/null)" = "$(cd "$REPO" && pwd -P)" ] \
+        && git -C "$REPO" rev-parse --verify -q HEAD 2> /dev/null; then
+        :
     else
         echo unknown
     fi
@@ -332,6 +335,8 @@ sha_part() { # sha256.txt: small text outputs of the part and of the runs this i
         cd "$OUT_ROOT" || exit 0
         {
             find "$PART" -maxdepth 2 -type f ! -name results.txt ! -name sha256.txt ! -name '.build_digest'
+            # the checkpoint part: the sealed files of a separate case (checkpoint/<case>/sealed/*, depth 3) like checkpoint/sealed/*
+            [ "$PART" = "checkpoint" ] && find "$PART" -mindepth 3 -maxdepth 3 -type f -path '*/sealed/*'
             for d in ${RUN_DIRS[@]+"${RUN_DIRS[@]}"}; do
                 [ -d "$d/realizations" ] && find "${d#"$OUT_ROOT"/}/realizations" -type f \
                     \( -name DONE -o -name status.json -o -name solver_b.json -o -name flow_stats.json -o -name field.json -o -name timings.json \)
@@ -458,7 +463,7 @@ sels() { # sels <selector|empty> -> the list of selectors to run
 # Par2 ----------------------------------------------------------------------------------------------------------------------
 # par2_run <pd> <id> <config> <raw-dir name> <expected realizations>: pipeline (cwd $OUT/par2) then par2_field_stats on the same config
 par2_run() {
-    local pd=$1 id=$2 cfg=$3 rawname=$4 nr=$5 rc n w=$OUT_ROOT/par2
+    local pd=$1 id=$2 cfg=$3 rawname=$4 nr=$5 rc n why fsf w=$OUT_ROOT/par2
     mk "$w/raw"
     case_run "$pd" "$id" " 0 " "$w" "$w/raw/$rawname" -- "$BIN_DIR/macroflow3d_pipeline" "$cfg"
     if [ "$CASE_STATE" != "dry" ]; then
@@ -473,13 +478,16 @@ par2_run() {
     case_run "$pd" "fs_$id" " 0 " "$w" - -- "$BIN_DIR/par2_field_stats" "$cfg" --nr "$nr"
     if [ "$CASE_STATE" != "dry" ]; then
         rc=$CASE_RC
+        fsf=$w/field_stats_$id.txt
         # a skipped case (recorded rc 0) never re-derives the analysis input from its log
-        [ "$CASE_STATE" = "ran" ] && grep '^FIELDSTAT' "$pd/logs/fs_${id//:/_}.log" > "$w/field_stats_$id.txt" 2> /dev/null
-        n=$(wc -l < "$w/field_stats_$id.txt" 2> /dev/null | tr -d ' ')
+        [ "$CASE_STATE" = "ran" ] && grep '^FIELDSTAT' "$pd/logs/fs_${id//:/_}.log" > "$fsf" 2> /dev/null
+        n=$(wc -l 2> /dev/null < "$fsf" | tr -d ' ')
         n=${n:-0}
-        res "RUN id=fs_$id rc=$rc wall=${CASE_WALL:-na}s fieldstat_lines=$n/$nr saved=$w/field_stats_$id.txt sha256=$(sha256sum "$w/field_stats_$id.txt" 2> /dev/null | cut -c1-64)"
+        res "RUN id=fs_$id rc=$rc wall=${CASE_WALL:-na}s fieldstat_lines=$n/$nr saved=$fsf sha256=$(sha256sum "$fsf" 2> /dev/null | cut -c1-64)"
         if [ "$rc" != "0" ] || [ "$n" -ne "$nr" ]; then
-            res "FIELDSTAT_FAILED id=fs_$id (rc=$rc, $n of $nr lines)"
+            why="rc=$rc, $n of $nr lines"
+            [ -e "$fsf" ] || why="$why; $fsf is missing, the recorded rc 0 is final and the file is not regenerated: remove the fs_$id record from exit_codes.tsv to regenerate it"
+            res "FIELDSTAT_FAILED id=fs_$id ($why)"
             BAD=$((BAD + 1))
         fi
     fi
@@ -510,11 +518,7 @@ tree_rev() {
 part_checks() {
     local arm out rc v ok refs_state head_out rev tid
     mk "$PD"
-    rev=$(tree_rev)
-    if [ "$rev" = "unknown" ] && [ "$DRY" != "1" ]; then
-        echo "run_sf39.sh: checks: the scripts revision is unknown (no SF39_COMMIT, .mf3d_source_rev or git HEAD), so the ids of the tree-dependent checks cannot be tied to the tree; refusing" >&2
-        exit 2
-    fi
+    rev=$(tree_rev) # a real run was vetted by checks_precheck (main)
     # (i) unit tests of the package (whole suite); the id carries the scripts revision and the log is read from the id-derived name
     tid=unittest:$rev
     case_run "$PD" "$tid" " 0 " - - -- "$PY" -m unittest discover -s "$SCRIPTS" -t "$SCRIPTS"
@@ -702,6 +706,22 @@ bud() { # bud <amp> <key>
     "$PY" -c 'import json,sys; print(json.load(open(sys.argv[1]))[sys.argv[2]][sys.argv[3]])' "$BUDGET" "$1" "$2"
 }
 
+# checks_precheck: a real `checks` run needs a revision that identifies the tree, verified BEFORE the part starts (a refusal leaves the part
+# directory untouched).  Refused: empty or blank, `unknown`, or ending in `-dirty` (a dirty tree keeps its revision after an edit, so the
+# tree-tied check ids would not re-run).
+checks_precheck() {
+    local raw rev
+    [ "$DRY" = "1" ] && return 0
+    raw=$(src_rev)
+    rev=${raw//[[:space:]]/}
+    case "$rev" in
+    "" | unknown | *-dirty)
+        echo "run_sf39.sh: checks: the scripts revision '$raw' does not identify the tree (empty, unknown or -dirty; sources: SF39_COMMIT, the mirror's .mf3d_source_rev, the HEAD of the repository whose top level is $REPO); the ids of the tree-dependent checks would not follow the tree; refusing" >&2
+        exit 2
+        ;;
+    esac
+}
+
 # extend_precheck: everything `extend` needs, verified BEFORE the part starts (a refusal leaves the part directory untouched).
 extend_precheck() {
     local s c nR cfg req
@@ -820,6 +840,7 @@ else
 fi
 
 [ "$ARG_PART" = "extend" ] && extend_precheck
+[ "$ARG_PART" = "checks" ] && checks_precheck
 part_begin "$ARG_PART"
 case "$ARG_PART" in
 checks) part_checks ;;

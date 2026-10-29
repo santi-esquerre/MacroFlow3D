@@ -459,14 +459,16 @@ class Study(unittest.TestCase):
 
     def test_existing_amplitudes_are_reproduced_without_s025(self):
         """Addendum A6 at fixture level: the analysis over four amplitudes reproduces, per `regress_existing`, the s1 / s225 / s4 outputs
-        of the analysis over the three original ones (same data, same budget file; only the amplitude registry differs)."""
+        of the analysis over the three original ones (same data, same budget file; only the amplitude registry differs); and
+        `--amps s1,s225,s4` gives exactly those outputs, also while an s025 arm is incomplete (the contingency)."""
         from sf39 import regress_existing as rg
+        three = ("s1", "s225", "s4")
         ref = os.path.join(self.tmp.name, "analysis_three")
-        with mock.patch.object(cp, "AMPS", ("s1", "s225", "s4")):
+        with mock.patch.object(cp, "AMPS", three):  # what the analysis was before s025 existed
             rc, err = run_quiet(self.out, self.art, ref)
         self.assertEqual(rc, 0, err)
-        self.assertEqual(sorted(json.loads(slurp(os.path.join(ref, "summary.json")))["amplitudes"]), ["s1", "s225", "s4"])
-        fails, adds, notes = rg.compare(ref, self.dest, ("s1", "s225", "s4"))
+        self.assertEqual(sorted(json.loads(slurp(os.path.join(ref, "summary.json")))["amplitudes"]), sorted(three))
+        fails, adds, notes = rg.compare(ref, self.dest)
         self.assertEqual(fails, [])
         self.assertTrue(any("s025" in a for a in adds), adds)  # the additions are the s025 rows / files
         self.assertTrue(os.path.isfile(os.path.join(self.dest, "reduced", "s025_prod.csv")))
@@ -475,6 +477,7 @@ class Study(unittest.TestCase):
         with contextlib.redirect_stdout(out):
             self.assertEqual(rg.main(["--ref", ref, "--new", self.dest]), 0)
         self.assertIn("IDENTICAL", out.getvalue())
+        self.assertIn(hashlib.sha256(slurp(os.path.join(ref, "manifest.txt"), "rb")).hexdigest(), out.getvalue())
         # and the comparison is not vacuous: one changed value in an s1 file of the new analysis is found
         bad = os.path.join(self.tmp.name, "analysis_bad")
         shutil.copytree(self.dest, bad)
@@ -485,6 +488,111 @@ class Study(unittest.TestCase):
             f.write(t + "x")
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertNotEqual(rg.main(["--ref", ref, "--new", bad]), 0)
+        # contingency: an s025 arm is incomplete and its frozen entry is absent; the default analysis refuses, `amps` does not need them
+        done = os.path.join(cp.arm_dir(self.out, "s025_n10"), "realizations", "r_0003", "DONE")
+        ck25 = os.path.join(self.out, "checkpoint", "s025")
+        opt = os.path.join(self.tmp.name, "analysis_option")
+        os.rename(done, done + ".off")
+        os.rename(ck25, ck25 + ".off")
+        try:
+            rc_def, err_def = run_quiet(self.out, self.art, os.path.join(self.tmp.name, "analysis_default_refused"))
+            rc_opt, err_opt = run_quiet(self.out, self.art, opt, amps=three)
+        finally:
+            os.rename(done + ".off", done)
+            os.rename(ck25 + ".off", ck25)
+        self.assertEqual(rc_def, 2, err_def)
+        self.assertIn("no frozen entry for s025", err_def)
+        self.assertEqual(rc_opt, 0, err_opt)
+        files = sorted(os.path.relpath(os.path.join(r, f), ref) for r, _, fs in os.walk(ref) for f in fs)
+        self.assertEqual(files, sorted(os.path.relpath(os.path.join(r, f), opt) for r, _, fs in os.walk(opt) for f in fs))
+        for pth in files:  # every output byte-identical to the analysis of the original registry
+            self.assertEqual(slurp(os.path.join(ref, pth), "rb"), slurp(os.path.join(opt, pth), "rb"), pth)
+        self.assertFalse(json.loads(slurp(os.path.join(opt, "summary.json")))["partial"])
+        self.assertEqual(rg.compare(opt, self.dest)[0], [])
+
+    def test_a4_readings_only_for_s025_and_consistent_with_the_A_block(self):
+        for amp in cp.AMPS:
+            self.assertEqual("A4_readings" in self.S["amplitudes"][amp], amp == "s025", amp)
+        R = self.S["amplitudes"]["s025"]["A4_readings"]
+        self.assertEqual(sorted(R), ["alpha_LAM", "alpha_TAM", "alpha_TP"])
+        t15 = 2.0 ** 1.5
+        for est, r in R.items():
+            A = self.S["amplitudes"]["s025"]["A"][est]
+            mp, m = A["margins"]["mean_production"], A["margins"]["m_h"]
+            close(self, r["production_mean"], mp)
+            close(self, r["m_over_alpha"]["m"], m / abs(mp))
+            close(self, r["m_over_alpha"]["twin_band"], t15 * m / abs(mp))
+            excl = []
+            for key, name, scale in (("D_f_frac", "D_f", 1.0), ("D_tw_frac", "D_tw", t15), ("d16_8_frac", "d16_8", 1.0)):
+                c = A["trend"][name]["ci"]  # the CI of the A block, not recomputed
+                d = scale * mp
+                lo, hi = sorted((c["lo"] / d, c["hi"] / d))
+                close(self, r[key]["mean"], c["mean"] / d)
+                close(self, r[key]["lo"], lo)
+                close(self, r[key]["hi"], hi)
+                if c["lo"] > 0 or c["hi"] < 0:
+                    excl.append({"D_f": "D_f", "D_tw": "D_tw/2^1.5", "d16_8": "d16_8"}[name])
+            self.assertEqual([t.split(":")[0] for t in r["trend_detected"]], excl, est)
+        # D_f_frac against the reduced CSVs (an independent path): (n20 - n10) over the production mean, alpha_TAM
+        n20, n10, prod = self.flux("s025_n20"), self.flux("s025_n10"), self.flux("s025_prod")
+        d_f = [float(n20[sd]["win.alpha_TAM"]) - float(n10[sd]["win.alpha_TAM"]) for sd in sorted(n20) if sd in n10]
+        close(self, R["alpha_TAM"]["D_f_frac"]["mean"], float(np.mean(d_f)) / float(np.mean([float(r_["win.alpha_TAM"]) for r_ in prod.values()])), 1e-9)
+
+    def test_a4_notes_on_the_s025_gate4_rows_only(self):
+        rows = read_csv(os.path.join(self.dest, "decisions.csv"))
+        R = self.S["amplitudes"]["s025"]["A4_readings"]
+        g4 = [r_ for r_ in rows if r_["decision_point"] == "Gate 4 label (D)"]
+        self.assertEqual([(r_["amplitude"], r_["estimator"]) for r_ in g4],
+                         [(a, e) for a in cp.AMPS for e in ("alpha_TAM", "alpha_TP")])
+        for r_ in g4:
+            if r_["amplitude"] == "s025":
+                self.assertTrue(r_["note"].endswith(an.a4_note(R[r_["estimator"]]["trend_detected"])), r_["note"])
+                self.assertIn("refinement trend", r_["note"])
+            else:
+                self.assertNotIn("refinement trend", r_["note"])
+        self.assertFalse([r_ for r_ in rows if r_["amplitude"] != "s025" and "refinement trend" in r_["note"]])
+
+    def test_f7_not_available_is_listed_and_the_finite_case_is_unchanged(self):
+        bud = an.load_budget(self.art)
+        orig = an.column
+
+        def column(res, key, mode=None):
+            v = orig(res, key, mode)
+            if key == "tp.delta_half":
+                v = np.array(v, dtype=float)
+                v[0] = np.nan
+            return v
+
+        C = an.Ctx(self.out, self.art, None, self.frz, None, N, False)
+        C.eff = an.effective_counts(C, bud)
+        with mock.patch.object(an, "column", column):
+            S = an.analyze_amp(C, "s1")
+        self.assertEqual(S["F7"], {"available": False})
+        rows = [r_ for _, r_ in C.rows if r_["decision_point"] == "F7 Delta_half"]
+        self.assertEqual(len(rows), 1)
+        r_ = rows[0]
+        self.assertEqual((r_["amplitude"], r_["estimator"], r_["verdict"], r_["ci"], r_["n"]),
+                         ("s1", "alpha_TP", "not available", None, B["s1"]["N_R"]))
+        self.assertIn("not finite in 1 of %d realizations" % B["s1"]["N_R"], r_["note"])
+        # finite: the row of the full analysis is the unchanged one (a verdict, a CI, no 'not available')
+        fin = [r2 for r2 in read_csv(os.path.join(self.dest, "decisions.csv")) if r2["decision_point"] == "F7 Delta_half"]
+        self.assertEqual([r2["amplitude"] for r2 in fin], list(cp.AMPS))
+        self.assertTrue(all(r2["verdict"] in ("decreasing", "not shown decreasing") and r2["ci_lo"] for r2 in fin))
+
+    def test_gate5_refuses_a_par2_config_variance_that_is_not_the_nominal(self):
+        art = self.art_copy()
+        cfg = os.path.join(art, "configs", "par2_s025.yaml")
+        with open(cfg) as f:
+            t = f.read()
+        self.assertIn("  sigma2: 0.25\n", t)
+        with open(cfg, "w") as f:
+            f.write(t.replace("  sigma2: 0.25\n", "  sigma2: 1.0\n"))
+        dest = os.path.join(self.tmp.name, "d_sigma2")
+        rc, err = run_quiet(self.out, art, dest, amps=("s025",))
+        self.assertEqual(rc, 1, err)
+        self.assertIn("ANALYSIS_FAILED ReduceError", err)
+        self.assertIn("stochastic.sigma2 1.0 differs from the nominal variance 0.25", err)
+        self.assertFalse(os.path.exists(os.path.join(dest, "summary.json")))
 
     def test_recorded_E(self):
         for amp in cp.AMPS:
@@ -884,6 +992,87 @@ class Series(unittest.TestCase):
         self.assertIn("snapshot times differ", str(cm.exception))
 
 
+class Amps(unittest.TestCase):
+    """The `--amps` contingency: registry order, refusals, the budget requirement, the CLI."""
+
+    def test_check_amps(self):
+        self.assertEqual(an.check_amps(None), tuple(cp.AMPS))
+        self.assertEqual(an.check_amps(("s4", "s1", "s225")), ("s1", "s225", "s4"))
+        self.assertEqual(an.check_amps(("s025",)), ("s025",))
+        for bad in ((), ("s9",), ("s1", "s1"), ("s1", "s9")):
+            with self.assertRaises(an.Refused):
+                an.check_amps(bad)
+
+    def test_budget_requires_only_the_listed_amplitudes(self):
+        with tempfile.TemporaryDirectory() as t:
+            os.makedirs(os.path.join(t, "configs"))
+            keys = dict(N_narrow=20, N_twin=20, N_hmax=20, N_R=20, N_A=20, N_run=20, par2_NR=20)
+            with open(os.path.join(t, "configs", "budget.json"), "w") as f:
+                json.dump({"s1": keys, "s225": keys, "s4": keys}, f)
+            self.assertEqual(sorted(an.load_budget(t, ("s1", "s225", "s4"))), ["s1", "s225", "s4"])
+            with self.assertRaises(an.Refused) as cm:
+                an.load_budget(t)
+            self.assertIn("s025.N_narrow=None", str(cm.exception))
+
+    def test_cli_refuses_an_unknown_amplitude_before_reading_anything(self):
+        with tempfile.TemporaryDirectory() as t:
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err):
+                rc = an.main(["--out-root", t, "--artifact", t, "--dest", os.path.join(t, "d"), "--amps", "s1,s9"])
+            self.assertEqual(rc, 2)
+            self.assertIn("ANALYSIS_REFUSED", err.getvalue())
+            self.assertFalse(os.path.exists(os.path.join(t, "d")))
+
+    def test_committed_par2_configs_have_the_nominal_variance(self):
+        from pathlib import Path
+        from sf39 import par2
+        cfgs = Path(__file__).resolve().parents[3] / "configs"
+        for amp in cp.AMPS:
+            v = par2.cfg_values((cfgs / ("par2_s%s.yaml" % cp.PAR2_ID[amp])).read_text(encoding="utf-8"))
+            self.assertEqual(v["sigma2"], an.SIGMA2_NOMINAL[amp], amp)
+        self.assertEqual(fc.SIGMA2_NOMINAL, an.SIGMA2_NOMINAL)  # the fixtures' own table
+
+
+class A4Pure(unittest.TestCase):
+    """`a4_readings` / `a4_note` on synthetic A blocks (a ratio of means is a ratio of the CIs already computed)."""
+
+    @staticmethod
+    def blk(mp, m, f, tw, h):
+        ci_ = lambda t: {"mean": t[0], "lo": t[1], "hi": t[2]}  # noqa: E731
+        return {"margins": {"mean_production": mp, "m_h": m},
+                "trend": {"D_f": {"ci": ci_(f)}, "D_tw": {"ci": ci_(tw)}, "d16_8": {"ci": ci_(h)}}}
+
+    def test_fractions_and_trend_strings(self):
+        r = an.a4_readings(self.blk(0.01, 0.0005, (-0.0003, -0.0005, -0.0001), (0.0002, -0.0004, 0.0008), (0.0002, 0.0001, 0.0003)))
+        self.assertAlmostEqual(r["m_over_alpha"]["m"], 0.05)
+        self.assertAlmostEqual(r["m_over_alpha"]["twin_band"], 2.0 ** 1.5 * 0.05)
+        self.assertAlmostEqual(r["D_f_frac"]["mean"], -0.03)
+        self.assertAlmostEqual(r["D_f_frac"]["lo"], -0.05)
+        self.assertAlmostEqual(r["D_f_frac"]["hi"], -0.01)
+        self.assertAlmostEqual(r["D_tw_frac"]["mean"], 0.0002 / (2.0 ** 1.5 * 0.01))  # D_tw / 2^1.5 over the production mean
+        self.assertAlmostEqual(r["d16_8_frac"]["hi"], 0.03)
+        # D_f and d16_8 exclude 0, D_tw does not
+        self.assertEqual(r["trend_detected"], ["D_f: -3 % [-5, -1]", "d16_8: 2 % [1, 3]"])
+        self.assertEqual(an.a4_note(r["trend_detected"]), "; refinement trend detected: D_f: -3 % [-5, -1]; d16_8: 2 % [1, 3]")
+
+    def test_no_trend(self):
+        r = an.a4_readings(self.blk(0.01, 0.0005, (0.0, -0.001, 0.001), (0.0, -0.001, 0.001), (0.0, -0.001, 0.001)))
+        self.assertEqual(r["trend_detected"], [])
+        self.assertEqual(an.a4_note(r["trend_detected"]), "; no refinement trend detected")
+
+    def test_negative_and_zero_production_mean(self):
+        r = an.a4_readings(self.blk(-0.01, 0.0005, (0.0003, 0.0001, 0.0005), (0.0, -0.001, 0.001), (0.0, -0.001, 0.001)))
+        self.assertAlmostEqual(r["m_over_alpha"]["m"], 0.05)  # over |alpha|
+        self.assertAlmostEqual(r["D_f_frac"]["mean"], -0.03)  # over the signed mean; the ends are reordered (lo <= hi)
+        self.assertAlmostEqual(r["D_f_frac"]["lo"], -0.05)
+        self.assertAlmostEqual(r["D_f_frac"]["hi"], -0.01)
+        self.assertEqual(r["trend_detected"], ["D_f: -3 % [-5, -1]"])
+        z = an.a4_readings(self.blk(0.0, 0.0005, (0.0003, 0.0001, 0.0005), (0.0, -0.001, 0.001), (0.0, -0.001, 0.001)))
+        self.assertTrue(np.isnan(z["m_over_alpha"]["m"]) and np.isnan(z["D_f_frac"]["mean"]))
+        self.assertEqual(len(z["trend_detected"]), 1)  # the CI still excludes 0; the percentages are NaN
+        self.assertTrue(z["trend_detected"][0].startswith("D_f: nan %"))
+
+
 class LoadFrozen(unittest.TestCase):
     """`load_frozen`: the original freeze merged with checkpoint/<amp>/tau_b_star_<amp>.json; refusals (exit 2 in `run`)."""
 
@@ -944,6 +1133,22 @@ class LoadFrozen(unittest.TestCase):
         self.assertIn("no frozen entry for s025", str(cm.exception))
         with mock.patch.object(cp, "AMPS", ("s1", "s225", "s4")):  # a three-amplitude registry needs no s025 file
             self.assertEqual(sorted(an.load_frozen(self.out)["amplitudes"]), ["s1", "s225", "s4"])
+
+    def test_refuses_a_different_n_pilot(self):
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025",), n_pilot=7))
+        with self.assertRaises(an.Refused) as cm:
+            an.load_frozen(self.out)
+        self.assertIn("n_pilot 7 differs from 20", str(cm.exception))
+
+    def test_amps_restrict_the_entries_required(self):
+        self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))
+        self.assertEqual(sorted(an.load_frozen(self.out, ("s1", "s225", "s4"))["amplitudes"]), ["s1", "s225", "s4"])
+        self.assertEqual(sorted(an.load_frozen(self.out, ("s1",))["amplitudes"]), ["s1", "s225", "s4"])  # the file is what it is
+        with self.assertRaises(an.Refused):
+            an.load_frozen(self.out, ("s025", "s1"))
+        self.put("s025/tau_b_star_s025.json", self.frz(("s025", "s4")))  # not read when s025 is not analysed
+        self.assertEqual(sorted(an.load_frozen(self.out, ("s1", "s225", "s4"))["amplitudes"]), ["s1", "s225", "s4"])
 
     def test_run_exits_2_on_a_refusal(self):
         self.put("tau_b_star.json", self.frz(("s1", "s225", "s4")))

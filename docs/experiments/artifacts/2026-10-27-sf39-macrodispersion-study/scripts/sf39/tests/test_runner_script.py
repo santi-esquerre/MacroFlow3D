@@ -118,6 +118,14 @@ class Dry(unittest.TestCase):
         self.assertEqual(p.returncode, 0, p.stderr)
         self.assertIn("DRYRUN [unittest:abcdef0123456789-dirty_e]", p.stdout)  # file-name characters, 24 at most
 
+    def test_a_dry_run_lists_the_commands_whatever_the_revision(self):
+        # the refusal of a revision that does not identify the tree belongs to real runs (README); a dry run only prints
+        for rev in ("abcdef012345-dirty", "   "):
+            env = dict(os.environ, SF39_DRYRUN="1", SF39_COMMIT=rev, SF39_OUT_ROOT=self.out_root)
+            p = subprocess.run(["bash", str(SH), "build/v100-release", "checks"], capture_output=True, text=True, env=env)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            self.assertIn("DRYRUN [unittest:", p.stdout)
+
     # -- extend ---------------------------------------------------------------------------------------------
     def test_extend_needs_a_complete_entry_for_what_it_runs(self):
         try:

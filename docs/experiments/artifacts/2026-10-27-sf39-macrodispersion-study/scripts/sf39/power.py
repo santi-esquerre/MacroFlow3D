@@ -157,9 +157,10 @@ def allocate(N, costs, done, budget_gpu_h):
     res = dict(N=cur, f=1.0, s4_ladders_to_20=False, projected_gpu_h=p0, projected_gpu_h_unscaled=p0, owner=False)
     if p0 <= budget_gpu_h:
         return res
-    if "s4" in cur:
+    has_s4 = "s4" in cur  # step (1) exists only where s4 does
+    if has_s4:
         cur["s4"] = derive({**cur["s4"], "N_narrow": N_MIN, "N_twin": N_MIN, "N_hmax": N_MIN})
-    res.update(N=cur, s4_ladders_to_20=True, projected_gpu_h=projected_gpu_h(cur, costs, done))
+    res.update(N=cur, s4_ladders_to_20=has_s4, projected_gpu_h=projected_gpu_h(cur, costs, done))
     if res["projected_gpu_h"] <= budget_gpu_h:
         return res
     for k in range(100, 0, -1):

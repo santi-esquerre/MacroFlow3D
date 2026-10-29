@@ -16,7 +16,7 @@ which `sync --delete` would erase).
 | `scripts/run_sf39.sh` | C-RUN | the six parts below; bookkeeping, md5 gate, restart rules |
 | `scripts/sf39/geometry.py` | C-GEOM | arm table (section 1), plane algorithm (section 2), mirror of the runner's parser checks |
 | `scripts/sf39/bytecheck.py` | RR3 (iii) | `--hmax-div 8,16,32` vs `8` byte comparison per F12 |
-| `scripts/sf39/regress_existing.py` | addendum A6 | regression of the existing amplitudes: `python3 -m sf39.regress_existing --ref <old analysis dir> --new <new analysis dir> [--amps s1,s225,s4]` (see "s025") |
+| `scripts/sf39/regress_existing.py` | addendum A6 | regression of the existing amplitudes (`s1` `s225` `s4`): `python3 -m sf39.regress_existing --ref <old analysis dir> --new <new analysis dir>` (see "s025") |
 | `scripts/sf39/tests/test_geometry.py`, `test_bytecheck.py`, `test_runner_script.py`, `test_runner_functional.py` | | synthetic known answers; dry runs and fake-binary restarts of `run_sf39.sh`; seconds |
 | `configs/par2_s{1,225,4}.yaml` | C-PAR2 inputs | Par2 pilot configs (copies of the SF-38 configs; only `stochastic.seed: 9001`, `NR: 20`, `output_dir: raw/par2_s{c}` and the header differ) |
 | `configs/par2_s025.yaml` | | Par2 pilot of `s025`: `python3 -m sf39.par2 mkpilot apps/config_pipeline_par2_sf38_s1.yaml 025`, a copy of the `s1` config with only `stochastic.sigma2: 0.25`, `stochastic.seed: 9001`, `NR: 20`, `output_dir: raw/par2_s025` and the header changed (no `apps/` file) |
@@ -49,7 +49,7 @@ governed by the `scripts/remote` slot and `REMOTE_GPU_MIN_FREE_MIB`.
 | `checkpoint` | none, `s025` | none: `python3 -m sf39.checkpoint --out-root $SF39_OUT_ROOT --artifact A` (case id `checkpoint`; freeze of `s1` `s225` `s4`, sealed pilot estimates, `nr_rule`, blinded report; never the four amplitudes). `s025`: case id `checkpoint_s025`, `--amps s025 --subdir s025`, everything under `checkpoint/s025/`. A recorded rc 0 is never re-run | no |
 | `extend` | `s025` `s1` `s225` `s4` `par2` | needs `configs/budget.json` (refuses with exit 2 and a message if absent or invalid, before anything is written; the amplitude selected, or every amplitude without selector / with `par2`, needs a complete entry, and every entry present is validated); raises `--nr` in the same directories (A to `N_A`, narrow rungs to `N_narrow` with `s4_n16` at least 30, twin to `N_twin` with `s4_tw` at least 30), creates directory B (`s{c}_B`, `--seed0 5001+N_A --nr N_run-N_A`, only if `N_run > N_A`); `par2`: needs `configs/par2_s{c}_ext.yaml` equal to the output of `python3 -m sf39.par2 mkext configs/par2_s{c}.yaml <par2_NR>` (refuses otherwise) and runs it plus `par2_field_stats` on it; skipped for `par2_NR <= 20`; the floor of 30 of `s4_n16` / `s4_tw` is `s4` only | yes |
 | `width` | | `s4_w24` (`--seed0 7101 --nr 30`), `s4_w12` (`--seed0 7201 --nr 30`), `s4_w12c` (`--seed0 7215 --nr 17`; see below) | yes |
-| `analysis` | | `python3 -m sf39.analyze --out-root $SF39_OUT_ROOT --artifact A --dest $SF39_OUT_ROOT/analysis`; re-run on every invocation (deterministic, idempotent) | no |
+| `analysis` | | `python3 -m sf39.analyze --out-root $SF39_OUT_ROOT --artifact A --dest $SF39_OUT_ROOT/analysis`; re-run on every invocation (deterministic, idempotent); `--amps` (manual contingency, never passed by this script) is described under "s025" | no |
 
 `s4_w12c` (owner decision 2026-10-28, a recorded deviation of one exploratory item; the preregistration is unchanged): `s4_w12` exited 4
 (medium (b) solve not converged) at `r = 13`, seed 7214, after `r = 0..12` (seeds 7201-7213) were DONE, so it is halted (RR6) and stays
@@ -123,25 +123,47 @@ Mechanics only; the settings and readings are in the addendum. `s025` is the fir
 ascending), with the `s1` geometry, `--eps 0.5`, the `s1` seeds and the Par2 config above. Nothing that `s1`, `s225` or `s4` produce changes.
 
 * **Tree-tied check ids.** The `checks` ids whose outcome depends on the scripts tree are `unittest:<rev>`, `geometry:<rev>`, `smoke_reduce:<rev>` and
-  `signtable:<rev>`, `<rev>` = the revision recorded in `run.env` (`SF39_COMMIT`, else the mirror's `.mf3d_source_rev`, else git HEAD) reduced to
-  file-name characters and at most 24 of them; their logs are `logs/<id with : as _>.log`. A new tree re-runs them (an unknown revision refuses with
-  exit 2) and the old records (`unittest`, `geometry`, ...) stay. The RR2 regression and the RR3 (iii) byte check records are reused, the existing
-  `chk_s1..s4` ids are skipped as recorded, and the four `chk_s025_*` solve checks run as new ids.
+  `signtable:<rev>`, `<rev>` = the revision recorded in `run.env` (`SF39_COMMIT`, else the mirror's `.mf3d_source_rev`, else the git HEAD of the
+  repository whose top level is the mirror root itself, never an enclosing repository's) reduced to file-name characters and at most 24 of them;
+  their logs are `logs/<id with : as _>.log`. A new tree re-runs them and the old records (`unittest`, `geometry`, ...) stay. A real `checks` run
+  refuses with exit 2, before the part starts (results.txt, PART_EXIT and run.env are left as they were), a revision that is empty or blank,
+  `unknown`, or ends in `-dirty` (after an edit a dirty tree keeps its revision, so the tied checks would not re-run); a dry run only prints.
+  The RR2 regression and the RR3 (iii) byte check records are reused, the existing `chk_s1..s4` ids are skipped as recorded, and the four
+  `chk_s025_*` solve checks run as new ids.
 * **Checkpoint.** `run_sf39.sh <bin> checkpoint s025` writes only under `checkpoint/s025/`: the write-once `tau_b_star_s025.json` (schema
   `sf39-tau_b_star-v1`, same content rules; a different content is refused), `sealed/` (`estimates.csv`, `nr_input.json`, `nr_out.json`,
   `nr_stdout.txt`), `costs.json`, `bytes.json` and the blinded `checkpoint_report.txt/.json`. `checkpoint/tau_b_star.json`, `sealed/`, `costs.json`,
-  `bytes.json` and `checkpoint_report.*` are never touched. `sf39.checkpoint` refuses to mix the cases (no `--subdir` needs exactly the three original
-  amplitudes; a `--subdir` needs amplitudes outside them).
+  `bytes.json` and `checkpoint_report.*` are never touched; the report names the frozen file of its case. `sf39.checkpoint` refuses to mix the cases
+  (no `--subdir` needs exactly the three original amplitudes; a `--subdir` needs exactly one amplitude, named like it, outside them). The
+  `checkpoint` part's `sha256.txt` hashes `checkpoint/sealed/*` and `checkpoint/s025/sealed/*` alike.
 * **Budget.** `configs/budget.json` gets the `s025` entry (same schema, below) only after the `s025` checkpoint. Until then the analysis refuses
   (`load_budget` requires every amplitude of `power.AMPLITUDES`) and `extend` works for the selected amplitudes that have an entry.
 * **Analysis.** `analyze.load_frozen` merges `checkpoint/tau_b_star.json` with `checkpoint/<amp>/tau_b_star_<amp>.json` and refuses (exit 2) on a schema
-  mismatch, an amplitude present in both files, or an amplitude without an entry. `summary.json` `amplitudes.s025.F11.upper_bound_fixed_axis_alpha_T`
-  also holds `alpha_Tfixed_lower` (one-sided 95 % lower limit) and `exceeds_BdD`; no key is added to the `s1` / `s225` / `s4` subtrees.
-* **Regression of the existing amplitudes** (addendum A6), the new analysis output against the committed `analysis/` of evidence commit `4dbf31f2`:
-  `python3 -m sf39.regress_existing --ref <old analysis dir> --new <new analysis dir> [--amps s1,s225,s4]` compares (a) the parsed JSON of
-  `summary.json` `amplitudes.<amp>` and `budget.<amp>`, (b) the bytes of every `reduced/*.csv` of `--ref` and of `series/alpha_t_<amp>.csv`, (c) the
-  ordered `decisions.csv` lines of the listed amplitudes and the reference `all` rows in order. It lists additions, exits 0 iff identical, 1 on any
-  difference, 2 on unreadable input. A difference is a defect, never accepted as new.
+  mismatch, a different `n_pilot`, an amplitude present in both files, or an amplitude without an entry. Gate 5 refuses (exit 1) a Par2 config whose
+  `stochastic.sigma2` is not the amplitude's nominal variance. An F7 that cannot be computed is listed as a decision row ("not available").
+  Only the `s025` subtree of `summary.json` carries: in `F11.upper_bound_fixed_axis_alpha_T`, `alpha_Tfixed_lower` (one-sided 95 % lower limit) and
+  `exceeds_BdD`; and `A4_readings` (addendum A4.1: per estimator `m_over_alpha`, `D_f_frac`, `D_tw_frac`, `d16_8_frac` as fractions of the production
+  mean, from the CIs of the A block, and `trend_detected`, one string per refinement CI that excludes 0). The `s025` Gate 4 rows end with
+  "refinement trend detected: ..." or "no refinement trend detected". No key or row of `s1` / `s225` / `s4` changes.
+* **Contingency `--amps`.** `python3 -m sf39.analyze --out-root ... --artifact ... --dest ... --amps s1,s225,s4` restricts every per-amplitude
+  step, the budget and frozen-entry requirements and every output to the listed amplitudes (default: all four). Its outputs are those of the
+  analysis before `s025` existed, so the original three can be analysed (not PARTIAL) while an `s025` arm is halted. It is a manual contingency:
+  `run_sf39.sh analysis` does not pass it.
+* **Regression of the existing amplitudes** (addendum A6), the new analysis output against the committed `analysis/` of evidence commit `4dbf31f2`.
+  The command on real data (the amplitudes `s1` `s225` `s4` are fixed; there is no `--amps`):
+
+  ```bash
+  mkdir <empty ref dir> && git archive 4dbf31f2 docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/analysis | tar -x -C <empty ref dir>
+  python3 -m sf39.regress_existing --ref <empty ref dir>/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/analysis --new <new analysis output>
+  ```
+
+  It compares (a) the parsed JSON of `summary.json` `amplitudes.<amp>` and `budget.<amp>`, (b) the bytes of every `reduced/*.csv` of `--ref` and of
+  `series/alpha_t_<amp>.csv`, (c) the ordered `decisions.csv` lines of the three amplitudes and the reference `all` rows in order. It lists additions,
+  exits 0 iff identical, 1 on any difference, 2 when it refuses or cannot read. It refuses (nothing compared) if `--ref` and `--new` are the same
+  directory (realpath); if the reference does not verify against its own `manifest.txt` (every entry under `reduced/` and `series/`, `summary.json`
+  and `decisions.csv`; the bookkeeping entries completed after the manifest are not checked, and a compared file that is not listed is refused);
+  or if the number of `reduced/*.csv` is 0 or differs from the number of `reduced/` entries of the manifest (53 for the evidence). The report prints
+  the sha256 of the reference manifest. A difference is a defect, never accepted as new.
 * **Import layout.** New bookkeeping is imported beside the committed one, never over it: `raw/campaign_s025/<part>/`, `raw/par2_s025[_ext]/` and
   `raw/field_stats_par2_s025[_ext].txt`. `analysis/` is replaced only after the regression above passes.
 

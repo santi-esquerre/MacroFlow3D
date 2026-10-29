@@ -460,6 +460,16 @@ class Campaign(unittest.TestCase):
         self.assertNotIn("TAU_B_STAR s1=", text)
         self.assertNotIn("s4_w24", text)
 
+    def test_report_names_the_frozen_file_of_its_case(self):
+        base = rd(os.path.join(self.ckd, "checkpoint_report.txt"))
+        s25 = rd(os.path.join(self.ck25, "checkpoint_report.txt"))
+        line = "FROZEN tau_b* (F2 pilot record; the other frozen times are in %s)"
+        self.assertIn(line % "tau_b_star.json", base.split("\n"))  # the original case's text is unchanged
+        self.assertEqual(base.split("\n")[0], "SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=%d per arm)" % N)
+        self.assertIn(line % "tau_b_star_s025.json", s25.split("\n"))
+        self.assertNotIn("tau_b_star.json", s25)
+        self.assertEqual(s25.split("\n")[0], "SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=%d per arm; amplitudes: s025)" % N)
+
     def test_s025_write_once_and_identical_rerun(self):
         path = os.path.join(self.ck25, "tau_b_star_s025.json")
         orig = rd(path)
@@ -485,7 +495,8 @@ class Campaign(unittest.TestCase):
     def test_cases_do_not_mix(self):
         before = tree_hashes(self.ckd)
         for kw in ({"amps": ("s025",)}, {"amps": ("s025", "s1"), "subdir": "s025"}, {"amps": ("s1",), "subdir": "s1"},
-                   {"amps": ("s025",), "subdir": "../x"}, {"amps": ("s9",), "subdir": "s9"}, {"amps": ("s1", "s225"), "subdir": ""}):
+                   {"amps": ("s025",), "subdir": "../x"}, {"amps": ("s9",), "subdir": "s9"}, {"amps": ("s1", "s225"), "subdir": ""},
+                   {"amps": ("s025",), "subdir": "other"}, {"amps": (), "subdir": "s025"}):  # a subdir is exactly one amplitude, named like it
             rc, err = run_quiet(self.out, self.art, n_pilot=N, **kw)
             self.assertEqual(rc, 2, kw)
             self.assertIn("CHECKPOINT_REFUSED", err)

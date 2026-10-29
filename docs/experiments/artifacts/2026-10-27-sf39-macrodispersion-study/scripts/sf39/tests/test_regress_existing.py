@@ -1,12 +1,15 @@
-"""Tests of sf39.regress_existing (addendum A6) on small fixtures: identical -> 0, additions listed and accepted, every kind of change -> non-zero."""
+"""Tests of sf39.regress_existing (addendum A6) on small fixtures and on the committed evidence analysis: identical -> 0, additions listed and
+accepted, every kind of change -> 1, every guard against a vacuous pass -> 2 (nothing compared)."""
 import contextlib
 import copy
+import hashlib
 import io
 import json
 import os
 import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
 from sf39 import regress_existing as rg
 
@@ -21,6 +24,7 @@ REF_ROWS = [
     "process,all,,CHECK_geometry,ok,,,,rc=0 (from checks/results.txt)",
     "process,all,,CHECK_bytecheck,ok,,,,rc=0 (from checks/results.txt)",
 ]
+ANALYSIS = Path(__file__).resolve().parents[3] / "analysis"  # the committed evidence analysis (evidence commit 4dbf31f2)
 
 
 def summary(amps=AMPS):
@@ -36,13 +40,33 @@ def write(path, text):
         f.write(text)
 
 
-def make(d, rows=REF_ROWS, summ=None, amps=AMPS, csv_extra=""):
+def sha(path):
+    with open(path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
+def write_manifest(d, drop=(), extra=()):
+    """manifest.txt in the format of `analyze` (sha256sum): every file of d but the manifest, plus bookkeeping entries completed after it
+    (listed with a hash that does not match, one of them for a file that does not exist)."""
+    lines = []
+    for r, _, fs in os.walk(d):
+        for f in fs:
+            rel = os.path.relpath(os.path.join(r, f), d)
+            if rel != "manifest.txt" and rel not in drop:
+                lines.append("%s  %s" % (sha(os.path.join(d, rel)), rel))
+    lines += ["%s  logs/analysis.log" % ("0" * 64), "%s  results.txt" % ("1" * 64), "%s  PART_EXIT" % ("2" * 64)] + list(extra)
+    write(os.path.join(d, "manifest.txt"), "\n".join(sorted(lines)) + "\n")
+    write(os.path.join(d, "results.txt"), "bookkeeping completed after the manifest\n")
+
+
+def make(d, rows=REF_ROWS, summ=None, amps=AMPS):
     write(os.path.join(d, "summary.json"), json.dumps(summ or summary(amps), indent=1, sort_keys=True) + "\n")
     for a in amps:
-        write(os.path.join(d, "reduced", "%s_prod.csv" % a), "set,seed,v\n%s_prod,5001,1.5\n%s_prod,5002,2.5\n" % (a, a) + csv_extra)
+        write(os.path.join(d, "reduced", "%s_prod.csv" % a), "set,seed,v\n%s_prod,5001,1.5\n%s_prod,5002,2.5\n" % (a, a))
         write(os.path.join(d, "series", "alpha_t_%s.csv" % a), "t,alpha\n1,0.1\n2,0.2\n")
     write(os.path.join(d, "reduced", "rho_s4.csv"), "pair,rho\n8-16,0.1\n")
     write(os.path.join(d, "decisions.csv"), "\n".join([HEAD] + rows) + "\n")
+    write_manifest(d)
 
 
 def run(ref, new, *extra):
@@ -61,8 +85,8 @@ class Fixture(unittest.TestCase):
         make(self.ref)
         shutil.copytree(self.ref, self.new)
 
-    def edit(self, rel, fn):
-        p = os.path.join(self.new, rel)
+    def edit(self, rel, fn, root=None):
+        p = os.path.join(root or self.new, rel)
         with open(p, newline="") as f:
             t = f.read()
         with open(p, "w", newline="") as f:
@@ -78,11 +102,14 @@ class Fixture(unittest.TestCase):
 
 
 class Identical(Fixture):
-    def test_identical_is_zero(self):
+    def test_identical_is_zero_and_prints_the_manifest_sha(self):
         rc, out, _ = run(self.ref, self.new)
         self.assertEqual(rc, 0, out)
         self.assertIn("REGRESS_EXISTING IDENTICAL (s1,s225,s4)", out)
         self.assertIn("csv files: 4 reduced + 3 series compared", out)
+        self.assertIn("reference manifest sha256 %s: 4 reduced/ entries" % sha(os.path.join(self.ref, "manifest.txt")), out)
+        # the bookkeeping entries of the manifest do not verify (by construction) and are ignored
+        self.assertIn("0" * 64 + "  logs/analysis.log", Path(self.ref, "manifest.txt").read_text())
 
     def test_additions_are_listed_and_never_fail(self):
         # what the s025 run adds: an amplitude in summary / budget / decisions, new csv files, new process rows (also between old ones)
@@ -99,11 +126,11 @@ class Identical(Fixture):
         self.assertIn("ADDED reduced/*.csv new files: 1", out)
         self.assertNotIn("DIFFERENT", out)
 
-    def test_amps_option_limits_amplitude_checks(self):
-        self.edit_summary(lambda d: d["amplitudes"]["s225"]["A"].update(mean=9.0))
-        self.assertNotEqual(run(self.ref, self.new)[0], 0)
-        self.assertEqual(run(self.ref, self.new, "--amps", "s1,s4")[0], 0)
-        self.assertNotEqual(run(self.ref, self.new, "--amps", "s225")[0], 0)
+    def test_the_amplitudes_are_fixed(self):
+        for extra in (("--amps", "s1"), ("--amps", "s1,s225,s4")):
+            with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as cm:
+                run(self.ref, self.new, *extra)
+            self.assertEqual(cm.exception.code, 2)
 
 
 class Different(Fixture):
@@ -172,10 +199,88 @@ class Different(Fixture):
         self.edit("decisions.csv", lambda t: t.replace("decision_point", "decision"))
         self.assertFails("header differs")
 
+
+class Refusals(Fixture):
+    """Every guard exits 2, says why, and compares nothing."""
+
+    def assertRefused(self, needle, ref=None, new=None):
+        rc, out, err = run(ref or self.ref, new or self.new)
+        self.assertEqual(rc, 2, out + err)
+        self.assertIn("REGRESS_EXISTING_REFUSED", err)
+        self.assertIn(needle, err)
+        self.assertNotIn("IDENTICAL", out)
+        self.assertNotIn("DIFFERENT", out)
+
+    def test_same_directory_even_through_a_link(self):
+        self.assertRefused("same directory", new=self.ref)
+        link = os.path.join(self.tmp.name, "link")
+        os.symlink(self.ref, link)
+        self.assertRefused("same directory", new=link)
+        self.assertRefused("same directory", ref=link, new=self.ref)
+
+    def test_reference_without_manifest(self):
+        os.remove(os.path.join(self.ref, "manifest.txt"))
+        self.assertRefused("no manifest.txt")
+
+    def test_malformed_manifest(self):
+        self.edit("manifest.txt", lambda t: t + "not a sha256sum line\n", root=self.ref)
+        self.assertRefused("malformed manifest line")
+
+    def test_reference_file_not_matching_the_manifest(self):
+        for rel, fn in (("reduced/s1_prod.csv", lambda t: t.replace("1.5", "1.6")), ("series/alpha_t_s225.csv", lambda t: t + "9,9\n"),
+                        ("summary.json", lambda t: t.replace("0.01", "0.02")), ("decisions.csv", lambda t: t.replace("0.0074", "0.0075"))):
+            self.setUp()
+            self.edit(rel, fn, root=self.ref)
+            self.edit(rel, fn, root=self.new)  # an identical change on both sides must not hide it
+            self.assertRefused("%s does not match its manifest sha256" % rel)
+
+    def test_listed_but_missing_and_not_listed(self):
+        os.remove(os.path.join(self.ref, "series", "alpha_t_s4.csv"))
+        self.assertRefused("series/alpha_t_s4.csv is listed but missing")
+        self.setUp()
+        write_manifest(self.ref, drop=("series/alpha_t_s4.csv",))
+        self.assertRefused("series/alpha_t_s4.csv is not listed in the manifest")
+        self.setUp()
+        write_manifest(self.ref, drop=("summary.json",))
+        self.assertRefused("summary.json is not listed in the manifest")
+
+    def test_reduced_count_must_match_the_manifest(self):
+        write(os.path.join(self.ref, "reduced", "extra.csv"), "a,b\n1,2\n")  # a reduced file the manifest does not list
+        self.assertRefused("holds 5 reduced/*.csv but its manifest lists 4")
+        self.setUp()
+        write_manifest(self.ref, extra=["%s  reduced/ghost.csv" % ("3" * 64)])  # a listed entry with no file
+        self.assertRefused("holds 4 reduced/*.csv but its manifest lists 5")
+
+    def test_no_reduced_csv(self):
+        shutil.rmtree(os.path.join(self.ref, "reduced"))
+        write_manifest(self.ref)
+        self.assertRefused("no reduced/*.csv")
+        os.makedirs(os.path.join(self.ref, "reduced"))
+        self.assertRefused("no reduced/*.csv")
+
     def test_unreadable_input_is_2(self):
         rc, _, err = run(self.ref, os.path.join(self.tmp.name, "absent"))
         self.assertEqual(rc, 2)
         self.assertIn("REGRESS_EXISTING_ERROR", err)
+
+
+class CommittedEvidence(unittest.TestCase):
+    """The real committed analysis: it verifies against its own manifest (53 reduced/ entries) and an exact copy is reproduced."""
+
+    def test_committed_analysis_against_a_copy(self):
+        with tempfile.TemporaryDirectory() as t:
+            new = os.path.join(t, "new")
+            shutil.copytree(ANALYSIS, new)
+            rc, out, err = run(str(ANALYSIS), new)
+            self.assertEqual((rc, err), (0, ""), out)
+            self.assertIn("53 reduced/ entries", out)
+            self.assertIn("csv files: 53 reduced + 3 series compared", out)
+            self.assertIn("reference manifest sha256 %s" % sha(str(ANALYSIS / "manifest.txt")), out)
+            with open(os.path.join(new, "reduced", "s1_prod.csv"), "a") as f:
+                f.write("x")
+            rc, out, err = run(str(ANALYSIS), new)
+            self.assertEqual(rc, 1, out)
+            self.assertIn("reduced/s1_prod.csv differs (bytes)", out)
 
 
 class JsonDiff(unittest.TestCase):
