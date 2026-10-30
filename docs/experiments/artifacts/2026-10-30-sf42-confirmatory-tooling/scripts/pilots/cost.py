@@ -10,7 +10,8 @@ import os
 
 from mcstat import costmodel as cm
 
-PAR2_TAG = "par2_rtol1e-10"
+PAR2_TAG = "par2_rtol1e-10"                  # Par2 at cg_rtol 1e-10 with SF-39's horizon rule (factor 1.2)
+PAR2_H36_TAG = "par2_rtol1e-10_h3.6"         # same with horizon factor 3.6 (J3B): the cost of the horizon SF-43 plane estimators need
 PLANES = 70
 AMPS = ("0.25", "1", "2.25", "4")
 SIG2 = {"0.25": 0.25, "1": 1.0, "2.25": 2.25, "4": 4.0}
@@ -25,7 +26,7 @@ def realization_seconds(r):
     return sum(x["flow_stage_s"] + x["transport_s"] for x in r["par2_stage_times"])
 
 
-def points_from_runs(root, jobs=("J1", "J2", "J3"), basis="realization"):
+def points_from_runs(root, jobs=("J1", "J2", "J3", "J3B"), basis="realization"):
     """Calibration points from ``<root>/<job>/<id>/RUN.json`` (exit 0 only); ``basis``: 'realization' (default, see
     ``realization_seconds``) or 'wall' (process wall, start-up included)."""
     pts = []
@@ -45,17 +46,18 @@ def points_from_runs(root, jobs=("J1", "J2", "J3"), basis="realization"):
             if r["code"] == "consumer":
                 arm = cm.lagrangian_arm(r["nx"], r["ny"], r["nz"], s2, float(r["M"]) ** 2, (8,), PLANES, r["id"])
             else:
-                arm = cm.par2_arm(r["nx"], r["ny"], r["nz"], s2, 1e4, PAR2_TAG, r["id"])
+                tag = PAR2_H36_TAG if r.get("par2_horizon_factor", 1.2) > 2.0 else PAR2_TAG
+                arm = cm.par2_arm(r["nx"], r["ny"], r["nz"], s2, 1e4, tag, r["id"])
             w = realization_seconds(r) if basis == "realization" and ("realizations" in r or "par2_stage_times" in r) else r["wall_s"]
             pts.append(cm.Point(arm, r["nr"], w, "%s %s %s" % (job, r["id"], basis)))
     return pts
 
 
-def plan(M, g5_n, v7=480, scale=None):
+def plan(M, g5_n, v7=480, scale=None, par2_tag=PAR2_H36_TAG):
     """The SF-43 planning table: list of dicts (family, arm label, arm, n).
 
     ``M``: {amp: lattice size}; ``g5_n``: {amp: Gate 5 realizations (both codes)}; ``scale``: optional function (family, amp, n) -> n
-    (variant B)."""
+    (variant B); ``par2_tag``: cost code of the planned Par2 rows (default: the 3.6 horizon SF-43 plane estimators need)."""
     rows = []
 
     def lag(fam, amp, nx, ny, n, hmax=(8,)):
@@ -64,7 +66,7 @@ def plan(M, g5_n, v7=480, scale=None):
                                                                                   "%s %s %dx%d" % (fam, amp, nx, ny))})
 
     def par2(fam, amp, nx, ny, n):
-        rows.append({"family": fam, "amp": amp, "n": n, "arm": cm.par2_arm(nx, ny, ny, SIG2[amp], 1e4, PAR2_TAG,
+        rows.append({"family": fam, "amp": amp, "n": n, "arm": cm.par2_arm(nx, ny, ny, SIG2[amp], 1e4, par2_tag,
                                                                            "%s %s %dx%d" % (fam, amp, nx, ny))})
 
     # production (h/8)

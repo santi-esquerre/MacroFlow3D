@@ -31,6 +31,12 @@
   "par2_horizon_factor": 3.6,
   "par2_n_steps": 138609,
   "par2_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
+   "min_first_over_injected": 1.0
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
    "min_last_over_injected": 1.0,
    "min_first_over_injected": 1.0
   }
@@ -67,7 +73,13 @@
   "par2_horizon_factor": 3.6,
   "par2_n_steps": 166331,
   "par2_crossing": {
+   "n_realizations": 8,
    "min_last_over_injected": 0.9999,
+   "min_first_over_injected": 1.0
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
    "min_first_over_injected": 1.0
   }
  },
@@ -103,8 +115,14 @@
   "par2_horizon_factor": 3.6,
   "par2_n_steps": 221774,
   "par2_crossing": {
+   "n_realizations": 8,
    "min_last_over_injected": 0.9996,
    "min_first_over_injected": 0.9999
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
+   "min_first_over_injected": 1.0
   }
  }
 }
