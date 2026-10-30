@@ -626,9 +626,12 @@ context) and by 1.2 to 1.3 GiB on the two smallest. SF-43 use of 2496x288x288 (`
 amplitude of the listed pair it could serve, and it would be an intermediate rung (`lambda/h` 24) that the specification does not
 plan.
 
-`sigma^2` 0.25 is not a J1 run (no grid is planned only there): J2 and J3 run 1040x240x240 at 0.25 and report 60.0 and 61.25 mean PCG
-iterations against the SF-39 median of 20, a ratio of 3.00 and 3.06 (outside the J1 protocol, reported for completeness; see Findings
-(f)).
+`sigma^2` 0.25 is not a J1 run (no grid is planned only there): J2 and J3 run 1040x240x240 at 0.25 (outside the J1 protocol, reported
+for completeness; see Findings (f)). J2's recorded PCG counts are 60 in all 18 realizations (three `M`, six each), a ratio of 3.00 to
+SF-39's median of 20, not more than 3; J3's are 60 (x7) and 70 (x1), mean 61.25, ratio 3.06 (the 70 alone is 3.5). With convergence tested
+every 10 iterations a recorded 20 means 11 to 20 actual iterations and a recorded 60 means 51 to 60, so the actual ratio lies between
+2.55 and 5.45 and the pre-stated 3x rule cannot resolve this case. It is not resolved here: it is flagged as an open decision on the
+0.25 production grid for SF-43's pre-registration and the owner.
 
 #### Particle count (J2)
 
@@ -1041,9 +1044,11 @@ crossing-completeness criterion reported per realization) for any plane-crossing
 amplitude. SF-39's time-window Gate 5 is not exposed to this censoring (section G, scope).
 
 (e) **GPU memory of the largest grids.** Peak memory of the job's own PID: 28203 MiB at 2080x480x480 (4.8e8 cells; runner exact bytes
-27683 MiB), 14365 at 1040x480x480, 12471 at 2496x288x288: 58.9 to 60.2 MiB per million cells. Extrapolated linearly (not run) to
-3328x384x384 (4.9e8 cells) that is 28.9e3 to 29.6e3 MiB, and the planned 2080x480x480 rungs use 28.2e3 MiB, of the V100's 32510 MiB. Only
-an otherwise empty GPU can run them (the R4 jobs waited for 30000 MiB free by `REMOTE_GPU_MIN_FREE_MIB`), which on the host shared with
+27683 MiB), 14365 at 1040x480x480, 12471 at 2496x288x288: 58.9 to 60.2 MiB per million cells. J2 ran the SF-43 production grids
+(measured, not extrapolated): 3328x384x384 (4.9e8 cells) at `sigma^2` 4 peaks at 29881 MiB (runner exact bytes 28347.4 MiB, maximum over
+`MEM_PHASE` lines; 60.9 MiB per million cells) and 1664x384x384 at 2.25 at 15703 MiB (exact 14173.7 MiB); the peak is the same for the
+three `M` of each amplitude (58, 100, 202), so in these runs it does not depend on `M`. The planned 2080x480x480 rungs use 28203 MiB
+(J1), of the V100's 32510 MiB. Only an otherwise empty GPU can run them (the R4 jobs waited for 30000 MiB free by `REMOTE_GPU_MIN_FREE_MIB`), which on the host shared with
 colleagues is a scheduling constraint for SF-43, not a tuning one. Par2 on its three grids uses 7.7e3 to 12.9e3 MiB.
 
 (f) **Multigrid depth and PCG iterations of the SF-43 grids.** The grids whose extents have few factors of two get a shallower hierarchy (MG
@@ -1051,7 +1056,10 @@ levels 3 to 5 at `ny` 120, 240, 288, 480 and `nx` 520, 1040, 1248, 2080 against 
 iterations than SF-39's median at the same `sigma^2`: ratios 2.0 to 2.3 at 520x120x120, 1040x240x240, 1040x480x480, 2080x480x480,
 2496x288x288 (J1), 1.4 to 1.5 at 1248x288x288; the production grid at `sigma^2` 0.25 and 1 takes 60 to 61 and 70 to 72 mean iterations
 (ratios 3.0 to 3.06 and 2.3 to 2.4, J2 and J3), while 192 and 384 (SF-39's own extents) give 0.67 to 1.0. No J1 grid trips the 3x rule
-(maximum 2.33); the 0.25 production grid sits at 3.0 to 3.06 in J2 and J3, outside the J1 protocol (J1 does not run 0.25). Counts are
+(maximum 2.33); the 0.25 production grid sits at 3.00 (J2: 60 in all 18 realizations) and 3.06 (J3: 60 x7, 70 x1, mean 61.25; the 70 alone 3.5) against the
+median 20, outside the J1 protocol (J1 does not run 0.25). Since a recorded count is a multiple of 10 (11 to 20 actual for 20, 51 to 60 for
+60), the actual ratio lies between 2.55 and 5.45 and the pre-stated rule cannot resolve it; this is an open decision on the 0.25
+production grid for SF-43's pre-registration and the owner. Counts are
 multiples of 10 (`check_every`). The link to the hierarchy depth is a hypothesis supported by the covariates (section G, cost model),
 not a tested cause; it is also why the SF-39-only cost model under-predicts them (by up to 42 % on the J1 grids). The choice of grids is SF-43's.
 
@@ -1072,6 +1080,10 @@ scenario of the projection uses 30).
 to 146.6 (+ largest residual) and 130.7 (anchored), and the most pessimistic combination, anchored +1 rms, is 150.9. `E_W` (45.3 GPU-h; the
 1040x480x480 arms at 0.25 and 1 alone 40.6), `E_h` (22.1) and production (16.3) dominate; denser lattices cost 112.0 (SF-39 density), 109.6
 (share 0.10), 118.2 (`M` common 128). The displacement-basis variant B is 45.3. Par2 at the 3.6 horizon adds 0.3 GPU-h.
+The refit under-predicts the measured planned production configuration: J2 `c_s1_M64` took 23.9 s per realization against the projection's
+17.6 s (`production 1 1040x240`, 17.64), and `c_s025_M64` 20.3 s against 17.2 (17.25). The anchored total, 130.7 GPU-h, is therefore the more
+realistic planning number and the anchored +1 rms value (150.9) the pessimistic edge, at the G10 budget of 150; the margin of the realistic
+number to 150 is about 19 GPU-h (19.3). The scenario with a large margin is the displacement-basis variant B (anchored 52.5).
 
 ## Conclusion
 
@@ -1107,5 +1119,7 @@ Pending (later nodes).
 9. The R4 worker was interrupted by the owner after all five remote jobs had finished and before its reporting stage (its commits were
    `4b2593cd`, `55d43300`; the experiment note, the cost-report completions and the artifact index were not done). R4b resumed locally
    from the uncommitted files of that worktree: copied unchanged (commit `0a8cd554`), then the report completions (anchored +1 rms, explicit
-   STOP-rule record, Par2 3.6 cost code, residual diagnostics, consumer crossing completeness; commit `31af02b1`) and this section. No job was
-   re-run and `scripts/remote` was not used in R4b.
+   STOP-rule record, Par2 3.6 cost code, residual diagnostics, consumer crossing completeness; commit `31af02b1`), unique cost-point labels
+   (commit `ca467143`) and the note (commit `6b7f3efa`). R4c (note text only) then corrected the memory finding (the 3328x384x384 and
+   1664x384x384 peaks were measured in J2, not extrapolated), stated the 0.25 PCG-count ratio and the 3x rule's resolution limit, and added
+   the projection-versus-measured comparison to the cost finding. No job was re-run and `scripts/remote` was not used in R4b or R4c.
