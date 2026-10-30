@@ -107,6 +107,12 @@ class TestScaleAndCost(unittest.TestCase):
         self.assertEqual([r["n"] for r in rb if r["family"] == "production"], [30, 30, 30, 30])
         self.assertEqual([r["n"] for r in rb if r["family"] == "E_h"], [r["n"] for r in rows if r["family"] == "E_h"])
 
+    def test_realization_seconds_basis(self):
+        c = {"code": "consumer", "realizations": [{"seconds": {"total": 10.0}}, {"seconds": {"total": 12.5}}]}
+        p = {"code": "par2", "par2_stage_times": [{"flow_stage_s": 3.0, "transport_s": 4.0}, {"flow_stage_s": 2.0, "transport_s": 5.0}]}
+        self.assertEqual(cost.realization_seconds(c), 22.5)
+        self.assertEqual(cost.realization_seconds(p), 14.0)
+
     def test_project_linear_in_n(self):
         pts = []
         for i, (nx, s2) in enumerate(((512, 0.25), (1024, 1.0), (2048, 2.25), (2048, 4.0), (1024, 4.0), (512, 1.0), (4096, 1.0))):

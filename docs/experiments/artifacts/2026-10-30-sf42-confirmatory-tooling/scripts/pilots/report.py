@@ -135,16 +135,25 @@ def j2(data, out):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def j3(data, out):
+def crossing_fraction(rows):
+    """Par2 plane-crossing completeness of a reduced table: min over realizations of n_last / n_traced, and of n_first / n_traced."""
+    rs = [r for r in rows if r["code"] == "par2" and r["family"] == "plane" and r["basis"] == "pos" and r["set"] == "perplane"]
+    return {"min_last_over_injected": min(float(r["n_last"]) / float(r["n_traced"]) for r in rs),
+            "min_first_over_injected": min(float(r["n_first"]) / float(r["n_traced"]) for r in rs)}
+
+
+def j3(data, out, par2_job="J3", name="j3_pairing.json"):
+    """Gate 5 pairing statistics; ``par2_job`` = 'J3B' pairs the J3 consumer tables with the longer-horizon Par2 runs."""
     runs = load_runs(data, "J3")
+    pruns = load_runs(data, par2_job)
     res = {}
     for amp in design.EPS:
         c = [r for r in runs if r["amp"] == amp and r["code"] == "consumer" and r["exit"] == 0]
-        p = [r for r in runs if r["amp"] == amp and r["code"] == "par2" and r["exit"] == 0]
+        p = [r for r in pruns if r["amp"] == amp and r["code"] == "par2" and r["exit"] == 0]
         if not (c and p):
             continue
         ct = an.read_table(os.path.join(data, "J3", "reduced", c[0]["id"] + ".csv"))
-        pt = an.read_table(os.path.join(data, "J3", "reduced", p[0]["id"] + ".csv"))
+        pt = an.read_table(os.path.join(data, par2_job, "reduced", p[0]["id"] + ".csv"))
         try:
             res[amp] = an.pairing(ct, pt)
         except ValueError as e:
@@ -152,7 +161,10 @@ def j3(data, out):
             continue
         res[amp]["grid"] = "%dx%dx%d" % (c[0]["nx"], c[0]["ny"], c[0]["nz"])
         res[amp]["M_consumer"] = c[0]["M"]
-    with open(os.path.join(out, "j3_pairing.json"), "w") as f:
+        res[amp]["par2_horizon_factor"] = p[0].get("par2_horizon_factor", 1.2)
+        res[amp]["par2_n_steps"] = p[0]["par2_n_steps"]
+        res[amp]["par2_crossing"] = crossing_fraction(pt)
+    with open(os.path.join(out, name), "w") as f:
         json.dump(res, f, indent=1)
     return res
 
@@ -166,13 +178,16 @@ def cost_report(data, out, repo, j2_json, j3_json, hostref_json):
     new = old.with_points(pts)
     fit = {"sf39_only": old.summary(), "with_pilots": new.summary(), "n_new_points": len(pts)}
     # residuals of the new points under the SF-39-only model (Par2 pilot points against SF-39's own 'par2' fit, cg_rtol 1e-6)
+    # on two bases: 'realization' (the code's own per-realization time, used for the refit) and 'wall' (process wall, start-up included)
     res = []
-    for p in pts:
-        a = p.arm
-        arm = a if a.family == "lagrangian" else cm.Arm("par2", a.cells, a.sigma2, a.particles, a.nx, 0.0, 0, a.label)
-        pred = old.predict(arm)
-        res.append({"label": a.label, "code": a.code, "n_real": p.n_real, "observed_s": p.gpu_s_per_real, "sf39_model_s": pred,
-                    "rel_error_sf39_model": (pred - p.gpu_s_per_real) / p.gpu_s_per_real, "in_sf39_range": old.in_range(arm)})
+    for basis in ("realization", "wall"):
+        for p in costmod.points_from_runs(data, basis=basis):
+            a = p.arm
+            arm = a if a.family == "lagrangian" else cm.Arm("par2", a.cells, a.sigma2, a.particles, a.nx, 0.0, 0, a.label)
+            pred = old.predict(arm)
+            res.append({"basis": basis, "label": a.label, "code": a.code, "n_real": p.n_real, "observed_s": p.gpu_s_per_real,
+                        "sf39_model_s": pred, "rel_error_sf39_model": (pred - p.gpu_s_per_real) / p.gpu_s_per_real,
+                        "in_sf39_range": old.in_range(arm)})
     labels = {p.arm.label for p in pts}
     resid_new = [{"label": r["label"], "code": r["code"], "rel_refit": r["rel"], "observed_s": r["observed"], "refit_s": r["predicted"]}
                  for r in new.residuals() if r["label"] in labels]
@@ -219,7 +234,7 @@ def cost_report(data, out, repo, j2_json, j3_json, hostref_json):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="pilots.report")
-    ap.add_argument("what", choices=("j1", "j2", "j3", "cost"))
+    ap.add_argument("what", choices=("j1", "j2", "j3", "j3b", "cost"))
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--repo", help="repository root (cost)")
@@ -230,7 +245,10 @@ def main(argv=None):
                         os.path.join(a.data, "hostref.json"))
         print(json.dumps({k: v["total_gpu_h"] for k, v in r["projections"].items()}, indent=1), "stop_budget=%s" % r["stop_budget"])
         return 0
-    r = {"j1": j1, "j2": j2, "j3": j3}[a.what](a.data, a.out)
+    if a.what == "j3b":
+        r = j3(a.data, a.out, "J3B", "j3b_pairing.json")
+    else:
+        r = {"j1": j1, "j2": j2, "j3": j3}[a.what](a.data, a.out)
     print(json.dumps(r, indent=1, default=str)[:6000])
     return 0
 

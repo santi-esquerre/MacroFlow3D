@@ -16,8 +16,18 @@ AMPS = ("0.25", "1", "2.25", "4")
 SIG2 = {"0.25": 0.25, "1": 1.0, "2.25": 2.25, "4": 4.0}
 
 
-def points_from_runs(root, jobs=("J1", "J2", "J3")):
-    """Calibration points from ``<root>/<job>/<id>/RUN.json`` (exit 0 only)."""
+def realization_seconds(r):
+    """Sum over the run's realizations of the code's own per-realization time (no process start-up, no post-processing): consumer =
+    ``timings.json`` ``seconds.total``; Par2 = stage times [4] -> 'Transport complete' (field + solve + velocity + transport).
+    SF-39's walls spread one start-up over >= 20 realizations; for pilot runs of 1-8 realizations this basis is the comparable one."""
+    if r["code"] == "consumer":
+        return sum(x["seconds"]["total"] for x in r["realizations"])
+    return sum(x["flow_stage_s"] + x["transport_s"] for x in r["par2_stage_times"])
+
+
+def points_from_runs(root, jobs=("J1", "J2", "J3"), basis="realization"):
+    """Calibration points from ``<root>/<job>/<id>/RUN.json`` (exit 0 only); ``basis``: 'realization' (default, see
+    ``realization_seconds``) or 'wall' (process wall, start-up included)."""
     pts = []
     for job in jobs:
         jd = os.path.join(root, job)
@@ -36,7 +46,8 @@ def points_from_runs(root, jobs=("J1", "J2", "J3")):
                 arm = cm.lagrangian_arm(r["nx"], r["ny"], r["nz"], s2, float(r["M"]) ** 2, (8,), PLANES, r["id"])
             else:
                 arm = cm.par2_arm(r["nx"], r["ny"], r["nz"], s2, 1e4, PAR2_TAG, r["id"])
-            pts.append(cm.Point(arm, r["nr"], r["wall_s"], "%s %s" % (job, r["id"])))
+            w = realization_seconds(r) if basis == "realization" and ("realizations" in r or "par2_stage_times" in r) else r["wall_s"]
+            pts.append(cm.Point(arm, r["nr"], w, "%s %s %s" % (job, r["id"], basis)))
     return pts
 
 

@@ -73,6 +73,18 @@ class TestRunTables(unittest.TestCase):
         runs = {r.id: r for r in d.j1_runs()}
         self.assertEqual(runs["p_s225_1248x288"].seed0, runs["c_s225_1248x288"].seed0)
 
+    def test_j3b_is_par2_only_with_longer_horizon(self):
+        runs = d.j3b_runs()
+        self.assertEqual([r.amp for r in runs], ["1", "2.25", "4"])
+        self.assertTrue(all(r.code == "par2" and r.job == "J3B" and r.hz == 3.6 for r in runs))
+        base = {r.id: r for r in d.j3_runs() if r.code == "par2"}
+        for r in runs:
+            b = base[r.id[:-3]]
+            self.assertEqual((r.seed0, r.nr, r.nx, r.ny), (b.seed0, b.nr, b.nx, b.ny))     # same fields as J3
+            self.assertEqual(d.par2_time(r.nx, r.ny, r.lh, 1.2), d.par2_time(b.nx, b.ny, b.lh))
+            self.assertGreater(d.par2_time(r.nx, r.ny, r.lh, r.hz)[1], 2.9 * d.par2_time(b.nx, b.ny, b.lh)[1])
+        self.assertIn("n_steps: %d" % d.par2_time(runs[2].nx, runs[2].ny, runs[2].lh, 3.6)[1], d.par2_yaml(runs[2]))
+
     def test_consumer_args_and_par2_yaml(self):
         r = [x for x in d.j3_runs() if x.id == "c_s4_1664x192"][0]
         a = d.consumer_args(r, "/o")

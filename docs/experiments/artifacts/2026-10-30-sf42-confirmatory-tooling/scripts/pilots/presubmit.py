@@ -29,7 +29,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     model, _ = cm.fit_sf39(a.repo)
     res = {}
-    for job in ("J1", "J2", "J3"):
+    for job in ("J1", "J2", "J3", "J3B"):
         rows, tot = [], 0.0
         for r in design.JOBS[job]():
             arm = arm_of(r)

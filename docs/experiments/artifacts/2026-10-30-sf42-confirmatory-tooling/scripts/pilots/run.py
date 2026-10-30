@@ -168,7 +168,8 @@ def run_one(run, build, root, dry=False):
     else:
         rec["par2_solves"], _ = summarize_par2(os.path.join(d, "run.log"))
         rec["par2_stage_times"] = par2_stage_times(marks)
-        dt, nst = design.par2_time(run.nx, run.ny, run.lh)
+        dt, nst = design.par2_time(run.nx, run.ny, run.lh, run.hz)
+        rec["par2_horizon_factor"] = run.hz
         rec["par2_dt"], rec["par2_n_steps"] = dt, nst
     with open(os.path.join(d, "RUN.json"), "w") as f:
         json.dump(rec, f, indent=1)
