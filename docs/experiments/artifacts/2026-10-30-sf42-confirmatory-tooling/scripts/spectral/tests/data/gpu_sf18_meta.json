@@ -1,0 +1,32 @@
+{
+ "producer": "build/wsl-debug/sf42_periodic_flow --n N --eps 1 --seed S (RTX 3050 Laptop, sm_86, CUDA debug build, 2026-10-30)",
+ "sigma2": 1.0,
+ "ell": 0.25,
+ "layout": "(nz,ny,nx) float64 C order, cell-centred",
+ "dumps": [
+  {
+   "file": "gpu_Y_N8_seed420002.npy",
+   "n": 8,
+   "seed": 420002,
+   "applied_scale": 0.90882312607033,
+   "raw_variance": 1.210713153486461,
+   "active_mode_count": 195
+  },
+  {
+   "file": "gpu_Y_N12_seed420003.npy",
+   "n": 12,
+   "seed": 420003,
+   "applied_scale": 0.9682148635028679,
+   "raw_variance": 1.0667349127731935,
+   "active_mode_count": 725
+  },
+  {
+   "file": "gpu_Y_N16_seed420001.npy",
+   "n": 16,
+   "seed": 420001,
+   "applied_scale": 1.2588037214279575,
+   "raw_variance": 0.6310793414846366,
+   "active_mode_count": 1799
+  }
+ ]
+}
