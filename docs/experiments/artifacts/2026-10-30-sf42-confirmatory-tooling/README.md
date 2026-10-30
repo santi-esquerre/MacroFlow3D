@@ -19,7 +19,9 @@ Artifact root `R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooli
 | `scripts/sf42red/` | reader and per-realization plane reduction for both codes, sha256 manifest and pruning tool | delivered |
 | `scripts/recompute/`, `scripts/reconcile/` | independent recomputation of SF-39 reduced values from raw moment files; reconciliation of solver verdicts against job logs | delivered |
 | `verification/` | R1 evidence of acceptance A, B, C: job scripts (`job_base.sh`, `job_head.sh`, `bytes.sh`, `identity.sh`, `identity.py`, `treecmp.py`), logs, comparison outputs, md5 lists, `jobs.tsv` (job table with GPU hours) | delivered |
-| `mms/`, `spectral/`, `coverage/`, `pilots/`, `repro/` | result directories of the later jobs (acceptance D, E, F, G, H) | pending (later nodes) |
+| `mms/` | R2 results of the MMS order study (acceptance D): 24 JSON, `mms_summary.{md,json}`, job logs | delivered |
+| `spectral/` | R2 results of the spectral cross-check (acceptance E): `summary.{md,json}`, `cases/`, FV `report.json`, `fv_npy.sha256` (the 4.7 GB FV dumps stay on the host), job logs | delivered |
+| `coverage/`, `pilots/`, `repro/` | result directories of the later jobs (acceptance F, G, H) | pending (later nodes) |
 
 ## Unit tests
 

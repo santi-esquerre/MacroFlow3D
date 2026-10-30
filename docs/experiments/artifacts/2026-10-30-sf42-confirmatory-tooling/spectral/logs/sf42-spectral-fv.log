@@ -1,0 +1,105 @@
+[2026-10-30T06:26:03Z] job=sf42-spectral-fv GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T06:26:03Z] job=sf42-spectral-fv chose GPU 0 (auto: least-loaded)
+[2026-10-30T06:26:03Z] job=sf42-spectral-fv session=macroflow3d-SF-42-sf42-spectral-fv started
+[2026-10-30T06:26:03Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T06:26:03Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T06:26:03Z] command=cd ~/MacroFlow3D-SF-42 && bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/spectral/run_spectral.sh build/v100-release ~/sf42_campaign/spectral fv
+fv s0p25 seed 420001 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 0.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=0.5 seed=420001 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.951937419402,0.00414381606942,0.00224536850037) flow=0.87s
+fv s0p25 seed 420001 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 0.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=0.5 seed=420001 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.949182553706,0.00439330787998,0.00217942816027) flow=0.94s
+fv s0p25 seed 420001 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 0.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=0.5 seed=420001 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.948845724602,0.00442338913513,0.00217129776447) flow=0.98s
+fv s0p25 seed 420001 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 0.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=0.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.948479295992,0.00445600891974,0.00216243871355) flow=2.05s
+fv s0p25 seed 420001 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 0.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=0.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.948302559912,0.00447170301323,0.00215816077647) flow=2.44s
+fv s0p25 seed 420001 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 0.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=0.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.948258318082,0.00447562768672,0.00215708939707) flow=4.34s
+fv s0p25 seed 420002 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 0.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=0.5 seed=420002 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.980761150034,-0.0226474771926,0.0082310405262) flow=0.88s
+fv s0p25 seed 420002 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 0.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=0.5 seed=420002 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.978596164001,-0.0231716914119,0.00845074035195) flow=0.93s
+fv s0p25 seed 420002 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 0.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=0.5 seed=420002 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.978331885614,-0.0232349891424,0.0084773210268) flow=0.96s
+fv s0p25 seed 420002 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 0.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=0.5 seed=420002 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.978044490199,-0.0233036564933,0.00850616949999) flow=1.03s
+fv s0p25 seed 420002 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 0.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=0.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.977905913407,-0.0233367047416,0.00852005851491) flow=2.45s
+fv s0p25 seed 420002 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 0.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=0.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.977871227957,-0.0233449703649,0.00852353275503) flow=4.32s
+fv s1 seed 420001 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 1.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=1 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.806219065768,0.00798988915132,0.00376046321341) flow=1.73s
+fv s1 seed 420001 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 1.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=1 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.798484868863,0.00868286943526,0.0033503035384) flow=1.84s
+fv s1 seed 420001 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 1.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=1 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.797533654176,0.00876539440513,0.0033003802364) flow=1.91s
+fv s1 seed 420001 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 1.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=1 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.796497363886,0.00885461645679,0.00324614353743) flow=2.03s
+fv s1 seed 420001 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 1.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=1 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.795996975682,0.00889744236101,0.00322001326356) flow=2.45s
+fv s1 seed 420001 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 1.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=1 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.795871656789,0.00890814161998,0.00321347524232) flow=4.34s
+fv s1 seed 420002 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 1.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=1 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.947066123351,-0.0666499962223,0.0191044724488) flow=1.74s
+fv s1 seed 420002 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 1.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=1 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.940017125348,-0.0676161870384,0.0194217961305) flow=1.83s
+fv s1 seed 420002 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 1.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=1 seed=420002 rtol=1e-12: iterations=(10,10,10) converged=1 G=(0.939151735195,-0.0677310596801,0.0194599664701) flow=0.96s
+fv s1 seed 420002 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 1.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=1 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.938209407449,-0.0678552368513,0.0195013422002) flow=2.04s
+fv s1 seed 420002 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 1.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=1 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.937754570232,-0.0679148372332,0.0195212436945) flow=2.46s
+fv s1 seed 420002 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 1.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=1 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.937640678115,-0.0679297271028,0.0195262200295) flow=4.31s
+fv s2p25 seed 420001 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 1.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=1.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.594808445923,0.00631343436782,0.00233285486694) flow=1.71s
+fv s2p25 seed 420001 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 1.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=1.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.584568364973,0.00729254293164,0.00157177282131) flow=1.86s
+fv s2p25 seed 420001 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 1.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=1.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.583299862158,0.00740766920778,0.00148008704654) flow=1.91s
+fv s2p25 seed 420001 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 1.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=1.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.581915289471,0.00753173484065,0.00138072347502) flow=2.03s
+fv s2p25 seed 420001 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 1.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=1.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.581245714429,0.00759113072207,0.00133294378957) flow=2.47s
+fv s2p25 seed 420001 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 1.5 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=1.5 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.581077917894,0.00760595360368,0.00132099833784) flow=4.33s
+fv s2p25 seed 420002 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 1.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=1.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.913824636093,-0.0984691714356,0.0179565538341) flow=1.73s
+fv s2p25 seed 420002 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 1.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=1.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.901400829967,-0.0988781331752,0.0179160502007) flow=1.82s
+fv s2p25 seed 420002 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 1.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=1.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.899863283701,-0.0989212295288,0.0179104267869) flow=1.91s
+fv s2p25 seed 420002 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 1.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=1.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.898185865139,-0.0989664142209,0.017904146285) flow=2.02s
+fv s2p25 seed 420002 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 1.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=1.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.89737502144,-0.098987575534,0.0179010566372) flow=2.46s
+fv s2p25 seed 420002 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 1.5 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=1.5 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.897171861744,-0.0989928084404,0.0179002770776) flow=4.32s
+fv s4 seed 420001 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 2.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=2 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.381585425171,0.00256934325939,0.000273854120236) flow=1.72s
+fv s4 seed 420001 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 2.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=2 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.3723898957,0.00351645638674,-0.000544164211349) flow=1.85s
+fv s4 seed 420001 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 2.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=2 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.37124179119,0.00362667968837,-0.000641533286723) flow=1.92s
+fv s4 seed 420001 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 2.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=2 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.369985836889,0.0037451531255,-0.000746745521407) flow=2.04s
+fv s4 seed 420001 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 2.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=2 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.369377355929,0.00380175214764,-0.000797219570777) flow=2.44s
+fv s4 seed 420001 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 2.0 --seed 420001 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=2 seed=420001 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.369224752584,0.00381586449044,-0.000809826450114) flow=4.33s
+fv s4 seed 420002 N=16: build/v100-release/sf42_periodic_flow --n 16 --eps 2.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=16 eps=2 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.876657235985,-0.104634737879,0.00791811426846) flow=1.72s
+fv s4 seed 420002 N=32: build/v100-release/sf42_periodic_flow --n 32 --eps 2.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=32 eps=2 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.859400606821,-0.10392969889,0.00754909014657) flow=1.86s
+fv s4 seed 420002 N=40: build/v100-release/sf42_periodic_flow --n 40 --eps 2.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=40 eps=2 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.857244481433,-0.103833352749,0.0075040671393) flow=1.90s
+fv s4 seed 420002 N=64: build/v100-release/sf42_periodic_flow --n 64 --eps 2.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=64 eps=2 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.85488677438,-0.103725968742,0.00745509523825) flow=2.05s
+fv s4 seed 420002 N=128: build/v100-release/sf42_periodic_flow --n 128 --eps 2.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=128 eps=2 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.853745021974,-0.103673210272,0.00743147605855) flow=2.46s
+fv s4 seed 420002 N=256: build/v100-release/sf42_periodic_flow --n 256 --eps 2.0 --seed 420002 --rtol 1e-12 --max-iter 4000
+sf42_periodic_flow N=256 eps=2 seed=420002 rtol=1e-12: iterations=(20,20,20) converged=1 G=(0.853458738836,-0.103659904623,0.00742556351055) flow=4.35s
+[2026-10-30T06:30:58Z] job=sf42-spectral-fv finished exit=0

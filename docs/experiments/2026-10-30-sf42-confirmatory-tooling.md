@@ -10,8 +10,8 @@
   disjoint from SF-43's.
 - Artifact root `R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/` (see `R/README.md`); R1 evidence in
   `R/verification/`.
-- Sections D to H and the findings for SF-43 that depend on them are filled by the later nodes (MMS, spectral cross-check, library
-  and coverage, pilots, reproducibility tooling).
+- Sections D and E (the MMS order study and the pseudo-spectral cross-check, second remote campaign R2) are recorded; sections F to H
+  and the findings for SF-43 that depend on them are filled by the later nodes (library and coverage, pilots, reproducibility tooling).
 
 ## Question
 
@@ -116,11 +116,45 @@ Jobs (times from the job logs, `R/verification/logs/`; GPU-h = wall hours of the
 | `sf42-bytes` | 05:06:46 | 05:07:08 | 22 | 0.006 | 0 | 0 |
 | `sf42-ctest` | 05:08:24 | 05:39:04 | 1840 | 0.511 | 0 | 0 |
 | `sf42-identity` | 05:40:09 | 05:40:58 | 49 | 0.014 | 0 | 0 |
-| total | | | 2952 | 0.820 | | |
+| `sf42-r2-build` (CPU: incremental build of the two R2 targets, 243 Python tests on the host stack) | 05:53:25 | 05:58:39 | 314 | 0.087 | 0 | 0 |
+| `sf42-mms` (CUDA) | 05:59:32 | 06:24:59 | 1527 | 0.424 | 0 | 0 |
+| `sf42-spectral-fv` (CUDA) | 06:26:03 | 06:30:58 | 295 | 0.082 | 0 | 0 |
+| `sf42-spectral-ref` (CPU, 40 workers; holds the slot) | 06:31:50 | 09:01:37 | 8987 | 2.496 | 0 | 0 |
+| total R1 | | | 2952 | 0.820 | | |
+| total R2 | | | 11123 | 3.090 | | |
+| running total R1 + R2 | | | 14075 | 3.910 | | |
 
 Two builds are compile-only jobs that hold the GPU slot (0.173 GPU-h of the total). Base and head both ran on GPU 0 of the same host.
 The first launch attempts of `sf42-base` and `sf42-bytes` were refused by the agent sandbox before reaching `scripts/remote` (no job was
 created); they were resubmitted unchanged in meaning.
+
+R2 jobs (second campaign, same mirror, started from the accepted R1 head `460c9178`; table rows above; `R/verification/jobs_r2.tsv`;
+logs trimmed in `R/mms/logs/`, `R/spectral/logs/`). Every job with `REMOTE_GPU_WAIT=7200`, the CUDA ones also with
+`REMOTE_GPU_MIN_FREE_MIB=30000`, no `--gpu`, one job at a time, GPU 0 chosen by `scripts/remote run` for all four (idle host:
+0.0 % and 2.0 % mean utilisation, 32510 MiB free). The sync of the R2 tree was done once before the first job. The build step
+rebuilt the library (127 ninja steps, the incremental state of the mirror did not carry over); the binaries (md5
+`27df9b39bd9464b8b5c9a80a969ee4cc` `mms_dirichlet`, `2850b02fbaa2783c38de75ba8f585514` `sf42_periodic_flow`) were built from sources
+identical to those of the R1 head build (`git diff 96a335dc HEAD -- src apps tests cmake CMakeLists.txt CMakePresets.json
+scripts/regress` empty). The 243 Python tests of `R/scripts` passed on the host stack (Python 3.11.7, numpy 1.26.4, scipy 1.11.4):
+`Ran 243 tests in 18.273s`, `OK (skipped=1)`.
+
+```bash
+# R2, from the mirror root (R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling)
+scripts/remote --increment SF-42 sync
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-r2-build -- "cd ~/MacroFlow3D-SF-42 && export TMPDIR=\$HOME/.cache/mf3d-tmp CMAKE_BUILD_PARALLEL_LEVEL=16 && cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target mms_dirichlet sf42_periodic_flow && md5sum build/v100-release/mms_dirichlet build/v100-release/sf42_periodic_flow && cd $R/scripts && time python3 -W error -m unittest discover -s . -t ."
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 scripts/remote --increment SF-42 run sf42-mms -- "cd ~/MacroFlow3D-SF-42 && bash $R/scripts/mms/run_mms.sh build/v100-release ~/sf42_campaign/mms"
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 scripts/remote --increment SF-42 run sf42-spectral-fv -- "cd ~/MacroFlow3D-SF-42 && bash $R/scripts/spectral/run_spectral.sh build/v100-release ~/sf42_campaign/spectral fv"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-spectral-ref -- "cd ~/MacroFlow3D-SF-42 && SF42_WORKERS=40 bash $R/scripts/spectral/run_spectral.sh build/v100-release ~/sf42_campaign/spectral spectral"
+# results copied from the host (small files) into R/mms, R/spectral; the FV dumps (4.7 GB, 192 npy) stay on the host,
+# ~/sf42_campaign/spectral/fv, with the sha256 list R/spectral/fv_npy.sha256 (sha256 of the list: 1cb50b7b8e17af59a2a88ad6021c6de16a21278a03a156a922f2a1c47293ffbb)
+```
+
+`run_mms.sh` runs `analyze.py` at the end (exit 0 = PASS); `run_spectral.sh ... spectral` runs `spectral.compare run` (reference pairs
+`0.25:64,1:64,2.25:96,4:128` and the `summarize` step, defaults of the script) and writes `summary.{json,md}`. Host outputs:
+`~/sf42_campaign/mms/` (JSON, 136 KB) and `~/sf42_campaign/spectral/` (`fv/` dumps and reports, `cases/`, `summary.*`). The sha256 of the
+24 MMS JSON, taken as `sha256sum *.json | sha256sum`, is `15296bca49bf18ddd430dad257021decef80f1c0465131a62e2bcbe84b061162` on the host and in
+`R/mms/`. `sf42-spectral-ref` took 2 h 30 min, dominated by the `sigma^2` = 4 reference at `M` = 256 (5634 s for seed 420001 and 1895 s for
+seed 420002: 2171 and 743 matvecs for the three correctors).
 
 ## A. Byte identity
 
@@ -189,11 +223,230 @@ Verdict: **met** (with one finding on the common lattice size of an amplitude, b
 
 ## D. MMS
 
-Pending (later nodes).
+Verdict: **met** (`analyze.py`: `Verdict D: PASS`; the minimum observed order of the four gated metrics over the two finest grid pairs
+and the four `eps` is **1.997**, threshold 1.8). Results: `R/mms/` (24 JSON, `mms_summary.{md,json}`, `logs/`); jobs `sf42-r2-build`
+and `sf42-mms` (section Commands, paragraph "R2 jobs").
+
+Instrument (`apps/mms_dirichlet/`, `R/scripts/mms/`): the driver reuses the production medium (b) Dirichlet path unchanged (multigrid
+hierarchy and geometric coarsening of `K`, `build_rhs_head`, `init_head_guess`, `VarCoeffLaplacian`, `MultigridPreconditioner` 2/2
+smoothing with coarse 50, `pcg_solve_external`, `compute_velocity_from_head`) and adds only the manufactured source. Geometry of medium
+(b): cell-centred, `h = 1/ny`, `nx = 4 ny` (`L1 = 4`), Dirichlet `x` faces (head `L1` at `x = 0`, 0 at `x = L1`), periodic `y`, `z`.
+Manufactured problem: `K = exp(eps Y_a)` with a smooth `Y_a` (three modes, amplitude `0.5 + 0.4 + 0.3`; `d ln K/dx` nonzero at both
+Dirichlet faces, `|d ln K / dx|` at least 0.13 at `eps = 0.5` in the self-check), head `h = (L1 - x) + p`, `p = sin(pi x/L1) q(y,z) +
+sin(2 pi x/L1) r(y,z)` (zero at the faces), source `f = -div(K grad h)` analytic. Grids `ny` = 16, 32, 64, 128, 256 (the finest is
+`1024 x 256 x 256` = 6.7e7 cells), `eps` = 0.5, 1, 1.5, 2, production `pcg rtol` 1e-10, then the algebraic control at `ny` = 256 with
+`rtol` 1e-12. The driver's own `--self-check` (analytic gradient and source against finite differences, boundary values, `K = 1`
+linear solution reproduced to 4.7e-14 in the head and 1.2e-13 in the fluxes including the Dirichlet faces) passed at the start of the
+job. The JSON field `commit` reads `unknown` (the host has no git; the mirror tree is `460c9178` plus the untracked `src/external/Par2_Core`,
+sources identical to `96a335dc`, see Build).
+
+PCG: **20 iterations at every grid and every `eps`** (the convergence check is every 10 iterations and the check at iteration 10 did not
+yet reach 1e-10; at 20 the relative residual is 1.3e-18 to 1.8e-15), converged at all 24 runs. The number
+of iterations does not grow with `ny` (3 to 7 multigrid levels) nor with `eps`. Wall time of the whole job 1527 s for 24 runs.
+
+Errors of the four gated metrics (absolute; `far` = at least two cells from the Dirichlet faces):
+
+eps = 0.5
+
+| ny | nx | MG levels | PCG it | rel. residual | head L2 | head max (far) | interior flux L2 | flux max (far) |
+|---|---|---|---|---|---|---|---|---|
+| 16 | 64 | 3 | 20 | 6.8e-18 | 2.341e-03 | 7.673e-03 | 6.744e-03 | 2.927e-02 |
+| 32 | 128 | 4 | 20 | 6.4e-17 | 5.819e-04 | 1.909e-03 | 1.678e-03 | 7.412e-03 |
+| 64 | 256 | 5 | 20 | 2.5e-16 | 1.453e-04 | 4.768e-04 | 4.190e-04 | 1.851e-03 |
+| 128 | 512 | 6 | 20 | 7.4e-16 | 3.630e-05 | 1.192e-04 | 1.047e-04 | 4.636e-04 |
+| 256 | 1024 | 7 | 20 | 1.8e-15 | 9.074e-06 | 2.979e-05 | 2.617e-05 | 1.159e-04 |
+
+eps = 1
+
+| ny | nx | MG levels | PCG it | rel. residual | head L2 | head max (far) | interior flux L2 | flux max (far) |
+|---|---|---|---|---|---|---|---|---|
+| 16 | 64 | 3 | 20 | 3.6e-18 | 2.599e-03 | 8.620e-03 | 8.894e-03 | 4.536e-02 |
+| 32 | 128 | 4 | 20 | 3.5e-17 | 6.456e-04 | 2.147e-03 | 2.210e-03 | 1.138e-02 |
+| 64 | 256 | 5 | 20 | 1.3e-16 | 1.611e-04 | 5.379e-04 | 5.515e-04 | 2.873e-03 |
+| 128 | 512 | 6 | 20 | 3.5e-16 | 4.027e-05 | 1.345e-04 | 1.378e-04 | 7.178e-04 |
+| 256 | 1024 | 7 | 20 | 8.3e-16 | 1.007e-05 | 3.362e-05 | 3.445e-05 | 1.795e-04 |
+
+eps = 1.5
+
+| ny | nx | MG levels | PCG it | rel. residual | head L2 | head max (far) | interior flux L2 | flux max (far) |
+|---|---|---|---|---|---|---|---|---|
+| 16 | 64 | 3 | 20 | 1.9e-18 | 3.029e-03 | 9.606e-03 | 1.266e-02 | 7.446e-02 |
+| 32 | 128 | 4 | 20 | 2.0e-17 | 7.519e-04 | 2.405e-03 | 3.140e-03 | 1.839e-02 |
+| 64 | 256 | 5 | 20 | 7.1e-17 | 1.877e-04 | 6.035e-04 | 7.836e-04 | 4.610e-03 |
+| 128 | 512 | 6 | 20 | 1.9e-16 | 4.690e-05 | 1.508e-04 | 1.958e-04 | 1.153e-03 |
+| 256 | 1024 | 7 | 20 | 4.7e-16 | 1.172e-05 | 3.770e-05 | 4.895e-05 | 2.883e-04 |
+
+eps = 2
+
+| ny | nx | MG levels | PCG it | rel. residual | head L2 | head max (far) | interior flux L2 | flux max (far) |
+|---|---|---|---|---|---|---|---|---|
+| 16 | 64 | 3 | 20 | 1.3e-18 | 3.639e-03 | 1.059e-02 | 1.874e-02 | 1.224e-01 |
+| 32 | 128 | 4 | 20 | 1.2e-17 | 9.034e-04 | 2.658e-03 | 4.640e-03 | 3.066e-02 |
+| 64 | 256 | 5 | 20 | 3.9e-17 | 2.255e-04 | 6.676e-04 | 1.158e-03 | 7.693e-03 |
+| 128 | 512 | 6 | 20 | 1.1e-16 | 5.634e-05 | 1.669e-04 | 2.892e-04 | 1.926e-03 |
+| 256 | 1024 | 7 | 20 | 2.8e-16 | 1.408e-05 | 4.173e-05 | 7.230e-05 | 4.818e-04 |
+
+Observed orders over the two finest grid pairs (gate: >= 1.8 for the four gated metrics), then the reported metrics:
+
+| eps | pair | head L2 | head max (far) | interior flux L2 | flux max (far) |
+|---|---|---|---|---|---|
+| 0.5 | 64-128 | 2.001 | 2.000 | 2.001 | 1.997 |
+| 0.5 | 128-256 | 2.000 | 2.000 | 2.000 | 2.000 |
+| 1 | 64-128 | 2.001 | 2.000 | 2.001 | 2.001 |
+| 1 | 128-256 | 2.000 | 2.000 | 2.000 | 2.000 |
+| 1.5 | 64-128 | 2.001 | 2.000 | 2.001 | 1.999 |
+| 1.5 | 128-256 | 2.000 | 2.000 | 2.000 | 2.000 |
+| 2 | 64-128 | 2.001 | 2.000 | 2.001 | 1.998 |
+| 2 | 128-256 | 2.000 | 2.000 | 2.000 | 1.999 |
+
+minimum gated order over every eps, metric and the two finest pairs: 1.997
+
+Reported, not gated: errors at `ny` = 256 and observed orders (pairs 64-128, 128-256) per eps:
+
+| metric | eps 0.5: err(256), p(64-128), p(128-256) | eps 1: err(256), p(64-128), p(128-256) | eps 1.5: err(256), p(64-128), p(128-256) | eps 2: err(256), p(64-128), p(128-256) |
+|---|---|---|---|---|
+| head max (all cells) | 2.98e-05, 2.00, 2.00 | 3.36e-05, 2.00, 2.00 | 3.77e-05, 2.00, 2.00 | 4.17e-05, 2.00, 2.00 |
+| interior flux max (all) | 1.16e-04, 2.00, 2.00 | 1.79e-04, 2.00, 2.00 | 2.88e-04, 2.00, 2.00 | 4.82e-04, 2.00, 2.00 |
+| Dirichlet faces L2 | 1.97e-05, 2.00, 2.00 | 3.19e-05, 2.00, 2.00 | 5.16e-05, 2.00, 2.00 | 8.18e-05, 2.00, 2.00 |
+| Dirichlet faces max | 6.87e-05, 2.00, 2.00 | 1.30e-04, 2.00, 2.00 | 2.34e-04, 2.00, 2.00 | 4.02e-04, 2.00, 2.00 |
+| first layer L2 | 1.19e-05, 1.98, 1.99 | 2.01e-05, 1.97, 1.98 | 3.29e-05, 1.96, 1.98 | 5.23e-05, 1.96, 1.98 |
+| first layer max | 6.84e-05, 1.99, 1.99 | 1.30e-04, 1.98, 1.99 | 2.32e-04, 1.98, 1.99 | 3.99e-04, 1.98, 1.99 |
+
+Dirichlet faces and first interior layer (reported, not gated): the specification and decision G6 anticipated first order ("first order
+by construction"). **Measured: second order**, not first. The Dirichlet-face flux errors (L2 and max) have observed order 2.00 over
+the two finest pairs of every `eps` (1.96 to 2.02 over all consecutive pairs), and the first interior layer approaches 2 from below (1.89 to 1.98 over the coarsest pairs, 1.98 to 1.99 over
+the finest). The manufactured `K` has `d ln K/dx != 0` at both faces, so the first-order term that a face coefficient taken at the cell
+centre would leave is present in the test; yet the face flux error is `O(h^2)`. This is what the cell balance gives for this scheme (the
+face flux equals the first interior face flux plus `h` times the discretely-satisfied balance residual, so a second-order interior flux
+yields a second-order Dirichlet-face flux); this is an argument consistent with the data, not a separate test. The Dirichlet-face
+absolute errors are of the size of the interior ones (at `ny` = 256, `eps` = 2: 8.2e-5 in L2 against 7.2e-5 for the interior fluxes).
+
+Algebraic-error control (`rtol` 1e-12 against 1e-10 at `ny` = 256, all four `eps`): the two runs stop at the same iteration (20) with
+the same iterate, so every reported error is **bitwise equal** (`analyze.py`: maximum relative change 0.00 for all four `eps`). The
+control is therefore not an independent tighter solve in the sense of a different iterate; the relevant statement is the final relative
+residual of the production-tolerance run, 3e-16 to 1.8e-15 at `ny` = 256, far below the smallest relative discretization error of the data
+(3.5e-6 relative head L2 error at `eps` = 0.5). The algebraic error does not contaminate the observed orders.
+
+What transfers to medium (b) and what does not (decision G6): the instrument exercises the production operator, multigrid
+preconditioner, PCG at the production tolerance and velocity routine in medium (b) geometry (aspect 4, Dirichlet in `x`, periodic in
+`y`, `z`), with a coefficient that varies at the Dirichlet faces; the head and the interior fluxes of that discretization are second order
+in this smooth regime, and the Dirichlet-face and first-layer fluxes are too. It does not transfer: the roughness of a Gaussian
+random field. The manufactured `|ln K|` is at most `1.2 eps` (2.4 at `eps` = 2) with one wavelength of `Y_a` over a transverse period
+(16 to 256 cells), whereas an SF-18 field at `sigma^2` = 4 has `|ln K|` of several units in 10^7 cells and `lambda/h` 4 to 64 for
+`ell` = 1/4; the under-resolved range (`lambda/h` below 8) and the spline representation are covered by the spectral cross-check
+(E) and the SF-39 ladders, not here. A clean MMS order says the scheme is consistent and that PCG does not pollute it at the
+production tolerance; it does not bound the discretization error of a given random realization.
 
 ## E. Spectral cross-check
 
-Pending (later nodes).
+Verdict: **met** (`summary.md`: `summary: PASS`; all 8 ladders pass: 4 `sigma^2` x 2 seeds). Results: `R/spectral/` (`summary.{md,json}`,
+`cases/*.json`, FV `report.json` and exit codes, sha256 list of the FV dumps, `logs/`); jobs `sf42-spectral-fv` (GPU) and
+`sf42-spectral-ref` (CPU, 40 workers) (section Commands, paragraph "R2 jobs"). No `scan` was needed: the reference pairs chosen by N3 passed the
+self-convergence criterion at every `sigma^2` on the first attempt, so there is one attempt per case and no rerun.
+
+Design as run: `sigma^2` = 0.25, 1, 2.25, 4 (`eps` = 0.5, 1, 1.5, 2), seeds 420001 and 420002 (the first two of the SF-42 range 420001-420099), unit box, `ell` = 1/4 (box = 4 `lambda`), FV grids `N` = 16, 32, 40, 64, 128, 256 (`lambda/h` = 4, 8,
+10, 16, 32, 64) of the SF-19 `AffinePeriodicFlowSolver` (driver `apps/sf42_periodic_flow`, SF-18 field normalised to `var Y` = 1, `K =
+exp(eps Y)`, `rtol` 1e-12, `max_iter` 4000), compared on the exact face averages of the pseudo-spectral reference (finer of the pair `M`,
+`2M`): `M` = 64 for `sigma^2` 0.25 and 1, 96 for 2.25, 128 for 4. The reference solves the same periodic cell problems
+(`K^{-1/2} (-Delta)^{-1} K^{-1/2}` preconditioner, Galerkin band `|m| <= M/4`, three correctors combined to `K_eff G = qbar`, true
+relative residual below 1e-12 enforced by a hard failure) on the continuous SF-18 field generated on a 64^3 mode set (the generator's
+modes, not the FV sample). Error = relative L2 norm of the difference of all face fluxes (the `x`-face norm is recorded too).
+
+Acceptance E, per ladder (all 8): FV PCG converged at all 48 levels (exit code 0 everywhere; 10 or 20 iterations per corrector at
+`rtol` 1e-12 with the check every 10 iterations); the error is strictly decreasing along the whole ladder; observed order over the
+finest pair (128 -> 256) is 2.00 in every ladder (all consecutive pairs 1.94 to 2.00, the lowest being the pair 16 -> 32 at `sigma^2` 4,
+seed 420002); the reference self-convergence (`M` against `2M` on the same faces) is at least `3.15e3` (smallest ratio: `sigma^2` = 1, seed
+420001, `N` = 256) times below the FV error against the threshold of 10 (every ratio, the smallest per ladder in the reference table).
+
+Relative L2 error of all FV face fluxes along the ladder (`lambda/h` = 0.25 `N`) and observed orders of the two finest pairs:
+
+| sigma^2 | seed | N=16 (lh 4) | N=32 (lh 8) | N=40 (lh 10) | N=64 (lh 16) | N=128 (lh 32) | N=256 (lh 64) | p(128-256) | p(64-128) |
+|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 420001 | 9.959e-03 | 2.522e-03 | 1.616e-03 | 6.325e-04 | 1.582e-04 | 3.957e-05 | 2.00 | 2.00 |
+| 0.25 | 420002 | 6.882e-03 | 1.739e-03 | 1.114e-03 | 4.359e-04 | 1.091e-04 | 2.727e-05 | 2.00 | 2.00 |
+| 1 | 420001 | 2.641e-02 | 6.731e-03 | 4.318e-03 | 1.691e-03 | 4.233e-04 | 1.059e-04 | 2.00 | 2.00 |
+| 1 | 420002 | 1.708e-02 | 4.358e-03 | 2.796e-03 | 1.095e-03 | 2.741e-04 | 6.855e-05 | 2.00 | 2.00 |
+| 2.25 | 420001 | 4.622e-02 | 1.183e-02 | 7.593e-03 | 2.976e-03 | 7.451e-04 | 1.863e-04 | 2.00 | 2.00 |
+| 2.25 | 420002 | 2.863e-02 | 7.376e-03 | 4.738e-03 | 1.859e-03 | 4.656e-04 | 1.165e-04 | 2.00 | 2.00 |
+| 4 | 420001 | 6.584e-02 | 1.695e-02 | 1.089e-02 | 4.269e-03 | 1.069e-03 | 2.675e-04 | 2.00 | 2.00 |
+| 4 | 420002 | 4.034e-02 | 1.051e-02 | 6.759e-03 | 2.655e-03 | 6.657e-04 | 1.665e-04 | 2.00 | 2.00 |
+
+Recorded errors at `lambda/h` = 10, 16 and 32 (relative L2, all faces and `x`-faces only), per `sigma^2` and seed:
+
+| sigma^2 | seed | lh 10 all | lh 10 x | lh 16 all | lh 16 x | lh 32 all | lh 32 x |
+|---|---|---|---|---|---|---|---|
+| 0.25 | 420001 | 1.616e-03 | 1.479e-03 | 6.325e-04 | 5.788e-04 | 1.582e-04 | 1.448e-04 |
+| 0.25 | 420002 | 1.114e-03 | 9.539e-04 | 4.359e-04 | 3.732e-04 | 1.091e-04 | 9.336e-05 |
+| 1 | 420001 | 4.318e-03 | 4.045e-03 | 1.691e-03 | 1.584e-03 | 4.233e-04 | 3.964e-04 |
+| 1 | 420002 | 2.796e-03 | 2.433e-03 | 1.095e-03 | 9.531e-04 | 2.741e-04 | 2.386e-04 |
+| 2.25 | 420001 | 7.593e-03 | 7.222e-03 | 2.976e-03 | 2.829e-03 | 7.451e-04 | 7.083e-04 |
+| 2.25 | 420002 | 4.738e-03 | 4.225e-03 | 1.859e-03 | 1.657e-03 | 4.656e-04 | 4.152e-04 |
+| 4 | 420001 | 1.089e-02 | 1.040e-02 | 4.269e-03 | 4.075e-03 | 1.069e-03 | 1.021e-03 |
+| 4 | 420002 | 6.759e-03 | 6.182e-03 | 2.655e-03 | 2.429e-03 | 6.657e-04 | 6.091e-04 |
+
+Reference and comparison data per ladder (reference pair `M` / `2M`, retained band `mcut` = `M/4`, PCG iterations of the three correctors, wall time of the `M` and `2M` solves on 40 workers, smallest ratio FV error / self-convergence over the ladder with its `N`, self-convergence at `N` = 256, FV iterations per corrector, spread of the applied scale across the ladder, largest generator mismatch, field variance outside the modes of the `N` = 16 grid):
+
+| sigma^2 | seed | M / 2M | mcut M / 2M | PCG its M (3 correctors) | PCG its 2M | true rel. residual 2M (max) | wall M / 2M [s] | min FV/selfconv (N) | selfconv at N=256 | FV its (min-max) | applied-scale spread | max dY/std (all N) | mode var. outside FV modes (N=16) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 420001 | 64 / 128 | 16 / 32 | 22/22/21 | 22/22/21 | 8.7e-13 | 2 / 11 | 8.03e+04 (256) | 4.93e-10 | 10-20 | 8.8e-16 | 5.3e-15 | 3.7e-17 |
+| 0.25 | 420002 | 64 / 128 | 16 / 32 | 19/19/19 | 19/19/19 | 8.1e-13 | 1 / 10 | 8e+05 (256) | 3.41e-11 | 10-20 | 3.7e-16 | 2.7e-15 | 1.5e-17 |
+| 1 | 420001 | 64 / 128 | 16 / 32 | 51/50/51 | 46/45/46 | 9.8e-13 | 3 / 22 | 3.15e+03 (256) | 3.36e-08 | 20-20 | 8.8e-16 | 5.3e-15 | 3.7e-17 |
+| 1 | 420002 | 64 / 128 | 16 / 32 | 34/34/34 | 32/32/32 | 2.8e-13 | 2 / 15 | 1.09e+04 (256) | 6.28e-09 | 10-20 | 3.7e-16 | 2.7e-15 | 1.5e-17 |
+| 2.25 | 420001 | 96 / 192 | 24 / 48 | 171/168/171 | 166/162/164 | 8.2e-13 | 30 / 500 | 3.14e+06 (256) | 5.93e-11 | 20-20 | 8.8e-16 | 5.3e-15 | 3.7e-17 |
+| 2.25 | 420002 | 96 / 192 | 24 / 48 | 81/80/80 | 80/80/78 | 9.8e-13 | 14 / 237 | 1.78e+07 (256) | 6.54e-12 | 20-20 | 3.7e-16 | 2.7e-15 | 1.5e-17 |
+| 4 | 420001 | 128 / 256 | 32 / 64 | 701/694/699 | 714/728/722 | 9.9e-13 | 313 / 5634 | 7.56e+08 (256) | 3.54e-13 | 20-20 | 8.8e-16 | 5.3e-15 | 3.7e-17 |
+| 4 | 420002 | 128 / 256 | 32 / 64 | 230/229/227 | 248/246/244 | 1.0e-12 | 102 / 1895 | 1.48e+08 (256) | 1.13e-12 | 20-20 | 3.7e-16 | 2.7e-15 | 1.5e-17 |
+
+Mean-gradient `G` and effective conductivity: FV (`N` = 256) against the reference (`2M`):
+
+| sigma^2 | seed | G (reference) | max rel diff G_FV (N=256) | rel diff K_eff,xx |
+|---|---|---|---|---|
+| 0.25 | 420001 | (0.948244, 0.004477, 0.002157) | 1.56e-05 | 1.56e-05 |
+| 0.25 | 420002 | (0.977860, -0.023348, 0.008525) | 1.18e-05 | 1.20e-05 |
+| 1 | 420001 | (0.795830, 0.008912, 0.003211) | 5.25e-05 | 5.26e-05 |
+| 1 | 420002 | (0.937603, -0.067935, 0.019528) | 4.05e-05 | 4.20e-05 |
+| 2.25 | 420001 | (0.581022, 0.007611, 0.001317) | 9.63e-05 | 9.65e-05 |
+| 2.25 | 420002 | (0.897104, -0.098995, 0.017900) | 7.55e-05 | 7.88e-05 |
+| 4 | 420001 | (0.369174, 0.003821, -0.000814) | 1.38e-04 | 1.38e-04 |
+| 4 | 420002 | (0.853363, -0.103655, 0.007424) | 1.12e-04 | 1.16e-04 |
+
+Effective conductivity error (FV against reference) at coarser grids, and the FV cost:
+
+| sigma^2 | seed | K_eff,xx rel. diff at lh 10 / 16 / 32 | FV iterations N=256 | FV flow seconds N=256 (V100) |
+|---|---|---|---|---|
+| 0.25 | 420001 | 6.35e-04 / 2.49e-04 / 6.23e-05 | [20, 20, 20] | 4.3 |
+| 0.25 | 420002 | 4.90e-04 / 1.92e-04 / 4.80e-05 | [20, 20, 20] | 4.3 |
+| 1 | 420001 | 2.14e-03 / 8.40e-04 / 2.10e-04 | [20, 20, 20] | 4.3 |
+| 1 | 420002 | 1.71e-03 / 6.70e-04 / 1.68e-04 | [20, 20, 20] | 4.3 |
+| 2.25 | 420001 | 3.91e-03 / 1.54e-03 / 3.86e-04 | [20, 20, 20] | 4.3 |
+| 2.25 | 420002 | 3.20e-03 / 1.26e-03 / 3.15e-04 | [20, 20, 20] | 4.3 |
+| 4 | 420001 | 5.58e-03 / 2.20e-03 / 5.52e-04 | [20, 20, 20] | 4.3 |
+| 4 | 420002 | 4.69e-03 / 1.85e-03 / 4.63e-04 | [20, 20, 20] | 4.3 |
+
+Checks of the comparison itself. Applied scale: the GPU generator's normalisation factor (`applied_scale`, `var Y` = 1) is the same at
+every `N` of a seed to 8.8e-16 (seed 420001) and 3.7e-16 (seed 420002) relative, and the Python port of the SF-18 generator reproduces the
+GPU `Y` dump at every level to 5.3e-15 of `std Y` at most, so the FV and the reference see the same field and the same normalisation; the
+variance of the 64^3-mode field outside the modes of an FV grid (grids `N` < 64 differ by modes absent from the FV sample) is
+at most 3.7e-17 (`N` = 16), negligible above. The effective conductivity scale that carries to the flux amplitude: relative difference of `K_eff,xx`
+(FV against reference) is in the K_eff table. The self-convergence is also essentially a band statement here: the reference's self-convergence
+is 3.4e-8 or better in all cases (3.5e-13 at `sigma^2` = 4, seed 420001), plausibly because the Gaussian-covariance field has a spectrum that decays faster than the retained bands; the
+criterion shows the reference is orders of magnitude below the FV error for these smooth fields; it does not by itself show the FV is right (the FV error
+decreases at order 2 against the same reference, which is the check).
+
+What transfers to medium (b) and what does not (decision G6): what transfers is the interior scheme error of the FV discretization of
+Darcy flow (the same stencil as `solve_head`, in the SF-19 operator class) as a function of `lambda/h` and `sigma^2` on SF-18
+fields up to `sigma^2` = 4: relative L2 flux error from 1.1e-3 to 1.6e-3 at `lambda/h` = 10 for `sigma^2` = 0.25 up to 6.8e-3 to
+1.1e-2 at `sigma^2` = 4, falling 4x per refinement, with the effective conductivity `K_eff,xx` error at `lambda/h` = 10 between 4.9e-4
+and 5.6e-3. What does not transfer: the Dirichlet inlet/outlet boundary treatment (covered by the MMS, D), the spline representation of
+the flow used by the consumer (SF-28; its divergence is measured elsewhere), the long-box end effects, and the particular periodic
+affine problem (the SF-19 flow with mean gradient `G`; its streamlines do not close on the torus, but its velocity is a well-defined
+function of `K` that both codes must reproduce). The FV error here is a flux-field error on a periodic cell problem, not an error of
+`alpha_L`, and nothing here is evidence on `alpha_T`.
+
+Independence: the reference does not share the FV solver nor its discretization; it shares the SF-18 generator (a Python port,
+matched to the GPU to 5e-15 of `std Y`) and the definition of the problem, so a defect common to the generator definition would not
+appear here. The reference band is `M/4` (half the Nyquist wavenumber of `M`), set by N3 against aliasing of the `K` spectrum tail;
+the criterion E is evaluated with the unchanged threshold of 10.
 
 ## F. Statistics library and coverage
 
@@ -219,6 +472,18 @@ Pending (later nodes).
 
 (b) **MMS smoke.** In the MMS smoke (`ny` 16 to 64, `eps` 1) the Dirichlet faces and the first interior layer converge at order about
 2, not about 1 as the specification anticipated (reported, not gated; the full ladder is in D).
+Full ladder (R2, `ny` 16 to 256, four `eps`): the Dirichlet-face fluxes (L2 and max) converge at **order 2.00 over the two finest pairs
+at every `eps`** (1.96 to 2.02 over all consecutive pairs) and the first interior layer at 1.98 to 1.99 over the finest pair, with
+absolute errors of the size of the interior fluxes (at `ny` = 256, `eps` = 2: 8.2e-5 against 7.2e-5 in L2). The statement "first order
+by construction" of decision G6 is not supported by the measurement for a smooth head and a coefficient with `d ln K/dx != 0` at the
+faces; SF-43 should not budget a first-order boundary term for the production Dirichlet fluxes on that basis, with the caveat that
+the manufactured head is smooth and that an MMS cannot bound the error of a random realization.
+(c) **FV error scale (E).** Relative L2 error of the FV face fluxes against the pseudo-spectral reference, second order from `lambda/h` =
+4: at `lambda/h` = 10 it is 1.1e-3 to 1.6e-3 (`sigma^2` 0.25) up to 6.8e-3 to 1.1e-2 (`sigma^2` 4), at 16 it is 4.4e-4 to 6.3e-4 up to
+2.7e-3 to 4.3e-3, at 32 it is 1.1e-4 to 1.6e-4 up to 6.7e-4 to 1.1e-3 (two seeds each); the effective conductivity `K_eff,xx` is off
+by 4.9e-4 to 5.6e-3 at `lambda/h` = 10. The constant grows with `sigma^2` by about 6 to 7 from 0.25 to 4 at fixed `lambda/h`; SF-43 can use
+these as an input to the `E_h` budget (they are the interior scheme error on a periodic affine problem, not the error of an
+estimand).
 
 ## Conclusion
 

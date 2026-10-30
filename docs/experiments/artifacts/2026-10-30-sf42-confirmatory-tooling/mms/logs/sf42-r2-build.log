@@ -1,0 +1,25 @@
+[2026-10-30T05:53:25Z] job=sf42-r2-build GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T05:53:25Z] job=sf42-r2-build chose GPU 0 (auto: least-loaded)
+[2026-10-30T05:53:25Z] job=sf42-r2-build session=macroflow3d-SF-42-sf42-r2-build started
+[2026-10-30T05:53:25Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T05:53:25Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T05:53:25Z] command=cd ~/MacroFlow3D-SF-42 && export TMPDIR=$HOME/.cache/mf3d-tmp CMAKE_BUILD_PARALLEL_LEVEL=16 && cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target mms_dirichlet sf42_periodic_flow && md5sum build/v100-release/mms_dirichlet build/v100-release/sf42_periodic_flow && cd docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts && time python3 -W error -m unittest discover -s . -t . 2>&1 | tail -6
+[... 146 lines of ninja compile output trimmed ...]
+[125/127] Linking CXX executable CMakeFiles/sf42_periodic_flow.dir/cmake_device_link.o
+[126/127] Linking CXX executable mms_dirichlet
+[127/127] Linking CXX executable sf42_periodic_flow
+27df9b39bd9464b8b5c9a80a969ee4cc  build/v100-release/mms_dirichlet
+2850b02fbaa2783c38de75ba8f585514  build/v100-release/sf42_periodic_flow
+.[02:58:37] reference M=32: PCG [22, 22, 22] iterations, 69 matvecs, 0 s, G=[ 0.970435375192 -0.003062620907 -0.015983098438]
+.........................
+----------------------------------------------------------------------
+Ran 243 tests in 18.273s
+
+OK (skipped=1)
+
+real	0m20.097s
+user	2m22.222s
+sys	0m6.142s
+[2026-10-30T05:58:39Z] job=sf42-r2-build finished exit=0
