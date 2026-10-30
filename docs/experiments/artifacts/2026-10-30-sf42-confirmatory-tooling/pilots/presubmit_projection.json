@@ -1,0 +1,373 @@
+{
+ "J1": {
+  "rows": [
+   {
+    "id": "c_s1_520x120",
+    "code": "consumer",
+    "n": 1,
+    "M": 96,
+    "gpu_s_per_real": 5.66392102576579,
+    "gpu_h": 0.0015733113960460527,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s4_832x96",
+    "code": "consumer",
+    "n": 1,
+    "M": 100,
+    "gpu_s_per_real": 7.9097787792252205,
+    "gpu_h": 0.0021971607720070057,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "c_s4_832x192",
+    "code": "consumer",
+    "n": 1,
+    "M": 100,
+    "gpu_s_per_real": 12.574968759186543,
+    "gpu_h": 0.0034930468775518173,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "c_s225_1040x240",
+    "code": "consumer",
+    "n": 1,
+    "M": 128,
+    "gpu_s_per_real": 21.97736640332628,
+    "gpu_h": 0.006104824000923967,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s225_1040x480",
+    "code": "consumer",
+    "n": 1,
+    "M": 128,
+    "gpu_s_per_real": 54.52664661719532,
+    "gpu_h": 0.015146290726998699,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s225_2080x480",
+    "code": "consumer",
+    "n": 1,
+    "M": 128,
+    "gpu_s_per_real": 107.25286297214853,
+    "gpu_h": 0.029792461936707926,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s4_2496x288",
+    "code": "consumer",
+    "n": 1,
+    "M": 100,
+    "gpu_s_per_real": 57.44999565288203,
+    "gpu_h": 0.015958332125800563,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "c_s225_1248x288",
+    "code": "consumer",
+    "n": 1,
+    "M": 100,
+    "gpu_s_per_real": 27.380243450924684,
+    "gpu_h": 0.0076056231808124125,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "c_s4_1664x192",
+    "code": "consumer",
+    "n": 1,
+    "M": 100,
+    "gpu_s_per_real": 23.34950725613098,
+    "gpu_h": 0.006485974237814161,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "p_s1_1040x240",
+    "code": "par2",
+    "n": 1,
+    "M": 0,
+    "gpu_s_per_real": 16.21483604587117,
+    "gpu_h": 0.004504121123853103,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "p_s225_1248x288",
+    "code": "par2",
+    "n": 1,
+    "M": 0,
+    "gpu_s_per_real": 28.019236687265384,
+    "gpu_h": 0.007783121302018162,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "p_s4_1664x192",
+    "code": "par2",
+    "n": 1,
+    "M": 0,
+    "gpu_s_per_real": 16.60399211097208,
+    "gpu_h": 0.0046122200308255775,
+    "in_range": false,
+    "approx": true
+   }
+  ],
+  "gpu_h": 0.10525648771135945
+ },
+ "J2": {
+  "rows": [
+   {
+    "id": "c_s025_M64",
+    "code": "consumer",
+    "n": 6,
+    "M": 64,
+    "gpu_s_per_real": 13.497216158759914,
+    "gpu_h": 0.02249536026459986,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s025_M128",
+    "code": "consumer",
+    "n": 6,
+    "M": 128,
+    "gpu_s_per_real": 20.492598211105783,
+    "gpu_h": 0.03415433035184297,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s025_M192",
+    "code": "consumer",
+    "n": 6,
+    "M": 192,
+    "gpu_s_per_real": 32.1515682983489,
+    "gpu_h": 0.05358594716391483,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s1_M64",
+    "code": "consumer",
+    "n": 6,
+    "M": 64,
+    "gpu_s_per_real": 14.0540042308426,
+    "gpu_h": 0.023423340384737663,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s1_M128",
+    "code": "consumer",
+    "n": 6,
+    "M": 128,
+    "gpu_s_per_real": 21.04938628318847,
+    "gpu_h": 0.03508231047198078,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s1_M192",
+    "code": "consumer",
+    "n": 6,
+    "M": 192,
+    "gpu_s_per_real": 32.70835637043159,
+    "gpu_h": 0.054513927284052646,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s225_M58",
+    "code": "consumer",
+    "n": 6,
+    "M": 58,
+    "gpu_s_per_real": 49.30517059029821,
+    "gpu_h": 0.08217528431716369,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s225_M100",
+    "code": "consumer",
+    "n": 6,
+    "M": 100,
+    "gpu_s_per_real": 55.34961789490332,
+    "gpu_h": 0.0922493631581722,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "c_s225_M202",
+    "code": "consumer",
+    "n": 6,
+    "M": 202,
+    "gpu_s_per_real": 83.40765809548432,
+    "gpu_h": 0.13901276349247388,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s4_M58",
+    "code": "consumer",
+    "n": 6,
+    "M": 58,
+    "gpu_s_per_real": 107.45272932019081,
+    "gpu_h": 0.17908788220031802,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "c_s4_M100",
+    "code": "consumer",
+    "n": 6,
+    "M": 100,
+    "gpu_s_per_real": 119.54162392940103,
+    "gpu_h": 0.19923603988233507,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "c_s4_M202",
+    "code": "consumer",
+    "n": 6,
+    "M": 202,
+    "gpu_s_per_real": 175.65770433056304,
+    "gpu_h": 0.2927628405509384,
+    "in_range": false,
+    "approx": false
+   }
+  ],
+  "gpu_h": 1.20777938952253
+ },
+ "J3": {
+  "rows": [
+   {
+    "id": "c_s025_1040x240",
+    "code": "consumer",
+    "n": 8,
+    "M": 128,
+    "gpu_s_per_real": 20.492598211105783,
+    "gpu_h": 0.04553910713579063,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "p_s025_1040x240",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 16.21483604587117,
+    "gpu_h": 0.036032968990824824,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "c_s1_1040x240",
+    "code": "consumer",
+    "n": 8,
+    "M": 128,
+    "gpu_s_per_real": 21.04938628318847,
+    "gpu_h": 0.04677641396264104,
+    "in_range": false,
+    "approx": false
+   },
+   {
+    "id": "p_s1_1040x240",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 16.21483604587117,
+    "gpu_h": 0.036032968990824824,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "c_s225_1248x288",
+    "code": "consumer",
+    "n": 8,
+    "M": 100,
+    "gpu_s_per_real": 27.380243450924684,
+    "gpu_h": 0.0608449854464993,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "p_s225_1248x288",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 28.019236687265384,
+    "gpu_h": 0.062264970416145295,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "c_s4_1664x192",
+    "code": "consumer",
+    "n": 8,
+    "M": 100,
+    "gpu_s_per_real": 23.34950725613098,
+    "gpu_h": 0.05188779390251329,
+    "in_range": true,
+    "approx": false
+   },
+   {
+    "id": "p_s4_1664x192",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 16.60399211097208,
+    "gpu_h": 0.03689776024660462,
+    "in_range": false,
+    "approx": true
+   }
+  ],
+  "gpu_h": 0.3762769690918439
+ },
+ "J3B": {
+  "rows": [
+   {
+    "id": "p_s1_1040x240_h3",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 16.21483604587117,
+    "gpu_h": 0.036032968990824824,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "p_s225_1248x288_h3",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 28.019236687265384,
+    "gpu_h": 0.062264970416145295,
+    "in_range": false,
+    "approx": true
+   },
+   {
+    "id": "p_s4_1664x192_h3",
+    "code": "par2",
+    "n": 8,
+    "M": 0,
+    "gpu_s_per_real": 16.60399211097208,
+    "gpu_h": 0.03689776024660462,
+    "in_range": false,
+    "approx": true
+   }
+  ],
+  "gpu_h": 0.13519569965357475
+ },
+ "J1_J2_J3_gpu_h": 1.6893128463257332
+}

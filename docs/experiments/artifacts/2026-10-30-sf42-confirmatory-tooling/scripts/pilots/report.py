@@ -202,26 +202,47 @@ def cost_report(data, out, repo, j2_json, j3_json, hostref_json):
     M_010 = {a: (j2r[a]["M_0.10_pos"] or 1024) for a in amps}
     M_sf39 = {a: int(round(float(design.target_M(a)))) for a in amps}
     g5 = {a: j3r[a]["plan_lower"]["n"] for a in amps}
+    j3b_path = os.path.join(os.path.dirname(j3_json), "j3b_pairing.json")      # horizon-corrected Par2 (amplitudes 1, 2.25, 4)
+    g5b = dict(g5)
+    if os.path.exists(j3b_path):
+        with open(j3b_path) as f:
+            for a, v in json.load(f).items():
+                g5b[a] = v["plan_lower"]["n"]
+    g5b = {a: max(30, n) for a, n in g5b.items()}
     ratio = {a: sdr[AMP_KEY[a]]["alpha_TP_disp"]["sd"] / sdr[AMP_KEY[a]]["alpha_TP_pos"]["sd"] for a in amps}
 
     def scale(fam, amp, n):
         return an.scale_n(n, 1.0, ratio[amp]) if fam in ("production", "E_W") else n
 
+    n_old = len(old.points)
+    ratios = {}
+    for pt, rs in zip(new.points[n_old:], new.residuals()[n_old:]):
+        ratios.setdefault((pt.arm.code, pt.arm.cells, pt.arm.nx), []).append(1.0 / (1.0 + rs["rel"]))
+    anchor = {k: sum(v) / len(v) for k, v in ratios.items()}
     out_proj = {}
     rms_l = fit["with_pilots"]["lagrangian"]["rms_rel"]
     rms_p = fit["with_pilots"][costmod.PAR2_TAG]["rms_rel"]
-    for name, M, sc in (("M_plan", M_plan, None), ("sf39_density", M_sf39, None), ("M_plan_share010", M_010, None),
-                        ("variant_B_M_plan", M_plan, scale)):
-        proj = costmod.project(new, costmod.plan(M, g5, scale=sc))
+    for name, M, sc, gn in (("M_plan", M_plan, None, g5), ("sf39_density", M_sf39, None, g5), ("M_plan_share010", M_010, None, g5),
+                            ("variant_B_M_plan", M_plan, scale, g5), ("M_plan_gate5_J3B_floor30", M_plan, None, g5b),
+                            ("M_common_128_128_86_68", dict(M_plan, **{"0.25": 128, "1": 128}), None, g5)):
+        prow = costmod.plan(M, gn, scale=sc)
+        proj = costmod.project(new, prow)
         lag_h = sum(r["gpu_h"] for r in proj["rows"] if r["code"] == "lagrangian")
         par_h = sum(r["gpu_h"] for r in proj["rows"] if r["code"] != "lagrangian")
         proj["M"] = M
         proj["lagrangian_subtotal_gpu_h"], proj["par2_subtotal_gpu_h"] = lag_h, par_h
         proj["total_plus_1rms"] = (lag_h * (1 + rms_l) + par_h * (1 + rms_p)) * 1.05
         proj["total_minus_1rms"] = (lag_h * (1 - rms_l) + par_h * (1 - rms_p)) * 1.05
+        max_l = fit["with_pilots"]["lagrangian"]["max_abs_rel"]
+        max_p = fit["with_pilots"][costmod.PAR2_TAG]["max_abs_rel"]
+        proj["total_plus_max_residual"] = (lag_h * (1 + max_l) + par_h * (1 + max_p)) * 1.05
+        # anchored: each arm on a geometry that was measured in the pilots is multiplied by the mean observed / refit ratio of those
+        # measurements (the refit leaves 10-27 % residuals on some large grids); arms on unmeasured geometries keep the model value
+        proj["total_anchored"] = 1.05 * sum(pr["gpu_h"] * anchor.get((rw["arm"].code, rw["arm"].cells, rw["arm"].nx), 1.0)
+                                            for pr, rw in zip(proj["rows"], prow))
         out_proj[name] = proj
     summary = {"fit": fit, "new_points_under_sf39_model": res, "new_points_residuals_refit": resid_new, "projections": out_proj,
-               "M_plan": M_plan, "M_share010": M_010, "M_sf39": M_sf39, "gate5_n_lower_bound_corr": g5, "variant_B_sd_ratio_disp_over_pos": ratio,
+               "M_plan": M_plan, "M_share010": M_010, "M_sf39": M_sf39, "gate5_n_lower_bound_corr": g5, "gate5_n_J3B_floor30": g5b, "anchor_factors": {"%s|%d|%d" % k: v for k, v in anchor.items()}, "variant_B_sd_ratio_disp_over_pos": ratio,
                "budget_gpu_h": 150.0}
     summary["stop_budget"] = bool(out_proj["M_plan"]["total_gpu_h"] > 150.0 or out_proj["M_plan"]["total_plus_1rms"] > 150.0)
     with open(os.path.join(out, "cost_projection.json"), "w") as f:

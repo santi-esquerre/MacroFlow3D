@@ -1,0 +1,36 @@
+{
+ "id": "p_s4_1664x192",
+ "job": "J1",
+ "code": "par2",
+ "nx": 1664,
+ "ny": 192,
+ "nz": 192,
+ "lh": 16,
+ "amp": "4",
+ "seed0": 420609,
+ "nr": 1,
+ "M": 0,
+ "start_utc": "2026-10-30T10:14:36Z",
+ "end_utc": "2026-10-30T10:14:57Z",
+ "wall_s": 20.748471722006798,
+ "exit": 0,
+ "peak_gpu_mib_own_pid": 7865,
+ "mem_samples": 7,
+ "par2_solves": [
+  {
+   "converged": "YES",
+   "iterations": 60
+  }
+ ],
+ "par2_stage_times": [
+  {
+   "field_s": 1.8849285691976547,
+   "solve_s": 10.299617044627666,
+   "velocity_s": 0.006917975842952728,
+   "transport_s": 3.5427909046411514,
+   "flow_stage_s": 12.191463589668274
+  }
+ ],
+ "par2_dt": 0.00012715657552083332,
+ "par2_n_steps": 73925
+}

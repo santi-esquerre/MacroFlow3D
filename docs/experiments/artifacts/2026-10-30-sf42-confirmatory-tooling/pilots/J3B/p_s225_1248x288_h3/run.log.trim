@@ -1,0 +1,145 @@
+[1] Loading config: config.yaml
+[2] Initializing CUDA context
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        1248 × 288 × 288  (dx=0.003472)
+  Domain:      [0, 4.3333] × [0, 1.0000] × [0, 1.0000]
+  Stochastic:  σ²=1.00  λ=0.0417  modes=1000  seed=42
+  Solver:      mg_cg  rtol=1.0e-06
+  Transport:   N=10000  dt=8.4771e-05  steps=166331  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    NR=8  λ_macro=0.0417  ||<v>||=1.0000  sample_every=1000  estimator=biased
+  Output:      out
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+  [config WARNING] [grid] dimensions not power-of-2; multigrid may underperform
+[3] Allocating fields and workspaces
+       Plane crossings: 70 planes, 17.1 MiB device records
+       Fields: K=103514112  head=103514112  vel=3×104317729  particles=10000
+────────────────────────────────────────────────────────
+  Realization 1 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420821, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=8.1802e-19  var=1.000000000000001e+00 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.39e+06 → 3.28e-06
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0000_planes.csv (70 planes)
+       Transport complete (r=0).
+       Wrote out/stats/realization_0000_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 2 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420822, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=4.6764e-19  var=9.999999999999997e-01 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.79e+06 → 5.54e-07
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0001_planes.csv (70 planes)
+       Transport complete (r=1).
+       Wrote out/stats/realization_0001_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 3 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420823, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=2.6832e-20  var=1.000000000000000e+00 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.30e+06 → 1.20e-06
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0002_planes.csv (70 planes)
+       Transport complete (r=2).
+       Wrote out/stats/realization_0002_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 4 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420824, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=1.4633e-18  var=9.999999999999993e-01 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.58e+06 → 1.47e-06
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0003_planes.csv (70 planes)
+       Transport complete (r=3).
+       Wrote out/stats/realization_0003_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 5 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420825, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=1.4853e-18  var=1.000000000000000e+00 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.26e+06 → 4.58e-06
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0004_planes.csv (70 planes)
+       Transport complete (r=4).
+       Wrote out/stats/realization_0004_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 6 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420826, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=-5.6446e-19  var=9.999999999999997e-01 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.43e+06 → 1.23e-05
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0005_planes.csv (70 planes)
+       Transport complete (r=5).
+       Wrote out/stats/realization_0005_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 7 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420827, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=-1.2965e-18  var=9.999999999999994e-01 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.33e+06 → 1.98e-06
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0006_planes.csv (70 planes)
+       Transport complete (r=6).
+       Wrote out/stats/realization_0006_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Realization 8 / 8
+────────────────────────────────────────────────────────
+  [4] SF-18 medium (b) field (seed=420828, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=1.5000e+00); K=exp(eps*Y)
+       Y stats: mean=1.6008e-18  var=1.000000000000001e+00 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=40  res=4.95e+06 → 4.93e-06
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 166331 (dt=8.4771e-05) ...
+       Wrote out/crossings/realization_0007_planes.csv (70 planes)
+       Transport complete (r=7).
+       Wrote out/stats/realization_0007_timeseries.csv (166 samples)
+────────────────────────────────────────────────────────
+  Post-processing: macrodispersion (NR=8)
+       Wrote out/ensemble/ensemble_timeseries.csv
+       Wrote out/analysis/macrodispersion.csv
+────────────────────────────────────────────────────────
+
+╔═══════════════════════════════════════════════════════════════╗
+║                   STAGE PROFILING REPORT                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Stage                     │ Total(ms) │ Count │  Avg(ms) │     % ║
+╠═══════════════════════════════════════════════════════════════╣
+║ K_generation              │ 28398.00 │     8 │  3549.75 │  18.8 ║
+║ solve_head                │ 94065.42 │     8 │ 11758.18 │  62.3 ║
+║ velocity                  │    92.30 │     8 │    11.54 │   0.1 ║
+║ transport                 │ 28507.83 │     8 │  3563.48 │  18.9 ║
+╠═══════════════════════════════════════════════════════════════╣
+║ TOTAL                     │ 151063.56 │     - │        - │  100% ║
+╠═══════════════════════════════════════════════════════════════╣
+║ GPU Memory: 12885.0 MB used / 32510.5 MB total (39.6% used)      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.

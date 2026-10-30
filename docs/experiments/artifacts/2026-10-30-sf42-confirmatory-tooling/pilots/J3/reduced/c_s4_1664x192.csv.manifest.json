@@ -1,0 +1,456 @@
+{
+ "files": [
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/track.json",
+   "sha256": "34ecc827e757ad78fdd57ca5c993631ba1db9949ca7da2756bc32261b8479a93",
+   "size": 4907
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/field.json",
+   "sha256": "6516e80fad0032ec59cd34e91df81252dd1b6fa2f202b222474c64be197bbcea",
+   "size": 346
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/flow_stats.json",
+   "sha256": "41d216690e785423f3c805cae7f3155151e39eb6079169ab820f8413ed7cc266",
+   "size": 721
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/weights.npy",
+   "sha256": "174debad4cbf39af22f0ed195f98b2c62601c854d4fbc9ed5d5747f90cd6f8f0",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/planes_x23.npy",
+   "sha256": "ce45185337116d737624d6b21ffa5fb2c57e1c17fa4d6c83697cd2b1e1de6e60",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/planes_tau.npy",
+   "sha256": "b91f87589c1baafb3d640b62ce93f576a7592b43f58af43287907800d077c37f",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/planes_I.npy",
+   "sha256": "b30562d8c884a7f9bb6ec04e34c8220ea8b75d7e87f84578ac79612e821dcdfc",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/times_x.npy",
+   "sha256": "c1899cfb9d3f2319af6069c8d627efb4430cc3d335ff66943bdbe7d1e05dcd02",
+   "size": 23760128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/times_I.npy",
+   "sha256": "0ad845fa2cc8025d58d15f91f63cbcc2b4bb3c2a5c6171e6bdd89c9e2c22fc6f",
+   "size": 7920128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0000/status_time.npy",
+   "sha256": "e5a31f4337aa4d36c9c768c1adab26753a7a42e966538838ee3a008b8306f76c",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/track.json",
+   "sha256": "a2a30a4489504d126a46cb1ba495447a79d8c97b75d995dbc18d3beddcbc469f",
+   "size": 4848
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/field.json",
+   "sha256": "f81984dc62fa3cfa9f8240b3fa8e61747d6ac8f8b89d47fc679ab9b00a68237c",
+   "size": 330
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/flow_stats.json",
+   "sha256": "45d263407b1be15ac387e9f1057cb30a1de8cc3a0ea12b2d58fd93438611be6a",
+   "size": 722
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/weights.npy",
+   "sha256": "b677467c763bcb0d276664ddec6bb6c096195e9586707661e89f665810317fec",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/planes_x23.npy",
+   "sha256": "40011657f9a91b75eb64474b79a3d5900e62b58668f2467a08ad307c8d3c05b1",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/planes_tau.npy",
+   "sha256": "33f1bd43fd8a03a8d9168a9ecff85e2230450df71f187d3b147c09d81048fbcb",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/planes_I.npy",
+   "sha256": "9634fe365ce4be157b8c6dc8b89fd317a3b8e74e77803e25fdec316be5932e7d",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/times_x.npy",
+   "sha256": "a34e2376d7b10f445450e783f8a5683b99215bcf55e3376ffa1cd22a05e29e45",
+   "size": 23040128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/times_I.npy",
+   "sha256": "3fc37746cc44b1d769e46fbdcf6eff0771d9be485fc0d7e8a60adb683e29ff29",
+   "size": 7680128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0001/status_time.npy",
+   "sha256": "2f289c7018b8f11a2a9f8e1c54a3adf0675fe15e28e642ec7462046b2ddb2e5c",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/track.json",
+   "sha256": "8e40d900683dd52246638ab6e78966bdbb4c8d1485de3803319eca88bbc26c55",
+   "size": 4906
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/field.json",
+   "sha256": "7d77927c6ac63d4d95a55204da7cb7517ad1d89664c18dbe4e62380d2217ac64",
+   "size": 346
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/flow_stats.json",
+   "sha256": "a5d4d4a5f6899f5008668b2ddd5921712c7bc339b0b8f85f4db294a39434e522",
+   "size": 725
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/weights.npy",
+   "sha256": "50cea7a44b9e8debe17c2e3df2fd5cfe075d1b2c9ff84064f10e75d643af26fd",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/planes_x23.npy",
+   "sha256": "0f471388f3b7fcc0dab7c83e29e93227acf625b2fe7baf651b537c209ee02415",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/planes_tau.npy",
+   "sha256": "908742f59f18e4c9cc8d775e0d7899584b3f8c6a0396b6faf8c35c732e27a2ad",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/planes_I.npy",
+   "sha256": "fe1d80c143b9486e6a9e85076c2367773b5d3c8927ee08311199e744a660c5b0",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/times_x.npy",
+   "sha256": "e362b83f01b079a2e0ae7242bfc22029ad42733897d1a97528d0a18ad7901bf3",
+   "size": 23760128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/times_I.npy",
+   "sha256": "ddc545cbbded94ea83561a36c0c13329db53c5fe59424fbfc6a1ba12d3219949",
+   "size": 7920128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0002/status_time.npy",
+   "sha256": "f08bb0f843a8538c484c09bddee13bba9c89598802f79689a2d2d19eb80d1ad3",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/track.json",
+   "sha256": "0ad704c70abce719a5b9cec6bfb14a7f7d4a78bf69873ef948880f096a6da1c6",
+   "size": 4932
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/field.json",
+   "sha256": "0ca33684be72d4e8a53b1ea200821d1ccfb85958d72d15e22a9cdc25f451e763",
+   "size": 347
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/flow_stats.json",
+   "sha256": "3bf1d882063a9087d957571595b570460c5a6cf86be79f0853d597f343f646ba",
+   "size": 723
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/weights.npy",
+   "sha256": "83ff3f33d83f70abd410fa6ae9022cca05a171384a5fbc52c3f2289e53b02c95",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/planes_x23.npy",
+   "sha256": "8c1f67caf5eccdc1a098b616dc6ea788772c079bf21d7174303747862a7d0dfd",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/planes_tau.npy",
+   "sha256": "cf358e69f699417466034dd193123cb246f605af28d9f3499c7acbfbfb0edbb4",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/planes_I.npy",
+   "sha256": "975d242adcdf07eed9c6765d0e0722b3d9dffc46c3edab2e0f0607fec9a30c65",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/times_x.npy",
+   "sha256": "52616ef97f8b951eec761364fbe2efd3e5fee08614d8b21def6ab4eec6f81dd0",
+   "size": 24000128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/times_I.npy",
+   "sha256": "e1ab8d6b55236ba34b3a19580221255f08cecd3b58a22f67aed99b55eee747ed",
+   "size": 8000128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0003/status_time.npy",
+   "sha256": "2abbf1bc8bf88896d03b939a027582ee86cd02892bc811242672caec65f7e50a",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/track.json",
+   "sha256": "747596c739b2b143721ccdf142f07f09e022f96bca89a5e8d3a53beb88f00de0",
+   "size": 4896
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/field.json",
+   "sha256": "fc610393860252b4c4e5efa3cafdebfa4a0638f7d203c648a4aa26423fb98acc",
+   "size": 331
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/flow_stats.json",
+   "sha256": "d7214b4fce078a260a03214cb253106a2c6b4a58355ce7c1a05269b0b49fda9c",
+   "size": 726
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/weights.npy",
+   "sha256": "24038e1a09b9dee65fe124bf194efea0fa2c3116e7352b80ad9920d08c74e207",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/planes_x23.npy",
+   "sha256": "428f1c645143b68ab7631847ba91e0d9dfcf0483a68c06fe37b0ef34981ff6df",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/planes_tau.npy",
+   "sha256": "7f9b8f4dde24d34c27b6a84e7d8bb0d0447f275cd1d70b9c29e2228808f33c07",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/planes_I.npy",
+   "sha256": "ed0a8db260dbfdf25926f6614f30b8eaa0151009057bd8e4cfdbdda143431ab5",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/times_x.npy",
+   "sha256": "83a6c8785b4a80a536c04a106804178bf2cb2dafd78df768fcde75c030e9ebcc",
+   "size": 23520128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/times_I.npy",
+   "sha256": "f8e3f0026dc801c25fe35c73ba25348abcb26c9e5f6f2362de1eda379da84d74",
+   "size": 7840128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0004/status_time.npy",
+   "sha256": "fece816575510bf828f9b32e60d680862ca8b3920a189aff67539b5f6624b3da",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/track.json",
+   "sha256": "fc7225daae21353d00aea132f78e6dc7d1c34b1cb1b3644941b2aa64c302e4a6",
+   "size": 4930
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/field.json",
+   "sha256": "074545ef1d1a4231bc86d87d126b7eeed534ca66ebe9b6df977f3a34ddb0eef7",
+   "size": 331
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/flow_stats.json",
+   "sha256": "3e3e21964408921d818673adf67121655a17c76fc908aac4fb1aae295dbe478f",
+   "size": 728
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/weights.npy",
+   "sha256": "2ccffafe96b06d462905a4ade3d383e147dcd4b742dea35863d5159df9228a7e",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/planes_x23.npy",
+   "sha256": "b5224cd6fd96714ad0a1f0d72c64c09d3744c791e87ff5810b4cabef4b468f51",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/planes_tau.npy",
+   "sha256": "d4ff76165f4b2a0bab51269186bf9204f64cb36596ee9658271a305cfdb7fb99",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/planes_I.npy",
+   "sha256": "f473eab94c885bbfd3a3ffd98bcb4de0ea341ce753101513844458445d9a58b7",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/times_x.npy",
+   "sha256": "149f533c155bbeb3be7d33efbe812068c3376e73658c6536465eab37f5d183f9",
+   "size": 24000128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/times_I.npy",
+   "sha256": "98201ed026b3d310228d8cad828dfdbda9758a478468585180c1b7a274958e7e",
+   "size": 8000128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0005/status_time.npy",
+   "sha256": "54d2e2ccc01f6c754e43f18c72c65f5c4a5b28b7994846a09fe5fb70141b1306",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/track.json",
+   "sha256": "36d73be3de08a793c300b44d89951cc4e7579c38d317c3f4bce371175aa41d51",
+   "size": 4965
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/field.json",
+   "sha256": "7258466cbb780f929d9bcff813ede80616ef03fea91038bc643eca0ea3a3baf2",
+   "size": 347
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/flow_stats.json",
+   "sha256": "d2300793afd10537dedb6a1aa4144e7518c24c312375b6853524dad9589dd4d9",
+   "size": 725
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/weights.npy",
+   "sha256": "dd1e26baa82ed76c321b4d59cf2630e438ff24246fbe04fddb85bc23954e0003",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/planes_x23.npy",
+   "sha256": "95f81bf04dbb8c7b3067ecd6ce084a4fbbafa84e6cb921f66a3afad8c875df95",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/planes_tau.npy",
+   "sha256": "137ca16811884e0cca17e7059fce479ec9aff9a2d51263570a4b3db881f21112",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/planes_I.npy",
+   "sha256": "f5a5749eec973bf27617283f1bbba4cfaa7b6ed4f023c23f03de9dedeffbba79",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/times_x.npy",
+   "sha256": "2f0a6ac2d73b8b024e840749b6232ad36898637f8cac06fa6d76549030c3c9ff",
+   "size": 24480128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/times_I.npy",
+   "sha256": "0404def24599bf62c3f9f03f6c1e10393976d9e9b71b656d29ce4e7cc0262a02",
+   "size": 8160128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0006/status_time.npy",
+   "sha256": "19b5e493e7f90ac98e9d47fde54591b3c451a88e269a52bafa47a1fa7a6e5bb7",
+   "size": 10128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/track.json",
+   "sha256": "180b1075a90e5ec00eb229ad1b0d37b7c4cc932dde11620e43a7078b317a543d",
+   "size": 4909
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/field.json",
+   "sha256": "e0d3e11f0ac7e5bee4a081f48e74c5d110122c59725b72df8130318eb46a48c7",
+   "size": 346
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/flow_stats.json",
+   "sha256": "a58fb2c5cb71c50afd8f26db37b195529cb6d87f6da6e05a28cb9a0abaf2271f",
+   "size": 724
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/weights.npy",
+   "sha256": "34d839fd7887ef4895275f155241e4592fbafe7ca3b6a0d50ea687bbb5061e33",
+   "size": 80128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/planes_x23.npy",
+   "sha256": "d95b7e4cad69c1d335ec807c2c565d10df1eb75d52ca43544cfd383214d8c98b",
+   "size": 11200128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/planes_tau.npy",
+   "sha256": "54442c8663a79a455fb70452c658de2fcd2b6239785afd00d2c9ddb08e195181",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/planes_I.npy",
+   "sha256": "fb1ddaa44d50743b90fa4649d2761526c698bb83f8a3fab5dec46a997d09379b",
+   "size": 5600128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/seeds.npy",
+   "sha256": "97d37766123cd6fac564210d3855231273cd5846eaa53167a9a1b3d320df94c9",
+   "size": 240128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/times_x.npy",
+   "sha256": "25a11d894ce555be3897d6f83d953c7089e98fbec0db894520b168f686714883",
+   "size": 23760128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/times_I.npy",
+   "sha256": "1cff31c71896980e38b2c733e100d988acb1632d88aaf66f34414ee18d844c0a",
+   "size": 7920128
+  },
+  {
+   "path": "c_s4_1664x192/out/realizations/r_0007/status_time.npy",
+   "sha256": "11c69e08876a6f8e0fc8acb0cb705f5a6deff449b2abaa1272f9f9a67ffc621d",
+   "size": 10128
+  }
+ ],
+ "format": "sf42red_manifest_v1",
+ "root_note": "input paths are relative to the --root given to the tool",
+ "tables": [
+  {
+   "path": "c_s4_1664x192.csv",
+   "sha256": "02cf32681d3539e769252f4005085c908797faed8d644929c2753221d1cfef79"
+  },
+  {
+   "path": "c_s4_1664x192.planes.csv",
+   "sha256": "e22cb7e614bd70b8639337121bff40d9a85054db1fac5c3295165536cdd7a1db"
+  }
+ ]
+}

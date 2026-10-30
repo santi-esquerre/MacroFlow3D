@@ -1,0 +1,51 @@
+[1] Loading config: config.yaml
+[2] Initializing CUDA context
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        1664 × 192 × 192  (dx=0.005208)
+  Domain:      [0, 8.6667] × [0, 1.0000] × [0, 1.0000]
+  Stochastic:  σ²=1.00  λ=0.0833  modes=1000  seed=42
+  Solver:      mg_cg  rtol=1.0e-06
+  Transport:   N=10000  dt=1.2716e-04  steps=73925  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    NR=1  λ_macro=0.0833  ||<v>||=1.0000  sample_every=1000  estimator=biased
+  Output:      out
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+  [config WARNING] [grid] dimensions not power-of-2; multigrid may underperform
+[3] Allocating fields and workspaces
+       Plane crossings: 70 planes, 17.1 MiB device records
+       Fields: K=61341696  head=61341696  vel=3×62019585  particles=10000
+  [4] SF-18 medium (b) field (seed=420609, sigma2=1.0000e+00, corr_length=8.3333e-02, eps=2.0000e+00); K=exp(eps*Y)
+       Y stats: mean=2.4211e-18  var=9.999999999999996e-01 (target sigma2=1.000000000000000e+00)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=60  res=1.34e+07 → 7.70e-05
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 10000 × 73925 (dt=1.2716e-04) ...
+       Wrote out/crossings/realization_0000_planes.csv (70 planes)
+       Transport complete (r=0).
+       Wrote out/stats/realization_0000_timeseries.csv (73 samples)
+────────────────────────────────────────────────────────
+  Post-processing: macrodispersion (NR=1)
+       Wrote out/ensemble/ensemble_timeseries.csv
+       Wrote out/analysis/macrodispersion.csv
+────────────────────────────────────────────────────────
+
+╔═══════════════════════════════════════════════════════════════╗
+║                   STAGE PROFILING REPORT                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Stage                     │ Total(ms) │ Count │  Avg(ms) │     % ║
+╠═══════════════════════════════════════════════════════════════╣
+║ K_generation              │  1885.18 │     1 │  1885.18 │  12.0 ║
+║ solve_head                │ 10299.35 │     1 │ 10299.35 │  65.5 ║
+║ velocity                  │     7.18 │     1 │     7.18 │   0.0 ║
+║ transport                 │  3530.44 │     1 │  3530.44 │  22.5 ║
+╠═══════════════════════════════════════════════════════════════╣
+║ TOTAL                     │ 15722.15 │     - │        - │  100% ║
+╠═══════════════════════════════════════════════════════════════╣
+║ GPU Memory: 7869.0 MB used / 32510.5 MB total (24.2% used)      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.
