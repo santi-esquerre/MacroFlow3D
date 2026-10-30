@@ -143,7 +143,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-36 — Lagrangian-label tracker core on the cube production stage](lester-eq14/increments/SF-36-lagrangian-tracker-core.md)
 - [x] [SF-37 — Verification of the Lagrangian consumer on the cube at sigma^2 <= 4, with blind O3](lester-eq14/increments/SF-37-lagrangian-cube-verification.md)
 - [x] [SF-38 — Long domain: non-cubic stage, medium A/B evaluation, ensemble runner and Par2 baseline](lester-eq14/increments/SF-38-long-domain-infrastructure.md)
-- [ ] [SF-39 — Macrodispersion study at sigma_Y^2 in {0.25, 1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
+- [x] [SF-39 — Macrodispersion study at sigma_Y^2 in {0.25, 1, 2.25, 4} with the Lagrangian consumer](lester-eq14/increments/SF-39-macrodispersion-study.md)
 - [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 - [x] [SF-41 — Medium (b) for the Lagrangian consumer: lean Dirichlet stage, non-periodic-in-x1 spline and x-exit handling](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md)
 
@@ -441,7 +441,9 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    `docs/decisions/2026-10-27-sf39-pre-activation-decisions.md`: executable estimator definitions, a plane-based conjunctive
    co-primary for `alpha_T`, a production `h` verdict without the ratio rule, rule D on measured direction, bounded-value reporting,
    pathwise drift, a width check and the method contrast; `sigma^2 = 6.25` deferred; compute on one GPU, the least-loaded,
-   `docs/decisions/2026-10-27-remote-single-gpu.md`).
+   `docs/decisions/2026-10-27-remote-single-gpu.md`) (done as the exploratory pilot, owner decision 2026-10-29: `alpha_T` positive at
+   `sigma^2` 1, 2.25 and 4 and bounded at 0.25 at these widths and travel distances, Gate 5 `agree` at 2.25 and 4, `inconclusive` at 1
+   and 0.25, `docs/experiments/2026-10-27-sf39-macrodispersion-study.md`; the confirmatory study is SF-43).
 6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
    SF-31 pseudo-symplectic tracker on gridded labels (deferred: future work, not a requirement).
 
