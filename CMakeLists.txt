@@ -337,6 +337,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(streamfunction_ev_ladder PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_ev_ladder PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
 
+    # SF-42 N3: finite-volume comparator of the pseudo-spectral cross-check (SF-19 flow on the SF-18 field, dumps Y and the
+    # face fluxes as .npy). Documented-experiment tool; NOT a ctest entry; no production change.
+    add_executable(sf42_periodic_flow apps/sf42_periodic_flow/sf42_periodic_flow_main.cu)
+    target_link_libraries(sf42_periodic_flow PRIVATE macroflow3d_lib)
+    target_compile_options(sf42_periodic_flow PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
     add_executable(streamfunction_operator_tests
         tests/streamfunctions/reference_operators.cpp
         tests/streamfunctions/streamfunction_operator_tests.cpp
