@@ -260,6 +260,39 @@ Never check a validation item for a command that was not run. Invalid,
 interrupted, or superseded attempts may remain in the bitacora but must be
 explicitly excluded from acceptance evidence.
 
+### 8A. Pre-registration commit and blinded phase (confirmatory studies)
+
+For an increment whose decision record requires pre-registration (G8 of
+`docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md`; SF-43):
+
+1. **Pre-registration commit.** One commit holds the pre-registration document
+   (estimands, seeds, grids, `N`, procedures, thresholds, analysis code and its
+   sha256 list). It is pushed to a **draft PR** of the increment branch before
+   the first production run; GitHub timestamps the push. **No force-push** on
+   that branch afterwards (amendments are new commits that say what changed and
+   why). The sha256 of the pre-registration file goes in a new bitácora row with
+   the commit hash and the push time.
+2. **Blinded phase** from the first production run to the analysis freeze:
+   `scripts/remote --increment SF-NN blinded start --label ...`
+   (`docs/runbooks/remote-v100.md`, "Blinded phase and exec logging").
+   - May be read: job costs (GPU-h, wall time, PCG iterations, memory), solver
+     verdicts (converged / fallback / not converged, from `solver_b.json` and the
+     reconciliation script), and the **blinded variance re-estimation**
+     (`mcstat` tool; it outputs standard deviations only, never means, slopes,
+     `alpha`, intervals or signs).
+   - Must not be read: any estimate of `alpha_L`, `alpha_T`, their per-realization
+     values, plots or contrasts, and the reduced tables' mean columns.
+   - Every `scripts/remote exec` and `run` submission is logged on the host
+     (`logs/exec-blinded.log`). Copy the log into the evidence at the freeze and
+     record its sha256.
+3. **Analysis freeze.** Declared in a bitácora row (UTC, commit of the analysis
+   code, sha256 of the per-realization reduced tables, sha256 of the exec log),
+   then `blinded stop`. After the freeze only the pre-registered analysis runs;
+   departures are reported as post-hoc.
+4. The human review includes the independent reduction of at least three
+   realizations from the retained arrays and the recomputation script
+   (`recompute.sf39`-style, no analysis-package imports).
+
 ---
 
 ## 9. Publish according to review class

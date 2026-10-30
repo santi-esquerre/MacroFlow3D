@@ -159,6 +159,44 @@ head build as detached `scripts/remote run` jobs, then `compare.sh`; references
 cached under `~/regress/refs/<base-short-sha>/out`). Protocol:
 `scripts/regress/README.md`.
 
+#### Blinded phase and exec logging
+
+For a confirmatory study (decision `docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md`
+G8, protocol in `docs/runbooks/lester-increment-workflow.md` section 8A) the
+orchestrator declares a blinded phase on the increment's mirror:
+
+```bash
+scripts/remote --increment SF-NN blinded start --label "SF-43 production"   # first production run
+scripts/remote --increment SF-NN blinded status                              # active/inactive + log line count
+scripts/remote --increment SF-NN blinded stop                                # at the analysis freeze
+```
+
+- The phase is the marker file `$REMOTE_STATE_ROOT/blinded.marker` on the host
+  (start time, increment, local `user@host`, label). `start` refuses (exit 1) if
+  one exists; `stop` refuses if none exists. `blinded` requires `--increment`.
+- While the marker exists, every `exec` and every `run` submission first appends
+  one tab-separated line to `$REMOTE_STATE_ROOT/logs/exec-blinded.log`:
+  `UTC  increment=  who=user@host  kind=exec|run  attempt=N  command=<shell-quoted>`
+  (`run` lines also carry `job=` and `gpu=`; `start`/`stop` are logged as
+  `kind=blinded-start|blinded-stop`). The command field is `printf %q` of the
+  exact string, so it is one line and decodes with `eval "printf %s $field"`.
+  The log is append-only across phases and is kept after `stop`.
+- Mechanism: `scripts/remote` always sends, in the same ssh invocation, a guard
+  statement `if [ -e <marker> ]; then <append line>; fi` on its own line before
+  `cd <mirror> && <command>`. No extra round trip. The command text itself is
+  unchanged and parsed as before, so its environment, working directory,
+  stdout/stderr and exit status are unchanged; the guard runs in a subshell and
+  writes nothing to stdout/stderr unless it fails. The decision is taken on the
+  host (the marker is the authority), hence the guard is sent even when no phase
+  is active; with no marker it is a no-op test.
+- `ssh_run` retries any non-zero exit (existing behaviour, unchanged): each retry
+  re-sends the guard and logs a line with its `attempt=` number.
+- A logging failure aborts the command: the guard exits 97 before the command
+  runs, with `ERROR: blinded phase: log write failed; command NOT run` on stderr
+  (an unlogged command would defeat the purpose). `scripts/remote` then exits 1
+  after its retries, as for any failing command.
+- Test: `bash scripts/tests/remote_blinded_test.sh` (fake host, no network).
+
 ---
 
 ## 1. Model
