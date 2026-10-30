@@ -17,6 +17,10 @@ Modules (each function documents its formula and the decision clause it implemen
 * ``sizing``       sample-size rules (G5.2) and the Gate 4 power model / joint allocation
 * ``blinded``      blinded variance re-estimation (G5.2): outputs standard deviations only
 * ``costmodel``    GPU-second cost model calibrated on SF-39 walls, with projection of a study plan
+* ``coverage``     coverage simulator (G5.3): per-tail miss rates of the sampling limits, the budget bounds, the whole robust-sign
+                   pipeline and the Gate 5 TOST under the normal and the stress family; ``python3 -m mcstat.coverage {stress,plan,
+                   bench,run,summarize}``; ``run_coverage.sh <out_dir> [--workers N]`` is the detached host job.  Helpers:
+                   ``covdist`` (distributions, ``stress_moments.json`` from the SF-39 tables), ``covproc`` (procedures, tail levels)
 
 Vectorization: samples are on the LAST axis, leading axes are independent replicates, so the interval / limit functions can be
 called on thousands of replicates at once (coverage simulator, SF-42 node N6b).  A one-sided limit takes ``tail`` as a scalar or a
@@ -44,4 +48,6 @@ API at a glance (``x``: (..., n) samples; every function documents its formula a
     sizing.gate4_power(alpha, a, n_prod, sd_prod, comps)   allocate_gate4(alpha_plan, a, sd_prod, cost_prod, comps, power)
     blinded.blinded_sds(arms)   blinded_reestimate(arms, n_orig, half_widths)   blinded_gate5(L, P, plan_mean_L, plan_mean_P, alpha, n_orig)
     costmodel.sf39_points(A) -> (points, excluded)    CostModel(points).predict(arm) / .project(plan) / .with_points(new) / .summary()
+    coverage.cp_upper(k, R)   coverage.make_cell / profile_full / init_plan / run / summarize / bench / project
+    covproc.holm_levels() / sampling_tails() / component_tails()      covdist.get_dist("normal" | "stress" | "stress-")
 """
