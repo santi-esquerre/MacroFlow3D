@@ -1,0 +1,36 @@
+{
+  "Np": 100,
+  "seed_backflow": 0,
+  "tracker_plane_pass": {
+    "backflow_encounters": 0,
+    "exit_inlet": 0,
+    "exit_outlet": 0,
+    "landings_discarded": 0,
+    "status_ge2": 0,
+    "status_hist": [
+      100,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "tracker_time_pass": {
+    "backflow_encounters": 0,
+    "exit_inlet": 0,
+    "exit_outlet": 7,
+    "landings_discarded": 0,
+    "status_ge2": 0,
+    "status_hist": [
+      93,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}
