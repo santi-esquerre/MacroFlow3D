@@ -717,4 +717,14 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(mms_dirichlet PRIVATE macroflow3d_lib)
     target_compile_options(mms_dirichlet PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
     add_test(NAME mms_dirichlet_self_check COMMAND mms_dirichlet --self-check)
+
+    # SF-42 N4: seed-lattice probe. Calls the PRODUCTION find_seed_on_face / make_seed_lattice on a list of
+    # (ny, window, M) cases; the ctest compares its outcome line by line with the Python predictor
+    # (seedlattice.rule) of the SF-42 artifact. Host code only, no GPU work; fast tier (seconds).
+    add_executable(seedlattice_probe apps/seedlattice_probe/seedlattice_probe_main.cu)
+    target_link_libraries(seedlattice_probe PRIVATE macroflow3d_lib)
+    target_compile_options(seedlattice_probe PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME seedlattice_probe
+        COMMAND python3 -W error -m seedlattice.verify_probe $<TARGET_FILE:seedlattice_probe>
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts)
 endif()

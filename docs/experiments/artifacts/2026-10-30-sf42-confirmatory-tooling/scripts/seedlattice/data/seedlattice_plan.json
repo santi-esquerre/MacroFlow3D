@@ -1,0 +1,1280 @@
+{
+ "arms": [
+  {
+   "amp": "0.25",
+   "family": "production",
+   "W": 24,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 240,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "0.25 production 1040x240x240"
+  },
+  {
+   "amp": "0.25",
+   "family": "E_h",
+   "W": 24,
+   "lh": 5,
+   "L": 104,
+   "nx": 520,
+   "ny": 120,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "0.25 E_h 520x120x120"
+  },
+  {
+   "amp": "0.25",
+   "family": "E_h",
+   "W": 24,
+   "lh": 20,
+   "L": 104,
+   "nx": 2080,
+   "ny": 480,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "0.25 E_h 2080x480x480"
+  },
+  {
+   "amp": "0.25",
+   "family": "E_W",
+   "W": 48,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 480,
+   "window": "0.3,0.7,0.3,0.7",
+   "constrains": true,
+   "label": "0.25 E_W 1040x480x480"
+  },
+  {
+   "amp": "0.25",
+   "family": "gate5",
+   "W": 24,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 240,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "0.25 gate5 1040x240x240"
+  },
+  {
+   "amp": "1",
+   "family": "production",
+   "W": 24,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 240,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "1 production 1040x240x240"
+  },
+  {
+   "amp": "1",
+   "family": "E_h",
+   "W": 24,
+   "lh": 5,
+   "L": 104,
+   "nx": 520,
+   "ny": 120,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "1 E_h 520x120x120"
+  },
+  {
+   "amp": "1",
+   "family": "E_h",
+   "W": 24,
+   "lh": 20,
+   "L": 104,
+   "nx": 2080,
+   "ny": 480,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "1 E_h 2080x480x480"
+  },
+  {
+   "amp": "1",
+   "family": "E_W",
+   "W": 48,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 480,
+   "window": "0.3,0.7,0.3,0.7",
+   "constrains": true,
+   "label": "1 E_W 1040x480x480"
+  },
+  {
+   "amp": "1",
+   "family": "gate5",
+   "W": 24,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 240,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "1 gate5 1040x240x240"
+  },
+  {
+   "amp": "2.25",
+   "family": "production",
+   "W": 24,
+   "lh": 16,
+   "L": 104,
+   "nx": 1664,
+   "ny": 384,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 production 1664x384x384"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_h",
+   "W": 24,
+   "lh": 8,
+   "L": 104,
+   "nx": 832,
+   "ny": 192,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 E_h 832x192x192"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_h",
+   "W": 24,
+   "lh": 4,
+   "L": 104,
+   "nx": 416,
+   "ny": 96,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 E_h 416x96x96"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_h",
+   "W": 24,
+   "lh": 20,
+   "L": 104,
+   "nx": 2080,
+   "ny": 480,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 E_h 2080x480x480"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_W",
+   "W": 24,
+   "lh": 8,
+   "L": 104,
+   "nx": 832,
+   "ny": 192,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 E_W 832x192x192"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_W",
+   "W": 24,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 240,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 E_W 1040x240x240"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_W",
+   "W": 48,
+   "lh": 8,
+   "L": 104,
+   "nx": 832,
+   "ny": 384,
+   "window": "0.3,0.7,0.3,0.7",
+   "constrains": true,
+   "label": "2.25 E_W 832x384x384"
+  },
+  {
+   "amp": "2.25",
+   "family": "E_W",
+   "W": 48,
+   "lh": 10,
+   "L": 104,
+   "nx": 1040,
+   "ny": 480,
+   "window": "0.3,0.7,0.3,0.7",
+   "constrains": true,
+   "label": "2.25 E_W 1040x480x480"
+  },
+  {
+   "amp": "2.25",
+   "family": "gate5",
+   "W": 24,
+   "lh": 12,
+   "L": 104,
+   "nx": 1248,
+   "ny": 288,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 gate5 1248x288x288"
+  },
+  {
+   "amp": "4",
+   "family": "production",
+   "W": 12,
+   "lh": 32,
+   "L": 104,
+   "nx": 3328,
+   "ny": 384,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "4 production 3328x384x384"
+  },
+  {
+   "amp": "4",
+   "family": "E_h",
+   "W": 12,
+   "lh": 8,
+   "L": 104,
+   "nx": 832,
+   "ny": 96,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "4 E_h 832x96x96"
+  },
+  {
+   "amp": "4",
+   "family": "E_h",
+   "W": 12,
+   "lh": 16,
+   "L": 104,
+   "nx": 1664,
+   "ny": 192,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "4 E_h 1664x192x192"
+  },
+  {
+   "amp": "4",
+   "family": "E_W",
+   "W": 12,
+   "lh": 8,
+   "L": 104,
+   "nx": 832,
+   "ny": 96,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "4 E_W 832x96x96"
+  },
+  {
+   "amp": "4",
+   "family": "E_W",
+   "W": 12,
+   "lh": 16,
+   "L": 104,
+   "nx": 1664,
+   "ny": 192,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "4 E_W 1664x192x192"
+  },
+  {
+   "amp": "4",
+   "family": "E_W",
+   "W": 24,
+   "lh": 8,
+   "L": 104,
+   "nx": 832,
+   "ny": 192,
+   "window": "0.3,0.7,0.3,0.7",
+   "constrains": true,
+   "label": "4 E_W 832x192x192"
+  },
+  {
+   "amp": "4",
+   "family": "E_W",
+   "W": 24,
+   "lh": 16,
+   "L": 104,
+   "nx": 1664,
+   "ny": 384,
+   "window": "0.3,0.7,0.3,0.7",
+   "constrains": true,
+   "label": "4 E_W 1664x384x384"
+  },
+  {
+   "amp": "4",
+   "family": "gate5",
+   "W": 12,
+   "lh": 16,
+   "L": 104,
+   "nx": 1664,
+   "ny": 192,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "4 gate5 1664x192x192"
+  },
+  {
+   "amp": "4",
+   "family": "pilot",
+   "W": 12,
+   "lh": 24,
+   "L": 104,
+   "nx": 2496,
+   "ny": 288,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": false,
+   "label": "4 pilot 2496x288x288"
+  },
+  {
+   "amp": "1",
+   "family": "distance",
+   "W": 24,
+   "lh": 10,
+   "L": 208,
+   "nx": 2080,
+   "ny": 240,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "1 distance 2080x240x240"
+  },
+  {
+   "amp": "2.25",
+   "family": "distance",
+   "W": 24,
+   "lh": 16,
+   "L": 208,
+   "nx": 3328,
+   "ny": 384,
+   "window": "0.1,0.9,0.1,0.9",
+   "constrains": true,
+   "label": "2.25 distance 3328x384x384"
+  }
+ ],
+ "amplitudes": {
+  "0.25": {
+   "source_lambda": 19.2,
+   "m_ref_sf39_density": 93.75,
+   "m_range": [
+    47,
+    234
+   ],
+   "variants": {
+    "all arms": {
+     "conflict_diagnosis": [
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 120,
+       "own_admissible": 6,
+       "intersection_without_it": 1
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 240,
+       "own_admissible": 3,
+       "intersection_without_it": 1
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 480,
+       "own_admissible": 1,
+       "intersection_without_it": 3
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 480,
+       "own_admissible": 3,
+       "intersection_without_it": 1
+      }
+     ],
+     "ny_by_window": {
+      "0.1,0.9,0.1,0.9": [
+       120,
+       240,
+       480
+      ],
+      "0.3,0.7,0.3,0.7": [
+       480
+      ]
+     },
+     "admissible_on_every_arm": [
+      128
+     ],
+     "flagged": {
+      "0.6x": {
+       "M": 128,
+       "target": 56.25,
+       "seeds_per_lambda": 6.666666666666667,
+       "density_vs_sf39": 1.3653333333333333
+      },
+      "1x": {
+       "M": 128,
+       "target": 93.75,
+       "seeds_per_lambda": 6.666666666666667,
+       "density_vs_sf39": 1.3653333333333333
+      },
+      "2x": {
+       "M": 128,
+       "target": 187.5,
+       "seeds_per_lambda": 6.666666666666667,
+       "density_vs_sf39": 1.3653333333333333
+      }
+     },
+     "admissible_full_plane_same_grids": [
+      64,
+      96,
+      128,
+      160,
+      192,
+      224
+     ],
+     "per_arm_check": [
+      {
+       "label": "0.25 production 1040x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "0.25 E_h 520x120x120",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "0.25 E_h 2080x480x480",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "0.25 E_W 1040x480x480",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "0.25 gate5 1040x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      }
+     ]
+    }
+   },
+   "production_arm_only": {
+    "label": "0.25 production 1040x240x240",
+    "admissible": [
+     64,
+     128,
+     192
+    ],
+    "flagged": {
+     "0.6x": {
+      "M": 64,
+      "target": 56.25,
+      "seeds_per_lambda": 3.3333333333333335,
+      "density_vs_sf39": 0.6826666666666666
+     },
+     "1x": {
+      "M": 64,
+      "target": 93.75,
+      "seeds_per_lambda": 3.3333333333333335,
+      "density_vs_sf39": 0.6826666666666666
+     },
+     "2x": {
+      "M": 192,
+      "target": 187.5,
+      "seeds_per_lambda": 10.0,
+      "density_vs_sf39": 2.048
+     }
+    }
+   }
+  },
+  "1": {
+   "source_lambda": 19.2,
+   "m_ref_sf39_density": 93.75,
+   "m_range": [
+    47,
+    234
+   ],
+   "variants": {
+    "all arms": {
+     "conflict_diagnosis": [
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 120,
+       "own_admissible": 6,
+       "intersection_without_it": 1
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 240,
+       "own_admissible": 3,
+       "intersection_without_it": 1
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 480,
+       "own_admissible": 1,
+       "intersection_without_it": 3
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 480,
+       "own_admissible": 3,
+       "intersection_without_it": 1
+      }
+     ],
+     "ny_by_window": {
+      "0.1,0.9,0.1,0.9": [
+       120,
+       240,
+       480
+      ],
+      "0.3,0.7,0.3,0.7": [
+       480
+      ]
+     },
+     "admissible_on_every_arm": [
+      128
+     ],
+     "flagged": {
+      "0.6x": {
+       "M": 128,
+       "target": 56.25,
+       "seeds_per_lambda": 6.666666666666667,
+       "density_vs_sf39": 1.3653333333333333
+      },
+      "1x": {
+       "M": 128,
+       "target": 93.75,
+       "seeds_per_lambda": 6.666666666666667,
+       "density_vs_sf39": 1.3653333333333333
+      },
+      "2x": {
+       "M": 128,
+       "target": 187.5,
+       "seeds_per_lambda": 6.666666666666667,
+       "density_vs_sf39": 1.3653333333333333
+      }
+     },
+     "admissible_full_plane_same_grids": [
+      64,
+      96,
+      128,
+      160,
+      192,
+      224
+     ],
+     "per_arm_check": [
+      {
+       "label": "1 production 1040x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "1 E_h 520x120x120",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "1 E_h 2080x480x480",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "1 E_W 1040x480x480",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "1 gate5 1040x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "1 distance 2080x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      }
+     ]
+    }
+   },
+   "production_arm_only": {
+    "label": "1 production 1040x240x240",
+    "admissible": [
+     64,
+     128,
+     192
+    ],
+    "flagged": {
+     "0.6x": {
+      "M": 64,
+      "target": 56.25,
+      "seeds_per_lambda": 3.3333333333333335,
+      "density_vs_sf39": 0.6826666666666666
+     },
+     "1x": {
+      "M": 64,
+      "target": 93.75,
+      "seeds_per_lambda": 3.3333333333333335,
+      "density_vs_sf39": 0.6826666666666666
+     },
+     "2x": {
+      "M": 192,
+      "target": 187.5,
+      "seeds_per_lambda": 10.0,
+      "density_vs_sf39": 2.048
+     }
+    }
+   }
+  },
+  "2.25": {
+   "source_lambda": 19.2,
+   "m_ref_sf39_density": 100.0,
+   "m_range": [
+    50,
+    250
+   ],
+   "variants": {
+    "E_h third level lh=4 (lh=20 not run)": {
+     "conflict_diagnosis": [
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 96,
+       "own_admissible": 52,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 192,
+       "own_admissible": 51,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 240,
+       "own_admissible": 3,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 288,
+       "own_admissible": 52,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 384,
+       "own_admissible": 51,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 384,
+       "own_admissible": 51,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 480,
+       "own_admissible": 3,
+       "intersection_without_it": 0
+      }
+     ],
+     "ny_by_window": {
+      "0.1,0.9,0.1,0.9": [
+       96,
+       192,
+       240,
+       288,
+       384
+      ],
+      "0.3,0.7,0.3,0.7": [
+       384,
+       480
+      ]
+     },
+     "admissible_on_every_arm": [],
+     "flagged": {
+      "0.6x": null,
+      "1x": null,
+      "2x": null
+     },
+     "admissible_full_plane_same_grids": [
+      128
+     ],
+     "per_arm_check": [
+      {
+       "label": "2.25 production 1664x384x384",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_h 832x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_h 416x96x96",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 832x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 1040x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 832x384x384",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 1040x480x480",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 gate5 1248x288x288",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 distance 3328x384x384",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      }
+     ]
+    },
+    "E_h third level lh=20 (lh=4 not run)": {
+     "conflict_diagnosis": [
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 192,
+       "own_admissible": 51,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 240,
+       "own_admissible": 3,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 288,
+       "own_admissible": 52,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 384,
+       "own_admissible": 51,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 480,
+       "own_admissible": 1,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 384,
+       "own_admissible": 51,
+       "intersection_without_it": 0
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 480,
+       "own_admissible": 3,
+       "intersection_without_it": 0
+      }
+     ],
+     "ny_by_window": {
+      "0.1,0.9,0.1,0.9": [
+       192,
+       240,
+       288,
+       384,
+       480
+      ],
+      "0.3,0.7,0.3,0.7": [
+       384,
+       480
+      ]
+     },
+     "admissible_on_every_arm": [],
+     "flagged": {
+      "0.6x": null,
+      "1x": null,
+      "2x": null
+     },
+     "admissible_full_plane_same_grids": [
+      128
+     ],
+     "per_arm_check": [
+      {
+       "label": "2.25 production 1664x384x384",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_h 832x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_h 2080x480x480",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 832x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 1040x240x240",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 832x384x384",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 E_W 1040x480x480",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 gate5 1248x288x288",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      },
+      {
+       "label": "2.25 distance 3328x384x384",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {}
+      }
+     ]
+    }
+   },
+   "production_arm_only": {
+    "label": "2.25 production 1664x384x384",
+    "admissible": [
+     50,
+     52,
+     58,
+     62,
+     68,
+     70,
+     74,
+     76,
+     82,
+     86,
+     92,
+     94,
+     98,
+     100,
+     106,
+     110,
+     116,
+     118,
+     122,
+     124,
+     130,
+     134,
+     140,
+     142,
+     146,
+     148,
+     154,
+     158,
+     164,
+     166,
+     170,
+     172,
+     178,
+     182,
+     188,
+     190,
+     194,
+     196,
+     202,
+     206,
+     212,
+     214,
+     218,
+     220,
+     226,
+     230,
+     236,
+     238,
+     242,
+     244,
+     250
+    ],
+    "flagged": {
+     "0.6x": {
+      "M": 58,
+      "target": 60.0,
+      "seeds_per_lambda": 3.0208333333333335,
+      "density_vs_sf39": 0.58
+     },
+     "1x": {
+      "M": 100,
+      "target": 100.0,
+      "seeds_per_lambda": 5.208333333333333,
+      "density_vs_sf39": 1.0
+     },
+     "2x": {
+      "M": 202,
+      "target": 200.0,
+      "seeds_per_lambda": 10.520833333333334,
+      "density_vs_sf39": 2.02
+     }
+    }
+   }
+  },
+  "4": {
+   "source_lambda": 9.6,
+   "m_ref_sf39_density": 100.0,
+   "m_range": [
+    50,
+    250
+   ],
+   "variants": {
+    "all arms": {
+     "conflict_diagnosis": [
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 96,
+       "own_admissible": 52,
+       "intersection_without_it": 51
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 192,
+       "own_admissible": 51,
+       "intersection_without_it": 51
+      },
+      {
+       "window": "0.1,0.9,0.1,0.9",
+       "ny": 384,
+       "own_admissible": 51,
+       "intersection_without_it": 51
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 192,
+       "own_admissible": 52,
+       "intersection_without_it": 51
+      },
+      {
+       "window": "0.3,0.7,0.3,0.7",
+       "ny": 384,
+       "own_admissible": 51,
+       "intersection_without_it": 51
+      }
+     ],
+     "ny_by_window": {
+      "0.1,0.9,0.1,0.9": [
+       96,
+       192,
+       384
+      ],
+      "0.3,0.7,0.3,0.7": [
+       192,
+       384
+      ]
+     },
+     "admissible_on_every_arm": [
+      50,
+      52,
+      58,
+      62,
+      68,
+      70,
+      74,
+      76,
+      82,
+      86,
+      92,
+      94,
+      98,
+      100,
+      106,
+      110,
+      116,
+      118,
+      122,
+      124,
+      130,
+      134,
+      140,
+      142,
+      146,
+      148,
+      154,
+      158,
+      164,
+      166,
+      170,
+      172,
+      178,
+      182,
+      188,
+      190,
+      194,
+      196,
+      202,
+      206,
+      212,
+      214,
+      218,
+      220,
+      226,
+      230,
+      236,
+      238,
+      242,
+      244,
+      250
+     ],
+     "flagged": {
+      "0.6x": {
+       "M": 58,
+       "target": 60.0,
+       "seeds_per_lambda": 6.041666666666667,
+       "density_vs_sf39": 0.58
+      },
+      "1x": {
+       "M": 100,
+       "target": 100.0,
+       "seeds_per_lambda": 10.416666666666666,
+       "density_vs_sf39": 1.0
+      },
+      "2x": {
+       "M": 202,
+       "target": 200.0,
+       "seeds_per_lambda": 21.041666666666668,
+       "density_vs_sf39": 2.02
+      }
+     },
+     "admissible_full_plane_same_grids": [
+      128
+     ],
+     "per_arm_check": [
+      {
+       "label": "4 production 3328x384x384",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 E_h 832x96x96",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 E_h 1664x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 E_W 832x96x96",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 E_W 1664x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 E_W 832x192x192",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 E_W 1664x384x384",
+       "window": "0.3,0.7,0.3,0.7",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      },
+      {
+       "label": "4 gate5 1664x192x192",
+       "window": "0.1,0.9,0.1,0.9",
+       "flagged_passes": {
+        "0.6x": true,
+        "1x": true,
+        "2x": true
+       }
+      }
+     ]
+    }
+   },
+   "production_arm_only": {
+    "label": "4 production 3328x384x384",
+    "admissible": [
+     50,
+     52,
+     58,
+     62,
+     68,
+     70,
+     74,
+     76,
+     82,
+     86,
+     92,
+     94,
+     98,
+     100,
+     106,
+     110,
+     116,
+     118,
+     122,
+     124,
+     130,
+     134,
+     140,
+     142,
+     146,
+     148,
+     154,
+     158,
+     164,
+     166,
+     170,
+     172,
+     178,
+     182,
+     188,
+     190,
+     194,
+     196,
+     202,
+     206,
+     212,
+     214,
+     218,
+     220,
+     226,
+     230,
+     236,
+     238,
+     242,
+     244,
+     250
+    ],
+    "flagged": {
+     "0.6x": {
+      "M": 58,
+      "target": 60.0,
+      "seeds_per_lambda": 6.041666666666667,
+      "density_vs_sf39": 0.58
+     },
+     "1x": {
+      "M": 100,
+      "target": 100.0,
+      "seeds_per_lambda": 10.416666666666666,
+      "density_vs_sf39": 1.0
+     },
+     "2x": {
+      "M": 202,
+      "target": 200.0,
+      "seeds_per_lambda": 21.041666666666668,
+      "density_vs_sf39": 2.02
+     }
+    }
+   }
+  }
+ }
+}

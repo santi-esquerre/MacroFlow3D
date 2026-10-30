@@ -1,0 +1,1575 @@
+384 0.1,0.9,0.1,0.9 128 ON_FACE m2=0 m3=1 axis=3
+256 0.1,0.9,0.1,0.9 100 OK
+384 0.1,0.9,0.1,0.9 100 OK
+64 0.1,0.9,0.1,0.9 100 OK
+128 0.1,0.9,0.1,0.9 100 OK
+192 0.1,0.9,0.1,0.9 100 OK
+384 0.3,0.7,0.3,0.7 100 OK
+192 0.36666666666666664,0.63333333333333336,0.36666666666666664,0.63333333333333336 100 OK
+192 0.3,0.7,0.3,0.7 100 OK
+16 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+16 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+16 0,1,0,1 3 ON_FACE m2=0 m3=1 axis=3
+16 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+16 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+16 0,1,0,1 6 ON_FACE m2=0 m3=1 axis=3
+16 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+16 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+16 0,1,0,1 9 ON_FACE m2=0 m3=4 axis=3
+16 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+16 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+16 0,1,0,1 12 ON_FACE m2=0 m3=1 axis=3
+16 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+16 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+16 0,1,0,1 15 ON_FACE m2=0 m3=7 axis=3
+16 0,1,0,1 16 OK
+16 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+16 0,1,0,1 18 ON_FACE m2=0 m3=4 axis=3
+16 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+16 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+16 0,1,0,1 21 ON_FACE m2=0 m3=10 axis=3
+16 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+16 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+16 0,1,0,1 24 ON_FACE m2=0 m3=1 axis=3
+16 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+16 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+16 0,1,0,1 27 ON_FACE m2=0 m3=13 axis=3
+16 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+16 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+16 0,1,0,1 30 ON_FACE m2=0 m3=7 axis=3
+16 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+16 0,1,0,1 32 OK
+16 0,1,0,1 33 ON_FACE m2=0 m3=16 axis=3
+16 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+16 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+16 0,1,0,1 36 ON_FACE m2=0 m3=4 axis=3
+16 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+16 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+16 0,1,0,1 39 ON_FACE m2=0 m3=19 axis=3
+16 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+16 0,1,0,1 48 OK
+16 0,1,0,1 64 OK
+16 0,1,0,1 96 OK
+16 0,1,0,1 128 OK
+16 0,1,0,1 192 OK
+16 0,1,0,1 256 OK
+16 0,1,0,1 512 OK
+16 0,1,0,1 1024 OK
+24 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+24 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+24 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+24 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+24 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+24 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+24 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+24 0,1,0,1 8 OK
+24 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+24 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+24 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+24 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+24 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+24 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+24 0,1,0,1 15 ON_FACE m2=0 m3=2 axis=3
+24 0,1,0,1 16 OK
+24 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+24 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+24 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+24 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+24 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+24 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+24 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+24 0,1,0,1 24 OK
+24 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+24 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+24 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+24 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+24 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+24 0,1,0,1 30 ON_FACE m2=0 m3=2 axis=3
+24 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+24 0,1,0,1 32 OK
+24 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+24 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+24 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+24 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+24 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+24 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+24 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+24 0,1,0,1 40 OK
+24 0,1,0,1 48 OK
+24 0,1,0,1 64 OK
+24 0,1,0,1 96 OK
+24 0,1,0,1 128 OK
+24 0,1,0,1 192 OK
+24 0,1,0,1 256 OK
+24 0,1,0,1 512 OK
+24 0,1,0,1 1024 OK
+48 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+48 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+48 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+48 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+48 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+48 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+48 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+48 0,1,0,1 15 ON_FACE m2=0 m3=2 axis=3
+48 0,1,0,1 16 OK
+48 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+48 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+48 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+48 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+48 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+48 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+48 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+48 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+48 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+48 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+48 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+48 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+48 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+48 0,1,0,1 30 ON_FACE m2=0 m3=2 axis=3
+48 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+48 0,1,0,1 32 OK
+48 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+48 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+48 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+48 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+48 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+48 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+48 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+48 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+48 0,1,0,1 48 OK
+48 0,1,0,1 64 OK
+48 0,1,0,1 96 OK
+48 0,1,0,1 128 OK
+48 0,1,0,1 192 OK
+48 0,1,0,1 256 OK
+48 0,1,0,1 512 OK
+48 0,1,0,1 1024 OK
+64 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+64 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+64 0,1,0,1 3 ON_FACE m2=0 m3=1 axis=3
+64 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+64 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+64 0,1,0,1 6 ON_FACE m2=0 m3=1 axis=3
+64 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+64 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+64 0,1,0,1 9 ON_FACE m2=0 m3=4 axis=3
+64 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+64 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+64 0,1,0,1 12 ON_FACE m2=0 m3=1 axis=3
+64 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+64 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+64 0,1,0,1 15 ON_FACE m2=0 m3=7 axis=3
+64 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+64 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+64 0,1,0,1 18 ON_FACE m2=0 m3=4 axis=3
+64 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+64 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+64 0,1,0,1 21 ON_FACE m2=0 m3=10 axis=3
+64 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+64 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+64 0,1,0,1 24 ON_FACE m2=0 m3=1 axis=3
+64 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+64 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+64 0,1,0,1 27 ON_FACE m2=0 m3=13 axis=3
+64 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+64 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+64 0,1,0,1 30 ON_FACE m2=0 m3=7 axis=3
+64 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+64 0,1,0,1 32 ON_FACE m2=0 m3=0 axis=2
+64 0,1,0,1 33 ON_FACE m2=0 m3=16 axis=3
+64 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+64 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+64 0,1,0,1 36 ON_FACE m2=0 m3=4 axis=3
+64 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+64 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+64 0,1,0,1 39 ON_FACE m2=0 m3=19 axis=3
+64 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+64 0,1,0,1 48 ON_FACE m2=0 m3=1 axis=3
+64 0,1,0,1 64 OK
+64 0,1,0,1 96 ON_FACE m2=0 m3=1 axis=3
+64 0,1,0,1 128 OK
+64 0,1,0,1 192 OK
+64 0,1,0,1 256 OK
+64 0,1,0,1 512 OK
+64 0,1,0,1 1024 OK
+96 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+96 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+96 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+96 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+96 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+96 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+96 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+96 0,1,0,1 15 ON_FACE m2=0 m3=2 axis=3
+96 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+96 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+96 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+96 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+96 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+96 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+96 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+96 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+96 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+96 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+96 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+96 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+96 0,1,0,1 30 ON_FACE m2=0 m3=2 axis=3
+96 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+96 0,1,0,1 32 OK
+96 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+96 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+96 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+96 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+96 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+96 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+96 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+96 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+96 0,1,0,1 48 ON_FACE m2=0 m3=0 axis=2
+96 0,1,0,1 64 OK
+96 0,1,0,1 96 OK
+96 0,1,0,1 128 OK
+96 0,1,0,1 192 OK
+96 0,1,0,1 256 OK
+96 0,1,0,1 512 OK
+96 0,1,0,1 1024 OK
+120 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 5 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+120 0,1,0,1 8 OK
+120 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+120 0,1,0,1 10 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+120 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+120 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+120 0,1,0,1 15 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 16 OK
+120 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+120 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+120 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+120 0,1,0,1 20 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+120 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+120 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+120 0,1,0,1 24 OK
+120 0,1,0,1 25 ON_FACE m2=0 m3=2 axis=3
+120 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+120 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+120 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+120 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+120 0,1,0,1 30 ON_FACE m2=0 m3=0 axis=2
+120 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+120 0,1,0,1 32 OK
+120 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+120 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+120 0,1,0,1 35 ON_FACE m2=0 m3=3 axis=3
+120 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+120 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+120 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+120 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+120 0,1,0,1 40 OK
+120 0,1,0,1 48 OK
+120 0,1,0,1 64 OK
+120 0,1,0,1 96 OK
+120 0,1,0,1 128 OK
+120 0,1,0,1 192 OK
+120 0,1,0,1 256 OK
+120 0,1,0,1 512 OK
+120 0,1,0,1 1024 OK
+128 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 3 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+128 0,1,0,1 6 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+128 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 9 ON_FACE m2=0 m3=4 axis=3
+128 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+128 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+128 0,1,0,1 12 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+128 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+128 0,1,0,1 15 ON_FACE m2=0 m3=7 axis=3
+128 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+128 0,1,0,1 18 ON_FACE m2=0 m3=4 axis=3
+128 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+128 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+128 0,1,0,1 21 ON_FACE m2=0 m3=10 axis=3
+128 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+128 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+128 0,1,0,1 24 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+128 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+128 0,1,0,1 27 ON_FACE m2=0 m3=13 axis=3
+128 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+128 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+128 0,1,0,1 30 ON_FACE m2=0 m3=7 axis=3
+128 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+128 0,1,0,1 32 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 33 ON_FACE m2=0 m3=16 axis=3
+128 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+128 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+128 0,1,0,1 36 ON_FACE m2=0 m3=4 axis=3
+128 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+128 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+128 0,1,0,1 39 ON_FACE m2=0 m3=19 axis=3
+128 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+128 0,1,0,1 48 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 64 ON_FACE m2=0 m3=0 axis=2
+128 0,1,0,1 96 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 128 OK
+128 0,1,0,1 192 ON_FACE m2=0 m3=1 axis=3
+128 0,1,0,1 256 OK
+128 0,1,0,1 512 OK
+128 0,1,0,1 1024 OK
+192 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+192 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+192 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+192 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+192 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+192 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+192 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+192 0,1,0,1 15 ON_FACE m2=0 m3=2 axis=3
+192 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+192 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+192 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+192 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+192 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+192 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+192 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+192 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+192 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+192 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+192 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+192 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+192 0,1,0,1 30 ON_FACE m2=0 m3=2 axis=3
+192 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+192 0,1,0,1 32 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+192 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+192 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+192 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+192 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+192 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+192 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+192 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+192 0,1,0,1 48 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 64 OK
+192 0,1,0,1 96 ON_FACE m2=0 m3=0 axis=2
+192 0,1,0,1 128 OK
+192 0,1,0,1 192 OK
+192 0,1,0,1 256 OK
+192 0,1,0,1 512 OK
+192 0,1,0,1 1024 OK
+240 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 5 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+240 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+240 0,1,0,1 10 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+240 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+240 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+240 0,1,0,1 15 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 16 OK
+240 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+240 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+240 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+240 0,1,0,1 20 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+240 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+240 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+240 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 25 ON_FACE m2=0 m3=2 axis=3
+240 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+240 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+240 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+240 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+240 0,1,0,1 30 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+240 0,1,0,1 32 OK
+240 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+240 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+240 0,1,0,1 35 ON_FACE m2=0 m3=3 axis=3
+240 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+240 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+240 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+240 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+240 0,1,0,1 40 ON_FACE m2=0 m3=0 axis=2
+240 0,1,0,1 48 OK
+240 0,1,0,1 64 OK
+240 0,1,0,1 96 OK
+240 0,1,0,1 128 OK
+240 0,1,0,1 192 OK
+240 0,1,0,1 256 OK
+240 0,1,0,1 512 OK
+240 0,1,0,1 1024 OK
+256 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 3 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+256 0,1,0,1 6 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+256 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 9 ON_FACE m2=0 m3=4 axis=3
+256 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+256 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+256 0,1,0,1 12 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+256 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+256 0,1,0,1 15 ON_FACE m2=0 m3=7 axis=3
+256 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+256 0,1,0,1 18 ON_FACE m2=0 m3=4 axis=3
+256 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+256 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+256 0,1,0,1 21 ON_FACE m2=0 m3=10 axis=3
+256 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+256 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+256 0,1,0,1 24 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+256 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+256 0,1,0,1 27 ON_FACE m2=0 m3=13 axis=3
+256 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+256 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+256 0,1,0,1 30 ON_FACE m2=0 m3=7 axis=3
+256 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+256 0,1,0,1 32 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 33 ON_FACE m2=0 m3=16 axis=3
+256 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+256 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+256 0,1,0,1 36 ON_FACE m2=0 m3=4 axis=3
+256 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+256 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+256 0,1,0,1 39 ON_FACE m2=0 m3=19 axis=3
+256 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+256 0,1,0,1 48 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 64 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 96 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 128 ON_FACE m2=0 m3=0 axis=2
+256 0,1,0,1 192 ON_FACE m2=0 m3=1 axis=3
+256 0,1,0,1 256 OK
+256 0,1,0,1 512 OK
+256 0,1,0,1 1024 OK
+288 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+288 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+288 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 9 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+288 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+288 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+288 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+288 0,1,0,1 15 ON_FACE m2=0 m3=2 axis=3
+288 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+288 0,1,0,1 18 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+288 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+288 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+288 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+288 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+288 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+288 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+288 0,1,0,1 27 ON_FACE m2=0 m3=1 axis=3
+288 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+288 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+288 0,1,0,1 30 ON_FACE m2=0 m3=2 axis=3
+288 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+288 0,1,0,1 32 OK
+288 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+288 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+288 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+288 0,1,0,1 36 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+288 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+288 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+288 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+288 0,1,0,1 48 ON_FACE m2=0 m3=0 axis=2
+288 0,1,0,1 64 OK
+288 0,1,0,1 96 OK
+288 0,1,0,1 128 OK
+288 0,1,0,1 192 OK
+288 0,1,0,1 256 OK
+288 0,1,0,1 512 OK
+288 0,1,0,1 1024 OK
+384 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 5 ON_FACE m2=0 m3=2 axis=3
+384 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+384 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+384 0,1,0,1 10 ON_FACE m2=0 m3=2 axis=3
+384 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+384 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+384 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+384 0,1,0,1 15 ON_FACE m2=0 m3=2 axis=3
+384 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+384 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+384 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+384 0,1,0,1 20 ON_FACE m2=0 m3=2 axis=3
+384 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+384 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+384 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+384 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 25 ON_FACE m2=0 m3=12 axis=3
+384 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+384 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+384 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+384 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+384 0,1,0,1 30 ON_FACE m2=0 m3=2 axis=3
+384 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+384 0,1,0,1 32 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+384 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+384 0,1,0,1 35 ON_FACE m2=0 m3=17 axis=3
+384 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+384 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+384 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+384 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+384 0,1,0,1 40 ON_FACE m2=0 m3=2 axis=3
+384 0,1,0,1 48 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 64 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 96 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 128 OK
+384 0,1,0,1 192 ON_FACE m2=0 m3=0 axis=2
+384 0,1,0,1 256 OK
+384 0,1,0,1 512 OK
+384 0,1,0,1 1024 OK
+480 0,1,0,1 1 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 2 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 3 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 4 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 5 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 6 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 7 ON_FACE m2=0 m3=3 axis=3
+480 0,1,0,1 8 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 9 ON_FACE m2=0 m3=1 axis=3
+480 0,1,0,1 10 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 11 ON_FACE m2=0 m3=5 axis=3
+480 0,1,0,1 12 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 13 ON_FACE m2=0 m3=6 axis=3
+480 0,1,0,1 14 ON_FACE m2=0 m3=3 axis=3
+480 0,1,0,1 15 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 16 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 17 ON_FACE m2=0 m3=8 axis=3
+480 0,1,0,1 18 ON_FACE m2=0 m3=1 axis=3
+480 0,1,0,1 19 ON_FACE m2=0 m3=9 axis=3
+480 0,1,0,1 20 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 21 ON_FACE m2=0 m3=3 axis=3
+480 0,1,0,1 22 ON_FACE m2=0 m3=5 axis=3
+480 0,1,0,1 23 ON_FACE m2=0 m3=11 axis=3
+480 0,1,0,1 24 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 25 ON_FACE m2=0 m3=2 axis=3
+480 0,1,0,1 26 ON_FACE m2=0 m3=6 axis=3
+480 0,1,0,1 27 ON_FACE m2=0 m3=4 axis=3
+480 0,1,0,1 28 ON_FACE m2=0 m3=3 axis=3
+480 0,1,0,1 29 ON_FACE m2=0 m3=14 axis=3
+480 0,1,0,1 30 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 31 ON_FACE m2=0 m3=15 axis=3
+480 0,1,0,1 32 OK
+480 0,1,0,1 33 ON_FACE m2=0 m3=5 axis=3
+480 0,1,0,1 34 ON_FACE m2=0 m3=8 axis=3
+480 0,1,0,1 35 ON_FACE m2=0 m3=3 axis=3
+480 0,1,0,1 36 ON_FACE m2=0 m3=1 axis=3
+480 0,1,0,1 37 ON_FACE m2=0 m3=18 axis=3
+480 0,1,0,1 38 ON_FACE m2=0 m3=9 axis=3
+480 0,1,0,1 39 ON_FACE m2=0 m3=6 axis=3
+480 0,1,0,1 40 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 48 ON_FACE m2=0 m3=0 axis=2
+480 0,1,0,1 64 OK
+480 0,1,0,1 96 OK
+480 0,1,0,1 128 OK
+480 0,1,0,1 192 OK
+480 0,1,0,1 256 OK
+480 0,1,0,1 512 OK
+480 0,1,0,1 1024 OK
+96 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+96 0.1,0.9,0.1,0.9 2 OK
+96 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=1 axis=3
+96 0.1,0.9,0.1,0.9 4 OK
+96 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+96 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+96 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+96 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=1 axis=3
+96 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=4 axis=3
+96 0.1,0.9,0.1,0.9 10 OK
+96 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+96 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=3 axis=3
+96 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+96 0.1,0.9,0.1,0.9 14 OK
+96 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=7 axis=3
+96 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+96 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+96 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+96 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+96 0.1,0.9,0.1,0.9 20 OK
+96 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=10 axis=3
+96 0.1,0.9,0.1,0.9 22 OK
+96 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+96 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=4 axis=3
+96 0.1,0.9,0.1,0.9 50 OK
+96 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=10 axis=3
+96 0.1,0.9,0.1,0.9 58 OK
+96 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=17 axis=3
+96 0.1,0.9,0.1,0.9 64 ON_FACE m2=0 m3=4 axis=3
+96 0.1,0.9,0.1,0.9 94 OK
+96 0.1,0.9,0.1,0.9 96 ON_FACE m2=0 m3=0 axis=2
+96 0.1,0.9,0.1,0.9 100 OK
+96 0.1,0.9,0.1,0.9 128 OK
+96 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+96 0.1,0.9,0.1,0.9 192 ON_FACE m2=0 m3=3 axis=3
+96 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=37 axis=3
+96 0.1,0.9,0.1,0.9 202 OK
+96 0.1,0.9,0.1,0.9 256 OK
+120 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 2 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 4 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+120 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+120 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=1 axis=3
+120 0.1,0.9,0.1,0.9 10 ON_FACE m2=0 m3=2 axis=3
+120 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+120 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+120 0.1,0.9,0.1,0.9 14 ON_FACE m2=0 m3=3 axis=3
+120 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=2 axis=3
+120 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+120 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+120 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+120 0.1,0.9,0.1,0.9 20 ON_FACE m2=0 m3=2 axis=3
+120 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=3 axis=3
+120 0.1,0.9,0.1,0.9 22 ON_FACE m2=0 m3=5 axis=3
+120 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+120 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=0 axis=2
+120 0.1,0.9,0.1,0.9 50 ON_FACE m2=0 m3=12 axis=3
+120 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=3 axis=3
+120 0.1,0.9,0.1,0.9 58 ON_FACE m2=0 m3=14 axis=3
+120 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=2 axis=3
+120 0.1,0.9,0.1,0.9 64 OK
+120 0.1,0.9,0.1,0.9 94 ON_FACE m2=0 m3=23 axis=3
+120 0.1,0.9,0.1,0.9 96 OK
+120 0.1,0.9,0.1,0.9 100 ON_FACE m2=0 m3=12 axis=3
+120 0.1,0.9,0.1,0.9 128 OK
+120 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+120 0.1,0.9,0.1,0.9 192 OK
+120 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=12 axis=3
+120 0.1,0.9,0.1,0.9 202 ON_FACE m2=0 m3=50 axis=3
+120 0.1,0.9,0.1,0.9 256 OK
+192 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+192 0.1,0.9,0.1,0.9 2 OK
+192 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=1 axis=3
+192 0.1,0.9,0.1,0.9 4 OK
+192 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+192 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+192 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+192 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=1 axis=3
+192 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=4 axis=3
+192 0.1,0.9,0.1,0.9 10 OK
+192 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+192 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=3 axis=3
+192 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+192 0.1,0.9,0.1,0.9 14 OK
+192 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=7 axis=3
+192 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+192 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+192 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+192 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+192 0.1,0.9,0.1,0.9 20 OK
+192 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=10 axis=3
+192 0.1,0.9,0.1,0.9 22 OK
+192 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+192 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=4 axis=3
+192 0.1,0.9,0.1,0.9 50 OK
+192 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=10 axis=3
+192 0.1,0.9,0.1,0.9 58 OK
+192 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=17 axis=3
+192 0.1,0.9,0.1,0.9 64 ON_FACE m2=0 m3=4 axis=3
+192 0.1,0.9,0.1,0.9 94 OK
+192 0.1,0.9,0.1,0.9 96 ON_FACE m2=0 m3=0 axis=2
+192 0.1,0.9,0.1,0.9 100 OK
+192 0.1,0.9,0.1,0.9 128 ON_FACE m2=0 m3=1 axis=3
+192 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+192 0.1,0.9,0.1,0.9 192 ON_FACE m2=0 m3=3 axis=3
+192 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=37 axis=3
+192 0.1,0.9,0.1,0.9 202 OK
+192 0.1,0.9,0.1,0.9 256 OK
+240 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 2 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 4 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+240 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+240 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=1 axis=3
+240 0.1,0.9,0.1,0.9 10 ON_FACE m2=0 m3=2 axis=3
+240 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+240 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+240 0.1,0.9,0.1,0.9 14 ON_FACE m2=0 m3=3 axis=3
+240 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=2 axis=3
+240 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+240 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+240 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+240 0.1,0.9,0.1,0.9 20 ON_FACE m2=0 m3=2 axis=3
+240 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=3 axis=3
+240 0.1,0.9,0.1,0.9 22 ON_FACE m2=0 m3=5 axis=3
+240 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+240 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 50 ON_FACE m2=0 m3=12 axis=3
+240 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=3 axis=3
+240 0.1,0.9,0.1,0.9 58 ON_FACE m2=0 m3=14 axis=3
+240 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=2 axis=3
+240 0.1,0.9,0.1,0.9 64 OK
+240 0.1,0.9,0.1,0.9 94 ON_FACE m2=0 m3=23 axis=3
+240 0.1,0.9,0.1,0.9 96 ON_FACE m2=0 m3=0 axis=2
+240 0.1,0.9,0.1,0.9 100 ON_FACE m2=0 m3=12 axis=3
+240 0.1,0.9,0.1,0.9 128 OK
+240 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+240 0.1,0.9,0.1,0.9 192 OK
+240 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=12 axis=3
+240 0.1,0.9,0.1,0.9 202 ON_FACE m2=0 m3=50 axis=3
+240 0.1,0.9,0.1,0.9 256 OK
+288 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+288 0.1,0.9,0.1,0.9 2 OK
+288 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=1 axis=3
+288 0.1,0.9,0.1,0.9 4 OK
+288 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+288 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+288 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+288 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=1 axis=3
+288 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=4 axis=3
+288 0.1,0.9,0.1,0.9 10 OK
+288 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+288 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=3 axis=3
+288 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+288 0.1,0.9,0.1,0.9 14 OK
+288 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=7 axis=3
+288 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+288 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+288 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+288 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+288 0.1,0.9,0.1,0.9 20 OK
+288 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=10 axis=3
+288 0.1,0.9,0.1,0.9 22 OK
+288 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+288 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=4 axis=3
+288 0.1,0.9,0.1,0.9 50 OK
+288 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=10 axis=3
+288 0.1,0.9,0.1,0.9 58 OK
+288 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=17 axis=3
+288 0.1,0.9,0.1,0.9 64 ON_FACE m2=0 m3=4 axis=3
+288 0.1,0.9,0.1,0.9 94 OK
+288 0.1,0.9,0.1,0.9 96 ON_FACE m2=0 m3=0 axis=2
+288 0.1,0.9,0.1,0.9 100 OK
+288 0.1,0.9,0.1,0.9 128 OK
+288 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+288 0.1,0.9,0.1,0.9 192 ON_FACE m2=0 m3=3 axis=3
+288 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=37 axis=3
+288 0.1,0.9,0.1,0.9 202 OK
+288 0.1,0.9,0.1,0.9 256 OK
+384 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+384 0.1,0.9,0.1,0.9 2 OK
+384 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=1 axis=3
+384 0.1,0.9,0.1,0.9 4 OK
+384 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+384 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+384 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+384 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=1 axis=3
+384 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=4 axis=3
+384 0.1,0.9,0.1,0.9 10 OK
+384 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+384 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=3 axis=3
+384 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+384 0.1,0.9,0.1,0.9 14 OK
+384 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=7 axis=3
+384 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+384 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+384 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+384 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+384 0.1,0.9,0.1,0.9 20 OK
+384 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=10 axis=3
+384 0.1,0.9,0.1,0.9 22 OK
+384 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+384 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=4 axis=3
+384 0.1,0.9,0.1,0.9 50 OK
+384 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=10 axis=3
+384 0.1,0.9,0.1,0.9 58 OK
+384 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=17 axis=3
+384 0.1,0.9,0.1,0.9 64 ON_FACE m2=0 m3=4 axis=3
+384 0.1,0.9,0.1,0.9 94 OK
+384 0.1,0.9,0.1,0.9 96 ON_FACE m2=0 m3=0 axis=2
+384 0.1,0.9,0.1,0.9 100 OK
+384 0.1,0.9,0.1,0.9 128 ON_FACE m2=0 m3=1 axis=3
+384 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+384 0.1,0.9,0.1,0.9 192 ON_FACE m2=0 m3=3 axis=3
+384 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=37 axis=3
+384 0.1,0.9,0.1,0.9 202 OK
+384 0.1,0.9,0.1,0.9 256 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 2 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 3 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 4 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 5 ON_FACE m2=0 m3=2 axis=3
+480 0.1,0.9,0.1,0.9 6 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 7 ON_FACE m2=0 m3=3 axis=3
+480 0.1,0.9,0.1,0.9 8 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 9 ON_FACE m2=0 m3=1 axis=3
+480 0.1,0.9,0.1,0.9 10 ON_FACE m2=0 m3=2 axis=3
+480 0.1,0.9,0.1,0.9 11 ON_FACE m2=0 m3=5 axis=3
+480 0.1,0.9,0.1,0.9 12 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 13 ON_FACE m2=0 m3=6 axis=3
+480 0.1,0.9,0.1,0.9 14 ON_FACE m2=0 m3=3 axis=3
+480 0.1,0.9,0.1,0.9 15 ON_FACE m2=0 m3=2 axis=3
+480 0.1,0.9,0.1,0.9 16 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 17 ON_FACE m2=0 m3=8 axis=3
+480 0.1,0.9,0.1,0.9 18 ON_FACE m2=0 m3=1 axis=3
+480 0.1,0.9,0.1,0.9 19 ON_FACE m2=0 m3=9 axis=3
+480 0.1,0.9,0.1,0.9 20 ON_FACE m2=0 m3=2 axis=3
+480 0.1,0.9,0.1,0.9 21 ON_FACE m2=0 m3=3 axis=3
+480 0.1,0.9,0.1,0.9 22 ON_FACE m2=0 m3=5 axis=3
+480 0.1,0.9,0.1,0.9 23 ON_FACE m2=0 m3=11 axis=3
+480 0.1,0.9,0.1,0.9 24 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 50 ON_FACE m2=0 m3=12 axis=3
+480 0.1,0.9,0.1,0.9 56 ON_FACE m2=0 m3=3 axis=3
+480 0.1,0.9,0.1,0.9 58 ON_FACE m2=0 m3=14 axis=3
+480 0.1,0.9,0.1,0.9 60 ON_FACE m2=0 m3=2 axis=3
+480 0.1,0.9,0.1,0.9 64 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 94 ON_FACE m2=0 m3=23 axis=3
+480 0.1,0.9,0.1,0.9 96 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 100 ON_FACE m2=0 m3=12 axis=3
+480 0.1,0.9,0.1,0.9 128 OK
+480 0.1,0.9,0.1,0.9 187 ON_FACE m2=0 m3=93 axis=3
+480 0.1,0.9,0.1,0.9 192 ON_FACE m2=0 m3=0 axis=2
+480 0.1,0.9,0.1,0.9 200 ON_FACE m2=0 m3=12 axis=3
+480 0.1,0.9,0.1,0.9 202 ON_FACE m2=0 m3=50 axis=3
+480 0.1,0.9,0.1,0.9 256 OK
+96 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+96 0.3,0.7,0.3,0.7 2 OK
+96 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=1 axis=3
+96 0.3,0.7,0.3,0.7 4 OK
+96 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+96 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+96 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+96 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=1 axis=3
+96 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=4 axis=3
+96 0.3,0.7,0.3,0.7 10 OK
+96 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+96 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=3 axis=3
+96 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+96 0.3,0.7,0.3,0.7 14 OK
+96 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=7 axis=3
+96 0.3,0.7,0.3,0.7 16 ON_FACE m2=0 m3=0 axis=2
+96 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+96 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+96 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+96 0.3,0.7,0.3,0.7 20 OK
+96 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=10 axis=3
+96 0.3,0.7,0.3,0.7 22 OK
+96 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+96 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=4 axis=3
+96 0.3,0.7,0.3,0.7 50 OK
+96 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=10 axis=3
+96 0.3,0.7,0.3,0.7 58 OK
+96 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=17 axis=3
+96 0.3,0.7,0.3,0.7 64 OK
+96 0.3,0.7,0.3,0.7 94 OK
+96 0.3,0.7,0.3,0.7 96 ON_FACE m2=0 m3=0 axis=2
+96 0.3,0.7,0.3,0.7 100 OK
+96 0.3,0.7,0.3,0.7 128 OK
+96 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+96 0.3,0.7,0.3,0.7 192 OK
+96 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=37 axis=3
+96 0.3,0.7,0.3,0.7 202 OK
+96 0.3,0.7,0.3,0.7 256 OK
+120 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 2 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 4 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+120 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+120 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=1 axis=3
+120 0.3,0.7,0.3,0.7 10 ON_FACE m2=0 m3=2 axis=3
+120 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+120 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+120 0.3,0.7,0.3,0.7 14 ON_FACE m2=0 m3=3 axis=3
+120 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=2 axis=3
+120 0.3,0.7,0.3,0.7 16 OK
+120 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+120 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+120 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+120 0.3,0.7,0.3,0.7 20 ON_FACE m2=0 m3=2 axis=3
+120 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=3 axis=3
+120 0.3,0.7,0.3,0.7 22 ON_FACE m2=0 m3=5 axis=3
+120 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+120 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=0 axis=2
+120 0.3,0.7,0.3,0.7 50 ON_FACE m2=0 m3=12 axis=3
+120 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=3 axis=3
+120 0.3,0.7,0.3,0.7 58 ON_FACE m2=0 m3=14 axis=3
+120 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=2 axis=3
+120 0.3,0.7,0.3,0.7 64 OK
+120 0.3,0.7,0.3,0.7 94 ON_FACE m2=0 m3=23 axis=3
+120 0.3,0.7,0.3,0.7 96 OK
+120 0.3,0.7,0.3,0.7 100 ON_FACE m2=0 m3=12 axis=3
+120 0.3,0.7,0.3,0.7 128 OK
+120 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+120 0.3,0.7,0.3,0.7 192 OK
+120 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=12 axis=3
+120 0.3,0.7,0.3,0.7 202 ON_FACE m2=0 m3=50 axis=3
+120 0.3,0.7,0.3,0.7 256 OK
+192 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+192 0.3,0.7,0.3,0.7 2 OK
+192 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=1 axis=3
+192 0.3,0.7,0.3,0.7 4 OK
+192 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+192 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+192 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+192 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=1 axis=3
+192 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=4 axis=3
+192 0.3,0.7,0.3,0.7 10 OK
+192 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+192 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=3 axis=3
+192 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+192 0.3,0.7,0.3,0.7 14 OK
+192 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=7 axis=3
+192 0.3,0.7,0.3,0.7 16 ON_FACE m2=0 m3=0 axis=2
+192 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+192 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+192 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+192 0.3,0.7,0.3,0.7 20 OK
+192 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=10 axis=3
+192 0.3,0.7,0.3,0.7 22 OK
+192 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+192 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=4 axis=3
+192 0.3,0.7,0.3,0.7 50 OK
+192 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=10 axis=3
+192 0.3,0.7,0.3,0.7 58 OK
+192 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=17 axis=3
+192 0.3,0.7,0.3,0.7 64 ON_FACE m2=0 m3=4 axis=3
+192 0.3,0.7,0.3,0.7 94 OK
+192 0.3,0.7,0.3,0.7 96 ON_FACE m2=0 m3=0 axis=2
+192 0.3,0.7,0.3,0.7 100 OK
+192 0.3,0.7,0.3,0.7 128 OK
+192 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+192 0.3,0.7,0.3,0.7 192 ON_FACE m2=0 m3=3 axis=3
+192 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=37 axis=3
+192 0.3,0.7,0.3,0.7 202 OK
+192 0.3,0.7,0.3,0.7 256 OK
+240 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 2 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 4 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+240 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+240 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=1 axis=3
+240 0.3,0.7,0.3,0.7 10 ON_FACE m2=0 m3=2 axis=3
+240 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+240 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+240 0.3,0.7,0.3,0.7 14 ON_FACE m2=0 m3=3 axis=3
+240 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=2 axis=3
+240 0.3,0.7,0.3,0.7 16 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+240 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+240 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+240 0.3,0.7,0.3,0.7 20 ON_FACE m2=0 m3=2 axis=3
+240 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=3 axis=3
+240 0.3,0.7,0.3,0.7 22 ON_FACE m2=0 m3=5 axis=3
+240 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+240 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=0 axis=2
+240 0.3,0.7,0.3,0.7 50 ON_FACE m2=0 m3=12 axis=3
+240 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=3 axis=3
+240 0.3,0.7,0.3,0.7 58 ON_FACE m2=0 m3=14 axis=3
+240 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=2 axis=3
+240 0.3,0.7,0.3,0.7 64 OK
+240 0.3,0.7,0.3,0.7 94 ON_FACE m2=0 m3=23 axis=3
+240 0.3,0.7,0.3,0.7 96 OK
+240 0.3,0.7,0.3,0.7 100 ON_FACE m2=0 m3=12 axis=3
+240 0.3,0.7,0.3,0.7 128 OK
+240 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+240 0.3,0.7,0.3,0.7 192 OK
+240 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=12 axis=3
+240 0.3,0.7,0.3,0.7 202 ON_FACE m2=0 m3=50 axis=3
+240 0.3,0.7,0.3,0.7 256 OK
+288 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+288 0.3,0.7,0.3,0.7 2 OK
+288 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=1 axis=3
+288 0.3,0.7,0.3,0.7 4 OK
+288 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+288 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+288 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+288 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=1 axis=3
+288 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=4 axis=3
+288 0.3,0.7,0.3,0.7 10 OK
+288 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+288 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=3 axis=3
+288 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+288 0.3,0.7,0.3,0.7 14 OK
+288 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=7 axis=3
+288 0.3,0.7,0.3,0.7 16 ON_FACE m2=0 m3=0 axis=2
+288 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+288 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+288 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+288 0.3,0.7,0.3,0.7 20 OK
+288 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=10 axis=3
+288 0.3,0.7,0.3,0.7 22 OK
+288 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+288 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=4 axis=3
+288 0.3,0.7,0.3,0.7 50 OK
+288 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=10 axis=3
+288 0.3,0.7,0.3,0.7 58 OK
+288 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=17 axis=3
+288 0.3,0.7,0.3,0.7 64 OK
+288 0.3,0.7,0.3,0.7 94 OK
+288 0.3,0.7,0.3,0.7 96 ON_FACE m2=0 m3=0 axis=2
+288 0.3,0.7,0.3,0.7 100 OK
+288 0.3,0.7,0.3,0.7 128 OK
+288 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+288 0.3,0.7,0.3,0.7 192 OK
+288 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=37 axis=3
+288 0.3,0.7,0.3,0.7 202 OK
+288 0.3,0.7,0.3,0.7 256 OK
+384 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+384 0.3,0.7,0.3,0.7 2 OK
+384 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=1 axis=3
+384 0.3,0.7,0.3,0.7 4 OK
+384 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+384 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+384 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+384 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=1 axis=3
+384 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=4 axis=3
+384 0.3,0.7,0.3,0.7 10 OK
+384 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+384 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=3 axis=3
+384 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+384 0.3,0.7,0.3,0.7 14 OK
+384 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=7 axis=3
+384 0.3,0.7,0.3,0.7 16 ON_FACE m2=0 m3=0 axis=2
+384 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+384 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+384 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+384 0.3,0.7,0.3,0.7 20 OK
+384 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=10 axis=3
+384 0.3,0.7,0.3,0.7 22 OK
+384 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+384 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=4 axis=3
+384 0.3,0.7,0.3,0.7 50 OK
+384 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=10 axis=3
+384 0.3,0.7,0.3,0.7 58 OK
+384 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=17 axis=3
+384 0.3,0.7,0.3,0.7 64 ON_FACE m2=0 m3=4 axis=3
+384 0.3,0.7,0.3,0.7 94 OK
+384 0.3,0.7,0.3,0.7 96 ON_FACE m2=0 m3=0 axis=2
+384 0.3,0.7,0.3,0.7 100 OK
+384 0.3,0.7,0.3,0.7 128 ON_FACE m2=0 m3=1 axis=3
+384 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+384 0.3,0.7,0.3,0.7 192 ON_FACE m2=0 m3=3 axis=3
+384 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=37 axis=3
+384 0.3,0.7,0.3,0.7 202 OK
+384 0.3,0.7,0.3,0.7 256 OK
+480 0.3,0.7,0.3,0.7 1 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 2 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 3 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 4 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 5 ON_FACE m2=0 m3=2 axis=3
+480 0.3,0.7,0.3,0.7 6 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 7 ON_FACE m2=0 m3=3 axis=3
+480 0.3,0.7,0.3,0.7 8 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 9 ON_FACE m2=0 m3=1 axis=3
+480 0.3,0.7,0.3,0.7 10 ON_FACE m2=0 m3=2 axis=3
+480 0.3,0.7,0.3,0.7 11 ON_FACE m2=0 m3=5 axis=3
+480 0.3,0.7,0.3,0.7 12 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 13 ON_FACE m2=0 m3=6 axis=3
+480 0.3,0.7,0.3,0.7 14 ON_FACE m2=0 m3=3 axis=3
+480 0.3,0.7,0.3,0.7 15 ON_FACE m2=0 m3=2 axis=3
+480 0.3,0.7,0.3,0.7 16 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 17 ON_FACE m2=0 m3=8 axis=3
+480 0.3,0.7,0.3,0.7 18 ON_FACE m2=0 m3=1 axis=3
+480 0.3,0.7,0.3,0.7 19 ON_FACE m2=0 m3=9 axis=3
+480 0.3,0.7,0.3,0.7 20 ON_FACE m2=0 m3=2 axis=3
+480 0.3,0.7,0.3,0.7 21 ON_FACE m2=0 m3=3 axis=3
+480 0.3,0.7,0.3,0.7 22 ON_FACE m2=0 m3=5 axis=3
+480 0.3,0.7,0.3,0.7 23 ON_FACE m2=0 m3=11 axis=3
+480 0.3,0.7,0.3,0.7 24 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 50 ON_FACE m2=0 m3=12 axis=3
+480 0.3,0.7,0.3,0.7 56 ON_FACE m2=0 m3=3 axis=3
+480 0.3,0.7,0.3,0.7 58 ON_FACE m2=0 m3=14 axis=3
+480 0.3,0.7,0.3,0.7 60 ON_FACE m2=0 m3=2 axis=3
+480 0.3,0.7,0.3,0.7 64 OK
+480 0.3,0.7,0.3,0.7 94 ON_FACE m2=0 m3=23 axis=3
+480 0.3,0.7,0.3,0.7 96 ON_FACE m2=0 m3=0 axis=2
+480 0.3,0.7,0.3,0.7 100 ON_FACE m2=0 m3=12 axis=3
+480 0.3,0.7,0.3,0.7 128 OK
+480 0.3,0.7,0.3,0.7 187 ON_FACE m2=0 m3=93 axis=3
+480 0.3,0.7,0.3,0.7 192 OK
+480 0.3,0.7,0.3,0.7 200 ON_FACE m2=0 m3=12 axis=3
+480 0.3,0.7,0.3,0.7 202 ON_FACE m2=0 m3=50 axis=3
+480 0.3,0.7,0.3,0.7 256 OK
+16 -1e308,1e308,0.1,0.9 4 ON_FACE m2=0 m3=0 axis=2
+16 0.1,0.9,-1e308,1e308 4 ON_FACE m2=0 m3=0 axis=3
+16 -1e308,1e308,-1e308,1e308 1 ON_FACE m2=0 m3=0 axis=2
+96 0.5,0.5000001,0.5,0.5000001 7 ON_FACE m2=0 m3=0 axis=2
+96 0.1,0.9,0.3,0.7 100 OK
+240 0.3,0.7,0.1,0.9 128 OK
+384 0,1,0.1,0.9 128 ON_FACE m2=0 m3=1 axis=3
+384 0.1,0.9,0,1 128 ON_FACE m2=1 m3=0 axis=2
+384 0.1,0.9,0.1,0.9 1 ON_FACE m2=0 m3=0 axis=2
+384 0.1,0.9,0.1,0.9 512 OK
+228 0.35,0.76,0.26,0.57 265 OK
+272 0.4,0.72,0.07,0.76 148 OK
+426 0.09,0.97,0.09,0.65 43 OK
+28 0.18,0.64,0.43,0.77 226 OK
+430 0.2,0.6,0.03,0.85 173 ON_FACE m2=86 m3=0 axis=2
+406 0.31,0.66,0.39,0.7 156 OK
+388 0.35,0.93,0.41,0.64 96 OK
+8 0.29,0.59,0.11,0.71 245 ON_FACE m2=171 m3=0 axis=2
+210 0.08,0.91,0.45,0.6 52 OK
+496 0.15,0.59,0.31,0.8 254 OK
+52 0.09,0.7,0.05,0.6 213 OK
+384 0.04,0.99,0.41,0.61 108 OK
+448 0.39,0.72,0.14,0.75 50 OK
+282 0.37,0.71,0.33,0.72 104 OK
+48 0.16,0.77,0.42,0.64 42 ON_FACE m2=10 m3=0 axis=2
+44 0.44,0.94,0.23,0.85 235 OK
+158 0.21,0.55,0.02,0.79 150 OK
+374 0.45,0.82,0.05,0.78 164 OK
+138 0.45,0.67,0.24,0.94 96 OK
+72 0.12,0.6,0.18,0.74 212 ON_FACE m2=0 m3=26 axis=3
+180 0.18,0.78,0.15,0.86 145 ON_FACE m2=101 m3=0 axis=2
+300 0.16,0.62,0.11,0.7 174 OK
+42 0.32,0.75,0.42,1.0 146 OK
+132 0.28,0.63,0.2,0.64 130 OK
+182 0.05,0.58,0.25,0.57 24 OK
+384 0.18,0.7,0.06,0.7 69 ON_FACE m2=0 m3=11 axis=3
+106 0.04,0.62,0.4,0.65 69 OK
+514 0.35,0.69,0.25,0.84 156 OK
+206 0.39,0.91,0.37,0.68 263 OK
+280 0.02,0.56,0.4,0.58 84 OK
+258 0.08,0.6,0.41,0.98 294 OK
+72 0.17,0.73,0.33,0.7 150 OK
+240 0.02,0.85,0.39,0.84 239 OK
+376 0.23,0.94,0.45,0.7 85 ON_FACE m2=0 m3=59 axis=3
+442 0.43,0.93,0.36,0.76 81 OK
+430 0.45,1.0,0.3,0.77 7 OK
+74 0.08,0.55,0.12,0.58 139 OK
+50 0.0,0.58,0.19,0.6 264 OK
+262 0.25,0.78,0.45,0.58 74 OK
+300 0.22,0.92,0.38,0.86 255 ON_FACE m2=0 m3=42 axis=3
+166 0.25,0.85,0.41,0.73 55 OK
+300 0.39,0.62,0.15,1.0 300 OK
+124 0.13,0.57,0.11,0.74 293 OK
+6 0.41,0.57,0.29,0.99 268 OK
+166 0.35,0.83,0.27,0.99 226 OK
+386 0.39,0.98,0.05,0.59 280 OK
+432 0.15,0.65,0.01,0.71 188 OK
+438 0.01,0.58,0.01,0.81 53 OK
+456 0.06,0.73,0.43,0.8 101 OK
+24 0.14,0.69,0.12,0.89 192 OK
+316 0.13,0.91,0.36,0.63 121 OK
+500 0.29,0.58,0.2,0.84 254 ON_FACE m2=0 m3=63 axis=3
+400 0.04,0.66,0.15,0.69 85 ON_FACE m2=0 m3=42 axis=3
+398 0.05,0.66,0.21,0.77 2 OK
+292 0.21,0.84,0.43,0.67 262 OK
+316 0.29,0.56,0.45,0.94 50 OK
+422 0.39,0.58,0.38,0.7 233 OK
+180 0.08,0.89,0.45,0.97 275 OK
+216 0.04,0.61,0.16,0.76 261 OK
+158 0.36,0.86,0.21,0.99 5 OK
+500 0.02,0.75,0.13,0.88 74 OK
+28 0.02,0.55,0.39,0.59 168 OK
+176 0.25,1.0,0.1,0.9 282 ON_FACE m2=23 m3=0 axis=2
+188 0.03,0.86,0.03,0.97 36 OK
+336 0.05,0.9,0.12,0.9 261 ON_FACE m2=0 m3=43 axis=3
+426 0.35,0.61,0.17,0.63 229 OK
+160 0.4,0.77,0.08,0.93 84 ON_FACE m2=52 m3=0 axis=2
+326 0.33,0.77,0.14,0.62 169 OK
+200 0.22,1.0,0.02,0.61 201 ON_FACE m2=0 m3=100 axis=3
+298 0.14,0.79,0.01,0.96 287 OK
+478 0.08,0.78,0.11,0.82 279 OK
+346 0.05,0.79,0.35,0.73 229 OK
+18 0.3,0.57,0.23,0.71 80 OK
+104 0.41,0.67,0.18,0.69 235 OK
+444 0.42,0.71,0.31,0.98 6 OK
+120 0.08,0.59,0.02,0.99 91 OK
+486 0.32,0.79,0.13,0.99 133 OK
+144 0.1,0.86,0.42,0.55 48 OK
+110 0.43,0.88,0.31,0.63 147 OK
+462 0.21,0.65,0.09,0.78 173 OK
+148 0.21,0.57,0.11,0.74 160 OK
+432 0.06,0.62,0.11,0.72 66 OK
+360 0.16,0.9,0.02,0.89 201 ON_FACE m2=33 m3=0 axis=2
+462 0.45,0.79,0.27,0.87 170 OK
+360 0.02,0.87,0.11,0.96 153 OK
+28 0.4,0.71,0.43,0.65 154 OK
+484 0.43,0.95,0.15,0.64 186 OK
+158 0.39,0.96,0.09,0.59 130 OK
+32 0.16,0.77,0.45,0.59 62 ON_FACE m2=15 m3=0 axis=2
+226 0.36,0.82,0.25,0.65 80 OK
+208 0.09,0.94,0.26,0.58 22 ON_FACE m2=0 m3=16 axis=3
+122 0.01,0.89,0.06,0.69 210 OK
+428 0.21,0.7,0.41,0.94 82 OK
+280 0.33,0.69,0.09,0.65 267 OK
+426 0.37,0.92,0.18,0.91 121 OK
+104 0.06,0.94,0.34,0.62 205 ON_FACE m2=102 m3=0 axis=2
+144 0.32,0.77,0.3,0.59 94 OK
+420 0.33,0.7,0.38,0.96 140 OK
+426 0.22,0.55,0.36,0.68 16 OK
+482 0.45,0.89,0.23,0.91 279 OK
+80 0.35,0.91,0.22,0.72 112 ON_FACE m2=2 m3=0 axis=2
+504 0.02,0.97,0.3,0.85 264 OK
+100 0.16,0.65,0.12,0.78 116 OK
+158 0.3,0.8,0.06,0.92 277 OK
+206 0.11,0.78,0.14,0.9 263 OK
+32 0.08,0.82,0.22,0.95 195 OK
+206 0.15,0.64,0.17,0.96 27 OK
+234 0.01,0.68,0.04,0.8 221 ON_FACE m2=0 m3=178 axis=3
+32 0.37,0.89,0.38,0.95 195 ON_FACE m2=142 m3=0 axis=2
+376 0.15,0.79,0.33,0.75 101 OK
+412 0.13,0.86,0.23,0.98 159 OK
+400 0.11,0.91,0.17,0.78 2 ON_FACE m2=0 m3=0 axis=2
+502 0.37,0.65,0.43,0.63 275 OK
+42 0.4,0.8,0.44,0.88 187 ON_FACE m2=0 m3=25 axis=3
+396 0.25,0.97,0.16,0.81 176 OK
+464 0.09,0.81,0.1,0.57 135 OK
+282 0.01,0.74,0.1,0.9 234 ON_FACE m2=0 m3=19 axis=3
+228 0.15,0.55,0.12,0.9 285 ON_FACE m2=0 m3=47 axis=3
+508 0.28,0.56,0.24,0.94 90 OK
+370 0.35,0.87,0.07,0.76 74 ON_FACE m2=2 m3=0 axis=2
+470 0.09,0.81,0.09,0.79 222 OK
+494 0.04,0.88,0.15,1.0 85 OK
+360 0.06,0.87,0.17,0.68 75 ON_FACE m2=0 m3=37 axis=3
+168 0.17,0.71,0.17,0.66 225 ON_FACE m2=137 m3=0 axis=2
+42 0.32,0.71,0.05,0.78 40 OK
+386 0.45,0.86,0.29,0.72 283 OK
+164 0.01,1.0,0.11,0.71 229 OK
+126 0.24,0.87,0.1,0.88 219 OK
+296 0.12,0.9,0.18,0.69 209 OK
+362 0.32,0.84,0.37,0.71 102 OK
+254 0.1,0.83,0.14,0.7 88 OK
+252 0.39,0.81,0.0,0.92 287 OK
+390 0.11,0.92,0.15,0.7 206 OK
+402 0.16,1.0,0.38,0.69 236 OK
+330 0.21,0.61,0.01,0.75 47 OK
+230 0.02,0.66,0.2,0.98 44 ON_FACE m2=5 m3=0 axis=2
+54 0.13,0.92,0.29,0.64 91 OK
+370 0.22,0.67,0.16,0.66 70 OK
+120 0.07,0.95,0.44,0.9 249 ON_FACE m2=0 m3=41 axis=3
+238 0.19,0.61,0.42,0.68 264 OK
+186 0.11,0.62,0.19,0.85 217 ON_FACE m2=0 m3=59 axis=3
+264 0.2,0.84,0.02,0.98 44 ON_FACE m2=0 m3=9 axis=3
+122 0.03,0.92,0.39,0.89 47 OK
+86 0.08,0.56,0.1,0.57 103 OK
+146 0.08,0.77,0.17,0.56 71 OK
+128 0.33,0.66,0.35,0.89 176 ON_FACE m2=11 m3=0 axis=2
+280 0.06,0.66,0.28,0.81 73 OK
+376 0.21,0.59,0.36,0.78 31 OK
+460 0.16,0.75,0.37,0.67 162 OK
+340 0.08,0.99,0.39,0.57 169 OK
+90 0.27,0.9,0.09,0.9 232 OK
+104 0.42,0.97,0.1,0.76 296 OK
+138 0.35,0.86,0.27,0.59 230 OK
+216 0.42,0.7,0.08,0.6 289 OK
+412 0.23,0.84,0.26,0.56 125 OK
+328 0.28,0.8,0.23,0.86 299 ON_FACE m2=126 m3=0 axis=2
+444 0.32,0.74,0.04,0.68 237 OK
+342 0.07,0.98,0.06,0.71 221 OK
+338 0.02,0.9,0.32,0.58 63 OK
+186 0.16,1.0,0.34,0.55 248 OK
+34 0.13,0.85,0.19,0.58 150 OK
+496 0.16,0.92,0.03,0.55 265 OK
+316 0.31,0.68,0.26,0.77 5 OK
+448 0.15,0.68,0.44,0.65 207 OK
+250 0.23,0.87,0.45,0.75 36 OK
+24 0.18,0.83,0.0,0.8 116 ON_FACE m2=0 m3=72 axis=3
+216 0.14,1.0,0.35,0.68 92 OK
+372 0.04,0.87,0.37,0.87 267 OK
+178 0.37,0.96,0.31,0.61 85 OK
+504 0.16,0.83,0.39,1.0 53 OK
+38 0.19,0.98,0.0,0.87 287 OK
+468 0.24,0.7,0.4,0.77 145 OK
+148 0.19,0.66,0.27,0.58 102 OK
+86 0.24,0.86,0.31,0.61 54 OK
+254 0.44,0.57,0.08,0.7 254 OK
+418 0.41,0.67,0.28,0.68 68 OK
+480 0.35,0.6,0.32,0.64 267 ON_FACE m2=44 m3=0 axis=2
+470 0.04,0.62,0.23,0.7 122 OK
+310 0.17,0.97,0.09,0.69 174 OK
+138 0.08,0.81,0.24,0.8 184 OK
+74 0.26,0.83,0.38,0.56 240 OK
+104 0.42,0.66,0.45,0.75 233 OK
+332 0.35,0.59,0.18,0.71 108 ON_FACE m2=67 m3=0 axis=2
+90 0.06,0.89,0.04,0.64 237 OK
+370 0.01,0.76,0.14,0.94 214 OK
+176 0.37,0.9,0.18,0.71 77 OK
+198 0.13,0.81,0.26,0.93 221 OK
+326 0.19,0.91,0.18,0.64 54 OK
+306 0.28,0.93,0.37,0.98 49 OK
+52 0.27,0.63,0.11,0.76 282 OK
+452 0.4,0.69,0.29,0.63 79 OK
+412 0.04,0.63,0.07,0.63 152 OK
+154 0.38,0.84,0.04,0.67 193 OK
+500 0.2,0.57,0.37,0.7 61 OK
+202 0.09,0.71,0.0,0.94 41 OK
+108 0.14,0.85,0.14,0.7 173 OK
+36 0.11,0.74,0.14,0.6 256 OK
+128 0.15,0.82,0.43,0.94 113 OK
+450 0.03,0.94,0.25,0.98 12 OK
+196 0.04,0.89,0.18,0.77 221 OK
+442 0.19,0.97,0.32,0.73 54 OK
+362 0.18,0.87,0.36,0.58 61 OK
+388 0.32,0.79,0.22,0.69 232 OK
+508 0.44,0.89,0.44,0.9 123 OK
+398 0.41,0.85,0.25,0.59 186 OK
+426 0.09,0.8,0.03,0.97 181 ON_FACE m2=0 m3=90 axis=3
+48 0.17,0.61,0.1,0.69 115 OK
+208 0.08,0.6,0.21,0.87 163 OK
+236 0.27,0.95,0.19,0.81 199 ON_FACE m2=0 m3=99 axis=3
+350 0.04,0.66,0.34,0.81 130 OK
+168 0.21,0.94,0.04,0.6 198 OK
+472 0.33,0.6,0.12,0.99 62 OK
+214 0.14,0.62,0.35,0.85 59 OK
+348 0.04,0.71,0.06,0.87 154 OK
+316 0.02,0.99,0.02,0.9 72 OK
+418 0.07,0.62,0.27,0.59 191 OK
+314 0.4,0.89,0.11,0.71 273 OK
+352 0.32,0.78,0.33,0.76 9 OK
+130 0.33,0.65,0.19,0.56 141 OK
+372 0.39,0.99,0.22,0.69 38 OK
+254 0.16,0.64,0.09,0.78 91 OK
+342 0.29,0.59,0.02,0.66 12 OK
+238 0.01,0.93,0.02,0.72 272 OK
+56 0.3,0.77,0.23,0.94 160 OK
+394 0.33,0.87,0.13,0.73 161 OK
+312 0.25,0.75,0.13,1.0 182 ON_FACE m2=3 m3=0 axis=2
+206 0.36,0.57,0.43,0.79 30 OK
+122 0.36,0.87,0.33,0.63 215 OK
+520 0.03,0.69,0.24,0.83 159 OK
+206 0.02,0.88,0.44,0.62 251 OK
+94 0.19,0.72,0.44,0.6 81 OK
+168 0.31,0.82,0.15,0.91 148 ON_FACE m2=0 m3=92 axis=3
+318 0.09,0.67,0.1,0.71 10 OK
+106 0.14,0.99,0.12,0.59 57 OK
+290 0.36,0.72,0.45,0.84 250 OK
+154 0.18,0.64,0.21,0.63 144 OK
+362 0.09,0.94,0.04,0.86 228 OK
+438 0.25,0.62,0.17,0.72 162 OK
+334 0.41,0.77,0.29,0.55 238 ON_FACE m2=59 m3=0 axis=2
+186 0.43,0.86,0.14,0.66 50 OK
+476 0.26,0.93,0.15,0.64 189 OK
+206 0.21,0.92,0.33,0.96 176 OK
+426 0.04,0.91,0.02,0.58 197 OK
+168 0.32,0.73,0.05,0.84 113 OK
+38 0.12,0.71,0.36,1.0 182 OK
+324 0.38,0.57,0.29,0.73 44 OK
+482 0.06,0.87,0.3,0.59 259 OK
+518 0.44,0.88,0.09,0.68 297 ON_FACE m2=40 m3=0 axis=2
+228 0.3,1.0,0.4,0.66 8 OK
+472 0.42,0.81,0.06,0.85 98 OK
+398 0.34,0.97,0.18,0.75 138 OK
+36 0.34,0.85,0.4,0.83 59 OK
+260 0.06,0.77,0.09,0.55 89 OK
+96 0.21,0.63,0.44,0.6 210 ON_FACE m2=82 m3=0 axis=2
+382 0.39,0.83,0.45,0.75 174 ON_FACE m2=43 m3=0 axis=2
+466 0.19,0.64,0.4,0.56 147 OK
+310 0.37,0.93,0.38,0.99 137 OK
+22 0.4,0.76,0.09,0.6 293 OK
+362 0.3,0.56,0.44,0.69 37 OK
+316 0.17,0.87,0.13,0.65 124 OK
+190 0.24,0.6,0.05,0.68 157 OK
+516 0.24,0.8,0.44,0.79 152 OK
+252 0.23,0.64,0.22,0.64 130 OK
+302 0.29,0.65,0.42,0.9 1 OK
+156 0.02,0.77,0.1,0.65 80 OK
+240 0.2,0.6,0.02,0.56 195 ON_FACE m2=32 m3=0 axis=2
+326 0.16,0.9,0.4,0.97 193 OK
+146 0.18,0.73,0.11,0.83 126 OK
+478 0.28,0.75,0.11,0.94 259 OK
+56 0.09,0.73,0.12,0.65 20 OK
+168 0.36,0.99,0.41,0.69 129 OK
+252 0.04,0.8,0.0,0.98 122 OK
+402 0.4,0.7,0.33,0.89 120 OK
+316 0.33,0.7,0.28,0.7 72 OK
+476 0.32,0.81,0.02,0.78 263 OK
+138 0.14,0.66,0.1,0.65 35 OK
+76 0.17,0.81,0.28,0.6 210 OK
+372 0.15,0.93,0.02,0.91 243 OK
+178 0.18,0.61,0.13,0.76 61 OK
+388 0.35,0.71,0.36,0.75 171 OK
+58 0.3,0.79,0.09,0.61 107 OK
+478 0.06,0.76,0.31,0.81 15 OK
+380 0.36,0.71,0.39,0.69 213 OK
+406 0.02,0.89,0.37,0.61 71 OK
+412 0.38,0.99,0.26,0.82 17 OK
+196 0.21,0.89,0.04,0.94 240 OK
+50 0.09,0.59,0.33,0.92 154 OK
+64 0.42,0.88,0.07,0.63 190 OK
+280 0.18,1.0,0.03,0.99 109 OK
+122 0.43,0.87,0.12,0.87 26 OK
+6 0.07,0.83,0.09,0.69 146 OK
+474 0.07,0.96,0.34,0.98 194 ON_FACE m2=0 m3=48 axis=3
+4 0.05,0.94,0.31,0.77 20 OK
+282 0.24,0.83,0.45,0.85 5 OK
+410 0.41,0.78,0.09,0.67 55 OK
+74 0.4,0.96,0.06,0.64 38 OK
+216 0.06,0.6,0.17,0.92 240 OK
+448 0.31,0.57,0.35,0.6 4 OK
+128 0.3,0.65,0.21,0.61 76 ON_FACE m2=9 m3=0 axis=2
+428 0.45,0.83,0.38,0.95 181 OK
+240 0.44,0.63,0.09,0.69 242 ON_FACE m2=60 m3=0 axis=2
+498 0.08,0.91,0.33,0.96 47 OK
+184 0.39,0.78,0.39,0.6 67 OK
+340 0.41,0.67,0.37,0.63 154 OK
+120 0.4,0.82,0.22,0.92 225 ON_FACE m2=0 m3=52 axis=3
+124 0.23,0.81,0.14,0.75 298 OK
+314 0.36,0.96,0.07,0.91 84 OK
+310 0.36,0.94,0.37,0.72 221 OK
+246 0.23,0.76,0.22,0.86 41 ON_FACE m2=0 m3=19 axis=3
+8 0.33,0.6,0.2,0.77 129 ON_FACE m2=21 m3=0 axis=2
+248 0.45,0.94,0.41,0.82 200 OK
+198 0.25,0.65,0.06,0.92 165 OK
+14 0.0,0.99,0.39,0.93 116 OK
+388 0.35,0.68,0.34,0.56 217 OK
+204 0.13,0.89,0.31,0.97 194 OK
+342 0.36,0.78,0.09,0.56 220 OK
+462 0.22,0.84,0.29,0.85 77 OK
+388 0.42,0.77,0.26,0.85 217 OK
+464 0.0,0.8,0.22,0.97 55 OK
+156 0.43,0.87,0.01,0.91 175 OK
+182 0.25,0.79,0.27,0.57 239 OK
+20 0.4,0.66,0.41,0.98 255 OK
+296 0.06,0.82,0.03,0.93 65 OK
+412 0.12,0.55,0.33,0.74 283 OK
+332 0.33,0.94,0.19,0.63 207 OK
+350 0.22,0.92,0.45,0.7 66 OK
+480 0.22,0.84,0.23,0.79 286 ON_FACE m2=0 m3=214 axis=3
+152 0.01,0.77,0.1,0.83 155 OK
+454 0.38,0.67,0.34,0.74 144 OK
+434 0.05,0.72,0.22,0.81 29 OK
+94 0.13,0.76,0.27,0.84 138 OK
+278 0.11,0.67,0.2,0.93 26 OK
+362 0.18,0.68,0.03,0.89 297 OK
+86 0.09,0.81,0.06,0.87 285 OK
+396 0.1,0.58,0.06,0.67 240 OK
+514 0.28,0.75,0.3,0.73 42 OK
+464 0.43,0.8,0.18,0.95 148 OK
+320 0.3,0.82,0.1,0.61 163 OK
+416 0.02,0.92,0.2,0.97 232 OK
+86 0.24,0.96,0.12,0.74 86 ON_FACE m2=0 m3=0 axis=2
+202 0.01,0.99,0.32,0.8 225 ON_FACE m2=112 m3=0 axis=2
+432 0.3,0.61,0.41,0.9 100 OK
+258 0.13,0.68,0.28,0.75 207 OK
+14 0.22,0.83,0.22,0.7 189 ON_FACE m2=0 m3=166 axis=3
+358 0.41,0.64,0.26,0.93 226 OK
+148 0.16,0.78,0.15,0.76 130 OK
+370 0.19,0.55,0.35,0.86 290 OK
+8 0.4,0.96,0.42,0.57 275 OK
+152 0.08,0.91,0.03,0.61 84 OK
+504 0.22,0.71,0.02,0.56 65 OK
+182 0.06,0.83,0.35,0.89 191 OK
+144 0.21,0.9,0.27,0.73 225 ON_FACE m2=0 m3=112 axis=3
+280 0.17,0.78,0.11,0.67 214 ON_FACE m2=0 m3=53 axis=3
+268 0.39,0.95,0.11,0.56 170 OK
+62 0.2,0.9,0.41,0.72 269 OK
+174 0.32,0.6,0.36,0.67 199 OK
+330 0.12,0.84,0.11,0.83 300 ON_FACE m2=0 m3=37 axis=3
+94 0.29,0.67,0.0,0.61 59 OK
+190 0.39,0.93,0.15,0.74 262 OK
+294 0.37,0.88,0.31,0.66 186 OK
+376 0.15,0.61,0.07,0.96 128 OK
+384 0.17,0.79,0.22,0.66 251 OK
+22 0.04,0.73,0.04,0.95 240 OK
+196 0.01,0.84,0.05,0.79 98 OK
+306 0.08,0.94,0.3,0.85 12 OK
+172 0.03,0.81,0.01,0.94 146 OK
+150 0.22,0.62,0.01,0.88 3 ON_FACE m2=0 m3=0 axis=2
+92 0.35,0.7,0.04,0.65 231 OK
+284 0.07,0.95,0.09,0.65 176 OK
+218 0.28,0.92,0.43,0.91 249 OK
+336 0.22,0.93,0.08,0.64 210 ON_FACE m2=0 m3=32 axis=3
+460 0.35,0.96,0.29,0.91 242 OK
+428 0.16,0.77,0.37,0.81 217 OK
+444 0.01,0.64,0.34,0.65 57 OK
+378 0.05,0.75,0.33,0.57 108 ON_FACE m2=0 m3=1 axis=3
+512 0.34,0.68,0.02,0.82 29 OK
+252 0.08,0.83,0.3,0.95 300 OK
+48 0.06,0.91,0.25,0.71 194 OK
+268 0.05,0.6,0.27,1.0 260 OK
+478 0.09,0.84,0.39,0.84 157 OK
+372 0.37,0.61,0.19,0.57 163 OK
+382 0.29,0.57,0.25,0.58 32 OK
+506 0.44,0.66,0.06,0.82 78 OK
+192 0.26,0.82,0.05,0.6 43 OK
+348 0.16,0.99,0.03,0.98 199 OK
+102 0.23,0.74,0.43,0.91 204 OK
+370 0.13,0.97,0.05,0.76 98 ON_FACE m2=31 m3=0 axis=2
+60 0.01,0.92,0.25,0.83 290 OK
+390 0.28,0.6,0.0,0.81 236 ON_FACE m2=88 m3=0 axis=2
+390 0.17,0.61,0.11,0.65 86 ON_FACE m2=64 m3=0 axis=2
+328 0.24,0.95,0.44,0.77 293 OK
+172 0.38,0.99,0.06,0.91 129 OK
+302 0.02,0.7,0.08,0.97 92 OK
+354 0.24,0.8,0.22,0.96 22 OK
+170 0.18,0.69,0.13,0.67 292 OK
+40 0.21,0.61,0.15,0.85 292 OK
+510 0.39,0.68,0.29,0.7 18 OK
+502 0.41,0.96,0.03,0.6 50 OK
+326 0.3,0.95,0.23,0.76 279 OK
+52 0.33,0.83,0.35,0.96 99 OK
