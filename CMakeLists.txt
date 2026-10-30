@@ -704,4 +704,11 @@ if(MACROFLOW3D_BUILD_APPS)
     add_executable(lagrangian_medium_ab apps/lagrangian_medium_ab/lagrangian_medium_ab_main.cu)
     target_link_libraries(lagrangian_medium_ab PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_medium_ab PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+
+    # SF-42 N2: manufactured-solution order study of the medium (b) Dirichlet head-solve path (documented-experiment
+    # instrument, V100 job; NOT a ctest entry except the fast `--self-check` contract smoke).
+    add_executable(mms_dirichlet apps/mms_dirichlet/mms_dirichlet_main.cu)
+    target_link_libraries(mms_dirichlet PRIVATE macroflow3d_lib)
+    target_compile_options(mms_dirichlet PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME mms_dirichlet_self_check COMMAND mms_dirichlet --self-check)
 endif()
