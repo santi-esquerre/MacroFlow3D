@@ -156,6 +156,37 @@ REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-spectral-ref -- "
 `R/mms/`. `sf42-spectral-ref` took 2 h 30 min, dominated by the `sigma^2` = 4 reference at `M` = 256 (5634 s for seed 420001 and 1895 s for
 seed 420002: 2171 and 743 matvecs for the three correctors).
 
+R3 jobs (third campaign, same mirror, from the R3 tree = accepted head `7306eecf` + N6b `c1afdafc` + N6c `05d9d213` cherry-picked with
+`-x` as `a9a7f23d`, `0a0ce386`, plus the R3 verification files; `R/verification/jobs_r3.tsv`, logs in `R/verification/logs/`). All four
+are CPU-only Python jobs (no CUDA call), each with `REMOTE_GPU_WAIT=7200`, no `--gpu`, one at a time; `scripts/remote run` chose GPU 0
+(idle host: 0.0 % and 2.0 % mean utilisation, 32510 MiB free) and held the slot for the whole job. `~/sf42_campaign/r3/.start` was created
+before the first job. Start and end are the first and last timestamps of the job log (slot held).
+
+| job | start (UTC) | end (UTC) | wall (s) | GPU-h | exit | GPU |
+|---|---|---|---|---|---|---|
+| `sf42-hosttests` (F, 309 tests on the host stack) | 2026-10-30 09:13:39 | 09:14:19 | 40 | 0.011 | 0 | 0 |
+| `sf42-recompute` (H) | 09:15:26 | 09:15:39 | 13 | 0.004 | 0 | 0 |
+| `sf42-reconcile` (H) | 09:17:37 | 09:17:40 | 3 | 0.001 | 0 | 0 |
+| `sf42-noise` (G, estimator noise) | 09:20:13 | 09:34:24 | 851 | 0.236 | 0 | 0 |
+| total R3 | | | 907 | 0.252 | | |
+| running total R1 + R2 + R3 | | | 14982 | 4.162 | | |
+
+```bash
+# R3, R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling, SF39 = docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study
+scripts/remote --increment SF-42 exec -- "mkdir -p ~/sf42_campaign/r3 && touch ~/sf42_campaign/r3/.start"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-hosttests -- "cd ~/MacroFlow3D-SF-42/$R && mkdir -p ~/sf42_campaign/r3 && python3 -B verification/par2_alphax_s025.py ~/sf39_campaign ~/MacroFlow3D-SF-42/$SF39 ~/sf42_campaign/r3/par2_alphax_s025.txt && cd scripts && OMP_NUM_THREADS=1 MCSTAT_PAR2_ALPHAX_S025=~/sf42_campaign/r3/par2_alphax_s025.txt python3 -W error -B -m unittest discover -s . -t . -v"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-recompute -- "cd ~/MacroFlow3D-SF-42/$R/scripts && python3 -B -m recompute.sf39 --out-root ~/sf39_campaign --artifact ~/MacroFlow3D-SF-42/$SF39 --sets s025_prod,s1_prod,s225_prod,s4_prod --realizations 0,1,2 --report ~/sf42_campaign/r3/recompute_report.json"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-reconcile -- "cd ~/MacroFlow3D-SF-42/$R/scripts && python3 -B -m reconcile.solver --logs ~/.macroflow3d-remote/macroflow3d-SF-39/logs --runs-root ~/sf39_campaign/runs --check-sf39 --report ~/sf42_campaign/r3/reconcile_report.txt"
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-noise -- "cd ~/MacroFlow3D-SF-42/$R/verification && bash noise_job.sh"
+```
+
+`~/sf39_campaign` was only read (the tools open it read-only; every output is under `~/sf42_campaign/r3/`); `sf42red prune` was not run.
+The check appended to `noise_job.sh` (`find ~/sf39_campaign -newer ~/sf42_campaign/r3/.start -print | head -20`, run after the three
+earlier jobs and the four reductions) printed nothing before `SF39_UNTOUCHED_CHECK_DONE`. The mirror's `src/external/Par2_Core` was
+populated in the worktree by copying the files of the control checkout's submodule (same commit `a1eecaef`; the `git submodule update`
+form of the common context was refused by the agent sandbox), only so that `scripts/remote sync` accepts the tree; nothing of it is
+committed.
+
 ## A. Byte identity
 
 Verdict: **met**.
@@ -450,15 +481,84 @@ the criterion E is evaluated with the unchanged threshold of 10.
 
 ## F. Statistics library and coverage
 
-Pending (later nodes).
+**Library on the host stack (R3).** The R3 tree contains the whole `mcstat` package (N6a, N6b coverage simulator, N6c studentized
+bounds and bootstrap-t Gate 5 TOST). `cd R/scripts && OMP_NUM_THREADS=1 python3 -W error -m unittest discover -s . -t .` ends
+`Ran 309 tests in 29.067s`, `OK (skipped=1)` locally (Python 3.13, numpy 2.5, scipy 1.18; the skipped test is the host-only one) and, on
+the host stack (Python 3.11.7, numpy 1.26.4, scipy 1.11.4, job `sf42-hosttests`), `Ran 309 tests in 37.532s`, `OK` with **no skip**:
+`mcstat.tests.test_sf39_reproduction.Par2PerRealization.test_s025_gate5_from_per_realization_values ... ok`.
+
+The input of that test, `~/sf42_campaign/r3/par2_alphax_s025.txt`, was produced in the same job by `R/verification/par2_alphax_s025.py`,
+which applies the SF-39 package's own functions (`sf39.par2.pooled`, `uc_mean`, `window`, `alpha_window`, read-only from the artifact) in
+the way `sf39.analyze.gate5_block` produced `summary.json` `amplitudes.s025.C.par2.alpha_x`: pooled pilot + extension realizations
+(`~/sf39_campaign/par2/raw/par2_s025` and `_ext`, first `n` = 25), `U_c` at the frozen `t_b,min` = 729712.5 with anchor `inject_x` = 250,
+window `[0.75, 1] tau_c lam / U_c` with the `tau_c` and `lam` = 50 of `tau_b_star_s025.json`. It printed `n=25`,
+`U_c=0.010191770851862745`, `window=[547236.3859, 729648.5145]`, `mean=0.27019457195374413`. The test then checks, at 1e-9 relative,
+the count, mean and standard deviation of these 25 values against the committed record, and the Gate 5 primary Welch bounds computed from
+the recorded consumer summary and these per-realization values against `gate5.primary.lo/hi` (at 5e-9, Deviation 3); all pass, so the
+committed Par2 Gate 5 numbers are reproduced from the raw Par2 series on the host. The procedure is the reducer's own code path
+(identified by reading `gate5_block`, from `ents = par2_entries(C, amp)[:n2]` to `P = np.array([a["x"] for a in al])`), not an
+approximation.
+
+Coverage simulation: pending (sf42-coverage).
 
 ## G. Design pilots
 
-Pending (later nodes).
+### Estimator noise by basis (R3, no new runs)
+
+Question (a design input for SF-43, not evidence about `alpha_T`): in which basis, positions `pos` or displacements `disp`, do the
+control-plane estimators `alpha_TP` and `alpha_TAP` have the lower noise at the SF-39 production sets? Data: the SF-39 consumer arrays,
+read-only, reduced with `python3 -m sf42red reduce` (job `sf42-noise`, `R/verification/noise_job.sh`): production set of an amplitude =
+every DONE realization of `<a>_A` (pass `hmax_8`) and `<a>_B` (single pass) = 25, 50, 62, 71 realizations at `sigma^2` 0.25, 1, 2.25, 4
+(the sizes of the committed `*_prod` sets). Window: the G4 default `d in [25, 94]` lambda is covered by the SF-39 planes (first window
+plane `d` = 25, or 24.999999999999996 at `sigma^2` 2.25 and 4, inside the 1e-9 tolerance; last 94; 71 window planes, 70 at `sigma^2` 4), so
+no sub-window was needed. Weights `flux`, set `perplane`. Mean and SD (ddof = 1) across realizations; split-half particle share =
+`sf42red` `splithalf_fraction` (mean over realizations of `(a_A - a_B)^2/4` over the sample variance; flag when above 0.25: never raised).
+Table: `R/verification/noise_summary.csv` (made by `noise_summary.py` from the host tables, which stay on the host in
+`~/sf42_campaign/r3/noise/`).
+
+| `sigma^2` | n | estimator | mean pos | SD pos | share pos | mean disp | SD disp | share disp | SD ratio pos/disp |
+|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 25 | `alpha_TP` | -1.877e-4 | 4.476e-3 | 4.0e-7 | 5.093e-4 | 1.206e-4 | 2.7e-6 | 37.13 |
+| 0.25 | 25 | `alpha_TAP` | -1.877e-4 | 4.476e-3 | 4.0e-7 | 5.093e-4 | 1.206e-4 | 2.7e-6 | 37.13 |
+| 1 | 50 | `alpha_TP` | 6.237e-3 | 1.103e-2 | 4.2e-4 | 7.217e-3 | 1.121e-3 | 2.0e-3 | 9.84 |
+| 1 | 50 | `alpha_TAP` | 6.237e-3 | 1.103e-2 | 4.2e-4 | 7.217e-3 | 1.121e-3 | 2.0e-3 | 9.84 |
+| 2.25 | 62 | `alpha_TP` | 2.833e-2 | 1.514e-2 | 7.1e-3 | 2.946e-2 | 4.073e-3 | 1.5e-2 | 3.72 |
+| 2.25 | 62 | `alpha_TAP` | 2.833e-2 | 1.514e-2 | 7.1e-3 | 2.946e-2 | 4.073e-3 | 1.5e-2 | 3.72 |
+| 4 | 71 | `alpha_TP` | 6.648e-2 | 1.918e-2 | 1.8e-2 | 6.538e-2 | 1.688e-2 | 1.5e-2 | 1.14 |
+| 4 | 71 | `alpha_TAP` | 6.646e-2 | 1.917e-2 | 1.8e-2 | 6.537e-2 | 1.687e-2 | 1.5e-2 | 1.14 |
+
+(Full precision in `noise_summary.csv`.) Reading as a design input: the displacement basis has the lower across-realization SD at every
+amplitude, by a factor of 37, 9.8, 3.7 and 1.14 from `sigma^2` 0.25 to 4 (the gain shrinks as the amplitude grows). The split-half particle
+share is below 2 % in both bases (far from the 0.25 flag), so the across-realization SD is realization-to-realization variation, not
+particle noise. `alpha_TP` and `alpha_TAP` agree within 4e-4 relative in mean and SD for the same basis. No claim is made on the sign or
+the size of `alpha_T` here (and no mechanism is claimed for the basis difference); the means are listed only to read the SDs against them.
+The pilot has one realization set per amplitude and no uncertainty on the SDs themselves.
+
+Other G parts: pending (later nodes).
 
 ## H. Reproducibility tooling
 
-Pending (later nodes).
+**Independent recomputation (R3, job `sf42-recompute`, `python3 -m recompute.sf39`).** From the runner's raw moment files of the host
+tree (`~/sf39_campaign`, read-only), three realizations per amplitude (positions 0, 1, 2 of the seed-sorted committed `*_prod` set: seeds
+5001, 5002, 5003 of `s025_A`, `s1_A`, `s225_A`, `s4_A`, pass `hmax_8`) were recomputed and compared with `analysis/reduced/*.csv` at
+`rtol` = 1e-10 (`atol` = 1e-15): 46 values per realization, **596 values compared, 0 beyond tolerance, maximum relative difference
+8.408e-12** (per realization 9.3e-14 to 8.4e-12; the three `s025` realizations 2.5e-12, 8.4e-12, 7.4e-12 are the largest), no column
+needing per-particle arrays. The mean of the committed `qbar` of every set reproduces the committed `U` (`OK` at the four amplitudes).
+The Par2 Gate 5 window values (`U_c`, window, mean and SD of `alpha_x`, `alpha_y`, `alpha_z`, `alpha_T_fixed` over all `N_R` Par2
+realizations: 11 values per amplitude) agree with `summary.json` with maximum relative difference **0** at the four amplitudes.
+`RECOMPUTE PASS` (acceptance: at least three realizations per amplitude to 1e-10 relative: met). Report:
+`R/verification/recompute_r3_report.txt`.
+
+**Solver-verdict reconciliation from the host logs (R3, job `sf42-reconcile`, `python3 -m reconcile.solver`).** Input: the 20 job logs of
+SF-39's `scripts/remote` state on the host (`~/.macroflow3d-remote/macroflow3d-SF-39/logs`; md5-identical to the 20 `*.log` files committed
+under `SF39/logs/job_logs`), cross-checked against every `solver_b.json` under `~/sf39_campaign/runs` (read-only). Result: **635 medium (b)
+solves in 47 arms, 4 not converged, 0 conflicts, 0 unmapped, 0 unparsed**; the four are exactly the expected ones
+(`SF39_EXPECTATION MATCH (4 expected non-converged solves)`): `s4_B` r=2 seed 5023 `fallback` (rel 3.04e-10, balance 8.10e-11), `s4_tw`
+r=22 seed 5023 `fallback` (2.20e-10, 1.46e-11), `s4_w12` r=4 seed 7205 `fallback` (9.88e-10, 2.14e-9), `s4_w12` r=13 seed 7214
+`not_converged_beyond_fallback` (3.39e-7, 2.64e-7). Totals by verdict: 631 `converged`, 3 `fallback`, 1 `not_converged_beyond_fallback`.
+Host cross-check: `HOST_CHECK checked=614 mismatches=0 logged_solves_without_solver_b_json=19`; the census of the `solver_b.json` files is
+`converged=611, fallback=3`. `max_div` is missing (line cut at about 200 characters) in 632 of the 635 logged lines, so the finiteness
+test uses `rel`, `balance`, `qbar`, `Q_in`, `Q_out`. `RECONCILE OK`. Report: `R/verification/reconcile_r3_report.txt`.
 
 ## Findings for SF-43
 
