@@ -8,10 +8,12 @@ stdlib + numpy + scipy only; identical results on the host stack (Python 3.11 / 
 
 Modules (each function documents its formula and the decision clause it implements):
 
-* ``intervals``    per-realization slope estimators (G4); Student, bootstrap-t, BCa, Welch, paired intervals and one-sided limits
+* ``intervals``    per-realization slope estimators (G4); Student, bootstrap-t, BCa, Welch, paired intervals and one-sided limits;
+                   studentized upper bounds of ``|Delta|`` for the budget components (``abs_upper_bound``, N6c)
 * ``budget``       robust lower limit and error budget (G5.4): ``StudentMean`` / ``BootstrapTMean``, ``LadderBound`` (E_h),
                    ``e_int``, ``e_w``, ``e_interaction``, ``RobustLimit`` (RL, p-value), ``intersection_union``
-* ``gate5``        paired log-ratio equivalence (G5.5): estimate, verdict, TOST p-value, analytic power, sample size
+* ``gate5``        paired log-ratio equivalence (G5.5): estimate, verdict, TOST p-value (Student, or bootstrap-t with
+                   ``method='bootstrap-t'``), analytic power (Student), sample size
 * ``splitplot``    2^(4-1) split-plot attribution factorial (G7): design generator, analysis, aliases
 * ``multiplicity`` Holm step-down (G5.6)
 * ``sizing``       sample-size rules (G5.2) and the Gate 4 power model / joint allocation
@@ -19,7 +21,9 @@ Modules (each function documents its formula and the decision clause it implemen
 * ``costmodel``    GPU-second cost model calibrated on SF-39 walls, with projection of a study plan
 * ``coverage``     coverage simulator (G5.3): per-tail miss rates of the sampling limits, the budget bounds, the whole robust-sign
                    pipeline and the Gate 5 TOST under the normal and the stress family; ``python3 -m mcstat.coverage {stress,plan,
-                   bench,run,summarize}``; ``run_coverage.sh <out_dir> [--workers N]`` is the detached host job.  Helpers:
+                   bench,run,summarize}``; ``run_coverage.sh <out_dir> [--workers N]`` is the detached host job.  Profiles: ``full``
+                   (N6b cells + the studentized alternatives of N6c), ``full-grid`` (the same with the complete ladder grid), ``n6b``
+                   (the N6b cells only), ``studentized`` (the new cells only), ``smoke``.  Helpers:
                    ``covdist`` (distributions, ``stress_moments.json`` from the SF-39 tables), ``covproc`` (procedures, tail levels)
 
 Vectorization: samples are on the LAST axis, leading axes are independent replicates, so the interval / limit functions can be
@@ -36,11 +40,14 @@ API at a glance (``x``: (..., n) samples; every function documents its formula a
     intervals.bootstrap_t(x, B, rng, seed, share_draws) -> BootT   bootstrap_t_limit(bt, tail, side)   bootstrap_t_interval(...)
     intervals.bca_interval(x, level, sided, B, seed, statistic)    margin_multiple(lo, hi, m)
     budget.StudentMean(x) / BootstrapTMean(x, B, rng, seed)        .lower(tails) .upper(tails)   (sampling limits L_e)
-    budget.LadderBound(levels, resolutions, ip, p_min, p_max, safety, fallback_factor, B, rng, seed)   (E_h; .bound(t), .details(t))
+    budget.LadderBound(levels, resolutions, ip, p_min, p_max, safety, fallback_factor, B, rng, seed, share_draws, method)
+                                                      (E_h; .bound(t), .details(t))
     budget.e_int(h16, h8) / e_w(wide, prod) / e_interaction(wide_f, wide_c, prod_f, prod_c)            (ContrastBound; .bound(t))
+        ``method='percentile'`` (default) | ``'student'`` | ``'bootstrap-t'``: the upper bound of |Delta| (N6c; see budget docstring)
+    intervals.abs_upper_bound(delta, se, tails, nu, tstar)   welch_groups(groups)   boot_tstar(groups, B, rng)
     budget.RobustLimit(sampling, components, lattice)   .lower(a)  .component_bounds(a)  .p_value()  .report(a)
     budget.intersection_union(*p)                     is_non_increasing_in_tail(bound_fn, tails)
-    gate5.gate5_paired(L, P, level, margin_ratio)     tost_power(n, sigma_e, delta, theta, alpha)    gate5_power(n, cv_L, cv_P, corr, alpha, ratio)
+    gate5.gate5_paired(L, P, level, margin_ratio, method, B, rng, seed)  tost_power(n, sigma_e, delta, theta, alpha)    gate5_power(...)
     gate5.gate5_sample_size(cv_L, cv_P, corr, alpha, power, ratio)   gate5_conservative_inputs(sd_L, sd_P, mean_L, mean_P, n_pilot, corr)
     splitplot.design(seeds_plus, seeds_minus)         analyze(data, level, log_bootstrap, seed)      aliases(word)   cells_of(g)
     multiplicity.holm(p, alpha)

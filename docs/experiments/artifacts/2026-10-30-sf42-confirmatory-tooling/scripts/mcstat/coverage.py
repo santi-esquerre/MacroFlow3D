@@ -32,9 +32,12 @@ Design (restart-safe, reproducible, memory-bounded, parallel)
   would give: different replicates look at the shared resamples through different data directions.  The production cells use
   ``m`` = 10 and ``B`` of 10^4, where even the bound is 1.001.  Procedures without bootstrap and the exact-independence cells
   (``m`` = 1 draw per replicate, the bootstrap-t cells) have ``D = 1``.
-* Default full study (``--profile full``; 573 cells, 84.5 million replicates, 17 thousand chunks, every cell with ``R tail >= 175``
-  for its smallest tail; each distribution is ``normal``, ``stress`` (skewness 1.936, excess kurtosis 4.711: the 95 % bootstrap upper
-  bounds of the sigma^2 = 4 series, which dominate those of 0.25, 1 and 2.25 in both moments) and its reflection ``stress-``):
+* Profiles (``--profile``): ``n6b`` (the 573 cells of SF-42 N6b), ``studentized`` (the cells of SF-42 N6c), ``full`` (default: ``n6b``
+  followed by ``studentized``, so the N6b cells keep their ids, streams and chunk files), ``full-grid`` (``full`` with the complete
+  N6b ladder grid for the studentized ladders), ``smoke`` (a tiny end-to-end check of every procedure family, incl. the N6c ones).
+  Every cell has ``R tail >= 175`` for its smallest tail; each distribution is ``normal``, ``stress`` (skewness 1.936, excess kurtosis
+  4.711: the 95 % bootstrap upper bounds of the sigma^2 = 4 series, which dominate those of 0.25, 1 and 2.25 in both moments) and its
+  reflection ``stress-``.  Profile ``n6b`` (84.5 million replicates, 17 thousand chunks):
 
   ==============================  ====================================================================  ===========  =================
   procedure (label)               what is simulated                                                     n            R per cell
@@ -43,20 +46,57 @@ Design (restart-safe, reproducible, memory-bounded, parallel)
   tost:gate5                      Gate 5 TOST at true ratio 1.10 and 1/1.10, rho 0, 0.5, 0.9, cv 0.3    20-170 (5)   25 000
   bca:mean                        BCa 95 % / 90 % two-sided interval, REPORTED ONLY                     20-100 (4)   7 000
   contrast:paired/unpaired/       UCB of |Delta| at Delta = 5 standard errors (E_int, E_W, 2 x 2 E_WxH)  20-200 (5)   196 000
-  interaction                     at the 13 component tails 8.9e-4 .. 8.3e-3
+  interaction                     at the 13 component tails 8.9e-4 .. 8.3e-3 (percentile bootstrap)
   ladder:E_h                      E_h bound of the production bias: true order 2, 1.5, 1, non-monotone;  20-200 (5)   196 000
                                   production level middle/finest; bias 12, 25, 50 level-mean errors
   pipeline:K3 / :K4               RL(a) > 0 at the 7 Holm levels, K = 3 (N 100, 300, 1000) and K = 4     N 30-1000    24 500
                                   (N 30, 100, 300); biases 0 and +2+2+2 standard errors, order 1 and 2
   ==============================  ====================================================================  ===========  =================
 
+  Profile ``studentized`` (SF-42 N6c: the N6b coverage simulation found the percentile bounds of ``ContrastBound`` / ``LadderBound``
+  under-covering at small ``n`` on NORMAL data and the Student TOST failing under the stress family; these cells measure the opt-in
+  studentized alternatives, with the same tails, distributions and sample sizes; labels end in ``/student`` or ``/boott``):
+
+  ==============================  ====================================================================  ===========  =================
+  procedure (label)               what is simulated                                                     n            R per cell
+  ==============================  ====================================================================  ===========  =================
+  contrast:<kind>/student|boott   as the N6b contrast cells, with ``method='student'`` (no bootstrap)     20-200 (5)   196 000
+                                  or ``'bootstrap-t'`` (B 12 000)
+  ladder:E_h/student|boott        as ladder:E_h, ``method='student'`` (B 23 000: the order limit p_L)    20-200 (5)   196 000
+                                  or ``'bootstrap-t'`` (B 34 000: also the Bonferroni range at t / 3);
+                                  LEAN cases: order 2 and 1 at kappa 12, 25, non-monotone at kappa 12,
+                                  production level middle/finest (``full-grid``: all 12 N6b cases)
+  pipeline:K3|K4/student|boott    as pipeline:K3 / :K4, ALL budget components with that method (the      N 30-1000    24 500
+                                  production sampling limit Student; N <= 100 also bootstrap-t)
+  tost:gate5/boott                Gate 5 bootstrap-t TOST (B 3000), rho 0, 0.5, 0.9, cv 0.3              20-170 (5)   25 000
+  ==============================  ====================================================================  ===========  =================
+
   Cost, measured as CPU seconds per replicate of every (procedure, n, distribution) group on the development workstation
-  (``python3 -m mcstat.coverage bench``, one core, numpy 2.5 / scipy 1.18): 114 core-hours, of which the ladder cells 99, the
-  bootstrap-t cells 5.8, the pipeline 4.6, the contrast bounds 4.2; projected 2.4 wall-hours on 80 workers at 90 % parallel
-  efficiency and a host core 1.5 times slower (3.2 h at 2 times).  Peak memory per worker 0.4 GiB (the K = 3, N = 1000 pipeline).
+  (``python3 -m mcstat.coverage bench``, one core, numpy 2.5 / scipy 1.18) and projected to 80 workers at 90 % parallel efficiency with
+  a host core 1.5 times slower (2 times in parentheses):
+
+  =============  =========  ============  =====================  ==========================  ==============================
+  profile        cells      replicates    core-hours             projected host wall time    of which the ladders
+  =============  =========  ============  =====================  ==========================  ==============================
+  ``n6b``        573        84.5 M        116                    2.4 h (3.2 h)               102 (percentile)
+  ``full``       1134       165 M         261                    5.4 h (7.3 h)               102 + 35 student + 92 boott
+  ``full-grid``  1554       247 M         440                    9.2 h (12.2 h)              102 + 85 student + 222 boott
+  =============  =========  ============  =====================  ==========================  ==============================
+
+  ``full`` is the default because ``full-grid`` would exceed the budget of about 10 wall-hours at a host core twice as slow as the
+  workstation's.  What ``full`` drops from ``full-grid``, exactly: for the studentized ladders only (every other N6c cell, all tails,
+  all distributions and all sample sizes are kept), the cases (kind, true order, kappa) (power, 1.5, 12 / 25 / 50), (power, 2 and 1, 50)
+  and (non-monotone, 1, 25 / 50): 7 of the 12 N6b cases, for both production levels, both methods, three distributions and the five
+  sample sizes.  The kept cases are the hard corners (the lowest signal-to-noise ratios and the extreme true orders; a larger kappa is
+  an easier problem, order 1.5 lies between 2 and 1, and the non-monotone ladder always takes the fallback, 3 x the range).  To cut
+  further, drop sample sizes first (``--ladder-ns 30,100,200``, which also thins the N6b ladders: ``full`` 4.3 h, ``full-grid`` 7.1 h
+  (9.4 h at 2 times)) or distributions (``--dists``).  Peak memory
+  per worker, measured on the largest new cells: 0.38 GiB (bootstrap-t pipeline K = 3, N = 1000), 0.30 GiB (bootstrap-t ladder, n = 200),
+  0.17 GiB (bootstrap-t contrast, n = 200), 0.13 GiB (bootstrap-t TOST, n = 170): the same as the N6b cells.
   Not covered (reduce or extend with ``--ladder-ns``, ``--dists``, ``--only``): ladder sequences of 4 or more levels, ladder ratios
   other than 2, width x resolution interactions other than the simulated 2 x 2, per-amplitude stress members (use
-  ``--dists stress_s1,...``), bias magnitudes other than 0 and 2 standard errors.
+  ``--dists stress_s1,...``), bias magnitudes other than 0 and 2 standard errors, Gate 5 at a true ratio other than the two boundaries
+  (the size is measured; the power of the bootstrap-t TOST is by simulation with ``gate5_paired``, see ``gate5``).
 * Commands (``python3 -m mcstat.coverage ...``): ``stress`` (recompute ``stress_moments.json`` from the SF-39 tables), ``plan``,
   ``bench`` (measure the cost per replicate of every cell and project the host time), ``run``, ``summarize``.
 """
@@ -474,34 +514,56 @@ COMPONENT_NS = (20, 30, 50, 100, 200)  # seeds per budget arm (budget_arm_size: 
 LADDER_NS = (20, 30, 50, 100, 200)
 # production sizes of the pipeline: (K, ladder production index, N): the SF-43 sigma^2 = 0.25 / 1, 2.25 and 4 structures
 PIPELINE_CONFIGS = ((3, 1, 100), (3, 1, 300), (3, 1, 1000), (4, 2, 30), (4, 2, 100), (4, 2, 300))
+PIPELINE_BIASES = (("zero", 0.0, 1.0), ("bias,order=1", 2.0, 1.0), ("bias,order=2", 2.0, 2.0))  # (name, bias in s.e., ladder order)
+LADDER_SCENARIOS = (("power", 2.0), ("power", 1.5), ("power", 1.0), ("nonmono", 1.0))  # (kind, true order)
+LADDER_KAPPAS = (12.0, 25.0, 50.0)  # production bias in standard errors of a level mean
+# (kind, true order, kappa) of the ladder cells of the studentized procedures.  GRID: all of N6b.  LEAN: the hard corners only; the
+# dropped cases (order 1.5, kappa 50, the non-monotone ladder at kappa 25 and 50) lie between or are easier than the kept ones (a larger
+# kappa is a higher signal-to-noise ratio; the non-monotone ladder always takes the fallback, 3 x the range)
+LADDER_CASES_GRID = tuple((sc, o, k) for sc, o in LADDER_SCENARIOS for k in LADDER_KAPPAS)
+LADDER_CASES_LEAN = (("power", 2.0, 12.0), ("power", 2.0, 25.0), ("power", 1.0, 12.0), ("power", 1.0, 25.0), ("nonmono", 1.0, 12.0))
 
 
 def _est_spr(proc, n, params):
     """Rough seconds per replicate on the development workstation (fits of the ``bench`` output): it only sizes the chunks."""
     B = params.get("B", 0) or params.get("B_c", 0)
-    return {"sampling": (3e-6 + 3e-8 * n) if params.get("method") == "student" else 2e-4 + 2.5e-8 * n * B,
-            "tost": 1e-5 * (1.0 + n / 50.0), "contrast": 8e-4 + 3.4e-5 * n, "ladder": 5e-3 + 1e-4 * n,
-            "pipeline": 8e-3 + 3e-5 * n, "bca": 5e-3 * (1.0 + n / 50.0)}[proc]
+    meth = params.get("method") or params.get("comp") or ""
+    if proc == "sampling":
+        return (3e-6 + 3e-8 * n) if params.get("method") == "student" else 2e-4 + 2.5e-8 * n * B
+    if proc == "tost":
+        return 1e-5 * (1.0 + n / 50.0) if meth != "bootstrap-t" else 1e-4 + 1.2e-8 * n * B
+    if proc == "contrast":
+        return {"student": 4e-5, "bootstrap-t": 1.5 * (8e-4 + 3.4e-5 * n)}.get(meth, 8e-4 + 3.4e-5 * n)
+    if proc == "ladder":
+        return (5e-3 + 1e-4 * n) * {"bootstrap-t": 1.6}.get(meth, 1.0)
+    if proc == "pipeline":
+        return (8e-3 + 3e-5 * n) * {"student": 0.7, "bootstrap-t": 1.5}.get(meth, 1.0)
+    return 5e-3 * (1.0 + n / 50.0)  # bca
 
 
 def _chunk_for(spr, m, seconds=60.0, cap=50000):
     return int(max(m, min(cap, seconds / max(spr, 1e-7))))
 
 
-def profile_full(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "stress", "stress-"),
-                 ladder_ns=LADDER_NS, component_ns=COMPONENT_NS):
-    """The default full study.  ``dists``: ``normal`` plus the stress family (``stress`` right-skewed, ``stress-`` its reflection:
-    a one-sided limit or a bias bound is anti-conservative for one of the two skew directions)."""
-    cells = []
-    t_s = float(covproc.sampling_tails().min())
-    t_c = float(covproc.component_tails().min())
-    t_a = float(covproc.holm_levels().min())
-
+def _adder(cells, target):
     def add(proc, label, scen, dist, n, params, share=False, m=1, report_only=False):
         c = make_cell(proc, label, scen, dist, n, params, target, m, None, share, report_only)
         spr = _est_spr(proc, n, params)
         c["chunk"] = int(min(c["R"], math.ceil(_chunk_for(spr, m) / m) * m))
         cells.append(c)
+    return add
+
+
+def profile_n6b(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "stress", "stress-"),
+                ladder_ns=LADDER_NS, component_ns=COMPONENT_NS):
+    """The cells of SF-42 N6b (the percentile bounds of the budget, the Student TOST, the sampling limits, BCa, the pipeline with
+    percentile components).  ``dists``: ``normal`` plus the stress family (``stress`` right-skewed, ``stress-`` its reflection:
+    a one-sided limit or a bias bound is anti-conservative for one of the two skew directions)."""
+    cells = []
+    t_s = float(covproc.sampling_tails().min())
+    t_c = float(covproc.component_tails().min())
+    t_a = float(covproc.holm_levels().min())
+    add = _adder(cells, target)
 
     for d in dists:
         for n in SAMPLING_NS:
@@ -519,7 +581,7 @@ def profile_full(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "
             for n in component_ns:
                 add("contrast", "contrast:" + kind, "", d, n, {"kind": kind, "kappa": 5.0, "B": Bc}, share=True, m=m_share)
         for ip in (1, 2):
-            for scenario, order in (("power", 2.0), ("power", 1.5), ("power", 1.0), ("nonmono", 1.0)):
+            for scenario, order in LADDER_SCENARIOS:
                 for kappa in (12.0, 25.0, 50.0):
                     for n in ladder_ns:
                         scen = "%s,ip=%d,kappa=%g" % ("order=%g" % order if scenario == "power" else "nonmono", ip, kappa)
@@ -527,7 +589,7 @@ def profile_full(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "
                             share=True, m=m_share)
         for K, ip, N in PIPELINE_CONFIGS:
             Bs = covproc.boot_size(t_a / 2.0, boot_per_tail)
-            for bname, b, order in (("zero", 0.0, 1.0), ("bias,order=1", 2.0, 1.0), ("bias,order=2", 2.0, 2.0)):
+            for bname, b, order in PIPELINE_BIASES:
                 pp = {"N": N, "nb": covproc.budget_arm_size(N), "K": K, "ip": ip, "order": order, "b_h": b, "b_int": b, "b_w": b,
                       "sampling": "student", "B_c": covproc.boot_size(t_a / (2.0 * K), boot_per_tail),
                       "B_l": covproc.boot_size(t_a / (4.0 * K), boot_per_tail), "B_s": Bs}
@@ -535,6 +597,75 @@ def profile_full(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "
                 if N <= 100 and bname == "bias,order=1":
                     add("pipeline", "pipeline:K%d,ip=%d" % (K, ip), "boott," + bname, d, N, dict(pp, sampling="boott"), share=True, m=m_share)
     return cells
+
+
+METHOD_TAG = {"student": "student", "bootstrap-t": "boott"}
+
+
+def profile_studentized(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "stress", "stress-"),
+                        ladder_ns=LADDER_NS, component_ns=COMPONENT_NS, gate5_ns=GATE5_NS, ladder_cases=LADDER_CASES_LEAN,
+                        methods=("student", "bootstrap-t"), pipeline_configs=PIPELINE_CONFIGS, pipeline_biases=PIPELINE_BIASES):
+    """SF-42 N6c: the studentized alternatives to the procedures that N6b found failing, with the same tails, distributions and
+    sample sizes (G5.3).  Labels carry ``/student`` or ``/boott``: ``contrast:<kind>`` and ``ladder:E_h`` with the studentized upper bound of
+    ``|Delta|`` (``ContrastBound`` / ``LadderBound`` ``method=``), ``pipeline:K<K>,ip=<ip>`` with ALL budget components of that method
+    (production sampling Student; for ``N <= 100`` also the bootstrap-t sampling limit, as in N6b), and ``tost:gate5/boott`` for the
+    bootstrap-t TOST (the Student TOST is the N6b cell ``tost:gate5``).  ``ladder_cases``: the (kind, order, kappa) cases of the ladder
+    (``LADDER_CASES_LEAN`` by default, ``LADDER_CASES_GRID`` is the full N6b grid); ``pipeline_biases`` the pipeline scenarios."""
+    cells = []
+    t_c = float(covproc.component_tails().min())
+    t_a = float(covproc.holm_levels().min())
+    add = _adder(cells, target)
+    P = 3  # pairs of a 3-level ladder (the Bonferroni split of the fallback range of the bootstrap-t E_h)
+    for meth in methods:
+        tag = METHOD_TAG[meth]
+        Bc = covproc.boot_size(t_c, boot_per_tail)
+        Bl = covproc.boot_size(t_c / 2.0, boot_per_tail) if meth == "student" else covproc.boot_size(t_c / max(2.0, P), boot_per_tail)
+        for d in dists:
+            for kind in ("paired", "unpaired", "interaction"):
+                for n in component_ns:
+                    if meth == "student":  # no bootstrap: independent replicates, large batches
+                        add("contrast", "contrast:%s/%s" % (kind, tag), "", d, n, {"kind": kind, "kappa": 5.0, "method": meth}, m=1000)
+                    else:
+                        add("contrast", "contrast:%s/%s" % (kind, tag), "", d, n, {"kind": kind, "kappa": 5.0, "B": Bc, "method": meth},
+                            share=True, m=m_share)
+        for d in dists:
+            for ip in (1, 2):
+                for scenario, order, kappa in ladder_cases:
+                    for n in ladder_ns:
+                        scen = "%s,ip=%d,kappa=%g" % ("order=%g" % order if scenario == "power" else "nonmono", ip, kappa)
+                        add("ladder", "ladder:E_h/%s" % tag, scen, d, n,
+                            {"scenario": scenario, "order": order, "ip": ip, "kappa": kappa, "B": Bl, "method": meth}, share=True, m=m_share)
+        for d in dists:
+            for K, ip, N in pipeline_configs:
+                Bs = covproc.boot_size(t_a / 2.0, boot_per_tail)
+                Bl_p = covproc.boot_size(t_a / (2.0 * K * (2.0 if meth == "student" else max(2.0, P))), boot_per_tail)
+                for bname, b, order in pipeline_biases:
+                    pp = {"N": N, "nb": covproc.budget_arm_size(N), "K": K, "ip": ip, "order": order, "b_h": b, "b_int": b, "b_w": b,
+                          "sampling": "student", "comp": meth, "B_c": covproc.boot_size(t_a / (2.0 * K), boot_per_tail),
+                          "B_l": Bl_p, "B_s": Bs}
+                    label = "pipeline:K%d,ip=%d/%s" % (K, ip, tag)
+                    add("pipeline", label, bname, d, N, pp, share=True, m=m_share)
+                    if N <= 100 and bname == "bias,order=1":
+                        add("pipeline", label, "boott," + bname, d, N, dict(pp, sampling="boott"), share=True, m=m_share)
+    if "bootstrap-t" in methods:
+        Bt = covproc.boot_size(t_a, 2.0 * boot_per_tail)  # 20 resamples beyond the smallest Holm level (p-value granularity)
+        for d in dists:
+            for rho in (0.0, 0.5, 0.9):
+                for n in gate5_ns:
+                    add("tost", "tost:gate5/boott", "rho=%g" % rho, d, n, {"rho": rho, "cv": 0.3, "method": "bootstrap-t", "B": Bt}, m=100)
+    return cells
+
+
+def profile_full(**kw):
+    """The default full study: the N6b cells (unchanged, same ids and streams) followed by the studentized alternatives of N6c, with
+    the lean ladder cases (``LADDER_CASES_LEAN``; every cell, tail, distribution and sample size of the other procedures is kept)."""
+    n6b_keys = ("target", "boot_per_tail", "m_share", "dists", "ladder_ns", "component_ns")
+    return profile_n6b(**{k: v for k, v in kw.items() if k in n6b_keys}) + profile_studentized(**kw)
+
+
+def profile_full_grid(**kw):
+    """``profile_full`` with the complete N6b ladder grid (orders 2, 1.5, 1, non-monotone x kappa 12, 25, 50) for the studentized ladders."""
+    return profile_full(**dict(kw, ladder_cases=LADDER_CASES_GRID))
 
 
 def profile_smoke(target=2.0):
@@ -552,10 +683,21 @@ def profile_smoke(target=2.0):
         {"N": 50, "nb": 25, "K": 3, "ip": 1, "order": 1.0, "b_h": 2.0, "b_int": 2.0, "b_w": 2.0, "sampling": "student",
          "B_c": 2000, "B_l": 4000, "B_s": 1000}, m=10, chunk=100, share=True)
     add("bca", "bca:mean", "", "normal", 30, {"B": 199}, m=10, chunk=30, report_only=True)
+    # SF-42 N6c: the studentized alternatives
+    add("contrast", "contrast:paired/student", "", "stress-", 30, {"kind": "paired", "kappa": 5.0, "method": "student"}, m=100, chunk=300)
+    add("contrast", "contrast:unpaired/boott", "", "normal", 30, {"kind": "unpaired", "kappa": 5.0, "B": 2000, "method": "bootstrap-t"},
+        m=10, chunk=100, share=True)
+    for meth, tag in (("student", "student"), ("bootstrap-t", "boott")):
+        add("ladder", "ladder:E_h/" + tag, "order=1,ip=1,kappa=12", "normal", 30,
+            {"scenario": "power", "order": 1.0, "ip": 1, "kappa": 12.0, "B": 2000, "method": meth}, m=10, chunk=100, share=True)
+        add("pipeline", "pipeline:K3/" + tag, tag + ",bias", "normal", 30,
+            {"N": 50, "nb": 25, "K": 3, "ip": 1, "order": 1.0, "b_h": 2.0, "b_int": 2.0, "b_w": 2.0, "sampling": "student", "comp": meth,
+             "B_c": 2000, "B_l": 4000, "B_s": 1000}, m=10, chunk=100, share=True)
+    add("tost", "tost:gate5/boott", "rho=0.5", "normal", 30, {"rho": 0.5, "cv": 0.3, "method": "bootstrap-t", "B": 1000}, m=10, chunk=30)
     return cells
 
 
-PROFILES = {"full": profile_full, "smoke": profile_smoke}
+PROFILES = {"full": profile_full, "full-grid": profile_full_grid, "n6b": profile_n6b, "studentized": profile_studentized, "smoke": profile_smoke}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -606,7 +748,7 @@ def project(cells, spr, workers=80, host_factor=1.5, efficiency=0.9):
 # ----------------------------------------------------------------------------------------------------------------------
 def _build(args):
     kw = {}
-    if args.profile == "full":
+    if args.profile != "smoke":
         kw = {"target": args.target, "boot_per_tail": args.boot_per_tail, "m_share": args.share_m}
         if args.ladder_ns:
             kw["ladder_ns"] = tuple(int(x) for x in args.ladder_ns.split(","))
@@ -658,7 +800,7 @@ def main(argv=None):
         print("summary: %d of %d cells complete; %d verdict lines; written to %s" % (s["cells_complete"], s["cells_total"], len(s["verdicts"]), args.out))
         return 0
     if args.target is None:
-        args.target = TARGET if args.profile == "full" else 2.0
+        args.target = TARGET if args.profile != "smoke" else 2.0
     cells = _build(args)
     if args.only:
         cells = [c for c in cells if re.search(args.only, c["id"])]

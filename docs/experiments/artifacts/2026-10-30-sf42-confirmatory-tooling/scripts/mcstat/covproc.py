@@ -19,6 +19,16 @@ Tail levels (derived from G5.4 / G5.6, all from the Holm sequence of the primary
 
 Replicates per cell: ``ceil(175 / smallest tail)`` (G5.3), so every tail of the cell has at least 175 expected misses at nominal.
 
+Studentized alternatives (SF-42 N6c).  The cells of N6b measure the percentile bounds of ``ContrastBound`` / ``LadderBound`` (it
+under-covers at small ``n`` on normal data) and the Student TOST of Gate 5 (it fails under the stress family).  The parameter
+``method`` of the ``contrast``, ``ladder`` and ``tost`` procedures (absent = the original: ``'percentile'`` / ``'student'``) and ``comp``
+of the ``pipeline`` (the method of all budget components) select the opt-in alternatives: ``'student'`` and ``'bootstrap-t'`` bounds of
+``|Delta|`` (``intervals.abs_upper_bound``), and the bootstrap-t TOST (``gate5.gate5_paired(method='bootstrap-t')``, ``B`` resamples of
+the seed pairs).  A cell without these keys is exactly an N6b cell (same id, same random streams, same counts).  Bootstrap sizes of the
+new cells: the bootstrap-t bound of a contrast resolves its tail ``t`` (``B = boot_size(t)``); the ladder's order limit ``p_L`` needs
+``t / 2`` (all methods) and the Bonferroni range of the bootstrap-t ladder ``t / P = t / 3``; the bootstrap-t TOST resolves the
+smallest Holm level with 20 resamples beyond it (the p-value has granularity ``1 / (B + 1)``).
+
 Bootstrap size.  The percentile / studentized bootstrap limits use the rank rule of ``_util`` ((B + 1) quantiles): a tail below
 ``1 / (B + 1)`` returns an infinite limit.  The simulator takes ``B = ceil(boot_per_tail / tail_resolved)`` (default 10 resamples
 beyond the quantile) rounded up to 1000, with ``tail_resolved`` the smallest tail the object resolves (``t`` for a contrast, ``t / 2``
@@ -108,20 +118,22 @@ def run_sampling(p, dist, rng, m):
 # ----------------------------------------------------------------------------------------------------------------------
 def run_contrast(p, dist, rng, m):
     tails = component_tails()
-    n, kind, B, share = p["n"], p["kind"], p["B"], p["share"]
+    n, kind, share = p["n"], p["kind"], p["share"]
+    B = p.get("B")  # absent for the Student method (no bootstrap)
+    method = p.get("method", "percentile")
     sd = SD_PAIR
     if kind == "paired":  # E_int style: one pairing group; Delta = mean of the per-seed difference u
         delta = p["kappa"] * sd / math.sqrt(n)
         u = delta + sd * dist.draw(rng, (m, n))
-        cb = bd.e_int(u, np.zeros_like(u), factor=1.0, B=B, rng=rng, share_draws=share)
+        cb = bd.e_int(u, np.zeros_like(u), factor=1.0, B=B, rng=rng, share_draws=share, method=method)
     elif kind == "unpaired":  # E_W style: two independent arms of unit sd
         delta = p["kappa"] * math.sqrt(2.0 / n)
-        cb = bd.e_w(delta + dist.draw(rng, (m, n)), dist.draw(rng, (m, n)), B=B, rng=rng, share_draws=share)
+        cb = bd.e_w(delta + dist.draw(rng, (m, n)), dist.draw(rng, (m, n)), B=B, rng=rng, share_draws=share, method=method)
     elif kind == "interaction":  # 2 x 2: two paired differences, one per width, compared; Delta = their difference
         delta = p["kappa"] * sd * math.sqrt(2.0 / n)
         wf = delta + sd * dist.draw(rng, (m, n))
         pf = sd * dist.draw(rng, (m, n))
-        cb = bd.e_interaction(wf, np.zeros_like(wf), pf, np.zeros_like(pf), B=B, rng=rng, share_draws=share)
+        cb = bd.e_interaction(wf, np.zeros_like(wf), pf, np.zeros_like(pf), B=B, rng=rng, share_draws=share, method=method)
     else:
         raise ValueError("unknown contrast kind %r" % (kind,))
     b = cb.bound(tails)
@@ -145,7 +157,8 @@ def run_ladder(p, dist, rng, m):
     sd_level = SD_PAIR / math.sqrt(2.0)
     e_p = p["kappa"] * sd_level / math.sqrt(n)  # production bias = kappa standard errors of a level mean
     levels = (e_p * f)[None, None, :] + sd_level * dist.draw(rng, (m, n, 3))
-    lb = bd.LadderBound(levels, RES, ip, safety=p.get("safety", 1.25), B=B, rng=rng, share_draws=share)  # safety: test control
+    lb = bd.LadderBound(levels, RES, ip, safety=p.get("safety", 1.25), B=B, rng=rng, share_draws=share,  # safety: test control
+                        method=p.get("method", "percentile"))
     b = lb.bound(tails)
     used = lb.details(tails)["order_branch_used"]
     return {"bound": _count(b < e_p)}, {"unresolved": _count(np.isinf(b)), "order_branch": _count(used)}
@@ -163,9 +176,10 @@ def run_tost(p, dist, rng, m):
     zl, zp = A * c + Bc * u, A * c - Bc * u
     P = 1.0 + cv * zp
     ratio = g5.MARGIN_RATIO
+    kw = {} if p.get("method", "student") == "student" else {"method": p["method"], "B": p["B"], "rng": rng, "share_draws": p["share"]}
     rows = {}
     for name, r in (("ratio_hi", ratio), ("ratio_lo", 1.0 / ratio)):  # true ratio at the boundary +delta / -delta
-        res = g5.gate5_paired(r * (1.0 + cv * zl), P)
+        res = g5.gate5_paired(r * (1.0 + cv * zl), P, **kw)
         rows[name] = _count(res.p_tost[:, None] <= a[None, :])
     return rows, {}
 
@@ -176,6 +190,7 @@ def run_tost(p, dist, rng, m):
 def run_pipeline(p, dist, rng, m):
     a = holm_levels()
     N, nb, K, share = p["N"], p["nb"], p["K"], p["share"]
+    cm = p.get("comp", "percentile")  # method of every budget component (ladder and contrasts)
     s_p = 1.0 / math.sqrt(N)
     e_h, e_i, w_f = p["b_h"] * s_p, p["b_int"] * s_p, p["b_w"] * s_p
     x = (e_h + e_i + w_f) + dist.draw(rng, (m, N))  # production arm, true alpha = 0
@@ -185,21 +200,21 @@ def run_pipeline(p, dist, rng, m):
         samp = bd.BootstrapTMean(x, p["B_s"], rng=rng, share_draws=share)
     ip = p["ip"]
     lev = (e_h * ladder_errors(p["order"], ip))[None, None, :] + SD_PAIR / math.sqrt(2.0) * dist.draw(rng, (m, nb, 3))
-    comps = [bd.LadderBound(lev, RES, ip, B=p["B_l"], rng=rng, share_draws=share)]
+    comps = [bd.LadderBound(lev, RES, ip, B=p["B_l"], rng=rng, share_draws=share, method=cm)]
     a16 = np.full((m, nb), e_i)
     a8 = 2.0 * e_i + SD_PAIR * dist.draw(rng, (m, nb))
-    comps.append(bd.e_int(a16, a8, B=p["B_c"], rng=rng, share_draws=share))
+    comps.append(bd.e_int(a16, a8, B=p["B_c"], rng=rng, share_draws=share, method=cm))
     base = e_h + e_i
     if K == 3:
-        comps.append(bd.e_w(base + dist.draw(rng, (m, nb)), x, B=p["B_c"], rng=rng, share_draws=share))
+        comps.append(bd.e_w(base + dist.draw(rng, (m, nb)), x, B=p["B_c"], rng=rng, share_draws=share, method=cm))
     elif K == 4:
         w_c = 0.5 * w_f
         wide_f = base + dist.draw(rng, (m, nb))
         wide_c = wide_f + SD_PAIR * dist.draw(rng, (m, nb))
         prod_f = x[:, :nb]
         prod_c = prod_f - (w_f - w_c) + SD_PAIR * dist.draw(rng, (m, nb))
-        comps.append(bd.e_w(wide_c, prod_c, B=p["B_c"], rng=rng, share_draws=share))
-        comps.append(bd.e_interaction(wide_f, wide_c, prod_f, prod_c, B=p["B_c"], rng=rng, share_draws=share))
+        comps.append(bd.e_w(wide_c, prod_c, B=p["B_c"], rng=rng, share_draws=share, method=cm))
+        comps.append(bd.e_interaction(wide_f, wide_c, prod_f, prod_c, B=p["B_c"], rng=rng, share_draws=share, method=cm))
     else:
         raise ValueError("K must be 3 or 4")
     rl = bd.RobustLimit(samp, comps).lower(a)

@@ -22,6 +22,26 @@ noncentral t exists because the acceptance region is a triangle in ``(theta_hat,
 (bivariate normal ``L, P`` through ``gate5_paired``) is part of the tests: the approximation error comes only from the
 linearization and the independence of ``theta_hat`` and ``s_e``; measured in the tests it is 0.001 at a true ratio 1 and about 0.012
 at a true ratio 0.95 (CVs 0.2-0.3, n = 40-100): use the analytic power for planning, not as an exact probability.
+
+Bootstrap-t variant (``method='bootstrap-t'``, SF-42 N6c).  The Student TOST above fails the coverage criterion of G5.3 under the stress
+family (skewness 1.94, excess kurtosis 4.7) for ``n <= 170`` (N6b).  The studentized bootstrap replaces the Student reference
+distribution by the resampled one: the seed pairs ``(L_r, P_r)`` are resampled jointly (the pairing is kept), and each resample
+recomputes ``theta* = log(mean L* / mean P*)`` and the linearized ``se*`` (same formula as above, on the resample), giving
+``T*_b = (theta*_b - theta_hat) / se*_b``.  One-sided p-values of the two TOST nulls (rank form of the Monte Carlo p-value, which is
+exactly the rank rule of the confidence limits below)::
+
+    p1 = (1 + #{T* >= (theta_hat + delta) / se}) / (B + 1)        H01: theta <= -delta
+    p2 = (1 + #{T* <= (theta_hat - delta) / se}) / (B + 1)        H02: theta >= +delta
+
+so ``p_tost = max(p1, p2) >= 1 / (B + 1)`` and a level ``alpha < 1 / (B + 1)`` can never be met (conservative, never optimistic);
+the ``level`` CI is ``theta_hat - se T*_{(upper tau)}, theta_hat - se T*_{(lower tau)}`` with ``tau = (1 - level) / 2`` and the rank
+rule of ``_util`` (infinite when ``B`` cannot resolve ``tau``).  ``p_tost <= alpha`` iff the ``1 - 2 alpha`` bootstrap-t CI lies
+strictly inside ``(-delta, delta)`` (tested).  The verdict rule is unchanged (G5.5).  There is no analytic power for this variant
+(the rejection region depends on the resampled distribution): power and sample size for ``'bootstrap-t'`` are obtained by
+simulation, i.e. by running ``gate5_paired(..., method='bootstrap-t')`` on paired data generated at the planning ratio, CVs and
+correlation (``covproc.run_tost`` generates exactly that bivariate structure; its ``tost:gate5/boott`` coverage cells use the two
+boundary ratios and so measure the SIZE), while ``tost_power`` / ``gate5_sample_size`` remain the Student planning approximations
+(for the bootstrap-t variant they are a guide, not its power).
 """
 from __future__ import annotations
 
@@ -31,7 +51,8 @@ import numpy as np
 from scipy import special as _sp
 from scipy import stats as _st
 
-from ._util import t_isf
+from ._util import bootstrap_means, get_rng, lcb_sorted, t_isf, ucb_sorted
+from .intervals import studentize_sorted
 from .sizing import corr_lower, mean_lower, sd_upper
 
 MARGIN_RATIO = 1.10
@@ -49,8 +70,32 @@ class Gate5Result(dict):
             raise AttributeError(name) from None
 
 
-def gate5_paired(L, P, level=0.90, margin_ratio=MARGIN_RATIO):
-    """Paired log-ratio equivalence of two codes on the same seeds (arrays (..., n); leading axes are replicates)."""
+def _boot_tstar(L, P, B, rng, share_draws):
+    """Sorted ``T* = (theta* - theta_hat) / se*`` (..., B) of the joint seed-pair bootstrap (see the module docstring).
+
+    Works on the data normalised by their means (``Ln = L / mean L``, ``Pn = P / mean P``): ``theta* - theta_hat = log(ml* / mp*)``
+    with the resample means ``ml*``, ``mp*`` of ``Ln``, ``Pn``, and the linearized contrast of the resample is ``Ln / ml* - Pn / mp*``
+    (mean exactly 0), whose second moment follows from the resample means of ``Ln^2``, ``Pn^2`` and ``Ln Pn``.
+    """
+    n = L.shape[-1]
+    Ln, Pn = L / L.mean(axis=-1, keepdims=True), P / P.mean(axis=-1, keepdims=True)
+    ml, mp, sl, sp, slp = bootstrap_means((Ln, Pn, Ln * Ln, Pn * Pn, Ln * Pn), B, rng, share_draws)
+    if np.any(ml <= 0.0) or np.any(mp <= 0.0):  # the log ratio of the resample means is undefined: never skipped silently
+        raise ValueError("a bootstrap resample has a non-positive mean of L or P: the log-ratio statistic is undefined")
+    ee = sl / (ml * ml) - 2.0 * slp / (ml * mp) + sp / (mp * mp)  # mean of e*^2
+    var_of_mean = np.maximum(n / (n - 1.0) * ee, 0.0) / n  # se*^2
+    return studentize_sorted(np.log(ml / mp), var_of_mean)
+
+
+def gate5_paired(L, P, level=0.90, margin_ratio=MARGIN_RATIO, method="student", B=4000, rng=None, seed=None, share_draws=False):
+    """Paired log-ratio equivalence of two codes on the same seeds (arrays (..., n); leading axes are replicates).
+
+    ``method='student'`` (default): Student reference distribution (module docstring).  ``method='bootstrap-t'``: studentized seed-pair
+    bootstrap with ``B`` resamples, ``rng`` (a ``numpy.random.Generator``) or ``seed`` required, ``share_draws`` as in
+    ``intervals.bootstrap_t``; ``dof`` is ``None`` and the result carries ``B``.
+    """
+    if method not in ("student", "bootstrap-t"):
+        raise ValueError("method must be 'student' or 'bootstrap-t', got %r" % (method,))
     L = np.asarray(L, dtype=float)
     P = np.asarray(P, dtype=float)
     if L.shape != P.shape:
@@ -65,17 +110,31 @@ def gate5_paired(L, P, level=0.90, margin_ratio=MARGIN_RATIO):
     se = e.std(axis=-1, ddof=1) / math.sqrt(n)
     theta = np.log(mL / mP)
     delta = math.log(margin_ratio)
-    q = t_isf(0.5 * (1.0 - level), n - 1)
-    lo, hi = theta - q * se, theta + q * se
+    if method == "student":
+        q = t_isf(0.5 * (1.0 - level), n - 1)
+        lo, hi = theta - q * se, theta + q * se
+        with np.errstate(divide="ignore", invalid="ignore"):
+            p1 = _st.t.sf((theta + delta) / se, n - 1)
+            p2 = _st.t.sf((delta - theta) / se, n - 1)
+        dof = n - 1
+    else:
+        ts = _boot_tstar(L, P, B, get_rng(rng, seed), share_draws)
+        tau = 0.5 * (1.0 - level)
+        with np.errstate(divide="ignore", invalid="ignore"):  # 0 * inf where se = 0 and the tail is unresolved
+            lo = np.where(se == 0.0, theta, theta - se * ucb_sorted(ts, tau))
+            hi = np.where(se == 0.0, theta, theta - se * lcb_sorted(ts, tau))
+            t1, t2 = (theta + delta) / se, (theta - delta) / se
+        p1 = (1.0 + (ts >= t1[..., None]).sum(axis=-1)) / (B + 1.0)
+        p2 = (1.0 + (ts <= t2[..., None]).sum(axis=-1)) / (B + 1.0)
+        dof = None
     verdict = np.where((lo >= -delta) & (hi <= delta), "agree",
                        np.where((lo > delta) | (hi < -delta), "disagree", "inconclusive"))
-    with np.errstate(divide="ignore", invalid="ignore"):
-        p1 = _st.t.sf((theta + delta) / se, n - 1)
-        p2 = _st.t.sf((delta - theta) / se, n - 1)
     p = np.maximum(p1, p2)
-    out = Gate5Result(theta=theta, se=se, dof=n - 1, lo=lo, hi=hi, verdict=verdict.item() if verdict.ndim == 0 else verdict,
+    out = Gate5Result(theta=theta, se=se, dof=dof, lo=lo, hi=hi, verdict=verdict.item() if verdict.ndim == 0 else verdict,
                       p_tost=p, ratio=np.exp(theta), ratio_lo=np.exp(lo), ratio_hi=np.exp(hi), n=n,
                       p1=p1, p2=p2)
+    if method == "bootstrap-t":
+        out["B"] = B
     return out
 
 

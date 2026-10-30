@@ -6,7 +6,7 @@
 #            ~/sf42-coverage-out --workers 72"
 #   scripts/remote wait sf42-coverage
 #
-# usage: run_coverage.sh <out_dir> [--workers N] [--profile full|smoke] [--ladder-ns 30,100,200]
+# usage: run_coverage.sh <out_dir> [--workers N] [--profile full|full-grid|n6b|studentized|smoke] [--ladder-ns 30,100,200]
 #
 # * CPU only (stdlib + numpy + scipy; host Python 3.11 / numpy 1.26 / scipy 1.11).  It does not touch a GPU.
 # * Restart-safe: rerun the same command after an interruption; finished chunks are skipped, and the result does not depend on the
@@ -14,11 +14,12 @@
 # * Default workers: the number of CPUs capped at 72 (the host is shared; pass --workers to override).
 # * Outputs in <out_dir>: plan.json, chunks/ (one JSON per finished chunk), summary.json, summary.md (qualification matrix,
 #   failures, UCL/tail tables), env.txt, run.log.  Expected cost of the default `full` profile: see the module docstring of
-#   mcstat/coverage.py (about 2.5-3.5 h on 72 cores).
+#   mcstat/coverage.py (`full`: 261 workstation core-hours, about 5.4-7.3 h on 80 cores; `full-grid` 440 core-hours, 9.2-12.2 h; `n6b`, the
+#   cells of SF-42 N6b only: 2.4-3.2 h).
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
-    sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
     exit 2
 fi
 OUT="$1"

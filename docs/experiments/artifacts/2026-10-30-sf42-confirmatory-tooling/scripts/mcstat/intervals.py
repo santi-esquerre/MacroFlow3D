@@ -301,6 +301,125 @@ def bootstrap_t_interval(x, level=0.90, sided="two", B=2000, rng=None, seed=None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Studentized upper bounds of |Delta| (SF-42 N6c; decision G5.3, G5.4)
+# ----------------------------------------------------------------------------------------------------------------------
+# The budget components B_k(t) are upper confidence bounds, at tail ``t``, of ``|Delta|`` for a linear contrast of arm means
+# ``Delta = sum_g E[u_g]`` (``u_g``: the per-seed combination of the arms of independent pairing group ``g``).  The percentile
+# bootstrap of ``|Delta*|`` is not studentized and under-covers at small ``n`` even on normal data (the coverage simulation of
+# N6b: ``n = 30``, ``P(t_{n-1} < -z sqrt((n-1)/n))`` instead of ``Phi(-z)``); the two methods below are studentized.
+#
+#   U(t) = max(UCL_t, -LCL_t),    UCL_t, LCL_t = the one-sided limits of ``Delta`` at tail ``t``.
+#
+# Validity.  If ``Delta >= 0`` then ``|Delta| = Delta`` and ``U(t) >= UCL_t``, so the miss ``|Delta| > U(t)`` implies
+# ``Delta > UCL_t`` (probability ``t`` for an exact limit).  If ``Delta < 0`` then ``|Delta| = -Delta`` and ``U(t) >= -LCL_t``, so
+# the miss implies ``-Delta > -LCL_t``, i.e. ``Delta < LCL_t`` (probability ``t``).  One of the two cases holds, hence
+# ``P(|Delta| > U(t)) <= t`` whenever the one-sided limits are exact; for finite ``n`` and skewed data they are approximate, which
+# the SF-42 coverage simulation measures.
+#
+# * ``method='student'``      ``U(t) = |Delta_hat| + t_{1-t, nu} se`` (UCL and -LCL differ only in the sign of ``Delta_hat``), with the
+#                             Welch-Satterthwaite standard error over the independent groups (one group: one-sample ``t`` on the
+#                             per-seed combinations, ``nu = n - 1``).
+# * ``method='bootstrap-t'``  ``T*_b = (Delta*_b - Delta_hat) / se*_b`` over joint resamples of the seeds (independent resamples of
+#                             every group, ``se*_b`` recomputed on the resample), ``UCL_t = Delta_hat - se T*_{(t)}``,
+#                             ``LCL_t = Delta_hat - se T*_{(1-t)}`` with the rank rule of ``_util``; ``+inf`` when ``B`` cannot
+#                             resolve the tail (never an optimistic value).
+#
+# Both are second-order accurate for smooth functions of means under their regularity conditions; neither is exact for skewed data.
+BOUND_METHODS = ("percentile", "student", "bootstrap-t")
+
+
+def check_bound_method(method):
+    if method not in BOUND_METHODS:
+        raise ValueError("method must be one of %s, got %r" % (BOUND_METHODS, method))
+    return method
+
+
+def welch_groups(groups):
+    """``(Delta_hat, se, nu)`` of ``Delta = sum_g mean(u_g)`` over independent groups ``u_g`` of shape ``(..., n_g)``.
+
+    ``se^2 = sum_g v_g`` with ``v_g = s_g^2 / n_g`` (``s_g`` the ddof = 1 standard deviation) and the Welch-Satterthwaite degrees of
+    freedom ``nu = (sum v_g)^2 / sum(v_g^2 / (n_g - 1))`` (exactly ``n - 1`` for one group; ``sum(n_g - 1)`` where every ``v_g`` is 0,
+    where ``se = 0`` makes ``nu`` irrelevant).  Extra leading axes (e.g. the pairs of a ladder) are carried along.
+    """
+    est = se2 = den = 0.0
+    dof = 0.0
+    for u in groups:
+        u = np.asarray(u, dtype=float)
+        n = u.shape[-1]
+        if n < 2:
+            raise ValueError("a studentized bound needs at least 2 seeds in every pairing group")
+        v = u.var(axis=-1, ddof=1) / n
+        est = est + u.mean(axis=-1)
+        se2 = se2 + v
+        den = den + v * v / (n - 1.0)
+        dof += n - 1.0
+    if len(groups) == 1:
+        nu = np.full(np.shape(est), dof)
+    else:
+        with np.errstate(divide="ignore", invalid="ignore"):
+            nu = np.where(den > 0.0, se2 * se2 / den, dof)
+    return est, np.sqrt(se2), nu
+
+
+def studentize_sorted(num, var_of_mean):
+    """Sorted (last axis) ``T* = num / sqrt(var_of_mean)``; a resample with zero variance gets ``0`` (``num = 0``) or ``+-inf``."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        t = num / np.sqrt(var_of_mean)
+        t = np.where(var_of_mean > 0.0, t, np.where(num == 0.0, 0.0, np.sign(num) * np.inf))
+    return np.sort(t, axis=-1)
+
+
+def _var_of_mean(mc, s2c, n):
+    """Variance of the mean of a resample from its centred first and second moments: ``n/(n-1) (s2c - mc^2) / n`` (floored at 0)."""
+    return np.maximum(n / (n - 1.0) * (s2c - mc * mc), 0.0) / n
+
+
+def tstar_from_moments(mc, s2c, n):
+    """Sorted bootstrap-t statistics of ONE group from the resample means ``mc`` and second moments ``s2c`` of the CENTRED values
+    (``u - mean(u)``): ``T* = mc / sqrt(var*/n)``, ``var*`` the ddof = 1 variance of the resample."""
+    return studentize_sorted(mc, _var_of_mean(mc, s2c, n))
+
+
+def boot_tstar(groups, B, rng, share_draws=False, inner_ndim=0):
+    """Sorted ``T*`` (..., B) of ``Delta = sum_g mean(u_g)``: resamples of the seeds, independent between groups, ``T* = (Delta* -
+    Delta_hat) / se*`` with ``se*^2 = sum_g var*_g / n_g`` recomputed on every resample."""
+    num = var = 0.0
+    for u in groups:
+        u = np.asarray(u, dtype=float)
+        n = u.shape[-1]
+        uc = u - u.mean(axis=-1, keepdims=True)
+        mc, s2c = bootstrap_means((uc, uc * uc), B, rng, share_draws, inner_ndim)
+        num = num + mc
+        var = var + _var_of_mean(mc, s2c, n)
+    return studentize_sorted(num, var)
+
+
+def abs_upper_bound(delta, se, tails, nu=None, tstar=None):
+    """``U(t) = max(UCL_t, -LCL_t)``, the upper confidence bound of ``|Delta|`` at tail(s) ``t`` (see the section comment).
+
+    ``delta``, ``se``: shape ``(...)``; ``tails``: scalar or 1-D (output ``(..., T)``, no tail axis for a scalar).  Student when
+    ``tstar`` is None (``nu`` required): ``|delta| + t_{1-t, nu} se``.  Bootstrap-t when the sorted ``tstar`` (..., B) is given:
+    ``UCL_t = delta - se T*_{(t)}``, ``LCL_t = delta - se T*_{(1-t)}``, ``+inf`` for a tail that ``B`` cannot resolve.  ``se = 0``
+    gives ``|delta|``.
+    """
+    tau, scalar = as_tails(tails)
+    d, s = np.asarray(delta, dtype=float)[..., None], np.asarray(se, dtype=float)[..., None]
+    if tstar is None:
+        if nu is None:
+            raise ValueError("nu is required for the Student bound")
+        nu = np.asarray(nu, dtype=float)
+        # one degrees-of-freedom value (single pairing group): the quantiles depend on the tail only (t_isf is the slow part)
+        q = t_isf(tau, nu.flat[0]) if nu.size and np.all(nu == nu.flat[0]) else t_isf(tau, nu[..., None])
+        out = np.abs(d) + q * s
+    else:
+        with np.errstate(invalid="ignore"):  # 0 * inf where se = 0 and the tail is unresolved: replaced below
+            ucl = d - s * lcb_sorted(tstar, tau)
+            lcl = d - s * ucb_sorted(tstar, tau)
+            out = np.where(s == 0.0, np.abs(d), np.maximum(ucl, -lcl))
+    return out[..., 0] if scalar else out
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # BCa (reporting only: decision G5.3 "BCa is reported, never a verdict")
 # ----------------------------------------------------------------------------------------------------------------------
 class BCa(NamedTuple):

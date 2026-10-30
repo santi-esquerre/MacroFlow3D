@@ -22,6 +22,21 @@ event implies a standard-normal tail below ``tau``); for finite ``n`` and skewed
 simulation of SF-42 measures for the whole robust-sign pipeline.  A component built from two estimated inputs (``E_h``: the difference and the order) takes each input at tail
 ``t / 2``.
 
+Studentized alternatives (``method=``, SF-42 N6c)
+-----------------------------------------------
+The percentile bound above is NOT studentized: on normal data at ``n = 30`` the 95 % upper limit of its miss rate is 1.4-2.9 times the
+tail at the tails of the budget (coverage simulation of N6b, repeated in N6c; the miss rate itself is 1.4-2.7 times the tail; analytic:
+``P(t_{n-1} < -z sqrt((n-1)/n))``).  Every contrast bound and ``LadderBound`` therefore
+take ``method``: ``'percentile'`` (default; bit-for-bit the original), ``'student'`` or ``'bootstrap-t'``, which replace the percentile
+bound of ``|Delta|`` by ``U(t) = max(UCL_t, -LCL_t)`` built from studentized one-sided limits of ``Delta`` (``intervals.abs_upper_bound``:
+validity argument, Welch-Satterthwaite standard error over the pairing groups, rank rule of the bootstrap-t).  ``E_h`` keeps the
+order lower limit ``p_L`` as the percentile of the bootstrap orders in every method (``rng=`` / ``seed=`` is therefore still
+needed by ``LadderBound``; ``ContrastBound`` needs it only for ``'percentile'`` and ``'bootstrap-t'``).  The fallback range of
+``E_h``, ``UCB(max_ij |m_i - m_j|)``, becomes ``max_ij U_ij(t / P)`` over the ``P = K (K - 1) / 2`` pairs of levels (per-seed pair
+differences, studentized as above), a Bonferroni split that is valid under any dependence between the pairs.  (Remark: because the
+true range is attained at one fixed, unknown pair, ``max_ij U_ij(t)`` is already a valid bound; ``t / P`` is the more conservative
+choice that was specified.)
+
 Monotone bounds
 ---------------
 ``B_k(t)`` is a bound at confidence level ``1 - t``: it must be NON-INCREASING in the tail ``t`` (a more confident bound is never
@@ -46,7 +61,8 @@ from typing import NamedTuple
 import numpy as np
 
 from ._util import as_levels, as_tails, bootstrap_means, get_rng, lcb_sorted, ucb_sorted
-from .intervals import bootstrap_t, bootstrap_t_limit, student_limit
+from .intervals import (abs_upper_bound, boot_tstar, bootstrap_t, bootstrap_t_limit, check_bound_method, student_limit,
+                        tstar_from_moments, welch_groups)
 
 LATTICE_PER_DECADE = 200
 LATTICE_A_MIN = 1e-8
@@ -101,14 +117,18 @@ class ContrastBound:
 
     ``terms``: list of ``(values, group, coeff)``; ``values`` (..., n_group) per-seed values of one arm; arms with the same
     ``group`` label must have the same ``n`` and the same seed order (they share the resampled indices); different groups are
-    resampled independently.  ``bound(t) = factor * (1 - t)-percentile of |sum_j c_j mean*_j|``.
+    resampled independently.  ``method='percentile'`` (default): ``bound(t) = factor * (1 - t)-percentile of |sum_j c_j mean*_j|``.
+    ``method='student'`` / ``'bootstrap-t'``: ``bound(t) = factor * U(t)``, the studentized upper bound of ``|Delta|`` of
+    ``intervals.abs_upper_bound`` (module docstring); ``'student'`` needs no random numbers.
     """
 
-    def __init__(self, name, terms, factor=1.0, B=2000, rng=None, seed=None, share_draws=False):
-        rng = get_rng(rng, seed)
+    def __init__(self, name, terms, factor=1.0, B=2000, rng=None, seed=None, share_draws=False, method="percentile"):
+        check_bound_method(method)
+        rng = get_rng(rng, seed) if method != "student" else None
         self.name = name
         self.factor = float(factor)
         self.B = B
+        self.method = method
         combined = {}  # group -> per-seed combination sum_j c_j v_j: arms of a group share the draws and the mean is linear
         for values, group, coeff in terms:
             v = coeff * np.asarray(values, dtype=float)
@@ -118,32 +138,44 @@ class ContrastBound:
                 combined[group] = combined[group] + v
             else:
                 combined[group] = v
-        est = 0.0
-        acc = 0.0
-        for u in combined.values():
-            est = est + u.mean(axis=-1)
-            acc = acc + bootstrap_means((u,), B, rng, share_draws)[0]
-        self.estimate = self.factor * np.abs(est)
-        self._sorted = np.sort(self.factor * np.abs(acc), axis=-1)
+        if method == "percentile":
+            est = 0.0
+            acc = 0.0
+            for u in combined.values():
+                est = est + u.mean(axis=-1)
+                acc = acc + bootstrap_means((u,), B, rng, share_draws)[0]
+            self.estimate = self.factor * np.abs(est)
+            self._sorted = np.sort(self.factor * np.abs(acc), axis=-1)
+            return
+        groups = list(combined.values())
+        self._delta, self._se, self._nu = welch_groups(groups)
+        self._tstar = boot_tstar(groups, B, rng, share_draws) if method == "bootstrap-t" else None
+        self.estimate = self.factor * np.abs(self._delta)
 
     def bound(self, tails):
-        return ucb_sorted(self._sorted, tails)
+        if self.method == "percentile":
+            return ucb_sorted(self._sorted, tails)
+        return self.factor * abs_upper_bound(self._delta, self._se, tails, self._nu, self._tstar)
 
     def details(self, tails):
-        return {"estimate": self.estimate, "bound": self.bound(tails)}
+        d = {"estimate": self.estimate, "bound": self.bound(tails), "method": self.method}
+        if self.method != "percentile":
+            d.update({"se": self.factor * self._se, "nu": self._nu})
+        return d
 
 
-def e_int(alpha_h16, alpha_h8, factor=2.0, B=2000, rng=None, seed=None, share_draws=False):
+def e_int(alpha_h16, alpha_h8, factor=2.0, B=2000, rng=None, seed=None, share_draws=False, method="percentile"):
     """Integration bound (G5.4): ``E_int = 2 UCB|alpha(h/16) - alpha(h/8)|`` from the paired ``h_max`` passes (order 1 assumed)."""
-    return ContrastBound("E_int", [(alpha_h16, "passes", 1.0), (alpha_h8, "passes", -1.0)], factor, B, rng, seed, share_draws)
+    return ContrastBound("E_int", [(alpha_h16, "passes", 1.0), (alpha_h8, "passes", -1.0)], factor, B, rng, seed, share_draws, method)
 
 
-def e_w(alpha_wide, alpha_prod_width, B=2000, rng=None, seed=None, share_draws=False):
+def e_w(alpha_wide, alpha_prod_width, B=2000, rng=None, seed=None, share_draws=False, method="percentile"):
     """Width bound (G5.4): ``E_W = UCB|alpha(W*) - alpha(W_prod)|``, the two widths UNPAIRED (the field depends on the box)."""
-    return ContrastBound("E_W", [(alpha_wide, "wide", 1.0), (alpha_prod_width, "prod", -1.0)], 1.0, B, rng, seed, share_draws)
+    return ContrastBound("E_W", [(alpha_wide, "wide", 1.0), (alpha_prod_width, "prod", -1.0)], 1.0, B, rng, seed, share_draws, method)
 
 
-def e_interaction(wide_fine, wide_coarse, prod_fine, prod_coarse, B=2000, rng=None, seed=None, share_draws=False):
+def e_interaction(wide_fine, wide_coarse, prod_fine, prod_coarse, B=2000, rng=None, seed=None, share_draws=False,
+                  method="percentile"):
     """Width x lambda/h interaction bound for a measured 2x2 (G5.4 "where measured").
 
     Definition: ``I = [alpha(W*, h_f) - alpha(W*, h_c)] - [alpha(W_prod, h_f) - alpha(W_prod, h_c)]``, the change of the
@@ -152,7 +184,7 @@ def e_interaction(wide_fine, wide_coarse, prod_fine, prod_coarse, B=2000, rng=No
     width both resolutions use the same seeds (shared indices); the two widths are independent groups.
     """
     return ContrastBound("E_WxH", [(wide_fine, "wide", 1.0), (wide_coarse, "wide", -1.0),
-                                   (prod_fine, "prod", -1.0), (prod_coarse, "prod", 1.0)], 1.0, B, rng, seed, share_draws)
+                                   (prod_fine, "prod", -1.0), (prod_coarse, "prod", 1.0)], 1.0, B, rng, seed, share_draws, method)
 
 
 class LadderBound:
@@ -173,11 +205,20 @@ class LadderBound:
       ``|e(h_p)|`` from the next-finer difference, the second ``|e(h_p)|`` from the next-coarser one.
     * Otherwise (also ``K < 3``, unequal ratios, non-monotone, oscillating, order outside the range):
       ``E_h = fallback_factor * UCB(max_ij |m_i - m_j|) / (r_min - 1)`` (single input, full tail ``t``).
+
+    ``method`` selects the upper bounds of the differences (``|m_{ip+1} - m_{ip}|`` and the range); ``'percentile'`` (default) is
+    the original percentile bootstrap of the means.  ``'student'`` / ``'bootstrap-t'`` use the studentized ``U(t)`` of
+    ``intervals.abs_upper_bound`` on the per-seed difference of the two levels (a paired contrast of one group); the range
+    becomes ``max_ij U_ij(t / P)`` over the ``P = K (K - 1) / 2`` pairs (Bonferroni).  The order lower limit ``p_L`` is the
+    percentile of the bootstrap orders in all methods, so ``rng`` / ``seed`` is always required.  ``'bootstrap-t'`` resamples the
+    seeds once for the levels and the pair differences (same indices).
     """
 
     def __init__(self, levels, resolutions, ip, p_min=0.5, p_max=4.0, safety=1.25, fallback_factor=3.0,
-                 B=2000, rng=None, seed=None, share_draws=False):
+                 B=2000, rng=None, seed=None, share_draws=False, method="percentile"):
         self.name = "E_h"
+        check_bound_method(method)
+        self.method = method
         rng = get_rng(rng, seed)
         x = np.asarray(levels, dtype=float)
         res = np.asarray(resolutions, dtype=float)
@@ -195,7 +236,19 @@ class LadderBound:
         self.ip, self.K, self.p_min, self.p_max = ip, K, p_min, p_max
         self.safety, self.fallback_factor, self.B = safety, fallback_factor, B
         m_hat = x.mean(axis=-2)  # (..., K)
-        m_star = np.moveaxis(bootstrap_means((np.moveaxis(x, -1, -2),), B, rng, share_draws, inner_ndim=1)[0], -2, -1)  # (..., B, K)
+        if method != "percentile":
+            iu, ju = np.triu_indices(K, 1)
+            u = np.moveaxis(x[..., ju] - x[..., iu], -1, -2)  # (..., P, n): per-seed difference m_j - m_i of every pair i < j
+        pair_tstar = None
+        if method == "bootstrap-t":  # one resampling for the level means and the moments of every pair difference
+            uc = u - u.mean(axis=-1, keepdims=True)
+            stack = np.concatenate([np.moveaxis(x, -1, -2), uc, uc * uc], axis=-2)  # (..., K + 2P, n)
+            boot = bootstrap_means((stack,), B, rng, share_draws, inner_ndim=1)[0]  # (..., K + 2P, B)
+            P = iu.size
+            m_star = np.moveaxis(boot[..., :K, :], -2, -1)  # (..., B, K)
+            pair_tstar = tstar_from_moments(boot[..., K:K + P, :], boot[..., K + P:, :], x.shape[-2])
+        else:
+            m_star = np.moveaxis(bootstrap_means((np.moveaxis(x, -1, -2),), B, rng, share_draws, inner_ndim=1)[0], -2, -1)  # (..., B, K)
         self.order_hat = self._order(m_hat)
         p_star = self._order(m_star)
         p_star = np.where(np.isnan(p_star), -np.inf, p_star)
@@ -203,9 +256,16 @@ class LadderBound:
         j = ip + 1 if ip < K - 1 else ip - 1
         self._finer = ip < K - 1
         self.delta_hat = np.abs(m_hat[..., j] - m_hat[..., ip])
-        self._delta_sorted = np.sort(np.abs(m_star[..., j] - m_star[..., ip]), axis=-1)
         self.range_hat = m_hat.max(axis=-1) - m_hat.min(axis=-1)
-        self._range_sorted = np.sort(m_star.max(axis=-1) - m_star.min(axis=-1), axis=-1)
+        if method == "percentile":
+            self._delta_sorted = np.sort(np.abs(m_star[..., j] - m_star[..., ip]), axis=-1)
+            self._range_sorted = np.sort(m_star.max(axis=-1) - m_star.min(axis=-1), axis=-1)
+            return
+        self._P = iu.size
+        self._pd, self._pse, self._pnu = welch_groups([u])  # (..., P) each: estimate, standard error, degrees of freedom
+        self._pt = pair_tstar
+        a = int(np.flatnonzero((iu == min(ip, j)) & (ju == max(ip, j)))[0])  # the pair (ip, ip +- 1) of the adjacent difference
+        self._adj = (self._pd[..., a], self._pse[..., a], self._pnu[..., a], None if pair_tstar is None else pair_tstar[..., a, :])
 
     def _order(self, m):
         """Observed order from level means ``m`` (..., K); NaN when there is no real order."""
@@ -225,8 +285,12 @@ class LadderBound:
         tau, scalar = as_tails(tails)
         half = 0.5 * tau
         p_L = lcb_sorted(self._p_sorted, half)
-        dU = ucb_sorted(self._delta_sorted, half)
-        rU = ucb_sorted(self._range_sorted, tau)
+        if self.method == "percentile":
+            dU = ucb_sorted(self._delta_sorted, half)
+            rU = ucb_sorted(self._range_sorted, tau)
+        else:  # studentized: adjacent difference at t / 2; range = max over the P pairs at t / P (Bonferroni)
+            dU = abs_upper_bound(*self._adj[:2], half, self._adj[2], self._adj[3])
+            rU = abs_upper_bound(self._pd, self._pse, tau / self._P, self._pnu, self._pt).max(axis=-2)
         in_range = np.isfinite(p_L) & (p_L >= self.p_min) & (p_L <= self.p_max)
         p_use = np.where(in_range, p_L, self.p_min)
         rp = self.r ** p_use
@@ -247,7 +311,7 @@ class LadderBound:
         """Intermediate quantities for reporting (per tail): branch used, ``p_L``, both candidate bounds."""
         scalar, bound, p_L, in_range, order_branch, fallback = self._parts(tails)
         sq = (lambda v: v[..., 0]) if scalar else (lambda v: v)
-        return {"order_hat": self.order_hat, "delta_hat": self.delta_hat, "range_hat": self.range_hat,
+        return {"method": self.method, "order_hat": self.order_hat, "delta_hat": self.delta_hat, "range_hat": self.range_hat,
                 "p_L": sq(p_L), "order_branch_used": sq(in_range), "bound": sq(bound),
                 "order_branch_value": sq(order_branch), "fallback_value": sq(fallback)}
 
