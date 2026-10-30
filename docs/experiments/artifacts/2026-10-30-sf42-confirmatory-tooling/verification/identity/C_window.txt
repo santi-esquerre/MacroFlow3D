@@ -1,0 +1,5 @@
+CMD macroflow3d_pipeline config.yaml (inject_window, plane_crossings dump_injection)
+par2 rc=0
+injected rows 2000 (expected 2000); x1 == 5 ell: 2000; inside x2 window: 2000; inside x3 window: 2000
+x2 range [0.100789, 0.899412] window [0.100000, 0.900000]; x3 range [0.200203, 0.799294] window [0.200000, 0.800000]
+INJECTION_WINDOW PASS

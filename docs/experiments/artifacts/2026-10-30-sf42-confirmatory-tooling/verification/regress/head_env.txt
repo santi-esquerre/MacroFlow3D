@@ -1,0 +1,10 @@
+DATE_UTC=2026-10-30T05:01:44Z
+HOST=localhost.localdomain
+REGRESS_SOURCE_TREE=daf0d92856b6
+REPO=/home/sesquerre/MacroFlow3D-SF-42
+BIN_DIR=/home/sesquerre/MacroFlow3D-SF-42/build/v100-release
+CUDA_VISIBLE_DEVICES=0
+GPU: GPU 0: Tesla V100-PCIE-32GB (UUID: GPU-f4987463-824f-d174-2ebd-db25d66b5791);GPU 1: Tesla V100-PCIE-32GB (UUID: GPU-52f77925-0e9a-233d-137b-68754b6c5e26);
+NVCC: Build cuda_11.4.r11.4/compiler.30521435_0
+GCC: gcc (GCC) 9.3.1 20200408 (Red Hat 9.3.1-2)
+KERNEL: Linux 3.10.0-1160.119.1.el7.x86_64
