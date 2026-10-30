@@ -407,7 +407,7 @@ above governs the frozen periodic stack only.
 4. `ctest` holds fast contract tests only; science runs are experiment notes run
    as detached V100 jobs.
 
-## Later phases (rewritten 2026-10-17; amended 2026-10-22; items 1-5 specified, item 6 prose)
+## Later phases (rewritten 2026-10-17; amended 2026-10-22 and 2026-10-29; items 1-5 specified, item 6 prose)
 
 Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requirement: the study reaches
 `sigma_Y^2 >= 4`; final amplitudes {1, 2.25, 4}, 6.25 exploratory).
@@ -450,6 +450,12 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    `docs/decisions/2026-10-27-remote-single-gpu.md`) (done as the exploratory pilot, owner decision 2026-10-29: `alpha_T` positive at
    `sigma^2` 1, 2.25 and 4 and bounded at 0.25 at these widths and travel distances, Gate 5 `agree` at 2.25 and 4, `inconclusive` at 1
    and 0.25, `docs/experiments/2026-10-27-sf39-macrodispersion-study.md`; the confirmatory study is SF-43).
+   The confirmatory study (decision `docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md`): tooling and verification
+   (Par2 with the SF-18 field, window injection, matched solver tolerance and plane crossings; face-free seed lattice; plane reduction in
+   both codes; MMS order of the Dirichlet Darcy solver; spectral comparator; robust-test and error-budget library; design pilots):
+   [SF-42](lester-eq14/increments/SF-42-confirmatory-tooling-verification.md); the confirmatory Monte Carlo study on control planes over a
+   common physical window with quantified error budgets per estimate, Gate 5 on matched fields and grids and the V100 memory limit
+   at `sigma^2 = 4` declared: [SF-43](lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md).
 6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
    SF-31 pseudo-symplectic tracker on gridded labels (deferred: future work, not a requirement).
 

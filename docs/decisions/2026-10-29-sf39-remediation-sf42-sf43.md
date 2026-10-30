@@ -6,7 +6,8 @@
 - Deciders: owner (G1-G4, G10, G11, each chosen among the options listed); orchestrator (drafting, G5-G9)
 - Evidence:
   - the post-review evaluation of SF-39: section "Post-review evaluation" of `docs/experiments/2026-10-27-sf39-macrodispersion-study.md`
-    (PR #83, commit `5a38894f`; four independent reviews and three skeptic recomputations, every number re-verified);
+    (PR #83, squash-merged on the default branch as `104cc254`; four independent reviews and three skeptic recomputations, every number
+    re-verified);
   - three adversarial reviews of the draft of this record and of the two specifications (Monte Carlo design validity, executability
     against the code, governance fidelity and coverage), incorporated below.
 - Builds on: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md`, `2026-10-23-sf38-activation-decisions.md` (D1-D21),
@@ -54,8 +55,8 @@ depends on SF-39 and SF-42. W8 is recorded as an open question (G9).
 
 ### G2. SF-39 is corrected and closed as an exploratory pilot (owner)
 
-Options: correct and close as pilot; amend SF-39 a third time; drop PR #83. **Chosen: correct and close as pilot** (PR #83, commits
-`5a38894f`, `1c716466`). Its verdicts stand as computed; SF-43 supersedes its estimates where they overlap.
+Options: correct and close as pilot; amend SF-39 a third time; drop PR #83. **Chosen: correct and close as pilot** (PR #83, closed
+`done` and merged as `104cc254`). Its verdicts stand as computed; SF-43 supersedes its estimates where they overlap.
 
 ### G3. The V100 memory cap is accepted and declared (owner)
 

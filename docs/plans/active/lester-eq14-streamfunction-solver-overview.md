@@ -574,7 +574,12 @@ dashboard):
 - SF-41: medio (b) para el consumidor lagrangiano: stage austero de Dirichlet en x, spline no
   periódico en `x1` y salida por las caras x (←SF-38; decisión 2026-10-24).
 - SF-39: estudio de macrodispersión a `sigma^2` en {0.25, 1, 2.25, 4} (←SF-37, SF-38, SF-41; 0.25 por la adenda del
-  2026-10-29, `docs/decisions/2026-10-29-sf39-sigma025-addendum.md`).
+  2026-10-29, `docs/decisions/2026-10-29-sf39-sigma025-addendum.md`); cerrado como piloto exploratorio.
+- SF-42: herramientas y verificación para el estudio confirmatorio (Par2 con el campo SF-18, reducción por planos,
+  orden MMS del solver de Darcy, comparador espectral, biblioteca de test robusto y pilotos de diseño) (←SF-38, SF-39,
+  SF-41; decisión `docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md`).
+- SF-43: estudio Monte Carlo confirmatorio de macrodispersión por planos de control, con presupuesto de error por
+  estimación (←SF-39, SF-42; misma decisión).
 
 Fases posteriores (SF-33 y SF-34 especificadas por el cierre de SF-29, SF-35 por el
 cierre de SF-33, SF-36..SF-39 por el cierre de SF-35; el resto en prosa): las etiquetas en
