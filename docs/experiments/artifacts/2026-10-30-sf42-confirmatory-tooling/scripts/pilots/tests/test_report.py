@@ -142,7 +142,7 @@ class TestHorizonTagAndTables(unittest.TestCase):
                     json.dump({"id": rid, "code": "par2", "nx": 1040, "ny": 240, "nz": 240, "amp": "1", "nr": 2, "M": 0, "wall_s": 40.0, "exit": 0,
                                "par2_horizon_factor": hz, "par2_stage_times": [{"flow_stage_s": 5.0, "transport_s": 5.0}] * 2}, f)
             pts = {p.arm.label: p.arm.code for p in cost.points_from_runs(td)}
-        self.assertEqual(pts, {"p1": cost.PAR2_TAG, "p1_h3": cost.PAR2_H36_TAG})
+        self.assertEqual(pts, {"J3/p1": cost.PAR2_TAG, "J3B/p1_h3": cost.PAR2_H36_TAG})
         rows = cost.plan({a: 100 for a in cost.AMPS}, {a: 10 for a in cost.AMPS})
         self.assertEqual({r["arm"].code for r in rows if r["family"] in ("gate5_par2", "g7_par2")}, {cost.PAR2_H36_TAG})
         rows = cost.plan({a: 100 for a in cost.AMPS}, {a: 10 for a in cost.AMPS}, par2_tag=cost.PAR2_TAG)

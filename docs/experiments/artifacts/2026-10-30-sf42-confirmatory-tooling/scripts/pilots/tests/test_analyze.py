@@ -90,7 +90,7 @@ class TestScaleAndCost(unittest.TestCase):
                 with open(os.path.join(d, "RUN.json"), "w") as f:
                     json.dump({"id": rid, "code": code, "nx": nx, "ny": ny, "nz": ny, "amp": amp, "nr": nr, "M": 96, "wall_s": wall, "exit": ex}, f)
             pts = cost.points_from_runs(td)
-        self.assertEqual(sorted(p.arm.label for p in pts), ["c1", "p1"])
+        self.assertEqual(sorted(p.arm.label for p in pts), ["J1/c1", "J1/p1"])
         c = [p for p in pts if p.arm.code == "lagrangian"][0]
         self.assertEqual(c.arm.particles, 96.0 ** 2)
         self.assertEqual([p.arm.code for p in pts if p.arm.family == "par2"], [cost.PAR2_TAG])

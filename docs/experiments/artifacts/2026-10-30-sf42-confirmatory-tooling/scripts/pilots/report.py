@@ -217,15 +217,15 @@ def residual_diagnostics(data, model, sdr_ref):
     """Evidence for the sign of the refit residuals of the consumer pilot points (hypothesis checks, not a model): per point the mean PCG
     iterations of the run against SF-39's production median at the amplitude, the realization count, and the first realization's time
     against the mean of the others; and the correlation of the refit residual with the iteration ratio."""
-    runs = {r["id"]: r for job in ("J1", "J2", "J3") for r in load_runs(data, job) if r["code"] == "consumer" and r["exit"] == 0}
+    runs = {"%s/%s" % (r["job"], r["id"]): r for job in ("J1", "J2", "J3") for r in load_runs(data, job) if r["code"] == "consumer" and r["exit"] == 0}
     rel = {x["label"]: x["rel"] for x in model.residuals() if x["code"] == "lagrangian"}
     rows = []
-    for rid, r in sorted(runs.items()):
+    for key, r in sorted(runs.items()):
         recs = [x for x in r["realizations"] if x.get("iterations") is not None]
         it = sum(x["iterations"] for x in recs) / len(recs)
         tot = [x["seconds"]["total"] for x in recs]
         med = sdr_ref[AMP_KEY[r["amp"]]]["production"]["median"]
-        rows.append({"id": rid, "job": r["job"], "amp": r["amp"], "nr": r["nr"], "ny": r["ny"], "mg_levels": recs[0].get("mg_levels"), "rel_refit": rel[rid], "mean_pcg_iterations": it,
+        rows.append({"id": r["id"], "job": r["job"], "amp": r["amp"], "nr": r["nr"], "ny": r["ny"], "mg_levels": recs[0].get("mg_levels"), "rel_refit": rel[key], "mean_pcg_iterations": it,
                      "sf39_median_iterations": med, "iteration_ratio": it / med,
                      "first_over_rest_time": tot[0] / (sum(tot[1:]) / len(tot[1:])) if len(tot) > 1 else None})
     x, y = np.array([r["iteration_ratio"] for r in rows]), np.array([r["rel_refit"] for r in rows])

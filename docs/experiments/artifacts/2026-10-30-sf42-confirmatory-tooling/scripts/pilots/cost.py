@@ -43,11 +43,12 @@ def points_from_runs(root, jobs=("J1", "J2", "J3", "J3B"), basis="realization"):
             if r["exit"] != 0:
                 continue
             s2 = SIG2[r["amp"]]
+            label = "%s/%s" % (job, r["id"])      # run ids repeat across jobs (J1 and J3 share grids): the label must be unique
             if r["code"] == "consumer":
-                arm = cm.lagrangian_arm(r["nx"], r["ny"], r["nz"], s2, float(r["M"]) ** 2, (8,), PLANES, r["id"])
+                arm = cm.lagrangian_arm(r["nx"], r["ny"], r["nz"], s2, float(r["M"]) ** 2, (8,), PLANES, label)
             else:
                 tag = PAR2_H36_TAG if r.get("par2_horizon_factor", 1.2) > 2.0 else PAR2_TAG
-                arm = cm.par2_arm(r["nx"], r["ny"], r["nz"], s2, 1e4, tag, r["id"])
+                arm = cm.par2_arm(r["nx"], r["ny"], r["nz"], s2, 1e4, tag, label)
             w = realization_seconds(r) if basis == "realization" and ("realizations" in r or "par2_stage_times" in r) else r["wall_s"]
             pts.append(cm.Point(arm, r["nr"], w, "%s %s %s" % (job, r["id"], basis)))
     return pts
