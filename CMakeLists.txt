@@ -104,6 +104,7 @@ set(RUNTIME_SOURCES
     src/runtime/CudaContext.cu
     src/runtime/pipeline/PipelineRunner.cu
     src/runtime/ensemble/EnsembleRunner.cu
+    src/runtime/stats/PlaneCrossingRecorder.cu
 )
 
 set(BLAS_SOURCES
@@ -403,6 +404,17 @@ if(MACROFLOW3D_BUILD_APPS)
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
     add_test(NAME stochastic_baseline_gaussian COMMAND stochastic_baseline_tests)
+
+    # SF-42 N1: contract tests of the opt-in Par2 options (SF-18 medium (b) K source, injection window,
+    # plane crossings vs an independent brute-force reference, Y/K dump); drives macroflow3d_pipeline
+    # (build both targets first). Fast tier <= 60 s.
+    add_executable(par2_sf42_options_tests tests/par2/par2_sf42_options_tests.cu)
+    target_link_libraries(par2_sf42_options_tests PRIVATE macroflow3d_lib)
+    target_compile_options(par2_sf42_options_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME par2_sf42_options
+        COMMAND par2_sf42_options_tests $<TARGET_FILE:macroflow3d_pipeline>)
 
     # SF-19 T02: affine-periodic Darcy solve acceptance tests
     # (AffinePeriodicFlowSolver.cuh). Standalone (mirrors

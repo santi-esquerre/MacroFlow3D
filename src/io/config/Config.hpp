@@ -18,6 +18,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace macroflow3d {
 namespace io {
@@ -69,6 +70,23 @@ struct GridConfig {
 };
 
 /**
+ * @brief SF-42 N1: parameters of `stochastic.field_source: sf18_medium_b` (opt-in; the SF-18 periodic
+ *        normalized generator as in `lagrangian_ensemble --medium b`).
+ *
+ * `ln K = eps * Y`, `K = exp(ln K)` (host `std::exp`), `Y` with the biased sample variance normalized
+ * to `sigma2`, `corr_length = stochastic.corr_length`, seed `seed0 + r` for realization `r`.
+ * `present` records that the YAML block exists (it is required iff `field_source` selects it).
+ * Bitwise identity of `Y`/`K` with the consumer requires `grid.dx` to parse to exactly `1.0 / ny`
+ * (write it with `%.17g`); this is documented, not enforced.
+ */
+struct Sf18MediumBYamlConfig {
+    bool present = false;
+    real sigma2 = 1.0;
+    real eps = 1.0;
+    uint64_t seed0 = 0;
+};
+
+/**
  * @brief Stochastic K field configuration
  */
 struct StochasticYamlConfig {
@@ -80,6 +98,12 @@ struct StochasticYamlConfig {
     int covariance_type = 1;
     uint64_t seed = 12345; // RNG seed
     real K_mean = 1.0;     // Geometric mean of K
+
+    // SF-42 N1 (opt-in): "" = the random-spectral generator above (default, unchanged);
+    // "sf18_medium_b" = the SF-18 periodic generator, see Sf18MediumBYamlConfig. With it,
+    // sigma2/n_modes/seed above are unused, K_mean must be 1 and corr_length is the correlation length.
+    std::string field_source;
+    Sf18MediumBYamlConfig sf18_medium_b;
 };
 
 /**
@@ -137,6 +161,13 @@ struct TransportYamlConfig {
     // Injection (default: x=0 plane spanning full YZ domain)
     real inject_x = 0.0;
 
+    // SF-42 N1 (opt-in): transverse injection window [w2a, w2b] x [w3a, w3b] as fractions of
+    // Ly and Lz (0 <= a < b <= 1). Disabled => the full plane [0, Ly] x [0, Lz] (unchanged call).
+    struct InjectWindow {
+        bool enabled = false;
+        std::array<real, 4> w{{0.0, 1.0, 0.0, 1.0}};
+    } inject_window;
+
     // Velocity layout — fixed to "padded" (Par2 is the only transport method);
     // NOT user-configurable.
     std::string velocity_layout = "padded";
@@ -175,11 +206,24 @@ struct SnapshotConfig {
 };
 
 /**
+ * @brief SF-42 N1 (opt-in): per-realization first-crossing statistics of control planes
+ *        (`crossings/realization_%04d_planes.csv`, see runtime/stats/PlaneCrossingRecorder.cuh).
+ *        `dump_injection` additionally writes the injection positions of every particle
+ *        (`crossings/realization_%04d_injection.csv`), a verification dump.
+ */
+struct PlaneCrossingsConfig {
+    bool enabled = false;
+    std::vector<real> planes; // positions in config length units, strictly increasing
+    bool dump_injection = false;
+};
+
+/**
  * @brief Analysis configuration (macrodispersion + snapshots)
  */
 struct AnalysisConfig {
     MacrodispersionConfig macrodispersion;
     SnapshotConfig snapshots;
+    PlaneCrossingsConfig plane_crossings;
 };
 
 /**
@@ -464,6 +508,16 @@ struct StreamfunctionSolverYamlConfig {
 };
 
 /**
+ * @brief SF-42 N1 (opt-in; only with `stochastic.field_source: sf18_medium_b`): dump of the SF-18
+ *        field Y and of K for the listed realizations, `<output_dir>/fields/r_%04d/{Y,K}.npy`
+ *        (float64, shape (nz, ny, nx)).
+ */
+struct DumpFieldConfig {
+    bool enabled = false;
+    std::vector<int> realizations;
+};
+
+/**
  * @brief Output configuration
  */
 struct OutputYamlConfig {
@@ -473,6 +527,7 @@ struct OutputYamlConfig {
     bool save_velocity = false;
     bool save_particles = true;
     std::string format = "binary"; // "binary" or "vtk"
+    DumpFieldConfig dump_field;    // SF-42 N1 (opt-in)
 };
 
 /**

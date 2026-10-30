@@ -84,6 +84,33 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
                 "(exponential) was retired, see "
                 "docs/decisions/2026-10-07-gaussian-covariance-only.md");
 
+    // ── SF-42 N1: SF-18 medium (b) conductivity source (opt-in) ──────────
+    // The block is required iff field_source selects it; every other combination is rejected.
+    const bool sf18_source = (cfg.stochastic.field_source == "sf18_medium_b");
+    if (!cfg.stochastic.field_source.empty() && !sf18_source)
+        err("stochastic.field_source", "'" + cfg.stochastic.field_source +
+                                           "' unknown; expected 'sf18_medium_b' (or absent for the "
+                                           "random-spectral generator)");
+    if (sf18_source && !cfg.stochastic.sf18_medium_b.present)
+        err("stochastic.sf18_medium_b",
+            "required when stochastic.field_source is 'sf18_medium_b' (sigma2, eps, seed0)");
+    if (cfg.stochastic.sf18_medium_b.present && !sf18_source)
+        err("stochastic.sf18_medium_b",
+            "only valid with stochastic.field_source: sf18_medium_b");
+    if (sf18_source) {
+        const auto& m = cfg.stochastic.sf18_medium_b;
+        if (!std::isfinite(m.sigma2) || m.sigma2 < 0)
+            err("stochastic.sf18_medium_b.sigma2", "must be finite and >= 0");
+        if (!std::isfinite(m.eps) || m.eps <= 0)
+            err("stochastic.sf18_medium_b.eps", "must be finite and > 0");
+        if (cfg.stochastic.K_mean != 1.0)
+            err("stochastic.K_mean", "must be exactly 1.0 with stochastic.field_source: "
+                                     "sf18_medium_b (K = exp(eps*Y), no geometric-mean factor)");
+        if (cfg.grid.nx % 2 != 0 || cfg.grid.ny % 2 != 0 || cfg.grid.nz % 2 != 0)
+            err("grid", "nx, ny, nz must be even with stochastic.field_source: sf18_medium_b "
+                        "(SF-18 half-spectrum layout)");
+    }
+
     // ── Flow ─────────────────────────────────────────────────────────
     const auto& solver = cfg.flow.solver;
     if (solver != "mg" && solver != "cg" && solver != "mg_cg")
@@ -129,6 +156,46 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
                                     "' unsupported; only 'par2' is available (the legacy 'pspta' "
                                     "engine was retired 2026-10-26)");
 
+    // ── SF-42 N1: transverse injection window (opt-in) ────────────────
+    if (cfg.transport.inject_window.enabled) {
+        const auto& w = cfg.transport.inject_window.w;
+        const char* p = "transport.inject_window";
+        for (int i = 0; i < 4; ++i)
+            if (!std::isfinite(w[i]))
+                err(p, "entries must be finite");
+        auto pair_ok = [&](real a, real b) {
+            return std::isfinite(a) && std::isfinite(b) && 0 <= a && a < b && b <= 1;
+        };
+        if (!pair_ok(w[0], w[1]))
+            err(p, "[w2a, w2b] must satisfy 0 <= w2a < w2b <= 1 (fractions of Ly)");
+        if (!pair_ok(w[2], w[3]))
+            err(p, "[w3a, w3b] must satisfy 0 <= w3a < w3b <= 1 (fractions of Lz)");
+    }
+
+    // ── SF-42 N1: plane crossings (opt-in) ────────────────────────────
+    const auto& pcx = cfg.analysis.plane_crossings;
+    if (pcx.enabled) {
+        const char* p = "analysis.plane_crossings.planes";
+        const double Lx = cfg.grid.nx * static_cast<double>(cfg.grid.dx);
+        if (pcx.planes.empty())
+            err(p, "must list at least one plane");
+        for (std::size_t k = 0; k < pcx.planes.size(); ++k) {
+            if (!std::isfinite(pcx.planes[k]))
+                err(p, "entries must be finite");
+            else if (k > 0 && !(pcx.planes[k] > pcx.planes[k - 1]))
+                err(p, "must be strictly increasing");
+        }
+        if (!pcx.planes.empty() && std::isfinite(pcx.planes.front()) &&
+            !(pcx.planes.front() > cfg.transport.inject_x))
+            err(p, "the first plane must be > transport.inject_x");
+        if (!pcx.planes.empty() && std::isfinite(pcx.planes.back()) && !(pcx.planes.back() < Lx))
+            err(p, "the last plane must be < Lx = nx*dx");
+        if (cfg.flow.bc.xmin.type == BCType::Periodic || cfg.flow.bc.xmax.type == BCType::Periodic)
+            err("analysis.plane_crossings", "requires non-periodic x faces");
+    } else if (pcx.dump_injection) {
+        err("analysis.plane_crossings.dump_injection", "requires analysis.plane_crossings.enabled");
+    }
+
     // ── Analysis / macrodispersion ───────────────────────────────────
     const auto& mac = cfg.analysis.macrodispersion;
     if (mac.enabled) {
@@ -159,6 +226,26 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
     // ── Output ───────────────────────────────────────────────────────
     if (cfg.output.output_dir.empty())
         err("output.output_dir", "must not be empty");
+
+    // SF-42 N1: Y/K dump (opt-in; the field is only available from the SF-18 source)
+    if (cfg.output.dump_field.enabled) {
+        const char* p = "output.dump_field";
+        if (!sf18_source)
+            err(p, "requires stochastic.field_source: sf18_medium_b");
+        const auto& rl = cfg.output.dump_field.realizations;
+        const int NR_eff = mac.enabled ? mac.NR : 1;
+        if (rl.empty())
+            err("output.dump_field.realizations", "must list at least one realization");
+        for (std::size_t i = 0; i < rl.size(); ++i) {
+            if (rl[i] < 0 || rl[i] >= NR_eff)
+                err("output.dump_field.realizations",
+                    std::to_string(rl[i]) + " outside [0, NR-1] (NR = " + std::to_string(NR_eff) + ")");
+            for (std::size_t j = 0; j < i; ++j)
+                if (rl[j] == rl[i])
+                    err("output.dump_field.realizations",
+                        "duplicate realization " + std::to_string(rl[i]));
+        }
+    }
 
     // ── Streamfunction solver (SF-16 T01) ───────────────────────────────
     // Mirrors the library's own validation ranges

@@ -58,7 +58,17 @@ struct ConfigSerializer {
         std::fprintf(f, "  n_modes: %d\n", cfg.stochastic.n_modes);
         std::fprintf(f, "  covariance_type: %d\n", cfg.stochastic.covariance_type);
         std::fprintf(f, "  seed: %llu\n", (unsigned long long)cfg.stochastic.seed);
-        std::fprintf(f, "  K_mean: %.15e\n\n", (double)cfg.stochastic.K_mean);
+        std::fprintf(f, "  K_mean: %.15e\n", (double)cfg.stochastic.K_mean);
+        // SF-42 N1: printed only when the opt-in source is used (existing configs unchanged).
+        if (cfg.stochastic.field_source == "sf18_medium_b") {
+            std::fprintf(f, "  field_source: %s\n", cfg.stochastic.field_source.c_str());
+            std::fprintf(f, "  sf18_medium_b:\n");
+            std::fprintf(f, "    sigma2: %.17g\n", (double)cfg.stochastic.sf18_medium_b.sigma2);
+            std::fprintf(f, "    eps: %.17g\n", (double)cfg.stochastic.sf18_medium_b.eps);
+            std::fprintf(f, "    seed0: %llu\n",
+                         (unsigned long long)cfg.stochastic.sf18_medium_b.seed0);
+        }
+        std::fprintf(f, "\n");
 
         // Flow
         std::fprintf(f, "flow:\n");
@@ -120,6 +130,11 @@ struct ConfigSerializer {
         std::fprintf(f, "  output_every: %d\n", cfg.transport.output_every);
         std::fprintf(f, "  snapshot_every: %d\n", cfg.transport.snapshot_every);
         std::fprintf(f, "  inject_x: %.15e\n", (double)cfg.transport.inject_x);
+        if (cfg.transport.inject_window.enabled) { // SF-42 N1 (opt-in)
+            const auto& w = cfg.transport.inject_window.w;
+            std::fprintf(f, "  inject_window: [%.17g, %.17g, %.17g, %.17g]\n", (double)w[0],
+                         (double)w[1], (double)w[2], (double)w[3]);
+        }
         std::fprintf(f, "  method: %s\n", cfg.transport.method.c_str());
         std::fprintf(f, "  velocity_layout: %s\n\n", cfg.transport.velocity_layout.c_str());
 
@@ -149,7 +164,17 @@ struct ConfigSerializer {
                      cfg.analysis.snapshots.include_unwrapped ? "true" : "false");
         std::fprintf(f, "    stride: %d\n", cfg.analysis.snapshots.stride);
         std::fprintf(f, "    max_particles: %d\n", cfg.analysis.snapshots.max_particles);
-        std::fprintf(f, "    precision: %d\n\n", cfg.analysis.snapshots.precision);
+        std::fprintf(f, "    precision: %d\n", cfg.analysis.snapshots.precision);
+        if (cfg.analysis.plane_crossings.enabled) { // SF-42 N1 (opt-in)
+            const auto& pc = cfg.analysis.plane_crossings;
+            std::fprintf(f, "  plane_crossings:\n    enabled: true\n    dump_injection: %s\n",
+                         pc.dump_injection ? "true" : "false");
+            std::fprintf(f, "    planes: [");
+            for (std::size_t k = 0; k < pc.planes.size(); ++k)
+                std::fprintf(f, "%s%.17g", k ? ", " : "", (double)pc.planes[k]);
+            std::fprintf(f, "]\n");
+        }
+        std::fprintf(f, "\n");
 
         // Output
         std::fprintf(f, "output:\n");
@@ -158,7 +183,14 @@ struct ConfigSerializer {
         std::fprintf(f, "  save_head: %s\n", cfg.output.save_head ? "true" : "false");
         std::fprintf(f, "  save_velocity: %s\n", cfg.output.save_velocity ? "true" : "false");
         std::fprintf(f, "  save_particles: %s\n", cfg.output.save_particles ? "true" : "false");
-        std::fprintf(f, "  format: %s\n\n", cfg.output.format.c_str());
+        std::fprintf(f, "  format: %s\n", cfg.output.format.c_str());
+        if (cfg.output.dump_field.enabled) { // SF-42 N1 (opt-in)
+            std::fprintf(f, "  dump_field:\n    enabled: true\n    realizations: [");
+            for (std::size_t i = 0; i < cfg.output.dump_field.realizations.size(); ++i)
+                std::fprintf(f, "%s%d", i ? ", " : "", cfg.output.dump_field.realizations[i]);
+            std::fprintf(f, "]\n");
+        }
+        std::fprintf(f, "\n");
 
         // Streamfunction solver (SF-16 T01)
         const auto& sf = cfg.streamfunction_solver;

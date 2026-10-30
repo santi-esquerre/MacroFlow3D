@@ -26,6 +26,10 @@
 // Runtime stats collector (Etapa 6)
 #include "../../runtime/stats/ParticleMomentsCollector.hpp"
 
+// SF-42 N1 (opt-in): first-crossing statistics of control planes; Y/K dump (npy writer)
+#include "../../physics/streamfunctions/inlet_slab/NpyIo.hpp"
+#include "../../runtime/stats/PlaneCrossingRecorder.cuh"
+
 // Analysis — macrodispersion (Etapa 6, CPU-only)
 #include "../../analysis/macrodispersion/MacrodispersionAnalysis.hpp"
 
@@ -63,7 +67,9 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -93,6 +99,83 @@ static StochasticConfig make_stochastic_cfg(const StochasticYamlConfig& y) {
 static bool bc_has_any_periodic(const BCSpec& bc) {
     return bc.xmin.type == BCType::Periodic || bc.ymin.type == BCType::Periodic ||
            bc.zmin.type == BCType::Periodic;
+}
+
+// ============================================================================
+// SF-42 N1: stochastic.field_source == "sf18_medium_b"
+// ============================================================================
+
+/**
+ * @brief K from the SF-18 periodic normalized generator, as `lagrangian_ensemble --medium b`
+ *        (DirichletLongBoxStage phases F and S1), for realization `r`.
+ *
+ * Y (device) is generated into the existing log-K workspace buffer `y_dev`, downloaded, and on the
+ * host `lnK = eps * Y; K = std::exp(lnK)` (the consumer's expression and libm, in place: same
+ * values), then K is uploaded into `K_field`. With seed0 + r, corr_length = ell and the pipeline
+ * grid this is bitwise the consumer's Y/K iff grid.dx == 1.0/ny exactly (give dx with %.17g).
+ * The SF-18 spectrum / cuFFT workspace is scoped to the generator call, so it is not allocated
+ * during the head solve and the transport.
+ */
+static void generate_K_sf18_medium_b(const AppConfig& cfg, int r, const Grid3D& grid,
+                                     CudaContext& ctx, DeviceBuffer<real>& y_dev,
+                                     ScalarField& K_field, std::vector<real>& host,
+                                     const OutputLayout& layout) {
+    const auto& m = cfg.stochastic.sf18_medium_b;
+    PeriodicGaussianFieldConfig pg_cfg;
+    pg_cfg.sigma2 = m.sigma2;
+    pg_cfg.corr_length = cfg.stochastic.corr_length;
+    pg_cfg.seed = static_cast<unsigned long long>(m.seed0) + static_cast<unsigned long long>(r);
+    pg_cfg.normalize_variance = true;
+
+    const size_t N = grid.num_cells();
+    std::printf("  [4] SF-18 medium (b) field (seed=%llu, sigma2=%.4e, corr_length=%.4e, eps=%.4e); "
+                "K=exp(eps*Y)\n",
+                pg_cfg.seed, (double)pg_cfg.sigma2, (double)pg_cfg.corr_length, (double)m.eps);
+    {
+        PeriodicGaussianFieldWorkspace pg_ws; // freed at the end of this scope
+        generate_periodic_gaussian_field(ctx, grid, pg_cfg, y_dev.span(), pg_ws);
+        ctx.synchronize();
+    }
+    host.resize(N);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(host.data(), y_dev.data(), N * sizeof(real),
+                                           cudaMemcpyDeviceToHost, ctx.cuda_stream()));
+    ctx.synchronize();
+
+    {
+        long double mean = 0, var = 0;
+        for (size_t c = 0; c < N; ++c)
+            mean += host[c];
+        mean /= static_cast<long double>(N);
+        for (size_t c = 0; c < N; ++c)
+            var += (host[c] - mean) * (host[c] - mean);
+        var /= static_cast<long double>(N);
+        std::printf("       Y stats: mean=%.4e  var=%.15e (target sigma2=%.15e)\n", (double)mean,
+                    (double)var, (double)pg_cfg.sigma2);
+    }
+
+    const auto& dump = cfg.output.dump_field;
+    const bool do_dump = dump.enabled && std::find(dump.realizations.begin(),
+                                                    dump.realizations.end(), r) !=
+                                             dump.realizations.end();
+    const std::vector<std::size_t> shape = {static_cast<std::size_t>(grid.nz),
+                                            static_cast<std::size_t>(grid.ny),
+                                            static_cast<std::size_t>(grid.nx)};
+    if (do_dump) {
+        std::filesystem::create_directories(layout.field_dump_dir(r));
+        streamfunctions::inlet_slab::write_npy(layout.field_dump_dir(r) + "/Y.npy", shape,
+                                               host.data(), N);
+    }
+    const real eps = m.eps;
+    for (size_t c = 0; c < N; ++c) {
+        const real lnK = eps * host[c];
+        host[c] = std::exp(lnK);
+    }
+    if (do_dump)
+        streamfunctions::inlet_slab::write_npy(layout.field_dump_dir(r) + "/K.npy", shape,
+                                               host.data(), N);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpyAsync(K_field.span().data(), host.data(), N * sizeof(real),
+                                           cudaMemcpyHostToDevice, ctx.cuda_stream()));
+    ctx.synchronize();
 }
 
 // ============================================================================
@@ -177,6 +260,10 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         Y_field.resize(N);
     }
 
+    // SF-42 N1 (opt-in): SF-18 medium (b) K source (host staging buffer, allocated on first use)
+    const bool use_sf18_medium_b = (cfg.stochastic.field_source == "sf18_medium_b");
+    std::vector<real> sf18_host;
+
     // Particles (device SoA — reused across realizations)
     const int NP = cfg.transport.n_particles;
     DeviceBuffer<real> px(NP), py(NP), pz(NP);
@@ -192,6 +279,17 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
 
     // Status array
     DeviceBuffer<uint8_t> status_buf(NP);
+
+    // SF-42 N1 (opt-in): plane-crossing recorder (device records allocated once, here)
+    std::unique_ptr<runtime::PlaneCrossingRecorder> crossings;
+    if (cfg.analysis.plane_crossings.enabled) {
+        const std::vector<double> planes(cfg.analysis.plane_crossings.planes.begin(),
+                                         cfg.analysis.plane_crossings.planes.end());
+        crossings = std::make_unique<runtime::PlaneCrossingRecorder>(
+            NP, planes, (double)cfg.grid.Lx(), (double)cfg.grid.Ly(), (double)cfg.grid.Lz());
+        std::printf("       Plane crossings: %zu planes, %.1f MiB device records\n", planes.size(),
+                    (double)crossings->device_bytes() / (1024.0 * 1024.0));
+    }
 
     // Unwrapped positions buffer (device)
     DeviceBuffer<real> ux, uy, uz;
@@ -266,7 +364,12 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         // generate_K_lognormal below) -- this is the ONLY place K_field is
         // written for a realization, so every downstream consumer sees the
         // periodic conductivity.
-        if (field_source_periodic_gaussian) {
+        if (use_sf18_medium_b) {
+            MACROFLOW3D_NVTX_PUSH("K_generation");
+            profiler.start("K_generation");
+            generate_K_sf18_medium_b(cfg, r, grid, ctx, stoch_ws.logK, K_field, sf18_host, layout);
+            profiler.stop();
+        } else if (field_source_periodic_gaussian) {
             const auto& pgcfg = cfg.streamfunction_solver.periodic_gaussian;
             PeriodicGaussianFieldConfig pg_cfg;
             pg_cfg.sigma2 = pgcfg.sigma2;
@@ -718,10 +821,23 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
         // particles(), compute_unwrapped, synchronize.
         auto run_hot_loop = [&](auto& eng) {
             eng.bind_particles(pv);
-            eng.inject_box(cfg.transport.inject_x, static_cast<real>(0.0), static_cast<real>(0.0),
-                           cfg.transport.inject_x, Ly, Lz, 0, NP);
+            // SF-42 N1 (opt-in): transverse window [w2a Ly, w2b Ly] x [w3a Lz, w3b Lz]; absent =>
+            // the full plane, exactly the historical call (0, 0 ... Ly, Lz).
+            real inj_y0 = static_cast<real>(0.0), inj_z0 = static_cast<real>(0.0);
+            real inj_y1 = Ly, inj_z1 = Lz;
+            if (cfg.transport.inject_window.enabled) {
+                const auto& w = cfg.transport.inject_window.w;
+                inj_y0 = w[0] * Ly;
+                inj_y1 = w[1] * Ly;
+                inj_z0 = w[2] * Lz;
+                inj_z1 = w[3] * Lz;
+            }
+            eng.inject_box(cfg.transport.inject_x, inj_y0, inj_z0, cfg.transport.inject_x, inj_y1,
+                           inj_z1, 0, NP);
             eng.ensure_tracking();
             eng.prepare();
+            if (crossings)
+                crossings->begin(eng.particles(), ctx.cuda_stream());
 
             if (do_stats)
                 collector.reset();
@@ -734,6 +850,9 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             for (int step = 1; step <= n_steps; ++step) {
                 eng.step(dt);
                 counters.add_step();
+                if (crossings) // SF-42 N1: device-side, async, no host sync
+                    crossings->update(eng.particles(), step, static_cast<double>(dt),
+                                      ctx.cuda_stream());
 
                 // Progress printout
                 const int out_every = cfg.transport.output_every;
@@ -781,6 +900,22 @@ int run_ensemble(const AppConfig& cfg, CudaContext& ctx, StageProfiler& profiler
             }
 
             eng.synchronize();
+
+            // SF-42 N1: reduce and write the plane-crossing statistics of this realization
+            if (crossings) {
+                const auto rows = crossings->finish(ctx.cuda_stream());
+                const std::string cpath = layout.crossings_planes_csv(r);
+                if (!runtime::write_plane_crossings_csv(cpath, rows))
+                    throw std::runtime_error("cannot write " + cpath);
+                std::printf("       Wrote %s (%zu planes)\n", cpath.c_str(), rows.size());
+                if (cfg.analysis.plane_crossings.dump_injection) {
+                    const std::string ipath = layout.crossings_injection_csv(r);
+                    if (!runtime::write_injection_csv(ipath, (double)cfg.transport.inject_x,
+                                                      crossings->injection_x2(),
+                                                      crossings->injection_x3()))
+                        throw std::runtime_error("cannot write " + ipath);
+                }
+            }
 
             // [Task 5] Write final snapshot if last step wasn't covered by cadence
             {

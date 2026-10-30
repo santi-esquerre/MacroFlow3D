@@ -20,6 +20,7 @@
 #include <ctime>
 #include <fstream>
 #include <string>
+#include <vector>
 
 namespace macroflow3d {
 namespace io {
@@ -76,6 +77,15 @@ struct ManifestWriter {
                            {"seed", cfg.stochastic.seed},
                            {"K_mean", (double)cfg.stochastic.K_mean}};
 
+        // SF-42 N1: opt-in options are recorded only when used (existing manifests unchanged).
+        if (cfg.stochastic.field_source == "sf18_medium_b") {
+            j["stochastic"]["field_source"] = cfg.stochastic.field_source;
+            j["stochastic"]["sf18_medium_b"] = {{"sigma2", (double)cfg.stochastic.sf18_medium_b.sigma2},
+                                                {"eps", (double)cfg.stochastic.sf18_medium_b.eps},
+                                                {"seed0", cfg.stochastic.sf18_medium_b.seed0},
+                                                {"normalize_variance", true}};
+        }
+
         // ── Flow ────────────────────────────────────────────────────
         j["flow"] = {{"solver", cfg.flow.solver},
                      {"mg_levels", cfg.flow.mg_levels},
@@ -94,6 +104,12 @@ struct ManifestWriter {
                           {"alpha_t", (double)cfg.transport.alpha_t},
                           {"seed", cfg.transport.seed}};
 
+        if (cfg.transport.inject_window.enabled) {
+            const auto& w = cfg.transport.inject_window.w;
+            j["transport"]["inject_window"] = {(double)w[0], (double)w[1], (double)w[2],
+                                               (double)w[3]};
+        }
+
         // ── Analysis ────────────────────────────────────────────────
         const auto& mac = cfg.analysis.macrodispersion;
         j["analysis"]["macrodispersion"] = {
@@ -105,7 +121,19 @@ struct ManifestWriter {
         j["analysis"]["snapshots"] = {
             {"enabled", snap.enabled}, {"every", snap.every}, {"stride", snap.stride}};
 
+        if (cfg.analysis.plane_crossings.enabled) {
+            std::vector<double> planes(cfg.analysis.plane_crossings.planes.begin(),
+                                       cfg.analysis.plane_crossings.planes.end());
+            j["analysis"]["plane_crossings"] = {
+                {"enabled", true},
+                {"planes", planes},
+                {"dump_injection", cfg.analysis.plane_crossings.dump_injection}};
+        }
+
         // ── Output ──────────────────────────────────────────────────
+        if (cfg.output.dump_field.enabled)
+            j["output"]["dump_field"] = {{"enabled", true},
+                                         {"realizations", cfg.output.dump_field.realizations}};
         j["output_dir"] = cfg.output.output_dir;
         j["effective_config"] = layout.effective_config();
 
