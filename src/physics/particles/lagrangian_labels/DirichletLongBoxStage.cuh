@@ -64,6 +64,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -122,6 +123,9 @@ struct DirichletLongBoxSpec {
     debug::Trace* debug_trace = nullptr; ///< non-owning; debug hashes of the solve (host syncs), see debug::
     bool build_splines = true;      ///< phase S3; false: f (device) and host_lnk are kept as the N2 outputs
     bool fused_coefficients = false; ///< S3: one interleaved double2 {pot, logk} array instead of two arrays
+    /// Optional (opt-in diagnostics): called once with the host Y and K = exp(eps Y) exactly as the stage uses them,
+    /// right after phase S1 (before K is uploaded and Y released). Null: not called.
+    std::function<void(const std::vector<real>&, const std::vector<real>&)> host_field_sink;
 };
 
 /// The `B_SOLVER` quantities of the A/B application (lagrangian_medium_ab_main.cu) and its verdict rule.

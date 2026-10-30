@@ -487,6 +487,8 @@ DirichletLongBoxStage build_dirichlet_long_box_stage(CudaContext& ctx, const Dir
                 th.join();
             rec.device_used = device_used_now();
         });
+        if (spec.host_field_sink)
+            spec.host_field_sink(Y, K);
         release(Y_gen);
         rec.seconds = since(t0);
     }
