@@ -1,0 +1,6 @@
+PART_BEGIN part=width selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
+RUN id=s4_w24:s7101:n30 rc=0 wall=1492s realizations_done=30/30 out=/home/sesquerre/sf39_campaign/runs/s4_w24
+ARM_HALTED arm=s4_w12 (listed in /home/sesquerre/sf39_campaign/halted_arms.txt after a runner exit 3/4; owner decision pending; not run)
+RUN id=s4_w12c:s7215:n17 rc=0 wall=342s realizations_done=17/17 out=/home/sesquerre/sf39_campaign/runs/s4_w12c
+RECORDED part_seconds=348 part_runs_seconds=2537 part=width (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=width rc=1

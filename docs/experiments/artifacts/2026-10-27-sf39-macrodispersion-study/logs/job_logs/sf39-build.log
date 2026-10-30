@@ -1,0 +1,16 @@
+[2026-10-27T16:07:28Z] job=sf39-build GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=84.0% min_free=31229/32510 MiB compute_procs=1
+  gpu 1: mean_util=0.0% min_free=32506/32510 MiB compute_procs=0
+[2026-10-27T16:07:28Z] job=sf39-build chose GPU 1 (auto: least-loaded)
+[2026-10-27T16:07:28Z] job=sf39-build session=macroflow3d-SF-39-sf39-build started
+[2026-10-27T16:07:28Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-27T16:07:28Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-27T16:07:28Z] command=echo TREE=$(cat .mf3d_source_rev); set -e; rm -rf build/v100-release; cmake --preset v100-release > $HOME/sf39_campaign/build/configure.log 2>&1; mkdir -p $HOME/.cache/mf3d-tmp; TMPDIR=$HOME/.cache/mf3d-tmp cmake --build build/v100-release -j > $HOME/sf39_campaign/build/build.log 2>&1; cd build/v100-release; md5sum lagrangian_ensemble lagrangian_medium_ab macroflow3d_pipeline inlet_slab par2_field_stats > $HOME/sf39_campaign/build/binaries.md5; cat $HOME/sf39_campaign/build/binaries.md5; cp ../../.mf3d_source_rev $HOME/sf39_campaign/build/source_rev.txt; echo BUILD_OK
+TREE=1e40cfe9cb51
+c40cc2377ebff034938099afc8876d52  lagrangian_ensemble
+ea4d8fde65f824658862a8617432e4d2  lagrangian_medium_ab
+110d2bcf947756f55e34a015bf862d19  macroflow3d_pipeline
+178427d778325954c00617b48aa038c9  inlet_slab
+5a59919a26aeb81fd7f0b93fabf93337  par2_field_stats
+BUILD_OK
+[2026-10-27T16:12:41Z] job=sf39-build finished exit=0

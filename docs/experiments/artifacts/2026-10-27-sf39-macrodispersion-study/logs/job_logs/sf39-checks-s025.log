@@ -1,0 +1,107 @@
+[2026-10-29T14:49:14Z] job=sf39-checks-s025 GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=1.6% min_free=32510/32510 MiB compute_procs=0
+[2026-10-29T14:49:14Z] job=sf39-checks-s025 chose GPU 0 (auto: least-loaded)
+[2026-10-29T14:49:14Z] job=sf39-checks-s025 session=macroflow3d-SF-39-sf39-checks-s025 started
+[2026-10-29T14:49:14Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-29T14:49:14Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-29T14:49:14Z] command=echo TREE=$(cat .mf3d_source_rev); bash docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts/run_sf39.sh build/v100-release checks; echo PART_SCRIPT_EXIT=$?
+TREE=61a019e0bb82
+PART_BEGIN part=checks selector=none binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
++ [unittest:61a019e0bb82] .: python3 -m unittest discover -s /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts -t /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts > /home/sesquerre/sf39_campaign/checks/logs/unittest_61a019e0bb82.log 2>&1
+  CASE_RESULT run=unittest:61a019e0bb82 rc=1 wall=242s end=2026-10-29T14:53:23Z
+CHECK_unittest rc=1 verdict=FAILED Ran 310 tests in 240.030s FAILED (errors=2) 
++ [geometry:61a019e0bb82] .: python3 -m sf39.geometry check > /home/sesquerre/sf39_campaign/checks/logs/geometry_61a019e0bb82.log 2>&1
+  CASE_RESULT run=geometry:61a019e0bb82 rc=0 wall=0s end=2026-10-29T14:53:23Z
+CHECK_geometry rc=0 verdict=ok GEOMETRY_CHECK OK
+CHECK_regress_refs rc=NA verdict=reused(/home/sesquerre/regress/refs/1e40cfe/out/REGRESS_DONE)
+SKIP_DONE run=regress_head rc=0
+CHECK_regress_head rc=0 verdict=REGRESS_DONE
+SKIP_DONE run=regress_compare rc=0
+CHECK_regress rc=0 verdict=REGRESS IDENTICAL
+SKIP_DONE run=chk_s1_n05:s4901:n1 rc=0
+RUN id=chk_s1_n05:s4901:n1 rc=0 wall=9s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_n05
+CHECK_solve_chk_s1_n05 rc=0 verdict=converged
+SKIP_DONE run=chk_s1_n10:s4901:n1 rc=0
+RUN id=chk_s1_n10:s4901:n1 rc=0 wall=20s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_n10
+CHECK_solve_chk_s1_n10 rc=0 verdict=converged
+SKIP_DONE run=chk_s1_n20:s4901:n1 rc=0
+RUN id=chk_s1_n20:s4901:n1 rc=0 wall=69s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_n20
+CHECK_solve_chk_s1_n20 rc=0 verdict=converged
+SKIP_DONE run=chk_s1_tw:s4901:n1 rc=0
+RUN id=chk_s1_tw:s4901:n1 rc=0 wall=11s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s1_tw
+CHECK_solve_chk_s1_tw rc=0 verdict=converged
+SKIP_DONE run=chk_s225_n08:s4901:n1 rc=0
+RUN id=chk_s225_n08:s4901:n1 rc=0 wall=14s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_n08
+CHECK_solve_chk_s225_n08 rc=0 verdict=converged
+SKIP_DONE run=chk_s225_n16:s4901:n1 rc=0
+RUN id=chk_s225_n16:s4901:n1 rc=0 wall=33s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_n16
+CHECK_solve_chk_s225_n16 rc=0 verdict=converged
+SKIP_DONE run=chk_s225_n32:s4901:n1 rc=0
+RUN id=chk_s225_n32:s4901:n1 rc=0 wall=133s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_n32
+CHECK_solve_chk_s225_n32 rc=0 verdict=converged
+SKIP_DONE run=chk_s225_tw:s4901:n1 rc=0
+RUN id=chk_s225_tw:s4901:n1 rc=0 wall=23s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s225_tw
+CHECK_solve_chk_s225_tw rc=0 verdict=converged
+SKIP_DONE run=chk_s4_n16:s4901:n1 rc=0
+RUN id=chk_s4_n16:s4901:n1 rc=0 wall=12s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_n16
+CHECK_solve_chk_s4_n16 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_n32:s4901:n1 rc=0
+RUN id=chk_s4_n32:s4901:n1 rc=0 wall=31s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_n32
+CHECK_solve_chk_s4_n32 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_n64:s4901:n1 rc=0
+RUN id=chk_s4_n64:s4901:n1 rc=0 wall=143s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_n64
+CHECK_solve_chk_s4_n64 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_tw:s4901:n1 rc=0
+RUN id=chk_s4_tw:s4901:n1 rc=0 wall=23s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_tw
+CHECK_solve_chk_s4_tw rc=0 verdict=converged
+SKIP_DONE run=chk_s4_w24:s4901:n1 rc=0
+RUN id=chk_s4_w24:s4901:n1 rc=0 wall=48s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_w24
+CHECK_solve_chk_s4_w24 rc=0 verdict=converged
+SKIP_DONE run=chk_s4_w12:s4901:n1 rc=0
+RUN id=chk_s4_w12:s4901:n1 rc=0 wall=21s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s4_w12
+CHECK_solve_chk_s4_w12 rc=0 verdict=converged
++ [chk_s025_n05:s4901:n1] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 1024,64,64 --sigma2 1 --eps 0.5 --ell 0.078125 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 0.46875,0.546875,0.625,0.703125,0.78125,0.859375,0.9375,1.015625,1.09375,1.171875,1.25,1.328125,1.40625,1.484375,1.5625,1.640625,1.71875,1.796875,1.875,1.953125,2.03125,2.109375,2.1875,2.265625,2.34375,2.421875,2.5,2.578125,2.65625,2.734375,2.8125,2.890625,2.96875,3.046875,3.125,3.203125,3.28125,3.359375,3.4375,3.515625,3.59375,3.671875,3.75,3.828125,3.90625,3.984375,4.0625,4.140625,4.1953125,4.21875,4.296875,4.375,4.453125,4.53125,4.609375,4.6875,4.765625,4.84375,4.921875,5,5.078125,5.15625,5.234375,5.3125,5.390625,5.46875,5.546875,5.625,5.703125,5.78125,5.859375,5.9375,6.015625,6.09375,6.171875,6.25,6.328125,6.40625,6.484375,6.5625,6.640625,6.71875,6.796875,6.875,6.953125,7.03125,7.109375,7.1875,7.265625,7.34375,7.421875,7.5,7.578125,7.65625,7.734375,7.8125,7.890625,7.96875,8,8.046875,8.125,8.203125,8.28125,8.359375,8.4375,8.515625,8.59375,8.671875,8.75,8.828125,8.90625,8.984375,9.0625,9.140625,9.21875,9.296875,9.375,9.453125,9.53125,9.609375,9.6875,9.765625,9.84375,9.921875,10,10.078125,10.15625,10.234375,10.3125,10.390625,10.46875,10.546875,10.625,10.703125,10.78125,10.859375,10.9375,11.015625,11.09375,11.171875,11.25,11.328125,11.40625,11.484375,11.5625,11.640625,11.71875,11.796875,11.875,11.953125,12.03125,12.109375,12.1875,12.265625,12.34375,12.421875,12.5,12.578125,12.65625,12.734375,12.8125,12.890625,12.96875,13.046875,13.125,13.203125,13.28125,13.359375,13.4375,13.515625,13.59375,13.671875,13.75,13.828125,13.90625,13.984375,14.0625,14.140625,14.21875,14.296875,14.375,14.453125,14.53125,14.609375,14.6875,14.765625,14.84375,14.921875,15,15.078125,15.15625,15.234375,15.3125,15.390625,15.46875,15.546875,15.609375 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 4901 --nr 1 --out /home/sesquerre/sf39_campaign/checks/runs/chk_s025_n05 > /home/sesquerre/sf39_campaign/checks/logs/chk_s025_n05_s4901_n1.log 2>&1
+  CASE_RESULT run=chk_s025_n05:s4901:n1 rc=0 wall=13s end=2026-10-29T14:53:38Z
+    R=0 B_SOLVER r=0 converged=1 iterations=40 initial=2.284873e+04 final=1.619888e-09 rel=7.089620e-14 qbar=1.038888918648e+00 Q_in=1.038888918648e+00 Q_out=1.038888918648e+00 balance=2.864019e-14 max_di
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=2733 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=2990
+    RUN_DONE nr=1
+RUN id=chk_s025_n05:s4901:n1 rc=0 wall=13s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_n05
+CHECK_solve_chk_s025_n05 rc=0 verdict=converged
++ [chk_s025_n10:s4901:n1] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 2048,128,128 --sigma2 1 --eps 0.5 --ell 0.078125 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 0.46875,0.546875,0.625,0.703125,0.78125,0.859375,0.9375,1.015625,1.09375,1.171875,1.25,1.328125,1.40625,1.484375,1.5625,1.640625,1.71875,1.796875,1.875,1.953125,2.03125,2.109375,2.1875,2.265625,2.34375,2.421875,2.5,2.578125,2.65625,2.734375,2.8125,2.890625,2.96875,3.046875,3.125,3.203125,3.28125,3.359375,3.4375,3.515625,3.59375,3.671875,3.75,3.828125,3.90625,3.984375,4.0625,4.140625,4.1953125,4.21875,4.296875,4.375,4.453125,4.53125,4.609375,4.6875,4.765625,4.84375,4.921875,5,5.078125,5.15625,5.234375,5.3125,5.390625,5.46875,5.546875,5.625,5.703125,5.78125,5.859375,5.9375,6.015625,6.09375,6.171875,6.25,6.328125,6.40625,6.484375,6.5625,6.640625,6.71875,6.796875,6.875,6.953125,7.03125,7.109375,7.1875,7.265625,7.34375,7.421875,7.5,7.578125,7.65625,7.734375,7.8125,7.890625,7.96875,8,8.046875,8.125,8.203125,8.28125,8.359375,8.4375,8.515625,8.59375,8.671875,8.75,8.828125,8.90625,8.984375,9.0625,9.140625,9.21875,9.296875,9.375,9.453125,9.53125,9.609375,9.6875,9.765625,9.84375,9.921875,10,10.078125,10.15625,10.234375,10.3125,10.390625,10.46875,10.546875,10.625,10.703125,10.78125,10.859375,10.9375,11.015625,11.09375,11.171875,11.25,11.328125,11.40625,11.484375,11.5625,11.640625,11.71875,11.796875,11.875,11.953125,12.03125,12.109375,12.1875,12.265625,12.34375,12.421875,12.5,12.578125,12.65625,12.734375,12.8125,12.890625,12.96875,13.046875,13.125,13.203125,13.28125,13.359375,13.4375,13.515625,13.59375,13.671875,13.75,13.828125,13.90625,13.984375,14.0625,14.140625,14.21875,14.296875,14.375,14.453125,14.53125,14.609375,14.6875,14.765625,14.84375,14.921875,15,15.078125,15.15625,15.234375,15.3125,15.390625,15.46875,15.546875,15.609375 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 4901 --nr 1 --out /home/sesquerre/sf39_campaign/checks/runs/chk_s025_n10 > /home/sesquerre/sf39_campaign/checks/logs/chk_s025_n10_s4901_n1.log 2>&1
+  CASE_RESULT run=chk_s025_n10:s4901:n1 rc=0 wall=22s end=2026-10-29T14:54:00Z
+    R=0 B_SOLVER r=0 converged=1 iterations=40 initial=6.681742e+04 final=9.353835e-09 rel=1.399910e-13 qbar=1.040376034694e+00 Q_in=1.040376034694e+00 Q_out=1.040376034694e+00 balance=8.323663e-14 max_di
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=2691 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=2754
+    RUN_DONE nr=1
+RUN id=chk_s025_n10:s4901:n1 rc=0 wall=22s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_n10
+CHECK_solve_chk_s025_n10 rc=0 verdict=converged
++ [chk_s025_n20:s4901:n1] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 4096,256,256 --sigma2 1 --eps 0.5 --ell 0.078125 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 0.46875,0.546875,0.625,0.703125,0.78125,0.859375,0.9375,1.015625,1.09375,1.171875,1.25,1.328125,1.40625,1.484375,1.5625,1.640625,1.71875,1.796875,1.875,1.953125,2.03125,2.109375,2.1875,2.265625,2.34375,2.421875,2.5,2.578125,2.65625,2.734375,2.8125,2.890625,2.96875,3.046875,3.125,3.203125,3.28125,3.359375,3.4375,3.515625,3.59375,3.671875,3.75,3.828125,3.90625,3.984375,4.0625,4.140625,4.1953125,4.21875,4.296875,4.375,4.453125,4.53125,4.609375,4.6875,4.765625,4.84375,4.921875,5,5.078125,5.15625,5.234375,5.3125,5.390625,5.46875,5.546875,5.625,5.703125,5.78125,5.859375,5.9375,6.015625,6.09375,6.171875,6.25,6.328125,6.40625,6.484375,6.5625,6.640625,6.71875,6.796875,6.875,6.953125,7.03125,7.109375,7.1875,7.265625,7.34375,7.421875,7.5,7.578125,7.65625,7.734375,7.8125,7.890625,7.96875,8,8.046875,8.125,8.203125,8.28125,8.359375,8.4375,8.515625,8.59375,8.671875,8.75,8.828125,8.90625,8.984375,9.0625,9.140625,9.21875,9.296875,9.375,9.453125,9.53125,9.609375,9.6875,9.765625,9.84375,9.921875,10,10.078125,10.15625,10.234375,10.3125,10.390625,10.46875,10.546875,10.625,10.703125,10.78125,10.859375,10.9375,11.015625,11.09375,11.171875,11.25,11.328125,11.40625,11.484375,11.5625,11.640625,11.71875,11.796875,11.875,11.953125,12.03125,12.109375,12.1875,12.265625,12.34375,12.421875,12.5,12.578125,12.65625,12.734375,12.8125,12.890625,12.96875,13.046875,13.125,13.203125,13.28125,13.359375,13.4375,13.515625,13.59375,13.671875,13.75,13.828125,13.90625,13.984375,14.0625,14.140625,14.21875,14.296875,14.375,14.453125,14.53125,14.609375,14.6875,14.765625,14.84375,14.921875,15,15.078125,15.15625,15.234375,15.3125,15.390625,15.46875,15.546875,15.609375 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 4901 --nr 1 --out /home/sesquerre/sf39_campaign/checks/runs/chk_s025_n20 > /home/sesquerre/sf39_campaign/checks/logs/chk_s025_n20_s4901_n1.log 2>&1
+  CASE_RESULT run=chk_s025_n20:s4901:n1 rc=0 wall=73s end=2026-10-29T14:55:13Z
+    R=0 B_SOLVER r=0 converged=1 iterations=40 initial=1.906016e+05 final=4.868583e-08 rel=2.554324e-13 qbar=1.040752901763e+00 Q_in=1.040752901763e+00 Q_out=1.040752901763e+00 balance=1.794273e-13 max_di
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=2710 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=2731
+    RUN_DONE nr=1
+RUN id=chk_s025_n20:s4901:n1 rc=0 wall=73s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_n20
+CHECK_solve_chk_s025_n20 rc=0 verdict=converged
++ [chk_s025_tw:s4901:n1] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 1024,128,128 --sigma2 1 --eps 0.5 --ell 0.0390625 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 0.234375,0.2734375,0.3125,0.3515625,0.390625,0.4296875,0.46875,0.5078125,0.546875,0.5859375,0.625,0.6640625,0.703125,0.7421875,0.78125,0.8203125,0.859375,0.8984375,0.9375,0.9765625,1.015625,1.0546875,1.09375,1.1328125,1.171875,1.2109375,1.25,1.2890625,1.328125,1.3671875,1.40625,1.4453125,1.484375,1.5234375,1.5625,1.6015625,1.640625,1.6796875,1.71875,1.7578125,1.796875,1.8359375,1.875,1.9140625,1.953125,1.9921875,2.03125,2.0703125,2.09765625,2.109375,2.1484375,2.1875,2.2265625,2.265625,2.3046875,2.34375,2.3828125,2.421875,2.4609375,2.5,2.5390625,2.578125,2.6171875,2.65625,2.6953125,2.734375,2.7734375,2.8125,2.8515625,2.890625,2.9296875,2.96875,3.0078125,3.046875,3.0859375,3.125,3.1640625,3.203125,3.2421875,3.28125,3.3203125,3.359375,3.3984375,3.4375,3.4765625,3.515625,3.5546875,3.59375,3.6328125,3.671875,3.7109375,3.75,3.7890625,3.828125,3.8671875,3.90625,3.9453125,3.984375,4,4.0234375,4.0625,4.1015625,4.140625,4.1796875,4.21875,4.2578125,4.296875,4.3359375,4.375,4.4140625,4.453125,4.4921875,4.53125,4.5703125,4.609375,4.6484375,4.6875,4.7265625,4.765625,4.8046875,4.84375,4.8828125,4.921875,4.9609375,5,5.0390625,5.078125,5.1171875,5.15625,5.1953125,5.234375,5.2734375,5.3125,5.3515625,5.390625,5.4296875,5.46875,5.5078125,5.546875,5.5859375,5.625,5.6640625,5.703125,5.7421875,5.78125,5.8203125,5.859375,5.8984375,5.9375,5.9765625,6.015625,6.0546875,6.09375,6.1328125,6.171875,6.2109375,6.25,6.2890625,6.328125,6.3671875,6.40625,6.4453125,6.484375,6.5234375,6.5625,6.6015625,6.640625,6.6796875,6.71875,6.7578125,6.796875,6.8359375,6.875,6.9140625,6.953125,6.9921875,7.03125,7.0703125,7.109375,7.1484375,7.1875,7.2265625,7.265625,7.3046875,7.34375,7.3828125,7.421875,7.4609375,7.5,7.5390625,7.578125,7.6171875,7.65625,7.6953125,7.734375,7.7734375,7.8046875 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 4901 --nr 1 --out /home/sesquerre/sf39_campaign/checks/runs/chk_s025_tw > /home/sesquerre/sf39_campaign/checks/logs/chk_s025_tw_s4901_n1.log 2>&1
+  CASE_RESULT run=chk_s025_tw:s4901:n1 rc=0 wall=13s end=2026-10-29T14:55:26Z
+    R=0 B_SOLVER r=0 converged=1 iterations=20 initial=9.104625e+04 final=2.639045e-07 rel=2.898577e-12 qbar=1.040469700472e+00 Q_in=1.040469700472e+00 Q_out=1.040469700474e+00 balance=1.719855e-12 max_di
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=2911 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=3122
+    RUN_DONE nr=1
+RUN id=chk_s025_tw:s4901:n1 rc=0 wall=13s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/chk_s025_tw
+CHECK_solve_chk_s025_tw rc=0 verdict=converged
+SKIP_DONE run=byte_multi rc=0
+RUN id=byte_multi rc=0 wall=240s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/byte_multi
+SKIP_DONE run=byte_single rc=0
+RUN id=byte_single rc=0 wall=112s realizations_done=1/1 out=/home/sesquerre/sf39_campaign/checks/runs/byte_single
+SKIP_DONE run=bytecheck rc=0
+CHECK_bytecheck rc=0 verdict=BYTECHECK IDENTICAL items=41
++ [smoke_reduce:61a019e0bb82] .: python3 -m sf39.reduce smoke /home/sesquerre/sf41_campaign > /home/sesquerre/sf39_campaign/checks/logs/smoke_reduce_61a019e0bb82.log 2>&1
+  CASE_RESULT run=smoke_reduce:61a019e0bb82 rc=0 wall=20s end=2026-10-29T14:55:46Z
+CHECK_smoke_reduce rc=0 verdict=SMOKE runs=28 failed=0 (NOT EVIDENCE)
++ [signtable:61a019e0bb82] .: python3 -m sf39.reduce signtable /home/sesquerre/sf41_campaign/evladder > /home/sesquerre/sf39_campaign/checks/logs/signtable_61a019e0bb82.log 2>&1
+  CASE_RESULT run=signtable:61a019e0bb82 rc=0 wall=0s end=2026-10-29T14:55:46Z
+CHECK_signtable rc=0 verdict=SIGNTABLE EQUAL
+RECORDED part_seconds=391 part_runs_seconds=1517 part=checks (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=checks rc=1
+PART_SCRIPT_EXIT=1
+[2026-10-29T14:55:47Z] job=sf39-checks-s025 finished exit=0

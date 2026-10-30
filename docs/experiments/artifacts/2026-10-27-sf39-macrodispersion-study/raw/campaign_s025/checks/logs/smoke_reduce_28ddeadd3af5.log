@@ -1,0 +1,58 @@
+SMOKE on existing SF-41 outputs: NOT EVIDENCE (script check only; missing planes/twin tolerated and reported)
+prodgrid/E1                  sigma_series ok; r0 skipped[plane_Xa;plane_Xq]; reduced 1/1 (tau_b*=132.2 from t_b,min=4.372)
+CROSSCHECK run=prodgrid/E1 planes=ok times=ok twin=ok max_rel=1.02e-13
+prodgrid/E2                  sigma_series ok; r0 skipped[plane_Xa;plane_Xq]; reduced 1/1 (tau_b*=107.3 from t_b,min=3.084)
+CROSSCHECK run=prodgrid/E2 planes=ok times=ok twin=ok max_rel=1.02e-13
+prodgrid/E3                  sigma_series ok; r0 skipped[plane_Xa;plane_Xq]; reduced 1/1 (tau_b*=35.77 from t_b,min=1.569)
+CROSSCHECK run=prodgrid/E3 planes=ok times=ok twin=ok max_rel=1.02e-13
+prodgrid/E4                  sigma_series ok; r0 skipped[plane_Xa;plane_Xq]; reduced 1/1 (tau_b*=42.59 from t_b,min=7.194)
+CROSSCHECK run=prodgrid/E4 planes=ok times=ok twin=ok max_rel=1.02e-13
+evladder/F_e1_s6101_g128     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=9.353 from t_b,min=5.829)
+CROSSCHECK run=evladder/F_e1_s6101_g128 planes=ok times=ok twin=absent max_rel=8.65e-15
+evladder/F_e1_s6101_g256     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=9.354 from t_b,min=5.829)
+CROSSCHECK run=evladder/F_e1_s6101_g256 planes=ok times=ok twin=absent max_rel=6.55e-15
+evladder/F_e1_s6101_g32      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=9.345 from t_b,min=5.825)
+CROSSCHECK run=evladder/F_e1_s6101_g32 planes=ok times=ok twin=absent max_rel=8.35e-15
+evladder/F_e1_s6101_g64      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=9.352 from t_b,min=5.828)
+CROSSCHECK run=evladder/F_e1_s6101_g64 planes=ok times=ok twin=absent max_rel=7.12e-15
+evladder/F_e1_s6102_g128     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=7.602 from t_b,min=4.682)
+CROSSCHECK run=evladder/F_e1_s6102_g128 planes=ok times=ok twin=absent max_rel=9.49e-15
+evladder/F_e1_s6102_g256     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=7.603 from t_b,min=4.682)
+CROSSCHECK run=evladder/F_e1_s6102_g256 planes=ok times=ok twin=absent max_rel=9.04e-15
+evladder/F_e1_s6102_g32      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=7.593 from t_b,min=4.678)
+CROSSCHECK run=evladder/F_e1_s6102_g32 planes=ok times=ok twin=absent max_rel=1.03e-14
+evladder/F_e1_s6102_g64      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=7.6 from t_b,min=4.681)
+CROSSCHECK run=evladder/F_e1_s6102_g64 planes=ok times=ok twin=absent max_rel=1.08e-14
+evladder/F_e1_s6103_g128     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=10.02 from t_b,min=5.873)
+CROSSCHECK run=evladder/F_e1_s6103_g128 planes=ok times=ok twin=absent max_rel=8.82e-15
+evladder/F_e1_s6103_g256     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=10.02 from t_b,min=5.874)
+CROSSCHECK run=evladder/F_e1_s6103_g256 planes=ok times=ok twin=absent max_rel=8.64e-15
+evladder/F_e1_s6103_g32      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=10 from t_b,min=5.868)
+CROSSCHECK run=evladder/F_e1_s6103_g32 planes=ok times=ok twin=absent max_rel=1.26e-14
+evladder/F_e1_s6103_g64      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=10.01 from t_b,min=5.872)
+CROSSCHECK run=evladder/F_e1_s6103_g64 planes=ok times=ok twin=absent max_rel=8.24e-15
+evladder/F_e2_s6101_g128     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.546 from t_b,min=6.836)
+CROSSCHECK run=evladder/F_e2_s6101_g128 planes=ok times=ok twin=absent max_rel=1.18e-14
+evladder/F_e2_s6101_g256     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.547 from t_b,min=6.836)
+CROSSCHECK run=evladder/F_e2_s6101_g256 planes=ok times=ok twin=absent max_rel=1.04e-14
+evladder/F_e2_s6101_g32      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.529 from t_b,min=6.823)
+CROSSCHECK run=evladder/F_e2_s6101_g32 planes=ok times=ok twin=absent max_rel=7.91e-15
+evladder/F_e2_s6101_g64      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.543 from t_b,min=6.833)
+CROSSCHECK run=evladder/F_e2_s6101_g64 planes=ok times=ok twin=absent max_rel=9.45e-15
+evladder/F_e2_s6102_g128     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=4.821 from t_b,min=5.766)
+CROSSCHECK run=evladder/F_e2_s6102_g128 planes=ok times=ok twin=absent max_rel=1.02e-14
+evladder/F_e2_s6102_g256     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=4.822 from t_b,min=5.766)
+CROSSCHECK run=evladder/F_e2_s6102_g256 planes=ok times=ok twin=absent max_rel=1.09e-14
+evladder/F_e2_s6102_g32      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=4.803 from t_b,min=5.752)
+CROSSCHECK run=evladder/F_e2_s6102_g32 planes=ok times=ok twin=absent max_rel=9.63e-15
+evladder/F_e2_s6102_g64      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=4.818 from t_b,min=5.763)
+CROSSCHECK run=evladder/F_e2_s6102_g64 planes=ok times=ok twin=absent max_rel=8.77e-15
+evladder/F_e2_s6103_g128     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.752 from t_b,min=5.603)
+CROSSCHECK run=evladder/F_e2_s6103_g128 planes=ok times=ok twin=absent max_rel=9.33e-15
+evladder/F_e2_s6103_g256     sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.754 from t_b,min=5.604)
+CROSSCHECK run=evladder/F_e2_s6103_g256 planes=ok times=ok twin=absent max_rel=1.21e-14
+evladder/F_e2_s6103_g32      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.712 from t_b,min=5.576)
+CROSSCHECK run=evladder/F_e2_s6103_g32 planes=ok times=ok twin=absent max_rel=7.26e-15
+evladder/F_e2_s6103_g64      sigma_series ok; r0 skipped[plane_Xq]; reduced 1/1 (tau_b*=6.744 from t_b,min=5.598)
+CROSSCHECK run=evladder/F_e2_s6103_g64 planes=ok times=ok twin=absent max_rel=1.03e-14
+SMOKE runs=28 failed=0 (NOT EVIDENCE)

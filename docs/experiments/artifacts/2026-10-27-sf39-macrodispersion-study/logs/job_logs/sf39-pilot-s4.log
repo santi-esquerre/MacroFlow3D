@@ -1,0 +1,234 @@
+[2026-10-27T20:34:03Z] job=sf39-pilot-s4 GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=83.4% min_free=31229/32510 MiB compute_procs=1
+  gpu 1: mean_util=0.0% min_free=32506/32510 MiB compute_procs=0
+[2026-10-27T20:34:03Z] job=sf39-pilot-s4 chose GPU 1 (auto: least-loaded)
+[2026-10-27T20:34:03Z] job=sf39-pilot-s4 session=macroflow3d-SF-39-sf39-pilot-s4 started
+[2026-10-27T20:34:03Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-10-27T20:34:03Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-27T20:34:03Z] command=echo TREE=$(cat .mf3d_source_rev); bash docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts/run_sf39.sh build/v100-release pilot s4; echo PART_SCRIPT_EXIT=$?
+TREE=b0be775db0f4
+PART_BEGIN part=pilot selector=s4 binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
++ [s4_A:s5001:n20] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 3328,384,384 --sigma2 1 --eps 2 --ell 0.083333333333333329 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 0.49999999999999994,0.58333333333333326,0.66666666666666663,0.75,0.83333333333333326,0.91666666666666663,0.99999999999999989,1.0833333333333333,1.1666666666666665,1.25,1.3333333333333333,1.4166666666666665,1.5,1.583333333333333,1.6666666666666665,1.75,1.833333333333333,1.9166666666666665,2,2.083333333333333,2.1666666666666665,2.25,2.333333333333333,2.375,2.4166666666666665,2.4999999999999996,2.583333333333333,2.6666666666666665,2.7499999999999996,2.833333333333333,2.9166666666666665,2.9999999999999996,3.083333333333333,3.1666666666666665,3.2499999999999996,3.333333333333333,3.4166666666666665,3.4999999999999996,3.583333333333333,3.6666666666666665,3.7499999999999996,3.833333333333333,3.9166666666666665,3.9999999999999996,4.083333333333333,4.166666666666667,4.25,4.333333333333333,4.416666666666667,4.5,4.583333333333333,4.666666666666667,4.75,4.833333333333333,4.916666666666667,5,5.083333333333333,5.166666666666667,5.25,5.333333333333333,5.416666666666667,5.5,5.583333333333333,5.666666666666667,5.75,5.833333333333333,5.916666666666667,6,6.083333333333333,6.166666666666667,6.25,6.333333333333333,6.416666666666667,6.5,6.583333333333333,6.666666666666667,6.75,6.833333333333333,6.916666666666667,7,7.083333333333333,7.166666666666667,7.25,7.333333333333333,7.416666666666667,7.5,7.583333333333333,7.666666666666667,7.75,7.833333333333333,7.916666666666667,8,8.0833333333333321,8.1666666666666661,8.25 --times auto --tol 1e-8 --hmax-div 8,16,32 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 5001 --nr 20 --out /home/sesquerre/sf39_campaign/runs/s4_A > /home/sesquerre/sf39_campaign/pilot/logs/s4_A_s5001_n20.log 2>&1
+  CASE_RESULT run=s4_A:s5001:n20 rc=0 wall=4872s end=2026-10-27T21:55:17Z
+    R=0 B_SOLVER r=0 converged=1 iterations=60 initial=2.719887e+07 final=2.597299e-04 rel=9.549292e-12 qbar=1.881710712446e+00 Q_in=1.881710712446e+00 Q_out=1.881710712466e+00 balance=1.047877e-11 max_di
+    R=0 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4654
+    R=1 B_SOLVER r=1 converged=1 iterations=50 initial=4.007628e+07 final=9.254651e-04 rel=2.309259e-11 qbar=1.878934567219e+00 Q_in=1.878934567219e+00 Q_out=1.878934567302e+00 balance=4.401056e-11 max_di
+    R=1 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4244
+    R=2 B_SOLVER r=2 converged=1 iterations=50 initial=2.773457e+07 final=1.355138e-03 rel=4.886096e-11 qbar=1.856679452377e+00 Q_in=1.856679452377e+00 Q_out=1.856679452501e+00 balance=6.677951e-11 max_di
+    R=2 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=5028
+    R=3 B_SOLVER r=3 converged=1 iterations=60 initial=2.644601e+07 final=6.307686e-05 rel=2.385118e-12 qbar=1.886614552061e+00 Q_in=1.886614552061e+00 Q_out=1.886614552064e+00 balance=1.636075e-12 max_di
+    R=3 STATUS ok passes=3 seed_backflow=22 pollock_weighted_not_active=4614
+    R=4 B_SOLVER r=4 converged=1 iterations=60 initial=3.941033e+07 final=2.676102e-04 rel=6.790357e-12 qbar=1.781688685640e+00 Q_in=1.781688685640e+00 Q_out=1.781688685647e+00 balance=4.105677e-12 max_di
+    R=4 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=5280
+    R=5 B_SOLVER r=5 converged=1 iterations=60 initial=3.145692e+07 final=8.523132e-05 rel=2.709462e-12 qbar=1.876258183908e+00 Q_in=1.876258183908e+00 Q_out=1.876258183893e+00 balance=7.897594e-12 max_di
+    R=5 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4555
+    R=6 B_SOLVER r=6 converged=1 iterations=60 initial=3.713024e+07 final=1.669530e-04 rel=4.496415e-12 qbar=1.888908215637e+00 Q_in=1.888908215637e+00 Q_out=1.888908215664e+00 balance=1.402041e-11 max_di
+    R=6 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4761
+    R=7 B_SOLVER r=7 converged=1 iterations=60 initial=2.706422e+07 final=3.642434e-04 rel=1.345849e-11 qbar=1.859239006410e+00 Q_in=1.859239006410e+00 Q_out=1.859239006411e+00 balance=8.147356e-13 max_di
+    R=7 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4735
+    R=8 B_SOLVER r=8 converged=1 iterations=150 initial=4.707800e+07 final=3.344666e-03 rel=7.104519e-11 qbar=1.871903258915e+00 Q_in=1.871903258915e+00 Q_out=1.871903258471e+00 balance=2.376297e-10 max_d
+    R=8 STATUS ok passes=3 seed_backflow=63 pollock_weighted_not_active=4121
+    R=9 B_SOLVER r=9 converged=1 iterations=50 initial=2.012457e+07 final=1.162839e-03 rel=5.778206e-11 qbar=1.862740971875e+00 Q_in=1.862740971875e+00 Q_out=1.862740971779e+00 balance=5.127500e-11 max_di
+    R=9 STATUS ok passes=3 seed_backflow=36 pollock_weighted_not_active=4699
+    R=10 B_SOLVER r=10 converged=1 iterations=60 initial=3.187138e+07 final=2.194553e-04 rel=6.885656e-12 qbar=1.859426757437e+00 Q_in=1.859426757437e+00 Q_out=1.859426757471e+00 balance=1.834582e-11 max_
+    R=10 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4823
+    R=11 B_SOLVER r=11 converged=1 iterations=60 initial=5.964920e+07 final=1.110693e-03 rel=1.862041e-11 qbar=1.913388032717e+00 Q_in=1.913388032717e+00 Q_out=1.913388032872e+00 balance=8.104806e-11 max_
+    R=11 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4382
+    R=12 B_SOLVER r=12 converged=1 iterations=60 initial=3.511513e+07 final=2.456991e-03 rel=6.996958e-11 qbar=1.908211067528e+00 Q_in=1.908211067528e+00 Q_out=1.908211067080e+00 balance=2.348931e-10 max_
+    R=12 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4173
+    R=13 B_SOLVER r=13 converged=1 iterations=60 initial=3.614047e+07 final=1.795016e-04 rel=4.966776e-12 qbar=1.815396472765e+00 Q_in=1.815396472765e+00 Q_out=1.815396472749e+00 balance=9.140491e-12 max_
+    R=13 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4880
+    R=14 B_SOLVER r=14 converged=1 iterations=60 initial=4.161069e+07 final=1.327206e-04 rel=3.189578e-12 qbar=1.901308655678e+00 Q_in=1.901308655678e+00 Q_out=1.901308655671e+00 balance=3.649653e-12 max_
+    R=14 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4928
+    R=15 B_SOLVER r=15 converged=1 iterations=60 initial=3.840203e+07 final=2.924374e-05 rel=7.615155e-13 qbar=1.886636053543e+00 Q_in=1.886636053543e+00 Q_out=1.886636053551e+00 balance=3.890826e-12 max_
+    R=15 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4663
+    R=16 B_SOLVER r=16 converged=1 iterations=50 initial=3.987252e+07 final=1.636052e-03 rel=4.103208e-11 qbar=1.888654068578e+00 Q_in=1.888654068578e+00 Q_out=1.888654068592e+00 balance=7.599102e-12 max_
+    R=16 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4505
+    R=17 B_SOLVER r=17 converged=1 iterations=60 initial=2.926500e+07 final=2.520820e-05 rel=8.613773e-13 qbar=1.928510463895e+00 Q_in=1.928510463895e+00 Q_out=1.928510463885e+00 balance=5.444755e-12 max_
+    R=17 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4340
+    R=18 B_SOLVER r=18 converged=1 iterations=50 initial=4.218040e+07 final=1.011860e-03 rel=2.398887e-11 qbar=1.853419416372e+00 Q_in=1.853419416372e+00 Q_out=1.853419416332e+00 balance=2.158629e-11 max_
+    R=18 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4268
+    R=19 B_SOLVER r=19 converged=1 iterations=50 initial=2.709278e+07 final=7.065600e-04 rel=2.607928e-11 qbar=1.858977086076e+00 Q_in=1.858977086076e+00 Q_out=1.858977085979e+00 balance=5.176641e-11 max_
+    R=19 STATUS ok passes=3 seed_backflow=0 pollock_weighted_not_active=4502
+    RUN_DONE nr=20
+RUN id=s4_A:s5001:n20 rc=0 wall=4872s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_A
++ [s4_n16:s5001:n20] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 1664,64,64 --sigma2 1 --eps 2 --ell 0.25 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5,3.75,4,4.25,4.5,4.75,5,5.25,5.5,5.75,6,6.25,6.5,6.75,7,7.125,7.25,7.5,7.75,8,8.25,8.5,8.75,9,9.25,9.5,9.75,10,10.25,10.5,10.75,11,11.25,11.5,11.75,12,12.25,12.5,12.75,13,13.25,13.5,13.75,14,14.25,14.5,14.75,15,15.25,15.5,15.75,16,16.25,16.5,16.75,17,17.25,17.5,17.75,18,18.25,18.5,18.75,19,19.25,19.5,19.75,20,20.25,20.5,20.75,21,21.25,21.5,21.75,22,22.25,22.5,22.75,23,23.25,23.5,23.75,24,24.25,24.5,24.75 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 5001 --nr 20 --out /home/sesquerre/sf39_campaign/runs/s4_n16 > /home/sesquerre/sf39_campaign/pilot/logs/s4_n16_s5001_n20.log 2>&1
+  CASE_RESULT run=s4_n16:s5001:n20 rc=0 wall=218s end=2026-10-27T21:58:55Z
+    R=0 B_SOLVER r=0 converged=1 iterations=100 initial=9.083975e+05 final=6.705105e-05 rel=7.381246e-11 qbar=1.404378363914e+00 Q_in=1.404378363914e+00 Q_out=1.404378362487e+00 balance=1.015971e-09 max_d
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4651 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4714
+    R=1 B_SOLVER r=1 converged=1 iterations=90 initial=6.375070e+05 final=3.200887e-05 rel=5.020944e-11 qbar=1.276511750089e+00 Q_in=1.276511750089e+00 Q_out=1.276511750880e+00 balance=6.195777e-10 max_di
+    R=1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5271 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5202
+    R=2 B_SOLVER r=2 converged=1 iterations=80 initial=9.548127e+05 final=2.916487e-05 rel=3.054512e-11 qbar=1.482869901212e+00 Q_in=1.482869901212e+00 Q_out=1.482869901215e+00 balance=2.499456e-12 max_di
+    R=2 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5994 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=6036
+    R=3 B_SOLVER r=3 converged=1 iterations=100 initial=1.474616e+06 final=7.054841e-05 rel=4.784188e-11 qbar=1.426180298515e+00 Q_in=1.426180298515e+00 Q_out=1.426180298447e+00 balance=4.832736e-11 max_d
+    R=3 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4901 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5021
+    R=4 B_SOLVER r=4 converged=1 iterations=90 initial=8.809796e+05 final=2.846206e-06 rel=3.230729e-12 qbar=1.287258723620e+00 Q_in=1.287258723620e+00 Q_out=1.287258723590e+00 balance=2.369621e-11 max_di
+    R=4 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5713 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5690
+    R=5 B_SOLVER r=5 converged=1 iterations=90 initial=1.144853e+06 final=1.516086e-05 rel=1.324263e-11 qbar=1.572567771064e+00 Q_in=1.572567771064e+00 Q_out=1.572567771101e+00 balance=2.316591e-11 max_di
+    R=5 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4484 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4524
+    R=6 B_SOLVER r=6 converged=1 iterations=90 initial=5.529833e+05 final=2.894057e-05 rel=5.233534e-11 qbar=1.485587987389e+00 Q_in=1.485587987389e+00 Q_out=1.485587987598e+00 balance=1.405442e-10 max_di
+    R=6 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5539 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5611
+    R=7 B_SOLVER r=7 converged=1 iterations=80 initial=1.196857e+06 final=7.695948e-05 rel=6.430134e-11 qbar=1.472352149933e+00 Q_in=1.472352149933e+00 Q_out=1.472352150394e+00 balance=3.134264e-10 max_di
+    R=7 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4653 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4703
+    R=8 B_SOLVER r=8 converged=1 iterations=90 initial=7.233370e+05 final=5.835102e-05 rel=8.066920e-11 qbar=1.323437882547e+00 Q_in=1.323437882547e+00 Q_out=1.323437882287e+00 balance=1.962087e-10 max_di
+    R=8 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4348 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4205
+    R=9 B_SOLVER r=9 converged=1 iterations=90 initial=5.471382e+05 final=1.619909e-06 rel=2.960695e-12 qbar=1.580771255551e+00 Q_in=1.580771255551e+00 Q_out=1.580771255547e+00 balance=2.708606e-12 max_di
+    R=9 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4335 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4284
+    R=10 B_SOLVER r=10 converged=1 iterations=80 initial=1.382546e+06 final=2.240363e-05 rel=1.620462e-11 qbar=1.588139514429e+00 Q_in=1.588139514429e+00 Q_out=1.588139514623e+00 balance=1.226285e-10 max_
+    R=10 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4302 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4379
+    R=11 B_SOLVER r=11 converged=1 iterations=80 initial=1.571364e+06 final=1.353168e-04 rel=8.611421e-11 qbar=1.773389667465e+00 Q_in=1.773389667465e+00 Q_out=1.773389664603e+00 balance=1.613697e-09 max_
+    R=11 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4668 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4566
+    R=12 B_SOLVER r=12 converged=1 iterations=100 initial=1.246677e+06 final=8.456171e-06 rel=6.782970e-12 qbar=1.340077363649e+00 Q_in=1.340077363649e+00 Q_out=1.340077363591e+00 balance=4.374888e-11 max
+    R=12 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5179 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5177
+    R=13 B_SOLVER r=13 converged=1 iterations=90 initial=9.545362e+05 final=2.433181e-05 rel=2.549071e-11 qbar=1.417760532170e+00 Q_in=1.417760532170e+00 Q_out=1.417760531948e+00 balance=1.563920e-10 max_
+    R=13 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4740 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4812
+    R=14 B_SOLVER r=14 converged=1 iterations=80 initial=8.281405e+05 final=5.461817e-06 rel=6.595278e-12 qbar=1.630916910429e+00 Q_in=1.630916910429e+00 Q_out=1.630916910405e+00 balance=1.492907e-11 max_
+    R=14 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4453 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4489
+    R=15 B_SOLVER r=15 converged=1 iterations=90 initial=6.133510e+06 final=1.634736e-04 rel=2.665254e-11 qbar=1.334488800707e+00 Q_in=1.334488800707e+00 Q_out=1.334488800736e+00 balance=2.147237e-11 max_
+    R=15 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4908 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4914
+    R=16 B_SOLVER r=16 converged=1 iterations=90 initial=1.098355e+06 final=1.799443e-05 rel=1.638307e-11 qbar=1.535847101750e+00 Q_in=1.535847101750e+00 Q_out=1.535847101793e+00 balance=2.821939e-11 max_
+    R=16 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4253 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4293
+    R=17 B_SOLVER r=17 converged=1 iterations=80 initial=2.272727e+06 final=1.343627e-04 rel=5.911958e-11 qbar=1.509290923770e+00 Q_in=1.509290923770e+00 Q_out=1.509290918327e+00 balance=3.606619e-09 max_
+    R=17 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5229 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5158
+    R=18 B_SOLVER r=18 converged=1 iterations=110 initial=1.866346e+06 final=9.144396e-06 rel=4.899624e-12 qbar=1.119227673348e+00 Q_in=1.119227673348e+00 Q_out=1.119227673364e+00 balance=1.453293e-11 max
+    R=18 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4241 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4384
+    R=19 B_SOLVER r=19 converged=1 iterations=100 initial=1.701866e+06 final=2.809403e-06 rel=1.650779e-12 qbar=1.437308308985e+00 Q_in=1.437308308985e+00 Q_out=1.437308309007e+00 balance=1.569319e-11 max
+    R=19 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4561 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4468
+    RUN_DONE nr=20
+RUN id=s4_n16:s5001:n20 rc=0 wall=218s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n16
++ [s4_n32:s5001:n20] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 3328,128,128 --sigma2 1 --eps 2 --ell 0.25 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5,3.75,4,4.25,4.5,4.75,5,5.25,5.5,5.75,6,6.25,6.5,6.75,7,7.125,7.25,7.5,7.75,8,8.25,8.5,8.75,9,9.25,9.5,9.75,10,10.25,10.5,10.75,11,11.25,11.5,11.75,12,12.25,12.5,12.75,13,13.25,13.5,13.75,14,14.25,14.5,14.75,15,15.25,15.5,15.75,16,16.25,16.5,16.75,17,17.25,17.5,17.75,18,18.25,18.5,18.75,19,19.25,19.5,19.75,20,20.25,20.5,20.75,21,21.25,21.5,21.75,22,22.25,22.5,22.75,23,23.25,23.5,23.75,24,24.25,24.5,24.75 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 5001 --nr 20 --out /home/sesquerre/sf39_campaign/runs/s4_n32 > /home/sesquerre/sf39_campaign/pilot/logs/s4_n32_s5001_n20.log 2>&1
+  CASE_RESULT run=s4_n32:s5001:n20 rc=0 wall=631s end=2026-10-27T22:09:26Z
+    R=0 B_SOLVER r=0 converged=1 iterations=120 initial=2.632380e+06 final=7.191841e-05 rel=2.732068e-11 qbar=1.406798279251e+00 Q_in=1.406798279251e+00 Q_out=1.406798279181e+00 balance=4.989112e-11 max_d
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4687 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4689
+    R=1 B_SOLVER r=1 converged=1 iterations=100 initial=1.815564e+06 final=1.670663e-05 rel=9.201896e-12 qbar=1.278625484483e+00 Q_in=1.278625484483e+00 Q_out=1.278625484499e+00 balance=1.250257e-11 max_d
+    R=1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5264 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5287
+    R=2 B_SOLVER r=2 converged=1 iterations=80 initial=2.721408e+06 final=2.548046e-04 rel=9.362972e-11 qbar=1.485455377882e+00 Q_in=1.485455377882e+00 Q_out=1.485455377933e+00 balance=3.407885e-11 max_di
+    R=2 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=6054 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5978
+    R=3 B_SOLVER r=3 converged=1 iterations=100 initial=4.206308e+06 final=4.068317e-04 rel=9.671944e-11 qbar=1.428489520447e+00 Q_in=1.428489520447e+00 Q_out=1.428489520380e+00 balance=4.724665e-11 max_d
+    R=3 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4932 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4975
+    R=4 B_SOLVER r=4 converged=1 iterations=90 initial=2.506584e+06 final=1.904445e-05 rel=7.597769e-12 qbar=1.289333225592e+00 Q_in=1.289333225592e+00 Q_out=1.289333225563e+00 balance=2.277461e-11 max_di
+    R=4 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5640 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5695
+    R=5 B_SOLVER r=5 converged=1 iterations=90 initial=3.265128e+06 final=1.300677e-04 rel=3.983539e-11 qbar=1.575411461616e+00 Q_in=1.575411461616e+00 Q_out=1.575411461568e+00 balance=3.027672e-11 max_di
+    R=5 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4510 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4470
+    R=6 B_SOLVER r=6 converged=1 iterations=90 initial=1.576779e+06 final=1.173275e-04 rel=7.440958e-11 qbar=1.487843038315e+00 Q_in=1.487843038315e+00 Q_out=1.487843038520e+00 balance=1.375085e-10 max_di
+    R=6 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5624 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5627
+    R=7 B_SOLVER r=7 converged=1 iterations=90 initial=3.412584e+06 final=5.985910e-05 rel=1.754070e-11 qbar=1.474817723663e+00 Q_in=1.474817723663e+00 Q_out=1.474817723581e+00 balance=5.549543e-11 max_di
+    R=7 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4700 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4730
+    R=8 B_SOLVER r=8 converged=1 iterations=100 initial=2.057106e+06 final=1.581164e-05 rel=7.686350e-12 qbar=1.325618408562e+00 Q_in=1.325618408562e+00 Q_out=1.325618408520e+00 balance=3.182483e-11 max_d
+    R=8 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4232 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4197
+    R=9 B_SOLVER r=9 converged=1 iterations=90 initial=1.559087e+06 final=7.739778e-06 rel=4.964300e-12 qbar=1.583583294883e+00 Q_in=1.583583294883e+00 Q_out=1.583583294871e+00 balance=7.628762e-12 max_di
+    R=9 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4311 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4329
+    R=10 B_SOLVER r=10 converged=1 iterations=80 initial=3.930820e+06 final=1.522805e-04 rel=3.874014e-11 qbar=1.590839419969e+00 Q_in=1.590839419969e+00 Q_out=1.590839420146e+00 balance=1.111679e-10 max_
+    R=10 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4348 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4388
+    R=11 B_SOLVER r=11 converged=1 iterations=90 initial=4.483518e+06 final=2.946896e-05 rel=6.572730e-12 qbar=1.776454371826e+00 Q_in=1.776454371826e+00 Q_out=1.776454371838e+00 balance=6.835625e-12 max_
+    R=11 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4572 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4558
+    R=12 B_SOLVER r=12 converged=1 iterations=100 initial=3.558730e+06 final=4.325241e-05 rel=1.215389e-11 qbar=1.342348883751e+00 Q_in=1.342348883751e+00 Q_out=1.342348883580e+00 balance=1.279008e-10 max
+    R=12 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5287 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5280
+    R=13 B_SOLVER r=13 converged=1 iterations=90 initial=2.719501e+06 final=1.634130e-04 rel=6.008934e-11 qbar=1.420059302741e+00 Q_in=1.420059302741e+00 Q_out=1.420059302459e+00 balance=1.984927e-10 max_
+    R=13 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4759 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4823
+    R=14 B_SOLVER r=14 converged=1 iterations=80 initial=2.356990e+06 final=3.365019e-05 rel=1.427677e-11 qbar=1.633916048164e+00 Q_in=1.633916048164e+00 Q_out=1.633916048137e+00 balance=1.649316e-11 max_
+    R=14 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4374 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4475
+    R=15 B_SOLVER r=15 converged=1 iterations=90 initial=1.752911e+07 final=1.552673e-03 rel=8.857684e-11 qbar=1.336668773025e+00 Q_in=1.336668773025e+00 Q_out=1.336668773206e+00 balance=1.351688e-10 max_
+    R=15 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4940 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4947
+    R=16 B_SOLVER r=16 converged=1 iterations=90 initial=3.131053e+06 final=1.433614e-04 rel=4.578695e-11 qbar=1.538483513385e+00 Q_in=1.538483513385e+00 Q_out=1.538483513418e+00 balance=2.129717e-11 max_
+    R=16 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4257 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4278
+    R=17 B_SOLVER r=17 converged=1 iterations=90 initial=6.494268e+06 final=4.563069e-05 rel=7.026303e-12 qbar=1.511792344396e+00 Q_in=1.511792344396e+00 Q_out=1.511792344474e+00 balance=5.141053e-11 max_
+    R=17 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5163 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5239
+    R=18 B_SOLVER r=18 converged=1 iterations=110 initial=5.328365e+06 final=5.508690e-05 rel=1.033842e-11 qbar=1.120932518013e+00 Q_in=1.120932518013e+00 Q_out=1.120932518043e+00 balance=2.696687e-11 max
+    R=18 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4153 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4259
+    R=19 B_SOLVER r=19 converged=1 iterations=100 initial=4.848380e+06 final=1.415970e-05 rel=2.920501e-12 qbar=1.439852811910e+00 Q_in=1.439852811910e+00 Q_out=1.439852811936e+00 balance=1.831392e-11 max
+    R=19 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4611 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4593
+    RUN_DONE nr=20
+RUN id=s4_n32:s5001:n20 rc=0 wall=631s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n32
++ [s4_n64:s5001:n20] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 6656,256,256 --sigma2 1 --eps 2 --ell 0.25 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 1.5,1.75,2,2.25,2.5,2.75,3,3.25,3.5,3.75,4,4.25,4.5,4.75,5,5.25,5.5,5.75,6,6.25,6.5,6.75,7,7.125,7.25,7.5,7.75,8,8.25,8.5,8.75,9,9.25,9.5,9.75,10,10.25,10.5,10.75,11,11.25,11.5,11.75,12,12.25,12.5,12.75,13,13.25,13.5,13.75,14,14.25,14.5,14.75,15,15.25,15.5,15.75,16,16.25,16.5,16.75,17,17.25,17.5,17.75,18,18.25,18.5,18.75,19,19.25,19.5,19.75,20,20.25,20.5,20.75,21,21.25,21.5,21.75,22,22.25,22.5,22.75,23,23.25,23.5,23.75,24,24.25,24.5,24.75 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 5001 --nr 20 --out /home/sesquerre/sf39_campaign/runs/s4_n64 > /home/sesquerre/sf39_campaign/pilot/logs/s4_n64_s5001_n20.log 2>&1
+  CASE_RESULT run=s4_n64:s5001:n20 rc=0 wall=2882s end=2026-10-27T22:57:29Z
+    R=0 B_SOLVER r=0 converged=1 iterations=120 initial=7.520904e+06 final=2.999103e-04 rel=3.987690e-11 qbar=1.407405910932e+00 Q_in=1.407405910932e+00 Q_out=1.407405910871e+00 balance=4.363267e-11 max_d
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4696 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4707
+    R=1 B_SOLVER r=1 converged=1 iterations=100 initial=5.144041e+06 final=1.189297e-04 rel=2.311990e-11 qbar=1.279156259882e+00 Q_in=1.279156259882e+00 Q_out=1.279156259883e+00 balance=1.316308e-12 max_d
+    R=1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5154 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5174
+    R=2 B_SOLVER r=2 converged=1 iterations=80 initial=7.712010e+06 final=6.818508e-04 rel=8.841416e-11 qbar=1.486104568999e+00 Q_in=1.486104568999e+00 Q_out=1.486104568981e+00 balance=1.202214e-11 max_di
+    R=2 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5955 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5959
+    R=3 B_SOLVER r=3 converged=1 iterations=110 initial=1.192319e+07 final=5.018689e-05 rel=4.209184e-12 qbar=1.429069262739e+00 Q_in=1.429069262739e+00 Q_out=1.429069262706e+00 balance=2.293676e-11 max_d
+    R=3 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4979 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4977
+    R=4 B_SOLVER r=4 converged=1 iterations=90 initial=7.100180e+06 final=1.232370e-04 rel=1.735689e-11 qbar=1.289854205837e+00 Q_in=1.289854205837e+00 Q_out=1.289854205801e+00 balance=2.770793e-11 max_di
+    R=4 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5669 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5689
+    R=5 B_SOLVER r=5 converged=1 iterations=90 initial=9.254347e+06 final=7.492622e-04 rel=8.096327e-11 qbar=1.576125528543e+00 Q_in=1.576125528543e+00 Q_out=1.576125528452e+00 balance=5.742467e-11 max_di
+    R=5 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4475 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4474
+    R=6 B_SOLVER r=6 converged=1 iterations=100 initial=4.468800e+06 final=9.187207e-05 rel=2.055855e-11 qbar=1.488409225176e+00 Q_in=1.488409225176e+00 Q_out=1.488409225248e+00 balance=4.790175e-11 max_d
+    R=6 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5620 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5614
+    R=7 B_SOLVER r=7 converged=1 iterations=90 initial=9.672288e+06 final=3.204916e-04 rel=3.313504e-11 qbar=1.475436820542e+00 Q_in=1.475436820542e+00 Q_out=1.475436820436e+00 balance=7.143686e-11 max_di
+    R=7 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4729 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4743
+    R=8 B_SOLVER r=8 converged=1 iterations=100 initial=5.826485e+06 final=8.159142e-05 rel=1.400354e-11 qbar=1.326165851218e+00 Q_in=1.326165851218e+00 Q_out=1.326165851183e+00 balance=2.622176e-11 max_d
+    R=8 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4235 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4243
+    R=9 B_SOLVER r=9 converged=1 iterations=90 initial=4.417966e+06 final=3.944670e-05 rel=8.928700e-12 qbar=1.584289406322e+00 Q_in=1.584289406322e+00 Q_out=1.584289406309e+00 balance=8.207983e-12 max_di
+    R=9 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4289 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4280
+    R=10 B_SOLVER r=10 converged=1 iterations=80 initial=1.113241e+07 final=9.143694e-04 rel=8.213579e-11 qbar=1.591517243689e+00 Q_in=1.591517243689e+00 Q_out=1.591517243865e+00 balance=1.106973e-10 max_
+    R=10 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4353 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4351
+    R=11 B_SOLVER r=11 converged=1 iterations=90 initial=1.270884e+07 final=3.033047e-04 rel=2.386565e-11 qbar=1.777224007119e+00 Q_in=1.777224007119e+00 Q_out=1.777224007129e+00 balance=5.559661e-12 max_
+    R=11 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4576 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4575
+    R=12 B_SOLVER r=12 converged=1 iterations=100 initial=1.008874e+07 final=3.429207e-04 rel=3.399043e-11 qbar=1.342919309016e+00 Q_in=1.342919309016e+00 Q_out=1.342919308936e+00 balance=5.944655e-11 max
+    R=12 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5231 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5239
+    R=13 B_SOLVER r=13 converged=1 iterations=90 initial=7.705833e+06 final=7.603606e-04 rel=9.867338e-11 qbar=1.420636390868e+00 Q_in=1.420636390868e+00 Q_out=1.420636390574e+00 balance=2.070673e-10 max_
+    R=13 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4753 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4774
+    R=14 B_SOLVER r=14 converged=1 iterations=80 initial=6.677310e+06 final=1.803476e-04 rel=2.700903e-11 qbar=1.634669260727e+00 Q_in=1.634669260727e+00 Q_out=1.634669260682e+00 balance=2.703108e-11 max_
+    R=14 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4501 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4476
+    R=15 B_SOLVER r=15 converged=1 iterations=100 initial=4.970775e+07 final=3.993276e-03 rel=8.033509e-11 qbar=1.337216188825e+00 Q_in=1.337216188825e+00 Q_out=1.337216188674e+00 balance=1.127280e-10 max
+    R=15 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4920 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4938
+    R=16 B_SOLVER r=16 converged=1 iterations=90 initial=8.873292e+06 final=7.894896e-04 rel=8.897369e-11 qbar=1.539145585034e+00 Q_in=1.539145585034e+00 Q_out=1.539145585007e+00 balance=1.722681e-11 max_
+    R=16 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4320 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4302
+    R=17 B_SOLVER r=17 converged=1 iterations=90 initial=1.841970e+07 final=2.400958e-04 rel=1.303472e-11 qbar=1.512420415121e+00 Q_in=1.512420415121e+00 Q_out=1.512420415238e+00 balance=7.760005e-11 max_
+    R=17 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5232 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5217
+    R=18 B_SOLVER r=18 converged=1 iterations=110 initial=1.510584e+07 final=3.621823e-04 rel=2.397632e-11 qbar=1.121360645279e+00 Q_in=1.121360645279e+00 Q_out=1.121360645308e+00 balance=2.513010e-11 max
+    R=18 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4146 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4163
+    R=19 B_SOLVER r=19 converged=1 iterations=100 initial=1.373785e+07 final=7.661154e-05 rel=5.576677e-12 qbar=1.440491685887e+00 Q_in=1.440491685887e+00 Q_out=1.440491685915e+00 balance=1.972100e-11 max
+    R=19 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4569 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4569
+    RUN_DONE nr=20
+RUN id=s4_n64:s5001:n20 rc=0 wall=2882s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_n64
++ [s4_tw:s5001:n20] .: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/lagrangian_ensemble --medium b --grid 1664,192,192 --sigma2 1 --eps 2 --ell 0.083333333333333329 --window 0.1,0.9,0.1,0.9 --np-side 100 --planes 0.49999999999999994,0.58333333333333326,0.66666666666666663,0.75,0.83333333333333326,0.91666666666666663,0.99999999999999989,1.0833333333333333,1.1666666666666665,1.25,1.3333333333333333,1.4166666666666665,1.5,1.583333333333333,1.6666666666666665,1.75,1.833333333333333,1.9166666666666665,2,2.083333333333333,2.1666666666666665,2.25,2.333333333333333,2.375,2.4166666666666665,2.4999999999999996,2.583333333333333,2.6666666666666665,2.7499999999999996,2.833333333333333,2.9166666666666665,2.9999999999999996,3.083333333333333,3.1666666666666665,3.2499999999999996,3.333333333333333,3.4166666666666665,3.4999999999999996,3.583333333333333,3.6666666666666665,3.7499999999999996,3.833333333333333,3.9166666666666665,3.9999999999999996,4.083333333333333,4.166666666666667,4.25,4.333333333333333,4.416666666666667,4.5,4.583333333333333,4.666666666666667,4.75,4.833333333333333,4.916666666666667,5,5.083333333333333,5.166666666666667,5.25,5.333333333333333,5.416666666666667,5.5,5.583333333333333,5.666666666666667,5.75,5.833333333333333,5.916666666666667,6,6.083333333333333,6.166666666666667,6.25,6.333333333333333,6.416666666666667,6.5,6.583333333333333,6.666666666666667,6.75,6.833333333333333,6.916666666666667,7,7.083333333333333,7.166666666666667,7.25,7.333333333333333,7.416666666666667,7.5,7.583333333333333,7.666666666666667,7.75,7.833333333333333,7.916666666666667,8,8.0833333333333321,8.1666666666666661,8.25 --times auto --tol 1e-8 --hmax-div 8 --fused-splines --single-launch --twin on --pollock-bridge on --seed0 5001 --nr 20 --out /home/sesquerre/sf39_campaign/runs/s4_tw > /home/sesquerre/sf39_campaign/pilot/logs/s4_tw_s5001_n20.log 2>&1
+  CASE_RESULT run=s4_tw:s5001:n20 rc=0 wall=439s end=2026-10-27T23:04:48Z
+    R=0 B_SOLVER r=0 converged=1 iterations=50 initial=9.535320e+06 final=8.982586e-04 rel=9.420329e-11 qbar=1.878430024335e+00 Q_in=1.878430024335e+00 Q_out=1.878430024799e+00 balance=2.466249e-10 max_di
+    R=0 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4779 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4734
+    R=1 B_SOLVER r=1 converged=1 iterations=50 initial=1.404399e+07 final=1.385201e-04 rel=9.863303e-12 qbar=1.875617909535e+00 Q_in=1.875617909535e+00 Q_out=1.875617909609e+00 balance=3.939005e-11 max_di
+    R=1 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4275 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4309
+    R=2 B_SOLVER r=2 converged=1 iterations=50 initial=9.722882e+06 final=2.441623e-04 rel=2.511213e-11 qbar=1.853390156478e+00 Q_in=1.853390156478e+00 Q_out=1.853390156605e+00 balance=6.825662e-11 max_di
+    R=2 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4979 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4903
+    R=3 B_SOLVER r=3 converged=1 iterations=60 initial=9.281065e+06 final=1.105086e-05 rel=1.190689e-12 qbar=1.883297909130e+00 Q_in=1.883297909130e+00 Q_out=1.883297909131e+00 balance=5.373974e-13 max_di
+    R=3 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=22 pollock_weighted_not_active=4630 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4603
+    R=4 B_SOLVER r=4 converged=1 iterations=60 initial=1.381562e+07 final=5.817042e-05 rel=4.210483e-12 qbar=1.778538765999e+00 Q_in=1.778538765999e+00 Q_out=1.778538766000e+00 balance=5.744194e-13 max_di
+    R=4 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5185 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5290
+    R=5 B_SOLVER r=5 converged=1 iterations=60 initial=1.102994e+07 final=1.568776e-05 rel=1.422289e-12 qbar=1.872848790830e+00 Q_in=1.872848790830e+00 Q_out=1.872848790815e+00 balance=8.115419e-12 max_di
+    R=5 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4447 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4438
+    R=6 B_SOLVER r=6 converged=1 iterations=60 initial=1.299932e+07 final=7.611558e-05 rel=5.855351e-12 qbar=1.885614807693e+00 Q_in=1.885614807693e+00 Q_out=1.885614807722e+00 balance=1.503264e-11 max_di
+    R=6 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4637 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4675
+    R=7 B_SOLVER r=7 converged=1 iterations=60 initial=9.493776e+06 final=5.165588e-05 rel=5.441026e-12 qbar=1.856006542045e+00 Q_in=1.856006542045e+00 Q_out=1.856006542048e+00 balance=1.795732e-12 max_di
+    R=7 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4708 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4748
+    R=8 B_SOLVER r=8 converged=1 iterations=140 initial=1.650292e+07 final=8.880680e-04 rel=5.381279e-11 qbar=1.868649411418e+00 Q_in=1.868649411418e+00 Q_out=1.868649411134e+00 balance=1.518444e-10 max_d
+    R=8 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=63 pollock_weighted_not_active=4057 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=3979
+    R=9 B_SOLVER r=9 converged=1 iterations=50 initial=7.059638e+06 final=1.979625e-04 rel=2.804145e-11 qbar=1.859440222243e+00 Q_in=1.859440222243e+00 Q_out=1.859440222148e+00 balance=5.100754e-11 max_di
+    R=9 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=36 pollock_weighted_not_active=4790 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4729
+    R=10 B_SOLVER r=10 converged=1 iterations=60 initial=1.118625e+07 final=4.013897e-05 rel=3.588241e-12 qbar=1.856179814995e+00 Q_in=1.856179814995e+00 Q_out=1.856179815023e+00 balance=1.534986e-11 max_
+    R=10 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4837 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4741
+    R=11 B_SOLVER r=11 converged=1 iterations=60 initial=2.090709e+07 final=1.995446e-04 rel=9.544352e-12 qbar=1.910034981328e+00 Q_in=1.910034981328e+00 Q_out=1.910034981448e+00 balance=6.309474e-11 max_
+    R=11 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4435 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4369
+    R=12 B_SOLVER r=12 converged=1 iterations=60 initial=1.231348e+07 final=5.076300e-04 rel=4.122556e-11 qbar=1.904872249633e+00 Q_in=1.904872249633e+00 Q_out=1.904872249177e+00 balance=2.394463e-10 max_
+    R=12 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4182 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4257
+    R=13 B_SOLVER r=13 converged=1 iterations=50 initial=1.267939e+07 final=9.105004e-04 rel=7.180951e-11 qbar=1.812266286824e+00 Q_in=1.812266286824e+00 Q_out=1.812266286884e+00 balance=3.332826e-11 max_
+    R=13 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4923 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4937
+    R=14 B_SOLVER r=14 converged=1 iterations=60 initial=1.459267e+07 final=2.301801e-05 rel=1.577368e-12 qbar=1.897847192954e+00 Q_in=1.897847192954e+00 Q_out=1.897847192946e+00 balance=3.855674e-12 max_
+    R=14 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=5077 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=5030
+    R=15 B_SOLVER r=15 converged=1 iterations=60 initial=1.346165e+07 final=5.039568e-06 rel=3.743648e-13 qbar=1.883331640155e+00 Q_in=1.883331640155e+00 Q_out=1.883331640162e+00 balance=3.581209e-12 max_
+    R=15 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4664 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4616
+    R=16 B_SOLVER r=16 converged=1 iterations=50 initial=1.396995e+07 final=3.656386e-04 rel=2.617323e-11 qbar=1.885465581684e+00 Q_in=1.885465581684e+00 Q_out=1.885465581732e+00 balance=2.548725e-11 max_
+    R=16 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4407 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4398
+    R=17 B_SOLVER r=17 converged=1 iterations=60 initial=1.027101e+07 final=3.801483e-06 rel=3.701176e-13 qbar=1.924994818357e+00 Q_in=1.924994818357e+00 Q_out=1.924994818357e+00 balance=1.607953e-13 max_
+    R=17 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4354 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4417
+    R=18 B_SOLVER r=18 converged=1 iterations=50 initial=1.477584e+07 final=1.853550e-04 rel=1.254446e-11 qbar=1.850226447041e+00 Q_in=1.850226447041e+00 Q_out=1.850226447006e+00 balance=1.875711e-11 max_
+    R=18 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4211 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4287
+    R=19 B_SOLVER r=19 converged=1 iterations=50 initial=9.501373e+06 final=1.169480e-04 rel=1.230854e-11 qbar=1.855682154346e+00 Q_in=1.855682154346e+00 Q_out=1.855682154263e+00 balance=4.457842e-11 max_
+    R=19 STATUS ok tracker_non_ok_plane=0 tracker_non_ok_time=0 seed_backflow=0 pollock_weighted_not_active=4519 exit_inlet_plane=0 exit_outlet_plane=0 exit_inlet_time=0 exit_outlet_time=4543
+    RUN_DONE nr=20
+RUN id=s4_tw:s5001:n20 rc=0 wall=439s realizations_done=20/20 out=/home/sesquerre/sf39_campaign/runs/s4_tw
+RECORDED part_seconds=9044 part_runs_seconds=21849 part=pilot (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=pilot rc=0
+PART_SCRIPT_EXIT=0
+[2026-10-27T23:04:48Z] job=sf39-pilot-s4 finished exit=0

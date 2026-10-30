@@ -1,0 +1,32 @@
+{
+ "s1": {
+  "N_narrow": 20,
+  "N_twin": 20,
+  "N_hmax": 20,
+  "N_R": 50,
+  "N_A": 20,
+  "N_run": 50,
+  "par2_NR": 50,
+  "capped": []
+ },
+ "s225": {
+  "N_narrow": 20,
+  "N_twin": 26,
+  "N_hmax": 20,
+  "N_R": 62,
+  "N_A": 20,
+  "N_run": 62,
+  "par2_NR": 62,
+  "capped": []
+ },
+ "s4": {
+  "N_narrow": 20,
+  "N_twin": 20,
+  "N_hmax": 20,
+  "N_R": 71,
+  "N_A": 20,
+  "N_run": 71,
+  "par2_NR": 71,
+  "capped": []
+ }
+}

@@ -1,0 +1,36 @@
+SF-39 CHECKPOINT REPORT (blinded, RR4; pilot n=20 per arm; amplitudes: s025)
+
+FROZEN tau_b* (F2 pilot record; the other frozen times are in tau_b_star_s025.json)
+TAU_B_STAR s025=159.511162711
+
+N values printed by nr_rule (>500: cap reached without meeting the target, 500 used)
+NR s025 N_narrow=20
+NR s025 N_twin=20
+NR s025 N_hmax=20
+NR s025 N_R=25
+NR s025 N_A=20
+NR s025 N_run=25
+NR s025 par2_NR=25
+
+GPU-seconds per realization (kind: measured | estimate)
+GPU_S s025_A 94.0704 measured
+GPU_S s025_B 33.6377 estimate
+GPU_S s025_n05 8.18515 measured
+GPU_S s025_n10 17.6519 measured
+GPU_S s025_n20 68.8741 measured
+GPU_S s025_par2 66.6652 measured
+GPU_S s025_tw 9.95335 measured
+
+PROJECTED_GPU_H 0.13931 (realizations still to run, N values above, GPU-s per realization above)
+PILOT_WALL_OVER_GPU_BUSY 1.00586 (sum of pilot runner walls / sum of pilot timings.json seconds.total)
+PROJECTED_WALL_H 0.140126 (one shared GPU: projected GPU-h x that ratio)
+
+BYTES per realization (kind: measured | estimate)
+BYTES s025_A 686666755 measured
+BYTES s025_B 320411898 estimate
+BYTES s025_n05 320964003 measured
+BYTES s025_n10 320627796 measured
+BYTES s025_n20 320599994 measured
+BYTES s025_par2 71972298 measured
+BYTES s025_tw 320965064 measured
+PROJECTED_BYTES 42797839180 (final counts x bytes per realization, all arms)

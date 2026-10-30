@@ -1,0 +1,57 @@
+NOTE: ref and head binaries.md5 are identical (same binaries; the comparison cannot detect a code change)
+== pipe_config_par2_small
+   pipe_config_par2_small IDENTICAL (111 items)
+== pipe_config_streamfunctions_homogeneous
+   pipe_config_streamfunctions_homogeneous IDENTICAL (30 items)
+== pipe_config_streamfunctions_continuation
+   pipe_config_streamfunctions_continuation IDENTICAL (31 items)
+== r_trace_N32_e0.5_host
+   r_trace_N32_e0.5_host IDENTICAL (6 items)
+== r_trace_N32_e0.5_gpu
+   r_trace_N32_e0.5_gpu IDENTICAL (6 items)
+== r_trace_N32_e1.0_host
+   r_trace_N32_e1.0_host IDENTICAL (6 items)
+== r_trace_N32_e1.0_gpu
+   r_trace_N32_e1.0_gpu IDENTICAL (6 items)
+== r_trace_N64_e0.5_host
+   r_trace_N64_e0.5_host IDENTICAL (6 items)
+== r_trace_N64_e0.5_gpu
+   r_trace_N64_e0.5_gpu IDENTICAL (6 items)
+== r_trace_N64_e1.0_host
+   r_trace_N64_e1.0_host IDENTICAL (6 items)
+== r_trace_N64_e1.0_gpu
+   r_trace_N64_e1.0_gpu IDENTICAL (6 items)
+== r_trace_N64_e2.0_gpu
+   r_trace_N64_e2.0_gpu IDENTICAL (6 items)
+== r_prod
+   r_prod IDENTICAL (2 items)
+== r_fwd_smoke_g3d_n16
+   r_fwd_smoke_g3d_n16 IDENTICAL (18 items)
+== r_fwd_g3d_n32_cov
+   r_fwd_g3d_n32_cov IDENTICAL (18 items)
+== r_fwd_gauss_n64_e1_cov
+   r_fwd_gauss_n64_e1_cov IDENTICAL (18 items)
+== r_fwd_gauss_n64_e2
+   r_fwd_gauss_n64_e2 IDENTICAL (16 items)
+== r_fwd_gauss_n64_e2_tol
+   r_fwd_gauss_n64_e2_tol IDENTICAL (16 items)
+== r_fwd_gauss_n40_e1
+   r_fwd_gauss_n40_e1 IDENTICAL (16 items)
+== r_fwd_gauss_n80_e2
+   r_fwd_gauss_n80_e2 IDENTICAL (16 items)
+== r_neutral_gauss_n64_e1_cov
+   r_neutral_gauss_n64_e1_cov IDENTICAL (33 items)
+== r_neutral_gauss_n64_e2
+   r_neutral_gauss_n64_e2 IDENTICAL (31 items)
+== r_neutral_gauss_n64_e2_tol
+   r_neutral_gauss_n64_e2_tol IDENTICAL (31 items)
+== g_runner_a
+   g_runner_a IDENTICAL (69 items)
+== g_ab
+   g_ab IDENTICAL (26 items)
+== runner_b
+   runner_b IDENTICAL (81 items)
+== runner_b_analysis
+   runner_b_analysis IDENTICAL (81 items)
+cases compared: 27
+REGRESS IDENTICAL

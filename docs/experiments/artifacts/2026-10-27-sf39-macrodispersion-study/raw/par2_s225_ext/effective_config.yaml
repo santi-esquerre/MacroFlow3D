@@ -1,0 +1,164 @@
+# Effective configuration (auto-generated, schema_version=1)
+# All values are resolved (user + defaults).
+
+run_mode: ensemble
+
+grid:
+  nx: 2496
+  ny: 288
+  nz: 288
+  dx: 5.000000000000000e+00
+
+stochastic:
+  sigma2: 2.250000000000000e+00
+  corr_length: 6.000000000000000e+01
+  n_modes: 10000
+  covariance_type: 1
+  seed: 9021
+  K_mean: 1.000000000000000e+00
+
+flow:
+  solver: mg_cg
+  mg_levels: 5
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 200
+  cg_rtol: 1.000000000000000e-06
+  cg_check_every: 10
+  rtol: 1.000000000000000e-06
+  verify_velocity: false
+  pin:
+    mode: off
+  bc:
+    xmin: { type: dirichlet, value: 1.218750000000000e+02 }
+    xmax: { type: dirichlet, value: 0.000000000000000e+00 }
+    ymin: { type: periodic, value: 0.000000000000000e+00 }
+    ymax: { type: periodic, value: 0.000000000000000e+00 }
+    zmin: { type: periodic, value: 0.000000000000000e+00 }
+    zmax: { type: periodic, value: 0.000000000000000e+00 }
+
+transport:
+  n_particles: 10000
+  dt: 1.250000000000000e+01
+  n_steps: 116786
+  porosity: 1.000000000000000e+00
+  diffusion: 0.000000000000000e+00
+  alpha_l: 0.000000000000000e+00
+  alpha_t: 0.000000000000000e+00
+  seed: 123476789
+  output_every: 389
+  snapshot_every: 0
+  inject_x: 3.000000000000000e+02
+  method: par2
+  velocity_layout: padded
+
+analysis:
+  macrodispersion:
+    enabled: true
+    NR: 42
+    lambda: 6.000000000000000e+01
+    vmean_norm: 9.765625000000000e-03
+    sample_every: 10
+    var_estimator: biased
+  snapshots:
+    enabled: true
+    every: 1167
+    legacy_format: true
+    include_time: false
+    include_status: false
+    include_wrap_counts: false
+    include_unwrapped: false
+    stride: 1
+    max_particles: -1
+    precision: 15
+
+output:
+  output_dir: raw/par2_s225_ext
+  save_K: false
+  save_head: false
+  save_velocity: false
+  save_particles: true
+  format: binary
+
+streamfunction_solver:
+  enabled: false
+  affine_mean_velocity:
+    mode: fixed
+    value: 1.000000000000000e+00
+  epsilon: 1.000000000000000e-02
+  eta: 1.000000000000000e+00
+  picard:
+    max_iter: 500
+    tolerance: 1.000000000000000e-06
+    omega: 2.500000000000000e-01
+  adaptive:
+    enabled: true
+  linear:
+    rtol: 1.000000000000000e-10
+    max_iter: 1000
+    check_every: 10
+  mg:
+    num_levels: 4
+  export:
+    iteration_history: true
+    summary: true
+    fields: false
+  field_source: stochastic
+  periodic_gaussian:
+    sigma2: 1.000000000000000e+00
+    corr_length: 1.000000000000000e+00
+    seed: 0
+    normalize_variance: true
+  darcy_source: pipeline
+  continuation:
+    enabled: false
+    eta:
+      start: 0.000000000000000e+00
+      initial_step: 1.000000000000000e-01
+      min_step: 1.250000000000000e-02
+      max_step: 2.500000000000000e-01
+      backtrack_factor: 5.000000000000000e-01
+      growth_factor: 1.500000000000000e+00
+      easy_streak: 2
+    epsilon:
+      target: 1.000000000000000e-06
+      initial_step_log10: 1.000000000000000e+00
+      min_step_log10: 1.250000000000000e-01
+      max_step_log10: 1.000000000000000e+00
+      backtrack_factor: 5.000000000000000e-01
+      growth_factor: 1.500000000000000e+00
+      easy_streak: 2
+    lambda:
+      enabled: false
+      start: 0.000000000000000e+00
+      initial_step: 1.000000000000000e-01
+      min_step: 1.250000000000000e-02
+      max_step: 2.000000000000000e-01
+      backtrack_factor: 5.000000000000000e-01
+      growth_factor: 1.500000000000000e+00
+      easy_streak: 2
+  anderson:
+    enabled: false
+    depth: 5
+    start_iteration: 5
+    condition_limit: 1.000000000000000e+12
+  newton:
+    enabled: false
+    activation_r_F: 1.000000000000000e-02
+    stagnation_activation_r_F: 1.000000000000000e-01
+    forcing_coefficient: 1.000000000000000e+00
+    forcing_min: 1.000000000000000e-08
+    forcing_max: 1.000000000000000e-01
+    armijo_c: 1.000000000000000e-04
+    alpha_min: 3.125000000000000e-02
+    backtrack_factor: 5.000000000000000e-01
+    max_newton_iterations: 50
+    rescue_picard_steps: 5
+    gmres:
+      restart: 10
+      max_iterations: 100
+    delta:
+      delta_min: 1.000000000000000e-12
+      delta_max: 1.000000000000000e+02

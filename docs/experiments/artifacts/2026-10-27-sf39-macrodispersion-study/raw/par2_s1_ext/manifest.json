@@ -1,0 +1,68 @@
+{
+  "analysis": {
+    "macrodispersion": {
+      "NR": 30,
+      "enabled": true,
+      "lambda": 50.0,
+      "sample_every": 10,
+      "var_estimator": "biased",
+      "vmean_norm": 0.009765625
+    },
+    "snapshots": {
+      "enabled": true,
+      "every": 957,
+      "stride": 1
+    }
+  },
+  "build": {
+    "build_type": "Release",
+    "cuda_architectures": "70",
+    "git_hash": "1e40cfe9cb51",
+    "nvcc_version": 11040
+  },
+  "config_schema_version": 1,
+  "effective_config": "raw/par2_s1_ext/effective_config.yaml",
+  "flow": {
+    "cg_max_iter": 200,
+    "mg_levels": 6,
+    "mg_max_cycles": 20,
+    "rtol": 1e-06,
+    "solver": "mg_cg",
+    "verify_velocity": false
+  },
+  "format_version": 1,
+  "gpu": {
+    "compute_capability": "7.0",
+    "cuda_driver_version": 11040,
+    "cuda_runtime_version": 11040,
+    "device_name": "Tesla V100-PCIE-32GB",
+    "vram_mib": 32510
+  },
+  "grid": {
+    "dx": 5.0,
+    "nx": 2048,
+    "ny": 256,
+    "nz": 256
+  },
+  "output_dir": "raw/par2_s1_ext",
+  "project": "MacroFlow3D",
+  "stochastic": {
+    "K_mean": 1.0,
+    "corr_length": 50.0,
+    "covariance_type": 1,
+    "n_modes": 10000,
+    "seed": 9021,
+    "sigma2": 1.0
+  },
+  "timestamp": "2026-10-28T14:26:59",
+  "transport": {
+    "alpha_l": 0.0,
+    "alpha_t": 0.0,
+    "diffusion": 0.0,
+    "dt": 12.5,
+    "n_particles": 10000,
+    "n_steps": 95749,
+    "porosity": 1.0,
+    "seed": 123476789
+  }
+}

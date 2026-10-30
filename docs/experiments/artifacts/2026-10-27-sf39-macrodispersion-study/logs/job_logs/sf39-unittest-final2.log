@@ -1,0 +1,13 @@
+[2026-10-29T18:08:18Z] job=sf39-unittest-final2 GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-29T18:08:18Z] job=sf39-unittest-final2 chose GPU 0 (auto: least-loaded)
+[2026-10-29T18:08:18Z] job=sf39-unittest-final2 session=macroflow3d-SF-39-sf39-unittest-final2 started
+[2026-10-29T18:08:18Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-29T18:08:18Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-29T18:08:18Z] command=echo TREE=$(cat .mf3d_source_rev); cd docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts && python3 -W error -m unittest discover -s . -t . > $HOME/sf39_campaign/export/unittest_final.txt 2>&1; echo UNITTEST_RC=$?; grep -E '^Ran |^OK|^FAILED|^ERROR|^FAIL' $HOME/sf39_campaign/export/unittest_final.txt
+TREE=d54db6d81d16
+UNITTEST_RC=0
+Ran 311 tests in 250.918s
+OK
+[2026-10-29T18:12:30Z] job=sf39-unittest-final2 finished exit=0

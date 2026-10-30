@@ -1,0 +1,32 @@
+[2026-10-28T12:08:49Z] job=sf39-pilot-par2 GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-28T12:08:49Z] job=sf39-pilot-par2 chose GPU 0 (auto: least-loaded)
+[2026-10-28T12:08:49Z] job=sf39-pilot-par2 session=macroflow3d-SF-39-sf39-pilot-par2 started
+[2026-10-28T12:08:49Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-28T12:08:49Z] cwd=/home/sesquerre/MacroFlow3D-SF-39
+[2026-10-28T12:08:49Z] command=echo TREE=$(cat .mf3d_source_rev); bash docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/scripts/run_sf39.sh build/v100-release pilot par2; echo PART_SCRIPT_EXIT=$?
+TREE=b0be775db0f4
+PART_BEGIN part=pilot selector=par2 binaries=ok(5 binaries, md5file_sha256=b1985f91d49d51f9)
++ [par2_s1] /home/sesquerre/sf39_campaign/par2: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/configs/par2_s1.yaml > /home/sesquerre/sf39_campaign/pilot/logs/par2_s1.log 2>&1
+  CASE_RESULT run=par2_s1 rc=0 wall=663s end=2026-10-28T12:19:59Z
+RUN id=par2_s1 rc=0 wall=663s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s1
++ [fs_par2_s1] /home/sesquerre/sf39_campaign/par2: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/par2_field_stats /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/configs/par2_s1.yaml --nr 20 > /home/sesquerre/sf39_campaign/pilot/logs/fs_par2_s1.log 2>&1
+  CASE_RESULT run=fs_par2_s1 rc=0 wall=406s end=2026-10-28T12:26:45Z
+RUN id=fs_par2_s1 rc=0 wall=406s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s1.txt sha256=48b4e21c896cc4e890ef754f972902bc9e4b2f243e3d3adfd177466284dbaa43
++ [par2_s225] /home/sesquerre/sf39_campaign/par2: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/configs/par2_s225.yaml > /home/sesquerre/sf39_campaign/pilot/logs/par2_s225.log 2>&1
+  CASE_RESULT run=par2_s225 rc=0 wall=1135s end=2026-10-28T12:45:40Z
+RUN id=par2_s225 rc=0 wall=1135s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s225
++ [fs_par2_s225] /home/sesquerre/sf39_campaign/par2: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/par2_field_stats /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/configs/par2_s225.yaml --nr 20 > /home/sesquerre/sf39_campaign/pilot/logs/fs_par2_s225.log 2>&1
+  CASE_RESULT run=fs_par2_s225 rc=0 wall=623s end=2026-10-28T12:56:03Z
+RUN id=fs_par2_s225 rc=0 wall=623s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s225.txt sha256=12a6899859e211a79ef98c5fb1d114dc895eddbfef7334c19f06a40e9c159e8c
++ [par2_s4] /home/sesquerre/sf39_campaign/par2: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/macroflow3d_pipeline /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/configs/par2_s4.yaml > /home/sesquerre/sf39_campaign/pilot/logs/par2_s4.log 2>&1
+  CASE_RESULT run=par2_s4 rc=0 wall=1238s end=2026-10-28T13:16:41Z
+RUN id=par2_s4 rc=0 wall=1238s par2_series=20/20 out=/home/sesquerre/sf39_campaign/par2/raw/par2_s4
++ [fs_par2_s4] /home/sesquerre/sf39_campaign/par2: /home/sesquerre/MacroFlow3D-SF-39/build/v100-release/par2_field_stats /home/sesquerre/MacroFlow3D-SF-39/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study/configs/par2_s4.yaml --nr 20 > /home/sesquerre/sf39_campaign/pilot/logs/fs_par2_s4.log 2>&1
+  CASE_RESULT run=fs_par2_s4 rc=0 wall=619s end=2026-10-28T13:27:00Z
+RUN id=fs_par2_s4 rc=0 wall=619s fieldstat_lines=20/20 saved=/home/sesquerre/sf39_campaign/par2/field_stats_par2_s4.txt sha256=c6c5ee9aa5aa7d86d7002252e06609c642c34dbaf24cab77edd1b5d87f8d9560
+RECORDED part_seconds=4690 part_runs_seconds=26533 part=pilot (this invocation / sum of the recorded run walls: GPU-busy upper bound, the GPU is shared)
+PART_DONE part=pilot rc=0
+PART_SCRIPT_EXIT=0
+[2026-10-28T13:27:00Z] job=sf39-pilot-par2 finished exit=0

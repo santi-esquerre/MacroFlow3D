@@ -1,0 +1,84 @@
+{
+ "N": {
+  "s025": {
+   "N_A": 20,
+   "N_R": 25,
+   "N_hmax": 20,
+   "N_narrow": 20,
+   "N_run": 25,
+   "N_twin": 20,
+   "par2_NR": 25
+  }
+ },
+ "N_capped_at_500": {
+  "s025": []
+ },
+ "bytes_per_realization": {
+  "s025_A": {
+   "kind": "measured",
+   "value": 686666755
+  },
+  "s025_B": {
+   "kind": "estimate",
+   "value": 320411898
+  },
+  "s025_n05": {
+   "kind": "measured",
+   "value": 320964003
+  },
+  "s025_n10": {
+   "kind": "measured",
+   "value": 320627796
+  },
+  "s025_n20": {
+   "kind": "measured",
+   "value": 320599994
+  },
+  "s025_par2": {
+   "kind": "measured",
+   "value": 71972298
+  },
+  "s025_tw": {
+   "kind": "measured",
+   "value": 320965064
+  }
+ },
+ "gpu_s_per_realization": {
+  "s025_A": {
+   "kind": "measured",
+   "value": 94.07040453325001
+  },
+  "s025_B": {
+   "kind": "estimate",
+   "value": 33.637681161
+  },
+  "s025_n05": {
+   "kind": "measured",
+   "value": 8.18514644155
+  },
+  "s025_n10": {
+   "kind": "measured",
+   "value": 17.6519476757
+  },
+  "s025_n20": {
+   "kind": "measured",
+   "value": 68.87411426485
+  },
+  "s025_par2": {
+   "kind": "measured",
+   "value": 66.66523963777642
+  },
+  "s025_tw": {
+   "kind": "measured",
+   "value": 9.953346799450001
+  }
+ },
+ "n_pilot": 20,
+ "pilot_wall_over_gpu_busy": 1.0058622815375409,
+ "projected_bytes": 42797839180,
+ "projected_gpu_h": 0.13930961222052282,
+ "projected_wall_h": 0.14012628438824518,
+ "tau_b_star": {
+  "s025": 159.51116271135302
+ }
+}
