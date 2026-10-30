@@ -1,0 +1,9 @@
+[2026-10-30T09:17:37Z] job=sf42-reconcile GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T09:17:37Z] job=sf42-reconcile chose GPU 0 (auto: least-loaded)
+[2026-10-30T09:17:37Z] job=sf42-reconcile session=macroflow3d-SF-42-sf42-reconcile started
+[2026-10-30T09:17:37Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T09:17:37Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T09:17:37Z] command=cd ~/MacroFlow3D-SF-42/docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts && python3 -B -m reconcile.solver --logs ~/.macroflow3d-remote/macroflow3d-SF-39/logs --runs-root ~/sf39_campaign/runs --check-sf39 --report ~/sf42_campaign/r3/reconcile_report.txt
+[2026-10-30T09:17:40Z] job=sf42-reconcile finished exit=0

@@ -1,0 +1,346 @@
+[2026-10-30T09:13:39Z] job=sf42-hosttests GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T09:13:39Z] job=sf42-hosttests chose GPU 0 (auto: least-loaded)
+[2026-10-30T09:13:39Z] job=sf42-hosttests session=macroflow3d-SF-42-sf42-hosttests started
+[2026-10-30T09:13:39Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T09:13:39Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T09:13:39Z] command=cd ~/MacroFlow3D-SF-42/docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling && mkdir -p ~/sf42_campaign/r3 && python3 -B verification/par2_alphax_s025.py ~/sf39_campaign ~/MacroFlow3D-SF-42/docs/experiments/artifacts/2026-10-27-sf39-macrodispersion-study ~/sf42_campaign/r3/par2_alphax_s025.txt && cd scripts && OMP_NUM_THREADS=1 MCSTAT_PAR2_ALPHAX_S025=~/sf42_campaign/r3/par2_alphax_s025.txt python3 -W error -B -m unittest discover -s . -t . -v
+PAR2_ALPHAX_S025 n=25 U_c=0.010191770851862745 window=[547236.3859, 729648.5145] mean=0.27019457195374413
+test_bootstrap_components_require_an_explicit_stream (mcstat.tests.test_budget.ContrastBounds.test_bootstrap_components_require_an_explicit_stream) ... ok
+test_e_int_paired_known_answer (mcstat.tests.test_budget.ContrastBounds.test_e_int_paired_known_answer) ... ok
+test_e_w_unpaired_bound_exceeds_the_estimate_by_the_sampling_noise (mcstat.tests.test_budget.ContrastBounds.test_e_w_unpaired_bound_exceeds_the_estimate_by_the_sampling_noise) ... ok
+test_group_size_mismatch_is_rejected (mcstat.tests.test_budget.ContrastBounds.test_group_size_mismatch_is_rejected) ... ok
+test_independent_draws_per_replicate_unless_shared (mcstat.tests.test_budget.ContrastBounds.test_independent_draws_per_replicate_unless_shared) ... ok
+test_interaction_contrast_is_the_difference_of_resolution_effects (mcstat.tests.test_budget.ContrastBounds.test_interaction_contrast_is_the_difference_of_resolution_effects) ... ok
+test_coarsest_production_level_uses_the_next_finer_difference (mcstat.tests.test_budget.LadderKnownAnswers.test_coarsest_production_level_uses_the_next_finer_difference) ... ok
+test_finer_level_formula (mcstat.tests.test_budget.LadderKnownAnswers.test_finer_level_formula) ... ok
+test_finest_level_formula (mcstat.tests.test_budget.LadderKnownAnswers.test_finest_level_formula) ... ok
+test_noisy_ladder_recovers_the_order_and_is_batched (mcstat.tests.test_budget.LadderKnownAnswers.test_noisy_ladder_recovers_the_order_and_is_batched) ... ok
+test_non_monotone_uses_the_fallback (mcstat.tests.test_budget.LadderKnownAnswers.test_non_monotone_uses_the_fallback) ... ok
+test_order_outside_the_preregistered_range_uses_the_fallback (mcstat.tests.test_budget.LadderKnownAnswers.test_order_outside_the_preregistered_range_uses_the_fallback) ... ok
+test_oscillating_four_level_sequence_uses_the_fallback (mcstat.tests.test_budget.LadderKnownAnswers.test_oscillating_four_level_sequence_uses_the_fallback) ... ok
+test_two_levels_and_unequal_ratios_have_no_order (mcstat.tests.test_budget.LadderKnownAnswers.test_two_levels_and_unequal_ratios_have_no_order) ... ok
+test_validation (mcstat.tests.test_budget.LadderKnownAnswers.test_validation) ... ok
+test_bootstrap_t_sampling_object_plugs_in (mcstat.tests.test_budget.MonotoneAndPValue.test_bootstrap_t_sampling_object_plugs_in) ... ok
+test_enforced_bounds_are_non_increasing_in_the_tail_and_dominate_the_raw_ones (mcstat.tests.test_budget.MonotoneAndPValue.test_enforced_bounds_are_non_increasing_in_the_tail_and_dominate_the_raw_ones) ... ok
+test_needs_a_component (mcstat.tests.test_budget.MonotoneAndPValue.test_needs_a_component) ... ok
+test_never_positive_when_the_bias_dominates (mcstat.tests.test_budget.MonotoneAndPValue.test_never_positive_when_the_bias_dominates) ... ok
+test_report_returns_intermediates_and_intersection_union (mcstat.tests.test_budget.MonotoneAndPValue.test_report_returns_intermediates_and_intersection_union) ... ok
+test_robust_limit_is_non_decreasing_in_a_and_p_value_is_its_inf (mcstat.tests.test_budget.MonotoneAndPValue.test_robust_limit_is_non_decreasing_in_a_and_p_value_is_its_inf) ... ok
+test_each_component_bound_covers_its_bias (mcstat.tests.test_budget.UnionBoundMonteCarlo.test_each_component_bound_covers_its_bias) ... ok
+test_robust_limit_union_bound (mcstat.tests.test_budget.UnionBoundMonteCarlo.test_robust_limit_union_bound) ... ok
+test_grids_and_passes_match_the_committed_tables (mcstat.tests.test_costmodel.ArmTableAgainstThePreregistration.test_grids_and_passes_match_the_committed_tables) ... ok
+test_par2_grids_match_the_committed_configs (mcstat.tests.test_costmodel.ArmTableAgainstThePreregistration.test_par2_grids_match_the_committed_configs) ... ok
+test_adding_calibration_points_refits (mcstat.tests.test_costmodel.Sf39Calibration.test_adding_calibration_points_refits) ... ok
+test_fit_quality_is_stated_and_acceptable (mcstat.tests.test_costmodel.Sf39Calibration.test_fit_quality_is_stated_and_acceptable) ... ok
+test_gpu_seconds_per_realization_from_the_walls (mcstat.tests.test_costmodel.Sf39Calibration.test_gpu_seconds_per_realization_from_the_walls) ... ok
+test_halted_arm_is_excluded_with_a_reason (mcstat.tests.test_costmodel.Sf39Calibration.test_halted_arm_is_excluded_with_a_reason) ... ok
+test_hold_out_checks_are_predicted_within_the_stated_scatter (mcstat.tests.test_costmodel.Sf39Calibration.test_hold_out_checks_are_predicted_within_the_stated_scatter) ... ok
+test_predictions_are_monotone_in_the_cost_drivers (mcstat.tests.test_costmodel.Sf39Calibration.test_predictions_are_monotone_in_the_cost_drivers) ... ok
+test_projection_and_validity_range (mcstat.tests.test_costmodel.Sf39Calibration.test_projection_and_validity_range) ... ok
+test_realization_counts_of_the_walls_entries (mcstat.tests.test_costmodel.Sf39Calibration.test_realization_counts_of_the_walls_entries) ... ok
+test_closed_form_moments_match_the_targets (mcstat.tests.test_covdist.MixtureFamily.test_closed_form_moments_match_the_targets) ... ok
+test_infeasible_pairs_are_rejected (mcstat.tests.test_covdist.MixtureFamily.test_infeasible_pairs_are_rejected) ... ok
+test_normal_and_unknown (mcstat.tests.test_covdist.MixtureFamily.test_normal_and_unknown) ... ok
+test_reflection_has_the_opposite_skewness (mcstat.tests.test_covdist.MixtureFamily.test_reflection_has_the_opposite_skewness) ... ok
+test_sample_moments_of_the_stress_family (mcstat.tests.test_covdist.MixtureFamily.test_sample_moments_of_the_stress_family) ... ok
+test_the_stress_pair_is_beyond_johnson_su (mcstat.tests.test_covdist.MixtureFamily.test_the_stress_pair_is_beyond_johnson_su) ... ok
+test_all_pairs_are_realizable_and_named_members_exist (mcstat.tests.test_covdist.StressMoments.test_all_pairs_are_realizable_and_named_members_exist) ... ok
+test_committed_json_is_reproduced_from_the_committed_sf39_tables (mcstat.tests.test_covdist.StressMoments.test_committed_json_is_reproduced_from_the_committed_sf39_tables) ... ok
+test_envelope_dominates_every_amplitude_and_every_series (mcstat.tests.test_covdist.StressMoments.test_envelope_dominates_every_amplitude_and_every_series) ... ok
+test_source_columns_are_the_sf39_analysis_columns (mcstat.tests.test_covdist.StressMoments.test_source_columns_are_the_sf39_analysis_columns) ... ok
+test_a_different_plan_in_the_same_directory_is_rejected (mcstat.tests.test_coverage.Engine.test_a_different_plan_in_the_same_directory_is_rejected) ... ok
+test_cli_smoke_profile_end_to_end (mcstat.tests.test_coverage.Engine.test_cli_smoke_profile_end_to_end) ... coverage: 35 of 35 chunks pending, 1 workers
+coverage: 1/35 chunks, 0 s elapsed, ETA 0 s (sampling_student__base__normal__n30)
+coverage: 35/35 chunks, 2 s elapsed, ETA 0 s (tost_gate5_boott__rho=0.5__normal__n30)
+coverage: finished 35 chunks in 2 s (1 core-seconds)
+ok
+test_interrupted_run_resumes_to_the_identical_result (mcstat.tests.test_coverage.Engine.test_interrupted_run_resumes_to_the_identical_result) ... ok
+test_results_do_not_depend_on_the_chunking (mcstat.tests.test_coverage.Engine.test_results_do_not_depend_on_the_chunking) ... ok
+test_results_do_not_depend_on_the_number_of_workers (mcstat.tests.test_coverage.Engine.test_results_do_not_depend_on_the_number_of_workers) ... summary: 15 of 15 cells complete; 20 verdict lines; written to /tmp/tmpajdv78_s/smoke
+ok
+test_seed_reproducibility (mcstat.tests.test_coverage.Engine.test_seed_reproducibility) ... ok
+test_streams_depend_on_cell_and_batch_only (mcstat.tests.test_coverage.Engine.test_streams_depend_on_cell_and_batch_only) ... ok
+test_bca_is_reported_not_judged (mcstat.tests.test_coverage.NominalCoverage.test_bca_is_reported_not_judged) ... ok
+test_bootstrap_t_on_normal_data (mcstat.tests.test_coverage.NominalCoverage.test_bootstrap_t_on_normal_data) ... ok
+test_ladder_bound_reports_its_branch (mcstat.tests.test_coverage.NominalCoverage.test_ladder_bound_reports_its_branch) ... ok
+test_pipeline_is_conservative_without_and_with_biases (mcstat.tests.test_coverage.NominalCoverage.test_pipeline_is_conservative_without_and_with_biases) ... ok
+test_positive_control_a_too_small_bound_is_detected (mcstat.tests.test_coverage.NominalCoverage.test_positive_control_a_too_small_bound_is_detected) ... ok
+test_student_on_normal_data_is_exact (mcstat.tests.test_coverage.NominalCoverage.test_student_on_normal_data_is_exact) ... ok
+test_student_under_the_stress_family_fails_where_it_should (mcstat.tests.test_coverage.NominalCoverage.test_student_under_the_stress_family_fails_where_it_should) ... ok
+test_the_biased_scenario_is_anti_conservative_without_the_budget (mcstat.tests.test_coverage.NominalCoverage.test_the_biased_scenario_is_anti_conservative_without_the_budget) ... ok
+test_tost_type_one_error_at_the_boundary (mcstat.tests.test_coverage.NominalCoverage.test_tost_type_one_error_at_the_boundary) ... ok
+test_unresolved_bootstrap_tails_are_counted (mcstat.tests.test_coverage.NominalCoverage.test_unresolved_bootstrap_tails_are_counted) ... ok
+test_clopper_pearson_known_values (mcstat.tests.test_coverage.Statistics.test_clopper_pearson_known_values) ... ok
+test_cost_projection (mcstat.tests.test_coverage.Statistics.test_cost_projection) ... ok
+test_design_effect (mcstat.tests.test_coverage.Statistics.test_design_effect) ... ok
+test_verdict_rule_on_synthetic_counts (mcstat.tests.test_coverage.Statistics.test_verdict_rule_on_synthetic_counts) ... ok
+test_holm_sequence_and_derived_tails (mcstat.tests.test_coverage.Tails.test_holm_sequence_and_derived_tails) ... ok
+test_replicates_per_cell_follow_the_175_rule (mcstat.tests.test_coverage.Tails.test_replicates_per_cell_follow_the_175_rule) ... ok
+test_hand_computed_example (mcstat.tests.test_gate5.Gate5Estimate.test_hand_computed_example) ... ok
+test_tost_p_is_consistent_with_the_ci_and_batches (mcstat.tests.test_gate5.Gate5Estimate.test_tost_p_is_consistent_with_the_ci_and_batches) ... ok
+test_validation (mcstat.tests.test_gate5.Gate5Estimate.test_validation) ... ok
+test_verdicts (mcstat.tests.test_gate5.Gate5Estimate.test_verdicts) ... ok
+test_analytic_power_against_monte_carlo_of_the_full_pipeline (mcstat.tests.test_gate5.Gate5Power.test_analytic_power_against_monte_carlo_of_the_full_pipeline) ... ok
+test_conservative_inputs (mcstat.tests.test_gate5.Gate5Power.test_conservative_inputs) ... ok
+test_power_properties (mcstat.tests.test_gate5.Gate5Power.test_power_properties) ... ok
+test_quadrature_against_adaptive_quadrature (mcstat.tests.test_gate5.Gate5Power.test_quadrature_against_adaptive_quadrature) ... ok
+test_sample_size_is_the_smallest_n_with_the_target_power (mcstat.tests.test_gate5.Gate5Power.test_sample_size_is_the_smallest_n_with_the_target_power) ... ok
+test_bca_for_reporting (mcstat.tests.test_intervals.BootstrapAndBCa.test_bca_for_reporting) ... ok
+test_bootstrap_t_batch_shapes (mcstat.tests.test_intervals.BootstrapAndBCa.test_bootstrap_t_batch_shapes) ... ok
+test_bootstrap_t_reproducible_and_close_to_student_for_normal (mcstat.tests.test_intervals.BootstrapAndBCa.test_bootstrap_t_reproducible_and_close_to_student_for_normal) ... ok
+test_bootstrap_t_unresolvable_tail_is_trivial_never_optimistic (mcstat.tests.test_intervals.BootstrapAndBCa.test_bootstrap_t_unresolvable_tail_is_trivial_never_optimistic) ... ok
+test_bootstrap_work_requires_an_explicit_stream (mcstat.tests.test_intervals.BootstrapAndBCa.test_bootstrap_work_requires_an_explicit_stream) ... ok
+test_bootstrap_t_normal_per_tail (mcstat.tests.test_intervals.Coverage.test_bootstrap_t_normal_per_tail) ... ok
+test_skewed_samples_student_fails_where_bootstrap_t_holds (mcstat.tests.test_intervals.Coverage.test_skewed_samples_student_fails_where_bootstrap_t_holds) ... ok
+test_student_two_sided_and_per_tail_on_normal (mcstat.tests.test_intervals.Coverage.test_student_two_sided_and_per_tail_on_normal) ... ok
+test_alpha_LP_known_answer_both_speed_definitions (mcstat.tests.test_intervals.SlopeEstimators.test_alpha_LP_known_answer_both_speed_definitions) ... ok
+test_alpha_TP_known_answer (mcstat.tests.test_intervals.SlopeEstimators.test_alpha_TP_known_answer) ... ok
+test_alpha_helpers (mcstat.tests.test_intervals.SlopeEstimators.test_alpha_helpers) ... ok
+test_ols_slope_exact_and_batched (mcstat.tests.test_intervals.SlopeEstimators.test_ols_slope_exact_and_batched) ... ok
+test_orthogonal_variance (mcstat.tests.test_intervals.SlopeEstimators.test_orthogonal_variance) ... ok
+test_margin_multiple (mcstat.tests.test_intervals.StudentAndWelch.test_margin_multiple) ... ok
+test_one_sided_limits_are_the_two_sided_tails (mcstat.tests.test_intervals.StudentAndWelch.test_one_sided_limits_are_the_two_sided_tails) ... ok
+test_paired_equals_one_sample_on_differences (mcstat.tests.test_intervals.StudentAndWelch.test_paired_equals_one_sample_on_differences) ... ok
+test_student_matches_scipy (mcstat.tests.test_intervals.StudentAndWelch.test_student_matches_scipy) ... ok
+test_welch_against_hand_formula_and_scipy_p_value (mcstat.tests.test_intervals.StudentAndWelch.test_welch_against_hand_formula_and_scipy_p_value) ... ok
+test_welch_one_sided_limit_and_contrast (mcstat.tests.test_intervals.StudentAndWelch.test_welch_one_sided_limit_and_contrast) ... ok
+test_all_amplitudes_and_estimators_against_the_json (mcstat.tests.test_sf39_reproduction.F4Ratios.test_all_amplitudes_and_estimators_against_the_json) ... ok
+test_headline_values_of_the_note (mcstat.tests.test_sf39_reproduction.F4Ratios.test_headline_values_of_the_note) ... ok
+test_twin_interval_from_the_reduced_per_realization_tables (mcstat.tests.test_sf39_reproduction.F4Ratios.test_twin_interval_from_the_reduced_per_realization_tables)
+D_tw = production minus twin per seed (reduced/<amp>_prod_twinpairs.csv and <amp>_tw.csv, flux weights): the Student ... ok
+test_every_amplitude_primary_interval_from_the_recorded_means_and_sds (mcstat.tests.test_sf39_reproduction.Gate5Welch.test_every_amplitude_primary_interval_from_the_recorded_means_and_sds) ... ok
+test_ratio_consistent_contrast_of_the_post_review_evaluation (mcstat.tests.test_sf39_reproduction.Gate5Welch.test_ratio_consistent_contrast_of_the_post_review_evaluation) ... ok
+test_s025_primary_interval_published_values (mcstat.tests.test_sf39_reproduction.Gate5Welch.test_s025_primary_interval_published_values) ... ok
+test_s025_gate5_from_per_realization_values (mcstat.tests.test_sf39_reproduction.Par2PerRealization.test_s025_gate5_from_per_realization_values) ... ok
+test_gate5_variant_uses_planning_means_not_data_means (mcstat.tests.test_sizing_blinded.BlindedReestimation.test_gate5_variant_uses_planning_means_not_data_means) ... ok
+test_output_is_standard_deviations_only_and_location_free (mcstat.tests.test_sizing_blinded.BlindedReestimation.test_output_is_standard_deviations_only_and_location_free) ... ok
+test_resize_rule (mcstat.tests.test_sizing_blinded.BlindedReestimation.test_resize_rule) ... ok
+test_allocation_reaches_the_power_and_beats_the_equal_split (mcstat.tests.test_sizing_blinded.Gate4PowerAndAllocation.test_allocation_reaches_the_power_and_beats_the_equal_split) ... ok
+test_power_model_properties (mcstat.tests.test_sizing_blinded.Gate4PowerAndAllocation.test_power_model_properties) ... ok
+test_hand_example (mcstat.tests.test_sizing_blinded.Holm.test_hand_example) ... ok
+test_monotone_capped_and_nan (mcstat.tests.test_sizing_blinded.Holm.test_monotone_capped_and_nan) ... ok
+test_step_down_stops_at_the_first_failure (mcstat.tests.test_sizing_blinded.Holm.test_step_down_stops_at_the_first_failure) ... ok
+test_absolute_and_relative_targets_use_the_conservative_inputs (mcstat.tests.test_sizing_blinded.Sizing.test_absolute_and_relative_targets_use_the_conservative_inputs) ... ok
+test_clamp_resize_upward_only_at_most_double (mcstat.tests.test_sizing_blinded.Sizing.test_clamp_resize_upward_only_at_most_double) ... ok
+test_n_for_halfwidth_is_the_smallest_meeting_the_target (mcstat.tests.test_sizing_blinded.Sizing.test_n_for_halfwidth_is_the_smallest_meeting_the_target) ... ok
+test_sd_upper_matches_the_sf39_chi_square_rule (mcstat.tests.test_sizing_blinded.Sizing.test_sd_upper_matches_the_sf39_chi_square_rule) ... ok
+test_log_scale_effects_and_bootstrap_ci (mcstat.tests.test_splitplot.Analysis.test_log_scale_effects_and_bootstrap_ci) ... ok
+test_noise_free_recovery_of_every_effect (mcstat.tests.test_splitplot.Analysis.test_noise_free_recovery_of_every_effect) ... ok
+test_simple_effects_are_one_sample_t_on_per_seed_contrasts (mcstat.tests.test_splitplot.Analysis.test_simple_effects_are_one_sample_t_on_per_seed_contrasts) ... ok
+test_validation (mcstat.tests.test_splitplot.Analysis.test_validation) ... ok
+test_with_field_and_cell_noise_subplot_effects_are_sharp_and_whole_plot_is_noisy (mcstat.tests.test_splitplot.Analysis.test_with_field_and_cell_noise_subplot_effects_are_sharp_and_whole_plot_is_noisy) ... ok
+test_alias_structure_resolution_iv (mcstat.tests.test_splitplot.DesignAndAliases.test_alias_structure_resolution_iv) ... ok
+test_design_rows (mcstat.tests.test_splitplot.DesignAndAliases.test_design_rows) ... ok
+test_effect_contrasts_are_orthogonal_balanced_and_alias_consistent (mcstat.tests.test_splitplot.DesignAndAliases.test_effect_contrasts_are_orthogonal_balanced_and_alias_consistent) ... ok
+test_fraction_and_defining_relation (mcstat.tests.test_splitplot.DesignAndAliases.test_fraction_and_defining_relation) ... ok
+test_close_to_student_on_symmetric_data (mcstat.tests.test_studentized.BootstrapTBounds.test_close_to_student_on_symmetric_data) ... ok
+test_resample_statistics_match_a_brute_force_resampling (mcstat.tests.test_studentized.BootstrapTBounds.test_resample_statistics_match_a_brute_force_resampling) ... ok
+test_single_group_equals_the_one_sided_bootstrap_t_limits (mcstat.tests.test_studentized.BootstrapTBounds.test_single_group_equals_the_one_sided_bootstrap_t_limits) ... ok
+test_unresolved_tail_is_infinite_never_optimistic (mcstat.tests.test_studentized.BootstrapTBounds.test_unresolved_tail_is_infinite_never_optimistic) ... ok
+test_bootstrap_sizes_resolve_the_tails_they_use (mcstat.tests.test_studentized.CoverageCells.test_bootstrap_sizes_resolve_the_tails_they_use) ... ok
+test_engine_end_to_end_on_the_new_cells (mcstat.tests.test_studentized.CoverageCells.test_engine_end_to_end_on_the_new_cells) ... ok
+test_labels_cover_every_new_procedure_and_method (mcstat.tests.test_studentized.CoverageCells.test_labels_cover_every_new_procedure_and_method) ... ok
+test_new_cells_run_and_report_per_tail_rates (mcstat.tests.test_studentized.CoverageCells.test_new_cells_run_and_report_per_tail_rates) ... ok
+test_percentile_contrast_under_covers_and_student_does_not_at_n30 (mcstat.tests.test_studentized.CoverageCells.test_percentile_contrast_under_covers_and_student_does_not_at_n30)
+The N6b finding that motivated this node, reproduced at small scale (Delta = 5 standard errors, normal data, n = 30, ... ok
+test_smoke_profile_contains_the_studentized_cells (mcstat.tests.test_studentized.CoverageCells.test_smoke_profile_contains_the_studentized_cells) ... ok
+test_default_methods_reproduce_the_n6b_values (mcstat.tests.test_studentized.DefaultsUnchanged.test_default_methods_reproduce_the_n6b_values) ... ok
+test_explicit_default_method_is_the_default (mcstat.tests.test_studentized.DefaultsUnchanged.test_explicit_default_method_is_the_default) ... ok
+test_the_n6b_plan_is_untouched (mcstat.tests.test_studentized.DefaultsUnchanged.test_the_n6b_plan_is_untouched) ... ok
+test_agrees_with_the_student_tost_on_large_normal_samples (mcstat.tests.test_studentized.Gate5BootstrapT.test_agrees_with_the_student_tost_on_large_normal_samples) ... ok
+test_resample_statistics_match_a_brute_force_resampling (mcstat.tests.test_studentized.Gate5BootstrapT.test_resample_statistics_match_a_brute_force_resampling) ... ok
+test_result_fields_and_reproducibility (mcstat.tests.test_studentized.Gate5BootstrapT.test_result_fields_and_reproducibility) ... ok
+test_tost_rejection_is_equivalent_to_the_ci_lying_inside_the_margin (mcstat.tests.test_studentized.Gate5BootstrapT.test_tost_rejection_is_equivalent_to_the_ci_lying_inside_the_margin) ... ok
+test_type_one_error_at_the_boundary_on_normal_data (mcstat.tests.test_studentized.Gate5BootstrapT.test_type_one_error_at_the_boundary_on_normal_data) ... ok
+test_unresolved_tail_never_agrees (mcstat.tests.test_studentized.Gate5BootstrapT.test_unresolved_tail_never_agrees) ... ok
+test_validation (mcstat.tests.test_studentized.Gate5BootstrapT.test_validation) ... ok
+test_bonferroni_fallback_formula_and_dominance (mcstat.tests.test_studentized.LadderStudentized.test_bonferroni_fallback_formula_and_dominance) ... ok
+test_bootstrap_t_ladder_is_infinite_when_b_cannot_resolve_the_tail (mcstat.tests.test_studentized.LadderStudentized.test_bootstrap_t_ladder_is_infinite_when_b_cannot_resolve_the_tail) ... ok
+test_bootstrap_t_pair_statistics_match_a_brute_force_resampling (mcstat.tests.test_studentized.LadderStudentized.test_bootstrap_t_pair_statistics_match_a_brute_force_resampling) ... ok
+test_order_branch_uses_the_studentized_adjacent_difference (mcstat.tests.test_studentized.LadderStudentized.test_order_branch_uses_the_studentized_adjacent_difference) ... ok
+test_robust_limit_accepts_studentized_components (mcstat.tests.test_studentized.LadderStudentized.test_robust_limit_accepts_studentized_components) ... ok
+test_two_levels_one_pair (mcstat.tests.test_studentized.LadderStudentized.test_two_levels_one_pair) ... ok
+test_constant_difference_has_zero_width_for_every_method (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_constant_difference_has_zero_width_for_every_method) ... ok
+test_interaction_contrast_has_two_groups_with_their_own_pairing (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_interaction_contrast_has_two_groups_with_their_own_pairing) ... ok
+test_paired_contrast_matches_the_one_sample_formula (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_paired_contrast_matches_the_one_sample_formula) ... ok
+test_smaller_tail_gives_larger_bound_and_batches_are_independent_rows (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_smaller_tail_gives_larger_bound_and_batches_are_independent_rows) ... ok
+test_the_bound_is_max_of_the_two_one_sided_limits_and_covers_both_signs (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_the_bound_is_max_of_the_two_one_sided_limits_and_covers_both_signs) ... ok
+test_unpaired_contrast_matches_welch (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_unpaired_contrast_matches_welch) ... ok
+test_validation (mcstat.tests.test_studentized.StudentBoundsAnalytic.test_validation) ... ok
+test_negligible_and_not (mms.tests.test_analyze.AlgebraicControlTests.test_negligible_and_not) ... ok
+test_no_matching_main_run (mms.tests.test_analyze.AlgebraicControlTests.test_no_matching_main_run) ... ok
+test_markdown_contains_orders_and_verdict (mms.tests.test_analyze.MarkdownSmokeTests.test_markdown_contains_orders_and_verdict) ... ok
+test_degenerate_errors_are_nan (mms.tests.test_analyze.OrderTests.test_degenerate_errors_are_nan) ... ok
+test_exact_orders (mms.tests.test_analyze.OrderTests.test_exact_orders) ... ok
+test_gate_needs_three_grids (mms.tests.test_analyze.OrderTests.test_gate_needs_three_grids) ... ok
+test_gate_threshold_is_inclusive (mms.tests.test_analyze.OrderTests.test_gate_threshold_is_inclusive) ... ok
+test_gate_uses_two_finest_pairs_only (mms.tests.test_analyze.OrderTests.test_gate_uses_two_finest_pairs_only) ... ok
+test_non_unit_ratio (mms.tests.test_analyze.OrderTests.test_non_unit_ratio) ... ok
+test_orders_series (mms.tests.test_analyze.OrderTests.test_orders_series) ... ok
+test_all_cells_head_max_is_reported_not_gated (mms.tests.test_analyze.VerdictTests.test_all_cells_head_max_is_reported_not_gated) ... ok
+test_dirichlet_order_one_does_not_affect_verdict (mms.tests.test_analyze.VerdictTests.test_dirichlet_order_one_does_not_affect_verdict) ... ok
+test_fail_not_masked_by_second_order_elsewhere (mms.tests.test_analyze.VerdictTests.test_fail_not_masked_by_second_order_elsewhere) ... ok
+test_fail_when_one_eps_and_one_gated_metric_is_first_order (mms.tests.test_analyze.VerdictTests.test_fail_when_one_eps_and_one_gated_metric_is_first_order) ... ok
+test_head_far_max_fails_even_if_all_cells_head_max_passes (mms.tests.test_analyze.VerdictTests.test_head_far_max_fails_even_if_all_cells_head_max_passes) ... ok
+test_head_l2_all_cells_still_gated (mms.tests.test_analyze.VerdictTests.test_head_l2_all_cells_still_gated) ... ok
+test_incomplete_when_a_solve_did_not_converge (mms.tests.test_analyze.VerdictTests.test_incomplete_when_a_solve_did_not_converge) ... ok
+test_incomplete_with_missing_eps (mms.tests.test_analyze.VerdictTests.test_incomplete_with_missing_eps) ... ok
+test_incomplete_with_too_few_grids (mms.tests.test_analyze.VerdictTests.test_incomplete_with_too_few_grids) ... ok
+test_pass (mms.tests.test_analyze.VerdictTests.test_pass) ... ok
+test_tight_rtol_runs_are_not_mixed_into_the_ladder (mms.tests.test_analyze.VerdictTests.test_tight_rtol_runs_are_not_mixed_into_the_ladder) ... ok
+test_cli_refuses_report_inside_out_root (recompute.tests.test_sf39.AgainstReducer.test_cli_refuses_report_inside_out_root) ... ok
+test_corrupted_committed_value_is_detected (recompute.tests.test_sf39.AgainstReducer.test_corrupted_committed_value_is_detected) ... ok
+test_late_window_reports_needs_arrays_not_a_mismatch (recompute.tests.test_sf39.AgainstReducer.test_late_window_reports_needs_arrays_not_a_mismatch) ... ok
+test_never_writes_under_out_root (recompute.tests.test_sf39.AgainstReducer.test_never_writes_under_out_root) ... ok
+test_plane_columns_reproduce_reducer_when_contributors_agree (recompute.tests.test_sf39.AgainstReducer.test_plane_columns_reproduce_reducer_when_contributors_agree) ... ok
+test_window_columns_reproduce_reducer_and_plane_columns_flagged (recompute.tests.test_sf39.AgainstReducer.test_window_columns_reproduce_reducer_and_plane_columns_flagged) ... ok
+test_active_set_change_before_window_is_irrelevant (recompute.tests.test_sf39.KnownAnswer.test_active_set_change_before_window_is_irrelevant) ... ok
+test_active_set_change_inside_window_needs_arrays (recompute.tests.test_sf39.KnownAnswer.test_active_set_change_inside_window_needs_arrays) ... ok
+test_compare_tolerances (recompute.tests.test_sf39.KnownAnswer.test_compare_tolerances) ... ok
+test_compare_tolerances_pass_and_fail (recompute.tests.test_sf39.KnownAnswer.test_compare_tolerances_pass_and_fail) ... ok
+test_contributor_mismatch_needs_arrays (recompute.tests.test_sf39.KnownAnswer.test_contributor_mismatch_needs_arrays) ... ok
+test_inconsistent_inputs_are_refused (recompute.tests.test_sf39.KnownAnswer.test_inconsistent_inputs_are_refused) ... ok
+test_plane_and_window_values (recompute.tests.test_sf39.KnownAnswer.test_plane_and_window_values) ... ok
+test_positions (recompute.tests.test_sf39.KnownAnswer.test_positions) ... ok
+test_set_to_arms (recompute.tests.test_sf39.KnownAnswer.test_set_to_arms) ... ok
+test_tilt (recompute.tests.test_sf39.KnownAnswer.test_tilt) ... ok
+test_window_between_snapshots_and_exact_snapshot (recompute.tests.test_sf39.KnownAnswer.test_window_between_snapshots_and_exact_snapshot) ... ok
+test_window_errors (recompute.tests.test_sf39.KnownAnswer.test_window_errors) ... ok
+test_module_imports_only_numpy_and_stdlib (recompute.tests.test_sf39.NoAnalysisImports.test_module_imports_only_numpy_and_stdlib) ... ok
+test_missing_series_is_a_failure_in_run (recompute.tests.test_sf39.Par2Gate5Driver.test_missing_series_is_a_failure_in_run) ... ok
+test_reproduces_summary_and_detects_a_change (recompute.tests.test_sf39.Par2Gate5Driver.test_reproduces_summary_and_detects_a_change) ... ok
+test_interp_outside_series_is_an_error (recompute.tests.test_sf39.Par2Values.test_interp_outside_series_is_an_error) ... ok
+test_known_answer (recompute.tests.test_sf39.Par2Values.test_known_answer) ... ok
+test_cli_check_sf39 (reconcile.tests.test_solver.CommittedSF39Logs.test_cli_check_sf39) ... ok
+test_counts_per_arm (reconcile.tests.test_solver.CommittedSF39Logs.test_counts_per_arm) ... ok
+test_everything_else_is_converged_and_nothing_is_ambiguous (reconcile.tests.test_solver.CommittedSF39Logs.test_everything_else_is_converged_and_nothing_is_ambiguous) ... ok
+test_exactly_the_four_non_converged_solves (reconcile.tests.test_solver.CommittedSF39Logs.test_exactly_the_four_non_converged_solves) ... ok
+test_seed_is_seed0_plus_r (reconcile.tests.test_solver.CommittedSF39Logs.test_seed_is_seed0_plus_r) ... ok
+test_cli_exit_codes (reconcile.tests.test_solver.Mapping.test_cli_exit_codes) ... ok
+test_conflicting_duplicates_are_reported (reconcile.tests.test_solver.Mapping.test_conflicting_duplicates_are_reported) ... ok
+test_header_gives_arm_and_seed (reconcile.tests.test_solver.Mapping.test_header_gives_arm_and_seed) ... ok
+test_host_crosscheck_reads_solver_b_json (reconcile.tests.test_solver.Mapping.test_host_crosscheck_reads_solver_b_json) ... ok
+test_identical_duplicates_across_logs_count_once (reconcile.tests.test_solver.Mapping.test_identical_duplicates_across_logs_count_once) ... ok
+test_lines_before_a_run_summary_take_its_arm (reconcile.tests.test_solver.Mapping.test_lines_before_a_run_summary_take_its_arm) ... ok
+test_repeat_with_more_fields_replaces_and_orphan_is_flagged (reconcile.tests.test_solver.Mapping.test_repeat_with_more_fields_replaces_and_orphan_is_flagged) ... ok
+test_unseeded_runs_and_non_run_headers (reconcile.tests.test_solver.Mapping.test_unseeded_runs_and_non_run_headers) ... ok
+test_exponent_cut_is_not_a_complete_number (reconcile.tests.test_solver.Rule.test_exponent_cut_is_not_a_complete_number) ... ok
+test_production_rule (reconcile.tests.test_solver.Rule.test_production_rule) ... ok
+test_truncated_lines (reconcile.tests.test_solver.Rule.test_truncated_lines) ... ok
+test_arms_follow_the_sf43_table (seedlattice.tests.test_plan.TestPlan.test_arms_follow_the_sf43_table) ... ok
+test_flagged_m_pass_on_every_arm_and_in_json (seedlattice.tests.test_plan.TestPlan.test_flagged_m_pass_on_every_arm_and_in_json) ... ok
+test_known_plan_results (seedlattice.tests.test_plan.TestPlan.test_known_plan_results) ... ok
+test_window_strings (seedlattice.tests.test_plan.TestPlan.test_window_strings) ... ok
+test_predictor_matches_production_fixture (seedlattice.tests.test_probe_fixture.TestProbeFixture.test_predictor_matches_production_fixture) ... ok
+test_sample_covers_required_cases (seedlattice.tests.test_probe_fixture.TestProbeFixture.test_sample_covers_required_cases) ... ok
+test_384_128_fails (seedlattice.tests.test_rule.TestRule.test_384_128_fails) ... ok
+test_admissible (seedlattice.tests.test_rule.TestRule.test_admissible) ... ok
+test_first_offender_order (seedlattice.tests.test_rule.TestRule.test_first_offender_order) ... ok
+test_full_plane_v2_rule (seedlattice.tests.test_rule.TestRule.test_full_plane_v2_rule) ... ok
+test_input_validation (seedlattice.tests.test_rule.TestRule.test_input_validation) ... ok
+test_overflow_and_nan_count_as_on_face (seedlattice.tests.test_rule.TestRule.test_overflow_and_nan_count_as_on_face) ... ok
+test_powers_of_two_with_window_01_09 (seedlattice.tests.test_rule.TestRule.test_powers_of_two_with_window_01_09) ... ok
+test_round_half_away_matches_std_round (seedlattice.tests.test_rule.TestRule.test_round_half_away_matches_std_round) ... ok
+test_seed_formula_is_binary64_in_runner_order (seedlattice.tests.test_rule.TestRule.test_seed_formula_is_binary64_in_runner_order) ... ok
+test_sf39_m100_passes (seedlattice.tests.test_rule.TestRule.test_sf39_m100_passes) ... ok
+test_reduce_splitshare_prune_dry_run_and_guard (sf42red.tests.test_fixture.TestCli.test_reduce_splitshare_prune_dry_run_and_guard) ... ok
+test_displacement_moments_differ_from_position_by_the_seed_offset (sf42red.tests.test_fixture.TestFixture.test_displacement_moments_differ_from_position_by_the_seed_offset) ... ok
+test_no_particle_lost_inside_the_window (sf42red.tests.test_fixture.TestFixture.test_no_particle_lost_inside_the_window) ... ok
+test_plane_moments_equal_the_runners_csv (sf42red.tests.test_fixture.TestFixture.test_plane_moments_equal_the_runners_csv) ... ok
+test_row_inventory (sf42red.tests.test_fixture.TestFixture.test_row_inventory) ... ok
+test_time_window_end_matches_the_runners_exit_counts_and_series (sf42red.tests.test_fixture.TestFixture.test_time_window_end_matches_the_runners_exit_counts_and_series) ... ok
+test_changed_array_refuses (sf42red.tests.test_prune.TestPrune.test_changed_array_refuses) ... ok
+test_dry_run_deletes_nothing_and_lists_plan (sf42red.tests.test_prune.TestPrune.test_dry_run_deletes_nothing_and_lists_plan) ... ok
+test_execute_keeps_retained_and_all_non_npy_and_logs_sha256 (sf42red.tests.test_prune.TestPrune.test_execute_keeps_retained_and_all_non_npy_and_logs_sha256) ... ok
+test_execute_needs_a_log (sf42red.tests.test_prune.TestPrune.test_execute_needs_a_log) ... ok
+test_guard_refuses_sf39_campaign_paths (sf42red.tests.test_prune.TestPrune.test_guard_refuses_sf39_campaign_paths) ... ok
+test_missing_manifest_refuses (sf42red.tests.test_prune.TestPrune.test_missing_manifest_refuses) ... ok
+test_not_done_realization_refuses (sf42red.tests.test_prune.TestPrune.test_not_done_realization_refuses) ... ok
+test_retained_pass_directories_of_a_realization_are_kept_together (sf42red.tests.test_prune.TestPrune.test_retained_pass_directories_of_a_realization_are_kept_together) ... ok
+test_table_must_cover_every_realization (sf42red.tests.test_prune.TestPrune.test_table_must_cover_every_realization) ... ok
+test_tampered_table_refuses (sf42red.tests.test_prune.TestPrune.test_tampered_table_refuses) ... ok
+test_unknown_retained_entry_refuses (sf42red.tests.test_prune.TestPrune.test_unknown_retained_entry_refuses) ... ok
+test_verification_failure_refuses (sf42red.tests.test_prune.TestPrune.test_verification_failure_refuses) ... ok
+test_alpha_exact_linear_growth (sf42red.tests.test_reduce.TestEstimators.test_alpha_exact_linear_growth) ... ok
+test_displacement_vs_position (sf42red.tests.test_reduce.TestEstimators.test_displacement_vs_position) ... ok
+test_expI_differs_and_is_finite (sf42red.tests.test_reduce.TestEstimators.test_expI_differs_and_is_finite) ... ok
+test_tilted_cloud_alpha_TAP_vs_TP (sf42red.tests.test_reduce.TestEstimators.test_tilted_cloud_alpha_TAP_vs_TP) ... ok
+test_uniform_vs_flux_planes_table_against_numpy (sf42red.tests.test_reduce.TestEstimators.test_uniform_vs_flux_planes_table_against_numpy) ... ok
+test_weighted_moments_by_hand (sf42red.tests.test_reduce.TestEstimators.test_weighted_moments_by_hand) ... ok
+test_manifest_lists_every_input_with_sha256 (sf42red.tests.test_reduce.TestManifest.test_manifest_lists_every_input_with_sha256) ... ok
+test_output_is_deterministic (sf42red.tests.test_reduce.TestManifest.test_output_is_deterministic) ... ok
+test_format_errors (sf42red.tests.test_reduce.TestPar2.test_format_errors) ... ok
+test_known_slopes_and_nan_rows (sf42red.tests.test_reduce.TestPar2.test_known_slopes_and_nan_rows) ... ok
+test_series_manifest_records_the_snapshots_read (sf42red.tests.test_reduce.TestPar2.test_series_manifest_records_the_snapshots_read) ... ok
+test_series_time_window_active_count_is_not_used (sf42red.tests.test_reduce.TestPar2.test_series_time_window_active_count_is_not_used) ... ok
+test_series_time_window_ends_at_the_last_clean_snapshot_with_constant_active (sf42red.tests.test_reduce.TestPar2.test_series_time_window_ends_at_the_last_clean_snapshot_with_constant_active) ... ok
+test_series_time_window_no_particle_beyond_exit_uses_the_last_snapshot (sf42red.tests.test_reduce.TestPar2.test_series_time_window_no_particle_beyond_exit_uses_the_last_snapshot) ... ok
+test_series_time_window_refuses_without_usable_snapshots (sf42red.tests.test_reduce.TestPar2.test_series_time_window_refuses_without_usable_snapshots) ... ok
+test_tilted_displacement_alpha_TAP (sf42red.tests.test_reduce.TestPar2.test_tilted_displacement_alpha_TAP) ... ok
+test_window_end_equals_sf39_t_b_last_clean (sf42red.tests.test_reduce.TestPar2.test_window_end_equals_sf39_t_b_last_clean) ... ok
+test_window_plane_without_crossings_gives_nan_with_note (sf42red.tests.test_reduce.TestPar2.test_window_plane_without_crossings_gives_nan_with_note) ... ok
+test_matches_sf39_tp_value (sf42red.tests.test_reduce.TestSF39Equivalence.test_matches_sf39_tp_value) ... ok
+test_empty_plane_gives_nan_and_note (sf42red.tests.test_reduce.TestSets.test_empty_plane_gives_nan_and_note) ... ok
+test_set_difference_flags_and_common_variant (sf42red.tests.test_reduce.TestSets.test_set_difference_flags_and_common_variant) ... ok
+test_window_selection_and_errors (sf42red.tests.test_reduce.TestSets.test_window_selection_and_errors) ... ok
+test_halves_against_brute_force_and_share (sf42red.tests.test_reduce.TestSplitHalf.test_halves_against_brute_force_and_share) ... ok
+test_odd_lattice_halves_unavailable (sf42red.tests.test_reduce.TestSplitHalf.test_odd_lattice_halves_unavailable) ... ok
+test_split_share_from_table (sf42red.tests.test_reduce.TestSplitHalf.test_split_share_from_table) ... ok
+test_splithalf_fraction_definition (sf42red.tests.test_reduce.TestSplitHalf.test_splithalf_fraction_definition) ... ok
+test_U_time_override (sf42red.tests.test_reduce.TestTimeFamily.test_U_time_override) ... ok
+test_aligned_frame_with_tilted_mean_flux (sf42red.tests.test_reduce.TestTimeFamily.test_aligned_frame_with_tilted_mean_flux) ... ok
+test_exit_before_first_snapshot_is_a_window_error_row (sf42red.tests.test_reduce.TestTimeFamily.test_exit_before_first_snapshot_is_a_window_error_row) ... ok
+test_non_exit_status_does_not_end_the_window (sf42red.tests.test_reduce.TestTimeFamily.test_non_exit_status_does_not_end_the_window) ... ok
+test_t_lo_before_first_snapshot (sf42red.tests.test_reduce.TestTimeFamily.test_t_lo_before_first_snapshot) ... ok
+test_window_ends_before_first_exit_and_alphas_exact (sf42red.tests.test_reduce.TestTimeFamily.test_window_ends_before_first_exit_and_alphas_exact) ... ok
+test_end_to_end_recovers_the_fabricated_error (spectral.tests.test_compare.Pipeline.test_end_to_end_recovers_the_fabricated_error) ... [06:14:16] reference M=32: PCG [22, 22, 22] iterations, 69 matvecs, 0 s, G=[ 0.970435375192 -0.003062620907 -0.015983098438]
+[06:14:16] reference M=16: PCG [22, 22, 22] iterations, 69 matvecs, 0 s, G=[ 0.97042827793  -0.003062941554 -0.015980983026]
+[06:14:16] reference M=32: PCG [22, 22, 22] iterations, 69 matvecs, 0 s, G=[ 0.970435375192 -0.003062620907 -0.015983098438]
+[06:14:16] case s0p25 seed 7 N=16: FV err all=1.953e-03 x=1.953e-03 | selfconv 2.590e-03 | ratio 0.8
+[06:14:16] case s0p25 seed 7 N=24: FV err all=8.681e-04 x=8.681e-04 | selfconv 2.653e-03 | ratio 0.3
+[06:14:16] summary: FAIL
+[06:14:16] case s0p25 seed 7: done (skipped)
+ok
+test_ref_m_parser (spectral.tests.test_compare.Pipeline.test_ref_m_parser) ... ok
+test_scan_reports_the_reference_self_convergence (spectral.tests.test_compare.Pipeline.test_scan_reports_the_reference_self_convergence) ... [06:14:16] reference M=16: PCG [21, 21, 21] iterations, 66 matvecs, 0 s, G=[ 0.97042827793  -0.003062941554 -0.015980983026]
+[06:14:16] reference M=24: PCG [21, 21, 20] iterations, 65 matvecs, 0 s, G=[ 0.970435345401 -0.003062622798 -0.015983086408]
+[06:14:17] reference M=32: PCG [21, 21, 20] iterations, 65 matvecs, 0 s, G=[ 0.970435375192 -0.003062620907 -0.015983098438]
+[06:14:17] scan s0p25 seed 7: M 16 -> 24 on the N=8 faces: rel L2 all 2.350e-03 (x 2.176e-03)
+[06:14:17] scan s0p25 seed 7: M 16 -> 24 on the N=16 faces: rel L2 all 2.599e-03 (x 2.326e-03)
+[06:14:17] scan s0p25 seed 7: M 24 -> 32 on the N=8 faces: rel L2 all 1.395e-04 (x 1.294e-04)
+[06:14:17] scan s0p25 seed 7: M 24 -> 32 on the N=16 faces: rel L2 all 1.605e-04 (x 1.447e-04)
+ok
+test_wrong_shapes_are_rejected (spectral.tests.test_compare.Pipeline.test_wrong_shapes_are_rejected) ... [06:14:17] reference M=32: PCG [22, 22, 22] iterations, 69 matvecs, 0 s, G=[ 0.970435375192 -0.003062620907 -0.015983098438]
+ok
+test_low_order_over_the_finest_pair_fails (spectral.tests.test_compare.Verdict.test_low_order_over_the_finest_pair_fails) ... ok
+test_non_monotone_fails (spectral.tests.test_compare.Verdict.test_non_monotone_fails) ... ok
+test_second_order_ladder_passes (spectral.tests.test_compare.Verdict.test_second_order_ladder_passes) ... ok
+test_single_level_rejected (spectral.tests.test_compare.Verdict.test_single_level_rejected) ... ok
+test_unconverged_reference_fails (spectral.tests.test_compare.Verdict.test_unconverged_reference_fails) ... ok
+test_constant_k (spectral.tests.test_darcy.ExactControls.test_constant_k) ... ok
+test_layers_across_the_flow_give_the_harmonic_mean (spectral.tests.test_darcy.ExactControls.test_layers_across_the_flow_give_the_harmonic_mean) ... ok
+test_layers_parallel_to_the_flow_give_the_arithmetic_mean (spectral.tests.test_darcy.ExactControls.test_layers_parallel_to_the_flow_give_the_arithmetic_mean) ... ok
+test_preconditioned_iterations_stay_moderate_with_the_study_band (spectral.tests.test_darcy.ExactControls.test_preconditioned_iterations_stay_moderate_with_the_study_band) ... ok
+test_random_field_invariants (spectral.tests.test_darcy.ExactControls.test_random_field_invariants) ... ok
+test_error_measures_and_orders (spectral.tests.test_darcy.FaceAverages.test_error_measures_and_orders) ... ok
+test_exact_for_trigonometric_polynomials (spectral.tests.test_darcy.FaceAverages.test_exact_for_trigonometric_polynomials) ... ok
+test_three_dimensional_separable_flux (spectral.tests.test_darcy.FaceAverages.test_three_dimensional_separable_flux) ... ok
+test_raises_when_the_iteration_cap_is_reached (spectral.tests.test_darcy.FailurePath.test_raises_when_the_iteration_cap_is_reached) ... ok
+test_raises_when_the_tolerance_is_unattainable (spectral.tests.test_darcy.FailurePath.test_raises_when_the_tolerance_is_unattainable) ... ok
+test_rejects_nonpositive_k (spectral.tests.test_darcy.FailurePath.test_rejects_nonpositive_k) ... ok
+test_matches_gpu_to_roundoff (spectral.tests.test_sf18.GpuDump.test_matches_gpu_to_roundoff) ... ok
+test_deterministic_and_seed_sensitive (spectral.tests.test_sf18.Structure.test_deterministic_and_seed_sensitive) ... ok
+test_field_on_finer_grids (spectral.tests.test_sf18.Structure.test_field_on_finer_grids) ... ok
+test_odd_extent_rejected (spectral.tests.test_sf18.Structure.test_odd_extent_rejected) ... ok
+test_refinement_keeps_the_coefficients_of_shared_modes (spectral.tests.test_sf18.Structure.test_refinement_keeps_the_coefficients_of_shared_modes) ... ok
+test_splitmix64_known_answer (spectral.tests.test_sf18.Structure.test_splitmix64_known_answer) ... ok
+test_truncated_mode_variance_matches_the_direct_difference (spectral.tests.test_sf18.Structure.test_truncated_mode_variance_matches_the_direct_difference) ... ok
+test_variance_and_mean (spectral.tests.test_sf18.Structure.test_variance_and_mean) ... ok
+
+----------------------------------------------------------------------
+Ran 309 tests in 37.532s
+
+OK
+[2026-10-30T09:14:19Z] job=sf42-hosttests finished exit=0
