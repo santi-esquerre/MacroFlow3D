@@ -6,7 +6,11 @@ import os
 import tempfile
 import unittest
 
+import numpy as np
+
 from sf42red import reduce as red
+
+NAN = float("nan")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIX = os.path.join(HERE, "fixture")
@@ -87,9 +91,13 @@ class TestFixture(unittest.TestCase):
                 self.assertTrue(near(float(row["t_end_next"]), float(ex[first]["t"]), 1e-12))
                 self.assertTrue(near(float(row["t_end"]), float(ex[first - 1]["t"]), 1e-12))
             # the same window from the runner's own uniform-weight series (Par2 format), an independent path (CSV vs arrays)
+            # (the twin series has a decreasing `active`, so the old count rule gives the window end independently here; the
+            # production Par2 rule uses snapshot positions, see test_reduce)
             ser = os.path.join(ARM, "stats_twin", "realization_%04d_timeseries.csv" % r)
-            prow = red.par2_time_row(red.Recorder(), ser, 0.25, 1.25, float(row["U_time"]))
-            self.assertEqual(int(prow["j_end"]), int(row["j_end"]))
+            s = red.read_par2_series(red.Recorder(), ser)
+            j_act = int(np.flatnonzero(s["active"] == s["active"][0])[-1])
+            self.assertEqual(j_act, int(row["j_end"]))
+            prow = red.par2_time_row_at(red.Recorder(), ser, 0.25, 1.25, float(row["U_time"]), float(s["t"][j_act]), NAN, j_act)
             self.assertTrue(near(prow["alpha_LAM"], float(row["alpha_LAM"]), 1e-8), (prow["alpha_LAM"], row["alpha_LAM"]))
             self.assertTrue(near(prow["alpha_Tfixed"], float(row["alpha_Tfixed"]), 1e-8))
 

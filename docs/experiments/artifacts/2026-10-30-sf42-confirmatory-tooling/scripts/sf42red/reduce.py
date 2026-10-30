@@ -12,7 +12,9 @@ INPUTS
             time_origin=injection`; header `x1,n_injected,n_crossed,mean_t,var_t,mean_x2,mean_x3,var_x2,var_x3,cov_x2x3,
             mean_dx2,mean_dx3,var_dx2,var_dx3,cov_dx2dx3`; biased moments over the particles that crossed, `nan` if none;
             transverse unwrapped; dx = crossing minus injection position); `--ell` and `--x0` (config length units) required.
-  par2 series (optional, secondary) `stats/realization_%04d_timeseries.csv` (`t,mean_x,mean_y,mean_z,var_x,var_y,var_z,active`).
+  par2 series (optional, secondary) `stats/realization_%04d_timeseries.csv` (`t,mean_x,mean_y,mean_z,var_x,var_y,var_z,active`)
+            plus the snapshots `<arm>/snapshots/r_%04d/step_%08d.csv` (header `id,x coord,y coord,z coord`; `<arm>` = the parent
+            of the series' `stats/` directory) that define the window end; needs `--U-time`, `--par2-exit-x` and `--par2-dt`.
 
 ESTIMANDS (decision G4; d = (x1 - x0)/ell in lambda; the travel window is d in [d_lo, d_hi], default [25, 94])
   Window planes: the run's planes with d_lo(1-tol) <= d <= d_hi(1+tol), tol = 1e-9 relative (absolute 1e-9 for |bound| < 1);
@@ -50,6 +52,19 @@ SECONDARY, family `time` (SF-39 style, descriptive; consumer all weights/bases p
   alpha_LAM = fixed-axis e1; alpha_Tfixed = (e2 + e3)/2; alpha_TAM = aligned frame (e_L = unit interior mean flux vector of
   flow_stats.json, Gram-Schmidt transverse pair).  Par2: t_end = the last series row with active == its first row's active,
   alpha_LAM from var_x, alpha_Tfixed from (var_y + var_z)/2 (needs `--U-time`), alpha_TAM NaN.
+  Par2 window end (positions, NOT the `active` count): in the pipeline the Dirichlet/Neumann x faces map to Par2 `Closed`
+  (src/physics/particles/par2_adapter/par2_mapping.cuh:28-37; nothing maps to `Open`), and `Closed` zeroes a move that would leave the
+  domain (Par2_Core types.hpp:36-44), so the particle stays and piles up near the outlet; only `Open` sets ParticleStatus::Exited
+  (types.hpp:59-67; kernels/move_particles.cu:528-531), and `active` counts Status::Active particles (stats.hpp:87,
+  Par2StatsAdapter.cu:57).  Hence `active` never decreases in the pipeline (it is the injected count at every sample) and the
+  old rule "last row with the initial active count" would end the window at the end of the run, with particles frozen at the outlet
+  inside it.  Rule (copy of SF-39 `par2.t_b_last_clean`): t_end,r = step*`--par2-dt` of the LAST snapshot (step order, stopping at the
+  first offender) in which no particle has x >= `--par2-exit-x` (config length units; SF-39 used Lx - 5 lambda, the consumer's first exit
+  is at the outlet face x = L1; the choice is the caller's and is logged in the table by t_end_next); t_end_next = time of the first
+  snapshot with a particle beyond X_exit (resolution; NaN if none, then t_end = the last snapshot); j_end = index of the t_end snapshot;
+  no snapshot, or a particle beyond X_exit already in the first snapshot -> WindowError (no fallback to `active`).  The window is
+  [0.75, 1] t_end,r on the series (t_end must lie inside the series' times, within 1e-9 relative); n_set = the series' `active`
+  at the last row with t <= t_end (diagnostic only).
 
 TABLES (`%.17g`, `nan` for undefined; ints and 0/1 flags as integers)
   <out>              one row per realization x pass x code x family x weights x basis x set; columns COLUMNS
@@ -63,6 +78,7 @@ TABLES (`%.17g`, `nan` for undefined; ints and 0/1 flags as integers)
 CLI: `python3 -m sf42red reduce|splitshare|prune ...` (see `__main__`).
 """
 import csv
+import glob
 import hashlib
 import json
 import math
@@ -534,27 +550,59 @@ def par2_rows(rec, path, ell, x0, d_lo, d_hi):
     return rows, prow
 
 
-def par2_time_row(rec, path, ell, x0, U):
-    """Secondary time-window row of one Par2 series (fixed axes; t_end = last row with the initial `active` count)."""
+def par2_snapshot_end(rec, snap_dir, x_exit, dt):
+    """(j_end, t_end, t_next, n_snapshots): the LAST snapshot (step order, stop at the first offender) with no particle at
+    x >= x_exit; t = step*dt (copy of SF-39 `par2.t_b_last_clean`).  t_next = time of the first offender (NaN if none)."""
+    files = sorted((int(m.group(1)), p) for p in glob.glob(os.path.join(snap_dir, "step_*.csv"))
+                   for m in [re.search(r"step_(\d+)\.csv$", p)] if m)
+    if not files:
+        raise WindowError("no Par2 snapshots in %s (the window end is defined by particle positions)" % snap_dir)
+    j_end, t_next = None, NAN
+    for j, (step, p) in enumerate(files):
+        lines = rec.lines(p)
+        head = [h.strip().lower() for h in lines[0].split(",")]
+        if "x coord" not in head:
+            raise ReduceError("%s: no `x coord` column (header %s)" % (p, head))
+        k = head.index("x coord")
+        xs = [float(ln.split(",")[k]) for ln in lines[1:] if ln.strip()]
+        if xs and max(xs) >= x_exit:
+            t_next = step * dt
+            break
+        j_end = j
+    if j_end is None:
+        raise WindowError("a particle is at x >= %.17g already in the first snapshot of %s: no clean snapshot" % (x_exit, snap_dir))
+    return j_end, files[j_end][0] * dt, t_next, len(files)
+
+
+def par2_time_row(rec, path, ell, x0, U, x_exit, dt, snap_dir=None):
+    """Secondary time-window row of one Par2 series (fixed axes); the window end comes from the snapshots (`par2_snapshot_end`)."""
+    r = int(re.search(r"realization_(\d{4})_timeseries", os.path.basename(path)).group(1))
+    if snap_dir is None:
+        snap_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(path))), "snapshots", "r_%04d" % r)
+    j_end, t_end, t_next, _ = par2_snapshot_end(rec, snap_dir, x_exit, dt)
+    return par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end)
+
+
+def par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end):
+    """Window [0.75, 1] t_end of one Par2 series for a given t_end (series covariances interpolated)."""
     s = read_par2_series(rec, path)
     r = int(re.search(r"realization_(\d{4})_timeseries", os.path.basename(path)).group(1))
     t, active = s["t"], s["active"]
-    full = np.flatnonzero(active == active[0])
-    j_end = int(full[-1])
-    row = {"code": "par2", "source": path, "r": r, "hmax_div": -1, "seed": NAN, "family": "time", "weights": "unif",
-           "basis": "pos", "set": "perplane", "ell": ell, "x0": x0, "n_traced": int(active[0]), "n_set": int(active[j_end]),
-           "t_end": float(t[j_end]), "t_end_next": float(t[j_end + 1]) if j_end + 1 < len(t) else NAN, "j_end": j_end,
-           "U_time": U, "note": ""}
-    row.update(_nan_est(TIME_EST, False))
-    t_end = float(t[j_end])
+    near = np.flatnonzero(np.abs(t - t_end) <= 1e-9 * abs(t_end))
+    if len(near):
+        t_end = float(t[near[0]])  # series and snapshot times are both step*dt: absorb the text round-off
     t_lo = WINDOW_FRACTION * t_end
-    row["t_lo"] = t_lo
+    kact = np.flatnonzero(t <= t_end)
+    row = {"code": "par2", "source": path, "r": r, "hmax_div": -1, "seed": NAN, "family": "time", "weights": "unif",
+           "basis": "pos", "set": "perplane", "ell": ell, "x0": x0, "n_traced": int(active[0]),
+           "n_set": int(active[kact[-1]]) if len(kact) else 0, "t_end": t_end, "t_end_next": t_next, "j_end": j_end,
+           "t_lo": t_lo, "U_time": U, "note": ""}
+    row.update(_nan_est(TIME_EST, False))
     try:
-        if np.any(np.diff(t[: j_end + 1]) <= 0.0):
+        if np.any(np.diff(t) <= 0.0):
             raise ReduceError("series times are not increasing")
-        times = t[: j_end + 1]
         cov_at = lambda j: np.diag([s["var_x"][j], s["var_y"][j], s["var_z"][j]])  # noqa: E731
-        al = time_alphas(times, cov_at, t_lo, t_end, None, ell, U)
+        al = time_alphas(t, cov_at, t_lo, t_end, None, ell, U)
         row.update(alpha_LAM=al["alpha_LAM"], alpha_Tfixed=al["alpha_Tfixed"])
     except ReduceError as e:
         row["note"] = str(e)
@@ -629,16 +677,20 @@ def write_manifest(path, rec, root, tables):
         f.write("\n")
 
 
-def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, root=None, warn=sys.stderr):
+def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, root=None, warn=sys.stderr, par2_exit_x=None,
+               par2_dt=None):
     """Run every reduction, write <out>, <out minus .csv>.planes.csv and <out>.manifest.json; returns the table rows."""
     if par2 or par2_series:
         if ell is None or x0 is None:
             raise ReduceError("--ell and --x0 are required for Par2 inputs")
     if par2_series and U_time is None:
         raise ReduceError("--U-time is required for --par2-series")
+    if par2_series and (par2_exit_x is None or par2_dt is None):
+        raise ReduceError("--par2-exit-x and --par2-dt are required for --par2-series (the window end is defined by snapshots)")
     if root is None:
         root = os.path.commonpath([os.path.abspath(p) if os.path.isdir(p) else os.path.dirname(os.path.abspath(p))
-                                   for p in list(consumer) + list(par2) + list(par2_series)])
+                                   for p in list(consumer) + list(par2)]
+                                  + [os.path.dirname(os.path.dirname(os.path.abspath(p))) for p in par2_series])  # arm dir: snapshots/
     rec = Recorder()
     rows, prows = [], []
     for pr in expand_consumer(consumer, warn):
@@ -650,7 +702,7 @@ def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, ro
         rows += a
         prows += b
     for p in par2_series:
-        rows.append(par2_time_row(rec, p, ell, x0, U_time))
+        rows.append(par2_time_row(rec, p, ell, x0, U_time, par2_exit_x, par2_dt))
     if not rows:
         raise ReduceError("no input")
     for row in rows + prows:  # `source` relative to the root, the key prune uses to check coverage

@@ -18,7 +18,12 @@ def main(argv=None):
     r = sub.add_parser("reduce", help="per-realization plane reduction (consumer pass/arm directories, Par2 crossing CSVs)")
     r.add_argument("--consumer", nargs="*", default=[], help="pass roots or arm directories (with realizations/)")
     r.add_argument("--par2", nargs="*", default=[], help="crossings/realization_%%04d_planes.csv files")
-    r.add_argument("--par2-series", nargs="*", default=[], help="stats/realization_%%04d_timeseries.csv (secondary, needs --U-time)")
+    r.add_argument("--par2-series", nargs="*", default=[], help="stats/realization_%%04d_timeseries.csv (secondary; needs --U-time, --par2-exit-x, --par2-dt and "
+                   "<arm>/snapshots/r_%%04d/step_%%08d.csv beside stats/)")
+    r.add_argument("--par2-exit-x", type=float, default=None, help="Par2 window end: x (config length units) beyond which a particle "
+                   "counts as exited; t_end = the last snapshot with no particle at x >= this (SF-39 used Lx - 5 lambda; the consumer's "
+                   "first exit is the outlet face x = L1)")
+    r.add_argument("--par2-dt", type=float, default=None, help="Par2 time step (snapshot time = step x dt)")
     r.add_argument("--ell", type=float, default=None, help="lambda (required for Par2; consumer: checked against field.json)")
     r.add_argument("--x0", type=float, default=None, help="injection plane (required for Par2; consumer: checked against track.json)")
     r.add_argument("--d-window", type=_floats, default=(25.0, 94.0), help="d_lo,d_hi in lambda (default 25,94)")
@@ -37,7 +42,8 @@ def main(argv=None):
     a = ap.parse_args(argv)
     try:
         if a.cmd == "reduce":
-            rows = red.reduce_all(a.consumer, a.par2, a.par2_series, a.ell, a.x0, a.d_window[0], a.d_window[1], a.U_time, a.out, a.root)
+            rows = red.reduce_all(a.consumer, a.par2, a.par2_series, a.ell, a.x0, a.d_window[0], a.d_window[1], a.U_time, a.out, a.root,
+                                 par2_exit_x=a.par2_exit_x, par2_dt=a.par2_dt)
             print("wrote %d rows to %s" % (len(rows), a.out))
         elif a.cmd == "splitshare":
             rows = red.split_share(a.table)

@@ -312,23 +312,97 @@ class TestPar2(Base):
         with self.assertRaises(red.ReduceError):
             self.reduce(par2=[p])  # --ell / --x0 missing
 
-    def test_series_time_window(self):
-        t = np.arange(0.0, 6.0, 0.5)[1:]
-        active = np.array([100] * 8 + [99] * 3)
-        ser = os.path.join(self.tmp, "stats", "realization_0002_timeseries.csv")
+    DT = 0.5
+
+    def _series_and_snapshots(self, n_series=12, clean=8, active=None, r=2):
+        """Arm dir with a series of n_series rows (t = k DT, constant `active` = 100: the Closed-boundary pipeline never decrements
+        it) and snapshots at steps 1..n_series (time k DT); from snapshot index `clean` on one particle sits at the outlet x = 9."""
+        arm = os.path.join(self.tmp, "arm_par2_%d" % clean)
+        ser = os.path.join(arm, "stats", "realization_%04d_timeseries.csv" % r)
         os.makedirs(os.path.dirname(ser))
         U = 2.0
         with open(ser, "w") as f:
             f.write("# format_version=1\nt,mean_x,mean_y,mean_z,var_x,var_y,var_z,active\n")
-            for ti, a in zip(t, active):
-                f.write("%.17g,%.17g,0,0,%.17g,%.17g,%.17g,%d\n" % (ti, U * ti, 2 * 0.05 * ELL * U * ti, 2 * 0.04 * ELL * U * ti, 2 * 0.04 * ELL * U * ti, a))
-        rows = self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U)
+            for k in range(1, n_series + 1):
+                ti = k * self.DT
+                a = 100 if active is None else active[k - 1]
+                f.write("%.17g,%.17g,0,0,%.17g,%.17g,%.17g,%d\n" % (ti, U * ti, 2 * 0.05 * ELL * U * ti, 2 * 0.04 * ELL * U * ti,
+                                                                   2 * 0.04 * ELL * U * ti, a))
+        sd = os.path.join(arm, "snapshots", "r_%04d" % r)
+        os.makedirs(sd)
+        for k in range(1, n_series + 1):
+            with open(os.path.join(sd, "step_%08d.csv" % k), "w") as f:
+                f.write("id,x coord,y coord,z coord\n0,1.0,0.5,0.5\n1,%.17g,0.5,0.5\n" % (9.0 if k - 1 >= clean else 4.0))
+        return ser, U, arm
+
+    def test_series_time_window_ends_at_the_last_clean_snapshot_with_constant_active(self):
+        ser, U, _ = self._series_and_snapshots(clean=8)  # snapshots 0..7 clean (times 0.5..4), index 8 (time 4.5) has a stuck particle
+        rows = self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=8.75, par2_dt=self.DT)
         r = rows[0]
         self.assertEqual((r["family"], r["code"], r["j_end"], r["n_set"]), ("time", "par2", "7", "100"))
+        self.assertAlmostEqual(float(r["t_end"]), 4.0, delta=1e-12)  # NOT 6.0 (the end of the run, where `active` is still 100)
+        self.assertAlmostEqual(float(r["t_end_next"]), 4.5, delta=1e-12)
+        self.assertAlmostEqual(float(r["t_lo"]), 3.0, delta=1e-12)
         self.assertAlmostEqual(float(r["alpha_LAM"]), 0.05, delta=1e-12)
         self.assertAlmostEqual(float(r["alpha_Tfixed"]), 0.04, delta=1e-12)
         with self.assertRaises(red.ReduceError):
-            self.reduce(series=[ser], ell=ELL, x0=X0)  # --U-time required
+            self.reduce(series=[ser], ell=ELL, x0=X0, par2_exit_x=8.75, par2_dt=self.DT)  # --U-time required
+        for kw in ({}, {"par2_exit_x": 8.75}, {"par2_dt": self.DT}):
+            with self.assertRaises(red.ReduceError):
+                self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, **kw)
+
+    def test_series_time_window_no_particle_beyond_exit_uses_the_last_snapshot(self):
+        ser, U, _ = self._series_and_snapshots(clean=99)
+        r = self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=8.75, par2_dt=self.DT)[0]
+        self.assertEqual((r["j_end"], r["t_end_next"]), ("11", "nan"))
+        self.assertAlmostEqual(float(r["t_end"]), 6.0, delta=1e-12)
+
+    def test_series_time_window_active_count_is_not_used(self):
+        ser, U, _ = self._series_and_snapshots(clean=8, active=[100] * 5 + [90] * 7)  # a decreasing count must not move the window end
+        r = self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=8.75, par2_dt=self.DT)[0]
+        self.assertEqual(r["j_end"], "7")
+        self.assertEqual(r["n_set"], "90")  # diagnostic only
+
+    def test_series_time_window_refuses_without_usable_snapshots(self):
+        ser, U, arm = self._series_and_snapshots(clean=8)
+        sd = os.path.join(arm, "snapshots", "r_0002")
+        kw = dict(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=8.75, par2_dt=self.DT)
+        with self.assertRaisesRegex(red.WindowError, "first snapshot"):
+            self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=0.5, par2_dt=self.DT)  # a particle at x = 1 already
+        for n in os.listdir(sd):
+            os.remove(os.path.join(sd, n))
+        with self.assertRaisesRegex(red.WindowError, "no Par2 snapshots"):
+            self.reduce(**kw)
+        os.rmdir(sd)
+        with self.assertRaisesRegex(red.WindowError, "no Par2 snapshots"):
+            self.reduce(**kw)
+
+    def test_series_manifest_records_the_snapshots_read(self):
+        ser, U, arm = self._series_and_snapshots(clean=8)
+        self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=8.75, par2_dt=self.DT, root=arm)
+        import json
+        with open(os.path.join(self.tmp, "table.csv.manifest.json")) as f:
+            names = {e["path"] for e in json.load(f)["files"]}
+        self.assertIn(os.path.join("snapshots", "r_0002", "step_00000009.csv"), names)  # the first offender is read too
+        self.assertNotIn(os.path.join("snapshots", "r_0002", "step_00000010.csv"), names)
+
+    def test_window_end_equals_sf39_t_b_last_clean(self):
+        art = os.path.abspath(os.path.join(os.path.dirname(__file__), *([".."] * 4), "2026-10-27-sf39-macrodispersion-study", "scripts"))
+        if not os.path.isdir(os.path.join(art, "sf39")):
+            self.skipTest("SF-39 artifact not present")
+        sys.path.insert(0, art)
+        try:
+            from sf39 import par2 as sp
+        finally:
+            sys.path.remove(art)
+        lx, lam = 10.0, 0.25
+        for clean in (3, 8, 99):
+            ser, U, arm = self._series_and_snapshots(clean=clean)
+            step, tb, _, reached = sp.t_b_last_clean({"dir": arm, "r": 2}, lx, lam, self.DT)
+            r = self.reduce(series=[ser], ell=ELL, x0=X0, U_time=U, par2_exit_x=lx - 5.0 * lam, par2_dt=self.DT)[0]
+            self.assertEqual(float(r["t_end"]), tb)
+            self.assertEqual(int(r["j_end"]), step - 1)  # snapshots are steps 1..12
+            self.assertEqual(r["t_end_next"] != "nan", reached)
 
 
 class TestSF39Equivalence(Base):
