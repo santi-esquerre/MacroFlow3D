@@ -21,7 +21,9 @@ Artifact root `R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooli
 | `verification/` | R1 evidence of acceptance A, B, C: job scripts (`job_base.sh`, `job_head.sh`, `bytes.sh`, `identity.sh`, `identity.py`, `treecmp.py`), logs, comparison outputs, md5 lists, `jobs.tsv` (job table with GPU hours) | delivered |
 | `mms/` | R2 results of the MMS order study (acceptance D): 24 JSON, `mms_summary.{md,json}`, job logs | delivered |
 | `spectral/` | R2 results of the spectral cross-check (acceptance E): `summary.{md,json}`, `cases/`, FV `report.json`, `fv_npy.sha256` (the 4.7 GB FV dumps stay on the host), job logs | delivered |
-| `coverage/`, `pilots/`, `repro/` | result directories of the later jobs (acceptance F, G, H) | pending (later nodes) |
+| `scripts/pilots/` | design-pilot tooling (R4): run tables (`design.py`), host runner with own-PID GPU memory sampling (`run.py`, `job.sh`), reduction and analysis (`analyze.py`, `report.py`, `cost.py`, `tables.py`, `hostref.py`, `presubmit.py`, `jobs.py`); `python3 -m pilots.report j1|j2|j3|j3b|cost`, `python3 -m pilots.tables` | delivered |
+| `pilots/` | R4 / R4b results of the design pilots (acceptance G): per-run `RUN.json`, `cmd.txt`, trimmed logs, Par2 configs, reduced per-realization tables with sha256 input manifests, `hostref.json`, `j1_grid.*`, `j2_*`, `j3_pairing.json`, `j3b_pairing.json`, `cost_projection*`, `presubmit_projection.json`; no per-particle arrays | delivered |
+| `coverage/`, `repro/` | result directories of the later jobs (acceptance F coverage, H) | pending (later nodes) |
 
 ## Unit tests
 
@@ -44,6 +46,7 @@ Contract tests of `scripts/remote` (local, seconds): `bash scripts/tests/remote_
 | `base_bin/` | `macroflow3d_pipeline`, `lagrangian_ensemble` built from the increment base `3164e4fb`, with `md5.txt` (extra byte checks) |
 | `regress/` | `scripts/regress` comparison of head against base: `compare.txt`, both `binaries.md5`, exit codes, `env.txt` |
 | `bytes/`, `identity/` | outputs of the jobs `sf42-bytes` and `sf42-identity` |
+| `pilots/` | per-particle outputs of the R4 design pilots (`J1`, `J2`, `J3`, `J3B`, reduced tables, `hostref.json`); sha256 in `R/pilots/J1/per_particle_sha256.txt` and the reduced-table manifests |
 
 `$HOME/regress/refs/3164e4f/out` (base reference) and `$HOME/regress/heads/SF-42-<tree>/out` follow the `scripts/regress/README.md`
 protocol. `$HOME/sf39_campaign` is not touched by SF-42.

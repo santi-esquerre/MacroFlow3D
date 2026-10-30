@@ -187,6 +187,42 @@ populated in the worktree by copying the files of the control checkout's submodu
 form of the common context was refused by the agent sandbox), only so that `scripts/remote sync` accepts the tree; nothing of it is
 committed.
 
+R4 jobs (fourth campaign, same mirror, from the R4 trees `4b2593cd` (J0 to J3) and `55d43300` (J3B) = accepted head `4d54fa7c` + the
+pilot tooling; `R/verification/jobs_r4.tsv`, logs in `R/verification/logs/`). One job at a time, each with `REMOTE_GPU_WAIT=7200`
+(the CUDA ones also `REMOTE_GPU_MIN_FREE_MIB=30000`), no `--gpu`; `scripts/remote run` chose GPU 0 every time (idle host, 32510 MiB
+free). Host outputs only under `~/sf42_campaign/pilots/`; `find ~/sf39_campaign -newer ~/sf42_campaign/r3/.start -print | head -20`
+appended to `job.sh` printed an empty list (`SF39_UNTOUCHED_CHECK_DONE` straight after `DRIVER_EXIT=0`) in all four CUDA jobs. Binaries of
+`sf42-r4-build` (md5): `lagrangian_ensemble` `ccef921eb383a5e144b7e12c256fdeda`, `macroflow3d_pipeline`
+`ce441c3ad49575df419e2ce381dd85fe` (sources identical to the R1 to R3 builds; no production code changed in R4). The 330 Python tests of
+`R/scripts` at tree `4b2593cd` passed on the host stack inside that job: `Ran 330 tests in 38.923s`, `OK (skipped=1)`.
+
+```bash
+# R4, R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling
+scripts/remote --increment SF-42 sync
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-r4-build -- "cd ~/MacroFlow3D-SF-42 && export TMPDIR=\$HOME/.cache/mf3d-tmp CMAKE_BUILD_PARALLEL_LEVEL=16 && cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target lagrangian_ensemble macroflow3d_pipeline && md5sum ... && (cd $R/scripts && OMP_NUM_THREADS=1 python3 -W error -B -m unittest discover -s . -t .)"
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 scripts/remote --increment SF-42 run sf42-pilot-grid -- "cd ~/MacroFlow3D-SF-42 && bash $R/scripts/pilots/job.sh J1"
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 scripts/remote --increment SF-42 run sf42-pilot-particles -- "cd ~/MacroFlow3D-SF-42 && bash $R/scripts/pilots/job.sh J2 --reduce"
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 scripts/remote --increment SF-42 run sf42-pilot-pairing -- "cd ~/MacroFlow3D-SF-42 && bash $R/scripts/pilots/job.sh J3 --reduce"
+scripts/remote --increment SF-42 sync          # tree 55d43300 (adds the J3B run table)
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 scripts/remote --increment SF-42 run sf42-pilot-horizon -- "cd ~/MacroFlow3D-SF-42 && bash $R/scripts/pilots/job.sh J3B --reduce"
+# local (R4b, no remote use): regenerate and tabulate from the committed R/pilots
+cd $R/scripts && python3 -m pilots.report j1|j2|j3|j3b --data ../pilots --out <dir> && python3 -m pilots.report cost --data ../pilots --out <dir> --repo <repo root>
+python3 -m pilots.tables ../pilots j1|j2|j2m|j2cross|j3|cost_fit|cost_new|resid|proj|proj_rows|stop
+```
+
+| job | start (UTC) | end (UTC) | wall (s) | GPU-h | exit | GPU |
+|---|---|---|---|---|---|---|
+| `sf42-r4-build` (CPU: incremental build of the two binaries, 330 Python tests on the host stack) | 2026-10-30 09:58:54 | 10:04:26 | 332 | 0.092 | 0 | 0 |
+| `sf42-pilot-grid` (J1, CUDA: 9 consumer + 3 Par2 runs) | 10:05:42 | 10:14:57 | 555 | 0.154 | 0 | 0 |
+| `sf42-pilot-particles` (J2, CUDA: 12 runs of 6 realizations, reduction) | 10:17:11 | 11:46:37 | 5366 | 1.491 | 0 | 0 |
+| `sf42-pilot-pairing` (J3, CUDA: 4 + 4 runs of 8 realizations, reduction) | 11:48:01 | 12:13:55 | 1554 | 0.432 | 0 | 0 |
+| `sf42-pilot-horizon` (J3B, CUDA: 3 Par2 runs of 8 realizations, reduction; Deviation 6) | 12:20:27 | 12:27:33 | 426 | 0.118 | 0 | 0 |
+| total R4 | | | 8233 | 2.287 | | |
+| running total R1 + R2 + R3 + R4 (0.820 + 3.090 + 0.252 + 2.287) | | | 23215 | 6.449 | | |
+
+Start and end are the first and last timestamps of the job log (slot held). R4's local budget rule (J1 to J3 projected above 8 GPU-h
+would cut the realization counts) did not bite: 1.69 GPU-h projected, 2.08 measured.
+
 ## A. Byte identity
 
 Verdict: **met**.
@@ -534,7 +570,415 @@ particle noise. `alpha_TP` and `alpha_TAP` agree within 4e-4 relative in mean an
 the size of `alpha_T` here (and no mechanism is claimed for the basis difference); the means are listed only to read the SDs against them.
 The pilot has one realization set per amplitude and no uncertainty on the SDs themselves.
 
-Other G parts: pending (later nodes).
+### Design pilots (R4, R4b)
+
+Scope: the pilots are design inputs for SF-43. They are not evidence about macrodispersion: no sign or size of any `alpha` is read or
+interpreted below (the `alpha_LP` means in the pairing tables are listed only because the coefficient of variation and the correlation
+are computed from them). Committed outputs: `R/pilots/` (2.5 MB: per-run `RUN.json`, `cmd.txt`, trimmed `run.log.trim` and the Par2
+`config.yaml`; the reduced per-realization tables with their sha256 input manifests; `hostref.json`; `j1_grid.*`, `j2_*`,
+`j3_pairing.json`, `j3b_pairing.json`, `cost_projection*`, `presubmit_projection.json`; `J1/per_particle_sha256.txt`). No per-particle
+array is committed (the arrays stay in `~/sf42_campaign/pilots/` on the host). Every number below is regenerated from the committed
+inputs by `R/scripts/pilots` (`python3 -m pilots.report j1|j2|j3|j3b|cost --data R/pilots --out <dir> --repo <repo root>`, tables by
+`python3 -m pilots.tables R/pilots <table>`); R4b regenerated all eight outputs into a scratch directory and they were
+byte-identical to the files R4 had produced (before the R4b additions, which only add keys/columns). The only inputs that exist on the host
+alone are the SF-39 PCG-iteration census and the planning SDs (`hostref.json`, made on the host by `pilots.hostref` from
+`~/sf39_campaign` and `~/sf42_campaign/r3`; committed as read) and the per-particle arrays.
+
+Jobs, one at a time (details under Commands): `sf42-r4-build` (CPU), `sf42-pilot-grid` (J1), `sf42-pilot-particles` (J2),
+`sf42-pilot-pairing` (J3), `sf42-pilot-horizon` (J3B; see Deviation 6). Projected before submission with the SF-39-only cost model
+(`presubmit_projection.json`): J1 0.105, J2 1.208, J3 0.376 GPU-h, sum 1.69 GPU-h, far below the 8 GPU-h that would have forced a cut
+of the realization counts; measured 0.154, 1.491, 0.432 (J1 +46 %, J2 +23 %, J3 +15 %); J3B projected 0.135, measured 0.118. Total of R4: 2.287 GPU-h.
+
+#### Grid feasibility (J1)
+
+One realization per grid at the highest `sigma^2` that SF-43 plans on that grid (mapping of the R4 brief, identical to the committed
+run table: 520x120x120 at 1, 832x96x96 and 832x192x192 at 4, 1040x240x240, 1040x480x480, 2080x480x480 and 1248x288x288 at 2.25,
+2496x288x288 and 1664x192x192 at 4), consumer `--medium b`, flux weights, `h/8` single pass, planes `d` in [25, 94] `lambda`, the
+amplitude's source (19.2 `lambda`; 9.6 at `sigma^2` 4), `M` the admissible lattice size nearest to SF-39's seeds per `lambda`
+(`seedlattice.rule`); Par2 (`cg_rtol` 1e-10, `n_particles` 1e4, `sf18_medium_b` field with the consumer's seed, window injection, plane
+crossings) on the three Gate 5 grids. All 12 runs exit 0 with a converged solve. Reference for the 3x rule: the median PCG iterations of
+SF-39's production medium (b) solves at the same `sigma^2` (`hostref.json`, from the host `solver_b.json` files: A and B arms; 25, 50, 62
+and 71 solves at `sigma^2` 0.25, 1, 2.25, 4, medians 20, 30, 40, 60).
+
+| run | code | grid | sigma^2 | M | PCG iters | verdict | SF-39 median | ratio | flow stage (s) | wall (s) | peak GPU MiB (own PID) | runner exact MiB | rule |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `c_s1_520x120` | consumer | 520x120x120 | 1 | 96 | 70 | converged | 30 | 2.33 | 4.7 | 13.4 | 1757 | 432 | ok |
+| `c_s225_1040x240` | consumer | 1040x240x240 | 2.25 | 128 | 90 | converged | 40 | 2.25 | 17.2 | 35.8 | 3971 | 3460 | ok |
+| `c_s225_1040x480` | consumer | 1040x480x480 | 2.25 | 128 | 90 | converged | 40 | 2.25 | 54.9 | 88.7 | 14365 | 13839 | ok |
+| `c_s225_1248x288` | consumer | 1248x288x288 | 2.25 | 100 | 60 | converged | 40 | 1.50 | 22.0 | 39.0 | 6491 | 5979 | ok |
+| `c_s225_2080x480` | consumer | 2080x480x480 | 2.25 | 128 | 90 | converged | 40 | 2.25 | 104.8 | 152.4 | 28203 | 27683 | ok |
+| `c_s4_1664x192` | consumer | 1664x192x192 | 4 | 100 | 60 | converged | 60 | 1.00 | 12.3 | 30.9 | 4051 | 3543 | ok |
+| `c_s4_2496x288` | consumer | 2496x288x288 | 4 | 100 | 120 | converged | 60 | 2.00 | 55.1 | 91.0 | 12471 | 11959 | ok |
+| `c_s4_832x192` | consumer | 832x192x192 | 4 | 100 | 40 | converged | 60 | 0.67 | 7.1 | 22.4 | 2275 | 1772 | ok |
+| `c_s4_832x96` | consumer | 832x96x96 | 4 | 100 | 50 | converged | 60 | 0.83 | 4.4 | 13.3 | 1701 | 443 | ok |
+| `p_s1_1040x240` | Par2 | 1040x240x240 | 1 | - | 50 | converged | 30 | 1.67 | 10.8 | 18.2 | 7699 | - | ok |
+| `p_s225_1248x288` | Par2 | 1248x288x288 | 2.25 | - | 40 | converged | 40 | 1.00 | 15.6 | 27.7 | 12881 | - | ok |
+| `p_s4_1664x192` | Par2 | 1664x192x192 | 4 | - | 60 | converged | 60 | 1.00 | 12.2 | 20.7 | 7865 | - | ok |
+
+Rule (spec G, pre-stated): more than 3x the SF-39 median, or no convergence, means "requires a different grid in SF-43". The largest
+ratio is 2.33 (520x120x120); no grid trips the rule. PCG iterations are quantized by the production `check_every = 10`
+(`src/numerics/solvers/pcg.cuh`: convergence is tested only every 10 iterations), so every count is a multiple of 10 and a ratio has a
+resolution of one check interval. "Flow stage" is the runner's stage time (field, head solve, velocity, splines); the runner's exact
+bytes are its own closed-form device accounting (`MEM_PHASE`, maximum over phases), the peak is the maximum of the job's own PID in
+`nvidia-smi --query-compute-apps` sampled every second (never the GPU total). The peak own-PID memory exceeds the runner's exact bytes by 0.49 to 0.51 GiB on every grid from 832x192x192 up (the CUDA
+context) and by 1.2 to 1.3 GiB on the two smallest. SF-43 use of 2496x288x288 (`lambda/h` 24, width 12): none is identifiable in the SF-43 specification. Its
+`E_h` ladder at `sigma^2` 4 is 8 / 16 / 32, and 2496x288x288 was the Par2 grid of SF-39 at 2.25 and 4; it is run here at 4, the only
+amplitude of the listed pair it could serve, and it would be an intermediate rung (`lambda/h` 24) that the specification does not
+plan.
+
+`sigma^2` 0.25 is not a J1 run (no grid is planned only there): J2 and J3 run 1040x240x240 at 0.25 and report 60.0 and 61.25 mean PCG
+iterations against the SF-39 median of 20, a ratio of 3.00 and 3.06 (outside the J1 protocol, reported for completeness; see Findings
+(f)).
+
+#### Particle count (J2)
+
+SF-39's seeds per `lambda`: M = 100 seeds per side over a source of 0.8 of the production width, 0.8 x 25.6 = 20.48 `lambda` at
+`sigma^2` 0.25 and 1, 0.8 x 24 = 19.2 at 2.25, 0.8 x 12 = 9.6 at 4: 100/20.48 = 4.883, 100/19.2 = 5.208, 100/9.6 = 10.42 seeds per
+`lambda`. SF-43's source is 19.2 / 19.2 / 19.2 / 9.6 `lambda`, so the same density is `M` = 4.883 x 19.2 = 93.75 at 0.25 and 1, 100 at
+2.25 and 4. Targets 0.6x / 1x / 2x: 56.25 / 93.75 / 187.5 at 0.25 and 1; 60 / 100 / 200 at 2.25 and 4. Admissible lattice sizes
+(`seedlattice.rule`) on the SF-43 production grid and window, nearest to the target without repeats: **64, 128, 192** at 0.25 and 1
+(1040x240x240; the admissible values there are the multiples of 64: 0.6x gives 64, 1x is also nearest to 64, which is taken, so 128;
+that is 0.68x, 1.37x, 2.05x of SF-39's density) and **58, 100, 202** at 2.25 (1664x384x384) and 4 (3328x384x384). Six realizations per
+`M`, the same six field seeds for the three `M` of an amplitude (common random numbers; seeds 420701, 420711, 420721, 420731 + 0..5), 12 runs.
+Reduced with `sf42red reduce` (consumer, flux weights, set `perplane`, window [25, 94]); the particle component is
+`mean_r[(a_A - a_B)^2]/4` of the two half-lattices (SF-39's split-half definition), its share is taken against the SF-39 planning
+across-realization variance of the estimator on [25, 94] (R3 table, `hostref.json` `planning_sd`; `pos` and `disp` SD, the `disp` one is the
+stricter for the transverse estimators), and projected to other `M` by the fixed `M^-2` planning law anchored on the three measured
+components (`k = exp(mean(log c_i + 2 log M_i))`); the fitted exponent is reported beside it. `alpha_LP` is a position-basis
+estimator only. `alpha_TAP` equals `alpha_TP` within 8e-4 relative in component and variance (maximum over all cells of `j2_components.csv`; R3: 4e-4 in mean and SD) and is left out of the table (full table in
+`j2_components.csv`). Complete rows (all estimators, bases, `M`; own split-half share of the 6 realizations; planning share):
+
+| sigma^2 | estimator (basis) | M | n | component `mean_r[(a_A-a_B)^2]/4` | own split-half share (6 real.) | planning SD (R3) | share of planning variance |
+|---|---|---|---|---|---|---|---|
+| 0.25 | alpha_TP (pos) | 64 | 6 | 7.307e-12 | 3.785e-06 | 4.476e-03 | 3.647e-07 |
+| 0.25 | alpha_TP (pos) | 128 | 6 | 7.963e-13 | 4.125e-07 | 4.476e-03 | 3.974e-08 |
+| 0.25 | alpha_TP (pos) | 192 | 6 | 1.441e-13 | 7.463e-08 | 4.476e-03 | 7.191e-09 |
+| 0.25 | alpha_TP (disp) | 64 | 6 | 1.331e-12 | 1.064e-04 | 1.206e-04 | 9.158e-05 |
+| 0.25 | alpha_TP (disp) | 128 | 6 | 1.024e-15 | 8.198e-08 | 1.206e-04 | 7.047e-08 |
+| 0.25 | alpha_TP (disp) | 192 | 6 | 2.734e-17 | 2.188e-09 | 1.206e-04 | 1.881e-09 |
+| 0.25 | alpha_LP (pos) | 64 | 6 | 8.732e-07 | 3.284e-03 | 2.888e-02 | 1.047e-03 |
+| 0.25 | alpha_LP (pos) | 128 | 6 | 2.620e-09 | 9.780e-06 | 2.888e-02 | 3.141e-06 |
+| 0.25 | alpha_LP (pos) | 192 | 6 | 7.223e-11 | 2.693e-07 | 2.888e-02 | 8.658e-08 |
+| 1 | alpha_TP (pos) | 64 | 6 | 1.395e-07 | 2.962e-03 | 1.103e-02 | 1.147e-03 |
+| 1 | alpha_TP (pos) | 128 | 6 | 1.309e-08 | 2.693e-04 | 1.103e-02 | 1.076e-04 |
+| 1 | alpha_TP (pos) | 192 | 6 | 3.079e-09 | 6.360e-05 | 1.103e-02 | 2.530e-05 |
+| 1 | alpha_TP (disp) | 64 | 6 | 1.480e-08 | 7.423e-03 | 1.121e-03 | 1.179e-02 |
+| 1 | alpha_TP (disp) | 128 | 6 | 2.244e-10 | 1.124e-04 | 1.121e-03 | 1.787e-04 |
+| 1 | alpha_TP (disp) | 192 | 6 | 8.814e-11 | 4.391e-05 | 1.121e-03 | 7.019e-05 |
+| 1 | alpha_LP (pos) | 64 | 6 | 8.607e-04 | 4.994e-02 | 1.018e-01 | 8.307e-02 |
+| 1 | alpha_LP (pos) | 128 | 6 | 1.274e-04 | 6.387e-03 | 1.018e-01 | 1.229e-02 |
+| 1 | alpha_LP (pos) | 192 | 6 | 4.286e-05 | 2.085e-03 | 1.018e-01 | 4.136e-03 |
+| 2.25 | alpha_TP (pos) | 58 | 6 | 1.327e-05 | 1.758e-01 | 1.514e-02 | 5.789e-02 |
+| 2.25 | alpha_TP (pos) | 100 | 6 | 1.563e-06 | 1.557e-02 | 1.514e-02 | 6.819e-03 |
+| 2.25 | alpha_TP (pos) | 202 | 6 | 1.997e-07 | 1.814e-03 | 1.514e-02 | 8.715e-04 |
+| 2.25 | alpha_TP (disp) | 58 | 6 | 8.570e-07 | 8.464e-02 | 4.073e-03 | 5.166e-02 |
+| 2.25 | alpha_TP (disp) | 100 | 6 | 1.796e-07 | 1.647e-02 | 4.073e-03 | 1.083e-02 |
+| 2.25 | alpha_TP (disp) | 202 | 6 | 5.115e-08 | 4.460e-03 | 4.073e-03 | 3.084e-03 |
+| 2.25 | alpha_LP (pos) | 58 | 6 | 2.748e-02 | 8.114e-01 | 2.291e-01 | 5.234e-01 |
+| 2.25 | alpha_LP (pos) | 100 | 6 | 6.487e-03 | 1.331e-01 | 2.291e-01 | 1.236e-01 |
+| 2.25 | alpha_LP (pos) | 202 | 6 | 3.609e-03 | 1.369e-01 | 2.291e-01 | 6.875e-02 |
+| 4 | alpha_TP (pos) | 58 | 6 | 7.765e-06 | 4.478e-02 | 1.918e-02 | 2.111e-02 |
+| 4 | alpha_TP (pos) | 100 | 6 | 5.334e-06 | 2.734e-02 | 1.918e-02 | 1.450e-02 |
+| 4 | alpha_TP (pos) | 202 | 6 | 8.146e-08 | 3.863e-04 | 1.918e-02 | 2.215e-04 |
+| 4 | alpha_TP (disp) | 58 | 6 | 4.440e-06 | 5.620e-02 | 1.688e-02 | 1.559e-02 |
+| 4 | alpha_TP (disp) | 100 | 6 | 1.204e-06 | 1.145e-02 | 1.688e-02 | 4.226e-03 |
+| 4 | alpha_TP (disp) | 202 | 6 | 1.300e-07 | 1.357e-03 | 1.688e-02 | 4.564e-04 |
+| 4 | alpha_LP (pos) | 58 | 6 | 9.664e-01 | 2.554e-01 | 1.478e+00 | 4.421e-01 |
+| 4 | alpha_LP (pos) | 100 | 6 | 1.001e-01 | 1.059e-01 | 1.478e+00 | 4.581e-02 |
+| 4 | alpha_LP (pos) | 202 | 6 | 8.900e-02 | 4.513e-02 | 1.478e+00 | 4.071e-02 |
+
+The component and share per estimator and basis, fitted exponent in `M` (standard error from three points), and the smallest admissible
+`M` whose projected share is at most 0.25 and at most 0.10 (fixed `M^-2` law / fitted law):
+
+| sigma^2 | grid | M tested | estimator (basis) | fitted exponent of M (se) | M at share <= 0.25 (fixed M^-2 law / fit) | M at share <= 0.10 (fixed / fit) |
+|---|---|---|---|---|---|---|
+| 0.25 | 1040x240x240 | 64,128,192 | alpha_TP (pos) | -3.53 (0.27) | 64 / 64 | 64 / 64 |
+| 0.25 | 1040x240x240 | 64,128,192 | alpha_TP (disp) | -9.88 (0.37) | 64 / 64 | 64 / 64 |
+| 0.25 | 1040x240x240 | 64,128,192 | alpha_LP (pos) | -8.54 (0.13) | 64 / 64 | 64 / 64 |
+| 1 | 1040x240x240 | 64,128,192 | alpha_TP (pos) | -3.47 (0.04) | 64 / 64 | 64 / 64 |
+| 1 | 1040x240x240 | 64,128,192 | alpha_TP (disp) | -4.81 (0.98) | 64 / 64 | 64 / 64 |
+| 1 | 1040x240x240 | 64,128,192 | alpha_LP (pos) | -2.73 (0.02) | 64 / 64 | 64 / 64 |
+| 2.25 | 1664x384x384 | 58,100,202 | alpha_TP (pos) | -3.34 (0.28) | 20 / 38 | 28 / 50 |
+| 2.25 | 1664x384x384 | 58,100,202 | alpha_TP (disp) | -2.24 (0.31) | 26 / 28 | 38 / 44 |
+| 2.25 | 1664x384x384 | 58,100,202 | alpha_LP (pos) | -1.59 (0.51) | 86 / 82 | 140 / 146 |
+| 4 | 3328x384x384 | 58,100,202 | alpha_TP (pos) | -3.76 (1.49) | 14 / 38 | 22 / 46 |
+| 4 | 3328x384x384 | 58,100,202 | alpha_TP (disp) | -2.85 (0.22) | 14 / 26 | 20 / 34 |
+| 4 | 3328x384x384 | 58,100,202 | alpha_LP (pos) | -1.83 (1.13) | 68 / 62 | 106 / 106 |
+
+| sigma^2 | M_plan (0.25, pos denominator; max over the three estimators) | same, disp denominator | M at 0.10 (pos) | M at 0.10 (disp) |
+|---|---|---|---|---|
+| 0.25 | 64 | 64 | 64 | 64 |
+| 1 | 64 | 64 | 64 | 64 |
+| 2.25 | 86 | 86 | 140 | 140 |
+| 4 | 68 | 68 | 106 | 106 |
+
+`M_plan` (column 2 of the second table) is the largest of the three estimators' conclusions at share 0.25 with the `pos` denominator;
+the `disp` denominator gives the same values (the `alpha_LP` basis is `pos` only and dominates at 2.25 and 4). At `sigma^2` 0.25 and 1 the
+conclusion 64 is the smallest admissible lattice size, not a share limit: every estimator's planning share at `M` = 64 is at most 8.3e-2
+(`alpha_LP` at `sigma^2` 1; at most 1.0e-3 at 0.25), so the binding constraint there is the lattice rule. At 2.25 and 4 the share of
+`alpha_LP` binds: 86 and 68 at 0.25, 140 and 106 at 0.10, against 20 to 38 (2.25) and 14 to 38 (4) for the transverse estimators
+(`pos`, `disp`). Flagged by SF-39's rule (own split-half share above 0.25): `alpha_LP` at `sigma^2` 2.25 with `M` = 58 (0.81) and at 4
+with `M` = 58 (0.26); the planning-share column shows the same two cells as the largest (0.52, 0.44). The fitted exponents are
+-3.5 / -3.5 / -3.3 / -3.8 (`alpha_TP`, `pos`) and -1.6 / -1.8 (`alpha_LP`, 2.25 / 4); three points per fit and six realizations, standard
+errors 0.02 to 1.5. The fixed `M^-2` law is the planning rule (it is not contradicted for `alpha_LP`: -1.59 +- 0.51 and
+-1.83 +- 1.13; `alpha_LP` at 0.25 and 1: -8.5 and -2.7); the transverse components fall faster than `M^-2` over this range. At
+0.25 and 1 the planning shares are between 1.9e-9 and 1.0e-3 (0.25) and 2.5e-5 and 8.3e-2 (1), where an exponent fitted to three
+components has little meaning.
+
+Crossing completeness of the consumer (fraction of seeded particles that reach the last plane and the first plane, minimum over the six
+realizations): 1.0000 for all 12 runs at both planes (`pilots.tables j2cross`; `n_last = n_traced` in every reduced row).
+
+#### Gate 5 pairing (J3 and J3B)
+
+Matched configuration (SF-43 item 7): consumer with uniform weights (the twin-style series) and Par2 on the same `sf18_medium_b` field
+per seed, window injection, plane crossings at the consumer's planes, `cg_rtol` 1e-10, eight seeds (420801 + 0..7 at 0.25, 420811 at 1,
+420821 at 2.25, 420831 at 4), Par2 `transport.seed` 420800001 (the pipeline adds 1000 r). Grids: 1040x240x240 at 0.25 and 1,
+1248x288x288 at 2.25, 1664x192x192 at 4; consumer `M` = 128, 128, 100, 100. Par2 time step: SF-39's rule scaled to the grid, `dt`
+= 0.0244140625 dx (SF-39: `U_nom dt` = 0.0244140625 dx) and `n_steps = ceil(hz (L1 - 10 ell) / dt)`. **SF-39's Par2 horizon rule**
+(SF-39 artifact `configs/par2_s{1,225,4}.yaml`, header comment, line 19): "`n_steps = ceil(1.2 (Lx - 10 lambda) / (J dt))` with `dt = 12.5`", i.e. 1.2 times
+the nominal travel time `U_nom = K_g J` to `Lx - 10 lambda`; J3 uses `hz` = 1.2, J3B `hz` = 3.6 (Deviation 6). Statistics per amplitude:
+mean and coefficient of variation of the paired `alpha_LP` per code, the Pearson correlation of the pairs (matched by seed), its 80 %
+lower bound (`mcstat.sizing.corr_lower`), and the Gate 5 planning `n` (`gate5_conservative_inputs` + `gate5_sample_size`, Holm worst level
+0.05/7, true ratio 1, power 0.8) at the lower-bound correlation and at 0 (the unpaired worst case):
+
+**J3 (SF-39 horizon factor 1.2)**
+
+| sigma^2 | grid | n pairs | mean L | mean P | CV L | CV P | corr | corr 80 % LB | Par2 steps | min Par2 crossed/injected at the last plane | min consumer reached/seeded | plan n (LB corr) | plan n (corr 0) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 1040x240x240 | 8 | 0.2439 | 0.2436 | 0.105 | 0.095 | 0.979 | 0.955 | 46203 | 0.9977 | 1.0000 | 7 | 64 |
+| 1 | 1040x240x240 | 8 | 1.065 | 0.9765 | 0.074 | 0.070 | 0.779 | 0.583 | 46203 | 0.9829 | 1.0000 | 16 | 34 |
+| 2.25 | 1248x288x288 | 8 | 3.199 | 2.25 | 0.106 | 0.158 | 0.731 | 0.504 | 55444 | 0.9733 | 1.0000 | 63 | 115 |
+| 4 | 1664x192x192 | 8 | 10.23 | 4.854 | 0.301 | 0.155 | 0.253 | -0.117 | 73925 | 0.9623 | 1.0000 | 426 | 390 |
+
+**J3B (horizon factor 3.6)**
+
+| sigma^2 | grid | n pairs | mean L | mean P | CV L | CV P | corr | corr 80 % LB | Par2 steps | min Par2 crossed/injected at the last plane | min consumer reached/seeded | plan n (LB corr) | plan n (corr 0) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1040x240x240 | 8 | 1.065 | 1.058 | 0.074 | 0.070 | 0.939 | 0.875 | 138609 | 1.0000 | 1.0000 | 7 | 34 |
+| 2.25 | 1248x288x288 | 8 | 3.199 | 3.151 | 0.106 | 0.122 | 0.860 | 0.725 | 166331 | 0.9999 | 1.0000 | 26 | 83 |
+| 4 | 1664x192x192 | 8 | 10.23 | 9 | 0.301 | 0.145 | 0.799 | 0.617 | 221774 | 0.9996 | 1.0000 | 205 | 380 |
+
+Scope of the horizon finding. With `hz` = 1.2 a few Par2 particles have not reached the last control plane when the run ends (minimum
+over the eight realizations of crossed/injected at the last plane: 0.9977, 0.9829, 0.9733, 0.9623 at `sigma^2` 0.25, 1, 2.25, 4); with
+3.6 it is 1.0000, 0.9999, 0.9996 (1, 2.25, 4). The consumer reaches the last plane with every seeded particle in all 12 J2 runs and all
+J3 runs (1.0000). This concerns **plane-crossing estimators** (`alpha_LP`, `alpha_TP` over planes) with a finite Par2 run: a plane-based
+average over the particles that crossed is censored at the horizon (late particles are missing). SF-39's own Gate 5 used snapshot
+time-window estimators: the window `W_c` ends before the first particle exits (`t_b,min` = the last snapshot with no particle at
+`x >= Lx - 5 lambda`, pre-registration section 4, item C), the variance is that of all active particles at each snapshot, and Par2
+realizations whose last clean snapshot precedes the end of `W_c` are counted and reported. By this definition it does not condition
+on crossing and is not exposed to the plane-based censoring; I did not re-analyse SF-39 (and found no count of such realizations in the SF-39 note).
+
+#### Cost model and SF-43 projection (J4)
+
+Calibration points: every pilot run, with the code's own per-realization time (consumer `timings.json` `seconds.total`; Par2 field +
+solve + velocity + transport from the stage lines), not the process wall: SF-39's job walls spread one start-up over at least 20
+realizations, the pilot runs of 1 to 8 realizations would carry it per realization (wall-basis residuals are in `cost_projection.json`,
+`new_points_under_sf39_model`, basis `wall`: for instance 13.4 s wall against 9.8 s per realization at 520x120x120). Consumer points keep
+code `lagrangian` with their real `M^2` and one pass; Par2 at `cg_rtol` 1e-10 has its own code `par2_rtol1e-10` (J1 and J3, horizon
+1.2) and, from J3B, `par2_rtol1e-10_h3.6` (horizon 3.6), each fitted from its own points only. Fit before and after:
+
+| code | fit | points | rms rel | max abs rel | cells range | sigma^2 range | particles range | coefficients |
+|---|---|---|---|---|---|---|---|---|
+| lagrangian | SF-39 only | 29 | 0.119 | 0.447 | 4.19e+06 - 4.91e+08 | 0.25 - 4 | 10000 - 10000 | const=1.8, cells=1.53e-07, cells_sigma2=1.24e-08, trace=5.47e-07 |
+| par2 | SF-39 only | 8 | 0.086 | 0.127 | 1.34e+08 - 2.07e+08 | 0.25 - 4 | 10000 - 10000 | cells=2.71e-07 |
+| par2_fs | SF-39 only | 8 | 0.066 | 0.179 | 1.34e+08 - 2.07e+08 | 0.25 - 4 | 10000 - 10000 | cells=1.53e-07 |
+| lagrangian | with pilots | 54 | 0.153 | 0.405 | 4.19e+06 - 4.91e+08 | 0.25 - 4 | 3364 - 40804 | const=3.68, cells=1.92e-07, cells_sigma2=8.87e-09, trace=4.47e-07 |
+| par2 | with pilots | 8 | 0.086 | 0.127 | 1.34e+08 - 2.07e+08 | 0.25 - 4 | 10000 - 10000 | cells=2.71e-07 |
+| par2_fs | with pilots | 8 | 0.066 | 0.179 | 1.34e+08 - 2.07e+08 | 0.25 - 4 | 10000 - 10000 | cells=1.53e-07 |
+| par2_rtol1e-10 | with pilots | 7 | 0.138 | 0.208 | 5.99e+07 - 1.04e+08 | 0.25 - 4 | 10000 - 10000 | cells=2.07e-07 |
+| par2_rtol1e-10_h3.6 | with pilots | 3 | 0.174 | 0.231 | 5.99e+07 - 1.04e+08 | 1 - 4 | 10000 - 10000 | cells=2.2e-07 |
+
+The refit changes `lagrangian` only in the sense expected from added points (rms 0.119 to 0.153, largest 0.447 to 0.405, constant
+1.8 s to 3.7 s). Residuals of the new points under the SF-39-only model (`(model - observed)/observed`; the Par2 pilots against SF-39's
+own `par2` fit, which used `cg_rtol` 1e-6) and after the refit:
+
+| point | code | observed s/real | SF-39-only model | relative error of the model | refit residual | in SF-39 range |
+|---|---|---|---|---|---|---|
+| `J1/c_s1_520x120` | lagrangian | 9.8 | 5.7 | -0.423 | -0.254 | no |
+| `J1/c_s225_1040x240` | lagrangian | 31.7 | 22.0 | -0.308 | -0.243 | no |
+| `J1/c_s225_1040x480` | lagrangian | 85.1 | 54.5 | -0.359 | -0.269 | no |
+| `J1/c_s225_1248x288` | lagrangian | 35.1 | 27.4 | -0.220 | -0.110 | yes |
+| `J1/c_s225_2080x480` | lagrangian | 148.5 | 107.3 | -0.278 | -0.187 | no |
+| `J1/c_s4_1664x192` | lagrangian | 26.9 | 23.3 | -0.132 | -0.067 | yes |
+| `J1/c_s4_2496x288` | lagrangian | 85.3 | 57.4 | -0.326 | -0.273 | yes |
+| `J1/c_s4_832x192` | lagrangian | 15.1 | 12.6 | -0.168 | -0.048 | yes |
+| `J1/c_s4_832x96` | lagrangian | 9.7 | 7.9 | -0.186 | -0.059 | yes |
+| `J1/p_s1_1040x240` | par2_rtol1e-10 | 14.2 | 16.2 | +0.145 | -0.125 | no |
+| `J1/p_s225_1248x288` | par2_rtol1e-10 | 20.1 | 28.0 | +0.394 | +0.065 | no |
+| `J1/p_s4_1664x192` | par2_rtol1e-10 | 15.7 | 16.6 | +0.055 | -0.193 | no |
+| `J2/c_s025_M128` | lagrangian | 26.2 | 20.5 | -0.218 | -0.123 | no |
+| `J2/c_s025_M192` | lagrangian | 35.8 | 32.2 | -0.103 | -0.093 | no |
+| `J2/c_s025_M64` | lagrangian | 20.3 | 13.5 | -0.334 | -0.149 | no |
+| `J2/c_s1_M128` | lagrangian | 27.8 | 21.0 | -0.244 | -0.161 | no |
+| `J2/c_s1_M192` | lagrangian | 38.9 | 32.7 | -0.159 | -0.155 | no |
+| `J2/c_s1_M64` | lagrangian | 23.9 | 14.1 | -0.413 | -0.263 | no |
+| `J2/c_s225_M100` | lagrangian | 54.0 | 55.3 | +0.026 | +0.172 | yes |
+| `J2/c_s225_M202` | lagrangian | 81.4 | 83.4 | +0.025 | +0.059 | no |
+| `J2/c_s225_M58` | lagrangian | 51.9 | 49.3 | -0.050 | +0.124 | no |
+| `J2/c_s4_M100` | lagrangian | 131.5 | 119.5 | -0.091 | -0.008 | yes |
+| `J2/c_s4_M202` | lagrangian | 193.0 | 175.7 | -0.090 | -0.087 | no |
+| `J2/c_s4_M58` | lagrangian | 127.3 | 107.5 | -0.156 | -0.053 | no |
+| `J3/c_s025_1040x240` | lagrangian | 26.6 | 20.5 | -0.229 | -0.136 | no |
+| `J3/c_s1_1040x240` | lagrangian | 26.1 | 21.0 | -0.192 | -0.103 | no |
+| `J3/c_s225_1248x288` | lagrangian | 37.5 | 27.4 | -0.270 | -0.166 | yes |
+| `J3/c_s4_1664x192` | lagrangian | 27.8 | 23.3 | -0.159 | -0.095 | yes |
+| `J3/p_s025_1040x240` | par2_rtol1e-10 | 11.4 | 16.2 | +0.426 | +0.090 | no |
+| `J3/p_s1_1040x240` | par2_rtol1e-10 | 12.7 | 16.2 | +0.278 | -0.023 | no |
+| `J3/p_s225_1248x288` | par2_rtol1e-10 | 17.7 | 28.0 | +0.581 | +0.208 | no |
+| `J3/p_s4_1664x192` | par2_rtol1e-10 | 15.0 | 16.6 | +0.105 | -0.155 | no |
+| `J3B/p_s1_1040x240_h3` | par2_rtol1e-10_h3.6 | 13.8 | 16.2 | +0.176 | -0.046 | no |
+| `J3B/p_s225_1248x288_h3` | par2_rtol1e-10_h3.6 | 19.2 | 28.0 | +0.463 | +0.187 | no |
+| `J3B/p_s4_1664x192_h3` | par2_rtol1e-10_h3.6 | 17.5 | 16.6 | -0.052 | -0.231 | no |
+
+Systematic sign of the refit residuals. Residual = (model - observed)/observed, so negative means the model is below the observation. Of the 25 consumer pilot points, 23 are below the observation under the SF-39-only model and 22 under the refit (the three positive ones, +0.06 to +0.17, are the 1664x384x384 runs of J2 at `sigma^2` 2.25). The Par2 points under the refit of their own code have mixed signs (4 of 10 positive). The residual table with its covariates:
+
+| point | job | sigma^2 | ny | MG levels | realizations | mean PCG iterations | SF-39 median | ratio | refit residual | first / rest time |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `c_s1_520x120` | J1 | 1 | 120 | 3 | 1 | 70.0 | 30 | 2.33 | -0.254 | - |
+| `c_s225_1040x240` | J1 | 2.25 | 240 | 4 | 1 | 90.0 | 40 | 2.25 | -0.243 | - |
+| `c_s225_1040x480` | J1 | 2.25 | 480 | 4 | 1 | 90.0 | 40 | 2.25 | -0.269 | - |
+| `c_s225_1248x288` | J1 | 2.25 | 288 | 5 | 1 | 60.0 | 40 | 1.50 | -0.110 | - |
+| `c_s225_2080x480` | J1 | 2.25 | 480 | 5 | 1 | 90.0 | 40 | 2.25 | -0.187 | - |
+| `c_s4_1664x192` | J1 | 4 | 192 | 6 | 1 | 60.0 | 60 | 1.00 | -0.067 | - |
+| `c_s4_2496x288` | J1 | 4 | 288 | 5 | 1 | 120.0 | 60 | 2.00 | -0.273 | - |
+| `c_s4_832x192` | J1 | 4 | 192 | 6 | 1 | 40.0 | 60 | 0.67 | -0.048 | - |
+| `c_s4_832x96` | J1 | 4 | 96 | 5 | 1 | 50.0 | 60 | 0.83 | -0.059 | - |
+| `c_s025_M128` | J2 | 0.25 | 240 | 4 | 6 | 60.0 | 20 | 3.00 | -0.123 | 0.98 |
+| `c_s025_M192` | J2 | 0.25 | 240 | 4 | 6 | 60.0 | 20 | 3.00 | -0.093 | 0.94 |
+| `c_s025_M64` | J2 | 0.25 | 240 | 4 | 6 | 60.0 | 20 | 3.00 | -0.149 | 1.01 |
+| `c_s1_M128` | J2 | 1 | 240 | 4 | 6 | 71.7 | 30 | 2.39 | -0.161 | 0.98 |
+| `c_s1_M192` | J2 | 1 | 240 | 4 | 6 | 71.7 | 30 | 2.39 | -0.155 | 0.98 |
+| `c_s1_M64` | J2 | 1 | 240 | 4 | 6 | 71.7 | 30 | 2.39 | -0.263 | 1.17 |
+| `c_s225_M100` | J2 | 2.25 | 384 | 7 | 6 | 30.0 | 40 | 0.75 | +0.172 | 1.00 |
+| `c_s225_M202` | J2 | 2.25 | 384 | 7 | 6 | 30.0 | 40 | 0.75 | +0.059 | 0.99 |
+| `c_s225_M58` | J2 | 2.25 | 384 | 7 | 6 | 30.0 | 40 | 0.75 | +0.124 | 0.98 |
+| `c_s4_M100` | J2 | 4 | 384 | 7 | 6 | 60.0 | 60 | 1.00 | -0.008 | 1.01 |
+| `c_s4_M202` | J2 | 4 | 384 | 7 | 6 | 60.0 | 60 | 1.00 | -0.087 | 0.95 |
+| `c_s4_M58` | J2 | 4 | 384 | 7 | 6 | 60.0 | 60 | 1.00 | -0.053 | 0.86 |
+| `c_s025_1040x240` | J3 | 0.25 | 240 | 4 | 8 | 61.2 | 20 | 3.06 | -0.136 | 0.93 |
+| `c_s1_1040x240` | J3 | 1 | 240 | 4 | 8 | 70.0 | 30 | 2.33 | -0.103 | 0.97 |
+| `c_s225_1248x288` | J3 | 2.25 | 288 | 5 | 8 | 57.5 | 40 | 1.44 | -0.166 | 1.02 |
+| `c_s4_1664x192` | J3 | 4 | 192 | 6 | 8 | 55.0 | 60 | 0.92 | -0.095 | 1.10 |
+
+negative residuals 22 of 25; Pearson / Spearman of residual with the iteration ratio -0.65 / -0.65; mean residual single-realization runs -0.168 (9), multi-realization runs -0.077 (16); median first / rest realization time 0.98
+
+Hypothesis (not proven, evidence is local and observational): the SF-39-only coefficients, in particular `cells_sigma2`, encode the PCG
+iteration counts of SF-39's grids; the pilot grids of SF-43 are different geometries (`ny` = 120, 240, 288, 480 and `nx` = 520, 1040,
+1248, 2080) whose multigrid hierarchy has fewer levels (3 to 5 against 5 to 7 in SF-39: the depth stops when an extent becomes odd, so
+`nx` = 1040 = 2^4 x 65 caps it at 4 whatever `ny`), and a shallower hierarchy needs more PCG iterations. Evidence in the table: the
+pilot points with the SAME `ny` and MG depth as SF-39 (192 with 6 levels, 384 with 7) have iteration ratios 0.67 to 1.0 and the smallest
+residuals (-0.10 to +0.17; the three runs at `sigma^2` 2.25 on 384, ratio 0.75, are the +0.06 to +0.17), while the 3 to 5 level grids,
+except 832x96x96 (ratio 0.83, residual -0.06), have ratios 1.4 to 3.1 and residuals -0.09 to -0.27; the Spearman correlation between the iteration ratio and the residual is
+-0.65 over 25 points. SF-39's levels are those logged in its runs (`STAGE medium=b ... mg_levels=` in the committed
+logs: 5 at ny 64, 6 at 128 and 192, 7 at 256 and 384). The alternative that start-up per realization is the cause is not supported:
+the median ratio of the first realization's time to the mean of the others in the 6 to 8 realization runs is 0.98. The single-realization
+J1 runs have the lower mean residual (-0.17, 9 runs, against -0.08, 16 runs) but five of the nine J1 consumer runs are
+also among those with iteration ratio at or above 2, so the two effects are confounded in this data. A cause check that was not made: a run of one grid with
+a deeper hierarchy. The consumer effect is absorbed by the refit only partly (rms 0.153); the sign is a reason to read the anchored values
+below as the more realistic planning numbers for geometries that were measured.
+
+SF-43 projection (planning table of the R4 brief; not a commitment). Rows: production (h/8) 1040x240x240 @0.25 1100 and @1 1650,
+1664x384x384 @2.25 110, 3328x384x384 @4 30; `E_h` rungs (0.25 and 1: 520x120x120 and 2080x480x480, 300 each; 2.25: 832x192x192 and
+2080x480x480, 110 each; 4: 832x96x96 and 1664x192x192, 30 each); `E_W` (0.25: 1040x480x480 1100; 1: 1040x480x480 1650; 2.25 2x2
+(832x192, 832x384, 1040x240, 1040x480) 110 each; 4 2x2 (832x96, 832x192, 1664x192, 1664x384) 30 each); `h_max` passes 8/16/32 (50 at
+0.25, 1, 2.25, 30 at 4, counted as full three-pass realizations); Gate 5 in both codes (1040x240 @0.25 and @1, 1248x288 @2.25,
+1664x192 @4) with the J3 planning `n` at the lower-bound correlation (7 / 16 / 63 / 426); G7 factorial (Par2, 1040x240 @0.25 and @1: 8 cells x 60
+= 480 each); distance arms (2080x240x240 @1 and 3328x384x384 @2.25, 100 each); plus 5 % for SF-43 pilots and reserve. Consumer `M`
+per row = `M_plan` (64, 64, 86, 68) unless stated; the planned Par2 rows use the cost of the horizon SF-43 plane estimators need,
+`par2_rtol1e-10_h3.6` (calibrated on the three J3B runs, same seeds and grids as J3; Par2 per-realization time J3B/J3 = 1.09, 1.08, 1.17
+while the steps are x3.00 and the transport stage x1.89, x1.91, x2.36; `cost_projection.json` `par2_horizon_cost_ratio`). GPU-h per
+family and total (columns after "reserve" are sensitivities: each code's refit rms and largest residual, and "anchored": an arm on a
+geometry measured in the pilots is multiplied by the mean observed / refit ratio of those measurements, others keep the model value;
+"anchored +1 rms" applies each code's rms on top of the anchored value):
+
+| variant | production | E_h | E_W | hmax | gate5_consumer | gate5_par2 | g7_par2 | distance | reserve 5 % | total GPU-h | -1 rms | +1 rms | +max residual | anchored | anchored +1 rms |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| M_plan | 16.3 | 22.1 | 45.3 | 3.5 | 3.1 | 2.1 | 3.5 | 4.2 | 5.0 | **105.0** | 88.8 | 121.2 | 146.6 | 130.7 | 150.9 |
+| sf39_density | 18.1 | 23.2 | 47.2 | 4.6 | 3.6 | 2.1 | 3.5 | 4.4 | 5.3 | **112.0** | 94.7 | 129.3 | 156.4 | 139.1 | 160.5 |
+| M_plan_share010 | 16.6 | 22.7 | 46.0 | 4.9 | 3.8 | 2.1 | 3.5 | 4.7 | 5.2 | **109.6** | 92.7 | 126.5 | 152.9 | 135.5 | 156.3 |
+| variant_B_M_plan | 1.8 | 22.1 | 2.8 | 3.5 | 3.1 | 2.1 | 3.5 | 4.2 | 2.2 | **45.3** | 38.2 | 52.3 | 62.6 | 52.5 | 60.6 |
+| M_plan_gate5_J3B_floor30 | 16.3 | 22.1 | 45.3 | 3.5 | 1.7 | 1.2 | 3.5 | 4.2 | 4.9 | **102.6** | 86.8 | 118.5 | 143.4 | 128.0 | 147.7 |
+| M_common_128_128_86_68 | 20.6 | 24.5 | 49.6 | 4.6 | 3.2 | 2.1 | 3.5 | 4.5 | 5.6 | **118.2** | 100.0 | 136.5 | 165.1 | 147.4 | 170.1 |
+| M_plan_par2_horizon1.2 | 16.3 | 22.1 | 45.3 | 3.5 | 3.1 | 2.0 | 3.3 | 4.2 | 5.0 | **104.7** | 88.7 | 120.6 | 146.0 | 130.1 | 150.0 |
+
+Variants: `sf39_density` = `M` at SF-39's seeds per `lambda` (94, 94, 100, 100); `M_plan_share010` = `M` at share 0.10 (64, 64, 140, 106);
+`variant_B_M_plan` = "variant B: displacement basis primary (SF-43 pre-registration choice, not assumed)": production and `E_W`
+realization counts multiplied by `(SD_disp/SD_pos)^2` of the amplitude (0.027, 0.102, 0.269, 0.880 for `alpha_TP`), floor 30 per arm,
+other rows unchanged (informational, not for the stop rule); `M_plan_gate5_J3B_floor30` = the Gate 5 `n` of the J3B pairing (7 / 26 / 205 at 1,
+2.25, 4; 0.25 keeps the J3 value) with a floor of 30; `M_common_128_128_86_68` = `M` = 128 at 0.25 and 1, the only values admissible on
+every constrained arm there (Finding (a); no `M` is common to all arms at 2.25, 86 being a production-grid value); `M_plan_par2_horizon1.2` = the
+planned Par2 rows at the horizon-1.2 cost, kept only to show the horizon's cost (0.3 GPU-h).
+
+GPU-h per arm and per 100 realizations at `M_plan` (so the arms can be resized; "in range" = inside the calibrated cells, `sigma^2` and
+particle span of the arm's code; the two out-of-range arms are the Par2 rows at `sigma^2` 0.25, outside the `sigma^2` 1 to 4 span of the three
+J3B points; the Par2 model has no `sigma^2` term):
+
+| family | sigma^2 | arm | n | s/realization | GPU-h | GPU-h per 100 | in calibrated range |
+|---|---|---|---|---|---|---|---|
+| production | 0.25 | 1040x240 | 1100 | 17.2 | 5.27 | 0.479 | yes |
+| production | 1 | 1040x240 | 1650 | 17.6 | 8.09 | 0.490 | yes |
+| production | 2.25 | 1664x384 | 110 | 61.3 | 1.87 | 1.703 | yes |
+| production | 4 | 3328x384 | 30 | 122.4 | 1.02 | 3.401 | yes |
+| E_h | 0.25 | 520x120 | 300 | 6.1 | 0.51 | 0.169 | yes |
+| E_h | 0.25 | 2080x480 | 300 | 100.8 | 8.40 | 2.800 | yes |
+| E_h | 1 | 520x120 | 300 | 6.1 | 0.51 | 0.171 | yes |
+| E_h | 1 | 2080x480 | 300 | 104.0 | 8.67 | 2.888 | yes |
+| E_h | 2.25 | 832x192 | 110 | 12.9 | 0.40 | 0.360 | yes |
+| E_h | 2.25 | 2080x480 | 110 | 112.4 | 3.43 | 3.121 | yes |
+| E_h | 4 | 832x96 | 30 | 7.1 | 0.06 | 0.199 | yes |
+| E_h | 4 | 1664x192 | 30 | 21.1 | 0.18 | 0.586 | yes |
+| E_W | 0.25 | 1040x480 | 1100 | 52.2 | 15.96 | 1.451 | yes |
+| E_W | 1 | 1040x480 | 1650 | 53.8 | 24.67 | 1.495 | yes |
+| E_W | 2.25 | 832x192 | 110 | 12.9 | 0.40 | 0.360 | yes |
+| E_W | 2.25 | 832x384 | 110 | 32.5 | 0.99 | 0.903 | yes |
+| E_W | 2.25 | 1040x240 | 110 | 19.8 | 0.61 | 0.551 | yes |
+| E_W | 2.25 | 1040x480 | 110 | 58.0 | 1.77 | 1.612 | yes |
+| E_W | 4 | 832x96 | 30 | 7.1 | 0.06 | 0.199 | yes |
+| E_W | 4 | 832x192 | 30 | 12.4 | 0.10 | 0.344 | yes |
+| E_W | 4 | 1664x192 | 30 | 21.1 | 0.18 | 0.586 | yes |
+| E_W | 4 | 1664x384 | 30 | 63.1 | 0.53 | 1.751 | yes |
+| hmax | 0.25 | 1040x240 | 50 | 28.7 | 0.40 | 0.797 | yes |
+| hmax | 1 | 1040x240 | 50 | 29.1 | 0.40 | 0.808 | yes |
+| hmax | 2.25 | 1664x384 | 50 | 94.3 | 1.31 | 2.620 | yes |
+| hmax | 4 | 3328x384 | 30 | 163.7 | 1.36 | 4.548 | yes |
+| gate5_consumer | 0.25 | 1040x240 | 7 | 17.2 | 0.03 | 0.479 | yes |
+| gate5_par2 | 0.25 | 1040x240 | 7 | 13.2 | 0.03 | 0.365 | **no** |
+| gate5_consumer | 1 | 1040x240 | 16 | 17.6 | 0.08 | 0.490 | yes |
+| gate5_par2 | 1 | 1040x240 | 16 | 13.2 | 0.06 | 0.365 | yes |
+| gate5_consumer | 2.25 | 1248x288 | 63 | 29.8 | 0.52 | 0.828 | yes |
+| gate5_par2 | 2.25 | 1248x288 | 63 | 22.7 | 0.40 | 0.631 | yes |
+| gate5_consumer | 4 | 1664x192 | 426 | 21.1 | 2.50 | 0.586 | yes |
+| gate5_par2 | 4 | 1664x192 | 426 | 13.5 | 1.59 | 0.374 | yes |
+| g7_par2 | 0.25 | 1040x240 | 480 | 13.2 | 1.75 | 0.365 | **no** |
+| g7_par2 | 1 | 1040x240 | 480 | 13.2 | 1.75 | 0.365 | yes |
+| distance | 1 | 2080x240 | 100 | 31.6 | 0.88 | 0.878 | yes |
+| distance | 2.25 | 3328x384 | 100 | 118.9 | 3.30 | 3.304 | yes |
+
+STOP rule (owner, decision G10): the budget is 150 GPU-h; the rule applies to the projected total at `M_plan` and to its +1 rms value.
+
+budget 150 GPU-h (G10); verdict **WITHIN_BUDGET**
+
+| value checked by the rule | GPU-h | margin to the budget |
+|---|---|---|
+| total_M_plan | 105.0 | 45.0 |
+| total_M_plan_plus_1rms | 121.2 | 28.8 |
+
+The rule is not triggered (`stop_budget` = false). The margin of the +1 rms value is 28.8 GPU-h. Reading of the sensitivities, which are not the
+rule's value: at `M_plan` the largest-residual total is 146.6 and the anchored value 130.7; the anchored +1 rms value, the most pessimistic
+combination, is 150.9, 0.9 above the budget; the variants with denser lattices (`sf39_density`, `M_plan_share010`, `M_common`) are
+112.0 / 109.6 / 118.2 at the rule's value and 160.5 / 156.3 / 170.1 anchored +1 rms. The two largest blocks are `E_W` (45.3 GPU-h, of which
+the 1040x480x480 arms at 0.25 and 1 are 40.6) and `E_h` (22.1, of which the 2080x480x480 rungs are 20.5); production is 16.3. The
+Par2 model is calibrated on 3 to 7 points per code (rms 0.14 to 0.17 on 1 coefficient); the Par2 rows total 5.6 GPU-h (gate5 2.1 + G7
+3.5).
+
+#### Reserved seeds
+
+SF-42 reserves for its pilots, to be avoided by SF-43 (earlier campaigns used 4901, 5001+, 7101+, 7201+, 9001+): grid pilot `seed0`
+420601-420699, particle pilot 420701-420799, pairing pilot 420801-420899, Par2 `transport.seed` 420800001 (+ 1000 r). Actually used: J1
+420601-420609 (one realization each; the Par2 runs reuse the seed of their grid's consumer run: 420604, 420608, 420609); J2 420701-420706,
+420711-420716, 420721-420726, 420731-420736 (the same six fields for the three `M` of an amplitude); J3 420801-420808, 420811-420818,
+420821-420828, 420831-420838, Par2 transport seeds 420800001 + 1000 r (r = 0..7); J3B the J3 seeds of amplitudes 1, 2.25, 4 with the
+same transport seed.
 
 ## H. Reproducibility tooling
 
@@ -585,6 +1029,50 @@ by 4.9e-4 to 5.6e-3 at `lambda/h` = 10. The constant grows with `sigma^2` by abo
 these as an input to the `E_h` budget (they are the interior scheme error on a periodic affine problem, not the error of an
 estimand).
 
+(d) **Par2 horizon and crossing completeness for plane-based estimators.** With SF-39's Par2 rule (`n_steps = ceil(1.2 (Lx - 10 lambda) / (J dt))`)
+0.2 to 3.8 % of the injected Par2 particles have not crossed the last control plane when the run ends: minimum over eight realizations
+of crossed/injected 0.9977 / 0.9829 / 0.9733 / 0.9623 at `sigma^2` 0.25 / 1 / 2.25 / 4. With horizon factor 3.6 (J3B, three times the steps) it is
+0.9999 / 0.9996 at 2.25 / 4 and 1.0000 at 1, at +9 %, +8 % and +17 % Par2 time per realization (the transport stage x1.9 to x2.4). The
+consumer reaches the last plane with every seeded particle in all J2 and J3 runs. The plane-based Par2 `alpha_LP` is censored by the
+horizon, and so is its pairing: the correlation with the consumer's (80 % lower bound) is 0.78 (0.58), 0.73 (0.50), 0.25 (-0.12) at
+horizon 1.2 and 0.94 (0.88), 0.86 (0.73), 0.80 (0.62) at 3.6 for `sigma^2` 1, 2.25, 4; the Gate 5 planning `n` at the lower-bound
+correlation 16 / 63 / 426 against 7 / 26 / 205. SF-43 needs a stated Par2 horizon (a time step and step count in the pre-registration, and a
+crossing-completeness criterion reported per realization) for any plane-crossing estimator; the 3.6 factor meets 0.9996 at the worst
+amplitude. SF-39's time-window Gate 5 is not exposed to this censoring (section G, scope).
+
+(e) **GPU memory of the largest grids.** Peak memory of the job's own PID: 28203 MiB at 2080x480x480 (4.8e8 cells; runner exact bytes
+27683 MiB), 14365 at 1040x480x480, 12471 at 2496x288x288: 58.9 to 60.2 MiB per million cells. Extrapolated linearly (not run) to
+3328x384x384 (4.9e8 cells) that is 28.9e3 to 29.6e3 MiB, and the planned 2080x480x480 rungs use 28.2e3 MiB, of the V100's 32510 MiB. Only
+an otherwise empty GPU can run them (the R4 jobs waited for 30000 MiB free by `REMOTE_GPU_MIN_FREE_MIB`), which on the host shared with
+colleagues is a scheduling constraint for SF-43, not a tuning one. Par2 on its three grids uses 7.7e3 to 12.9e3 MiB.
+
+(f) **Multigrid depth and PCG iterations of the SF-43 grids.** The grids whose extents have few factors of two get a shallower hierarchy (MG
+levels 3 to 5 at `ny` 120, 240, 288, 480 and `nx` 520, 1040, 1248, 2080 against 5 to 7 at SF-39's `ny` 64 to 384) and take more PCG
+iterations than SF-39's median at the same `sigma^2`: ratios 2.0 to 2.3 at 520x120x120, 1040x240x240, 1040x480x480, 2080x480x480,
+2496x288x288 (J1), 1.4 to 1.5 at 1248x288x288; the production grid at `sigma^2` 0.25 and 1 takes 60 to 61 and 70 to 72 mean iterations
+(ratios 3.0 to 3.06 and 2.3 to 2.4, J2 and J3), while 192 and 384 (SF-39's own extents) give 0.67 to 1.0. No J1 grid trips the 3x rule
+(maximum 2.33); the 0.25 production grid sits at 3.0 to 3.06 in J2 and J3, outside the J1 protocol (J1 does not run 0.25). Counts are
+multiples of 10 (`check_every`). The link to the hierarchy depth is a hypothesis supported by the covariates (section G, cost model),
+not a tested cause; it is also why the SF-39-only cost model under-predicts them (by up to 42 % on the J1 grids). The choice of grids is SF-43's.
+
+(g) **`alpha_LP` drives `M` at 2.25 and 4.** The smallest admissible `M` at planning share 0.25 (0.10) is 86 (140) at 2.25 and 68 (106) at 4
+for `alpha_LP`, against 20 (28) to 38 (50) and 14 (20) to 38 (46) for `alpha_TP` (`pos`, `disp`; fixed `M^-2` law / fitted law); at 0.25 and 1
+every share at `M` = 64 is at most 8.3e-2, so the lattice rule (smallest admissible `M` 64 on the production grid, 128 common to all constrained arms,
+Finding (a)) binds. The planning shares of `alpha_LP` at `M` of about 58 are 0.52 (2.25) and 0.44 (4).
+
+(h) **Gate 5 planning `n` and why `sigma^2` 4 is large.** At the 80 % lower-bound correlation: 7 (0.25, horizon 1.2 only), 7 (1), 26 (2.25),
+205 (4) with horizon 3.6; at correlation 0: 64, 34, 83, 380. The specification's unpaired planning figures are about 170 / 60 / 30 / 100;
+the pilot's `n` at `sigma^2` 4 is 2 times (lower-bound correlation) to 3.8 times (unpaired) that, and at 2.25 the unpaired 83 is 2.8 times 30. It is driven by the consumer's coefficient of variation on 1664x192x192, 0.30 against
+0.145 for Par2, on eight seeds, inflated by the conservative inputs (each CV = the 80 % upper bound of the SD over the 80 % lower bound of the mean at n = 8, and the
+correlation at its lower bound 0.62). The `n` of 7 to 26 at 0.25 to 2.25 rests on eight pairs and is below any usable floor; SF-43 will have to set one (the J3B
+scenario of the projection uses 30).
+
+(i) **Cost and margin to the owner budget.** Refitted model, planning table (section G, J4): **105.0 GPU-h** at `M_plan` (+1 rms 121.2), budget
+150: the STOP rule is not triggered; margins 45.0 and 28.8 GPU-h. The sensitivities that are not the rule's value go from 88.8 (-1 rms)
+to 146.6 (+ largest residual) and 130.7 (anchored), and the most pessimistic combination, anchored +1 rms, is 150.9. `E_W` (45.3 GPU-h; the
+1040x480x480 arms at 0.25 and 1 alone 40.6), `E_h` (22.1) and production (16.3) dominate; denser lattices cost 112.0 (SF-39 density), 109.6
+(share 0.10), 118.2 (`M` common 128). The displacement-basis variant B is 45.3. Par2 at the 3.6 horizon adds 0.3 GPU-h.
+
 ## Conclusion
 
 Pending (later nodes).
@@ -605,3 +1093,19 @@ Pending (later nodes).
    `ny` = 384 admits `M` = 512); the cited case `ny` = 384, `M` = 128 fails as stated.
 5. The Par2 secondary time window ends at the last snapshot with no particle beyond an explicit `X_exit` (Par2 maps Dirichlet faces to
    Closed, so `active` never decreases).
+6. J3B (job `sf42-pilot-horizon`, 0.118 GPU-h) was not in the R4 brief. J3 showed that with SF-39's Par2 horizon rule (factor 1.2) 0.2 to
+   3.8 % of the Par2 particles never reach the last control plane and that the plane-based Par2 `alpha_LP` pairs poorly; J3B repeated Par2
+   only (J3 seeds, amplitudes 1, 2.25, 4; the consumer tables of J3 are reused, the consumer being independent of the Par2 horizon) with factor
+   3.6. It is within the node's 8 GPU-h and is accepted as a justified deviation; it changes no earlier result.
+7. The cost-model calibration points of the pilots use the code's own per-realization time, not the process wall (SF-39's fit uses job
+   walls with a start-up spread over at least 20 realizations); the wall-basis residuals are in `cost_projection.json`.
+8. Lattice sizes: J2 at `sigma^2` 0.25 and 1 ran `M` = 64, 128, 192 (0.68x, 1.37x, 2.05x of SF-39's density) because the nearest admissible
+   value to 1x (93.75) is 64, already used for 0.6x, so the repeat-free choice is 128; J3's consumer ran `M` = 128 at 0.25 and 1 (the only
+   `M` admissible on every constrained SF-43 arm, 1.37x) instead of the nearest-density 64, and 100 at 2.25 and 4. The J1 `sigma^2` per
+   grid equals the brief's mapping; the Par2 time step is SF-39's rule scaled to the grid (CFL `U_nom dt / dx` = 0.0244140625, horizon
+   factor 1.2; 3.6 in J3B); Par2 field seeds equal the consumer's of the same grid and amplitude.
+9. The R4 worker was interrupted by the owner after all five remote jobs had finished and before its reporting stage (its commits were
+   `4b2593cd`, `55d43300`; the experiment note, the cost-report completions and the artifact index were not done). R4b resumed locally
+   from the uncommitted files of that worktree: copied unchanged (commit `0a8cd554`), then the report completions (anchored +1 rms, explicit
+   STOP-rule record, Par2 3.6 cost code, residual diagnostics, consumer crossing completeness; commit `31af02b1`) and this section. No job was
+   re-run and `scripts/remote` was not used in R4b.
