@@ -8,9 +8,10 @@ prints the markdown. Observed order of a pair: p = log(e_coarse/e_fine) / log(ny
 ratio-2 ladders).
 
 Verdict D (spec acceptance D): at every eps, the observed order of each GATED metric is >= threshold over each of
-the two finest grid pairs. Gated metrics: head L2 and head max (all cells), interior face flux L2, interior face
-flux max restricted to faces at least two cells from the Dirichlet faces. Reported, not gated: Dirichlet faces and
-first interior layer (order near 1 expected). Verdict INCOMPLETE if fewer than min_grids grids or an expected eps is
+the two finest grid pairs. Gated metrics (exactly spec D): head L2 (all cells), head max restricted to cells at least
+two cells from the Dirichlet faces (head_far), interior face flux L2, interior face flux max restricted to faces at
+least two cells from the Dirichlet faces. Reported, not gated: head max over all cells, head L2 on head_far, interior
+flux max over all interior faces, Dirichlet faces and first interior layer (order near 1 expected). Verdict INCOMPLETE if fewer than min_grids grids or an expected eps is
 missing or any run did not converge; the algebraic-error control (rtol 1e-12 vs 1e-10 at the finest grid) is
 reported with its largest relative change of any reported error.
 """
@@ -23,7 +24,9 @@ import sys
 # (key in the JSON, norm key, label, gated)
 METRICS = [
     ("head", "l2_abs", "head L2", True),
-    ("head", "max_abs", "head max", True),
+    ("head", "max_abs", "head max (all cells)", False),
+    ("head_far", "l2_abs", "head L2 (>=2 cells from Dirichlet faces)", False),
+    ("head_far", "max_abs", "head max (>=2 cells from Dirichlet faces)", True),
     ("flux_interior", "l2_abs", "interior flux L2", True),
     ("flux_far", "max_abs", "flux max (>=2 cells from Dirichlet faces)", True),
     ("flux_interior", "max_abs", "interior flux max (all interior faces)", False),
@@ -126,8 +129,8 @@ def fmt(x):
 def markdown(runs, v):
     main = [r for r in runs if math.isclose(r["pcg_rtol"], 1e-10, rel_tol=1e-9)]
     L = ["# MMS order study of the Dirichlet head solve (SF-42 N2)", "",
-         "Verdict D: **%s** (threshold %.2f over the two finest grid pairs; gated: head L2 and max, interior flux L2, "
-         "flux max at least 2 cells from the Dirichlet faces)." % (v["verdict"], v["threshold"]), ""]
+         "Verdict D: **%s** (threshold %.2f over the two finest grid pairs; gated: head L2, head max and flux max at "
+         "least 2 cells from the Dirichlet faces, interior flux L2)." % (v["verdict"], v["threshold"]), ""]
     if v["problems"]:
         L += ["Problems: " + "; ".join(v["problems"]), ""]
     for eps in sorted({r["eps"] for r in main}):

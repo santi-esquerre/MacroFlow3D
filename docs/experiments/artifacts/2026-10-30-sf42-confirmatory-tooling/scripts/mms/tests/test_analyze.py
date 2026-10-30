@@ -4,7 +4,7 @@ import unittest
 
 from mms import analyze as an
 
-NORM_KEYS = ["head", "flux_interior", "flux_far", "flux_dirichlet", "flux_first_layer"]
+NORM_KEYS = ["head", "head_far", "flux_interior", "flux_far", "flux_dirichlet", "flux_first_layer"]
 
 
 def run(ny, eps, errs, rtol=1e-10, conv=True):
@@ -17,14 +17,18 @@ def run(ny, eps, errs, rtol=1e-10, conv=True):
     return d
 
 
-def ladder(eps, order_by_key, nys=(16, 32, 64, 128), c=1.0, rtol=1e-10):
+def ladder(eps, order_by_key, nys=(16, 32, 64, 128), c=1.0, rtol=1e-10, head_max_order=None):
+    """head_max_order: order of the all-cells head MAX only (head L2 keeps order_by_key['head'])."""
     runs = []
     for ny in nys:
-        runs.append(run(ny, eps, {k: c * (16.0 / ny) ** order_by_key[k] for k in NORM_KEYS}, rtol))
+        r = run(ny, eps, {k: c * (16.0 / ny) ** order_by_key[k] for k in NORM_KEYS}, rtol)
+        if head_max_order is not None:
+            r["head"]["max_abs"] = c * (16.0 / ny) ** head_max_order
+        runs.append(r)
     return runs
 
 
-GOOD = {"head": 2.0, "flux_interior": 2.0, "flux_far": 2.0, "flux_dirichlet": 1.0, "flux_first_layer": 1.0}
+GOOD = {"head": 2.0, "head_far": 2.0, "flux_interior": 2.0, "flux_far": 2.0, "flux_dirichlet": 1.0, "flux_first_layer": 1.0}
 
 
 class OrderTests(unittest.TestCase):
@@ -121,11 +125,44 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(v["verdict"], "INCOMPLETE")
 
     def test_fail_not_masked_by_second_order_elsewhere(self):
-        # head max only first order at one eps: FAIL even if all else passes
+        # head_far (gated head max) only first order at one eps: FAIL even if all else passes
         runs = []
         for eps in self.EPS:
             order = dict(GOOD)
             if eps == 0.5:
+                order["head_far"] = 1.0
+            runs += ladder(eps, order)
+        self.assertEqual(an.verdict(runs, self.EPS)["verdict"], "FAIL")
+
+    def test_all_cells_head_max_is_reported_not_gated(self):
+        # all-cells head max first order (boundary-layer pollution) but head_far max and L2 second order: PASS (spec D)
+        runs = []
+        for eps in self.EPS:
+            runs += ladder(eps, GOOD, head_max_order=1.0)
+        v = an.verdict(runs, self.EPS)
+        self.assertEqual(v["verdict"], "PASS")
+        m = v["per_eps"]["1.0"]["metrics"]
+        self.assertFalse(m["head max (all cells)"]["gated"])
+        self.assertAlmostEqual(m["head max (all cells)"]["last_two"][0], 1.0, places=12)
+        self.assertTrue(m["head max (>=2 cells from Dirichlet faces)"]["gated"])
+
+    def test_head_far_max_fails_even_if_all_cells_head_max_passes(self):
+        runs = []
+        for eps in self.EPS:
+            order = dict(GOOD)
+            if eps == 2.0:
+                order["head_far"] = 1.5
+            runs += ladder(eps, order, head_max_order=2.0)
+        v = an.verdict(runs, self.EPS)
+        self.assertEqual(v["verdict"], "FAIL")
+        self.assertFalse(v["per_eps"]["2.0"]["metrics"]["head max (>=2 cells from Dirichlet faces)"]["pass"])
+        self.assertTrue(v["per_eps"]["2.0"]["metrics"]["head max (all cells)"]["pass"])
+
+    def test_head_l2_all_cells_still_gated(self):
+        runs = []
+        for eps in self.EPS:
+            order = dict(GOOD)
+            if eps == 1.0:
                 order["head"] = 1.0
             runs += ladder(eps, order)
         self.assertEqual(an.verdict(runs, self.EPS)["verdict"], "FAIL")

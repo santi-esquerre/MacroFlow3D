@@ -188,7 +188,7 @@ struct CaseResult {
     bool converged;
     int iters;
     double res0, resN;
-    Norms head, flux_interior, flux_far, flux_dirichlet, flux_first_layer;
+    Norms head, head_far, flux_interior, flux_far, flux_dirichlet, flux_first_layer;
 };
 
 /// control_k1: K = 1, h = L1 - x, zero source, zero initial guess (round-off control of RHS/operator/velocity).
@@ -315,7 +315,7 @@ CaseResult run_case(CudaContext& ctx, int ny, int aspect, double eps, double pcg
     const std::vector<real> W = download(vel.W.data(), vel.W.size());
 
     // ---- head errors at the cell centres ----
-    Acc ah;
+    Acc ah, ahf; // ahf: cells at least two cells from the Dirichlet faces (2 <= i <= nx-3, as the far V/W faces)
     for (int k = 0; k < nz; ++k)
         for (int j = 0; j < ny; ++j)
             for (int i = 0; i < nx; ++i) {
@@ -323,8 +323,11 @@ CaseResult run_case(CudaContext& ctx, int ny, int aspect, double eps, double pcg
                 const double ex = control_k1 ? L1 - (i + 0.5) * h
                                              : mms::eval((i + 0.5) * h, (j + 0.5) * h, (k + 0.5) * h, eps, L1).h;
                 ah.add(H[c] - ex, ex);
+                if (i >= 2 && i <= nx - 3)
+                    ahf.add(H[c] - ex, ex);
             }
     R.head = ah.done();
+    R.head_far = ahf.done();
 
     // ---- face-flux errors against the exact point value -K dh/dn at the face centres ----
     // Sets (face index i along x for U; owning-cell index i along x for V/W):
@@ -402,6 +405,7 @@ void write_json(const std::string& path, const CaseResult& R, const std::string&
     std::fprintf(f, "  \"residual_initial\": %.17g, \"residual_final\": %.17g, \"residual_rel\": %.17g,\n", R.res0, R.resN,
                  R.res0 > 0 ? R.resN / R.res0 : 0.0);
     write_norms(f, "head", R.head);
+    write_norms(f, "head_far", R.head_far);
     write_norms(f, "flux_interior", R.flux_interior);
     write_norms(f, "flux_far", R.flux_far);
     write_norms(f, "flux_dirichlet", R.flux_dirichlet);
