@@ -1,6 +1,6 @@
 # SF-42 — Tooling and verification for the confirmatory macrodispersion study
 
-- State: `pending`
+- State: `active`
 - Goal: `Dotar al estudio confirmatorio de macrodispersión de las herramientas y la verificación que SF-39 no tuvo: Par2 con el campo SF-18, inyección en ventana, tolerancia del solver igualada y salida de cruces de plano; regla de red de semillas sin caras para cualquier malla y ventana; lector y reducción por planos de control en ambos códigos; orden continuo del solver de Darcy Dirichlet por solución manufacturada; contraste de la velocidad de volúmenes finitos con el solver pseudo-espectral a sigma^2 de 0.25 a 4; biblioteca estadística con presupuesto de error y simulación de cobertura; pilotos de diseño, sin cambiar ningún resultado de los caminos existentes.`
 - Depends on: `SF-38, SF-39, SF-41`
 - Unlocks: `SF-43`
@@ -8,8 +8,8 @@
 - Worktree: `Claude-managed per-node isolated worktrees`
 - Acceptance gate: `Gate 1 + Gate 2 (new options verified on exact controls; existing paths byte-identical) + verification records (MMS order, spectral cross-check, coverage simulation, design pilots)`
 - Human review: `required`
-- Owner: `unassigned`
-- Started: `not started`
+- Owner: `Claude Opus 5.5 orchestrator (session 2026-10-30)`
+- Started: `2026-10-30T03:40Z on base 3164e4f`
 - Completed: `not completed`
 - PR: `not opened`
 - Commit: `not recorded`
@@ -204,3 +204,4 @@ Append entries; do not rewrite prior observations. Store large raw outputs as ar
 | UTC | Commit/state | Observation or action | Evidence/decision | Next action |
 |---|---|---|---|---|
 | 2026-10-29T21:00Z | `pending`; governance PR (docs only) | Specification created on the governance PR of decision `2026-10-29-sf39-remediation-sf42-sf43.md` (G1, G4-G8), after the SF-39 post-review evaluation and three adversarial reviews of the draft. | Owner decisions G1-G4, G10, G11 of 2026-10-29. | Merge of the governance PR after PR #83; activation when SF-38, SF-39 and SF-41 are `done` on the default branch. |
+| 2026-10-30T03:40Z | `active`; base `3164e4fb5c2e3bebf4fdc9ae5647bc5b1d27384a` | Activated by the owner's request in the orchestrator session. Preconditions verified: local `master` fast-forwarded over HTTPS to `3164e4fb` (merge of the governance PR #84, merged 2026-10-30T03:00:37Z); `check-lester-increments.sh` on that tree: `OK (44 increments, ready=SF-34 SF-42, nonterminal=none)`, so activating SF-42 leaves one nonterminal increment. Owner constraints for this run: one remote job at a time, `scripts/remote --increment SF-42` (own mirror), `REMOTE_GPU_WAIT=7200`, `REMOTE_GPU_MIN_FREE_MIB=30000` for CUDA parts, never `--gpu` / `CUDA_VISIBLE_DEVICES` / GPU work under `exec`; SF-39 host outputs (`$HOME/sf39_campaign`, 169 GB) not to be modified or deleted; GPU-h of every job recorded here; stop and consult the owner if the pilots project SF-43 above the G10 budget (about 150 GPU-h); D or E failing leaves SF-42 `blocked`. | Owner request 2026-10-30; checker output above. | UNDERSTAND, intra-increment DAG, delegated nodes in isolated worktrees. |
