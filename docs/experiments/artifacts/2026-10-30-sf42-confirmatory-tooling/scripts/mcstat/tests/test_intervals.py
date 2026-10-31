@@ -139,6 +139,26 @@ class BootstrapAndBCa(unittest.TestCase):
         self.assertEqual(float(iv.bootstrap_t_limit(bt, 1e-4, "upper")), np.inf)
         self.assertTrue(np.isfinite(float(iv.bootstrap_t_limit(bt, 0.05, "lower"))))
 
+    def test_bootstrap_t_resample_mean_exactly_zero_is_warning_free_and_unchanged(self):
+        # x = (-1, 1): the resample (-1, 1) has mean exactly 0 (0 * inf in the branch np.where does not select); (-1, -1) and (1, 1)
+        # have sd 0 and mean -+1 -> t* = -+inf.  Under warnings-as-errors; values equal the former formula evaluated outside errstate.
+        import warnings
+        from mcstat._util import bootstrap_means
+        x = np.array([-1.0, 1.0])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            bt = iv.bootstrap_t(x, B=64, seed=3)
+        self.assertEqual(set(np.unique(bt.tstar).tolist()), {-np.inf, 0.0, np.inf})
+        xc = x - x.mean()
+        m, s2 = bootstrap_means((xc, xc * xc), 64, np.random.default_rng(3), False)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            var = np.maximum(2.0 / 1.0 * (s2 - m * m), 0.0)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                t = m / (np.sqrt(var) / np.sqrt(2))
+            old = np.where(np.sqrt(var) > 0.0, t, np.where(m == 0.0, 0.0, np.sign(m) * np.inf))
+        np.testing.assert_array_equal(bt.tstar, np.sort(old))
+
     def test_bootstrap_t_batch_shapes(self):
         x = np.random.default_rng(2).normal(size=(5, 4, 20))
         bt = iv.bootstrap_t(x, B=199, seed=3, share_draws=True)

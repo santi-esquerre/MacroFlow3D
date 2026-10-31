@@ -102,6 +102,103 @@ class Statistics(unittest.TestCase):
         self.assertAlmostEqual(pr["wall_hours_host"], core * 1.5 / (80 * 0.9) / 3600.0, places=12)
 
 
+class NominalFailProbability(unittest.TestCase):
+    """False-fail probability of the G5.3 criterion for an exactly nominal procedure (replaces the former '1e-3' statement)."""
+
+    def test_threshold_is_the_smallest_failing_miss_count(self):
+        for R, tau in ((49000, 1 / 280.0), (196000, 0.05 / 56.0), (5000, 0.05)):
+            k = cv.fail_threshold(R, tau)
+            self.assertGreater(cv.cp_upper(k, R), cv.CRITERION * tau)
+            self.assertLessEqual(cv.cp_upper(k - 1, R), cv.CRITERION * tau)
+
+    def test_reference_values_sampling_tails_at_49000(self):
+        r = cv.nominal_fail_probability(49000, covproc.sampling_tails())
+        self.assertEqual(r["kstar"][0], 195)  # against 175 expected misses at the smallest tail 1/280
+        np.testing.assert_allclose(r["p_tail"][:5], [0.0717, 0.0459, 0.0203, 0.0064, 0.0008], atol=6e-5)
+        self.assertAlmostEqual(r["p_any"], 0.0819, delta=1e-3)  # exact; the fixed-seed simulation below agrees within its error
+        self.assertGreaterEqual(r["p_any"], max(r["p_tail"]))
+        self.assertLessEqual(r["p_any"], sum(r["p_tail"]))
+        self.assertAlmostEqual(1.0 - (1.0 - r["p_any"]) ** 3, 0.2261, delta=2e-3)
+        c = cv.nominal_fail_probability(196000, covproc.component_tails())
+        self.assertEqual(c["kstar"][0], 195)
+        self.assertAlmostEqual(c["p_any"], 0.084, delta=2e-3)
+
+    def test_dynamic_programme_against_multinomial_simulation(self):
+        R, tails = 49000, covproc.sampling_tails()
+        r = cv.nominal_fail_probability(R, tails)
+        S = 200000
+        edges = np.concatenate([[0.0], r["tails"]])
+        pv = np.diff(np.concatenate([edges, [1.0]]))
+        N = np.cumsum(np.random.default_rng(12345).multinomial(R, pv, size=S)[:, :-1], axis=1)  # nested counts at the sorted tails
+        sim = float((N >= np.array(r["kstar"])).any(axis=1).mean())
+        se = math.sqrt(sim * (1.0 - sim) / S)
+        self.assertLess(abs(sim - r["p_any"]), 4.0 * se, (sim, r["p_any"], se))
+
+    def test_dynamic_programme_against_exhaustive_enumeration(self):
+        # tiny case, every multinomial outcome: R = 6 replicates, tails 0.2 and 0.5, a lenient criterion so that both can fail
+        R, tails, conf, crit = 6, [0.2, 0.5], 0.95, 1.0
+        ks = [cv.fail_threshold(R, t, conf, crit) for t in tails]
+        pv = [0.2, 0.3, 0.5]
+        total = 0.0
+        for a in range(R + 1):
+            for b in range(R + 1 - a):
+                c = R - a - b
+                if a >= ks[0] or a + b >= ks[1]:
+                    total += math.factorial(R) / (math.factorial(a) * math.factorial(b) * math.factorial(c)) * pv[0] ** a * pv[1] ** b * pv[2] ** c
+        r = cv.nominal_fail_probability(R, tails, conf, crit, target=0.0, window_sd=50.0)
+        self.assertEqual(r["kstar"], ks)
+        self.assertAlmostEqual(r["p_any"], total, places=12)
+
+    def test_untested_tails_are_skipped_and_the_table_lists_distinct_plan_sets(self):
+        self.assertEqual(cv.nominal_fail_probability(100, [0.05])["tails"], [])  # 5 expected misses: not judged
+        cells = [cv.make_cell("sampling", "sampling:student", "", d, n, {"method": "student"}, m=1000) for d in ("normal", "stress") for n in (20, 30)]
+        cells.append(cv.make_cell("bca", "bca:mean", "", "normal", 20, {"B": 199}, m=10, report_only=True))
+        tab = cv.nominal_fail_table(cells)
+        self.assertEqual(len(tab), 1)  # one distinct (R, tails); the BCa cell is not judged
+        self.assertEqual((tab[0]["R"], tab[0]["cells"]), (49000, 4))
+
+
+class IncompleteGroups(unittest.TestCase):
+    def synthetic(self, dists):
+        e = lambda: {"tail": 0.01, "misses": 100, "R": 17500, "rate": 0.0057, "ucl_over_tail": 0.9, "rate_over_tail": 0.6, "pass": True}
+        return [{"label": "p", "proc": "p", "scen": "", "dist": d, "n": 30, "report_only": False, "rows": {"r": [e()]}} for d in dists]
+
+    def plan(self, dists, n=30):
+        return [{"label": "p", "scen": "", "dist": d, "n": n} for d in dists]
+
+    def test_group_with_a_missing_distribution_is_not_qualified(self):
+        full = cv.make_verdicts(self.synthetic(["normal", "stress"]), self.plan(["normal", "stress"]))
+        self.assertTrue(full[0]["qualified"])
+        part = cv.make_verdicts(self.synthetic(["normal"]), self.plan(["normal", "stress"]))
+        self.assertIsNone(part[0]["qualified"])
+        self.assertEqual(part[0]["incomplete_dists"], ["stress"])
+        self.assertTrue(cv.make_verdicts(self.synthetic(["normal"]))[0]["qualified"])  # without a plan: the former behaviour
+        bad = self.synthetic(["normal"])
+        bad[0]["rows"]["r"][0]["pass"] = False
+        bad[0]["rows"]["r"][0]["tail"] = 0.01
+        self.assertIs(cv.make_verdicts(bad, self.plan(["normal", "stress"]))[0]["qualified"], False)  # a failure is final
+
+    def test_summary_marks_unfinished_groups(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        cells = [cv.make_cell("sampling", "sampling:student", "", d, 30, {"method": "student"}, m=1000, chunk=25000) for d in ("normal", "stress")]
+        cells.append(cv.make_cell("sampling", "sampling:student", "", "normal", 50, {"method": "student"}, m=1000, chunk=25000))
+        out = os.path.join(tmp.name, "o")
+        cv.init_plan(out, cells, 11, "test")
+        cv.run(out, 1, max_chunks=2 + 1, log=lambda s: None)  # n=30 normal (2 chunks) + the first chunk of n=30 stress
+        s = cv.summarize(out)
+        self.assertEqual(s["cells_complete"], 1)
+        self.assertEqual({tuple(g) for g in s["incomplete_groups"]}, {("sampling:student", "", 30), ("sampling:student", "", 50)})
+        self.assertTrue(all(x["incomplete_dists"] == ["stress"] and x["qualified"] is not True for x in s["verdicts"]))
+        with open(os.path.join(out, "summary.md")) as f:
+            md = f.read()
+        matrix = md.split("## Qualification matrix")[1].split("## Verdict list")[0]
+        self.assertNotIn("ALL", matrix.split("Entry:")[1].split("\n", 1)[1])  # the legend mentions ALL; the table rows must not
+        self.assertIn("inc", matrix)
+        self.assertIn("INCOMPLETE", md.split("## Verdict list")[1].split("## ")[0])
+        self.assertIn("## False-fail probability of an exactly nominal procedure", md)
+
+
 class NominalCoverage(unittest.TestCase):
     """Small-scale runs reproduce the nominal rates within Monte Carlo error where the procedure is exact or close to it."""
 

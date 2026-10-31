@@ -5,7 +5,13 @@ misses, replicates, rate, the 95 % one-sided Clopper-Pearson upper limit (UCL), 
 
     PASS  iff  UCL <= 1.25 x tail           (G5.3: judged at the 95 % Monte Carlo upper limit)
 
-with at least ``ceil(175 / tail)`` replicates per cell (so a procedure exactly at nominal passes with UCL/tail about 1.13).
+with at least ``ceil(175 / tail)`` replicates per cell (so a procedure exactly at nominal passes with UCL/tail about 1.13 when its
+miss count equals its expectation).  The miss count is random, though: a procedure whose true miss rate equals every tail EXACTLY still
+fails the verdict at the smallest tail with probability 0.07 (R = 49 000, k >= 195 misses against 175 expected), at the next tails
+0.05, 0.02, 0.006, 0.001, and at some tail of a (cell, distribution) with probability about 0.08 (about 0.22 over the three
+distributions of a group); ``nominal_fail_probability`` computes these numbers exactly and the summary lists them for every distinct
+(R, tail set) of the plan.  "Not qualified" with a point estimate within 1.25 x tail (``marginal``) is therefore compatible with a
+nominal procedure; the remedy is more replicates, not a different criterion.
 The procedures, tails, arm structure and bootstrap sizes are in ``covproc`` (docstring), the distributions (normal and the stress
 family at the upper bootstrap bounds of SF-39's skewness and kurtosis) in ``covdist``.  BCa cells are reported, never judged.
 
@@ -157,6 +163,68 @@ def design_effect(batch_counts, m):
     """``design_effect_from_moments`` of an array (nbatch, T) of per-batch miss counts."""
     c = np.asarray(batch_counts, dtype=float)
     return design_effect_from_moments(c.sum(axis=0), (c * c).sum(axis=0), c.shape[0], m)
+
+
+def fail_threshold(R, tail, conf=CONF, criterion=CRITERION):
+    """Smallest miss count ``k`` whose verdict fails: ``cp_upper(k, R, conf) > criterion x tail`` (``None``: no ``k <= R`` fails)."""
+    lim = criterion * tail
+    if cp_upper(R, R, conf) <= lim:
+        return None
+    if cp_upper(0, R, conf) > lim:
+        return 0
+    lo, hi = 0, R  # cp_upper increases with k: cp_upper(lo) <= lim < cp_upper(hi)
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        lo, hi = (mid, hi) if cp_upper(mid, R, conf) <= lim else (lo, mid)
+    return hi
+
+
+def nominal_fail_probability(R, tails, conf=CONF, criterion=CRITERION, target=TARGET, window_sd=12.0):
+    """Probability that a procedure whose true miss rate equals EVERY tail exactly fails the G5.3 verdict by Monte Carlo noise alone.
+
+    ``R`` replicates, binomial counts (design effect 1: shared bootstrap draws only raise these probabilities).  Only the tails
+    judged by the engine (``R x tail >= target``) count.  Returns ``{"R", "tails", "kstar", "p_tail", "p_any"}``: per tail the
+    threshold ``k*`` (``fail_threshold``) and ``p_tail = P(Bin(R, tail) >= k*)``; ``p_any`` = probability that at least one tail
+    fails.  The misses at the nested tails are nested (a replicate that misses at ``tau`` misses at every larger tail: the
+    statistic ``U`` is uniform and the miss event ``U < tau``), so the counts ``N_1 <= N_2 <= ...`` at the sorted tails have
+    multinomial increments, and ``1 - p_any = P(N_i < k*_i for all i)`` is computed EXACTLY by a dynamic programme over
+    ``N_i`` (conditional increment ``Bin(R - N_i, (tau_i - tau_{i-1}) / (1 - tau_{i-1}))``), restricted to ``mean +- window_sd``
+    standard deviations (the neglected mass is below 1e-30)."""
+    ts = sorted({float(t) for t in tails if R * float(t) >= target - 1e-9})
+    ks = [fail_threshold(R, t, conf, criterion) for t in ts]
+    p_tail = [0.0 if k is None else float(_st.binom.sf(k - 1, R, t)) for k, t in zip(ks, ts)]
+    f, lo, prev = None, 0, 0.0
+    for t, k in zip(ts, ks):
+        top = R if k is None else k - 1  # largest count that still passes at this tail
+        sd = math.sqrt(R * t * (1.0 - t))
+        a, b = max(0, int(R * t - window_sd * sd)), min(top, int(math.ceil(R * t + window_sd * sd)))
+        if b < a:
+            return {"R": R, "tails": ts, "kstar": ks, "p_tail": p_tail, "p_any": 1.0}
+        n_new = np.arange(a, b + 1)
+        if f is None:
+            f = _st.binom.pmf(n_new, R, t)
+        else:
+            n_old = np.arange(lo, lo + len(f))
+            q = (t - prev) / (1.0 - prev)
+            f = f @ _st.binom.pmf(n_new[None, :] - n_old[:, None], (R - n_old)[:, None], q)  # negative increments have pmf 0
+        lo, prev = a, t
+    return {"R": R, "tails": ts, "kstar": ks, "p_tail": p_tail, "p_any": float(max(0.0, 1.0 - f.sum())) if f is not None else 0.0}
+
+
+def nominal_fail_table(plan_cells):
+    """``nominal_fail_probability`` of every distinct (R, tail set) of the judged (not report-only) cells of a plan, with the
+    number of cells and the probability that at least one of three independent distributions of a cell group fails."""
+    groups = {}
+    for c in plan_cells:
+        if not c["report_only"]:
+            groups.setdefault((int(c["R"]), tuple(c["tails"])), []).append(c["label"])
+    out = []
+    for (R, tails), labels in sorted(groups.items()):
+        r = nominal_fail_probability(R, tails)
+        if r["tails"]:
+            r.update(cells=len(labels), labels=sorted(set(labels)), p_any_3dist=1.0 - (1.0 - r["p_any"]) ** 3)
+            out.append(r)
+    return out
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -387,10 +455,13 @@ def summarize(out, write=True):
         cells.append({**{k: c[k] for k in ("id", "proc", "label", "scen", "dist", "n", "m", "R", "tails", "report_only", "params")},
                       "seconds": agg["seconds"], "extra": {k: v.tolist() for k, v in agg["extra"].items()},
                       "rows": evaluate_cell(c, agg)})
-    verdicts = make_verdicts(cells)
+    verdicts = make_verdicts(cells, plan["cells"])
+    missing_ids = set(incomplete)
     summ = {"version": VERSION, "plan_hash": plan["plan_hash"], "profile": plan.get("profile"), "seed": plan["seed"],
             "env": plan.get("env"), "criterion": "UCL(95%% one-sided Clopper-Pearson) <= %.2f x tail, >= %d replicates x tail" % (CRITERION, TARGET),
             "cells_total": len(plan["cells"]), "cells_complete": len(cells), "incomplete": incomplete, "cells": cells, "verdicts": verdicts,
+            "nominal_false_fail": nominal_fail_table(plan["cells"]),
+            "incomplete_groups": sorted({(c["label"], c["scen"], c["n"]) for c in plan["cells"] if c["id"] in missing_ids}),
             "core_seconds": sum(c["seconds"] for c in cells)}
     if write:
         write_json(os.path.join(out, "summary.json"), summ)
@@ -399,9 +470,14 @@ def summarize(out, write=True):
     return summ
 
 
-def make_verdicts(cells):
+def make_verdicts(cells, plan_cells=None):
     """Per (procedure, row, scenario, n): tails that pass in EVERY simulated distribution, and the failures.  ``qualified`` is
-    ``None`` when nothing was judged (report-only cell, or too few replicates for the verdict)."""
+    ``None`` when nothing was judged (report-only cell, or too few replicates for the verdict) or when a planned distribution of
+    the group is missing (``incomplete_dists`` non-empty: a group with a failure stays ``False``, since a failure is final, but a
+    group without one is never reported as qualified).  ``plan_cells``: the planned cells (``label``, ``scen``, ``n``, ``dist``)."""
+    planned = {}
+    for c in plan_cells or ():
+        planned.setdefault((c["label"], c["scen"], c["n"]), set()).add(c["dist"])
     groups = {}
     for c in cells:
         for row, entries in c["rows"].items():
@@ -418,9 +494,13 @@ def make_verdicts(cells):
                 fails += [{"tail": tau, "dist": d, "ucl_over_tail": e["ucl_over_tail"], "rate_over_tail": e["rate_over_tail"]} for d, e in bad]
             elif all(e["pass"] for _, e in lst):
                 passed.append(tau)
+        missing = sorted(planned.get((label, scen, n), set()) - set(g["dists"]))
+        qualified = None if not (passed or fails) else not fails and len(passed) == len(g["per_tail"])
+        if missing and qualified:
+            qualified = None
         out.append({"label": label, "row": row, "scen": scen, "n": n, "dists": sorted(g["dists"]), "report_only": g["report_only"],
-                    "tails_pass": passed, "tails_fail": fails, "tails_total": len(g["per_tail"]),
-                    "qualified": None if not (passed or fails) else not fails and len(passed) == len(g["per_tail"])})
+                    "tails_pass": passed, "tails_fail": fails, "tails_total": len(g["per_tail"]), "incomplete_dists": missing,
+                    "qualified": qualified})
     return out
 
 
@@ -442,22 +522,27 @@ def render_markdown(s):
           "- budget bounds (ContrastBound, LadderBound; K = 3, 4): " + ", ".join(_fmt_tail(t) for t in covproc.component_tails()),
           "- Gate 5 TOST and whole robust-sign pipeline (Holm levels, m = 7): " + ", ".join(_fmt_tail(t) for t in covproc.holm_levels()), "",
           "## Qualification matrix", "",
-          "Entry: `ALL` if every tail passes in every simulated distribution, else `passing/total tails`; `rep` = reported, never judged (BCa); `n/a` = fewer than 175 expected misses at nominal, not judged.",
+          "Entry: `ALL` if every tail passes in every simulated distribution, else `passing/total tails`; `rep` = reported, never judged (BCa); `n/a` = fewer than 175 expected misses at nominal, not judged; `inc` = a planned cell (distribution) of the group is not finished, so no verdict (`k/t inc`: already failing in the finished ones).",
           ""]
     keys = sorted({(v["label"], v["row"], v["scen"]) for v in ver})
     ns = sorted({v["n"] for v in ver})
     L += ["| procedure | row | scenario | " + " | ".join("n=%d" % n for n in ns) + " |", "|" + "---|" * (3 + len(ns))]
     idx = {(v["label"], v["row"], v["scen"], v["n"]): v for v in ver}
+    incg = {tuple(g) for g in s.get("incomplete_groups", [])}  # (label, scen, n) with an unfinished planned cell
     for k in keys:
         cellsv = []
         for n in ns:
             v = idx.get(k + (n,))
             if v is None:
-                cellsv.append("")
+                cellsv.append("inc" if (k[0], k[2], n) in incg else "")
             elif v["report_only"]:
                 cellsv.append("rep")
+            elif v["incomplete_dists"] and v["qualified"] is None:
+                cellsv.append("inc")
             elif v["qualified"] is None:
                 cellsv.append("n/a")
+            elif v["incomplete_dists"]:
+                cellsv.append("%d/%d inc" % (len(v["tails_pass"]), v["tails_total"]))
             else:
                 cellsv.append("ALL" if v["qualified"] else "%d/%d" % (len(v["tails_pass"]), v["tails_total"]))
         L.append("| %s | %s | %s | %s |" % (k[0], k[1], k[2] or "-", " | ".join(cellsv)))
@@ -467,16 +552,34 @@ def render_markdown(s):
         if vs[0]["report_only"]:
             continue
         ok = [v["n"] for v in vs if v["qualified"]]
-        bad = ["%d (%d of %d tails)" % (v["n"], len(v["tails_pass"]), v["tails_total"]) for v in vs if v["qualified"] is False]
-        na = [v["n"] for v in vs if v["qualified"] is None]
-        L.append("- **%s / %s%s**: qualified at n = %s; not qualified at n = %s%s" % (
+        bad = ["%d (%d of %d tails%s)" % (v["n"], len(v["tails_pass"]), v["tails_total"], ", unfinished cells" if v["incomplete_dists"] else "")
+               for v in vs if v["qualified"] is False]
+        na = [v["n"] for v in vs if v["qualified"] is None and not v["incomplete_dists"]]
+        inc = sorted({v["n"] for v in vs if v["qualified"] is None and v["incomplete_dists"]} |
+                     {n for n in ns if (k[0], k[2], n) in incg and k + (n,) not in idx})
+        L.append("- **%s / %s%s**: qualified at n = %s; not qualified at n = %s%s%s" % (
             k[0], k[1], (" / " + k[2]) if k[2] else "", ", ".join(map(str, ok)) or "none", ", ".join(bad) or "none",
-            ("; not judged at n = " + ", ".join(map(str, na))) if na else ""))
+            ("; not judged at n = " + ", ".join(map(str, na))) if na else "",
+            ("; INCOMPLETE (no verdict) at n = " + ", ".join(map(str, inc))) if inc else ""))
+    L += ["", "## False-fail probability of an exactly nominal procedure", "",
+          "A procedure whose true miss rate equals every tail exactly still fails the verdict by Monte Carlo noise alone: per tail "
+          "`P = P(Bin(R, tail) >= k*)`, `k*` the smallest miss count with UCL > %.2f x tail; at least one tail of a (cell, distribution, row) "
+          "fails with `P(any)` (exact: the misses at nested tails are nested); `P(any of 3)` = at least one of three independent "
+          "distributions (normal, stress, stress-). Design effect 1 assumed (shared bootstrap draws only raise these)." % CRITERION, ""]
+    for g in s.get("nominal_false_fail", []):
+        L += ["**R = %d, %d tails, %d cells** (%s%s): P(any) = %.4f, P(any of 3) = %.4f" % (
+            g["R"], len(g["tails"]), g["cells"], ", ".join(g["labels"][:6]), ", ..." if len(g["labels"]) > 6 else "", g["p_any"], g["p_any_3dist"]), "",
+            "| tail | k* | k*/(R tail) | P(fail) |", "|---|---|---|---|"]
+        for t, k, pt in zip(g["tails"], g["kstar"], g["p_tail"]):
+            L.append("| %s | %s | %s | %.3g |" % (_fmt_tail(t), "-" if k is None else k, "-" if k is None else "%.3f" % (k / (g["R"] * t)), pt))
+        L.append("")
     fails = [(v, f) for v in ver for f in v["tails_fail"]]
     L += ["", "## Failures (%d tail x distribution entries)" % len(fails), ""]
     if fails:
-        L += ["`marginal`: the point estimate of the miss rate is within 1.25 x tail and only the 95% limit exceeds it (Monte Carlo "
-              "noise of an exactly nominal procedure fails a cell this way with probability about 1e-3; rerun with more replicates).", "",
+        L += ["`marginal`: the point estimate of the miss rate is within 1.25 x tail and only the 95% limit exceeds it. This is compatible "
+              "with an exactly nominal procedure (see the false-fail probabilities above: about 0.07 for the smallest tail, about 0.08 for "
+              "some tail of a cell and distribution); the remedy is more replicates at SF-43's final `n`, not a different criterion. "
+              "Without the mark, the point estimate itself exceeds 1.25 x tail: a clear failure.", "",
               "| procedure | row | scenario | n | dist | tail | rate/tail | UCL/tail | |", "|---|---|---|---|---|---|---|---|---|"]
         for v, f in fails[:400]:
             L.append("| %s | %s | %s | %d | %s | %s | %.2f | %.2f | %s |" % (

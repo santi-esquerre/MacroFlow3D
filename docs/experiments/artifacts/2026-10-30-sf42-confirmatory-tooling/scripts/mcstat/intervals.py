@@ -258,7 +258,8 @@ def bootstrap_t(x, B=2000, rng=None, seed=None, share_draws=False):
     var = np.maximum(n / (n - 1.0) * (s2 - m * m), 0.0)
     with np.errstate(divide="ignore", invalid="ignore"):
         t = m / (np.sqrt(var) / np.sqrt(n))
-    t = np.where(np.sqrt(var) > 0.0, t, np.where(m == 0.0, 0.0, np.sign(m) * np.inf))
+        # inside errstate: np.where evaluates sign(m) * inf also where m == 0 (0 * inf, 'invalid'); the value is not selected there
+        t = np.where(np.sqrt(var) > 0.0, t, np.where(m == 0.0, 0.0, np.sign(m) * np.inf))
     t.sort(axis=-1)
     return BootT(mean, se, t, B)
 
