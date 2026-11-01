@@ -23,7 +23,9 @@ Artifact root `R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooli
 | `spectral/` | R2 results of the spectral cross-check (acceptance E): `summary.{md,json}`, `cases/`, FV `report.json`, `fv_npy.sha256` (the 4.7 GB FV dumps stay on the host), job logs | delivered |
 | `scripts/pilots/` | design-pilot tooling (R4): run tables (`design.py`), host runner with own-PID GPU memory sampling (`run.py`, `job.sh`), reduction and analysis (`analyze.py`, `report.py`, `cost.py`, `tables.py`, `hostref.py`, `presubmit.py`, `jobs.py`); `python3 -m pilots.report j1|j2|j3|j3b|cost`, `python3 -m pilots.tables` | delivered |
 | `pilots/` | R4 / R4b results of the design pilots (acceptance G): per-run `RUN.json`, `cmd.txt`, trimmed logs, Par2 configs, reduced per-realization tables with sha256 input manifests, `hostref.json`, `j1_grid.*`, `j2_*`, `j3_pairing.json`, `j3b_pairing.json`, `cost_projection*`, `presubmit_projection.json`; no per-particle arrays | delivered |
-| `coverage/`, `repro/` | result directories of the later jobs (acceptance F coverage, H) | pending (later nodes) |
+| `coverage/` | R5 / R5b result of the coverage simulation (acceptance F; job `sf42-coverage`, `full` profile, 1134 cells): `plan.json`, `summary.json` and `summary.md` (from the corrected `summarize`, qualification matrix, failures, false-fail probabilities), the host `env.txt` (unchanged, says `cpus 1`: Deviation 10), `chunks.sha256` (sha256 of the 35844 chunk files; the chunks stay on the host in `~/sf42_campaign/coverage/chunks`; the sha256 of the list is `f7ae476d9858695bf2d7b83e2da3c9677792f04e89de7828c6317b7ddda35793`) | delivered |
+| `verification/jobs_r5.tsv`, `verification/logs/sf42-coverage.log`, `verification/job_r5.sh` | job row (41.693 GPU-h of slot time, CPU only), trimmed job record, and the wrapper the job ran; `verification/indep_boott_unpaired.{py,txt}`: independent check (no `mcstat` import) of the bootstrap-t over-miss of the unpaired contrast bound | delivered |
+| `repro/` | result directory of the reproducibility tooling jobs (acceptance H) | pending (later nodes) |
 
 ## Unit tests
 
@@ -47,6 +49,8 @@ Contract tests of `scripts/remote` (local, seconds): `bash scripts/tests/remote_
 | `regress/` | `scripts/regress` comparison of head against base: `compare.txt`, both `binaries.md5`, exit codes, `env.txt` |
 | `bytes/`, `identity/` | outputs of the jobs `sf42-bytes` and `sf42-identity` |
 | `pilots/` | per-particle outputs of the R4 design pilots (`J1`, `J2`, `J3`, `J3B`, reduced tables, `hostref.json`); sha256 in `R/pilots/J1/per_particle_sha256.txt` and the reduced-table manifests |
+| `coverage/` | the full output of the coverage simulation (`plan.json`, `chunks/` 35844 files, `summary.*`, `env.txt`, `run.log`, `smoke/`); `R/coverage/` holds all but the chunks (`chunks.sha256`), `run.log` and `smoke/` |
+| `r5_hosttests.log` | the host unit-test log of the coverage job (`Ran 309 tests in 36.038s`, `OK`) |
 
 `$HOME/regress/refs/3164e4f/out` (base reference) and `$HOME/regress/heads/SF-42-<tree>/out` follow the `scripts/regress/README.md`
 protocol. `$HOME/sf39_campaign` is not touched by SF-42.

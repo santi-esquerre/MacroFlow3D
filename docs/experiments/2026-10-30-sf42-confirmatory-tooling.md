@@ -10,8 +10,9 @@
   disjoint from SF-43's.
 - Artifact root `R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/` (see `R/README.md`); R1 evidence in
   `R/verification/`.
-- Sections D and E (the MMS order study and the pseudo-spectral cross-check, second remote campaign R2) are recorded; sections F to H
-  and the findings for SF-43 that depend on them are filled by the later nodes (library and coverage, pilots, reproducibility tooling).
+- Sections D and E (the MMS order study and the pseudo-spectral cross-check, second remote campaign R2) are recorded, and sections F to H:
+  the statistics library and the coverage simulation (job `sf42-coverage`, R5 / R5b), the design pilots (R4) and the reproducibility tooling
+  (R3), with the findings for SF-43 that depend on them.
 
 ## Question
 
@@ -218,10 +219,34 @@ python3 -m pilots.tables ../pilots j1|j2|j2m|j2cross|j3|cost_fit|cost_new|resid|
 | `sf42-pilot-pairing` (J3, CUDA: 4 + 4 runs of 8 realizations, reduction) | 11:48:01 | 12:13:55 | 1554 | 0.432 | 0 | 0 |
 | `sf42-pilot-horizon` (J3B, CUDA: 3 Par2 runs of 8 realizations, reduction; Deviation 6) | 12:20:27 | 12:27:33 | 426 | 0.118 | 0 | 0 |
 | total R4 | | | 8233 | 2.287 | | |
-| running total R1 + R2 + R3 + R4 (0.820 + 3.090 + 0.252 + 2.287) | | | 23215 | 6.449 | | |
 
 Start and end are the first and last timestamps of the job log (slot held). R4's local budget rule (J1 to J3 projected above 8 GPU-h
 would cut the realization counts) did not bite: 1.69 GPU-h projected, 2.08 measured.
+
+R5 job (fifth campaign, same mirror, tree `67548000` = the R3 head plus `R/verification/job_r5.sh`; the R4 chain head `8422b2e2` contains
+the same `mcstat` package, unchanged since R3; `R/verification/jobs_r5.tsv`, trimmed log `R/verification/logs/sf42-coverage.log`).
+CPU only; `scripts/remote run` nevertheless assigned GPU 0 and held the single project slot for the whole run (the GPU stayed idle:
+0 MiB, 0 %), so its GPU-h are wall hours holding the slot, the convention of this note. The interrupted R5 worker (Deviation 10) wrote
+`job_r5.sh` because the agent sandbox rejected `cd` inside the `run` text; the job itself was not touched afterwards.
+
+```bash
+# R5 (flags as for every job of this note; the launch environment is not part of the job record given to R5b)
+scripts/remote --increment SF-42 sync          # tree 67548000
+REMOTE_GPU_WAIT=7200 scripts/remote --increment SF-42 run sf42-coverage -- "bash $R/verification/job_r5.sh 72"
+scripts/remote --increment SF-42 wait sf42-coverage
+# job_r5.sh: (cd $R/scripts && OMP_NUM_THREADS=1 MCSTAT_PAR2_ALPHAX_S025=~/sf42_campaign/r3/par2_alphax_s025.txt python3 -W error -m unittest discover -s . -t .),
+#   then, if it passed, bash $R/scripts/mcstat/run_coverage.sh ~/sf42_campaign/coverage --profile full --workers 72
+# local (R5b, no remote use): corrected summary and checks on a copy of the host outputs
+cd $R/scripts && OMP_NUM_THREADS=1 python3 -W error -m mcstat.coverage summarize --out <copy of ~/sf42_campaign/coverage>
+python3 -I $R/verification/indep_boott_unpaired.py 7 > $R/verification/indep_boott_unpaired.txt
+```
+
+| job | start (UTC) | end (UTC) | wall (s) | GPU-h | exit | GPU |
+|---|---|---|---|---|---|---|
+| `sf42-coverage` (CPU only: 309 host Python tests, smoke check, `full` coverage simulation on 72 workers) | 2026-10-30 16:45:15 | 2026-11-01 10:26:51 | 150096 | 41.693 | 0 | 0 |
+
+Running total R1 to R5: 0.820 + 3.090 + 0.252 + 2.287 + 41.693 = **48.142 GPU-h** (173311 s). `~/sf39_campaign` was not touched
+(`find -newer ~/sf42_campaign/r5_hosttests.log` empty at the end of the job).
 
 ## A. Byte identity
 
@@ -535,7 +560,254 @@ committed Par2 Gate 5 numbers are reproduced from the raw Par2 series on the hos
 (identified by reading `gate5_block`, from `ents = par2_entries(C, amp)[:n2]` to `P = np.array([a["x"] for a in al])`), not an
 approximation.
 
-Coverage simulation: pending (sf42-coverage).
+### Coverage simulation (R5 job `sf42-coverage`, corrected report by R5b)
+
+**What was run.** The `full` profile of `python3 -m mcstat.coverage` (decision G5.3 as a qualification report for SF-43, not a gate of
+SF-42): 1134 cells, 35844 chunks, 165.1 million replicates, seed 20261030, plan hash
+`0b08b6be86ce67841e71352cbed0191c4f2e7fc1e5422831f14042d705fa0bf0`; the 23 procedure labels are the sampling limit of a mean (Student,
+bootstrap-t), `ContrastBound` paired / unpaired / interaction (percentile, Student, bootstrap-t), `LadderBound` (the same three), the
+robust-sign pipeline K = 3 and K = 4 (all budget components with one method each), Gate 5 TOST (Student, bootstrap-t) and BCa
+(reported, never judged), each on `normal`, `stress` (skewness 1.936, excess kurtosis 4.711) and its reflection `stress-`. Job
+`sf42-coverage`: mirror tree `67548000` (R3 head plus `R/verification/job_r5.sh`), command `bash $R/verification/job_r5.sh 72`; host
+unit tests first, `Ran 309 tests in 36.038s`, `OK` (no skip: the host-only test ran), then the smoke check (passed) and the study,
+72 workers, `nice -n 10`; slot held 2026-10-30T16:45:15Z to 2026-11-01T10:26:51Z, `STATE=succeeded`, `EXIT_CODE=0`, `finished 35844
+chunks in 150047 s (10782196 core-seconds)`, `summary: 1134 of 1134 cells complete; 428 verdict lines`. Host Python 3.11.7, numpy
+1.26.4, scipy 1.11.4. Files: `R/coverage/` (`plan.json`, `summary.json`, `summary.md`, `env.txt`, `chunks.sha256` of the 35844 chunk files;
+the chunks stay on the host in `~/sf42_campaign/coverage/chunks`), `R/verification/jobs_r5.tsv`, `R/verification/logs/sf42-coverage.log`
+(trimmed). `summary.json` / `summary.md` were produced by the corrected `summarize` of this tree (R5b) from the final chunks. The host's own
+summary was made by the older code (before the R5b report corrections); against it, all 1134 cells and 13734 tail rows have identical
+misses, `R`, `pass`, `powered`, design effect and rate; the UCL differs by at most 8.7e-15 relative (scipy 1.11 against 1.18 beta quantile,
+so the UCL is not bit-identical: 4940 of 13734 rows are, the rest differ at rounding level); the 428 verdicts have identical `qualified`,
+passing and failing tails; `incomplete_dists` is empty everywhere and there are no incomplete groups. Chunk-list hash (`find chunks -type f |
+LC_ALL=C sort | xargs sha256sum | sha256sum`, equal to `sha256sum R/coverage/chunks.sha256`):
+`f7ae476d9858695bf2d7b83e2da3c9677792f04e89de7828c6317b7ddda35793`. `env.txt` is the host's, unchanged, and says `cpus 1`: that is the
+`nproc` artefact corrected in R5b (`nproc` honours the `OMP_NUM_THREADS=1` that the script exported before the print); the host has 2 x
+Xeon Gold 6138, 80 logical / 40 physical CPUs. The host `run.log` holds two `RuntimeWarning: invalid value encountered in multiply` from
+`intervals.py:261` (workers of the bootstrap-t sampling cells; `0 * inf` in the unselected branch of `np.where`, values unaffected), removed
+in R5b by moving the line inside `np.errstate`.
+
+**Reproduction evidence (R5b, local stack Python 3.13 / numpy 2.5 / scipy 1.18, under `python3 -W error`).** The corrected code builds the
+identical plan (`plan_hash(profile_full(), 20261030)` equals the host's; the 1134 cells equal those of `plan.json`). Recomputing host chunks
+with `coverage.run_chunk(cell, j, seed)` gave `counts`, `extra`, `sumsq`, `nbatch` and `R` **exactly equal** to the host files (seconds
+excluded) for 14 distinct chunks (chunk 0 of each; every procedure family except BCa): `sampling_student__base__normal__n20`, `tost_gate5__rho=0.5__stress__n20`,
+`tost_gate5__rho=0.9__normal__n170`, `sampling_boott__base__stress__n20` (the family of the host warning), `contrast_paired__base__stress__n20`
+(percentile, shared draws), `pipeline_K4_ip=2__bias_order=1__normal__n30`, `ladder_E_h__nonmono_ip=1_kappa=12__normal__n20` (seven, checked on a partial copy of
+the host outputs while the job ran), and, on the final outputs, seven chunks of the N6c families `contrast_paired_student__base__stress__n20` (0.1 s locally, 0.4 s on the
+host), `contrast_unpaired_boott__base__stress__n20` (32.8 s, 142.9 s), `ladder_E_h_student__order=1_ip=2_kappa=12__stress__n20` (17.6 s, 112.8 s),
+`ladder_E_h_boott__order=1_ip=1_kappa=25__stress__n20` (39.2 s, 229.1 s), `pipeline_K4_ip=2_student__zero__stress__n30` (59.0 s, 407.9 s),
+`pipeline_K4_ip=2_boott__zero__stress__n30` (42.7 s, 243.4 s), `tost_gate5_boott__rho=0__stress__n20` (35.0 s, 319.8 s). No mismatch was found; for the 10 of these chunks that took 17 s or more locally, the host took 4.4 to 9.1 times longer.
+
+**False-fail probability of the criterion for an exactly nominal procedure (G5.3).** PASS is `UCL <= 1.25 x tail` at
+`R = ceil(175 / smallest tail)`, so a procedure whose true miss rate equals the tail exactly still fails by noise alone. Computed exactly
+(`coverage.nominal_fail_probability`: binomial threshold `k*` and a dynamic programme over the nested counts at the sorted tails; design effect 1):
+
+| `R` | tails | cells | `k*` at the smallest tail (expected misses 175) | P(fail) at the smallest tail | P(some tail fails) per (cell, distribution, row) | P(some tail fails in any of the 3 distributions) |
+|---|---|---|---|---|---|---|
+| 24500 | 7 Holm | 234 | 195 | 0.0714 | 0.0815 | 0.2250 |
+| 25000 | 7 Holm | 45 | 199 | 0.0691 | 0.0779 | 0.2159 |
+| 49000 | 8 sampling | 48 | 195 | 0.0717 | 0.0819 | 0.2261 |
+| 196000 | 13 component | 795 | 195 | 0.0720 | 0.0840 | 0.2314 |
+
+(`summary.md` lists `k*` and the probability for every tail.) The earlier text that put this at "about 1e-3" was wrong by two orders of
+magnitude. Consequences for reading the tables: a group `Q` (qualified) is stronger evidence than a marginal failure is evidence against.
+
+**Results in numbers.** 13734 tail rows (cell x row x tail): 12401 PASS, 1285 FAIL, 48 reported only (BCa), none unpowered; unresolved
+bootstrap tails 0 and non-finite limits 0 in all cells; largest design effect 1.079. Of the 428 verdict groups (row x scenario x `n`, the
+verdict taking all tails in all three distributions), 8 are BCa (reported), 310 qualified and **110 not qualified: 101 clear** (some failing
+tail with a point estimate of the miss rate above 1.25 x tail) **and 9 marginal** (every failing tail has a point estimate within 1.25 x
+tail and only the 95 % limit exceeds it).
+
+**Qualification matrix.** Entry `Q`: every tail qualifies in each of `normal`, `stress`, `stress-`; `k/t`: `k` of the `t` groups of that
+procedure and `n` qualify (groups: the lower and upper limit; the two TOST boundaries x 3 `rho`; the ladder cases and production levels,
+the pipeline biases and orders), suffix `m`: every non-qualified group is marginal only; blank: not simulated. The column is the sample size of the
+cell (seeds per arm; `N` for the pipelines; pairs for Gate 5).
+
+| procedure | method | 20 | 30 | 50 | 100 | 170 | 200 | 300 | 500 | 1000 | 1650 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| sampling of the mean | Student | 0/2 | 0/2 | 0/2 | 0/2 |  | 0/2 |  | 0/2 | 0/2 | 0/2 |
+| sampling of the mean | bootstrap-t | 0/2 | 0/2 | 0/2 | 0/2 |  | 1/2m |  | 1/2m | Q | Q |
+| ContrastBound paired | Student | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1 |  |  |  |  |
+| ContrastBound paired | percentile | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1 |  |  |  |  |
+| ContrastBound paired | bootstrap-t | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1 |  |  |  |  |
+| ContrastBound unpaired | Student | Q | Q | Q | Q |  | Q |  |  |  |  |
+| ContrastBound unpaired | percentile | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1m |  |  |  |  |
+| ContrastBound unpaired | bootstrap-t | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1 |  |  |  |  |
+| ContrastBound interaction | Student | Q | Q | Q | Q |  | Q |  |  |  |  |
+| ContrastBound interaction | percentile | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1m |  |  |  |  |
+| ContrastBound interaction | bootstrap-t | 0/1 | 0/1 | 0/1 | 0/1 |  | 0/1 |  |  |  |  |
+| LadderBound | Student | Q | Q | Q | Q |  | Q |  |  |  |  |
+| LadderBound | percentile | Q | Q | Q | Q |  | Q |  |  |  |  |
+| LadderBound | bootstrap-t | Q | Q | Q | Q |  | Q |  |  |  |  |
+| robust-sign pipeline K = 3 | Student |  |  |  | Q |  |  | Q |  | Q |  |
+| robust-sign pipeline K = 3 | percentile |  |  |  | Q |  |  | Q |  | Q |  |
+| robust-sign pipeline K = 3 | bootstrap-t |  |  |  | Q |  |  | Q |  | Q |  |
+| robust-sign pipeline K = 4 | Student |  | Q |  | Q |  |  | Q |  |  |  |
+| robust-sign pipeline K = 4 | percentile |  | Q |  | Q |  |  | Q |  |  |  |
+| robust-sign pipeline K = 4 | bootstrap-t |  | Q |  | Q |  |  | Q |  |  |  |
+| Gate 5 TOST | Student | 2/6 | 2/6 | 0/6 | 0/6 | 0/6 |  |  |  |  |  |
+| Gate 5 TOST | bootstrap-t | 2/6 | 2/6 | 2/6 | 0/6 | 1/6m |  |  |  |  |  |
+
+**By distribution: the largest miss rate over the tails, divided by the tail.** `*` the cell fails with a point estimate above 1.25 (clear),
+`~` it fails only at the 95 % limit (point estimate within 1.25, marginal), no mark: every tail passes. Limit of the mean (R = 49000,
+tails 3.6e-3 to 0.05):
+
+| method | limit | distribution | n=20 | n=30 | n=50 | n=100 | n=200 | n=500 | n=1000 | n=1650 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Student | lower | normal | 1.01 | 1.05 | 1.08 | 1.11 | 1.16~ | 1.05 | 1.02 | 0.98 |
+| Student | lower | stress | 0.34 | 0.40 | 0.54 | 0.61 | 0.73 | 0.83 | 0.85 | 0.89 |
+| Student | lower | stress- | 8.94* | 8.76* | 6.23* | 3.72* | 2.69* | 1.87* | 1.70* | 1.42* |
+| Student | upper | normal | 1.00 | 1.06 | 0.96 | 1.04 | 1.00 | 0.99 | 1.02 | 1.08 |
+| Student | upper | stress | 8.93* | 8.36* | 5.95* | 3.79* | 2.33* | 1.83* | 1.54* | 1.30* |
+| Student | upper | stress- | 0.35 | 0.43 | 0.51 | 0.65 | 0.77 | 0.82 | 0.84 | 0.91 |
+| bootstrap-t | lower | normal | 1.02 | 0.99 | 1.06 | 1.09 | 1.06 | 1.16~ | 1.02 | 1.01 |
+| bootstrap-t | lower | stress | 0.83 | 0.89 | 0.93 | 0.97 | 1.00 | 1.00 | 0.97 | 1.12 |
+| bootstrap-t | lower | stress- | 7.80* | 7.81* | 4.79* | 1.82* | 1.04 | 1.03 | 1.05 | 1.06 |
+| bootstrap-t | upper | normal | 1.07 | 1.13~ | 1.02 | 1.02 | 1.01 | 0.99 | 1.02 | 1.02 |
+| bootstrap-t | upper | stress | 8.27* | 7.86* | 4.91* | 1.69* | 1.14~ | 1.11 | 1.00 | 1.03 |
+| bootstrap-t | upper | stress- | 0.85 | 0.90 | 0.95 | 0.95 | 0.96 | 1.03 | 1.03 | 1.00 |
+
+Contrast bounds (R = 196000, the 13 component tails 8.9e-4 to 8.3e-3; the `percentile` rows are the N6b bound):
+
+| bound | method | distribution | n=20 | n=30 | n=50 | n=100 | n=200 |
+|---|---|---|---|---|---|---|---|
+| paired | Student | normal | 1.08 | 1.00 | 0.96 | 0.97 | 1.05 |
+| paired | Student | stress | 14.11* | 16.27* | 12.16* | 6.72* | 4.33* |
+| paired | Student | stress- | 0.05 | 0.08 | 0.16 | 0.30 | 0.44 |
+| paired | percentile | normal | 3.88* | 2.67* | 1.75* | 1.30* | 1.20~ |
+| paired | percentile | stress | 34.42* | 26.93* | 14.00* | 5.62* | 2.99* |
+| paired | percentile | stress- | 0.51 | 0.51 | 0.54 | 0.59 | 0.69 |
+| paired | bootstrap-t | normal | 1.20~ | 1.11 | 1.11 | 1.11 | 1.05 |
+| paired | bootstrap-t | stress | 13.97* | 14.95* | 10.35* | 3.51* | 1.43* |
+| paired | bootstrap-t | stress- | 0.35 | 0.58 | 0.75 | 0.86 | 0.96 |
+| unpaired | Student | normal | 1.01 | 1.09 | 1.00 | 1.04 | 1.02 |
+| unpaired | Student | stress | 0.65 | 0.78 | 0.89 | 0.97 | 1.03 |
+| unpaired | Student | stress- | 0.64 | 0.79 | 0.91 | 0.94 | 1.02 |
+| unpaired | percentile | normal | 2.34* | 1.83* | 1.31* | 1.24~ | 1.15~ |
+| unpaired | percentile | stress | 3.42* | 2.54* | 1.68* | 1.35* | 1.08 |
+| unpaired | percentile | stress- | 3.46* | 2.65* | 1.93* | 1.31* | 1.16~ |
+| unpaired | bootstrap-t | normal | 1.09 | 1.03 | 0.99 | 1.02 | 1.01 |
+| unpaired | bootstrap-t | stress | 2.42* | 2.73* | 2.40* | 1.88* | 1.53* |
+| unpaired | bootstrap-t | stress- | 2.34* | 2.69* | 2.62* | 1.82* | 1.39* |
+| interaction | Student | normal | 1.08 | 1.11 | 1.10 | 1.04 | 1.11 |
+| interaction | Student | stress | 0.63 | 0.76 | 0.88 | 0.94 | 0.99 |
+| interaction | Student | stress- | 0.63 | 0.80 | 0.88 | 0.94 | 1.03 |
+| interaction | percentile | normal | 2.17* | 1.72* | 1.47* | 1.21~ | 1.07 |
+| interaction | percentile | stress | 3.42* | 2.68* | 1.97* | 1.27* | 1.14~ |
+| interaction | percentile | stress- | 3.43* | 2.75* | 2.05* | 1.27* | 1.18~ |
+| interaction | bootstrap-t | normal | 1.02 | 1.07 | 1.01 | 1.06 | 0.94 |
+| interaction | bootstrap-t | stress | 2.45* | 2.87* | 2.56* | 1.99* | 1.33* |
+| interaction | bootstrap-t | stress- | 2.40* | 2.69* | 2.32* | 1.99* | 1.42* |
+
+Gate 5 TOST (R = 25000 for Student, 24500 for bootstrap-t; the 7 Holm levels 7.1e-3 to 0.05, true ratio at the margin; `hi` / `lo`: the two one-sided tests):
+
+| method | rho | side | distribution | n=20 | n=30 | n=50 | n=100 | n=170 |
+|---|---|---|---|---|---|---|---|---|
+| Student | 0 | hi | normal | 0.00 | 0.01 | 0.13 | 0.92 | 1.01 |
+| Student | 0 | hi | stress | 0.50 | 0.91 | 1.39* | 2.70* | 2.22* |
+| Student | 0 | hi | stress- | 0.00 | 0.00 | 0.00 | 0.41 | 0.69 |
+| Student | 0 | lo | normal | 0.00 | 0.00 | 0.15 | 0.97 | 0.99 |
+| Student | 0 | lo | stress | 0.01 | 0.00 | 0.00 | 0.44 | 0.71 |
+| Student | 0 | lo | stress- | 0.55 | 0.94 | 1.42* | 2.41* | 2.00* |
+| Student | 0.5 | hi | normal | 0.11 | 0.41 | 0.94 | 1.03 | 1.01 |
+| Student | 0.5 | hi | stress | 2.47* | 3.84* | 4.06* | 2.77* | 2.30* |
+| Student | 0.5 | hi | stress- | 0.01 | 0.02 | 0.26 | 0.66 | 0.72 |
+| Student | 0.5 | lo | normal | 0.11 | 0.42 | 0.95 | 0.99 | 1.02 |
+| Student | 0.5 | lo | stress | 0.01 | 0.02 | 0.23 | 0.63 | 0.74 |
+| Student | 0.5 | lo | stress- | 2.40* | 3.93* | 3.84* | 2.81* | 2.25* |
+| Student | 0.9 | hi | normal | 0.97 | 0.97 | 1.01 | 1.08 | 1.02 |
+| Student | 0.9 | hi | stress | 6.26* | 5.98* | 4.16* | 2.83* | 2.44* |
+| Student | 0.9 | hi | stress- | 0.29 | 0.40 | 0.53 | 0.65 | 0.70 |
+| Student | 0.9 | lo | normal | 1.02 | 1.03 | 0.96 | 1.07 | 1.03 |
+| Student | 0.9 | lo | stress | 0.30 | 0.42 | 0.53 | 0.63 | 0.67 |
+| Student | 0.9 | lo | stress- | 6.20* | 5.53* | 4.59* | 2.59* | 2.06* |
+| bootstrap-t | 0 | hi | normal | 0.00 | 0.01 | 0.18 | 0.99 | 1.07 |
+| bootstrap-t | 0 | hi | stress | 0.49 | 0.89 | 1.04 | 1.38* | 1.18~ |
+| bootstrap-t | 0 | hi | stress- | 0.00 | 0.00 | 0.01 | 0.64 | 0.94 |
+| bootstrap-t | 0 | lo | normal | 0.01 | 0.01 | 0.18 | 0.95 | 1.06 |
+| bootstrap-t | 0 | lo | stress | 0.00 | 0.00 | 0.01 | 0.61 | 0.95 |
+| bootstrap-t | 0 | lo | stress- | 0.50 | 0.90 | 0.96 | 1.31* | 1.15~ |
+| bootstrap-t | 0.5 | hi | normal | 0.12 | 0.41 | 0.94 | 1.02 | 1.12 |
+| bootstrap-t | 0.5 | hi | stress | 2.35* | 3.99* | 3.43* | 1.55* | 1.10 |
+| bootstrap-t | 0.5 | hi | stress- | 0.01 | 0.02 | 0.37 | 0.97 | 1.03 |
+| bootstrap-t | 0.5 | lo | normal | 0.11 | 0.41 | 1.02 | 1.12~ | 1.00 |
+| bootstrap-t | 0.5 | lo | stress | 0.01 | 0.03 | 0.40 | 0.98 | 0.97 |
+| bootstrap-t | 0.5 | lo | stress- | 2.24* | 3.59* | 3.37* | 1.57* | 1.14~ |
+| bootstrap-t | 0.9 | hi | normal | 1.07 | 1.05 | 1.04 | 1.01 | 1.02 |
+| bootstrap-t | 0.9 | hi | stress | 6.67* | 6.08* | 3.24* | 1.49* | 1.21~ |
+| bootstrap-t | 0.9 | hi | stress- | 0.65 | 0.95 | 0.96 | 0.93 | 0.99 |
+| bootstrap-t | 0.9 | lo | normal | 1.09 | 1.09 | 1.08 | 1.04 | 1.02 |
+| bootstrap-t | 0.9 | lo | stress | 0.67 | 0.90 | 0.89 | 0.96 | 1.04 |
+| bootstrap-t | 0.9 | lo | stress- | 7.33* | 5.97* | 3.51* | 1.63* | 1.17~ |
+
+`LadderBound` (360 percentile cells = the 12 N6b cases x 2 production levels x 3 distributions x 5 `n`; 150 Student and 150 bootstrap-t cells =
+the 5 lean cases of the `full` profile in the same layout) and the robust-sign pipeline (K = 3, 4;
+all budget components with the method named) qualify at every `n`, distribution and tail, for all three methods. Largest UCL / tail
+of the ladders: 0.66 (percentile), 0.30 (Student), 0.57 (bootstrap-t); largest rate / tail 0.56, 0.24, 0.47: the bounds are conservative
+by a factor of at least 1.5. The pipeline had **0 misses out of 24500 replicates at every Holm level, in every cell** (largest UCL / tail
+0.017 = the Clopper-Pearson limit of zero misses at `R` = 24500 divided by the smallest Holm level 7.14e-3): it is conservative by construction (union
+bound, biases at their sign), which bears on the power of SF-43's decision, not on its validity.
+
+**Per `n`: the (procedure, method) combinations that qualify at every tail and distribution.**
+
+n=20: ContrastBound unpaired (Student); ContrastBound interaction (Student); LadderBound (Student); LadderBound (percentile); LadderBound (bootstrap-t)
+n=30: ContrastBound unpaired (Student); ContrastBound interaction (Student); LadderBound (Student); LadderBound (percentile); LadderBound (bootstrap-t); robust-sign pipeline K = 4 (Student); robust-sign pipeline K = 4 (percentile); robust-sign pipeline K = 4 (bootstrap-t)
+n=50: ContrastBound unpaired (Student); ContrastBound interaction (Student); LadderBound (Student); LadderBound (percentile); LadderBound (bootstrap-t)
+n=100: ContrastBound unpaired (Student); ContrastBound interaction (Student); LadderBound (Student); LadderBound (percentile); LadderBound (bootstrap-t); robust-sign pipeline K = 3 (Student); robust-sign pipeline K = 3 (percentile); robust-sign pipeline K = 3 (bootstrap-t); robust-sign pipeline K = 4 (Student); robust-sign pipeline K = 4 (percentile); robust-sign pipeline K = 4 (bootstrap-t)
+n=170: none
+n=200: ContrastBound unpaired (Student); ContrastBound interaction (Student); LadderBound (Student); LadderBound (percentile); LadderBound (bootstrap-t)
+n=300: robust-sign pipeline K = 3 (Student); robust-sign pipeline K = 3 (percentile); robust-sign pipeline K = 3 (bootstrap-t); robust-sign pipeline K = 4 (Student); robust-sign pipeline K = 4 (percentile); robust-sign pipeline K = 4 (bootstrap-t)
+n=500: none
+n=1000: sampling of the mean (bootstrap-t); robust-sign pipeline K = 3 (Student); robust-sign pipeline K = 3 (percentile); robust-sign pipeline K = 3 (bootstrap-t)
+n=1650: sampling of the mean (bootstrap-t)
+
+(`n` = 170, 500: nothing qualifies in full; at 500 the bootstrap-t limit of the mean qualifies for its upper limit and is marginal for the
+lower; at 170 the bootstrap-t TOST has one boundary of one `rho` qualified, see below.) The Student limit of the mean never qualifies: it is
+exact on normal data but fails on the skew side of `stress` / `stress-` at every `n` up to 1650.
+
+**Marginal failures.** The nine marginal groups (each failing row individually compatible with a nominal procedure at the false-fail
+probability above, about 0.08 per (cell, distribution, row) and 0.22 to 0.23 per three-distribution group) are: `ContrastBound` interaction
+percentile, `n` = 200, `stress` and `stress-` (5 tails, 1.18); `ContrastBound` unpaired percentile, `n` = 200, `normal` and `stress-` (3
+tails, 1.16); the bootstrap-t limit of the mean, lower, `n` = 500, `normal` (2 tails, 1.16); the same, upper, `n` = 200, `stress` (2 tails,
+1.14); and the five bootstrap-t TOST groups at `n` = 170 (`rho` 0 hi 1.18 and lo 1.15, `rho` 0.5 lo 1.14, `rho` 0.9 hi 1.21 and lo 1.17;
+2-3 tails each, the skew side only). Where several tails of one row fail on the same, skew, side (the TOST at 170), the pattern points to a
+real residual excess of at most about 20 %, not to pure noise; isolated normal-data failures are noise. On normal data, 5 rows fail among
+the 122 rows of Student and bootstrap-t sampling, Student and bootstrap-t TOST and the Student and bootstrap-t contrast bounds (Student
+sampling lower `n` = 200: 1.16; bootstrap-t sampling upper `n` = 30: 1.13 and lower `n` = 500: 1.16; bootstrap-t TOST `rho` 0.5 lo `n` = 100: 1.12; bootstrap-t
+paired contrast `n` = 20: 1.20; all marginal), against about 9.8 expected if all 122 rows were exactly nominal (122 rows at 0.08): no
+clear failure of an exact or second-order procedure on normal data. The 101 clear groups are the cases below.
+
+**Where no method qualifies.** (i) The paired contrast bound under `stress` at every `n` from 20 to 200: percentile 34.4 / 26.9 / 14.0 / 5.6 /
+3.0 (largest rate / tail, `n` = 20, 30, 50, 100, 200), Student 14.1 / 16.3 / 12.2 / 6.7 / 4.3 (UCL / tail 12.60, 7.05, 4.60 at `n` = 50, 100, 200), bootstrap-t
+14.0 / 15.0 / 10.4 / 3.5 / 1.43 (UCL / tail 10.76, 3.76, 1.56 at 50, 100, 200; at `n` = 200 10 of 13 tails still fail). It is the skewness
+of the paired difference that none of the three removes. This confirms, and extends from `n` <= 100 to `n` = 200, what the small-scale N6c
+runs predicted (UCL / tail 12.6, 7.1, 4.6 for Student and 10.8, 3.8, 1.48 for bootstrap-t at `n` = 50, 100, 200, as quoted in the orchestrator's audit). (ii)
+Gate 5 TOST under `stress`: the Student version fails at every `n` from 20 to 170 and every `rho` except `rho` = 0 at `n` = 20 and 30 (rate /
+tail 0.50 to 0.94, where the TOST is conservative: `rho` = 0 on normal data has a rate of about 0 at `n` = 20 and 30, because the standard error is large relative to the
+margin; this "pass" is not evidence of robustness); at `n` = 170 its rate / tail is 2.0 to 2.4 under `stress`. The bootstrap-t TOST (UCL / tail
+1.35 at `n` = 170, `rho` 0.9, as predicted) is within 1.25 x tail for `rho` = 0 at `n` = 20 to 50 (again the conservative regime), fails clearly at `n` <= 100
+for `rho` 0.5 and 0.9 (up to 7.3) and at `n` = 100 for `rho` 0 (1.38), and at `n` = 170 qualifies only `rho` 0.5 hi; `rho` 0.5 lo, and both boundaries at `rho` 0
+and 0.9 are marginal (1.14 to 1.21). Therefore **no TOST version qualifies both boundaries at any `n` up to 170 under `stress`**; the closest is the
+bootstrap-t TOST at `n` = 170, `rho` 0.5 (one boundary qualified, the other marginal at 1.14). (iii) The limit of the mean (Student) at every `n` up to 1650 on the skew
+side (8.9 at `n` = 20, 2.3 to 2.7 at 200, 1.3 to 1.4 at 1650; the opposite side over-covers); the bootstrap-t qualifies from `n` = 200 (lower) and 500 (upper), and at 1000 and 1650.
+(iv) The percentile unpaired and interaction contrast bounds at every `n` <= 200 (they already fail on `normal` data up to `n` = 100: 2.3 at `n` = 20 for unpaired,
+1.2 at 100; marginal at 200). The Student version of both qualifies at every `n` (conservative under `stress`: 0.63 to 0.65 at `n` = 20, rising to 0.99 to 1.03 at 200, exact on `normal`).
+
+**A pattern the N6c small-scale runs did not predict.** The bootstrap-t bound of the **unpaired and interaction contrasts fails under both
+stress signs** (rate / tail 2.3 to 2.5 at `n` = 20, 1.8 to 2.0 at 100, 1.3 to 1.5 at 200; clear at every `n`), while it is exact on normal data (0.94 to 1.09) and the Student bound of
+the same contrasts qualifies at every `n`. An independent re-implementation that imports nothing from `mcstat`
+(`R/verification/indep_boott_unpaired.py`, output `R/verification/indep_boott_unpaired.txt`, `python3 -I ... 7`; unpaired contrast, `stress`
+mixture, `n` = 20, `R` = 20000, `B` = 2000, `Delta` = 5 standard errors) gives bootstrap-t rate / tail 1.87 / 1.86 / 1.88 at the tails 0.00833 / 0.00417
+/ 0.0025 and Student 0.64 / 0.54 / 0.50; the study's cell (`B` = 12000, `R` = 196000) has bootstrap-t 2.02 / 2.24 and Student 0.65 / 0.54 at the first two of these tails (the third is not a tail of the plan). It
+is therefore a property of the bootstrap-t under this mixture, not an implementation defect. Mechanism, as a **hypothesis** (not tested here): the skews of the two arms cancel in the
+difference, so the Student bound is made conservative only by the kurtosis, while the bootstrap-t estimates the distribution of `T*` conditionally on the sample configuration
+(an arm with or without minority-component points) and that conditional skew is correlated with the miss event, so its lower `T*` quantile is too shallow exactly when the
+observed difference is low.
+
+**Cost.** 10 782 196 core-seconds = 2995.1 host core-hours in 150 047 s of wall time on 72 workers (99.8 % busy), the slot held for 41.693 h
+(`R/verification/jobs_r5.tsv`). The projection in the `coverage.py` docstring was 261 workstation core-hours and 5.4 to 7.3 h on 80 cores; the measured cost is 11.5 times the
+core-hours and 5.7 to 7.7 times the projected wall time. The ladders are 2654 h (89 %). The 72 workers shared 40 physical cores (hyper-threading, 2 threads per core), the host
+core is slower than the workstation's and numpy is older (1.26 against 2.5); 10 sampled chunks (17 s or more) took 4.4 to 9.1 times longer on the host than on the workstation, below
+the overall factor of 11.5, which is not decomposed further. The cost table of the `coverage.py` docstring was corrected with these figures (workstation figures kept and labelled).
 
 ## G. Design pilots
 
@@ -1085,13 +1357,54 @@ The refit under-predicts the measured planned production configuration: J2 `c_s1
 realistic planning number and the anchored +1 rms value (150.9) the pessimistic edge, at the G10 budget of 150; the margin of the realistic
 number to 150 is about 19 GPU-h (19.3). The scenario with a large margin is the displacement-basis variant B (anchored 52.5).
 
+(j) **Coverage of the intervals SF-43 may use (section F).** Qualification (G5.3: UCL at most 1.25 x tail, all tails, `normal`, `stress`,
+`stress-`) by procedure and sample size: `LadderBound` (percentile, Student, bootstrap-t) qualifies at every simulated `n` (20 to 200) and the
+robust-sign pipeline (K = 3 at `N` 100, 300, 1000; K = 4 at 30, 100, 300; any component method) at every `N`, with very large margins (ladders: UCL / tail at most
+0.66; pipeline: 0 misses in 24500 at every Holm level, so it is very conservative; this bears on SF-43's power, not on validity). The Student contrast bound qualifies
+for the **unpaired and interaction** contrasts at every `n` from 20 to 200 (conservative under `stress`, exact on `normal`); the percentile bound does not (it fails on
+`normal` data at `n` <= 100) and neither does the bootstrap-t (fails under both stress signs, rate / tail up to 2.5; independent check in
+`R/verification/indep_boott_unpaired.txt`). The limit of the mean: the Student limit never qualifies (skew side, 8.9 at `n` = 20, 1.3 to 1.4 at 1650);
+the bootstrap-t limit qualifies at `n` = 1000 and 1650 and one side at 200 and 500. **No method qualifies** (a) the paired contrast bound under `stress` at any
+`n` from 20 to 200 (Student up to 16, bootstrap-t 1.43 at 200 with 10 of 13 tails failing) and (b) Gate 5 TOST under `stress` at any `n` up to 170 (Student 2.0 to 2.4 at
+170; bootstrap-t one boundary qualified and the other marginal at best, `rho` 0.5, 170), apart from `rho` = 0 at the smallest `n`, where the TOST is conservative and
+"passes" without being robust. Both confirm N6c's small-scale predictions. If SF-43 needs the paired contrast or the TOST under skewed per-realization
+distributions at these `n`, it needs a different procedure or a larger `n` (the paired bootstrap-t is at 1.43 at 200 and no larger `n` was simulated); the qualification of what is simulated does not extend to other `n`, tails or distributions (Caveats). **False-fail probability of the
+criterion:** an exactly nominal procedure fails a (cell, distribution, row) with probability 0.069 to 0.072 at its smallest tail and 0.078 to 0.084 at some tail,
+and a three-distribution group with probability 0.216 to 0.231 (section F table). So "pre-register only qualifying procedures" would reject, by noise alone, about
+one nominal procedure in five on this evidence; of the 110 non-qualified groups, 9 are marginal (all failing rows within 1.25 x tail) and 101 clear, and the marginal
+ones, in particular isolated normal-data rows, are not evidence of under-coverage, whereas several tails failing on the same skew side (the bootstrap-t TOST at 170)
+indicate a residual excess of at most about 20 %. The same criterion at twice the replicates (350 expected misses at the smallest tail, `R` = 98000 for the
+sampling tails, `coverage.nominal_fail_probability(R, tails, target=350)`) has a per-row false-fail probability of 0.003 (0.009 for three distributions); at 700 it is negligible.
+**Host cost of a re-run:** the `full` plan took 2995 host core-hours, 41.7 h on 72 workers (11.5 times the workstation figure; ladders 89 %), and holds the single project
+slot for that long under the current helper (CPU-only jobs hold a GPU slot); a re-run at SF-43's final `n` should be budgeted from this figure, restricted to the
+candidate procedures, and doubling `R` doubles it.
+
 ## Conclusion
 
-Pending (later nodes).
+Acceptance A to E are met as recorded in their sections, the design pilots (G) report design inputs without a verdict; the reproducibility tooling (H) passed its recomputation and
+reconciliation (`RECOMPUTE PASS`, `RECONCILE OK`). For the statistics library and coverage (F): the library passes its unit tests on both stacks (309 tests
+on the host; 346 locally after the R5b report corrections, `OK (skipped=1)`), and the coverage simulation was run in full (1134 of 1134 cells, 428 verdict groups): 310
+groups qualify, 110 do not (101 clear, 9 marginal), 8 BCa groups are reported. `LadderBound`, the pipeline and the Student unpaired and interaction contrast bounds
+qualify at all simulated sizes; no method qualifies the paired contrast under `stress` (`n` <= 200) or Gate 5 TOST under `stress` (`n` <= 170); the bootstrap-t
+bound of the unpaired and interaction contrasts fails under `stress`, which the small-scale runs had not shown. The coverage simulation is a qualification
+report for SF-43 and not a gate of SF-42; nothing here estimates `alpha_L` or `alpha_T`.
 
 ## Caveats
 
-Pending (later nodes).
+- Coverage is qualified only for what was simulated: three distributions (a normal and the stress family at the upper bootstrap bounds of SF-39's skewness and
+  kurtosis, one skew-and-kurtosis shape in both signs), the listed sample sizes, the tails of the plan, the ladder sequences and cases of the profile (the
+  `coverage.py` docstring lists what is not covered), the pipeline at the production sizes, Gate 5 at the two boundary ratios and `rho` 0, 0.5, 0.9, cv 0.3, and contrast
+  differences of 5 standard errors. A procedure that qualifies here can still under-cover on other data; one that does not qualify here may do so only
+  at this stress level.
+- The verdict is judged at the 95 % one-sided Clopper-Pearson limit with design-effect adjustment for the shared bootstrap draws (largest design effect 1.079). The
+  false-fail probabilities assume a design effect of 1, so they are lower bounds for the shared-draw cells; the three-distribution value assumes independent distributions.
+- The host UCL values differ from the local re-computation by at most 8.7e-15 relative (scipy 1.11 against 1.18); all counts and verdicts are identical. `env.txt`
+  records `cpus 1` (artefact, Section F); the cost figures use the topology measured by `lscpu` (80 logical / 40 physical CPUs).
+- The mechanism proposed for the bootstrap-t failure of the unpaired and interaction contrasts is a hypothesis; only its existence was reproduced by an
+  independent implementation (one seed, `n` = 20, three tails).
+- The cost ratio of 11.5 against the workstation is measured, not decomposed; the host was shared and the workers ran at `nice -n 10`.
+- The older `RuntimeWarning` in the host `run.log` and the `env.txt` CPU count were corrected after the job started; the job ran the earlier code, and R5b
+  verified (chunk recomputation, summary comparison) that the corrections change no chunk result or per-cell verdict row.
 
 ## Deviations
 
@@ -1123,3 +1436,13 @@ Pending (later nodes).
    (commit `ca467143`) and the note (commit `6b7f3efa`). R4c (note text only) then corrected the memory finding (the 3328x384x384 and
    1664x384x384 peaks were measured in J2, not extrapolated), stated the 0.25 PCG-count ratio and the 3x rule's resolution limit, and added
    the projection-versus-measured comparison to the cost finding. No job was re-run and `scripts/remote` was not used in R4b or R4c.
+10. R5 (the coverage simulation) was interrupted by the owner while its worker polled the running remote job; the worker's only commit,
+   `R/verification/job_r5.sh` (the job command in a file, because the sandbox rejected `cd` in `scripts/remote run` text), was kept unchanged as
+   the record of what ran, and the running job was not touched. R5b continued from the R4 chain head plus that commit: phase 1, while the job ran
+   (local only): the report corrections (the "about 1e-3" false-fail statement replaced by the exact probabilities, incomplete groups marked,
+   `env.txt` CPU count by `nproc --all` and `lscpu`, the bootstrap-t `RuntimeWarning` removed by moving one line inside `np.errstate`); phase 2, after
+   the job: the outputs, the corrected `summarize`, this section F, the cost table of the `coverage.py` docstring and `run_coverage.sh` header, the independent
+   check `indep_boott_unpaired.py`. These corrections change no chunk result and no per-cell verdict row (evidence in section F: the plan hash, 14 host chunks
+   recomputed exactly, all 13734 tail rows of the final summary equal to the host's old-code summary in counts, `R`, `pass`, `powered`, design effect and rate; the UCL at
+   rounding level). The job's own `env.txt` keeps `cpus 1` and its `run.log` the two `RuntimeWarning` lines. The job held the single project slot for 41.693 h
+   although it is CPU only.

@@ -13,9 +13,9 @@
 #   number of workers, so a rerun may use another --workers.  A plan different from the one in <out_dir> is refused.
 # * Default workers: the number of CPUs capped at 72 (the host is shared; pass --workers to override).
 # * Outputs in <out_dir>: plan.json, chunks/ (one JSON per finished chunk), summary.json, summary.md (qualification matrix,
-#   failures, UCL/tail tables), env.txt, run.log.  Expected cost of the default `full` profile: see the module docstring of
-#   mcstat/coverage.py (`full`: 261 workstation core-hours, about 5.4-7.3 h on 80 cores; `full-grid` 440 core-hours, 9.2-12.2 h; `n6b`, the
-#   cells of SF-42 N6b only: 2.4-3.2 h).
+#   failures, UCL/tail tables), env.txt, run.log.  Cost of the default `full` profile: see the module docstring of
+#   mcstat/coverage.py (MEASURED on the host: 2995 core-hours, 41.7 h wall on 72 workers; the earlier projection of 5.4-7.3 h from 261
+#   workstation core-hours was 6-8 times too low; `full-grid` and `n6b` were never run on the host).
 set -euo pipefail
 
 if [ $# -lt 1 ]; then

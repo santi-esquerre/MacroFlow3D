@@ -1,0 +1,5 @@
+mixture check: mean -0.0009 sd 0.9991 skew 1.937 exkurt 4.726
+n 20 R 20000 B 2000
+tail 0.00833  boott misses 312 rate/tail 1.87   student misses 107 rate/tail 0.64   (nominal 167)
+tail 0.00417  boott misses 155 rate/tail 1.86   student misses 45 rate/tail 0.54   (nominal 83)
+tail 0.00250  boott misses 94 rate/tail 1.88   student misses 25 rate/tail 0.50   (nominal 50)

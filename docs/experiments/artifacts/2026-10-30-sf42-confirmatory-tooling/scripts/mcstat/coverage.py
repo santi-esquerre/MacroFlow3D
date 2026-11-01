@@ -89,8 +89,41 @@ Design (restart-safe, reproducible, memory-bounded, parallel)
   ``full-grid``  1554       247 M         440                    9.2 h (12.2 h)              102 + 85 student + 222 boott
   =============  =========  ============  =====================  ==========================  ==============================
 
+  MEASURED on the host (job ``sf42-coverage``, ``full`` profile, 72 workers, ``nice -n 10``, 2 x Xeon Gold 6138 = 80 logical / 40 physical
+  CPUs, Python 3.11 / numpy 1.26 / scipy 1.11): 35 844 chunks, 10 782 196 core-seconds = **2995 core-hours** in 150 047 s = **41.7 h** wall
+  (the workers' time is 99.8 % of 72 x wall).  That is 11.5 times the workstation core-hours of the table above (``n6b`` cells 1432 h =
+  12.3 times, N6c cells 1564 h = 10.8 times, ladders 2654 h = 11.6 times 229) and 5.7 to 7.7 times the projected wall time (the
+  projection assumed a host core 1.5 to 2 times slower and 80 workers at 90 %).  Recomputed on the workstation, 10 sampled host chunks
+  of 17 s or more (n 20-30, 7 families) took 4.4 to 9.1 times less than on the host; the overall factor of 11.5 is above that sample and is not
+  decomposed (72 workers on 40 physical cores, a slower core and the older numpy all contribute; that larger arrays suffer more from
+  the shared memory bandwidth is a hypothesis, not measured):
+
+  ============================  ==========  =======  =======  ==============  ==============
+  family                        method      cells    chunks   host core-h     host s / chunk
+  ============================  ==========  =======  =======  ==============  ==============
+  sampling of the mean          Student     24       24       0.0             3
+  sampling of the mean          bootstrap-t 24       672      61.6            330
+  Gate 5 TOST                   Student     45       45       0.0             1
+  Gate 5 TOST                   bootstrap-t 45       72       15.8            789
+  BCa (reported)                percentile  12       18       0.3             51
+  contrast (3 kinds)            percentile  45       531      48.8            331
+  contrast (3 kinds)            Student     45       180      0.2             5
+  contrast (3 kinds)            bootstrap-t 45       801      58.8            264
+  ladder E_h                    percentile  360      15408    1268.7          296
+  ladder E_h                    Student     150      6420     475.0           266
+  ladder E_h                    bootstrap-t 150      10260    909.8           319
+  pipeline K = 3, 4             percentile  63       438      52.1            428
+  pipeline K = 3, 4             Student     63       321      27.9            313
+  pipeline K = 3, 4             bootstrap-t 63       654      75.9            418
+  all                                       1134     35844    2995.1          301
+  ============================  ==========  =======  =======  ==============  ==============
+
+  The ladders are 89 % of the cost.  The chunk-sizing estimate ``_est_spr`` (about 60 workstation-seconds per chunk) implies 587 workstation
+  core-hours for ``full``, 2.2 times the benchmarked 261: it over-sizes the chunks on the workstation (a sampled chunk took 17-59 s
+  there) and is not a cost projection.  A re-run of ``full`` at the same size needs about 41.7 h on 72 workers of that host.
+
   ``full`` is the default because ``full-grid`` would exceed the budget of about 10 wall-hours at a host core twice as slow as the
-  workstation's.  What ``full`` drops from ``full-grid``, exactly: for the studentized ladders only (every other N6c cell, all tails,
+  workstation's (projected; the measured cost of ``full`` alone exceeded it four times).  What ``full`` drops from ``full-grid``, exactly: for the studentized ladders only (every other N6c cell, all tails,
   all distributions and all sample sizes are kept), the cases (kind, true order, kappa) (power, 1.5, 12 / 25 / 50), (power, 2 and 1, 50)
   and (non-monotone, 1, 25 / 50): 7 of the 12 N6b cases, for both production levels, both methods, three distributions and the five
   sample sizes.  The kept cases are the hard corners (the lowest signal-to-noise ratios and the extreme true orders; a larger kappa is
