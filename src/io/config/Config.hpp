@@ -77,7 +77,7 @@ struct GridConfig {
  * to `sigma2`, `corr_length = stochastic.corr_length`, seed `seed0 + r` for realization `r`.
  * `present` records that the YAML block exists (it is required iff `field_source` selects it).
  * Bitwise identity of `Y`/`K` with the consumer requires `grid.dx` to parse to exactly `1.0 / ny`
- * (write it with `%.17g`); this is documented, not enforced.
+ * (write it with `%.17g`); the validator enforces it.
  */
 struct Sf18MediumBYamlConfig {
     bool present = false;

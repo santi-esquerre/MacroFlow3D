@@ -123,4 +123,34 @@ ssh() { shift; ( PATH="$tmp/bin:$PATH"; eval "$1" ); }
 bash --noprofile --norc -c "$(blinded_wrap 'true' run "job=myjob"$'\t'"gpu=auto" 1)"
 expect_eq run-line-count "$(grep -c 'kind=run' "$LOG")" 1
 
+# --- 8. the blinded log cannot be addressed as a job (launcher would truncate it) ----
+echo keep-me >>"$LOG"
+n_before="$(wc -l <"$LOG")"
+: >"$rec"
+ssh() { shift; printf '%s\n---\n' "$1" >>"$rec"; }
+for fn in "run_command exec-blinded auto true" "status_command exec-blinded" "tail_command exec-blinded" \
+          "wait_command exec-blinded" "cancel_command exec-blinded"; do
+  rc=0; ( $fn ) >/dev/null 2>&1 || rc=$?
+  expect_eq "reserved-job-name-refused[${fn%% *}]" "$rc" "1"
+done
+expect_eq reserved-name-no-ssh "$(wc -c <"$rec")" "0"
+expect_eq reserved-name-log-intact "$(wc -l <"$LOG")" "$n_before"
+rc=0; ( run_command exec-blinded2 auto true ) >/dev/null 2>&1 || rc=$?
+[[ $rc -eq 0 ]] && ok other-job-names-unaffected || bad "other-job-names-unaffected (rc=$rc)"
+! grep -q '(exit 97)' "$here/../remote" && grep -q 'helper (after its ssh retries) exits 1' "$here/../remote" \
+  && ok usage-exit-status-text || bad usage-exit-status-text
+
+# --- 9. remove-mirror refuses while the increment's blinded.marker exists ----------
+ssh() { shift; ( PATH="$tmp/bin:$PATH"; eval "$1" ); }
+mirror="$HOME/MacroFlow3D-T9"; mstate="$HOME/.macroflow3d-remote/macroflow3d-T9"
+mkdir -p "$mirror" "$mstate/logs"
+echo log >"$mstate/logs/exec-blinded.log"; : >"$mstate/blinded.marker"
+rc=0; ( remove_mirror_command T9 ) >/dev/null 2>&1 || rc=$?
+[[ $rc -ne 0 && -d "$mirror" && -e "$mstate/logs/exec-blinded.log" ]] \
+  && ok remove-mirror-refused-during-phase || bad "remove-mirror-refused-during-phase (rc=$rc)"
+rm -f "$mstate/blinded.marker"
+rc=0; ( remove_mirror_command T9 ) >/dev/null 2>&1 || rc=$?
+[[ $rc -eq 0 && ! -e "$mirror" && ! -e "$mstate" ]] \
+  && ok remove-mirror-unchanged-without-phase || bad "remove-mirror-unchanged-without-phase (rc=$rc)"
+
 (( fails == 0 )) && echo "ALL PASS" || { echo "$fails FAILED"; exit 1; }

@@ -181,6 +181,19 @@ scripts/remote --increment SF-NN blinded stop                                # a
   `kind=blinded-start|blinded-stop`). The command field is `printf %q` of the
   exact string, so it is one line and decodes with `eval "printf %s $field"`.
   The log is append-only across phases and is kept after `stop`.
+- Scope of the logging: the marker and the log live under the per-increment
+  `$REMOTE_STATE_ROOT`, so only `exec` and `run` invoked with the SAME
+  `--increment` (or `REMOTE_INCREMENT`) are logged. Not logged: `exec`/`run`
+  with another or no `--increment`, `tail`/`status`/`wait` reads of job logs, and
+  direct `ssh` to the host. The log is an integrity aid for the blinded protocol
+  (declare what was read in the bitácora), not an access control.
+- Protections of the log: the job name `exec-blinded` is reserved (the log is
+  `logs/exec-blinded.log`, next to the job logs `logs/<job>.log`), so `run`,
+  `status`, `tail`, `wait` and `cancel` refuse it and no job launcher can truncate
+  the log; and `remove-mirror <id>` refuses (exit 1) while that increment's
+  `blinded.marker` exists. After `blinded stop` the log is kept, but a later
+  `remove-mirror` deletes the whole state root with it: copy the log into the
+  evidence (at the freeze) first.
 - Mechanism: `scripts/remote` always sends, in the same ssh invocation, a guard
   statement `if [ -e <marker> ]; then <append line>; fi` on its own line before
   `cd <mirror> && <command>`. No extra round trip. The command text itself is

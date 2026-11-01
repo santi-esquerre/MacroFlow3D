@@ -21,6 +21,13 @@
  * biased: divide by n_crossed, two-pass centred) for t, the transverse position (x2, x3) and the
  * transverse displacement from the injection point (dx = crossing - injection).
  *
+ * Closed outlet (Dirichlet x faces map to Par2 `Closed`). Par2_Core zeroes the x displacement of a move that
+ * would leave the domain, so a particle closer to Lx than one step never crosses a plane in (x_n, Lx):
+ * planes closer to Lx than the largest step |dx_step| (advective U dt plus the diffusive/dispersive jump,
+ * several sigma) are not reliably crossed. The validator only requires the last plane < Lx; leave a
+ * clearance of at least several steps (e.g. >= 10 U_max dt) and treat n_crossed < n_injected on planes
+ * near the outlet as this limitation, not as a particle property.
+ *
  * HPC contract: device buffers are allocated once in the constructor (no allocation, no host sync
  * in update()); records are per particle and plane (n_particles x P x (3 doubles + 1 byte)), which
  * is the dominant memory cost of the option (25 B per particle and plane).

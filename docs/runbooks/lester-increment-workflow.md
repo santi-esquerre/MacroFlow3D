@@ -282,9 +282,14 @@ For an increment whose decision record requires pre-registration (G8 of
      `alpha`, intervals or signs).
    - Must not be read: any estimate of `alpha_L`, `alpha_T`, their per-realization
      values, plots or contrasts, and the reduced tables' mean columns.
-   - Every `scripts/remote exec` and `run` submission is logged on the host
-     (`logs/exec-blinded.log`). Copy the log into the evidence at the freeze and
-     record its sha256.
+   - Every `scripts/remote exec` and `run` submission made with this
+     `--increment` is logged on the host (`logs/exec-blinded.log` under that
+     increment's state root). NOT logged: `exec`/`run` with another or no
+     `--increment`, `tail`/`status`/`wait` of job logs, and direct ssh; the log
+     documents the protocol, it is not an access control. The job name
+     `exec-blinded` is reserved and `remove-mirror` refuses while the phase is
+     active (`remote-v100.md`). Copy the log into the evidence at the freeze
+     (before any `remove-mirror`) and record its sha256.
 3. **Analysis freeze.** Declared in a bitácora row (UTC, commit of the analysis
    code, sha256 of the per-realization reduced tables, sha256 of the exec log),
    then `blinded stop`. After the freeze only the pre-registered analysis runs;

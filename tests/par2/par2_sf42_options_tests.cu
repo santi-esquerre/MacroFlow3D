@@ -18,10 +18,18 @@
  *    - the plane-crossing CSV equals an INDEPENDENT brute-force reference to 1e-12 relative. The
  *      reference never touches the device crossing code: it reads the full-precision (fixed, 20
  *      decimals) unwrapped positions of EVERY step from the pipeline's own snapshot output
- *      (`analysis.snapshots.every = 1`, `include_unwrapped`) plus the injection dump, scans every
+ *      (`analysis.snapshots.every = 1`, `include_unwrapped`), takes the step-0 positions (and the
+ *      displacement origin) from the test's own re-evaluation of the Par2 injection law (below), NOT
+ *      from the recorder's capture, checks that capture against it, scans every
  *      particle's piecewise-linear trajectory for the first crossing of each plane, and computes
  *      the moments in long double (two-pass, biased). The case crosses several planes in one step
- *      and wraps transverse coordinates periodically (both asserted from the data).
+ *      and wraps transverse coordinates periodically (both asserted from the data). Both
+ *      realizations (r = 0, 1) are compared. Injection law (Par2_Core `inject_box_kernel`, documented
+ *      here, re-evaluated by a kernel of this file): seed = transport.seed + 1000 r, per particle i
+ *      curand_init(seed, i, 0) and three curand_uniform_double (u, v, w), position = lo + u (hi - lo).
+ *    - control: enabling analysis.plane_crossings and output.dump_field leaves every other output
+ *      file of the Par2 run byte-identical (effective_config.yaml / manifest.json excepted: they
+ *      record the new keys by design).
  * C. A run with zero crossings (nan rows), default K source and full-plane injection.
  *
  * Tolerances (stated before the first run): counts exact; values 1e-12 relative to max(|ref|, floor)
@@ -39,6 +47,8 @@
 #include "src/physics/streamfunctions/inlet_slab/NpyIo.hpp"
 #include "src/runtime/CudaContext.cuh"
 
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -118,6 +128,36 @@ void case_a_validation() {
         const io::AppConfig c = valid_sf18_config();
         const io::ValidationResult r = io::validate_config(c);
         check("A.valid_sf18_config_accepted", r.ok());
+    }
+    {
+        // AUD-ABC-1: the periodic_gaussian streamfunction field source would read an uninitialized Y
+        io::AppConfig c = valid_sf18_config();
+        c.streamfunction_solver.enabled = true;
+        c.streamfunction_solver.field_source = "periodic_gaussian";
+        check("A.sf18_with_streamfunction_periodic_gaussian_rejected",
+              rejects(c, "streamfunction_solver.field_source"));
+        c.streamfunction_solver.field_source = "stochastic";
+        check("A.sf18_with_streamfunction_stochastic_accepted", io::validate_config(c).ok());
+        c.streamfunction_solver.enabled = false;
+        c.streamfunction_solver.field_source = "periodic_gaussian"; // disabled stage: unused
+        check("A.sf18_with_disabled_streamfunction_accepted", io::validate_config(c).ok());
+    }
+    {
+        // AUD-ABC-5: unit-box spacing dx == 1/ny exactly (the message prints the %.17g value)
+        io::AppConfig c = valid_sf18_config();
+        c.grid.dx = 0.0625 * (1.0 + 1e-15);
+        check("A.sf18_dx_not_1_over_ny_rejected", rejects(c, "grid.dx") && rejects(c, "0.0625"));
+        c.grid.dx = 1.0;
+        check("A.sf18_dx_one_rejected", rejects(c, "grid.dx"));
+        c.grid.ny = 24;
+        c.grid.nz = 24;
+        c.grid.dx = 1.0 / 24.0;
+        check("A.sf18_dx_1_over_24_accepted", io::validate_config(c).ok());
+        c.grid.dx = 0.041666666666666664; // the %.17g text of 1/24 used by the committed configs
+        check("A.sf18_dx_text_of_1_over_24_accepted", io::validate_config(c).ok());
+        io::AppConfig d = io::make_default_config(); // non-sf18 configs keep any dx
+        d.grid.dx = 0.3;
+        check("A.default_source_dx_unconstrained", io::validate_config(d).ok());
     }
     {
         io::AppConfig c = valid_sf18_config();
@@ -371,6 +411,7 @@ struct RunSpec {
     bool sf18 = true;
     bool window = true;
     bool dump = true;
+    bool crossings = true;
     bool snapshots = true;
     int nr = 2;
     int steps = kSteps;
@@ -406,10 +447,12 @@ std::string write_config(const fs::path& path, const RunSpec& s) {
     if (s.snapshots)
         y << "  snapshots: {enabled: true, every: 1, legacy_format: false, include_unwrapped: "
              "true, include_wrap_counts: true, precision: 20}\n";
-    y << "  plane_crossings:\n    enabled: true\n    dump_injection: true\n    planes: [";
-    for (size_t k = 0; k < s.planes.size(); ++k)
-        y << (k ? ", " : "") << strf("%.17g", s.planes[k]);
-    y << "]\n";
+    if (s.crossings) {
+        y << "  plane_crossings:\n    enabled: true\n    dump_injection: true\n    planes: [";
+        for (size_t k = 0; k < s.planes.size(); ++k)
+            y << (k ? ", " : "") << strf("%.17g", s.planes[k]);
+        y << "]\n";
+    }
     y << "output:\n  output_dir: " << s.out.string() << "\n  save_K: false\n";
     if (s.dump)
         y << "  dump_field:\n    enabled: true\n    realizations: [0, 1]\n";
@@ -515,22 +558,64 @@ struct Traj {
     bool ok = false;
 };
 
-Traj read_trajectories(const fs::path& out, const Csv& inj, int steps) {
+/// The Par2 injection law (see the header comment), evaluated by this file's own kernel.
+__global__ void inject_law_kernel(double* x, double* y, double* z, int n, double x0, double y0,
+                                  double z0, double x1, double y1, double z1,
+                                  unsigned long long seed) {
+    const int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid >= n)
+        return;
+    curandState_t st;
+    curand_init(seed, tid, 0, &st);
+    const double u = curand_uniform_double(&st);
+    const double v = curand_uniform_double(&st);
+    const double w = curand_uniform_double(&st);
+    x[tid] = x0 + u * (x1 - x0);
+    y[tid] = y0 + v * (y1 - y0);
+    z[tid] = z0 + w * (z1 - z0);
+}
+
+struct Origin {
+    std::vector<double> x, y, z;
+};
+
+Origin independent_injection(int r) {
+    constexpr unsigned long long kTransportSeed = 777; // write_config: transport.seed
+    const double Ly = kNy * kH, Lz = kNz * kH;
+    double *dx = nullptr, *dy = nullptr, *dz = nullptr;
+    MACROFLOW3D_CUDA_CHECK(cudaMalloc(&dx, kNp * sizeof(double)));
+    MACROFLOW3D_CUDA_CHECK(cudaMalloc(&dy, kNp * sizeof(double)));
+    MACROFLOW3D_CUDA_CHECK(cudaMalloc(&dz, kNp * sizeof(double)));
+    inject_law_kernel<<<(kNp + 127) / 128, 128>>>(dx, dy, dz, kNp, kInjectX, kW[0] * Ly, kW[2] * Lz,
+                                                   kInjectX, kW[1] * Ly, kW[3] * Lz,
+                                                   kTransportSeed + 1000ULL * r);
+    MACROFLOW3D_CUDA_CHECK(cudaDeviceSynchronize());
+    Origin o;
+    o.x.resize(kNp);
+    o.y.resize(kNp);
+    o.z.resize(kNp);
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(o.x.data(), dx, kNp * sizeof(double), cudaMemcpyDeviceToHost));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(o.y.data(), dy, kNp * sizeof(double), cudaMemcpyDeviceToHost));
+    MACROFLOW3D_CUDA_CHECK(cudaMemcpy(o.z.data(), dz, kNp * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaFree(dx);
+    cudaFree(dy);
+    cudaFree(dz);
+    return o;
+}
+
+Traj read_trajectories(const fs::path& out, int r, const Origin& o, int steps) {
     Traj t;
     t.x.assign(steps + 1, std::vector<double>(kNp));
     t.y = t.x;
     t.z = t.x;
     t.wrapped.assign(steps + 1, std::vector<char>(kNp, 0));
-    const int ci = col(inj, "x1"), cy = col(inj, "x2"), cz = col(inj, "x3");
-    if (ci < 0 || cy < 0 || cz < 0 || static_cast<int>(inj.rows.size()) != kNp)
-        return t;
     for (int i = 0; i < kNp; ++i) {
-        t.x[0][i] = inj.rows[i][ci];
-        t.y[0][i] = inj.rows[i][cy];
-        t.z[0][i] = inj.rows[i][cz];
+        t.x[0][i] = o.x[i];
+        t.y[0][i] = o.y[i];
+        t.z[0][i] = o.z[i];
     }
     for (int s = 1; s <= steps; ++s) {
-        const Csv c = read_csv(out / "snapshots" / "r_0000" / strf("step_%08d.csv", s));
+        const Csv c = read_csv(out / "snapshots" / strf("r_%04d", r) / strf("step_%08d.csv", s));
         const int cx = col(c, "xu"), cyu = col(c, "yu"), czu = col(c, "zu"), wy = col(c, "wrapY"),
                   wz = col(c, "wrapZ");
         if (!c.ok || cx < 0 || cyu < 0 || czu < 0 || wy < 0 || wz < 0 ||
@@ -702,7 +787,7 @@ void case_b(const std::string& exe, const fs::path& base, CudaContext& ctx) {
         check("B.no_dump_for_unlisted_realization", !fs::exists(s.out / "fields" / "r_0002"));
     }
 
-    // ---- injection inside the window ----
+    // ---- injection inside the window (recorder's capture) ----
     const Csv inj = read_csv(s.out / "crossings" / "realization_0000_injection.csv");
     const double Ly = kNy * kH, Lz = kNz * kH;
     {
@@ -725,60 +810,78 @@ void case_b(const std::string& exe, const fs::path& base, CudaContext& ctx) {
               (y_max - y_min) > 0.8 * (kW[1] - kW[0]) * Ly && (z_max - z_min) > 0.8 * (kW[3] - kW[2]) * Lz);
     }
 
-    // ---- crossings against the brute-force reference ----
-    const Csv cr = read_csv(s.out / "crossings" / "realization_0000_planes.csv");
+    // ---- crossings against the brute-force reference (both realizations) ----
+    const Csv cr0 = read_csv(s.out / "crossings" / "realization_0000_planes.csv");
     check("B.crossings_header",
-          cr.ok && cr.comments.size() == 1 &&
-              cr.comments[0] == "# format_version=1 sf42_plane_crossings weights=uniform "
-                                "time_origin=injection" &&
-              cr.header == split("x1,n_injected,n_crossed,mean_t,var_t,mean_x2,mean_x3,var_x2,var_x3,"
-                                 "cov_x2x3,mean_dx2,mean_dx3,var_dx2,var_dx3,cov_dx2dx3", ','));
+          cr0.ok && cr0.comments.size() == 1 &&
+              cr0.comments[0] == "# format_version=1 sf42_plane_crossings weights=uniform "
+                                 "time_origin=injection" &&
+              cr0.header == split("x1,n_injected,n_crossed,mean_t,var_t,mean_x2,mean_x3,var_x2,var_x3,"
+                                  "cov_x2x3,mean_dx2,mean_dx3,var_dx2,var_dx3,cov_dx2dx3", ','));
     check("B.crossings_file_per_realization",
           fs::exists(s.out / "crossings" / "realization_0001_planes.csv") &&
               !fs::exists(s.out / "crossings" / "realization_0002_planes.csv"));
-    const Traj T = read_trajectories(s.out, inj, kSteps);
-    check("B.reference_trajectories_read", T.ok);
-    check("B.periodic_wrapping_exercised", T.ok && T.wrapped_rows > 0,
-          strf("%lld wrapped rows", T.wrapped_rows));
-    if (!T.ok || !cr.ok || cr.rows.size() != kPlanes.size())
-        return;
     int multi = 0;
-    long long wrapped_crossings = 0;
-    bool all_ok = true;
+    long long wrapped_crossings = 0, wrapped_rows = 0;
     long long partial = 0;
-    for (size_t k = 0; k < kPlanes.size(); ++k) {
-        const RefRow ref = reference_plane(T, kSteps, kDt, kPlanes[k], k == 0 ? &multi : nullptr,
-                                           kPlanes, &wrapped_crossings);
-        const auto& row = cr.rows[k];
-        bool ok = row[col(cr, "x1")] == kPlanes[k] && row[col(cr, "n_injected")] == kNp &&
-                  static_cast<long long>(row[col(cr, "n_crossed")]) == ref.n_crossed;
-        if (ref.n_crossed > 0 && ref.n_crossed < kNp)
-            ++partial;
-        const char* names[12] = {"mean_t",  "var_t",    "mean_x2",  "mean_x3",  "var_x2",    "var_x3",
-                                 "cov_x2x3", "mean_dx2", "mean_dx3", "var_dx2",  "var_dx3",   "cov_dx2dx3"};
-        // reference slots: v[0..1] = mean_t,var_t ; v[2..6] = x2,x3 means/vars/cov ; v[7..11] = dx
-        const int slot[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-        for (int q = 0; q < 12 && ref.n_crossed > 0; ++q) {
-            double floor_scale = 0.0;
-            if (q == 7)
-                floor_scale = std::sqrt(static_cast<double>(ref.v[9]));
-            if (q == 8)
-                floor_scale = std::sqrt(static_cast<double>(ref.v[10]));
-            if (q == 6)
-                floor_scale = std::sqrt(static_cast<double>(ref.v[4] * ref.v[5]));
-            if (q == 11)
-                floor_scale = std::sqrt(static_cast<double>(ref.v[9] * ref.v[10]));
-            const double got = row[col(cr, names[q])];
-            const bool good = near(got, ref.v[slot[q]], floor_scale);
-            if (!good)
-                std::printf("   MISMATCH plane %.3f %s: got %.17g ref %.17Lg\n", kPlanes[k], names[q],
-                            got, ref.v[slot[q]]);
-            ok = ok && good;
+    for (int r = 0; r < 2; ++r) {
+        // step-0 source independent of the recorder: the injection law re-evaluated here
+        const Origin org = independent_injection(r);
+        const Csv ir = read_csv(s.out / "crossings" / strf("realization_%04d_injection.csv", r));
+        const int cxi = col(ir, "x1"), cyi = col(ir, "x2"), czi = col(ir, "x3");
+        double max_diff = std::numeric_limits<double>::infinity();
+        if (ir.ok && cxi >= 0 && cyi >= 0 && czi >= 0 && static_cast<int>(ir.rows.size()) == kNp) {
+            max_diff = 0.0;
+            for (int i = 0; i < kNp; ++i)
+                max_diff = std::max({max_diff, std::fabs(ir.rows[i][cxi] - org.x[i]),
+                                     std::fabs(ir.rows[i][cyi] - org.y[i]),
+                                     std::fabs(ir.rows[i][czi] - org.z[i])});
         }
-        all_ok = all_ok && ok;
-        std::printf("   plane %.3f: n_crossed %lld / %d\n", kPlanes[k], ref.n_crossed, kNp);
+        // exact up to FMA contraction of x0 + u (x1 - x0) in the two compilations (<= 1 ulp ~ 2e-16)
+        check(strf("B.recorder_injection_equals_independent_law_r%d", r), max_diff <= 4e-16,
+              strf("max |diff| = %.3g", max_diff));
+
+        const Csv cr = read_csv(s.out / "crossings" / strf("realization_%04d_planes.csv", r));
+        const Traj T = read_trajectories(s.out, r, org, kSteps);
+        check(strf("B.reference_trajectories_read_r%d", r), T.ok && cr.ok);
+        if (!T.ok || !cr.ok || cr.rows.size() != kPlanes.size())
+            continue;
+        wrapped_rows += T.wrapped_rows;
+        bool all_ok = true;
+        for (size_t k = 0; k < kPlanes.size(); ++k) {
+            const RefRow ref = reference_plane(T, kSteps, kDt, kPlanes[k], k == 0 ? &multi : nullptr,
+                                               kPlanes, &wrapped_crossings);
+            const auto& row = cr.rows[k];
+            bool ok = row[col(cr, "x1")] == kPlanes[k] && row[col(cr, "n_injected")] == kNp &&
+                      static_cast<long long>(row[col(cr, "n_crossed")]) == ref.n_crossed;
+            if (ref.n_crossed > 0 && ref.n_crossed < kNp)
+                ++partial;
+            const char* names[12] = {"mean_t",  "var_t",    "mean_x2",  "mean_x3",  "var_x2",    "var_x3",
+                                     "cov_x2x3", "mean_dx2", "mean_dx3", "var_dx2",  "var_dx3",   "cov_dx2dx3"};
+            // reference slots: v[0..1] = mean_t,var_t ; v[2..6] = x2,x3 means/vars/cov ; v[7..11] = dx
+            for (int q = 0; q < 12 && ref.n_crossed > 0; ++q) {
+                double floor_scale = 0.0;
+                if (q == 7)
+                    floor_scale = std::sqrt(static_cast<double>(ref.v[9]));
+                if (q == 8)
+                    floor_scale = std::sqrt(static_cast<double>(ref.v[10]));
+                if (q == 6)
+                    floor_scale = std::sqrt(static_cast<double>(ref.v[4] * ref.v[5]));
+                if (q == 11)
+                    floor_scale = std::sqrt(static_cast<double>(ref.v[9] * ref.v[10]));
+                const double got = row[col(cr, names[q])];
+                const bool good = near(got, ref.v[q], floor_scale);
+                if (!good)
+                    std::printf("   MISMATCH r=%d plane %.3f %s: got %.17g ref %.17Lg\n", r,
+                                kPlanes[k], names[q], got, ref.v[q]);
+                ok = ok && good;
+            }
+            all_ok = all_ok && ok;
+            std::printf("   r=%d plane %.3f: n_crossed %lld / %d\n", r, kPlanes[k], ref.n_crossed, kNp);
+        }
+        check(strf("B.crossings_equal_bruteforce_1e-12_r%d", r), all_ok);
     }
-    check("B.crossings_equal_bruteforce_1e-12", all_ok);
+    check("B.periodic_wrapping_exercised", wrapped_rows > 0, strf("%lld wrapped rows", wrapped_rows));
     check("B.crossings_of_wrapped_particles", wrapped_crossings > 0,
           strf("%lld first crossings with a nonzero wrap counter", wrapped_crossings));
     check("B.several_planes_in_one_step", multi > 0, strf("%d (particle, step) pairs", multi));
@@ -824,6 +927,64 @@ void case_c(const std::string& exe, const fs::path& base) {
     check("C.no_field_dump_dir", !fs::exists(s.out / "fields"));
 }
 
+/// AUD-ABC-6: enabling plane_crossings + output.dump_field changes no other Par2 output file.
+void case_d(const std::string& exe, const fs::path& base) {
+    RunSpec off, on;
+    off.out = base / "D_off";
+    on.out = base / "D_on";
+    off.crossings = false;
+    off.dump = false;
+    for (RunSpec* sp : {&off, &on}) {
+        sp->nr = 2; // dump_field.realizations is [0, 1]
+        sp->steps = 10;
+        sp->sample_every = 5;
+    }
+    write_config(base / "D_off.yaml", off);
+    write_config(base / "D_on.yaml", on);
+    const int rc0 = run_pipeline(exe, base / "D_off.yaml", base / "D_off.log");
+    const int rc1 = run_pipeline(exe, base / "D_on.yaml", base / "D_on.log");
+    check("D.pipeline_exit_0", rc0 == 0 && rc1 == 0, strf("exit %d / %d", rc0, rc1));
+    if (rc0 != 0 || rc1 != 0)
+        return;
+    auto slurp = [](const fs::path& p) {
+        std::ifstream f(p, std::ios::binary);
+        std::stringstream ss;
+        ss << f.rdbuf();
+        return ss.str();
+    };
+    long long n_files = 0, n_diff = 0, n_extra_outside = 0;
+    for (const auto& e : fs::recursive_directory_iterator(off.out)) {
+        if (!e.is_regular_file())
+            continue;
+        const fs::path rel = fs::relative(e.path(), off.out);
+        // by design these two record the new keys (and run-time metadata)
+        if (rel == "effective_config.yaml" || rel == "manifest.json")
+            continue;
+        ++n_files;
+        const fs::path other = on.out / rel;
+        if (!fs::exists(other) || slurp(e.path()) != slurp(other)) {
+            ++n_diff;
+            std::printf("   DIFFERS: %s\n", rel.c_str());
+        }
+    }
+    for (const auto& e : fs::recursive_directory_iterator(on.out)) {
+        if (!e.is_regular_file())
+            continue;
+        const fs::path rel = fs::relative(e.path(), on.out);
+        const std::string top = rel.begin()->string();
+        if (!fs::exists(off.out / rel) && top != "crossings" && top != "fields") {
+            ++n_extra_outside;
+            std::printf("   EXTRA: %s\n", rel.c_str());
+        }
+    }
+    check("D.other_outputs_byte_identical", n_files > 10 && n_diff == 0,
+          strf("%lld files compared, %lld differ", n_files, n_diff));
+    check("D.new_files_only_in_crossings_and_fields", n_extra_outside == 0 && fs::exists(on.out / "crossings") &&
+                                                         fs::exists(on.out / "fields") &&
+                                                         !fs::exists(off.out / "crossings") &&
+                                                         !fs::exists(off.out / "fields"));
+}
+
 } // namespace
 
 int main(int argc, char** argv) {
@@ -843,6 +1004,7 @@ int main(int argc, char** argv) {
         case_b(exe, base, ctx);
     }
     case_c(exe, base);
+    case_d(exe, base);
 
     std::printf("par2_sf42_options: %d checks, %d failed\n", g_checks, g_failed);
     if (g_failed == 0)

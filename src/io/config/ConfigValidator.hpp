@@ -13,6 +13,7 @@
 
 #include "Config.hpp"
 #include <cmath>
+#include <cstdio>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -109,6 +110,23 @@ inline ValidationResult validate_config(const AppConfig& cfg) {
         if (cfg.grid.nx % 2 != 0 || cfg.grid.ny % 2 != 0 || cfg.grid.nz % 2 != 0)
             err("grid", "nx, ny, nz must be even with stochastic.field_source: sf18_medium_b "
                         "(SF-18 half-spectrum layout)");
+        // Box-unit precondition of bitwise Y/K identity with the consumer (h = 1/ny as a double).
+        if (cfg.grid.ny > 0 && cfg.grid.dx != 1.0 / static_cast<double>(cfg.grid.ny)) {
+            char buf[64];
+            std::snprintf(buf, sizeof buf, "%.17g", 1.0 / static_cast<double>(cfg.grid.ny));
+            err("grid.dx", "must equal exactly 1/ny = " + std::string(buf) +
+                               " (%.17g) with stochastic.field_source: sf18_medium_b (unit-box "
+                               "spacing of the consumer lagrangian_ensemble --medium b)");
+        }
+        // EnsembleRunner skips the periodic_gaussian Y_field write when sf18_medium_b is active, yet
+        // the lambda continuation reads Y_field (the only reader); even without it the stage would
+        // claim a field it does not use.
+        if (cfg.streamfunction_solver.enabled &&
+            cfg.streamfunction_solver.field_source == "periodic_gaussian")
+            err("streamfunction_solver.field_source",
+                "'periodic_gaussian' cannot be combined with stochastic.field_source: "
+                "sf18_medium_b (the SF-18 Y field of the streamfunction stage would be "
+                "uninitialized); use 'stochastic' or disable streamfunction_solver");
     }
 
     // ── Flow ─────────────────────────────────────────────────────────

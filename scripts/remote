@@ -75,7 +75,11 @@ Blinded phase (decision 2026-10-29 G8; docs/runbooks/remote-v100.md):
   exists every `exec` and every `run` submission appends one tab-separated line
   (UTC, increment, local user@host, kind, attempt, exact command) to
   $REMOTE_STATE_ROOT/logs/exec-blinded.log BEFORE it runs, inside the same ssh
-  invocation. If that line cannot be written the command is NOT run (exit 97).
+  invocation. If that line cannot be written the command is NOT run: the host-side guard
+  exits 97 and this helper (after its ssh retries) exits 1. The name `exec-blinded`
+  is reserved (job names), and `remove-mirror <id>` is refused while that
+  increment's blinded.marker exists, so the log cannot be truncated or deleted during
+  the phase (after `blinded stop` it is kept; copy it before any later remove-mirror).
 
 Canonical examples:
   scripts/remote sync
@@ -130,6 +134,8 @@ validate_job_name() {
   [[ "$job" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
     die "job names must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
   }
+  # <job>.log would be the blinded-phase log (see blinded_log_path): never truncate or tail it as a job.
+  [[ "$job" != exec-blinded ]] || die "job name 'exec-blinded' is reserved for the blinded-phase log"
 }
 
 session_name_for() {
@@ -825,6 +831,10 @@ remove_mirror_command() {
     if [[ -n \"\$live\" ]]; then
       echo 'ERROR: refusing to remove mirror $id; live tmux sessions with prefix ${prefix}:' >&2
       echo \"\$live\" >&2
+      exit 1
+    fi
+    if [[ -e $state_dir/blinded.marker ]]; then
+      echo 'ERROR: refusing to remove mirror $id; a blinded phase is active (blinded.marker); run blinded stop first (the log is kept)' >&2
       exit 1
     fi
     echo 'Removing' $repo 'and' $state_dir
