@@ -17,8 +17,8 @@ Power model (analytic).  The linearization makes ``theta_hat ~ N(theta, sigma_e^
 (n - 1)`` approximately independent, with ``sigma_e^2 = cv_L^2 + cv_P^2 - 2 rho cv_L cv_P`` (CV = sd / mean, ``rho`` the pairing
 correlation).  The TOST rejects iff ``-delta + c s_e < theta_hat < delta - c s_e``, ``c = t_{1 - alpha, n-1} / sqrt(n)``, so
 ``power = E_s[ Phi((delta - c s - theta) sqrt(n) / sigma) - Phi((-delta + c s - theta) sqrt(n) / sigma) ]_+`` evaluated by
-quadrature over the chi-square density (Gauss-Legendre, 600 nodes, checked against adaptive quadrature in the tests; an exact two-variable integral under the stated independence; no closed form such as a
-noncentral t exists because the acceptance region is a triangle in ``(theta_hat, s)``).  A Monte Carlo check of the full pipeline
+quadrature over the chi-square density (Gauss-Legendre, 600 nodes, checked against adaptive quadrature in the tests; an exact two-variable integral under the stated independence).  The
+same quantity is Owen's Q function (the closed form used by PowerTOST for the TOST power); the quadrature evaluates it numerically.  A Monte Carlo check of the full pipeline
 (bivariate normal ``L, P`` through ``gate5_paired``) is part of the tests: the approximation error comes only from the
 linearization and the independence of ``theta_hat`` and ``s_e``; measured in the tests it is 0.001 at a true ratio 1 and about 0.012
 at a true ratio 0.95 (CVs 0.2-0.3, n = 40-100): use the analytic power for planning, not as an exact probability.

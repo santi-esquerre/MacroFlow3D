@@ -1,29 +1,37 @@
 """SF-42 N5: pruning of per-particle arrays after the reduced tables are written and verified (decision G8).
 
-`prune(arms, retained_file, table, root, execute, log)`:
+`prune(arms, retained_file, table, root, execute, log, min_retained)`:
   1. HARD GUARD: any path (arm, root, table, manifest, retained list or entry, log) whose text or realpath contains
      `sf39_campaign` is refused; there is no override in this increment.
   2. The manifest `<table>.manifest.json` (written by `sf42red reduce`) must list the table's sha256 and the table must match
      it; every recorded input file (relative to `--root`) must exist with the recorded size and sha256 (verification failure
      refuses everything).
   3. Coverage: every realization directory of every arm (`<arm>/realizations/r_%04d`, which must have `DONE`) and each of its
-     pass roots must appear as a `source` of a consumer plane row of the table.
+     pass roots must appear as a `source` of a consumer plane row of the table, and at least one such row must carry a finite
+     plane estimator (a pass whose reduced rows are all NaN is NOT verified and refuses).
   4. The sha256 of EVERY `.npy` under the arms' realization directories is recorded (kept and deleted ones alike).
   5. Only the `.npy` of realizations NOT in the retained list are deletion candidates.  The retained list is a text file with
      one realization directory per line, relative to `--root` (e.g. `armA/realizations/r_0003`), '#' comments; an entry that
-     is not a realization of the arms refuses.
+     is not a realization of the arms refuses.  Decision G8: at least `min_retained` (default 5, the G8 number) realizations
+     of every arm are retained (an arm with fewer realizations must be retained whole); The CLI always uses the G8 number; a
+     lower `min_retained` is an explicit API argument (tests only) and is reported in the plan.
+  6. Symlinks: the `realizations/` directory, every realization directory and every directory below one must not be a symlink,
+     and the realpath of every `.npy` that would be deleted must lie inside the realpath of its arm and not contain
+     `sf39_campaign`; any violation refuses BEFORE anything is deleted (`os.walk` never follows links).
   Dry run by default (prints the plan, writes nothing); `execute=True` needs a log path, writes the log (path, size, sha256,
   action) BEFORE deleting, then deletes only `*.npy` files inside the arms' realization directories.  CSV, JSON and every
   other file are never touched.
 """
 import csv
 import json
+import math
 import os
 import re
 
-from .reduce import ReduceError, sha256_file
+from .reduce import PLANE_EST, ReduceError, sha256_file
 
 GUARD = "sf39_campaign"
+MIN_RETAINED = 5  # decision G8: at least 5 retained realizations per arm
 
 
 class PruneRefused(ReduceError):
@@ -41,11 +49,16 @@ def _guard(*paths):
 
 def _realizations(arm):
     rd = os.path.join(arm, "realizations")
+    if os.path.islink(rd):
+        raise PruneRefused("%s is a symlink" % rd)
     if not os.path.isdir(rd):
         raise PruneRefused("%s has no realizations/ directory" % arm)
     out = [os.path.join(rd, n) for n in sorted(os.listdir(rd)) if re.fullmatch(r"r_\d{4}", n)]
     if not out:
         raise PruneRefused("%s has no realization directory" % arm)
+    for R in out:
+        if os.path.islink(R):
+            raise PruneRefused("realization directory %s is a symlink" % R)
     return out
 
 
@@ -81,8 +94,15 @@ def verify(table, root):
 
 
 def _covered_sources(table):
+    """(sources with a consumer plane row, sources with a consumer plane row that has a finite plane estimator)."""
+    seen, finite = set(), set()
     with open(table) as f:
-        return {r["source"] for r in csv.DictReader(f) if r["code"] == "consumer" and r["family"] == "plane"}
+        for r in csv.DictReader(f):
+            if r["code"] == "consumer" and r["family"] == "plane":
+                seen.add(r["source"])
+                if any(r[e] != "" and math.isfinite(float(r[e])) for e in PLANE_EST):
+                    finite.add(r["source"])
+    return seen, finite
 
 
 def _retained(path, root):
@@ -96,40 +116,60 @@ def _retained(path, root):
     return out
 
 
-def prune(arms, retained_file, table, root, execute=False, log=None, out=print):
+def prune(arms, retained_file, table, root, execute=False, log=None, out=print, min_retained=MIN_RETAINED):
     """Plan (and with `execute` carry out) the deletion; returns the list of deleted (or, in a dry run, planned) paths."""
     root = os.path.abspath(root)
     arms = [os.path.abspath(a) for a in arms]
     _guard(root, table, table + ".manifest.json", retained_file, log, *arms)
     if execute and not log:
         raise PruneRefused("--execute needs a --log path")
+    if min_retained < 0:
+        raise PruneRefused("min_retained must be >= 0")
     verify(table, root)
-    covered = _covered_sources(table)
+    covered, finite = _covered_sources(table)
     keep = _retained(retained_file, root)
-    all_R = []
+    all_R, per_arm = [], []
+    real_root = os.path.realpath(root)
     for arm in arms:
-        if os.path.commonpath([root, arm]) != root:
+        if os.path.commonpath([root, arm]) != root or os.path.commonpath([real_root, os.path.realpath(arm)]) != real_root:
             raise PruneRefused("arm %s is outside the root %s" % (arm, root))
-        for R in _realizations(arm):
+        Rs = _realizations(arm)
+        for R in Rs:
             if not os.path.isfile(os.path.join(R, "DONE")):
                 raise PruneRefused("realization %s is not DONE" % R)
             for pr in _pass_roots(R):
-                if os.path.relpath(pr, root) not in covered:
-                    raise PruneRefused("the reduced table has no row for %s" % os.path.relpath(pr, root))
+                src = os.path.relpath(pr, root)
+                if src not in covered:
+                    raise PruneRefused("the reduced table has no row for %s" % src)
+                if src not in finite:
+                    raise PruneRefused("the reduced rows of %s are all NaN: not verified for deletion" % src)
             all_R.append(R)
+        per_arm.append((arm, Rs))
     unknown = keep - set(all_R)
     if unknown:
         raise PruneRefused("retained entries that are not realizations of the arms: %s" % sorted(os.path.relpath(u, root) for u in unknown))
+    for arm, Rs in per_arm:  # decision G8: a minimum retained subset per arm (an arm smaller than the minimum is retained whole)
+        need, have = min(min_retained, len(Rs)), len(keep & set(Rs))
+        if have < need:
+            raise PruneRefused("arm %s retains %d realization(s), decision G8 requires at least %d" % (arm, have, need))
     records = []  # (path, size, sha, action)
     for R in all_R:
-        for dp, _, fn in os.walk(R):
+        real_R = os.path.realpath(R)
+        for dp, dn, fn in os.walk(R, followlinks=False):
+            for d in dn:
+                if os.path.islink(os.path.join(dp, d)):
+                    raise PruneRefused("symlinked directory %s below %s" % (os.path.join(dp, d), R))
             for n in sorted(fn):
                 if n.endswith(".npy"):
                     p = os.path.join(dp, n)
+                    rp = os.path.realpath(p)
+                    _guard(p)
+                    if os.path.commonpath([real_R, rp]) != real_R:
+                        raise PruneRefused("%s resolves outside its realization directory (%s)" % (p, rp))
                     records.append((p, os.path.getsize(p), sha256_file(p), "keep" if R in keep else "delete"))
     todo = [r for r in records if r[3] == "delete"]
-    out("%s: %d .npy recorded, %d retained realization(s), %d file(s) / %d bytes to delete"
-        % ("EXECUTE" if execute else "DRY RUN", len(records), len(keep), len(todo), sum(r[1] for r in todo)))
+    out("%s: %d .npy recorded, %d retained realization(s) (min per arm %d), %d file(s) / %d bytes to delete"
+        % ("EXECUTE" if execute else "DRY RUN", len(records), len(keep), min_retained, len(todo), sum(r[1] for r in todo)))
     if not execute:
         for r in todo:
             out("would delete %s" % os.path.relpath(r[0], root))

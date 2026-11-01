@@ -4,14 +4,22 @@ Tolerances.  Quantile-free quantities (difference, standard error, degrees of fr
 reproduced at 1e-9 relative or better (the integer-dof intervals at 1e-15).  The Welch bounds use a t quantile at NON-integer degrees of
 freedom: the committed numbers were computed on the host with scipy 1.11.4, whose ``t.ppf`` is off by 1.4e-9 relative there (its
 cdf at the returned quantile misses the level by 2.3e-10; scipy 1.18 returns 1.68546250814216 with a cdf residual of 0), so the bounds
-are compared at ``RTOL_Q = 5e-9`` relative to the bound.  On the host stack they are reproduced exactly.
+are compared at ``RTOL_Q = 5e-9`` relative to the bound.  The refined quantile of ``mcstat`` (``_util.t_isf``) is accurate to ~1e-14
+on every scipy, so on the host it differs from the committed record by that ~1.3e-9 (it passes through ``RTOL_Q``); the recorded
+values are NOT reproduced exactly on any stack.
+
+The ratio-consistent contrast ``L - 0.9 P`` has no full-precision committed reference (the record gives 4 decimals,
+[-0.0466, -0.0014]): it is checked at 4 decimals against the record and at 1e-12 relative against a Welch interval computed inside the
+test from the SF-39 means, standard deviations and sample sizes, independently of ``mcstat``.
 """
 import csv
 import json
+import math
 import os
 import unittest
 
 import numpy as np
+from scipy import stats
 
 from mcstat import intervals as iv
 from mcstat.tests._paths import A
@@ -59,30 +67,41 @@ class Gate5Welch(unittest.TestCase):
         C = self.S["amplitudes"]["s025"]["C"]
         L, P = C["lagrangian"]["alpha_LAM"], C["par2"]["alpha_x"]
         w = iv.welch_contrast(L["mean"], L["sd"], L["n"], P["mean"], P["sd"], P["n"], 1.0, -0.9, 0.90)
-        # note: [-0.0466, -0.0014]; survey reproduction [-0.046606, -0.001382], nu = 40.94
-        self.assertAlmostEqual(float(w.lo), -0.046606, delta=5.1e-7)
-        self.assertAlmostEqual(float(w.hi), -0.001382, delta=5.1e-7)
+        # the record (note): [-0.0466, -0.0014] at 4 decimals, nu = 40.94; there is no full-precision committed reference
+        self.assertEqual(round(float(w.lo), 4), -0.0466)
+        self.assertEqual(round(float(w.hi), 4), -0.0014)
         self.assertAlmostEqual(float(w.nu), 40.94, delta=5.1e-3)
-        self.assertAlmostEqual(round(float(w.lo), 4), -0.0466)
-        self.assertAlmostEqual(round(float(w.hi), 4), -0.0014)
         self.assertLess(float(w.hi), 0.0)  # the contrast reads `disagree` (the whole interval below zero)
+        # 1e-12 relative against a hand Welch (contrast L - 0.9 P, Welch-Satterthwaite dof, two-sided 90 %, Student quantile)
+        v1, v2 = L["sd"] ** 2 / L["n"], 0.81 * P["sd"] ** 2 / P["n"]
+        diff, se = L["mean"] - 0.9 * P["mean"], math.sqrt(v1 + v2)
+        nu = (v1 + v2) ** 2 / (v1 ** 2 / (L["n"] - 1) + v2 ** 2 / (P["n"] - 1))
+        q = float(stats.t.isf(0.05, nu))
+        for _ in range(2):  # Newton on sf(q) - 0.05: scipy < 1.12 `t.isf` is only accurate to ~1e-9 at non-integer dof
+            q += (float(stats.t.sf(q, nu)) - 0.05) / float(stats.t.pdf(q, nu))
+        close(self, w.diff, diff, 1e-12)
+        close(self, w.se, se, 1e-12)
+        close(self, w.nu, nu, 1e-12)
+        close(self, w.lo, diff - q * se, 1e-12)
+        close(self, w.hi, diff + q * se, 1e-12)
 
 
 class F4Ratios(unittest.TestCase):
-    """max(|tw_ci.lo|, |tw_ci.hi|) / m of the twin-difference interval against the margin m (F4 production verdict)."""
+    """max(|tw_ci.lo|, |tw_ci.hi|) / m of the twin-difference interval against the margin m (F4 production verdict).
+
+    The substantive reproductions are ``tw_inside`` (the verdict) and ``tw_ci`` recomputed from the reduced per-realization tables;
+    the headline multiples are the values quoted in the note."""
 
     @classmethod
     def setUpClass(cls):
         cls.S = summary()
 
-    def test_all_amplitudes_and_estimators_against_the_json(self):
+    def test_tw_inside_verdict_of_all_amplitudes_and_estimators(self):
         n = 0
         for amp in AMPS:
             for est in EST:
                 f4 = self.S["amplitudes"][amp]["A"][est]["F4"]
                 lo, hi, m = f4["tw_ci"]["lo"], f4["tw_ci"]["hi"], f4["m"]
-                want = max(abs(lo), abs(hi)) / m  # recomputed here from the JSON
-                close(self, iv.margin_multiple(lo, hi, m), want, msg="%s %s" % (amp, est))
                 # tw_inside is the statement ratio <= 2^1.5
                 self.assertEqual(bool(iv.margin_multiple(lo, hi, m) <= 2.0 ** 1.5), bool(f4["tw_inside"]), msg="%s %s" % (amp, est))
                 n += 1

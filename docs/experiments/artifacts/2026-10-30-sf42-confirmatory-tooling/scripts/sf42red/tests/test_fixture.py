@@ -123,10 +123,16 @@ class TestCli(unittest.TestCase):
             ret = os.path.join(td, "ret.txt")
             with open(ret, "w") as f:
                 f.write("arm/realizations/r_0000\n")
+            err = io.StringIO()
+            with contextlib.redirect_stderr(err):  # the CLI always applies decision G8's minimum: the arm has 2 realizations, 1 retained
+                self.assertEqual(main(["prune", "--arms", ARM, "--retained", ret, "--table", out, "--root", FIX]), 2)
+            self.assertIn("G8", err.getvalue())
+            with open(ret, "w") as f:
+                f.write("arm/realizations/r_0000\narm/realizations/r_0001\n")
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
                 self.assertEqual(main(["prune", "--arms", ARM, "--retained", ret, "--table", out, "--root", FIX]), 0)
-            self.assertIn("DRY RUN: 18 .npy recorded, 1 retained realization(s), 9 file(s)", buf.getvalue())
+            self.assertIn("DRY RUN: 18 .npy recorded, 2 retained realization(s) (min per arm 5), 0 file(s)", buf.getvalue())
             self.assertEqual(len([f for f in os.listdir(os.path.join(ARM, "realizations", "r_0001")) if f.endswith(".npy")]), 9)
             err = io.StringIO()
             with contextlib.redirect_stderr(err):
