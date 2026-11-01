@@ -1,6 +1,6 @@
 """Markdown tables of the committed pilot outputs (``R/pilots``) for the experiment note: python3 -m pilots.tables <R/pilots dir> <table>.
 
-Tables: j1, j2, j2m (M conclusions), j2cross (consumer crossing completeness), j3, cost_fit, cost_new (residuals of the new points under the SF-39-only model), proj (SF-43
+Tables: j1, j1b, j2, j2m (M conclusions), j2cross (consumer crossing completeness), j3, cost_fit, cost_new (residuals of the new points under the SF-39-only model), proj (SF-43
 projection), proj_rows (GPU-h per arm and per 100 realizations at M_plan), stop (STOP rule), resid (diagnostics of the refit residuals).  No interpretation of any alpha is made or printed.
 """
 import csv
@@ -23,8 +23,8 @@ def g(x, n=4):
     return "%.*g" % (n, x) if isinstance(x, float) else str(x)
 
 
-def j1(d):
-    rows = _csv(d, "j1_grid.csv")
+def j1(d, name="j1_grid.csv"):
+    rows = _csv(d, name)
     out = ["| run | code | grid | sigma^2 | M | PCG iters | verdict | SF-39 median | ratio | flow stage (s) | wall (s) | peak GPU MiB (own PID) | runner exact MiB | rule |",
            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
@@ -156,5 +156,5 @@ def resid(d):
 
 
 if __name__ == "__main__":
-    print({"j1": j1, "j2": j2, "j2m": j2m, "j3": j3, "cost_fit": cost_fit, "cost_new": cost_new, "proj": proj, "proj_rows": proj_rows,
+    print({"j1": j1, "j1b": lambda d: j1(d, "j1b_grid.csv"), "j2": j2, "j2m": j2m, "j3": j3, "cost_fit": cost_fit, "cost_new": cost_new, "proj": proj, "proj_rows": proj_rows,
        "j2cross": j2cross, "stop": stop, "resid": resid}[sys.argv[2]](sys.argv[1]))

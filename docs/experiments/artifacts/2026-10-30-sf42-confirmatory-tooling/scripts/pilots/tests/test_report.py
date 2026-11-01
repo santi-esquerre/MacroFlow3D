@@ -1,4 +1,6 @@
+import contextlib
 import csv
+import io
 import json
 import os
 import tempfile
@@ -79,6 +81,23 @@ class TestReportJ1Rule(unittest.TestCase):
         self.assertFalse(rows["c1"]["different_grid_required"])      # 90 = 3.0 x 30: not above 3x
         self.assertTrue(rows["c2"]["different_grid_required"])       # 100 > 90
         self.assertAlmostEqual(rows["c1"]["runner_exact_bytes_max_mib"], 1.0)
+
+
+    def test_j1b_job_and_file_names(self):
+        with tempfile.TemporaryDirectory() as td:
+            os.makedirs(os.path.join(td, "J1B", "c1"))
+            rec = {"id": "c1", "code": "consumer", "nx": 416, "ny": 96, "nz": 96, "lh": 4, "amp": "2.25", "M": 100, "seed0": 420901, "exit": 0,
+                   "wall_s": 10.0, "peak_gpu_mib_own_pid": 5000,
+                   "realizations": [{"iterations": 40, "verdict": "converged", "seconds": {"stage": 1.0}, "mem_lines_stage": [], "mem_line_bridge": ""}]}
+            with open(os.path.join(td, "J1B", "c1", "RUN.json"), "w") as f:
+                json.dump(rec, f)
+            with open(os.path.join(td, "hostref.json"), "w") as f:
+                json.dump({"pcg": {k: {"production": {"median": 40}} for k in ("s025", "s1", "s225", "s4")}, "planning_sd": {}}, f)
+            out = os.path.join(td, "out")
+            os.makedirs(out)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(report.main(["j1b", "--data", td, "--out", out]), 0)
+            self.assertEqual(sorted(os.listdir(out)), ["j1b_grid.csv", "j1b_grid.json"])
 
 
 class TestCrossing(unittest.TestCase):

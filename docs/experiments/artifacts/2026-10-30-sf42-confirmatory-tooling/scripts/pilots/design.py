@@ -5,7 +5,7 @@ the amplitude's fixed source S (19.2 lambda at sigma^2 0.25 / 1 / 2.25, 9.6 at 4
 (``seedlattice.rule``).  Consumer flags are those of SF-39's production arms (``sf39.geometry flags``) with the SF-42 plane list
 (d = 25 .. 94 lambda from x0 = 5 lambda, spacing 1 lambda, the SF-39 spacing).  Par2 configs use the SF-42 keys
 (``stochastic.field_source: sf18_medium_b``, ``transport.inject_window``, ``analysis.plane_crossings``) and SF-39's Par2 time-step rule
-scaled to the grid (``par2_time``).  Seeds: SF-42 pilot ranges 420601-420699 (J1), 420701-420799 (J2), 420801-420899 (J3).
+scaled to the grid (``par2_time``).  Seeds: SF-42 pilot ranges 420601-420699 (J1), 420701-420799 (J2), 420801-420899 (J3), 420901-420999 (J1B).
 """
 import math
 from collections import OrderedDict, namedtuple
@@ -184,6 +184,12 @@ J1_GRIDS = [(520, 120, 5, "1"), (832, 96, 8, "4"), (832, 192, 8, "4"), (1040, 24
 J1_PAR2 = [(1040, 240, 10, "1"), (1248, 288, 12, "2.25"), (1664, 192, 16, "4")]     # Gate 5 grids (Par2)
 J1_SEED0 = 420601                                                                  # + index in J1_GRIDS (Par2: seed of the consumer run of the grid)
 
+# J1B (R6, audit AUD-GH-3): the SF-43 planning grids that neither SF-39 nor J1 ran, one realization each at the highest sigma^2 planned on the grid:
+# 416x96x96 (E_h rung lh 4 at 2.25), 832x384x384 (E_W 2x2 at 2.25), 2080x240x240 (distance arm at 1).  Consumer only (none is a Gate 5 grid).
+J1B_GRIDS = [(416, 96, 4, "2.25"), (832, 384, 8, "2.25"), (2080, 240, 10, "1")]
+J1B_M = {"1": 128}                                                                 # the only M admissible on every SF-43 arm at 0.25 and 1 (as J3_M)
+J1B_SEED0 = 420901                                                                 # + index; reserved range 420901-420999
+
 J2_CONFIG = OrderedDict([("0.25", (1040, 240, 10)), ("1", (1040, 240, 10)), ("2.25", (1664, 384, 16)), ("4", (3328, 384, 32))])
 J2_SEED0 = OrderedDict([("0.25", 420701), ("1", 420711), ("2.25", 420721), ("4", 420731)])
 J2_FACTORS = (0.6, 1.0, 2.0)
@@ -208,6 +214,16 @@ def j1_runs():
     for nx, ny, lh, amp in J1_PAR2:
         seed = next(J1_SEED0 + i for i, g in enumerate(J1_GRIDS) if g[:3] == (nx, ny, lh))
         runs.append(Run("p_" + gid(nx, ny, amp), "J1", "par2", nx, ny, lh, amp, seed, 1, 0))
+    return runs
+
+
+def j1b_runs():
+    runs = []
+    for i, (nx, ny, lh, amp) in enumerate(J1B_GRIDS):
+        M = J1B_M.get(amp) or pick_M(ny, window(nx, ny, lh, amp), target_M(amp))
+        if M is None:
+            raise ValueError("no admissible M for %dx%d %s" % (nx, ny, amp))
+        runs.append(Run("c_" + gid(nx, ny, amp), "J1B", "consumer", nx, ny, lh, amp, J1B_SEED0 + i, 1, M))
     return runs
 
 
@@ -246,4 +262,4 @@ def j3b_runs(nr=8):
     return [r._replace(id=r.id + "_h3", job="J3B", hz=J3B_HZ) for r in j3_runs(nr) if r.code == "par2" and r.amp != "0.25"]
 
 
-JOBS = {"J1": j1_runs, "J2": j2_runs, "J3": j3_runs, "J3B": j3b_runs}
+JOBS = {"J1": j1_runs, "J1B": j1b_runs, "J2": j2_runs, "J3": j3_runs, "J3B": j3b_runs}

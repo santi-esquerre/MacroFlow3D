@@ -1,6 +1,6 @@
 """Local report generator of the SF-42 R4 pilots from the pulled host data (design inputs; no interpretation of any alpha).
 
-    python3 -m pilots.report j1|j2|j3 --data <dir with J1, J2, J3, hostref.json> --out <R/pilots dir>
+    python3 -m pilots.report j1|j1b|j2|j3|j3b --data <dir with J1, J2, J3, hostref.json> --out <R/pilots dir>
 
 ``--data`` layout (copied from ``~/sf42_campaign/pilots``): ``<job>/<run id>/RUN.json``, ``<job>/reduced/<run id>.csv``,
 ``hostref.json`` (SF-39 PCG iteration reference, planning SDs).  Outputs: ``j1_grid.{json,csv}``, ``j2_particles.{json,csv}``,
@@ -49,11 +49,11 @@ def write_csv(path, rows, cols):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def j1(data, out):
+def j1(data, out, job="J1", name="j1_grid"):
     with open(os.path.join(data, "hostref.json")) as f:
         ref = json.load(f)["pcg"]
     rows = []
-    for r in load_runs(data, "J1"):
+    for r in load_runs(data, job):
         row = {"id": r["id"], "code": r["code"], "grid": "%dx%dx%d" % (r["nx"], r["ny"], r["nz"]), "lh": r["lh"], "amp": r["amp"],
                "M": r["M"], "seed0": r["seed0"], "exit": r["exit"], "wall_s": r["wall_s"], "peak_gpu_mib": r["peak_gpu_mib_own_pid"]}
         if r["code"] == "consumer":
@@ -83,8 +83,8 @@ def j1(data, out):
         rows.append(row)
     cols = ["id", "code", "grid", "lh", "amp", "M", "seed0", "exit", "wall_s", "flow_stage_s", "solve_s", "prepare_s", "track_s", "total_s_runner", "peak_gpu_mib", "runner_exact_bytes_max_mib",
             "pcg_iterations", "verdict", "sf39_median_iterations", "ratio_to_sf39_median", "different_grid_required"]
-    write_csv(os.path.join(out, "j1_grid.csv"), rows, cols)
-    with open(os.path.join(out, "j1_grid.json"), "w") as f:
+    write_csv(os.path.join(out, name + ".csv"), rows, cols)
+    with open(os.path.join(out, name + ".json"), "w") as f:
         json.dump({"rule": "iterations > %g x SF-39 production median (A+B arms, same amplitude) or not converged: requires a different grid" % RATIO_LIMIT,
                    "sf39_reference": ref, "rows": rows}, f, indent=1)
     return rows
@@ -340,7 +340,7 @@ def cost_report(data, out, repo, j2_json, j3_json, hostref_json):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="pilots.report")
-    ap.add_argument("what", choices=("j1", "j2", "j3", "j3b", "cost"))
+    ap.add_argument("what", choices=("j1", "j1b", "j2", "j3", "j3b", "cost"))
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--repo", help="repository root (cost)")
@@ -351,7 +351,9 @@ def main(argv=None):
                         os.path.join(a.data, "hostref.json"))
         print(json.dumps({k: v["total_gpu_h"] for k, v in r["projections"].items()}, indent=1), "stop_budget=%s" % r["stop_budget"])
         return 0
-    if a.what == "j3b":
+    if a.what == "j1b":
+        r = j1(a.data, out=a.out, job="J1B", name="j1b_grid")
+    elif a.what == "j3b":
         r = j3(a.data, a.out, "J3B", "j3b_pairing.json")
     else:
         r = {"j1": j1, "j2": j2, "j3": j3}[a.what](a.data, a.out)

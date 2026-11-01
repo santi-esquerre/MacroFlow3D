@@ -59,7 +59,7 @@ class TestRunTables(unittest.TestCase):
             self.assertEqual(len({(r.seed0, r.nr) for r in d.j2_runs() if r.amp == amp}), 1)
 
     def test_seed_ranges_disjoint_and_reserved(self):
-        for job, lo, hi in (("J1", 420601, 420699), ("J2", 420701, 420799), ("J3", 420801, 420899)):
+        for job, lo, hi in (("J1", 420601, 420699), ("J1B", 420901, 420999), ("J2", 420701, 420799), ("J3", 420801, 420899)):
             for r in d.JOBS[job]():
                 self.assertTrue(lo <= r.seed0 and r.seed0 + r.nr - 1 <= hi, (r.id, r.seed0))
         self.assertEqual(d.PAR2_SEED, 420800001)
@@ -68,6 +68,40 @@ class TestRunTables(unittest.TestCase):
         for r in d.j1_runs() + d.j3_runs():
             if r.code == "consumer":
                 self.assertFalse(rule.on_face(r.ny, d.window(r.nx, r.ny, r.lh, r.amp), r.M)[0], r.id)
+
+    def test_j1b_is_the_complement_of_j1_and_sf39_in_the_sf43_arms(self):
+        """Every SF-43 planning grid (seedlattice.plan arms) neither run by SF-39 nor in J1 is in J1B, at the highest sigma^2 planned on it."""
+        from seedlattice import plan
+        sf39 = {(3328, 384, 16), (3328, 384, 32), (1664, 384, 16)}     # SF-39 s225_A (distance), s4_A (production), s4_w24 (E_W at 4)
+        order = list(d.EPS)
+        top = {}
+        for a in plan.build_arms():
+            k = (a["nx"], a["ny"], a["lh"])
+            top[k] = max(top.get(k, a["amp"]), a["amp"], key=order.index)
+        want = sorted((k + (amp,)) for k, amp in top.items() if k not in sf39 and k not in {g[:3] for g in d.J1_GRIDS})
+        self.assertEqual(sorted(d.J1B_GRIDS), want)
+        for k, amp in top.items():
+            if k in {g[:3] for g in d.J1_GRIDS}:        # J1 already ran each of its grids at the highest planned sigma^2
+                self.assertEqual([g[3] for g in d.J1_GRIDS if g[:3] == k], [amp], k)
+
+    def test_j1b_runs(self):
+        runs = d.j1b_runs()
+        self.assertEqual([(r.nx, r.ny, r.amp, r.nr, r.code, r.job) for r in runs],
+                         [(416, 96, "2.25", 1, "consumer", "J1B"), (832, 384, "2.25", 1, "consumer", "J1B"), (2080, 240, "1", 1, "consumer", "J1B")])
+        self.assertEqual([r.seed0 for r in runs], [420901, 420902, 420903])
+        self.assertEqual([r.M for r in runs], [100, 100, 128])
+        self.assertEqual(len({r.id for r in runs}), 3)
+        for r in runs:
+            self.assertFalse(rule.on_face(r.ny, d.window(r.nx, r.ny, r.lh, r.amp), r.M)[0], r.id)
+            a = d.consumer_args(r, "/o")
+            self.assertEqual(len(a[a.index("--planes") + 1].split(",")), 70)
+            self.assertEqual(a[a.index("--nr") + 1], "1")
+
+    def test_j1b_seeds_disjoint_from_every_other_sf42_range(self):
+        used = [r.seed0 + k for job in ("J1", "J2", "J3") for r in d.JOBS[job]() for k in range(r.nr)] + [d.PAR2_SEED]
+        mine = {r.seed0 for r in d.j1b_runs()}
+        self.assertFalse(mine & set(used))
+        self.assertTrue(all(420901 <= s <= 420999 for s in mine))     # clear of 420001-420099 (spectral), 420201-420299 (R1), 4206xx-4208xx
 
     def test_j1_par2_uses_the_consumer_seed_of_the_grid(self):
         runs = {r.id: r for r in d.j1_runs()}
