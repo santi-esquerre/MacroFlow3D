@@ -1,12 +1,19 @@
 """Recomputation driver: reduced tables (`python3 -m sf42red reduce`) vs values recomputed from the raw moment files.
 
-CAMPAIGN LAYOUT (contract with the SF-43 campaign engine)
-  <C>/arms/<arm_id>/<segment>/            one runner invocation
-      out/.../realizations/r_XXXX/        consumer realization (pass root R, or R/hmax_<d>): track.json, moment CSVs, [arrays]
-      <segment>/out/crossings/realization_XXXX_planes.csv   Par2 plane crossings (and `config.yaml`)
-REDUCED TABLES  `--reduced <dir>`: every `*.csv` below it (not `*.planes.csv`) whose header starts `code,source,r,hmax_div,seed,`,
-  each with `<table>.manifest.json` and `<table minus .csv>.planes.csv` written by `sf42red reduce`.  A row's `source` is relative
-  to the reducer's `--root`; it is resolved against `--root` (repeatable; default: the campaign directory).
+CAMPAIGN LAYOUT (the engine's: sf43camp/README.md)
+  <C>/segments/<arm_id>/<segment>/        one runner invocation (segment = u<unit>_s<seed0>)
+      out/realizations/r_XXXX/            consumer realization (pass root R, or R/hmax_<d>): track.json, moment CSVs, [arrays]
+      out/crossings/realization_XXXX_planes.csv   Par2 plane crossings (and `config.yaml`)
+REDUCED TABLES  `--reduced <dir>` (<C>/reduced): `<arm>/<segment>/<arm>__<segment>__d<lo>-<hi>.csv` (any `*.csv` below it, not
+  `*.planes.csv`, whose header starts `code,source,r,hmax_div,seed,`), each with `<table>.manifest.json` and
+  `<table minus .csv>.planes.csv` written by `sf42red reduce`.  The campaign reduces with `--root <segment dir>`, so a row's
+  `source` and the manifest paths are relative to `<C>/segments/<arm>/<segment>` (derived from the table's own location); `--root`
+  (repeatable; default: the campaign directory) is searched after it.
+PRIMARY ARMS  `--primary-arm <id>` (repeatable; H21): every consumer realization of these arms must have the plane arrays
+  (seeds, weights, planes_x23, planes_tau), so the displacement basis, alpha_TAP and the common set are recomputed for ALL of them;
+  a realization without them is a PROBLEM (exit 1).
+SINGLE PASS  `--single-pass-hmax N`: a single-pass realization root (no `hmax_<d>` directory) is labelled -1 by the reducer, or N when the
+  campaign reduced the arm with `sf42red reduce --single-pass-hmax N` (arms with `hmax_div_first`); both are accepted, any other label fails.
 
 WHAT IS RECOMPUTED (every other column/row is listed under NOT_COVERED, never silently skipped)
   consumer, family plane
@@ -14,8 +21,9 @@ WHAT IS RECOMPUTED (every other column/row is listed under NOT_COVERED, never si
         alpha_TP, alpha_LP, U_r, sigT2_first, sigT2_last, tilt, n_first, n_last, n_min, n_max, n_common, set_differs (sets are
         nested: n_common = min over the window of `contributing`), n_planes, d_first, d_last, seed, r, hmax_div, ell, x0;
         planes table: n, mean_tau, var_tau, mean_x2, mean_x3, var_x2, var_x3 of every plane.
-    arrays (retained subset only): every weights (flux/unif/expI) x basis (pos/disp) x set (perplane/common) row: all of the above
-        plus alpha_TAP, wfrac_min, n_traced; planes table: also cov_x2x3.
+    arrays (every realization of the primary arms, the retained subset elsewhere): every weights (flux/unif, and expI when
+        planes_I survives) x basis (pos/disp) x set (perplane/common) row: all of the above plus alpha_TAP, wfrac_min, n_traced;
+        planes table: also cov_x2x3.
     NOT covered: family `time` rows (the window end needs status_time/times_x), split-half columns `*_A`/`*_B`, `note`.
   par2, family plane: every estimator/count column of both bases and the planes table, from the crossing CSV.
     NOT covered: family `time` rows (series + snapshots), `ell`/`x0`/`d_lo`/`d_hi` (reducer inputs, not in the raw files).
@@ -152,7 +160,7 @@ def expected_plane_row(src, ell, idx, x1w, row):
             mom = [m_all[k] for k in idx]
             cnt = [m["n"] if m else 0 for m in mom]
             out.append(("csv", _vals(mom, x1w, ell, {"n_common": min(cnt)}, cnt, "csv")))  # nested sets: n_common = min
-        if src.arrays is not None:
+        if src.has_weights(wmode):
             mom = src.array_moments(wmode, basis, idx, common)
             cnt = [m["n"] if m else 0 for m in mom]
             n_common, wfrac, traced = src.set_stats(wmode, idx)
@@ -160,7 +168,7 @@ def expected_plane_row(src, ell, idx, x1w, row):
     return out, (None if out else "variant needs the per-particle arrays (pruned)")
 
 
-def compare_plane_rows(tally, src, rows, who, not_covered):
+def compare_plane_rows(tally, src, rows, who, not_covered, single_pass_hmax=None):
     for row in rows:
         if src.code == "consumer":
             ell_r, x0_r = src.ell, src.x0
@@ -182,7 +190,9 @@ def compare_plane_rows(tally, src, rows, who, not_covered):
         if src.code == "consumer":
             meta.update(seed=int(src.field["seed"]), ell=ell_r, x0=x0_r, r=int(re.search(r"r_(\d{4})", src.rdir).group(1)))
             hm = re.search(r"hmax_(\d+)$", os.path.normpath(src.root))
-            meta["hmax_div"] = int(hm.group(1)) if hm else -1
+            # a single-pass root has no hmax_<d> directory: -1, or the label sf42red's --single-pass-hmax gave (an arm that mixes layouts)
+            meta["hmax_div"] = int(hm.group(1)) if hm else (single_pass_hmax if single_pass_hmax is not None
+                                                           and int(fnum(row["hmax_div"])) == single_pass_hmax else -1)
         else:
             meta["r"] = int(re.search(r"realization_(\d{4})_planes", os.path.basename(src.path)).group(1))
         for origin, vals in got:
@@ -201,7 +211,7 @@ def compare_planes_table(tally, src, prows, who, not_covered):
         else:
             if src.csv_available(wmode, basis):
                 mom.append(("csv", src.csv_moments(wmode)))
-            if src.arrays is not None:
+            if src.has_weights(wmode):
                 mom.append(("arrays", src.array_moments(wmode, basis, list(range(len(src.planes))), False)))
         if not mom:
             not_covered.append("%s planes table %s/%s: variant needs the per-particle arrays (pruned)" % (who, wmode, basis))
@@ -225,12 +235,23 @@ def open_source(code, path):
     return ConsumerSource(path) if code == "consumer" else Par2Source(path)
 
 
-def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL):
+SEG_ARM = re.compile(r"(?:^|/)segments/([^/]+)/")
+
+
+def table_root(campaign, reduced, table):
+    """Segment directory a table's `source` paths are relative to: <C>/segments/<arm>/<segment> for <reduced>/<arm>/<segment>/<table>.csv."""
+    parts = os.path.relpath(table, reduced).split(os.sep)
+    return os.path.join(campaign, "segments", parts[0], parts[1]) if len(parts) >= 3 else None
+
+
+def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL, primary_arms=(), single_pass_hmax=None):
     """Write the report to the file object `out`; return the exit code."""
     P = lambda *a: print(*a, file=out)  # noqa: E731
     roots = list(roots) if roots else [campaign]
     tally = Tally(rtol, atol)
-    P("RECOMPUTE43 campaign=%s reduced=%s roots=%s rtol=%g atol=%g" % (campaign, reduced, ",".join(roots), rtol, atol))
+    P("RECOMPUTE43 campaign=%s reduced=%s roots=%s rtol=%g atol=%g primary_arms=%s" % (campaign, reduced, ",".join(roots), rtol, atol,
+                                                                                         ",".join(primary_arms) or "-"))
+    primary_arms, base_roots, primary_seen = set(primary_arms), roots, {}
     problems, not_covered, nonrow = [], [], []
     realizations = {"consumer": set(), "par2": set()}
     with_arrays = set()
@@ -239,6 +260,8 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL):
         P("no reduced table under %s" % reduced)
     for t in tables:
         rows = read_table(t)
+        sroot = table_root(campaign, reduced, t)
+        roots = ([sroot] if sroot and os.path.isdir(sroot) else []) + list(base_roots)
         pl = t[:-4] + ".planes.csv"
         prows = read_table(pl) if os.path.isfile(pl) else []
         if not prows:
@@ -268,12 +291,17 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL):
             realizations[code].add(who)
             if code == "consumer" and src.arrays is not None:
                 with_arrays.add(who)
+            arm_id = (SEG_ARM.search(path.replace(os.sep, "/")) or [None, None])[1]
+            if code == "consumer" and arm_id in primary_arms:
+                primary_seen.setdefault(arm_id, set()).add(who)
+                if src.arrays is None:
+                    problems.append("%s: primary arm %s without the plane arrays (seeds, weights, planes_x23, planes_tau)" % (who, arm_id))
             if code == "consumer" and not src.csv and src.arrays is None:
                 problems.append("%s: neither moment CSVs nor arrays present" % who)
                 continue
             before = tally.n
             try:
-                compare_plane_rows(tally, src, plane_rows, who, not_covered)
+                compare_plane_rows(tally, src, plane_rows, who, not_covered, single_pass_hmax)
                 compare_planes_table(tally, src, prow_src, who, not_covered)
             except (ValueError, KeyError, IndexError) as e:
                 problems.append("%s: recomputation failed (%s: %s)" % (who, type(e).__name__, e))
@@ -283,7 +311,12 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL):
     P("COVERAGE (values compared per code / family / origin / column, realizations covered, max relative difference)")
     for (code, fam, origin, col), c in sorted(tally.cov.items()):
         P("  %-8s %-12s %-9s %-12s values=%-6d realizations=%-4d max_rel=%.3e" % (code, fam, origin, col, c["n"], len(c["who"]), c["max"]))
-    P("REALIZATIONS consumer=%d (with per-particle arrays %d) par2=%d" % (len(realizations["consumer"]), len(with_arrays), len(realizations["par2"])))
+    P("REALIZATIONS consumer=%d (with plane arrays %d) par2=%d" % (len(realizations["consumer"]), len(with_arrays), len(realizations["par2"])))
+    for a in sorted(primary_arms):
+        n = len(primary_seen.get(a, ()))
+        P("PRIMARY_ARM %s realization passes=%d with_arrays=%d" % (a, n, len([w for w in primary_seen.get(a, ()) if w in with_arrays])))
+        if n == 0:
+            problems.append("primary arm %s: no reduced consumer realization found" % a)
     for tag, items in (("NOT_COVERED", not_covered), ("NOT_RECOMPUTED_ROWS", nonrow)):
         agg = OrderedDict()
         for s in items:

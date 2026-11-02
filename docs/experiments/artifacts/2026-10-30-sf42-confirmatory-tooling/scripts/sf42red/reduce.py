@@ -331,7 +331,7 @@ def consumer_plane_variant(x1, fin, Wk, Yk, tauk, member, common):
     return mom, counts
 
 
-def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi):
+def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass_hmax=None):
     """(rows, plane_rows) of the plane family for one tracker pass."""
     P = ConsumerPass(rec, pass_root)
     if ell_arg is not None and abs(P.ell - ell_arg) > 1e-9 * abs(P.ell):
@@ -358,7 +358,7 @@ def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi):
         halves, half_note = (), str(e)
     r = int(re.search(r"r_(\d{4})", P.rdir).group(1))
     hm = re.search(r"hmax_(\d+)$", os.path.normpath(pass_root))
-    base = {"code": "consumer", "source": pass_root, "r": r, "hmax_div": int(hm.group(1)) if hm else -1,
+    base = {"code": "consumer", "source": pass_root, "r": r, "hmax_div": int(hm.group(1)) if hm else -1 if single_pass_hmax is None else int(single_pass_hmax),
             "seed": int(P.field["seed"]), "family": "plane", "ell": P.ell, "x0": P.x0, "d_lo": d_lo, "d_hi": d_hi,
             "n_planes": len(idx), "d_first": (x1w[0] - P.x0) / P.ell, "d_last": (x1w[-1] - P.x0) / P.ell,
             "n_traced": int(P.traced.sum())}
@@ -463,7 +463,7 @@ def time_alphas(times, cov_at, t_lo, t_hi, q, ell, U):
     return out
 
 
-def consumer_time_rows(rec, pass_root, U_arg):
+def consumer_time_rows(rec, pass_root, U_arg, single_pass_hmax=None):
     P = ConsumerPass(rec, pass_root)
     tx = P.npy("times_x")
     tI = P.npy("times_I")
@@ -488,7 +488,7 @@ def consumer_time_rows(rec, pass_root, U_arg):
         halves, hnote = (), str(e)
     rows = []
     for wmode in ("flux", "unif", "expI"):
-        row = {"code": "consumer", "source": pass_root, "r": r, "hmax_div": int(hm.group(1)) if hm else -1,
+        row = {"code": "consumer", "source": pass_root, "r": r, "hmax_div": int(hm.group(1)) if hm else -1 if single_pass_hmax is None else int(single_pass_hmax),
                "seed": int(P.field["seed"]), "family": "time", "weights": wmode, "basis": "pos", "set": "perplane",
                "ell": P.ell, "x0": P.x0, "n_traced": int(P.traced.sum()), "t_end": t_end,
                "t_end_next": NAN if j_next is None else float(P.times[j_next]), "j_end": j_end, "t_lo": t_lo, "U_time": U,
@@ -516,15 +516,16 @@ def consumer_time_rows(rec, pass_root, U_arg):
 # ------------------------------------------------------------------------------------------------
 # Par2
 # ------------------------------------------------------------------------------------------------
-def par2_rows(rec, path, ell, x0, d_lo, d_hi):
-    """(rows, plane_rows) from one crossing CSV."""
+def par2_rows(rec, path, ell, x0, d_lo, d_hi, seed0=None):
+    """(rows, plane_rows) from one crossing CSV.  seed0 (SF-43): seed of realization 0 of the run, the rows then carry seed0 + r
+    (default None: NaN, the SF-42 behaviour)."""
     t = read_par2_crossings(rec, path)
     r = int(re.search(r"realization_(\d{4})_planes", os.path.basename(path)).group(1))
     idx = window_planes(t["x1"], x0, ell, d_lo, d_hi)
     x1w = t["x1"][idx]
     ncr = t["n_crossed"]
-    base = {"code": "par2", "source": path, "r": r, "hmax_div": -1, "seed": NAN, "family": "plane", "weights": "unif",
-            "set": "perplane", "ell": ell, "x0": x0, "d_lo": d_lo, "d_hi": d_hi, "n_planes": len(idx),
+    base = {"code": "par2", "source": path, "r": r, "hmax_div": -1, "seed": NAN if seed0 is None else int(seed0) + r, "family": "plane",
+            "weights": "unif", "set": "perplane", "ell": ell, "x0": x0, "d_lo": d_lo, "d_hi": d_hi, "n_planes": len(idx),
             "d_first": (x1w[0] - x0) / ell, "d_last": (x1w[-1] - x0) / ell, "n_traced": int(t["n_injected"][idx[0]]),
             "n_first": int(ncr[idx[0]]), "n_last": int(ncr[idx[-1]]), "n_min": int(ncr[idx].min()), "n_max": int(ncr[idx].max()),
             "n_common": int(ncr[idx].min()), "set_differs": int(ncr[idx].min() != ncr[idx].max()),
@@ -574,16 +575,16 @@ def par2_snapshot_end(rec, snap_dir, x_exit, dt):
     return j_end, files[j_end][0] * dt, t_next, len(files)
 
 
-def par2_time_row(rec, path, ell, x0, U, x_exit, dt, snap_dir=None):
+def par2_time_row(rec, path, ell, x0, U, x_exit, dt, snap_dir=None, seed0=None):
     """Secondary time-window row of one Par2 series (fixed axes); the window end comes from the snapshots (`par2_snapshot_end`)."""
     r = int(re.search(r"realization_(\d{4})_timeseries", os.path.basename(path)).group(1))
     if snap_dir is None:
         snap_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(path))), "snapshots", "r_%04d" % r)
     j_end, t_end, t_next, _ = par2_snapshot_end(rec, snap_dir, x_exit, dt)
-    return par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end)
+    return par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end, seed0)
 
 
-def par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end):
+def par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end, seed0=None):
     """Window [0.75, 1] t_end of one Par2 series for a given t_end (series covariances interpolated)."""
     s = read_par2_series(rec, path)
     r = int(re.search(r"realization_(\d{4})_timeseries", os.path.basename(path)).group(1))
@@ -593,7 +594,7 @@ def par2_time_row_at(rec, path, ell, x0, U, t_end, t_next, j_end):
         t_end = float(t[near[0]])  # series and snapshot times are both step*dt: absorb the text round-off
     t_lo = WINDOW_FRACTION * t_end
     kact = np.flatnonzero(t <= t_end)
-    row = {"code": "par2", "source": path, "r": r, "hmax_div": -1, "seed": NAN, "family": "time", "weights": "unif",
+    row = {"code": "par2", "source": path, "r": r, "hmax_div": -1, "seed": NAN if seed0 is None else int(seed0) + r, "family": "time", "weights": "unif",
            "basis": "pos", "set": "perplane", "ell": ell, "x0": x0, "n_traced": int(active[0]),
            "n_set": int(active[kact[-1]]) if len(kact) else 0, "t_end": t_end, "t_end_next": t_next, "j_end": j_end,
            "t_lo": t_lo, "U_time": U, "note": ""}
@@ -678,8 +679,11 @@ def write_manifest(path, rec, root, tables):
 
 
 def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, root=None, warn=sys.stderr, par2_exit_x=None,
-               par2_dt=None):
-    """Run every reduction, write <out>, <out minus .csv>.planes.csv and <out>.manifest.json; returns the table rows."""
+               par2_dt=None, par2_seed0=None, single_pass_hmax=None):
+    """Run every reduction, write <out>, <out minus .csv>.planes.csv and <out>.manifest.json; returns the table rows.
+    SF-43 options (default None = the SF-42 behaviour): par2_seed0 (Par2 rows carry seed0 + r); single_pass_hmax (a single-pass
+    realization root, which has no `hmax_<d>` directory, is labelled hmax_div = this value instead of -1, so an arm that mixes
+    single- and multi-pass segments has one label for its production pass)."""
     if par2 or par2_series:
         if ell is None or x0 is None:
             raise ReduceError("--ell and --x0 are required for Par2 inputs")
@@ -694,15 +698,15 @@ def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, ro
     rec = Recorder()
     rows, prows = [], []
     for pr in expand_consumer(consumer, warn):
-        a, b = consumer_plane_rows(rec, pr, ell, x0, d_lo, d_hi)
-        rows += a + consumer_time_rows(rec, pr, U_time)
+        a, b = consumer_plane_rows(rec, pr, ell, x0, d_lo, d_hi, single_pass_hmax)
+        rows += a + consumer_time_rows(rec, pr, U_time, single_pass_hmax)
         prows += b
     for p in par2:
-        a, b = par2_rows(rec, p, ell, x0, d_lo, d_hi)
+        a, b = par2_rows(rec, p, ell, x0, d_lo, d_hi, par2_seed0)
         rows += a
         prows += b
     for p in par2_series:
-        rows.append(par2_time_row(rec, p, ell, x0, U_time, par2_exit_x, par2_dt))
+        rows.append(par2_time_row(rec, p, ell, x0, U_time, par2_exit_x, par2_dt, seed0=par2_seed0))
     if not rows:
         raise ReduceError("no input")
     for row in rows + prows:  # `source` relative to the root, the key prune uses to check coverage

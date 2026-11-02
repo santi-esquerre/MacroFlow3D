@@ -210,6 +210,46 @@ class TestG8Minimum(PruneBase):
         self.assertTrue(all("r_0001" in p for p in deleted))
 
 
+class TestKeepArrays(PruneBase):
+    """SF-43 option: named arrays survive in every realization (default empty = unchanged behaviour)."""
+
+    def test_default_is_unchanged(self):
+        n = len(npys(self.root))
+        deleted = self.run_prune(execute=True, log=self.log)
+        self.assertEqual(len(deleted), n - 9)  # only the retained r_0001 keeps its nine arrays
+        self.assertTrue(all("r_0001" not in p for p in deleted))
+
+    def test_kept_arrays_survive_in_non_retained_realizations_and_are_logged(self):
+        before = npys(self.root)
+        keep = ("seeds", "weights", "planes_x23", "planes_tau")
+        deleted = self.run_prune(execute=True, log=self.log, keep_arrays=keep)
+        self.assertTrue(deleted and all(os.path.basename(p)[:-4] not in keep for p in deleted))
+        left = npys(self.root)
+        self.assertEqual(len(left) + len(deleted), len(before))
+        for r in ("armA/realizations/r_0000", "armA/realizations/r_0002", "armB/realizations/r_0000/hmax_8", "armB/realizations/r_0000/hmax_16"):
+            have = {os.path.basename(p)[:-4] for p in left if os.sep.join(r.split("/")) in p}
+            self.assertTrue(set(keep) <= have, (r, have))
+        retained = {os.path.basename(p)[:-4] for p in left if "r_0001" in p}
+        self.assertEqual(len(retained), 9)  # the retained realization keeps all nine arrays
+        with open(self.log) as f:
+            rows = list(csv.DictReader(ln for ln in f if not ln.startswith("#")))
+        self.assertEqual({r["action"] for r in rows if os.path.basename(r["path"])[:-4] in keep}, {"keep"})
+
+    def test_bad_names_refuse(self):
+        with self.assertRaises(pr.PruneRefused):
+            self.run_prune(keep_arrays=("../seeds",))
+
+    def test_cli_option(self):
+        from sf42red import __main__ as cli
+        before = npys(self.root)
+        rc = cli.main(["prune", "--arms", self.armA, self.armB, "--retained", self.retained, "--table", self.table, "--root", self.root,
+                       "--log", self.log, "--execute", "--min-retained", "0", "--keep-arrays", "seeds,weights"])
+        self.assertEqual(rc, 0)
+        left = npys(self.root)
+        self.assertLess(len(left), len(before))
+        self.assertTrue(any(p.endswith("seeds.npy") and "r_0000" in p for p in left))
+
+
 class TestSymlinksAndNaN(PruneBase):
     def refused(self, match):
         before = npys(self.root)

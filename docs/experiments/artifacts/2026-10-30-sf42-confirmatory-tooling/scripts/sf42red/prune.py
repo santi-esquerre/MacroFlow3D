@@ -21,6 +21,11 @@
   6. Symlinks: the `realizations/` directory, every realization directory and every directory below one must not be a symlink,
      and the realpath of every `.npy` that would be deleted must lie inside the realpath of its arm and not contain
      `sf39_campaign`; any violation refuses BEFORE anything is deleted (`os.walk` never follows links).
+  SF-43 (disclosed, backward-compatible): `--keep-arrays name,...` (CLI) / `keep_arrays=(name, ...)` (API) names `.npy` arrays
+     (file name without the extension, e.g. `seeds`, `weights`, `planes_x23`, `planes_tau`) that are NEVER deletion candidates in any
+     realization (recorded with action `keep` in the log); the default is empty, which is the previous behaviour.  The SF-43 campaign
+     uses it to keep the plane arrays of every realization of its primary arms (the independent recomputation then covers the
+     displacement basis for all of them) and to delete only the others (time-pass and Pollock arrays).
   Dry run by default (prints the plan, writes nothing); `execute=True` needs a log path, writes the log (path, size, sha256,
   action) BEFORE deleting, then deletes only `*.npy` files inside the arms' realization directories.  CSV, JSON and every
   other file are never touched.
@@ -119,7 +124,7 @@ def _retained(path, root):
     return out
 
 
-def prune(arms, retained_file, table, root, execute=False, log=None, out=print, min_retained=MIN_RETAINED):
+def prune(arms, retained_file, table, root, execute=False, log=None, out=print, min_retained=MIN_RETAINED, keep_arrays=()):
     """Plan (and with `execute` carry out) the deletion; returns the list of deleted (or, in a dry run, planned) paths."""
     root = os.path.abspath(root)
     arms = [os.path.abspath(a) for a in arms]
@@ -128,6 +133,9 @@ def prune(arms, retained_file, table, root, execute=False, log=None, out=print, 
         raise PruneRefused("--execute needs a --log path")
     if min_retained < 0:
         raise PruneRefused("min_retained must be >= 0")
+    keep_arrays = set(keep_arrays)
+    if any(not re.fullmatch(r"[A-Za-z0-9_]+", k) for k in keep_arrays):
+        raise PruneRefused("keep_arrays entries must be array names without extension, got %s" % sorted(keep_arrays))
     verify(table, root)
     covered, finite = _covered_sources(table)
     keep = _retained(retained_file, root)
@@ -169,10 +177,11 @@ def prune(arms, retained_file, table, root, execute=False, log=None, out=print, 
                     _guard(p)
                     if os.path.commonpath([real_R, rp]) != real_R:
                         raise PruneRefused("%s resolves outside its realization directory (%s)" % (p, rp))
-                    records.append((p, os.path.getsize(p), sha256_file(p), "keep" if R in keep else "delete"))
+                    records.append((p, os.path.getsize(p), sha256_file(p), "keep" if R in keep or n[:-4] in keep_arrays else "delete"))
     todo = [r for r in records if r[3] == "delete"]
-    out("%s: %d .npy recorded, %d retained realization(s) (min per arm %d), %d file(s) / %d bytes to delete"
-        % ("EXECUTE" if execute else "DRY RUN", len(records), len(keep), min_retained, len(todo), sum(r[1] for r in todo)))
+    out("%s: %d .npy recorded, %d retained realization(s) (min per arm %d)%s, %d file(s) / %d bytes to delete"
+        % ("EXECUTE" if execute else "DRY RUN", len(records), len(keep), min_retained,
+           (", kept arrays %s" % sorted(keep_arrays)) if keep_arrays else "", len(todo), sum(r[1] for r in todo)))
     if not execute:
         for r in todo:
             out("would delete %s" % os.path.relpath(r[0], root))

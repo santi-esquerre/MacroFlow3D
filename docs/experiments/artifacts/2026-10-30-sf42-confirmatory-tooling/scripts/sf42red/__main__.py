@@ -28,6 +28,9 @@ def main(argv=None):
     r.add_argument("--x0", type=float, default=None, help="injection plane (required for Par2; consumer: checked against track.json)")
     r.add_argument("--d-window", type=_floats, default=(25.0, 94.0), help="d_lo,d_hi in lambda (default 25,94)")
     r.add_argument("--U-time", type=float, default=None, help="mean speed of the time-window alphas (default: qbar per realization)")
+    r.add_argument("--par2-seed0", type=int, default=None, help="seed of Par2 realization 0 (SF-43): the Par2 rows carry seed = seed0 + r "
+                   "(default: NaN, the SF-42 behaviour)")
+    r.add_argument("--single-pass-hmax", type=int, default=None, help="hmax_div label of single-pass realization roots (SF-43; default -1)")
     r.add_argument("--root", default=None, help="manifest root (default: common parent of the inputs)")
     r.add_argument("--out", required=True)
     s = sub.add_parser("splitshare", help="particle share of the per-realization variance from a reduced table (SF-39 definition)")
@@ -42,11 +45,14 @@ def main(argv=None):
     p.add_argument("--min-retained", type=int, default=prune_mod.MIN_RETAINED,
                    help="decision G8 minimum of retained realizations per directory (default %d; SF-43 passes a lower value, down to 0, "
                    "when it prunes per segment directory against an arm-level retained list)" % prune_mod.MIN_RETAINED)
+    p.add_argument("--keep-arrays", default="", help="comma-separated array names (no extension) never deleted in any realization, e.g. "
+                   "seeds,weights,planes_x23,planes_tau (default: none)")
     a = ap.parse_args(argv)
     try:
         if a.cmd == "reduce":
             rows = red.reduce_all(a.consumer, a.par2, a.par2_series, a.ell, a.x0, a.d_window[0], a.d_window[1], a.U_time, a.out, a.root,
-                                 par2_exit_x=a.par2_exit_x, par2_dt=a.par2_dt)
+                                 par2_exit_x=a.par2_exit_x, par2_dt=a.par2_dt, par2_seed0=a.par2_seed0,
+                                 single_pass_hmax=a.single_pass_hmax)
             print("wrote %d rows to %s" % (len(rows), a.out))
         elif a.cmd == "splitshare":
             rows = red.split_share(a.table)
@@ -56,7 +62,8 @@ def main(argv=None):
             for row in rows:
                 wr.writerow([red._fmt(row[c]) for c in cols])
         else:
-            prune_mod.prune(a.arms, a.retained, a.table, a.root, a.execute, a.log, min_retained=a.min_retained)
+            prune_mod.prune(a.arms, a.retained, a.table, a.root, a.execute, a.log, min_retained=a.min_retained,
+                            keep_arrays=[k for k in a.keep_arrays.split(",") if k])
     except red.ReduceError as e:
         print("sf42red: %s" % e, file=sys.stderr)
         return 2

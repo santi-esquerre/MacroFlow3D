@@ -7,14 +7,16 @@
   "budget_gpu_h": 150,
   "disk_min_free_gb": 100,
   "campaign_dir": "sf43_campaign_example",
-  "executor": "sf43exec:Executor",
+  "executor": "sf43camp.runner_executor:RunnerExecutor",
+  "min_retained": 5,
+  "background_wait_minutes": 0,
   "binaries": {"lagrangian_ensemble": "00000000000000000000000000000000", "macroflow3d_pipeline": "00000000000000000000000000000000"},
   "analysis": {"command": ["python3", "-W", "error", "-m", "analyze", "{campaign_dir}"], "sha256_list": {}},
   "recompute": {"command": ["python3", "-W", "error", "-m", "recompute", "{campaign_dir}"]},
   "reconcile": {"command": ["python3", "-W", "error", "-m", "reconcile", "{campaign_dir}"]},
   "blinded_reestimation": {
     "fraction": 0.25, "max_factor": 2.0, "arms": ["s1_prod"],
-    "sd_plan_ub": {"s1_prod": {"alpha_TP": 0.004, "alpha_LP": 0.02}}
+    "hw_target": {"s1_prod": {"alpha_TP": 0.0008, "alpha_TAP": 0.0008, "alpha_LP": 0.01}}
   },
   "failure": {"halt_rate": 0.05, "min_for_rate": 20},
   "groups": {
@@ -22,30 +24,39 @@
     "s4": {"reserves": {"start": 4900, "count": 10}}
   },
   "arms": [
-    {"id": "s1_prod", "family": "production", "amplitude": 1.0, "runner": "consumer", "priority": 0, "heavy": true, "min_free_mib": 17000,
+    {"id": "s1_prod", "family": "production", "amplitude": 1.0, "runner": "consumer", "priority": 0, "heavy": true, "min_free_mib": 17000, "primary": true,
      "group": "s1", "seeds": {"start": 1000, "count": 400}, "n_conf": 200, "n_max": 400, "unit_size": 10, "est_seconds": 300, "raw_gb": 0.1,
-     "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": 8}, "reduce": {"estimators": ["alpha_TP", "alpha_LP"]}, "retained": [1000, 1001, 1002]},
+     "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": [8], "hmax_div_first": {"n": 30, "divs": [8, 16, 32]}}, "reduce": {"estimators": ["alpha_TP", "alpha_LP"]}, "retained": [1000, 1001, 1002]},
     {"id": "s1_grid20", "family": "grid_ladder", "amplitude": 1.0, "runner": "consumer", "priority": 0, "heavy": true, "min_free_mib": 29000,
      "group": "s1", "seeds": {"start": 1000, "count": 100}, "n_conf": 100, "n_max": 100, "unit_size": 10, "est_seconds": 900, "raw_gb": 0.2,
-     "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": 8}, "reduce": {}, "retained": [1000]},
+     "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": [8]}, "reduce": {}, "retained": [1000]},
     {"id": "s1_par2", "family": "gate5_par2", "amplitude": 1.0, "runner": "par2", "priority": 0, "heavy": false, "min_free_mib": 8000,
      "group": "s1", "seeds": {"start": 1000, "count": 100}, "n_conf": 100, "n_max": 100, "unit_size": 20, "est_seconds": 200, "raw_gb": 0.01,
      "par2": {"dt": 0.01}, "reduce": {}, "retained": []},
     {"id": "s4_prod", "family": "production", "amplitude": 4.0, "runner": "consumer", "priority": 1, "heavy": true, "min_free_mib": 29000,
      "group": "s4", "seeds": {"start": 4000, "count": 60}, "n_conf": 30, "n_max": 60, "unit_size": 5, "est_seconds": 2400, "raw_gb": 0.23,
-     "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": 8}, "reduce": {}, "retained": [4000]}
+     "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": [8]}, "reduce": {}, "retained": [4000]}
   ],
   "smoke": {
     "campaign_dir": "sf43_campaign_smoke", "cutoff_minutes": 30, "budget_gpu_h": 2, "stage1_max_hours": 1,
-    "groups": {"s1": {"reserves": {"start": 9900, "count": 2}}},
-    "blinded_reestimation": {"fraction": 0.5, "max_factor": 2.0, "arms": ["s1_prod"], "sd_plan_ub": {"s1_prod": {"alpha_TP": 0.004}}},
+    "groups": {"s1": {"reserves": {"start": 9900, "count": 2}}, "sd": {"reserves": {"start": 9950, "count": 2}}},
+    "determinism_pairs": [["det_a", "det_b"]],
+    "background": [{"name": "coverage", "argv": ["python3", "-m", "coverage_sim", "{campaign_dir}"], "nice": 19, "env": {}}],
+    "background_wait_minutes": 20,
+    "blinded_reestimation": {"fraction": 0.5, "max_factor": 2.0, "arms": ["s1_prod"], "hw_target": {"s1_prod": {"alpha_TP": 0.0008}}},
     "arms": [
       {"id": "s1_prod", "family": "production", "amplitude": 1.0, "runner": "consumer", "priority": 0, "heavy": true, "min_free_mib": 17000,
        "group": "s1", "seeds": {"start": 9000, "count": 4}, "n_conf": 2, "n_max": 4, "unit_size": 2, "est_seconds": 60, "raw_gb": 0.1,
-       "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": 8}, "reduce": {}, "retained": []},
+       "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": [8]}, "reduce": {}, "retained": []},
       {"id": "s1_par2", "family": "gate5_par2", "amplitude": 1.0, "runner": "par2", "priority": 0, "heavy": false, "min_free_mib": 8000,
        "group": "s1", "seeds": {"start": 9000, "count": 2}, "n_conf": 2, "n_max": 2, "unit_size": 2, "est_seconds": 60, "raw_gb": 0.01,
-       "par2": {"dt": 0.01}, "reduce": {}, "retained": []}
+       "par2": {"dt": 0.01}, "reduce": {}, "retained": []},
+      {"id": "det_a", "family": "determinism", "amplitude": 1.0, "runner": "consumer", "priority": 0, "heavy": true, "min_free_mib": 17000, "lane": "A",
+       "group": "sd", "seeds": {"start": 9500, "count": 2}, "n_conf": 2, "n_max": 2, "unit_size": 2, "est_seconds": 60, "raw_gb": 0.1,
+       "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": [8]}, "reduce": {}, "retained": []},
+      {"id": "det_b", "family": "determinism", "amplitude": 1.0, "runner": "consumer", "priority": 0, "heavy": true, "min_free_mib": 17000, "lane": "B",
+       "group": "sd", "seeds": {"start": 9500, "count": 2}, "n_conf": 2, "n_max": 2, "unit_size": 2, "est_seconds": 60, "raw_gb": 0.1,
+       "consumer": {"ell": 0.25, "eps": 0.5, "hmax_div": [8]}, "reduce": {}, "retained": []}
     ]
   }
 }

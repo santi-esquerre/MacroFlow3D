@@ -19,7 +19,12 @@ ARM DICT (from the plan JSON).  Common: ``id``, ``family``, ``amplitude``, ``run
 x1 = x0 + d ell with x0 = ``x0_ell`` ell, ``x0_ell`` default 5, which is the consumer's own default x0 for medium b; the float expression
 is the SF-42 pilots' ``5.0*ell + d*ell``); ``hmax_div`` list (default [8]; [8,16,32] = three passes of one stage build); ``twin`` and
 ``pollock_bridge`` (default true -> ``on``); ``tol`` (default "1e-8"); ``times`` (default "auto"); ``sigma2`` (default "1");
-``fused_splines``/``single_launch`` (default true).  Strings are passed as they are, numbers with ``repr``.
+``fused_splines``/``single_launch`` (default true); ``hmax_div_first`` = {"n": N, "divs": [8, 16, 32]} (optional): a unit whose seeds
+are all among the first N positions of the arm's seed range (``seeds.start`` .. +N) runs with ``--hmax-div 8,16,32``, every other
+unit (later positions, reserve and extension seeds) with ``hmax_div``; the plan validates that ``unit_size`` divides N so that no
+unit straddles N.  The reduced rows of a single-pass segment are labelled with the production pass ``hmax_div`` (the first of
+``hmax_div``) instead of -1, so the arm has one label for its production pass in both layouts.  Strings are passed as they are,
+numbers with ``repr``.
 
 ``par2`` (SF-42 keys; config-only G7 factors): ``grid``; ``eps``; ``ell``; ``window``; ``planes_d``; ``x0_ell`` (default 5);
 ``n_particles`` (default 10000); ``cg_max_iter`` (default 2000, spec item 3); ``cg_rtol`` (default "1.0e-10"; factor R: "1.0e-6");
@@ -33,9 +38,25 @@ whatever the segmentation (default 420800001); ``snapshots_every`` (default 0 = 
 snapshots, needed only by the time-window secondary); ``mg_levels`` (default: the rule of ``pilots.design.mg_levels``).
 
 ``reduce``: ``code`` (``consumer``|``par2``); ``d_windows`` list of [d_lo, d_hi] (default [[25, 94]]; one table per window);
-``weights``/``bases`` (informational: the SF-42 reducer always writes every variant; they only pick the rows ``blinded_sd`` reads,
-defaults consumer flux/pos, Par2 unif/pos, set ``perplane``, via optional ``blind`` = {weights, basis, set}); time-window secondary
-(optional): ``U_time`` and ``par2_exit_x`` (Par2 needs both and ``snapshots_every`` > 0).
+``weights``/``bases`` (informational: the SF-42 reducer always writes every variant); optional ``blind`` = {weights, basis, set,
+window, hmax_div} picks the rows ``blinded_sd`` reads (defaults: consumer flux / Par2 unif, basis ``disp`` (H2), set ``perplane``,
+window [25, 94], consumer production pass ``hmax_div`` 8 / Par2 -1); time-window secondary (optional): ``U_time`` and
+``par2_exit_x`` (Par2 needs both and ``snapshots_every`` > 0).
+
+``primary`` (arm flag, default false): the arm feeds the primary family; ``prune`` then keeps, for EVERY realization, the plane arrays
+(``seeds``, ``weights``, ``planes_x23``, ``planes_tau``: exactly what the displacement-basis plane estimators read, so ``recompute43``
+can rebuild them) and deletes only the others (time-pass arrays, Pollock and ``planes_I``); a non-primary arm keeps only its
+retained realizations (all arrays).  Par2 ``prune`` deletes the regular snapshots after the reduction (those of retained realizations
+stay) and keeps the crossing CSVs.
+
+SEED MAP.  ``command`` writes ``D/seedmap.json`` = {seed0, nr, seeds: {r: seed0 + r}} (both codes).  The Par2 rows of the reduced
+tables carry ``seed = seed0 + r`` (``sf42red reduce --par2-seed0``), so the analysis pairs Gate 5 by seed.  The field seed Par2 prints
+(``SF-18 medium (b) field (seed=`` or ``K generation (seed=``) is cross-checked against the map in the solver records.
+
+PAR2 USABILITY (H5, H12).  The pipeline exits 0 after ``Converged=NO``; it prints ``Converged=YES|NO  iters=N  res=<initial> -> <final>``
+(absolute norms; no balance).  Verdict per seed: ``converged`` (YES); ``fallback`` (NO with final/initial <= 1e-8: usable, as the
+consumer's fallback; the balance is not printed, so the rule uses the residual only); ``not_converged_beyond_fallback`` (else: unusable,
+the seed is replaced group-wide); ``non_finite``.
 """
 import csv
 import glob
@@ -63,7 +84,12 @@ _OOM = [re.compile(p, re.I) for p in (
     r"Failed to allocate (RNG states|corner velocity buffers|drift correction buffers|status array|wrap counter arrays)",
     r"std::bad_alloc")]
 _DISK = re.compile(r"write failed|cannot write", re.I)
-_CONVERGED = re.compile(r"Converged=(YES|NO)\b")
+_CONVERGED = re.compile(r"Converged=(YES|NO)\b(?:\s+iters=(\d+)\s+res=(\S+)\s+\S+\s+(\S+))?")
+_FIELD_SEED = re.compile(r"\[4\] (?:SF-18 .*?|K generation )\(seed=(\d+)")
+USABLE = ("converged", "fallback")
+KEEP_ARRAYS = ("seeds", "weights", "planes_x23", "planes_tau")  # what the displacement-basis plane estimators read
+FALLBACK_TOL = 1e-8
+BLIND_EST = ("alpha_TP", "alpha_TAP", "alpha_LP")
 
 
 def _num(v):
@@ -82,6 +108,27 @@ def _seed0(seeds):
     if not s or s != list(range(s[0], s[0] + len(s))):
         raise ValueError("seeds must be a non-empty consecutive range, got %r" % (seeds,))
     return s[0], len(s)
+
+
+def hmax_divs(arm, seeds):
+    """The ``--hmax-div`` list of a unit: the arm's ``hmax_div_first`` divs if every seed is among its first N positions, else ``hmax_div``
+    (default [8]).  A unit that straddles N is an error (the plan makes it impossible)."""
+    c = arm["consumer"]
+    first = c.get("hmax_div_first")
+    if not first:
+        return [int(d) for d in c.get("hmax_div", [8])]
+    pos = [int(s) - int(arm["seeds"]["start"]) for s in seeds]
+    inn = [0 <= q < int(first["n"]) for q in pos]
+    if any(inn) and not all(inn):
+        raise ValueError("arm %s: unit %s straddles position %s of hmax_div_first" % (arm["id"], list(seeds), first["n"]))
+    return [int(d) for d in (first["divs"] if all(inn) else c.get("hmax_div", [8]))]
+
+
+def peak_mib(log_text):
+    """Largest device memory the consumer reports (``MEM_PHASE`` ``device_used`` / ``exact_bytes``, bytes -> MiB), or None."""
+    v = [int(m) for m in re.findall(r"^MEM_PHASE\S* .*?\bexact_bytes=(\d+)", log_text, re.M)]
+    v += [int(m) for m in re.findall(r"\bdevice_used=(\d+)", log_text)]
+    return max(v) / 1048576.0 if v else None
 
 
 def planes_of(ell, planes_d, x0_ell=5.0):
@@ -212,7 +259,29 @@ def _read_text(path):
         return ""
 
 
+def par2_solves(log_text):
+    """[{conv, iters, res0, res1, rel, verdict, usable, field_seed}] in realization order, from a Par2 log (see the module docstring)."""
+    seeds = [int(m) for m in _FIELD_SEED.findall(log_text)]
+    out = []
+    for i, m in enumerate(_CONVERGED.finditer(log_text)):
+        yes = m.group(1) == "YES"
+        try:
+            res0, res1 = float(m.group(3)), float(m.group(4))
+        except (TypeError, ValueError):
+            res0 = res1 = float("nan")
+        rel = (res1 / res0 if res0 > 0.0 else 0.0) if math.isfinite(res0) and math.isfinite(res1) else float("nan")
+        verdict = ("converged" if yes else "non_finite" if not math.isfinite(rel) and m.group(3) is not None else
+                   "fallback" if rel <= FALLBACK_TOL else "not_converged_beyond_fallback")
+        out.append({"conv": yes, "iters": None if m.group(2) is None else int(m.group(2)), "res0": res0, "res1": res1, "rel": rel,
+                    "verdict": verdict, "usable": verdict in USABLE, "field_seed": seeds[i] if i < len(seeds) else None})
+    return out
+
+
 class RunnerExecutor:
+    def __init__(self, plan=None, build_dir=None):
+        """The engine builds the executor as ``Class(plan, build_dir)``; the methods take everything they need as arguments."""
+        self.plan, self.build_dir = plan, build_dir
+
     # ---- command ---------------------------------------------------------------------------------------------------------------
     def command(self, arm, seeds, segment_dir, build_dir):
         s0, nr = _seed0(seeds)
@@ -227,12 +296,13 @@ class RunnerExecutor:
                     "--sigma2", _num(c.get("sigma2", "1")), "--eps", _num(c["eps"]), "--ell", repr(ell), "--window", str(c["window"]),
                     "--np-side", str(int(c["np_side"])), "--planes", ",".join(repr(x) for x in planes),
                     "--times", _num(c.get("times", "auto")), "--tol", _num(c.get("tol", "1e-8")),
-                    "--hmax-div", ",".join(str(int(d)) for d in c.get("hmax_div", [8]))]
+                    "--hmax-div", ",".join(str(d) for d in hmax_divs(arm, seeds))]
             argv += (["--fused-splines"] if c.get("fused_splines", True) else []) + (["--single-launch"] if c.get("single_launch", True) else [])
             argv += ["--twin", onoff(c.get("twin", True)), "--pollock-bridge", onoff(c.get("pollock_bridge", True)),
                      "--seed0", str(s0), "--nr", str(nr), "--out", os.path.join(segment_dir, "out")]
             files = {}
             meta["n_planes"] = len(planes)
+            meta["hmax_div"] = hmax_divs(arm, seeds)
         elif arm["runner"] == "par2":
             p = arm["par2"]
             argv = ["stdbuf", "-oL", os.path.join(build_dir, "macroflow3d_pipeline"), "config.yaml"]
@@ -243,6 +313,8 @@ class RunnerExecutor:
         else:
             raise ValueError("unknown runner %r" % (arm["runner"],))
         files[os.path.join(segment_dir, "segment.json")] = json.dumps(meta, sort_keys=True) + "\n"
+        files[os.path.join(segment_dir, "seedmap.json")] = json.dumps(
+            {"runner": arm["runner"], "seed0": s0, "nr": nr, "seeds": {str(r): s0 + r for r in range(nr)}}, sort_keys=True) + "\n"
         return {"argv": argv, "cwd": segment_dir, "env": {}, "files": files, "log_path": os.path.join(segment_dir, LOG)}
 
     # ---- completed realizations ------------------------------------------------------------------------------------------------
@@ -256,11 +328,11 @@ class RunnerExecutor:
         return out
 
     def _par2_state(self, segment_dir):
-        """(meta, {r: Converged flag}, {r: crossing CSV path}) of the complete realizations of a Par2 segment."""
+        """(meta, {r: solve record of ``par2_solves``}, {r: crossing CSV path}) of the complete realizations of a Par2 segment."""
         meta = _read_json(os.path.join(segment_dir, "segment.json"))
         if not meta:
             return None, {}, {}
-        conv = {i: m == "YES" for i, m in enumerate(_CONVERGED.findall(_read_text(os.path.join(segment_dir, LOG))))}
+        conv = dict(enumerate(par2_solves(_read_text(os.path.join(segment_dir, LOG)))))
         csvs = {}
         for r in range(meta["nr"]):
             path = os.path.join(segment_dir, "out", "crossings", "realization_%04d_planes.csv" % r)
@@ -270,18 +342,22 @@ class RunnerExecutor:
         return meta, conv, csvs
 
     def completed(self, arm, segment_dir):
-        """Seeds with complete outputs.  Par2: a realization whose head solve did not converge is NOT complete (unusable_solve)."""
+        """Seeds with complete outputs.  Par2: a realization whose head solve is unusable (verdict neither converged nor fallback) is
+        NOT complete (unusable_solve)."""
         if arm["runner"] == "consumer":
             return sorted(self._consumer_dirs(segment_dir))
         meta, conv, csvs = self._par2_state(segment_dir)
-        return [] if meta is None else [meta["seed0"] + r for r in sorted(csvs) if conv.get(r) is True]
+        return [] if meta is None else [meta["seed0"] + r for r in sorted(csvs) if r in conv and conv[r]["usable"]]
 
     # ---- classification --------------------------------------------------------------------------------------------------------
     def classify(self, arm, seeds, segment_dir, exit_code, log_text):
+        """-> {cls, completed_seeds, failed_seed, failed_seeds, verdicts {seed: verdict}, seconds, solver {seed: record}, [note]}.
+        ``solver``: per seed with a solve record: verdict, iterations, rel, balance (consumer), max_div (consumer, if in solver_b.json),
+        field_seed (Par2).  ``failed_seeds``: every seed of the unit with an unusable solve (Par2 runs on after one)."""
         s0, nr = _seed0(seeds)
         done = [s for s in self.completed(arm, segment_dir) if s0 <= s < s0 + nr]
-        verdicts, seconds = {}, {}
-        failed, note = None, ""
+        verdicts, seconds, solver = {}, {}, {}
+        failed, bad, note = None, [], ""
         if arm["runner"] == "consumer":
             for r, v in re.findall(r"^R=(\d+) STAGE medium=b status=(\w+)", log_text, re.M):
                 verdicts[s0 + int(r)] = v
@@ -291,23 +367,31 @@ class RunnerExecutor:
                 sv = _read_json(os.path.join(d, "solver_b.json"))
                 if sv and "verdict" in sv:
                     verdicts[s] = sv["verdict"]
+                if sv:
+                    solver[s] = {"verdict": sv.get("verdict"), "iterations": sv.get("iterations"), "rel": sv.get("rel"),
+                                 "balance": sv.get("balance"), "max_div": sv.get("max_div")}
             sf = re.findall(r"^R=(\d+) STAGE_FAILED .*?verdict=(\w+)", log_text, re.M)
             if sf:
                 failed = s0 + int(sf[-1][0])
                 verdicts[failed] = sf[-1][1]
+                bad = [failed]
         else:
             meta, conv, csvs = self._par2_state(segment_dir)
-            for r, ok in conv.items():
-                verdicts[s0 + r] = "converged" if ok else "not_converged"
+            for r, c in conv.items():
+                verdicts[s0 + r] = c["verdict"]
+                solver[s0 + r] = {"verdict": c["verdict"], "iterations": c["iters"], "rel": c["rel"], "balance": None, "max_div": None,
+                                  "field_seed": c["field_seed"]}
+                if c["field_seed"] is not None and c["field_seed"] != s0 + r:
+                    note += "field seed %s printed for seed %d; " % (c["field_seed"], s0 + r)
             prev = os.path.getmtime(os.path.join(segment_dir, "segment.json")) if meta else None
             for r in sorted(csvs):  # wall time between successive crossing CSVs (r = 0: from the unit's launch files); approximate
                 t = os.path.getmtime(csvs[r])
                 seconds[s0 + r] = max(0.0, t - prev)
                 prev = t
-            bad = [s0 + r for r, ok in sorted(conv.items()) if not ok]
+            bad = [s0 + r for r, c in sorted(conv.items()) if not c["usable"]]
             if bad:
                 failed = bad[0]
-                note = "Converged=NO for seeds %s" % bad
+                note += "unusable Par2 solves for seeds %s" % bad
         if exit_code in (137, -9):
             cls = "oom"
         elif exit_code == 4 and arm["runner"] == "consumer":
@@ -327,12 +411,13 @@ class RunnerExecutor:
         else:
             cls = "ok"
         if arm["runner"] == "par2" and cls != "unusable_solve":
-            failed = None  # a Converged=NO seed is a failure of the unit only if nothing else stopped it
+            failed, bad = None, []  # an unusable seed is a failure of the unit only if nothing else stopped it
         missing = [s for s in range(s0, s0 + nr) if s not in done]  # the runners go in seed order: the first missing seed is the failing one
         failed = None if cls == "ok" else failed if failed is not None else missing[0] if missing else None
-        out = {"cls": cls, "completed_seeds": done, "failed_seed": failed, "verdicts": verdicts, "seconds": seconds}
+        out = {"cls": cls, "completed_seeds": done, "failed_seed": failed, "peak_mib": peak_mib(log_text), "failed_seeds": bad if cls == "unusable_solve" else [],
+               "verdicts": verdicts, "seconds": seconds, "solver": solver}
         if note:
-            out["note"] = note
+            out["note"] = note.strip("; ")
         return out
 
     # ---- reduction, pruning, blinded SDs ---------------------------------------------------------------------------------------
@@ -348,12 +433,15 @@ class RunnerExecutor:
         kw, consumer, par2, series = {}, [], [], []
         if arm["runner"] == "consumer":
             consumer = [os.path.join(segment_dir, "out")]
+            if run.get("hmax_div_first"):  # one label for the production pass whether the segment ran one or several passes
+                kw = {"single_pass_hmax": int(run.get("hmax_div", [8])[0])}
         else:
             meta, _, csvs = self._par2_state(segment_dir)
             par2 = [csvs[s - meta["seed0"]] for s in done]
+            kw = {"par2_seed0": meta["seed0"]}  # the Par2 rows carry seed = seed0 + r (Gate 5 pairs by seed)
             if int(run.get("snapshots_every", 0)) > 0 and "U_time" in rd and "par2_exit_x" in rd:
                 series = [os.path.join(segment_dir, "out", "stats", "realization_%04d_timeseries.csv" % (s - meta["seed0"])) for s in done]
-                kw = {"par2_exit_x": rd["par2_exit_x"], "par2_dt": meta["dt"]}
+                kw.update(par2_exit_x=rd["par2_exit_x"], par2_dt=meta["dt"])
         res = {"tables": [], "planes": [], "manifests": [], "manifest_sha256": {}, "seeds": done}
         for lo, hi in rd.get("d_windows", [[25, 94]]):
             out = os.path.join(out_dir, "%s__%s__d%g-%g.csv" % (arm["id"], os.path.basename(os.path.normpath(segment_dir)), lo, hi))
@@ -366,11 +454,15 @@ class RunnerExecutor:
         return res
 
     def prune(self, arm, segment_dir, reduced, retained_seeds):
-        """Delete the per-particle .npy of the realizations not in ``retained_seeds`` (an ARM-level list; entries outside this
-        segment are ignored, the arm-level minimum is the caller's).  Verification and the table coverage are the SF-42 pruner's; the
-        manifest of the FIRST table is checked (all tables of a segment record the same inputs).  Par2 has no per-particle arrays."""
+        """Free the raw data of a reduced segment.  ``retained_seeds`` is an ARM-level list (entries outside this segment are ignored;
+        the arm-level minimum of 5 is the engine's).
+
+        Consumer: delete the per-particle .npy of the realizations not in ``retained_seeds``; for a ``primary`` arm the plane arrays
+        (``KEEP_ARRAYS``) of EVERY realization stay.  Verification and table coverage are the SF-42 pruner's (the manifest of the FIRST
+        table is checked: all tables of a segment record the same inputs).  Par2: delete the regular snapshots (those of retained
+        realizations stay) after verifying the manifest; the crossing CSVs always stay."""
         if arm["runner"] != "consumer":
-            return {"deleted_files": 0, "deleted_bytes": 0, "retained": [], "log": None, "note": "par2 has no per-particle arrays"}
+            return self._prune_par2(segment_dir, reduced, retained_seeds)
         keep = set(int(s) for s in retained_seeds)
         dirs = self._consumer_dirs(segment_dir)
         kept = sorted(s for s in dirs if s in keep)
@@ -380,32 +472,63 @@ class RunnerExecutor:
             for s in kept:
                 f.write(os.path.relpath(dirs[s], segment_dir) + "\n")
         log = os.path.join(segment_dir, "prune_log.csv")
+        keep_arrays = KEEP_ARRAYS if arm.get("primary") else ()
         _prune.prune([os.path.join(segment_dir, "out")], retained, reduced["tables"][0], segment_dir, True, log, out=lambda s: None,
-                     min_retained=0)
+                     min_retained=0, keep_arrays=keep_arrays)
         with open(log, newline="") as f:
             rows = list(csv.DictReader(ln for ln in f if not ln.startswith("#")))
         gone = [r for r in rows if r["action"] == "delete"]
         return {"deleted_files": len(gone), "deleted_bytes": sum(int(r["size"]) for r in gone), "retained": kept, "log": log,
-                "log_sha256": _red.sha256_file(log)}
+                "kept_arrays": list(keep_arrays), "log_sha256": _red.sha256_file(log)}
 
-    def blinded_sd(self, arm, reduced_tables):
-        """Standard deviations (ddof 1) of the per-realization plane estimators over all given tables, per (d window, hmax pass,
-        estimator), plus the numbers of values.  No location statistic is read into the result."""
-        sel = {"weights": "unif" if arm["runner"] == "par2" else "flux", "basis": "pos", "set": "perplane"}
-        sel.update(arm.get("reduce", {}).get("blind", {}))
-        groups = {}
-        for t in reduced_tables:
-            with open(t, newline="") as f:
-                for row in csv.DictReader(f):
-                    if row["code"] != arm["runner"] or row["family"] != "plane" or any(row[k] != v for k, v in sel.items()):
-                        continue
-                    for est in _red.PLANE_EST:
-                        v = float(row[est]) if row[est] != "" else float("nan")
-                        if math.isfinite(v):
-                            groups.setdefault("d%g-%g|hmax%s|%s" % (float(row["d_lo"]), float(row["d_hi"]), row["hmax_div"], est), []).append(v)
-        usable = {k: v for k, v in groups.items() if len(v) >= 4}
-        res = _blinded.blinded_sds(usable)
-        return {"sd": res, "n_obs": {k: len(v) for k, v in groups.items()}}
+    def _prune_par2(self, segment_dir, reduced, retained_seeds):
+        _prune._guard(segment_dir)
+        _prune.verify(reduced["tables"][0], segment_dir)  # the reduction is intact: its inputs are what was reduced
+        meta = _read_json(os.path.join(segment_dir, "segment.json"))
+        keep = {"r_%04d" % (int(s) - meta["seed0"]) for s in retained_seeds if 0 <= int(s) - meta["seed0"] < meta["nr"]}
+        snaps, n, size = os.path.join(segment_dir, "out", "snapshots"), 0, 0
+        for dp, dn, fn in os.walk(snaps, followlinks=False):
+            if os.path.basename(dp) in keep or os.path.basename(os.path.dirname(dp)) in keep:
+                continue
+            for name in fn:
+                path = os.path.join(dp, name)
+                if os.path.islink(path):
+                    raise _prune.PruneRefused("symlink in the snapshots: %s" % path)
+                size += os.path.getsize(path)
+                os.remove(path)
+                n += 1
+        return {"deleted_files": n, "deleted_bytes": size, "retained": sorted(meta["seed0"] + int(r[2:]) for r in keep),
+                "log": None, "kept_arrays": [], "note": "par2: regular snapshots deleted, crossing CSVs kept"}
+
+    def blinded_sd(self, arm, reduced):
+        """Blinded SDs for the engine's re-estimation: ``({estimator: sd}, n)``.  ``reduced`` is the list of reduce-result dicts of
+        the arm's reduced segments (``info["tables"]``; plain table paths are accepted too).  Rows: ``code`` = the arm's runner, plane
+        family, window [25, 94], the production pass (consumer ``hmax_div`` 8, or -1 for a single-pass root; Par2 -1), basis ``disp`` (H2), flux (consumer) / uniform
+        (Par2) weights, set ``perplane`` (``reduce.blind`` overrides).  Estimators ``alpha_TP``, ``alpha_TAP``, ``alpha_LP``: the sample
+        SD (ddof 1) of the finite values, one per seed, for estimators with at least 4 values; ``n`` = the smallest such count.  No
+        location statistic is read into the result (mcstat.blinded)."""
+        cons = arm["runner"] == "consumer"
+        blind = arm.get("reduce", {}).get("blind", {})
+        sel = {"weights": "flux" if cons else "unif", "basis": "disp", "set": "perplane"}
+        sel.update({k: blind[k] for k in ("weights", "basis", "set") if k in blind})
+        lo, hi = (float(v) for v in blind.get("window", (25.0, 94.0)))
+        hms = {int(blind["hmax_div"])} if "hmax_div" in blind else {8, -1} if cons else {-1}  # -1: a single-pass root
+        vals = {e: {} for e in BLIND_EST}
+        for info in reduced:
+            for t in (info["tables"] if isinstance(info, dict) else [info]):
+                with open(t, newline="") as f:
+                    for row in csv.DictReader(f):
+                        if (row["code"] != arm["runner"] or row["family"] != "plane" or any(row[k] != v for k, v in sel.items())
+                                or float(row["d_lo"]) != lo or float(row["d_hi"]) != hi or int(float(row["hmax_div"])) not in hms):
+                            continue
+                        key = int(float(row["seed"])) if row.get("seed", "") not in ("", "nan") else (t, row["r"])
+                        for e in BLIND_EST:
+                            v = float(row[e]) if row[e] != "" else float("nan")
+                            if math.isfinite(v):
+                                vals[e][key] = v
+        usable = {e: list(v.values()) for e, v in vals.items() if len(v) >= 4}
+        sd = _blinded.blinded_sds(usable)
+        return sd, (min(len(v) for v in usable.values()) if usable else max((len(v) for v in vals.values()), default=0))
 
     def expected_raw_gb(self, arm, n_seeds):
         return arm["raw_gb"] * n_seeds

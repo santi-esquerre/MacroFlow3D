@@ -96,7 +96,7 @@ class Failures(unittest.TestCase):
         self.assertEqual(s.run(), DONE)
         st = s.state()
         rep = kinds(s, "replacement")
-        self.assertEqual([(r["group"], r["seed"], r["replacement"]) for r in rep], [("g1", 103, 900)])
+        self.assertEqual([(r["group"], r["seed"], r["replaced_by"]) for r in rep], [("g1", 103, 900)])
         self.assertEqual(st.arms["A1"].failed, {103})
         for a in ("A1", "A2", "S"):
             self.assertIn(900, st.arms[a].done)
@@ -251,10 +251,10 @@ class Resume(unittest.TestCase):
 
 
 class Reestimation(unittest.TestCase):
-    def plan(self, ub=1.0, **kw):
+    def plan(self, hw=1.0, **kw):
         a = arm("P", n=10, count=20, est=100)
-        return mk_plan(tmpdir(self), [a, arm("G5", group="g2", n=10, start=200)], blinded_reestimation={
-            "fraction": 0.5, "max_factor": 2.0, "arms": ["P"], "sd_plan_ub": {"P": {"e": ub}}}, **kw)
+        return mk_plan(tmpdir(self), [a, arm("G5", group="g2", n=10, start=200, no_reestimation=True)], blinded_reestimation={
+            "fraction": 0.5, "max_factor": 2.0, "arms": ["P"], "hw_target": {"P": {"e": hw}}}, **kw)
 
     def test_n_raised_once_sds_only_other_arms_untouched(self):
         s = Sim(self.plan(), sd_obs={"P": {"e": 1.2}, "G5": {"e": 99.0}})
@@ -267,11 +267,12 @@ class Reestimation(unittest.TestCase):
         self.assertLessEqual(r["n_new"], 20)
         self.assertEqual(len(st.arms["P"].done), r["n_new"])
         self.assertEqual(len(st.arms["G5"].done), 10)
-        self.assertEqual(set(r), {"kind", "arm", "sd", "n_obs", "factor", "n_old", "n_new", "text", "t", "utc"})  # SDs and N only
+        self.assertEqual(set(r), {"kind", "arm", "sd", "n_obs", "n_req", "n_old", "n_new", "text", "t", "utc"})  # SDs and N only
+        self.assertEqual((r["n_obs"], r["n_req"], r["n_new"]), (5, 16, 16))  # H9: ceil((t_{.95,4} sd_UB80 / hw)^2) at sd 1.2, n 5, hw 1
         self.assertIn("REESTIMATE arm=P", s.log())
 
     def test_never_lowered_and_no_growth_when_sd_below_plan(self):
-        s = Sim(self.plan(ub=100.0), sd_obs={"P": {"e": 0.5}})
+        s = Sim(self.plan(hw=100.0), sd_obs={"P": {"e": 0.5}})
         self.assertEqual(s.run(), DONE)
         self.assertEqual(kinds(s, "reest")[0]["n_new"], 10)
         self.assertEqual(len(s.state().arms["P"].done), 10)

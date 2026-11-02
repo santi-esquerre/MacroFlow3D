@@ -46,7 +46,7 @@ class Example(unittest.TestCase):
         p = load_plan(f)
         self.assertEqual(len(p["arms"]), 4)
         s = load_plan(f, smoke=True, now=1_800_000_000.0)
-        self.assertEqual((len(s["arms"]), s["campaign_dir"], s["cutoff_utc"]), (2, "sf43_campaign_smoke", "2027-01-15T08:30:00Z"))
+        self.assertEqual((len(s["arms"]), s["campaign_dir"], s["cutoff_utc"]), (4, "sf43_campaign_smoke", "2027-01-15T08:30:00Z"))
         self.assertNotEqual(p["plan_sha256"], s["plan_sha256"])
 
 
@@ -88,14 +88,16 @@ class Guards(unittest.TestCase):
     def test_backoff(self):
         self.assertEqual([guards.oom_backoff_s(n) for n in (1, 2, 3, 4, 5, 9)], [600, 1200, 2400, 3600, 3600, 3600])
 
-    def test_resize_up_only_clipped_and_capped(self):
-        ub = {"e": 1.0}
-        self.assertEqual(guards.resize({"e": 0.1}, 20, ub, 10, 2.0, 100), (1.0, 10))  # lower SD never lowers N
-        f, n = guards.resize({"e": 5.0}, 20, ub, 10, 2.0, 100)
-        self.assertEqual((f, n), (2.0, 20))  # clipped at max_factor
-        self.assertEqual(guards.resize({"e": 5.0}, 20, ub, 10, 2.0, 15)[1], 15)  # capped by the seed range / n_max
-        f, n = guards.resize({"e": 1.0, "other": 99.0}, 40, {"e": 1.0}, 10, 2.0, 100)  # only planned estimators count
-        self.assertTrue(1.0 < f < 2.0 and 10 < n < 20)
+    def test_resize_h9_rule_up_only_clipped_and_capped(self):
+        hw = {"e": 1.0}  # planning half-width target
+        self.assertEqual(guards.resize({"e": 0.1}, 20, hw, 10, 2.0, 100), (1, 10))  # N_req below n_conf never lowers N
+        n_req, n = guards.resize({"e": 5.0}, 20, hw, 10, 2.0, 100)
+        self.assertEqual((n_req, n), (104, 20))  # N_req = ceil((t_{.95,19} sd_UB80 / hw)^2); n_target = min(2 n_conf, ...)
+        self.assertEqual(guards.resize({"e": 5.0}, 20, hw, 10, 2.0, 15)[1], 15)  # capped by the seed range / n_max
+        a = guards.resize({"e": 1.0, "other": 99.0}, 40, {"e": 0.4}, 10, 2.0, 100)  # only planned estimators count
+        self.assertEqual(a, guards.resize({"e": 1.0}, 40, {"e": 0.4}, 10, 2.0, 100))
+        self.assertEqual(a, (23, 20))
+        self.assertEqual(guards.n_required(1.0, 40, 0.4), 23)
 
     def test_budget_and_disk(self):
         self.assertTrue(guards.budget_ok(1, 1, 1, 3))

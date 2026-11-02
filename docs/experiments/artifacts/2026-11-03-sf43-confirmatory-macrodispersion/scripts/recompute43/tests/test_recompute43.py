@@ -112,7 +112,7 @@ class Consumer(Base):
         self.assertIn(" csv       alpha_TP", rep)
         self.assertNotIn(" csv       alpha_TAP", rep)  # no cross covariance in the moment CSV
         self.assertIn("realizations=1", rep)
-        self.assertIn("REALIZATIONS consumer=1 (with per-particle arrays 1)", rep)
+        self.assertIn("REALIZATIONS consumer=1 (with plane arrays 1)", rep)
 
     def test_pruned_pass_is_csv_only(self):
         out, proot = self.consumer(drift=(0.2, 0.0), miss={4: 6})
@@ -120,7 +120,7 @@ class Consumer(Base):
         self.prune(proot)
         code, rep = self.run_tool()
         self.assertEqual(code, 0, rep)
-        self.assertIn("REALIZATIONS consumer=1 (with per-particle arrays 0)", rep)
+        self.assertIn("REALIZATIONS consumer=1 (with plane arrays 0)", rep)
         self.assertNotRegex(rep, r"consumer +plane +arrays")
         self.assertIn(" csv       alpha_LP", rep)
         # disp, common and expI rows, and the TAP column, are listed as not covered
@@ -204,6 +204,53 @@ class Consumer(Base):
         os.makedirs(self.C)
         with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
             main(["run", "--campaign", self.C, "--reduced", self.R, "--out", os.path.join(self.C, "report.txt")])
+
+
+class CampaignLayout(Base):
+    """The engine's layout: segments/<arm>/<segment>, reduced/<arm>/<segment>/*.csv with `source` relative to the segment directory;
+    a primary arm keeps the plane arrays of every realization (sf42red prune --keep-arrays)."""
+
+    def build(self, arm="prim", seg="u000001_s100", drop=()):
+        sdir = os.path.join(self.C, "segments", arm, seg)
+        proot = synth.write_pass(os.path.join(sdir, "out"), ell=ELL, x0=X0, drift=(0.3, -0.1), miss={3: 5})
+        tracker_planes_csv(os.path.join(proot, "moments_planes.csv"), proot, "flux")
+        tracker_planes_csv(os.path.join(proot, "twin", "moments_planes.csv"), proot, "unif")
+        rdir = os.path.join(self.C, "reduced", arm, seg)
+        os.makedirs(rdir)
+        red.reduce_all([os.path.join(sdir, "out")], [], [], None, None, 25.0, 94.0, None, os.path.join(rdir, "%s__%s__d25-94.csv" % (arm, seg)), sdir)
+        for n in ("planes_I", "times_x", "times_I", "status_plane", "status_time") + tuple(drop):  # the selective prune
+            os.remove(os.path.join(proot, n + ".npy"))
+        return proot
+
+    def run_tool(self, **kw):
+        buf = io.StringIO()
+        code = driver.run(self.C, os.path.join(self.C, "reduced"), [self.C], buf, **kw)
+        return code, buf.getvalue()
+
+    def test_displacement_basis_and_alpha_TAP_are_recomputed_from_the_kept_plane_arrays(self):
+        self.build()
+        code, rep = self.run_tool(primary_arms=("prim",))
+        self.assertEqual(code, 0, rep[-600:])
+        self.assertIn("PRIMARY_ARM prim realization passes=1 with_arrays=1", rep)
+        for col in ("alpha_TAP", "alpha_TP", "wfrac_min"):
+            self.assertIn(" arrays    %-12s" % col, rep)
+        self.assertIn("NOT_COVERED 1 x expI/pos/perplane", rep)  # planes_I was pruned: expI is listed, never skipped silently
+        self.assertNotIn("PROBLEM", rep)
+
+    def test_a_primary_realization_without_the_plane_arrays_is_a_problem(self):
+        self.build(drop=("seeds",))
+        code, rep = self.run_tool(primary_arms=("prim",))
+        self.assertEqual(code, 1)
+        self.assertIn("PROBLEM", rep)
+        self.assertIn("primary arm prim without the plane arrays", rep)
+        code, _ = self.run_tool()  # not declared primary: only the moment CSVs are recomputed, as before
+        self.assertEqual(code, 0)
+
+    def test_a_declared_primary_arm_with_no_reduced_realization_is_a_problem(self):
+        self.build()
+        code, rep = self.run_tool(primary_arms=("other",))
+        self.assertEqual(code, 1)
+        self.assertIn("primary arm other: no reduced consumer realization", rep)
 
 
 class Par2(Base):

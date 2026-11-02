@@ -1,23 +1,28 @@
 """Solver-verdict reconciliation of an SF-43 campaign (decision 2026-10-29 G8; acceptance F).
 
-CAMPAIGN LAYOUT (contract with the campaign engine; read only)
-  <C>/arms/<arm_id>/<segment>/run.log      stdout+stderr of ONE runner invocation (a segment)
-  <C>/arms/<arm_id>/<segment>/config.yaml  present iff the segment is a Par2 run (otherwise a `lagrangian_ensemble` run)
-  <C>/arms/<arm_id>/<segment>/out/**/realizations/r_XXXX/{solver_b.json,DONE}    consumer realizations (r = index in the invocation)
-  <C>/ledger.jsonl                         the engine's ledger, one JSON object per line:
-      seed record     {"arm", "segment", "seed", "verdict", "class", ["group"], ["seed0"]}   (no "kind", or "kind": "seed")
-                      verdict: the consumer's 5-way solver verdict, or for Par2 `converged` / `not_converged` (`YES` / `NO` accepted);
-                      class: `ok`, `unusable_solve`, or an engine class such as `oom_retry` (only the LAST record of an (arm, seed)
-                      is compared; earlier ones are attempts); `group`: the paired group a replacement is applied to group-wide
-                      (default: the arm); `seed0`: the segment's --seed0 (optional cross-check and fallback of the seed mapping)
-      replacement     {"kind": "replacement", "seed": <replaced seed>, "replaced_by": <reserve seed>, ["group"]}  (group default: arm)
+CAMPAIGN LAYOUT (the engine's: sf43camp/README.md; read only)
+  <C>/segments/<arm_id>/<segment>/run.log      stdout+stderr of ONE runner invocation (a segment, `u<unit>_s<seed0>`)
+  <C>/segments/<arm_id>/<segment>/config.yaml  present iff the segment is a Par2 run (otherwise a `lagrangian_ensemble` run)
+  <C>/segments/<arm_id>/<segment>/seedmap.json {seed0, nr, seeds: {r: seed0 + r}} written by the executor (both codes)
+  <C>/segments/<arm_id>/<segment>/out/**/realizations/r_XXXX/{solver_b.json,DONE}    consumer realizations (r = index in the invocation)
+  <C>/ledger.jsonl                         the engine's ledger, one JSON object per line; only these kinds are read (every other kind of
+                                           the engine - claim, unit_end, hb, reduced, ... - is ignored):
+      seed record     {"kind": "seed", "arm", "segment" (basename), "seed", "verdict", "class", "group", "seed0", ["iterations",
+                      "max_div", "rel", "balance", "field_seed"]}.  verdict: the consumer's solver verdict, or for Par2 `converged`
+                      (Converged=YES), `fallback` (NO with final/initial residual <= 1e-8, usable) or `not_converged_beyond_fallback`;
+                      class: `ok` or `unusable_solve` (only the LAST record of an (arm, seed) is compared); `group`: the paired group a
+                      replacement is applied to group-wide; `seed0`: the segment's --seed0 (cross-check and fallback of the seed mapping)
+      replacement     {"kind": "replacement", "arm", "group", "seed": <replaced seed>, "replaced_by": <reserve seed>}
 
 WHAT IS CHECKED
   1. every consumer `B_SOLVER` line is mapped to (arm, seed): seed = the seed printed by the same realization's `R=<r> FIELD ... seed=`
      line (else seed0 + r when the ledger gives seed0); a line mapped to no seed is UNMAPPED.  The verdict is recomputed from the
      fields (rule.py) and compared with the runner's own `R=<r> STAGE medium=b status=<verdict> ... solver_usable=<0|1>` line.
-  2. every Par2 `Converged=YES|NO` line is mapped to the seed of the preceding `SF-18 ... field (seed=S` line; a seed line with no
-     Converged line (and a Converged line with no seed) is UNPARSED / UNMAPPED.
+  2. every Par2 `Converged=YES|NO  iters=N  res=<initial> -> <final>` line is mapped to the seed of the preceding field line: the
+     SF-18 medium (b) line `[4] SF-18 ... (seed=S` or Par2's own generator `[4] K generation (seed=S)` (G7 factor G), and the seed
+     is cross-checked against the segment's seed map (the r-th Converged line is seed0 + r); a seed line with no Converged line (and
+     a Converged line with no seed line and no seed map) is UNPARSED / UNMAPPED.  The verdict is `converged` (YES), `fallback`
+     (NO, final/initial <= 1e-8) or `not_converged_beyond_fallback` (the pipeline prints no balance).
   3. repeated records of one (arm, seed) must be identical (an OOM retry re-runs a deterministic solve); a difference is a CONFLICT.
   4. `solver_b.json` of every consumer realization: seed, r, verdict and fallback equal the log's; a json with no log line, and a DONE
      realization without json, are mismatches.  (An unusable solve stops the runner before it writes a json, so none is expected.)
@@ -31,6 +36,7 @@ Exit: 0 `RECONCILE OK`, 1 `RECONCILE MISMATCH`, 2 nothing parsed.
 """
 import glob
 import json
+import math
 import os
 import re
 from collections import Counter, OrderedDict
@@ -40,9 +46,21 @@ from . import rule
 FIELD_RE = re.compile(r"^R=(\d+) FIELD .*?\bseed=(\d+)")
 STAGE_RE = re.compile(r"^R=(\d+) STAGE medium=b status=(\S+) .*?\bsolver_usable=([01])")
 PFX_RE = re.compile(r"^R=(\d+) ")
-P2_SEED_RE = re.compile(r"SF-18 .*?\(seed=(\d+)")
-P2_CONV_RE = re.compile(r"Converged=(YES|NO)\b")
-P2_VERDICT = {"YES": "converged", "NO": "not_converged"}
+P2_SEED_RE = re.compile(r"\[4\] (?:SF-18 .*?|K generation )\(seed=(\d+)")
+P2_CONV_RE = re.compile(r"Converged=(YES|NO)\b(?:\s+iters=(\d+)\s+res=(\S+)\s+\S+\s+(\S+))?")
+
+
+def par2_verdict(m):
+    """Par2 solve verdict of a `Converged=` match (the rule of sf43camp.runner_executor.par2_solves, written again here)."""
+    if m.group(1) == "YES":
+        return "converged"
+    try:
+        r0, r1 = float(m.group(3)), float(m.group(4))
+    except (TypeError, ValueError):
+        return "not_converged_beyond_fallback"
+    if not (math.isfinite(r0) and math.isfinite(r1)):
+        return "non_finite"
+    return "fallback" if (r1 / r0 if r0 > 0.0 else 0.0) <= rule.TOL else "not_converged_beyond_fallback"
 
 
 class Solve:
@@ -105,8 +123,8 @@ def parse_consumer_log(arm, seg, path, seed0, fnd):
     return out
 
 
-def parse_par2_log(arm, seg, path, fnd):
-    out, pending = [], None
+def parse_par2_log(arm, seg, path, seed0, fnd):
+    out, pending, k = [], None, 0
     for no, line in enumerate(read_lines(path), 1):
         src = "%s/%s/run.log:%d" % (arm, seg, no)
         m = P2_SEED_RE.search(line)
@@ -117,11 +135,16 @@ def parse_par2_log(arm, seg, path, fnd):
             continue
         m = P2_CONV_RE.search(line)
         if m:
-            if pending is None:
-                fnd.add("unmapped", "%s: Converged=%s without a preceding SF-18 seed line" % (src, m.group(1)))
+            mapped = None if seed0 is None else seed0 + k  # the r-th Converged line of the invocation is seed0 + r
+            k += 1
+            if pending is None and mapped is None:
+                fnd.add("unmapped", "%s: Converged=%s without a preceding field seed line and without a seed map" % (src, m.group(1)))
                 continue
-            v = P2_VERDICT[m.group(1)]
-            out.append(Solve("par2", arm, seg, None, pending[0], v, v == "converged", (("converged", m.group(1)),), src))
+            seed = pending[0] if pending is not None else mapped
+            if pending is not None and mapped is not None and pending[0] != mapped:
+                fnd.add("conflict", "%s: field seed %d != seed map seed0 + r = %d" % (src, pending[0], mapped))
+            v = par2_verdict(m)
+            out.append(Solve("par2", arm, seg, k - 1, seed, v, v in rule.USABLE, (("converged", m.group(1)), ("iterations", m.group(2))), src))
             pending = None
     if pending is not None:
         fnd.add("unparsed", "%s: seed %d has no Converged line" % (pending[1], pending[0]))
@@ -141,7 +164,7 @@ def read_ledger(path, fnd):
             rec = json.loads(line)
             if rec.get("kind") == "replacement":
                 repl.append((rec.get("group") or rec.get("arm"), int(rec["seed"]), int(rec["replaced_by"]), no))
-            else:
+            elif rec.get("kind", "seed") == "seed":
                 key = (rec["arm"], int(rec["seed"]))
                 seeds.setdefault(key, []).append(rec)
                 if rec.get("seed0") is not None:
@@ -188,12 +211,19 @@ def run(campaign, out):
     fnd = Findings()
     seeds_l, repl, seed0 = read_ledger(os.path.join(campaign, "ledger.jsonl"), fnd)
     solves, n_json, n_seg = OrderedDict(), 0, Counter()
-    for lp in sorted(glob.glob(os.path.join(campaign, "arms", "*", "*", "run.log"))):
+    for lp in sorted(glob.glob(os.path.join(campaign, "segments", "*", "*", "run.log"))):
         sd = os.path.dirname(lp)
         arm, seg = os.path.basename(os.path.dirname(sd)), os.path.basename(sd)
         par2 = os.path.isfile(os.path.join(sd, "config.yaml"))
         n_seg["par2" if par2 else "consumer"] += 1
-        seg_solves = parse_par2_log(arm, seg, lp, fnd) if par2 else parse_consumer_log(arm, seg, lp, seed0.get((arm, seg)), fnd)
+        s0 = seed0.get((arm, seg))
+        if os.path.isfile(os.path.join(sd, "seedmap.json")):  # the executor's seed map is the primary source of seed0
+            with open(os.path.join(sd, "seedmap.json")) as f:
+                m0 = int(json.load(f)["seed0"])
+            if s0 is not None and s0 != m0:
+                fnd.add("conflict", "%s/%s: ledger seed0 %d != seedmap.json seed0 %d" % (arm, seg, s0, m0))
+            s0 = m0
+        seg_solves = parse_par2_log(arm, seg, lp, s0, fnd) if par2 else parse_consumer_log(arm, seg, lp, s0, fnd)
         if not par2:
             n_json += check_jsons(sd, arm, seg, seg_solves, fnd)
             for s in seg_solves:
@@ -218,13 +248,20 @@ def run(campaign, out):
             fnd.add("ledger", "%s seed %d: logged solve (%s) without ledger record" % (key[0], key[1], s.verdict))
             continue
         rec = recs[-1]
-        lv = P2_VERDICT.get(rec.get("verdict"), rec.get("verdict"))
+        lv = rec.get("verdict")
         if lv != s.verdict:
             fnd.add("ledger", "%s seed %d: verdict log=%s ledger=%s" % (key[0], key[1], s.verdict, rec.get("verdict")))
         if os.path.basename(str(rec.get("segment"))) != s.segment:
             fnd.add("ledger", "%s seed %d: segment log=%s ledger=%s" % (key[0], key[1], s.segment, rec.get("segment")))
         if (rec.get("class") == "unusable_solve") == s.usable:
             fnd.add("ledger", "%s seed %d: class %s but the solve is %s" % (key[0], key[1], rec.get("class"), "usable" if s.usable else "unusable"))
+        pay = dict(s.payload)  # solver numbers the ledger carries (SF-43 item 10) against the log's (the log prints %.6e)
+        if rec.get("iterations") is not None and pay.get("iterations") not in (None, "") and int(rec["iterations"]) != int(pay["iterations"]):
+            fnd.add("ledger", "%s seed %d: iterations log=%s ledger=%s" % (key[0], key[1], pay["iterations"], rec["iterations"]))
+        if rec.get("max_div") is not None and pay.get("max_div") is not None:
+            lg, lv = float(pay["max_div"]), float(rec["max_div"])
+            if abs(lg - lv) > 1e-5 * max(abs(lg), abs(lv)):
+                fnd.add("ledger", "%s seed %d: max_div log=%s ledger=%s" % (key[0], key[1], pay["max_div"], rec["max_div"]))
     for key, recs in seeds_l.items():
         if key not in solves and recs[-1].get("verdict"):
             fnd.add("ledger", "%s seed %d: ledger verdict %s without a log line" % (key[0], key[1], recs[-1]["verdict"]))

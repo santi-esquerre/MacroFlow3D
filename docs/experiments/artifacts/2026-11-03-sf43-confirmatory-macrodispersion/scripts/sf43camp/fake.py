@@ -40,7 +40,8 @@ class FakeExecutor:
     def classify(self, arm, seeds, segment_dir, exit_code, log_text):
         r = self.segs[segment_dir]
         return {"cls": r["cls"], "completed_seeds": [s for s, _ in r["items"]], "failed_seed": r["failed"],
-                "verdicts": {s: "converged" for s in seeds}, "seconds": {s: self.durations.get((arm["id"], s), arm["est_seconds"]) for s in seeds},
+                "verdicts": {s: "converged" for s in seeds},
+                "solver": {s: {"verdict": "converged", "iterations": 30, "rel": 1e-12, "balance": 1e-10, "max_div": 2.0e-08} for s in seeds}, "seconds": {s: self.durations.get((arm["id"], s), arm["est_seconds"]) for s in seeds},
                 "peak_mib": arm["min_free_mib"]}
 
     def completed(self, arm, segment_dir):

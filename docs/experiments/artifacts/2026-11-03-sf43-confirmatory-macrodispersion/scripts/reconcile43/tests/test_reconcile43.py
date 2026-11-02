@@ -1,5 +1,5 @@
 """reconcile43 on synthetic campaign trees with the real run-log grammar (runner `R=<r> FIELD/B_SOLVER/STAGE` lines, Par2 pipeline
-`SF-18 ... (seed=S` / `Converged=YES|NO` lines), `solver_b.json`, `DONE` and `ledger.jsonl`."""
+`[4] SF-18 ... (seed=S` / `[4] K generation (seed=S)` / `Converged=YES|NO` lines), `solver_b.json`, `DONE` and `ledger.jsonl`."""
 import contextlib
 import io
 import json
@@ -27,7 +27,7 @@ class Camp:
         self.ledger = []
 
     def consumer(self, arm, seg, seed0, specs, group=None, with_json=True, omit_field=None, stage_lie=None):
-        d = os.path.join(self.C, "arms", arm, seg)
+        d = os.path.join(self.C, "segments", arm, seg)
         os.makedirs(d, exist_ok=True)
         lines = ["R=0 some banner"]
         for r, spec in enumerate(specs):
@@ -40,8 +40,8 @@ class Camp:
             lines.append("R=%d %s" % (r, line))
             lines.append("R=%d STAGE medium=b status=%s grid=64x16x16 mg_levels=4 solver_converged=%d solver_usable=%d flow_ready=1 seconds=1.0" % (
                 r, stage_lie or v, spec["converged"], int(usable)))
-            self.ledger.append(dict(arm=arm, segment=seg, seed=seed, verdict=v, seed0=seed0, **{"class": "ok" if usable else "unusable_solve"},
-                                    **({"group": group} if group else {})))
+            self.ledger.append(dict(kind="seed", arm=arm, segment=seg, seed=seed, verdict=v, seed0=seed0, iterations=50, max_div=2.0e-08,
+                                    **{"class": "ok" if usable else "unusable_solve"}, **({"group": group} if group else {})))
             if not usable:
                 lines.append("R=%d STAGE_FAILED status=solver_failed verdict=%s" % (r, v))
                 break  # the runner stops at an unusable solve and writes no solver_b.json
@@ -58,20 +58,26 @@ class Camp:
         with open(os.path.join(d, "run.log"), "w") as f:
             f.write("\n".join(lines) + "\n")
 
-    def par2(self, arm, seg, seeds_yes_no, group=None, drop_conv=None):
-        d = os.path.join(self.C, "arms", arm, seg)
+    def par2(self, arm, seg, seeds_yes_no, group=None, drop_conv=None, own_generator=False, seedmap=True, seed0_map=None):
+        """seeds_yes_no: (seed, state) with state True (YES), False (NO beyond the fallback) or 'fb' (NO within 1e-8: usable)."""
+        d = os.path.join(self.C, "segments", arm, seg)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "config.yaml"), "w") as f:
             f.write("grid: {}\n")
+        if seedmap:
+            with open(os.path.join(d, "seedmap.json"), "w") as f:
+                json.dump({"seed0": seeds_yes_no[0][0] if seed0_map is None else seed0_map, "nr": len(seeds_yes_no)}, f)
         lines = ["[1] Loading config: config.yaml"]
-        for k, (seed, yes) in enumerate(seeds_yes_no):
+        for k, (seed, st) in enumerate(seeds_yes_no):
             lines += ["  Realization %d / %d" % (k + 1, len(seeds_yes_no)),
+                      "  [4] K generation (seed=%d)" % seed if own_generator else
                       "  [4] SF-18 medium (b) field (seed=%d, sigma2=1.0000e+00, corr_length=4.1667e-02, eps=5.0000e-01); K=exp(eps*Y)" % seed,
                       "  [5] Solving head (mg_cg)"]
             if drop_conv != seed:
-                lines.append("       Converged=%s  iters=40  res=1.66e+05 → 1.65e-05" % ("YES" if yes else "NO"))
-            self.ledger.append(dict(arm=arm, segment=seg, seed=seed, verdict="converged" if yes else "not_converged",
-                                    **{"class": "ok" if yes else "unusable_solve"}, **({"group": group} if group else {})))
+                lines.append("       Converged=%s  iters=40  res=1.66e+05 \u2192 %s" % ("YES" if st is True else "NO", "5.00e+04" if st is False else "1.65e-05"))
+            v = "converged" if st is True else "not_converged_beyond_fallback" if st is False else "fallback"
+            self.ledger.append(dict(kind="seed", arm=arm, segment=seg, seed=seed, verdict=v, **{"class": "unusable_solve" if st is False else "ok"},
+                                    **({"group": group} if group else {})))
         self._write(d, lines)
 
     def replacement(self, seed, by, group=None, arm=None):
@@ -126,9 +132,56 @@ class Passing(Base):
 
 
 class Detects(Base):
+    def test_par2_own_generator_lines_and_the_fallback_verdict(self):
+        """G7 factor G: Par2's own generator prints `[4] K generation (seed=N)`; NO within 1e-8 is a usable `fallback`."""
+        self.c.par2("p1", "s0", [(7001, True), (7002, "fb"), (7003, False)], own_generator=True, group="g1")
+        self.c.par2("p2", "s0", [(7001, True), (7002, True), (7003, True)], group="g1")
+        self.c.replacement(7003, 7100, group="g1")
+        code, rep = self.c.run()
+        self.assertEqual(code, 0, rep)
+        self.assertIn("par2     p1             converged=1 fallback=1 not_converged_beyond_fallback=1", rep)
+        self.assertIn("RECONCILE OK", rep)
+
+    def test_the_engine_ledger_kinds_other_than_seed_and_replacement_are_ignored(self):
+        self.c.consumer("a1", "s0", 5001, [CONV])
+        self.c.ledger[:0] = [{"kind": "campaign_start"}, {"kind": "claim", "unit": 1, "arm": "a1", "seeds": [5001]},
+                             {"kind": "unit_end", "unit": 1, "arm": "a1", "completed": [5001]}, {"kind": "hb", "gpu_s": 1.0}]
+        code, rep = self.c.run()
+        self.assertEqual(code, 0, rep)
+
+    def test_ledger_iterations_and_max_div_are_compared_with_the_log(self):
+        self.c.consumer("a1", "s0", 5001, [CONV, CONV])
+        self.c.ledger[0]["iterations"] = 51
+        self.c.ledger[1]["max_div"] = 3.0e-08
+        code, rep = self.c.run()
+        self.assertEqual(code, 1)
+        self.assertIn("iterations log=50 ledger=51", rep)
+        self.assertIn("max_div log=2.000000e-08 ledger=3e-08", rep)
+
+    def test_par2_field_seed_disagrees_with_the_segment_seed_map(self):
+        self.c.par2("p1", "s0", [(7001, True), (7002, True)], seed0_map=7000)
+        code, rep = self.c.run()
+        self.assertEqual(code, 1)
+        self.assertIn("CONFLICT p1/s0/run.log:", rep)
+        self.assertIn("field seed 7001 != seed map seed0 + r = 7000", rep)
+
+    def test_par2_converged_without_a_seed_line_needs_the_seed_map(self):
+        self.c.par2("p1", "s0", [(7001, True)])
+        path = os.path.join(self.c.C, "segments", "p1", "s0", "run.log")
+        with open(path) as f:
+            lines = [x for x in f.read().splitlines() if "K generation" not in x and "SF-18 medium" not in x]
+        with open(path, "w") as f:
+            f.write("\n".join(lines) + "\n")
+        code, rep = self.c.run()
+        self.assertEqual(code, 0, rep)  # mapped by the seed map
+        os.remove(os.path.join(self.c.C, "segments", "p1", "s0", "seedmap.json"))
+        code, rep = self.c.run()
+        self.assertEqual(code, 2)  # nothing could be mapped: no solver record parsed
+        self.assertIn("no solver record parsed", rep)
+
     def test_json_verdict_conflict(self):
         self.c.consumer("a1", "s0", 5001, [CONV, CONV])
-        p = os.path.join(self.c.C, "arms", "a1", "s0", "out", "realizations", "r_0001", "solver_b.json")
+        p = os.path.join(self.c.C, "segments", "a1", "s0", "out", "realizations", "r_0001", "solver_b.json")
         with open(p, "w") as f:
             json.dump({"r": 1, "seed": 5002, "verdict": "fallback", "fallback": True}, f)
         code, rep = self.c.run()

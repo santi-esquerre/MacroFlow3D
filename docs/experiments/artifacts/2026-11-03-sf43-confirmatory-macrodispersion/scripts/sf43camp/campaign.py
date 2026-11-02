@@ -8,7 +8,8 @@ import signal
 import subprocess
 import time
 
-from . import procs
+from . import determinism, procs
+from .background import Background
 from .fake import FakeExecutor
 from .lanes import Engine, Lane
 from .ledger import Ledger
@@ -17,6 +18,18 @@ from .scheduler import State
 
 DONE, PARTIAL, STOPPED, ANALYSIS_FAILED, REFUSED, SIGNALLED = 0, 10, 11, 12, 13, 143
 MARKERS = ("DONE", "DONE_PARTIAL", "STOPPED", "ANALYSIS_FAILED")
+BLOCKED = "ANALYSIS_BLOCKED_UNREDUCED"
+
+
+def lane_b_class_mib(plan, env=os.environ):
+    """Launch threshold of lane B's GPU: plan `lane_b_min_free_mib`, else REMOTE_GPU_MIN_FREE_MIB_2, else REMOTE_GPU_MIN_FREE_MIB (the helper
+    does not export them to the job: pass them in the job command or put the number in the plan), else None (every heavy unit)."""
+    if "lane_b_min_free_mib" in plan:
+        return plan["lane_b_min_free_mib"]
+    for k in ("REMOTE_GPU_MIN_FREE_MIB_2", "REMOTE_GPU_MIN_FREE_MIB"):
+        if env.get(k, "").strip().isdigit():
+            return int(env[k])
+    return None
 
 
 def md5_file(path):
@@ -67,15 +80,22 @@ def analysis(plan, build_dir, log, runner=run_cmd):
     return True, "ok"
 
 
-def report(st, eng, status, an, cdir):
+def report(st, eng, status, an, cdir, extra=()):
     ev = [e for e in st.events if not e[2].startswith("PROJECTION")]
     ln = ["SF-43 campaign %s: %s" % (st.plan["campaign"], status), "analysis: %s" % an,
           "stage1_start: %s" % utc_iso(st.stage1_start), "lane_b_released: %s" % st.lane_b_released,
           "gpu_h_used: %.2f of %.2f" % (st.gpu_s / 3600.0, st.plan["budget_gpu_h"]), "stopping: %s" % eng.stopping, "lane_crashes: %d" % eng.crashed, "",
-          "%-24s %8s %9s %8s %6s %5s %4s %s" % ("arm", "planned", "completed", "replaced", "failed", "oom", "run", "halted")]
+          "%-24s %8s %9s %8s %6s %5s %4s %9s %s" % ("arm", "planned", "completed", "replaced", "failed", "oom", "run", "peak_mib", "halted")]
     for a in st.arms.values():
-        ln.append("%-24s %8d %9d %8d %6d %5d %4d %s" % (a.id, len(a.planned) - len(a.dropped), len(a.done), len(a.dropped), len(a.failed), a.oom_total,
-                                                        len(a.pending()) + len(a.claimed), a.halted or ""))
+        ln.append("%-24s %8d %9d %8d %6d %5d %4d %9s %s" % (a.id, len(a.planned) - len(a.dropped), len(a.done), len(a.dropped), len(a.failed), a.oom_total,
+                                                           len(a.pending()) + len(a.claimed), "-" if a.peak_mib is None else "%.0f" % a.peak_mib,
+                                                           a.halted or ""))
+    ln += ["", "retention (raw-array realizations kept / required per arm):"] + ["  %-24s %d / %d" % (k, h, n) for k, (h, n) in eng.retention.items()]
+    ln += ["", "UNREDUCED (completed, not reduced: MISSING for the analysis, not the end of a prefix):"]
+    ln += ["  %s %s seeds %s" % u for u in eng.unreduced] or ["  none"]
+    if eng.bg and eng.bg.state:
+        ln += ["", "background jobs:"] + eng.bg.report()
+    ln += [""] + list(extra) if extra else []
     ln += ["", "events:"] + ["  %s %s %s" % e for e in ev]
     with open(os.path.join(cdir, "REPORT.txt"), "w") as f:
         f.write("\n".join(ln) + "\n")
@@ -110,7 +130,7 @@ def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free
             return REFUSED
     else:
         ledger.append({"kind": "campaign_start", "campaign": plan["campaign"], "plan_sha256": plan["plan_sha256"]})
-    for m in MARKERS:
+    for m in MARKERS + (BLOCKED,):
         if os.path.exists(os.path.join(cdir, m)):
             os.remove(os.path.join(cdir, m))
     st = State(plan)
@@ -124,18 +144,28 @@ def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free
         if st.lane_b_released or clock() >= st.stage1_start + 3600.0 * plan["stage1_max_hours"]:
             log("RESUME_SINGLE_LANE stage 1 is over (released=%s); %d GPUs granted, lane A only: relaunch with one GPU" % (st.lane_b_released, len(gpus)))
         else:
-            lanes.append(Lane("B", gpus[1], True))
+            lanes.append(Lane("B", gpus[1], True, lane_b_class_mib(plan)))
     log("CAMPAIGN %s lanes=%s stage1_start=%s utc=%s" % (plan["campaign"], ",".join("%s:gpu%s" % (ln.name, ln.gpu) for ln in lanes), utc_iso(st.stage1_start), utc_iso(clock())))
     eng = Engine(st, ledger, ex, build_dir, cdir, lanes, clock=clock, sleep=sleep, disk_free_gb=disk_free_gb, gpu_free_mib=gpu_free_mib,
-                 spawn=spawn, worker=procs.Worker(threaded), log=log, poll_s=poll_s)
+                 spawn=spawn, worker=procs.Worker(threaded), log=log, poll_s=poll_s, bg=Background(plan, build_dir, cdir, log, clock, sleep))
     if on_engine:
         on_engine(eng)
     eng.recover()
+    eng.bg.start(eng.rec)
     eng.run()
     if eng.sig:
         ledger.append({"kind": "final", "status": "SIGNAL"})
         log("SIGNALLED sig=%s: units terminated and recorded; no analysis (cancel)" % eng.sig)
         return SIGNALLED
+    unreduced = eng.final_reductions()  # every completed segment is reduced before the analysis, or listed
+    if unreduced:
+        with open(os.path.join(cdir, BLOCKED), "w") as f:
+            f.write("segments completed but not reduced; their seeds are MISSING for the analysis:\n")
+            f.writelines("%s %s seeds %s\n" % u for u in unreduced)
+        log("%s: %d segment(s) unreduced after %d rounds; the analysis runs and must treat their seeds as missing" % (BLOCKED, len(unreduced), 3))
+    eng.retention = eng.retention_check()
+    eng.bg.wait(60.0 * plan["background_wait_minutes"], eng.rec)
+    extra = determinism.run(plan, st, cdir, log)
     complete = st.complete()
     status = "STOPPED" if eng.stopping in ("budget", "disk") and not complete else "DONE" if complete and not eng.crashed else "DONE_PARTIAL"
     ok, detail = analysis(plan, build_dir, log, runner)
@@ -145,7 +175,7 @@ def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free
     else:
         status_file, code = status, {"DONE": DONE, "DONE_PARTIAL": PARTIAL, "STOPPED": STOPPED}[status]
     ledger.append({"kind": "final", "status": status, "code": code})
-    report(st, eng, status, detail, cdir)
+    report(st, eng, status, detail, cdir, extra)
     with open(os.path.join(cdir, status_file), "w") as f:
         f.write(utc_iso(clock()) + "\n")
     log("FINAL status=%s analysis=%s exit=%d gpu_h=%.2f utc=%s" % (status, detail, code, st.gpu_s / 3600.0, utc_iso(clock())))
@@ -207,11 +237,11 @@ def main(argv=None):
     if not gpus:
         log("REFUSED CUDA_VISIBLE_DEVICES is empty (the helper exports the granted GPUs)")
         return REFUSED
-    mod, _, cls = plan.get("executor", "sf43exec:Executor").partition(":")
+    mod, _, cls = plan["executor"].partition(":")  # default sf43camp.runner_executor:RunnerExecutor
     try:
         ex = getattr(importlib.import_module(mod), cls)(plan, a.build_dir)
-    except (ImportError, AttributeError) as e:
-        log("REFUSED executor %s not available: %s" % (plan.get("executor", "sf43exec:Executor"), e))
+    except (ImportError, AttributeError, TypeError) as e:
+        log("REFUSED executor %s not available: %s" % (plan["executor"], e))
         return REFUSED
 
     def on_engine(eng):

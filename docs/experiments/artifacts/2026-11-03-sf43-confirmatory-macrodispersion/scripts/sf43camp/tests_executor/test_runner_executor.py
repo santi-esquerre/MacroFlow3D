@@ -93,7 +93,9 @@ class TestConsumerCommand(Base):
             "--fused-splines", "--single-launch", "--twin", "on", "--pollock-bridge", "on", "--seed0", "1000", "--nr", "3",
             "--out", "/s/seg/out"])
         self.assertEqual((cmd["cwd"], cmd["log_path"], cmd["env"]), ("/s/seg", "/s/seg/run.log", {}))
-        self.assertEqual(sorted(cmd["files"]), ["/s/seg/segment.json"])
+        self.assertEqual(sorted(cmd["files"]), ["/s/seg/seedmap.json", "/s/seg/segment.json"])
+        self.assertEqual(json.loads(cmd["files"]["/s/seg/seedmap.json"]), {"runner": "consumer", "seed0": 1000, "nr": 3,
+                                                                          "seeds": {"0": 1000, "1": 1001, "2": 1002}})
         self.assertEqual(json.loads(cmd["files"]["/s/seg/segment.json"])["seed0"], 1000)
 
     def test_never_sets_a_gpu(self):
@@ -119,6 +121,32 @@ class TestConsumerCommand(Base):
         a = self.ex.command(consumer_arm(twin=False, pollock_bridge=False), [1], "/s", "/b")["argv"]
         self.assertEqual((a[a.index("--twin") + 1], a[a.index("--pollock-bridge") + 1]), ("off", "off"))
 
+    def test_hmax_div_first_selects_the_pass_list_by_position(self):
+        arm = consumer_arm(hmax_div_first={"n": 30, "divs": [8, 16, 32]})
+        arm["seeds"] = {"start": 1000, "count": 200}
+        div = lambda seeds: (lambda a: a[a.index("--hmax-div") + 1])(self.ex.command(arm, seeds, "/s", "/b")["argv"])  # noqa: E731
+        self.assertEqual(div(list(range(1000, 1010))), "8,16,32")
+        self.assertEqual(div(list(range(1020, 1030))), "8,16,32")  # the last unit inside the first 30 positions
+        self.assertEqual(div(list(range(1030, 1040))), "8")  # later positions: the arm's own hmax_div
+        self.assertEqual(div([1900]), "8")  # a reserve seed (outside the seed range) runs single-pass
+        self.assertEqual(div([1100, 1101]), "8")  # an extension seed
+        with self.assertRaises(ValueError):  # a unit straddling position n cannot happen with a unit_size that divides n
+            div(list(range(1025, 1035)))
+        self.assertEqual(json.loads(self.ex.command(arm, [1000, 1001], "/s", "/b")["files"]["/s/segment.json"])["hmax_div"], [8, 16, 32])
+
+    def test_hmax_div_first_selects_the_pass_list_by_position(self):
+        arm = consumer_arm(hmax_div_first={"n": 30, "divs": [8, 16, 32]})
+        arm["seeds"] = {"start": 1000, "count": 200}
+        div = lambda seeds: (lambda a: a[a.index("--hmax-div") + 1])(self.ex.command(arm, seeds, "/s", "/b")["argv"])  # noqa: E731
+        self.assertEqual(div(list(range(1000, 1010))), "8,16,32")
+        self.assertEqual(div(list(range(1020, 1030))), "8,16,32")  # the last unit inside the first 30 positions
+        self.assertEqual(div(list(range(1030, 1040))), "8")  # later positions: the arm's own hmax_div
+        self.assertEqual(div([1900]), "8")  # a reserve seed (outside the seed range) runs single-pass
+        self.assertEqual(div([1100, 1101]), "8")  # an extension seed
+        with self.assertRaises(ValueError):  # a unit straddling position n cannot happen with a unit_size that divides n
+            div(list(range(1025, 1035)))
+        self.assertEqual(json.loads(self.ex.command(arm, [1000, 1001], "/s", "/b")["files"]["/s/segment.json"])["hmax_div"], [8, 16, 32])
+
     def test_seeds_must_be_consecutive_and_keys_present(self):
         for bad in ([], [1, 3], [2, 1]):
             with self.assertRaises(ValueError):
@@ -143,7 +171,8 @@ class TestPar2Config(Base):
         cmd = self.ex.command(par2_arm(), [5000, 5001], "/s", "/b")
         self.assertEqual(cmd["argv"], ["stdbuf", "-oL", "/b/macroflow3d_pipeline", "config.yaml"])
         self.assertEqual((cmd["cwd"], cmd["log_path"], cmd["env"]), ("/s", "/s/run.log", {}))
-        self.assertEqual(sorted(cmd["files"]), ["/s/config.yaml", "/s/segment.json"])
+        self.assertEqual(sorted(cmd["files"]), ["/s/config.yaml", "/s/seedmap.json", "/s/segment.json"])
+        self.assertEqual(json.loads(cmd["files"]["/s/seedmap.json"])["seeds"], {"0": 5000, "1": 5001})
 
     def test_matched_gate5_configuration(self):
         cfg = self.cfg(par2_arm())
@@ -321,8 +350,39 @@ class TestClassify(Base):
         self.assertEqual(rc, 0)
         r = self.ex.classify(arm, [7000, 7001, 7002], seg2, rc, log)
         self.assertEqual((r["cls"], r["completed_seeds"], r["failed_seed"]), ("unusable_solve", [7000, 7002], 7001))
-        self.assertEqual(r["verdicts"], {7000: "converged", 7001: "not_converged", 7002: "converged"})
+        self.assertEqual(r["verdicts"], {7000: "converged", 7001: "not_converged_beyond_fallback", 7002: "converged"})
+        self.assertEqual(r["failed_seeds"], [7001])
         self.assertEqual(self.ex.completed(arm, seg2), [7000, 7002])
+
+    def test_par2_solver_records_carry_iterations_and_the_printed_field_seed(self):
+        arm, seg = par2_arm(), self.seg()
+        rc, log = self.launch(arm, [7000, 7001], seg)
+        r = self.ex.classify(arm, [7000, 7001], seg, rc, log)
+        self.assertEqual({s: (v["iterations"], v["field_seed"], v["verdict"]) for s, v in r["solver"].items()},
+                         {7000: (40, 7000, "converged"), 7001: (41, 7001, "converged")})
+        self.assertNotIn("note", r)
+        # Par2's own generator (G7 factor G) prints `K generation (seed=`; the seed is the same seed0 + r
+        arm2, seg2 = par2_arm(generator="random_spectral", n_modes=10000), self.seg("g")
+        rc, log = self.launch(arm2, [7000, 7001], seg2)
+        self.assertIn("[4] K generation (seed=7001)", log)
+        r = self.ex.classify(arm2, [7000, 7001], seg2, rc, log)
+        self.assertEqual({s: v["field_seed"] for s, v in r["solver"].items()}, {7000: 7000, 7001: 7001})
+        # a printed field seed that disagrees with the seed map is reported
+        r = self.ex.classify(arm2, [7005, 7006], seg2, rc, log)
+        self.assertTrue(r.get("note"))
+
+    def test_par2_converged_no_is_usable_only_within_the_fallback_tolerance(self):
+        arm, seg = par2_arm(), self.seg()
+        rc, log = self.launch(arm, [7000, 7001, 7002], seg, FAKE_FALLBACK_AT=1)
+        r = self.ex.classify(arm, [7000, 7001, 7002], seg, rc, log)
+        self.assertEqual((r["cls"], r["completed_seeds"], r["failed_seed"]), ("ok", [7000, 7001, 7002], None))
+        self.assertEqual(r["verdicts"], {7000: "converged", 7001: "fallback", 7002: "converged"})
+        sol = rx.par2_solves
+        self.assertEqual(sol("Converged=NO  iters=2000  res=1.00e+00 \u2192 9.99e-09")[0]["verdict"], "fallback")
+        self.assertEqual(sol("Converged=NO  iters=2000  res=1.00e+00 -> 1.01e-08")[0]["verdict"], "not_converged_beyond_fallback")
+        self.assertEqual(sol("Converged=NO  iters=2000  res=1.00e+00 -> nan")[0]["verdict"], "non_finite")
+        self.assertEqual(sol("Converged=NO")[0]["verdict"], "not_converged_beyond_fallback")  # nothing printed: not usable
+        self.assertEqual(sol("Converged=YES  iters=3  res=1.00e+00 -> 1.00e-12")[0]["verdict"], "converged")
 
     def test_par2_oom_mid_unit_is_not_unusable(self):
         arm, seg = par2_arm(), self.seg()
@@ -420,13 +480,17 @@ class TestReducePrune(Base):
         res = self.ex.prune(self.parm, self.pseg, self.pred, [3000])
         self.assertEqual(res["deleted_files"], 0)
 
-    def test_blinded_sd_returns_sds_only_and_is_shift_invariant(self):
-        res = self.ex.blinded_sd(self.arm, self.red["tables"])
-        self.assertEqual(set(res), {"sd", "n_obs"})
-        self.assertEqual(len(res["sd"]), 2 * 2 * 3)  # 2 windows x 2 passes x 3 estimators (alpha_TP, alpha_TAP, alpha_LP)
-        self.assertTrue(all(isinstance(v, float) and v >= 0 for v in res["sd"].values()))
-        self.assertTrue(all(v > 0 for k, v in res["sd"].items() if k.endswith("alpha_TP")))  # (alpha_LP of the fixtures is seed-independent)
-        self.assertTrue(all(n == 6 for n in res["n_obs"].values()))
+    def test_blinded_sd_is_flat_takes_reduce_info_dicts_and_is_shift_invariant(self):
+        sd, n = self.ex.blinded_sd(self.arm, [self.red])  # the engine passes the reduce-result dicts
+        self.assertEqual(n, 6)  # 6 seeds; window [25, 94], pass h/8, basis disp, flux weights: one row per seed
+        self.assertLessEqual(set(sd), {"alpha_TP", "alpha_TAP", "alpha_LP"})
+        self.assertIn("alpha_TP", sd)
+        self.assertTrue(all(isinstance(v, float) and v >= 0 for v in sd.values()))
+        self.assertGreater(sd["alpha_TP"], 0.0)  # synthetic a_T depends on the seed
+        # one table path is accepted as well, and the second window or pass never leaks into the selection
+        self.assertEqual(self.ex.blinded_sd(self.arm, [self.red["tables"][0]]), (sd, n))
+        self.assertEqual(self.ex.blinded_sd(self.arm, [{"tables": self.red["tables"][:1]}]), (sd, n))
+        self.assertEqual(self.ex.blinded_sd(self.arm, [{"tables": self.red["tables"][1:]}])[0], {})  # window [94, 194] only
         # shifting every estimator by a constant leaves the output unchanged: no location statistic enters the result
         shifted = []
         for t in self.red["tables"]:
@@ -443,15 +507,21 @@ class TestReducePrune(Base):
                 wr.writeheader()
                 wr.writerows(rows)
             shifted.append(p)
-        res2 = self.ex.blinded_sd(self.arm, shifted)
-        self.assertEqual(set(res2["sd"]), set(res["sd"]))
-        for k, v in res["sd"].items():
-            self.assertAlmostEqual(v, res2["sd"][k], places=9)
+        sd2, n2 = self.ex.blinded_sd(self.arm, [{"tables": shifted}])
+        self.assertEqual((set(sd2), n2), (set(sd), n))
+        for k, v in sd.items():
+            self.assertAlmostEqual(v, sd2[k], places=9)
+
+    def test_blinded_sd_selection_follows_the_arm_and_the_blind_override(self):
+        pos = dict(self.arm, reduce=dict(self.arm["reduce"], blind={"basis": "pos", "hmax_div": 16}))
+        sd, n = self.ex.blinded_sd(pos, [self.red])
+        self.assertEqual(n, 6)
+        self.assertNotEqual(sd["alpha_TP"], self.ex.blinded_sd(self.arm, [self.red])[0]["alpha_TP"])  # another basis, another SD
+        sd_p, n_p = self.ex.blinded_sd(self.parm, [self.pred])  # Par2: code par2, uniform weights, hmax_div -1, seeds from the rows
+        self.assertEqual(n_p, 6)
+        self.assertIn("alpha_TP", sd_p)
 
     def test_blinded_sd_needs_four_values(self):
-        res = self.ex.blinded_sd(self.arm, self.red["tables"][:1])
-        self.assertEqual(len(res["sd"]), 2 * 3)
-        # a table with 2 realizations only: counted, no SD
         small = os.path.join(self.root, "small.csv")
         with open(self.red["tables"][0], newline="") as f:
             rd = csv.DictReader(f)
@@ -460,9 +530,14 @@ class TestReducePrune(Base):
             wr = csv.DictWriter(f, cols, lineterminator="\n")
             wr.writeheader()
             wr.writerows(rows)
-        res = self.ex.blinded_sd(self.arm, [small])
-        self.assertEqual(res["sd"], {})
-        self.assertTrue(res["n_obs"])
+        sd, n = self.ex.blinded_sd(self.arm, [{"tables": [small]}])
+        self.assertEqual(sd, {})  # counted, no SD
+        self.assertEqual(n, 2)
+
+    def test_par2_reduced_rows_carry_the_seed(self):
+        with open(self.pred["tables"][0]) as f:
+            rows = [x for x in csv.DictReader(f) if x["family"] == "plane"]
+        self.assertEqual({(int(x["r"]), int(x["seed"])) for x in rows}, {(r, 3000 + r) for r in range(6)})
 
     def test_zz_prune_with_arm_level_retained_list(self):
         npy = lambda: sorted(glob.glob(os.path.join(self.seg, "out", "**", "*.npy"), recursive=True))  # noqa: E731
@@ -482,6 +557,60 @@ class TestReducePrune(Base):
         self.assertEqual(len([p for p in left if "r_0001" in p]), 2 * 9)
         for t in self.red["tables"]:
             self.assertTrue(os.path.isfile(t))
+
+
+class TestSelectivePrune(Base):
+    def test_primary_arm_keeps_the_plane_arrays_of_every_realization(self):
+        arm = dict(consumer_arm(hmax_div=[8, 16]), primary=True)
+        seg = self.seg("p")
+        self.assertEqual(self.launch(arm, [3000, 3001, 3002, 3003], seg)[0], 0)
+        red = self.ex.reduce(arm, seg, os.path.join(self.root, "red"))
+        res = self.ex.prune(arm, seg, red, [3001])
+        left = glob.glob(os.path.join(seg, "out", "**", "*.npy"), recursive=True)
+        names = lambda sel: {os.path.basename(x)[:-4] for x in left if sel(x)}  # noqa: E731
+        self.assertEqual(res["kept_arrays"], ["seeds", "weights", "planes_x23", "planes_tau"])
+        for r in (0, 2, 3):  # not retained: the four plane arrays stay in both passes, everything else goes
+            self.assertEqual(names(lambda x, r=r: "r_%04d" % r in x), set(rx.KEEP_ARRAYS))
+            self.assertEqual(len([x for x in left if "r_%04d" % r in x]), 2 * 4)
+        self.assertEqual(len(names(lambda x: "r_0001" in x)), 9)  # the retained realization keeps all nine arrays
+        self.assertGreater(res["deleted_files"], 0)
+        # a non-primary arm keeps only the retained realizations (all arrays)
+        arm2, seg2 = consumer_arm(), self.seg("q")
+        self.launch(arm2, [3000, 3001], seg2)
+        red2 = self.ex.reduce(arm2, seg2, os.path.join(self.root, "red2"))
+        self.assertEqual(self.ex.prune(arm2, seg2, red2, [3001])["kept_arrays"], [])
+        self.assertEqual({os.path.basename(x) for x in glob.glob(os.path.join(seg2, "out", "**", "r_0000", "*.npy"), recursive=True)}, set())
+
+    def test_recompute_inputs_survive_for_the_displacement_basis(self):
+        arm = dict(consumer_arm(), primary=True)
+        seg = self.seg("p")
+        self.launch(arm, [3000, 3001], seg)
+        red = self.ex.reduce(arm, seg, os.path.join(self.root, "red"))
+        self.ex.prune(arm, seg, red, [])
+        for r in (0, 1):
+            d = os.path.join(seg, "out", "realizations", "r_%04d" % r)
+            self.assertEqual(sorted(x for x in os.listdir(d) if x.endswith(".npy")), ["planes_tau.npy", "planes_x23.npy", "seeds.npy", "weights.npy"])
+
+    def test_par2_prune_deletes_regular_snapshots_keeps_crossings_and_retained_snapshots(self):
+        arm = par2_arm(snapshots_every=100)
+        seg = self.seg("s")
+        self.assertEqual(self.launch(arm, [7000, 7001, 7002], seg)[0], 0)
+        red = self.ex.reduce(arm, seg, os.path.join(self.root, "red"))
+        snaps = lambda: sorted(glob.glob(os.path.join(seg, "out", "snapshots", "*", "*.csv")))  # noqa: E731
+        self.assertEqual(len(snaps()), 3)
+        res = self.ex.prune(arm, seg, red, [7001, 99999])
+        self.assertEqual([os.path.basename(os.path.dirname(x)) for x in snaps()], ["r_0001"])
+        self.assertEqual((res["deleted_files"], res["retained"]), (2, [7001]))
+        self.assertEqual(len(glob.glob(os.path.join(seg, "out", "crossings", "*.csv"))), 3)
+        # an altered input refuses before anything is deleted
+        arm2, seg2 = par2_arm(snapshots_every=100), self.seg("s2")
+        self.launch(arm2, [7000, 7001], seg2)
+        red2 = self.ex.reduce(arm2, seg2, os.path.join(self.root, "red2"))
+        with open(os.path.join(seg2, "out", "crossings", "realization_0000_planes.csv"), "a") as f:
+            f.write("# tampered\n")
+        with self.assertRaises(Exception):
+            self.ex.prune(arm2, seg2, red2, [])
+        self.assertEqual(len(glob.glob(os.path.join(seg2, "out", "snapshots", "*", "*.csv"))), 2)
 
 
 class TestSmall(unittest.TestCase):

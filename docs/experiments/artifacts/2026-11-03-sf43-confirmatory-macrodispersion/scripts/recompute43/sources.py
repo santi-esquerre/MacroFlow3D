@@ -4,7 +4,10 @@ Consumer pass root `P` (a realization directory, or `R/hmax_<d>`), files as writ
   P/track.json (planes, X0), R/field.json (seed, ell), R/flow_stats.json (lambda),
   P/moments_planes.csv (flux weights) and P/twin/moments_planes.csv (uniform weights): header
       x1,contributing,non_ok,mean_x2,var_x2,mean_x3,var_x3,mean_tau,var_tau,rms_ev,max_ev   (`%.15e`),
-  per-particle P/{seeds,weights,planes_x23,planes_tau,planes_I}.npy (pruned except for the retained subset).
+  per-particle P/{seeds,weights,planes_x23,planes_tau}.npy and P/planes_I.npy.  The campaign keeps the first four for EVERY realization
+  of its primary arms (`sf42red prune --keep-arrays`; `planes_I`, time-pass and Pollock arrays are pruned except for the retained
+  subset), which is all the displacement basis, the cross covariance (alpha_TAP) and the common set need; `planes_I` only serves the
+  `expI` weights, which are NOT covered when it is absent.
 Par2: `crossings/realization_%04d_planes.csv` (format line, then x1,n_injected,n_crossed,mean_t,var_t,mean_x2,mean_x3,var_x2,var_x3,
   cov_x2x3,mean_dx2,mean_dx3,var_dx2,var_dx3,cov_dx2dx3).
 
@@ -15,7 +18,8 @@ particles (weight 0) are never traced (`n_reached = 0`).  The reducer's per-plan
 set.  Both normalise the weights over the set and use the biased form.  Hence per-plane moments from the CSVs equal the reducer's
 (`set=perplane`) to the 16 printed digits.  The `set=common` set (particles that landed on every window plane) is NOT recoverable
 from the CSVs (the sets are nested, but a plane's moments cannot be restricted to a subset), nor are the cross covariance
-(alpha_TAP), the displacement basis (needs the seeds) and the `expI` weights: those use the arrays of the retained subset.
+(alpha_TAP) and the displacement basis (needs the seeds): those use the plane arrays, which the campaign keeps for every realization
+of the primary arms (the `expI` weights also need `planes_I`, kept for the retained subset only).
 The check `n(plane) = contributing` is made on every plane of every realization, so a set difference is reported, never assumed.
 """
 import csv
@@ -47,7 +51,7 @@ class ConsumerSource:
     """Moments of a consumer pass from the moment CSVs (flux, unif; position basis; no cross covariance) and/or the arrays."""
 
     code = "consumer"
-    ARRAYS = ("seeds", "weights", "planes_x23", "planes_tau", "planes_I")
+    ARRAYS = ("seeds", "weights", "planes_x23", "planes_tau")  # what the plane estimators read; planes_I (expI weights) is optional
 
     def __init__(self, pass_root):
         self.root = pass_root
@@ -75,6 +79,8 @@ class ConsumerSource:
         self.arrays = None
         if all(os.path.isfile(os.path.join(pass_root, a + ".npy")) for a in self.ARRAYS):
             a = {n: np.load(os.path.join(pass_root, n + ".npy")) for n in self.ARRAYS}
+            if os.path.isfile(os.path.join(pass_root, "planes_I.npy")):
+                a["planes_I"] = np.load(os.path.join(pass_root, "planes_I.npy"))
             a["fin"] = np.isfinite(a["planes_x23"]).all(axis=2) & np.isfinite(a["planes_tau"]) & (a["weights"] > 0.0)[:, None]
             self.arrays = a
 
@@ -119,6 +125,10 @@ class ConsumerSource:
             out.append(_mom(len(sel), mt, float((w * (tau - mt) ** 2).sum() / sw), (float(mu[0]), float(mu[1])),
                             float(C[0, 0]), float(C[1, 1]), float(C[0, 1])))
         return out
+
+    def has_weights(self, wmode):
+        """Whether the arrays can deliver the weight variant (expI needs planes_I)."""
+        return self.arrays is not None and (wmode != "expI" or "planes_I" in self.arrays)
 
     def set_stats(self, wmode, ks):
         """(n_common, wfrac_min, n_traced) over planes ks: n_common = landed on every plane; wfrac_min = smallest share of the

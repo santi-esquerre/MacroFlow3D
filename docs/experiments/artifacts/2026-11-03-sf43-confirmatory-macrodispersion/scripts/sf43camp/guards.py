@@ -1,4 +1,4 @@
-"""Pure decision functions: budget, disk, projection, backoff, blinded re-sizing factor."""
+"""Pure decision functions: budget, disk, projection, backoff, blinded re-sizing (H9)."""
 import math
 
 
@@ -28,11 +28,15 @@ def sd_upper80(sd, n):
     return sd * math.sqrt((n - 1) / stats.chi2.ppf(0.2, n - 1))
 
 
-def resize(sd_obs, n_obs, sd_plan_ub, n_conf, max_factor, cap):
-    """Blinded re-sizing: factor = max over estimators of clip((sd_obs_ub / sd_plan_ub)^2, 1, max_factor); returns (factor, n_new)
-    with n_new = min(ceil(factor n_conf), cap) (never below n_conf).  Takes standard deviations only."""
-    f = 1.0
-    for e, ub in sd_plan_ub.items():
-        if e in sd_obs:
-            f = max(f, min(max_factor, (sd_upper80(sd_obs[e], n_obs) / ub) ** 2))
-    return f, max(n_conf, min(math.ceil(f * n_conf), cap))
+def n_required(sd_obs, n_obs, hw_target):
+    """H9 precision-target N at the 80 % upper bound of the SD: ceil((t_{0.95, n-1} sd_UB80 / hw_target)^2)."""
+    from scipy import stats
+    return int(math.ceil((stats.t.ppf(0.95, n_obs - 1) * sd_upper80(sd_obs, n_obs) / hw_target) ** 2))
+
+
+def resize(sd_obs, n_obs, hw_target, n_conf, max_factor, cap):
+    """Blinded re-sizing (H9): N_req = max over the arm's estimators of n_required; n_new = min(floor(max_factor n_conf), max(n_conf, N_req), cap)
+    (upward only, at most max_factor, cap = the arm's n_max / seed range).  Takes standard deviations and counts only; returns (N_req, n_new)."""
+    req = [n_required(sd_obs[e], n_obs, hw) for e, hw in hw_target.items() if e in sd_obs]
+    n_req = max(req, default=n_conf)
+    return n_req, max(n_conf, min(int(math.floor(max_factor * n_conf)), n_req, cap))

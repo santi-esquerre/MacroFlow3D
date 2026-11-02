@@ -14,10 +14,12 @@ T0 = 1_800_000_000  # virtual start (epoch s)
 H = 3600.0
 
 
-def arm(i, group="g1", heavy=True, n=10, unit=5, est=100.0, prio=0, start=100, count=None, mem=1000, raw=1.0, retained=()):
-    return {"id": i, "family": "x", "amplitude": 1.0, "runner": "consumer", "priority": prio, "heavy": heavy, "min_free_mib": mem, "group": group,
+def arm(i, group="g1", heavy=True, n=10, unit=5, est=100.0, prio=0, start=100, count=None, mem=1000, raw=1.0, retained=(), **extra):
+    a = {"id": i, "family": "x", "amplitude": 1.0, "runner": "consumer", "priority": prio, "heavy": heavy, "min_free_mib": mem, "group": group,
             "seeds": {"start": start, "count": count or n}, "n_conf": n, "n_max": count or n, "unit_size": unit, "est_seconds": est, "raw_gb": raw,
             "consumer": {}, "reduce": {}, "retained": list(retained)}
+    a.update(extra)
+    return a
 
 
 def mk_plan(cdir, arms, cutoff_h=1000.0, **over):
