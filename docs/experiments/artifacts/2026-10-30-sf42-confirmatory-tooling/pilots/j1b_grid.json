@@ -1,0 +1,137 @@
+{
+ "rule": "iterations > 3 x SF-39 production median (A+B arms, same amplitude) or not converged: requires a different grid",
+ "sf39_reference": {
+  "s025": {
+   "production": {
+    "n": 25,
+    "min": 20,
+    "median": 20,
+    "p90": 20,
+    "max": 20
+   },
+   "all_arms": {
+    "n": 105,
+    "min": 20,
+    "median": 30,
+    "p90": 40,
+    "max": 40
+   }
+  },
+  "s1": {
+   "production": {
+    "n": 50,
+    "min": 20,
+    "median": 30.0,
+    "p90": 30,
+    "max": 30
+   },
+   "all_arms": {
+    "n": 130,
+    "min": 20,
+    "median": 30.0,
+    "p90": 40,
+    "max": 40
+   }
+  },
+  "s225": {
+   "production": {
+    "n": 62,
+    "min": 40,
+    "median": 40.0,
+    "p90": 50,
+    "max": 50
+   },
+   "all_arms": {
+    "n": 148,
+    "min": 40,
+    "median": 40.0,
+    "p90": 70,
+    "max": 80
+   }
+  },
+  "s4": {
+   "production": {
+    "n": 71,
+    "min": 50,
+    "median": 60,
+    "p90": 70,
+    "max": 2000
+   },
+   "all_arms": {
+    "n": 231,
+    "min": 40,
+    "median": 60,
+    "p90": 100,
+    "max": 2000
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "c_s1_2080x240",
+   "code": "consumer",
+   "grid": "2080x240x240",
+   "lh": 10,
+   "amp": "1",
+   "M": 128,
+   "seed0": 420903,
+   "exit": 0,
+   "wall_s": 59.649060629308224,
+   "peak_gpu_mib": 7445,
+   "pcg_iterations": 100,
+   "verdict": "converged",
+   "flow_stage_s": 30.113661612,
+   "track_s": 13.230327631,
+   "prepare_s": 0.889324843,
+   "total_s_runner": 54.040464037,
+   "runner_exact_bytes_max_mib": 6919.7387771606445,
+   "sf39_median_iterations": 30.0,
+   "ratio_to_sf39_median": 3.3333333333333335,
+   "different_grid_required": true
+  },
+  {
+   "id": "c_s225_416x96",
+   "code": "consumer",
+   "grid": "416x96x96",
+   "lh": 4,
+   "amp": "2.25",
+   "M": 100,
+   "seed0": 420901,
+   "exit": 0,
+   "wall_s": 12.224164053797722,
+   "peak_gpu_mib": 1655,
+   "pcg_iterations": 30,
+   "verdict": "converged",
+   "flow_stage_s": 2.005711064,
+   "track_s": 2.489158461,
+   "prepare_s": 0.014828965,
+   "total_s_runner": 5.144407248,
+   "runner_exact_bytes_max_mib": 221.46021270751953,
+   "sf39_median_iterations": 40.0,
+   "ratio_to_sf39_median": 0.75,
+   "different_grid_required": false
+  },
+  {
+   "id": "c_s225_832x384",
+   "code": "consumer",
+   "grid": "832x384x384",
+   "lh": 8,
+   "amp": "2.25",
+   "M": 100,
+   "seed0": 420902,
+   "exit": 0,
+   "wall_s": 33.7880417406559,
+   "peak_gpu_mib": 7595,
+   "pcg_iterations": 30,
+   "verdict": "converged",
+   "flow_stage_s": 17.366855132,
+   "track_s": 4.883489974,
+   "prepare_s": 0.283380197,
+   "total_s_runner": 30.004653107,
+   "runner_exact_bytes_max_mib": 7086.8408279418945,
+   "sf39_median_iterations": 40.0,
+   "ratio_to_sf39_median": 0.75,
+   "different_grid_required": false
+  }
+ ]
+}

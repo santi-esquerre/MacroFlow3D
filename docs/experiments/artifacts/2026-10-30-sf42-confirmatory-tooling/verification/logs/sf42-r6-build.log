@@ -1,0 +1,387 @@
+[2026-11-01T23:36:53Z] job=sf42-r6-build GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=75.8% min_free=31861/32510 MiB compute_procs=1
+  gpu 1: mean_util=0.0% min_free=32506/32510 MiB compute_procs=0
+[2026-11-01T23:36:53Z] job=sf42-r6-build chose GPU 1 (auto: least-loaded)
+[2026-11-01T23:36:53Z] job=sf42-r6-build session=macroflow3d-SF-42-sf42-r6-build started
+[2026-11-01T23:36:53Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-11-01T23:36:53Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-11-01T23:36:53Z] command=bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/verification/job_r6_build.sh
+2026-11-01T23:36:53Z
+TREE=08079af16e2c
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[0/2] Re-checking globbed directories...
+[1/305] Generating source revision
+[2/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/null.cpp.o
+[3/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/binary.cpp.o
+[4/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/exceptions.cpp.o
+[5/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/directives.cpp.o
+[6/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/node.cpp.o
+[7/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/depthguard.cpp.o
+[8/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/ostream_wrapper.cpp.o
+[9/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/tag.cpp.o
+[10/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/regex_yaml.cpp.o
+[11/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/stream.cpp.o
+[12/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/exp.cpp.o
+[13/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/memory.cpp.o
+[14/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/simplekey.cpp.o
+[15/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emit.cpp.o
+[16/305] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/EulerianFaceStats.cpp.o
+[17/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/nodeevents.cpp.o
+[18/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitfromevents.cpp.o
+[19/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scantag.cpp.o
+[20/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/nodebuilder.cpp.o
+[21/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitterstate.cpp.o
+[22/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitter.cpp.o
+[23/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/parser.cpp.o
+[24/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/parse.cpp.o
+[25/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/node_data.cpp.o
+[26/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/convert.cpp.o
+[27/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/singledocparser.cpp.o
+[28/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scanscalar.cpp.o
+[29/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scanner.cpp.o
+[30/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/kernels/cornerfield.cu.o
+[31/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/kernels/drift_correction.cu.o
+[32/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/scal.cu.o
+[33/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/preconditioner.cu.o
+[34/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/copy.cu.o
+[35/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/CudaContext.cu.o
+[36/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/mg_preconditioner.cu.o
+[37/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/axpy.cu.o
+[38/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu.o
+[39/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/fill.cu.o
+[40/305] Building CXX object CMakeFiles/macroflow3d_lib.dir/generated/git_rev.cpp.o
+[41/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/axpby.cu.o
+[42/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/cg_kernels.cu.o
+[43/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scantoken.cpp.o
+[44/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/dot.cu.o
+[45/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/constraints/MeanZeroProjector.cu.o
+[46/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/projected_positive_mg_preconditioner.cu.o
+[47/305] Building CXX object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/reference_operators.cpp.o
+[48/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/io.cu.o
+[49/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/FaceFluxRepack.cu.o
+[50/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/cycle/projected_positive_v_cycle.cu.o
+[51/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/cycle/v_cycle.cu.o
+[52/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/operators/varcoeff_laplacian.cu.o
+[53/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/nrm2.cu.o
+[54/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabStencils4.cu.o
+[55/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/transfer/restrict_3d.cu.o
+[56/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/coefficient_hierarchy.cu.o
+[57/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/BlockDiagonalMGPreconditioner.cu.o
+[58/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/CoupledGmres.cu.o
+[59/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/affine_periodic_rhs.cu.o
+[60/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ShiftedJacobianOperator.cu.o
+[61/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/NonlinearSources.cu.o
+[62/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/transfer/prolong_3d.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/src/multigrid/transfer/prolong_3d.cu(107): warning: variable "NZ" was declared but never referenced
+
+[63/305] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitterutils.cpp.o
+[64/305] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/runtime/analysis/AnalysisRunner.cpp.o
+[65/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/DifferentialOperators.cu.o
+[66/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/pipeline/PipelineRunner.cu.o
+[67/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/PollockTracker.cu.o
+[68/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabOracle.cu.o
+[69/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/JacobianVectorProduct.cu.o
+[70/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/AndersonAccelerator.cu.o
+[71/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/injectors.cu.o
+[72/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/rhs_head.cu.o
+[73/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/InletLabels.cu.o
+[74/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabGmres.cu.o
+[75/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/interpolation/PeriodicTricubicBSpline.cu.o
+[76/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/interpolation/NonPeriodicXTricubicBSpline.cu.o
+[77/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ResidualEvaluator.cu.o
+[78/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/StreamfunctionWorkspace.cu.o
+[79/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/transport_engine.cu.o
+[80/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/sum.cu.o
+[81/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/Diagnostics.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/src/physics/streamfunctions/Diagnostics.cu(300): warning: parameter "nz" was declared but never referenced
+
+[82/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabResidual.cu.o
+[83/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/stochastic/PeriodicGaussianField.cu.o
+[84/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/NewtonKrylovSolver.cu.o
+[85/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/stats/PlaneCrossingRecorder.cu.o
+[86/305] Building CXX object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_operator_tests.cpp.o
+[87/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cu.o
+[88/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/StokesFaceVelocity.cu.o
+[89/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/kernels/move_particles.cu.o
+[90/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/velocity_from_head.cu.o
+[91/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/StreamfunctionSolver.cu.o
+[92/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabJacobianVectorProduct.cu.o
+[93/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2TransportAdapter.cu.o
+[94/305] Building CUDA object src/external/Par2_Core/CMakeFiles/par2_core.dir/src/stats.cu.o
+[95/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cu.o
+[96/305] Building CUDA object CMakeFiles/macroflow3d_pipeline.dir/apps/macroflow3d_pipeline.cu.o
+[97/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabModePreconditioner.cu.o
+[98/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/smoothers/residual_3d.cu.o
+[99/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu.o
+[100/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2StatsAdapter.cu.o
+[101/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/smoothers/gsrb_3d.cu.o
+[102/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2SnapshotAdapter.cu.o
+[103/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ContinuationController.cu.o
+[104/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/DirichletMedium.cu.o
+[105/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/stochastic/stochastic.cu.o
+[106/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/LongBoxStage.cu.o
+[107/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/velocity_diagnostics.cu.o
+[108/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/mean_zero_projector_gpu_cases.cu.o
+[109/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/solve_head.cu.o
+[110/305] Building CUDA object CMakeFiles/spurious_spreading.dir/apps/spurious_spreading/spurious_spreading_main.cu.o
+[111/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/PollockComparator.cu.o
+[112/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/affine_periodic_rhs_gpu_cases.cu.o
+[113/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/AffinePeriodicFlowSolver.cu.o
+[114/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_gradient_gpu_cases.cu.o
+[115/305] Linking CXX static library src/external/yaml-cpp-0.8.0/libyaml-cpp.a
+[116/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_operator_gpu_cases.cu.o
+[117/305] Linking CUDA static library src/external/Par2_Core/libpar2_core.a
+[118/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/hessian_vector_b_gpu_cases.cu.o
+[119/305] Building CUDA object CMakeFiles/periodic_gaussian_tests.dir/tests/stochastic/periodic_gaussian_tests.cu.o
+[120/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_homogeneous_gpu_cases.cu.o
+[121/305] Building CUDA object CMakeFiles/flow_workspace_bytes_tests.dir/tests/flow/flow_workspace_bytes_tests.cu.o
+[122/305] Building CUDA object CMakeFiles/projected_pcg_external_tests.dir/tests/streamfunctions/projected_pcg_external_tests.cu.o
+[123/305] Building CUDA object CMakeFiles/interpolation_tests.dir/tests/interpolation/periodic_tricubic_bspline_tests.cu.o
+[124/305] Building CUDA object CMakeFiles/affine_periodic_flow_tests.dir/tests/flow/affine_periodic_flow_tests.cu.o
+[125/305] Building CUDA object CMakeFiles/affine_periodic_flow_lean_tests.dir/tests/flow/affine_periodic_flow_lean_tests.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/flow/affine_periodic_flow_lean_tests.cu(330): warning: const variable "opt" requires an initializer -- class "macroflow3d::physics::AffinePeriodicFlowLeanOptions" has no user-provided default constructor
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/flow/affine_periodic_flow_lean_tests.cu(330): warning: const variable "opt" requires an initializer -- class "macroflow3d::physics::AffinePeriodicFlowLeanOptions" has no user-provided default constructor
+
+[126/305] Building CUDA object CMakeFiles/streamline_tracker_face_flux_tests.dir/tests/streamline_tracker/face_flux_tests.cu.o
+[127/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/nonlinear_sources_gpu_cases.cu.o
+[128/305] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/io/config/ConfigYaml.cpp.o
+[129/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/projected_pcg_gpu_cases.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/projected_pcg_gpu_cases.cu(92): warning: 'long double' is treated as 'double' in device code
+
+Warning: 'long double' is treated as 'double' in device code
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/projected_pcg_gpu_cases.cu(31): warning: 'long double' is treated as 'double' in device code
+
+Warning: 'long double' is treated as 'double' in device code
+
+[130/305] Building CUDA object CMakeFiles/interpolation_hessian_tests.dir/tests/interpolation/spline_hessian_tests.cu.o
+[131/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_picard_fixed_gpu_cases.cu.o
+[132/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/multigrid_reuse_gpu_cases.cu.o
+[133/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/physical_diagnostics_gpu_cases.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/physical_diagnostics_gpu_cases.cu(260): warning: function "macroflow3d::streamfunctions::test::<unnamed>::PhysicalDiagnosticsGpuFixture::n" was declared but never referenced
+
+[134/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/DirichletLongBoxStage.cu.o
+[135/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/newton_gpu_cases.cu.o
+[136/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_picard_adaptive_gpu_cases.cu.o
+[137/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu.o
+[138/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_api_workspace_gpu_cases.cu.o
+[139/305] Building CUDA object CMakeFiles/interpolation_nonperiodic_x_tests.dir/tests/interpolation/nonperiodic_x_bspline_tests.cu.o
+[140/305] Building CUDA object CMakeFiles/streamline_tracker_pollock_tests.dir/tests/streamline_tracker/pollock_tracker_tests.cu.o
+[141/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_anderson_gpu_cases.cu.o
+[142/305] Building CUDA object CMakeFiles/inlet_slab_jvp_tests.dir/tests/inlet_slab/slab_jvp_tests.cu.o
+[143/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/heterogeneity_continuation_gpu_cases.cu.o
+[144/305] Building CUDA object CMakeFiles/lagrangian_ensemble.dir/apps/lagrangian_ensemble/lagrangian_ensemble_main.cu.o
+[145/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/jvp_gpu_cases.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/jvp_gpu_cases.cu(139): warning: 'long double' is treated as 'double' in device code
+
+[146/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/streamfunction_continuation_gpu_cases.cu.o
+[147/305] Building CUDA object CMakeFiles/dirichlet_medium_tests.dir/tests/lagrangian_labels/dirichlet_medium_tests.cu.o
+[148/305] Building CUDA object CMakeFiles/face_flux_repack_tests.dir/tests/lagrangian_labels/face_flux_repack_tests.cu.o
+[149/305] Building CUDA object CMakeFiles/streamline_tracker_rk_tests.dir/tests/streamline_tracker/reference_rk_tracker_tests.cu.o
+[150/305] Building CUDA object CMakeFiles/inlet_slab_contract_tests.dir/tests/inlet_slab/slab_contract_tests.cu.o
+[151/305] Building CUDA object CMakeFiles/seedlattice_probe.dir/apps/seedlattice_probe/seedlattice_probe_main.cu.o
+[152/305] Building CUDA object CMakeFiles/streamfunction_ev_ladder.dir/apps/closure_gate/ev_ladder_main.cu.o
+[153/305] Building CUDA object CMakeFiles/inlet_slab_coarse_tests.dir/tests/inlet_slab/slab_coarse_tests.cu.o
+[154/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/coupled_residual_gpu_cases.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/coupled_residual_gpu_cases.cu(473): warning: variable "grads" was declared but never referenced
+
+[155/305] Building CUDA object CMakeFiles/inlet_slab_stage_options_tests.dir/tests/inlet_slab/slab_stage_options_tests.cu.o
+[156/305] Building CUDA object CMakeFiles/sf41_cross_representation_tests.dir/tests/lagrangian_labels/sf41_cross_representation_tests.cu.o
+[157/305] Building CUDA object CMakeFiles/spurious_spreading_controls_tests.dir/tests/spurious_spreading/spurious_spreading_controls_tests.cu.o
+[158/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabMetrics.cu.o
+[159/305] Building CUDA object CMakeFiles/streamline_closure_integrator_tests.dir/tests/closure/streamline_closure_integrator_tests.cu.o
+[160/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/ProtoCase.cu.o
+[161/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabLabelTransport.cu.o
+[162/305] Building CUDA object CMakeFiles/pollock_nonperiodic_tests.dir/tests/lagrangian_labels/pollock_nonperiodic_tests.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/pollock_nonperiodic_tests.cu(339): warning: const variable "field" requires an initializer -- class "macroflow3d::lobe_ref::LobeField" has no user-provided default constructor
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/pollock_nonperiodic_tests.cu(339): warning: const variable "field" requires an initializer -- class "macroflow3d::lobe_ref::LobeField" has no user-provided default constructor
+
+[163/305] Building CUDA object CMakeFiles/stochastic_baseline_tests.dir/tests/stochastic/stochastic_baseline_tests.cu.o
+[164/305] Building CUDA object CMakeFiles/streamline_tracker_ps_tests.dir/tests/streamline_tracker/pseudo_symplectic_tracker_tests.cu.o
+[165/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/gmres_gpu_cases.cu.o
+[166/305] Building CUDA object CMakeFiles/inlet_slab_production_tests.dir/tests/inlet_slab/slab_production_tests.cu.o
+[167/305] Building CUDA object CMakeFiles/dirichlet_long_box_stage_tests.dir/tests/lagrangian_labels/dirichlet_long_box_stage_tests.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/dirichlet_long_box_stage_tests.cu(661): warning: variable "T" was declared but never referenced
+
+[168/305] Building CUDA object CMakeFiles/spurious_spreading_core.dir/apps/spurious_spreading/label_routes.cu.o
+[169/305] Building CUDA object CMakeFiles/inlet_slab_newton_tests.dir/tests/inlet_slab/slab_newton_tests.cu.o
+[170/305] Building CUDA object CMakeFiles/inlet_slab_npy_tests.dir/tests/inlet_slab/slab_npy_tests.cu.o
+[171/305] Building CUDA object CMakeFiles/inlet_slab_trace_gpu_tests.dir/tests/inlet_slab/slab_trace_gpu_tests.cu.o
+[172/305] Building CUDA object CMakeFiles/lagrangian_gpu_host_tests.dir/tests/lagrangian_labels/lagrangian_gpu_host_tests.cu.o
+[173/305] Building CUDA object CMakeFiles/closure_gate.dir/apps/closure_gate/closure_gate_main.cu.o
+[174/305] Building CUDA object CMakeFiles/streamline_closure_controls_tests.dir/tests/closure/streamline_closure_controls_tests.cu.o
+[175/305] Building CUDA object CMakeFiles/sf42_periodic_flow.dir/apps/sf42_periodic_flow/sf42_periodic_flow_main.cu.o
+[176/305] Building CUDA object CMakeFiles/streamfunction_operator_tests.dir/tests/streamfunctions/terminal_solver_gpu_cases.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/terminal_solver_gpu_cases.cu(2615): warning: variable "check" was declared but never referenced
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/streamfunctions/terminal_solver_gpu_cases.cu(3505): warning: variable "check" was declared but never referenced
+
+[177/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/ReferenceRkTracker.cu.o
+[178/305] Building CUDA object CMakeFiles/par2_field_stats.dir/apps/par2_field_stats/par2_field_stats_main.cu.o
+[179/305] Building CUDA object CMakeFiles/mms_dirichlet.dir/apps/mms_dirichlet/mms_dirichlet_main.cu.o
+[180/305] Building CUDA object CMakeFiles/inlet_slab_controls_tests.dir/tests/inlet_slab/slab_controls_tests.cu.o
+[181/305] Building CUDA object CMakeFiles/long_box_tests.dir/tests/lagrangian_labels/long_box_tests.cu.o
+[182/305] Building CUDA object CMakeFiles/par2_sf42_options_tests.dir/tests/par2/par2_sf42_options_tests.cu.o
+[183/305] Building CUDA object CMakeFiles/inlet_slab_proto_check.dir/tests/inlet_slab/slab_proto_check.cu.o
+[184/305] Building CUDA object CMakeFiles/inlet_slab_trace_tests.dir/tests/inlet_slab/slab_trace_tests.cu.o
+[185/305] Building CUDA object CMakeFiles/lagrangian_medium_ab_tests.dir/tests/lagrangian_labels/lagrangian_medium_ab_tests.cu.o
+[186/305] Building CUDA object CMakeFiles/lagrangian_ensemble_tests.dir/tests/lagrangian_labels/lagrangian_ensemble_tests.cu.o
+[187/305] Building CUDA object CMakeFiles/tracker_l6_tests.dir/tests/lagrangian_labels/tracker_l6_tests.cu.o
+[188/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/ensemble/EnsembleRunner.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/src/runtime/ensemble/EnsembleRunner.cu: In instantiation of ‘macroflow3d::ensemble::run_ensemble(const macroflow3d::io::AppConfig&, macroflow3d::CudaContext&, macroflow3d::StageProfiler&)::<lambda(auto:1&)> [with auto:1 = macroflow3d::physics::particles::Par2TransportAdapter]’:
+/home/sesquerre/MacroFlow3D-SF-42/src/runtime/ensemble/EnsembleRunner.cu:942:17:   required from here
+/home/sesquerre/MacroFlow3D-SF-42/src/runtime/ensemble/../../io/writers/CsvTimeSeriesWriter.hpp:25:27: note: ‘struct macroflow3d::io::TimeSeriesPoint<double>’ has no user-provided default constructor
+   25 | template <typename T> struct TimeSeriesPoint {
+      |                           ^~~~~~~~~~~~~~~
+/home/sesquerre/MacroFlow3D-SF-42/src/runtime/ensemble/../../io/writers/CsvTimeSeriesWriter.hpp:26:3: note: and the implicitly-defined constructor does not initialize ‘double macroflow3d::io::TimeSeriesPoint<double>::time’
+   26 |     T time;
+      |   ^ ~~
+[189/305] Building CUDA object CMakeFiles/dirichlet_controls_tests.dir/tests/lagrangian_labels/dirichlet_controls_tests.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/dirichlet_controls_tests.cu(957): warning: const variable "field" requires an initializer -- class "macroflow3d::lobe_ref::LobeField" has no user-provided default constructor
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/dirichlet_controls_tests.cu(957): warning: const variable "field" requires an initializer -- class "macroflow3d::lobe_ref::LobeField" has no user-provided default constructor
+
+[190/305] Building CUDA object CMakeFiles/lagrangian_ensemble_b_tests.dir/tests/lagrangian_labels/lagrangian_ensemble_b_tests.cu.o
+[191/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/EnsembleRunner.cu.o
+[192/305] Building CUDA object CMakeFiles/lagrangian_medium_ab.dir/apps/lagrangian_medium_ab/lagrangian_medium_ab_main.cu.o
+[193/305] Building CUDA object CMakeFiles/inlet_slab.dir/apps/inlet_slab/inlet_slab_main.cu.o
+[194/305] Building CUDA object CMakeFiles/spurious_spreading_core.dir/apps/spurious_spreading/return_map_run.cu.o
+[195/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabTraceGpu.cu.o
+[196/305] Building CUDA object CMakeFiles/lagrangian_controls_tests.dir/tests/lagrangian_labels/lagrangian_controls_tests.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(421): warning: variable "iref_all" was declared but never referenced
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(421): warning: variable "idiff_all" was declared but never referenced
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(1029): warning: const variable "f" requires an initializer -- class "<unnamed>::SmoothField" has no user-provided default constructor
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(1167): warning: const variable "f" requires an initializer -- class "<unnamed>::SmoothField" has no user-provided default constructor
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(558): warning: variable "<unnamed>::kBandOk" was declared but never referenced
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(1029): warning: const variable "f" requires an initializer -- class "<unnamed>::SmoothField" has no user-provided default constructor
+
+/home/sesquerre/MacroFlow3D-SF-42/tests/lagrangian_labels/lagrangian_controls_tests.cu(1167): warning: const variable "f" requires an initializer -- class "<unnamed>::SmoothField" has no user-provided default constructor
+
+[197/305] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/LagrangianTracker.cu.o
+[198/305] Linking CXX static library libmacroflow3d_lib.a
+[199/305] Linking CXX static library libspurious_spreading_core.a
+[200/305] Linking CXX executable CMakeFiles/tracker_l6_tests.dir/cmake_device_link.o
+[201/305] Linking CXX executable CMakeFiles/flow_workspace_bytes_tests.dir/cmake_device_link.o
+[202/305] Linking CXX executable CMakeFiles/closure_gate.dir/cmake_device_link.o
+[203/305] Linking CXX executable CMakeFiles/affine_periodic_flow_lean_tests.dir/cmake_device_link.o
+[204/305] Linking CXX executable CMakeFiles/inlet_slab_jvp_tests.dir/cmake_device_link.o
+[205/305] Linking CXX executable CMakeFiles/sf42_periodic_flow.dir/cmake_device_link.o
+[206/305] Linking CXX executable CMakeFiles/inlet_slab_proto_check.dir/cmake_device_link.o
+[207/305] Linking CXX executable CMakeFiles/par2_sf42_options_tests.dir/cmake_device_link.o
+[208/305] Linking CXX executable CMakeFiles/inlet_slab_production_tests.dir/cmake_device_link.o
+[209/305] Linking CXX executable CMakeFiles/streamfunction_ev_ladder.dir/cmake_device_link.o
+[210/305] Linking CXX executable CMakeFiles/interpolation_nonperiodic_x_tests.dir/cmake_device_link.o
+[211/305] Linking CXX executable CMakeFiles/streamline_closure_controls_tests.dir/cmake_device_link.o
+[212/305] Linking CXX executable CMakeFiles/periodic_gaussian_tests.dir/cmake_device_link.o
+[213/305] Linking CXX executable CMakeFiles/long_box_tests.dir/cmake_device_link.o
+[214/305] Linking CXX executable CMakeFiles/streamline_tracker_face_flux_tests.dir/cmake_device_link.o
+[215/305] Linking CXX executable CMakeFiles/inlet_slab_contract_tests.dir/cmake_device_link.o
+[216/305] Linking CXX executable CMakeFiles/interpolation_hessian_tests.dir/cmake_device_link.o
+[217/305] Linking CXX executable CMakeFiles/affine_periodic_flow_tests.dir/cmake_device_link.o
+[218/305] Linking CXX executable CMakeFiles/lagrangian_medium_ab.dir/cmake_device_link.o
+[219/305] Linking CXX executable CMakeFiles/dirichlet_controls_tests.dir/cmake_device_link.o
+[220/305] Linking CXX executable CMakeFiles/inlet_slab_trace_tests.dir/cmake_device_link.o
+[221/305] Linking CXX executable CMakeFiles/lagrangian_gpu_host_tests.dir/cmake_device_link.o
+[222/305] Linking CXX executable CMakeFiles/face_flux_repack_tests.dir/cmake_device_link.o
+[223/305] Linking CXX executable CMakeFiles/sf41_cross_representation_tests.dir/cmake_device_link.o
+[224/305] Linking CXX executable CMakeFiles/dirichlet_long_box_stage_tests.dir/cmake_device_link.o
+[225/305] Linking CXX executable CMakeFiles/dirichlet_medium_tests.dir/cmake_device_link.o
+[226/305] Linking CXX executable CMakeFiles/pollock_nonperiodic_tests.dir/cmake_device_link.o
+[227/305] Linking CXX executable tracker_l6_tests
+[228/305] Linking CXX executable CMakeFiles/mms_dirichlet.dir/cmake_device_link.o
+[229/305] Linking CXX executable CMakeFiles/stochastic_baseline_tests.dir/cmake_device_link.o
+[230/305] Linking CXX executable CMakeFiles/streamline_tracker_ps_tests.dir/cmake_device_link.o
+[231/305] Linking CXX executable CMakeFiles/lagrangian_controls_tests.dir/cmake_device_link.o
+[232/305] Linking CXX executable CMakeFiles/seedlattice_probe.dir/cmake_device_link.o
+[233/305] Linking CXX executable flow_workspace_bytes_tests
+[234/305] Linking CXX executable CMakeFiles/lagrangian_ensemble_tests.dir/cmake_device_link.o
+[235/305] Linking CXX executable CMakeFiles/spurious_spreading.dir/cmake_device_link.o
+[236/305] Linking CXX executable CMakeFiles/lagrangian_ensemble.dir/cmake_device_link.o
+[237/305] Linking CXX executable CMakeFiles/inlet_slab_newton_tests.dir/cmake_device_link.o
+[238/305] Linking CXX executable CMakeFiles/interpolation_tests.dir/cmake_device_link.o
+[239/305] Linking CXX executable CMakeFiles/lagrangian_ensemble_b_tests.dir/cmake_device_link.o
+[240/305] Linking CXX executable CMakeFiles/streamline_tracker_pollock_tests.dir/cmake_device_link.o
+[241/305] Linking CXX executable CMakeFiles/inlet_slab_stage_options_tests.dir/cmake_device_link.o
+[242/305] Linking CXX executable CMakeFiles/projected_pcg_external_tests.dir/cmake_device_link.o
+[243/305] Linking CXX executable CMakeFiles/macroflow3d_pipeline.dir/cmake_device_link.o
+[244/305] Linking CXX executable CMakeFiles/inlet_slab_coarse_tests.dir/cmake_device_link.o
+[245/305] Linking CXX executable CMakeFiles/streamfunction_operator_tests.dir/cmake_device_link.o
+[246/305] Linking CXX executable affine_periodic_flow_lean_tests
+[247/305] Linking CXX executable CMakeFiles/lagrangian_medium_ab_tests.dir/cmake_device_link.o
+[248/305] Linking CXX executable CMakeFiles/streamline_closure_integrator_tests.dir/cmake_device_link.o
+[249/305] Linking CXX executable CMakeFiles/inlet_slab_controls_tests.dir/cmake_device_link.o
+[250/305] Linking CXX executable CMakeFiles/inlet_slab_trace_gpu_tests.dir/cmake_device_link.o
+[251/305] Linking CXX executable closure_gate
+[252/305] Linking CXX executable CMakeFiles/spurious_spreading_controls_tests.dir/cmake_device_link.o
+[253/305] Linking CXX executable CMakeFiles/inlet_slab.dir/cmake_device_link.o
+[254/305] Linking CXX executable interpolation_nonperiodic_x_tests
+[255/305] Linking CXX executable sf42_periodic_flow
+[256/305] Linking CXX executable streamfunction_ev_ladder
+[257/305] Linking CXX executable CMakeFiles/par2_field_stats.dir/cmake_device_link.o
+[258/305] Linking CXX executable streamline_closure_controls_tests
+[259/305] Linking CXX executable inlet_slab_jvp_tests
+[260/305] Linking CXX executable inlet_slab_production_tests
+[261/305] Linking CXX executable CMakeFiles/inlet_slab_npy_tests.dir/cmake_device_link.o
+[262/305] Linking CXX executable inlet_slab_proto_check
+[263/305] Linking CXX executable par2_sf42_options_tests
+[264/305] Linking CXX executable CMakeFiles/streamline_tracker_rk_tests.dir/cmake_device_link.o
+[265/305] Linking CXX executable streamline_tracker_face_flux_tests
+[266/305] Linking CXX executable inlet_slab_contract_tests
+[267/305] Linking CXX executable long_box_tests
+[268/305] Linking CXX executable sf41_cross_representation_tests
+[269/305] Linking CXX executable periodic_gaussian_tests
+[270/305] Linking CXX executable interpolation_hessian_tests
+[271/305] Linking CXX executable lagrangian_medium_ab
+[272/305] Linking CXX executable inlet_slab_trace_tests
+[273/305] Linking CXX executable lagrangian_gpu_host_tests
+[274/305] Linking CXX executable face_flux_repack_tests
+[275/305] Linking CXX executable affine_periodic_flow_tests
+[276/305] Linking CXX executable streamline_tracker_ps_tests
+[277/305] Linking CXX executable dirichlet_long_box_stage_tests
+[278/305] Linking CXX executable dirichlet_medium_tests
+[279/305] Linking CXX executable dirichlet_controls_tests
+[280/305] Linking CXX executable pollock_nonperiodic_tests
+[281/305] Linking CXX executable interpolation_tests
+[282/305] Linking CXX executable inlet_slab_coarse_tests
+[283/305] Linking CXX executable stochastic_baseline_tests
+[284/305] Linking CXX executable lagrangian_ensemble
+[285/305] Linking CXX executable mms_dirichlet
+[286/305] Linking CXX executable inlet_slab_newton_tests
+[287/305] Linking CXX executable inlet_slab_stage_options_tests
+[288/305] Linking CXX executable spurious_spreading
+[289/305] Linking CXX executable lagrangian_ensemble_b_tests
+[290/305] Linking CXX executable streamline_tracker_pollock_tests
+[291/305] Linking CXX executable projected_pcg_external_tests
+[292/305] Linking CXX executable seedlattice_probe
+[293/305] Linking CXX executable lagrangian_ensemble_tests
+[294/305] Linking CXX executable lagrangian_controls_tests
+[295/305] Linking CXX executable inlet_slab_trace_gpu_tests
+[296/305] Linking CXX executable streamline_closure_integrator_tests
+[297/305] Linking CXX executable streamfunction_operator_tests
+[298/305] Linking CXX executable inlet_slab_controls_tests
+[299/305] Linking CXX executable spurious_spreading_controls_tests
+[300/305] Linking CXX executable lagrangian_medium_ab_tests
+[301/305] Linking CXX executable macroflow3d_pipeline
+[302/305] Linking CXX executable inlet_slab
+[303/305] Linking CXX executable inlet_slab_npy_tests
+[304/305] Linking CXX executable par2_field_stats
+[305/305] Linking CXX executable streamline_tracker_rk_tests
+7aef44842aed3797bfa5ebc8ab7914f9  build/v100-release/macroflow3d_pipeline
+58d1099da5cce300e5ebc6547822de08  build/v100-release/lagrangian_ensemble
+2026-11-01T23:41:59Z
+[2026-11-01T23:41:59Z] job=sf42-r6-build finished exit=0

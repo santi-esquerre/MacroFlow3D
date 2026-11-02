@@ -1,0 +1,54 @@
+[2026-11-02T00:25:22Z] job=sf42-r6-hosttests GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-11-02T00:25:22Z] job=sf42-r6-hosttests chose GPU 0 (auto: least-loaded)
+[2026-11-02T00:25:22Z] job=sf42-r6-hosttests session=macroflow3d-SF-42-sf42-r6-hosttests started
+[2026-11-02T00:25:22Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-11-02T00:25:22Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-11-02T00:25:22Z] command=bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/verification/job_r6_hosttests.sh
+START_UTC=2026-11-02T00:25:23Z
+TREE=08079af16e2c
+python 3.11.7 numpy 1.26.4 scipy 1.11.4
+nproc_all=80
+ y: array(-0.031061)
+
+----------------------------------------------------------------------
+Ran 367 tests in 43.515s
+
+FAILED (failures=1)
+unittest_rc=1
+skipped_tests=0
+SF39_NEWER_THAN_R3_START (empty expected):
+SF39_UNTOUCHED_CHECK_DONE
+END_UTC=2026-11-02T00:26:08Z
+[2026-11-02T00:26:08Z] job=sf42-r6-hosttests finished exit=1
+
+=== excerpt of the -v log ~/sf42_campaign/r6/hosttests.log (417 lines; unittest -v) ===
+host-only test line: test_s025_gate5_from_per_realization_values (mcstat.tests.test_sf39_reproduction.Par2PerRealization.test_s025_gate5_from_per_realization_values) ... ok
+skipped tests in the -v log: 0
+======================================================================
+FAIL: test_RL_is_L_at_a_over_2_minus_the_bounds_at_a_over_2K (mcstat.tests.test_budget_splits.RobustLimitSplits.test_RL_is_L_at_a_over_2_minus_the_bounds_at_a_over_2K)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/sesquerre/MacroFlow3D-SF-42/docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/mcstat/tests/test_budget_splits.py", line 153, in test_RL_is_L_at_a_over_2_minus_the_bounds_at_a_over_2K
+    np.testing.assert_allclose(float(rl.lower(a)), want, rtol=1e-8, atol=1e-10, err_msg="K=%d a=%g" % (K, a))
+  File "/home/sesquerre/anaconda3/lib/python3.11/site-packages/numpy/testing/_private/utils.py", line 1504, in assert_allclose
+    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),
+  File "/home/sesquerre/anaconda3/lib/python3.11/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/sesquerre/anaconda3/lib/python3.11/site-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Not equal to tolerance rtol=1e-08, atol=1e-10
+K=4 a=0.2
+Mismatched elements: 1 / 1 (100%)
+Max absolute difference: 9.42519396e-10
+Max relative difference: 3.03437943e-08
+ x: array(-0.031061)
+ y: array(-0.031061)
+
+----------------------------------------------------------------------
+Ran 367 tests in 43.515s
+
+FAILED (failures=1)

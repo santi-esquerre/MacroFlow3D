@@ -1,0 +1,9 @@
+== p2_e1: grid 64,16,16 ell 0.25 eps 1 seed0 420211 (sigma2 1)
+CMD lagrangian_ensemble --medium b --grid 64,16,16 --ell 0.25 --sigma2 1 --eps 1 --seed0 420211 --nr 1 --np-side 10 --times auto --tol 1e-6 --dump-field fields --out out
+consumer rc=0
+CMD macroflow3d_pipeline config.yaml
+par2 rc=0
+Y: files byte-identical True; arrays (shape (16, 16, 64), dtype float64) byte-identical True
+var Y (mean-subtracted, biased) = 1, |var-1| = 0.000e+00 (limit 1e-12)
+K: files byte-identical True; arrays (shape (16, 16, 64), dtype float64) byte-identical True
+FIELD_IDENTITY PASS

@@ -1,0 +1,4 @@
+id,code,grid,lh,amp,M,seed0,exit,wall_s,flow_stage_s,solve_s,prepare_s,track_s,total_s_runner,peak_gpu_mib,runner_exact_bytes_max_mib,pcg_iterations,verdict,sf39_median_iterations,ratio_to_sf39_median,different_grid_required
+c_s1_2080x240,consumer,2080x240x240,10,1,128,420903,0,59.64906063,30.11366161,,0.889324843,13.23032763,54.04046404,7445,6919.738777,100,converged,30,3.333333333,True
+c_s225_416x96,consumer,416x96x96,4,2.25,100,420901,0,12.22416405,2.005711064,,0.014828965,2.489158461,5.144407248,1655,221.4602127,30,converged,40,0.75,False
+c_s225_832x384,consumer,832x384x384,8,2.25,100,420902,0,33.78804174,17.36685513,,0.283380197,4.883489974,30.00465311,7595,7086.840828,30,converged,40,0.75,False

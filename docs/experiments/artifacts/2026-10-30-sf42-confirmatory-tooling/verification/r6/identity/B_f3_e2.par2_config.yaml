@@ -1,0 +1,45 @@
+run_mode: ensemble
+grid: {nx: 96, ny: 24, nz: 24, dx: 0.041666666666666664}
+stochastic:
+  sigma2: 1.0
+  corr_length: 0.25
+  n_modes: 1000
+  covariance_type: 1
+  seed: 42
+  K_mean: 1.0
+  field_source: sf18_medium_b
+  sf18_medium_b: {sigma2: 1, eps: 2, seed0: 420214}
+flow:
+  solver: mg_cg
+  mg_levels: 3
+  mg_pre_smooth: 4
+  mg_post_smooth: 4
+  mg_coarse_iters: 50
+  mg_max_cycles: 20
+  cg_max_iter: 2000
+  cg_rtol: 1.0e-10
+  cg_check_every: 10
+  rtol: 1.0e-6
+  pin: {mode: off}
+  bc:
+    west:   { type: dirichlet, value: 4 }
+    east:   { type: dirichlet, value: 0.0 }
+    south:  { type: periodic }
+    north:  { type: periodic }
+    bottom: { type: periodic }
+    top:    { type: periodic }
+transport:
+  n_particles: 100
+  dt: 0.05
+  n_steps: 2
+  seed: 777
+  output_every: 1000
+  inject_x: 1.25
+analysis:
+  macrodispersion: {enabled: true, NR: 1, lambda: 0.25, vmean_norm: 1.0, sample_every: 1, var_estimator: biased}
+output:
+  output_dir: out
+  save_K: false
+  dump_field:
+    enabled: true
+    realizations: [0]
