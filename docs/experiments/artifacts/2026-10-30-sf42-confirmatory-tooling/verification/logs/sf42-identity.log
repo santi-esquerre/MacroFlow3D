@@ -1,0 +1,69 @@
+[2026-10-30T05:40:09Z] job=sf42-identity GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T05:40:09Z] job=sf42-identity chose GPU 0 (auto: least-loaded)
+[2026-10-30T05:40:09Z] job=sf42-identity session=macroflow3d-SF-42-sf42-identity started
+[2026-10-30T05:40:09Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T05:40:09Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T05:40:09Z] command=cd ~/MacroFlow3D-SF-42 && bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/verification/identity.sh build/v100-release ~/sf42_campaign/identity
+== p2_e1: grid 64,16,16 ell 0.25 eps 1 seed0 420211 (sigma2 1)
+CMD lagrangian_ensemble --medium b --grid 64,16,16 --ell 0.25 --sigma2 1 --eps 1 --seed0 420211 --nr 1 --np-side 10 --times auto --tol 1e-6 --dump-field fields --out out
+consumer rc=0
+CMD macroflow3d_pipeline config.yaml
+par2 rc=0
+Y: files byte-identical True; arrays (shape (16, 16, 64), dtype float64) byte-identical True
+var Y (mean-subtracted, biased) = 1, |var-1| = 0.000e+00 (limit 1e-12)
+K: files byte-identical True; arrays (shape (16, 16, 64), dtype float64) byte-identical True
+FIELD_IDENTITY PASS
+== p2_e2: grid 64,16,16 ell 0.25 eps 2 seed0 420212 (sigma2 1)
+CMD lagrangian_ensemble --medium b --grid 64,16,16 --ell 0.25 --sigma2 1 --eps 2 --seed0 420212 --nr 1 --np-side 10 --times auto --tol 1e-6 --dump-field fields --out out
+consumer rc=0
+CMD macroflow3d_pipeline config.yaml
+par2 rc=0
+Y: files byte-identical True; arrays (shape (16, 16, 64), dtype float64) byte-identical True
+var Y (mean-subtracted, biased) = 0.99999999999999978, |var-1| = 2.220e-16 (limit 1e-12)
+K: files byte-identical True; arrays (shape (16, 16, 64), dtype float64) byte-identical True
+FIELD_IDENTITY PASS
+== f3_e1: grid 96,24,24 ell 0.25 eps 1 seed0 420213 (sigma2 1)
+CMD lagrangian_ensemble --medium b --grid 96,24,24 --ell 0.25 --sigma2 1 --eps 1 --seed0 420213 --nr 1 --np-side 10 --times auto --tol 1e-6 --dump-field fields --out out
+consumer rc=0
+CMD macroflow3d_pipeline config.yaml
+par2 rc=0
+Y: files byte-identical True; arrays (shape (24, 24, 96), dtype float64) byte-identical True
+var Y (mean-subtracted, biased) = 0.99999999999999989, |var-1| = 1.110e-16 (limit 1e-12)
+K: files byte-identical True; arrays (shape (24, 24, 96), dtype float64) byte-identical True
+FIELD_IDENTITY PASS
+== f3_e2: grid 96,24,24 ell 0.25 eps 2 seed0 420214 (sigma2 1)
+CMD lagrangian_ensemble --medium b --grid 96,24,24 --ell 0.25 --sigma2 1 --eps 2 --seed0 420214 --nr 1 --np-side 10 --times auto --tol 1e-6 --dump-field fields --out out
+consumer rc=0
+CMD macroflow3d_pipeline config.yaml
+par2 rc=0
+Y: files byte-identical True; arrays (shape (24, 24, 96), dtype float64) byte-identical True
+var Y (mean-subtracted, biased) = 1.0000000000000002, |var-1| = 2.220e-16 (limit 1e-12)
+K: files byte-identical True; arrays (shape (24, 24, 96), dtype float64) byte-identical True
+FIELD_IDENTITY PASS
+CMD macroflow3d_pipeline config.yaml (inject_window, plane_crossings dump_injection)
+par2 rc=0
+injected rows 2000 (expected 2000); x1 == 5 ell: 2000; inside x2 window: 2000; inside x3 window: 2000
+x2 range [0.100789, 0.899412] window [0.100000, 0.900000]; x3 range [0.200203, 0.799294] window [0.200000, 0.800000]
+INJECTION_WINDOW PASS
+== par2_sf42_options_tests (standalone; contains B.crossings_equal_bruteforce_1e-12)
+CHECK B.Y_bitwise_equal_consumer_r0 PASS
+CHECK B.K_bitwise_equal_exp_eps_Y_r0 PASS
+CHECK B.var_Y_equals_sigma2_r0 PASS  var=1.4999999999999999
+CHECK B.Y_bitwise_equal_consumer_r1 PASS
+CHECK B.K_bitwise_equal_exp_eps_Y_r1 PASS
+CHECK B.var_Y_equals_sigma2_r1 PASS  var=1.5000000000000003
+CHECK B.injection_inside_window PASS  y in [0.8504, 0.9999], z in [0.0006, 0.1997]
+CHECK B.injection_fills_window PASS
+CHECK B.crossings_header PASS
+CHECK B.crossings_file_per_realization PASS
+CHECK B.crossings_equal_bruteforce_1e-12 PASS
+CHECK B.crossings_of_wrapped_particles PASS  984 first crossings with a nonzero wrap counter
+par2_sf42_options: 86 checks, 0 failed
+par2_sf42_options_tests rc=0
+== seedlattice verify_probe (standalone)
+seedlattice_probe: 1575 cases (996 ON_FACE, 579 OK), 0 mismatches
+seedlattice verify_probe rc=0
+IDENTITY_DONE bad=0
+[2026-10-30T05:40:58Z] job=sf42-identity finished exit=0

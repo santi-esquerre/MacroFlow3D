@@ -1,0 +1,89 @@
+{
+  "G": [
+    0.3699858368885648,
+    0.003745153125495389,
+    -0.0007467455214069968
+  ],
+  "K_eff": [
+    [
+      2.703008559158819,
+      -0.018988321839430514,
+      0.005048178176164062
+    ],
+    [
+      -0.018988321839430482,
+      1.8374475111709192,
+      -0.1926866025316055
+    ],
+    [
+      0.005048178176164075,
+      -0.19268660253160558,
+      1.5348114755329882
+    ]
+  ],
+  "Y_mean_host": -4.930595726626227e-16,
+  "Y_variance_host": 0.9999999999999929,
+  "achieved_mean_flux": [
+    1.0000000000000016,
+    2.1589175759617607e-17,
+    4.824699667560495e-18
+  ],
+  "all_correctors_converged": true,
+  "correctors": [
+    {
+      "converged": true,
+      "final_projected_residual": 2.0533731739344674e-09,
+      "initial_projected_residual": 86559.35388479919,
+      "iterations": 20,
+      "relative_projected_residual": 2.3722140725163882e-14,
+      "status": 0
+    },
+    {
+      "converged": true,
+      "final_projected_residual": 3.985293315654577e-09,
+      "initial_projected_residual": 66524.50255545267,
+      "iterations": 20,
+      "relative_projected_residual": 5.990714943463976e-14,
+      "status": 0
+    },
+    {
+      "converged": true,
+      "final_projected_residual": 2.1324289030034274e-09,
+      "initial_projected_residual": 87937.55681748857,
+      "iterations": 20,
+      "relative_projected_residual": 2.424935352058065e-14,
+      "status": 0
+    }
+  ],
+  "div_max_abs": 8.027711828617612e-11,
+  "div_rms": 1.7035242017042033e-12,
+  "ell": 0.25,
+  "eps": 2.0,
+  "h": 0.015625,
+  "layout": {
+    "U": "(nz,ny,nx+1)",
+    "V": "(nz,ny+1,nx)",
+    "W": "(nz+1,ny,nx)",
+    "Y": "(nz,ny,nx)",
+    "flux": "F = K_f (G.n + d h~/dn), K_f harmonic; periodic duplicate plane = plane 0"
+  },
+  "mg_levels": 5,
+  "n": 64,
+  "pcg_max_iter": 4000,
+  "pcg_rtol": 1e-12,
+  "seconds": {
+    "flow": 2.039516627,
+    "total": 5.267346571
+  },
+  "seed": 420001,
+  "sf18": {
+    "active_mode_count": 127007,
+    "applied_scale": 1.2588037214279568,
+    "final_variance": 1.0,
+    "raw_mean": -4.87890977618477e-18,
+    "raw_variance": 0.6310793414846372
+  },
+  "sigma2_gen": 1.0,
+  "symmetry_defect_rel": 3.080520280438901e-17,
+  "tool": "sf42_periodic_flow (SF-42 N3)"
+}

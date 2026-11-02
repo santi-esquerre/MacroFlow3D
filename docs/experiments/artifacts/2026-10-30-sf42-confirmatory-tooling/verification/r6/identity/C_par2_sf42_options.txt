@@ -1,0 +1,118 @@
+CHECK A.valid_sf18_config_accepted PASS
+CHECK A.sf18_with_streamfunction_periodic_gaussian_rejected PASS
+CHECK A.sf18_with_streamfunction_stochastic_accepted PASS
+CHECK A.sf18_with_disabled_streamfunction_accepted PASS
+CHECK A.sf18_dx_not_1_over_ny_rejected PASS
+CHECK A.sf18_dx_one_rejected PASS
+CHECK A.sf18_dx_1_over_24_accepted PASS
+CHECK A.sf18_dx_text_of_1_over_24_accepted PASS
+CHECK A.default_source_dx_unconstrained PASS
+CHECK A.field_source_without_block PASS
+CHECK A.block_without_field_source PASS
+CHECK A.unknown_field_source PASS
+CHECK A.eps_0_rejected PASS
+CHECK A.eps_-1_rejected PASS
+CHECK A.eps_nan_rejected PASS
+CHECK A.eps_inf_rejected PASS
+CHECK A.sigma2_-0.5_rejected PASS
+CHECK A.sigma2_nan_rejected PASS
+CHECK A.K_mean_not_one_rejected PASS
+CHECK A.odd_extent_rejected PASS
+CHECK A.default_source_K_mean_unchanged PASS
+CHECK A.window_valid_accepted PASS
+CHECK A.window_bad_0_rejected PASS
+CHECK A.window_bad_1_rejected PASS
+CHECK A.window_bad_2_rejected PASS
+CHECK A.window_bad_3_rejected PASS
+CHECK A.window_bad_4_rejected PASS
+CHECK A.window_bad_5_rejected PASS
+CHECK A.window_bad_6_rejected PASS
+CHECK A.window_bad_7_rejected PASS
+CHECK A.window_nan_rejected PASS
+CHECK A.window_with_default_source_accepted PASS
+CHECK A.planes_valid_accepted PASS
+CHECK A.planes_bad_0_rejected PASS
+CHECK A.planes_bad_1_rejected PASS
+CHECK A.planes_bad_2_rejected PASS
+CHECK A.planes_bad_3_rejected PASS
+CHECK A.planes_bad_4_rejected PASS
+CHECK A.planes_bad_5_rejected PASS
+CHECK A.planes_bad_6_rejected PASS
+CHECK A.planes_bad_7_rejected PASS
+CHECK A.planes_with_periodic_x_rejected PASS
+CHECK A.planes_disabled_not_validated PASS
+CHECK A.dump_valid_accepted PASS
+CHECK A.dump_without_sf18_rejected PASS
+CHECK A.dump_empty_realizations_rejected PASS
+CHECK A.dump_realization_out_of_range_rejected PASS
+CHECK A.dump_negative_realization_rejected PASS
+CHECK A.dump_duplicate_rejected PASS
+CHECK A.dump_two_of_three_accepted PASS
+CHECK A.yaml_parse_sf18 PASS
+CHECK A.yaml_parse_window PASS
+CHECK A.yaml_parse_planes PASS
+CHECK A.yaml_parse_dump PASS
+CHECK A.yaml_parsed_config_validates PASS
+CHECK A.yaml_defaults_off PASS
+CHECK A.yaml_reject_unk_sf18 PASS
+CHECK A.yaml_reject_missing_seed0 PASS
+CHECK A.yaml_reject_missing_eps PASS
+CHECK A.yaml_reject_window_len3 PASS
+CHECK A.yaml_reject_window_len5 PASS
+CHECK A.yaml_reject_window_scalar PASS
+CHECK A.yaml_reject_unk_planes PASS
+CHECK A.yaml_reject_planes_scalar PASS
+CHECK A.yaml_reject_unk_dump PASS
+CHECK A.yaml_reject_dump_realizations_scalar PASS
+CHECK A.yaml_reject_unk_stoch_source PASS
+CHECK B.pipeline_exit_0 PASS  exit 0 (log /tmp/par2_sf42_options_174668/B.log)
+CHECK B.effective_config_records_options PASS
+CHECK B.manifest_records_options PASS
+CHECK B.effective_config_exact_values PASS
+CHECK B.Y_bitwise_equal_consumer_r0 PASS
+CHECK B.K_bitwise_equal_exp_eps_Y_r0 PASS
+CHECK B.var_Y_equals_sigma2_r0 PASS  var=1.4999999999999999
+CHECK B.Y_bitwise_equal_consumer_r1 PASS
+CHECK B.K_bitwise_equal_exp_eps_Y_r1 PASS
+CHECK B.var_Y_equals_sigma2_r1 PASS  var=1.5000000000000003
+CHECK B.realizations_use_seed0_plus_r PASS
+CHECK B.no_dump_for_unlisted_realization PASS
+CHECK B.injection_inside_window PASS  y in [0.8504, 0.9999], z in [0.0006, 0.1997]
+CHECK B.injection_fills_window PASS
+CHECK B.crossings_header PASS
+CHECK B.crossings_file_per_realization PASS
+CHECK B.recorder_injection_equals_independent_law_r0 PASS  max |diff| = 0
+CHECK B.reference_trajectories_read_r0 PASS
+   r=0 plane 0.400: n_crossed 396 / 400
+   r=0 plane 0.420: n_crossed 394 / 400
+   r=0 plane 0.440: n_crossed 393 / 400
+   r=0 plane 0.460: n_crossed 391 / 400
+   r=0 plane 0.900: n_crossed 215 / 400
+   r=0 plane 1.300: n_crossed 172 / 400
+   r=0 plane 1.700: n_crossed 122 / 400
+   r=0 plane 1.950: n_crossed 79 / 400
+CHECK B.crossings_equal_bruteforce_1e-12_r0 PASS
+CHECK B.recorder_injection_equals_independent_law_r1 PASS  max |diff| = 0
+CHECK B.reference_trajectories_read_r1 PASS
+   r=1 plane 0.400: n_crossed 400 / 400
+   r=1 plane 0.420: n_crossed 400 / 400
+   r=1 plane 0.440: n_crossed 400 / 400
+   r=1 plane 0.460: n_crossed 400 / 400
+   r=1 plane 0.900: n_crossed 302 / 400
+   r=1 plane 1.300: n_crossed 149 / 400
+   r=1 plane 1.700: n_crossed 99 / 400
+   r=1 plane 1.950: n_crossed 37 / 400
+CHECK B.crossings_equal_bruteforce_1e-12_r1 PASS
+CHECK B.periodic_wrapping_exercised PASS  7161 wrapped rows
+CHECK B.crossings_of_wrapped_particles PASS  1513 first crossings with a nonzero wrap counter
+CHECK B.several_planes_in_one_step PASS  235 (particle, step) pairs
+CHECK B.some_plane_partially_crossed PASS  12 planes
+CHECK C.pipeline_exit_0 PASS  exit 0
+CHECK C.zero_crossings_give_nan_rows PASS
+CHECK C.nan_spelled_nan PASS
+CHECK C.full_plane_default_no_injection_window_in_config PASS
+CHECK C.no_field_dump_dir PASS
+CHECK D.pipeline_exit_0 PASS  exit 0 / 0
+CHECK D.other_outputs_byte_identical PASS  34 files compared, 0 differ
+CHECK D.new_files_only_in_crossings_and_fields PASS
+par2_sf42_options: 101 checks, 0 failed

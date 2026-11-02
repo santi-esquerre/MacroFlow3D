@@ -104,6 +104,7 @@ set(RUNTIME_SOURCES
     src/runtime/CudaContext.cu
     src/runtime/pipeline/PipelineRunner.cu
     src/runtime/ensemble/EnsembleRunner.cu
+    src/runtime/stats/PlaneCrossingRecorder.cu
 )
 
 set(BLAS_SOURCES
@@ -336,6 +337,12 @@ if(MACROFLOW3D_BUILD_APPS)
     target_link_libraries(streamfunction_ev_ladder PRIVATE macroflow3d_lib)
     target_compile_options(streamfunction_ev_ladder PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
 
+    # SF-42 N3: finite-volume comparator of the pseudo-spectral cross-check (SF-19 flow on the SF-18 field, dumps Y and the
+    # face fluxes as .npy). Documented-experiment tool; NOT a ctest entry; no production change.
+    add_executable(sf42_periodic_flow apps/sf42_periodic_flow/sf42_periodic_flow_main.cu)
+    target_link_libraries(sf42_periodic_flow PRIVATE macroflow3d_lib)
+    target_compile_options(sf42_periodic_flow PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>)
+
     add_executable(streamfunction_operator_tests
         tests/streamfunctions/reference_operators.cpp
         tests/streamfunctions/streamfunction_operator_tests.cpp
@@ -403,6 +410,17 @@ if(MACROFLOW3D_BUILD_APPS)
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
     )
     add_test(NAME stochastic_baseline_gaussian COMMAND stochastic_baseline_tests)
+
+    # SF-42 N1: contract tests of the opt-in Par2 options (SF-18 medium (b) K source, injection window,
+    # plane crossings vs an independent brute-force reference, Y/K dump); drives macroflow3d_pipeline
+    # (build both targets first). Fast tier <= 60 s.
+    add_executable(par2_sf42_options_tests tests/par2/par2_sf42_options_tests.cu)
+    target_link_libraries(par2_sf42_options_tests PRIVATE macroflow3d_lib)
+    target_compile_options(par2_sf42_options_tests
+        PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda>
+    )
+    add_test(NAME par2_sf42_options
+        COMMAND par2_sf42_options_tests $<TARGET_FILE:macroflow3d_pipeline>)
 
     # SF-19 T02: affine-periodic Darcy solve acceptance tests
     # (AffinePeriodicFlowSolver.cuh). Standalone (mirrors
@@ -692,4 +710,21 @@ if(MACROFLOW3D_BUILD_APPS)
     add_executable(lagrangian_medium_ab apps/lagrangian_medium_ab/lagrangian_medium_ab_main.cu)
     target_link_libraries(lagrangian_medium_ab PRIVATE macroflow3d_lib)
     target_compile_options(lagrangian_medium_ab PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+
+    # SF-42 N2: manufactured-solution order study of the medium (b) Dirichlet head-solve path (documented-experiment
+    # instrument, V100 job; NOT a ctest entry except the fast `--self-check` contract smoke).
+    add_executable(mms_dirichlet apps/mms_dirichlet/mms_dirichlet_main.cu)
+    target_link_libraries(mms_dirichlet PRIVATE macroflow3d_lib)
+    target_compile_options(mms_dirichlet PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME mms_dirichlet_self_check COMMAND mms_dirichlet --self-check)
+
+    # SF-42 N4: seed-lattice probe. Calls the PRODUCTION find_seed_on_face / make_seed_lattice on a list of
+    # (ny, window, M) cases; the ctest compares its outcome line by line with the Python predictor
+    # (seedlattice.rule) of the SF-42 artifact. Host code only, no GPU work; fast tier (seconds).
+    add_executable(seedlattice_probe apps/seedlattice_probe/seedlattice_probe_main.cu)
+    target_link_libraries(seedlattice_probe PRIVATE macroflow3d_lib)
+    target_compile_options(seedlattice_probe PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr --extended-lambda --fmad=false>)
+    add_test(NAME seedlattice_probe
+        COMMAND python3 -W error -m seedlattice.verify_probe $<TARGET_FILE:seedlattice_probe>
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts)
 endif()

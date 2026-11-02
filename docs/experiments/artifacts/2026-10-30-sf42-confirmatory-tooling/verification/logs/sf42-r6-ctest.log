@@ -1,0 +1,100 @@
+[2026-11-01T23:50:02Z] job=sf42-r6-ctest GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=71.2% min_free=31861/32510 MiB compute_procs=1
+  gpu 1: mean_util=0.0% min_free=32506/32510 MiB compute_procs=0
+[2026-11-01T23:50:02Z] job=sf42-r6-ctest chose GPU 1 (auto: least-loaded)
+[2026-11-01T23:50:02Z] job=sf42-r6-ctest session=macroflow3d-SF-42-sf42-r6-ctest started
+[2026-11-01T23:50:02Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-11-01T23:50:02Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-11-01T23:50:02Z] command=ctest --test-dir build/v100-release --output-on-failure
+Test project /home/sesquerre/MacroFlow3D-SF-42/build/v100-release
+      Start  1: streamfunction_operator_tests
+ 1/43 Test  #1: streamfunction_operator_tests ..........   Passed  1343.18 sec
+      Start  2: periodic_gaussian
+ 2/43 Test  #2: periodic_gaussian ......................   Passed    3.80 sec
+      Start  3: stochastic_baseline_gaussian
+ 3/43 Test  #3: stochastic_baseline_gaussian ...........   Passed    3.93 sec
+      Start  4: par2_sf42_options
+ 4/43 Test  #4: par2_sf42_options ......................   Passed   16.08 sec
+      Start  5: affine_periodic_flow
+ 5/43 Test  #5: affine_periodic_flow ...................   Passed    8.46 sec
+      Start  6: affine_periodic_flow_lean
+ 6/43 Test  #6: affine_periodic_flow_lean ..............   Passed   16.48 sec
+      Start  7: projected_pcg_external
+ 7/43 Test  #7: projected_pcg_external .................   Passed    7.12 sec
+      Start  8: flow_workspace_bytes
+ 8/43 Test  #8: flow_workspace_bytes ...................   Passed    3.18 sec
+      Start  9: interpolation_periodic_tricubic
+ 9/43 Test  #9: interpolation_periodic_tricubic ........   Passed    4.06 sec
+      Start 10: interpolation_hessian
+10/43 Test #10: interpolation_hessian ..................   Passed    3.04 sec
+      Start 11: interpolation_nonperiodic_x
+11/43 Test #11: interpolation_nonperiodic_x ............   Passed    3.99 sec
+      Start 12: streamline_tracker_pseudo_symplectic
+12/43 Test #12: streamline_tracker_pseudo_symplectic ...   Passed    4.71 sec
+      Start 13: streamline_tracker_reference_rk
+13/43 Test #13: streamline_tracker_reference_rk ........   Passed    3.92 sec
+      Start 14: streamline_tracker_face_flux
+14/43 Test #14: streamline_tracker_face_flux ...........   Passed    4.65 sec
+      Start 15: streamline_tracker_pollock
+15/43 Test #15: streamline_tracker_pollock .............   Passed    4.85 sec
+      Start 16: streamline_closure_integrator
+16/43 Test #16: streamline_closure_integrator ..........   Passed    5.78 sec
+      Start 17: spurious_spreading_controls16
+17/43 Test #17: spurious_spreading_controls16 ..........   Passed    4.08 sec
+      Start 18: streamline_closure_controls16
+18/43 Test #18: streamline_closure_controls16 ..........   Passed   12.42 sec
+      Start 19: inlet_slab_contracts
+19/43 Test #19: inlet_slab_contracts ...................   Passed    3.45 sec
+      Start 20: inlet_slab_jvp
+20/43 Test #20: inlet_slab_jvp .........................   Passed    3.48 sec
+      Start 21: inlet_slab_newton
+21/43 Test #21: inlet_slab_newton ......................   Passed   15.98 sec
+      Start 22: inlet_slab_coarse
+22/43 Test #22: inlet_slab_coarse ......................   Passed    4.95 sec
+      Start 23: inlet_slab_production16
+23/43 Test #23: inlet_slab_production16 ................   Passed   11.84 sec
+      Start 24: inlet_slab_trace16
+24/43 Test #24: inlet_slab_trace16 .....................   Passed   10.85 sec
+      Start 25: inlet_slab_controls
+25/43 Test #25: inlet_slab_controls ....................   Passed   10.43 sec
+      Start 26: inlet_slab_trace_gpu
+26/43 Test #26: inlet_slab_trace_gpu ...................   Passed   32.85 sec
+      Start 27: lagrangian_tracker_gpu_host
+27/43 Test #27: lagrangian_tracker_gpu_host ............   Passed   13.94 sec
+      Start 28: lagrangian_tracker_controls
+28/43 Test #28: lagrangian_tracker_controls ............   Passed   18.86 sec
+      Start 29: lagrangian_tracker_l6
+29/43 Test #29: lagrangian_tracker_l6 ..................   Passed    9.95 sec
+      Start 30: lagrangian_long_box
+30/43 Test #30: lagrangian_long_box ....................   Passed   33.73 sec
+      Start 31: lagrangian_cross_representation
+31/43 Test #31: lagrangian_cross_representation ........   Passed    5.61 sec
+      Start 32: lagrangian_dirichlet_medium
+32/43 Test #32: lagrangian_dirichlet_medium ............   Passed    4.59 sec
+      Start 33: lagrangian_dirichlet_long_box_stage
+33/43 Test #33: lagrangian_dirichlet_long_box_stage ....   Passed   10.24 sec
+      Start 34: lagrangian_face_flux_repack
+34/43 Test #34: lagrangian_face_flux_repack ............   Passed    4.45 sec
+      Start 35: lagrangian_pollock_nonperiodic
+35/43 Test #35: lagrangian_pollock_nonperiodic .........   Passed    3.35 sec
+      Start 36: lagrangian_dirichlet_controls
+36/43 Test #36: lagrangian_dirichlet_controls ..........   Passed    6.20 sec
+      Start 37: lagrangian_ensemble
+37/43 Test #37: lagrangian_ensemble ....................   Passed   48.12 sec
+      Start 38: lagrangian_ensemble_medium_b
+38/43 Test #38: lagrangian_ensemble_medium_b ...........   Passed   44.76 sec
+      Start 39: lagrangian_medium_ab
+39/43 Test #39: lagrangian_medium_ab ...................   Passed   62.89 sec
+      Start 40: inlet_slab_stage_options
+40/43 Test #40: inlet_slab_stage_options ...............   Passed   14.39 sec
+      Start 41: inlet_slab_npy
+41/43 Test #41: inlet_slab_npy .........................   Passed    3.76 sec
+      Start 42: mms_dirichlet_self_check
+42/43 Test #42: mms_dirichlet_self_check ...............   Passed    4.54 sec
+      Start 43: seedlattice_probe
+43/43 Test #43: seedlattice_probe ......................   Passed    0.99 sec
+
+100% tests passed, 0 tests failed out of 43
+
+Total Test time (real) = 1838.01 sec
+[2026-11-02T00:20:41Z] job=sf42-r6-ctest finished exit=0

@@ -1,0 +1,21 @@
+[2026-11-02T00:22:21Z] job=sf42-r6-grid GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-11-02T00:22:21Z] job=sf42-r6-grid chose GPU 0 (auto: least-loaded)
+[2026-11-02T00:22:21Z] job=sf42-r6-grid session=macroflow3d-SF-42-sf42-r6-grid started
+[2026-11-02T00:22:21Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-11-02T00:22:21Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-11-02T00:22:21Z] command=bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/pilots/job.sh J1B
+JOB_START J1B 2026-11-02T00:22:21Z tree=08079af16e2c
+JOB_BEGIN J1B runs=3 2026-11-02T00:22:22Z
+RUN c_s225_416x96 code=consumer grid=416x96x96 amp=2.25 seed0=420901 nr=1 M=100
+DONE c_s225_416x96 exit=0 wall=12.2s peak_mib=1655
+RUN c_s225_832x384 code=consumer grid=832x384x384 amp=2.25 seed0=420902 nr=1 M=100
+DONE c_s225_832x384 exit=0 wall=33.8s peak_mib=7595
+RUN c_s1_2080x240 code=consumer grid=2080x240x240 amp=1 seed0=420903 nr=1 M=128
+DONE c_s1_2080x240 exit=0 wall=59.6s peak_mib=7445
+JOB_END J1B failed_runs=0 2026-11-02T00:24:07Z
+DRIVER_EXIT=0
+SF39_UNTOUCHED_CHECK_DONE
+JOB_END J1B 2026-11-02T00:24:08Z
+[2026-11-02T00:24:08Z] job=sf42-r6-grid finished exit=0

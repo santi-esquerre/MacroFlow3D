@@ -1,0 +1,39 @@
+[2026-10-30T09:20:13Z] job=sf42-noise GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T09:20:13Z] job=sf42-noise chose GPU 0 (auto: least-loaded)
+[2026-10-30T09:20:13Z] job=sf42-noise session=macroflow3d-SF-42-sf42-noise started
+[2026-10-30T09:20:13Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T09:20:13Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T09:20:13Z] command=cd ~/MacroFlow3D-SF-42/docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/verification && bash noise_job.sh
+SET s025: 20 A passes + arm s025_B
+wrote 375 rows to /home/sesquerre/sf42_campaign/r3/noise/s025.csv
+SET s1: 20 A passes + arm s1_B
+wrote 750 rows to /home/sesquerre/sf42_campaign/r3/noise/s1.csv
+SET s225: 20 A passes + arm s225_B
+wrote 930 rows to /home/sesquerre/sf42_campaign/r3/noise/s225.csv
+SET s4: 20 A passes + arm s4_B
+wrote 1065 rows to /home/sesquerre/sf42_campaign/r3/noise/s4.csv
+set,estimator,basis,n,mean,sd,splitshare_fraction,splitshare_flag,sd_ratio_pos_over_disp
+# s025 window coverage (d_first, d_last, n_planes, d_lo, d_hi): [('25', '94', '71', '25', '94')]; rows 50
+s025,alpha_TP,pos,25,-0.0001877133427,0.0044759655,4.048607298e-07,0,
+s025,alpha_TP,disp,25,0.0005093330294,0.0001205564082,2.704739889e-06,0,37.12756184
+s025,alpha_TAP,pos,25,-0.0001877144509,0.004475964132,4.048606739e-07,0,
+s025,alpha_TAP,disp,25,0.0005093327513,0.0001205562752,2.704744864e-06,0,37.12759143
+# s1 window coverage (d_first, d_last, n_planes, d_lo, d_hi): [('25', '94', '71', '25', '94')]; rows 100
+s1,alpha_TP,pos,50,0.006236936508,0.01103110649,0.00041654414,0,
+s1,alpha_TP,disp,50,0.007216874402,0.001120574325,0.001970289478,0,9.844154239
+s1,alpha_TAP,pos,50,0.006236885684,0.01103104297,0.0004165462753,0,
+s1,alpha_TAP,disp,50,0.007216825478,0.001120559633,0.001970309049,0,9.844226613
+# s225 window coverage (d_first, d_last, n_planes, d_lo, d_hi): [('24.999999999999996', '94', '71', '25', '94')]; rows 124
+s225,alpha_TP,pos,62,0.02832718196,0.01513906524,0.007121154148,0,
+s225,alpha_TP,disp,62,0.02946473445,0.00407294397,0.01470086559,0,3.716983429
+s225,alpha_TAP,pos,62,0.02832626611,0.0151387208,0.007121251808,0,
+s225,alpha_TAP,disp,62,0.02946383143,0.004072777815,0.01470253113,0,3.717050498
+# s4 window coverage (d_first, d_last, n_planes, d_lo, d_hi): [('24.999999999999996', '94', '70', '25', '94')]; rows 142
+s4,alpha_TP,pos,71,0.06647720662,0.01917773561,0.01766100764,0,
+s4,alpha_TP,disp,71,0.06538089597,0.01687814483,0.01510820582,0,1.136246655
+s4,alpha_TAP,pos,71,0.06646047495,0.01917107468,0.01766523569,0,
+s4,alpha_TAP,disp,71,0.06536518264,0.01687273067,0.01511499677,0,1.136216482
+SF39_UNTOUCHED_CHECK_DONE
+[2026-10-30T09:34:24Z] job=sf42-noise finished exit=0

@@ -28,6 +28,8 @@ inline constexpr int kOutputFormatVersion = 1;
  *   <base>/snapshots/r_XXXX/step_XXXXXXXX.csv  (r>0)
  *   <base>/ensemble/ensemble_timeseries.csv
  *   <base>/analysis/macrodispersion.csv
+ *   <base>/crossings/realization_XXXX_{planes,injection}.csv  (SF-42 N1, opt-in)
+ *   <base>/fields/r_XXXX/{Y,K}.npy  (SF-42 N1, opt-in)
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/{iteration_history,trial_history}.csv
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/stage_history.csv  (SF-17 T03, continuation only)
  *   <base>/streamfunctions/r_XXXX/grid_XXXX/summary.json
@@ -73,6 +75,24 @@ struct OutputLayout {
     std::string ensemble_timeseries() const { return base + "/ensemble/ensemble_timeseries.csv"; }
 
     std::string macrodispersion_csv() const { return base + "/analysis/macrodispersion.csv"; }
+
+    // ── SF-42 N1 (opt-in outputs; directories are created by the writers when used) ──
+    std::string crossings_planes_csv(int r) const {
+        char buf[512];
+        std::snprintf(buf, sizeof(buf), "%s/crossings/realization_%04d_planes.csv", base.c_str(), r);
+        return buf;
+    }
+    std::string crossings_injection_csv(int r) const {
+        char buf[512];
+        std::snprintf(buf, sizeof(buf), "%s/crossings/realization_%04d_injection.csv", base.c_str(),
+                      r);
+        return buf;
+    }
+    std::string field_dump_dir(int r) const {
+        char buf[512];
+        std::snprintf(buf, sizeof(buf), "%s/fields/r_%04d", base.c_str(), r);
+        return buf;
+    }
 
     // ── Streamfunction solver (SF-16 T02) ──────────────────────────────
     // One directory per realization × fine-grid nx, so a run that changes

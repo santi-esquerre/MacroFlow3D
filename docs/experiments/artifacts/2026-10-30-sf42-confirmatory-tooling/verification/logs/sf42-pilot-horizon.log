@@ -1,0 +1,27 @@
+[2026-10-30T12:20:27Z] job=sf42-pilot-horizon GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T12:20:27Z] job=sf42-pilot-horizon chose GPU 0 (auto: least-loaded)
+[2026-10-30T12:20:27Z] job=sf42-pilot-horizon session=macroflow3d-SF-42-sf42-pilot-horizon started
+[2026-10-30T12:20:27Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T12:20:27Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T12:20:27Z] command=cd ~/MacroFlow3D-SF-42 && bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/pilots/job.sh J3B --reduce
+JOB_START J3B 2026-10-30T12:20:28Z tree=55d433006e00
+JOB_BEGIN J3B runs=3 2026-10-30T12:20:28Z
+RUN p_s1_1040x240_h3 code=par2 grid=1040x240x240 amp=1 seed0=420811 nr=8 M=0
+DONE p_s1_1040x240_h3 exit=0 wall=117.5s peak_mib=8157
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3B/reduced/p_s1_1040x240_h3.csv
+REDUCE p_s1_1040x240_h3 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3B/reduced/p_s1_1040x240_h3.csv
+RUN p_s225_1248x288_h3 code=par2 grid=1248x288x288 amp=2.25 seed0=420821 nr=8 M=0
+DONE p_s225_1248x288_h3 exit=0 wall=161.0s peak_mib=13673
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3B/reduced/p_s225_1248x288_h3.csv
+REDUCE p_s225_1248x288_h3 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3B/reduced/p_s225_1248x288_h3.csv
+RUN p_s4_1664x192_h3 code=par2 grid=1664x192x192 amp=4 seed0=420831 nr=8 M=0
+DONE p_s4_1664x192_h3 exit=0 wall=144.8s peak_mib=8335
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3B/reduced/p_s4_1664x192_h3.csv
+REDUCE p_s4_1664x192_h3 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3B/reduced/p_s4_1664x192_h3.csv
+JOB_END J3B failed_runs=0 2026-10-30T12:27:32Z
+DRIVER_EXIT=0
+SF39_UNTOUCHED_CHECK_DONE
+JOB_END J3B 2026-10-30T12:27:33Z
+[2026-10-30T12:27:33Z] job=sf42-pilot-horizon finished exit=0

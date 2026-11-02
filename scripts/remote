@@ -45,6 +45,7 @@ Usage:
   scripts/remote tail <job> [--lines N] [--no-follow]
   scripts/remote wait <job> [--interval SEC]
   scripts/remote cancel <job>
+  scripts/remote blinded start [--label <text>] | stop | status      (needs --increment)
   scripts/remote list-mirrors
   scripts/remote remove-mirror <id>
 
@@ -68,6 +69,17 @@ the least loaded one; the host is shared with users who do not use our locks):
   choice; the job gets CUDA_VISIBLE_DEVICES=<chosen>. nvidia-smi failure fails
   the job (exit 70), never a blind pick. `cancel` kills the job's whole process
   group, releasing the slot. `exec` takes no lock.
+
+Blinded phase (decision 2026-10-29 G8; docs/runbooks/remote-v100.md):
+  `blinded start` creates $REMOTE_STATE_ROOT/blinded.marker on the host; while it
+  exists every `exec` and every `run` submission appends one tab-separated line
+  (UTC, increment, local user@host, kind, attempt, exact command) to
+  $REMOTE_STATE_ROOT/logs/exec-blinded.log BEFORE it runs, inside the same ssh
+  invocation. If that line cannot be written the command is NOT run: the host-side guard
+  exits 97 and this helper (after its ssh retries) exits 1. The name `exec-blinded`
+  is reserved (job names), and `remove-mirror <id>` is refused while that
+  increment's blinded.marker exists, so the log cannot be truncated or deleted during
+  the phase (after `blinded stop` it is kept; copy it before any later remove-mirror).
 
 Canonical examples:
   scripts/remote sync
@@ -122,6 +134,8 @@ validate_job_name() {
   [[ "$job" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || {
     die "job names must match ^[A-Za-z0-9][A-Za-z0-9._-]*$"
   }
+  # <job>.log would be the blinded-phase log (see blinded_log_path): never truncate or tail it as a job.
+  [[ "$job" != exec-blinded ]] || die "job name 'exec-blinded' is reserved for the blinded-phase log"
 }
 
 session_name_for() {
@@ -144,13 +158,33 @@ remote_launcher_path_for() {
   printf '%s/%s.sh' "$REMOTE_LAUNCHER_DIR" "$1"
 }
 
+# Blinded-phase logging (G8). blinded_wrap prepends, as a separate leading
+# statement, a guard that appends one log line when the host marker exists. The
+# original command text follows untouched on its own line, so its parsing,
+# environment, cwd, output and exit status are those of the unwrapped command
+# (the guard runs in a subshell and only exits, with 97, when the log write fails).
+blinded_marker_path() { printf '%s/blinded.marker' "$REMOTE_STATE_ROOT"; }
+blinded_log_path() { printf '%s/exec-blinded.log' "$REMOTE_LOG_DIR"; }
+blinded_actor() { printf '%s@%s' "$(id -un)" "${HOSTNAME:-$(uname -n)}"; }
+
+# args: <remote_cmd> <kind|""> <detail> <attempt>; kind empty = unchanged.
+blinded_wrap() {
+  local cmd="$1" kind="$2" detail="$3" attempt="$4" rest
+  if [[ -z "$kind" ]]; then printf '%s' "$cmd"; return 0; fi
+  rest="$(printf 'increment=%s\twho=%s\tkind=%s\tattempt=%s\t%s' \
+    "${REMOTE_INCREMENT:-none}" "$(blinded_actor)" "$kind" "$attempt" "$detail")"
+  printf '%s\n%s' "if [ -e $(blinded_marker_path) ]; then ( mkdir -p $REMOTE_LOG_DIR && printf '%s\\t%s\\n' \"\$(date -u +%Y-%m-%dT%H:%M:%SZ)\" $(printf '%q' "$rest") >> $(blinded_log_path) ) || { echo 'ERROR: blinded phase: log write failed; command NOT run' >&2; exit 97; }; fi" "$cmd"
+}
+
+# ssh_run <remote_cmd> [<log_kind> <log_detail>]: the optional pair enables the
+# blinded-phase guard (re-evaluated per attempt so retries are logged).
 ssh_run() {
-  local remote_cmd="$1"
+  local remote_cmd="$1" log_kind="${2:-}" log_detail="${3:-}"
   local attempt=1
   local max_attempts=$((REMOTE_SSH_RETRIES + 1))
 
   while (( attempt <= max_attempts )); do
-    if ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$remote_cmd")"; then
+    if ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$(blinded_wrap "$remote_cmd" "$log_kind" "$log_detail" "$attempt")")"; then
       return 0
     fi
     if (( attempt == max_attempts )); then
@@ -301,7 +335,54 @@ sync_command() {
 exec_command() {
   local command="$1"
   ensure_remote_repo
-  ssh_run "cd $REMOTE_REPO_DIR && $command"
+  ssh_run "cd $REMOTE_REPO_DIR && $command" exec "command=$(printf '%q' "$command")"
+}
+
+# Declare / end / query the blinded phase of the increment (host marker file).
+# The remote script is a header of assignments plus a literal body; paths are
+# assigned unquoted so "~" expands on the host (as everywhere in this script).
+blinded_command() {
+  local action="${1:-}" label="" header body
+  shift || true
+  [[ -n "$REMOTE_INCREMENT" ]] || die "blinded requires --increment <id> (or REMOTE_INCREMENT)"
+  case "$action" in
+    start)
+      if [[ "${1:-}" == "--label" ]]; then
+        [[ $# -ge 2 ]] || die "--label requires a value"
+        label="$2"; shift 2
+      fi
+      [[ $# -eq 0 ]] || die "unknown blinded start option: $1"
+      body='
+mkdir -p "$LOGD"
+t=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+if ! ( set -C; printf "BLINDED_START=%s\nINCREMENT=%s\nWHO=%s\nLABEL=%q\n" "$t" "$INC" "$WHO" "$LABEL" > "$MARKER" ) 2>/dev/null; then
+  echo "ERROR: blinded phase already active:" >&2; cat "$MARKER" >&2; exit 1
+fi
+printf "%s\tincrement=%s\twho=%s\tkind=blinded-start\tlabel=%q\n" "$t" "$INC" "$WHO" "$LABEL" >> "$LOGF"
+echo "blinded phase started $t"'
+      ;;
+    stop)
+      [[ $# -eq 0 ]] || die "blinded stop takes no arguments"
+      body='
+if [ ! -e "$MARKER" ]; then echo "ERROR: no blinded phase active" >&2; exit 1; fi
+t=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+printf "%s\tincrement=%s\twho=%s\tkind=blinded-stop\n" "$t" "$INC" "$WHO" >> "$LOGF" &&
+rm -f "$MARKER" && echo "blinded phase stopped $t; log kept: $LOGF"'
+      ;;
+    status)
+      [[ $# -eq 0 ]] || die "blinded status takes no arguments"
+      body='
+if [ -e "$MARKER" ]; then echo "blinded: active"; cat "$MARKER"; else echo "blinded: inactive"; fi
+if [ -f "$LOGF" ]; then echo "exec_log: $LOGF ($(wc -l < "$LOGF") lines)"; else echo "exec_log: none"; fi'
+      ;;
+    *) die "blinded requires start [--label <text>] | stop | status" ;;
+  esac
+  header="INC=$(printf '%q' "$REMOTE_INCREMENT") WHO=$(printf '%q' "$(blinded_actor)") LABEL=$(printf '%q' "$label")
+MARKER=$(blinded_marker_path)
+LOGF=$(blinded_log_path)
+LOGD=$REMOTE_LOG_DIR"
+  # Single attempt: "already active" / "not active" are refusals, not transient failures.
+  ssh "$REMOTE_HOST" "bash -lc $(printf '%q' "$header$body")" || die "blinded $action failed or was refused"
 }
 
 # GPU selection rule (single source of truth; embedded in the launcher via
@@ -577,7 +658,7 @@ EOF
   ssh_run "
 $(kill_session_snippet "$session_name")
 tmux new-session -d -s $(printf '%q' "$session_name") $launcher_path
-  "
+  " run "job=$(printf '%q' "$job")"$'\t'"gpu=$gpu_req"$'\t'"command=$(printf '%q' "$command")"
 
   echo "Launched remote job '$job'"
   echo "  session: $session_name"
@@ -752,6 +833,10 @@ remove_mirror_command() {
       echo \"\$live\" >&2
       exit 1
     fi
+    if [[ -e $state_dir/blinded.marker ]]; then
+      echo 'ERROR: refusing to remove mirror $id; a blinded phase is active (blinded.marker); run blinded stop first (the log is kept)' >&2
+      exit 1
+    fi
     echo 'Removing' $repo 'and' $state_dir
     rm -rf $repo $state_dir
   "
@@ -787,6 +872,9 @@ main() {
         shift
       done
       run_command "$job" "$gpu_req" "$(require_command_string "$@")"
+      ;;
+    blinded)
+      blinded_command "$@"
       ;;
     list-mirrors|mirrors)
       [[ $# -eq 0 ]] || die "list-mirrors takes no arguments"

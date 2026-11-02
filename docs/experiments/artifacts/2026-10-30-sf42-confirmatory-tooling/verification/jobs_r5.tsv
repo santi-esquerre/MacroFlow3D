@@ -1,0 +1,3 @@
+job	start_utc	end_utc	wall_s	gpu_h	exit	gpu	kind
+sf42-coverage	2026-10-30T16:45:15Z	2026-11-01T10:26:51Z	150096	41.693	0	0	CPU
+TOTAL_R5			150096	41.693

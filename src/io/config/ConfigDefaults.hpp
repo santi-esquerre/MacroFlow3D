@@ -43,6 +43,12 @@ inline AppConfig make_default_config() {
     cfg.stochastic.covariance_type = 1;
     cfg.stochastic.seed = 12345;
     cfg.stochastic.K_mean = 1.0;
+    // SF-42 N1 opt-ins (all off): random-spectral K, full-plane injection, no crossings, no dump.
+    cfg.stochastic.field_source = "";
+    cfg.stochastic.sf18_medium_b = Sf18MediumBYamlConfig{};
+    cfg.transport.inject_window = TransportYamlConfig::InjectWindow{};
+    cfg.analysis.plane_crossings = PlaneCrossingsConfig{};
+    cfg.output.dump_field = DumpFieldConfig{};
 
     // Flow
     cfg.flow.solver = "mg";

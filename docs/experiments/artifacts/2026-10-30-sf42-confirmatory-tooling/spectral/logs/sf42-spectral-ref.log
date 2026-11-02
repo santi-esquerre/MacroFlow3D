@@ -1,0 +1,74 @@
+[2026-10-30T06:31:50Z] job=sf42-spectral-ref GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T06:31:50Z] job=sf42-spectral-ref chose GPU 0 (auto: least-loaded)
+[2026-10-30T06:31:50Z] job=sf42-spectral-ref session=macroflow3d-SF-42-sf42-spectral-ref started
+[2026-10-30T06:31:50Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T06:31:50Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T06:31:50Z] command=cd ~/MacroFlow3D-SF-42 && SF42_WORKERS=40 bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/spectral/run_spectral.sh build/v100-release ~/sf42_campaign/spectral spectral
+[03:31:53] reference M=64: PCG [22, 22, 21] iterations, 68 matvecs, 2 s, G=[0.948243565662 0.004476936013 0.002156732103]
+[03:32:09] reference M=128: PCG [22, 22, 21] iterations, 68 matvecs, 11 s, G=[0.948243565662 0.004476936013 0.002156732103]
+[03:32:15] case s0p25 seed 420001 N=16: FV err all=9.959e-03 x=9.111e-03 | selfconv 4.554e-10 | ratio 21869623.8
+[03:32:15] case s0p25 seed 420001 N=32: FV err all=2.522e-03 x=2.307e-03 | selfconv 4.802e-10 | ratio 5250966.3
+[03:32:15] case s0p25 seed 420001 N=40: FV err all=1.616e-03 x=1.479e-03 | selfconv 4.810e-10 | ratio 3360362.3
+[03:32:15] case s0p25 seed 420001 N=64: FV err all=6.325e-04 x=5.788e-04 | selfconv 4.896e-10 | ratio 1291945.4
+[03:32:15] case s0p25 seed 420001 N=128: FV err all=1.582e-04 x=1.448e-04 | selfconv 4.923e-10 | ratio 321426.4
+[03:32:26] case s0p25 seed 420001 N=256: FV err all=3.957e-05 x=3.621e-05 | selfconv 4.931e-10 | ratio 80254.8
+[03:32:28] reference M=64: PCG [19, 19, 19] iterations, 60 matvecs, 1 s, G=[ 0.977859662471 -0.023347725889  0.008524691012]
+[03:32:42] reference M=128: PCG [19, 19, 19] iterations, 60 matvecs, 10 s, G=[ 0.977859662471 -0.023347725889  0.008524691012]
+[03:32:48] case s0p25 seed 420002 N=16: FV err all=6.882e-03 x=5.888e-03 | selfconv 3.027e-11 | ratio 227346871.3
+[03:32:48] case s0p25 seed 420002 N=32: FV err all=1.739e-03 x=1.489e-03 | selfconv 3.274e-11 | ratio 53110144.0
+[03:32:48] case s0p25 seed 420002 N=40: FV err all=1.114e-03 x=9.539e-04 | selfconv 3.317e-11 | ratio 33595784.4
+[03:32:48] case s0p25 seed 420002 N=64: FV err all=4.359e-04 x=3.732e-04 | selfconv 3.371e-11 | ratio 12930894.2
+[03:32:48] case s0p25 seed 420002 N=128: FV err all=1.091e-04 x=9.336e-05 | selfconv 3.400e-11 | ratio 3207828.4
+[03:32:59] case s0p25 seed 420002 N=256: FV err all=2.727e-05 x=2.334e-05 | selfconv 3.407e-11 | ratio 800343.5
+[03:33:03] reference M=64: PCG [51, 50, 51] iterations, 155 matvecs, 3 s, G=[0.795829864052 0.008911707391 0.003211295422]
+[03:33:29] reference M=128: PCG [46, 45, 46] iterations, 140 matvecs, 22 s, G=[0.795829864052 0.008911707391 0.003211295422]
+[03:33:35] case s1 seed 420001 N=16: FV err all=2.641e-02 x=2.477e-02 | selfconv 3.065e-08 | ratio 861705.1
+[03:33:35] case s1 seed 420001 N=32: FV err all=6.731e-03 x=6.306e-03 | selfconv 3.255e-08 | ratio 206819.7
+[03:33:35] case s1 seed 420001 N=40: FV err all=4.318e-03 x=4.045e-03 | selfconv 3.201e-08 | ratio 134891.5
+[03:33:35] case s1 seed 420001 N=64: FV err all=1.691e-03 x=1.584e-03 | selfconv 3.328e-08 | ratio 50813.5
+[03:33:36] case s1 seed 420001 N=128: FV err all=4.233e-04 x=3.964e-04 | selfconv 3.350e-08 | ratio 12636.0
+[03:33:47] case s1 seed 420001 N=256: FV err all=1.059e-04 x=9.914e-05 | selfconv 3.356e-08 | ratio 3154.6
+[03:33:49] reference M=64: PCG [34, 34, 34] iterations, 105 matvecs, 2 s, G=[ 0.937602697801 -0.067934689482  0.019527878894]
+[03:34:08] reference M=128: PCG [32, 32, 32] iterations, 99 matvecs, 15 s, G=[ 0.937602697801 -0.067934689482  0.019527878894]
+[03:34:14] case s1 seed 420002 N=16: FV err all=1.708e-02 x=1.486e-02 | selfconv 5.584e-09 | ratio 3059125.3
+[03:34:14] case s1 seed 420002 N=32: FV err all=4.358e-03 x=3.793e-03 | selfconv 6.038e-09 | ratio 721680.7
+[03:34:14] case s1 seed 420002 N=40: FV err all=2.796e-03 x=2.433e-03 | selfconv 6.110e-09 | ratio 457555.6
+[03:34:15] case s1 seed 420002 N=64: FV err all=1.095e-03 x=9.531e-04 | selfconv 6.216e-09 | ratio 176155.9
+[03:34:15] case s1 seed 420002 N=128: FV err all=2.741e-04 x=2.386e-04 | selfconv 6.269e-09 | ratio 43726.7
+[03:34:26] case s1 seed 420002 N=256: FV err all=6.855e-05 x=5.967e-05 | selfconv 6.283e-09 | ratio 10911.3
+[03:34:57] reference M=96: PCG [171, 168, 171] iterations, 513 matvecs, 30 s, G=[0.581021949712 0.007610892223 0.001317016486]
+[03:43:22] reference M=192: PCG [166, 162, 164] iterations, 495 matvecs, 500 s, G=[0.581021949712 0.007610892223 0.001317016486]
+[03:43:29] case s2p25 seed 420001 N=16: FV err all=4.622e-02 x=4.406e-02 | selfconv 5.170e-11 | ratio 894078824.4
+[03:43:29] case s2p25 seed 420001 N=32: FV err all=1.183e-02 x=1.125e-02 | selfconv 5.676e-11 | ratio 208405330.4
+[03:43:29] case s2p25 seed 420001 N=40: FV err all=7.593e-03 x=7.222e-03 | selfconv 5.743e-11 | ratio 132228538.0
+[03:43:29] case s2p25 seed 420001 N=64: FV err all=2.976e-03 x=2.829e-03 | selfconv 5.863e-11 | ratio 50758233.3
+[03:43:30] case s2p25 seed 420001 N=128: FV err all=7.451e-04 x=7.083e-04 | selfconv 5.913e-11 | ratio 12601129.1
+[03:43:42] case s2p25 seed 420001 N=256: FV err all=1.863e-04 x=1.771e-04 | selfconv 5.931e-11 | ratio 3142188.0
+[03:43:56] reference M=96: PCG [81, 80, 80] iterations, 244 matvecs, 14 s, G=[ 0.897104101843 -0.098994547624  0.017900016588]
+[03:47:57] reference M=192: PCG [80, 80, 78] iterations, 241 matvecs, 237 s, G=[ 0.897104101843 -0.098994547624  0.017900016588]
+[03:48:04] case s2p25 seed 420002 N=16: FV err all=2.863e-02 x=2.551e-02 | selfconv 5.430e-12 | ratio 5272255048.6
+[03:48:04] case s2p25 seed 420002 N=32: FV err all=7.376e-03 x=6.576e-03 | selfconv 6.138e-12 | ratio 1201618280.9
+[03:48:04] case s2p25 seed 420002 N=40: FV err all=4.738e-03 x=4.225e-03 | selfconv 6.256e-12 | ratio 757455388.3
+[03:48:04] case s2p25 seed 420002 N=64: FV err all=1.859e-03 x=1.657e-03 | selfconv 6.417e-12 | ratio 289644673.5
+[03:48:05] case s2p25 seed 420002 N=128: FV err all=4.656e-04 x=4.152e-04 | selfconv 6.513e-12 | ratio 71491027.6
+[03:48:16] case s2p25 seed 420002 N=256: FV err all=1.165e-04 x=1.038e-04 | selfconv 6.539e-12 | ratio 17808312.8
+[03:53:29] reference M=128: PCG [701, 694, 699] iterations, 2098 matvecs, 313 s, G=[ 0.369173841469  0.003820565244 -0.000814027687]
+[05:27:29] reference M=256: PCG [714, 728, 722] iterations, 2171 matvecs, 5634 s, G=[ 0.369173841469  0.003820565244 -0.000814027687]
+[05:27:39] case s4 seed 420001 N=16: FV err all=6.584e-02 x=6.302e-02 | selfconv 2.041e-13 | ratio 322646350001.6
+[05:27:39] case s4 seed 420001 N=32: FV err all=1.695e-02 x=1.619e-02 | selfconv 2.299e-13 | ratio 73736212975.2
+[05:27:39] case s4 seed 420001 N=40: FV err all=1.089e-02 x=1.040e-02 | selfconv 2.377e-13 | ratio 45803040611.8
+[05:27:39] case s4 seed 420001 N=64: FV err all=4.269e-03 x=4.075e-03 | selfconv 2.565e-13 | ratio 16646064604.7
+[05:27:40] case s4 seed 420001 N=128: FV err all=1.069e-03 x=1.021e-03 | selfconv 3.034e-13 | ratio 3525107844.8
+[05:27:51] case s4 seed 420001 N=256: FV err all=2.675e-04 x=2.553e-04 | selfconv 3.540e-13 | ratio 755638704.3
+[05:29:32] reference M=128: PCG [230, 229, 227] iterations, 689 matvecs, 102 s, G=[ 0.853363235681 -0.103655459048  0.007423591967]
+[06:01:13] reference M=256: PCG [248, 246, 244] iterations, 743 matvecs, 1895 s, G=[ 0.853363235681 -0.103655459048  0.007423591967]
+[06:01:23] case s4 seed 420002 N=16: FV err all=4.034e-02 x=3.684e-02 | selfconv 8.235e-13 | ratio 48977259553.4
+[06:01:23] case s4 seed 420002 N=32: FV err all=1.051e-02 x=9.608e-03 | selfconv 7.760e-13 | ratio 13537292795.6
+[06:01:23] case s4 seed 420002 N=40: FV err all=6.759e-03 x=6.182e-03 | selfconv 7.830e-13 | ratio 8631583795.0
+[06:01:23] case s4 seed 420002 N=64: FV err all=2.655e-03 x=2.429e-03 | selfconv 8.367e-13 | ratio 3173520841.0
+[06:01:24] case s4 seed 420002 N=128: FV err all=6.657e-04 x=6.091e-04 | selfconv 9.497e-13 | ratio 700932897.7
+[06:01:37] case s4 seed 420002 N=256: FV err all=1.665e-04 x=1.524e-04 | selfconv 1.125e-12 | ratio 147995417.2
+[06:01:37] summary: PASS
+[2026-10-30T09:01:37Z] job=sf42-spectral-ref finished exit=0

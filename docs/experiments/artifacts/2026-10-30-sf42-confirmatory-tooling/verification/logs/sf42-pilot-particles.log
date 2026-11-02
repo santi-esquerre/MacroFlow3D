@@ -1,0 +1,63 @@
+[2026-10-30T10:17:11Z] job=sf42-pilot-particles GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T10:17:11Z] job=sf42-pilot-particles chose GPU 0 (auto: least-loaded)
+[2026-10-30T10:17:11Z] job=sf42-pilot-particles session=macroflow3d-SF-42-sf42-pilot-particles started
+[2026-10-30T10:17:11Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T10:17:11Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T10:17:11Z] command=cd ~/MacroFlow3D-SF-42 && bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/pilots/job.sh J2 --reduce
+JOB_START J2 2026-10-30T10:17:12Z tree=4b2593cddc93
+JOB_BEGIN J2 runs=12 2026-10-30T10:17:12Z
+RUN c_s025_M64 code=consumer grid=1040x240x240 amp=0.25 seed0=420701 nr=6 M=64
+DONE c_s025_M64 exit=0 wall=129.0s peak_mib=4997
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s025_M64.csv
+REDUCE c_s025_M64 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s025_M64.csv
+RUN c_s025_M128 code=consumer grid=1040x240x240 amp=0.25 seed0=420701 nr=6 M=128
+DONE c_s025_M128 exit=0 wall=161.4s peak_mib=4997
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s025_M128.csv
+REDUCE c_s025_M128 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s025_M128.csv
+RUN c_s025_M192 code=consumer grid=1040x240x240 amp=0.25 seed0=420701 nr=6 M=192
+DONE c_s025_M192 exit=0 wall=219.8s peak_mib=4997
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s025_M192.csv
+REDUCE c_s025_M192 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s025_M192.csv
+RUN c_s1_M64 code=consumer grid=1040x240x240 amp=1 seed0=420711 nr=6 M=64
+DONE c_s1_M64 exit=0 wall=147.9s peak_mib=4997
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s1_M64.csv
+REDUCE c_s1_M64 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s1_M64.csv
+RUN c_s1_M128 code=consumer grid=1040x240x240 amp=1 seed0=420711 nr=6 M=128
+DONE c_s1_M128 exit=0 wall=174.5s peak_mib=4997
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s1_M128.csv
+REDUCE c_s1_M128 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s1_M128.csv
+RUN c_s1_M192 code=consumer grid=1040x240x240 amp=1 seed0=420711 nr=6 M=192
+DONE c_s1_M192 exit=0 wall=238.4s peak_mib=4997
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s1_M192.csv
+REDUCE c_s1_M192 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s1_M192.csv
+RUN c_s225_M58 code=consumer grid=1664x384x384 amp=2.25 seed0=420721 nr=6 M=58
+DONE c_s225_M58 exit=0 wall=318.9s peak_mib=15703
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s225_M58.csv
+REDUCE c_s225_M58 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s225_M58.csv
+RUN c_s225_M100 code=consumer grid=1664x384x384 amp=2.25 seed0=420721 nr=6 M=100
+DONE c_s225_M100 exit=0 wall=331.0s peak_mib=15703
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s225_M100.csv
+REDUCE c_s225_M100 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s225_M100.csv
+RUN c_s225_M202 code=consumer grid=1664x384x384 amp=2.25 seed0=420721 nr=6 M=202
+DONE c_s225_M202 exit=0 wall=495.5s peak_mib=15703
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s225_M202.csv
+REDUCE c_s225_M202 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s225_M202.csv
+RUN c_s4_M58 code=consumer grid=3328x384x384 amp=4 seed0=420731 nr=6 M=58
+DONE c_s4_M58 exit=0 wall=771.3s peak_mib=29881
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s4_M58.csv
+REDUCE c_s4_M58 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s4_M58.csv
+RUN c_s4_M100 code=consumer grid=3328x384x384 amp=4 seed0=420731 nr=6 M=100
+DONE c_s4_M100 exit=0 wall=796.3s peak_mib=29881
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s4_M100.csv
+REDUCE c_s4_M100 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s4_M100.csv
+RUN c_s4_M202 code=consumer grid=3328x384x384 amp=4 seed0=420731 nr=6 M=202
+DONE c_s4_M202 exit=0 wall=1163.6s peak_mib=29881
+wrote 90 rows to /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s4_M202.csv
+REDUCE c_s4_M202 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J2/reduced/c_s4_M202.csv
+JOB_END J2 failed_runs=0 2026-10-30T11:46:37Z
+DRIVER_EXIT=0
+SF39_UNTOUCHED_CHECK_DONE
+JOB_END J2 2026-10-30T11:46:37Z
+[2026-10-30T11:46:37Z] job=sf42-pilot-particles finished exit=0

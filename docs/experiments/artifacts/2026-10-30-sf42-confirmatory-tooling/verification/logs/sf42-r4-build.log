@@ -1,0 +1,148 @@
+[2026-10-30T09:58:54Z] job=sf42-r4-build GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T09:58:54Z] job=sf42-r4-build chose GPU 0 (auto: least-loaded)
+[2026-10-30T09:58:54Z] job=sf42-r4-build session=macroflow3d-SF-42-sf42-r4-build started
+[2026-10-30T09:58:54Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T09:58:54Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T09:58:54Z] command=cd ~/MacroFlow3D-SF-42 && export TMPDIR=$HOME/.cache/mf3d-tmp CMAKE_BUILD_PARALLEL_LEVEL=16 && cmake --preset v100-release > /dev/null && cmake --build build/v100-release -j --target lagrangian_ensemble macroflow3d_pipeline && md5sum build/v100-release/lagrangian_ensem
+CMake Deprecation Warning at src/external/yaml-cpp-0.8.0/CMakeLists.txt:4 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+[0/2] Re-checking globbed directories...
+[1/119] Generating source revision
+[2/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/null.cpp.o
+[3/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/directives.cpp.o
+[4/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/binary.cpp.o
+[5/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/exceptions.cpp.o
+[6/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/node.cpp.o
+[7/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/depthguard.cpp.o
+[8/119] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/EulerianFaceStats.cpp.o
+[9/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/tag.cpp.o
+[10/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/ostream_wrapper.cpp.o
+[11/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/exp.cpp.o
+[12/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emit.cpp.o
+[13/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/regex_yaml.cpp.o
+[14/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/stream.cpp.o
+[15/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/simplekey.cpp.o
+[16/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scantag.cpp.o
+[17/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/nodeevents.cpp.o
+[18/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitfromevents.cpp.o
+[19/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/memory.cpp.o
+[20/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitterstate.cpp.o
+[21/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/nodebuilder.cpp.o
+[22/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/parse.cpp.o
+[23/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/parser.cpp.o
+[24/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitter.cpp.o
+[25/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/node_data.cpp.o
+[26/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/convert.cpp.o
+[27/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/singledocparser.cpp.o
+[28/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scanscalar.cpp.o
+[29/119] Building CXX object CMakeFiles/macroflow3d_lib.dir/generated/git_rev.cpp.o
+[30/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scanner.cpp.o
+[31/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/preconditioner.cu.o
+[32/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/axpy.cu.o
+[33/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/transfer/restrict_3d.cu.o
+[34/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/axpby.cu.o
+[35/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/cycle/projected_positive_v_cycle.cu.o
+[36/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/copy.cu.o
+[37/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/scal.cu.o
+[38/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/cycle/v_cycle.cu.o
+[39/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/CudaContext.cu.o
+[40/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/scantoken.cpp.o
+[41/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/StreamlineTrackerCommon.cu.o
+[42/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/mg_preconditioner.cu.o
+[43/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/operators/varcoeff_laplacian.cu.o
+[44/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/fill.cu.o
+[45/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/dot.cu.o
+[46/119] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/runtime/analysis/AnalysisRunner.cpp.o
+[47/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/cg_kernels.cu.o
+[48/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/solvers/projected_positive_mg_preconditioner.cu.o
+[49/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/constraints/MeanZeroProjector.cu.o
+[50/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/FaceFluxRepack.cu.o
+[51/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/coefficient_hierarchy.cu.o
+[52/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/nrm2.cu.o
+[53/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ShiftedJacobianOperator.cu.o
+[54/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabStencils4.cu.o
+[55/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/NonlinearSources.cu.o
+[56/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/transfer/prolong_3d.cu.o
+
+[57/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/BlockDiagonalMGPreconditioner.cu.o
+[58/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/affine_periodic_rhs.cu.o
+[59/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/JacobianVectorProduct.cu.o
+[60/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/DifferentialOperators.cu.o
+[61/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/rhs_head.cu.o
+[62/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/CoupledGmres.cu.o
+[63/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/pipeline/PipelineRunner.cu.o
+[64/119] Building CXX object src/external/yaml-cpp-0.8.0/CMakeFiles/yaml-cpp.dir/src/emitterutils.cpp.o
+[65/119] Linking CXX static library src/external/yaml-cpp-0.8.0/libyaml-cpp.a
+[66/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ResidualEvaluator.cu.o
+[67/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/interpolation/PeriodicTricubicBSpline.cu.o
+[68/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/PollockTracker.cu.o
+[69/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/AndersonAccelerator.cu.o
+[70/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabResidual.cu.o
+[71/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/NewtonKrylovSolver.cu.o
+[72/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/Diagnostics.cu.o
+
+[73/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/InletLabels.cu.o
+[74/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabOracle.cu.o
+[75/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabGmres.cu.o
+[76/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/stochastic/PeriodicGaussianField.cu.o
+[77/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2TransportAdapter.cu.o
+[78/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/interpolation/NonPeriodicXTricubicBSpline.cu.o
+[79/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/StreamfunctionWorkspace.cu.o
+[80/119] Building CUDA object CMakeFiles/macroflow3d_pipeline.dir/apps/macroflow3d_pipeline.cu.o
+[81/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/stats/PlaneCrossingRecorder.cu.o
+[82/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/velocity_from_head.cu.o
+[83/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2StatsAdapter.cu.o
+[84/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/par2_adapter/Par2SnapshotAdapter.cu.o
+[85/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/numerics/blas/sum.cu.o
+[86/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabCoarseCorrection.cu.o
+[87/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/StokesFaceVelocity.cu.o
+[88/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/StreamfunctionSolver.cu.o
+[89/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/smoothers/residual_3d.cu.o
+[90/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabJacobianVectorProduct.cu.o
+[91/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabProductionSetup.cu.o
+[92/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/velocity_diagnostics.cu.o
+[93/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabNewtonKrylov.cu.o
+[94/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabModePreconditioner.cu.o
+[95/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/multigrid/smoothers/gsrb_3d.cu.o
+[96/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/stochastic/stochastic.cu.o
+[97/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/ContinuationController.cu.o
+[98/119] Building CUDA object CMakeFiles/lagrangian_ensemble.dir/apps/lagrangian_ensemble/lagrangian_ensemble_main.cu.o
+[99/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/DirichletMedium.cu.o
+[100/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/solve_head.cu.o
+[101/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/LongBoxStage.cu.o
+[102/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/flow/AffinePeriodicFlowSolver.cu.o
+[103/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/PollockComparator.cu.o
+[104/119] Building CXX object CMakeFiles/macroflow3d_lib.dir/src/io/config/ConfigYaml.cpp.o
+[105/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/PseudoSymplecticTracker.cu.o
+[106/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/DirichletLongBoxStage.cu.o
+[107/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabMetrics.cu.o
+[108/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabLabelTransport.cu.o
+[109/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/ProtoCase.cu.o
+[110/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/streamline_tracker/ReferenceRkTracker.cu.o
+[111/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/runtime/ensemble/EnsembleRunner.cu.o
+/home/sesquerre/MacroFlow3D-SF-42/src/runtime/ensemble/EnsembleRunner.cu: In instantiation of ‘macroflow3d::ensemble::run_ensemble(const macroflow3d::io::AppConfig&, macroflow3d::CudaContext&, macroflow3d::StageProfiler&)::<lambda(auto:1&)> [with auto:1 = macroflow3d::physics::particles::Par2Transpo
+/home/sesquerre/MacroFlow3D-SF-42/src/runtime/ensemble/EnsembleRunner.cu:942:17:   required from here
+[112/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/EnsembleRunner.cu.o
+[113/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/streamfunctions/inlet_slab/SlabTraceGpu.cu.o
+[114/119] Building CUDA object CMakeFiles/macroflow3d_lib.dir/src/physics/particles/lagrangian_labels/LagrangianTracker.cu.o
+[115/119] Linking CXX static library libmacroflow3d_lib.a
+[116/119] Linking CXX executable CMakeFiles/macroflow3d_pipeline.dir/cmake_device_link.o
+[117/119] Linking CXX executable CMakeFiles/lagrangian_ensemble.dir/cmake_device_link.o
+[118/119] Linking CXX executable macroflow3d_pipeline
+[119/119] Linking CXX executable lagrangian_ensemble
+ccef921eb383a5e144b7e12c256fdeda  build/v100-release/lagrangian_ensemble
+ce441c3ad49575df419e2ce381dd85fe  build/v100-release/macroflow3d_pipeline
+----------------------------------------------------------------------
+Ran 330 tests in 38.923s
+
+OK (skipped=1)
+[2026-10-30T10:04:26Z] job=sf42-r4-build finished exit=0

@@ -1,0 +1,64 @@
+RECONCILE solves=635 arms=47 non_converged=4 conflicts=0 unmapped=0
+
+NON_CONVERGED (every solve whose recomputed verdict is not `converged`)
+arm         r   seed  verdict                         converged  iters          rel      balance  notes
+s4_B        2   5023  fallback                                0   2000 3.036214e-10 8.097665e-11  max_div_missing
+s4_tw      22   5023  fallback                                0   2000 2.202646e-10 1.460679e-11  max_div_missing
+s4_w12      4   7205  fallback                                0   2000 9.884947e-10 2.142987e-09  max_div_missing
+s4_w12     13   7214  not_converged_beyond_fallback           0   2000 3.386153e-07 2.643839e-07  max_div_missing
+
+COUNTS_PER_ARM
+arm          solves converged converged_balance_above_1e-8 fallback not_converged_beyond_fallback non_finite unparsed_truncated
+byte_multi        1 1 0 0 0 0 0
+byte_single       1 1 0 0 0 0 0
+chk_s025_n05      1 1 0 0 0 0 0
+chk_s025_n10      1 1 0 0 0 0 0
+chk_s025_n20      1 1 0 0 0 0 0
+chk_s025_tw       1 1 0 0 0 0 0
+chk_s1_n05        1 1 0 0 0 0 0
+chk_s1_n10        1 1 0 0 0 0 0
+chk_s1_n20        1 1 0 0 0 0 0
+chk_s1_tw         1 1 0 0 0 0 0
+chk_s225_n08      1 1 0 0 0 0 0
+chk_s225_n16      1 1 0 0 0 0 0
+chk_s225_n32      1 1 0 0 0 0 0
+chk_s225_tw       1 1 0 0 0 0 0
+chk_s4_n16        1 1 0 0 0 0 0
+chk_s4_n32        1 1 0 0 0 0 0
+chk_s4_n64        1 1 0 0 0 0 0
+chk_s4_tw         1 1 0 0 0 0 0
+chk_s4_w12        1 1 0 0 0 0 0
+chk_s4_w24        1 1 0 0 0 0 0
+s025_A           20 20 0 0 0 0 0
+s025_B            5 5 0 0 0 0 0
+s025_n05         20 20 0 0 0 0 0
+s025_n10         20 20 0 0 0 0 0
+s025_n20         20 20 0 0 0 0 0
+s025_tw          20 20 0 0 0 0 0
+s1_A             20 20 0 0 0 0 0
+s1_B             30 30 0 0 0 0 0
+s1_n05           20 20 0 0 0 0 0
+s1_n10           20 20 0 0 0 0 0
+s1_n20           20 20 0 0 0 0 0
+s1_tw            20 20 0 0 0 0 0
+s225_A           20 20 0 0 0 0 0
+s225_B           42 42 0 0 0 0 0
+s225_n08         20 20 0 0 0 0 0
+s225_n16         20 20 0 0 0 0 0
+s225_n32         20 20 0 0 0 0 0
+s225_tw          26 26 0 0 0 0 0
+s4_A             20 20 0 0 0 0 0
+s4_B             51 50 0 1 0 0 0
+s4_n16           30 30 0 0 0 0 0
+s4_n32           20 20 0 0 0 0 0
+s4_n64           20 20 0 0 0 0 0
+s4_tw            30 29 0 1 0 0 0
+s4_w12           14 12 0 1 1 0 0
+s4_w12c          17 17 0 0 0 0 0
+s4_w24           30 30 0 0 0 0 0
+TOTAL           635 631 0 3 1 0 0
+max_div missing (line cut) in 632 of 635 solves; their finiteness is checked on rel, balance, qbar, Q_in, Q_out
+SF39_EXPECTATION MATCH (4 expected non-converged solves)
+HOST_CENSUS solver_b.json verdicts over all runs: converged=611, fallback=3
+HOST_CHECK checked=614 mismatches=0 logged_solves_without_solver_b_json=19
+RECONCILE OK

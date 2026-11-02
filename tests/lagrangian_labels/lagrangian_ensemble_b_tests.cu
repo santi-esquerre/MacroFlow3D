@@ -18,7 +18,10 @@
  *     realization: the layout is the single-pass layout and its flux-weighted series is byte-identical to the first
  *     pass of run A (fused / mapped-host variants are bitwise by design).
  *  6. medium (a) with a multi-pass list: the first pass is byte-identical to the single-pass (a) run.
- *  7. usage errors: --medium c, --head-mapped-host with medium a, duplicate --hmax-div, a (b) plane >= L1.
+ *  7. usage errors: --medium c, --head-mapped-host with medium a, duplicate --hmax-div, a (b) plane >= L1,
+ *     --dump-field with medium a / --field-only.
+ *  8. SF-42 --dump-field: the run of 5 plus --dump-field has an identical tree (every file but timings.json),
+ *     r_0000/{Y,K}.npy are float64 (nz,ny,nx) C-order, K == exp(eps Y) bitwise, var Y == sigma2 (1e-12).
  *
  * Usage: lagrangian_ensemble_b_tests <lagrangian_ensemble exe>
  */
@@ -36,6 +39,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -83,6 +87,19 @@ bool rel_close(double a, double b, double rtol) {
 
 std::string g_ens;
 fs::path g_base;
+
+/// Reads a v1.0 little-endian float64 `.npy`; returns the header text and the values.
+bool read_npy_f8(const fs::path& p, std::string& header, std::vector<double>& v) {
+    const std::string b = slurp(p);
+    if (b.size() < 10 || b.compare(0, 6, "\x93NUMPY") != 0)
+        return false;
+    const std::size_t hl = static_cast<unsigned char>(b[8]) | (static_cast<std::size_t>(static_cast<unsigned char>(b[9])) << 8);
+    header = b.substr(10, hl);
+    const std::size_t nbytes = b.size() - 10 - hl;
+    v.resize(nbytes / sizeof(double));
+    std::memcpy(v.data(), b.data() + 10 + hl, v.size() * sizeof(double));
+    return nbytes % sizeof(double) == 0;
+}
 
 int run_cmd(const std::string& args, const fs::path& log) {
     const std::string cmd = g_ens + " " + args + " > " + log.string() + " 2>&1";
@@ -503,6 +520,49 @@ int main(int argc, char** argv) {
                   slurp(g_base / "S.log").find("exit_inlet_plane=") != std::string::npos);
     }
 
+    // ---- SF-42 --dump-field: opt-in, writes the stage's host Y and K, changes nothing else ----------------------
+    {
+        const fs::path S2 = g_base / "S2", D = g_base / "D";
+        rc = run_cmd(kB + "--nr 1 --fused-splines --single-launch --head-mapped-host --twin off --out " + S2.string() +
+                         " --dump-field " + D.string(),
+                     g_base / "S2.log");
+        check("dump_field_exit0", rc == 0, strf("rc=%d", rc));
+        // every file of the run without the flag (run S) is present and equal; the dump lives outside --out; the
+        // only excluded file is timings.json (wall-clock) and the stdout log, which gains one DUMP_FIELD line
+        const std::string dtree = compare_trees(g_base / "S", S2);
+        check("dump_field_other_outputs_identical", dtree.empty(), dtree);
+        check("dump_field_log_line_only_with_flag",
+              slurp(g_base / "S2.log").find("DUMP_FIELD") != std::string::npos &&
+                  slurp(g_base / "S.log").find("DUMP_FIELD") == std::string::npos);
+        std::string hY, hK;
+        std::vector<double> Y, K;
+        const bool rd = read_npy_f8(D / "r_0000/Y.npy", hY, Y) && read_npy_f8(D / "r_0000/K.npy", hK, K);
+        const std::size_t n = 128u * 16u * 16u;
+        check("dump_field_npy_layout",
+              rd && Y.size() == n && K.size() == n && hY == hK &&
+                  hY.find("'descr': '<f8'") != std::string::npos &&
+                  hY.find("'fortran_order': False") != std::string::npos &&
+                  hY.find("'shape': (16, 16, 128)") != std::string::npos && (10 + hY.size()) % 64 == 0 && fs::exists(D / "r_0000"),
+              hY);
+        bool kbit = rd && K.size() == Y.size();
+        for (std::size_t c = 0; kbit && c < n; ++c) {
+            const double lnK = 1.0 * Y[c]; // --eps 1
+            const double e = std::exp(lnK);
+            kbit = std::memcmp(&K[c], &e, sizeof(double)) == 0;
+        }
+        check("dump_field_K_equals_exp_eps_Y_bitwise", kbit);
+        double mean = 0.0, var = 0.0;
+        for (double y : Y)
+            mean += y;
+        mean /= double(n);
+        for (double y : Y)
+            var += (y - mean) * (y - mean);
+        var /= double(n);
+        const double fvar = json::parse(slurp(S2 / "realizations/r_0000/field.json")).at("final_variance").get<double>();
+        check("dump_field_variance_is_sigma2", rel_close(var, 1.0, 1e-12) && rel_close(var, fvar, 1e-12),
+              strf("var %.17g final_variance %.17g mean %.3e", var, fvar, mean));
+    }
+
     // ---- explicit lists beyond the travel time: exits through x1 = L1 are counted per time -------------------
     {
         const fs::path E = g_base / "E";
@@ -559,7 +619,12 @@ int main(int argc, char** argv) {
             {"mapped_host_needs_b", g + "--head-mapped-host --out " + (g_base / "U2").string(), "--head-mapped-host"},
             {"hmax_duplicate", g + "--medium b --hmax-div 8,8 --out " + (g_base / "U3").string(), "--hmax-div"},
             {"plane_beyond_L1", g + "--medium b --planes 3,8 --out " + (g_base / "U4").string(), "--planes"},
-            {"x0_beyond_L1", g + "--medium b --x0 9 --out " + (g_base / "U5").string(), "--x0"}};
+            {"x0_beyond_L1", g + "--medium b --x0 9 --out " + (g_base / "U5").string(), "--x0"},
+            {"dump_field_needs_b", g + "--dump-field " + (g_base / "Ud").string() + " --out " + (g_base / "U6").string(),
+             "--dump-field needs --medium b"},
+            {"dump_field_field_only", "--grid 128,16,16 --ell 0.5 --seed0 4001 --field-only --dump-field " +
+                                          (g_base / "Ud").string() + " --out " + (g_base / "U7").string(),
+             "--field-only contradicts --dump-field"}};
         for (const U& u : us) {
             const std::string log = (g_base / (std::string(u.tag) + ".log")).string();
             const int rcu = run_cmd(u.args, log);

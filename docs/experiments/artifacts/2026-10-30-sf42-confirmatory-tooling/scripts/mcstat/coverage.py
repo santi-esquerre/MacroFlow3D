@@ -1,0 +1,962 @@
+"""Coverage simulator of the SF-42 confirmatory tooling (spec item 8, acceptance F; decision G5.3).
+
+It qualifies, per procedure, distribution and sample size, the one-sided miss rate at every tail level SF-43 will use:
+misses, replicates, rate, the 95 % one-sided Clopper-Pearson upper limit (UCL), the ratio to the nominal tail, and
+
+    PASS  iff  UCL <= 1.25 x tail           (G5.3: judged at the 95 % Monte Carlo upper limit)
+
+with at least ``ceil(175 / tail)`` replicates per cell (so a procedure exactly at nominal passes with UCL/tail about 1.13 when its
+miss count equals its expectation).  The miss count is random, though: a procedure whose true miss rate equals every tail EXACTLY still
+fails the verdict at the smallest tail with probability 0.07 (R = 49 000, k >= 195 misses against 175 expected), at the next tails
+0.05, 0.02, 0.006, 0.001, and at some tail of a (cell, distribution) with probability about 0.08 (about 0.22 over the three
+distributions of a group); ``nominal_fail_probability`` computes these numbers exactly and the summary lists them for every distinct
+(R, tail set) of the plan.  "Not qualified" with a point estimate within 1.25 x tail (``marginal``) is therefore compatible with a
+nominal procedure; the remedy is more replicates, not a different criterion.
+The procedures, tails, arm structure and bootstrap sizes are in ``covproc`` (docstring), the distributions (normal and the stress
+family at the upper bootstrap bounds of SF-39's skewness and kurtosis) in ``covdist``.  BCa cells are reported, never judged.
+
+Design (restart-safe, reproducible, memory-bounded, parallel)
+-------------------------------------------------------------
+* A *plan* (``plan.json``) lists the cells; a cell is (procedure, scenario, distribution, n) with its tails, replicate count ``R``,
+  batch size ``m`` and chunk size.  The plan is written once and reused on restart (a different plan in the same directory is an
+  error).
+* A *batch* is ``m`` replicates run in one vectorized call; its random stream is
+  ``default_rng(SeedSequence([seed, sha256(cell id)[:8], batch index]))``, so the numbers depend on neither the number of workers, nor
+  the chunking, nor the order or the interruptions of the run.  A *chunk* is ``chunk`` consecutive replicates (a multiple of ``m``,
+  sized to about a minute of work): the unit of scheduling and restart.  Each finished chunk is written atomically to
+  ``chunks/<cell>/<index>.json``; a rerun skips the existing chunks.  Memory per worker is one batch (``m x B`` floats per bootstrap
+  array, ``B`` a few 10^4, ``m`` a few tens at most).
+* Workers: ``multiprocessing`` with the ``spawn`` start method (identical on every platform, and a fork with live BLAS threads warns
+  on recent Pythons); set ``OMP_NUM_THREADS=1`` (``run_coverage.sh`` does).
+* Shared bootstrap draws.  A bootstrap-heavy procedure draws one resampling-index matrix per *batch* of ``m`` replicates
+  (``share_draws=True`` of ``intervals`` / ``budget``) instead of one per replicate (the draw is most of the cost).  Every
+  replicate's limit is still valid, but replicates of a batch are dependent through the shared draws, which inflates the variance of
+  a miss count above the binomial one.  The sum and sum of squares of the per-batch counts are stored; the summary estimates the design effect
+  ``D = Var(batch count) / (m p (1 - p))`` per tail (at least 1) and judges ``UCL`` on the effective sample (``k / D`` misses out of
+  ``R / D``).  Measured (one-off runs of the N6b report, unpaired and paired contrasts, ``n`` 20-30, ``B`` 300-500, ``m`` 100-300,
+  3000 batches): ``D = 1.00 +- 0.03`` against the upper bound ``1 + (m - 1) / B`` = 1.2-2.0 that a fully common bootstrap quantile
+  would give: different replicates look at the shared resamples through different data directions.  The production cells use
+  ``m`` = 10 and ``B`` of 10^4, where even the bound is 1.001.  Procedures without bootstrap and the exact-independence cells
+  (``m`` = 1 draw per replicate, the bootstrap-t cells) have ``D = 1``.
+* Profiles (``--profile``): ``n6b`` (the 573 cells of SF-42 N6b), ``studentized`` (the cells of SF-42 N6c), ``full`` (default: ``n6b``
+  followed by ``studentized``, so the N6b cells keep their ids, streams and chunk files), ``full-grid`` (``full`` with the complete
+  N6b ladder grid for the studentized ladders), ``smoke`` (a tiny end-to-end check of every procedure family, incl. the N6c ones).
+  Every cell has ``R tail >= 175`` for its smallest tail; each distribution is ``normal``, ``stress`` (skewness 1.936, excess kurtosis
+  4.711: the 95 % bootstrap upper bounds of the sigma^2 = 4 series, which dominate those of 0.25, 1 and 2.25 in both moments) and its
+  reflection ``stress-``.  Profile ``n6b`` (84.5 million replicates, 17 thousand chunks):
+
+  ==============================  ====================================================================  ===========  =================
+  procedure (label)               what is simulated                                                     n            R per cell
+  ==============================  ====================================================================  ===========  =================
+  sampling:student / :boott       lower and upper limit of a mean, 8 tails 3.57e-3 .. 0.05              20-1650 (8)  49 000
+  tost:gate5                      Gate 5 TOST at true ratio 1.10 and 1/1.10, rho 0, 0.5, 0.9, cv 0.3    20-170 (5)   25 000
+  bca:mean                        BCa 95 % / 90 % two-sided interval, REPORTED ONLY                     20-100 (4)   7 000
+  contrast:paired/unpaired/       UCB of |Delta| at Delta = 5 standard errors (E_int, E_W, 2 x 2 E_WxH)  20-200 (5)   196 000
+  interaction                     at the 13 component tails 8.9e-4 .. 8.3e-3 (percentile bootstrap)
+  ladder:E_h                      E_h bound of the production bias: true order 2, 1.5, 1, non-monotone;  20-200 (5)   196 000
+                                  production level middle/finest; bias 12, 25, 50 level-mean errors
+  pipeline:K3 / :K4               RL(a) > 0 at the 7 Holm levels, K = 3 (N 100, 300, 1000) and K = 4     N 30-1000    24 500
+                                  (N 30, 100, 300); biases 0 and +2+2+2 standard errors, order 1 and 2
+  ==============================  ====================================================================  ===========  =================
+
+  Profile ``studentized`` (SF-42 N6c: the N6b coverage simulation found the percentile bounds of ``ContrastBound`` / ``LadderBound``
+  under-covering at small ``n`` on NORMAL data and the Student TOST failing under the stress family; these cells measure the opt-in
+  studentized alternatives, with the same tails, distributions and sample sizes; labels end in ``/student`` or ``/boott``):
+
+  ==============================  ====================================================================  ===========  =================
+  procedure (label)               what is simulated                                                     n            R per cell
+  ==============================  ====================================================================  ===========  =================
+  contrast:<kind>/student|boott   as the N6b contrast cells, with ``method='student'`` (no bootstrap)     20-200 (5)   196 000
+                                  or ``'bootstrap-t'`` (B 12 000)
+  ladder:E_h/student|boott        as ladder:E_h, ``method='student'`` (B 23 000: the order limit p_L)    20-200 (5)   196 000
+                                  or ``'bootstrap-t'`` (B 34 000: also the Bonferroni range at t / 3);
+                                  LEAN cases: order 2 and 1 at kappa 12, 25, non-monotone at kappa 12,
+                                  production level middle/finest (``full-grid``: all 12 N6b cases)
+  pipeline:K3|K4/student|boott    as pipeline:K3 / :K4, ALL budget components with that method (the      N 30-1000    24 500
+                                  production sampling limit Student; N <= 100 also bootstrap-t)
+  tost:gate5/boott                Gate 5 bootstrap-t TOST (B 3000), rho 0, 0.5, 0.9, cv 0.3              20-170 (5)   25 000
+  ==============================  ====================================================================  ===========  =================
+
+  Cost, measured as CPU seconds per replicate of every (procedure, n, distribution) group on the development workstation
+  (``python3 -m mcstat.coverage bench``, one core, numpy 2.5 / scipy 1.18) and projected to 80 workers at 90 % parallel efficiency with
+  a host core 1.5 times slower (2 times in parentheses):
+
+  =============  =========  ============  =====================  ==========================  ==============================
+  profile        cells      replicates    core-hours             projected host wall time    of which the ladders
+  =============  =========  ============  =====================  ==========================  ==============================
+  ``n6b``        573        84.5 M        116                    2.4 h (3.2 h)               102 (percentile)
+  ``full``       1134       165 M         261                    5.4 h (7.3 h)               102 + 35 student + 92 boott
+  ``full-grid``  1554       247 M         440                    9.2 h (12.2 h)              102 + 85 student + 222 boott
+  =============  =========  ============  =====================  ==========================  ==============================
+
+  MEASURED on the host (job ``sf42-coverage``, ``full`` profile, 72 workers, ``nice -n 10``, 2 x Xeon Gold 6138 = 80 logical / 40 physical
+  CPUs, Python 3.11 / numpy 1.26 / scipy 1.11): 35 844 chunks, 10 782 196 core-seconds = **2995 core-hours** in 150 047 s = **41.7 h** wall
+  (the workers' time is 99.8 % of 72 x wall).  That is 11.5 times the workstation core-hours of the table above (``n6b`` cells 1432 h =
+  12.3 times, N6c cells 1564 h = 10.8 times, ladders 2654 h = 11.6 times 229) and 5.7 to 7.7 times the projected wall time (the
+  projection assumed a host core 1.5 to 2 times slower and 80 workers at 90 %).  Recomputed on the workstation, 10 sampled host chunks
+  of 17 s or more (n 20-30, 7 families) took 4.4 to 9.1 times less than on the host; the overall factor of 11.5 is above that sample and is not
+  decomposed (72 workers on 40 physical cores, a slower core and the older numpy all contribute; that larger arrays suffer more from
+  the shared memory bandwidth is a hypothesis, not measured):
+
+  ============================  ==========  =======  =======  ==============  ==============
+  family                        method      cells    chunks   host core-h     host s / chunk
+  ============================  ==========  =======  =======  ==============  ==============
+  sampling of the mean          Student     24       24       0.0             3
+  sampling of the mean          bootstrap-t 24       672      61.6            330
+  Gate 5 TOST                   Student     45       45       0.0             1
+  Gate 5 TOST                   bootstrap-t 45       72       15.8            789
+  BCa (reported)                percentile  12       18       0.3             51
+  contrast (3 kinds)            percentile  45       531      48.8            331
+  contrast (3 kinds)            Student     45       180      0.2             5
+  contrast (3 kinds)            bootstrap-t 45       801      58.8            264
+  ladder E_h                    percentile  360      15408    1268.7          296
+  ladder E_h                    Student     150      6420     475.0           266
+  ladder E_h                    bootstrap-t 150      10260    909.8           319
+  pipeline K = 3, 4             percentile  63       438      52.1            428
+  pipeline K = 3, 4             Student     63       321      27.9            313
+  pipeline K = 3, 4             bootstrap-t 63       654      75.9            418
+  all                                       1134     35844    2995.1          301
+  ============================  ==========  =======  =======  ==============  ==============
+
+  The ladders are 89 % of the cost.  The chunk-sizing estimate ``_est_spr`` (about 60 workstation-seconds per chunk) implies 587 workstation
+  core-hours for ``full``, 2.2 times the benchmarked 261: it over-sizes the chunks on the workstation (a sampled chunk took 17-59 s
+  there) and is not a cost projection.  A re-run of ``full`` at the same size needs about 41.7 h on 72 workers of that host.
+
+  ``full`` is the default because ``full-grid`` would exceed the budget of about 10 wall-hours at a host core twice as slow as the
+  workstation's (projected; the measured cost of ``full`` alone exceeded it four times).  What ``full`` drops from ``full-grid``, exactly: for the studentized ladders only (every other N6c cell, all tails,
+  all distributions and all sample sizes are kept), the cases (kind, true order, kappa) (power, 1.5, 12 / 25 / 50), (power, 2 and 1, 50)
+  and (non-monotone, 1, 25 / 50): 7 of the 12 N6b cases, for both production levels, both methods, three distributions and the five
+  sample sizes.  The kept cases are the hard corners (the lowest signal-to-noise ratios and the extreme true orders; a larger kappa is
+  an easier problem, order 1.5 lies between 2 and 1, and the non-monotone ladder always takes the fallback, 3 x the range).  To cut
+  further, drop sample sizes first (``--ladder-ns 30,100,200``, which also thins the N6b ladders: ``full`` 4.3 h, ``full-grid`` 7.1 h
+  (9.4 h at 2 times)) or distributions (``--dists``).  Peak memory
+  per worker, measured on the largest new cells: 0.38 GiB (bootstrap-t pipeline K = 3, N = 1000), 0.30 GiB (bootstrap-t ladder, n = 200),
+  0.17 GiB (bootstrap-t contrast, n = 200), 0.13 GiB (bootstrap-t TOST, n = 170): the same as the N6b cells.
+  Not covered (reduce or extend with ``--ladder-ns``, ``--dists``, ``--only``): ladder sequences of 4 or more levels, ladder ratios
+  other than 2, width x resolution interactions other than the simulated 2 x 2, per-amplitude stress members (use
+  ``--dists stress_s1,...``), bias magnitudes other than 0 and 2 standard errors, Gate 5 at a true ratio other than the two boundaries
+  (the size is measured; the power of the bootstrap-t TOST is by simulation with ``gate5_paired``, see ``gate5``).
+* Commands (``python3 -m mcstat.coverage ...``): ``stress`` (recompute ``stress_moments.json`` from the SF-39 tables), ``plan``,
+  ``bench`` (measure the cost per replicate of every cell and project the host time), ``run``, ``summarize``.
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import multiprocessing as mp
+import os
+import platform
+import re
+import sys
+import time
+
+import numpy as np
+from scipy import stats as _st
+
+from . import covdist, covproc
+
+VERSION = 1
+TARGET = 175  # replicates x tail (G5.3)
+CRITERION = 1.25  # allowed ratio UCL / tail
+CONF = 0.95  # one-sided Clopper-Pearson level of the UCL
+DEFAULT_SEED = 20261030
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Statistics
+# ----------------------------------------------------------------------------------------------------------------------
+def cp_upper(k, R, conf=CONF):
+    """One-sided Clopper-Pearson upper limit of a binomial proportion: ``Beta(conf; k + 1, R - k)`` (real ``k``, ``R`` allowed:
+    the effective sample of a clustered estimate).  ``k = 0`` gives ``1 - (1 - conf)^(1 / R)``; ``k >= R`` gives 1."""
+    if R <= 0 or k >= R:
+        return 1.0
+    return float(_st.beta.ppf(conf, k + 1.0, R - k))
+
+
+def design_effect_from_moments(total, sumsq, nbatch, m):
+    """Per-tail variance inflation of a miss count from replicates that share bootstrap draws in batches of ``m``.
+
+    ``total`` / ``sumsq``: sum and sum of squares over the ``nbatch`` batches of the per-batch miss counts.  ``D = Var_b(count) /
+    (m p (1 - p))``, ``p`` the pooled rate; 1 where ``p`` is 0 or 1, with fewer than 2 batches, or below 1 (an under-dispersed
+    estimate is not used to shrink the interval).
+    """
+    total, sumsq = np.asarray(total, dtype=float), np.asarray(sumsq, dtype=float)
+    if nbatch < 2 or m < 2:
+        return np.ones(total.shape)
+    p = total / (nbatch * m)
+    var = (sumsq - total * total / nbatch) / (nbatch - 1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        d = var / (m * p * (1.0 - p))
+    return np.maximum(np.where((p > 0.0) & (p < 1.0) & np.isfinite(d), d, 1.0), 1.0)
+
+
+def design_effect(batch_counts, m):
+    """``design_effect_from_moments`` of an array (nbatch, T) of per-batch miss counts."""
+    c = np.asarray(batch_counts, dtype=float)
+    return design_effect_from_moments(c.sum(axis=0), (c * c).sum(axis=0), c.shape[0], m)
+
+
+def fail_threshold(R, tail, conf=CONF, criterion=CRITERION):
+    """Smallest miss count ``k`` whose verdict fails: ``cp_upper(k, R, conf) > criterion x tail`` (``None``: no ``k <= R`` fails)."""
+    lim = criterion * tail
+    if cp_upper(R, R, conf) <= lim:
+        return None
+    if cp_upper(0, R, conf) > lim:
+        return 0
+    lo, hi = 0, R  # cp_upper increases with k: cp_upper(lo) <= lim < cp_upper(hi)
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        lo, hi = (mid, hi) if cp_upper(mid, R, conf) <= lim else (lo, mid)
+    return hi
+
+
+def nominal_fail_probability(R, tails, conf=CONF, criterion=CRITERION, target=TARGET, window_sd=12.0):
+    """Probability that a procedure whose true miss rate equals EVERY tail exactly fails the G5.3 verdict by Monte Carlo noise alone.
+
+    ``R`` replicates, binomial counts (design effect 1: shared bootstrap draws only raise these probabilities).  Only the tails
+    judged by the engine (``R x tail >= target``) count.  Returns ``{"R", "tails", "kstar", "p_tail", "p_any"}``: per tail the
+    threshold ``k*`` (``fail_threshold``) and ``p_tail = P(Bin(R, tail) >= k*)``; ``p_any`` = probability that at least one tail
+    fails.  The misses at the nested tails are nested (a replicate that misses at ``tau`` misses at every larger tail: the
+    statistic ``U`` is uniform and the miss event ``U < tau``), so the counts ``N_1 <= N_2 <= ...`` at the sorted tails have
+    multinomial increments, and ``1 - p_any = P(N_i < k*_i for all i)`` is computed EXACTLY by a dynamic programme over
+    ``N_i`` (conditional increment ``Bin(R - N_i, (tau_i - tau_{i-1}) / (1 - tau_{i-1}))``), restricted to ``mean +- window_sd``
+    standard deviations (the neglected mass is below 1e-30)."""
+    ts = sorted({float(t) for t in tails if R * float(t) >= target - 1e-9})
+    ks = [fail_threshold(R, t, conf, criterion) for t in ts]
+    p_tail = [0.0 if k is None else float(_st.binom.sf(k - 1, R, t)) for k, t in zip(ks, ts)]
+    f, lo, prev = None, 0, 0.0
+    for t, k in zip(ts, ks):
+        top = R if k is None else k - 1  # largest count that still passes at this tail
+        sd = math.sqrt(R * t * (1.0 - t))
+        a, b = max(0, int(R * t - window_sd * sd)), min(top, int(math.ceil(R * t + window_sd * sd)))
+        if b < a:
+            return {"R": R, "tails": ts, "kstar": ks, "p_tail": p_tail, "p_any": 1.0}
+        n_new = np.arange(a, b + 1)
+        if f is None:
+            f = _st.binom.pmf(n_new, R, t)
+        else:
+            n_old = np.arange(lo, lo + len(f))
+            q = (t - prev) / (1.0 - prev)
+            f = f @ _st.binom.pmf(n_new[None, :] - n_old[:, None], (R - n_old)[:, None], q)  # negative increments have pmf 0
+        lo, prev = a, t
+    return {"R": R, "tails": ts, "kstar": ks, "p_tail": p_tail, "p_any": float(max(0.0, 1.0 - f.sum())) if f is not None else 0.0}
+
+
+def nominal_fail_table(plan_cells):
+    """``nominal_fail_probability`` of every distinct (R, tail set) of the judged (not report-only) cells of a plan, with the
+    number of cells and the probability that at least one of three independent distributions of a cell group fails."""
+    groups = {}
+    for c in plan_cells:
+        if not c["report_only"]:
+            groups.setdefault((int(c["R"]), tuple(c["tails"])), []).append(c["label"])
+    out = []
+    for (R, tails), labels in sorted(groups.items()):
+        r = nominal_fail_probability(R, tails)
+        if r["tails"]:
+            r.update(cells=len(labels), labels=sorted(set(labels)), p_any_3dist=1.0 - (1.0 - r["p_any"]) ** 3)
+            out.append(r)
+    return out
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Plan
+# ----------------------------------------------------------------------------------------------------------------------
+def _sanitize(s):
+    return re.sub(r"[^A-Za-z0-9_.+=-]", "_", s)
+
+
+def make_cell(proc, label, scen, dist, n, params, target=TARGET, m=1, chunk=None, share=False, report_only=False, min_reps=0):
+    """One cell of the plan: ``R = ceil(target / smallest tail)`` replicates (at least ``min_reps``), as a multiple of ``m``."""
+    params = dict(params, n=n, share=bool(share))
+    tails = covproc.PROCS[proc].tails(params)
+    R = max(int(math.ceil(target / float(tails.min()) * (1.0 - 1e-12))), int(min_reps), 1)
+    R = int(math.ceil(R / m) * m)
+    chunk = R if chunk is None else int(min(R, math.ceil(chunk / m) * m))
+    return {"id": _sanitize("%s__%s__%s__n%d" % (label, scen or "base", dist, n)), "proc": proc, "label": label, "scen": scen or "",
+            "dist": dist, "n": int(n), "params": params, "tails": [float(t) for t in tails], "R": R, "m": int(m), "chunk": chunk,
+            "report_only": bool(report_only)}
+
+
+def plan_hash(cells, seed):
+    return hashlib.sha256(json.dumps({"seed": seed, "cells": cells}, sort_keys=True).encode()).hexdigest()
+
+
+def env_info():
+    return {"python": platform.python_version(), "numpy": np.__version__, "scipy": __import__("scipy").__version__,
+            "platform": platform.platform(), "cpu_count": os.cpu_count()}
+
+
+def write_json(path, obj, compact=False):
+    tmp = "%s.tmp.%d" % (path, os.getpid())
+    with open(tmp, "w") as f:
+        if compact:
+            json.dump(obj, f, separators=(",", ":"))
+        else:
+            json.dump(obj, f, indent=1, sort_keys=True)
+    os.replace(tmp, path)
+
+
+def _chunk_path(out, cell_id, j):
+    return os.path.join(out, "chunks", cell_id, "%05d.json" % j)
+
+
+def nchunks(cell):
+    return int(math.ceil(cell["R"] / cell["chunk"]))
+
+
+def init_plan(out, cells, seed, profile):
+    """Write ``plan.json`` into ``out`` (or verify that the existing one is identical) and return it."""
+    ids = [c["id"] for c in cells]
+    if len(set(ids)) != len(ids):
+        raise ValueError("duplicate cell ids in the plan")
+    os.makedirs(out, exist_ok=True)
+    plan = {"version": VERSION, "profile": profile, "seed": seed, "target_per_tail": TARGET, "criterion": CRITERION, "conf": CONF,
+            "plan_hash": plan_hash(cells, seed), "cells": cells}
+    path = os.path.join(out, "plan.json")
+    if os.path.exists(path):
+        with open(path) as f:
+            old = json.load(f)
+        if old.get("plan_hash") != plan["plan_hash"]:
+            raise ValueError("%s holds a different plan (hash %s, requested %s): use a new output directory" %
+                             (path, old.get("plan_hash"), plan["plan_hash"]))
+        return old
+    plan["env"] = env_info()
+    write_json(path, plan)
+    return plan
+
+
+def load_plan(out):
+    with open(os.path.join(out, "plan.json")) as f:
+        return json.load(f)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Execution
+# ----------------------------------------------------------------------------------------------------------------------
+def batch_rng(seed, cell_id, b):
+    """The random stream of batch ``b`` of a cell (see the module docstring)."""
+    h = int.from_bytes(hashlib.sha256(cell_id.encode()).digest()[:8], "big")
+    return np.random.default_rng(np.random.SeedSequence([seed, h, b]))
+
+
+def run_cell_batches(cell, seed, first, nbatch, dist=None):
+    """Run batches ``first .. first + nbatch - 1`` of ``cell['m']`` replicates: ``(rows, extra)`` with ``rows[name]`` of shape
+    (nbatch, T)."""
+    proc = covproc.PROCS[cell["proc"]]
+    dist = covdist.get_dist(cell["dist"]) if dist is None else dist
+    rows, extra = {}, {}
+    for b in range(first, first + nbatch):
+        r, e = proc.run(cell["params"], dist, batch_rng(seed, cell["id"], b), cell["m"])
+        for k, v in r.items():
+            rows.setdefault(k, []).append(v)
+        for k, v in e.items():
+            extra.setdefault(k, []).append(v)
+    return ({k: np.array(v, dtype=np.int64) for k, v in rows.items()}, {k: np.array(v, dtype=np.int64) for k, v in extra.items()})
+
+
+def run_chunk(cell, j, seed):
+    """Replicates ``[j chunk, (j + 1) chunk)`` of a cell: the record that is written to disk."""
+    size = min(cell["chunk"], cell["R"] - j * cell["chunk"])
+    t0 = time.time()
+    rows, extra = run_cell_batches(cell, seed, j * cell["chunk"] // cell["m"], size // cell["m"])
+    rec = {"cell": cell["id"], "chunk": j, "R": size, "seconds": time.time() - t0,
+           "extra": {k: v.sum(axis=0).tolist() for k, v in extra.items()}}
+    rec["counts"] = {k: v.sum(axis=0).tolist() for k, v in rows.items()}
+    if cell["params"].get("share") and cell["m"] > 1:  # sufficient statistics of the design effect: sum of squares of batch counts
+        rec["sumsq"] = {k: (v * v).sum(axis=0).tolist() for k, v in rows.items()}
+        rec["nbatch"] = size // cell["m"]
+    return rec
+
+
+_W = {}
+
+
+def _init_worker(out):
+    plan = load_plan(out)
+    _W["cells"] = {c["id"]: c for c in plan["cells"]}
+    _W["seed"] = plan["seed"]
+    _W["out"] = out
+
+
+def _work(task):
+    cid, j = task
+    rec = run_chunk(_W["cells"][cid], j, _W["seed"])
+    write_json(_chunk_path(_W["out"], cid, j), rec, compact=True)
+    return cid, j, rec["seconds"]
+
+
+def pending_tasks(out, plan):
+    tasks = []
+    for c in plan["cells"]:
+        for j in range(nchunks(c)):
+            if not os.path.exists(_chunk_path(out, c["id"], j)):
+                tasks.append((c["id"], j))
+    return tasks
+
+
+def run(out, workers=1, max_chunks=None, log=None):
+    """Run every missing chunk of ``out/plan.json`` (at most ``max_chunks`` of them: a test aid that simulates an interruption)."""
+    log = log or (lambda s: print(s, file=sys.stderr, flush=True))
+    plan = load_plan(out)
+    tasks = pending_tasks(out, plan)
+    total = sum(nchunks(c) for c in plan["cells"])
+    if max_chunks is not None:
+        tasks = tasks[:max_chunks]
+    log("coverage: %d of %d chunks pending, %d workers" % (len(tasks), total, workers))
+    for c in plan["cells"]:
+        os.makedirs(os.path.join(out, "chunks", c["id"]), exist_ok=True)
+    t0, done, busy, last = time.time(), 0, 0.0, 0.0
+    if workers <= 1:
+        _init_worker(out)
+        results = map(_work, tasks)
+        pool = None
+    else:
+        pool = mp.get_context("spawn").Pool(workers, initializer=_init_worker, initargs=(out,))
+        results = pool.imap_unordered(_work, tasks, chunksize=1)
+    try:
+        for cid, j, sec in results:
+            done += 1
+            busy += sec
+            if time.time() - last >= 60.0 or done == len(tasks):
+                last = time.time()
+                el = last - t0
+                log("coverage: %d/%d chunks, %.0f s elapsed, ETA %.0f s (%s)" % (done, len(tasks), el, el / done * (len(tasks) - done), cid))
+    finally:
+        if pool is not None:
+            pool.terminate()
+            pool.join()
+    log("coverage: finished %d chunks in %.0f s (%.0f core-seconds)" % (done, time.time() - t0, busy))
+    return done
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Aggregation and summaries
+# ----------------------------------------------------------------------------------------------------------------------
+def aggregate_cell(out, cell):
+    """Summed chunk records of a cell, or ``None`` if a chunk is missing."""
+    rows, sumsq, nbatch, extra, R, sec = {}, {}, 0, {}, 0, 0.0
+    for j in range(nchunks(cell)):
+        path = _chunk_path(out, cell["id"], j)
+        if not os.path.exists(path):
+            return None
+        with open(path) as f:
+            rec = json.load(f)
+        R += rec["R"]
+        sec += rec["seconds"]
+        nbatch += rec.get("nbatch", 0)
+        for k, v in rec["counts"].items():
+            rows[k] = rows.get(k, 0) + np.array(v, dtype=np.int64)
+        for k, v in rec.get("sumsq", {}).items():
+            sumsq[k] = sumsq.get(k, 0) + np.array(v, dtype=np.int64)
+        for k, v in rec["extra"].items():
+            extra[k] = extra.get(k, 0) + np.array(v, dtype=np.int64)
+    if R != cell["R"]:
+        raise ValueError("cell %s: chunks hold %d replicates, the plan says %d" % (cell["id"], R, cell["R"]))
+    return {"R": R, "seconds": sec, "rows": rows, "sumsq": sumsq, "nbatch": nbatch, "extra": extra}
+
+
+def evaluate_cell(cell, agg):
+    """Per row and tail: misses, rate, naive and design-effect-adjusted UCL, ratio to the tail, PASS (``None``: report-only cell,
+    or fewer than 175 expected misses at nominal, which G5.3 does not accept as a verdict)."""
+    out = {}
+    tails = np.array(cell["tails"])
+    for row, k in agg["rows"].items():
+        D = (design_effect_from_moments(k, agg["sumsq"][row], agg["nbatch"], cell["m"]) if row in agg["sumsq"] else np.ones(len(tails)))
+        entries = []
+        for i, tau in enumerate(tails):
+            R = agg["R"]
+            ucl_naive = cp_upper(int(k[i]), R)
+            ucl = cp_upper(k[i] / D[i], R / D[i])
+            entries.append({"tail": float(tau), "misses": int(k[i]), "R": R, "rate": float(k[i]) / R, "ucl_naive": ucl_naive,
+                            "design_effect": float(D[i]), "ucl": ucl, "ucl_over_tail": ucl / float(tau),
+                            "rate_over_tail": float(k[i]) / R / float(tau), "powered": bool(R * tau >= TARGET - 1e-9),
+                            "pass": None if cell["report_only"] or R * tau < TARGET - 1e-9 else bool(ucl <= CRITERION * tau)})
+        out[row] = entries
+    return out
+
+
+def summarize(out, write=True):
+    plan = load_plan(out)
+    cells, incomplete = [], []
+    for c in plan["cells"]:
+        agg = aggregate_cell(out, c)
+        if agg is None:
+            incomplete.append(c["id"])
+            continue
+        cells.append({**{k: c[k] for k in ("id", "proc", "label", "scen", "dist", "n", "m", "R", "tails", "report_only", "params")},
+                      "seconds": agg["seconds"], "extra": {k: v.tolist() for k, v in agg["extra"].items()},
+                      "rows": evaluate_cell(c, agg)})
+    verdicts = make_verdicts(cells, plan["cells"])
+    missing_ids = set(incomplete)
+    summ = {"version": VERSION, "plan_hash": plan["plan_hash"], "profile": plan.get("profile"), "seed": plan["seed"],
+            "env": plan.get("env"), "criterion": "UCL(95%% one-sided Clopper-Pearson) <= %.2f x tail, >= %d replicates x tail" % (CRITERION, TARGET),
+            "cells_total": len(plan["cells"]), "cells_complete": len(cells), "incomplete": incomplete, "cells": cells, "verdicts": verdicts,
+            "nominal_false_fail": nominal_fail_table(plan["cells"]),
+            "incomplete_groups": sorted({(c["label"], c["scen"], c["n"]) for c in plan["cells"] if c["id"] in missing_ids}),
+            "core_seconds": sum(c["seconds"] for c in cells)}
+    if write:
+        write_json(os.path.join(out, "summary.json"), summ)
+        with open(os.path.join(out, "summary.md"), "w") as f:
+            f.write(render_markdown(summ))
+    return summ
+
+
+def make_verdicts(cells, plan_cells=None):
+    """Per (procedure, row, scenario, n): tails that pass in EVERY simulated distribution, and the failures.  ``qualified`` is
+    ``None`` when nothing was judged (report-only cell, or too few replicates for the verdict) or when a planned distribution of
+    the group is missing (``incomplete_dists`` non-empty: a group with a failure stays ``False``, since a failure is final, but a
+    group without one is never reported as qualified).  ``plan_cells``: the planned cells (``label``, ``scen``, ``n``, ``dist``)."""
+    planned = {}
+    for c in plan_cells or ():
+        planned.setdefault((c["label"], c["scen"], c["n"]), set()).add(c["dist"])
+    groups = {}
+    for c in cells:
+        for row, entries in c["rows"].items():
+            g = groups.setdefault((c["label"], row, c["scen"], c["n"]), {"dists": [], "per_tail": {}, "report_only": c["report_only"]})
+            g["dists"].append(c["dist"])
+            for e in entries:
+                g["per_tail"].setdefault(e["tail"], []).append((c["dist"], e))
+    out = []
+    for (label, row, scen, n), g in sorted(groups.items()):
+        fails, passed = [], []
+        for tau, lst in sorted(g["per_tail"].items()):
+            bad = [(d, e) for d, e in lst if e["pass"] is False]
+            if bad:
+                fails += [{"tail": tau, "dist": d, "ucl_over_tail": e["ucl_over_tail"], "rate_over_tail": e["rate_over_tail"]} for d, e in bad]
+            elif all(e["pass"] for _, e in lst):
+                passed.append(tau)
+        missing = sorted(planned.get((label, scen, n), set()) - set(g["dists"]))
+        qualified = None if not (passed or fails) else not fails and len(passed) == len(g["per_tail"])
+        if missing and qualified:
+            qualified = None
+        out.append({"label": label, "row": row, "scen": scen, "n": n, "dists": sorted(g["dists"]), "report_only": g["report_only"],
+                    "tails_pass": passed, "tails_fail": fails, "tails_total": len(g["per_tail"]), "incomplete_dists": missing,
+                    "qualified": qualified})
+    return out
+
+
+def _fmt_tail(t):
+    return "%.3g" % t
+
+
+def render_markdown(s):
+    L = ["# Coverage simulation summary", "",
+         "Criterion (decision G5.3): one-sided miss rate with 95%% one-sided Clopper-Pearson upper limit (UCL) at most %.2f x the nominal "
+         "tail, at least %d replicates x tail per cell. Cells complete: %d of %d. Core-seconds: %.0f." %
+         (CRITERION, TARGET, s["cells_complete"], s["cells_total"], s["core_seconds"]), "",
+         "Seed %s, profile %s, plan hash `%s`; environment: %s." % (s["seed"], s["profile"], s["plan_hash"][:16], json.dumps(s["env"])), ""]
+    if s["incomplete"]:
+        L += ["**Incomplete cells (%d):** %s" % (len(s["incomplete"]), ", ".join(s["incomplete"][:20]) + (" ..." if len(s["incomplete"]) > 20 else "")), ""]
+    ver = s["verdicts"]
+    L += ["## Tail levels", "",
+          "- sampling limits (Student, bootstrap-t; lower and upper): " + ", ".join(_fmt_tail(t) for t in covproc.sampling_tails()),
+          "- budget bounds (ContrastBound, LadderBound; K = 3, 4): " + ", ".join(_fmt_tail(t) for t in covproc.component_tails()),
+          "- Gate 5 TOST and whole robust-sign pipeline (Holm levels, m = 7): " + ", ".join(_fmt_tail(t) for t in covproc.holm_levels()), "",
+          "## Qualification matrix", "",
+          "Entry: `ALL` if every tail passes in every simulated distribution, else `passing/total tails`; `rep` = reported, never judged (BCa); `n/a` = fewer than 175 expected misses at nominal, not judged; `inc` = a planned cell (distribution) of the group is not finished, so no verdict (`k/t inc`: already failing in the finished ones).",
+          ""]
+    keys = sorted({(v["label"], v["row"], v["scen"]) for v in ver})
+    ns = sorted({v["n"] for v in ver})
+    L += ["| procedure | row | scenario | " + " | ".join("n=%d" % n for n in ns) + " |", "|" + "---|" * (3 + len(ns))]
+    idx = {(v["label"], v["row"], v["scen"], v["n"]): v for v in ver}
+    incg = {tuple(g) for g in s.get("incomplete_groups", [])}  # (label, scen, n) with an unfinished planned cell
+    for k in keys:
+        cellsv = []
+        for n in ns:
+            v = idx.get(k + (n,))
+            if v is None:
+                cellsv.append("inc" if (k[0], k[2], n) in incg else "")
+            elif v["report_only"]:
+                cellsv.append("rep")
+            elif v["incomplete_dists"] and v["qualified"] is None:
+                cellsv.append("inc")
+            elif v["qualified"] is None:
+                cellsv.append("n/a")
+            elif v["incomplete_dists"]:
+                cellsv.append("%d/%d inc" % (len(v["tails_pass"]), v["tails_total"]))
+            else:
+                cellsv.append("ALL" if v["qualified"] else "%d/%d" % (len(v["tails_pass"]), v["tails_total"]))
+        L.append("| %s | %s | %s | %s |" % (k[0], k[1], k[2] or "-", " | ".join(cellsv)))
+    L += ["", "## Verdict list", "", "Qualified = every tail passes in every simulated distribution of that cell group.", ""]
+    for k in keys:
+        vs = sorted((idx[k + (n,)] for n in ns if k + (n,) in idx), key=lambda v: v["n"])
+        if vs[0]["report_only"]:
+            continue
+        ok = [v["n"] for v in vs if v["qualified"]]
+        bad = ["%d (%d of %d tails%s)" % (v["n"], len(v["tails_pass"]), v["tails_total"], ", unfinished cells" if v["incomplete_dists"] else "")
+               for v in vs if v["qualified"] is False]
+        na = [v["n"] for v in vs if v["qualified"] is None and not v["incomplete_dists"]]
+        inc = sorted({v["n"] for v in vs if v["qualified"] is None and v["incomplete_dists"]} |
+                     {n for n in ns if (k[0], k[2], n) in incg and k + (n,) not in idx})
+        L.append("- **%s / %s%s**: qualified at n = %s; not qualified at n = %s%s%s" % (
+            k[0], k[1], (" / " + k[2]) if k[2] else "", ", ".join(map(str, ok)) or "none", ", ".join(bad) or "none",
+            ("; not judged at n = " + ", ".join(map(str, na))) if na else "",
+            ("; INCOMPLETE (no verdict) at n = " + ", ".join(map(str, inc))) if inc else ""))
+    L += ["", "## False-fail probability of an exactly nominal procedure", "",
+          "A procedure whose true miss rate equals every tail exactly still fails the verdict by Monte Carlo noise alone: per tail "
+          "`P = P(Bin(R, tail) >= k*)`, `k*` the smallest miss count with UCL > %.2f x tail; at least one tail of a (cell, distribution, row) "
+          "fails with `P(any)` (exact: the misses at nested tails are nested); `P(any of 3)` = at least one of three independent "
+          "distributions (normal, stress, stress-). Design effect 1 assumed (shared bootstrap draws only raise these)." % CRITERION, ""]
+    for g in s.get("nominal_false_fail", []):
+        L += ["**R = %d, %d tails, %d cells** (%s%s): P(any) = %.4f, P(any of 3) = %.4f" % (
+            g["R"], len(g["tails"]), g["cells"], ", ".join(g["labels"][:6]), ", ..." if len(g["labels"]) > 6 else "", g["p_any"], g["p_any_3dist"]), "",
+            "| tail | k* | k*/(R tail) | P(fail) |", "|---|---|---|---|"]
+        for t, k, pt in zip(g["tails"], g["kstar"], g["p_tail"]):
+            L.append("| %s | %s | %s | %.3g |" % (_fmt_tail(t), "-" if k is None else k, "-" if k is None else "%.3f" % (k / (g["R"] * t)), pt))
+        L.append("")
+    fails = [(v, f) for v in ver for f in v["tails_fail"]]
+    L += ["", "## Failures (%d tail x distribution entries)" % len(fails), ""]
+    if fails:
+        L += ["`marginal`: the point estimate of the miss rate is within 1.25 x tail and only the 95% limit exceeds it. This is compatible "
+              "with an exactly nominal procedure (see the false-fail probabilities above: about 0.07 for the smallest tail, about 0.08 for "
+              "some tail of a cell and distribution); the remedy is more replicates at SF-43's final `n`, not a different criterion. "
+              "Without the mark, the point estimate itself exceeds 1.25 x tail: a clear failure.", "",
+              "| procedure | row | scenario | n | dist | tail | rate/tail | UCL/tail | |", "|---|---|---|---|---|---|---|---|---|"]
+        for v, f in fails[:400]:
+            L.append("| %s | %s | %s | %d | %s | %s | %.2f | %.2f | %s |" % (
+                v["label"], v["row"], v["scen"] or "-", v["n"], f["dist"], _fmt_tail(f["tail"]), f["rate_over_tail"], f["ucl_over_tail"],
+                "marginal" if f["rate_over_tail"] <= CRITERION else ""))
+        if len(fails) > 400:
+            L.append("| ... %d more in summary.json | | | | | | | | |" % (len(fails) - 400))
+    else:
+        L.append("none")
+    L += ["", "## UCL / tail by cell", "", "Entries are UCL/tail (pass iff at most %.2f; `*` marks a failure); the header lists the tails." % CRITERION, ""]
+    groups = {}
+    for c in s["cells"]:
+        for row, entries in c["rows"].items():
+            groups.setdefault((c["label"], row, c["scen"], c["dist"]), []).append((c["n"], c, entries))
+    for (label, row, scen, dist), lst in sorted(groups.items()):
+        tails = [e["tail"] for e in lst[0][2]]
+        L += ["### %s / %s%s / %s" % (label, row, (" / " + scen) if scen else "", dist), "",
+              "| n | R | maxD | " + " | ".join(_fmt_tail(t) for t in tails) + " |", "|" + "---|" * (3 + len(tails))]
+        for n, c, entries in sorted(lst, key=lambda t: t[0]):
+            cellsv = ["%.2f%s" % (e["ucl_over_tail"], "*" if e["pass"] is False else "") for e in entries]
+            L.append("| %d | %d | %.3f | %s |" % (n, c["R"], max(e["design_effect"] for e in entries), " | ".join(cellsv)))
+        L.append("")
+    extras = [(c["id"], c["extra"]) for c in s["cells"] if any(np.sum(v) > 0 for k, v in c["extra"].items() if k in ("unresolved", "nonfinite"))]
+    L += ["## Unresolved bootstrap tails", "", ("cells with infinite (unresolved) limits: %d (see summary.json `extra`)" % len(extras)) if extras else
+          "none: every bootstrap tail was resolved by its B", ""]
+    return "\n".join(L) + "\n"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Profiles
+# ----------------------------------------------------------------------------------------------------------------------
+SAMPLING_NS = (20, 30, 50, 100, 200, 500, 1000, 1650)  # n of the sampling procedures (SF-43 N: 30 to 1650)
+GATE5_NS = (20, 30, 50, 100, 170)  # paired seeds of Gate 5 (SF-43: about 30 to 170 per arm)
+COMPONENT_NS = (20, 30, 50, 100, 200)  # seeds per budget arm (budget_arm_size: N / 2 between 20 and 200)
+LADDER_NS = (20, 30, 50, 100, 200)
+# production sizes of the pipeline: (K, ladder production index, N): the SF-43 sigma^2 = 0.25 / 1, 2.25 and 4 structures
+PIPELINE_CONFIGS = ((3, 1, 100), (3, 1, 300), (3, 1, 1000), (4, 2, 30), (4, 2, 100), (4, 2, 300))
+PIPELINE_BIASES = (("zero", 0.0, 1.0), ("bias,order=1", 2.0, 1.0), ("bias,order=2", 2.0, 2.0))  # (name, bias in s.e., ladder order)
+LADDER_SCENARIOS = (("power", 2.0), ("power", 1.5), ("power", 1.0), ("nonmono", 1.0))  # (kind, true order)
+LADDER_KAPPAS = (12.0, 25.0, 50.0)  # production bias in standard errors of a level mean
+# (kind, true order, kappa) of the ladder cells of the studentized procedures.  GRID: all of N6b.  LEAN: the hard corners only; the
+# dropped cases (order 1.5, kappa 50, the non-monotone ladder at kappa 25 and 50) lie between or are easier than the kept ones (a larger
+# kappa is a higher signal-to-noise ratio; the non-monotone ladder always takes the fallback, 3 x the range)
+LADDER_CASES_GRID = tuple((sc, o, k) for sc, o in LADDER_SCENARIOS for k in LADDER_KAPPAS)
+LADDER_CASES_LEAN = (("power", 2.0, 12.0), ("power", 2.0, 25.0), ("power", 1.0, 12.0), ("power", 1.0, 25.0), ("nonmono", 1.0, 12.0))
+
+
+def _est_spr(proc, n, params):
+    """Rough seconds per replicate on the development workstation (fits of the ``bench`` output): it only sizes the chunks."""
+    B = params.get("B", 0) or params.get("B_c", 0)
+    meth = params.get("method") or params.get("comp") or ""
+    if proc == "sampling":
+        return (3e-6 + 3e-8 * n) if params.get("method") == "student" else 2e-4 + 2.5e-8 * n * B
+    if proc == "tost":
+        return 1e-5 * (1.0 + n / 50.0) if meth != "bootstrap-t" else 1e-4 + 1.2e-8 * n * B
+    if proc == "contrast":
+        return {"student": 4e-5, "bootstrap-t": 1.5 * (8e-4 + 3.4e-5 * n)}.get(meth, 8e-4 + 3.4e-5 * n)
+    if proc == "ladder":
+        return (5e-3 + 1e-4 * n) * {"bootstrap-t": 1.6}.get(meth, 1.0)
+    if proc == "pipeline":
+        return (8e-3 + 3e-5 * n) * {"student": 0.7, "bootstrap-t": 1.5}.get(meth, 1.0)
+    return 5e-3 * (1.0 + n / 50.0)  # bca
+
+
+def _chunk_for(spr, m, seconds=60.0, cap=50000):
+    return int(max(m, min(cap, seconds / max(spr, 1e-7))))
+
+
+def _adder(cells, target):
+    def add(proc, label, scen, dist, n, params, share=False, m=1, report_only=False):
+        c = make_cell(proc, label, scen, dist, n, params, target, m, None, share, report_only)
+        spr = _est_spr(proc, n, params)
+        c["chunk"] = int(min(c["R"], math.ceil(_chunk_for(spr, m) / m) * m))
+        cells.append(c)
+    return add
+
+
+def profile_n6b(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "stress", "stress-"),
+                ladder_ns=LADDER_NS, component_ns=COMPONENT_NS):
+    """The cells of SF-42 N6b (the percentile bounds of the budget, the Student TOST, the sampling limits, BCa, the pipeline with
+    percentile components).  ``dists``: ``normal`` plus the stress family (``stress`` right-skewed, ``stress-`` its reflection:
+    a one-sided limit or a bias bound is anti-conservative for one of the two skew directions)."""
+    cells = []
+    t_s = float(covproc.sampling_tails().min())
+    t_c = float(covproc.component_tails().min())
+    t_a = float(covproc.holm_levels().min())
+    add = _adder(cells, target)
+
+    for d in dists:
+        for n in SAMPLING_NS:
+            add("sampling", "sampling:student", "", d, n, {"method": "student"}, m=1000)
+            add("sampling", "sampling:boott", "", d, n, {"method": "boott", "B": covproc.boot_size(t_s, boot_per_tail)}, m=1)
+        for rho in (0.0, 0.5, 0.9):
+            for n in GATE5_NS:
+                add("tost", "tost:gate5", "rho=%g" % rho, d, n, {"rho": rho, "cv": 0.3}, m=1000)
+        for n in (20, 30, 50, 100):
+            add("bca", "bca:mean", "", d, n, {"B": 1999}, m=100, report_only=True)
+    Bc = covproc.boot_size(t_c, boot_per_tail)
+    Bl = covproc.boot_size(t_c / 2.0, boot_per_tail)
+    for d in dists:
+        for kind in ("paired", "unpaired", "interaction"):
+            for n in component_ns:
+                add("contrast", "contrast:" + kind, "", d, n, {"kind": kind, "kappa": 5.0, "B": Bc}, share=True, m=m_share)
+        for ip in (1, 2):
+            for scenario, order in LADDER_SCENARIOS:
+                for kappa in (12.0, 25.0, 50.0):
+                    for n in ladder_ns:
+                        scen = "%s,ip=%d,kappa=%g" % ("order=%g" % order if scenario == "power" else "nonmono", ip, kappa)
+                        add("ladder", "ladder:E_h", scen, d, n, {"scenario": scenario, "order": order, "ip": ip, "kappa": kappa, "B": Bl},
+                            share=True, m=m_share)
+        for K, ip, N in PIPELINE_CONFIGS:
+            Bs = covproc.boot_size(t_a / 2.0, boot_per_tail)
+            for bname, b, order in PIPELINE_BIASES:
+                pp = {"N": N, "nb": covproc.budget_arm_size(N), "K": K, "ip": ip, "order": order, "b_h": b, "b_int": b, "b_w": b,
+                      "sampling": "student", "B_c": covproc.boot_size(t_a / (2.0 * K), boot_per_tail),
+                      "B_l": covproc.boot_size(t_a / (4.0 * K), boot_per_tail), "B_s": Bs}
+                add("pipeline", "pipeline:K%d,ip=%d" % (K, ip), bname, d, N, pp, share=True, m=m_share)
+                if N <= 100 and bname == "bias,order=1":
+                    add("pipeline", "pipeline:K%d,ip=%d" % (K, ip), "boott," + bname, d, N, dict(pp, sampling="boott"), share=True, m=m_share)
+    return cells
+
+
+METHOD_TAG = {"student": "student", "bootstrap-t": "boott"}
+
+
+def profile_studentized(target=TARGET, boot_per_tail=10, m_share=10, dists=("normal", "stress", "stress-"),
+                        ladder_ns=LADDER_NS, component_ns=COMPONENT_NS, gate5_ns=GATE5_NS, ladder_cases=LADDER_CASES_LEAN,
+                        methods=("student", "bootstrap-t"), pipeline_configs=PIPELINE_CONFIGS, pipeline_biases=PIPELINE_BIASES):
+    """SF-42 N6c: the studentized alternatives to the procedures that N6b found failing, with the same tails, distributions and
+    sample sizes (G5.3).  Labels carry ``/student`` or ``/boott``: ``contrast:<kind>`` and ``ladder:E_h`` with the studentized upper bound of
+    ``|Delta|`` (``ContrastBound`` / ``LadderBound`` ``method=``), ``pipeline:K<K>,ip=<ip>`` with ALL budget components of that method
+    (production sampling Student; for ``N <= 100`` also the bootstrap-t sampling limit, as in N6b), and ``tost:gate5/boott`` for the
+    bootstrap-t TOST (the Student TOST is the N6b cell ``tost:gate5``).  ``ladder_cases``: the (kind, order, kappa) cases of the ladder
+    (``LADDER_CASES_LEAN`` by default, ``LADDER_CASES_GRID`` is the full N6b grid); ``pipeline_biases`` the pipeline scenarios."""
+    cells = []
+    t_c = float(covproc.component_tails().min())
+    t_a = float(covproc.holm_levels().min())
+    add = _adder(cells, target)
+    P = 3  # pairs of a 3-level ladder (the Bonferroni split of the fallback range of the bootstrap-t E_h)
+    for meth in methods:
+        tag = METHOD_TAG[meth]
+        Bc = covproc.boot_size(t_c, boot_per_tail)
+        Bl = covproc.boot_size(t_c / 2.0, boot_per_tail) if meth == "student" else covproc.boot_size(t_c / max(2.0, P), boot_per_tail)
+        for d in dists:
+            for kind in ("paired", "unpaired", "interaction"):
+                for n in component_ns:
+                    if meth == "student":  # no bootstrap: independent replicates, large batches
+                        add("contrast", "contrast:%s/%s" % (kind, tag), "", d, n, {"kind": kind, "kappa": 5.0, "method": meth}, m=1000)
+                    else:
+                        add("contrast", "contrast:%s/%s" % (kind, tag), "", d, n, {"kind": kind, "kappa": 5.0, "B": Bc, "method": meth},
+                            share=True, m=m_share)
+        for d in dists:
+            for ip in (1, 2):
+                for scenario, order, kappa in ladder_cases:
+                    for n in ladder_ns:
+                        scen = "%s,ip=%d,kappa=%g" % ("order=%g" % order if scenario == "power" else "nonmono", ip, kappa)
+                        add("ladder", "ladder:E_h/%s" % tag, scen, d, n,
+                            {"scenario": scenario, "order": order, "ip": ip, "kappa": kappa, "B": Bl, "method": meth}, share=True, m=m_share)
+        for d in dists:
+            for K, ip, N in pipeline_configs:
+                Bs = covproc.boot_size(t_a / 2.0, boot_per_tail)
+                Bl_p = covproc.boot_size(t_a / (2.0 * K * (2.0 if meth == "student" else max(2.0, P))), boot_per_tail)
+                for bname, b, order in pipeline_biases:
+                    pp = {"N": N, "nb": covproc.budget_arm_size(N), "K": K, "ip": ip, "order": order, "b_h": b, "b_int": b, "b_w": b,
+                          "sampling": "student", "comp": meth, "B_c": covproc.boot_size(t_a / (2.0 * K), boot_per_tail),
+                          "B_l": Bl_p, "B_s": Bs}
+                    label = "pipeline:K%d,ip=%d/%s" % (K, ip, tag)
+                    add("pipeline", label, bname, d, N, pp, share=True, m=m_share)
+                    if N <= 100 and bname == "bias,order=1":
+                        add("pipeline", label, "boott," + bname, d, N, dict(pp, sampling="boott"), share=True, m=m_share)
+    if "bootstrap-t" in methods:
+        Bt = covproc.boot_size(t_a, 2.0 * boot_per_tail)  # 20 resamples beyond the smallest Holm level (p-value granularity)
+        for d in dists:
+            for rho in (0.0, 0.5, 0.9):
+                for n in gate5_ns:
+                    add("tost", "tost:gate5/boott", "rho=%g" % rho, d, n, {"rho": rho, "cv": 0.3, "method": "bootstrap-t", "B": Bt}, m=100)
+    return cells
+
+
+def profile_full(**kw):
+    """The default full study: the N6b cells (unchanged, same ids and streams) followed by the studentized alternatives of N6c, with
+    the lean ladder cases (``LADDER_CASES_LEAN``; every cell, tail, distribution and sample size of the other procedures is kept)."""
+    n6b_keys = ("target", "boot_per_tail", "m_share", "dists", "ladder_ns", "component_ns")
+    return profile_n6b(**{k: v for k, v in kw.items() if k in n6b_keys}) + profile_studentized(**kw)
+
+
+def profile_full_grid(**kw):
+    """``profile_full`` with the complete N6b ladder grid (orders 2, 1.5, 1, non-monotone x kappa 12, 25, 50) for the studentized ladders."""
+    return profile_full(**dict(kw, ladder_cases=LADDER_CASES_GRID))
+
+
+def profile_smoke(target=2.0):
+    """A tiny plan for a quick end-to-end check (tests, installation): a few cells of every procedure, few replicates."""
+    cells = []
+    add = lambda *a, **k: cells.append(make_cell(*a, target=target, **k))
+    add("sampling", "sampling:student", "", "normal", 30, {"method": "student"}, m=100, chunk=300)
+    add("sampling", "sampling:boott", "", "stress", 20, {"method": "boott", "B": 1000}, m=1, chunk=100)
+    add("tost", "tost:gate5", "rho=0.5", "normal", 30, {"rho": 0.5, "cv": 0.3}, m=100, chunk=300)
+    add("contrast", "contrast:paired", "", "stress-", 30, {"kind": "paired", "kappa": 5.0, "B": 2000}, m=10, chunk=100, share=True)
+    add("contrast", "contrast:unpaired", "", "normal", 30, {"kind": "unpaired", "kappa": 5.0, "B": 2000}, m=10, chunk=100, share=True)
+    add("ladder", "ladder:E_h", "order=1,ip=1,kappa=12", "normal", 30,
+        {"scenario": "power", "order": 1.0, "ip": 1, "kappa": 12.0, "B": 2000}, m=10, chunk=100, share=True)
+    add("pipeline", "pipeline:K3", "student,bias", "normal", 30,
+        {"N": 50, "nb": 25, "K": 3, "ip": 1, "order": 1.0, "b_h": 2.0, "b_int": 2.0, "b_w": 2.0, "sampling": "student",
+         "B_c": 2000, "B_l": 4000, "B_s": 1000}, m=10, chunk=100, share=True)
+    add("bca", "bca:mean", "", "normal", 30, {"B": 199}, m=10, chunk=30, report_only=True)
+    # SF-42 N6c: the studentized alternatives
+    add("contrast", "contrast:paired/student", "", "stress-", 30, {"kind": "paired", "kappa": 5.0, "method": "student"}, m=100, chunk=300)
+    add("contrast", "contrast:unpaired/boott", "", "normal", 30, {"kind": "unpaired", "kappa": 5.0, "B": 2000, "method": "bootstrap-t"},
+        m=10, chunk=100, share=True)
+    for meth, tag in (("student", "student"), ("bootstrap-t", "boott")):
+        add("ladder", "ladder:E_h/" + tag, "order=1,ip=1,kappa=12", "normal", 30,
+            {"scenario": "power", "order": 1.0, "ip": 1, "kappa": 12.0, "B": 2000, "method": meth}, m=10, chunk=100, share=True)
+        add("pipeline", "pipeline:K3/" + tag, tag + ",bias", "normal", 30,
+            {"N": 50, "nb": 25, "K": 3, "ip": 1, "order": 1.0, "b_h": 2.0, "b_int": 2.0, "b_w": 2.0, "sampling": "student", "comp": meth,
+             "B_c": 2000, "B_l": 4000, "B_s": 1000}, m=10, chunk=100, share=True)
+    add("tost", "tost:gate5/boott", "rho=0.5", "normal", 30, {"rho": 0.5, "cv": 0.3, "method": "bootstrap-t", "B": 1000}, m=10, chunk=30)
+    return cells
+
+
+PROFILES = {"full": profile_full, "full-grid": profile_full_grid, "n6b": profile_n6b, "studentized": profile_studentized, "smoke": profile_smoke}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Cost benchmark
+# ----------------------------------------------------------------------------------------------------------------------
+def bench(cells, min_seconds=0.5, per_group=2, seed=1, log=None):
+    """CPU seconds per replicate of every cell (process time: independent of other load on the machine): one warm-up batch, then
+    batches until ``min_seconds`` of CPU time have elapsed (at least 2).  Cells that differ only by scenario parameters share the
+    cost (same procedure, ``n``, distribution, sizes): ``per_group`` of each group are timed and the others get the group mean
+    (``per_group=0`` times every cell)."""
+    log = log or (lambda s: print(s, file=sys.stderr, flush=True))
+    res, groups = {}, {}
+    for c in cells:
+        key = (c["label"], c["n"], c["dist"], c["params"].get("B"), c["m"])
+        g = groups.setdefault(key, [])
+        g.append(c["id"])
+        if per_group and len(g) > per_group:
+            continue
+        dist = covdist.get_dist(c["dist"])
+        run_cell_batches(c, seed, 0, 1, dist)
+        t0, nb = time.process_time(), 0
+        while nb < 2 or time.process_time() - t0 < min_seconds:
+            run_cell_batches(c, seed, 1 + nb, 1, dist)
+            nb += 1
+        res[c["id"]] = (time.process_time() - t0) / (nb * c["m"])
+        log("bench %-70s %.3g s/replicate, R=%d -> %.0f core-s" % (c["id"], res[c["id"]], c["R"], res[c["id"]] * c["R"]))
+    for ids in groups.values():
+        timed = [res[i] for i in ids if i in res]
+        for i in ids:
+            res.setdefault(i, sum(timed) / len(timed))
+    return res
+
+
+def project(cells, spr, workers=80, host_factor=1.5, efficiency=0.9):
+    """Core-seconds per label and the projected wall time on ``workers`` cores (``host_factor``: slower host core, ``efficiency``:
+    parallel efficiency)."""
+    by = {}
+    for c in cells:
+        by[c["label"]] = by.get(c["label"], 0.0) + spr[c["id"]] * c["R"]
+    core = sum(by.values())
+    return {"core_seconds_local": core, "core_hours_local": core / 3600.0, "by_label_core_hours": {k: v / 3600.0 for k, v in sorted(by.items())},
+            "host_factor": host_factor, "efficiency": efficiency, "workers": workers,
+            "wall_hours_host": core * host_factor / (workers * efficiency) / 3600.0}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# CLI
+# ----------------------------------------------------------------------------------------------------------------------
+def _build(args):
+    kw = {}
+    if args.profile != "smoke":
+        kw = {"target": args.target, "boot_per_tail": args.boot_per_tail, "m_share": args.share_m}
+        if args.ladder_ns:
+            kw["ladder_ns"] = tuple(int(x) for x in args.ladder_ns.split(","))
+        if args.dists:
+            kw["dists"] = tuple(args.dists.split(","))
+    else:
+        kw = {"target": args.target}
+    return PROFILES[args.profile](**kw)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="python3 -m mcstat.coverage", description=__doc__.split("\n\n")[0])
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    for name in ("plan", "run", "bench"):
+        sp = sub.add_parser(name)
+        sp.add_argument("--profile", choices=sorted(PROFILES), default="full")
+        sp.add_argument("--target", type=float, default=None, help="replicates x tail (default 175 for full, 2 for smoke)")
+        sp.add_argument("--boot-per-tail", type=float, default=10.0)
+        sp.add_argument("--share-m", type=int, default=10, help="replicates per shared bootstrap draw")
+        sp.add_argument("--ladder-ns", default=None, help="seeds per ladder arm, comma-separated (default 20,30,50,100,200)")
+        sp.add_argument("--dists", default=None, help="comma-separated distributions (full profile)")
+        sp.add_argument("--seed", type=int, default=DEFAULT_SEED)
+        sp.add_argument("--only", default=None, help="keep only the cells whose id matches this regular expression")
+        if name != "bench":
+            sp.add_argument("--out", required=True)
+        if name == "run":
+            sp.add_argument("--workers", type=int, default=os.cpu_count() or 1)
+            sp.add_argument("--max-chunks", type=int, default=None, help="stop after this many chunks (testing aid)")
+        if name == "bench":
+            sp.add_argument("--workers", type=int, default=80, help="host cores for the projection")
+            sp.add_argument("--host-factor", type=float, default=1.5)
+            sp.add_argument("--per-group", type=int, default=2, help="cells timed per (procedure, n, distribution, B) group; 0 = all")
+            sp.add_argument("--json", default=None, help="write the projection here")
+    sp = sub.add_parser("summarize")
+    sp.add_argument("--out", required=True)
+    sp = sub.add_parser("stress")
+    sp.add_argument("--sf39", required=True, help="SF-39 artifact root")
+    sp.add_argument("--out", default=covdist.STRESS_JSON)
+    sp.add_argument("--conf", type=float, default=0.95)
+    sp.add_argument("--B", type=int, default=10000)
+    args = ap.parse_args(argv)
+    if args.cmd == "stress":
+        st = covdist.stress_from_sf39(args.sf39, args.conf, args.B)
+        write_json(args.out, st)
+        print(json.dumps({"envelope": st["envelope"], "amplitudes": {a: {k: v[k] for k in ("skew", "ekurt")} for a, v in st["amplitudes"].items()}}, indent=1))
+        return 0
+    if args.cmd == "summarize":
+        s = summarize(args.out)
+        print("summary: %d of %d cells complete; %d verdict lines; written to %s" % (s["cells_complete"], s["cells_total"], len(s["verdicts"]), args.out))
+        return 0
+    if args.target is None:
+        args.target = TARGET if args.profile != "smoke" else 2.0
+    cells = _build(args)
+    if args.only:
+        cells = [c for c in cells if re.search(args.only, c["id"])]
+        if not cells:
+            raise SystemExit("--only %r matches no cell" % (args.only,))
+    if args.cmd == "plan":
+        plan = init_plan(args.out, cells, args.seed, args.profile)
+        print("plan: %d cells, %d chunks, hash %s" % (len(plan["cells"]), sum(nchunks(c) for c in plan["cells"]), plan["plan_hash"][:16]))
+        return 0
+    if args.cmd == "bench":
+        spr = bench(cells, per_group=args.per_group, seed=args.seed)
+        proj = project(cells, spr, args.workers, args.host_factor)
+        print(json.dumps(proj, indent=1))
+        if args.json:
+            write_json(args.json, {"seconds_per_replicate": spr, "projection": proj})
+        return 0
+    init_plan(args.out, cells, args.seed, args.profile)
+    run(args.out, args.workers, args.max_chunks)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

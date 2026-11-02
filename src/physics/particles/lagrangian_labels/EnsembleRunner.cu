@@ -609,6 +609,17 @@ int run_realization(CudaContext& ctx, const EnsembleConfig& c, int r, EnsembleRu
         ds.keep_host_faces = true; // flow_stats.json always; the Pollock bridge reuses them
         ds.build_splines = true;
         ds.fused_coefficients = c.fused_splines;
+        if (!c.dump_field.empty()) {
+            const std::string dd = fmt("%s/r_%04d", c.dump_field.c_str(), r);
+            ds.host_field_sink = [&c, dd](const std::vector<real>& Yh, const std::vector<real>& Kh) {
+                fs::create_directories(dd);
+                const std::vector<std::size_t> shape{static_cast<std::size_t>(c.nz), static_cast<std::size_t>(c.ny),
+                                                     static_cast<std::size_t>(c.nx)}; // flat = i + nx (j + ny k)
+                write_npy_raw(dd + "/Y.npy", "<f8", shape, Yh.data(), Yh.size(), sizeof(real));
+                write_npy_raw(dd + "/K.npy", "<f8", shape, Kh.data(), Kh.size(), sizeof(real));
+            };
+            P(fmt("DUMP_FIELD host Y and K of the stage written to %s/{Y,K}.npy", dd.c_str()));
+        }
 
         const auto t_stage = Clock::now();
         stage_b = std::make_unique<DirichletLongBoxStage>(build_dirichlet_long_box_stage(ctx, ds));
@@ -1180,6 +1191,8 @@ std::string ensemble_usage() {
            "  --nr N                 number of realizations (default 1)\n"
            "  --medium a|b           a: affine-periodic SF-19 medium (default); b: Dirichlet in x1, periodic y/z\n"
            "                         (SF-41 lean stage, non-periodic x1 splines, x-exit handling, flow_stats.json)\n"
+           "  --dump-field DIR       (medium b) also write DIR/r_NNNN/Y.npy and K.npy (float64, shape nz,ny,nx; the stage's\n"
+           "                         host Y and K = exp(eps Y), bitwise); no other output changes\n"
            "  --head-mapped-host     (medium b) PCG solution in pinned mapped host memory (bitwise memory fallback)\n"
            "  --x0 X                 injection plane (default 0; medium b: 5*ell)\n"
            "  --window a,b,c,d       injection window w2a,w2b,w3a,w3b (default 0.1,0.9,0.1,0.9)\n"
@@ -1444,7 +1457,7 @@ EnsembleConfig parse_ensemble_args(int argc, const char* const* argv) {
         "--grid",   "--sigma2",  "--ell",     "--eps",      "--seed0",           "--nr",
         "--x0",     "--window",  "--np-side", "--planes",   "--times",           "--tol",
         "--hmax-div", "--twin",  "--pollock-bridge", "--out", "--pcg-rtol", "--max-arclength", "--test-abort-after",
-        "--medium"};
+        "--medium", "--dump-field"};
     static const std::set<std::string> flag_opts = {"--fused-splines", "--single-launch",
                                                     "--field-only", "--help", "--head-mapped-host"};
     EnsembleConfig c;
@@ -1475,7 +1488,7 @@ EnsembleConfig parse_ensemble_args(int argc, const char* const* argv) {
     if (c.field_only) {
         for (const char* o : {"--eps", "--x0", "--window", "--np-side", "--planes", "--times", "--tol",
                               "--hmax-div", "--twin", "--pollock-bridge", "--pcg-rtol", "--max-arclength",
-                              "--fused-splines", "--single-launch", "--medium", "--head-mapped-host"})
+                              "--fused-splines", "--single-launch", "--medium", "--head-mapped-host", "--dump-field"})
             if (val.count(o) || flags.count(o))
                 throw UsageError(std::string("--field-only contradicts ") + o +
                                  " (field-only runs SF-18 only: no flow, no tracking)");
@@ -1488,6 +1501,11 @@ EnsembleConfig parse_ensemble_args(int argc, const char* const* argv) {
     c.head_mapped_host = flags.count("--head-mapped-host") != 0;
     if (c.head_mapped_host && !c.medium_b)
         throw UsageError("--head-mapped-host needs --medium b");
+    if (val.count("--dump-field")) {
+        if (!c.medium_b)
+            throw UsageError("--dump-field needs --medium b (it dumps the Dirichlet stage's host Y and K)");
+        c.dump_field = val["--dump-field"];
+    }
     for (const char* o : {"--grid", "--ell", "--seed0", "--out"})
         if (!val.count(o))
             throw UsageError(std::string("missing required option ") + o);

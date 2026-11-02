@@ -103,6 +103,7 @@ struct EnsembleConfig {
     double pcg_rtol = 1e-10;
     bool fused_splines = false, single_launch = false;
     bool twin = true, pollock_bridge = false, field_only = false;
+    std::string dump_field; ///< (b) only, opt-in: DIR/r_%04d/{Y,K}.npy, the stage's host arrays; empty: off
     std::string out;
     std::string command_line;
     // test-only (hidden option): _Exit(99) at `phase` of realization r. Phases: stage, partial, tmp, rename.

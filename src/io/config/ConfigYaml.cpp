@@ -52,6 +52,26 @@ void check_unknown_keys(const YAML::Node& node, const std::set<std::string>& kno
     }
 }
 
+// SF-42 N1: read a YAML sequence of T into `out`; a non-sequence or a non-convertible entry is
+// reported through `errs` (never thrown) with the key path.
+template <typename T>
+bool read_list(const YAML::Node& node, const std::string& path, std::vector<T>& out,
+               std::vector<std::string>& errs) {
+    if (!node.IsSequence()) {
+        errs.push_back("'" + path + "' must be a list");
+        return false;
+    }
+    out.clear();
+    try {
+        for (std::size_t i = 0; i < node.size(); ++i)
+            out.push_back(node[i].as<T>());
+    } catch (const YAML::Exception&) {
+        errs.push_back("'" + path + "' has an entry that is not a number");
+        return false;
+    }
+    return true;
+}
+
 // Parse BCType from string
 BCType parse_bc_type(const std::string& s) {
     if (s == "dirichlet" || s == "Dirichlet")
@@ -113,7 +133,8 @@ StochasticYamlConfig parse_stochastic(const YAML::Node& node, const StochasticYa
         return cfg;
 
     static const std::set<std::string> known = {"sigma2",          "corr_length", "n_modes",
-                                                "covariance_type", "seed",        "K_mean"};
+                                                "covariance_type", "seed",        "K_mean",
+                                                "field_source",    "sf18_medium_b"};
     check_unknown_keys(node, known, "stochastic", errs);
 
     cfg.sigma2 = get_or<real>(node, "sigma2", def.sigma2);
@@ -122,6 +143,25 @@ StochasticYamlConfig parse_stochastic(const YAML::Node& node, const StochasticYa
     cfg.covariance_type = get_or<int>(node, "covariance_type", def.covariance_type);
     cfg.seed = get_or<uint64_t>(node, "seed", def.seed);
     cfg.K_mean = get_or<real>(node, "K_mean", def.K_mean);
+
+    // SF-42 N1 (opt-in): SF-18 medium (b) conductivity source. All three sub-keys are required.
+    cfg.field_source = get_or<std::string>(node, "field_source", def.field_source);
+    if (node["sf18_medium_b"]) {
+        const auto& n = node["sf18_medium_b"];
+        static const std::set<std::string> sf18_known = {"sigma2", "eps", "seed0"};
+        if (!n.IsMap()) {
+            errs.push_back("'stochastic.sf18_medium_b' must be a map {sigma2, eps, seed0}");
+        } else {
+            check_unknown_keys(n, sf18_known, "stochastic.sf18_medium_b", errs);
+            for (const auto& k : sf18_known)
+                if (!n[k])
+                    errs.push_back("Missing key 'stochastic.sf18_medium_b." + k + "'");
+            cfg.sf18_medium_b.present = true;
+            cfg.sf18_medium_b.sigma2 = get_or<real>(n, "sigma2", def.sf18_medium_b.sigma2);
+            cfg.sf18_medium_b.eps = get_or<real>(n, "eps", def.sf18_medium_b.eps);
+            cfg.sf18_medium_b.seed0 = get_or<uint64_t>(n, "seed0", def.sf18_medium_b.seed0);
+        }
+    }
 
     return cfg;
 }
@@ -238,7 +278,8 @@ TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlC
 
     static const std::set<std::string> known = {
         "n_particles", "dt",   "n_steps",      "porosity",       "diffusion", "alpha_l",
-        "alpha_t",     "seed", "output_every", "snapshot_every", "inject_x",  "method"};
+        "alpha_t",     "seed", "output_every", "snapshot_every", "inject_x",  "method",
+        "inject_window"};
     check_unknown_keys(node, known, "transport", errs);
 
     cfg.n_particles = get_or<int>(node, "n_particles", def.n_particles);
@@ -255,6 +296,20 @@ TransportYamlConfig parse_transport(const YAML::Node& node, const TransportYamlC
     cfg.method = get_or<std::string>(node, "method", def.method);
     // velocity_layout stays "padded" (not user-configurable)
 
+    // SF-42 N1 (opt-in): [w2a, w2b, w3a, w3b], fractions of Ly and Lz.
+    if (node["inject_window"]) {
+        std::vector<real> w;
+        if (read_list<real>(node["inject_window"], "transport.inject_window", w, errs)) {
+            if (w.size() != 4) {
+                errs.push_back("'transport.inject_window' must have 4 entries [w2a, w2b, w3a, w3b]");
+            } else {
+                cfg.inject_window.enabled = true;
+                for (int i = 0; i < 4; ++i)
+                    cfg.inject_window.w[i] = w[i];
+            }
+        }
+    }
+
     return cfg;
 }
 
@@ -266,7 +321,8 @@ OutputYamlConfig parse_output(const YAML::Node& node, const OutputYamlConfig& de
         return cfg;
 
     static const std::set<std::string> known = {"output_dir",    "save_K",         "save_head",
-                                                "save_velocity", "save_particles", "format"};
+                                                "save_velocity", "save_particles", "format",
+                                                "dump_field"};
     check_unknown_keys(node, known, "output", errs);
 
     cfg.output_dir = get_or<std::string>(node, "output_dir", def.output_dir);
@@ -275,6 +331,21 @@ OutputYamlConfig parse_output(const YAML::Node& node, const OutputYamlConfig& de
     cfg.save_velocity = get_or<bool>(node, "save_velocity", def.save_velocity);
     cfg.save_particles = get_or<bool>(node, "save_particles", def.save_particles);
     cfg.format = get_or<std::string>(node, "format", def.format);
+
+    // SF-42 N1 (opt-in): Y/K dump of the SF-18 source for the listed realizations.
+    if (node["dump_field"]) {
+        const auto& n = node["dump_field"];
+        if (!n.IsMap()) {
+            errs.push_back("'output.dump_field' must be a map {enabled, realizations}");
+        } else {
+            static const std::set<std::string> dump_known = {"enabled", "realizations"};
+            check_unknown_keys(n, dump_known, "output.dump_field", errs);
+            cfg.dump_field.enabled = get_or<bool>(n, "enabled", def.dump_field.enabled);
+            if (n["realizations"])
+                read_list<int>(n["realizations"], "output.dump_field.realizations",
+                               cfg.dump_field.realizations, errs);
+        }
+    }
 
     return cfg;
 }
@@ -538,7 +609,8 @@ AnalysisConfig parse_analysis(const YAML::Node& node, const AnalysisConfig& def,
     if (!node)
         return cfg;
 
-    static const std::set<std::string> analysis_known = {"macrodispersion", "snapshots"};
+    static const std::set<std::string> analysis_known = {"macrodispersion", "snapshots",
+                                                         "plane_crossings"};
     check_unknown_keys(node, analysis_known, "analysis", errs);
 
     // Macrodispersion sub-section
@@ -582,6 +654,23 @@ AnalysisConfig parse_analysis(const YAML::Node& node, const AnalysisConfig& def,
         cfg.snapshots.stride = get_or<int>(s, "stride", def.snapshots.stride);
         cfg.snapshots.max_particles = get_or<int>(s, "max_particles", def.snapshots.max_particles);
         cfg.snapshots.precision = get_or<int>(s, "precision", def.snapshots.precision);
+    }
+
+    // SF-42 N1 (opt-in): plane-crossing statistics.
+    if (node["plane_crossings"]) {
+        const auto& n = node["plane_crossings"];
+        if (!n.IsMap()) {
+            errs.push_back("'analysis.plane_crossings' must be a map {enabled, planes}");
+        } else {
+            static const std::set<std::string> pc_known = {"enabled", "planes", "dump_injection"};
+            check_unknown_keys(n, pc_known, "analysis.plane_crossings", errs);
+            cfg.plane_crossings.enabled = get_or<bool>(n, "enabled", def.plane_crossings.enabled);
+            cfg.plane_crossings.dump_injection =
+                get_or<bool>(n, "dump_injection", def.plane_crossings.dump_injection);
+            if (n["planes"])
+                read_list<real>(n["planes"], "analysis.plane_crossings.planes",
+                                cfg.plane_crossings.planes, errs);
+        }
     }
 
     return cfg;

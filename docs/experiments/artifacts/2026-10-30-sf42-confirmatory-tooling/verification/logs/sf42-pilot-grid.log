@@ -1,0 +1,105 @@
+[2026-10-30T10:05:42Z] job=sf42-pilot-grid GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T10:05:42Z] job=sf42-pilot-grid chose GPU 0 (auto: least-loaded)
+[2026-10-30T10:05:42Z] job=sf42-pilot-grid session=macroflow3d-SF-42-sf42-pilot-grid started
+[2026-10-30T10:05:42Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T10:05:42Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T10:05:42Z] command=cd ~/MacroFlow3D-SF-42 && bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/pilots/job.sh J1
+JOB_START J1 2026-10-30T10:05:43Z tree=4b2593cddc93
+{
+ "s025": {
+  "production": {
+   "n": 25,
+   "min": 20,
+   "median": 20,
+   "p90": 20,
+   "max": 20
+  },
+  "all_arms": {
+   "n": 105,
+   "min": 20,
+   "median": 30,
+   "p90": 40,
+   "max": 40
+  }
+ },
+ "s1": {
+  "production": {
+   "n": 50,
+   "min": 20,
+   "median": 30.0,
+   "p90": 30,
+   "max": 30
+  },
+  "all_arms": {
+   "n": 130,
+   "min": 20,
+   "median": 30.0,
+   "p90": 40,
+   "max": 40
+  }
+ },
+ "s225": {
+  "production": {
+   "n": 62,
+   "min": 40,
+   "median": 40.0,
+   "p90": 50,
+   "max": 50
+  },
+  "all_arms": {
+   "n": 148,
+   "min": 40,
+   "median": 40.0,
+   "p90": 70,
+   "max": 80
+  }
+ },
+ "s4": {
+  "production": {
+   "n": 71,
+   "min": 50,
+   "median": 60,
+   "p90": 70,
+   "max": 2000
+  },
+  "all_arms": {
+   "n": 231,
+   "min": 40,
+   "median": 60,
+   "p90": 100,
+   "max": 2000
+  }
+ }
+}
+JOB_BEGIN J1 runs=12 2026-10-30T10:05:43Z
+RUN c_s1_520x120 code=consumer grid=520x120x120 amp=1 seed0=420601 nr=1 M=96
+DONE c_s1_520x120 exit=0 wall=13.4s peak_mib=1757
+RUN c_s4_832x96 code=consumer grid=832x96x96 amp=4 seed0=420602 nr=1 M=100
+DONE c_s4_832x96 exit=0 wall=13.3s peak_mib=1701
+RUN c_s4_832x192 code=consumer grid=832x192x192 amp=4 seed0=420603 nr=1 M=100
+DONE c_s4_832x192 exit=0 wall=22.4s peak_mib=2275
+RUN c_s225_1040x240 code=consumer grid=1040x240x240 amp=2.25 seed0=420604 nr=1 M=128
+DONE c_s225_1040x240 exit=0 wall=35.8s peak_mib=3971
+RUN c_s225_1040x480 code=consumer grid=1040x480x480 amp=2.25 seed0=420605 nr=1 M=128
+DONE c_s225_1040x480 exit=0 wall=88.7s peak_mib=14365
+RUN c_s225_2080x480 code=consumer grid=2080x480x480 amp=2.25 seed0=420606 nr=1 M=128
+DONE c_s225_2080x480 exit=0 wall=152.4s peak_mib=28203
+RUN c_s4_2496x288 code=consumer grid=2496x288x288 amp=4 seed0=420607 nr=1 M=100
+DONE c_s4_2496x288 exit=0 wall=91.0s peak_mib=12471
+RUN c_s225_1248x288 code=consumer grid=1248x288x288 amp=2.25 seed0=420608 nr=1 M=100
+DONE c_s225_1248x288 exit=0 wall=39.0s peak_mib=6491
+RUN c_s4_1664x192 code=consumer grid=1664x192x192 amp=4 seed0=420609 nr=1 M=100
+DONE c_s4_1664x192 exit=0 wall=30.9s peak_mib=4051
+RUN p_s1_1040x240 code=par2 grid=1040x240x240 amp=1 seed0=420604 nr=1 M=0
+DONE p_s1_1040x240 exit=0 wall=18.2s peak_mib=7699
+RUN p_s225_1248x288 code=par2 grid=1248x288x288 amp=2.25 seed0=420608 nr=1 M=0
+DONE p_s225_1248x288 exit=0 wall=27.7s peak_mib=12881
+RUN p_s4_1664x192 code=par2 grid=1664x192x192 amp=4 seed0=420609 nr=1 M=0
+DONE p_s4_1664x192 exit=0 wall=20.7s peak_mib=7865
+JOB_END J1 failed_runs=0 2026-10-30T10:14:57Z
+DRIVER_EXIT=0
+SF39_UNTOUCHED_CHECK_DONE
+JOB_END J1 2026-10-30T10:14:57Z
+[2026-10-30T10:14:57Z] job=sf42-pilot-grid finished exit=0

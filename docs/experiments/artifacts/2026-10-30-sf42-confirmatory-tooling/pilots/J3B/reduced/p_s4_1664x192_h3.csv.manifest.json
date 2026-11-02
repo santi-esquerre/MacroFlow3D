@@ -1,0 +1,56 @@
+{
+ "files": [
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0000_planes.csv",
+   "sha256": "758503e2cc1ec0bbec739d95fc5b090369ff55dba757df5ca163008fdbc8e18a",
+   "size": 19326
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0001_planes.csv",
+   "sha256": "7ae9b5212e39851366d5dd5704b9d82863dc4949430ab70c6a61a02b81ada5da",
+   "size": 19228
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0002_planes.csv",
+   "sha256": "410d7a7a57f5074a91e2cec9d72babe1893127c147019cc742057ef665347c7c",
+   "size": 19251
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0003_planes.csv",
+   "sha256": "02576d5676c74c0834169ffed34220cd252a0fc3fb02e63dc4d4805b8034881a",
+   "size": 19405
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0004_planes.csv",
+   "sha256": "c707f3f15dd52762aca4f33e56ffdc8366019e1892a8e13a403b98464a611beb",
+   "size": 19329
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0005_planes.csv",
+   "sha256": "b8c5989672872b8a8890980e443e8d4e14e58fd014502acf1ae564352f25de81",
+   "size": 19387
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0006_planes.csv",
+   "sha256": "19a75acc240d56b7243f9997faa6bddaada619a8188889b6197b68cf498db7e5",
+   "size": 19291
+  },
+  {
+   "path": "p_s4_1664x192_h3/out/crossings/realization_0007_planes.csv",
+   "sha256": "7db4421f80a223ba570e31d8dcdd01e30992ff5a658915e3c89434264e97bad6",
+   "size": 19378
+  }
+ ],
+ "format": "sf42red_manifest_v1",
+ "root_note": "input paths are relative to the --root given to the tool",
+ "tables": [
+  {
+   "path": "p_s4_1664x192_h3.csv",
+   "sha256": "5dba3fecec03933120ce1b148985c8a75a557220399dce20454d8fb032e5f85e"
+  },
+  {
+   "path": "p_s4_1664x192_h3.planes.csv",
+   "sha256": "e6abdd22b8daf6129206d30a3599924bb07f60be34ac409cfbde8e1d7298acaa"
+  }
+ ]
+}

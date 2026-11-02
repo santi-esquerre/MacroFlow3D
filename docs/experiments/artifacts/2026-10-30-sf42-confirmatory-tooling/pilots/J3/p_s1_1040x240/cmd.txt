@@ -1,0 +1,1 @@
+stdbuf -oL /home/sesquerre/MacroFlow3D-SF-42/build/v100-release/macroflow3d_pipeline config.yaml

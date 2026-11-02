@@ -1,0 +1,16 @@
+[2026-11-01T23:47:24Z] job=sf42-r6-bytes GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=74.0% min_free=31861/32510 MiB compute_procs=1
+  gpu 1: mean_util=0.0% min_free=32506/32510 MiB compute_procs=0
+[2026-11-01T23:47:24Z] job=sf42-r6-bytes chose GPU 1 (auto: least-loaded)
+[2026-11-01T23:47:24Z] job=sf42-r6-bytes session=macroflow3d-SF-42-sf42-r6-bytes started
+[2026-11-01T23:47:24Z] GPU=1 (CUDA_VISIBLE_DEVICES=1, request=auto)
+[2026-11-01T23:47:24Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-11-01T23:47:24Z] command=bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/verification/bytes.sh ~/sf42_campaign/base_bin build/v100-release ~/sf42_campaign/r6/bytes
+== (a) lagrangian_ensemble medium b: base vs head
+SKIP timings.json: realizations/r_0000/timings.json
+TREECMP IDENTICAL files=41
+== (b) Par2 (SF-39 s1 config, shortened): base vs head
+MANIFEST par2_s1/manifest.json: stripped(timestamp, build.git_hash) IDENTICAL; raw bytes differ
+TREECMP IDENTICAL files=112
+BYTES_DONE bad=0
+[2026-11-01T23:47:36Z] job=sf42-r6-bytes finished exit=0

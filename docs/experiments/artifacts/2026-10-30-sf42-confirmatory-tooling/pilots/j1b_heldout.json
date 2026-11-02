@@ -1,0 +1,44 @@
+{
+ "note": "J1B points held out of the fit; rel = (model - observed) / observed",
+ "rows": [
+  {
+   "label": "J1B/c_s1_2080x240",
+   "code": "lagrangian",
+   "cells": 119808000.0,
+   "sigma2": 1.0,
+   "observed_s": 54.040464037,
+   "sf39_model_s": 40.298342304134835,
+   "rel_sf39_model": -0.25429318525940703,
+   "in_sf39_range": false,
+   "refit_model_s": 43.04179432836237,
+   "rel_refit_model": -0.20352655930391614,
+   "in_refit_range": true
+  },
+  {
+   "label": "J1B/c_s225_416x96",
+   "code": "lagrangian",
+   "cells": 3833856.0,
+   "sigma2": 2.25,
+   "observed_s": 5.144407248,
+   "sf39_model_s": 4.7719575019693155,
+   "rel_sf39_model": -0.07239896222747193,
+   "in_sf39_range": false,
+   "refit_model_s": 6.352625055804018,
+   "rel_refit_model": 0.23486045127429184,
+   "in_refit_range": false
+  },
+  {
+   "label": "J1B/c_s225_832x384",
+   "code": "lagrangian",
+   "cells": 122683392.0,
+   "sigma2": 2.25,
+   "observed_s": 30.004653107,
+   "sf39_model_s": 28.57502407857271,
+   "rel_sf39_model": -0.04764691074177961,
+   "in_sf39_range": true,
+   "refit_model_s": 33.461222620173686,
+   "rel_refit_model": 0.11520111566853206,
+   "in_refit_range": true
+  }
+ ]
+}

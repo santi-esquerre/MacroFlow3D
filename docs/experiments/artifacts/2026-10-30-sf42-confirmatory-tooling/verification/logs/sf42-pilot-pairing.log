@@ -1,0 +1,47 @@
+[2026-10-30T11:48:01Z] job=sf42-pilot-pairing GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-10-30T11:48:01Z] job=sf42-pilot-pairing chose GPU 0 (auto: least-loaded)
+[2026-10-30T11:48:01Z] job=sf42-pilot-pairing session=macroflow3d-SF-42-sf42-pilot-pairing started
+[2026-10-30T11:48:01Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-10-30T11:48:01Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-10-30T11:48:01Z] command=cd ~/MacroFlow3D-SF-42 && bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/scripts/pilots/job.sh J3 --reduce
+JOB_START J3 2026-10-30T11:48:02Z tree=4b2593cddc93
+JOB_BEGIN J3 runs=8 2026-10-30T11:48:02Z
+RUN c_s025_1040x240 code=consumer grid=1040x240x240 amp=0.25 seed0=420801 nr=8 M=128
+DONE c_s025_1040x240 exit=0 wall=220.1s peak_mib=4997
+wrote 120 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s025_1040x240.csv
+REDUCE c_s025_1040x240 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s025_1040x240.csv
+RUN p_s025_1040x240 code=par2 grid=1040x240x240 amp=0.25 seed0=420801 nr=8 M=0
+DONE p_s025_1040x240 exit=0 wall=97.0s peak_mib=8157
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s025_1040x240.csv
+REDUCE p_s025_1040x240 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s025_1040x240.csv
+RUN c_s1_1040x240 code=consumer grid=1040x240x240 amp=1 seed0=420811 nr=8 M=128
+DONE c_s1_1040x240 exit=0 wall=212.7s peak_mib=4997
+wrote 120 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s1_1040x240.csv
+REDUCE c_s1_1040x240 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s1_1040x240.csv
+RUN p_s1_1040x240 code=par2 grid=1040x240x240 amp=1 seed0=420811 nr=8 M=0
+DONE p_s1_1040x240 exit=0 wall=106.8s peak_mib=8157
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s1_1040x240.csv
+REDUCE p_s1_1040x240 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s1_1040x240.csv
+RUN c_s225_1248x288 code=consumer grid=1248x288x288 amp=2.25 seed0=420821 nr=8 M=100
+DONE c_s225_1248x288 exit=0 wall=303.8s peak_mib=7517
+wrote 120 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s225_1248x288.csv
+REDUCE c_s225_1248x288 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s225_1248x288.csv
+RUN p_s225_1248x288 code=par2 grid=1248x288x288 amp=2.25 seed0=420821 nr=8 M=0
+DONE p_s225_1248x288 exit=0 wall=147.6s peak_mib=13673
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s225_1248x288.csv
+REDUCE p_s225_1248x288 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s225_1248x288.csv
+RUN c_s4_1664x192 code=consumer grid=1664x192x192 amp=4 seed0=420831 nr=8 M=100
+DONE c_s4_1664x192 exit=0 wall=227.6s peak_mib=5077
+wrote 120 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s4_1664x192.csv
+REDUCE c_s4_1664x192 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/c_s4_1664x192.csv
+RUN p_s4_1664x192 code=par2 grid=1664x192x192 amp=4 seed0=420831 nr=8 M=0
+DONE p_s4_1664x192 exit=0 wall=125.2s peak_mib=8335
+wrote 16 rows to /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s4_1664x192.csv
+REDUCE p_s4_1664x192 exit=0 -> /home/sesquerre/sf42_campaign/pilots/J3/reduced/p_s4_1664x192.csv
+JOB_END J3 failed_runs=0 2026-10-30T12:13:55Z
+DRIVER_EXIT=0
+SF39_UNTOUCHED_CHECK_DONE
+JOB_END J3 2026-10-30T12:13:55Z
+[2026-10-30T12:13:55Z] job=sf42-pilot-pairing finished exit=0

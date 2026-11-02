@@ -1,0 +1,170 @@
+{
+ "0.25": {
+  "n_pairs": 8,
+  "n_consumer": 8,
+  "n_par2": 8,
+  "mean_L": 0.2438881632932884,
+  "mean_P": 0.24358574825024182,
+  "sd_L": 0.025710591074319177,
+  "sd_P": 0.023196260180769018,
+  "cv_L": 0.10541959366597399,
+  "cv_P": 0.0952283142482495,
+  "corr": 0.9785312569086351,
+  "corr_lower80": 0.9549674418342343,
+  "ratio_of_means": 1.0012415136978208,
+  "plan_lower": {
+   "cv_L": 0.1475904604498989,
+   "cv_P": 0.13287855061967402,
+   "corr_used": 0.9549674418342343,
+   "n": 7,
+   "found": true
+  },
+  "plan_zero": {
+   "cv_L": 0.1475904604498989,
+   "cv_P": 0.13287855061967402,
+   "corr_used": 0.0,
+   "n": 64,
+   "found": true
+  },
+  "grid": "1040x240x240",
+  "M_consumer": 128,
+  "par2_horizon_factor": 1.2,
+  "par2_n_steps": 46203,
+  "par2_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 0.9977,
+   "min_first_over_injected": 1.0
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
+   "min_first_over_injected": 1.0
+  }
+ },
+ "1": {
+  "n_pairs": 8,
+  "n_consumer": 8,
+  "n_par2": 8,
+  "mean_L": 1.0653026967407317,
+  "mean_P": 0.9765084363934231,
+  "sd_L": 0.07885372415369199,
+  "sd_P": 0.06866594553371078,
+  "cv_L": 0.07402001740438946,
+  "cv_P": 0.07031782110077554,
+  "corr": 0.7793362820685948,
+  "corr_lower80": 0.5831966921873648,
+  "ratio_of_means": 1.090930356603222,
+  "plan_lower": {
+   "cv_L": 0.10257456828952802,
+   "cv_P": 0.0973272934862804,
+   "corr_used": 0.5831966921873648,
+   "n": 16,
+   "found": true
+  },
+  "plan_zero": {
+   "cv_L": 0.10257456828952802,
+   "cv_P": 0.0973272934862804,
+   "corr_used": 0.0,
+   "n": 34,
+   "found": true
+  },
+  "grid": "1040x240x240",
+  "M_consumer": 128,
+  "par2_horizon_factor": 1.2,
+  "par2_n_steps": 46203,
+  "par2_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 0.9829,
+   "min_first_over_injected": 1.0
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
+   "min_first_over_injected": 1.0
+  }
+ },
+ "2.25": {
+  "n_pairs": 8,
+  "n_consumer": 8,
+  "n_par2": 8,
+  "mean_L": 3.198818545534403,
+  "mean_P": 2.2499777416939524,
+  "sd_L": 0.3394888976271507,
+  "sd_P": 0.35473084585852943,
+  "cv_L": 0.10612946398634648,
+  "cv_P": 0.15765971337630272,
+  "corr": 0.7308841529637574,
+  "corr_lower80": 0.50369004941006,
+  "ratio_of_means": 1.4217111957410264,
+  "plan_lower": {
+   "cv_L": 0.14861887586918462,
+   "cv_P": 0.2245730801511919,
+   "corr_used": 0.50369004941006,
+   "n": 63,
+   "found": true
+  },
+  "plan_zero": {
+   "cv_L": 0.14861887586918462,
+   "cv_P": 0.2245730801511919,
+   "corr_used": 0.0,
+   "n": 115,
+   "found": true
+  },
+  "grid": "1248x288x288",
+  "M_consumer": 100,
+  "par2_horizon_factor": 1.2,
+  "par2_n_steps": 55444,
+  "par2_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 0.9733,
+   "min_first_over_injected": 0.9989
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
+   "min_first_over_injected": 1.0
+  }
+ },
+ "4": {
+  "n_pairs": 8,
+  "n_consumer": 8,
+  "n_par2": 8,
+  "mean_L": 10.230527603900635,
+  "mean_P": 4.853626181896251,
+  "sd_L": 3.083990467584077,
+  "sd_P": 0.7540232531974618,
+  "cv_L": 0.30144979682262246,
+  "cv_P": 0.15535256011472937,
+  "corr": 0.2532182286158589,
+  "corr_lower80": -0.11699764031971026,
+  "ratio_of_means": 2.1078111952790923,
+  "plan_lower": {
+   "cv_L": 0.4510146551904818,
+   "cv_P": 0.2211166244188616,
+   "corr_used": -0.11699764031971026,
+   "n": 426,
+   "found": true
+  },
+  "plan_zero": {
+   "cv_L": 0.4510146551904818,
+   "cv_P": 0.2211166244188616,
+   "corr_used": 0.0,
+   "n": 390,
+   "found": true
+  },
+  "grid": "1664x192x192",
+  "M_consumer": 100,
+  "par2_horizon_factor": 1.2,
+  "par2_n_steps": 73925,
+  "par2_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 0.9623,
+   "min_first_over_injected": 0.9888
+  },
+  "consumer_crossing": {
+   "n_realizations": 8,
+   "min_last_over_injected": 1.0,
+   "min_first_over_injected": 1.0
+  }
+ }
+}

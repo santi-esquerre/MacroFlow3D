@@ -1,0 +1,86 @@
+CMD macroflow3d_pipeline par2_tiny.yaml
+START_UTC=2026-10-30T05:07:04Z
+[1] Loading config: par2_tiny.yaml
+[2] Initializing CUDA context
+────────────────────────────────────────────────────────
+  MacroFlow3D Pipeline — Configuration Summary
+────────────────────────────────────────────────────────
+  Grid:        256 × 32 × 32  (dx=5.000000)
+  Domain:      [0, 1280.0000] × [0, 160.0000] × [0, 160.0000]
+  Stochastic:  σ²=1.00  λ=50.0000  modes=10000  seed=9001
+  Solver:      mg_cg  rtol=1.0e-06
+  Transport:   N=200  dt=1.2500e+01  steps=300  Dm=0.00e+00  αL=0.00e+00  αT=0.00e+00
+  Analysis:    NR=2  λ_macro=50.0000  ||<v>||=0.0098  sample_every=10  estimator=biased
+  Snapshots:   every=100  stride=1  unwrapped=no
+  Output:      raw/par2_s1
+────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────
+[3] Allocating fields and workspaces
+       Fields: K=262144  head=262144  vel=3×279873  particles=200
+────────────────────────────────────────────────────────
+  Realization 1 / 2
+────────────────────────────────────────────────────────
+  [4] K generation (seed=9001)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=10  res=2.48e-01 → 1.76e-07
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 200 × 300 (dt=1.2500e+01) ...
+           step    30/300  t=3.750e+02
+           step    60/300  t=7.500e+02
+           step    90/300  t=1.125e+03
+           step   120/300  t=1.500e+03
+           step   150/300  t=1.875e+03
+           step   180/300  t=2.250e+03
+           step   210/300  t=2.625e+03
+           step   240/300  t=3.000e+03
+           step   270/300  t=3.375e+03
+           step   300/300  t=3.750e+03
+       Transport complete (r=0).
+       Wrote raw/par2_s1/stats/realization_0000_timeseries.csv (30 samples)
+────────────────────────────────────────────────────────
+  Realization 2 / 2
+────────────────────────────────────────────────────────
+  [4] K generation (seed=9002)
+  [5] Solving head (mg_cg)
+       Converged=YES  iters=10  res=3.20e-01 → 6.75e-08
+  [6] Computing velocity (padded)
+  [7] Transport (Par2_Core)
+       Stepping 200 × 300 (dt=1.2500e+01) ...
+           step    30/300  t=3.750e+02
+           step    60/300  t=7.500e+02
+           step    90/300  t=1.125e+03
+           step   120/300  t=1.500e+03
+           step   150/300  t=1.875e+03
+           step   180/300  t=2.250e+03
+           step   210/300  t=2.625e+03
+           step   240/300  t=3.000e+03
+           step   270/300  t=3.375e+03
+           step   300/300  t=3.750e+03
+       Transport complete (r=1).
+       Wrote raw/par2_s1/stats/realization_0001_timeseries.csv (30 samples)
+────────────────────────────────────────────────────────
+  Post-processing: macrodispersion (NR=2)
+       Wrote raw/par2_s1/ensemble/ensemble_timeseries.csv
+       Wrote raw/par2_s1/analysis/macrodispersion.csv
+────────────────────────────────────────────────────────
+
+╔═══════════════════════════════════════════════════════════════╗
+║                   STAGE PROFILING REPORT                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║ Stage                     │ Total(ms) │ Count │  Avg(ms) │     % ║
+╠═══════════════════════════════════════════════════════════════╣
+║ K_generation              │    93.31 │     2 │    46.65 │  14.9 ║
+║ solve_head                │   459.76 │     2 │   229.88 │  73.2 ║
+║ velocity                  │     0.15 │     2 │     0.08 │   0.0 ║
+║ transport                 │    74.78 │     2 │    37.39 │  11.9 ║
+╠═══════════════════════════════════════════════════════════════╣
+║ TOTAL                     │   627.99 │     - │        - │  100% ║
+╠═══════════════════════════════════════════════════════════════╣
+║ GPU Memory: 571.0 MB used / 32510.5 MB total (1.8% used)      ║
+╚═══════════════════════════════════════════════════════════════╝
+
+────────────────────────────────────────────────────────
+Ensemble finished successfully.
+RC=0
+END_UTC=2026-10-30T05:07:08Z

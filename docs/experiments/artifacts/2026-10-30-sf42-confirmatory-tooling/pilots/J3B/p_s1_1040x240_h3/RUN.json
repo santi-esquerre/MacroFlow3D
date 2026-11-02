@@ -1,0 +1,114 @@
+{
+ "id": "p_s1_1040x240_h3",
+ "job": "J3B",
+ "code": "par2",
+ "nx": 1040,
+ "ny": 240,
+ "nz": 240,
+ "lh": 10,
+ "amp": "1",
+ "seed0": 420811,
+ "nr": 8,
+ "M": 0,
+ "start_utc": "2026-10-30T12:20:28Z",
+ "end_utc": "2026-10-30T12:22:26Z",
+ "wall_s": 117.53249561786652,
+ "exit": 0,
+ "peak_gpu_mib_own_pid": 8157,
+ "mem_samples": 44,
+ "par2_solves": [
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  },
+  {
+   "converged": "YES",
+   "iterations": 50
+  }
+ ],
+ "par2_stage_times": [
+  {
+   "field_s": 1.763175718486309,
+   "solve_s": 8.891997791826725,
+   "velocity_s": 0.007062099874019623,
+   "transport_s": 5.126371845602989,
+   "flow_stage_s": 10.662235610187054
+  },
+  {
+   "field_s": 2.434570223093033,
+   "solve_s": 8.885445721447468,
+   "velocity_s": 0.007084846496582031,
+   "transport_s": 2.5236237049102783,
+   "flow_stage_s": 11.327100791037083
+  },
+  {
+   "field_s": 1.750744454562664,
+   "solve_s": 8.888213701546192,
+   "velocity_s": 0.0071772560477256775,
+   "transport_s": 2.560600720345974,
+   "flow_stage_s": 10.646135412156582
+  },
+  {
+   "field_s": 1.5171595364809036,
+   "solve_s": 8.886945813894272,
+   "velocity_s": 0.00712142139673233,
+   "transport_s": 3.3626069873571396,
+   "flow_stage_s": 10.411226771771908
+  },
+  {
+   "field_s": 1.7541606947779655,
+   "solve_s": 8.886694312095642,
+   "velocity_s": 0.007066205143928528,
+   "transport_s": 2.5591948702931404,
+   "flow_stage_s": 10.647921212017536
+  },
+  {
+   "field_s": 1.6246566250920296,
+   "solve_s": 8.889888517558575,
+   "velocity_s": 0.007053263485431671,
+   "transport_s": 2.5259120240807533,
+   "flow_stage_s": 10.521598406136036
+  },
+  {
+   "field_s": 1.58204947412014,
+   "solve_s": 8.88954895734787,
+   "velocity_s": 0.0070124417543411255,
+   "transport_s": 3.4922690764069557,
+   "flow_stage_s": 10.478610873222351
+  },
+  {
+   "field_s": 1.9554575085639954,
+   "solve_s": 8.904490604996681,
+   "velocity_s": 0.007026463747024536,
+   "transport_s": 2.5513051599264145,
+   "flow_stage_s": 10.866974577307701
+  }
+ ],
+ "par2_horizon_factor": 3.6,
+ "par2_dt": 0.00010172526041666667,
+ "par2_n_steps": 138609
+}
