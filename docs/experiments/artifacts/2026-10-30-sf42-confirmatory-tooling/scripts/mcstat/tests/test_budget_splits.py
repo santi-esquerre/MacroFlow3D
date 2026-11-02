@@ -22,6 +22,15 @@ R = 2.0
 EPS = 1e-9
 
 
+def tisf(tail, dof):
+    """Student-t upper quantile of the REFERENCE: ``stats.t.isf`` then two Newton steps on ``t.sf`` (written here, independent of
+    ``mcstat._util.t_isf``): scipy 1.11's ``t.isf`` is only accurate to ~2e-9 relative at non-integer degrees of freedom."""
+    q = float(stats.t.isf(tail, dof))
+    for _ in range(2):
+        q += (float(stats.t.sf(q, dof)) - tail) / float(stats.t.pdf(q, dof))
+    return q
+
+
 def _rank_lower(vals, tau):  # lower tau-quantile: order statistic floor(tau (B + 1)); -inf when unresolved
     k = math.floor(tau * (len(vals) + 1) + EPS)
     return -math.inf if k < 1 else sorted(vals)[k - 1]
@@ -54,7 +63,7 @@ def brute_ladder(x, ip, t, split, method, B, seed, safety=1.25, factor=3.0, p_mi
         if method == "percentile":
             return _rank_upper([abs(m[k] - m[i]) for m in mstar], tail)
         if method == "student":
-            return abs(d) + stats.t.isf(tail, n - 1) * se
+            return abs(d) + tisf(tail, n - 1) * se
         ts = []  # bootstrap-t
         for b in range(B):
             ub = u[idx[b]]
@@ -139,7 +148,7 @@ class RobustLimitSplits(unittest.TestCase):
         v = [u.var(ddof=1) / m for u, m in zip(groups, n)]
         se = math.sqrt(sum(v))
         nu = sum(v) ** 2 / sum(vi * vi / (m - 1) for vi, m in zip(v, n))
-        return factor * (abs(sum(u.mean() for u in groups)) + stats.t.isf(tail, nu) * se)
+        return factor * (abs(sum(u.mean() for u in groups)) + tisf(tail, nu) * se)
 
     def test_RL_is_L_at_a_over_2_minus_the_bounds_at_a_over_2K(self):
         for K in (3, 4):
@@ -147,11 +156,13 @@ class RobustLimitSplits(unittest.TestCase):
             rl = bd.RobustLimit(bd.StudentMean(prod), comps)
             n, mean, se = prod.size, prod.mean(), prod.std(ddof=1) / math.sqrt(prod.size)
             for a in (0.01, 0.05, 0.2, 0.9):
-                L = mean - stats.t.isf(a / 2.0, n - 1) * se
+                L = mean - tisf(a / 2.0, n - 1) * se
                 Bs = [self.welch_bound(g, f, a / (2.0 * K)) for g, f in refs]
                 want = L - sum(Bs)
-                np.testing.assert_allclose(float(rl.lower(a)), want, rtol=1e-8, atol=1e-10, err_msg="K=%d a=%g" % (K, a))
-                wrong_L = mean - stats.t.isf(a, n - 1) * se  # sampling limit at a instead of a / 2
+                # RL is a cancellation (|RL| can be 1e-2 of its terms): the tolerance is on the scale of the terms, not of RL
+                scale = abs(mean) + tisf(a / 2.0, n - 1) * se + sum(Bs)
+                np.testing.assert_allclose(float(rl.lower(a)), want, rtol=0, atol=5e-9 * scale, err_msg="K=%d a=%g" % (K, a))
+                wrong_L = mean - tisf(a, n - 1) * se  # sampling limit at a instead of a / 2
                 wrong_B = sum(self.welch_bound(g, f, a / K) for g, f in refs)  # tail a / K instead of a / (2K)
                 self.assertGreater(abs(wrong_L - L), 1e-3 * abs(L))
                 self.assertGreater(abs(wrong_B - sum(Bs)), 1e-3 * sum(Bs))
@@ -160,7 +171,7 @@ class RobustLimitSplits(unittest.TestCase):
         prod, comps, refs = self.build(3)
         a = 0.05
         rep = bd.RobustLimit(bd.StudentMean(prod), comps).report(a)
-        want_L = prod.mean() - stats.t.isf(a / 2.0, prod.size - 1) * prod.std(ddof=1) / math.sqrt(prod.size)
+        want_L = prod.mean() - tisf(a / 2.0, prod.size - 1) * prod.std(ddof=1) / math.sqrt(prod.size)
         np.testing.assert_allclose(float(np.ravel(rep["L_a_over_2"])[0]), want_L, rtol=1e-8)
         for entry, (g, f) in zip(rep["components"].values(), refs):
             np.testing.assert_allclose(float(np.ravel(entry["raw"])[0]), self.welch_bound(g, f, a / 6.0), rtol=1e-8)
