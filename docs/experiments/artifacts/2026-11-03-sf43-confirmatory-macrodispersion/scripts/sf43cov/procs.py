@@ -23,9 +23,13 @@ from __future__ import annotations
 
 from sf43cov import mcpath  # noqa: F401
 
+import math
+
 import numpy as np
 
+from mcstat import budget as bd
 from mcstat import covproc
+from mcstat import intervals as iv
 
 from sf43ana import gate5 as g5
 
@@ -60,3 +64,69 @@ def register():
 
 
 register()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The robust-sign pieces of H15 at the m = 8 Holm levels (mcstat's own procedures are fixed at m = 7)
+# ----------------------------------------------------------------------------------------------------------------------
+SD_PAIR = covproc.SD_PAIR
+RES = covproc.RES
+
+
+def holm_tails(p):
+    return covproc.holm_levels(int(p["family_m"]), float(p["fwer"]))
+
+
+def run_sf43_sampling(p, dist, rng, m):
+    """Bootstrap-t sampling limits of a mean (the production limit of the robust sign) at the Holm levels and their halves, ``m = 8``:
+    rows ``lower`` (miss: lower limit above the true mean 0) and ``upper`` (upper limit below it), as ``mcstat.covproc.run_sampling``."""
+    tails = fieller_tails(p)
+    x = dist.draw(rng, (m, int(p["n"])))
+    bt = iv.bootstrap_t(x, int(p["B"]), rng, share_draws=bool(p["share"]))
+    lo, up = iv.bootstrap_t_limit(bt, tails, "lower"), iv.bootstrap_t_limit(bt, tails, "upper")
+    return ({"lower": covproc._count(lo > 0.0), "upper": covproc._count(up < 0.0)},
+            {"unresolved": covproc._count(np.isinf(lo) | np.isinf(up))})
+
+
+def run_sf43_pipeline(p, dist, rng, m):
+    """The whole robust-sign pipeline at the Holm levels of the ``family_m`` family with PER-ARM sizes (``mcstat.covproc.run_pipeline``
+    uses one size for all budget arms and ``m = 7``): production ``N`` (bootstrap-t sampling limit, ``sampling='boott'``), ladder ``n_l``
+    seeds, ``h_max`` passes ``n_i``, width cells ``n_w``; ``K`` = 3 (``E_h``, ``E_int``, ``E_W``) or 4 (+ ``E_WxH``); all components
+    Student-studentized (``comp``), true alpha 0, biases ``b_h, b_int, b_w`` in standard errors of the production mean (the
+    anti-conservative sign).  Row ``RL``: ``RL(a_j) > 0`` at the Holm levels."""
+    a = holm_tails(p)
+    N, nl, ni, nw, K, share = int(p["N"]), int(p["n_l"]), int(p["n_i"]), int(p["n_w"]), int(p["K"]), bool(p["share"])
+    cm = p.get("comp", "student")
+    s_p = 1.0 / math.sqrt(N)
+    e_h, e_i, w_f = p["b_h"] * s_p, p["b_int"] * s_p, p["b_w"] * s_p
+    x = (e_h + e_i + w_f) + dist.draw(rng, (m, N))
+    samp = bd.StudentMean(x) if p["sampling"] == "student" else bd.BootstrapTMean(x, int(p["B_s"]), rng=rng, share_draws=share)
+    ip = int(p["ip"])
+    lev = (e_h * covproc.ladder_errors(p["order"], ip))[None, None, :] + SD_PAIR / math.sqrt(2.0) * dist.draw(rng, (m, nl, 3))
+    comps = [bd.LadderBound(lev, RES, ip, B=int(p["B_l"]), rng=rng, share_draws=share, method=cm)]
+    a16 = np.full((m, ni), e_i)
+    a8 = 2.0 * e_i + SD_PAIR * dist.draw(rng, (m, ni))
+    comps.append(bd.e_int(a16, a8, B=int(p["B_c"]), rng=rng, share_draws=share, method=cm))
+    base = e_h + e_i
+    if K == 3:
+        comps.append(bd.e_w(base + dist.draw(rng, (m, nw)), x, B=int(p["B_c"]), rng=rng, share_draws=share, method=cm))
+    elif K == 4:
+        w_c = 0.5 * w_f
+        wide_f = base + dist.draw(rng, (m, nw))
+        wide_c = wide_f + SD_PAIR * dist.draw(rng, (m, nw))
+        prod_f = x[:, :nw]
+        prod_c = prod_f - (w_f - w_c) + SD_PAIR * dist.draw(rng, (m, nw))
+        comps.append(bd.e_w(wide_c, prod_c, B=int(p["B_c"]), rng=rng, share_draws=share, method=cm))
+        comps.append(bd.e_interaction(wide_f, wide_c, prod_f, prod_c, B=int(p["B_c"]), rng=rng, share_draws=share, method=cm))
+    else:
+        raise ValueError("K must be 3 or 4")
+    rl = bd.RobustLimit(samp, comps).lower(a)
+    return {"RL": covproc._count(rl > 0.0)}, {"nonfinite": covproc._count(~np.isfinite(rl))}
+
+
+def register_sf43():
+    covproc.PROCS["sf43_sampling"] = covproc.Proc(fieller_tails, run_sf43_sampling)
+    covproc.PROCS["sf43_pipeline"] = covproc.Proc(holm_tails, run_sf43_pipeline)
+
+
+register_sf43()
