@@ -1,0 +1,34 @@
+[2026-11-02T00:46:35Z] job=sf42-r6-hosttests2 GPU snapshot (5 samples, min_free_required=0 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-11-02T00:46:35Z] job=sf42-r6-hosttests2 chose GPU 0 (auto: least-loaded)
+[2026-11-02T00:46:35Z] job=sf42-r6-hosttests2 session=macroflow3d-SF-42-sf42-r6-hosttests2 started
+[2026-11-02T00:46:35Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-11-02T00:46:35Z] cwd=/home/sesquerre/MacroFlow3D-SF-42
+[2026-11-02T00:46:35Z] command=bash docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/verification/job_r6_hosttests.sh
+START_UTC=2026-11-02T00:46:36Z
+TREE=4ae17cbcb42f
+python 3.11.7 numpy 1.26.4 scipy 1.11.4
+nproc_all=80
+test_variance_and_mean (spectral.tests.test_sf18.Structure.test_variance_and_mean) ... ok
+
+----------------------------------------------------------------------
+Ran 369 tests in 43.961s
+
+OK
+unittest_rc=0
+skipped_tests=0
+SF39_NEWER_THAN_R3_START (empty expected):
+SF39_UNTOUCHED_CHECK_DONE
+END_UTC=2026-11-02T00:47:21Z
+[2026-11-02T00:47:21Z] job=sf42-r6-hosttests2 finished exit=0
+
+=== excerpt of the -v suite log ~/sf42_campaign/r6/hosttests.log (397 lines; unittest -v) ===
+skipped tests in the -v log: 0
+test_s025_gate5_from_per_realization_values (mcstat.tests.test_sf39_reproduction.Par2PerRealization.test_s025_gate5_from_per_realization_values) ... ok
+test_RL_is_L_at_a_over_2_minus_the_bounds_at_a_over_2K (mcstat.tests.test_budget_splits.RobustLimitSplits.test_RL_is_L_at_a_over_2_minus_the_bounds_at_a_over_2K) ... ok
+test_report_exposes_the_same_split (mcstat.tests.test_budget_splits.RobustLimitSplits.test_report_exposes_the_same_split) ... ok
+----------------------------------------------------------------------
+Ran 369 tests in 43.961s
+
+OK

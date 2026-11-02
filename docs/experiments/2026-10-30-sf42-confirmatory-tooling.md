@@ -12,9 +12,8 @@
   disjoint from SF-43's.
 - Artifact root `R = docs/experiments/artifacts/2026-10-30-sf42-confirmatory-tooling/` (see `R/README.md`); R1 evidence in
   `R/verification/`.
-- Status: all sections are recorded (campaigns R1 to R6; jobs and slot time in Commands and in the ledger there). One host-stack job
-  of the final test tree, `<R6-HOSTTESTS2>`, is still to be recorded (it is named where the host-stack statement of section F and the
-  Conclusion depend on it).
+- Status: all sections are recorded (campaigns R1 to R6; jobs and slot time in Commands and in the ledger there). The
+  last job, the host-stack suite at the final test tree (`sf42-r6-hosttests2`), is recorded; no job is left to record.
 
 ## Question
 
@@ -329,8 +328,8 @@ python3 -m pilots.heldout --data ../pilots --repo <repo root> --out <dir>/j1b_he
 | `sf42-r6-ctest` (Gate 1) | CUDA | 23:50:02 | 2026-11-02 00:20:41 | 1839 | 0.511 | 0 | 1 |
 | `sf42-r6-grid` (J1B, 3 consumer runs) | CUDA | 00:22:21 | 00:24:08 | 107 | 0.030 | 0 | 0 |
 | `sf42-r6-hosttests` (367 Python tests on the host stack: 1 failure, a test-reference precision issue, section F) | CPU-only | 00:25:22 | 00:26:08 | 46 | 0.013 | 1 | 0 |
-| `sf42-r6-hosttests2` (the same suite on the corrected test tree) | CPU-only | `<R6-HOSTTESTS2>` | | | | | |
-| subtotal R6 (without `sf42-r6-hosttests2`) | CUDA 2172 s = 0.603 h; CPU-only 352 s = 0.098 h | | | 2524 | 0.701 | | |
+| `sf42-r6-hosttests2` (the same suite on the corrected test tree `4ae17cbcb42f`: 369 tests, OK, 0 skipped; section F) | CPU-only | 2026-11-02 00:46:35 | 00:47:21 | 46 | 0.013 | 0 | 0 |
+| subtotal R6 | CUDA 2172 s = 0.603 h; CPU-only 398 s = 0.111 h | | | 2570 | 0.714 | | |
 
 The failed `sf42-r6-hosttests` run is recorded as it happened (exit 1); `~/sf39_campaign` was not touched in either R6 host job that
 checks it (`find -newer ~/sf42_campaign/r3/.start` empty after the grid job and after the host tests).
@@ -349,8 +348,8 @@ was held.
 | R3 (F host tests, G noise, H) | 0 | 0.252 | 0.252 |
 | R4 (G pilots J1 to J3B) | 2.195 | 0.092 | 2.287 |
 | R5 (F coverage simulation) | 0 | 41.693 | 41.693 |
-| R6 (re-verification, J1B; without `<R6-HOSTTESTS2>`) | 0.603 | 0.098 | 0.701 |
-| **total** | **3.951** (14225 s) | **44.892** (161610 s) | **48.843** (175835 s) |
+| R6 (re-verification, J1B, host suites) | 0.603 | 0.111 | 0.714 |
+| **total** | **3.951** (14225 s) | **44.904** (161656 s) | **48.856** (175881 s) |
 
 ## A. Byte identity
 
@@ -749,7 +748,12 @@ scoped to the runs named here.
   mutations `a` for `a/2` (both RL tests fail) and `a/K` for `a/(2K)` (the RL test fails) still fail. The same raw-quantile pattern was
   looked for in every other assertion of `test_budget_splits.py` (the Student bounds of the ladder and the report test): all now use the
   refined reference.
-- *Host-stack statement at the final test tree:* `<R6-HOSTTESTS2>`. Local stack (Python 3.13, numpy 2.5, scipy 1.18) at the final tree:
+- *Host-stack statement at the final test tree (job `sf42-r6-hosttests2`, mirror tree `4ae17cbcb42f`, the commit with the corrected test
+  and the R6 records; `src apps tests cmake scripts` are identical to `08079af1`):* Python 3.11.7, numpy 1.26.4, scipy 1.11.4, 80 logical CPUs,
+  `Ran 369 tests in 43.961s`, **`OK`, 0 skipped** (the host-only `test_s025_gate5_from_per_realization_values` ran and passed; the two
+  corrected `RobustLimitSplits` tests pass), `unittest_rc=0`, `find ~/sf39_campaign -newer ~/sf42_campaign/r3/.start` empty (46 s,
+  CPU-only; `R/verification/logs/sf42-r6-hosttests2.log`). So at the final code tree the library and the whole `R/scripts` suite pass on the
+  host stack (369 tests, none skipped) and on the local stack, with the one skip being the host-only test. Local stack (Python 3.13, numpy 2.5, scipy 1.18) at the final tree:
   `Ran 369 tests in 20.881s, OK (skipped=1)` (`python3 -W error`; the skipped test is the host-only one).
 
 ### Coverage simulation (R5 job `sf42-coverage`, corrected report by R5b)
@@ -1730,9 +1734,10 @@ GPU-h by the model and 147.4 anchored against the budget of 150, 162.3 with the 
 The reproducibility tooling (H) passed its recomputation (596 values, 21 of the 46 per realization independent estimator values) and
 reconciliation (`RECOMPUTE PASS`, `RECONCILE OK`) and has the exec logging with its C1 protections. For the statistics library and
 coverage (F): the library passes its unit tests locally (Python 3.13, numpy 2.5, scipy 1.18) at the final tree, `Ran 369 tests in 20.881s, OK (skipped=1)`, and on the
-host stack (Python 3.11.7, numpy 1.26.4, scipy 1.11.4) at the final tree as follows: `<R6-HOSTTESTS2>`. The statement "passes on both
-stacks" is scoped to those two runs: the earlier host runs (309 tests at R3 and R5) were of earlier trees, and the R6 host run of the
-final library tree (367 tests, 0 skipped) had one failure, a precision limit of a C2 test's own reference, corrected in the test alone.
+host stack (Python 3.11.7, numpy 1.26.4, scipy 1.11.4) at the final tree (job `sf42-r6-hosttests2`): `Ran 369 tests in 43.961s`, OK, 0
+skipped (the host-only test ran). The statement "passes on both stacks" is scoped to those two runs: the earlier host runs (309 tests at R3
+and R5) were of earlier trees, and the first R6 host run (367 tests, 0 skipped) had one failure, a precision limit of a C2 test's own
+reference, corrected in the test alone and confirmed by the second run.
 The coverage simulation was run in full (1134 of 1134 cells, 428 verdict groups): 310 groups qualify, 110 do not (101 clear, 9
 marginal), 8 BCa groups are reported. `LadderBound`, the pipeline and the Student unpaired and interaction contrast bounds qualify at
 all simulated sizes; no method qualifies the paired contrast under `stress` (`n` <= 200) or Gate 5 TOST under `stress` (`n` <= 170); the
