@@ -167,16 +167,18 @@ REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=170
   to `REMOTE_GPU_MIN_FREE_MIB`; it applies only with `REMOTE_GPU_COUNT=2`).
   The helper chooses both; commands never write `CUDA_VISIBLE_DEVICES` and
   launch commands never use `--gpu`.
-- Waiting: while fewer than two GPUs qualify, the launcher re-samples every
+- Waiting (`REMOTE_GPU_COUNT_MIN=2`, or no GPU qualifying at all): while fewer
+  than two GPUs qualify, the launcher re-samples every
   30 s until the single `REMOTE_GPU_WAIT` deadline (always `7200` here). When two
   qualify it takes both: `CUDA_VISIBLE_DEVICES=<first>,<second>`, status
   `gpu: <first>,<second>`, holder `HOLDER_GPU=<first>,<second>`, and a log line
   naming both GPUs with the threshold each one met.
-- Degradation and exit 75: at the deadline, if at least `REMOTE_GPU_COUNT_MIN`
-  GPUs qualify (`REMOTE_GPU_COUNT_MIN`, default = `REMOTE_GPU_COUNT`; `1`
-  allows degrading), the job starts with the first GPU only and logs
-  `GPU_COUNT degraded: granted 1 of 2 (REMOTE_GPU_COUNT_MIN=1)`; otherwise it
-  fails with **exit 75** exactly as for a single GPU (nothing ran). With
+- Degradation and exit 75: with `REMOTE_GPU_COUNT_MIN=1` (default =
+  `REMOTE_GPU_COUNT`) exactly one qualifying GPU starts the job AT ONCE with it
+  (no waiting for the other one; see the sharing subsection below); with no
+  qualifying GPU it keeps waiting to the deadline and then fails with
+  **exit 75** exactly as for a single GPU (nothing ran), as does
+  `REMOTE_GPU_COUNT_MIN=2` with fewer than two. With
   `REMOTE_GPU_WAIT=0` the decision is made on the first sampling round. The job
   sees `REMOTE_GPU_COUNT_GRANTED` (`1` or `2`) in its environment in both
   cases (it is also `1` for ordinary single-GPU jobs).
@@ -214,8 +216,12 @@ both only if both are free.
   starts AT ONCE (no waiting for the colleague) with the best single GPU (a free
   one if any; if none is free, the least loaded as before) and logs
   `two-GPU request degraded to 1: GPU <n> has <k> third-party compute
-  process(es)` (one line per busy GPU of the pair). With `REMOTE_GPU_COUNT_MIN=2`
-  the launcher keeps waiting as before.
+  process(es)` (one line per busy GPU of the pair). The same holds when only one
+  GPU meets its memory threshold (the other is held by a colleague's memory,
+  with or without a compute process): the job starts at once with it, logging
+  `two-GPU request degraded to 1: only GPU <n> eligible (GPU <m> min_free=<x>
+  MiB < <thr> MiB)`. With no eligible GPU at all it keeps waiting as before;
+  with `REMOTE_GPU_COUNT_MIN=2` the launcher keeps waiting as before.
 - During the run the campaign engine applies the same rule to lane B (see
   `sf43camp/README.md`): at each claim boundary a third-party process on lane
   B's GPU releases that GPU (`LANE_B_RELEASED gpu=<id> reason=third_party

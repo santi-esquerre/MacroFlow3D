@@ -76,11 +76,12 @@ the least loaded one; the host is shared with users who do not use our locks):
   no compute process (selection time); free GPUs rank first, then the order above.
   Two GPUs are taken only if BOTH are free; if either has a third-party process
   and REMOTE_GPU_COUNT_MIN=1 the job starts AT ONCE with one GPU (a free one if
-  any), logging "two-GPU request degraded to 1: GPU <n> has <k> ...". With
-  COUNT_MIN=2 it waits as below.
-  It waits (one REMOTE_GPU_WAIT deadline) for two eligible GPUs; at the deadline
-  REMOTE_GPU_COUNT_MIN (default = REMOTE_GPU_COUNT, 1..COUNT) decides: enough
-  eligible GPUs -> start degraded (logged) with what is eligible, else exit 75.
+  any), logging "two-GPU request degraded to 1: GPU <n> has <k> ...". Likewise,
+  with COUNT_MIN=1, exactly ONE eligible GPU (the other lacks free memory) starts
+  the job at once ("... only GPU <n> eligible (GPU <m> min_free=<x> MiB < <thr>
+  MiB)"). No eligible GPU: waits (one REMOTE_GPU_WAIT deadline), then exit 75.
+  REMOTE_GPU_COUNT_MIN (default = REMOTE_GPU_COUNT, 1..COUNT): with 2 it waits
+  (same deadline) for two eligible GPUs, else exit 75.
   REMOTE_GPU_MIN_FREE_MIB_2 (default = REMOTE_GPU_MIN_FREE_MIB; count 2 only) is
   the memory threshold of the SECOND GPU (the first needs REMOTE_GPU_MIN_FREE_MIB).
   The job sees REMOTE_GPU_COUNT_GRANTED. --gpu <n> with REMOTE_GPU_COUNT=2 is refused.
@@ -654,24 +655,24 @@ choose_gpu() {
       fi
       return 0
     fi
-    if (( rc == 3 )) && grep -q '^BUSY ' <<<"\$sel"; then
-      # both eligible but a third-party process runs on one: start at once with the best single GPU, no waiting
+    if (( rc == 3 && gpu_count_min <= 1 )); then
+      # count 2, MIN 1, exactly one GPU usable now (the other has a third-party process, or too little free memory because of one):
+      # start AT ONCE with it (owner decision of 2026-11-02); never wait for the colleague
       gpu=\$(awk '\$1 == "CHOSEN" { print \$2 }' <<<"\$sel")
       granted=1
-      while read -r _ i n; do
-        printf '[%s] job=%s two-GPU request degraded to 1: GPU %s has %s third-party compute process(es)\n' "\$(ts)" "\$job_name" "\$i" "\$n" >>"\$log_file"
-      done < <(grep '^BUSY ' <<<"\$sel")
+      if grep -q '^BUSY ' <<<"\$sel"; then
+        while read -r _ i n; do
+          printf '[%s] job=%s two-GPU request degraded to 1: GPU %s has %s third-party compute process(es)\n' "\$(ts)" "\$job_name" "\$i" "\$n" >>"\$log_file"
+        done < <(grep '^BUSY ' <<<"\$sel")
+      else
+        # the other GPU with the most free memory (the closest to eligible)
+        read -r i f < <(awk -v c="\$gpu" '\$1 == "GPU" && \$2 != c && (best == "" || \$4 > bf) { best = \$2; bf = \$4 } END { print best, bf }' <<<"\$sel")
+        printf '[%s] job=%s two-GPU request degraded to 1: only GPU %s eligible (GPU %s min_free=%s MiB < %s MiB)\n' "\$(ts)" "\$job_name" "\$gpu" "\$i" "\$f" "\$min_free_2" >>"\$log_file"
+      fi
       printf '[%s] job=%s chose GPU %s (%s; granted 1 of %s, REMOTE_GPU_COUNT_MIN=%s)\n' "\$(ts)" "\$job_name" "\$gpu" "\$reason" "\$gpu_count" "\$gpu_count_min" >>"\$log_file"
       return 0
     fi
     if (( SECONDS >= deadline )); then
-      # rc 3 = fewer than gpu_count but one eligible (only reachable with gpu_count 2, granted 1)
-      if (( rc == 3 && gpu_count_min <= 1 )); then
-        gpu=\$(awk '\$1 == "CHOSEN" { print \$2 }' <<<"\$sel")
-        granted=1
-        printf '[%s] job=%s GPU_COUNT degraded: granted 1 of %s (REMOTE_GPU_COUNT_MIN=%s); chose GPU %s (%s; min_free>=%s MiB; second GPU needed min_free>=%s MiB, none eligible)\n' "\$(ts)" "\$job_name" "\$gpu_count" "\$gpu_count_min" "\$gpu" "\$reason" "\$min_free" "\$min_free_2" >>"\$log_file"
-        return 0
-      fi
       return 1
     fi
     if (( rc == 3 )); then

@@ -115,7 +115,7 @@ BELOW=("0, 100, 32768, 50" "1, 30000, 32768, 10")
 reset_nv; csv 1 "${BELOW[@]}"
 ( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=17000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch t2b )
 got="$(jlog t2b)"
-grep -q 'GPU_COUNT degraded: granted 1 of 2 (REMOTE_GPU_COUNT_MIN=1); chose GPU 0 (auto: least-loaded; min_free>=30000 MiB; second GPU needed min_free>=17000 MiB, none eligible)' <<<"$got" \
+grep -q 'two-GPU request degraded to 1: only GPU 0 eligible (GPU 1 min_free=2768 MiB < 17000 MiB)' <<<"$got" \
   && grep -qx 'CVD=0 GRANTED=1' <<<"$got" && ok second-below-both-degraded || bad "second-below-both-degraded: $got"
 reset_nv; csv 1 "${BELOW[@]}"
 ( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=17000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=2; launch t2c )
@@ -169,26 +169,47 @@ grep -qx 'job=p7 chose GPU 0 (auto: least-loaded)' <<<"$got" && grep -qx 'CVD=0 
   && ok policy-count1-prefers-free || bad "policy-count1-prefers-free: $got"
 rm -f "$NV_DIR/apps"
 
-# --- 3. count 2, second GPU appears while waiting (round 2): waits, then takes both ---
+# --- 3. count 2, one GPU eligible only by memory (the other is held by a colleague's memory) ---
+# MIN=1: starts AT ONCE with the eligible one (owner decision of 2026-11-02), even with a long REMOTE_GPU_WAIT; no re-sampling
 reset_nv; csv 1 "${ONE_ELIG[@]}"; csv 2 "${ONE_BUSY[@]}"
-( export REMOTE_GPU_WAIT=600 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch c2w )
+( export REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch c2w )
 got="$(jlog c2w)"
+grep -qxF 'job=c2w two-GPU request degraded to 1: only GPU 1 eligible (GPU 0 min_free=3768 MiB < 30000 MiB)' <<<"$got" && grep -qx 'CVD=1 GRANTED=1' <<<"$got" \
+  && ! grep -q 're-sampling' <<<"$got" && ok count2-min1-degrades-at-once || bad "count2-min1-degrades-at-once: $got"
+# symmetric: GPU 1 is the memory-busy one (GPU 0 free), with and without a compute process on it
+for pr in none busy; do
+  reset_nv; csv 1 "0, 100, 32768, 50" "1, 22768, 32768, 0"   # GPU 1: 10000 MiB free < 30000
+  if [[ $pr == busy ]]; then apps GPU-b; else rm -f "$NV_DIR/apps"; fi
+  ( export REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch sym0$pr )
+  got="$(jlog sym0$pr)"
+  grep -qxF "job=sym0$pr two-GPU request degraded to 1: only GPU 0 eligible (GPU 1 min_free=10000 MiB < 30000 MiB)" <<<"$got" && grep -qx 'CVD=0 GRANTED=1' <<<"$got" \
+    && ! grep -q 're-sampling' <<<"$got" && ok "immediate-single-gpu0[compute_procs=$pr]" || bad "immediate-single-gpu0[$pr]: $got"
+  reset_nv; csv 1 "0, 22768, 32768, 0" "1, 100, 32768, 50"   # GPU 0: 10000 MiB free < 30000
+  if [[ $pr == busy ]]; then apps GPU-a; else rm -f "$NV_DIR/apps"; fi
+  ( export REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch sym1$pr )
+  got="$(jlog sym1$pr)"
+  grep -qxF "job=sym1$pr two-GPU request degraded to 1: only GPU 1 eligible (GPU 0 min_free=10000 MiB < 30000 MiB)" <<<"$got" && grep -qx 'CVD=1 GRANTED=1' <<<"$got" \
+    && ! grep -q 're-sampling' <<<"$got" && ok "immediate-single-gpu1[compute_procs=$pr]" || bad "immediate-single-gpu1[$pr]: $got"
+done
+rm -f "$NV_DIR/apps"
+# no GPU eligible at all keeps waiting (spins to the deadline: sleep is a no-op) and then fails 75
+reset_nv; csv 1 "${NONE_ELIG[@]}"
+( export REMOTE_GPU_WAIT=2 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch nowait )
+grep -q 'no eligible GPU (min_free_required=30000 MiB); re-sampling' "$LOGD/nowait.log" && expect_eq none-eligible-keeps-waiting "$(jstate nowait)" "failed 75 " || bad none-eligible-keeps-waiting
+# MIN=2 unchanged: waits for the second GPU, then takes both; at the deadline without it fails 75
+reset_nv; csv 1 "${ONE_ELIG[@]}"; csv 2 "${ONE_BUSY[@]}"
+( export REMOTE_GPU_WAIT=600 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=2; launch c2w2 )
+got="$(jlog c2w2)"
 grep -q 'only 1 of 2 requested GPUs eligible' <<<"$got" && grep -qx 'CVD=1,0 GRANTED=2' <<<"$got" && ! grep -q degraded <<<"$got" \
-  && ok count2-waits-then-both || bad "count2-waits-then-both: $got"
+  && ok count2-min2-waits-then-both || bad "count2-min2-waits-then-both: $got"
 
 # --- 4. count 2, one eligible, MIN=1, WAIT=0: degraded, one id, GRANTED=1 -------------
 reset_nv; csv 1 "${ONE_ELIG[@]}"
 ( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch c2d )
 got="$(jlog c2d)"
-grep -q 'GPU_COUNT degraded: granted 1 of 2 (REMOTE_GPU_COUNT_MIN=1)' <<<"$got" && ok degraded-line || bad "degraded-line: $got"
+grep -q 'two-GPU request degraded to 1: only GPU 1 eligible' <<<"$got" && ok degraded-line || bad "degraded-line: $got"
 grep -qx 'CVD=1 GRANTED=1' <<<"$got" && ok degraded-cvd-granted || bad "degraded-cvd-granted: $got"
 expect_eq degraded-status "$(jstate c2d)" "succeeded 0 1"
-# at a nonzero deadline the degradation happens only after the waiting (sleep is a no-op: the loop spins 2 s)
-reset_nv; csv 1 "${ONE_ELIG[@]}"
-( export REMOTE_GPU_WAIT=2 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch c2dw )
-got="$(jlog c2dw)"
-grep -q 'only 1 of 2 requested GPUs eligible' <<<"$got" && grep -q 'GPU_COUNT degraded' <<<"$got" && grep -qx 'CVD=1 GRANTED=1' <<<"$got" \
-  && ok degraded-after-wait || bad "degraded-after-wait: $got"
 
 # --- 5. count 2 strict (MIN=2), one eligible: failed 75, command not run --------------
 reset_nv; csv 1 "${ONE_ELIG[@]}"
