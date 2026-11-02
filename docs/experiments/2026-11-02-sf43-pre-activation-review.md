@@ -483,3 +483,8 @@ The recommendations are decisions H1-H21 of
 [`2026-11-02-sf43-pre-activation-decisions.md`](../decisions/2026-11-02-sf43-pre-activation-decisions.md). The owner decides H2-H5, H9,
 H14, H15's qualification route and H20 in a single consultation, and the record states the outcome before this PR is merged. Its merge
 commit is SF-43's increment base. The SF-43 Goal and acceptance thresholds are unchanged.
+
+Consultation of 2026-11-02 (about 15:12Z): the owner chose every recommended option — variant A complete (with the `sigma^2 = 4`
+distance extension and the positive control), the displacement basis with the unbounded first-order null and `m = 8`, Gate 5 in Fieller
+form with coverage qualified before the pre-registration and the pipeline-level qualification route, and the latitude items as written.
+The decision record lists the items fixed.

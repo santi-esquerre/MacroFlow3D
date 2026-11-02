@@ -1,9 +1,9 @@
 # SF-43 pre-activation decisions: displacement-basis estimands, a geometry-robust null, a qualified Gate 5, gated budgets, a two-GPU first stage and a design that fits the deadline
 
-- Status: **proposed** (orchestrator recommendations of the pre-activation review, revised after five adversarial reviews; owner
-  decisions pending the single consultation of 2026-11-02). Items marked *owner* are decided by the owner among the options listed;
-  items marked *latitude* fill what decision 2026-10-29 G5.2-G5.4 leaves to the pre-registration; all are ratified by the human merge of
-  the PR that adds this record. The section "Owner decisions of the consultation" records the outcome before merge.
+- Status: **accepted** — owner decisions taken in the single consultation of 2026-11-02 (about 15:12Z), every recommended option
+  chosen; ratified by the human merge of the PR that adds this record. Items marked *owner* were decided by the owner among the options
+  listed; items marked *latitude* fill what decision 2026-10-29 G5.2-G5.4 leaves to the pre-registration and were accepted as written in
+  the same consultation. The section "Owner decisions of the consultation" records the outcome.
 - Date: 2026-11-02
 - Deciders: owner (H2-H5, H9, H14, H15's qualification route, H20); orchestrator (drafting; the latitude items)
 - Evidence: [`docs/experiments/2026-11-02-sf43-pre-activation-review.md`](../experiments/2026-11-02-sf43-pre-activation-review.md) (verified
@@ -240,22 +240,33 @@ human-review sample).
 
 ## Owner decisions of the consultation
 
-(to be recorded before merge)
+Single consultation of 2026-11-02, about 15:12Z (12:12 local), four questions; the owner chose the recommended option in each, before
+any SF-43 seed existed:
+
+| question | owner choice | items fixed |
+|---|---|---|
+| Design and sizes | variant A complete | H9 as written, including the scope extension (208-`lambda` arm at `sigma^2 = 4`, 3328x192x192, `lambda/h` 16, width 12, 100 realizations; specification item 9 gains it) and the positive control (`sigma^2 = 0.04`, 1040x240x240, 30 realizations) |
+| Estimands, null and family | displacement + `c = alpha_FO` + `m = 8` | H2 (a), H3 (a) with `c = 7.992e-5 sigma^2 lambda`, H4 (a) with `sigma^2 = 0.25` in the family |
+| Gate 5 and qualification route | Fieller form, coverage before the pre-registration | H5 (a) (coverage run in the smoke-test job, resolved before the pre-registration is committed); H15 route: pipeline-level qualification with the bootstrap-t sampling limit |
+| Operating rules | accept everything as written | the latitude items H6-H8, H10-H13, H16, H21 as written, including lane B at `REMOTE_GPU_MIN_FREE_MIB_2=17000` (half-class units only), the GPU-availability rule (launch with 17000 MiB if no GPU has 30000 MiB free by 2026-11-05 12:00 local), the clock cutoff 2026-11-08 16:00 local with one hour of grace, the 150 GPU-h guard, figures in the job and H19's corrections in SF-43's PR |
+
+H14 (two-GPU first stage) and H20 (order of work) are owner decisions of 2026-11-02 taken before the consultation, recorded above
+unchanged.
 
 ## Consequences
 
 - SF-43's pre-registration fixes the numbers of the chosen variant; the increment base is the merge commit of the PR that adds this
   record and the review.
 - The specification's planning numbers (item 6 `N`, item 3 "4 or 20", item 4's 2.25 cells, item 7 unpaired `n`) are superseded where H2,
-  H5, H6, H7, H9 differ; its Goal and acceptance thresholds are unchanged; item 9 gains the `sigma^2 = 4` distance arm if the owner agrees.
+  H5, H6, H7, H9 differ; its Goal and acceptance thresholds are unchanged; item 9 gains the `sigma^2 = 4` distance arm (owner, H9).
 - `scripts/remote` gains the two-GPU request (default unchanged); `AGENTS.md` and the runbook record the exception.
 
 ## Classification (docs/AGENTS.md)
 
 | item | class |
 |---|---|
-| H2, H3, H4, H5, H9, H14, H15 route, H20 | accepted scope (owner) once decided |
-| H6-H8, H10-H13, H15 run, H16, H21 | proposed, ratified by merge (latitude) |
+| H2, H3, H4, H5, H9, H14, H15 route, H20 | accepted scope (owner, 2026-11-02) |
+| H6-H8, H10-H13, H15 run, H16, H21 | accepted as written in the consultation (latitude); ratified by merge |
 | SD ratios, costs, memory, pilot moments, lattice sets | confirmed (committed SF-39/SF-42 data, recomputed by scripts) |
 | unbounded first-order values | confirmed (two independent derivations) |
 | box first-order values | estimate (first order, Dirichlet faces not modelled) |
