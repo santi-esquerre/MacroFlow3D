@@ -13,8 +13,11 @@
   5. Only the `.npy` of realizations NOT in the retained list are deletion candidates.  The retained list is a text file with
      one realization directory per line, relative to `--root` (e.g. `armA/realizations/r_0003`), '#' comments; an entry that
      is not a realization of the arms refuses.  Decision G8: at least `min_retained` (default 5, the G8 number) realizations
-     of every arm are retained (an arm with fewer realizations must be retained whole); The CLI always uses the G8 number; a
-     lower `min_retained` is an explicit API argument (tests only) and is reported in the plan.
+     of every arm are retained (an arm with fewer realizations must be retained whole).  The CLI default is the G8 number.
+     SF-43 (disclosed change to this SF-42 tooling): `--min-retained N` (CLI) / `min_retained=N` (API) lowers it, down to 0, because
+     the SF-43 campaign prunes per segment directory (a consecutive seed range of one arm) against an ARM-level retained list (the
+     first seeds of the arm plus a human-review sample), so a single segment may legitimately retain fewer than 5 (or none); the G8
+     arm-level minimum is then enforced by the SF-43 caller.  The value used is reported in the plan line.
   6. Symlinks: the `realizations/` directory, every realization directory and every directory below one must not be a symlink,
      and the realpath of every `.npy` that would be deleted must lie inside the realpath of its arm and not contain
      `sf39_campaign`; any violation refuses BEFORE anything is deleted (`os.walk` never follows links).

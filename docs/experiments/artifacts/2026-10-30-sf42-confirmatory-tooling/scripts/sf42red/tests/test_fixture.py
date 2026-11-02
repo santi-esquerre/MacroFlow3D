@@ -139,6 +139,41 @@ class TestCli(unittest.TestCase):
                 self.assertEqual(main(["prune", "--arms", ARM, "--retained", ret, "--table", out, "--root", FIX, "--execute"]), 2)
             self.assertIn("needs a --log", err.getvalue())
 
+    def test_prune_min_retained_option(self):
+        """SF-43: `--min-retained N` (default stays decision G8's 5); a segment may retain fewer, down to none."""
+        import contextlib
+        import io
+        from sf42red.__main__ import main
+        with tempfile.TemporaryDirectory() as td:
+            out = os.path.join(td, "t.csv")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["reduce", "--consumer", ARM, "--ell", "0.25", "--x0", "1.25", "--d-window", "4,20", "--out", out,
+                                       "--root", FIX]), 0)
+            ret = os.path.join(td, "ret.txt")
+            with open(ret, "w") as f:
+                f.write("arm/realizations/r_0000\n")
+            base = ["prune", "--arms", ARM, "--retained", ret, "--table", out, "--root", FIX]
+
+            def run(*extra):
+                o, e = io.StringIO(), io.StringIO()
+                with contextlib.redirect_stdout(o), contextlib.redirect_stderr(e):
+                    rc = main(base + list(extra))
+                return rc, o.getvalue(), e.getvalue()
+            rc, _, err = run()
+            self.assertEqual((rc, "G8" in err), (2, True))                    # default unchanged
+            rc, _, err = run("--min-retained", "2")
+            self.assertEqual((rc, "requires at least 2" in err), (2, True))   # explicit value is enforced
+            rc, o, _ = run("--min-retained", "1")
+            self.assertEqual(rc, 0)
+            self.assertIn("(min per arm 1)", o)
+            with open(ret, "w") as f:
+                f.write("# nothing retained in this segment\n")
+            rc, o, _ = run("--min-retained", "0")
+            self.assertEqual(rc, 0)
+            self.assertIn("(min per arm 0)", o)
+            rc, _, err = run("--min-retained", "-1")
+            self.assertEqual((rc, "must be >= 0" in err), (2, True))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -39,6 +39,9 @@ def main(argv=None):
     p.add_argument("--root", required=True)
     p.add_argument("--log", default=None)
     p.add_argument("--execute", action="store_true")
+    p.add_argument("--min-retained", type=int, default=prune_mod.MIN_RETAINED,
+                   help="decision G8 minimum of retained realizations per directory (default %d; SF-43 passes a lower value, down to 0, "
+                   "when it prunes per segment directory against an arm-level retained list)" % prune_mod.MIN_RETAINED)
     a = ap.parse_args(argv)
     try:
         if a.cmd == "reduce":
@@ -53,7 +56,7 @@ def main(argv=None):
             for row in rows:
                 wr.writerow([red._fmt(row[c]) for c in cols])
         else:
-            prune_mod.prune(a.arms, a.retained, a.table, a.root, a.execute, a.log)
+            prune_mod.prune(a.arms, a.retained, a.table, a.root, a.execute, a.log, min_retained=a.min_retained)
     except red.ReduceError as e:
         print("sf42red: %s" % e, file=sys.stderr)
         return 2
