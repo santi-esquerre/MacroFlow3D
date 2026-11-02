@@ -66,7 +66,7 @@ def qualification_doc(profiles=((3, 20, 20, 20, 10), (4, 20, 20, 20, 10)), sampl
             doc["pipeline"].append({"cell": "K%d_%s" % (K, scen), "K": K, "N": N, "arm_sizes": {"ladder": nl, "h_max": ni, "width": nw},
                                     "scenario": scen, "dist": "normal", "qualified": q(prof)})
     for n in sampling:
-        doc["sampling"]["n=%d" % n] = {d: {"lower": {"qualified": q(n)}, "upper": {"qualified": True}} for d in ("normal", "stress")}
+        doc["sampling"]["n=%d" % n] = {d: {"lower": {"qualified": q(n), "max_ucl_over_tail": 1.3 if q(n) is False else 0.9}, "upper": {"qualified": True, "max_ucl_over_tail": 0.9}} for d in ("normal", "stress")}
     return doc
 
 

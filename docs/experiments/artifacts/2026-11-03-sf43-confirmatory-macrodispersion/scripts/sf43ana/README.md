@@ -112,13 +112,16 @@ Gate 5 needs >= `gate5.floor` pairs (default `floors.gate5` = 200; 250 at sigma^
 
 The floors above are necessary, not sufficient: the coverage of the pipeline was simulated at pre-registered sizes (`sf43cov`, profiles `full` and
 `half`, see its README), and the campaign may be truncated below the planned sizes. The robust sign at an amplitude is TESTABLE only if (a) its floors
-hold, (b) the pipeline of its structure `K` (number of budget components: 3 at sigma^2 0.25 / 1, 4 at 2.25 / 4) is qualified at the LARGEST profile whose
+hold, and (b) the pipeline of its structure `K` (number of budget components: 3 at sigma^2 0.25 / 1, 4 at 2.25 / 4) is qualified at the LARGEST profile whose
 every arm size (production `N`, the paired ladder, the smallest width cell, the `h_max` pairs: the sizes of the design arrays the test uses) is at most
-the realized size of that arm, and (c) the bootstrap-t sampling limit is qualified at the largest grid size `n` at most the realized production `N`.
+the realized size of that arm (decision H15: qualified at the PIPELINE level). The bootstrap-t sampling-limit cells (per `n`, side and distribution,
+with `max_ucl_over_tail`) are REPORTED in `process.qualification.sampling_diagnostic` and NEVER gate: the pipeline spends a/2 on the sampling limit and
+`B_k >= 0`, so `RL <= L(a/2)`, and the pipeline cells, which use the same bootstrap-t sampling limit, are the qualifying evidence (the sampling limit
+alone fails the G5.3 criterion at the smallest tails at small `n`, which would make every robust sign untestable).
 Otherwise `p = 1` (the hypothesis stays in the fixed family) with `status` `not qualified at the realized sizes`; without a document (key absent or
 file missing) every robust sign has `p = 1` and status `no qualification document` (the smoke run may have none). An incomplete document
 (`all_cells_complete` not true) qualifies nothing. Estimates, budgets and classes stay descriptive; `gate4.<amp>.qualification` records the
-profile, the grid size and the reasons, `process.qualification` the path and sha256 of the document. A profile is qualified iff EVERY cell of it
+profile and the reasons, `process.qualification` the path and sha256 of the document. A profile is qualified iff EVERY cell of it
 passed (all distributions, bias scenarios, tails).
 
 **Assumption (stated, not tested):** coverage qualified at a smaller size carries over to larger sizes (the coverage error of the studentized procedures

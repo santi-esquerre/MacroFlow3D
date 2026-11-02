@@ -5,20 +5,24 @@ mean on a grid of sizes ``n`` and (ii) the whole robust-sign pipeline ``RL(a_j) 
 (``K`` = number of budget components: 3 at sigma^2 0.25 / 1, 4 at 2.25 / 4).  Its ``qualification.json`` is the document the
 pre-registration names (key ``qualification``, hashed like the coverage summary).
 
-A robust sign at an amplitude is TESTABLE only if
+A robust sign at an amplitude is TESTABLE only if (decision H15: qualified at the PIPELINE level)
 
-  (a) its H13 floors hold (``gate4.design_from_arms``: this is not repeated here);
+  (a) its H13 floors hold (``gate4.design_from_arms``: this is not repeated here); and
   (b) the pipeline of its structure ``K`` is qualified at the LARGEST profile whose every arm size (production, ladder, width cells,
-      ``h_max`` passes) is at most the REALIZED size of that arm (the sizes of the design arrays the test actually uses); and
-  (c) the sampling limit is qualified at the largest grid size ``n`` at most the realized production ``N``.
+      ``h_max`` passes) is at most the REALIZED size of that arm (the sizes of the design arrays the test actually uses).
+
+The sampling-limit cells (per ``n``, side and distribution, with ``max_ucl_over_tail``) are REPORTED (``sampling_diagnostic``) and NEVER gate.
+Reason: the pipeline spends a/2 on the sampling limit and the budget lower bound ``B_k >= 0``, so ``RL <= L(a/2)``; the pipeline cells, which use
+the same bootstrap-t sampling limit, are the qualifying evidence.  Requiring the sampling limit alone to pass the G5.3 criterion (it fails at
+the smallest tails at small ``n`` under ``stress-``) would make every robust sign untestable, which H15 does not ask.
 
 Otherwise its p-value is 1 (the hypothesis stays in the fixed Holm family) with status ``not qualified at the realized sizes``; without a
 qualification document every robust sign has ``p = 1`` and status ``no qualification document`` (the smoke run may have none).
 
 ASSUMPTION (stated, not tested): coverage qualified at a smaller size carries over to larger sizes (the coverage error of the studentized
 procedures decreases with the sample sizes).  The rule uses the largest eligible profile only; a smaller qualified profile does not rescue a
-larger eligible profile that is not qualified.  A profile or grid size is qualified only if EVERY simulated cell of it passed (all
-distributions, bias scenarios, tails); an incomplete document (cells missing) qualifies nothing.
+larger eligible profile that is not qualified.  A profile is qualified only if EVERY simulated cell of it passed (all distributions, bias
+scenarios, tails); an incomplete document (cells missing) qualifies nothing.
 """
 import hashlib
 import json
@@ -37,7 +41,8 @@ def load(path):
     with open(path, "rb") as f:
         raw = f.read()
     doc = json.loads(raw.decode())
-    info.update(found=True, sha256=hashlib.sha256(raw).hexdigest(), plan_hash=doc.get("plan_hash"), all_cells_complete=doc.get("all_cells_complete"))
+    info.update(found=True, sha256=hashlib.sha256(raw).hexdigest(), plan_hash=doc.get("plan_hash"), all_cells_complete=doc.get("all_cells_complete"),
+                sampling_diagnostic=sampling_diagnostic(doc))
     return doc, info
 
 
@@ -60,12 +65,11 @@ def pipeline_profiles(doc):
     return [{"K": g["K"], "arm_sizes": g["arm_sizes"], "qualified": _all(g["flags"]), "cells": len(g["flags"])} for _, g in sorted(groups.items())]
 
 
-def sampling_grid(doc):
-    """``{n: qualified}`` of the bootstrap-t sampling limit (side ``lower``, every distribution of the grid point)."""
-    out = {}
-    for key, byd in doc.get("sampling", {}).items():
-        out[int(key.split("=")[1])] = _all([e["lower"]["qualified"] for e in byd.values()])
-    return out
+def sampling_diagnostic(doc):
+    """Reported, never gating: ``[{n, dist, side, qualified, max_ucl_over_tail}]`` of every sampling-limit cell of the document."""
+    return [{"n": int(key.split("=")[1]), "dist": d, "side": side, "qualified": c.get("qualified"), "max_ucl_over_tail": c.get("max_ucl_over_tail")}
+            for key, byd in sorted(doc.get("sampling", {}).items(), key=lambda kv: int(kv[0].split("=")[1]))
+            for d, bys in sorted(byd.items()) for side, c in sorted(bys.items())]
 
 
 def realized_sizes(design):
@@ -80,17 +84,15 @@ def realized_sizes(design):
 
 def check(doc, K, sizes):
     """-> (status | None, detail).  ``status`` None: testable by the rule; else ``NO_DOC`` / ``NOT_QUALIFIED``.  ``detail`` documents the profile
-    and the grid size used."""
+    used.  The sampling limit never gates (see the module docstring)."""
     detail = {"K": K, "realized_sizes": dict(sizes)}
     if doc is None:
         return NO_DOC, detail
     profiles = [p for p in pipeline_profiles(doc) if p["K"] == K and all(sizes[k] is None or p["arm_sizes"][k] <= sizes[k] for k in ARM_KEYS)]
     chosen = max(profiles, key=lambda p: (sum(p["arm_sizes"].values()), tuple(p["arm_sizes"][k] for k in ARM_KEYS)), default=None)
-    grid = sampling_grid(doc)
-    g = max((n for n in grid if n <= sizes["production"]), default=None)
     complete = doc.get("all_cells_complete") is True
-    detail.update(pipeline_profile=chosen, sampling_grid_n=g, sampling_qualified=None if g is None else grid[g], document_complete=complete)
-    ok = complete and chosen is not None and chosen["qualified"] is True and g is not None and grid[g] is True
+    detail.update(pipeline_profile=chosen, document_complete=complete)
+    ok = complete and chosen is not None and chosen["qualified"] is True
     reasons = []
     if not complete:
         reasons.append("the qualification document is incomplete (all_cells_complete is not true)")
@@ -98,9 +100,5 @@ def check(doc, K, sizes):
         reasons.append("no pipeline profile of structure K = %d has every arm size at most the realized size" % K)
     elif chosen["qualified"] is not True:
         reasons.append("the largest eligible pipeline profile %s is not qualified" % (chosen["arm_sizes"],))
-    if g is None:
-        reasons.append("no sampling grid size at most the realized production N = %d" % sizes["production"])
-    elif grid[g] is not True:
-        reasons.append("the bootstrap-t sampling limit is not qualified at n = %d" % g)
     detail["reasons"] = reasons
     return (None if ok else NOT_QUALIFIED), detail

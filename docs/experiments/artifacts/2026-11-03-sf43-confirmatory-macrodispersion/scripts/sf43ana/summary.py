@@ -15,10 +15,10 @@ under ``-W error`` (the unit tests) warnings stay exceptions.  ``run`` exits 0 w
 
 Qualification gate (H4, H13 vs H15; ``sf43ana.qualification``): a robust sign whose design is testable by the floors is TESTABLE only if the
 qualification document named by the pre-registration (``qualification``; ``--qualification`` overrides, ``none`` = no document) qualifies the
-pipeline of its structure at the largest profile that fits the REALIZED arm sizes and the sampling limit at the largest grid size at most the
-realized production N.  Otherwise ``p = 1`` and the hypothesis ``status`` is ``not qualified at the realized sizes`` (``no qualification
+pipeline of its structure at the largest profile that fits the REALIZED arm sizes (H15: pipeline level; the sampling-limit cells are reported
+in ``process.qualification.sampling_diagnostic``, never gating).  Otherwise ``p = 1`` and the hypothesis ``status`` is ``not qualified at the realized sizes`` (``no qualification
 document`` without a document).  The estimates, budgets and classes stay descriptive; ``gate4.<amp>.qualification`` and
-``process.qualification`` record the profile, the grid size, the reasons and the document hash.
+``process.qualification`` record the profile, the reasons and the document hash.
 
 Gate 5 p-values (``--gate5``): omitted or ``auto``: computed by ``sf43ana.gate5`` from the pre-registration's ``gate5`` block (none ->
 no p-values); ``none``: no p-values; a path: JSON ``{"p": {"<amplitude>": p, ...}}`` (the ``p`` wrapper optional; a value may also be

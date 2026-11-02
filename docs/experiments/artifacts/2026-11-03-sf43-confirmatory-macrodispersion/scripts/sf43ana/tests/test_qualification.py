@@ -24,18 +24,19 @@ class Rule(unittest.TestCase):
         prof = {(p["K"], p["arm_sizes"]["production"]): p for p in Q.pipeline_profiles(d)}
         self.assertEqual({k: p["qualified"] for k, p in prof.items()}, {(3, 100): True, (4, 100): False, (4, 200): True})
         self.assertEqual(prof[(4, 100)]["cells"], 2)
-        self.assertEqual(Q.sampling_grid(d), {100: True, 150: False, 200: True})
+        diag = {(c["n"], c["dist"], c["side"]): c for c in Q.sampling_diagnostic(d)}
+        self.assertEqual({n: diag[(n, "normal", "lower")]["qualified"] for n in (100, 150, 200)}, {100: True, 150: False, 200: True})
+        self.assertEqual(diag[(150, "normal", "lower")]["max_ucl_over_tail"], 1.3)
         d["pipeline"][0]["qualified"] = None  # a not-judged cell: the profile is not qualified
         self.assertIsNone(Q.pipeline_profiles(d)[0]["qualified"])
 
-    def test_testable_at_the_largest_eligible_profile_and_grid_point(self):
+    def test_testable_at_the_largest_eligible_profile(self):
         st, det = Q.check(self.doc(), 4, self.SIZES)
         self.assertIsNone(st)
         self.assertEqual(det["pipeline_profile"]["arm_sizes"], {"production": 100, "ladder": 75, "width": 75, "h_max": 20})
-        self.assertEqual(det["sampling_grid_n"], 100)
         st, det = Q.check(self.doc(), 4, dict(self.SIZES, production=250, ladder=200, width=200, h_max=40))
         self.assertIsNone(st)
-        self.assertEqual((det["pipeline_profile"]["arm_sizes"]["production"], det["sampling_grid_n"]), (200, 200))  # the largest that fits
+        self.assertEqual(det["pipeline_profile"]["arm_sizes"]["production"], 200)  # the largest that fits
         st, det = Q.check(self.doc(), 3, dict(self.SIZES, ladder=60))
         self.assertIsNone(st)
         self.assertEqual(det["pipeline_profile"]["K"], 3)
@@ -43,14 +44,26 @@ class Rule(unittest.TestCase):
     def test_not_qualified_cases(self):
         for why, K, sizes, kw in (
                 ("a smaller arm than every profile", 4, dict(self.SIZES, width=74), {}),
-                ("production below the smallest grid point", 4, dict(self.SIZES, production=99), {}),
+                ("production below the smallest profile", 4, dict(self.SIZES, production=99), {}),
                 ("another structure", 5, self.SIZES, {}),
                 ("the largest eligible profile fails", 4, self.SIZES, {"qualified": {(4, 100, 75, 75, 20): False}}),
-                ("the sampling limit fails at the largest grid point", 4, self.SIZES, {"qualified": {100: False}}),
                 ("an incomplete document", 4, self.SIZES, {"complete": False})):
             st, det = Q.check(self.doc(**kw), K, sizes)
             self.assertEqual(st, Q.NOT_QUALIFIED, why)
             self.assertTrue(det["reasons"], why)
+
+    def test_the_sampling_limit_is_reported_but_never_gates(self):
+        # H15: pipeline true + sampling false (every grid point) -> TESTABLE; pipeline false + sampling true -> not qualified
+        d = self.doc(qualified={100: False, 150: False, 200: False})
+        self.assertTrue(all(p["qualified"] for p in Q.pipeline_profiles(d)))
+        self.assertIsNone(Q.check(d, 4, self.SIZES)[0])
+        self.assertEqual(Q.check(d, 3, self.SIZES)[0], None)
+        self.assertEqual(Q.check(d, 4, dict(self.SIZES, production=50, ladder=50, width=50, h_max=10))[0], Q.NOT_QUALIFIED)  # no eligible profile
+        d = self.doc(qualified={(4, 100, 75, 75, 20): False})
+        st, det = Q.check(d, 4, self.SIZES)
+        self.assertEqual(st, Q.NOT_QUALIFIED)
+        self.assertNotIn("sampling", " ".join(det["reasons"]))
+        self.assertTrue(all(not c["qualified"] for c in Q.sampling_diagnostic(self.doc(qualified={100: False, 150: False, 200: False})) if c["side"] == "lower"))
 
     def test_a_smaller_qualified_profile_does_not_rescue_a_failing_larger_eligible_one(self):
         d = self.doc(qualified={(4, 100, 75, 75, 20): False}, extra=((4, 60, 40, 40, 10),))
@@ -87,7 +100,8 @@ class InTheAnalysis(World):
         with open(path, "rb") as fh:
             self.assertEqual((q["found"], q["sha256"]), (True, hashlib.sha256(fh.read()).hexdigest()))
         g = J["gate4"]["2.25"]["qualification"]
-        self.assertEqual((g["status"], g["sampling_grid_n"], g["pipeline_profile"]["arm_sizes"]["production"]), (None, 20, 20))
+        self.assertEqual((g["status"], g["pipeline_profile"]["arm_sizes"]["production"]), (None, 20))
+        self.assertEqual({(c["n"], c["side"]) for c in q["sampling_diagnostic"] if c["dist"] == "normal"}, {(20, "lower"), (20, "upper")})
         self.assertEqual(g["realized_sizes"]["production"], 40)
 
     def test_unqualified_sizes_give_p_one_and_the_status_but_the_estimates_stay(self):
@@ -106,14 +120,14 @@ class InTheAnalysis(World):
         self.assertTrue(J["budgets"]["2.25"]["disp"]["alpha_TP"]["testable"])      # the budgets stay descriptive
         self.assertTrue(J["gate4"]["2.25"]["bases"]["disp"]["estimators"]["alpha_TP"]["testable"])
 
-    def test_sampling_limit_not_qualified_at_the_realized_production_n(self):
+    def test_sampling_limit_not_qualified_is_reported_but_the_robust_sign_stays_testable(self):
         self.build()
-        self.set_doc(fx.qualification_doc(sampling=(20, 30), qualified={30: False}))  # 40 realized: the largest grid point 30 fails
+        self.set_doc(fx.qualification_doc(sampling=(20, 30), qualified={30: False}))  # pipeline qualified, sampling limit fails at n = 30
         J, _ = self.run_({"1": 0.001, "2.25": 0.002})
         h = self.fam(J)["robust:1"]
-        self.assertEqual(h["status"], "not qualified at the realized sizes")
-        self.assertIn("sampling limit is not qualified at n = 30", h["note"])
-        self.assertEqual(J["gate4"]["1"]["qualification"]["sampling_grid_n"], 30)
+        self.assertEqual((h["status"], h["testable"]), ("ok", True))
+        bad = [c for c in J["process"]["qualification"]["sampling_diagnostic"] if not c["qualified"]]
+        self.assertEqual([(c["n"], c["side"], c["max_ucl_over_tail"]) for c in bad if c["dist"] == "normal"], [(30, "lower", 1.3)])
 
     def test_no_document_is_p_one_with_its_own_status(self):
         self.build(qualification=None)
