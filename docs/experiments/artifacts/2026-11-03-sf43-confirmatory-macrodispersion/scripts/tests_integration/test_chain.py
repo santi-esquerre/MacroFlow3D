@@ -31,6 +31,7 @@ from sf43plan import __main__ as GEN
 from sf43plan import build as B
 from sf43plan import design as D
 from sf43ana.tests.test_gate5 import fake_summary
+from sf43ana.tests.fixtures import qualification_doc
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.dirname(HERE)
@@ -42,6 +43,7 @@ PLANES_D = [25, 30, 40, 50, 60, 70, 80, 94, 120, 150, 194]
 WINDOW = "0.375,0.625,0.375,0.625"
 SIZES = {"n": 6, "n_slow": 6, "reest_n_conf": 8, "reest_n_max": 16, "reest_fraction": 0.5, "hmax_first_n": 4, "unit": 2}
 REPLACED_SEED = 439104       # smoke_s1 block (start 439101), position 3
+INCOMPLETE_SEED = 439102     # smoke_s1 block, position 1: the fake Par2 runner lets 99 of its 100 particles cross (completeness 0.99)
 FLAKY_ARM, FLAKY_SEED = "sm_s1_eh5", 439106
 REEST_ARM = "sm_s025_prod"
 AMPS = ("s025", "s1", "s225", "s4")
@@ -117,6 +119,10 @@ class Chain(unittest.TestCase):
         cls.cov_summary = os.path.join(root, "cov_summary.json")
         with open(cls.cov_summary, "w") as f:
             json.dump(summ, f)
+        # qualification of the robust sign of the smoke job: both structures qualified at the smallest sizes of the smoke campaign (n = 2)
+        cls.qual_doc = os.path.join(root, "qual.json")
+        with open(cls.qual_doc, "w") as f:
+            json.dump(qualification_doc(profiles=((3, 2, 2, 2, 2), (4, 2, 2, 2, 2)), sampling=(2,)), f)
         cls.camp = os.path.join(root, "camp")
         with mock.patch.dict(D.SMOKE, SIZES), contextlib.redirect_stdout(io.StringIO()):
             GEN.main(["generate", "--variant", "A", "--campaign-dir", cls.camp, "--binaries", "placeholder", "--coverage-summary", cov,
@@ -133,8 +139,9 @@ class Chain(unittest.TestCase):
         shutil.copy(os.path.join(cls.out, "prereg_smoke.json"), os.path.join(art_t, "prereg_smoke.json"))
         cls.prereg = jload(os.path.join(cls.out, "prereg_smoke.json"))
         cls.plan_gen = jload(os.path.join(cls.out, "plan.json"))
-        bg = [sys.executable, "-c", "import os,shutil,sys; os.makedirs(sys.argv[1]); shutil.copy(sys.argv[2], os.path.join(sys.argv[1], 'summary.json'))",
-              "{campaign_dir}/coverage", cls.cov_summary]
+        bg = [sys.executable, "-c", "import os,shutil,sys; os.makedirs(sys.argv[1]); shutil.copy(sys.argv[2], os.path.join(sys.argv[1], 'summary.json')); "
+              "shutil.copy(sys.argv[3], os.path.join(sys.argv[1], 'qualification.json'))",
+              "{campaign_dir}/coverage", cls.cov_summary, cls.qual_doc]
         plan = tiny_plan(json.loads(json.dumps(cls.plan_gen)), FLAKY_ARM, FLAKY_SEED, bg, cls.wrapper)
         cls.plan_file = os.path.join(root, "plan.json")
         with open(cls.plan_file, "w") as f:
@@ -156,7 +163,8 @@ class Chain(unittest.TestCase):
             f.write("#!/bin/sh\nexit 1\n")
         os.chmod(smi, 0o755)
         env = mock.patch.dict(os.environ, {"CUDA_VISIBLE_DEVICES": "1,0", "PYTHONPATH": SCRIPTS + os.pathsep + SF42,
-                                          "PATH": os.path.dirname(smi) + os.pathsep + os.environ["PATH"], "FAKE_NOCONV_SEED": str(REPLACED_SEED)})
+                                          "PATH": os.path.dirname(smi) + os.pathsep + os.environ["PATH"], "FAKE_NOCONV_SEED": str(REPLACED_SEED),
+                                          "FAKE_PAR2_INCOMPLETE_SEED": str(INCOMPLETE_SEED)})
         env.start()
         cls.addClassCleanup(env.stop)
         for name, val in (("PRUNE_S", 0.5), ("REDUCE_BACKOFF_S", (0.0, 0.0, 0.0))):
@@ -196,6 +204,7 @@ class Chain(unittest.TestCase):
             self.assertIn(last, ("RECOMPUTE PASS", "RECONCILE OK"), n)
         self.assertEqual([r["rc"] for r in self.kind("background_end")], [0])
         self.assertTrue(os.path.isfile(os.path.join(self.cdir, "coverage", "summary.json")))
+        self.assertTrue(os.path.isfile(os.path.join(self.cdir, "coverage", "qualification.json")))
 
     def test_smoke_wrapper_prints_only_check_finite(self):
         """analysis.log holds the wrapper's stdout and stderr: ONLY the check-finite lines (counts, STRUCTURE_OK)."""
@@ -347,6 +356,83 @@ class Chain(unittest.TestCase):
         self.assertEqual(sorted(self.S["g7"]["factorial"]), ["s025"])
         with open(os.path.join(self.cdir, "analysis", "run.stderr.txt")) as f:
             self.assertTrue(os.path.isdir(os.path.join(self.cdir, "analysis", "figures")) or "FIGURES_SKIPPED" in f.read())
+
+    def test_new_descriptive_blocks_exist_and_the_gaps_are_wired_through_the_chain(self):
+        """C-GAPS: achieved Gate 4 power, basis contrasts, Par2 completeness (H12), recrossings and backflow (H17) from the reduced tables."""
+        S = self.S
+        for sec in ("gate4_power", "basis"):
+            self.assertIn(sec, S, sec)
+            self.assertNotIn("error", S[sec], sec)
+        # gate4_power: computed where the smoke design is testable, with the realized sizes; never an error
+        P = S["gate4_power"]["amplitudes"]
+        self.assertEqual(sorted(P), sorted(AMPS))
+        computed = [a for a in AMPS if P[a]["status"] == "computed"]
+        self.assertTrue(computed, P)
+        for a in computed:
+            sc = P[a]["scenarios"]["no_bias"]
+            self.assertTrue(0.0 <= sc["both"]["fwer"]["p"] <= 1.0 and sc["both"]["fwer_over_m"]["p"] <= sc["both"]["fwer"]["p"] + 1e-12)
+        # basis: flux contrast and the uniform-weight control per amplitude, on the production analysis set (after the re-estimation at s025)
+        for a in AMPS:
+            b = S["basis"]["amplitudes"][a]
+            self.assertEqual(b["arms"], {"flux": "sm_%s_prod" % a, "unif": "sm_%s_produnif" % a})
+            for est in ("alpha_TP", "alpha_TAP"):
+                self.assertGreaterEqual(b["flux"][est]["n"], 2, (a, est))
+                self.assertEqual(b["control_uniform"][est]["n"], b["flux"][est]["n"], (a, est))
+                self.assertIn("flag", b["control_uniform"][est])
+        self.assertEqual(S["basis"]["amplitudes"]["s025"]["flux"]["alpha_TP"]["n"], SIZES["reest_n_max"])
+        # H12: the fake Par2 runner lets 99 of 100 particles cross for one seed of the s1 group
+        c = S["gate5"]["amplitudes"]["s1"]["par2_completeness"]
+        self.assertEqual((c["n_flagged"], c["n_nonfinite"]), (1, 0))
+        self.assertAlmostEqual(c["min"], 0.99, places=12)
+        self.assertEqual(S["gate5"]["amplitudes"]["s1"]["pair_completeness_sensitivity"]["n_excluded"], 1)
+        self.assertEqual(S["gate5"]["amplitudes"]["s025"]["par2_completeness"]["n_flagged"], 0)
+        # H17: recrossings per traced and backflow fractions of the plane pass (fake track.json totals), per consumer arm and per (amplitude, family)
+        R = S["secondaries"]["recrossings"]
+        arm = R["arms"]["sm_s1_prod"]
+        self.assertEqual((arm["amplitude"], arm["family"]), ("s1", "production"))
+        self.assertEqual(arm["recrossings_per_traced"]["n"], SIZES["n"])
+        self.assertTrue(1.0 / 64 <= arm["recrossings_per_traced"]["mean"] <= 5.0 / 64)   # seed % 5 + 1 recrossings over 64 traced particles
+        self.assertEqual(arm["alpha_LP_without_backflow"]["status"], "not available: no per-particle flag")
+        self.assertIn("production", R["by_amplitude_family"]["s1"])
+        self.assertNotIn("sm_s1_g5c", R["arms"])
+        self.assertTrue(set(R["arms"]) >= {"sm_s025_prod", "sm_s4_prod", "sm_s1_eh5"})
+
+    def test_the_qualification_rule_is_applied_to_the_robust_sign(self):
+        """The smoke qualification document qualifies the smallest sizes, so every robust sign is testable (see test_every_family_hypothesis...);
+        the same campaign analysed with a document that requires larger arms, or none, gets p = 1 with the status of the rule."""
+        from sf43ana import summary
+        S = self.S
+        for a in AMPS:
+            q = S["gate4"][a]["qualification"]
+            self.assertTrue(q["evaluated"] and q["status"] is None, (a, q))
+            self.assertEqual(q["pipeline_profile"]["arm_sizes"], {"production": 2, "ladder": 2, "width": 2, "h_max": 2})
+        self.assertTrue(S["process"]["qualification"]["found"])
+        reduced = os.path.join(self.cdir, "reduced")
+        pre = os.path.join(self.out, "prereg_smoke.json")
+        cases = (("large", qualification_doc(profiles=((3, 60, 50, 50, 20), (4, 60, 50, 50, 20)), sampling=(60,)), "not qualified at the realized sizes"),
+                 ("failing", qualification_doc(profiles=((3, 2, 2, 2, 2), (4, 2, 2, 2, 2)), sampling=(2,), qualified=False), "not qualified at the realized sizes"),
+                 ("none", None, "no qualification document"))
+        for tag, doc, status in cases:
+            path = "none"
+            if doc is not None:
+                path = os.path.join(self.root, "q_%s.json" % tag)
+                with open(path, "w") as f:
+                    json.dump(doc, f)
+            with contextlib.redirect_stderr(io.StringIO()):
+                J, _ = summary.run(pre, self.cdir, reduced, "auto", os.path.join(self.root, "rule_" + tag), self.cov_summary, path)
+            fam = {h["id"]: h for h in J["family"]["hypotheses"]}
+            for a in AMPS:
+                h = fam["robust:" + a]
+                self.assertEqual((h["p"], h["testable"], h["rejected"], h["status"]), (1.0, False, False, status), (tag, a))
+            self.assertEqual(J["family"]["info"]["m"], 8)
+            for a in AMPS:   # the Gate 5 hypotheses and the descriptive results are unaffected
+                self.assertTrue(fam["gate5:" + a]["testable"], (tag, a))
+                self.assertTrue(J["gate4"][a]["bases"]["disp"]["estimators"]["alpha_TP"]["testable"], (tag, a))
+        # the check-finite structure still holds for such an analysis, and it does not print a status text (counts only)
+        from sf43ana import finite
+        buf = io.StringIO()
+        self.assertEqual(finite.run(os.path.join(self.root, "rule_none", "summary.json"), buf), 0, buf.getvalue())
+        self.assertNotIn("qualif", buf.getvalue())
 
     def test_determinism_pairs_and_selective_pruning(self):
         with open(os.path.join(self.cdir, "DETERMINISM.txt")) as f:

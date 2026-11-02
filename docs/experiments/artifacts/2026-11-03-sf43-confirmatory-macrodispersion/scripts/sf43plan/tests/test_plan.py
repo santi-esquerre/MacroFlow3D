@@ -97,7 +97,7 @@ class Generated(unittest.TestCase):
         self.assertEqual(len(s["arms"]), 40)
 
     def test_prereg_validates(self):
-        for name, narms, floor in (("prereg.json", 64, None), ("prereg_smoke.json", 56, 2)):
+        for name, narms, floor in (("prereg.json", 68, None), ("prereg_smoke.json", 60, 2)):
             r = load_prereg(self.path(name))                           # strict: every key the generator emits is accepted
             self.assertEqual(len(r.arms), narms)
             self.assertEqual(r.family_ids(), D.PRIMARY_FAMILY)        # a FIXED family of m = 8
@@ -488,6 +488,38 @@ class Generated(unittest.TestCase):
         self.assertEqual(r["gate5"]["coverage_summary"], B.ART_REL + "/coverage/summary.json")
         sm = load(self.path("prereg_smoke.json"))
         self.assertNotIn("coverage_summary", sm["gate5"])                                 # the wrapper passes the smoke job's own output
+
+    def test_gaps_closed_blocks_arms_and_keys(self):
+        """C-GAPS: achieved Gate 4 power, basis contrasts with the uniform-weight control arm, the qualification document, the recrossing
+        distributions per consumer arm and the Par2 completeness threshold (all accepted by the strict configuration)."""
+        r = load(self.path("prereg.json"))
+        arms = {a["id"]: a for a in r["arms"]}
+        # gate4_power: alternatives = the SF-42 R3 displacement-basis means (note lines 1025-1032), both estimators
+        gp = r["gate4_power"]
+        self.assertEqual({a: (v["alpha_TP"], v["alpha_TAP"]) for a, v in gp["alternatives"].items()},
+                         {"s025": (5.093e-4, 5.093e-4), "s1": (7.217e-3, 7.217e-3), "s225": (2.946e-2, 2.946e-2), "s4": (6.538e-2, 6.537e-2)})
+        self.assertIn("lines 1025-1032", gp["source"])
+        self.assertEqual((gp["R"], gp["B_budget"], gp["scenarios"]), (1000, 4000, ["no_bias", "observed"]))
+        self.assertEqual(load(self.path("prereg_smoke.json"))["gate4_power"]["R"], 20)
+        # basis: the production arm (flux) and its uniform-weight copy (source = production arm, label 8, follows the re-estimation like prodpol)
+        for amp in ("s025", "s1", "s225", "s4"):
+            prod, u = arms[amp + "_prod"], arms[amp + "_produnif"]
+            self.assertEqual((u["source"], u["hmax_div"], u["reest"], u["selection"], u["code"]), (prod["id"], 8, True, {"weights": "unif"}, "consumer"))
+            self.assertEqual((u["seeds"], u["n_conf"], u["n_max"], u["floor"]), (prod["seeds"], prod["n_conf"], prod["n_max"], prod["floor"]))
+            self.assertEqual(r["basis"]["amplitudes"][amp], {"flux": prod["id"], "unif": u["id"]})
+        # qualification document (production only: the smoke run reads its own), recrossings of every consumer arm that is not a duplicate
+        self.assertEqual(r["qualification"], B.ART_REL + "/coverage/qualification.json")
+        self.assertNotIn("qualification", load(self.path("prereg_smoke.json")))
+        rec = r["secondaries"]["recrossings"]
+        want = {a["id"] for a in r["arms"] if a["code"] == "consumer" and a["role"] not in ("gate5_consumer_twin", "basis_control_uniform")}
+        self.assertEqual(set(rec), want)
+        self.assertTrue(all(v == {"arm": k} for k, v in rec.items()))
+        self.assertIn("s4_prod", rec)
+        self.assertNotIn("s4_produnif", rec)
+        self.assertEqual(r["gate5"]["completeness_min"], 0.999)
+        # the strict configuration takes all of it (also the smoke one)
+        for name in ("prereg.json", "prereg_smoke.json"):
+            load_prereg(self.path(name))
 
     def test_positive_control_arm_and_preregistered_statistic(self):
         r = load(self.path("prereg.json"))

@@ -17,7 +17,7 @@ python3 -W error -m unittest discover -s sf43plan/tests -t .        # ~4 s, no G
 | file | content |
 |---|---|
 | `plan.json` | campaign-engine plan (`sf43camp/plan.py` schema): 44 arms, groups with reserves, blinded re-estimation, analysis / recompute / reconcile commands, `analysis.sha256_list` (analysis files, pre-registration, coverage files: regenerate last), and the `smoke` overlay (`run_sf43.sh ... --smoke`) |
-| `prereg.json` | analysis pre-registration (`sf43ana/config.py` schema, strict; every key emitted is accepted) with the sections `gate5`, `g7`, `pollock`, `secondaries`, `failures`, `positive_control` |
+| `prereg.json` | analysis pre-registration (`sf43ana/config.py` schema, strict; every key emitted is accepted) with the sections `gate5` (incl. `completeness_min`), `g7`, `pollock`, `secondaries` (incl. `recrossings` of every consumer arm that is not a duplicate), `failures`, `positive_control`, `gate4_power` (achieved power, planning alternatives = the SF-42 R3 displacement-basis means, note lines 1025-1032), `basis` (H2) and the top-level `qualification` (the committed `coverage/qualification.json` the robust sign's qualification gate reads; production only) |
 | `prereg_smoke.json` | the same for the smoke arms (`sm_` ids), every floor 2 and B reduced, so that every analysis code path runs |
 | `seeds_registry.json` | every seed block (group, purpose, start, count, end, reserves, arms), the smoke blocks, the forbidden ranges, checked disjoint (`build.check_seeds`) |
 | `design_table.md` | arms, GPU-h per arm and total, seed blocks |
@@ -55,6 +55,8 @@ The planning extras of the three-pass realizations are in `arms[].hmax_extra` (i
    `hmax_div` 8 for a production source, -1 otherwise) and Par2 arms read the uniform-weight rows.
 3. Pollock: `<amp>_prodpol` (acceptance B: the production set, flux, label 8) and `<amp>_g5pol` (the Gate 5 twin, uniform weights) are arms with `code: pollock` and
    the consumer's engine arm as `source`; `g7.twins.pollock` points at `<amp>_g5pol`; the `pollock` block lists the contrast and the decomposition.
+   Basis control (H2): `<amp>_produnif` is the production set read with uniform weights (`source` = the production arm, `selection: {weights: unif}`, label 8, `reest: true` like
+   `<amp>_prodpol`, same seeds / `n_conf` / `n_max` / floor); the `basis` block pairs `<amp>_prod` (flux) with it. These entries are analysis-only (no engine arm).
 4. Par2 time-window parameters (a priori, `design.py`): `U_time = exp(sigma^2 / 6)`, `par2_exit_x` = the outlet plane (L / W in box units), `snapshots_every` about
    100 snapshots per realization (a multiple of 1000).
 5. Positive control: arm `pc_s004` under the control amplitude `s004`; the pre-registered statistic `R` with its expectation [0.8, 1.25] and rationale is in

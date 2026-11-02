@@ -33,6 +33,9 @@ def main(argv=None):
     r.add_argument("--single-pass-hmax", type=int, default=None, help="hmax_div label of single-pass realization roots (SF-43; default -1)")
     r.add_argument("--pollock", action="store_true", help="SF-43: also reduce the Pollock bridge arrays (<realization>/pollock/) of every "
                    "consumer realization into code=pollock plane rows (an error if a realization has none; default off = the SF-42 behaviour)")
+    r.add_argument("--tracker-counts", action="store_true", help="SF-43: append recrossings_per_traced, frac_backflow, seed_backflow (tracker "
+                   "totals of the plane pass, from track.json) to every consumer plane row (an error if a track.json lacks them; default off = "
+                   "the SF-42 tables, byte for byte)")
     r.add_argument("--root", default=None, help="manifest root (default: common parent of the inputs)")
     r.add_argument("--out", required=True)
     s = sub.add_parser("splitshare", help="particle share of the per-realization variance from a reduced table (SF-39 definition)")
@@ -54,7 +57,8 @@ def main(argv=None):
         if a.cmd == "reduce":
             rows = red.reduce_all(a.consumer, a.par2, a.par2_series, a.ell, a.x0, a.d_window[0], a.d_window[1], a.U_time, a.out, a.root,
                                  par2_exit_x=a.par2_exit_x, par2_dt=a.par2_dt, par2_seed0=a.par2_seed0,
-                                 single_pass_hmax=a.single_pass_hmax, pollock=a.pollock)
+                                 single_pass_hmax=a.single_pass_hmax, pollock=a.pollock,
+                                 tracker_counts=a.tracker_counts)
             print("wrote %d rows to %s" % (len(rows), a.out))
         elif a.cmd == "splitshare":
             rows = red.split_share(a.table)

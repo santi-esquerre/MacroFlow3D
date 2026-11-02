@@ -192,16 +192,25 @@ class Sf43Profile(unittest.TestCase):
         self.assertEqual(len(judged), 3 * 7 + 2)
         self.assertEqual(sorted((c["dist"], c["n"]) for c in by["fieller"] if c["report_only"] and c["n"] == 250), [])
         self.assertTrue(all(c["R"] == 56000 for c in by["fieller"]))
-        # (ii) bootstrap-t sampling limit at n = 200, smallest tail 3.125e-3
-        self.assertEqual(sorted((c["dist"], c["n"]) for c in by["sf43_sampling"]), [("normal", 200), ("stress", 200), ("stress-", 200)])
+        # (ii) bootstrap-t sampling limit on the grid n = 100, 150, 200 (H13 floors against H15), smallest tail 3.125e-3
+        self.assertEqual(sorted((c["dist"], c["n"]) for c in by["sf43_sampling"]),
+                         sorted((d, n) for d in ("normal", "stress", "stress-") for n in (100, 150, 200)))
         self.assertTrue(all(c["R"] == 56000 and min(c["tails"]) == 0.003125 for c in by["sf43_sampling"]))
         self.assertTrue(all((c["params"]["B"] + 1) * 0.003125 == 105 for c in by["sf43_sampling"]))  # exact ranks: 33600 / 320
-        # (iii) pipeline at variant A's arm sizes, m = 8 Holm levels, R >= 28 000
+        # (iii) pipeline at variant A's arm sizes (full) and at the truncated sizes (half), m = 8 Holm levels, R >= 28 000
         pl = by["sf43_pipeline"]
-        self.assertEqual(len(pl), 2 * 3 * 3)
+        self.assertEqual(len(pl), 4 * 3 * 3)
         self.assertTrue(all(c["R"] == 28000 and min(c["tails"]) == 0.05 / 8 for c in pl))
         sizes = {(c["params"]["K"], c["params"]["N"], c["params"]["n_l"], c["params"]["n_i"], c["params"]["n_w"], c["params"]["ip"]) for c in pl}
-        self.assertEqual(sizes, {(3, 200, 100, 30, 150, 1), (4, 200, 150, 30, 150, 2)})
+        self.assertEqual(sizes, {(3, 200, 100, 30, 150, 1), (4, 200, 150, 30, 150, 2),  # full
+                                 (3, 100, 50, 20, 75, 1), (4, 100, 75, 20, 75, 2)})      # half: K = 3 ladder 50, K = 4 ladder 75, width 75, h_max 20
+        half = [c for c in pl if c["params"]["N"] == 100]
+        full = [c for c in pl if c["params"]["N"] == 200]
+        self.assertEqual((len(half), len(full)), (18, 18))
+        # the same distributions, bias scenarios, orders and R in both profiles
+        key = lambda c: (c["params"]["K"], c["dist"], c["scen"], c["params"]["order"], c["R"], c["params"]["b_h"])  # noqa: E731
+        self.assertEqual(sorted(map(key, half)), sorted(map(key, full)))
+        self.assertEqual(len({c["id"] for c in pl}), len(pl))
         self.assertTrue(all(c["params"]["sampling"] == "boott" and c["params"]["comp"] == "student" for c in pl))
         self.assertEqual({c["dist"] for c in pl}, {"normal", "stress", "stress-"})
         self.assertEqual(plan["cells"][0]["proc"], "fieller")  # summarize() reads the Gate 5 parameters from the first cell
@@ -286,14 +295,20 @@ class Sf43RunAndQualify(unittest.TestCase):
             self.assertTrue(doc["all_cells_complete"])
             self.assertEqual(sorted(doc["gate5"]["families"]), ["base", "with_j3b"])
             self.assertEqual(sorted(doc["gate5"]["families"]["with_j3b"]["procedures"]), ["boott", "boott_half", "hall"])
-            self.assertEqual(len(doc["pipeline"]), 2 * 3 * 2)
+            self.assertEqual(len(doc["pipeline"]), 4 * 3 * 2)
             self.assertIn("n=60", doc["sampling"])
+            self.assertIn("n=40", doc["sampling"])
+            # per profile: structure K and the four arm sizes; the grid; the headline booleans by profile
+            self.assertEqual(sorted((p["K"], p["arm_sizes"]["production"]) for p in doc["pipeline_profiles"]), [(3, 30), (3, 40), (4, 30), (4, 40)])
+            self.assertTrue(all(p["cells"] == 6 for p in doc["pipeline_profiles"]))
+            self.assertEqual(sorted(doc["sampling_grid"]), ["40", "60"])
+            self.assertEqual(sorted(doc["overall"]["pipeline_by_profile"]), ["K3:30/15/15/8", "K3:40/20/20/10", "K4:30/15/15/8", "K4:40/20/20/10"])
             self.assertIn("qualified", doc["sampling"]["n=60"]["normal"]["lower"])
             self.assertIn("pipeline_qualified", doc["overall"])
             self.assertIn("run.log", os.listdir(out))
             second = subprocess.run(["bash", os.path.join(SCRIPTS, "sf43cov", "run_cov.sh"), out] + self.ARGS, capture_output=True, text=True, timeout=400)
             self.assertEqual(second.returncode, 0, second.stderr[-2000:])
-            self.assertIn("0 of 18 chunks pending", second.stderr + second.stdout)  # idempotent
+            self.assertIn("0 of 32 chunks pending", second.stderr + second.stdout)  # idempotent
             with open(q) as f:
                 self.assertEqual(json.load(f), doc)
 

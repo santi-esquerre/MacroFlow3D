@@ -48,6 +48,10 @@ POLLOCK ROWS (the Pollock contrast, spec items 5 and 8).  A consumer arm with ``
 (same columns and estimators; ``blinded_sd`` reads the arm's runner code only, so these never enter the re-estimation).  ``prune``
 then deletes the Pollock arrays of non-retained realizations (their rows are in the table) and never one whose rows are missing.
 
+TRACKER COUNTS (H17).  Every consumer arm is reduced with ``sf42red reduce --tracker-counts``: the consumer plane rows carry
+``recrossings_per_traced``, ``frac_backflow`` and ``seed_backflow`` of the plane pass (per pass ``track.json``; ``sf43ana`` reports their
+per-realization distribution).  A ``track.json`` without the totals makes the reduction of the segment fail (the engine's ``unreduced`` path).
+
 ``primary`` (arm flag, default false): the arm feeds the primary family; ``prune`` then keeps, for EVERY realization, the plane arrays
 (``seeds``, ``weights``, ``planes_x23``, ``planes_tau``: exactly what the displacement-basis plane estimators read, so ``recompute43``
 can rebuild them) and deletes only the others (time-pass arrays, Pollock and ``planes_I``); a non-primary arm keeps only its
@@ -438,6 +442,7 @@ class RunnerExecutor:
         kw, consumer, par2, series = {}, [], [], []
         if arm["runner"] == "consumer":
             consumer = [os.path.join(segment_dir, "out")]
+            kw["tracker_counts"] = True  # H17: recrossings_per_traced / frac_backflow / seed_backflow of the plane pass (track.json) on the consumer rows
             if run.get("pollock_bridge", True):  # the arm's runs carry the bridge (`--pollock-bridge on`): reduce its arrays too (code=pollock rows)
                 kw["pollock"] = True
             if run.get("hmax_div_first"):  # one label for the production pass whether the segment ran one or several passes

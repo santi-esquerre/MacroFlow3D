@@ -26,7 +26,7 @@
     time_window: {arm: {"amplitude": amp}},  expI: {name: {"arm": arm}},
     par2_transverse: {amp: {"par2": arm, "consumer": arm}},
     bdd_fit: [{"name": str, "arm": arm, "amplitude": amp, "t_key": "curve_t", "alpha_key": "curve_alpha"}],
-    recrossings: {name: {"arm": arm}}      (H17; needs columns frac_recross / frac_backflow / alpha_LP:nobackflow, see ``recrossings``)
+    recrossings: {name: {"arm": arm}}      (H17; needs the columns of ``sf42red reduce --tracker-counts``, see ``recrossings``)
 
 ``data``: ``{"arms": {arm: {"seed": int array, "cols": {name: float array (n,) or (n, K)}}}}`` as ``sf43ana.gate5``.
 """
@@ -220,20 +220,42 @@ def bdd_fit(cfg, item, data):
 
 
 # ---------------------------------------------------------------------------------------------------------------- 5. recrossings / backflow (H17)
-RECROSS_COLS = ("frac_recross", "frac_backflow", "alpha_LP:nobackflow")
+TRACKER_COLS = ("recrossings_per_traced", "frac_backflow", "seed_backflow")
+LEGACY_COLS = ("frac_recross", "alpha_LP:nobackflow")
+RECROSS_COLS = TRACKER_COLS + LEGACY_COLS
+QUANTILES = (0.0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0)
+NOBACKFLOW_STATUS = "not available: no per-particle flag"
 
 
-def recrossings(cfg, spec, data):
-    """Recrossing and backflow-encounter fractions and the ``alpha_LP`` sensitivity without backflow-encounter particles (H17).
+def _distribution(v):
+    """Mean, sd, quantiles (``QUANTILES``) and the number of strictly positive entries of the finite values of ``v``."""
+    v = np.asarray(v, dtype=float)
+    v = v[np.isfinite(v)]
+    if not v.size:
+        return {"n": 0}
+    return {"n": int(v.size), "mean": float(v.mean()), "sd": float(v.std(ddof=1)) if v.size > 1 else float("nan"),
+            "quantiles": {"%g" % q: float(x) for q, x in zip(QUANTILES, np.quantile(v, QUANTILES))}, "n_positive": int((v > 0).sum())}
 
-    INPUT (not written by ``sf42red`` today; see the README): per-realization columns ``frac_recross`` (share of the traced particles
-    that cross some plane more than once), ``frac_backflow`` (share with a backflow encounter) and ``alpha_LP:nobackflow`` (the
-    plane-based ``alpha_LP`` recomputed without those particles) in the primary-window reduced table, or the same names as columns of
-    the arm in ``data``.  Without them the block says so instead of reporting."""
-    out = {}
+
+def recrossings(cfg, spec, data, arms_info=None):
+    """Recrossings and backflow encounters of the tracker (H17), per realization, per arm and per (amplitude, arm family).
+
+    INPUT: the columns ``recrossings_per_traced`` (recrossings of the plane pass over the traced particles), ``frac_backflow`` (share of the
+    traced particles with a backflow encounter) and ``seed_backflow`` (seeds that start against the flow, not traced) that ``sf42red reduce
+    --tracker-counts`` copies from the pass's ``track.json`` onto the consumer plane rows (the executor passes it for consumer arms).  Per
+    arm: the distribution of each over the realizations of the analysis set (mean, sd, quantiles 0 / 5 / 25 / 50 / 75 / 95 / 100 %, number
+    positive), tagged with the arm's amplitude and family (``role`` of the pre-registered arm); ``by_amplitude_family`` pools the
+    realizations of the arms of one family at one amplitude.
+
+    ``alpha_LP_without_backflow``: the H17 sensitivity of ``alpha_LP`` without the backflow-encounter particles needs the per-particle flag,
+    which the runner does NOT write (only the totals above): status ``not available: no per-particle flag`` (``NOBACKFLOW_STATUS``) unless a
+    column ``alpha_LP:nobackflow`` is supplied (then the paired log-ratio against ``alpha_LP``).  Counts are per realization; nothing here
+    changes an estimator."""
+    out, groups = {}, {}
     for name, s in spec.items():
         arm = s["arm"]
-        res = {"arm": arm}
+        amp, fam = (arms_info or {}).get(arm, (None, None))
+        res = {"arm": arm, "amplitude": amp, "family": fam}
         have = []
         for c in RECROSS_COLS:
             try:
@@ -243,17 +265,26 @@ def recrossings(cfg, spec, data):
             if np.isfinite(v).any():
                 have.append(c)
                 if c != "alpha_LP:nobackflow":
-                    res[c] = _student(v, cfg["level"])
-        if not have:
-            res["note"] = ("input absent: the reduced tables of this campaign carry none of %s; add them to the table (or to the arm's data) "
-                           "to report recrossing fractions and the alpha_LP sensitivity" % (list(RECROSS_COLS),))
-        elif "alpha_LP:nobackflow" in have:
+                    res[c] = _distribution(v) if c in TRACKER_COLS else _student(v, cfg["level"])
+                    if c in TRACKER_COLS:
+                        groups.setdefault((str(amp), str(fam)), {}).setdefault(c, []).append(np.asarray(v, dtype=float))
+        if not [c for c in have if c != "alpha_LP:nobackflow"] and "alpha_LP:nobackflow" not in have:
+            res["note"] = ("input absent: the reduced tables of this arm carry none of %s (reduce with --tracker-counts)" % (list(RECROSS_COLS),))
+        if "alpha_LP:nobackflow" in have:
             sa, va = arm_series(data, arm, "alpha_LP:nobackflow")
             sb, vb = arm_series(data, arm, "alpha_LP")
-            _, a, b, info = pair_by_seed(sa, va, sb, vb)
-            res["alpha_LP_without_backflow_over_all"] = dict(_paired_log_ratio(a, b, cfg["level"]), pairing=info)
+            _, a_, b_, info = pair_by_seed(sa, va, sb, vb)
+            res["alpha_LP_without_backflow"] = dict(_paired_log_ratio(a_, b_, cfg["level"]), pairing=info)
+        else:
+            res["alpha_LP_without_backflow"] = {"status": NOBACKFLOW_STATUS,
+                                                "reason": "the runner writes the backflow-encounter COUNT of each pass, not a per-particle flag; "
+                                                          "excluding those particles from alpha_LP needs a runner change (out of scope)"}
         out[name] = res
-    return out
+    pooled = {}
+    for (amp, fam), cols in sorted(groups.items()):
+        pooled.setdefault(amp, {})[fam] = {c: _distribution(np.concatenate(v)) for c, v in cols.items()}
+        pooled[amp][fam]["arms"] = sorted(n for n, r in out.items() if (str(r["amplitude"]), str(r["family"])) == (amp, fam))
+    return {"arms": out, "by_amplitude_family": pooled, "alpha_LP_without_backflow_status": NOBACKFLOW_STATUS}
 
 
 KEYS = {"level", "seed", "B", "t_scale", "time_window", "expI", "par2_transverse", "bdd_fit", "recrossings", "note"}
@@ -279,5 +310,6 @@ def run(prereg, data):
     if "bdd_fit" in p:
         out["bdd_fit"] = {it.get("name", it["arm"]): bdd_fit(cfg, it, data) for it in p["bdd_fit"]}
     if "recrossings" in p:
-        out["recrossings"] = recrossings(cfg, p["recrossings"], data)
+        info = {x["id"]: (x["amplitude"], x.get("role", "")) for x in prereg.get("arms", [])}
+        out["recrossings"] = recrossings(cfg, p["recrossings"], data, info)
     return jsonable(out)

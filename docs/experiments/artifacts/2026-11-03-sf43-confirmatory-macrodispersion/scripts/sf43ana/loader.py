@@ -37,8 +37,10 @@ Par2 rows exist with ``weights = unif`` only (applied unless overridden), ``hmax
 Column names: ``<est>`` is the POSITION basis, ``<est>:<basis>`` any other (``alpha_TP:disp``) for the estimators ``alpha_TP``,
 ``alpha_TAP``, ``alpha_LP``, ``U_r`` at the primary window; ``alpha_LAM:time``, ``alpha_Tfixed:time``, ``alpha_TAM:time`` and
 ``t_end_adv`` (= ``t_end U_time / ell``, advection times) from the ``family=time`` rows (weights flux for the consumer, unif for Par2);
-``alpha_TP:expI``, ``alpha_LP:expI`` (consumer weights ``expI``); recrossing and backflow counts ``frac_recross``, ``frac_backflow`` (per-realization
-fractions) and ``alpha_LP:nobackflow`` if (and only if) the table carries them (see README: ``sf42red`` does not write them today).
+``alpha_TP:expI``, ``alpha_LP:expI`` (consumer weights ``expI``); ``recrossings_per_traced``, ``frac_backflow``, ``seed_backflow`` (per-realization
+tracker totals of the plane pass, ``sf42red reduce --tracker-counts``), ``n_last`` and ``n_traced`` (the counts of the row: for Par2 the
+particles that crossed the last window plane and the particles injected at the first one, H12) and the legacy ``frac_recross``,
+``alpha_LP:nobackflow``, each if (and only if) the table carries them.
 """
 import csv
 import json
@@ -49,7 +51,10 @@ import numpy as np
 
 COLS = ("alpha_TP", "alpha_TAP", "alpha_LP", "U_r")
 TIME_COLS = ("alpha_LAM", "alpha_Tfixed", "alpha_TAM")
-OPTIONAL_COLS = ("frac_recross", "frac_backflow", "alpha_LP:nobackflow")
+# columns of the plane row of the primary window that are copied when the table carries them: H17 (``sf42red reduce --tracker-counts``:
+# recrossings_per_traced, frac_backflow, seed_backflow; the legacy names frac_recross / alpha_LP:nobackflow are not written by any tool today)
+# and H12 (n_last / n_traced: the Par2 crossing completeness n_last / n_traced of the main window)
+OPTIONAL_COLS = ("frac_recross", "frac_backflow", "alpha_LP:nobackflow", "recrossings_per_traced", "seed_backflow", "n_last", "n_traced")
 
 
 class LoadError(Exception):

@@ -43,7 +43,7 @@ comparison (ratio of means of independent samples, delta-method log-ratio interv
 ``run(prereg, data)`` -- ``prereg["gate5"]`` (schema and an example in README.md; ``config.validate`` is strict)::
 
     family_m (8), fwer (0.05), margin_ratio (1.10), level (0.90), B (33599), seed (int), key ("alpha_LP"), ref ("t"), floor (default
-    ``floors.gate5`` = 200), fallback_verdicts (["fallback"]), coverage_summary (path of the summary.json of sf43cov; or
+    ``floors.gate5`` = 200), fallback_verdicts (["fallback"]), completeness_min (0.999, H12), coverage_summary (path of the summary.json of sf43cov; or
     ``data["coverage_summary"]``, an already loaded dict),
     amplitudes: {amp: {"consumer": arm, "par2": arm, "floor": n, "j3b": bool, "pilot": {"consumer": arm, "par2": arm},
                        "unmatched": {"consumer": arm, "par2": arm}}}
@@ -53,7 +53,9 @@ prefix stops at the first non-finite pair), all of them analysed with the proced
 (not truncated to it).  ``n < floor``: untestable, ``p = 1``, estimates reported.  ``j3b: true`` (sigma^2 = 4): the J3B-bound family
 (``J3B_DISTS``) is part of the qualification.  Achieved power: ``fieller_power`` (Fieller form at the realized ``n``, observed SD of
 ``D_r`` at the margins), next to the delta-method power of SF-42.  Pair-exclusion sensitivity: pairs with a ``fallback`` verdict in
-either code removed.
+either code removed.  Par2 crossing completeness (H12): ``par2_completeness`` (per realization ``n_last / n_traced`` of the Par2 arm over the main
+window, flag below ``completeness_min``, counts and quantiles over the arm and over the pairs) and ``pair_completeness_sensitivity`` (pairs whose
+Par2 realization is flagged removed; same procedure, descriptive), next to the fallback-exclusion sensitivity.
 
 ``data`` is the structure of ``sf43ana.loader.build_data`` (``data["arms"][arm]``: ``seed`` in prefix order, ``cols``, ``verdict``).
 Returns ``{"amplitudes": {amp: {...}}, "pvalues": {amp: p}, "holm_order": [amp, ...], "config": {...}}``.
@@ -476,6 +478,25 @@ def fieller_power(L, P, alpha, ratios=(1.0, 0.95), margin_ratio=MARGIN_RATIO, n=
     return out
 
 
+def par2_completeness(arm, threshold=0.999):
+    """Par2 crossing completeness per realization of an arm's analysis set: ``n_last / n_traced`` from the reduced plane row of the main window
+    (``sf42red.reduce.par2_rows``: ``n_traced`` = ``n_injected`` at the first window plane, ``n_last`` = ``n_crossed`` at the last window plane,
+    both for the particles of the whole injection window).  Flag: ``completeness < threshold`` or not finite.  Returns ``{"columns_present",
+    "n", "n_flagged", "threshold", "min", "quantiles", "flag"}`` (``flag``: bool array in prefix order; the caller pops it) or a note if the
+    columns are absent."""
+    cols = arm["cols"]
+    if "n_last" not in cols or "n_traced" not in cols:
+        return {"columns_present": False, "note": "columns n_last / n_traced absent from the reduced tables of this arm: completeness not computed"}
+    nl, nt = np.asarray(cols["n_last"], dtype=float), np.asarray(cols["n_traced"], dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        c = np.where(nt > 0, nl / nt, np.nan)
+    flag = ~(c >= threshold)  # NaN is flagged
+    fin = c[np.isfinite(c)]
+    q = {} if not fin.size else {"%g" % p: float(np.quantile(fin, p)) for p in (0.0, 0.01, 0.05, 0.5)}
+    return {"columns_present": True, "n": int(c.size), "n_flagged": int(flag.sum()), "n_nonfinite": int((~np.isfinite(c)).sum()),
+            "threshold": threshold, "min": float(fin.min()) if fin.size else float("nan"), "quantiles": q, "flag": flag}
+
+
 def _rng(seed, amp, tag=""):
     return np.random.default_rng(np.random.SeedSequence([seed, zlib.crc32(amp.encode()), zlib.crc32(tag.encode())]))
 
@@ -542,16 +563,31 @@ def _amplitude(cfg, amp, spec, data, summary, rng_seed):
     out["power"] = {"fieller": fieller_power(L, P, fwer / m, (1.0, 0.95, round(float(L.mean() / P.mean()), 6)), margin),
                     "delta_method": achieved_power(n, cv_L, cv_P, corr, fwer / m, ratios=(1.0, 0.95), margin_ratio=margin)}
     # sensitivity: pairs with a fallback-accepted solve in either code excluded (H5); descriptive, same procedure
+    def sensitivity(keep, tag, sens, same_note):
+        if keep.sum() >= 3 and L[keep].mean() > 0 and P[keep].mean() > 0 and (~keep).any():
+            sens.update(_decision(L[keep], P[keep], desc_proc, cfg, _rng(cfg["seed"], amp, tag), margin), ratio=float(L[keep].mean() / P[keep].mean()))
+        elif not (~keep).any():
+            sens["note"] = same_note
+        return sens
+
     fbv = set(cfg["fallback_verdicts"])
     vc, vp = data["arms"][spec["consumer"]].get("verdict"), data["arms"][spec["par2"]].get("verdict")
     if vc is not None and vp is not None:
         keep = np.array([(vc[i] not in fbv) and (vp[i] not in fbv) for i in range(n)], dtype=bool)
         sens = {"fallback_verdicts": sorted(fbv), "n_excluded": int((~keep).sum()), "n": int(keep.sum())}
-        if keep.sum() >= 3 and L[keep].mean() > 0 and P[keep].mean() > 0 and (~keep).any():
-            sens.update(_decision(L[keep], P[keep], desc_proc, cfg, _rng(cfg["seed"], amp, "excl"), margin), ratio=float(L[keep].mean() / P[keep].mean()))
-        elif not (~keep).any():
-            sens["note"] = "no pair has a fallback-accepted solve: identical to the main analysis"
-        out["pair_exclusion_sensitivity"] = sens
+        out["pair_exclusion_sensitivity"] = sensitivity(keep, "excl", sens, "no pair has a fallback-accepted solve: identical to the main analysis")
+    # H12: Par2 crossing completeness n_last / n_traced of the main window (reduced columns of the Par2 arm's plane row: particles that
+    # crossed the last window plane over the particles injected); a realization below ``completeness_min`` is flagged and its pairs are
+    # excluded in a second, descriptive sensitivity (same procedure)
+    comp = par2_completeness(data["arms"][spec["par2"]], cfg["completeness_min"])
+    if comp.get("columns_present"):
+        flag = comp.pop("flag")
+        out["par2_completeness"] = dict(comp, n_pairs=n, n_flagged_pairs=int(flag[:n].sum()))
+        keep = ~flag[:n]
+        sens = {"threshold": cfg["completeness_min"], "n_excluded": int((~keep).sum()), "n": int(keep.sum())}
+        out["pair_completeness_sensitivity"] = sensitivity(keep, "compl", sens, "no pair has a flagged Par2 realization: identical to the main analysis")
+    else:
+        out["par2_completeness"] = comp
     pl = spec.get("pilot")
     if pl:  # pilot moments of D_r at the margins (SF-39 / SF-42 data passed as arms of ``data``)
         try:
@@ -571,7 +607,7 @@ def _amplitude(cfg, amp, spec, data, summary, rng_seed):
 
 
 GATE5_KEYS = {"family_m", "fwer", "margin_ratio", "level", "B", "seed", "key", "ref", "coverage_summary", "fallback_verdicts", "floor",
-              "amplitudes"}
+              "completeness_min", "amplitudes"}
 GATE5_AMP_KEYS = {"consumer", "par2", "unmatched", "pilot", "floor", "j3b"}
 
 
@@ -579,7 +615,7 @@ def config(prereg):
     g = dict(prereg["gate5"])
     return {"family_m": int(g.get("family_m", 8)), "fwer": float(g.get("fwer", 0.05)), "margin_ratio": float(g.get("margin_ratio", MARGIN_RATIO)),
             "level": float(g.get("level", 0.90)), "B": int(g.get("B", DEFAULT_B)), "seed": int(g.get("seed", 20261103)),
-            "key": g.get("key", "alpha_LP"), "ref": g.get("ref", "t"),
+            "key": g.get("key", "alpha_LP"), "ref": g.get("ref", "t"), "completeness_min": float(g.get("completeness_min", 0.999)),
             "floor": int(g.get("floor", prereg.get("floors", {}).get("gate5", 200))),
             "fallback_verdicts": list(g.get("fallback_verdicts", prereg.get("fallback_verdicts", ["fallback"])))}
 

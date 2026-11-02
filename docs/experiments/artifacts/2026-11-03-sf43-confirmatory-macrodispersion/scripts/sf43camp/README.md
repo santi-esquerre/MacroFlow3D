@@ -12,6 +12,10 @@ bash run_sf43.sh <build_dir> all [--resume] [--dry-run] [--smoke] [--plan <file>
 cd <A>/scripts && python3 -W error -m unittest discover -s sf43camp/tests -t .          # ~8 s, no GPU
 ```
 
+Every consumer arm is reduced with `sf42red reduce --pollock --tracker-counts` (executor): besides the Pollock rows, `recrossings_per_traced`, `frac_backflow` and
+`seed_backflow` of the plane pass (from each pass's `track.json`) are columns of the consumer plane rows (H17; `sf43ana` secondaries). A `track.json` without those totals fails the
+reduction of its segment (the `unreduced` path of the ledger).
+
 The script enters the repository root: `<build_dir>`, `campaign_dir` and every relative path of the plan are relative to it.
 `PYTHONPATH` = this `scripts/` dir + the SF-42 scripts dir (`2026-10-30-sf42-confirmatory-tooling/scripts`, for the executor).
 

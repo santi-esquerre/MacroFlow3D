@@ -125,6 +125,12 @@ G7_RS_MODES = 10000                                   # SF-39 used 10000 modes f
 
 # planning standard deviation of alpha_TP (displacement basis) with its n: SF-42 R3 noise_summary.csv (alpha_TAP identical to 4 digits)
 SD_PLAN = {"s025": (1.205564082e-4, 25), "s1": (1.120574325e-3, 50), "s225": (4.07294397e-3, 62), "s4": (1.687814483e-2, 71)}
+# Gate 4 achieved-power PLANNING ALTERNATIVES (specification acceptance C): the displacement-basis means of the SF-42 R3 estimator-noise pilot, column
+# "mean disp" of the table "Estimator noise by basis (R3, no new runs)" of docs/experiments/2026-10-30-sf42-confirmatory-tooling.md, lines 1025-1032
+# (alpha_TP rows 1025 / 1027 / 1029 / 1031, alpha_TAP rows 1026 / 1028 / 1030 / 1032).  Design inputs, not claims about alpha_T.
+GATE4_ALTERNATIVES = OrderedDict([("s025", (5.093e-4, 5.093e-4)), ("s1", (7.217e-3, 7.217e-3)), ("s225", (2.946e-2, 2.946e-2)), ("s4", (6.538e-2, 6.537e-2))])
+GATE4_ALTERNATIVES_SOURCE = ("SF-42 R3 displacement-basis pilot means (docs/experiments/2026-10-30-sf42-confirmatory-tooling.md, section 'Estimator noise by "
+                             "basis (R3, no new runs)', table lines 1025-1032, column 'mean disp'); planning alternatives, not claims about alpha_T")
 # precision targets (specification item 6): 90 % half-width of alpha_TP (lambda); reported, not extended after the fact
 TARGETS = {"s025": 2.5e-4, "s1": 6e-4, "s225": 2.8e-3, "s4": 6.6e-3}
 # first-order alpha_T of the window [25, 94] in an unbounded medium: 7.992e-5 sigma^2 (firstorder_window.py); H3 null c = this value

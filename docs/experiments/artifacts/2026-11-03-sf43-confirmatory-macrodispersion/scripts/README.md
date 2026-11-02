@@ -9,8 +9,11 @@ The toolchain, in the order it runs (each README has the details):
 | analyse | `analyse_sf43.sh <campaign_dir> <build_dir> [--smoke]` (the engine's `analysis.command`) -> `<campaign_dir>/analysis/summary.json`, figures | `sf43ana/README.md` |
 | coverage | CPU harness of the Gate 5 / sampling / pipeline coverage (the smoke job's background command) | `sf43cov/README.md` |
 
+Qualification gate (H4, H13 against H15): the robust sign is testable only at sizes covered by a qualified coverage profile (`sf43cov` -> `qualification.json` -> `sf43ana/qualification.py`);
+the pre-registration names the document (`qualification`, hashed in `analysis.sha256_list`); the smoke run passes its own (or none: every robust sign `p = 1`). In the smoke job the document is the real coverage run's, while the smoke arms have tiny realized sizes: its robust signs are therefore `p = 1`, status `not qualified at the realized sizes` (the smoke checks structure and counts only, so this is expected, and the Gate 5 / descriptive paths still run).
+
 `analyse_sf43.sh`: production = `python3 -W default -m sf43ana run` (warnings are recorded in `summary.json`, never fatal; the unit tests keep `-W error`) with `<A>/prereg.json`, Gate 5 `auto` with the committed coverage summary, then `check-finite` (output printed, exit status ignored so the recompute / reconcile steps still run); `--smoke` =
-`<A>/prereg_smoke.json`, the smoke job's own coverage output (or Gate 5 descriptive), analysis stdout / stderr to files in `analysis/`, and ONLY the
+`<A>/prereg_smoke.json`, the smoke job's own coverage output (or Gate 5 descriptive) and qualification document (or none), analysis stdout / stderr to files in `analysis/`, and ONLY the
 output of `check-finite` (structure and counts, `STRUCTURE_OK`, `warnings_count`, `errors_count`) on stdout: no estimand, bound, p-value, decision or class reaches the job log.
 
 Tests (from this directory, no GPU, no data):
@@ -25,6 +28,8 @@ python3 -W error -m unittest discover -s recompute43/tests -t .
 python3 -W error -m unittest discover -s reconcile43/tests -t .
 python3 -W error -m unittest discover -s tests_integration -t .        # the whole chain, ~2-3 min: generator -> engine -> analysis -> check-finite
 ```
+
+(Tests added by C-GAPS: `sf42red` suite from `2026-10-30-sf42-confirmatory-tooling/scripts` -- `python3 -W error -m unittest discover -s sf42red/tests -t .` -- with `test_tracker_counts`.)
 
 `tests_integration/test_chain.py`: the real generator (smoke universe, sizes scaled), the real engine and executor with the fake runner binaries, `recompute43`, `reconcile43`,
 a scratch copy of `analyse_sf43.sh --smoke`, `check-finite` `STRUCTURE_OK`; with an injected unusable solve (group-wide replacement), an unreduced segment, and a blinded re-estimation.

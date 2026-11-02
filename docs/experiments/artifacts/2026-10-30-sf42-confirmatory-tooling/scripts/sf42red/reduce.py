@@ -38,6 +38,14 @@ ESTIMANDS (decision G4; d = (x1 - x0)/ell in lambda; the travel window is d in [
   no `expI` (the bridge has no `planes_I`) and no `time` family.  A realization without `pollock/` is an error (`MissingData`).  Under a
   multi-pass realization the identical Pollock rows are written under each pass's `hmax_div` label (the labels of the consumer rows).  The
   per-plane covariance table gets `code=pollock` rows too.  `prune` deletes a Pollock array only when these rows exist (finite).
+  SF-43 `--tracker-counts` (`tracker_counts=True`; default off, which is the SF-42 behaviour: the tables are byte-identical): the tracker totals
+  of the PLANE pass that `write_track_outputs` puts in the pass's `track.json` (`plane_pass.recrossings`, `plane_pass.backflow_encounters`,
+  `seed_backflow`; one `track.json` per pass, so a multi-pass realization has its own totals under each `hmax_<d>`) become three extra columns
+  of every `code=consumer` plane row: `recrossings_per_traced = recrossings / n_traced` (a mean count per traced particle), `frac_backflow =
+  backflow_encounters / n_traced` (`backflow_encounter` is a 0/1 flag per particle: the share of the traced particles with an encounter) and
+  `seed_backflow` (count of seeds that start against the flow and are not traced), `n_traced` being the column of the row (positive weight).
+  Pollock and time rows leave them empty; a `track.json` without these keys is a `MissingData` error (the option is explicit).  The runner does
+  NOT write the per-particle backflow flag, so nothing here excludes backflow particles from an estimator.
   Particle sets: per plane = particles that crossed that plane (finite x23 and tau; seeds with weight 0 never; weights
   renormalized over the set); `set=common` = particles that crossed EVERY plane of the window (check variant).  Columns
   n_first, n_last, n_min, n_max, n_common (counts), set_differs (1 if any plane count differs from n_common; the sets are
@@ -114,6 +122,9 @@ COLUMNS = (["code", "source", "r", "hmax_div", "seed", "family", "weights", "bas
             "wfrac_min", "U_r", "sigT2_first", "sigT2_last", "tilt",
             "t_end", "t_end_next", "j_end", "t_lo", "U_time", "n_set"]
            + list(ALL_EST) + [e + s for e in ALL_EST for s in ("_A", "_B")] + ["note"])
+# SF-43 `--tracker-counts` (opt-in): the tracker totals of the plane pass, copied onto every consumer plane row; appended AFTER `note`, only
+# when the option is on (the default tables keep COLUMNS exactly)
+TRACKER_COLUMNS = ["recrossings_per_traced", "frac_backflow", "seed_backflow"]
 PLANE_COLUMNS = ["code", "source", "r", "hmax_div", "weights", "basis", "plane", "x1", "d", "in_window", "n", "mean_tau",
                  "var_tau", "mean_x2", "mean_x3", "var_x2", "var_x3", "cov_x2x3"]
 
@@ -367,7 +378,17 @@ def consumer_plane_variant(x1, fin, Wk, Yk, tauk, member, common):
     return mom, counts
 
 
-def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass_hmax=None, pollock=False):
+def tracker_counts_of(track, n_traced, where):
+    """(recrossings / n_traced, backflow_encounters / n_traced, seed_backflow) from a pass's ``track.json`` dictionary (see the module docstring)."""
+    try:
+        pp = track["plane_pass"]
+        rc, bf, sb = float(pp["recrossings"]), float(pp["backflow_encounters"]), float(track["seed_backflow"])
+    except (KeyError, TypeError, ValueError) as e:
+        raise MissingData("%s: track.json lacks plane_pass.recrossings / plane_pass.backflow_encounters / seed_backflow (%s)" % (where, e))
+    return (rc / n_traced if n_traced > 0 else NAN), (bf / n_traced if n_traced > 0 else NAN), int(sb)
+
+
+def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass_hmax=None, pollock=False, tracker_counts=False):
     """(rows, plane_rows) of the plane family for one tracker pass.  `pollock=True` (SF-43): the same estimators on the Pollock bridge
     arrays of the realization (`pollock_{weights,planes_x23,planes_t}.npy` for the consumer's `weights,planes_x23,planes_tau`; seeds
     from the pass), rows `code=pollock`, `source` = the realization's `pollock/` directory, weights flux (= pollock_weights) and unif
@@ -412,6 +433,8 @@ def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass
             "seed": int(P.field["seed"]), "family": "plane", "ell": P.ell, "x0": P.x0, "d_lo": d_lo, "d_hi": d_hi,
             "n_planes": len(idx), "d_first": (x1w[0] - P.x0) / P.ell, "d_last": (x1w[-1] - P.x0) / P.ell,
             "n_traced": int(P.traced.sum())}
+    if tracker_counts and not pollock:  # opt-in (SF-43): the consumer rows only
+        base.update(zip(TRACKER_COLUMNS, tracker_counts_of(P.track, base["n_traced"], pass_root)))
     rows, prow = [], []
     all_mem = np.ones(Np, bool)
     for wmode in modes:
@@ -729,13 +752,15 @@ def write_manifest(path, rec, root, tables):
 
 
 def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, root=None, warn=sys.stderr, par2_exit_x=None,
-               par2_dt=None, par2_seed0=None, single_pass_hmax=None, pollock=False):
+               par2_dt=None, par2_seed0=None, single_pass_hmax=None, pollock=False, tracker_counts=False):
     """Run every reduction, write <out>, <out minus .csv>.planes.csv and <out>.manifest.json; returns the table rows.
     SF-43 options (default None = the SF-42 behaviour): par2_seed0 (Par2 rows carry seed0 + r); single_pass_hmax (a single-pass
     realization root, which has no `hmax_<d>` directory, is labelled hmax_div = this value instead of -1, so an arm that mixes
     single- and multi-pass segments has one label for its production pass); pollock=True (SF-43): per consumer pass root additionally the
     plane rows of the realization's Pollock bridge arrays (`code=pollock`, see `consumer_plane_rows`; a realization without them is an
-    error).  The Pollock arrays do not depend on h_max, so a multi-pass realization gets identical Pollock rows under each of its pass labels."""
+    error).  The Pollock arrays do not depend on h_max, so a multi-pass realization gets identical Pollock rows under each of its pass labels.
+    tracker_counts=True (SF-43, default off = the SF-42 tables, byte for byte): the three TRACKER_COLUMNS are appended to the table (see the module
+    docstring)."""
     if par2 or par2_series:
         if ell is None or x0 is None:
             raise ReduceError("--ell and --x0 are required for Par2 inputs")
@@ -750,7 +775,7 @@ def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, ro
     rec = Recorder()
     rows, prows = [], []
     for pr in expand_consumer(consumer, warn):
-        a, b = consumer_plane_rows(rec, pr, ell, x0, d_lo, d_hi, single_pass_hmax)
+        a, b = consumer_plane_rows(rec, pr, ell, x0, d_lo, d_hi, single_pass_hmax, tracker_counts=tracker_counts)
         rows += a + consumer_time_rows(rec, pr, U_time, single_pass_hmax)
         prows += b
         if pollock:
@@ -769,7 +794,7 @@ def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, ro
         row["source"] = _relpath(row["source"], root)
     base = out[:-4] if out.endswith(".csv") else out
     planes_path = base + ".planes.csv"
-    write_table(out, rows, COLUMNS)
+    write_table(out, rows, COLUMNS + TRACKER_COLUMNS if tracker_counts else COLUMNS)
     write_table(planes_path, prows, PLANE_COLUMNS)
     write_manifest(out + ".manifest.json", rec, root, [out, planes_path])
     return rows

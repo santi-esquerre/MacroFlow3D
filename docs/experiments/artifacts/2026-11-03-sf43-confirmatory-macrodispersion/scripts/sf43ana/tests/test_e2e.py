@@ -222,9 +222,48 @@ class EndToEnd(World):
         self.assertAlmostEqual(sec["expI"]["w"]["alpha_LP"]["ratio"], 0.9, places=1)
         self.assertAlmostEqual(sec["time_window"]["p1"]["t_end_adv"]["mean"], 20.0 * 0.5 / 0.1, places=9)
         self.assertAlmostEqual(sec["time_window"]["p1"]["alpha_LAM:time"]["mean"], 0.3, places=9)
-        self.assertIn("input absent", sec["recrossings"]["r"]["note"])
+        self.assertIn("input absent", sec["recrossings"]["arms"]["r"]["note"])
+        self.assertEqual(sec["recrossings"]["arms"]["r"]["alpha_LP_without_backflow"]["status"], "not available: no per-particle flag")
         self.assertIn("input absent", sec["bdd_fit"]["f"]["note"])
         self.assertIn("consumer/pollock", J["g7"]["twins"]["1"]["alpha_LP"])  # twins ran on the loaded data
+
+    def test_par2_completeness_and_tracker_counts_reach_their_blocks(self):
+        """H12 / H17 through the loader: n_last / n_traced of the Par2 arm -> Gate 5 completeness block and sensitivity; the tracker columns of
+        the consumer rows -> secondaries.recrossings per arm and per (amplitude, family)."""
+        from sf43ana.tests.test_gate5 import fake_summary
+
+        def hook(src, seg, s, wname, row):
+            if wname == "main":
+                row.update(n_traced=10000.0, n_last=9999.0 if s % 10 else 9000.0 if s % 20 else 9990.0)
+                if row["code"] == "consumer":
+                    row.update(recrossings_per_traced=0.001 * (s % 4), frac_backflow=0.002 * (s % 3), seed_backflow=float(s % 2))
+            return []
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.root = self._tmp.name
+        self.pr = fx.prereg_dict()
+        self.pr["arms"][0]["role"] = "production"
+        cov = os.path.join(self.root, "cov.json")
+        ok = {"student": {20: False, 40: False}, "hall": {20: True, 40: True}, "boott": {20: True, 40: True}}
+        with open(cov, "w") as f:
+            json.dump(fake_summary(ok, ns=(20, 40)), f)
+        self.pr["gate5"] = {"B": 399, "seed": 3, "coverage_summary": cov, "floor": 20, "amplitudes": {"1": {"consumer": "g5c", "par2": "g5p"}}}
+        self.pr["secondaries"] = {"B": 20, "recrossings": {"p1": {"arm": "p1"}}}
+        self.paths = fx.write_world(self.root, self.pr, mean_of, extra_rows=hook)
+        self.out = os.path.join(self.root, "out")
+        J, _ = self.run_()
+        a = J["gate5"]["amplitudes"]["1"]
+        c = a["par2_completeness"]
+        n_bad = 2  # seeds 8010 and 8030: 9000 / 10000 = 0.9; the seeds with 9990 / 10000 = 0.999 are not flagged (strictly below the threshold)
+        self.assertEqual((c["n"], c["n_flagged"], c["n_pairs"], c["n_flagged_pairs"]), (40, n_bad, 40, n_bad))
+        self.assertAlmostEqual(c["min"], 0.9, places=12)
+        self.assertEqual(a["pair_completeness_sensitivity"]["n_excluded"], n_bad)
+        r = J["secondaries"]["recrossings"]
+        self.assertAlmostEqual(r["arms"]["p1"]["recrossings_per_traced"]["mean"], sum(0.001 * (s % 4) for s in range(1000, 1040)) / 40, places=12)
+        self.assertEqual(r["arms"]["p1"]["recrossings_per_traced"]["n"], 40)
+        self.assertEqual((r["arms"]["p1"]["amplitude"], r["arms"]["p1"]["family"]), ("1", "production"))
+        self.assertEqual(r["by_amplitude_family"]["1"]["production"]["seed_backflow"]["n"], 40)
+        self.assertEqual(r["alpha_LP_without_backflow_status"], "not available: no per-particle flag")
 
     def test_a_failing_descriptive_block_does_not_cost_the_primary_results(self):
         self.build()
@@ -324,6 +363,8 @@ class EndToEnd(World):
         raw["amplitudes"]["2.25"]["floors"] = {"ladder": 10}  # an amplitude-level override
         with open(self.paths["prereg"], "w") as f:
             json.dump(raw, f)
+        with open(raw["qualification"], "w") as f:  # the paired ladder (and the paired production-width cell) has 10 seeds: the pipeline must be qualified at a profile with ladder, width <= 10
+            json.dump(fx.qualification_doc(extra=((3, 20, 10, 10, 10),)), f)
         self.out = os.path.join(self.root, "out_override")
         J, _ = self.run_({"1": 0.001, "2.25": 0.002})
         fam = {h["id"]: h for h in J["family"]["hypotheses"]}

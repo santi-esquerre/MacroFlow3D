@@ -12,6 +12,7 @@ generators (``sf42red.tests.synth``), plus the log lines the executor parses.  F
   FAKE_ERR_AT=r        consumer/Par2: print FAKE_ERR_TEXT on stderr and exit FAKE_ERR_EXIT (default 1) before realization r
   FAKE_NOCONV_SEED=s / FAKE_FALLBACK_SEED=s   the same for the realization whose field seed is s (Par2 and consumer, independent of the
                        position inside the invocation)
+  FAKE_PAR2_INCOMPLETE_SEED=s   Par2: the realization whose field seed is s has 99 of its 100 particles crossing every plane (completeness 0.99)
   FAKE_NOCONV_AT=r     Par2: realization r prints Converged=NO beyond the fallback (final/initial 1e-5; exit stays 0)
   FAKE_FALLBACK_AT=r   Par2: realization r prints Converged=NO with final/initial 1e-12 (verdict 'fallback', usable)
 """
@@ -90,8 +91,10 @@ def consumer(argv):
                   % (r, val["--eps"]))
             return 4
         verdict = "fallback" if env_int("FAKE_FALLBACK_AT") == r or seed_hit("FAKE_FALLBACK_SEED", seed) else "converged"
+        # the tracker totals of `track.json` (plane_pass / seed_backflow; `reduce --tracker-counts`): deterministic from the seed and the pass
         proots = [synth.write_pass(out, M=M, ell=ell, x0=x0, d_planes=d_planes, r=r, hmax=d if len(hm) > 1 else None, seed=seed,
-                                   a_T=0.03 * (1.0 + 0.1 * (seed % 7))) for d in hm]
+                                   a_T=0.03 * (1.0 + 0.1 * (seed % 7)),
+                                   tracker={"recrossings": seed % 5 + d // 8, "backflow_encounters": seed % 3, "seed_backflow": seed % 2}) for d in hm]
         rdir = os.path.join(out, "realizations", "r_%04d" % r)
         if val.get("--pollock-bridge", "off") == "on":  # R/pollock/ in the format of EnsembleRunner.cu: once per realization, whatever the passes
             tw = synth.write_pass(os.path.join(out, "_pollock_cloud"), M=M, ell=ell, x0=x0, d_planes=d_planes, seed=seed, U0=2.5,
@@ -143,7 +146,7 @@ def par2(argv):
         for x1 in planes:
             off = x1 - x0
             v = 2 * 0.03 * ell * off + 1.0 / 12
-            rows.append([x1, 100, 100, off / 2.0, 0.02 * off, 0.5, 0.5, v, v, 0.0, 0.0, 0.0, v - 1.0 / 12, v - 1.0 / 12, 0.0])
+            rows.append([x1, 100, 99 if seed_hit("FAKE_PAR2_INCOMPLETE_SEED", fseed) else 100, off / 2.0, 0.02 * off, 0.5, 0.5, v, v, 0.0, 0.0, 0.0, v - 1.0 / 12, v - 1.0 / 12, 0.0])
         synth.write_par2(os.path.join(cross, "realization_%04d_planes.csv" % r), rows)
         if cfg["analysis"].get("snapshots", {}).get("enabled"):
             sd = os.path.join(cfg["output"]["output_dir"], "snapshots", "r_%04d" % r)

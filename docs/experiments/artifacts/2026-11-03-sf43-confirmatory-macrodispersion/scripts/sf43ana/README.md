@@ -3,17 +3,18 @@
 Purpose: from the campaign ledger, the reduced tables of the engine and the pre-registration JSON, produce `summary.json`: estimands,
 error budgets, robust-sign tests, the fixed-family Holm decisions, the Gate 4 classes (decision `2026-10-29-sf39-remediation-sf42-sf43`
 G4, G5.1-G5.7, G8 with the pre-activation decisions H2-H6, H13, H15-H17), Gate 5 in Fieller form (H5), the descriptive blocks (G7,
-secondaries, failures, positive control) and the standard figures. It imports `mcstat` and `sf42red` of the SF-42 artifact unchanged
+secondaries, failures, positive control, achieved Gate 4 power, basis contrasts) and the standard figures. It imports `mcstat` and `sf42red` of the SF-42 artifact unchanged
 (located relative to this directory, or `SF42_SCRIPTS`). stdlib + numpy + scipy (+ optional matplotlib).
 
 ```bash
 cd docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts
 python3 -W error -m unittest discover -s sf43ana/tests -t .        # about 2 min (the null simulations dominate)
-python3 -m sf43ana run --prereg P.json --campaign C --reduced R [--gate5 auto|none|G.json] --out O      # O/summary.json (+ O/figures/)
+python3 -m sf43ana run --prereg P.json --campaign C --reduced R [--gate5 auto|none|G.json] [--coverage-summary PATH|none] [--qualification PATH|none] --out O   # O/summary.json (+ O/figures/)
 python3 -m sf43ana check-finite --summary O/summary.json     # smoke test: structure and COUNTS only, STRUCTURE_OK | STRUCTURE_FAIL <reasons>
 ```
 
-`--coverage-summary PATH|none` overrides `gate5.coverage_summary` (the smoke run reads its own coverage output; `none`: Gate 5 descriptive).
+`--coverage-summary PATH|none` overrides `gate5.coverage_summary` (the smoke run reads its own coverage output; `none`: Gate 5 descriptive); `--qualification PATH|none`
+overrides the top-level `qualification` (`none`: no document, every robust sign `p = 1`, status `no qualification document`).
 `--gate5`: `auto` (default) computes Gate 5 from the pre-registration's `gate5` block (no block: no p-values); `none` supplies no p-value; a
 path supplies `{"p": {"<amplitude>": p}}`. A hypothesis without a p-value enters the Holm family with `p = 1` (untestable).
 `check-finite` prints per section the numbers of finite / non-finite / other leaves and `STRUCTURE_OK` or `STRUCTURE_FAIL`; it never prints an
@@ -49,7 +50,9 @@ data = {"arms":   {arm id: {"seed": int array (N,) IN PREFIX ORDER, "verdict": s
         "halted": [arm], "sources": {ledger arm: [arm ids reading its tables]}, "coverage_summary": dict|None}
 columns: <est> = position basis, <est>:<basis> any other (alpha_TP:disp), est in alpha_TP, alpha_TAP, alpha_LP, U_r (primary window);
          alpha_LAM:time alpha_Tfixed:time alpha_TAM:time t_end_adv (time family); alpha_TP:expI alpha_LP:expI (consumer expI weights);
-         frac_recross frac_backflow alpha_LP:nobackflow (H17, only if the table carries them)
+         recrossings_per_traced frac_backflow seed_backflow (H17: tracker totals of the plane pass, `sf42red reduce --tracker-counts`),
+         n_last n_traced (the counts of the plane row; Par2: crossed the last window plane / injected, H12), the legacy frac_recross and
+         alpha_LP:nobackflow (all only if the table carries them)
 ```
 
 **Analysis set** of an arm = the longest COMPLETE prefix of its pre-registered seed order after the group-wide replacements, cut at the arm's
@@ -70,8 +73,9 @@ Defaults (`config.DEFAULTS`, echoed in `process.prereg_effective`): `windows` ma
 `fallback_verdicts` [fallback]; `reduced_pattern`; `sampling_method` bootstrap-t; `bootstrap` {B_sampling 33599 (B+1 = 33600: exact ranks for
 every Holm level 0.05/j and half), B_budget 4000, B_ucl 4000, B_bca 5000, seed};
 `eh` {p_range [0.5,2.1], p_cap 2, safety 1.25, fallback_factor 3, gate_level 0.90}; `floors` {production 100, ladder 30, width 30, hmax 20,
-gate5 200}. Top-level keys: the defaults, `amplitudes`, `arms`, `family`, `targets`, `first_order`, `report_levels` and the blocks `gate5`,
-`g7`, `secondaries`, `failures`, `positive_control`.
+gate5 200}. Top-level keys: the defaults, `amplitudes`, `arms`, `family`, `targets`, `first_order`, `report_levels`, `qualification` (path of the
+`sf43cov` `qualification.json`, hashed in the summary like the coverage summary) and the blocks `gate5`, `g7`, `secondaries`, `failures`,
+`positive_control`, `pollock`, `gate4_power`, `basis`.
 
 ```text
 arms[]        id, amplitude, group, seeds (confirmatory order: the first n_max seeds of the group's block), reserves, n_conf (planned), n_max
@@ -104,11 +108,28 @@ A hypothesis is untestable (`p = 1`, estimates descriptive) unless every arm it 
 production-width arm of the group), every width cell >= `floors.width`, the h_max passes >= `floors.hmax` paired seeds, plus each arm's own `floor`;
 Gate 5 needs >= `gate5.floor` pairs (default `floors.gate5` = 200; 250 at sigma^2 4 via `gate5.amplitudes.<a>.floor`).
 
+### Qualification gate of the robust sign (H4, H13 against H15; `qualification.py`)
+
+The floors above are necessary, not sufficient: the coverage of the pipeline was simulated at pre-registered sizes (`sf43cov`, profiles `full` and
+`half`, see its README), and the campaign may be truncated below the planned sizes. The robust sign at an amplitude is TESTABLE only if (a) its floors
+hold, (b) the pipeline of its structure `K` (number of budget components: 3 at sigma^2 0.25 / 1, 4 at 2.25 / 4) is qualified at the LARGEST profile whose
+every arm size (production `N`, the paired ladder, the smallest width cell, the `h_max` pairs: the sizes of the design arrays the test uses) is at most
+the realized size of that arm, and (c) the bootstrap-t sampling limit is qualified at the largest grid size `n` at most the realized production `N`.
+Otherwise `p = 1` (the hypothesis stays in the fixed family) with `status` `not qualified at the realized sizes`; without a document (key absent or
+file missing) every robust sign has `p = 1` and status `no qualification document` (the smoke run may have none). An incomplete document
+(`all_cells_complete` not true) qualifies nothing. Estimates, budgets and classes stay descriptive; `gate4.<amp>.qualification` records the
+profile, the grid size and the reasons, `process.qualification` the path and sha256 of the document. A profile is qualified iff EVERY cell of it
+passed (all distributions, bias scenarios, tails).
+
+**Assumption (stated, not tested):** coverage qualified at a smaller size carries over to larger sizes (the coverage error of the studentized procedures
+decreases with the sample sizes). Consequently only the largest eligible profile is consulted: a smaller qualified profile does not rescue a
+larger eligible profile that fails.
+
 ### `gate5` (H5; Fieller form; `gate5.py`)
 
 ```json
 "gate5": {"family_m": 8, "fwer": 0.05, "margin_ratio": 1.10, "level": 0.90, "B": 33599, "seed": 20261103, "key": "alpha_LP", "ref": "t",
-          "coverage_summary": "<out of sf43cov>/summary.json", "floor": 200, "fallback_verdicts": ["fallback"],
+          "coverage_summary": "<out of sf43cov>/summary.json", "floor": 200, "fallback_verdicts": ["fallback"], "completeness_min": 0.999,
           "amplitudes": {"0.25": {"consumer": "g5c025", "par2": "g5p025"},
                          "4": {"consumer": "g5c4", "par2": "g5p4", "floor": 250, "j3b": true,
                                "pilot": {"consumer": "pilot_c", "par2": "pilot_p"}, "unmatched": {"consumer": "p4", "par2": "g5p4"}}}}
@@ -120,7 +141,10 @@ coverage summary qualifies at the LARGEST coverage grid point <= the realized `n
 J3B-bound family (skewness 2.73, excess kurtosis 7.59, both signs). Ratio interval by inverting the tests (Fieller); verdict `agree` /
 `disagree` / `inconclusive`; achieved power = Fieller-form power at the realized `n` with the observed SD of `D_hi = L - 1.10 P`, `D_lo = L - P/1.10`
 and their correlation (also the delta-method power for continuity); `pair_exclusion_sensitivity` (pairs with a `fallback` verdict in either code
-removed); `d_moments` of `D_r` at the margins, and `pilot` moments if pilot arms are passed (they must exist in `data`, e.g. as extra arms).
+removed); **Par2 crossing completeness** (H12): per Par2 realization `completeness = n_last / n_traced` of the main window (`sf42red.reduce.par2_rows`:
+`n_traced` = particles injected at the first window plane, `n_last` = particles that crossed the last window plane, from the uniform-weight plane row),
+flagged below `completeness_min` (0.999; undefined = flagged) -- `par2_completeness` (counts over the arm and over the pairs, minimum and quantiles) and
+`pair_completeness_sensitivity` (the pairs with a flagged Par2 realization removed; same procedure, descriptive), next to the fallback-exclusion one; `d_moments` of `D_r` at the margins, and `pilot` moments if pilot arms are passed (they must exist in `data`, e.g. as extra arms).
 
 ### `positive_control` (H9; `positive_control.py`)
 
@@ -170,8 +194,48 @@ arm, the production label `hmax_div` 8 (the multi-pass realizations carry identi
 
 `failures` runs with its defaults when absent. A failure inside a descriptive block is recorded as `{"error": ...}` (stderr `BLOCK_ERROR`), never
 fatal; Gate 5 errors propagate. Inputs not written by `sf42red` today and what they need: (the G7 Pollock twin is an arm with `code: pollock`, whose rows `sf42red reduce --pollock` writes), **`bdd_fit`** (columns `curve_t`,
-`curve_alpha` of snapshot-time curves, `unavailable` without), **`recrossings`** (H17: columns `frac_recross`, `frac_backflow` and
-`alpha_LP:nobackflow` in the reduced table; the reducer does not write them, so the block reports `input absent` and names the columns).
+`curve_alpha` of snapshot-time curves, `unavailable` without).
+
+**`recrossings` (H17).** The consumer writes per-pass tracker totals in `track.json` (`plane_pass.recrossings`, `plane_pass.backflow_encounters` -- a 0/1 flag per
+particle, so the count is the number of particles with an encounter --, `seed_backflow`); the executor reduces every consumer arm with the opt-in
+`sf42red reduce --tracker-counts`, which copies `recrossings_per_traced`, `frac_backflow` and `seed_backflow` of the plane pass onto each consumer plane row
+(SF-42 tables are byte-identical without the flag). The block `secondaries.recrossings` has `arms.<name>` (the distribution over the realizations of the
+analysis set: mean, sd, quantiles 0 / 5 / 25 / 50 / 75 / 95 / 100 %, number positive; tagged with the arm's amplitude and family = `role`),
+`by_amplitude_family` (the realizations of the arms of one family at one amplitude pooled) and, per arm, `alpha_LP_without_backflow`: **status `not available: no
+per-particle flag`**. The H17 sensitivity of `alpha_LP` without the backflow-encounter particles cannot be computed because the runner does not write a
+per-particle backflow flag (only the totals); it needs a runner change (out of scope here) and the block says so instead of reporting an absent number. A
+supplied column `alpha_LP:nobackflow` would still be analysed (paired log-ratio).
+
+### `gate4_power` (acceptance C; `gate4_power.py`)
+
+```json
+"gate4_power": {"R": 1000, "B_budget": 4000, "seed": 20261103, "chunk": 100, "scenarios": ["no_bias", "observed"],
+                "alternatives": {"s1": {"alpha_TP": 7.217e-3, "alpha_TAP": 7.217e-3}, "...": {}}, "source": "..."}
+```
+
+Achieved power at the REALIZED sizes: per amplitude, the probability that the robust sign rejects -- BOTH estimators, intersection-union -- at the smallest Holm
+level `fwer / m` and at `fwer`, when the true growths are the pre-registered planning `alternatives` (the SF-42 R3 displacement-basis means,
+`docs/experiments/2026-10-30-sf42-confirmatory-tooling.md` lines 1025-1032, column "mean disp": design inputs, not claims about `alpha_T`; the Holm power lies between
+the two levels). Port of `gate4_power_sim.py` of the pre-activation review with the pre-registered classes (`gate4.RobustTest`, `eh.EhBound`, the mcstat
+contrast bounds): normal draws, the REALIZED arm sizes, the OBSERVED SD of the production arm and the OBSERVED mean / covariance of every budget contrast (ladder level
+differences incl. the gate arm, width cells and their resolution steps, `h_max` pairs). Scenario `no_bias`: every contrast has true mean 0; `observed`: the observed
+means. Output per scenario: each estimator's power with its Monte Carlo SE, `both` (the same standard-normal draws drive both estimators: they agree to 1e-3 per
+realization in SF-42 R3) and the Frechet upper bound `min`. **Simplifications:** the sampling limit is Student, not the bootstrap-t (33 599 resamples per replicate
+are out of reach; under normal draws they agree to second order, and the bootstrap-t is qualified by `sf43cov`); `B_budget` resamples for `E_h`; normal draws only;
+the review's non-monotone-level scenario is not simulated. An amplitude whose design is untestable by the floors is `not computed` with the reasons. Cost: 1.5 s per 100 replicates (both estimators) at sigma^2 = 4-like sizes
+with `B_budget` 4000, so R = 1000 takes about 2 minutes locally for the four amplitudes and both scenarios. Descriptive; it never feeds a decision.
+
+### `basis` (H2; `basis.py`)
+
+```json
+"basis": {"level": 0.90, "B": 2000, "seed": 20261103, "amplitudes": {"s1": {"flux": "s1_prod", "unif": "s1_produnif"}}}
+```
+
+Per amplitude on the production analysis set: `flux` (flux weights; `alpha_TP`, `alpha_TAP`): the paired difference `pos - disp` (mean, 90 % Student and bootstrap-t
+intervals) and the ratio of means `pos / disp` (paired seed-bootstrap percentile interval); `control_uniform`: the same on the uniform-weight copy of the set (arm
+`<amp>_produnif`: `source` = the production arm, `selection.weights = unif`, label `hmax_div` 8, follows the re-estimation like `<amp>_prodpol`), whose expectation is a
+difference of 0 by transverse stationarity; `interval_excludes_zero` (Student, bootstrap-t) and `flag` (either excludes 0). A flag indicts the estimand pipeline or
+the stationarity, not the physics. Descriptive.
 
 ## Statistics (decisions in `gate4.py`, `eh.py`, `holm.py`)
 
@@ -196,8 +260,8 @@ Every amplitude of `gate5.amplitudes.<a>` carries `reporting`: `confirmatory_out
 
 ## `summary.json`
 
-Sections `estimands`, `gate4`, `family`, `budgets`, `precision`, `process`, and `gate5`, `g7`, `secondaries`, `failures`, `positive_control`, `pollock` if
-configured; non-finite numbers are the strings `"nan"`, `"inf"`, `"-inf"`. Figures (H18) in `figures/` if matplotlib imports, else
+Sections `estimands`, `gate4`, `family`, `budgets`, `precision`, `process`, and `gate5`, `g7`, `secondaries`, `failures`, `positive_control`, `pollock`,
+`gate4_power`, `basis` if configured; non-finite numbers are the strings `"nan"`, `"inf"`, `"-inf"`. Figures (H18) in `figures/` if matplotlib imports, else
 `FIGURES_SKIPPED` on stderr; never fatal.
 
 **Isolation and warnings.** A descriptive block that raises is recorded as `{"error": ...}` (`BLOCK_ERROR` on stderr). An exception while computing ONE
@@ -212,7 +276,9 @@ production setting (the unit tests keep `-W error`, where a warning stays an exc
 
 `test_eh` (known answers, per-triple range, fallback levels, the gate on an exact power law and a pre-asymptotic law, `>= LadderBound` on random
 ladders with active gates), `test_gate4`, `test_holm`, `test_loader` (prefix, replacements, executor naming, Par2 seed map, torn ledger, data
-contract), `test_gate5` (Hall, Fieller inversion, selection incl. J3B, prefix pairs, floors, Fieller power vs simulation, exclusion sensitivity),
-`test_pollock`, `test_alignment` (Gate 5 reporting labels, coverage override, unreduced block), `test_g7`, `test_secondaries` (incl. recrossings hook), `test_failures`, `test_positive_control`, `test_nullsim` (family-wise rate <= 0.05 under
+contract), `test_gate5` (Hall, Fieller inversion, selection incl. J3B, prefix pairs, floors, Fieller power vs simulation, exclusion sensitivity, Par2 completeness and its sensitivity),
+`test_pollock`, `test_alignment` (Gate 5 reporting labels, coverage override, unreduced block), `test_g7`, `test_secondaries` (incl. the recrossing distributions and the
+`not available` status), `test_qualification` (the rule: largest eligible profile, grid point, incomplete / failing / absent documents, the status in the family, the CLI
+override), `test_gate4_power` (the noncentral-t known answer, monotonicity, determinism, strict schema), `test_basis` (known answers, the control flag, the arm), `test_failures`, `test_positive_control`, `test_nullsim` (family-wise rate <= 0.05 under
 normal/skewed data with BOTH the Student and the bootstrap-t sampling limit), `test_e2e` (synthetic campaign: Gate 5 from the campaign, floors,
 strict validation, `check-finite`, figures, the two-entries-share-the-production-arm contract).

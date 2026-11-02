@@ -40,6 +40,33 @@ class PrefixAndReplacement(Base):
         self.assertEqual(arms["par2_1"].N, 10)
         self.assertTrue(np.all(np.isfinite(a.get("main", "disp", "alpha_TP"))))
 
+    def test_optional_columns_tracker_counts_and_crossing_counts_are_loaded_when_the_table_has_them(self):
+        """H17 / H12: recrossings_per_traced, frac_backflow, seed_backflow (``reduce --tracker-counts``) and n_last / n_traced of the plane row."""
+        arms, _, _ = self.build()
+        for a in ("p1", "par2_1"):
+            self.assertNotIn("recrossings_per_traced", arms[a].extra)  # the fixture tables do not carry the tracker columns
+
+        def hook(src, seg, s, wname, row):
+            if wname == "main":
+                row.update(n_last=900.0 + s % 7, n_traced=1000.0)
+                if row["code"] == "consumer":
+                    row.update(recrossings_per_traced=0.001 * (s % 4), frac_backflow=0.002, seed_backflow=float(s % 2))
+            return []
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.pr = fx.prereg_dict()
+        self.paths = fx.write_world(self._tmp.name, self.pr, flat_mean, extra_rows=hook)
+        self.prereg = config.load_prereg(self.paths["prereg"])
+        d = build_data(self.prereg, *load_all(self.prereg, self.paths["campaign"], self.paths["reduced"])[::2])
+        c = d["arms"]["p1"]["cols"]
+        self.assertEqual(c["recrossings_per_traced"].tolist(), [0.001 * (int(s) % 4) for s in d["arms"]["p1"]["seed"]])
+        self.assertEqual(set(c["frac_backflow"]), {0.002})
+        self.assertEqual(c["seed_backflow"].tolist(), [float(int(s) % 2) for s in d["arms"]["p1"]["seed"]])
+        self.assertEqual(c["n_traced"].tolist(), [1000.0] * 40)
+        p = d["arms"]["par2_1"]["cols"]
+        self.assertEqual(p["n_last"].tolist(), [900.0 + int(s) % 7 for s in d["arms"]["par2_1"]["seed"]])
+        self.assertNotIn("recrossings_per_traced", p)  # Par2 rows carry no tracker totals
+
     def test_par2_seed_is_segment_seed0_plus_r(self):
         arms, _, _ = self.build()
         a = arms["par2_1"]

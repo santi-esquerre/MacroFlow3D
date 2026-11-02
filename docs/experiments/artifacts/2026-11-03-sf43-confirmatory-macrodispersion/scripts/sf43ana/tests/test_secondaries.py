@@ -95,28 +95,52 @@ class Blocks(unittest.TestCase):
 
 
 class Recrossings(unittest.TestCase):
-    def data(self, with_cols):
+    def data(self, with_cols, legacy=False):
         rng = np.random.default_rng(2)
         n = 40
         lp = 1.0 + 0.1 * rng.standard_normal(n)
         cols = {"alpha_LP": lp}
         if with_cols:
-            cols.update({"frac_recross": 0.02 + 0.005 * rng.standard_normal(n), "frac_backflow": 0.004 + 0.001 * rng.standard_normal(n),
-                         "alpha_LP:nobackflow": lp * 0.95})
-        return {"arms": {"a": {"seed": np.arange(n), "cols": cols}}}
+            cols.update({"recrossings_per_traced": 0.02 + 0.005 * rng.standard_normal(n), "frac_backflow": 0.004 + 0.001 * rng.standard_normal(n),
+                         "seed_backflow": rng.integers(0, 3, n).astype(float)})
+        if legacy:
+            cols.update({"frac_recross": 0.02 + 0.005 * rng.standard_normal(n), "alpha_LP:nobackflow": lp * 0.95})
+        return {"arms": {"a": {"seed": np.arange(n), "cols": cols}, "b": {"seed": np.arange(n), "cols": dict(cols)}}}
 
-    def test_fractions_and_the_sensitivity_without_backflow_encounters(self):
-        r = sec.run({"secondaries": {"recrossings": {"s4": {"arm": "a"}}}}, self.data(True))["recrossings"]["s4"]
-        self.assertAlmostEqual(r["frac_recross"]["mean"], 0.02, delta=0.005)
+    PRE = {"secondaries": {"recrossings": {"s4": {"arm": "a"}, "s4b": {"arm": "b"}}},
+           "arms": [{"id": "a", "amplitude": "s4", "role": "production"}, {"id": "b", "amplitude": "s4", "role": "production"}]}
+
+    def test_per_realization_distribution_per_arm_and_per_amplitude_and_family(self):
+        out = sec.run(self.PRE, self.data(True))["recrossings"]
+        r = out["arms"]["s4"]
+        self.assertEqual((r["amplitude"], r["family"]), ("s4", "production"))
+        self.assertAlmostEqual(r["recrossings_per_traced"]["mean"], 0.02, delta=0.005)
         self.assertAlmostEqual(r["frac_backflow"]["mean"], 0.004, delta=0.001)
-        self.assertAlmostEqual(r["alpha_LP_without_backflow_over_all"]["ratio"], 0.95, places=10)
+        self.assertEqual(r["recrossings_per_traced"]["n"], 40)
+        self.assertEqual(sorted(r["frac_backflow"]["quantiles"]), ["0", "0.05", "0.25", "0.5", "0.75", "0.95", "1"])
+        self.assertLessEqual(r["frac_backflow"]["quantiles"]["0.05"], r["frac_backflow"]["quantiles"]["0.95"])
         self.assertNotIn("note", r)
+        pooled = out["by_amplitude_family"]["s4"]["production"]  # the two arms of the family pooled: 80 realizations
+        self.assertEqual((pooled["frac_backflow"]["n"], pooled["arms"]), (80, ["s4", "s4b"]))
+
+    def test_the_alpha_LP_sensitivity_says_it_is_not_available_without_the_per_particle_flag(self):
+        out = sec.run(self.PRE, self.data(True))["recrossings"]
+        self.assertEqual(out["alpha_LP_without_backflow_status"], "not available: no per-particle flag")
+        r = out["arms"]["s4"]["alpha_LP_without_backflow"]
+        self.assertEqual(r["status"], "not available: no per-particle flag")
+        self.assertIn("runner change", r["reason"])
+
+    def test_a_supplied_nobackflow_column_is_still_used(self):
+        r = sec.run(self.PRE, self.data(True, legacy=True))["recrossings"]["arms"]["s4"]
+        self.assertAlmostEqual(r["alpha_LP_without_backflow"]["ratio"], 0.95, places=10)
+        self.assertAlmostEqual(r["frac_recross"]["mean"], 0.02, delta=0.005)
 
     def test_without_the_input_the_block_says_what_is_needed(self):
-        r = sec.run({"secondaries": {"recrossings": {"s4": {"arm": "a"}}}}, self.data(False))["recrossings"]["s4"]
+        r = sec.run({"secondaries": {"recrossings": {"s4": {"arm": "a"}}}}, self.data(False))["recrossings"]["arms"]["s4"]
         self.assertIn("input absent", r["note"])
-        for c in ("frac_recross", "frac_backflow", "alpha_LP:nobackflow"):
+        for c in ("recrossings_per_traced", "frac_backflow", "seed_backflow", "alpha_LP:nobackflow"):
             self.assertIn(c, r["note"])
+        self.assertEqual(r["alpha_LP_without_backflow"]["status"], "not available: no per-particle flag")
 
 
 if __name__ == "__main__":

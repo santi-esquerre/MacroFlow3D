@@ -4,12 +4,16 @@ docstring; ``qualify --results DIR`` is an alias of ``--out``).
 PROFILES (``--profile``).  ``gate5`` (default): the Gate 5 block below.  ``sf43`` (decision H15, all blocks, one plan, resumable per chunk):
   (i)   the Gate 5 block, plus the J3B-bound family (skewness 2.73, excess kurtosis 7.59, both signs) as JUDGED cells at ``--j3b-ns``
         (250: Gate 5 at sigma^2 = 4 is analysed at 250 pairs; it is gating there, the other sizes of the J3B family stay reported);
-  (ii)  the bootstrap-t sampling limit of the production mean at ``--sampling-ns`` (200) at the m = 8 Holm tails and their halves
+  (ii)  the bootstrap-t sampling limit of the production mean at ``--sampling-ns`` (100, 150, 200: the grid on which the analysis qualifies
+        the limit at the largest n at most the realized production N, H13 against H15) at the m = 8 Holm tails and their halves
         (smallest 3.125e-3), ``normal`` / ``stress`` / ``stress-``, ``R >= 56 000``: proc ``sf43_sampling``;
-  (iii) the whole robust-sign pipeline at variant A's arm sizes (production 200; ladders 100 at K = 3 (sigma^2 0.25, 1) and 150 at K = 4
-        (2.25, 4); width cells 150; h_max 30), bootstrap-t production limit and Student components, at the m = 8 Holm levels,
-        ``R >= 28 000``, biases 0 and +2 standard errors per component (order 1 and 2), ``normal`` / ``stress`` / ``stress-``: proc
-        ``sf43_pipeline`` (``procs.run_sf43_pipeline``; ``mcstat``'s pipeline is fixed at m = 7 and one budget-arm size).
+  (iii) the whole robust-sign pipeline at two PROFILES of arm sizes per structure K: ``full`` = variant A's sizes (production 200; ladders
+        100 at K = 3 (sigma^2 0.25, 1) and 150 at K = 4 (2.25, 4); width cells 150; h_max 30) and ``half`` = the truncated sizes (K = 3:
+        production 100, ladder 50, width 75, h_max 20; K = 4: production 100, ladder 75, width 75, h_max 20), the same distributions,
+        bias scenarios and R; bootstrap-t production limit and Student components, at the m = 8 Holm levels, ``R >= 28 000``, biases 0 and +2
+        standard errors per component (order 1 and 2), ``normal`` / ``stress`` / ``stress-``: proc ``sf43_pipeline``
+        (``procs.run_sf43_pipeline``; ``mcstat``'s pipeline is fixed at m = 7 and one budget-arm size).  ``qualify`` reports per profile and the
+        analysis (``sf43ana.qualification``) applies the largest profile that fits the realized sizes.
 ``--smoke`` shrinks every block to a seconds-long end-to-end check (all procedures, both workers and the bootstrap).
 
 The Gate 5 plan (``plan.json`` in ``--out``, written once; a different plan in the same directory is refused) holds one cell per (distribution,
@@ -46,10 +50,12 @@ DEFAULT_WORKERS = 32
 MAX_WORKERS = 32  # the host is shared: never more than 32 workers
 VERSION = 1
 J3B_NS = (250,)
-SAMPLING_NS = (200,)
+SAMPLING_NS = (100, 150, 200)
 # (label, K, ip, N, n_l, n_i, n_w): variant A of the pre-registration (sigma^2 0.25 / 1: K = 3, production level in the middle of the ladder;
-# 2.25 / 4: K = 4, production finest)
-PIPELINE_CONFIGS = (("K3", 3, 1, 200, 100, 30, 150), ("K4", 4, 2, 200, 150, 30, 150))
+# 2.25 / 4: K = 4, production finest) -- the FULL profile -- and the HALF profile of the truncated campaign (H13 floors against H15)
+PIPELINE_CONFIGS = (("K3", 3, 1, 200, 100, 30, 150), ("K4", 4, 2, 200, 150, 30, 150),
+                    ("K3half", 3, 1, 100, 50, 20, 75), ("K4half", 4, 2, 100, 75, 20, 75))
+SMOKE_PIPELINE_CONFIGS = (("K3", 3, 1, 40, 20, 10, 20), ("K4", 4, 2, 40, 20, 10, 20), ("K3half", 3, 1, 30, 15, 8, 15), ("K4half", 4, 2, 30, 15, 8, 15))
 PIPELINE_BIASES = (("zero", 0.0, 1.0), ("bias,order=1", 2.0, 1.0), ("bias,order=2", 2.0, 2.0))  # (name, bias in s.e. of each component, order)
 
 
@@ -253,8 +259,8 @@ def main(argv=None):
         args.workers = MAX_WORKERS
     args.pipeline_configs = PIPELINE_CONFIGS
     if args.smoke:
-        args.pipeline_configs = (("K3", 3, 1, 40, 20, 10, 20), ("K4", 4, 2, 40, 20, 10, 20))
-        args.sampling_ns, args.j3b_ns = (60,), (60,)
+        args.pipeline_configs = SMOKE_PIPELINE_CONFIGS
+        args.sampling_ns, args.j3b_ns = (40, 60), (60,)
         args.ns, args.report_ns = (60,), ()
     if args.cmd == "qualify":
         from sf43cov import qualify

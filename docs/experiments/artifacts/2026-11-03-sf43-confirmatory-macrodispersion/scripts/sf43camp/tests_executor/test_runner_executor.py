@@ -484,6 +484,25 @@ class TestReducePrune(Base):
         self.assertEqual({x["weights"] for x in rows if x["code"] == "pollock"}, {"flux", "unif"})  # no expI, no time family
         self.assertEqual({x["family"] for x in rows if x["code"] == "pollock"}, {"plane"})
 
+    def test_consumer_rows_carry_the_tracker_counts_of_their_own_pass(self):
+        """H17: ``reduce --tracker-counts`` for consumer arms; the fake runner writes recrossings = seed % 5 + d // 8, backflow = seed % 3 and
+        seed_backflow = seed % 2 in the track.json of pass d; Np = 8 x 8 = 64 traced (the fake's weights are uniform)."""
+        with open(self.red["tables"][0]) as f:
+            rows = list(csv.DictReader(f))
+        cons = [x for x in rows if x["code"] == "consumer" and x["family"] == "plane"]
+        self.assertTrue(cons)
+        for x in cons:
+            seed, d = int(x["seed"]), int(x["hmax_div"])
+            self.assertEqual(int(x["n_traced"]), 64)
+            self.assertAlmostEqual(float(x["recrossings_per_traced"]), (seed % 5 + d // 8) / 64.0, delta=1e-15)
+            self.assertAlmostEqual(float(x["frac_backflow"]), (seed % 3) / 64.0, delta=1e-15)
+            self.assertEqual(int(x["seed_backflow"]), seed % 2)
+        for x in rows:
+            if x["code"] != "consumer" or x["family"] != "plane":
+                self.assertEqual(x["recrossings_per_traced"], "")
+        with open(self.pred["tables"][0]) as f:  # Par2 tables: no tracker columns
+            self.assertNotIn("frac_backflow", next(csv.reader(f)))
+
     def test_pollock_rows_are_off_when_the_arm_has_no_bridge(self):
         arm = consumer_arm(hmax_div=[8], pollock_bridge=False)
         seg = os.path.join(self.root, "seg_nopol")

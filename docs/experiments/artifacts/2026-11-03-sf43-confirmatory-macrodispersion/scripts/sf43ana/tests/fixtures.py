@@ -52,6 +52,24 @@ def prereg_dict(n=40, nh=20):
             "first_order": {"1": {"alpha_TP": 0.006}}}
 
 
+def qualification_doc(profiles=((3, 20, 20, 20, 10), (4, 20, 20, 20, 10)), sampling=(20,), qualified=True, complete=True, extra=()):
+    """A ``qualification.json`` of ``sf43cov qualify`` (the fields ``sf43ana.qualification`` reads): one pipeline cell per profile
+    ``(K, production N, ladder, width, h_max)`` (two cells, so that the profile aggregates) and one sampling grid point per ``n`` in ``sampling``.
+    ``qualified``: True / False / a dict {profile or n: bool}; ``extra``: more profiles of the same form."""
+    def q(key):
+        return qualified.get(key, True) if isinstance(qualified, dict) else qualified
+
+    doc = {"version": 1, "all_cells_complete": complete, "incomplete": [], "pipeline": [], "sampling": {}, "plan_hash": "fixture"}
+    for prof in tuple(profiles) + tuple(extra):
+        K, N, nl, nw, ni = prof
+        for scen in ("zero", "bias"):
+            doc["pipeline"].append({"cell": "K%d_%s" % (K, scen), "K": K, "N": N, "arm_sizes": {"ladder": nl, "h_max": ni, "width": nw},
+                                    "scenario": scen, "dist": "normal", "qualified": q(prof)})
+    for n in sampling:
+        doc["sampling"]["n=%d" % n] = {d: {"lower": {"qualified": q(n)}, "upper": {"qualified": True}} for d in ("normal", "stress")}
+    return doc
+
+
 def _val(aid, seed, mu, common_sd, own_sd, group):
     z = np.random.default_rng([zlib.crc32(group.encode()), seed]).standard_normal()
     e = np.random.default_rng([zlib.crc32(aid.encode()), seed, 7]).standard_normal()
@@ -69,7 +87,8 @@ def seed_record(arm_id, group, segment_path, seed, seed0, unit, verdict, cls):
             "field_seed": seed}
 
 
-def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), segments=2, extra_rows=None, ell=0.1, unreduced=(), reest=None):
+def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), segments=2, extra_rows=None, ell=0.1, unreduced=(), reest=None,
+                qualification="permissive"):
     """Writes ``prereg.json``, ``campaign/ledger.jsonl`` (``seed`` / ``replacement`` / ``unreduced`` / ``reest`` records of the engine; ``unit_end``
     too, which the loader ignores) and the reduced tables
     ``reduced/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv`` of every arm.
@@ -81,8 +100,15 @@ def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), 
     """
     os.makedirs(os.path.join(root, "campaign"), exist_ok=True)
     pp = os.path.join(root, "prereg.json")
+    extra_keys = {}
+    if qualification is not None:  # the robust sign needs a qualification document (sf43ana.qualification); "permissive" qualifies every fixture size
+        qdoc = qualification_doc() if qualification == "permissive" else qualification
+        qpath = os.path.join(root, "qualification.json")
+        with open(qpath, "w") as f:
+            json.dump(qdoc, f)
+        extra_keys["qualification"] = qpath
     with open(pp, "w") as f:
-        json.dump(dict(prereg, windows=WINDOWS), f)
+        json.dump(dict(prereg, windows=WINDOWS, **extra_keys), f)
     fail, unreduced = set(fail), set(unreduced)
     ledger, rows, sources = [], {}, {}
     for a in prereg["arms"]:
@@ -117,8 +143,8 @@ def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), 
                 if skip_seg:
                     continue
                 for a in group_arms:
-                    if a["code"] == "pollock" or s not in set(a["seeds"]) | set(a.get("reserves", [])):
-                        continue  # a Pollock entry reads rows of the table that ``extra_rows`` adds
+                    if a["code"] == "pollock" or a.get("selection") or s not in set(a["seeds"]) | set(a.get("reserves", [])):
+                        continue  # a Pollock entry or an entry with its own row selection (uniform weights) reads rows of the table that ``extra_rows`` adds
                     for wname, (lo, hi) in WINDOWS.items():
                         for basis in ("pos", "disp"):
                             mu = lambda est: mean_of(a, wname, basis, est)  # noqa: E731
@@ -136,7 +162,8 @@ def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), 
         lo, hi = WINDOWS[wname]
         path = table_path(root, src, seg, lo, hi)
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        red.write_table(path, rs, red.COLUMNS)
+        extra = [c for c in red.TRACKER_COLUMNS if any(c in r for r in rs)]  # the opt-in tracker columns (sf42red reduce --tracker-counts)
+        red.write_table(path, rs, red.COLUMNS + extra)
     for g, s, t in replace:
         ledger.append({"kind": "replacement", "group": g, "seed": s, "replaced_by": t, "arm": "?"})
     for arm_id, n_new in (reest or {}).items():

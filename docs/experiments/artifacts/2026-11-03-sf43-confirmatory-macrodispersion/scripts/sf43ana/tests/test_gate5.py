@@ -374,6 +374,43 @@ class Run(unittest.TestCase):
         self.assertLess(far["ratio_1.1"], 0.06)  # at the margin: at most about the level
         self.assertLess(far["ratio_1.14"], far["ratio_1.1"] + 1e-9)
 
+    def test_par2_completeness_flag_counts_and_sensitivity(self):
+        """H12: completeness = n_last / n_traced per Par2 realization (reduced columns), flag below 0.999, and the Gate 5 sensitivity without
+        the pairs whose Par2 realization is flagged (same procedure), next to the fallback-exclusion sensitivity."""
+        data = arms_for(n=150)
+        data["coverage_summary"] = fake_summary({"student": {n: False for n in (100, 150, 200)}, "hall": {n: True for n in (100, 150, 200)},
+                                                 "boott": {n: True for n in (100, 150, 200)}})
+        nt = np.full(150, 10000.0)
+        nl = nt.copy()
+        nl[[5, 77]] = [9980.0, 9000.0]  # completeness 0.998 and 0.9: flagged
+        nl[9] = 9990.0                  # 0.999: not flagged (the rule is strictly below the threshold)
+        nt[120] = 0.0                   # undefined: flagged and counted
+        data["arms"]["P"]["cols"].update(n_last=nl, n_traced=nt)
+        a = g5.run(self.prereg, data)["amplitudes"]["s1"]
+        c = a["par2_completeness"]
+        self.assertEqual((c["n"], c["n_flagged"], c["n_nonfinite"], c["n_pairs"], c["n_flagged_pairs"], c["threshold"]), (150, 3, 1, 150, 3, 0.999))
+        self.assertAlmostEqual(c["min"], 0.9, places=12)
+        self.assertAlmostEqual(c["quantiles"]["0"], 0.9, places=12)
+        s = a["pair_completeness_sensitivity"]
+        self.assertEqual((s["n_excluded"], s["n"], s["procedure"]), (3, 147, "hall"))
+        L, P = data["arms"]["L"]["cols"]["alpha_LP"], data["arms"]["P"]["cols"]["alpha_LP"]
+        keep = np.ones(150, bool)
+        keep[[5, 77, 120]] = False
+        self.assertAlmostEqual(s["ratio"], L[keep].mean() / P[keep].mean(), places=12)
+        self.assertEqual(a["procedure"], "hall")  # the main analysis is unchanged
+        # counts over the pairs only (a pair prefix shorter than the arm), the threshold from the pre-registration, no column -> a note
+        pr = {"gate5": dict(self.prereg["gate5"], completeness_min=0.95)}
+        self.assertEqual(g5.run(pr, data)["amplitudes"]["s1"]["par2_completeness"]["n_flagged"], 2)  # 0.9 and the undefined one
+        del data["arms"]["P"]["cols"]["n_last"]
+        out = g5.run(self.prereg, data)["amplitudes"]["s1"]
+        self.assertIn("not computed", out["par2_completeness"]["note"])
+        self.assertNotIn("pair_completeness_sensitivity", out)
+        nl2 = np.full(150, 10000.0)
+        data["arms"]["P"]["cols"].update(n_last=nl2, n_traced=np.full(150, 10000.0))
+        full = g5.run(self.prereg, data)["amplitudes"]["s1"]
+        self.assertEqual(full["par2_completeness"]["n_flagged"], 0)
+        self.assertIn("identical to the main analysis", full["pair_completeness_sensitivity"]["note"])
+
     def test_fieller_power_agrees_with_simulation(self):
         rng = np.random.default_rng(3)
         n, cvl, cvp, rho, r_true, alpha = 80, 0.30, 0.15, 0.6, 1.04, 0.05 / 8

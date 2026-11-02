@@ -13,6 +13,13 @@ recorded in ``process.errors`` (id, status, exception type, message, traceback; 
 Every warning is recorded per block under ``process.warnings`` (category, message, ``file:line``, count; ``process.warnings_count``);
 under ``-W error`` (the unit tests) warnings stay exceptions.  ``run`` exits 0 whenever ``summary.json`` was written.
 
+Qualification gate (H4, H13 vs H15; ``sf43ana.qualification``): a robust sign whose design is testable by the floors is TESTABLE only if the
+qualification document named by the pre-registration (``qualification``; ``--qualification`` overrides, ``none`` = no document) qualifies the
+pipeline of its structure at the largest profile that fits the REALIZED arm sizes and the sampling limit at the largest grid size at most the
+realized production N.  Otherwise ``p = 1`` and the hypothesis ``status`` is ``not qualified at the realized sizes`` (``no qualification
+document`` without a document).  The estimates, budgets and classes stay descriptive; ``gate4.<amp>.qualification`` and
+``process.qualification`` record the profile, the grid size, the reasons and the document hash.
+
 Gate 5 p-values (``--gate5``): omitted or ``auto``: computed by ``sf43ana.gate5`` from the pre-registration's ``gate5`` block (none ->
 no p-values); ``none``: no p-values; a path: JSON ``{"p": {"<amplitude>": p, ...}}`` (the ``p`` wrapper optional; a value may also be
 ``{"p": ...}``).  A missing amplitude enters the Holm family with ``p = 1`` (untestable).
@@ -32,12 +39,13 @@ import numpy as np
 
 from . import config as cfgmod
 from . import figures
+from . import qualification as qual_mod
 from .estimands import TRANSVERSE, amplitude_estimands
 from .gate4 import (CLASS_PHYS, FailedTest, RobustTest, classify_amplitude, classify_estimator, design_from_arms, record_error)
 from .holm import holm
 from .loader import build_data, load_all
 
-OPTIONAL = ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock")
+OPTIONAL = ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock", "gate4_power", "basis")
 
 
 class Context:
@@ -143,7 +151,22 @@ def _scalar(v):
     return float(np.asarray(v).reshape(-1)[0])
 
 
-def build_family(prereg, tests, gate5_p, errors=None):
+def qualification_status(prereg, tests, doc):
+    """{amp: {"status": None | NO_DOC | NOT_QUALIFIED, "detail": ...}} for the robust sign of every amplitude whose primary-basis design is
+    testable by the floors (otherwise ``{"evaluated": False}``)."""
+    pb = prereg["bases"]["primary"]
+    out = {}
+    for amp in prereg.amps:
+        ts = [tests[(amp, pb, e)] for e in TRANSVERSE]
+        if not all(t.testable and t.design is not None for t in ts):
+            out[amp] = {"status": None, "evaluated": False, "reason": "the design is untestable by the floors / missing arms (see the hypothesis note)"}
+            continue
+        st, detail = qual_mod.check(doc, len(ts[0].design.components), qual_mod.realized_sizes(ts[0].design))
+        out[amp] = {"status": st, "evaluated": True, **detail}
+    return out
+
+
+def build_family(prereg, tests, gate5_p, errors=None, qual=None):
     """Hypotheses of the FIXED family in order.  Any exception of a hypothesis (or a non-finite p) makes it untestable with ``p = 1`` and ``status``
     ``error``; ``errors`` (list) receives the record (``gate4.record_error``); ``errors`` entries of ``gate5:<amp>`` already there mark Gate 5."""
     pb = prereg["bases"]["primary"]
@@ -168,6 +191,10 @@ def build_family(prereg, tests, gate5_p, errors=None):
                 if not all(t.testable for t in ts):
                     h["note"] = "; ".join(r for t in ts for r in t.missing)
                     h["status"] = "error" if any(isinstance(t, FailedTest) for t in ts) else "ok"
+                    continue
+                qs = (qual or {}).get(amp, {}).get("status")
+                if qs:  # qualification gate: p stays 1, the hypothesis stays in the family
+                    h["note"], h["status"] = "; ".join([qs] + qual[amp].get("reasons", [])), qs
                     continue
                 h["p"] = max(_scalar(t.p_value()[0]) for t in ts)
                 h["testable"] = True
@@ -247,10 +274,11 @@ def gate5_reporting(optional, by_id):
                 "verdict": a.get("verdict")}}
 
 
-def _gate4_section(prereg, tests, by_id, pb, gate4, errors):
+def _gate4_section(prereg, tests, by_id, pb, gate4, errors, qual=None):
     """``gate4`` entries per amplitude.  An exception of a test (p-value, class inputs) replaces it by an untestable ``FailedTest`` (recorded)."""
     for amp in prereg.amps:
-        g = {"sigma2": prereg.sigma2(amp), "null_value": prereg.null_value(amp), "primary_basis": pb, "bases": {}}
+        g = {"sigma2": prereg.sigma2(amp), "null_value": prereg.null_value(amp), "primary_basis": pb, "bases": {},
+             "qualification": (qual or {}).get(amp)}
         for role, b in prereg["bases"].items():
             per = {}
             for e in TRANSVERSE:
@@ -275,11 +303,15 @@ def _gate4_section(prereg, tests, by_id, pb, gate4, errors):
         gate4[amp] = g
 
 
-def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
-    """``coverage``: None (the pre-registration's ``gate5.coverage_summary``), ``"none"`` (no coverage summary: Gate 5 descriptive) or a path."""
+def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None, qualification=None):
+    """``coverage``: None (the pre-registration's ``gate5.coverage_summary``), ``"none"`` (no coverage summary: Gate 5 descriptive) or a path.
+    ``qualification``: None (the pre-registration's ``qualification``), ``"none"`` (no document: every robust sign has p = 1) or a path."""
     prereg = cfgmod.load_prereg(prereg_path)
     if coverage is not None and prereg.raw.get("gate5"):
         prereg.raw["gate5"]["coverage_summary"] = None if coverage == "none" else coverage
+    if qualification is not None:
+        prereg.raw["qualification"] = None if qualification == "none" else qualification
+    qdoc, qinfo = qual_mod.load(prereg.raw.get("qualification"))
     ctx = Context(prereg, None, campaign, reduced, {}, None)
     with watch(ctx, "loader"):
         arms, proc, ledger = load_all(prereg, campaign, reduced)
@@ -302,7 +334,8 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
                 est[amp] = {}
     with watch(ctx, "gate4"):
         tests = gate4_tests(prereg, arms, errors)
-        hyps = build_family(prereg, tests, gate5_p, errors)
+        qual = qualification_status(prereg, tests, qdoc)
+        hyps = build_family(prereg, tests, gate5_p, errors, qual)
         fwer = prereg["levels"]["fwer"]
         res, info = holm(hyps, fwer, prereg["tie_rtol"])
     by_id = {r["id"]: r for r in res}
@@ -313,7 +346,7 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
     pb = prereg["bases"]["primary"]
     gate4 = {}
     with watch(ctx, "gate4_classes"):
-        _gate4_section(prereg, tests, by_id, pb, gate4, errors)
+        _gate4_section(prereg, tests, by_id, pb, gate4, errors, qual)
     levels = prereg.raw.get("report_levels") or [fwer, fwer / info["m"]]
     with watch(ctx, "budgets"):
         budgets = budgets_section(prereg, tests, levels, errors)
@@ -321,7 +354,8 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
                "budgets": budgets, "precision": precision_section(prereg, est)}
     cov_path = (prereg.raw.get("gate5") or {}).get("coverage_summary")
     summary["process"] = {"prereg_sha256": sha256(prereg_path),
-                          "coverage_summary": {"path": cov_path, "sha256": sha256(cov_path) if cov_path and os.path.isfile(cov_path) else None}, "prereg_effective": {k: v for k, v in prereg.raw.items() if k != "arms"},
+                          "coverage_summary": {"path": cov_path, "sha256": sha256(cov_path) if cov_path and os.path.isfile(cov_path) else None},
+                          "qualification": qinfo, "prereg_effective": {k: v for k, v in prereg.raw.items() if k != "arms"},
                           "loader": proc, "arms": {a: d.info for a, d in arms.items()},
                           "classes_legend": [CLASS_PHYS, "numerical", "unresolved (bounded)", "unresolved"]}
     bs, m = prereg["bootstrap"], info["m"]

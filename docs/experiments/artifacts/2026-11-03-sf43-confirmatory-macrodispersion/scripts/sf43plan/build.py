@@ -384,7 +384,7 @@ POSITIVE_CONTROL_EXPECTATION = (
     "outside the bounds indicts the estimand pipeline or the runner, not the physics.  Descriptive; never a gate of the family.")
 
 
-def build_prereg(smoke=False, coverage_summary_rel=COV_SUMMARY_REL):
+def build_prereg(smoke=False, coverage_summary_rel=COV_SUMMARY_REL, qualification_rel=COV_QUAL_REL):
     ents = smoke_entries() if smoke else production_entries()
     pre_ = "sm_" if smoke else ""
     blocks = group_blocks(ents, (lambda g: 0.15) if smoke else reserve_frac)
@@ -416,6 +416,9 @@ def build_prereg(smoke=False, coverage_summary_rel=COV_SUMMARY_REL):
         n_conf, n_max = (max(2, e.n), max(2, e.nmax)) if smoke else (e.n, e.nmax)
         arms.append(prereg_arm(nm(amp + "_prodpol"), amp, e.grp, b["start"], n_max, b["reserves"], n_conf, lo or FLOOR["production"], source=e.id,
                                hmax=8, code="pollock", role="pollock_production", n_max=n_max, reest=True))
+        # basis contrast (H2): the same production set read with uniform weights (control: displacement = position by transverse stationarity)
+        arms.append(prereg_arm(nm(amp + "_produnif"), amp, e.grp, b["start"], n_max, b["reserves"], n_conf, lo or FLOOR["production"], source=e.id,
+                               hmax=8, role="basis_control_uniform", weights="unif", n_max=n_max, reest=True))
     for amp, src in G5C.items():
         e = by[nm(src)]
         b = blocks[e.grp]
@@ -460,10 +463,17 @@ def build_prereg(smoke=False, coverage_summary_rel=COV_SUMMARY_REL):
         pre["note"] = ("smoke: arms of the smoke plan (sm_ prefix); every floor 2 so that every analysis code path runs; arms with one realization "
                        "exercise the below_floor paths; B reduced; Gate 5 reads the smoke job's own coverage output (analyse_sf43.sh --smoke)")
         pre["floors"] = OrderedDict((k, 2) for k in ("production", "ladder", "width", "hmax", "gate5"))
+    if not smoke:        # the smoke run reads its own qualification output (analyse_sf43.sh --smoke passes --qualification when it exists)
+        pre["qualification"] = qualification_rel
     pre["gate5"] = _gate5_section(nm, by, smoke, coverage_summary_rel)
     pre["g7"] = _g7_section(nm, by)
     pre["pollock"] = _pollock_section(nm)
     pre["secondaries"] = _secondaries(nm, by)
+    # H17: recrossing / backflow distributions per consumer arm (the arms that are not duplicates of an engine arm's rows)
+    pre["secondaries"]["recrossings"] = OrderedDict((a["id"], {"arm": a["id"]}) for a in arms
+                                                    if a["code"] == "consumer" and a["role"] not in ("gate5_consumer_twin", "basis_control_uniform"))
+    pre["gate4_power"] = _gate4_power_section(smoke)
+    pre["basis"] = _basis_section(nm)
     pre["failures"] = _failures()
     pre["positive_control"] = _positive_control(nm("pc_s004"), smoke)
     return pre
@@ -508,8 +518,23 @@ def _gate5_section(nm, by, smoke, coverage_summary_rel):
     if not smoke:                  # the smoke run reads its own coverage output: analyse_sf43.sh --smoke passes --coverage-summary
         g["coverage_summary"] = coverage_summary_rel
     g["floor"] = 2 if smoke else 200
+    g["completeness_min"] = 0.999          # H12: Par2 crossing completeness n_last / n_traced below this is flagged
     g["amplitudes"] = amps
     return g
+
+
+def _gate4_power_section(smoke):
+    """Achieved Gate 4 power (acceptance C): descriptive Monte Carlo at the realized sizes under the planning alternatives (sf43ana/gate4_power.py)."""
+    return OrderedDict([("R", 20 if smoke else 1000), ("B_budget", 399 if smoke else 4000), ("seed", 20261103), ("chunk", 100),
+                        ("scenarios", ["no_bias", "observed"]),
+                        ("alternatives", OrderedDict((a, OrderedDict([("alpha_TP", tp), ("alpha_TAP", tap)])) for a, (tp, tap) in D.GATE4_ALTERNATIVES.items())),
+                        ("source", D.GATE4_ALTERNATIVES_SOURCE)])
+
+
+def _basis_section(nm):
+    """H2 basis contrasts: flux weights (the production set) and the uniform-weight control, per amplitude."""
+    return OrderedDict([("level", 0.90), ("B", 2000), ("seed", 20261103),
+                        ("amplitudes", OrderedDict((amp, OrderedDict([("flux", nm(amp + "_prod")), ("unif", nm(amp + "_produnif"))])) for amp in G5C))])
 
 
 def _g7_section(nm, by):

@@ -34,8 +34,9 @@ DEFAULTS = {
 }
 
 
-BLOCKS = ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock")
-TOP_KEYS = set(DEFAULTS) | {"amplitudes", "arms", "family", "targets", "first_order", "report_levels", "name", "variant", "note"} | set(BLOCKS)
+BLOCKS = ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock", "gate4_power", "basis")
+# ``qualification``: path of the sf43cov qualification.json (the robust sign's qualification gate, ``sf43ana.qualification``; absent = no document)
+TOP_KEYS = set(DEFAULTS) | {"amplitudes", "arms", "family", "targets", "first_order", "report_levels", "name", "variant", "note", "qualification"} | set(BLOCKS)
 # n_conf = planned size; n_max = seeds the engine may run (default len(seeds)); reest: the analysis cut follows the engine's blinded
 # re-estimation of the SOURCE arm (``reest`` ledger record: n_new, never below n_conf)
 ARM_KEYS = {"id", "amplitude", "group", "seeds", "reserves", "n_conf", "n_max", "floor", "source", "hmax_div", "code", "role", "family", "selection",
@@ -103,7 +104,7 @@ def _strict(d, allowed, where):
 
 def _validate_blocks(raw, arms):
     """Strict keys and arm references of the optional analysis blocks."""
-    from . import failures, g7, gate5, pollock, positive_control, secondaries  # lazy: scipy-heavy
+    from . import basis, failures, g7, gate4_power, gate5, pollock, positive_control, secondaries  # lazy: scipy-heavy
 
     def arm_ref(a, where):
         _need(a in arms, "%s: unknown arm %r" % (where, a))
@@ -157,6 +158,22 @@ def _validate_blocks(raw, arms):
                 for k in keys:
                     _need(k in sp, "pollock.%s.%s lacks '%s'" % (blk, amp, k))
                     arm_ref(sp[k], "pollock.%s.%s.%s" % (blk, amp, k))
+    if raw.get("gate4_power"):
+        gp = raw["gate4_power"]
+        _strict(gp, gate4_power.KEYS, "gate4_power")
+        for amp, alt in gp.get("alternatives", {}).items():
+            _need(amp in raw["amplitudes"] and not raw["amplitudes"][amp].get("control"), "gate4_power.alternatives: unknown amplitude %r" % amp)
+            _strict(alt, {"alpha_TP", "alpha_TAP"}, "gate4_power.alternatives.%s" % amp)
+            _need(set(alt) == {"alpha_TP", "alpha_TAP"}, "gate4_power.alternatives.%s needs alpha_TP and alpha_TAP" % amp)
+        _need(set(gp.get("scenarios", gate4_power.SCENARIOS)) <= set(gate4_power.SCENARIOS), "gate4_power.scenarios must be among %s" % (gate4_power.SCENARIOS,))
+    if raw.get("basis"):
+        _strict(raw["basis"], basis.KEYS, "basis")
+        for amp, sp in raw["basis"].get("amplitudes", {}).items():
+            _need(amp in raw["amplitudes"], "basis.amplitudes: unknown amplitude %r" % amp)
+            _strict(sp, basis.AMP_KEYS, "basis.amplitudes.%s" % amp)
+            for k in sorted(basis.AMP_KEYS):
+                _need(k in sp, "basis.amplitudes.%s lacks '%s'" % (amp, k))
+                arm_ref(sp[k], "basis.amplitudes.%s.%s" % (amp, k))
     if raw.get("positive_control"):
         pc = raw["positive_control"]
         _strict(pc, positive_control.KEYS, "positive_control")
@@ -207,6 +224,7 @@ def validate(raw):
     W = raw["windows"]
     _need(raw["primary_window"] in W, "primary_window not among windows")
     _need(raw["sampling_method"] in ("bootstrap-t", "student"), "sampling_method must be 'bootstrap-t' or 'student'")
+    _need(raw.get("qualification") is None or isinstance(raw["qualification"], str), "qualification must be a path string (or absent)")
     _need(0.0 < raw["eh"].get("gate_level", 0.9) < 1.0 and raw["tie_rtol"] >= 0.0, "bad eh.gate_level / tie_rtol")
     _need(set(raw["floors"]) >= {"production", "ladder", "width", "hmax", "gate5"}, "floors must define production, ladder, width, hmax, gate5")
     lo, hi = raw["eh"]["p_range"]
@@ -272,7 +290,7 @@ def load_prereg(path):
         given = json.load(f)
     raw = _merge(DEFAULTS, given)
     raw["windows"] = given.get("windows", DEFAULTS["windows"])
-    for k in ("amplitudes", "arms", "family", "targets", "first_order", "report_levels"):
+    for k in ("amplitudes", "arms", "family", "targets", "first_order", "report_levels", "qualification"):
         if k in given:
             raw[k] = given[k]
     validate(raw)

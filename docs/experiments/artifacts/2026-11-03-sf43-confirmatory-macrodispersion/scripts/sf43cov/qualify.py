@@ -8,11 +8,14 @@ expected misses at the tail; a tail that is not judged is not qualified):
                 families ``normal`` / ``stress`` / ``stress-`` (``families.base``) and for those plus the J3B-bound family (skewness 2.73,
                 excess kurtosis 7.59, both signs; ``families.with_j3b``: gating at sigma^2 = 4), the largest UCL / tail and the first problems; and
                 ``first_qualified`` per ``n`` (the selection rule of ``sf43ana.gate5``) for both;
-``sampling``    the bootstrap-t sampling limit of the production mean (n = 200, m = 8 Holm tails and their halves): per distribution and side
+``sampling``    the bootstrap-t sampling limit of the production mean (grid n = 100, 150, 200, m = 8 Holm tails and their halves): per distribution and side
                 (``lower`` is the one the robust sign uses) qualified yes/no, the largest UCL / tail and the failing tails;
 ``pipeline``    the whole robust-sign pipeline per cell (structure K, arm sizes, bias scenario, distribution): ``RL(a_j) > 0`` at the m = 8 Holm
                 levels; qualified yes/no, the largest UCL / tail, the misses;
-``overall``     the three headline booleans (``null`` = not judged because cells are missing).
+``pipeline_profiles``  the cells grouped by profile (structure K and the four arm sizes production / ladder / width / h_max): qualified iff
+                every cell of the profile passed (``sf43ana.qualification.pipeline_profiles``, the function the analysis applies);
+``sampling_grid``  the bootstrap-t sampling limit per grid size n (``lower`` side, every distribution);
+``overall``     the headline booleans (``null`` = not judged because cells are missing).
 """
 import json
 import os
@@ -22,6 +25,7 @@ from sf43cov import mcpath  # noqa: F401
 
 from mcstat import coverage as cov
 from sf43ana import gate5 as g5
+from sf43ana import qualification as Q
 
 
 def _status(entries):
@@ -80,6 +84,8 @@ def build(out):
         pipeline.append(dict(e, cell=c["id"], K=pp["K"], N=pp["N"], arm_sizes={"ladder": pp["n_l"], "h_max": pp["n_i"], "width": pp["n_w"]},
                              scenario=c["scen"], dist=c["dist"], misses=[x["misses"] for x in c["rows"]["RL"]], tails=[x["tail"] for x in c["rows"]["RL"]]))
     doc["pipeline"] = pipeline
+    doc["pipeline_profiles"] = Q.pipeline_profiles(doc)
+    doc["sampling_grid"] = {str(n): q for n, q in sorted(Q.sampling_grid(doc).items())}
     n_pl_planned = planned.get("sf43_pipeline", 0)
     n_sa_planned = planned.get("sf43_sampling", 0)
 
@@ -96,6 +102,7 @@ def build(out):
         "gate5_first_qualified_with_j3b": doc["gate5"]["first_qualified"]["with_j3b"],
         "sampling_boott_lower_qualified": agg(sa_flags, n_sa_planned),
         "pipeline_qualified": agg([p["qualified"] for p in pipeline], n_pl_planned),
+        "pipeline_by_profile": {"K%d:%d/%d/%d/%d" % ((p["K"],) + tuple(p["arm_sizes"][k] for k in Q.ARM_KEYS)): p["qualified"] for p in doc["pipeline_profiles"]},
     }
     return doc
 
