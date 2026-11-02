@@ -113,6 +113,15 @@ def factorial(cfg, cells, data, responses):
     return out
 
 
+KEYS = {"level", "log_bootstrap", "seed", "responses", "twins", "factorial"}
+
+
+def analyse(ctx):
+    if not ctx.prereg.raw.get("g7"):
+        return None
+    return run(ctx.prereg.raw, ctx.data)
+
+
 def run(prereg, data):
     p = prereg["g7"]
     cfg = {"level": float(p.get("level", 0.90)), "log_bootstrap": int(p.get("log_bootstrap", 2000)), "seed": int(p.get("seed", 20261103))}

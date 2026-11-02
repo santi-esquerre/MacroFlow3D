@@ -4,12 +4,21 @@ pre-activation refinements H2-H6, H16).
 Per amplitude, transverse estimator ``e`` in {alpha_TP, alpha_TAP} and basis (displacement primary, position secondary):
 
     RL_e(a) = L_e(a/2) - sum_{k=1..K} B_k(a / (2K))          (``mcstat.budget.RobustLimit``)
-    reject the null  <=>  RL_e(a) > null_value                 (null_value = null_per_sigma2 * sigma^2 by default; 0 allowed)
-    p_e = inf{a : RL_e(a) > null_value} on the mcstat log lattice (1.0 if never), amplitude p = max(p_TP, p_TAP).
+    reject the null  <=>  RL_e(a) > c                          (c = null_value = null_per_sigma2 * sigma^2 by default; 0 allowed)
+    p_e = inf{a : RL_e(a) > c} on the mcstat log lattice (1.0 if never), amplitude p = max(p_TP, p_TAP).
 
-``L_e`` is the bootstrap-t (or Student) lower limit of the production mean; the ``B_k`` are the Student-studentized components
-(``eh.EhBound`` for ``E_h``, ``mcstat.budget.ContrastBound`` for ``E_W``, the width x lambda/h interaction ``E_WxH`` and ``E_int``).
+The threshold ``c`` is explicit: the data are never shifted (H3; statistics review S12), so every budget component is computed from the
+unshifted arms.  A decision is ``exceeds(RL, c)``: ``RL - c > tie_rtol * max(|RL|, |c|)`` (relative tolerance 1e-9: a tie is not a
+rejection).  ``L_e`` is the BOOTSTRAP-t lower limit of the production mean (``sampling_method``, default; Student only on request),
+the components are Student-studentized.
+
+``eh.EhBound`` is ``E_h``; ``mcstat.budget.ContrastBound`` gives ``E_W``, the width x lambda/h interaction ``E_WxH`` and ``E_int``.
 Enforced (monotone) bounds are those of ``RobustLimit``.
+
+Floors (H13).  A hypothesis is untestable (``p = 1``, estimates descriptive) unless every arm it needs reaches its floor: the production
+arm ``floors.production`` (100), the ladder ``floors.ladder`` (30 complete PAIRED seeds: the common prefix of all ladder arms, of the
+gate arm and of the production-width arm of the same group), every width cell ``floors.width`` (30), the ``h_max`` passes
+``floors.hmax`` (20 paired seeds); an amplitude may override them (``floors`` key); each arm's own ``floor`` applies as well.
 
 Classes (G5.7 with levels; ``classify_estimator`` / ``classify_amplitude``), in order of precedence:
   physical (restricted)  Holm rejects the amplitude's robust-sign hypothesis (both estimators, intersection-union);
@@ -39,6 +48,13 @@ CLASS_UNRES = "unresolved"
 TRANSVERSE = ("alpha_TP", "alpha_TAP")
 
 
+def exceeds(rl, c, rtol=1e-9):
+    """``RL > c`` with a relative tolerance: ``RL - c > rtol * max(|RL|, |c|)`` (NaN -> False).  A tie is not a rejection."""
+    rl = np.asarray(rl, dtype=float)
+    with np.errstate(invalid="ignore"):
+        return (rl - c) > rtol * np.maximum(np.abs(rl), abs(c))
+
+
 def seq_rng(base_seed, *labels):
     """Deterministic, label-dependent stream (crc32 of the label; never Python's salted hash)."""
     key = [int(base_seed)] + [zlib.crc32(str(l).encode()) for l in labels]
@@ -55,10 +71,12 @@ class Design:
     """
 
     def __init__(self, prod, components, levels=None, res=None, ip=None, triples=None, wide_fine=None, prod_fine=None,
-                 wide_coarse=None, prod_coarse=None, prod_fine_paired=False, h16=None, h8=None, reasons=()):
+                 wide_coarse=None, prod_coarse=None, prod_fine_paired=False, h16=None, h8=None, reasons=(), gates=(), gate_extra=None,
+                 fallback_levels=None):
         self.prod = None if prod is None else np.asarray(prod, dtype=float)
         self.components = list(components)
         self.levels, self.res, self.ip, self.triples = levels, res, ip, triples
+        self.gates, self.gate_extra, self.fallback_levels = list(gates), gate_extra, fallback_levels
         self.wide_fine, self.prod_fine, self.wide_coarse, self.prod_coarse = wide_fine, prod_fine, wide_coarse, prod_coarse
         self.prod_fine_paired = prod_fine_paired
         self.h16, self.h8 = h16, h8
@@ -79,6 +97,11 @@ def design_from_arms(prereg, amp, arms, est, basis):
     c, prim = prereg.amp(amp), prereg["primary_window"]
     comps = [k for k in ("E_h", "E_W", "E_WxH", "E_int") if k in c.get("components", [])]
     reasons = []
+    floors = dict(prereg["floors"], **c.get("floors", {}))
+
+    def floor_check(what, n, role):
+        if n < floors[role]:
+            reasons.append("%s: %d complete seeds < floor %d (H13)" % (what, n, floors[role]))
 
     def use(aid):
         a = arms[aid]
@@ -90,13 +113,18 @@ def design_from_arms(prereg, amp, arms, est, basis):
         return a.get(prim, basis, est, n)
 
     P = use(c["production"])
+    floor_check("production arm %s" % P.id, P.N, "production")
     LA = [use(i) for i in c["ladder"]["arms"]] if "E_h" in comps else []
+    gate_arms = {g["arm"]: use(g["arm"]) for g in c["ladder"].get("gates", []) if g["type"] == "extra_level"} if "E_h" in comps else {}
     wf = wc = pf = pc = h16 = h8 = None
     if "E_W" in comps or "E_WxH" in comps:
         W = c["width"]
         wf, pf = use(W["wide_fine"]), use(W["prod_fine"])
         if "E_WxH" in comps:
             wc, pc = use(W["wide_coarse"]), use(W["prod_coarse"])
+        for cell in (wf, pf, wc, pc):
+            if cell is not None:
+                floor_check("width cell %s" % cell.id, cell.N, "width")
     if "E_int" in comps:
         h16, h8 = use(c["hmax"]["h16"]), use(c["hmax"]["h8"])
     d = Design(vals(P) if P.usable else None, comps)
@@ -106,10 +134,19 @@ def design_from_arms(prereg, amp, arms, est, basis):
     paired = bool(LA and pf is not None and pf.group == LA[0].group)
     pg = [a for a in (pf, pc) if a is not None]
     if LA:
-        joint = list(LA) + ([a for a in pg if a.id not in {x.id for x in LA}] if paired else [])
+        joint = list(LA) + list(gate_arms.values()) + ([a for a in pg if a.id not in {x.id for x in LA}] if paired else [])
         n = common_prefix(joint)
+        floor_check("ladder (paired prefix of %s)" % [a.id for a in joint], n, "ladder")
+        if reasons:
+            d.reasons = sorted(set(reasons))
+            return d
         d.levels = np.stack([vals(a, n) for a in LA], axis=-1)
         d.res, d.ip, d.triples = c["ladder"]["resolutions"], c["ladder"]["production_index"], c["ladder"].get("triples")
+        d.gates = [dict(g) for g in c["ladder"].get("gates", [])]
+        d.fallback_levels = c["ladder"].get("fallback_levels")
+        for g in d.gates:
+            if g["type"] == "extra_level":
+                d.gate_extra = vals(gate_arms[g["arm"]], n)
     if pg:
         n = d.levels.shape[0] if paired else common_prefix(pg)
         d.prod_fine, d.prod_fine_paired = vals(pf, n), paired
@@ -119,12 +156,17 @@ def design_from_arms(prereg, amp, arms, est, basis):
         d.wide_fine, d.wide_coarse = vals(wf, n), (vals(wc, n) if wc is not None else None)
     if h16 is not None:
         n = common_prefix([h16, h8])
+        floor_check("h_max passes %s" % [h16.id, h8.id], n, "hmax")
         d.h16, d.h8 = vals(h16, n), vals(h8, n)
+    if reasons:
+        d.reasons = sorted(set(reasons))
     return d
 
 
 def _check_complete(d):
     miss = []
+    if not d.components:
+        miss.append("no budget component configured")
     if d.prod is None:
         miss.append("production")
     if "E_h" in d.components and d.levels is None:
@@ -145,7 +187,8 @@ def build_components(d, eh_cfg, B, rng):
         if name == "E_h":
             lo, hi = eh_cfg["p_range"]
             out.append(eh_mod.EhBound(d.levels, d.res, d.ip, d.triples, lo, hi, eh_cfg["p_cap"], eh_cfg["safety"],
-                                      eh_cfg["fallback_factor"], B=B, rng=rng))
+                                      eh_cfg["fallback_factor"], B=B, rng=rng, gates=d.gates, extra=d.gate_extra,
+                                      gate_level=eh_cfg.get("gate_level", 0.90), fallback_levels=d.fallback_levels))
         elif name == "E_W":
             out.append(e_w(d.wide_fine, d.prod_fine, method="student"))
         elif name == "E_WxH":
@@ -163,6 +206,7 @@ class RobustTest:
         self.testable = design.testable and not _check_complete(design)
         self.missing = list(design.reasons) + [m for m in _check_complete(design)]
         self.p_cache = None
+        self.rtol = float(cfg.get("tie_rtol", 1e-9))
         if not self.testable:
             return
         bs = cfg["bootstrap"]
@@ -180,7 +224,7 @@ class RobustTest:
             return 1.0, True
         if self.p_cache is None:
             RL = self.rl.lower(self.rl.lattice)
-            pos = RL > self.null
+            pos = exceeds(RL, self.null, self.rtol)
             first = np.argmax(pos, axis=-1)
             any_pos = pos.any(axis=-1)
             self.p_cache = (np.where(any_pos, self.rl.lattice[first], 1.0), ~any_pos)
@@ -191,7 +235,7 @@ class RobustTest:
 
     def reject(self, a):
         """Exact decision at level ``a``: RL(a) > null (not read off the lattice)."""
-        return bool(self.testable and np.all(self.rl.lower(a) > self.null))
+        return bool(self.testable and np.all(exceeds(self.rl.lower(a), self.null, self.rtol)))
 
     def upper_bound(self, tail):
         """Bound of the class 'unresolved (bounded)': U(tail) + sum_k B_k(tail / K)."""
@@ -207,11 +251,12 @@ class RobustTest:
 # ----------------------------------------------------------------------------------------------------------------------
 # bias-corrected estimate (class "numerical")
 # ----------------------------------------------------------------------------------------------------------------------
-def bias_corrected(d, eh_bound, B, rng, ucl_tail):
+def bias_corrected(d, eh_bound, p_order, B, rng, ucl_tail):
     """Production mean + Richardson correction + width correction, with the seed-bootstrap upper limit (module docstring).
 
-    Returns dict(mean_prod, richardson, width, estimate, ucl).  The production mean is the ladder's production column when a ladder
-    exists (aligned seeds), else the production arm.
+    ``p_order``: the order of the Richardson correction (H16: ``p_use`` if the order branch is in range, else 1), held fixed in the
+    resamples.  Returns dict(mean_prod, richardson, width, estimate, ucl, p).  The production mean is the ladder's production column
+    when a ladder exists (aligned seeds), else the production arm.
     """
     ladder = d.levels is not None and "E_h" in d.components
     width = "E_W" in d.components and d.wide_fine is not None
@@ -221,7 +266,7 @@ def bias_corrected(d, eh_bound, B, rng, ucl_tail):
         WL = boot_counts(n, B, rng) / n  # (B, n)
         ms = Lv.T @ WL.T  # (K, B)
         prod_s = ms[d.ip]
-        rich_hat, rich_s = float(eh_bound.correction(Lv.mean(axis=0))), eh_bound.correction(ms.T)
+        rich_hat, rich_s = float(eh_bound.correction(Lv.mean(axis=0), p_order)), eh_bound.correction(ms.T, p_order)
         prod_hat = float(Lv[:, d.ip].mean())
     else:
         n = d.prod.size
@@ -239,7 +284,7 @@ def bias_corrected(d, eh_bound, B, rng, ucl_tail):
             pf_hat, pf_s = float(d.prod_fine.mean()), d.prod_fine @ (boot_counts(npf, B, rng) / npf).T
         w_hat, w_s = float(d.wide_fine.mean()) - pf_hat, d.wide_fine @ Ww.T - pf_s
     star = np.sort(prod_s + rich_s + w_s)
-    return {"mean_prod": prod_hat, "richardson": rich_hat, "width": w_hat, "estimate": prod_hat + rich_hat + w_hat,
+    return {"mean_prod": prod_hat, "richardson": rich_hat, "width": w_hat, "estimate": prod_hat + rich_hat + w_hat, "p": p_order,
             "ucl": float(ucb_sorted(star, ucl_tail)), "ucl_tail": ucl_tail, "B": B}
 
 
@@ -254,10 +299,16 @@ def classify_estimator(test, cfg, label):
     iv = bootstrap_t_interval(d.prod, lv["interval"], "two", bs["B_sampling"], rng=seq_rng(bs["seed"], "interval", label))
     out["interval"] = [float(iv.lo), float(iv.hi)]
     ehb = next((c for c in test.components if getattr(c, "name", "") == "E_h"), None)
-    corr = bias_corrected(d, ehb, bs["B_ucl"], seq_rng(bs["seed"], "ucl", label), lv["ucl"])
+    p_order, order_used = 1.0, False
+    if ehb is not None:  # H16: p = p_use (the E_h bound at the class's component tail ucl / K) if in range, else 1
+        det = ehb.details(lv["ucl"] / len(test.components))
+        order_used = bool(det["order_branch_used"])
+        p_order = float(det["p_use"]) if order_used else 1.0
+    corr = bias_corrected(d, ehb, p_order, bs["B_ucl"], seq_rng(bs["seed"], "ucl", label), lv["ucl"])
+    corr["order_branch_in_range"] = order_used
     out["corrected"] = corr
     # production mean of the comparison = the aligned one used by the correction
-    out["numerical"] = bool(iv.lo > test.null and corr["mean_prod"] > 0.0
+    out["numerical"] = bool(bool(exceeds(iv.lo, test.null, test.rtol)) and corr["mean_prod"] > 0.0
                             and corr["ucl"] < cfg["numerical_fraction"] * corr["mean_prod"])
     return out
 

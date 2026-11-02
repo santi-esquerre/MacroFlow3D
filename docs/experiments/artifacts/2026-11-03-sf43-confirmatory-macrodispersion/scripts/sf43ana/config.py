@@ -14,15 +14,34 @@ DEFAULTS = {
     "selection": {"code": "consumer", "family": "plane", "weights": "flux", "set": "perplane"},
     "bases": {"primary": "disp", "secondary": "pos"},
     "ledger": "ledger.jsonl",
-    "reduced_pattern": "{arm}/{segment}/{window}.csv",
-    "ok_verdicts": ["ok"],
+    # executor naming (sf43camp runner_executor.reduce): reduced/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv; {segment} is the segment
+    # directory name (basename of the ledger's segment path), {lo}, {hi} the window bounds ("%g"), {window} the window key
+    "reduced_pattern": "{arm}/{segment}/{arm}__{segment}__d{lo:g}-{hi:g}.csv",
+    # solver verdicts that make a realization usable (consumer: solver_b verdict "converged" or the 1e-8 "fallback"; Par2: "converged")
+    "ok_verdicts": ["converged", "fallback"],
+    "fallback_verdicts": ["fallback"],
     "levels": {"fwer": 0.05, "interval": 0.90, "ucl": 0.05},
+    "tie_rtol": 1e-9,  # relative tolerance of the decisions at the Holm levels (ties are not rejections)
+    # H13 floors (seeds): Gate 4 production / each ladder level (complete paired seeds) / each width cell / h_max passes; Gate 5 pairs
+    "floors": {"production": 100, "ladder": 30, "width": 30, "hmax": 20, "gate5": 200},
     "null_per_sigma2": 7.992e-5,
     "numerical_fraction": 0.5,
-    "eh": {"p_range": [0.5, 2.1], "p_cap": 2.0, "safety": 1.25, "fallback_factor": 3.0},
-    "bootstrap": {"B_sampling": 4000, "B_budget": 4000, "B_ucl": 4000, "B_bca": 5000, "seed": 20261103},
+    "eh": {"p_range": [0.5, 2.1], "p_cap": 2.0, "safety": 1.25, "fallback_factor": 3.0, "gate_level": 0.90},
+    # B_sampling + 1 = 33600 is a multiple of 1/a for every Holm level a = 0.05/j (j <= 8) and every half (exact bootstrap-t ranks)
+    "bootstrap": {"B_sampling": 33599, "B_budget": 4000, "B_ucl": 4000, "B_bca": 5000, "seed": 20261103},
     "sampling_method": "bootstrap-t",
 }
+
+
+BLOCKS = ("gate5", "g7", "secondaries", "failures", "positive_control")
+TOP_KEYS = set(DEFAULTS) | {"amplitudes", "arms", "family", "targets", "first_order", "report_levels"} | set(BLOCKS)
+ARM_KEYS = {"id", "amplitude", "group", "seeds", "reserves", "n_conf", "floor", "source", "hmax_div", "code", "role", "family", "selection"}
+AMP_KEYS = {"sigma2", "production", "components", "ladder", "width", "hmax", "distance_arm", "primary", "null_value", "floors"}
+LADDER_KEYS = {"arms", "resolutions", "production_index", "triples", "gates", "fallback_levels"}
+WIDTH_KEYS = {"wide_fine", "prod_fine", "wide_coarse", "prod_coarse"}
+GATE_KEYS = {"type", "triple", "triples", "arm", "resolution"}
+SELECTION_KEYS = {"code", "family", "weights", "set"}
+NESTED = ("levels", "eh", "bootstrap", "bases", "floors", "selection")
 
 
 class ConfigError(ValueError):
@@ -70,9 +89,86 @@ def _need(cond, msg):
         raise ConfigError(msg)
 
 
+def _strict(d, allowed, where):
+    extra = sorted(set(d) - set(allowed))
+    _need(not extra, "%s: unknown key(s) %s (allowed: %s)" % (where, extra, sorted(allowed)))
+
+
+def _validate_blocks(raw, arms):
+    """Strict keys and arm references of the optional analysis blocks."""
+    from . import failures, g7, gate5, positive_control, secondaries  # lazy: scipy-heavy
+
+    def arm_ref(a, where):
+        _need(a in arms, "%s: unknown arm %r" % (where, a))
+
+    if raw.get("gate5"):
+        g = raw["gate5"]
+        _strict(g, gate5.GATE5_KEYS, "gate5")
+        _need(g.get("amplitudes"), "gate5 needs 'amplitudes'")
+        for amp, sp in g["amplitudes"].items():
+            _need(amp in raw["amplitudes"], "gate5: unknown amplitude %r" % amp)
+            _strict(sp, gate5.GATE5_AMP_KEYS, "gate5.amplitudes.%s" % amp)
+            for k in ("consumer", "par2"):
+                _need(k in sp, "gate5.amplitudes.%s lacks '%s'" % (amp, k))
+                arm_ref(sp[k], "gate5.amplitudes.%s.%s" % (amp, k))
+            for blk in ("unmatched", "pilot"):
+                for k, a in sp.get(blk, {}).items():
+                    _need(k in ("consumer", "par2"), "gate5.amplitudes.%s.%s: bad key %r" % (amp, blk, k))
+                    if blk == "unmatched":
+                        arm_ref(a, "gate5.amplitudes.%s.unmatched" % amp)
+    if raw.get("g7"):
+        _strict(raw["g7"], g7.KEYS, "g7")
+        for amp, sp in raw["g7"].get("twins", {}).items():
+            for k, a in sp.items():
+                _need(k in ("consumer", "pollock", "par2"), "g7.twins.%s: bad key %r" % (amp, k))
+                arm_ref(a, "g7.twins.%s.%s" % (amp, k))
+        for amp, cells in raw["g7"].get("factorial", {}).items():
+            for c in cells:
+                _strict(c, {"g", "i", "d", "r", "arm"}, "g7.factorial.%s" % amp)
+                arm_ref(c["arm"], "g7.factorial.%s" % amp)
+    if raw.get("secondaries"):
+        sc = raw["secondaries"]
+        _strict(sc, secondaries.KEYS, "secondaries")
+        for a in sc.get("time_window", {}):
+            arm_ref(a, "secondaries.time_window")
+        for k, v in list(sc.get("expI", {}).items()) + list(sc.get("recrossings", {}).items()):
+            arm_ref(v["arm"], "secondaries.%s" % k)
+        for k, v in sc.get("par2_transverse", {}).items():
+            arm_ref(v["par2"], "secondaries.par2_transverse.%s" % k)
+            if v.get("consumer"):
+                arm_ref(v["consumer"], "secondaries.par2_transverse.%s" % k)
+        for it in sc.get("bdd_fit", []):
+            arm_ref(it["arm"], "secondaries.bdd_fit")
+    if "failures" in raw:
+        _strict(raw["failures"], failures.KEYS, "failures")
+    if raw.get("positive_control"):
+        pc = raw["positive_control"]
+        _strict(pc, positive_control.KEYS, "positive_control")
+        for k in ("arm", "sigma2", "width_lambda", "length_lambda"):
+            _need(k in pc, "positive_control lacks '%s'" % k)
+        arm_ref(pc["arm"], "positive_control.arm")
+
+
 def validate(raw):
+    _strict(raw, TOP_KEYS, "pre-registration")
+    for key in NESTED:
+        _strict(raw[key], DEFAULTS[key], key)
     for key in ("amplitudes", "arms"):
         _need(key in raw, "pre-registration lacks '%s'" % key)
+    for a in raw["arms"]:
+        _strict(a, ARM_KEYS, "arm %s" % a.get("id"))
+        _strict(a.get("selection", {}), SELECTION_KEYS, "arm %s selection" % a.get("id"))
+    for amp, c in raw["amplitudes"].items():
+        _strict(c, AMP_KEYS, "amplitude %s" % amp)
+        if "ladder" in c:
+            _strict(c["ladder"], LADDER_KEYS, "amplitude %s ladder" % amp)
+            for g in c["ladder"].get("gates", []):
+                _strict(g, GATE_KEYS, "amplitude %s ladder gate" % amp)
+        if "width" in c:
+            _strict(c["width"], WIDTH_KEYS, "amplitude %s width" % amp)
+        if "hmax" in c:
+            _strict(c["hmax"], {"h16", "h8"}, "amplitude %s hmax" % amp)
+        _strict(c.get("floors", {}), DEFAULTS["floors"], "amplitude %s floors" % amp)
     ids = [a.get("id") for a in raw["arms"]]
     _need(all(isinstance(i, str) and i for i in ids) and len(set(ids)) == len(ids), "arm ids must be unique non-empty strings")
     arms = {a["id"]: a for a in raw["arms"]}
@@ -82,6 +178,7 @@ def validate(raw):
         a.setdefault("source", a["id"])
         a.setdefault("code", "consumer")
         a.setdefault("hmax_div", -1)
+        a.setdefault("selection", {})
         a.setdefault("reserves", [])
         a.setdefault("role", a.get("family", ""))
         _need(a["amplitude"] in raw["amplitudes"], "arm %s: unknown amplitude %r" % (a["id"], a["amplitude"]))
@@ -91,6 +188,8 @@ def validate(raw):
     W = raw["windows"]
     _need(raw["primary_window"] in W, "primary_window not among windows")
     _need(raw["sampling_method"] in ("bootstrap-t", "student"), "sampling_method must be 'bootstrap-t' or 'student'")
+    _need(0.0 < raw["eh"].get("gate_level", 0.9) < 1.0 and raw["tie_rtol"] >= 0.0, "bad eh.gate_level / tie_rtol")
+    _need(set(raw["floors"]) >= {"production", "ladder", "width", "hmax", "gate5"}, "floors must define production, ladder, width, hmax, gate5")
     lo, hi = raw["eh"]["p_range"]
     _need(0 < lo <= hi and raw["eh"]["p_cap"] > 1.0 and raw["eh"]["safety"] >= 1.0, "bad eh parameters")
 
@@ -113,6 +212,16 @@ def validate(raw):
             _need(la[L["production_index"]]["id"] == prod["id"], "amplitude %s: ladder production_index is not the production arm" % amp)
             for t in L.get("triples", []):
                 _need(len(t) == 3 and t[0] < t[1] < t[2] < len(la), "amplitude %s: bad triple %r" % (amp, t))
+            for g in L.get("gates", []):
+                _need(g.get("type") in ("extra_level", "orders_agree"), "amplitude %s: unknown ladder gate %r" % (amp, g))
+                trs = [g["triple"]] if g["type"] == "extra_level" else g.get("triples", [])
+                _need(trs and all(len(t) == 3 and 0 <= t[0] < t[1] < t[2] < len(la) for t in trs), "amplitude %s: bad gate triples in %r" % (amp, g))
+                if g["type"] == "extra_level":
+                    _need("resolution" in g, "amplitude %s: an extra_level gate needs its 'resolution'" % amp)
+                    a_g = ref(g.get("arm"), amp, "gate arm")
+                    _need(a_g["group"] == la[0]["group"], "amplitude %s: the gate arm must share the ladder's seeds (group)" % amp)
+            for i in L.get("fallback_levels", range(len(la))):
+                _need(0 <= i < len(la), "amplitude %s: bad fallback_levels" % amp)
         if "E_W" in comps or "E_WxH" in comps:
             Wd = c.get("width")
             _need(Wd is not None, "amplitude %s: E_W/E_WxH need a 'width' block" % amp)
@@ -129,6 +238,7 @@ def validate(raw):
             _need(ref(H["h16"], amp, "hmax.h16")["group"] == ref(H["h8"], amp, "hmax.h8")["group"], "amplitude %s: h_max arms must share a group" % amp)
         if c.get("distance_arm"):
             ref(c["distance_arm"], amp, "distance_arm")
+    _validate_blocks(raw, arms)
     fam = Prereg(raw).family_ids()
     _need(len(set(fam)) == len(fam) and fam, "the Holm family must be non-empty and without duplicates")
     for h in fam:

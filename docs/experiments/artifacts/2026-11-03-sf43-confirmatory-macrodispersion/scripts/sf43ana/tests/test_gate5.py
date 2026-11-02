@@ -260,11 +260,11 @@ def arms_for(n=150, ratio=1.0, seed0=1000):
     rng = np.random.default_rng(31)
     L, P = paired(rng, n, ratio, 0.1, 0.12)
     seeds = np.arange(seed0, seed0 + n)
-    return {"arms": {"L": {"seed": seeds, "cols": {"alpha_LP": L}}, "P": {"seed": seeds[::-1].copy(), "cols": {"alpha_LP": P[::-1].copy()}}}}
+    return {"arms": {"L": {"seed": seeds, "cols": {"alpha_LP": L}}, "P": {"seed": seeds.copy(), "cols": {"alpha_LP": P}}}}
 
 
 class Run(unittest.TestCase):
-    prereg = {"gate5": {"family_m": 8, "B": 3999, "seed": 7, "amplitudes": {"s1": {"consumer": "L", "par2": "P"}}}}
+    prereg = {"gate5": {"family_m": 8, "B": 3999, "seed": 7, "floor": 100, "amplitudes": {"s1": {"consumer": "L", "par2": "P"}}}}
 
     def test_selected_procedure_p_ci_and_descriptives(self):
         data = arms_for()
@@ -280,7 +280,8 @@ class Run(unittest.TestCase):
         self.assertEqual(a["verdict"], "agree")
         self.assertEqual(a["delta_method"]["verdict"], "agree")
         self.assertEqual(a["student_fieller"]["verdict"], "agree")
-        self.assertGreater(a["power"]["ratio_1"], 0.99)
+        self.assertGreater(a["power"]["delta_method"]["ratio_1"], 0.99)
+        self.assertGreater(a["power"]["fieller"]["ratio_1"], 0.99)
         self.assertEqual(a["unmatched"]["verdict"], "agree")
         self.assertTrue(0.95 < a["ci"]["lo"] < a["ratio"] < a["ci"]["hi"] < 1.06)
 
@@ -295,20 +296,98 @@ class Run(unittest.TestCase):
         self.assertIn("descriptive", a["note"])
         self.assertLess(a["p_by_procedure"]["student"]["p_tost"], 1e-6)  # still reported
 
-    def test_pairs_by_seed_and_drops_nonfinite_pairs(self):
-        data = arms_for(n=60)
-        data["arms"]["P"]["cols"]["alpha_LP"][3] = np.nan
-        data["arms"]["L"]["seed"] = data["arms"]["L"]["seed"] + 0
+    def test_pairs_are_the_prefix_in_arm_order_and_stop_at_a_nonfinite_pair(self):
+        data = arms_for(n=120)
+        data["arms"]["P"]["cols"]["alpha_LP"][110] = np.nan
+        data["arms"]["P"]["seed"] = data["arms"]["P"]["seed"][:115]
+        data["arms"]["P"]["cols"]["alpha_LP"] = data["arms"]["P"]["cols"]["alpha_LP"][:115]
         r = g5.run(self.prereg, dict(data, coverage_summary=None))["amplitudes"]["s1"]
-        self.assertEqual(r["n"], 59)
-        self.assertEqual(r["pairing"]["n_nonfinite_dropped"], 1)
+        self.assertEqual(r["n"], 110)  # the first 110 positions; the NaN at position 110 ends the prefix, later pairs are not used
+        self.assertTrue(r["pairing"]["stopped_at_nonfinite"])
         self.assertIsNone(r["procedure"])  # no coverage summary: descriptive
+        data["arms"]["P"]["seed"] = data["arms"]["P"]["seed"][::-1].copy()
+        with self.assertRaises(ValueError):  # seed orders differ: not a paired prefix
+            g5.run(self.prereg, dict(data, coverage_summary=None))
+
+    def test_floor_makes_gate5_untestable(self):
+        data = arms_for(n=150)
+        data["coverage_summary"] = fake_summary({"student": {n: False for n in (100, 150, 200)}, "hall": {100: True, 150: True, 200: True},
+                                                 "boott": {100: True, 150: True, 200: True}})
+        pr = {"gate5": dict(self.prereg["gate5"], floor=200)}
+        a = g5.run(pr, data)["amplitudes"]["s1"]
+        self.assertEqual((a["procedure"], a["p_tost"]), (None, 1.0))
+        self.assertIn("floor 200", a["note"])
+        self.assertLess(a["p_by_procedure"]["hall"]["p_tost"], 1e-6)  # the estimates are still reported (descriptive)
+        pr = {"gate5": dict(self.prereg["gate5"], floor=200, amplitudes={"s1": {"consumer": "L", "par2": "P", "floor": 150}})}
+        self.assertEqual(g5.run(pr, data)["amplitudes"]["s1"]["procedure"], "hall")  # per-amplitude floor
+
+    def test_j3b_family_gates_only_where_configured(self):
+        data = arms_for(n=150)
+        base = {"student": {n: False for n in (100, 150, 200)}, "hall": {n: True for n in (100, 150, 200)}, "boott": {n: True for n in (100, 150, 200)}}
+        summ = fake_summary(base)
+        j3b = [dict(c, dist=d) for c in summ["cells"] if c["n"] == 150 and c["dist"] == "normal" for d in g5.J3B_DISTS]
+        for c in j3b:
+            c["rows"] = {k: [dict(e, pass_=None) for e in v] for k, v in c["rows"].items()}
+            for v in c["rows"].values():
+                for e in v:
+                    e.update(**{"pass": False, "ucl_over_tail": 1.9})
+        summ["cells"] += j3b  # the J3B-bound family fails at n = 150
+        data["coverage_summary"] = summ
+        plain = g5.run(self.prereg, data)["amplitudes"]["s1"]
+        self.assertEqual(plain["procedure"], "hall")  # not gating where not configured
+        gated = g5.run({"gate5": dict(self.prereg["gate5"], amplitudes={"s1": {"consumer": "L", "par2": "P", "j3b": True}})}, data)["amplitudes"]["s1"]
+        self.assertIsNone(gated["procedure"])
+        self.assertEqual(gated["p_tost"], 1.0)
+        self.assertIn("mix:2.73:7.59", " ".join(gated["selection"]["problems"]["hall"]))
+
+    def test_fieller_power_and_moments_and_exclusion_sensitivity(self):
+        data = arms_for(n=150)
+        data["coverage_summary"] = fake_summary({"student": {n: False for n in (100, 150, 200)}, "hall": {n: True for n in (100, 150, 200)},
+                                                 "boott": {n: True for n in (100, 150, 200)}})
+        verd = np.array(["converged"] * 150, dtype=object)
+        verd[[3, 40]] = "fallback"
+        data["arms"]["L"]["verdict"] = verd
+        data["arms"]["P"]["verdict"] = np.array(["converged"] * 150, dtype=object)
+        data["arms"]["pilot_L"] = {"seed": np.arange(50), "cols": {"alpha_LP": 1.0 + 0.1 * np.sin(np.arange(50))}}
+        data["arms"]["pilot_P"] = {"seed": np.arange(50), "cols": {"alpha_LP": 1.0 + 0.1 * np.cos(np.arange(50))}}
+        pr = {"gate5": dict(self.prereg["gate5"], amplitudes={"s1": {"consumer": "L", "par2": "P", "pilot": {"consumer": "pilot_L", "par2": "pilot_P"}}})}
+        a = g5.run(pr, data)["amplitudes"]["s1"]
+        self.assertEqual(a["pair_exclusion_sensitivity"]["n_excluded"], 2)
+        self.assertEqual(a["pair_exclusion_sensitivity"]["n"], 148)
+        self.assertEqual(a["pair_exclusion_sensitivity"]["procedure"], "hall")
+        self.assertEqual(a["pilot"]["n"], 50)
+        self.assertEqual(sorted(a["pilot"]["moments"]), ["corr_hi_lo", "hi", "lo"])
+        self.assertEqual(sorted(a["d_moments"]["hi"]), ["ekurt", "mean", "sd", "skew"])
+        # Fieller-form power: ~1 at ratio 1 for this tight data; low at a ratio beyond the margin; matches a direct simulation of the Student procedure
+        pw = a["power"]["fieller"]
+        self.assertGreater(pw["ratio_1"], 0.99)
+        L, P = data["arms"]["L"]["cols"]["alpha_LP"], data["arms"]["P"]["cols"]["alpha_LP"]
+        far = g5.fieller_power(L, P, 0.05 / 8, ratios=(1.10, 1.14))
+        self.assertLess(far["ratio_1.1"], 0.06)  # at the margin: at most about the level
+        self.assertLess(far["ratio_1.14"], far["ratio_1.1"] + 1e-9)
+
+    def test_fieller_power_agrees_with_simulation(self):
+        rng = np.random.default_rng(3)
+        n, cvl, cvp, rho, r_true, alpha = 80, 0.30, 0.15, 0.6, 1.04, 0.05 / 8
+        z1, z2 = rng.standard_normal((2, 20000, n))
+        L = r_true * (1 + cvl * z1)
+        P = 1 + cvp * (rho * z1 + math.sqrt(1 - rho ** 2) * z2)
+        Dh, Dl = L - M * P, L - P / M
+        t = lambda D: D.mean(1) / (D.std(1, ddof=1) / math.sqrt(n))  # noqa: E731
+        c = stats.t.isf(alpha, n - 1)
+        sim = float(np.mean((t(Dh) < -c) & (t(Dl) > c)))  # the Student Fieller TOST at the true ratio
+        big = np.random.default_rng(4).standard_normal((2, 400000))
+        Lb = r_true * (1 + cvl * big[0])
+        Pb = 1 + cvp * (rho * big[0] + math.sqrt(1 - rho ** 2) * big[1])
+        formula = g5.fieller_power(Lb, Pb, alpha, ratios=(r_true,), n=n)["ratio_%g" % r_true]  # population moments, n = 80
+        self.assertAlmostEqual(sim, formula, delta=0.03)
+        self.assertTrue(0.05 < sim < 0.95)
 
     def test_power_and_ratio_of_means_not_mean_of_ratios(self):
         data = arms_for(ratio=1.0)
         a = g5.run(self.prereg, dict(data, coverage_summary=None))["amplitudes"]["s1"]
         L = data["arms"]["L"]["cols"]["alpha_LP"]
-        P = data["arms"]["P"]["cols"]["alpha_LP"][::-1]
+        P = data["arms"]["P"]["cols"]["alpha_LP"]
         self.assertAlmostEqual(a["ratio"], L.mean() / P.mean(), places=12)
 
 

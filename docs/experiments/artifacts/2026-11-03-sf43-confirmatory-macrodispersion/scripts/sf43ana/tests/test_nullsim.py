@@ -65,7 +65,7 @@ def make_design(rng, R, spec, alpha_star, biases, dist):
     return d
 
 
-def simulate(scenario, R=200, seed=0, true_up=()):
+def simulate(scenario, R=200, seed=0, true_up=(), sampling="student", B_sampling=None):
     """-> dict(rate, se, n_false, per-amplitude rejection rates, naive rate).  ``true_up``: amplitudes with a truly positive alpha."""
     rng = np.random.default_rng(seed)
     dist = "skew" if scenario == "biased_skew" else "normal"
@@ -80,7 +80,7 @@ def simulate(scenario, R=200, seed=0, true_up=()):
         biases = (3.0 * se, 3.0 * se, 1.0 * se) if biased else (0.0, 0.0, 0.0)
         for est in ("alpha_TP", "alpha_TAP"):
             d = make_design(rng, R, spec, a_star, biases, dist)
-            t = RobustTest(d, null, CFG, "%s/%s" % (amp, est), lattice=lattice, sampling="student", B_budget=4000, rng=rng)
+            t = RobustTest(d, null, CFG, "%s/%s" % (amp, est), lattice=lattice, sampling=sampling, B_sampling=B_sampling, B_budget=4000, rng=rng)
             tabs[(amp, est)] = np.asarray(t.rl.lower(np.array(LEVELS)))  # (R, M) exact RL at every possible Holm level
             ps[(amp, est)] = np.asarray(t.p_value()[0])
             naive[(amp, est)] = np.asarray(StudentMean(d.prod).lower(0.05)) > null
@@ -111,10 +111,11 @@ def simulate(scenario, R=200, seed=0, true_up=()):
 
 class NullSimulation(unittest.TestCase):
     R = 200
+    sampling, B_sampling = "student", None
 
     def check(self, scenario, **kw):
-        out = simulate(scenario, self.R, **kw)
-        print("\nnull simulation %s: %s" % (scenario, out))
+        out = simulate(scenario, self.R, sampling=self.sampling, B_sampling=self.B_sampling, **kw)
+        print("\nnull simulation (%s sampling limit) %s: %s" % (self.sampling, scenario, out))
         self.assertLessEqual(out["rate"], 0.05, out)
         self.assertLessEqual(out["ucl95_clopper_pearson"], 0.05, out)  # R = 200 resolves 5 % when no false rejection occurs (rule of three: 1.5 %)
         return out
@@ -136,6 +137,12 @@ class NullSimulation(unittest.TestCase):
         out = self.check("mixed", seed=5, true_up=("2.25", "4"))
         self.assertGreater(out["rejection_by_amplitude"]["2.25"], 0.9)  # power where alpha is truly above the null
         self.assertGreater(out["rejection_by_amplitude"]["4"], 0.9)
+
+
+class NullSimulationBootstrapT(NullSimulation):
+    """The same scenarios with the pre-registered production sampling limit: the bootstrap-t lower limit (B + 1 = 3200 resolves the
+    smallest Holm tail 0.05 / 16 with 10 ranks; the pre-registration uses B = 33599)."""
+    sampling, B_sampling = "bootstrap-t", 3199
 
 
 if __name__ == "__main__":

@@ -40,17 +40,23 @@ power (the analytic Student delta-method power of ``mcstat.gate5.tost_power`` at
 and pairing correlation: an approximation to the power of the selected procedure, not its exact value), and the SF-39-style unmatched
 comparison (ratio of means of independent samples, delta-method log-ratio interval).
 
-``run(prereg, data)`` -- ``prereg["gate5"]``::
+``run(prereg, data)`` -- ``prereg["gate5"]`` (schema and an example in README.md; ``config.validate`` is strict)::
 
-    family_m (8), fwer (0.05), margin_ratio (1.10), level (0.90), B (33599), seed (int), key ("alpha_LP"), ref ("t"),
-    coverage_summary (path of the summary.json of sf43cov; or ``data["coverage_summary"]``, an already loaded dict),
-    amplitudes: {amp: {"consumer": arm, "par2": arm, "unmatched": {"consumer": arm, "par2": arm} (optional)}}
+    family_m (8), fwer (0.05), margin_ratio (1.10), level (0.90), B (33599), seed (int), key ("alpha_LP"), ref ("t"), floor (default
+    ``floors.gate5`` = 200), fallback_verdicts (["fallback"]), coverage_summary (path of the summary.json of sf43cov; or
+    ``data["coverage_summary"]``, an already loaded dict),
+    amplitudes: {amp: {"consumer": arm, "par2": arm, "floor": n, "j3b": bool, "pilot": {"consumer": arm, "par2": arm},
+                       "unmatched": {"consumer": arm, "par2": arm}}}
 
-``data``::
+PAIRS (H13, H5): the first ``n`` POSITIONS of the two arms' analysis sets in prefix order (``pair_prefix``; the seed orders must agree; the
+prefix stops at the first non-finite pair), all of them analysed with the procedure qualified at the largest coverage grid point <= ``n``
+(not truncated to it).  ``n < floor``: untestable, ``p = 1``, estimates reported.  ``j3b: true`` (sigma^2 = 4): the J3B-bound family
+(``J3B_DISTS``) is part of the qualification.  Achieved power: ``fieller_power`` (Fieller form at the realized ``n``, observed SD of
+``D_r`` at the margins), next to the delta-method power of SF-42.  Pair-exclusion sensitivity: pairs with a ``fallback`` verdict in
+either code removed.
 
-    {"arms": {arm: {"seed": int array (n,), "cols": {name: float array (n,)}}}}     (NaN allowed; pairs with a NaN are dropped, counted)
-
-Returns ``{"amplitudes": {amp: {...}}, "pvalues": {amp: p}, "holm_order": [amp, ...], "selection": {...}, "config": {...}}``.
+``data`` is the structure of ``sf43ana.loader.build_data`` (``data["arms"][arm]``: ``seed`` in prefix order, ``cols``, ``verdict``).
+Returns ``{"amplitudes": {amp: {...}}, "pvalues": {amp: p}, "holm_order": [amp, ...], "config": {...}}``.
 """
 from __future__ import annotations
 
@@ -70,6 +76,7 @@ MARGIN_RATIO = 1.10
 DEFAULT_B = 33599
 PROCS = ("hall", "boott", "boott_half")  # the pre-registered order
 DISTS = ("normal", "stress", "stress-")
+J3B_DISTS = ("mix:2.73:7.59", "mix:2.73:7.59-")  # the J3B upper-bound family (skewness 2.73, excess kurtosis 7.59) and its mirror (H5)
 COVERAGE_LABEL = "fieller"
 GRID_FACTOR = 1.02
 GRID_SPAN = 1e3
@@ -359,7 +366,7 @@ def qualification(summary, m=8, fwer=0.05, dists=DISTS, label=COVERAGE_LABEL):
     return out
 
 
-def select_procedure(summary, n_realized, m=8, fwer=0.05, dists=DISTS):
+def select_procedure(summary, n_realized, m=8, fwer=0.05, dists=DISTS):  # dists + J3B_DISTS where the J3B-bound family is gating (sigma^2 = 4)
     """The first of ``PROCS`` qualified at the largest grid size ``<= n_realized`` (see the module docstring).
 
     Returns ``{"procedure": name | None, "grid_n": int | None, "n": n_realized, "table": {proc: qualified at grid_n},
@@ -419,25 +426,96 @@ def _delta_method(L, P, level, margin_ratio):
 # ----------------------------------------------------------------------------------------------------------------------
 # run
 # ----------------------------------------------------------------------------------------------------------------------
+def pair_prefix(sa, va, sb, vb):
+    """The paired analysis set in PREFIX ORDER: the first ``n`` positions at which both arms have a finite value, ``n`` the longest common
+    prefix of the two seed orders that stops at the first non-finite pair.  Returns ``(seeds, a, b, info)``; ``ValueError`` if the seed
+    orders of the two arms differ inside the common length (arms of one group share their seed order)."""
+    sa, sb = np.asarray(sa), np.asarray(sb)
+    n = min(sa.size, sb.size)
+    bad = np.flatnonzero(sa[:n] != sb[:n])
+    if bad.size:
+        raise ValueError("the seed orders of the paired arms differ at position %d (%s vs %s)" % (bad[0], sa[bad[0]], sb[bad[0]]))
+    a, b = np.asarray(va, dtype=float)[:n], np.asarray(vb, dtype=float)[:n]
+    fin = np.isfinite(a) & np.isfinite(b)
+    k = n if fin.all() else int(np.argmin(fin))
+    info = {"n_common_prefix": int(n), "n_pairs": int(k), "n_only_a": int(sa.size - n), "n_only_b": int(sb.size - n),
+            "stopped_at_nonfinite": bool(k < n)}
+    return sa[:k].astype(np.int64), a[:k], b[:k], info
+
+
+def d_moments(L, P, margin):
+    """Mean, sd, skewness and excess kurtosis (bias-corrected) of ``D_hi = L - m P`` and ``D_lo = L - P / m`` and their correlation."""
+    out = {}
+    D = {"hi": L - margin * P, "lo": L - P / margin}
+    for k, d in D.items():
+        out[k] = {"mean": float(d.mean()), "sd": float(d.std(ddof=1)), "skew": float(_st.skew(d, bias=False)),
+                  "ekurt": float(_st.kurtosis(d, bias=False))}
+    out["corr_hi_lo"] = float(np.corrcoef(D["hi"], D["lo"])[0, 1])
+    return out
+
+
+def fieller_power(L, P, alpha, ratios=(1.0, 0.95), margin_ratio=MARGIN_RATIO, n=None):
+    """Achieved power of the Fieller-form TOST at the REALIZED ``n``: both one-sided Student tests (level ``alpha`` each) reject, for a
+    true ratio ``r`` of the means, with the OBSERVED sd of ``D_hi = L - m P`` and ``D_lo = L - P / m``, their observed correlation and the
+    observed ``mean(P)``: ``T_hi ~ N(mu_hi sqrt(n) / s_hi, 1)``, ``mu_hi = mean(P) (r - m)`` (``mu_lo = mean(P) (r - 1/m)``), reject iff
+    ``T_hi < -c`` and ``T_lo > c``, ``c`` the Student ``t_{n-1}`` upper ``alpha`` quantile; the probability is the bivariate normal
+    probability with correlation ``corr(D_hi, D_lo)`` (an approximation: the Student statistics are taken normal around the critical
+    value, so it is the power of the Student procedure, an upper bound for a skewed-data procedure's)."""
+    n = int(L.size if n is None else n)  # the realized n (``n=`` only to evaluate the formula at the moments of a large sample)
+    Dh, Dl = L - margin_ratio * P, L - P / margin_ratio
+    sh, sl = float(Dh.std(ddof=1)), float(Dl.std(ddof=1))
+    rho = float(np.clip(np.corrcoef(Dh, Dl)[0, 1], -0.999999, 0.999999))
+    c = float(_st.t.isf(alpha, n - 1))
+    mP = float(P.mean())
+    out = {"alpha": alpha, "n": int(n), "sd_D_hi": sh, "sd_D_lo": sl, "corr": rho, "form": "Fieller (bivariate normal around the Student critical value)"}
+    mv_cov = np.array([[1.0, -rho], [-rho, 1.0]])
+    for r in ratios:
+        dh = mP * (r - margin_ratio) * math.sqrt(n) / sh
+        dl = mP * (r - 1.0 / margin_ratio) * math.sqrt(n) / sl
+        out["ratio_%g" % r] = float(_st.multivariate_normal(mean=[dh, -dl], cov=mv_cov, allow_singular=True).cdf([-c, -c]))
+    return out
+
+
+def _rng(seed, amp, tag=""):
+    return np.random.default_rng(np.random.SeedSequence([seed, zlib.crc32(amp.encode()), zlib.crc32(tag.encode())]))
+
+
+def _decision(L, P, proc, cfg, rng, margin):
+    """p-values, interval and verdict of the Fieller form on the paired sample with ``proc``."""
+    F = Fieller(L, P, B=cfg["B"], rng=rng, ref=cfg["ref"])
+    ph, pl, pt = p_tost(F, proc, margin)
+    tail = 0.5 * (1.0 - cfg["level"])
+    lo, hi = F.limits(proc, tail)
+    return {"procedure": proc, "p_hi": ph, "p_lo": pl, "p_tost": pt, "lo": lo, "hi": hi, "verdict": verdict(lo, hi, margin), "n": int(L.size)}
+
+
 def _amplitude(cfg, amp, spec, data, summary, rng_seed):
     m, fwer, margin, level = cfg["family_m"], cfg["fwer"], cfg["margin_ratio"], cfg["level"]
     key = cfg["key"]
+    floor = int(spec.get("floor", cfg["floor"]))
     sc, L_all = arm_series(data, spec["consumer"], key)
     sp, P_all = arm_series(data, spec["par2"], key)
-    seeds, L, P, info = pair_by_seed(sc, L_all, sp, P_all)
+    seeds, L, P, info = pair_prefix(sc, L_all, sp, P_all)
     n = int(L.size)
-    out = {"amplitude": amp, "arms": {"consumer": spec["consumer"], "par2": spec["par2"]}, "key": key, "n": n, "pairing": info}
+    out = {"amplitude": amp, "arms": {"consumer": spec["consumer"], "par2": spec["par2"]}, "key": key, "n": n, "pairing": info,
+           "floor": floor, "j3b_gating": bool(spec.get("j3b", False))}
     pos = n >= 3 and L.mean() > 0 and P.mean() > 0
     if not pos:
         out.update(procedure=None, p_tost=1.0, verdict="undefined", note="fewer than 3 pairs or a non-positive mean: Gate 5 descriptive, p = 1")
         return out
     corr = float(np.corrcoef(L, P)[0, 1])
     cv_L, cv_P = float(L.std(ddof=1) / L.mean()), float(P.std(ddof=1) / P.mean())
-    out.update(mean_L=float(L.mean()), mean_P=float(P.mean()), ratio=float(L.mean() / P.mean()), cv_L=cv_L, cv_P=cv_P, corr=corr)
-    sel = select_procedure(summary, n, m, fwer) if summary is not None else \
-        {"procedure": None, "grid_n": None, "n": n, "table": {}, "problems": {}, "reason": "no coverage summary supplied"}
+    out.update(mean_L=float(L.mean()), mean_P=float(P.mean()), ratio=float(L.mean() / P.mean()), cv_L=cv_L, cv_P=cv_P, corr=corr,
+               d_moments=d_moments(L, P, margin))
+    dists = DISTS + J3B_DISTS if spec.get("j3b") else DISTS
+    below_floor = n < floor
+    if summary is None:
+        sel = {"procedure": None, "grid_n": None, "n": n, "table": {}, "problems": {}, "reason": "no coverage summary supplied"}
+    else:
+        sel = select_procedure(summary, n, m, fwer, dists)
+    sel["dists"] = list(dists)
     out["selection"] = sel
-    rng = np.random.default_rng(np.random.SeedSequence([cfg["seed"], zlib.crc32(amp.encode())]))
+    rng = _rng(cfg["seed"], amp)
     F = Fieller(L, P, B=cfg["B"], rng=rng, ref=cfg["ref"])
     tail = 0.5 * (1.0 - level)
     by = {}
@@ -445,21 +523,42 @@ def _amplitude(cfg, amp, spec, data, summary, rng_seed):
         ph, pl, pt = p_tost(F, proc, margin)
         by[proc] = {"p_hi": ph, "p_lo": pl, "p_tost": pt}
     out["p_by_procedure"] = by
-    chosen = sel["procedure"]
+    chosen = None if below_floor else sel["procedure"]
     out["procedure"] = chosen
     out["p_tost"] = by[chosen]["p_tost"] if chosen else 1.0
     desc_proc = chosen if chosen else "student"
     lo_t, hi_t = F.limits(desc_proc, tail)
     out["ci"] = {"level": level, "procedure": desc_proc, "lo": lo_t, "hi": hi_t, "descriptive": chosen is None,
-                 "note": "bootstrap-t at half the level: tails %.4g each side (a %.1f %% interval), conservative" % (tail / 2, 100 * (1 - tail))
-                 if chosen == "boott_half" else None}
+                 "note": "Fieller inversion of the tests; bootstrap-t at half the level: tails %.4g each side (a %.1f %% interval), conservative"
+                 % (tail / 2, 100 * (1 - tail)) if chosen == "boott_half" else "Fieller inversion of the tests"}
     out["verdict"] = verdict(lo_t, hi_t, margin)
-    if chosen is None:
+    if below_floor:
+        out["note"] = "%d pairs < floor %d (H13): Gate 5 untestable, descriptive, its p-value is 1" % (n, floor)
+    elif chosen is None:
         out["note"] = "no Fieller-form procedure is qualified at n = %d (grid %s): Gate 5 descriptive, its p-value is 1" % (n, sel.get("grid_n"))
     sl, su = F.limits("student", tail)
     out["student_fieller"] = {"lo": sl, "hi": su, "p_tost": by["student"]["p_tost"], "verdict": verdict(sl, su, margin)}
     out["delta_method"] = _delta_method(L, P, level, margin)
-    out["power"] = achieved_power(n, cv_L, cv_P, corr, fwer / m, ratios=(1.0, 0.95, round(float(L.mean() / P.mean()), 6)), margin_ratio=margin)
+    out["power"] = {"fieller": fieller_power(L, P, fwer / m, (1.0, 0.95, round(float(L.mean() / P.mean()), 6)), margin),
+                    "delta_method": achieved_power(n, cv_L, cv_P, corr, fwer / m, ratios=(1.0, 0.95), margin_ratio=margin)}
+    # sensitivity: pairs with a fallback-accepted solve in either code excluded (H5); descriptive, same procedure
+    fbv = set(cfg["fallback_verdicts"])
+    vc, vp = data["arms"][spec["consumer"]].get("verdict"), data["arms"][spec["par2"]].get("verdict")
+    if vc is not None and vp is not None:
+        keep = np.array([(vc[i] not in fbv) and (vp[i] not in fbv) for i in range(n)], dtype=bool)
+        sens = {"fallback_verdicts": sorted(fbv), "n_excluded": int((~keep).sum()), "n": int(keep.sum())}
+        if keep.sum() >= 3 and L[keep].mean() > 0 and P[keep].mean() > 0 and (~keep).any():
+            sens.update(_decision(L[keep], P[keep], desc_proc, cfg, _rng(cfg["seed"], amp, "excl"), margin), ratio=float(L[keep].mean() / P[keep].mean()))
+        elif not (~keep).any():
+            sens["note"] = "no pair has a fallback-accepted solve: identical to the main analysis"
+        out["pair_exclusion_sensitivity"] = sens
+    pl = spec.get("pilot")
+    if pl:  # pilot moments of D_r at the margins (SF-39 / SF-42 data passed as arms of ``data``)
+        try:
+            _, Lp, Pp, pinfo = pair_by_seed(*arm_series(data, pl["consumer"], key), *arm_series(data, pl["par2"], key))
+            out["pilot"] = {"arms": pl, "n": int(Lp.size), "moments": d_moments(Lp, Pp, margin) if Lp.size >= 4 else None, "pairing": pinfo}
+        except KeyError as e:
+            out["pilot"] = {"arms": pl, "note": "unavailable: %s" % (e.args[0],)}
     um = spec.get("unmatched")
     if um:
         _, Lu = arm_series(data, um["consumer"], key)
@@ -471,11 +570,18 @@ def _amplitude(cfg, amp, spec, data, summary, rng_seed):
     return out
 
 
+GATE5_KEYS = {"family_m", "fwer", "margin_ratio", "level", "B", "seed", "key", "ref", "coverage_summary", "fallback_verdicts", "floor",
+              "amplitudes"}
+GATE5_AMP_KEYS = {"consumer", "par2", "unmatched", "pilot", "floor", "j3b"}
+
+
 def config(prereg):
     g = dict(prereg["gate5"])
     return {"family_m": int(g.get("family_m", 8)), "fwer": float(g.get("fwer", 0.05)), "margin_ratio": float(g.get("margin_ratio", MARGIN_RATIO)),
             "level": float(g.get("level", 0.90)), "B": int(g.get("B", DEFAULT_B)), "seed": int(g.get("seed", 20261103)),
-            "key": g.get("key", "alpha_LP"), "ref": g.get("ref", "t")}
+            "key": g.get("key", "alpha_LP"), "ref": g.get("ref", "t"),
+            "floor": int(g.get("floor", prereg.get("floors", {}).get("gate5", 200))),
+            "fallback_verdicts": list(g.get("fallback_verdicts", prereg.get("fallback_verdicts", ["fallback"])))}
 
 
 def run(prereg, data):
@@ -490,3 +596,10 @@ def run(prereg, data):
         amps[amp] = _amplitude(cfg, amp, spec, data, summary, cfg["seed"])
     return jsonable({"amplitudes": amps, "pvalues": {a: r["p_tost"] for a, r in amps.items()}, "holm_order": list(amps),
                      "config": cfg, "coverage_plan_hash": None if summary is None else summary.get("plan_hash")})
+
+
+def analyse(ctx):
+    """Block of ``summary.json``: Gate 5 from the loaded campaign (None if the pre-registration has no ``gate5`` block)."""
+    if not ctx.prereg.raw.get("gate5"):
+        return None
+    return run(ctx.prereg.raw, ctx.data)

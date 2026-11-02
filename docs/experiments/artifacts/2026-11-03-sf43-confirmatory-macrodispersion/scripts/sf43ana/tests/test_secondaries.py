@@ -93,5 +93,31 @@ class Blocks(unittest.TestCase):
         self.assertIn("t_end_adv", r["time_window"]["cons"]["bdd_window"]["note"])
 
 
+
+class Recrossings(unittest.TestCase):
+    def data(self, with_cols):
+        rng = np.random.default_rng(2)
+        n = 40
+        lp = 1.0 + 0.1 * rng.standard_normal(n)
+        cols = {"alpha_LP": lp}
+        if with_cols:
+            cols.update({"frac_recross": 0.02 + 0.005 * rng.standard_normal(n), "frac_backflow": 0.004 + 0.001 * rng.standard_normal(n),
+                         "alpha_LP:nobackflow": lp * 0.95})
+        return {"arms": {"a": {"seed": np.arange(n), "cols": cols}}}
+
+    def test_fractions_and_the_sensitivity_without_backflow_encounters(self):
+        r = sec.run({"secondaries": {"recrossings": {"s4": {"arm": "a"}}}}, self.data(True))["recrossings"]["s4"]
+        self.assertAlmostEqual(r["frac_recross"]["mean"], 0.02, delta=0.005)
+        self.assertAlmostEqual(r["frac_backflow"]["mean"], 0.004, delta=0.001)
+        self.assertAlmostEqual(r["alpha_LP_without_backflow_over_all"]["ratio"], 0.95, places=10)
+        self.assertNotIn("note", r)
+
+    def test_without_the_input_the_block_says_what_is_needed(self):
+        r = sec.run({"secondaries": {"recrossings": {"s4": {"arm": "a"}}}}, self.data(False))["recrossings"]["s4"]
+        self.assertIn("input absent", r["note"])
+        for c in ("frac_recross", "frac_backflow", "alpha_LP:nobackflow"):
+            self.assertIn(c, r["note"])
+
+
 if __name__ == "__main__":
     unittest.main()

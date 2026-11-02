@@ -1,11 +1,15 @@
 """Orchestration and ``summary.json`` (sections ``estimands``, ``gate4``, ``family``, ``budgets``, ``precision``, ``process``).
 
-Optional blocks of the sibling modules ``gate5``, ``g7``, ``secondaries``, ``failures``: when the module ``sf43ana.<name>`` exists and
-defines ``analyse(ctx) -> dict``, the dictionary is merged under the key ``<name>`` (``ctx`` is a ``Context``: ``prereg``, ``arms``,
-``campaign``, ``reduced``, ``gate5_p``).  Absent modules are skipped; any other failure propagates.
+Optional blocks of the sibling modules ``gate5``, ``g7``, ``secondaries``, ``failures``, ``positive_control``: when the module
+``sf43ana.<name>`` exists and defines ``analyse(ctx) -> dict | None``, the dictionary is merged under the key ``<name>`` (``ctx`` is a
+``Context``: ``prereg``, ``arms``, ``campaign``, ``reduced``, ``gate5_p``, ``ledger`` and the lazily built ``data`` of ``loader``).  Absent
+modules are skipped, ``None`` (block not configured) is omitted.  A failure of a DESCRIPTIVE block (all but ``gate5``) is recorded as
+``{"error": ...}`` under its key and on stderr (``BLOCK_ERROR``): a descriptive analysis never costs the primary results; Gate 5
+errors propagate (they decide a hypothesis of the family).
 
-Gate 5 p-values are an INPUT (``--gate5``): JSON ``{"p": {"<amplitude>": p, ...}}`` (the ``p`` wrapper optional; a value may also be
-``{"p": ...}``).  A missing amplitude, or ``--gate5 none``, enters the Holm family with ``p = 1`` (untestable).
+Gate 5 p-values (``--gate5``): omitted or ``auto``: computed by ``sf43ana.gate5`` from the pre-registration's ``gate5`` block (none ->
+no p-values); ``none``: no p-values; a path: JSON ``{"p": {"<amplitude>": p, ...}}`` (the ``p`` wrapper optional; a value may also be
+``{"p": ...}``).  A missing amplitude enters the Holm family with ``p = 1`` (untestable).
 """
 import hashlib
 import importlib
@@ -17,21 +21,48 @@ import os
 import numpy as np
 
 from . import config as cfgmod
+from . import figures
 from .estimands import TRANSVERSE, amplitude_estimands
 from .gate4 import (CLASS_PHYS, RobustTest, classify_amplitude, classify_estimator, design_from_arms)
 from .holm import holm
-from .loader import load_all
+from .loader import build_data, load_all
 
-OPTIONAL = ("gate5", "g7", "secondaries", "failures")
+OPTIONAL = ("gate5", "g7", "secondaries", "failures", "positive_control")
 
 
 class Context:
-    def __init__(self, prereg, arms, campaign, reduced, gate5_p):
-        self.prereg, self.arms, self.campaign, self.reduced, self.gate5_p = prereg, arms, campaign, reduced, gate5_p
+    def __init__(self, prereg, arms, campaign, reduced, gate5_p, ledger=None):
+        self.prereg, self.arms, self.campaign, self.reduced, self.gate5_p, self.ledger = prereg, arms, campaign, reduced, gate5_p, ledger
+        self._data = None
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = build_data(self.prereg, self.arms, self.ledger)
+        return self._data
+
+
+def _analyse(name, ctx):
+    """-> result dict, None (module absent or block not configured); an error of a descriptive block is returned as {"error": ...}."""
+    if importlib.util.find_spec("sf43ana." + name) is None:
+        return None
+    fn = getattr(importlib.import_module("sf43ana." + name), "analyse", None)
+    if not callable(fn):
+        return None
+    if name == "gate5":
+        return fn(ctx)
+    try:
+        return fn(ctx)
+    except Exception as e:  # noqa: BLE001  (descriptive block: recorded, never fatal)
+        import sys
+        import traceback
+        print("BLOCK_ERROR %s: %s: %s" % (name, type(e).__name__, e), file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        return {"error": "%s: %s" % (type(e).__name__, e)}
 
 
 def read_gate5(path):
-    if path in (None, "none", ""):
+    if path in (None, "none", "", "auto"):
         return {}
     with open(path) as f:
         raw = json.load(f)
@@ -130,14 +161,20 @@ def precision_section(prereg, est):
 
 def run(prereg_path, campaign, reduced, gate5_path, out_dir):
     prereg = cfgmod.load_prereg(prereg_path)
-    arms, proc = load_all(prereg, campaign, reduced)
+    arms, proc, ledger = load_all(prereg, campaign, reduced)
+    auto = gate5_path in (None, "auto", "")
     gate5_p = read_gate5(gate5_path)
-    ctx = Context(prereg, arms, campaign, reduced, gate5_p)
+    ctx = Context(prereg, arms, campaign, reduced, gate5_p, ledger)
+    optional = {}
+    if auto and prereg.raw.get("gate5"):
+        optional["gate5"] = _analyse("gate5", ctx)
+        if optional["gate5"] is not None:
+            gate5_p.update({str(k): float(v) for k, v in optional["gate5"]["pvalues"].items()})
     est = {amp: amplitude_estimands(prereg, amp, arms) for amp in prereg.amps}
     tests = gate4_tests(prereg, arms)
     hyps = build_family(prereg, tests, gate5_p)
     fwer = prereg["levels"]["fwer"]
-    res, info = holm(hyps, fwer)
+    res, info = holm(hyps, fwer, prereg["tie_rtol"])
     by_id = {r["id"]: r for r in res}
     for r, h in zip(res, hyps):
         r["note"] = h["note"]
@@ -176,13 +213,13 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir):
         "B_budget": bs["B_budget"],
         "ok": bool(bs["B_sampling"] + 1 >= 2 * m / fwer and all(bs["B_budget"] + 1 >= 4 * len(prereg.amp(a).get("components", [])) * m / fwer for a in prereg.amps))}
     for name in OPTIONAL:
-        if importlib.util.find_spec("sf43ana." + name) is not None:
-            fn = getattr(importlib.import_module("sf43ana." + name), "analyse", None)
-            if callable(fn):
-                summary[name] = fn(ctx)
+        out = optional[name] if name in optional else _analyse(name, ctx)
+        if out is not None:
+            summary[name] = out
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "summary.json")
     with open(path, "w") as f:
         json.dump(clean(summary), f, indent=1, sort_keys=True)
         f.write("\n")
+    figures.make(path, os.path.join(out_dir, "figures"))  # never raises; FIGURES_SKIPPED if matplotlib is absent
     return summary, path

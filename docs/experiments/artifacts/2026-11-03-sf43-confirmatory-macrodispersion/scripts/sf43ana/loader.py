@@ -1,16 +1,41 @@
-"""Reduced tables + campaign ledger -> per-arm, per-seed arrays (prefix rule and group-wide replacements).
+"""Campaign ledger + reduced tables -> per-arm, per-seed arrays (prefix rule, group-wide replacements): THE data contract of ``sf43ana``.
 
-Analysis set of an arm = the longest COMPLETE prefix of its pre-registered seed order, after the group-wide replacements of the
-ledger (a replaced seed's position is taken by its reserve; chains are followed), cut at ``n_conf``.  A position is complete when
-the ledger's latest record for (source arm, seed) has an accepted verdict AND the reduced table of that record's segment has the
-row (selection: code, family, weights, set, hmax_div; both bases) with finite ``alpha_TP``, ``alpha_TAP``, ``alpha_LP``, ``U_r``
-in the primary window.  The first incomplete position ends the prefix (nothing later is used, whatever its state): no
-outcome-dependent selection.  An arm whose prefix is shorter than its ``floor`` has ``status = 'below_floor'``: its hypotheses are
-untestable and its estimates descriptive.
+Inputs are exactly what the campaign engine (``sf43camp``) writes:
 
-Ledger: JSON lines.  Seed records ``{"arm","segment","seed","verdict","class"}`` (no ``kind``, or ``"kind": "seed"``); replacement
-records ``{"kind": "replacement", "seed", "replaced_by", "group"}``.  Reduced tables: ``reduced_pattern.format(arm=<source arm>,
-segment=<segment of the ledger record>, window=<window label>)`` under the ``--reduced`` directory, in the ``sf42red`` format.
+* the LEDGER ``<campaign>/ledger.jsonl`` (JSON lines; a torn last line is ignored).  Used records: ``unit_end`` (``arm``, ``segment``
+  = path ``segments/<arm>/u<unit>_s<seed0>``, ``segment_seed0``, ``completed`` = seeds with complete outputs, ``verdicts`` = {seed:
+  solver verdict}, ``cls``, ``failed_seed``), ``replacement`` (``group``, ``seed``, ``replacement``, ``arm``) and ``arm_halt``
+  (``arm``, ``reason``).  Per (arm, seed) the LATEST ``unit_end`` that lists the seed counts: completed seeds are ``class ok`` (verdict
+  from ``verdicts``; ``None`` for a ``recovered`` unit, whose verdicts were not logged: usable, counted in ``verdict_unknown``); the
+  ``failed_seed`` of a ``unusable_solve`` unit is a failed seed.
+* the REDUCED TABLES written by ``sf43camp.runner_executor.reduce``: ``<reduced>/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv``
+  (``reduced_pattern``: ``{arm}``, ``{segment}`` = ``<segdir>``, ``{window}``, ``{lo}``, ``{hi}``).  A consumer row carries its
+  ``seed``; a Par2 row has ``seed = nan`` and the realization index ``r`` of its segment, its seed is ``segment_seed0 + r`` (the
+  executor's seed map: realization index r <-> seed seed0 + r in both codes; seed0 from the ledger).
+
+Analysis set of an arm = the longest COMPLETE prefix of its pre-registered seed order, after the group-wide replacements of the ledger
+(a replaced seed's position is taken by its reserve; chains are followed), cut at ``n_conf``.  A position is complete when the
+ledger's latest record for (source arm, seed) is completed with a usable verdict (``ok_verdicts``) AND the reduced table of that
+record's segment has the selected rows (both bases) with finite ``alpha_TP``, ``alpha_TAP``, ``alpha_LP``, ``U_r`` in the primary
+window.  The first incomplete position ends the prefix (nothing later is used, whatever its state): no outcome-dependent selection.
+An arm whose prefix is shorter than its ``floor`` has ``status = 'below_floor'``.
+
+Row selection per arm: ``prereg.selection`` (code, family, weights, set), the arm's ``code``, then the arm's own ``selection`` override;
+Par2 rows exist with ``weights = unif`` only (applied unless overridden), ``hmax_div`` = the arm's.
+
+``data`` (``build_data``): the one structure every sibling module (``gate5``, ``g7``, ``secondaries``, ``failures``,
+``positive_control``) reads::
+
+    {"arms":   {arm id: {"seed": int array (N,) in PREFIX ORDER, "verdict": str array (N,), "N": int, "status": "ok"|"below_floor",
+                         "cols": {name: float array (N,)}, "segment": [segdir per seed]}},
+     "ledger": [{"arm","segment","seed","verdict","class",["replaces"]}, ...],      # one per (arm, seed), latest record
+     "halted": [arm, ...], "sources": {ledger arm: [arm ids reading its tables]}, "coverage_summary": dict|None}
+
+Column names: ``<est>`` is the POSITION basis, ``<est>:<basis>`` any other (``alpha_TP:disp``) for the estimators ``alpha_TP``,
+``alpha_TAP``, ``alpha_LP``, ``U_r`` at the primary window; ``alpha_LAM:time``, ``alpha_Tfixed:time``, ``alpha_TAM:time`` and
+``t_end_adv`` (= ``t_end U_time / ell``, advection times) from the ``family=time`` rows (weights flux for the consumer, unif for Par2);
+``alpha_TP:expI``, ``alpha_LP:expI`` (consumer weights ``expI``); recrossing and backflow counts ``frac_recross``, ``frac_backflow`` (per-realization
+fractions) and ``alpha_LP:nobackflow`` if (and only if) the table carries them (see README: ``sf42red`` does not write them today).
 """
 import csv
 import json
@@ -20,33 +45,69 @@ import os
 import numpy as np
 
 COLS = ("alpha_TP", "alpha_TAP", "alpha_LP", "U_r")
-TABLE_NUM = COLS
+TIME_COLS = ("alpha_LAM", "alpha_Tfixed", "alpha_TAM")
+OPTIONAL_COLS = ("frac_recross", "frac_backflow", "alpha_LP:nobackflow")
 
 
 class LoadError(Exception):
     pass
 
 
+class Ledger:
+    """Parsed campaign ledger (see the module docstring)."""
+
+    def __init__(self):
+        self.seeds = {}      # (arm, seed) -> normalized record
+        self.repl = {}       # group -> {seed: replacement}
+        self.halted = {}     # arm -> reason
+        self.seg_seed0 = {}  # (arm, segdir) -> seed0
+        self.n = 0
+        self.verdict_unknown = 0
+
+
+def segdir(path):
+    return os.path.basename(os.path.normpath(path))
+
+
 def read_ledger(path):
-    """-> (latest seed record per (arm, seed), {group: {seed: replaced_by}}, number of records)."""
-    seeds, repl, n = {}, {}, 0
+    L = Ledger()
     with open(path) as f:
-        for ln, line in enumerate(f, 1):
-            if not line.strip():
+        lines = f.read().split("\n")
+    last = max((i for i, ln in enumerate(lines) if ln.strip()), default=-1)
+    for ln, line in enumerate(lines):
+        if not line.strip():
+            continue
+        try:
+            r = json.loads(line)
+        except ValueError as e:
+            if ln == last:  # a torn last line (the writer was killed mid-append) is ignored, as the engine does
                 continue
-            try:
-                r = json.loads(line)
-            except ValueError as e:
-                raise LoadError("%s:%d: %s" % (path, ln, e))
-            n += 1
-            if r.get("kind") == "replacement":
-                g = repl.setdefault(r["group"], {})
-                if r["seed"] in g and g[r["seed"]] != r["replaced_by"]:
-                    raise LoadError("%s:%d: seed %s replaced twice in group %s" % (path, ln, r["seed"], r["group"]))
-                g[int(r["seed"])] = int(r["replaced_by"])
-            elif r.get("kind", "seed") == "seed":
-                seeds[(r["arm"], int(r["seed"]))] = r
-    return seeds, repl, n
+            raise LoadError("%s:%d: %s" % (path, ln + 1, e))
+        L.n += 1
+        kind = r.get("kind")
+        if kind == "replacement":
+            g = L.repl.setdefault(r["group"], {})
+            s, t = int(r["seed"]), int(r["replacement"])
+            if s in g and g[s] != t:
+                raise LoadError("%s:%d: seed %s replaced twice in group %s" % (path, ln + 1, s, r["group"]))
+            g[s] = t
+        elif kind == "arm_halt":
+            L.halted[r["arm"]] = r.get("reason", "")
+        elif kind == "unit_end":
+            seg = segdir(r["segment"])
+            L.seg_seed0[(r["arm"], seg)] = int(r["segment_seed0"])
+            verd = r.get("verdicts") or {}
+            for s in r.get("completed", []):
+                v = verd.get(str(s))
+                L.seeds[(r["arm"], int(s))] = {"arm": r["arm"], "segment": seg, "segment_rel": r["segment"], "seed": int(s), "verdict": v,
+                                               "class": "ok", "unit_class": r.get("cls"), "seed0": int(r["segment_seed0"])}
+            if r.get("cls") == "unusable_solve" and r.get("failed_seed") is not None:
+                s = int(r["failed_seed"])
+                L.seeds[(r["arm"], s)] = {"arm": r["arm"], "segment": seg, "segment_rel": r["segment"], "seed": s,
+                                          "verdict": verd.get(str(s)), "class": "unusable_solve", "unit_class": r.get("cls"),
+                                          "seed0": int(r["segment_seed0"])}
+    L.verdict_unknown = sum(1 for r in L.seeds.values() if r["class"] == "ok" and r["verdict"] is None)
+    return L
 
 
 def effective_order(seeds, replacements):
@@ -67,34 +128,57 @@ def effective_order(seeds, replacements):
     return out, applied
 
 
+def selection_of(prereg, cfg):
+    """Row selection of an arm: pre-registered default, the arm's code (Par2: uniform weights only), the arm's own override."""
+    sel = dict(prereg["selection"])
+    sel["code"] = cfg["code"]
+    if cfg["code"] == "par2":
+        sel["weights"] = "unif"
+    sel.update(cfg.get("selection", {}))
+    return sel
+
+
 class TableCache:
-    def __init__(self, reduced_dir, prereg):
-        self.dir, self.p, self._c = reduced_dir, prereg, {}
+    """Reads the reduced tables once: ``table(source arm, segdir, window)`` -> {(code, family, weights, basis, set, hmax_div, seed): row}
+    (``row``: dict of the raw strings), or ``None`` if the file is absent.  Par2 seeds come from ``segment_seed0 + r``."""
+
+    def __init__(self, reduced_dir, prereg, ledger):
+        self.dir, self.p, self.ledger, self._c = reduced_dir, prereg, ledger, {}
 
     def path(self, arm, segment, window):
-        return os.path.join(self.dir, self.p["reduced_pattern"].format(arm=arm, segment=segment, window=window))
+        lo, hi = self.p["windows"][window]
+        return os.path.join(self.dir, self.p["reduced_pattern"].format(arm=arm, segment=segment, window=window, lo=lo, hi=hi))
 
-    def rows(self, arm_cfg, segment, window):
-        """dict (seed, basis) -> {column: float} of the selected rows of one table, or None if the file is absent."""
-        p = self.path(arm_cfg["source"], segment, window)
-        key = (p, arm_cfg["hmax_div"], arm_cfg["code"])
-        if key in self._c:
-            return self._c[key]
+    def table(self, arm, segment, window):
+        p = self.path(arm, segment, window)
+        if p in self._c:
+            return self._c[p]
         if not os.path.isfile(p):
-            self._c[key] = None
+            self._c[p] = None
             return None
-        sel = dict(self.p["selection"], code=arm_cfg["code"])
         out = {}
         with open(p, newline="") as f:
             for row in csv.DictReader(f):
-                if any(row[k] != v for k, v in sel.items()) or int(float(row["hmax_div"])) != arm_cfg["hmax_div"]:
-                    continue
-                k = (int(float(row["seed"])), row["basis"])
+                seed = float(row["seed"]) if row["seed"] not in ("", "nan") else float("nan")
+                if math.isnan(seed):
+                    s0 = self.ledger.seg_seed0.get((arm, segment))
+                    if s0 is None:
+                        raise LoadError("%s: a row without a seed and no ledger seed0 for segment %s of arm %s" % (p, segment, arm))
+                    seed = s0 + int(float(row["r"]))
+                k = (row["code"], row["family"], row["weights"], row["basis"], row["set"], int(float(row["hmax_div"])), int(seed))
                 if k in out:
-                    raise LoadError("%s: duplicate row for seed %d basis %s" % (p, k[0], k[1]))
-                out[k] = {c: float(row[c]) for c in TABLE_NUM}
-        self._c[key] = out
+                    raise LoadError("%s: duplicate row %r" % (p, k))
+                out[k] = row
+        self._c[p] = out
         return out
+
+
+def _num(row, col):
+    v = row.get(col, "")
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return float("nan")
 
 
 class ArmData:
@@ -103,7 +187,9 @@ class ArmData:
         self.amplitude, self.group = cfg["amplitude"], cfg["group"]
         self.n_conf, self.floor = cfg["n_conf"], cfg["floor"]
         self.seeds = np.zeros(0, dtype=int)
+        self.verdicts, self.segments = [], []
         self.values = {}  # (window, basis, column) -> array (N,)
+        self.extra = {}   # extra column name -> array (N,)
         self.info = {}
 
     @property
@@ -118,46 +204,101 @@ class ArmData:
         v = self.values[(window, basis, col)]
         return v if n is None else v[:n]
 
+    def as_data(self, prereg):
+        """The ``data["arms"][id]`` view (module docstring)."""
+        prim = prereg["primary_window"]
+        cols = {}
+        for b in prereg["bases"].values():
+            for c in COLS:
+                cols[c if b == "pos" else "%s:%s" % (c, b)] = self.values[(prim, b, c)]
+        cols.update(self.extra)
+        return {"seed": self.seeds, "verdict": np.array(self.verdicts, dtype=object), "N": self.N, "status": self.info.get("status"),
+                "cols": cols, "segment": list(self.segments)}
 
-def load_arm(cfg, prereg, ledger, replacements, tables):
+
+def _extra_columns(cfg, prereg, sel, seg_of, seeds, tables):
+    """Columns of the sibling modules from other rows of the primary-window tables (see the module docstring)."""
+    prim = prereg["primary_window"]
+    n = len(seeds)
+    consumer = cfg["code"] == "consumer"
+    wt = sel["weights"] if consumer else "unif"
+    variants = {"%s:time" % c: ("time", wt, "pos", c) for c in TIME_COLS}
+    if consumer:
+        variants.update({"alpha_TP:expI": ("plane", "expI", "pos", "alpha_TP"), "alpha_LP:expI": ("plane", "expI", "pos", "alpha_LP")})
+    out = {k: np.full(n, np.nan) for k in list(variants) + ["t_end_adv"] + list(OPTIONAL_COLS)}
+    seen = {k: False for k in out}
+    for i, s in enumerate(seeds):
+        tab = tables.table(cfg["source"], seg_of[int(s)], prim)
+        if tab is None:
+            continue
+        for name, (fam, w, basis, col) in variants.items():
+            row = tab.get((cfg["code"], fam, w, basis, sel["set"], cfg["hmax_div"], int(s)))
+            if row is not None:
+                out[name][i] = _num(row, col)
+        row = tab.get((cfg["code"], "time", wt, "pos", sel["set"], cfg["hmax_div"], int(s)))
+        if row is not None:
+            te, ut, ell = _num(row, "t_end"), _num(row, "U_time"), _num(row, "ell")
+            if ell > 0:
+                out["t_end_adv"][i] = te * ut / ell
+        prow = tab.get((cfg["code"], sel["family"], sel["weights"], "pos", sel["set"], cfg["hmax_div"], int(s)))
+        if prow is not None:
+            for c in OPTIONAL_COLS:
+                if c in prow:
+                    out[c][i] = _num(prow, c)
+                    seen[c] = True
+    return {k: v for k, v in out.items() if not np.all(np.isnan(v)) or seen.get(k)}
+
+
+def load_arm(cfg, prereg, ledger, tables):
     a = ArmData(cfg)
     prim, bases = prereg["primary_window"], (prereg["bases"]["primary"], prereg["bases"]["secondary"])
-    order, applied = effective_order(cfg["seeds"], replacements.get(cfg["group"], {}))
+    order, applied = effective_order(cfg["seeds"], ledger.repl.get(cfg["group"], {}))
     ok = set(prereg["ok_verdicts"])
+    sel = selection_of(prereg, cfg)
     info = {"n_conf": a.n_conf, "floor": a.floor, "replacements_applied": [{"seed": s, "replaced_by": t} for s, t in applied],
-            "stopped_at": None, "missing_tables": []}
-    seg_of, n = {}, 0
+            "stopped_at": None, "missing_tables": [], "selection": sel}
+    seg_of, verd, n = {}, [], 0
     for pos in range(a.n_conf):
         s = order[pos]
-        rec = ledger.get((cfg["source"], s))
+        rec = ledger.seeds.get((cfg["source"], s))
         why = None
         if rec is None:
             why = "no ledger record"
-        elif rec["verdict"] not in ok:
-            why = "verdict %r (class %r)" % (rec["verdict"], rec.get("class"))
+        elif rec["class"] != "ok":
+            why = "class %r (verdict %r)" % (rec["class"], rec["verdict"])
+        elif rec["verdict"] is not None and rec["verdict"] not in ok:
+            why = "verdict %r" % (rec["verdict"],)
         else:
-            rows = tables.rows(cfg, rec["segment"], prim)
-            if rows is None:
+            tab = tables.table(cfg["source"], rec["segment"], prim)
+            if tab is None:
                 why = "missing reduced table %s" % tables.path(cfg["source"], rec["segment"], prim)
                 info["missing_tables"].append(tables.path(cfg["source"], rec["segment"], prim))
-            elif any((s, b) not in rows or not all(math.isfinite(rows[(s, b)][c]) for c in COLS) for b in bases):
-                why = "no complete finite row in the reduced table"
+            else:
+                for b in bases:
+                    row = tab.get((sel["code"], sel["family"], sel["weights"], b, sel["set"], cfg["hmax_div"], s))
+                    if row is None or not all(math.isfinite(_num(row, c)) for c in COLS):
+                        why = "no complete finite row in the reduced table"
+                        break
         if why:
             info["stopped_at"] = {"position": pos, "seed": s, "reason": why}
             break
         seg_of[s] = rec["segment"]
+        verd.append(rec["verdict"] if rec["verdict"] is not None else "unknown")
         n += 1
     a.seeds = np.array(order[:n], dtype=int)
+    a.verdicts, a.segments = verd, [seg_of[int(s)] for s in a.seeds]
     for w in prereg["windows"]:
         for b in bases:
             arr = {c: np.full(n, np.nan) for c in COLS}
             for i, s in enumerate(a.seeds):
-                rows = tables.rows(cfg, seg_of[int(s)], w)
-                if rows is not None and (int(s), b) in rows:
+                tab = tables.table(cfg["source"], seg_of[int(s)], w)
+                row = None if tab is None else tab.get((sel["code"], sel["family"], sel["weights"], b, sel["set"], cfg["hmax_div"], int(s)))
+                if row is not None:
                     for c in COLS:
-                        arr[c][i] = rows[(int(s), b)][c]
+                        arr[c][i] = _num(row, c)
             for c in COLS:
                 a.values[(w, b, c)] = arr[c]
+    a.extra = _extra_columns(cfg, prereg, sel, seg_of, a.seeds, tables)
     info["N"] = n
     info["status"] = "ok" if n >= a.floor else "below_floor"
     info["complete_prefix_equals_n_conf"] = n == a.n_conf
@@ -166,16 +307,13 @@ def load_arm(cfg, prereg, ledger, replacements, tables):
 
 
 def load_all(prereg, campaign_dir, reduced_dir):
-    """-> ({arm id: ArmData} for the arms of the selected code, process info)."""
-    ledger, repl, nrec = read_ledger(os.path.join(campaign_dir, prereg["ledger"]))
-    tables = TableCache(reduced_dir, prereg)
-    arms, skipped = {}, []
-    for aid, cfg in prereg.arms.items():
-        if cfg["code"] != prereg["selection"]["code"]:
-            skipped.append(aid)
-            continue
-        arms[aid] = load_arm(cfg, prereg, ledger, repl, tables)
-    return arms, {"ledger_records": nrec, "replacement_groups": {g: len(m) for g, m in repl.items()}, "skipped_arms_other_code": skipped}
+    """-> ({arm id: ArmData} for EVERY pre-registered arm (both codes), process info, Ledger)."""
+    ledger = read_ledger(os.path.join(campaign_dir, prereg["ledger"]))
+    tables = TableCache(reduced_dir, prereg, ledger)
+    arms = {aid: load_arm(cfg, prereg, ledger, tables) for aid, cfg in prereg.arms.items()}
+    proc = {"ledger_records": ledger.n, "replacement_groups": {g: len(m) for g, m in ledger.repl.items()},
+            "halted_arms": dict(ledger.halted), "verdict_unknown": ledger.verdict_unknown}
+    return arms, proc, ledger
 
 
 def common_prefix(arms):
@@ -185,3 +323,28 @@ def common_prefix(arms):
         if not np.array_equal(a.seeds[:n], arms[0].seeds[:n]):
             raise LoadError("arms %s do not share their seed order on the common prefix" % [x.id for x in arms])
     return n
+
+
+def build_data(prereg, arms, ledger, coverage_summary=None):
+    """The ``data`` structure of the module docstring."""
+    repl_of = {}
+    for g, m in ledger.repl.items():
+        for s, t in m.items():
+            repl_of[(g, t)] = s
+    groups_of = {}
+    for a in prereg.arms.values():
+        groups_of.setdefault(a["source"], set()).add(a["group"])
+    recs = []
+    for (arm, seed), r in sorted(ledger.seeds.items()):
+        rec = {"arm": arm, "segment": r["segment"], "seed": seed, "verdict": r["verdict"], "class": r["class"]}
+        for g in sorted(groups_of.get(arm, ())):
+            if (g, seed) in repl_of:
+                rec["replaces"] = repl_of[(g, seed)]
+        recs.append(rec)
+    for arm, why in sorted(ledger.halted.items()):
+        recs.append({"arm": arm, "segment": None, "seed": -1, "verdict": None, "class": "halted", "reason": why})
+    sources = {}
+    for aid, cfg in prereg.arms.items():
+        sources.setdefault(cfg["source"], []).append(aid)
+    return {"arms": {aid: a.as_data(prereg) for aid, a in arms.items()}, "ledger": recs, "halted": sorted(ledger.halted),
+            "sources": sources, "coverage_summary": coverage_summary}

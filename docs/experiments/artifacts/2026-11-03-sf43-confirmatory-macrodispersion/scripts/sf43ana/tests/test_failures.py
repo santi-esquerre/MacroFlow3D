@@ -47,13 +47,13 @@ class Run(unittest.TestCase):
     def build(self):
         ledger = []
         for s in range(100):  # arm A: seeds 0..99 attempted, 3 failed (3 %), replaced by 100..102
-            ledger.append(rec("A", s, "failed" if s in (5, 17, 60) else "ok", "fallback" if s in (7, 8) else "converged"))
+            ledger.append(rec("A", s, "unusable_solve" if s in (5, 17, 60) else "ok", "fallback" if s in (7, 8) else "converged"))
         for s, f in ((100, 5), (101, 17), (102, 60)):
             ledger.append(rec("A", s, "ok", replaces=f))
         for s in range(200):  # arm B: 200 attempted, 1 failed (0.5 %)
-            ledger.append(rec("B", s, "failed" if s == 3 else "ok"))
+            ledger.append(rec("B", s, "unusable_solve" if s == 3 else "ok"))
         ledger.append(rec("H", 0, "halted"))
-        ledger.append(rec("A", 5, "failed", segment=1))  # a second failed segment of the same seed counts once
+        ledger.append(rec("A", 5, "unusable_solve", segment=1))  # a second failed segment of the same seed counts once
         rng = np.random.default_rng(3)
         usable_A = [s for s in range(103) if s not in (5, 17, 60)]
         usable_B = [s for s in range(200) if s != 3]

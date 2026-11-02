@@ -15,13 +15,14 @@ Per arm, from the campaign ledger (JSON lines, one record per segment of a seed'
 
 ``run(prereg, data)`` -- ``prereg["failures"]`` (all optional)::
 
-    max_rate (0.01), failure_classes (["failed"]), fallback_verdicts (["fallback"]), estimands (["alpha_TP", "alpha_TAP", "alpha_LP"]),
+    max_rate (0.01), failure_classes (["unusable_solve"]), fallback_verdicts (["fallback"]), estimands (["alpha_TP:disp", "alpha_TAP:disp", "alpha_LP", "alpha_TP", "alpha_TAP"]),
     q_low (0.05), q_high (0.95), arms (default: the arms of the ledger)
 
 ``data``::
 
     {"ledger": [{"arm", "segment", "seed", "verdict", "class", ["replaces"]}, ...],
-     "arms": {arm: {"seed": int array, "cols": {name: float array}}},  "halted": [arm, ...]}
+     "arms": {arm: {"seed": int array, "cols": {name: float array}}},  "halted": [arm, ...], "sources": {ledger arm: [arm ids]}}
+    (the normalized ledger and ``arms`` of ``sf43ana.loader.build_data``; the ledger ``arm`` is the SOURCE arm of the campaign)
 
 A record counts as failed iff its ``class`` is in ``failure_classes``.  The usable per-seed values of an arm are the finite entries of
 ``data["arms"][arm]`` (the loader has already excluded failed solves); an arm absent from ``data["arms"]`` is reported without
@@ -72,12 +73,19 @@ def impute_worst_case(values, n_failed, q_low=0.05, q_high=0.95):
     return out
 
 
+KEYS = {"max_rate", "failure_classes", "fallback_verdicts", "estimands", "q_low", "q_high", "arms"}
+
+
+def analyse(ctx):
+    return run(ctx.prereg.raw, ctx.data)
+
+
 def run(prereg, data):
     cfg = dict(prereg.get("failures", {}))
     max_rate = float(cfg.get("max_rate", 0.01))
-    fclasses = set(cfg.get("failure_classes", ["failed"]))
-    fbverd = set(cfg.get("fallback_verdicts", ["fallback"]))
-    ests = list(cfg.get("estimands", ["alpha_TP", "alpha_TAP", "alpha_LP"]))
+    fclasses = set(cfg.get("failure_classes", ["unusable_solve"]))
+    fbverd = set(cfg.get("fallback_verdicts", prereg.get("fallback_verdicts", ["fallback"])))
+    ests = list(cfg.get("estimands", ["alpha_TP:disp", "alpha_TAP:disp", "alpha_LP", "alpha_TP", "alpha_TAP"]))
     ql, qh = float(cfg.get("q_low", 0.05)), float(cfg.get("q_high", 0.95))
     ledger = list(data.get("ledger", []))
     arms = list(cfg.get("arms", sorted({r["arm"] for r in ledger})))
@@ -101,8 +109,9 @@ def run(prereg, data):
                "exceeds_max_rate": bool(n and k / n > max_rate), "fallback_accepted_seeds": fallback, "halted": arm in halted}
         out["total"]["attempted"] += n
         out["total"]["failed"] += k
-        if arm in data.get("arms", {}):
-            a = data["arms"][arm]
+        aid = arm if arm in data.get("arms", {}) else next((x for x in data.get("sources", {}).get(arm, []) if x in data.get("arms", {})), None)
+        if aid is not None:
+            a = data["arms"][aid]
             seed = np.asarray(a["seed"])
             res["estimands"] = {}
             for e in ests:
