@@ -69,6 +69,15 @@ the least loaded one; the host is shared with users who do not use our locks):
   choice; the job gets CUDA_VISIBLE_DEVICES=<chosen>. nvidia-smi failure fails
   the job (exit 70), never a blind pick. `cancel` kills the job's whole process
   group, releasing the slot. `exec` takes no lock.
+  Two-GPU exception (SF-43 stage 1 only; docs/runbooks/remote-v100.md): env
+  REMOTE_GPU_COUNT=2 (default 1; only 1 or 2) makes the same single job hold the
+  two best eligible GPUs (CUDA_VISIBLE_DEVICES=i,j; the job narrows it per lane).
+  It waits (one REMOTE_GPU_WAIT deadline) for two eligible GPUs; at the deadline
+  REMOTE_GPU_COUNT_MIN (default = REMOTE_GPU_COUNT, 1..COUNT) decides: enough
+  eligible GPUs -> start degraded (logged) with what is eligible, else exit 75.
+  REMOTE_GPU_MIN_FREE_MIB_2 (default = REMOTE_GPU_MIN_FREE_MIB; count 2 only) is
+  the memory threshold of the SECOND GPU (the first needs REMOTE_GPU_MIN_FREE_MIB).
+  The job sees REMOTE_GPU_COUNT_GRANTED. --gpu <n> with REMOTE_GPU_COUNT=2 is refused.
 
 Blinded phase (decision 2026-10-29 G8; docs/runbooks/remote-v100.md):
   `blinded start` creates $REMOTE_STATE_ROOT/blinded.marker on the host; while it
@@ -99,6 +108,9 @@ Configuration:
     REMOTE_STATE_ROOT
     REMOTE_GPU_WAIT
     REMOTE_GPU_MIN_FREE_MIB
+    REMOTE_GPU_COUNT
+    REMOTE_GPU_MIN_FREE_MIB_2
+    REMOTE_GPU_COUNT_MIN
     REMOTE_LOCK_ROOT
     REMOTE_WAIT_INTERVAL
     REMOTE_SSH_RETRIES
@@ -388,12 +400,18 @@ LOGD=$REMOTE_LOG_DIR"
 # GPU selection rule (single source of truth; embedded in the launcher via
 # `declare -f` and exercised by scripts/tests/remote_gpu_select_test.sh).
 # stdin: nvidia-smi CSV samples "index,memory.used,memory.total,utilization.gpu"
-# (nounits, any number of samples, all GPUs). args: <min_free_mib> <auto|index>.
+# (nounits, any number of samples, all GPUs). args: <min_free_mib> <auto|index> [<count>] [<min_free_mib_2>].
 # stdout: "GPU <idx> <mean_util> <min_free_mib> <total_mib>" per GPU, then
-# "CHOSEN <idx>" | "CHOSEN none" | "ERROR <why>".
-# exit: 0 chosen, 1 none eligible (retry later), 2 unparseable input / unknown pin.
+# "CHOSEN <idx>[,<idx>]" | "CHOSEN none" | "ERROR <why>". A third arg <count>
+# (default 1) picks the best <count> eligible GPUs by the same ordering (ranked
+# best first, e.g. "CHOSEN 1,0"). With count 2 the FIRST GPU needs min free >=
+# <min_free_mib>, the SECOND (best of the remaining) >= <min_free_mib_2>
+# (default = <min_free_mib>); the list keeps that order.
+# exit: 0 <count> chosen, 1 none eligible (retry later), 2 unparseable input /
+# unknown pin, 3 fewer than <count> but at least one eligible (stdout names the
+# eligible ones; the launcher applies REMOTE_GPU_COUNT_MIN).
 gpu_select() {
-  awk -F, -v minfree="$1" -v req="${2:-auto}" '
+  awk -F, -v minfree="$1" -v req="${2:-auto}" -v cnt="${3:-1}" -v minfree2="${4:-$1}" '
     { gsub(/[ \t\r]/, "") }
     $0 == "" { next }
     NF != 4 || $1 !~ /^[0-9]+$/ || $2 !~ /^[0-9]+$/ || $3 !~ /^[0-9]+$/ || $4 !~ /^[0-9]+$/ { bad = 1; next }
@@ -403,17 +421,27 @@ gpu_select() {
       if (bad || length(c) == 0) { print "ERROR unparseable or empty nvidia-smi output"; exit 2 }
       for (i in c) idx[++m] = i + 0
       for (a = 2; a <= m; a++) { v = idx[a]; for (b = a - 1; b >= 1 && idx[b] > v; b--) idx[b + 1] = idx[b]; idx[b + 1] = v }
-      best = ""
       for (a = 1; a <= m; a++) {
         i = idx[a]; u = su[i] / c[i]
         printf "GPU %d %.1f %d %d\n", i, u, mf[i], tot[i]
-        if (req != "auto" && i != req + 0) continue
-        if (mf[i] < minfree + 0) continue
-        if (best == "" || u < bu || (u == bu && mf[i] > bf)) { best = i; bu = u; bf = mf[i] }
       }
       if (req != "auto" && !((req + 0) in c)) { print "ERROR pinned GPU " req " not listed by nvidia-smi"; exit 2 }
-      if (best == "") { print "CHOSEN none"; exit 1 }
-      print "CHOSEN " best
+      for (k = 1; k <= cnt + 0; k++) {
+        best = ""
+        thr = (k == 1 ? minfree : minfree2) + 0
+        for (a = 1; a <= m; a++) {
+          i = idx[a]; u = su[i] / c[i]
+          if (i in used) continue
+          if (req != "auto" && i != req + 0) continue
+          if (mf[i] < thr) continue
+          if (best == "" || u < bu || (u == bu && mf[i] > bf)) { best = i; bu = u; bf = mf[i] }
+        }
+        if (best == "") break
+        used[best] = 1; got++; list = (list == "" ? "" : list ",") best
+      }
+      if (got == 0) { print "CHOSEN none"; exit 1 }
+      print "CHOSEN " list
+      if (got < cnt + 0) exit 3
     }'
 }
 
@@ -427,6 +455,11 @@ run_command() {
   [[ "$gpu_req" =~ ^(auto|[0-9]+)$ ]] || die "--gpu must be auto or a non-negative integer"
   [[ "$REMOTE_GPU_WAIT" =~ ^[0-9]+$ ]] || die "REMOTE_GPU_WAIT must be a non-negative integer (seconds)"
   [[ "$REMOTE_GPU_MIN_FREE_MIB" =~ ^[0-9]+$ ]] || die "REMOTE_GPU_MIN_FREE_MIB must be a non-negative integer (MiB)"
+  local min_free_2="${REMOTE_GPU_MIN_FREE_MIB_2:-$REMOTE_GPU_MIN_FREE_MIB}"
+  [[ "$min_free_2" =~ ^[0-9]+$ ]] || die "REMOTE_GPU_MIN_FREE_MIB_2 must be a non-negative integer (MiB)"
+  [[ "$REMOTE_GPU_COUNT" =~ ^[12]$ ]] || die "REMOTE_GPU_COUNT must be 1 or 2 (two GPUs is the SF-43 stage-1 exception only)"
+  [[ "$REMOTE_GPU_COUNT_MIN" =~ ^[12]$ && "$REMOTE_GPU_COUNT_MIN" -le "$REMOTE_GPU_COUNT" ]] || die "REMOTE_GPU_COUNT_MIN must be an integer in 1..REMOTE_GPU_COUNT ($REMOTE_GPU_COUNT)"
+  [[ "$REMOTE_GPU_COUNT" == 1 || "$gpu_req" == auto ]] || die "--gpu <n> cannot be combined with REMOTE_GPU_COUNT=$REMOTE_GPU_COUNT (pinning is a single-GPU action)"
   if [[ "$gpu_req" != auto ]]; then
     local listed
     listed="$(ssh_run_capture "nvidia-smi --query-gpu=index --format=csv,noheader")" || die "cannot query nvidia-smi on $REMOTE_HOST to validate --gpu $gpu_req"
@@ -442,6 +475,8 @@ run_command() {
   launcher_path="$(remote_launcher_path_for "$job")"
 
   write_remote_file "$command_path" 600 "$command"
+  local gpu_count_detail=
+  [[ "$REMOTE_GPU_COUNT" == 1 ]] || gpu_count_detail=$'\t'"gpu_count=$REMOTE_GPU_COUNT"
 
   launcher_body=$(cat <<EOF
 #!/usr/bin/env bash
@@ -456,6 +491,10 @@ log_file=$log_path
 gpu_req=$gpu_req
 gpu_wait=$REMOTE_GPU_WAIT
 min_free=$REMOTE_GPU_MIN_FREE_MIB
+min_free_2=$min_free_2
+gpu_count=$REMOTE_GPU_COUNT
+gpu_count_min=$REMOTE_GPU_COUNT_MIN
+granted=1
 lock_root=$REMOTE_LOCK_ROOT
 increment=$(printf '%q' "$REMOTE_INCREMENT")
 gpu=
@@ -564,7 +603,7 @@ choose_gpu() {
   while true; do
     csv=\$(sample_gpus 2>>"\$log_file") || fail_gpu "nvidia-smi sampling failed; no GPU chosen (not a retryable 'no GPU now')" 70
     rc=0
-    sel=\$(gpu_select "\$min_free" "\$gpu_req" <<<"\$csv") || rc=\$?
+    sel=\$(gpu_select "\$min_free" "\$gpu_req" "\$gpu_count" "\$min_free_2" <<<"\$csv") || rc=\$?
     if (( rc == 2 )); then
       fail_gpu "GPU selection input invalid: \$(printf '%s' "\$sel" | tr '\n' ' ')" 70
     fi
@@ -580,11 +619,29 @@ choose_gpu() {
     } >>"\$log_file"
     if (( rc == 0 )); then
       gpu=\$(awk '\$1 == "CHOSEN" { print \$2 }' <<<"\$sel")
-      printf '[%s] job=%s chose GPU %s (%s)\n' "\$(ts)" "\$job_name" "\$gpu" "\$reason" >>"\$log_file"
+      if (( gpu_count == 1 )); then
+        printf '[%s] job=%s chose GPU %s (%s)\n' "\$(ts)" "\$job_name" "\$gpu" "\$reason" >>"\$log_file"
+      else
+        granted=\$gpu_count
+        printf '[%s] job=%s chose GPUs %s (%s, %s of %s; first=GPU %s min_free>=%s MiB, second=GPU %s min_free>=%s MiB)\n' "\$(ts)" "\$job_name" "\$gpu" "\$reason" "\$granted" "\$gpu_count" "\${gpu%%,*}" "\$min_free" "\${gpu##*,}" "\$min_free_2" >>"\$log_file"
+      fi
       return 0
     fi
-    if (( SECONDS >= deadline )); then return 1; fi
-    printf '[%s] job=%s no eligible GPU (min_free_required=%s MiB); re-sampling in <=30 s\n' "\$(ts)" "\$job_name" "\$min_free" >>"\$log_file"
+    if (( SECONDS >= deadline )); then
+      # rc 3 = fewer than gpu_count but one eligible (only reachable with gpu_count 2, granted 1)
+      if (( rc == 3 && gpu_count_min <= 1 )); then
+        gpu=\$(awk '\$1 == "CHOSEN" { print \$2 }' <<<"\$sel")
+        granted=1
+        printf '[%s] job=%s GPU_COUNT degraded: granted 1 of %s (REMOTE_GPU_COUNT_MIN=%s); chose GPU %s (%s; min_free>=%s MiB; second GPU needed min_free>=%s MiB, none eligible)\n' "\$(ts)" "\$job_name" "\$gpu_count" "\$gpu_count_min" "\$gpu" "\$reason" "\$min_free" "\$min_free_2" >>"\$log_file"
+        return 0
+      fi
+      return 1
+    fi
+    if (( rc == 3 )); then
+      printf '[%s] job=%s only 1 of %s requested GPUs eligible (min_free_required=%s MiB, second=%s MiB); re-sampling in <=30 s\n' "\$(ts)" "\$job_name" "\$gpu_count" "\$min_free" "\$min_free_2" >>"\$log_file"
+    else
+      printf '[%s] job=%s no eligible GPU (min_free_required=%s MiB); re-sampling in <=30 s\n' "\$(ts)" "\$job_name" "\$min_free" >>"\$log_file"
+    fi
     write_status waiting_gpu
     i=\$((deadline - SECONDS))
     if (( i > 30 )); then i=30; fi
@@ -624,11 +681,16 @@ if ! choose_gpu; then
 fi
 write_holder
 export CUDA_VISIBLE_DEVICES="\$gpu"
+export REMOTE_GPU_COUNT_GRANTED="\$granted"
 write_status running
 
 {
   printf '[%s] job=%s session=%s started\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$job_name" "\$session_name"
-  printf '[%s] GPU=%s (CUDA_VISIBLE_DEVICES=%s, request=%s)\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$gpu" "\$gpu" "\$gpu_req"
+  if (( gpu_count == 1 )); then
+    printf '[%s] GPU=%s (CUDA_VISIBLE_DEVICES=%s, request=%s)\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$gpu" "\$gpu" "\$gpu_req"
+  else
+    printf '[%s] GPU=%s (CUDA_VISIBLE_DEVICES=%s, request=%s, gpu_count=%s granted=%s)\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$gpu" "\$gpu" "\$gpu_req" "\$gpu_count" "\$granted"
+  fi
   printf '[%s] cwd=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$repo_dir"
   printf '[%s] command=%s\n' "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\$(cat "\$command_file")"
 } >>"\$log_file"
@@ -658,7 +720,7 @@ EOF
   ssh_run "
 $(kill_session_snippet "$session_name")
 tmux new-session -d -s $(printf '%q' "$session_name") $launcher_path
-  " run "job=$(printf '%q' "$job")"$'\t'"gpu=$gpu_req"$'\t'"command=$(printf '%q' "$command")"
+  " run "job=$(printf '%q' "$job")"$'\t'"gpu=$gpu_req${gpu_count_detail}"$'\t'"command=$(printf '%q' "$command")"
 
   echo "Launched remote job '$job'"
   echo "  session: $session_name"

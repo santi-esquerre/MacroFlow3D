@@ -98,8 +98,10 @@ Within one increment the mirror is still single-flight: do not
 `scripts/remote --increment SF-NN sync` while a job of that same increment is
 `running` or `waiting_gpu`, because the sync overwrites the tree the job
 executes against. DAG nodes that need remote execution are serialized; the
-slot enforces this for `run` jobs. There is no multi-GPU exception: the
-two-GPU rule of decisions 2026-10-24 E6 and 2026-10-27 F13 is withdrawn.
+slot enforces this for `run` jobs. The single-GPU rule has one time-limited
+exception, the SF-43 stage-1 two-GPU request (see "Two-GPU request (SF-43
+stage-1 exception only)" below); the old two-GPU rule of decisions 2026-10-24
+E6 and 2026-10-27 F13 remains withdrawn.
 
 `scripts/remote exec` takes **no** GPU lock and selects no GPU; it is only for
 short, bounded configure/compile/check steps that launch no CUDA work.
@@ -123,6 +125,9 @@ scripts/remote --increment SF-NN run <job> --gpu 1 -- "<cmd>"    # pin (exceptio
   current slot holder (job, session, increment, GPU, start time, whether the
   session is alive) or the last GPU snapshot. `scripts/remote wait <job>`
   returns 75.
+- `REMOTE_GPU_COUNT` (default `1`; only `1` or `2`) is the two-GPU request of
+  the SF-43 stage-1 exception below; any other value, or `--gpu <n>` together
+  with `REMOTE_GPU_COUNT=2`, is refused before any ssh.
 - If `nvidia-smi` fails or returns nothing usable, the job fails with
   **exit code 70**; there is no blind fallback to a fixed GPU.
 - `status` reports the assigned GPU in the `gpu:` line and the mirror in the
@@ -135,6 +140,61 @@ scripts/remote --increment SF-NN run <job> --gpu 1 -- "<cmd>"    # pin (exceptio
 - The holder file `~/.macroflow3d-remote/gpu.holder` is informational only;
   the kernel `flock` is the authority. A stale holder file never blocks a new
   job.
+
+#### Two-GPU request (SF-43 stage-1 exception only)
+
+Scope and expiry: owner decision of 2026-11-02, recorded in
+`docs/decisions/2026-11-02-sf43-pre-activation-decisions.md` (item "two-GPU
+exception"), which supersedes items 1 and 3 of
+`docs/decisions/2026-10-27-remote-single-gpu.md` for this scope only. It
+applies to SF-43 stage 1 (at most about 30 h of wall time); afterwards the job
+returns to one GPU. Every other increment, and SF-43's stage 2, keep the
+single-GPU rule above. It is still ONE project job holding the ONE host-wide
+slot; only the number of GPUs the job holds changes.
+
+```bash
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1 \
+  scripts/remote --increment SF-43 run <job> -- "<cmd>"
+# optional lower threshold for the second GPU (lane B runs only small grids):
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=17000 \
+  REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1 scripts/remote --increment SF-43 run <job> -- "<cmd>"
+```
+
+- Selection: with the slot held, the first GPU is the best (existing ordering:
+  lowest mean utilization, then more free memory, then lower index) among those
+  with free memory >= `REMOTE_GPU_MIN_FREE_MIB`; the second is the best of the
+  remaining GPUs with free memory >= `REMOTE_GPU_MIN_FREE_MIB_2` (default: equal
+  to `REMOTE_GPU_MIN_FREE_MIB`; it applies only with `REMOTE_GPU_COUNT=2`).
+  The helper chooses both; commands never write `CUDA_VISIBLE_DEVICES` and
+  launch commands never use `--gpu`.
+- Waiting: while fewer than two GPUs qualify, the launcher re-samples every
+  30 s until the single `REMOTE_GPU_WAIT` deadline (always `7200` here). When two
+  qualify it takes both: `CUDA_VISIBLE_DEVICES=<first>,<second>`, status
+  `gpu: <first>,<second>`, holder `HOLDER_GPU=<first>,<second>`, and a log line
+  naming both GPUs with the threshold each one met.
+- Degradation and exit 75: at the deadline, if at least `REMOTE_GPU_COUNT_MIN`
+  GPUs qualify (`REMOTE_GPU_COUNT_MIN`, default = `REMOTE_GPU_COUNT`; `1`
+  allows degrading), the job starts with the first GPU only and logs
+  `GPU_COUNT degraded: granted 1 of 2 (REMOTE_GPU_COUNT_MIN=1)`; otherwise it
+  fails with **exit 75** exactly as for a single GPU (nothing ran). With
+  `REMOTE_GPU_WAIT=0` the decision is made on the first sampling round. The job
+  sees `REMOTE_GPU_COUNT_GRANTED` (`1` or `2`) in its environment in both
+  cases (it is also `1` for ordinary single-GPU jobs).
+- Lanes: both runners always use device 0 (`CudaContext ctx(0)`), so the job
+  itself distributes the granted list: each lane exports `CUDA_VISIBLE_DEVICES`
+  set to ONE entry of the list it received. This narrowing inside the job is
+  the only permitted use of that variable; the job logs it.
+- Releasing the second GPU mid-run needs no helper action: the job's second
+  lane simply exits (its CUDA context frees the memory) and the job logs it.
+  The flock remains the single project slot for the whole job; there is no
+  release subcommand.
+- GPU-h accounting: a job that holds two GPUs is charged 2 x wall time while
+  both are held (1 x for a degraded start); the SF-43 ledger records the
+  granted list and the time at which the second lane exited.
+- With `REMOTE_GPU_COUNT=1` (the default) behavior and log lines are unchanged
+  (apart from `REMOTE_GPU_COUNT_GRANTED=1` in the job environment); the blinded
+  `exec-blinded.log` line of a `run` submission gains `gpu_count=N` only when
+  `N` is not `1`.
 
 #### Mirror lifecycle
 
@@ -426,7 +486,8 @@ Avoid:
   against the same mirror
 - sharing one remote mirror between two increments (always use
   `--increment SF-NN` / `REMOTE_INCREMENT=SF-NN` for increment work)
-- using more than one GPU, or a GPU not chosen by the slot: do not bypass it
+- using more than one GPU (other than the SF-43 stage-1 two-GPU request), or
+  a GPU not chosen by the slot: do not bypass it
   with CUDA work under `scripts/remote exec`, `CUDA_VISIBLE_DEVICES` overrides
   inside the command, multi-GPU programs, or detached (`setsid`/`nohup &`)
   processes that outlive their job
