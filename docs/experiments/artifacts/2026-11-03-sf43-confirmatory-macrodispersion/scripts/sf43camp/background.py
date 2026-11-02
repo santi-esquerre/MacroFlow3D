@@ -1,10 +1,11 @@
 """Plan `background` jobs: CPU processes that run next to the units (the H15 coverage simulation inside the smoke-test job).
 
-Each entry {name, argv, nice (default 19), env}: started once at engine start with `CUDA_VISIBLE_DEVICES=""` in its own process group
+Each entry {name, argv, nice (default 19), env}: started once at engine start with `CUDA_VISIBLE_DEVICES=""` in the LAUNCHER'S process group
+(no new session: the helper's group signal on a cancel must reach them; `terminate` still kills each job's tree)
 (`argv` may contain `{campaign_dir}` / `{build_dir}`), output in `<campaign_dir>/background/<name>.log`; its end writes
 `<name>.done` (the exit code) and the ledger record `background_end`.  A resumed session skips the jobs whose done file exists.
-SIGTERM / SIGINT terminate them with the units.  `wait(seconds)` is the final analysis' wait (plan `background_wait_minutes`); what is
-still running after it is terminated and reported.
+SIGTERM / SIGINT terminate them with the units.  `wait(seconds, rec, stop)` is the final analysis' wait (plan `background_wait_minutes`); what is
+still running after it is terminated and reported; `stop()` (the engine's signal flag) is checked at least every 2 s and ends the wait at once.
 """
 import os
 import signal
@@ -38,8 +39,7 @@ class Background:
             env["CUDA_VISIBLE_DEVICES"] = ""
             logf = open(os.path.join(self.dir, n + ".log"), "ab")
             try:
-                self.procs[n] = self.popen(["nice", "-n", str(b.get("nice", 19))] + argv, env=env, stdout=logf, stderr=subprocess.STDOUT,
-                                           start_new_session=True)
+                self.procs[n] = self.popen(["nice", "-n", str(b.get("nice", 19))] + argv, env=env, stdout=logf, stderr=subprocess.STDOUT)
             except OSError as e:
                 self.state[n] = "failed to start: %s" % e
                 rec(kind="background_end", name=n, rc=-1, text=self.state[n])
@@ -62,7 +62,7 @@ class Background:
                 rec(kind="background_end", name=n, rc=rc)
                 self.log("BACKGROUND_END name=%s rc=%d" % (n, rc))
 
-    def terminate(self, rec):
+    def terminate(self, rec, reason=None):
         for n, p in list(self.procs.items()):
             procs.kill_tree(p.pid, signal.SIGTERM)
             try:
@@ -73,12 +73,12 @@ class Background:
             del self.procs[n]
             self.state[n] = "terminated"
             rec(kind="background_end", name=n, rc=p.returncode, text="terminated")
-            self.log("BACKGROUND_TERMINATED name=%s" % n)
+            self.log("BACKGROUND_TERMINATED name=%s%s" % (n, " reason=" + reason if reason else ""))
 
-    def wait(self, seconds, rec):
-        """Wait up to `seconds` (the engine's clock) for the running jobs, then terminate the rest."""
+    def wait(self, seconds, rec, stop=lambda: None):
+        """Wait up to `seconds` (the engine's clock) for the running jobs, then terminate the rest; a signal (`stop()` truthy) ends the wait now."""
         deadline = self.clock() + seconds
-        while self.procs and self.clock() < deadline:
+        while self.procs and self.clock() < deadline and not stop():
             for p in list(self.procs.values()):
                 try:
                     p.wait(timeout=0.5)  # real time passes even on a virtual clock
@@ -86,9 +86,9 @@ class Background:
                     pass
             self.poll(rec)
             if self.procs:
-                self.sleep(min(30.0, max(0.0, deadline - self.clock())))
+                self.sleep(min(1.0, max(0.0, deadline - self.clock())))  # a signal is seen within ~2 s
         self.poll(rec)
-        self.terminate(rec)
+        self.terminate(rec, "signal" if stop() else None)
 
     def report(self):
         return ["  %-24s %s" % (n, st) for n, st in sorted(self.state.items())]

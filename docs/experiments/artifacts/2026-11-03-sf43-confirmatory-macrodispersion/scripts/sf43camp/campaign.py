@@ -129,6 +129,7 @@ def run_campaign(plan, build_dir, ex, *, resume, gpus, clock=time.time, sleep=ti
 
 def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free_mib, spawn, threaded, log, poll_s, runner, on_engine):
     cdir = plan["campaign_dir"]
+    build_dir = os.path.abspath(build_dir)  # units run with cwd = their segment directory: no relative path may reach a child
     ledger = Ledger(os.path.join(cdir, "ledger.jsonl"), clock)
     recs = ledger.records()
     if recs:
@@ -172,9 +173,20 @@ def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free
             f.writelines("%s %s seeds %s\n" % u for u in unreduced)
         log("%s: %d segment(s) unreduced after %d rounds; the analysis runs and must treat their seeds as missing" % (BLOCKED, len(unreduced), 3))
     eng.retention = eng.retention_check()
-    eng.bg.wait(60.0 * plan["background_wait_minutes"], eng.rec)
-    extra = determinism.run(plan, st, cdir, log)
     complete = st.complete()
+    # nothing can run any more and the work is not done (every lane crashed, or no unit produced a seed and the run did not stop on purpose): a wait for the
+    # background jobs would only hold the GPUs idle
+    dead = not complete and not eng.sig and eng.stopping is None and ((eng.crashed and not any(ln.alive for ln in eng.lanes)) or not any(a.done for a in st.arms.values()))
+    if dead:
+        log("NO_LIVE_LANE crashed_lanes=%d: background jobs are not waited for" % eng.crashed)
+        eng.bg.terminate(eng.rec, "no_live_lane")
+    else:
+        eng.bg.wait(60.0 * plan["background_wait_minutes"], eng.rec, lambda: eng.sig)
+    if eng.sig:  # a signal during the final reductions or the background wait: no analysis (cancel)
+        ledger.append({"kind": "final", "status": "SIGNAL"})
+        log("SIGNALLED sig=%s: units and background jobs terminated; no analysis (cancel)" % eng.sig)
+        return SIGNALLED
+    extra = determinism.run(plan, st, cdir, log)
     status = "STOPPED" if eng.stopping in ("budget", "disk") and not complete else "DONE" if complete and not eng.crashed else "DONE_PARTIAL"
     ok, detail = analysis(plan, build_dir, log, runner)
     ledger.append({"kind": "analysis", "ok": ok, "detail": detail})

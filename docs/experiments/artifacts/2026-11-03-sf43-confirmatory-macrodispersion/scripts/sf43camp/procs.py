@@ -57,7 +57,11 @@ def spawn(cmd, gpu):
     env = dict(os.environ, **cmd.get("env", {}))
     env["CUDA_VISIBLE_DEVICES"] = str(gpu)  # the runners always use device 0 of what they see
     logf = open(cmd["log_path"], "ab")
-    return Proc(subprocess.Popen(cmd["argv"], cwd=cmd.get("cwd") or None, env=env, stdout=logf, stderr=subprocess.STDOUT), logf)
+    try:
+        return Proc(subprocess.Popen(cmd["argv"], cwd=cmd.get("cwd") or None, env=env, stdout=logf, stderr=subprocess.STDOUT), logf)
+    except BaseException:  # no leaked run.log when the program cannot be started
+        logf.close()
+        raise
 
 
 def disk_free_gb(path):

@@ -289,10 +289,12 @@ def par2_solves(log_text):
 class RunnerExecutor:
     def __init__(self, plan=None, build_dir=None):
         """The engine builds the executor as ``Class(plan, build_dir)``; the methods take everything they need as arguments."""
-        self.plan, self.build_dir = plan, build_dir
+        self.plan, self.build_dir = plan, (os.path.abspath(build_dir) if build_dir else build_dir)
 
     # ---- command ---------------------------------------------------------------------------------------------------------------
     def command(self, arm, seeds, segment_dir, build_dir):
+        # The child runs with cwd = segment_dir: a relative program or --out path would be resolved against THAT, not the engine's cwd.
+        build_dir, segment_dir = os.path.abspath(build_dir), os.path.abspath(segment_dir)
         s0, nr = _seed0(seeds)
         meta = {"arm": arm["id"], "runner": arm["runner"], "seed0": s0, "nr": nr}
         if arm["runner"] == "consumer":
@@ -309,12 +311,13 @@ class RunnerExecutor:
             argv += (["--fused-splines"] if c.get("fused_splines", True) else []) + (["--single-launch"] if c.get("single_launch", True) else [])
             argv += ["--twin", onoff(c.get("twin", True)), "--pollock-bridge", onoff(c.get("pollock_bridge", True)),
                      "--seed0", str(s0), "--nr", str(nr), "--out", os.path.join(segment_dir, "out")]
-            files = {}
+            files, program = {}, argv[0]
             meta["n_planes"] = len(planes)
             meta["hmax_div"] = hmax_divs(arm, seeds)
         elif arm["runner"] == "par2":
             p = arm["par2"]
-            argv = ["stdbuf", "-oL", os.path.join(build_dir, "macroflow3d_pipeline"), "config.yaml"]
+            program = os.path.join(build_dir, "macroflow3d_pipeline")
+            argv = ["stdbuf", "-oL", program, "config.yaml"]
             files = {os.path.join(segment_dir, "config.yaml"): par2_yaml(arm, seeds)}
             meta["n_planes"] = len(p["planes_d"])
             meta["dt"] = par2_time(int(p["grid"][0]), int(p["grid"][1]), float(p["ell"]), float(p.get("hz", 3.6)),
@@ -324,7 +327,7 @@ class RunnerExecutor:
         files[os.path.join(segment_dir, "segment.json")] = json.dumps(meta, sort_keys=True) + "\n"
         files[os.path.join(segment_dir, "seedmap.json")] = json.dumps(
             {"runner": arm["runner"], "seed0": s0, "nr": nr, "seeds": {str(r): s0 + r for r in range(nr)}}, sort_keys=True) + "\n"
-        return {"argv": argv, "cwd": segment_dir, "env": {}, "files": files, "log_path": os.path.join(segment_dir, LOG)}
+        return {"argv": argv, "program": program, "cwd": segment_dir, "env": {}, "files": files, "log_path": os.path.join(segment_dir, LOG)}
 
     # ---- completed realizations ------------------------------------------------------------------------------------------------
     def _consumer_dirs(self, segment_dir):

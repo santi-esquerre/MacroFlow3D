@@ -23,6 +23,18 @@ class Lane:
         self.alive = self.held = True  # alive: may claim; held: its GPU is still held by the job
         self.nothing = False  # last pick found nothing to claim
         self.retry_at = 0.0
+        self.spawn_failed = False  # the program of the unit could not be started (OSError at Popen)
+
+
+class SpawnFailed:
+    """Stands in for the process of a unit whose program could not be started: already ended."""
+    returncode = 127
+
+    def poll(self):
+        return self.returncode
+
+    def terminate(self, grace=30.0):
+        pass
 
 
 class Engine:
@@ -201,7 +213,15 @@ class Engine:
                 with open(p, "w") as f:
                     f.write(text)
         self.log("SF43_UNIT lane=%s gpu=%s arm=%s seed0=%d nr=%d segment=%s utc=%s" % (ln.name, ln.gpu, a.id, u.seeds[0], len(u.seeds), rel, utc_iso(now)))
-        ln.proc = self.spawn(cmd, ln.gpu)
+        ln.spawn_failed = False
+        try:
+            prog = cmd.get("program")  # the program behind a wrapper (stdbuf): a wrapper reports a missing target only through its exit code
+            if prog and not os.access(prog, os.X_OK):
+                raise FileNotFoundError(2, "not an executable file", prog)
+            ln.proc = self.spawn(cmd, ln.gpu)
+        except OSError as e:  # a missing / non-executable program is the arm's configuration error, not a lane crash
+            ln.proc, ln.spawn_failed = SpawnFailed(), True
+            self.log("SPAWN_FAILED arm=%s path=%s error=%s" % (a.id, e.filename or cmd["argv"][0], e))
 
     # unit end ------------------------------------------------------------------------------------------------------------
     def reap(self, now):
@@ -223,7 +243,9 @@ class Engine:
     def end(self, ln, now, forced=None):
         u, a = ln.unit, self.st.arms[ln.unit.arm]
         seeds = u.seeds
-        if forced:
+        if ln.spawn_failed:
+            c = {"cls": "config_error", "completed_seeds": []}
+        elif forced:
             det = self.details(a, seeds, ln.seg, ln.cmd["log_path"], ln.proc.poll())
             c = {"cls": forced, "completed_seeds": self.ex.completed(a.spec, ln.seg), "verdicts": det.get("verdicts", {}), "solver": det.get("solver", {}),
                  "peak_mib": det.get("peak_mib")}

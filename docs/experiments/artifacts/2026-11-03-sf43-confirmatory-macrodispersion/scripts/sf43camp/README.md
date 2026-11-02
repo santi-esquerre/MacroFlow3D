@@ -17,6 +17,8 @@ Every consumer arm is reduced with `sf42red reduce --pollock --tracker-counts` (
 reduction of its segment (the `unreduced` path of the ledger).
 
 The script enters the repository root: `<build_dir>`, `campaign_dir` and every relative path of the plan are relative to it.
+The units run with cwd = their segment directory, so the engine and the executor hand every child ABSOLUTE paths (`build_dir`, `--out`, log, the program behind
+`stdbuf`); the only relative path a child sees is `config.yaml`, which is relative to that cwd on purpose.
 `PYTHONPATH` = this `scripts/` dir + the SF-42 scripts dir (`2026-10-30-sf42-confirmatory-tooling/scripts`, for the executor).
 
 ## Exit codes (never 70, 75, 97, 130: the helper's)
@@ -77,7 +79,10 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
 * **`unusable_solve`** at seed s of arm a in group g: s is replaced by the group's next reserve seed in EVERY arm of g that planned s (pending s dropped, completed s
   kept and listed in the ledger); the replacement unit sorts at the failed seed's position. Reserves exhausted = logged. Failure rate (failed / attempted) above
   `failure.halt_rate` with at least `min_for_rate` attempts halts the arm. `config_error` halts the arm; `other_error` retries once (same first seed), then halts it.
-  Other arms continue. A lane that raises is logged (`LANE_CRASH`), the other lane continues, the exit is >= 10.
+  Other arms continue. A lane that raises is logged (`LANE_CRASH`), the other lane continues, the exit is >= 10. A program that cannot be started (missing / not executable,
+  `OSError` at spawn, or the executor's `program` not executable) is that unit's `config_error` (log `SPAWN_FAILED arm= path= error=`), not a lane crash.
+  If nothing can run any more and the work is not done (every lane crashed, or no unit produced a seed and the run did not stop on purpose) the background jobs are NOT waited for:
+  `NO_LIVE_LANE`, `BACKGROUND_TERMINATED reason=no_live_lane`, then the final analysis and the partial exit code as usual.
 * **Blinded re-estimation** (H9; arms in `blinded_reestimation.arms` only, never an arm flagged `no_reestimation`: Gate 5 arms and the sigma^2 = 4 (12,16) rung): once
   `fraction x n_conf` realizations are reduced, `executor.blinded_sd(arm, [reduce-info dicts])` is called once and returns `({estimator: sd}, n)` (SDs and a count, no mean). Per estimator of the arm's
   `hw_target` (planning half-width): `N_req = ceil((t_{0.95,n-1} sd_UB80 / hw_target)^2)` with `sd_UB80 = sd sqrt((n-1)/chi2_{0.2,n-1})`; `n_target = min(floor(max_factor n_conf),
@@ -117,10 +122,11 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
   every raw output file of every shared seed (consumer: the whole `out/realizations/r_XXXX/` tree; Par2: crossings, stats, snapshots of the realization) is compared by sha256, except logs and
   timing files (`*.log *timing* *texit* *mem_phase* prune_log.csv retained.txt`, extended by the plan's `determinism_exclude`), and the reduced rows value by value (all columns but `source`, `r`).
   `DETERMINISM.txt` has PASS/FAIL per file, the REPORT one line per pair; a FAIL never stops the job.
-* **Background jobs** (plan `background: [{name, argv, nice (19), env}]`, `background_wait_minutes` default 0): started once at engine start with `CUDA_VISIBLE_DEVICES=""`, `nice`, own
-  process group, `{campaign_dir}`/`{build_dir}` substituted in `argv`, log `background/<name>.log`; the exit code goes to `background/<name>.done` and the ledger (`background_start`,
+* **Background jobs** (plan `background: [{name, argv, nice (19), env}]`, `background_wait_minutes` default 0): started once at engine start with `CUDA_VISIBLE_DEVICES=""`, `nice`, the
+  launcher's own process group (no new session: the helper's group signal on a cancel reaches them), `{campaign_dir}`/`{build_dir}` substituted in `argv`, log `background/<name>.log`; the exit code goes to `background/<name>.done` and the ledger (`background_start`,
   `background_end`); a resumed session skips a job whose done file exists (a job that was running when the launcher died has none and starts again). SIGTERM terminates them with the units.
-  The final analysis waits up to `background_wait_minutes` for them, the rest is terminated; the REPORT lists their state.
+  The final analysis waits up to `background_wait_minutes` for them, the rest is terminated; the REPORT lists their state. The wait checks the engine's signal flag at least every
+  2 s: a signal terminates the jobs at once and the run ends 143 without analysis.
 
 ## Plan JSON (`plan_example.json`; validated by `plan.py`)
 
@@ -138,7 +144,7 @@ reduced with `--single-pass-hmax <hmax_div[0]>` so the production pass has one `
 
 ## Executor interface (duck typed; `fake.FakeExecutor` implements it for tests and the dry run)
 
-`command(arm, seeds, segment_dir, build_dir)` -> `{argv, cwd, env, files {path: text}, log_path}` (the engine adds `CUDA_VISIBLE_DEVICES` = the lane's single id);
+`command(arm, seeds, segment_dir, build_dir)` -> `{argv, cwd, env, files {path: text}, log_path, program (optional: the executable behind a wrapper, checked before spawn)}` (the engine adds `CUDA_VISIBLE_DEVICES` = the lane's single id);
 `classify(arm, seeds, segment_dir, exit_code, log_text)` -> `{cls in ok|oom|unusable_solve|config_error|disk_full|other_error, completed_seeds, failed_seed, failed_seeds, verdicts, solver {seed: {verdict, iterations, rel, balance, max_div, field_seed}}, seconds, peak_mib}`;
 `completed(arm, segment_dir)`; `reduce(arm, segment_dir, out_dir)` -> `{tables, ...}`; `prune(arm, segment_dir, reduced, retained_seeds)`; `blinded_sd(arm, [reduce results])` -> `({estimator: sd}, n)` (a plain
 `{estimator: sd}` is accepted, n is then the number of reduced realizations); `expected_raw_gb(arm, n_seeds)`.
@@ -146,7 +152,8 @@ reduced with `--single-pass-hmax <hmax_div[0]>` so the production pass has one `
 
 Tests: `python3 -W error -m unittest discover -s sf43camp/tests -t .` (engine, fake executor, virtual clock) and `-s sf43camp/tests_executor -t .` (the real executor with fake runner binaries;
 `test_e2e.py` runs the whole engine through `campaign.main` with the real `RunnerExecutor`, a CRN group, reduce, prune, a SIGTERM kill + `--resume`, the background job, the determinism pair
-and the real `recompute43` / `reconcile43` hooks, ~6 s). No GPU, no data.
+and the real `recompute43` / `reconcile43` hooks, ~6 s; `test_paths.py` the host environment: relative `build_dir` with cwd = segment dir, missing binary, SIGTERM
+and a process-group SIGKILL during the background wait). No GPU, no data.
 
 Sizes to expect: consumer raw ~45-230 MB per realization (3-pass h_max ~2.1x), Par2 crossings ~20-30 KB per realization plus ~60 MB of snapshots per invocation; a runner
 process costs ~4 s of start-up, so units should hold several seeds (5-10 consumer, 10-20 Par2).
