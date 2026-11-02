@@ -27,6 +27,17 @@ ESTIMANDS (decision G4; d = (x1 - x0)/ell in lambda; the travel window is d in [
                var_u = (u2,u3) C (u2,u3)^T with C the 2x2 transverse covariance at the plane (x1 is constant on a plane).
   alpha_LP   = (U_r^2/2) slope[var(tau)] / ell,  U_r = 1/slope[mean(tau)]  (tau = time since injection).  Independent of the
                basis (the same value is reported in the position and displacement rows).
+  SF-43 `--pollock` (`pollock=True`; default off, which is the SF-42 behaviour; disclosed addition, like prune's `--keep-arrays`): for every
+  consumer realization the same plane estimators on the arrays of the Pollock bridge (`<R>/pollock/`, one directory per realization,
+  written once whatever the number of h_max passes; `lagrangian_ensemble --pollock-bridge on`, `EnsembleRunner.cu`), rows `code=pollock`,
+  family `plane`, the consumer's columns, `source` = `<R>/pollock`.  Arrays: `pollock_weights` (Np, flux weights of the RT0 interpolant at the
+  seed, 0 for non-positive seeds), `pollock_planes_x23` (Np,P,2 unwrapped, NaN once the particle stopped or exited) and `pollock_planes_t`
+  (Np,P clock since injection) play the roles of `weights`, `planes_x23`, `planes_tau`; the displacement basis uses the pass's `seeds`
+  (the Pollock lattice is the tracker's: `pollock.json seeds_equal_tracker` and the plane list are checked).  Variants: weights flux
+  (= pollock_weights) and unif, bases pos/disp, sets perplane/common, and the split-half columns (lattice index p = m2 M + m3 is the same);
+  no `expI` (the bridge has no `planes_I`) and no `time` family.  A realization without `pollock/` is an error (`MissingData`).  Under a
+  multi-pass realization the identical Pollock rows are written under each pass's `hmax_div` label (the labels of the consumer rows).  The
+  per-plane covariance table gets `code=pollock` rows too.  `prune` deletes a Pollock array only when these rows exist (finite).
   Particle sets: per plane = particles that crossed that plane (finite x23 and tau; seeds with weight 0 never; weights
   renormalized over the set); `set=common` = particles that crossed EVERY plane of the window (check variant).  Columns
   n_first, n_last, n_min, n_max, n_common (counts), set_differs (1 if any plane count differs from n_common; the sets are
@@ -287,7 +298,7 @@ def half_masks(Np, M):
 class ConsumerPass:
     """Lazy arrays of one tracker pass plus the realization metadata (all reads go through the recorder)."""
 
-    def __init__(self, rec, pass_root):
+    def __init__(self, rec, pass_root, pollock=False):
         self.rec, self.root = rec, pass_root
         self.rdir = pass_root if os.path.isfile(os.path.join(pass_root, "field.json")) else os.path.dirname(os.path.abspath(pass_root))
         self.track = rec.json(os.path.join(pass_root, "track.json"))
@@ -301,11 +312,36 @@ class ConsumerPass:
         if abs(e - lam) > 1e-9 * abs(lam):
             raise ReduceError("field.json ell=%.17g differs from flow_stats.json lambda=%.17g in %s" % (e, lam, self.rdir))
         self.ell = e
-        self.weights = np.asarray(self.npy("weights"), float)
+        self.pollock_dir = None
+        if pollock:
+            self._open_pollock()
+        else:
+            self.weights = np.asarray(self.npy("weights"), float)
         self.traced = self.weights > 0.0
 
     def npy(self, name):
         return self.rec.npy(os.path.join(self.root, name + ".npy"))
+
+    def _open_pollock(self):
+        """SF-43 (`pollock=True`): the Pollock bridge arrays of this realization (`R/pollock/`, written once per realization, the same
+        for every h_max pass).  Same seed lattice (p = m2 M + m3), planes and Np as the pass: checked, never assumed."""
+        d = os.path.join(self.rdir, "pollock")
+        if not os.path.isdir(d):
+            raise MissingData("pollock reduction requested but %s does not exist (the realization ran without the Pollock bridge?)" % d)
+        self.pollock_dir = d
+        pj = self.rec.json(os.path.join(d, "pollock.json"))
+        if pj.get("seeds_equal_tracker") is not True:
+            raise ReduceError("%s: pollock.json seeds_equal_tracker is not true (the displacement basis needs the tracker's seeds)" % d)
+        pl = np.asarray(pj["planes"], float)
+        if pl.shape != self.planes.shape or np.any(np.abs(pl - self.planes) > 1e-12 * np.maximum(1.0, np.abs(self.planes))):
+            raise ReduceError("%s: pollock.json planes differ from track.json planes of %s" % (d, self.root))
+        self.weights = np.asarray(self.pollock_npy("weights"), float)
+        Np = len(self.npy("seeds"))
+        if self.weights.shape != (Np,):
+            raise ReduceError("%s: pollock_weights has shape %s for %d seeds" % (d, self.weights.shape, Np))
+
+    def pollock_npy(self, name):
+        return self.rec.npy(os.path.join(self.pollock_dir, "pollock_" + name + ".npy"))
 
 
 def _weights_matrix(w, mode, I):
@@ -331,22 +367,36 @@ def consumer_plane_variant(x1, fin, Wk, Yk, tauk, member, common):
     return mom, counts
 
 
-def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass_hmax=None):
-    """(rows, plane_rows) of the plane family for one tracker pass."""
-    P = ConsumerPass(rec, pass_root)
+def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass_hmax=None, pollock=False):
+    """(rows, plane_rows) of the plane family for one tracker pass.  `pollock=True` (SF-43): the same estimators on the Pollock bridge
+    arrays of the realization (`pollock_{weights,planes_x23,planes_t}.npy` for the consumer's `weights,planes_x23,planes_tau`; seeds
+    from the pass), rows `code=pollock`, `source` = the realization's `pollock/` directory, weights flux (= pollock_weights) and unif
+    only (the bridge has no `planes_I`: no `expI`).  Records are NaN from a particle's first non-active plane on and the finite mask
+    below is the only status handling, exactly as for the consumer."""
+    P = ConsumerPass(rec, pass_root, pollock)
+    code, source = ("pollock", P.pollock_dir) if pollock else ("consumer", pass_root)
     if ell_arg is not None and abs(P.ell - ell_arg) > 1e-9 * abs(P.ell):
         raise ReduceError("--ell %.17g differs from field.json ell %.17g in %s" % (ell_arg, P.ell, pass_root))
     if x0_arg is not None and abs(P.x0 - x0_arg) > 1e-9 * max(1.0, abs(P.x0)):
         raise ReduceError("--x0 %.17g differs from track.json X0 %.17g in %s" % (x0_arg, P.x0, pass_root))
     idx = window_planes(P.planes, P.x0, P.ell, d_lo, d_hi)
     x1w = P.planes[idx]
-    X = np.asarray(P.npy("planes_x23")[:, :, :], float)  # all planes (covariance table), (Np,P,2)
-    tau = np.asarray(P.npy("planes_tau"), float)
-    I = np.asarray(P.npy("planes_I"), float)
     seeds = np.asarray(P.npy("seeds"), float)
     Np = len(P.weights)
+    if pollock:
+        X = np.asarray(P.pollock_npy("planes_x23")[:, :, :], float)
+        tau = np.asarray(P.pollock_npy("planes_t"), float)
+        I = np.zeros(tau.shape)
+        modes = ("flux", "unif")
+        if X.shape != (Np, len(P.planes), 2) or tau.shape != (Np, len(P.planes)):
+            raise ReduceError("%s: pollock array shapes %s %s differ from (Np=%d, P=%d)" % (P.pollock_dir, X.shape, tau.shape, Np, len(P.planes)))
+    else:
+        X = np.asarray(P.npy("planes_x23")[:, :, :], float)  # all planes (covariance table), (Np,P,2)
+        tau = np.asarray(P.npy("planes_tau"), float)
+        I = np.asarray(P.npy("planes_I"), float)
+        modes = ("flux", "unif", "expI")
     fin_all = np.isfinite(X).all(axis=2) & np.isfinite(tau) & P.traced[:, None]
-    if np.any(fin_all & ~np.isfinite(I)):
+    if not pollock and np.any(fin_all & ~np.isfinite(I)):
         raise ReduceError("non-finite planes_I at a recorded crossing in %s" % pass_root)
     I0 = np.where(fin_all, I, 0.0)
     disp = X - seeds[:, None, 1:3]
@@ -358,13 +408,13 @@ def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass
         halves, half_note = (), str(e)
     r = int(re.search(r"r_(\d{4})", P.rdir).group(1))
     hm = re.search(r"hmax_(\d+)$", os.path.normpath(pass_root))
-    base = {"code": "consumer", "source": pass_root, "r": r, "hmax_div": int(hm.group(1)) if hm else -1 if single_pass_hmax is None else int(single_pass_hmax),
+    base = {"code": code, "source": source, "r": r, "hmax_div": int(hm.group(1)) if hm else -1 if single_pass_hmax is None else int(single_pass_hmax),
             "seed": int(P.field["seed"]), "family": "plane", "ell": P.ell, "x0": P.x0, "d_lo": d_lo, "d_hi": d_hi,
             "n_planes": len(idx), "d_first": (x1w[0] - P.x0) / P.ell, "d_last": (x1w[-1] - P.x0) / P.ell,
             "n_traced": int(P.traced.sum())}
     rows, prow = [], []
     all_mem = np.ones(Np, bool)
-    for wmode in ("flux", "unif", "expI"):
+    for wmode in modes:
         Wk_all = _weights_matrix(P.weights, wmode, I0)
         for basis, Y_all in (("pos", X), ("disp", disp)):
             for sname, common in (("perplane", False), ("common", True)):
@@ -396,7 +446,7 @@ def consumer_plane_rows(rec, pass_root, ell_arg, x0_arg, d_lo, d_hi, single_pass
             # per-plane covariance table (every plane of the run, per-plane sets)
             for k in range(len(P.planes)):
                 sel = np.flatnonzero(fin_all[:, k])
-                pr = {"code": "consumer", "source": pass_root, "r": r, "hmax_div": base["hmax_div"], "weights": wmode,
+                pr = {"code": code, "source": source, "r": r, "hmax_div": base["hmax_div"], "weights": wmode,
                       "basis": basis, "plane": k, "x1": float(P.planes[k]), "d": (P.planes[k] - P.x0) / P.ell,
                       "in_window": int(k in set(idx.tolist())), "n": len(sel)}
                 if len(sel):
@@ -679,11 +729,13 @@ def write_manifest(path, rec, root, tables):
 
 
 def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, root=None, warn=sys.stderr, par2_exit_x=None,
-               par2_dt=None, par2_seed0=None, single_pass_hmax=None):
+               par2_dt=None, par2_seed0=None, single_pass_hmax=None, pollock=False):
     """Run every reduction, write <out>, <out minus .csv>.planes.csv and <out>.manifest.json; returns the table rows.
     SF-43 options (default None = the SF-42 behaviour): par2_seed0 (Par2 rows carry seed0 + r); single_pass_hmax (a single-pass
     realization root, which has no `hmax_<d>` directory, is labelled hmax_div = this value instead of -1, so an arm that mixes
-    single- and multi-pass segments has one label for its production pass)."""
+    single- and multi-pass segments has one label for its production pass); pollock=True (SF-43): per consumer pass root additionally the
+    plane rows of the realization's Pollock bridge arrays (`code=pollock`, see `consumer_plane_rows`; a realization without them is an
+    error).  The Pollock arrays do not depend on h_max, so a multi-pass realization gets identical Pollock rows under each of its pass labels."""
     if par2 or par2_series:
         if ell is None or x0 is None:
             raise ReduceError("--ell and --x0 are required for Par2 inputs")
@@ -701,6 +753,10 @@ def reduce_all(consumer, par2, par2_series, ell, x0, d_lo, d_hi, U_time, out, ro
         a, b = consumer_plane_rows(rec, pr, ell, x0, d_lo, d_hi, single_pass_hmax)
         rows += a + consumer_time_rows(rec, pr, U_time, single_pass_hmax)
         prows += b
+        if pollock:
+            a, b = consumer_plane_rows(rec, pr, ell, x0, d_lo, d_hi, single_pass_hmax, pollock=True)
+            rows += a
+            prows += b
     for p in par2:
         a, b = par2_rows(rec, p, ell, x0, d_lo, d_hi, par2_seed0)
         rows += a

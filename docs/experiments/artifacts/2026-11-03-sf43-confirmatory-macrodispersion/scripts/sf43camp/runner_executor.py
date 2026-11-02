@@ -43,6 +43,11 @@ window, hmax_div} picks the rows ``blinded_sd`` reads (defaults: consumer flux /
 window [25, 94], consumer production pass ``hmax_div`` 8 / Par2 -1); time-window secondary (optional): ``U_time`` and
 ``par2_exit_x`` (Par2 needs both and ``snapshots_every`` > 0).
 
+POLLOCK ROWS (the Pollock contrast, spec items 5 and 8).  A consumer arm with ``pollock_bridge`` on (default) is reduced with
+``sf42red reduce --pollock``: besides the ``code=consumer`` rows the tables hold ``code=pollock`` plane rows of ``<realization>/pollock/``
+(same columns and estimators; ``blinded_sd`` reads the arm's runner code only, so these never enter the re-estimation).  ``prune``
+then deletes the Pollock arrays of non-retained realizations (their rows are in the table) and never one whose rows are missing.
+
 ``primary`` (arm flag, default false): the arm feeds the primary family; ``prune`` then keeps, for EVERY realization, the plane arrays
 (``seeds``, ``weights``, ``planes_x23``, ``planes_tau``: exactly what the displacement-basis plane estimators read, so ``recompute43``
 can rebuild them) and deletes only the others (time-pass arrays, Pollock and ``planes_I``); a non-primary arm keeps only its
@@ -433,8 +438,10 @@ class RunnerExecutor:
         kw, consumer, par2, series = {}, [], [], []
         if arm["runner"] == "consumer":
             consumer = [os.path.join(segment_dir, "out")]
+            if run.get("pollock_bridge", True):  # the arm's runs carry the bridge (`--pollock-bridge on`): reduce its arrays too (code=pollock rows)
+                kw["pollock"] = True
             if run.get("hmax_div_first"):  # one label for the production pass whether the segment ran one or several passes
-                kw = {"single_pass_hmax": int(run.get("hmax_div", [8])[0])}
+                kw["single_pass_hmax"] = int(run.get("hmax_div", [8])[0])
         else:
             meta, _, csvs = self._par2_state(segment_dir)
             par2 = [csvs[s - meta["seed0"]] for s in done]

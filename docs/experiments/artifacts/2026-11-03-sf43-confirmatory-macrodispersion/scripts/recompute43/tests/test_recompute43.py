@@ -65,9 +65,9 @@ class Base(unittest.TestCase):
         tracker_planes_csv(os.path.join(proot, "twin", "moments_planes.csv"), proot, "unif")
         return out, proot
 
-    def reduce(self, name="t.csv", consumer=(), par2=()):
+    def reduce(self, name="t.csv", consumer=(), par2=(), **kw):
         red.reduce_all(list(consumer), list(par2), [], ELL if par2 else None, X0 if par2 else None, 25.0, 94.0, None,
-                       os.path.join(self.R, name), self.C)
+                       os.path.join(self.R, name), self.C, **kw)
 
     def prune(self, proot):
         for n in ("seeds", "weights", "planes_x23", "planes_tau", "planes_I", "times_x", "times_I", "status_plane", "status_time"):
@@ -204,6 +204,78 @@ class Consumer(Base):
         os.makedirs(self.C)
         with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
             main(["run", "--campaign", self.C, "--reduced", self.R, "--out", os.path.join(self.C, "report.txt")])
+
+
+class Pollock(Base):
+    """`code=pollock` rows (sf42red reduce --pollock) against the Pollock bridge arrays (`R/pollock/`), recomputed without sf42red."""
+
+    def build(self, hmax=(), **kw):
+        out = os.path.join(self.C, "arms", "a1", "seg0", "out")
+        if hmax:
+            proots = [synth.write_pass(out, ell=ELL, x0=X0, hmax=h, **kw) for h in hmax]
+            rdir = os.path.dirname(proots[0])
+        else:
+            proots = [synth.write_pass(out, ell=ELL, x0=X0, **kw)]
+            rdir = proots[0]
+        twin = synth.write_pass(os.path.join(self.C, "cloud"), ell=ELL, x0=X0, a_T=0.05, U0=3.0, c_tau=0.01, drift=(0.1, 0.2), miss={7: 4})
+        pd = synth.write_pollock(rdir, proots[0], planes_x23=np.load(os.path.join(twin, "planes_x23.npy")),
+                                 planes_t=np.load(os.path.join(twin, "planes_tau.npy")), weights=np.arange(1.0, 65.0) % 7)  # includes weight-0 seeds
+        return out, rdir, pd
+
+    def test_pollock_rows_are_recomputed_from_the_bridge_arrays(self):
+        out, _, _ = self.build(miss={3: 5})
+        self.reduce(consumer=[out], pollock=True)
+        code, rep = self.run_tool()
+        self.assertEqual(code, 0, rep)
+        for col in ("alpha_TP", "alpha_TAP", "alpha_LP", "U_r", "wfrac_min", "n_common", "seed"):
+            self.assertIn(" pollock  plane        arrays    %-12s" % col, rep)
+        self.assertIn(" pollock  planes-table arrays    cov_x2x3", rep)
+        self.assertIn("POLLOCK realizations=1 (arrays on disk 1)", rep)
+
+    def test_wrong_pollock_value_is_a_failure_and_a_consumer_value_is_not_confused_with_it(self):
+        out, _, _ = self.build()
+        self.reduce(consumer=[out], pollock=True)
+
+        def bump(code):
+            def fn(r):
+                if r["code"] == code and r["family"] == "plane" and r["weights"] == "unif" and r["basis"] == "disp" and r["set"] == "common":
+                    r["alpha_TAP"] = "%.17g" % (float(r["alpha_TAP"]) * (1.0 + 1e-9))
+            return fn
+        self.edit_table("t.csv", bump("pollock"))
+        code, rep = self.run_tool()
+        self.assertEqual(code, 1)
+        self.assertEqual(rep.count("FAIL pollock"), 1, rep)
+        self.assertNotIn("FAIL consumer", rep)
+
+    def test_pruned_pollock_arrays_are_not_covered_not_failed(self):
+        out, _, pd = self.build()
+        self.reduce(consumer=[out], pollock=True)
+        for n in os.listdir(pd):
+            if n.endswith(".npy"):
+                os.remove(os.path.join(pd, n))
+        code, rep = self.run_tool()
+        self.assertEqual(code, 0, rep)
+        self.assertIn("POLLOCK realizations=1 (arrays on disk 0)", rep)
+        self.assertIn("NOT_COVERED 1 x Pollock arrays (or seeds) pruned", rep)
+        self.assertNotRegex(rep, r"pollock +plane")
+
+    def test_hmax_label_must_be_a_pass_of_the_realization(self):
+        out, _, _ = self.build(hmax=(8, 16))
+        self.reduce(consumer=[out], pollock=True)
+        code, rep = self.run_tool()
+        self.assertEqual(code, 0, rep)
+        self.edit_table("t.csv", lambda r: r.update(hmax_div="32") if r["code"] == "pollock" and r["hmax_div"] == "16" else None)
+        code, rep = self.run_tool()
+        self.assertEqual(code, 1)
+        self.assertIn("hmax_div label 32 is not a pass", rep)
+
+    def test_single_pass_label(self):
+        out, _, _ = self.build()
+        self.reduce(consumer=[out], pollock=True, single_pass_hmax=8)
+        code, rep = self.run_tool()
+        self.assertEqual(code, 1)  # the reducer labelled the single pass 8: the tool must be told
+        code, rep = self.run_tool(single_pass_hmax=8)
+        self.assertEqual(code, 0, rep)
 
 
 class CampaignLayout(Base):

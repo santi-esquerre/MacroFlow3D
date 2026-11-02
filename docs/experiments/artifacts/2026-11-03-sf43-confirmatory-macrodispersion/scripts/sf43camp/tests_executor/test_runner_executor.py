@@ -467,10 +467,32 @@ class TestReducePrune(Base):
             self.assertEqual(man["tables"][0]["sha256"], rx._red.sha256_file(t))
         with open(r["tables"][0]) as f:
             rows = list(csv.DictReader(f))
-        plane = [x for x in rows if x["family"] == "plane" and x["weights"] == "flux" and x["basis"] == "pos" and x["set"] == "perplane"]
+        sel = lambda code: [x for x in rows if x["code"] == code and x["family"] == "plane" and x["weights"] == "flux"  # noqa: E731
+                            and x["basis"] == "pos" and x["set"] == "perplane"]
+        plane = sel("consumer")
         self.assertEqual(len(plane), 6 * 2)  # 6 realizations x 2 passes
         self.assertEqual({x["hmax_div"] for x in plane}, {"8", "16"})
         self.assertEqual({x["d_lo"] for x in plane}, {"25"})
+        # the Pollock bridge of the same realizations (pollock_bridge on by default): one set of rows per pass label, seed = the field seed
+        pol = sel("pollock")
+        self.assertEqual(len(pol), 6 * 2)
+        self.assertEqual({(x["r"], x["seed"]) for x in pol}, {(str(r), str(3000 + r)) for r in range(6)})
+        self.assertEqual({x["hmax_div"] for x in pol}, {"8", "16"})
+        self.assertEqual({x["source"] for x in pol}, {"out/realizations/r_%04d/pollock" % r for r in range(6)})
+        self.assertTrue(all(x["alpha_TP"] not in ("", "nan") for x in pol))
+        self.assertTrue(all(x["alpha_TP"] != y["alpha_TP"] for x, y in zip(pol, plane) if x["r"] == y["r"]))  # the fake's bridge is another cloud
+        self.assertEqual({x["weights"] for x in rows if x["code"] == "pollock"}, {"flux", "unif"})  # no expI, no time family
+        self.assertEqual({x["family"] for x in rows if x["code"] == "pollock"}, {"plane"})
+
+    def test_pollock_rows_are_off_when_the_arm_has_no_bridge(self):
+        arm = consumer_arm(hmax_div=[8], pollock_bridge=False)
+        seg = os.path.join(self.root, "seg_nopol")
+        os.makedirs(seg)
+        self.assertEqual(self.launch(arm, [3000, 3001], seg)[0], 0)
+        self.assertFalse(os.path.exists(os.path.join(seg, "out", "realizations", "r_0000", "pollock")))
+        red = self.ex.reduce(arm, seg, os.path.join(self.root, "reduced_nopol"))
+        with open(red["tables"][0]) as f:
+            self.assertEqual({x["code"] for x in csv.DictReader(f)}, {"consumer"})
 
     def test_par2_reduce_and_prune_is_a_noop(self):
         with open(self.pred["tables"][0]) as f:
@@ -511,6 +533,27 @@ class TestReducePrune(Base):
         self.assertEqual((set(sd2), n2), (set(sd), n))
         for k, v in sd.items():
             self.assertAlmostEqual(v, sd2[k], places=9)
+
+    def test_blinded_sd_reads_consumer_rows_only_never_pollock(self):
+        sd, n = self.ex.blinded_sd(self.arm, [self.red])
+        bumped = []
+        for t in self.red["tables"]:
+            with open(t, newline="") as f:
+                rd = csv.DictReader(f)
+                rows, cols = list(rd), rd.fieldnames
+            self.assertIn("pollock", {x["code"] for x in rows})
+            for row in rows:
+                if row["code"] == "pollock":  # wildly different Pollock estimates, even a Pollock-only seed: nothing may change
+                    for e in ("alpha_TP", "alpha_TAP", "alpha_LP"):
+                        row[e] = "1e6"
+                    row["seed"] = str(int(row["seed"]) + 500)
+            p = t + ".pollock.csv"
+            with open(p, "w", newline="") as f:
+                wr = csv.DictWriter(f, cols, lineterminator="\n")
+                wr.writeheader()
+                wr.writerows(rows)
+            bumped.append(p)
+        self.assertEqual(self.ex.blinded_sd(self.arm, [{"tables": bumped}]), (sd, n))
 
     def test_blinded_sd_selection_follows_the_arm_and_the_blind_override(self):
         pos = dict(self.arm, reduce=dict(self.arm["reduce"], blind={"basis": "pos", "hmax_div": 16}))
@@ -554,7 +597,8 @@ class TestReducePrune(Base):
                                 if os.path.isfile(p) and not p.endswith(".npy")), others)  # nothing but .npy is touched
         self.assertTrue(os.path.isfile(res["log"]) and len(res["log_sha256"]) == 64)
         # the retained realizations keep every array of every pass; the reduced tables are untouched
-        self.assertEqual(len([p for p in left if "r_0001" in p]), 2 * 9)
+        self.assertEqual(len([p for p in left if "r_0001" in p]), 2 * 9 + 7)  # + the seven arrays of its pollock/ directory
+        self.assertEqual([p for p in left if "pollock_" in p and "r_0001" not in p and "r_0004" not in p], [])  # reduced and not retained: gone
         for t in self.red["tables"]:
             self.assertTrue(os.path.isfile(t))
 
@@ -572,7 +616,8 @@ class TestSelectivePrune(Base):
         for r in (0, 2, 3):  # not retained: the four plane arrays stay in both passes, everything else goes
             self.assertEqual(names(lambda x, r=r: "r_%04d" % r in x), set(rx.KEEP_ARRAYS))
             self.assertEqual(len([x for x in left if "r_%04d" % r in x]), 2 * 4)
-        self.assertEqual(len(names(lambda x: "r_0001" in x)), 9)  # the retained realization keeps all nine arrays
+        self.assertEqual(len(names(lambda x: "r_0001" in x)), 9 + 7)  # the retained realization keeps all nine arrays and its seven pollock_ ones
+        self.assertEqual(names(lambda x: "pollock_" in x and "r_0001" not in x), set())  # the others' Pollock arrays were reduced, then deleted
         self.assertGreater(res["deleted_files"], 0)
         # a non-primary arm keeps only the retained realizations (all arrays)
         arm2, seg2 = consumer_arm(), self.seg("q")

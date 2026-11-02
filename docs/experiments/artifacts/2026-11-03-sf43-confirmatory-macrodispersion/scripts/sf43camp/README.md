@@ -87,6 +87,19 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
   report's count falls below the requirement. Arms with `primary: true` keep, for EVERY realization, `seeds`, `weights`, `planes_x23`, `planes_tau` (`sf42red prune --keep-arrays`; what the
   displacement-basis recomputation reads) and delete only the other arrays (time passes, Pollock, `planes_I`) of the non-retained ones. Par2 segments: the regular snapshots are
   deleted after the reduction (those of retained realizations stay), the crossing CSVs stay.
+* **Pollock contrast** (spec items 5 and 8; disclosed SF-43 addition to the SF-42 reducer, like `--keep-arrays`): a consumer arm with `consumer.pollock_bridge` on (default) is
+  reduced with `sf42red reduce --pollock`. Source: `lagrangian_ensemble --pollock-bridge on` writes ONE `<realization>/pollock/` per realization, whatever the number of `--hmax-div`
+  passes (`EnsembleRunner.cu`; `pollock_weights` (Np), `pollock_status_plane` (u1, raw SF-32 codes, 8/9 = inlet/outlet exit in medium (b)), `pollock_planes_x23` (Np,P,2 unwrapped, NaN
+  from the first plane not reached), `pollock_planes_t` (Np,P clock since injection, the consumer's `tau`), `pollock.json` (`seeds_equal_tracker`, `planes`), ...). The Pollock
+  particles start at the consumer's `seeds` (checked through `seeds_equal_tracker`, planes compared with `track.json`); the displacement basis uses the pass's `seeds.npy`.
+  Rows: `code = pollock`, family `plane`, the consumer's columns and estimator code (weights `flux` = `pollock_weights` and `unif`, bases pos/disp, sets perplane/common, split halves;
+  no `expI`, no `time` family), `seed` = field seed, `hmax_div` = the label of the consumer rows of the same root/pass (identical Pollock rows under each pass label of a multi-pass
+  realization), `source` = `<realization>/pollock`. Set rule = the consumer's: finite record and weight > 0 (a Pollock seed with non-positive RT0 weight is tracked but outside
+  the sets, unlike the bridge's own `pollock_moments_planes.csv`, whose `contributing` counts it). The status code is not read: a stopped or exited particle has NaN records
+  from there on. A realization without `pollock/` is a `MissingData` error of the reduction. `prune` deletes `pollock_*.npy` only when the table has the finite `code=pollock` rows
+  of that directory (otherwise action `keep`, reported in the plan line "unreduced pollock array(s) kept"). `blinded_sd` reads `code = <the arm's runner>` rows only, so Pollock
+  rows never enter the re-estimation. `recompute43` recomputes the Pollock rows of the realizations whose Pollock arrays are still on disk (the retained subset, same 1e-10
+  criterion, independent of `sf42red`) and lists the others under NOT_COVERED.
 * **Resume**: the ledger (append-only, flock, fsync; a torn last line is ignored) is replayed through the same `State.apply` as live operation; units claimed by a dead
   launcher are closed (`recovered`) with `executor.completed()`, and re-run from the first incomplete seed into a NEW segment directory; unreduced segments are re-reduced.
 * **Ledger records the analysis tools read**: besides the engine's own kinds (`claim`, `unit_end`, `hb`, `reduced`, `pruned`, `reest`, ...), one `seed` record per solve

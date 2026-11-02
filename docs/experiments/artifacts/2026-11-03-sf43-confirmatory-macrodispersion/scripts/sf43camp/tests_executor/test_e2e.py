@@ -11,6 +11,7 @@ peak memory.  Run from `scripts/`:  python3 -W error -m unittest discover -s sf4
 import glob
 import json
 import os
+import re as re_mod
 import signal
 import stat
 import sys
@@ -167,6 +168,17 @@ class E2E(unittest.TestCase):
             rec = f.read()
         self.assertTrue(rec.rstrip().endswith("RECOMPUTE PASS"), rec[-1500:])
         self.assertIn("PRIMARY_ARM prod", rec)
+        # Pollock rows: 16 prod + 4 + 4 det_x/det_y realizations; the arrays survive in the retained prod ones (>= 5; extra retention depends on
+        # the segmentation after the simulated kill) and the 8 of the two small (fully retained) arms: those are recomputed independently of
+        # sf42red, all the others are listed under NOT_COVERED
+        total, disk = (int(x) for x in re_mod.search(r"\nPOLLOCK realizations=(\d+) \(arrays on disk (\d+)\)\n", rec).groups())
+        self.assertEqual(total, 24)
+        self.assertGreaterEqual(disk, 13)
+        if disk < total:
+            self.assertIn("NOT_COVERED %d x Pollock arrays (or seeds) pruned" % (total - disk), rec)
+        else:
+            self.assertNotIn("Pollock arrays (or seeds) pruned", rec)
+        self.assertRegex(rec, r"pollock +plane +arrays +alpha_TP +values=\d+ ")
         # blinded re-estimation through the real executor: SDs and counts only, N doubled (H9: min(2 n_conf, max(n_conf, N_req)))
         re = kind("reest")
         self.assertEqual([(r["arm"], r["n_old"], r["n_new"]) for r in re], [("prod", 8, 16)])
@@ -191,6 +203,18 @@ class E2E(unittest.TestCase):
         late = self.segment("prod", 1012)
         with open(os.path.join(self.cdir, "reduced", "prod", late, "prod__%s__d25-94.csv" % late)) as f:
             self.assertEqual({x.split(",")[3] for x in f.read().splitlines()[1:]}, {"8"})
+        # the Pollock contrast survives the pruning: code=pollock rows of EVERY prod realization in the reduced tables, seeds paired
+        pol = set()
+        for seg in glob.glob(os.path.join(self.cdir, "reduced", "prod", "*")):
+            for t in glob.glob(os.path.join(seg, "*__d25-94.csv")):
+                with open(t) as f:
+                    hdr = f.readline().rstrip("\n").split(",")
+                    for ln in f:
+                        v = dict(zip(hdr, ln.rstrip("\n").split(",")))
+                        if v["code"] == "pollock" and v["weights"] == "flux" and v["basis"] == "disp" and v["set"] == "perplane":
+                            self.assertNotIn(v["alpha_TP"], ("", "nan"))
+                            pol.add(int(float(v["seed"])))
+        self.assertEqual(pol, set(range(1000, 1016)))
         # Par2 reduced rows carry the seed
         tw = self.segment("twin", 1000)
         with open(os.path.join(self.cdir, "reduced", "twin", tw, "twin__%s__d25-94.csv" % tw)) as f:
@@ -206,7 +230,8 @@ class E2E(unittest.TestCase):
         self.assertEqual(sorted(npy), list(range(1000, 1016)))
         for seed, names in npy.items():
             self.assertTrue({"seeds", "weights", "planes_x23", "planes_tau"} <= names, (seed, names))
-        self.assertTrue(all(len(npy[s]) == 9 for s in range(1000, 1005)), {s: len(npy[s]) for s in range(1000, 1006)})  # first 5 positions: everything
+        self.assertTrue(all(len(npy[s]) == 9 + 7 for s in range(1000, 1005)), {s: len(npy[s]) for s in range(1000, 1006)})  # first 5 positions:
+        # everything, the seven pollock_ arrays included (the Pollock arrays of the others were reduced into code=pollock rows, then pruned)
         self.assertTrue(any(len(npy[s]) == 4 for s in range(1005, 1016)), "nothing was pruned")
         self.assertRegex(rep, r"retention.*\n(  \S+ +\d+ / \d+\n)+")
         # lane pins, determinism pair, background job, peak memory

@@ -17,7 +17,10 @@ generators (``sf42red.tests.synth``), plus the log lines the executor parses.  F
 """
 import json
 import os
+import shutil
 import sys
+
+import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "..", "..", "..", "2026-10-30-sf42-confirmatory-tooling", "scripts"))
@@ -87,10 +90,15 @@ def consumer(argv):
                   % (r, val["--eps"]))
             return 4
         verdict = "fallback" if env_int("FAKE_FALLBACK_AT") == r or seed_hit("FAKE_FALLBACK_SEED", seed) else "converged"
-        for d in hm:
-            synth.write_pass(out, M=M, ell=ell, x0=x0, d_planes=d_planes, r=r, hmax=d if len(hm) > 1 else None, seed=seed,
-                             a_T=0.03 * (1.0 + 0.1 * (seed % 7)))
+        proots = [synth.write_pass(out, M=M, ell=ell, x0=x0, d_planes=d_planes, r=r, hmax=d if len(hm) > 1 else None, seed=seed,
+                                   a_T=0.03 * (1.0 + 0.1 * (seed % 7))) for d in hm]
         rdir = os.path.join(out, "realizations", "r_%04d" % r)
+        if val.get("--pollock-bridge", "off") == "on":  # R/pollock/ in the format of EnsembleRunner.cu: once per realization, whatever the passes
+            tw = synth.write_pass(os.path.join(out, "_pollock_cloud"), M=M, ell=ell, x0=x0, d_planes=d_planes, seed=seed, U0=2.5,
+                                  a_T=0.041 * (1.0 + 0.13 * (seed % 5)))  # a different cloud: the Pollock contrast is not zero
+            synth.write_pollock(rdir, proots[0], planes_x23=np.load(os.path.join(tw, "planes_x23.npy")),
+                                planes_t=np.load(os.path.join(tw, "planes_tau.npy")))
+            shutil.rmtree(os.path.join(out, "_pollock_cloud"))
         with open(os.path.join(rdir, "solver_b.json"), "w") as f:
             json.dump({"r": r, "seed": seed, "verdict": verdict, "usable": True, "converged": verdict == "converged", "iterations": 30 + r,
                        "rel": 1e-12, "balance": 1e-10, "max_div": 2.0e-08, "fallback": verdict == "fallback"}, f)

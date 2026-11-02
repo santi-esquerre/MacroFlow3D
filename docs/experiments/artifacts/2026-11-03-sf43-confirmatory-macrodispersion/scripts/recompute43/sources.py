@@ -143,6 +143,59 @@ class ConsumerSource:
         return int(fin.all(axis=1).sum()), float(min(fr)), traced
 
 
+class PollockSource(ConsumerSource):
+    """Moments of the Pollock bridge of one consumer realization, from the arrays of `R/pollock/` (the row `source` is that directory).
+
+    Files (`EnsembleRunner.cu`, one directory per realization whatever the number of h_max passes): `pollock_weights.npy` (Np), `pollock_planes_x23.npy`
+    (Np,P,2 unwrapped, NaN from the first plane a particle did not reach), `pollock_planes_t.npy` (Np,P clock since injection), `pollock.json`
+    (planes, seeds_equal_tracker); planes and X0 from the pass's `track.json`, seeds (displacement basis) from the pass's `seeds.npy`, seed and
+    ell from `R/field.json`.  The set of a plane is the same as the consumer's: finite record and weight > 0 (the tracker-like moment CSVs of the
+    bridge count weight-0 particles in `contributing`, so they are not used).  `arrays` is None when the Pollock arrays (or the seeds) were
+    pruned: the realization is then reported as not covered.  `hmax_labels`: the pass labels the rows of this realization may carry."""
+
+    code = "pollock"
+
+    def __init__(self, path):
+        self.root = self.path = path
+        rdir = os.path.dirname(os.path.abspath(path))
+        self.rdir = rdir
+        passes = [rdir] if os.path.isfile(os.path.join(rdir, "track.json")) else sorted(
+            os.path.join(rdir, d) for d in os.listdir(rdir) if d.startswith("hmax_") and os.path.isfile(os.path.join(rdir, d, "track.json")))
+        if not passes:
+            raise ValueError("%s: no pass root (track.json) next to the pollock directory" % path)
+        self.hmax_labels = [int(os.path.basename(p)[5:]) for p in passes] if passes[0] != rdir else []
+        self.track = read_json(os.path.join(passes[0], "track.json"))
+        self.field = read_json(os.path.join(rdir, "field.json"))
+        self.ell = float(self.field["ell"])
+        lam = float(read_json(os.path.join(rdir, "flow_stats.json"))["lambda"])
+        if abs(self.ell - lam) > 1e-9 * abs(lam):
+            raise ValueError("field.json ell %.17g != flow_stats.json lambda %.17g" % (self.ell, lam))
+        self.x0 = float(self.track["X0"])
+        self.planes = [float(x) for x in self.track["planes"]]
+        pj = read_json(os.path.join(path, "pollock.json"))
+        if pj.get("seeds_equal_tracker") is not True:
+            raise ValueError("%s: pollock.json seeds_equal_tracker is not true" % path)
+        if len(pj["planes"]) != len(self.planes) or any(abs(a - b) > 1e-12 * max(1.0, abs(b)) for a, b in zip(pj["planes"], self.planes)):
+            raise ValueError("%s: pollock.json planes differ from track.json" % path)
+        self.csv = {}
+        self.arrays = None
+        names = {"weights": "pollock_weights", "planes_x23": "pollock_planes_x23", "planes_tau": "pollock_planes_t"}
+        seeds = os.path.join(passes[0], "seeds.npy")
+        if os.path.isfile(seeds) and all(os.path.isfile(os.path.join(path, n + ".npy")) for n in names.values()):
+            a = {k: np.load(os.path.join(path, n + ".npy")) for k, n in names.items()}
+            a["seeds"] = np.load(seeds)
+            if a["planes_x23"].shape != (len(a["weights"]), len(self.planes), 2) or a["planes_tau"].shape != a["planes_x23"].shape[:2] \
+                    or a["seeds"].shape != (len(a["weights"]), 3):
+                raise ValueError("%s: array shapes %s %s %s %s inconsistent" % (path, a["weights"].shape, a["planes_x23"].shape,
+                                                                              a["planes_tau"].shape, a["seeds"].shape))
+            a["fin"] = np.isfinite(a["planes_x23"]).all(axis=2) & np.isfinite(a["planes_tau"]) & (a["weights"] > 0.0)[:, None]
+            self.arrays = a
+
+    def hmax_ok(self, label, single_pass_hmax):
+        """Whether a row's hmax_div label is one this realization can carry (its passes, or -1 / the single-pass label for a single pass)."""
+        return label in self.hmax_labels if self.hmax_labels else label in (-1, single_pass_hmax)
+
+
 class Par2Source:
     """Moments of a Par2 plane-crossing CSV (uniform weights, both bases, own sets, full 2x2 covariance)."""
 

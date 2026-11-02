@@ -94,3 +94,27 @@ def write_par2(path, rows):
         f.write(PAR2_FORMAT + "\n" + PAR2_HEADER + "\n")
         for r in rows:
             f.write(",".join("nan" if v != v else "%.17g" % v for v in r) + "\n")
+
+
+def write_pollock(rdir, proot, *, weights=None, planes_x23=None, planes_t=None, seeds_equal=True, planes=None, status_plane=None):
+    """SF-43: the Pollock bridge directory `rdir/pollock/` in the format of `EnsembleRunner.cu` (pollock_{weights,status_plane,planes_x23,
+    planes_t}.npy, pollock.json), by default a copy of the pass `proot` arrays (weights, planes_x23, planes_tau; Pollock clock = tau)."""
+    d = os.path.join(rdir, "pollock")
+    os.makedirs(d, exist_ok=True)
+    A = lambda n: np.load(os.path.join(proot, n + ".npy"))  # noqa: E731
+    w = A("weights") if weights is None else np.asarray(weights, float)
+    x = A("planes_x23") if planes_x23 is None else planes_x23
+    t = A("planes_tau") if planes_t is None else planes_t
+    np.save(os.path.join(d, "pollock_weights.npy"), w)
+    np.save(os.path.join(d, "pollock_planes_x23.npy"), x)
+    np.save(os.path.join(d, "pollock_planes_t.npy"), t)
+    np.save(os.path.join(d, "pollock_status_plane.npy"), np.zeros(len(w), np.uint8) if status_plane is None else status_plane)
+    np.save(os.path.join(d, "pollock_status_time.npy"), np.zeros(len(w), np.uint8))
+    np.save(os.path.join(d, "pollock_times_x.npy"), np.zeros((len(w), 2, 3)))
+    np.save(os.path.join(d, "pollock_cells.npy"), np.zeros((len(w), 2), np.uint64))
+    with open(os.path.join(proot, "track.json")) as f:
+        tr = json.load(f)
+    with open(os.path.join(d, "pollock.json"), "w") as f:
+        json.dump({"comparator": "pollock", "weights": "rt0_v1_at_seed", "Np": len(w), "seeds_equal_tracker": seeds_equal,
+                   "planes": tr["planes"] if planes is None else planes}, f)
+    return d

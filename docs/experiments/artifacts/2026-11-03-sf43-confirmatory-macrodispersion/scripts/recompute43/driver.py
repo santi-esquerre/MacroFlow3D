@@ -25,6 +25,11 @@ WHAT IS RECOMPUTED (every other column/row is listed under NOT_COVERED, never si
         planes_I survives) x basis (pos/disp) x set (perplane/common) row: all of the above plus alpha_TAP, wfrac_min, n_traced;
         planes table: also cov_x2x3.
     NOT covered: family `time` rows (the window end needs status_time/times_x), split-half columns `*_A`/`*_B`, `note`.
+  pollock, family plane (the Pollock bridge rows of `sf42red reduce --pollock`; `source` = `R/pollock`): every weights (flux/unif) x basis x set
+    row and the planes table, from the bridge arrays (`pollock_weights`, `pollock_planes_x23`, `pollock_planes_t`; seeds and X0 from the pass),
+    the same columns as the arrays origin of the consumer rows, for the realizations whose Pollock arrays are still on disk (the retained
+    subset: the campaign deletes the others after the reduction); a realization whose arrays are gone is listed under NOT_COVERED, not
+    failed.  The row's hmax_div must be a pass label of the realization (or -1 / `--single-pass-hmax` for a single pass).
   par2, family plane: every estimator/count column of both bases and the planes table, from the crossing CSV.
     NOT covered: family `time` rows (series + snapshots), `ell`/`x0`/`d_lo`/`d_hi` (reducer inputs, not in the raw files).
 Manifest: the sha256 of every input still present is recomputed (a pruned input is counted, not a failure); a changed input or table
@@ -41,7 +46,7 @@ import re
 from collections import OrderedDict
 
 from . import formulas as F
-from .sources import ConsumerSource, Par2Source, plane_row_values
+from .sources import ConsumerSource, Par2Source, PollockSource, plane_row_values
 
 NAN = float("nan")
 RTOL, ATOL = 1e-10, 1e-15
@@ -170,7 +175,7 @@ def expected_plane_row(src, ell, idx, x1w, row):
 
 def compare_plane_rows(tally, src, rows, who, not_covered, single_pass_hmax=None):
     for row in rows:
-        if src.code == "consumer":
+        if src.code != "par2":
             ell_r, x0_r = src.ell, src.x0
         else:
             ell_r, x0_r = float(row["ell"]), float(row["x0"])
@@ -187,7 +192,14 @@ def compare_plane_rows(tally, src, rows, who, not_covered, single_pass_hmax=None
             not_covered.append("%s %s: %s" % (who, tag, why))
             continue
         meta = {"n_planes": len(idx), "d_first": (x1w[0] - x0_r) / ell_r, "d_last": (x1w[-1] - x0_r) / ell_r}
-        if src.code == "consumer":
+        if src.code == "pollock":
+            lab = int(fnum(row["hmax_div"]))
+            meta.update(seed=int(src.field["seed"]), ell=ell_r, x0=x0_r, r=int(re.search(r"r_(\d{4})", src.rdir).group(1)),
+                        hmax_div=lab if src.hmax_ok(lab, single_pass_hmax) else None)
+            if meta["hmax_div"] is None:
+                tally.fails.append("FAIL %s %s: hmax_div label %d is not a pass of the realization" % (who, tag, lab))
+                del meta["hmax_div"]
+        elif src.code == "consumer":
             meta.update(seed=int(src.field["seed"]), ell=ell_r, x0=x0_r, r=int(re.search(r"r_(\d{4})", src.rdir).group(1)))
             hm = re.search(r"hmax_(\d+)$", os.path.normpath(src.root))
             # a single-pass root has no hmax_<d> directory: -1, or the label sf42red's --single-pass-hmax gave (an arm that mixes layouts)
@@ -232,7 +244,7 @@ def _group(rows, cols):
 
 
 def open_source(code, path):
-    return ConsumerSource(path) if code == "consumer" else Par2Source(path)
+    return {"consumer": ConsumerSource, "pollock": PollockSource, "par2": Par2Source}[code](path)
 
 
 SEG_ARM = re.compile(r"(?:^|/)segments/([^/]+)/")
@@ -253,8 +265,8 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL, primary_arms=(), si
                                                                                          ",".join(primary_arms) or "-"))
     primary_arms, base_roots, primary_seen = set(primary_arms), roots, {}
     problems, not_covered, nonrow = [], [], []
-    realizations = {"consumer": set(), "par2": set()}
-    with_arrays = set()
+    realizations = {"consumer": set(), "par2": set(), "pollock": set()}
+    with_arrays, pollock_arrays = set(), set()
     tables = find_tables(reduced)
     if not tables:
         P("no reduced table under %s" % reduced)
@@ -288,7 +300,9 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL, primary_arms=(), si
             except (OSError, ValueError, KeyError) as e:
                 problems.append("%s: raw source unreadable (%s: %s)" % (who, type(e).__name__, e))
                 continue
-            realizations[code].add(who)
+            realizations[code].add(path if code == "pollock" else who)  # sources of different segments share names; the Pollock count uses the path
+            if code == "pollock" and src.arrays is not None:
+                pollock_arrays.add(path)
             if code == "consumer" and src.arrays is not None:
                 with_arrays.add(who)
             arm_id = (SEG_ARM.search(path.replace(os.sep, "/")) or [None, None])[1]
@@ -296,6 +310,9 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL, primary_arms=(), si
                 primary_seen.setdefault(arm_id, set()).add(who)
                 if src.arrays is None:
                     problems.append("%s: primary arm %s without the plane arrays (seeds, weights, planes_x23, planes_tau)" % (who, arm_id))
+            if code == "pollock" and src.arrays is None:
+                not_covered.append("%s: Pollock arrays (or seeds) pruned: realization outside the retained subset" % who)
+                continue
             if code == "consumer" and not src.csv and src.arrays is None:
                 problems.append("%s: neither moment CSVs nor arrays present" % who)
                 continue
@@ -312,6 +329,8 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL, primary_arms=(), si
     for (code, fam, origin, col), c in sorted(tally.cov.items()):
         P("  %-8s %-12s %-9s %-12s values=%-6d realizations=%-4d max_rel=%.3e" % (code, fam, origin, col, c["n"], len(c["who"]), c["max"]))
     P("REALIZATIONS consumer=%d (with plane arrays %d) par2=%d" % (len(realizations["consumer"]), len(with_arrays), len(realizations["par2"])))
+    if realizations["pollock"]:
+        P("POLLOCK realizations=%d (arrays on disk %d)" % (len(realizations["pollock"]), sum(1 for w in realizations["pollock"] if w in pollock_arrays)))
     for a in sorted(primary_arms):
         n = len(primary_seen.get(a, ()))
         P("PRIMARY_ARM %s realization passes=%d with_arrays=%d" % (a, n, len([w for w in primary_seen.get(a, ()) if w in with_arrays])))
