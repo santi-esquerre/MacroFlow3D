@@ -31,7 +31,7 @@ WHAT IS RECOMPUTED (every other column/row is listed under NOT_COVERED, never si
     subset: the campaign deletes the others after the reduction); a realization whose arrays are gone is listed under NOT_COVERED, not
     failed.  The row's hmax_div must be a pass label of the realization (or -1 / `--single-pass-hmax` for a single pass).
   par2, family plane: every estimator/count column of both bases and the planes table, from the crossing CSV.
-    NOT covered: family `time` rows (series + snapshots), `ell`/`x0`/`d_lo`/`d_hi` (reducer inputs, not in the raw files).
+    NOT covered: family `time` rows (series + snapshots; listed under NOT_RECOMPUTED_ROWS, the series file is never read), `ell`/`x0`/`d_lo`/`d_hi` (reducer inputs, not in the raw files).
 Manifest: the sha256 of every input still present is recomputed (a pruned input is counted, not a failure); a changed input or table
 is a failure.
 Exit code: 0 PASS, 1 FAIL (a value beyond tolerance, a changed input, an unreadable raw file), 2 nothing compared.
@@ -285,8 +285,13 @@ def run(campaign, reduced, roots, out, rtol=RTOL, atol=ATOL, primary_arms=(), si
         by_src = _group(rows, ("code", "source"))
         pby_src = _group(prows, ("code", "source"))
         for (code, source), srows in by_src.items():
-            path = resolve(source, roots)
             who = "%s:%s" % (code, source)
+            if code == "par2" and all(r["family"] != "plane" for r in srows) and not pby_src.get((code, source)):
+                # a Par2 time-series source (not the plane-crossings format): its rows are never recomputed, so the reader is not applied
+                for r in srows:
+                    nonrow.append("%s %s/%s/%s: family %s is not recomputed" % (who, r["weights"], r["basis"], r["set"], r["family"]))
+                continue
+            path = resolve(source, roots)
             if path is None:
                 problems.append("%s: raw source not found under the roots" % who)
                 continue

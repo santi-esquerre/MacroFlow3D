@@ -369,6 +369,31 @@ class Par2(Base):
         self.assertEqual(code, 0, rep)
 
 
+    def test_par2_time_series_rows_are_listed_not_recomputed_and_not_read_as_crossings(self):
+        x1 = X0 + np.array([5, 25, 40, 70, 94, 100]) * ELL
+        out = os.path.join(self.C, "arms", "p1", "seg0", "out")
+        p = os.path.join(out, "crossings", "realization_0002_planes.csv")
+        synth.write_par2(p, self.rows(x1))
+        ser = os.path.join(out, "stats", "realization_0002_timeseries.csv")  # the Par2 time-series format, not the plane-crossings one
+        os.makedirs(os.path.dirname(ser))
+        with open(ser, "w") as f:
+            f.write("# format_version=1\nt,mean_x,mean_y,mean_z,var_x,var_y,var_z,active\n")
+            for k in range(1, 13):
+                f.write("%.17g,%.17g,0,0,%.17g,%.17g,%.17g,100\n" % (0.5 * k, 1.0 * k, 0.01 * k, 0.008 * k, 0.008 * k))
+        sd = os.path.join(out, "snapshots", "r_0002")
+        os.makedirs(sd)
+        for k in range(1, 13):
+            with open(os.path.join(sd, "step_%08d.csv" % k), "w") as f:
+                f.write("id,x coord,y coord,z coord\n0,1.0,0.5,0.5\n1,%.17g,0.5,0.5\n" % (9.0 if k - 1 >= 8 else 4.0))
+        red.reduce_all([], [p], [ser], ELL, X0, 25.0, 94.0, 2.0, os.path.join(self.R, "t.csv"), self.C, par2_exit_x=8.75, par2_dt=0.5)
+        code, rep = self.run_tool()
+        self.assertEqual(code, 0, rep)
+        self.assertIn("RECOMPUTE PASS", rep)
+        self.assertNotIn("PROBLEM", rep)
+        self.assertIn("NOT_RECOMPUTED_ROWS 1 x unif/pos/perplane: family time is not recomputed", rep)
+        self.assertIn(" crossings alpha_TP", rep)  # plane rows still compared
+
+
 class Formulas(unittest.TestCase):
     def test_close(self):
         from recompute43 import formulas as F
