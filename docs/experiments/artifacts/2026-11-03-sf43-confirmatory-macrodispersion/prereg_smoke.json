@@ -1,0 +1,2166 @@
+{
+ "name": "sf43-confirmatory-A-smoke",
+ "variant": "A",
+ "windows": {
+  "main": [
+   25,
+   94
+  ],
+  "h1": [
+   25,
+   59.5
+  ],
+  "h2": [
+   59.5,
+   94
+  ],
+  "far": [
+   94,
+   194
+  ]
+ },
+ "primary_window": "main",
+ "selection": {
+  "code": "consumer",
+  "family": "plane",
+  "weights": "flux",
+  "set": "perplane"
+ },
+ "bases": {
+  "primary": "disp",
+  "secondary": "pos"
+ },
+ "ledger": "ledger.jsonl",
+ "ok_verdicts": [
+  "converged",
+  "fallback"
+ ],
+ "fallback_verdicts": [
+  "fallback"
+ ],
+ "levels": {
+  "fwer": 0.05,
+  "interval": 0.9,
+  "ucl": 0.05
+ },
+ "null_per_sigma2": 7.992e-05,
+ "numerical_fraction": 0.5,
+ "eh": {
+  "p_range": [
+   0.5,
+   2.1
+  ],
+  "p_cap": 2.0,
+  "safety": 1.25,
+  "fallback_factor": 3.0
+ },
+ "bootstrap": {
+  "B_sampling": 3999,
+  "B_budget": 400,
+  "B_ucl": 400,
+  "B_bca": 200,
+  "seed": 20261103
+ },
+ "sampling_method": "bootstrap-t",
+ "family": [
+  "robust:s025",
+  "robust:s1",
+  "robust:s225",
+  "robust:s4",
+  "gate5:s025",
+  "gate5:s1",
+  "gate5:s225",
+  "gate5:s4"
+ ],
+ "report_levels": [
+  0.05,
+  0.00625
+ ],
+ "targets": {
+  "s025": {
+   "alpha_TP": 0.00025,
+   "alpha_TAP": 0.00025
+  },
+  "s1": {
+   "alpha_TP": 0.0006,
+   "alpha_TAP": 0.0006
+  },
+  "s225": {
+   "alpha_TP": 0.0028,
+   "alpha_TAP": 0.0028
+  },
+  "s4": {
+   "alpha_TP": 0.0066,
+   "alpha_TAP": 0.0066
+  }
+ },
+ "first_order": {
+  "s025": {
+   "alpha_TP": 1.998e-05,
+   "alpha_TAP": 1.998e-05
+  },
+  "s1": {
+   "alpha_TP": 7.992e-05,
+   "alpha_TAP": 7.992e-05
+  },
+  "s225": {
+   "alpha_TP": 0.00017982,
+   "alpha_TAP": 0.00017982
+  },
+  "s4": {
+   "alpha_TP": 0.00031968,
+   "alpha_TAP": 0.00031968
+  }
+ },
+ "amplitudes": {
+  "s025": {
+   "sigma2": 0.25,
+   "primary": true,
+   "production": "sm_s025_prod",
+   "components": [
+    "E_h",
+    "E_W",
+    "E_int"
+   ],
+   "ladder": {
+    "arms": [
+     "sm_s025_eh5",
+     "sm_s025_prod",
+     "sm_s025_eh20"
+    ],
+    "resolutions": [
+     5,
+     10,
+     20
+    ],
+    "production_index": 1
+   },
+   "width": {
+    "wide_fine": "sm_s025_w48",
+    "prod_fine": "sm_s025_prod"
+   },
+   "hmax": {
+    "h16": "sm_s025_h16",
+    "h8": "sm_s025_h8"
+   }
+  },
+  "s1": {
+   "sigma2": 1.0,
+   "primary": true,
+   "production": "sm_s1_prod",
+   "components": [
+    "E_h",
+    "E_W",
+    "E_int"
+   ],
+   "ladder": {
+    "arms": [
+     "sm_s1_eh5",
+     "sm_s1_prod",
+     "sm_s1_eh20"
+    ],
+    "resolutions": [
+     5,
+     10,
+     20
+    ],
+    "production_index": 1
+   },
+   "width": {
+    "wide_fine": "sm_s1_w48",
+    "prod_fine": "sm_s1_prod"
+   },
+   "hmax": {
+    "h16": "sm_s1_h16",
+    "h8": "sm_s1_h8"
+   },
+   "distance_arm": "sm_s1_dist"
+  },
+  "s225": {
+   "sigma2": 2.25,
+   "primary": true,
+   "production": "sm_s225_prod",
+   "components": [
+    "E_h",
+    "E_W",
+    "E_WxH",
+    "E_int"
+   ],
+   "ladder": {
+    "arms": [
+     "sm_s225_eh4",
+     "sm_s225_eh8",
+     "sm_s225_prod"
+    ],
+    "resolutions": [
+     4,
+     8,
+     16
+    ],
+    "production_index": 2,
+    "gates": [
+     {
+      "type": "extra_level",
+      "triple": [
+       0,
+       1,
+       2
+      ],
+      "arm": "sm_s225_c12",
+      "resolution": 12
+     }
+    ]
+   },
+   "width": {
+    "wide_fine": "sm_s225_w48_12",
+    "prod_fine": "sm_s225_c12",
+    "wide_coarse": "sm_s225_w48_8",
+    "prod_coarse": "sm_s225_eh8"
+   },
+   "hmax": {
+    "h16": "sm_s225_h16",
+    "h8": "sm_s225_h8"
+   },
+   "distance_arm": "sm_s225_dist"
+  },
+  "s4": {
+   "sigma2": 4.0,
+   "primary": true,
+   "production": "sm_s4_prod",
+   "components": [
+    "E_h",
+    "E_W",
+    "E_WxH",
+    "E_int"
+   ],
+   "ladder": {
+    "arms": [
+     "sm_s4_l4",
+     "sm_s4_l8",
+     "sm_s4_l16",
+     "sm_s4_prod"
+    ],
+    "resolutions": [
+     4,
+     8,
+     16,
+     32
+    ],
+    "production_index": 3,
+    "triples": [
+     [
+      0,
+      1,
+      2
+     ],
+     [
+      1,
+      2,
+      3
+     ]
+    ],
+    "gates": [
+     {
+      "type": "orders_agree",
+      "triples": [
+       [
+        0,
+        1,
+        2
+       ],
+       [
+        1,
+        2,
+        3
+       ]
+      ]
+     }
+    ]
+   },
+   "width": {
+    "wide_fine": "sm_s4_w24_16",
+    "prod_fine": "sm_s4_l16",
+    "wide_coarse": "sm_s4_w24_8",
+    "prod_coarse": "sm_s4_l8"
+   },
+   "hmax": {
+    "h16": "sm_s4_h16",
+    "h8": "sm_s4_h8"
+   },
+   "distance_arm": "sm_s4_dist"
+  },
+  "s004": {
+   "sigma2": 0.04,
+   "control": true
+  }
+ },
+ "arms": [
+  {
+   "id": "sm_s025_prod",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002,
+    439003,
+    439004,
+    439005,
+    439006,
+    439007,
+    439008,
+    439009,
+    439010,
+    439011,
+    439012,
+    439013,
+    439014
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 10,
+   "n_max": 14,
+   "floor": 2,
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "production",
+   "reest": true
+  },
+  {
+   "id": "sm_s025_eh5",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s025_eh20",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s025_w48",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_W",
+   "reest": true
+  },
+  {
+   "id": "sm_s025_g5p",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "gate5_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s1_prod",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "production",
+   "reest": true
+  },
+  {
+   "id": "sm_s1_eh5",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s1_eh20",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s1_w48",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_W",
+   "reest": true
+  },
+  {
+   "id": "sm_s1_g5p",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "gate5_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s1_dist",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "distance"
+  },
+  {
+   "id": "sm_s225_prod",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "production",
+   "reest": true
+  },
+  {
+   "id": "sm_s225_eh4",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s225_eh8",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s225_w48_8",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_W",
+   "reest": true
+  },
+  {
+   "id": "sm_s225_w48_12",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_W",
+   "reest": true
+  },
+  {
+   "id": "sm_s225_c12",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "gate5_consumer"
+  },
+  {
+   "id": "sm_s225_g5p",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "gate5_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s225_dist",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "distance"
+  },
+  {
+   "id": "sm_s4_prod",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "production",
+   "reest": true
+  },
+  {
+   "id": "sm_s4_l4",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s4_l8",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_h"
+  },
+  {
+   "id": "sm_s4_l16",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "gate5_consumer"
+  },
+  {
+   "id": "sm_s4_w24_8",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_W",
+   "reest": true
+  },
+  {
+   "id": "sm_s4_w24_16",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "E_W",
+   "reest": true
+  },
+  {
+   "id": "sm_s4_g5p",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "gate5_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s4_dist",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "distance"
+  },
+  {
+   "id": "sm_pc_s004",
+   "amplitude": "s004",
+   "group": "smoke_s004",
+   "seeds": [
+    439401,
+    439402
+   ],
+   "reserves": [
+    439403,
+    439404,
+    439405
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "positive_control"
+  },
+  {
+   "id": "sm_g7_s025_SFNT",
+   "amplitude": "s025",
+   "group": "smoke_g7_S",
+   "seeds": [
+    439501,
+    439502
+   ],
+   "reserves": [
+    439503,
+    439504,
+    439505
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_SFHL",
+   "amplitude": "s025",
+   "group": "smoke_g7_S",
+   "seeds": [
+    439501,
+    439502
+   ],
+   "reserves": [
+    439503,
+    439504,
+    439505
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_SWNL",
+   "amplitude": "s025",
+   "group": "smoke_g7_S",
+   "seeds": [
+    439501,
+    439502
+   ],
+   "reserves": [
+    439503,
+    439504,
+    439505
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_SWHT",
+   "amplitude": "s025",
+   "group": "smoke_g7_S",
+   "seeds": [
+    439501,
+    439502
+   ],
+   "reserves": [
+    439503,
+    439504,
+    439505
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_RFNL",
+   "amplitude": "s025",
+   "group": "smoke_g7_R",
+   "seeds": [
+    439601,
+    439602
+   ],
+   "reserves": [
+    439603,
+    439604,
+    439605
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_RFHT",
+   "amplitude": "s025",
+   "group": "smoke_g7_R",
+   "seeds": [
+    439601,
+    439602
+   ],
+   "reserves": [
+    439603,
+    439604,
+    439605
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_RWNT",
+   "amplitude": "s025",
+   "group": "smoke_g7_R",
+   "seeds": [
+    439601,
+    439602
+   ],
+   "reserves": [
+    439603,
+    439604,
+    439605
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_g7_s025_RWHL",
+   "amplitude": "s025",
+   "group": "smoke_g7_R",
+   "seeds": [
+    439601,
+    439602
+   ],
+   "reserves": [
+    439603,
+    439604,
+    439605
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "hmax_div": -1,
+   "code": "par2",
+   "role": "g7_par2",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s025_h16",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s025_prod",
+   "hmax_div": 16,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s025_h8",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s025_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s025_prodpol",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002,
+    439003,
+    439004,
+    439005,
+    439006,
+    439007,
+    439008,
+    439009,
+    439010,
+    439011,
+    439012,
+    439013,
+    439014
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 10,
+   "n_max": 14,
+   "floor": 2,
+   "source": "sm_s025_prod",
+   "hmax_div": 8,
+   "code": "pollock",
+   "role": "pollock_production",
+   "reest": true
+  },
+  {
+   "id": "sm_s025_produnif",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002,
+    439003,
+    439004,
+    439005,
+    439006,
+    439007,
+    439008,
+    439009,
+    439010,
+    439011,
+    439012,
+    439013,
+    439014
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 10,
+   "n_max": 14,
+   "floor": 2,
+   "source": "sm_s025_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "basis_control_uniform",
+   "selection": {
+    "weights": "unif"
+   },
+   "reest": true
+  },
+  {
+   "id": "sm_s1_h16",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s1_prod",
+   "hmax_div": 16,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s1_h8",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s1_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s1_prodpol",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s1_prod",
+   "hmax_div": 8,
+   "code": "pollock",
+   "role": "pollock_production",
+   "reest": true
+  },
+  {
+   "id": "sm_s1_produnif",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s1_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "basis_control_uniform",
+   "selection": {
+    "weights": "unif"
+   },
+   "reest": true
+  },
+  {
+   "id": "sm_s225_h16",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s225_prod",
+   "hmax_div": 16,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s225_h8",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s225_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s225_prodpol",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s225_prod",
+   "hmax_div": 8,
+   "code": "pollock",
+   "role": "pollock_production",
+   "reest": true
+  },
+  {
+   "id": "sm_s225_produnif",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s225_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "basis_control_uniform",
+   "selection": {
+    "weights": "unif"
+   },
+   "reest": true
+  },
+  {
+   "id": "sm_s4_h16",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s4_prod",
+   "hmax_div": 16,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s4_h8",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s4_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "h_max_pass"
+  },
+  {
+   "id": "sm_s4_prodpol",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s4_prod",
+   "hmax_div": 8,
+   "code": "pollock",
+   "role": "pollock_production",
+   "reest": true
+  },
+  {
+   "id": "sm_s4_produnif",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s4_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "basis_control_uniform",
+   "selection": {
+    "weights": "unif"
+   },
+   "reest": true
+  },
+  {
+   "id": "sm_s025_g5c",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s025_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "gate5_consumer_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s025_g5pol",
+   "amplitude": "s025",
+   "group": "smoke_s025",
+   "seeds": [
+    439001,
+    439002
+   ],
+   "reserves": [
+    439015,
+    439016,
+    439017
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s025_prod",
+   "hmax_div": 8,
+   "code": "pollock",
+   "role": "gate5_pollock_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s1_g5c",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s1_prod",
+   "hmax_div": 8,
+   "code": "consumer",
+   "role": "gate5_consumer_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s1_g5pol",
+   "amplitude": "s1",
+   "group": "smoke_s1",
+   "seeds": [
+    439101,
+    439102
+   ],
+   "reserves": [
+    439103,
+    439104,
+    439105
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s1_prod",
+   "hmax_div": 8,
+   "code": "pollock",
+   "role": "gate5_pollock_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s225_g5c",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s225_c12",
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "gate5_consumer_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s225_g5pol",
+   "amplitude": "s225",
+   "group": "smoke_s225",
+   "seeds": [
+    439201,
+    439202
+   ],
+   "reserves": [
+    439203,
+    439204,
+    439205
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s225_c12",
+   "hmax_div": -1,
+   "code": "pollock",
+   "role": "gate5_pollock_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s4_g5c",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s4_l16",
+   "hmax_div": -1,
+   "code": "consumer",
+   "role": "gate5_consumer_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  },
+  {
+   "id": "sm_s4_g5pol",
+   "amplitude": "s4",
+   "group": "smoke_s4",
+   "seeds": [
+    439301,
+    439302
+   ],
+   "reserves": [
+    439303,
+    439304,
+    439305
+   ],
+   "n_conf": 2,
+   "n_max": 2,
+   "floor": 2,
+   "source": "sm_s4_l16",
+   "hmax_div": -1,
+   "code": "pollock",
+   "role": "gate5_pollock_twin",
+   "selection": {
+    "weights": "unif"
+   }
+  }
+ ],
+ "note": "smoke: arms of the smoke plan (sm_ prefix); every floor 2 so that every analysis code path runs; arms with one realization exercise the below_floor paths; B reduced; Gate 5 reads the smoke job's own coverage output (analyse_sf43.sh --smoke)",
+ "floors": {
+  "production": 2,
+  "ladder": 2,
+  "width": 2,
+  "hmax": 2,
+  "gate5": 2
+ },
+ "gate5": {
+  "family_m": 8,
+  "fwer": 0.05,
+  "margin_ratio": 1.1,
+  "level": 0.9,
+  "B": 399,
+  "seed": 20261103,
+  "key": "alpha_LP",
+  "ref": "t",
+  "floor": 2,
+  "completeness_min": 0.999,
+  "amplitudes": {
+   "s025": {
+    "consumer": "sm_s025_g5c",
+    "par2": "sm_s025_g5p",
+    "floor": 2
+   },
+   "s1": {
+    "consumer": "sm_s1_g5c",
+    "par2": "sm_s1_g5p",
+    "floor": 2
+   },
+   "s225": {
+    "consumer": "sm_s225_g5c",
+    "par2": "sm_s225_g5p",
+    "floor": 2
+   },
+   "s4": {
+    "consumer": "sm_s4_g5c",
+    "par2": "sm_s4_g5p",
+    "floor": 2,
+    "j3b": true
+   }
+  }
+ },
+ "g7": {
+  "level": 0.9,
+  "log_bootstrap": 2000,
+  "seed": 20261103,
+  "responses": [
+   "alpha_LP",
+   "alpha_TP"
+  ],
+  "twins": {
+   "s025": {
+    "consumer": "sm_s025_g5c",
+    "pollock": "sm_s025_g5pol",
+    "par2": "sm_s025_g5p"
+   },
+   "s1": {
+    "consumer": "sm_s1_g5c",
+    "pollock": "sm_s1_g5pol",
+    "par2": "sm_s1_g5p"
+   },
+   "s225": {
+    "consumer": "sm_s225_g5c",
+    "pollock": "sm_s225_g5pol",
+    "par2": "sm_s225_g5p"
+   },
+   "s4": {
+    "consumer": "sm_s4_g5c",
+    "pollock": "sm_s4_g5pol",
+    "par2": "sm_s4_g5p"
+   }
+  },
+  "factorial": {
+   "s025": [
+    {
+     "g": 1,
+     "i": -1,
+     "d": -1,
+     "r": 1,
+     "arm": "sm_g7_s025_SFNT"
+    },
+    {
+     "g": 1,
+     "i": -1,
+     "d": 1,
+     "r": -1,
+     "arm": "sm_g7_s025_SFHL"
+    },
+    {
+     "g": 1,
+     "i": 1,
+     "d": -1,
+     "r": -1,
+     "arm": "sm_g7_s025_SWNL"
+    },
+    {
+     "g": 1,
+     "i": 1,
+     "d": 1,
+     "r": 1,
+     "arm": "sm_g7_s025_SWHT"
+    },
+    {
+     "g": -1,
+     "i": -1,
+     "d": -1,
+     "r": -1,
+     "arm": "sm_g7_s025_RFNL"
+    },
+    {
+     "g": -1,
+     "i": -1,
+     "d": 1,
+     "r": 1,
+     "arm": "sm_g7_s025_RFHT"
+    },
+    {
+     "g": -1,
+     "i": 1,
+     "d": -1,
+     "r": 1,
+     "arm": "sm_g7_s025_RWNT"
+    },
+    {
+     "g": -1,
+     "i": 1,
+     "d": 1,
+     "r": -1,
+     "arm": "sm_g7_s025_RWHL"
+    }
+   ]
+  }
+ },
+ "pollock": {
+  "level": 0.9,
+  "B": 2000,
+  "seed": 20261103,
+  "responses": [
+   "alpha_LP",
+   "alpha_TP:disp",
+   "alpha_TP",
+   "alpha_TAP:disp",
+   "alpha_TAP"
+  ],
+  "estimands": [
+   "alpha_TP",
+   "alpha_TAP",
+   "alpha_LP",
+   "U_r"
+  ],
+  "contrast": {
+   "s025": {
+    "consumer": "sm_s025_prod",
+    "pollock": "sm_s025_prodpol"
+   },
+   "s1": {
+    "consumer": "sm_s1_prod",
+    "pollock": "sm_s1_prodpol"
+   },
+   "s225": {
+    "consumer": "sm_s225_prod",
+    "pollock": "sm_s225_prodpol"
+   },
+   "s4": {
+    "consumer": "sm_s4_prod",
+    "pollock": "sm_s4_prodpol"
+   }
+  },
+  "decomposition": {
+   "s025": {
+    "consumer": "sm_s025_g5c",
+    "pollock": "sm_s025_g5pol",
+    "par2": "sm_s025_g5p"
+   },
+   "s1": {
+    "consumer": "sm_s1_g5c",
+    "pollock": "sm_s1_g5pol",
+    "par2": "sm_s1_g5p"
+   },
+   "s225": {
+    "consumer": "sm_s225_g5c",
+    "pollock": "sm_s225_g5pol",
+    "par2": "sm_s225_g5p"
+   },
+   "s4": {
+    "consumer": "sm_s4_g5c",
+    "pollock": "sm_s4_g5pol",
+    "par2": "sm_s4_g5p"
+   }
+  }
+ },
+ "secondaries": {
+  "level": 0.9,
+  "seed": 20261103,
+  "B": 1000,
+  "t_scale": 1.0,
+  "time_window": {
+   "sm_s025_prod": {
+    "amplitude": "s025"
+   },
+   "sm_s025_g5p": {
+    "amplitude": "s025"
+   },
+   "sm_s1_prod": {
+    "amplitude": "s1"
+   },
+   "sm_s1_g5p": {
+    "amplitude": "s1"
+   },
+   "sm_s1_dist": {
+    "amplitude": "s1"
+   },
+   "sm_s225_prod": {
+    "amplitude": "s225"
+   },
+   "sm_s225_g5p": {
+    "amplitude": "s225"
+   },
+   "sm_s225_dist": {
+    "amplitude": "s225"
+   },
+   "sm_s4_prod": {
+    "amplitude": "s4"
+   },
+   "sm_s4_g5p": {
+    "amplitude": "s4"
+   },
+   "sm_s4_dist": {
+    "amplitude": "s4"
+   }
+  },
+  "expI": {
+   "expI_s025": {
+    "arm": "sm_s025_prod"
+   },
+   "expI_s1": {
+    "arm": "sm_s1_prod"
+   },
+   "expI_s225": {
+    "arm": "sm_s225_prod"
+   },
+   "expI_s4": {
+    "arm": "sm_s4_prod"
+   }
+  },
+  "par2_transverse": {
+   "s025": {
+    "par2": "sm_s025_g5p",
+    "consumer": "sm_s025_g5c"
+   },
+   "s1": {
+    "par2": "sm_s1_g5p",
+    "consumer": "sm_s1_g5c"
+   },
+   "s225": {
+    "par2": "sm_s225_g5p",
+    "consumer": "sm_s225_g5c"
+   },
+   "s4": {
+    "par2": "sm_s4_g5p",
+    "consumer": "sm_s4_g5c"
+   }
+  },
+  "bdd_fit": [
+   {
+    "name": "bdd_sm_s025_g5p",
+    "arm": "sm_s025_g5p",
+    "amplitude": "s025",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   },
+   {
+    "name": "bdd_sm_s1_g5p",
+    "arm": "sm_s1_g5p",
+    "amplitude": "s1",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   },
+   {
+    "name": "bdd_sm_s1_dist",
+    "arm": "sm_s1_dist",
+    "amplitude": "s1",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   },
+   {
+    "name": "bdd_sm_s225_g5p",
+    "arm": "sm_s225_g5p",
+    "amplitude": "s225",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   },
+   {
+    "name": "bdd_sm_s225_dist",
+    "arm": "sm_s225_dist",
+    "amplitude": "s225",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   },
+   {
+    "name": "bdd_sm_s4_g5p",
+    "arm": "sm_s4_g5p",
+    "amplitude": "s4",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   },
+   {
+    "name": "bdd_sm_s4_dist",
+    "arm": "sm_s4_dist",
+    "amplitude": "s4",
+    "t_key": "curve_t",
+    "alpha_key": "curve_alpha"
+   }
+  ],
+  "note": "Par2 time-window parameters fixed a priori (reduce.U_time = exp(sigma^2 / 6), reduce.par2_exit_x = the outlet plane L / W in box units, regular snapshots every plan par2.snapshots_every steps, about 100 per realization): sf43plan/design.py",
+  "recrossings": {
+   "sm_s025_prod": {
+    "arm": "sm_s025_prod"
+   },
+   "sm_s025_eh5": {
+    "arm": "sm_s025_eh5"
+   },
+   "sm_s025_eh20": {
+    "arm": "sm_s025_eh20"
+   },
+   "sm_s025_w48": {
+    "arm": "sm_s025_w48"
+   },
+   "sm_s1_prod": {
+    "arm": "sm_s1_prod"
+   },
+   "sm_s1_eh5": {
+    "arm": "sm_s1_eh5"
+   },
+   "sm_s1_eh20": {
+    "arm": "sm_s1_eh20"
+   },
+   "sm_s1_w48": {
+    "arm": "sm_s1_w48"
+   },
+   "sm_s1_dist": {
+    "arm": "sm_s1_dist"
+   },
+   "sm_s225_prod": {
+    "arm": "sm_s225_prod"
+   },
+   "sm_s225_eh4": {
+    "arm": "sm_s225_eh4"
+   },
+   "sm_s225_eh8": {
+    "arm": "sm_s225_eh8"
+   },
+   "sm_s225_w48_8": {
+    "arm": "sm_s225_w48_8"
+   },
+   "sm_s225_w48_12": {
+    "arm": "sm_s225_w48_12"
+   },
+   "sm_s225_c12": {
+    "arm": "sm_s225_c12"
+   },
+   "sm_s225_dist": {
+    "arm": "sm_s225_dist"
+   },
+   "sm_s4_prod": {
+    "arm": "sm_s4_prod"
+   },
+   "sm_s4_l4": {
+    "arm": "sm_s4_l4"
+   },
+   "sm_s4_l8": {
+    "arm": "sm_s4_l8"
+   },
+   "sm_s4_l16": {
+    "arm": "sm_s4_l16"
+   },
+   "sm_s4_w24_8": {
+    "arm": "sm_s4_w24_8"
+   },
+   "sm_s4_w24_16": {
+    "arm": "sm_s4_w24_16"
+   },
+   "sm_s4_dist": {
+    "arm": "sm_s4_dist"
+   },
+   "sm_pc_s004": {
+    "arm": "sm_pc_s004"
+   },
+   "sm_s025_h16": {
+    "arm": "sm_s025_h16"
+   },
+   "sm_s025_h8": {
+    "arm": "sm_s025_h8"
+   },
+   "sm_s1_h16": {
+    "arm": "sm_s1_h16"
+   },
+   "sm_s1_h8": {
+    "arm": "sm_s1_h8"
+   },
+   "sm_s225_h16": {
+    "arm": "sm_s225_h16"
+   },
+   "sm_s225_h8": {
+    "arm": "sm_s225_h8"
+   },
+   "sm_s4_h16": {
+    "arm": "sm_s4_h16"
+   },
+   "sm_s4_h8": {
+    "arm": "sm_s4_h8"
+   }
+  }
+ },
+ "gate4_power": {
+  "R": 20,
+  "B_budget": 399,
+  "seed": 20261103,
+  "chunk": 100,
+  "scenarios": [
+   "no_bias",
+   "observed"
+  ],
+  "alternatives": {
+   "s025": {
+    "alpha_TP": 0.0005093,
+    "alpha_TAP": 0.0005093
+   },
+   "s1": {
+    "alpha_TP": 0.007217,
+    "alpha_TAP": 0.007217
+   },
+   "s225": {
+    "alpha_TP": 0.02946,
+    "alpha_TAP": 0.02946
+   },
+   "s4": {
+    "alpha_TP": 0.06538,
+    "alpha_TAP": 0.06537
+   }
+  },
+  "source": "SF-42 R3 displacement-basis pilot means (docs/experiments/2026-10-30-sf42-confirmatory-tooling.md, section 'Estimator noise by basis (R3, no new runs)', table lines 1025-1032, column 'mean disp'); planning alternatives, not claims about alpha_T"
+ },
+ "basis": {
+  "level": 0.9,
+  "B": 2000,
+  "seed": 20261103,
+  "amplitudes": {
+   "s025": {
+    "flux": "sm_s025_prod",
+    "unif": "sm_s025_produnif"
+   },
+   "s1": {
+    "flux": "sm_s1_prod",
+    "unif": "sm_s1_produnif"
+   },
+   "s225": {
+    "flux": "sm_s225_prod",
+    "unif": "sm_s225_produnif"
+   },
+   "s4": {
+    "flux": "sm_s4_prod",
+    "unif": "sm_s4_produnif"
+   }
+  }
+ },
+ "failures": {
+  "max_rate": 0.01,
+  "failure_classes": [
+   "unusable_solve"
+  ],
+  "fallback_verdicts": [
+   "fallback"
+  ],
+  "estimands": [
+   "alpha_TP",
+   "alpha_TAP",
+   "alpha_LP"
+  ],
+  "q_low": 0.05,
+  "q_high": 0.95,
+  "expected": {
+   "unusable_solve_rate": {
+    "s025": "< 0.01",
+    "s1": "< 0.01",
+    "s225": "< 0.01",
+    "s4": "about 0.02 (SF-39: 1.6 %)"
+   },
+   "engine_halt_rate": 0.25,
+   "note": "pre-registered expectation, compared with the observed rates in the report; the engine halts an arm only above halt_rate (a systematic-failure detector); particle-stagnation fractions are reported, never failures"
+  }
+ },
+ "positive_control": {
+  "arm": "sm_pc_s004",
+  "sigma2": 0.04,
+  "width_lambda": 24,
+  "length_lambda": 104,
+  "window": [
+   25,
+   94
+  ],
+  "weights": [
+   "flux",
+   "unif"
+  ],
+  "level": 0.9,
+  "B": 200,
+  "seed": 20261103,
+  "kmax": 12.0,
+  "R_bounds": [
+   0.8,
+   1.25
+  ],
+  "R_weights": "flux",
+  "expectation": "R = (mean over the window planes [25, 94] of the measured FLUX-weighted displacement-basis second moment X22(d)) / (the same mean of the first-order box prediction at sigma^2 = 0.04, W = 24 lambda, L = 104 lambda), with a 90 % seed-bootstrap interval.  EXPECTED: the interval inside [0.8, 1.25] (positive_control_ok); inconclusive if it straddles a bound; failed if entirely outside.  Rationale: the prediction is first order in sigma^2 and the O(sigma^2) nonlinear corrections are about 4 % at 0.04; the discretization (lambda/h = 10) and the Dirichlet inflow/outflow faces of medium (b), which the prediction neglects, are expected to move the window mean by a few per cent at most.  A value outside the bounds indicts the estimand pipeline or the runner, not the physics.  Descriptive; never a gate of the family."
+ }
+}
