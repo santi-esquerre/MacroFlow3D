@@ -270,21 +270,26 @@ class Chain(unittest.TestCase):
         rp = self.kind("replacement")
         self.assertEqual([(r["group"], r["seed"]) for r in rp], [("smoke_s1", REPLACED_SEED)])
         reserve = rp[0]["replaced_by"]
-        # the first arm that fails the seed triggers the replacement; the pending seed is DROPPED from the other arms of the group (not run, not failed)
+        # two arms of the group may run the failing seed concurrently on the two lanes (both record unusable_solve, the engine ONE replacement):
+        # any non-empty subset of the group's arms ran it (the replacement arm is one of them); the seed is DROPPED from the others (not run, not failed)
         bad = {r["arm"] for r in self.kind("seed") if r["seed"] == REPLACED_SEED and r["class"] == "unusable_solve"}
-        self.assertEqual(bad, {rp[0]["arm"]})
+        self.assertIn(rp[0]["arm"], bad)
         arms = self.S["process"]["arms"]
-        for aid in ("sm_s1_prod", "sm_s1_eh20", "sm_s1_g5c", "sm_s1_g5p", "sm_s1_h8"):
-            applied = arms[aid]["replacements_applied"]
+        group = [a["id"] for a in self.plan_gen["smoke"]["arms"] if a["group"] == rp[0]["group"]]
+        self.assertTrue(bad <= set(group), bad)
+        for aid in group:
             if arms[aid]["n_cut"] > 3:
-                self.assertEqual(applied, [{"seed": REPLACED_SEED, "replaced_by": reserve}], aid)
+                self.assertEqual(arms[aid]["replacements_applied"], [{"seed": REPLACED_SEED, "replaced_by": reserve}], aid)
         self.assertEqual(arms["sm_s1_prod"]["N"], SIZES["n"])
-        failed = self.S["failures"]["arms"][rp[0]["arm"]]
-        self.assertEqual(failed["failed_seeds"], [REPLACED_SEED])
-        self.assertEqual(failed["replacements"], [{"failed_seed": REPLACED_SEED, "replacement_seed": reserve}])
-        other = self.S["failures"]["arms"]["sm_s1_prod"]               # the replacement is disclosed for the arms that never ran the seed as well
-        self.assertEqual((other["failed_seeds"], other["replacements"], other["replacements_without_failure"]),
-                         ([], [{"failed_seed": REPLACED_SEED, "replacement_seed": reserve}], [REPLACED_SEED]))
+        fa = self.S["failures"]["arms"]
+        self.assertIn("sm_s1_prod", fa)
+        repl = [{"failed_seed": REPLACED_SEED, "replacement_seed": reserve}]
+        for aid in group:
+            if aid in bad:
+                self.assertEqual((fa[aid]["failed_seeds"], fa[aid]["replacements"]), ([REPLACED_SEED], repl), aid)
+            elif aid in fa:                                                        # the replacement is disclosed for the arms that never ran the seed as well
+                self.assertEqual((fa[aid]["failed_seeds"], fa[aid]["replacements"], fa[aid]["replacements_without_failure"]),
+                                 ([], repl, [REPLACED_SEED]), aid)
 
     def test_unreduced_segment_is_missing_explicitly(self):
         un = self.kind("unreduced")

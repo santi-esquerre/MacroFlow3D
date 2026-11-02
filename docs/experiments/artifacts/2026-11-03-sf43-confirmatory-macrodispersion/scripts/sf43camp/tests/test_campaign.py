@@ -108,6 +108,21 @@ class Failures(unittest.TestCase):
         # the failed unit's tail (104) is re-queued from the first incomplete seed
         self.assertIn(104, st.arms["A1"].done)
 
+    def test_two_arms_of_a_group_failing_the_same_seed_concurrently_get_one_replacement(self):
+        p = mk_plan(tmpdir(self), [arm("A1", n=10), arm("A2", n=10)])
+        s = Sim(p, events={("A1", 103): ["unusable_solve"], ("A2", 103): ["unusable_solve"]})
+        self.assertEqual(s.run(), DONE)
+        st = s.state()
+        ends = [r for r in s.records() if r["kind"] == "unit_end" and r["cls"] == "unusable_solve"]
+        self.assertEqual(sorted(r["arm"] for r in ends), ["A1", "A2"])
+        self.assertEqual(len({r["lane"] for r in ends}), 2)             # one lane each: the failures were concurrent
+        self.assertEqual(len(kinds(s, "replacement")), 1)               # one group-wide replacement, not one per failing arm
+        self.assertEqual(st.groups["g1"].next_reserve, 1)
+        for a in ("A1", "A2"):
+            self.assertEqual(st.arms[a].failed, {103}, a)               # both failures counted
+            self.assertEqual(st.arms[a].planned.count(900), 1, a)       # the reserve is queued once per arm
+            self.assertIn(900, st.arms[a].done, a)
+
     def test_config_error_halts_only_that_arm(self):
         p = mk_plan(tmpdir(self), [arm("A1", n=10), arm("A2", n=10)])
         s = Sim(p, events={("A1", 100): ["config_error"]})
