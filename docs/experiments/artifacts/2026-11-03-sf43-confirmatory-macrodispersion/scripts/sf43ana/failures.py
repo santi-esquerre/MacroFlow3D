@@ -11,7 +11,8 @@ Per arm, from the campaign ledger (JSON lines, one record per segment of a seed'
   column; the mean of the augmented sample, and its one-sided 95 % Student lower (low case) / upper (high case) bound, are reported;
 * sensitivity excluding fallback-accepted solves (ledger ``verdict`` in ``fallback_verdicts``, default ``fallback``; solver_b.json
   verdict): the mean and the 90 % Student interval of every estimand with those seeds removed, against all usable seeds;
-* halted arms (ledger ``class == "halted"`` or ``data["halted"]``) listed: a halted arm stops and goes to the owner.
+* halted arms (ledger ``class == "halted"`` or ``data["halted"]``) listed: a halted arm stops and goes to the owner;
+* ``data["unreduced"]`` ({"arm/segment": seeds}, ledger ``unreduced`` records) listed as ``unreduced_segments``: those seeds are missing.
 
 ``run(prereg, data)`` -- ``prereg["failures"]`` (all optional)::
 
@@ -73,7 +74,7 @@ def impute_worst_case(values, n_failed, q_low=0.05, q_high=0.95):
     return out
 
 
-KEYS = {"max_rate", "failure_classes", "fallback_verdicts", "estimands", "q_low", "q_high", "arms"}
+KEYS = {"max_rate", "failure_classes", "fallback_verdicts", "estimands", "q_low", "q_high", "arms", "expected"}  # expected: pre-registered rates (informational)
 
 
 def analyse(ctx):
@@ -92,7 +93,9 @@ def run(prereg, data):
     halted = sorted(set(data.get("halted", [])) | {r["arm"] for r in ledger if r.get("class") == "halted"})
     out = {"config": {"max_rate": max_rate, "failure_classes": sorted(fclasses), "fallback_verdicts": sorted(fbverd), "estimands": ests,
                       "q_low": ql, "q_high": qh},
-           "arms": {}, "halted": halted, "total": {"attempted": 0, "failed": 0}}
+           "arms": {}, "halted": halted, "total": {"attempted": 0, "failed": 0},
+           "unreduced_segments": dict(data.get("unreduced", {})),
+           "unreduced_note": "completed segments the engine could not reduce (ledger 'unreduced'): their seeds are MISSING, so the arm's prefix ends there"}
     for arm in arms:
         recs = [r for r in ledger if r["arm"] == arm and r.get("class") != "halted"]
         attempted = sorted({int(r["seed"]) for r in recs})

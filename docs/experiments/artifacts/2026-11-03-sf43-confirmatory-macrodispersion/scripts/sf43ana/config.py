@@ -15,8 +15,9 @@ DEFAULTS = {
     "bases": {"primary": "disp", "secondary": "pos"},
     "ledger": "ledger.jsonl",
     # executor naming (sf43camp runner_executor.reduce): reduced/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv; {segment} is the segment
-    # directory name (basename of the ledger's segment path), {lo}, {hi} the window bounds ("%g"), {window} the window key
-    "reduced_pattern": "{arm}/{segment}/{arm}__{segment}__d{lo:g}-{hi:g}.csv",
+    # directory name (basename of the ledger's segment path), {stem} = loader.window_stem(lo, hi) = "d%g-%g" of the window bounds (one rule,
+    # whatever the window's semantic label), {lo}, {hi} the bounds, {window} the label
+    "reduced_pattern": "{arm}/{segment}/{arm}__{segment}__{stem}.csv",
     # solver verdicts that make a realization usable (consumer: solver_b verdict "converged" or the 1e-8 "fallback"; Par2: "converged")
     "ok_verdicts": ["converged", "fallback"],
     "fallback_verdicts": ["fallback"],
@@ -33,10 +34,15 @@ DEFAULTS = {
 }
 
 
-BLOCKS = ("gate5", "g7", "secondaries", "failures", "positive_control")
-TOP_KEYS = set(DEFAULTS) | {"amplitudes", "arms", "family", "targets", "first_order", "report_levels"} | set(BLOCKS)
-ARM_KEYS = {"id", "amplitude", "group", "seeds", "reserves", "n_conf", "floor", "source", "hmax_div", "code", "role", "family", "selection"}
-AMP_KEYS = {"sigma2", "production", "components", "ladder", "width", "hmax", "distance_arm", "primary", "null_value", "floors"}
+BLOCKS = ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock")
+TOP_KEYS = set(DEFAULTS) | {"amplitudes", "arms", "family", "targets", "first_order", "report_levels", "name", "variant", "note"} | set(BLOCKS)
+# n_conf = planned size; n_max = seeds the engine may run (default len(seeds)); reest: the analysis cut follows the engine's blinded
+# re-estimation of the SOURCE arm (``reest`` ledger record: n_new, never below n_conf)
+ARM_KEYS = {"id", "amplitude", "group", "seeds", "reserves", "n_conf", "n_max", "floor", "source", "hmax_div", "code", "role", "family", "selection",
+            "reest"}
+CODES = ("consumer", "par2", "pollock")
+# a control amplitude (the positive control) is referenced by arms only: no Gate 4, no family
+AMP_KEYS = {"sigma2", "production", "components", "ladder", "width", "hmax", "distance_arm", "primary", "null_value", "floors", "control"}
 LADDER_KEYS = {"arms", "resolutions", "production_index", "triples", "gates", "fallback_levels"}
 WIDTH_KEYS = {"wide_fine", "prod_fine", "wide_coarse", "prod_coarse"}
 GATE_KEYS = {"type", "triple", "triples", "arm", "resolution"}
@@ -62,7 +68,8 @@ class Prereg:
     def __init__(self, raw):
         self.raw = raw
         self.arms = {a["id"]: a for a in raw["arms"]}
-        self.amps = sorted(raw["amplitudes"], key=lambda k: float(raw["amplitudes"][k].get("sigma2", k)))
+        self.amps = sorted((k for k, v in raw["amplitudes"].items() if not v.get("control")),
+                           key=lambda k: float(raw["amplitudes"][k].get("sigma2", k)))
 
     def amp(self, key):
         return self.raw["amplitudes"][key]
@@ -96,7 +103,7 @@ def _strict(d, allowed, where):
 
 def _validate_blocks(raw, arms):
     """Strict keys and arm references of the optional analysis blocks."""
-    from . import failures, g7, gate5, positive_control, secondaries  # lazy: scipy-heavy
+    from . import failures, g7, gate5, pollock, positive_control, secondaries  # lazy: scipy-heavy
 
     def arm_ref(a, where):
         _need(a in arms, "%s: unknown arm %r" % (where, a))
@@ -141,6 +148,15 @@ def _validate_blocks(raw, arms):
             arm_ref(it["arm"], "secondaries.bdd_fit")
     if "failures" in raw:
         _strict(raw["failures"], failures.KEYS, "failures")
+    if raw.get("pollock"):
+        _strict(raw["pollock"], pollock.KEYS, "pollock")
+        for blk, keys in (("contrast", ("consumer", "pollock")), ("decomposition", ("consumer", "pollock", "par2"))):
+            for amp, sp in raw["pollock"].get(blk, {}).items():
+                _need(amp in raw["amplitudes"], "pollock.%s: unknown amplitude %r" % (blk, amp))
+                _strict(sp, keys, "pollock.%s.%s" % (blk, amp))
+                for k in keys:
+                    _need(k in sp, "pollock.%s.%s lacks '%s'" % (blk, amp, k))
+                    arm_ref(sp[k], "pollock.%s.%s.%s" % (blk, amp, k))
     if raw.get("positive_control"):
         pc = raw["positive_control"]
         _strict(pc, positive_control.KEYS, "positive_control")
@@ -180,11 +196,14 @@ def validate(raw):
         a.setdefault("hmax_div", -1)
         a.setdefault("selection", {})
         a.setdefault("reserves", [])
+        a.setdefault("reest", False)
         a.setdefault("role", a.get("family", ""))
+        _need(a["code"] in CODES, "arm %s: code must be one of %s" % (a["id"], CODES))
+        a.setdefault("n_max", len(a["seeds"]))
         _need(a["amplitude"] in raw["amplitudes"], "arm %s: unknown amplitude %r" % (a["id"], a["amplitude"]))
         s = list(a["seeds"]) + list(a["reserves"])
         _need(len(set(s)) == len(s), "arm %s: seeds/reserves are not unique" % a["id"])
-        _need(2 <= a["floor"] <= a["n_conf"] <= len(a["seeds"]), "arm %s: need 2 <= floor <= n_conf <= len(seeds)" % a["id"])
+        _need(2 <= a["floor"] <= a["n_conf"] <= a["n_max"] <= len(a["seeds"]), "arm %s: need 2 <= floor <= n_conf <= n_max <= len(seeds)" % a["id"])
     W = raw["windows"]
     _need(raw["primary_window"] in W, "primary_window not among windows")
     _need(raw["sampling_method"] in ("bootstrap-t", "student"), "sampling_method must be 'bootstrap-t' or 'student'")
@@ -199,6 +218,8 @@ def validate(raw):
         return arms[arm]
 
     for amp, c in raw["amplitudes"].items():
+        if c.get("control"):
+            continue
         prod = ref(c.get("production"), amp, "production")
         comps = c.get("components", [])
         _need(set(comps) <= set(COMPONENTS) and len(set(comps)) == len(comps), "amplitude %s: components must be a subset of %s" % (amp, COMPONENTS))

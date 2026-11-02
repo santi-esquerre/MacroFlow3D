@@ -13,6 +13,7 @@ python3 -m sf43ana run --prereg P.json --campaign C --reduced R [--gate5 auto|no
 python3 -m sf43ana check-finite --summary O/summary.json     # smoke test: structure and COUNTS only, STRUCTURE_OK | STRUCTURE_FAIL <reasons>
 ```
 
+`--coverage-summary PATH|none` overrides `gate5.coverage_summary` (the smoke run reads its own coverage output; `none`: Gate 5 descriptive).
 `--gate5`: `auto` (default) computes Gate 5 from the pre-registration's `gate5` block (no block: no p-values); `none` supplies no p-value; a
 path supplies `{"p": {"<amplitude>": p}}`. A hypothesis without a p-value enters the Holm family with `p = 1` (untestable).
 `check-finite` prints per section the numbers of finite / non-finite / other leaves and `STRUCTURE_OK` or `STRUCTURE_FAIL`; it never prints an
@@ -24,12 +25,18 @@ production mean).
 
 Inputs are exactly what the campaign engine (`sf43camp`) writes (`loader.py` docstring is the reference):
 
-* **Ledger** `<campaign>/ledger.jsonl`: `unit_end` (`arm`, `segment` = `segments/<arm>/u<unit>_s<seed0>`, `segment_seed0`, `completed`,
-  `verdicts` {seed: solver verdict}, `cls`, `failed_seed`), `replacement` (`group`, `seed`, `replacement`), `arm_halt`. A torn last line is
-  ignored. Per (arm, seed) the latest `unit_end` listing the seed counts. A completed seed of a `recovered` unit has no logged verdict: usable,
-  counted in `process.loader.verdict_unknown`.
-* **Reduced tables** `<reduced>/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv` (executor naming; `reduced_pattern`). Consumer rows carry
-  their `seed`; Par2 rows have `seed = nan` and the realization index `r`: the seed is `segment_seed0 + r` (per-segment seed map from the ledger).
+* **Ledger** `<campaign>/ledger.jsonl` (the engine's records, `sf43camp/lanes.py`): per solve a `seed` record (`arm`, `segment` = segment
+  directory name, `seed`, `seed0` = first seed of the unit, `verdict`, `class` ok | unusable_solve, `iterations`, `rel`, `max_div`; the LATEST
+  record of (arm, seed) counts), `replacement` (`group`, `seed`, `replaced_by`), `arm_halt`, `reduced` / `unreduced` (`arm`, `segment`, `seeds`: a
+  segment listed `unreduced` and not reduced afterwards has its seeds MISSING, reported explicitly: the arm's prefix ends there with the reason
+  `unreduced segment ...`, and `process.loader.unreduced` / `failures.unreduced_segments` list them) and `reest` (`arm`, `n_new`). A torn last
+  line is ignored. A completed seed of a `recovered` unit has its verdict in its `seed` record as well; a `None` verdict is counted in
+  `process.loader.verdict_unknown`. Verdict vocabulary: `ok_verdicts` [converged, fallback]; the fallback sensitivity uses `fallback`.
+* **Reduced tables** `<reduced>/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv` (executor naming). THE window rule: the file stem is `d%g-%g` of the
+  window bounds (`loader.window_stem`), whatever the semantic label of the window in the pre-registration (`main`, `h1`, `h2`, `far`);
+  `reduced_pattern` has the fields `{arm} {segment} {stem} {window} {lo} {hi}`. Rows: `code` consumer | par2 | pollock (the Pollock-bridge plane
+  moments of the consumer's realizations, same seed and `hmax_div` label, always the production label for the three-pass arms). Consumer rows
+  carry their `seed`; Par2 rows have `seed = nan` and the realization index `r`: the seed is `seed0 + r` (`seed0` from the `seed` records).
   Planes tables `<table minus .csv>.planes.csv` (positive control).
 
 `loader.load_all` returns `({arm id: ArmData}, process info, Ledger)` for EVERY pre-registered arm (both codes); `loader.build_data` gives the
@@ -45,7 +52,10 @@ columns: <est> = position basis, <est>:<basis> any other (alpha_TP:disp), est in
          frac_recross frac_backflow alpha_LP:nobackflow (H17, only if the table carries them)
 ```
 
-**Analysis set** of an arm = the longest COMPLETE prefix of its pre-registered seed order after the group-wide replacements, cut at `n_conf`;
+**Analysis set** of an arm = the longest COMPLETE prefix of its pre-registered seed order after the group-wide replacements, cut at the arm's
+PLANNED `n_conf`, or at `n_new` of the engine's blinded re-estimation (ledger `reest`, never below `n_conf`, never beyond the seeds listed) for an
+entry with `reest: true` whose engine arm has such a record (the production arm and its Pollock partner; the Gate 5 twins, the `h_max` passes and
+the ladders keep their planned size);
 the first incomplete position ends it. Row selection: `selection` (code, family, weights, set), the arm's `code` (Par2: weights `unif`), the arm's
 own `selection` override, `hmax_div`. **Production arm and `h_max` passes** (engine contract): the production arm of an amplitude is ONE engine
 arm; its first 30 seeds run three passes (rows with `hmax_div` 8 / 16 / 32). In the pre-registration this is two entries sharing
@@ -64,9 +74,10 @@ gate5 200}. Top-level keys: the defaults, `amplitudes`, `arms`, `family`, `targe
 `g7`, `secondaries`, `failures`, `positive_control`.
 
 ```text
-arms[]        id, amplitude, group, seeds (confirmatory order), reserves, n_conf, floor (2 <= floor <= n_conf), source (default id), hmax_div (-1),
-              code (consumer|par2), role, family, selection {code,family,weights,set}
-amplitudes.<a>  sigma2, production, components (subset of E_h E_W E_WxH E_int; K = their number), primary (false: out of the family), null_value,
+arms[]        id, amplitude, group, seeds (confirmatory order: the first n_max seeds of the group's block), reserves, n_conf (planned), n_max
+              (default len(seeds)), floor (2 <= floor <= n_conf <= n_max <= len(seeds)), source (default id), hmax_div (-1),
+              code (consumer|par2|pollock), reest (false), role, family, selection {code,family,weights,set}
+amplitudes.<a>  sigma2, control (true: a control amplitude such as the positive control's 0.04: arms may refer to it, no Gate 4, not in the family), production, components (subset of E_h E_W E_WxH E_int; K = their number), primary (false: out of the family), null_value,
               floors {production,ladder,width,hmax,gate5} (amplitude override), distance_arm,
               ladder {arms: coarse->fine, resolutions, production_index, triples, fallback_levels, gates},
               width {wide_fine, prod_fine[, wide_coarse, prod_coarse]}, hmax {h16, h8}
@@ -114,13 +125,36 @@ removed); `d_moments` of `D_r` at the margins, and `pilot` moments if pilot arms
 ### `positive_control` (H9; `positive_control.py`)
 
 ```json
-"positive_control": {"arm": "pc004", "sigma2": 0.04, "width_lambda": 24, "length_lambda": 104, "window": [25, 94],
-                     "weights": ["flux","unif"], "level": 0.90, "B": 2000, "seed": 20261103, "kmax": 12.0}
+"positive_control": {"arm": "pc_s004", "sigma2": 0.04, "width_lambda": 24, "length_lambda": 104, "window": [25, 94],
+                     "weights": ["flux","unif"], "level": 0.90, "B": 2000, "seed": 20261103, "kmax": 12.0,
+                     "R_bounds": [0.8, 1.25], "R_weights": "flux", "expectation": "..."}
 ```
 
 Compares the per-plane ensemble displacement variance profile of the `sigma^2 = 0.04` arm (planes tables, displacement basis; second moment and
 centred) with the first-order box prediction `X22(d)` (port of `firstorder_box.py`, times `sigma^2`): ratios per plane with seed-bootstrap
 intervals, the window slope against the box value (difference and ratio with intervals). Descriptive.
+
+**Pre-registered statistic `R`** (block `R` of the output): the mean over the window planes of the measured FLUX-weighted displacement-basis second
+moment divided by the same mean of the box prediction, with a 90 % seed-bootstrap interval. `positive_control_ok` = the interval lies within
+`R_bounds` [0.8, 1.25]; `status` `ok` | `inconclusive` (the interval straddles a bound) | `failed` (entirely outside). EXPECTATION (pre-registered,
+also in the `expectation` string of the pre-registration): `R` within [0.8, 1.25]. Rationale: the prediction is first order in `sigma^2`; the
+O(`sigma^2`) nonlinear corrections are about 4 % at 0.04; the discretization (lambda/h = 10) and the Dirichlet inflow / outflow faces of medium (b),
+which the prediction neglects, are expected to move the window mean by a few per cent at most. A value outside the bounds indicts the estimand pipeline
+or the runner, not the physics; the control is descriptive and never gates the family.
+
+### `pollock` (acceptance B, item 8; `pollock.py`)
+
+```json
+"pollock": {"level": 0.90, "B": 2000, "seed": 20261103,
+            "contrast": {"s1": {"consumer": "s1_prod", "pollock": "s1_prodpol"}},
+            "decomposition": {"s1": {"consumer": "s1_g5c", "pollock": "s1_g5pol", "par2": "s1_g5p"}}}
+```
+
+`contrast`: for every amplitude, over the production analysis set (flux weights), every plane estimand (`alpha_TP`, `alpha_TAP`, `alpha_LP`, `U_r`) in both
+bases: the paired difference consumer - Pollock (mean, 90 % Student and bootstrap-t intervals) and the ratio of means (paired seed-bootstrap
+percentile interval). `decomposition`: on the Gate 5 pairs (uniform weights) the consumer/Pollock, Pollock/Par2 and consumer/Par2 log-ratio
+contrasts (`g7.twins`). Reported, outside the error budget and the Holm family. The Pollock entries are arms with `code: pollock`, `source` = the engine
+arm, the production label `hmax_div` 8 (the multi-pass realizations carry identical Pollock rows under each label).
 
 ### `g7`, `secondaries`, `failures`
 
@@ -135,8 +169,7 @@ intervals, the window slope against the box value (difference and ratio with int
 ```
 
 `failures` runs with its defaults when absent. A failure inside a descriptive block is recorded as `{"error": ...}` (stderr `BLOCK_ERROR`), never
-fatal; Gate 5 errors propagate. Inputs not written by `sf42red` today and what they need: **G7 Pollock twin** (an arm whose tables are the
-consumer's Pollock-bridge plane outputs: no reduced rows exist, the twin is reported `unavailable`), **`bdd_fit`** (columns `curve_t`,
+fatal; Gate 5 errors propagate. Inputs not written by `sf42red` today and what they need: (the G7 Pollock twin is an arm with `code: pollock`, whose rows `sf42red reduce --pollock` writes), **`bdd_fit`** (columns `curve_t`,
 `curve_alpha` of snapshot-time curves, `unavailable` without), **`recrossings`** (H17: columns `frac_recross`, `frac_backflow` and
 `alpha_LP:nobackflow` in the reduced table; the reducer does not write them, so the block reports `input absent` and names the columns).
 
@@ -155,9 +188,15 @@ consumer's Pollock-bridge plane outputs: no reduced rows exist, the twin is repo
   `unresolved (bounded)` (`U(0.05) + sum_k B_k(0.05/K)`) > `unresolved`; descriptive, outside the family.
 * Bootstrap size: a tail `t` is resolvable by `B` resamples only if `t (B + 1) >= 1`; `process.bootstrap_resolution` reports the check.
 
+## Gate 5 reporting (acceptance D)
+
+Every amplitude of `gate5.amplitudes.<a>` carries `reporting`: `confirmatory_outcome` = the Holm TOST decision of the family hypothesis `gate5:<a>`
+(`rejected`, `p_tost`, `holm_level`) -- THE confirmatory outcome -- and `descriptive_verdict` = the G5.5 verdict (agree | disagree | inconclusive from the
+90 % Fieller interval of the ratio), which is descriptive and never decides the hypothesis.
+
 ## `summary.json`
 
-Sections `estimands`, `gate4`, `family`, `budgets`, `precision`, `process`, and `gate5`, `g7`, `secondaries`, `failures`, `positive_control` if
+Sections `estimands`, `gate4`, `family`, `budgets`, `precision`, `process`, and `gate5`, `g7`, `secondaries`, `failures`, `positive_control`, `pollock` if
 configured; non-finite numbers are the strings `"nan"`, `"inf"`, `"-inf"`. Figures (H18) in `figures/` if matplotlib imports, else
 `FIGURES_SKIPPED` on stderr; never fatal.
 
@@ -166,6 +205,6 @@ configured; non-finite numbers are the strings `"nan"`, `"inf"`, `"-inf"`. Figur
 `test_eh` (known answers, per-triple range, fallback levels, the gate on an exact power law and a pre-asymptotic law, `>= LadderBound` on random
 ladders with active gates), `test_gate4`, `test_holm`, `test_loader` (prefix, replacements, executor naming, Par2 seed map, torn ledger, data
 contract), `test_gate5` (Hall, Fieller inversion, selection incl. J3B, prefix pairs, floors, Fieller power vs simulation, exclusion sensitivity),
-`test_g7`, `test_secondaries` (incl. recrossings hook), `test_failures`, `test_positive_control`, `test_nullsim` (family-wise rate <= 0.05 under
+`test_pollock`, `test_alignment` (Gate 5 reporting labels, coverage override, unreduced block), `test_g7`, `test_secondaries` (incl. recrossings hook), `test_failures`, `test_positive_control`, `test_nullsim` (family-wise rate <= 0.05 under
 normal/skewed data with BOTH the Student and the bootstrap-t sampling limit), `test_e2e` (synthetic campaign: Gate 5 from the campaign, floors,
 strict validation, `check-finite`, figures, the two-entries-share-the-production-arm contract).

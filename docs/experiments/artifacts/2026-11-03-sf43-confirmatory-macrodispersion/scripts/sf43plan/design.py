@@ -104,7 +104,7 @@ ROWS = [
     row("s225_dist", "s225", "distance", "c", 24, 16, 208, 100, "g_d_s225", 3, ("3328x384_L208", "2.25"), mem="near", flags=("dist",)),
     # ---- sigma^2 4 (prod lambda/h 32, width 12; ladder 4/8/16/32; width 2x2 of 12/24 at 8/16)
     row("s4_prod", "s4", "production", "c", 12, 32, 104, 200, "g_s4", 1, ("3328x384", "4"), mem="near", nmax=400, flags=P),
-    row("s4_l4", "s4", "E_h", "c", 12, 4, 104, 100, "g_s4", 1, ("416x48", "4")),
+    row("s4_l4", "s4", "E_h", "c", 12, 4, 104, 150, "g_s4", 1, ("416x48", "4")),                      # H9: ladders 150 at 2.25 and 4
     row("s4_l8", "s4", "E_h", "c", 12, 8, 104, 150, "g_s4", 1, ("832x96", "4")),                      # also the (12, 8) width cell
     row("s4_l16", "s4", "gate5_consumer", "c", 12, 16, 104, 250, "g_s4", 1, ("1664x192", "4"), flags=("g5c",)),  # E_h rung, (12, 16) cell, Gate 5 twin
     row("s4_w24_8", "s4", "E_W", "c", 24, 8, 104, 150, "g_s4", 1, ("832x192", "4"), nmax=300, flags=E),
@@ -130,7 +130,19 @@ TARGETS = {"s025": 2.5e-4, "s1": 6e-4, "s225": 2.8e-3, "s4": 6.6e-3}
 # first-order alpha_T of the window [25, 94] in an unbounded medium: 7.992e-5 sigma^2 (firstorder_window.py); H3 null c = this value
 NULL_PER_SIGMA2 = 7.992e-5
 BLINDED = {"fraction": 0.25, "max_factor": 2.0, "level": 0.90}   # G5.2 / H9
-FAILURE = {"halt_rate": 0.05, "min_for_rate": 20}                # engine arm halt; expected rates pre-registered in the note
+# Engine arm halt: a SYSTEMATIC-failure detector, not a quality gate.  The expected failure rates are pre-registered below; at sigma^2 = 4 the
+# unusable-solve rate was about 1.6 % in SF-39, so with halt_rate 0.05 and min_for_rate 20 a primary arm could halt by chance (two failures
+# in the first 20 attempts); 0.25 halts only a campaign that is broken (config error, wrong binary, exhausted memory), never a rare event.
+FAILURE = {"halt_rate": 0.25, "min_for_rate": 20}
+# Pre-registered expected failure rates per amplitude (unusable solves / attempted); reported in the analysis next to the observed ones
+# (`failures` block), judged against failures.max_rate (1 %, worst-case imputation above it).  Particle stagnation (a particle that does not
+# reach a plane) is NOT a failure: its fractions are reported, never imputed.
+EXPECTED_FAILURE_RATE = OrderedDict([("s025", "< 0.01"), ("s1", "< 0.01"), ("s225", "< 0.01"), ("s4", "about 0.02 (SF-39: 1.6 %)")])
+# Par2 time-window parameters (family `time`), fixed a priori:  U_time = exp(sigma^2 / 6) (first-order effective conductivity K_eff of the
+# lognormal field with the flux normalized to q = 1; the consumer's mean velocity agrees to 0.7 %), par2_exit_x = the OUTLET plane
+# (L / W in box units = the consumer's outlet face: the first exit of a particle), snapshots every `snapshots_every` steps (about 100
+# snapshots per realization, a multiple of 1000 = the plane-crossing sample_every).
+PAR2_U_TIME = "exp(sigma^2 / 6)"
 RESERVE_FRAC = {"default": 0.05, "s4": 0.10}                     # H13
 RETAIN_FIRST, REVIEW_POSITIONS = 5, (0.4, 0.7, 1.0)              # retained seeds per consumer arm: first 5 + 3 for the human review
 
@@ -152,4 +164,6 @@ SMOKE = {
     "budget_factor": 2.6, "budget_min": 3,
     "campaign_suffix": "_smoke", "det_consumer": ("s4", 416, 48, 4, 12), "det_par2": ("s025", 1040, 240, 10, 24),
 }
-COVERAGE_ARGS = ["--workers", "32"]
+# the background coverage run (sf43cov/run_cov.sh): profile sf43 (every block of H15), at most 32 workers on the shared host, nice 19 (the
+# engine adds `nice -n`), output `{campaign_dir}/coverage`; run_cov.sh ends with `sf43cov qualify`
+COVERAGE_ARGS = ["--workers", "32", "--profile", "sf43"]

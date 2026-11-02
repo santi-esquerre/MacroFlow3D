@@ -2,19 +2,22 @@
 
 Inputs are exactly what the campaign engine (``sf43camp``) writes:
 
-* the LEDGER ``<campaign>/ledger.jsonl`` (JSON lines; a torn last line is ignored).  Used records: ``unit_end`` (``arm``, ``segment``
-  = path ``segments/<arm>/u<unit>_s<seed0>``, ``segment_seed0``, ``completed`` = seeds with complete outputs, ``verdicts`` = {seed:
-  solver verdict}, ``cls``, ``failed_seed``), ``replacement`` (``group``, ``seed``, ``replacement``, ``arm``) and ``arm_halt``
-  (``arm``, ``reason``).  Per (arm, seed) the LATEST ``unit_end`` that lists the seed counts: completed seeds are ``class ok`` (verdict
-  from ``verdicts``; ``None`` for a ``recovered`` unit, whose verdicts were not logged: usable, counted in ``verdict_unknown``); the
-  ``failed_seed`` of a ``unusable_solve`` unit is a failed seed.
-* the REDUCED TABLES written by ``sf43camp.runner_executor.reduce``: ``<reduced>/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv``
-  (``reduced_pattern``: ``{arm}``, ``{segment}`` = ``<segdir>``, ``{window}``, ``{lo}``, ``{hi}``).  A consumer row carries its
-  ``seed``; a Par2 row has ``seed = nan`` and the realization index ``r`` of its segment, its seed is ``segment_seed0 + r`` (the
-  executor's seed map: realization index r <-> seed seed0 + r in both codes; seed0 from the ledger).
+* the LEDGER ``<campaign>/ledger.jsonl`` (JSON lines; a torn last line is ignored).  Used records (``sf43camp/lanes.py``):
+  ``seed`` (one per solve: ``arm``, ``segment`` = segment directory name, ``seed``, ``seed0`` = first seed of the unit, ``verdict``, ``class``
+  ``ok`` | ``unusable_solve``, ``iterations``, ``rel``, ``max_div``), ``replacement`` (``group``, ``seed``, ``replaced_by``),
+  ``arm_halt`` (``arm``, ``reason``), ``reduced`` / ``unreduced`` (``arm``, ``segment``, ``seeds``: a segment listed ``unreduced`` and not
+  reduced afterwards has its seeds MISSING, explicitly) and ``reest`` (``arm``, ``n_new``: the blinded re-estimation).  Per (arm, seed) the
+  LATEST ``seed`` record counts.
+* the REDUCED TABLES written by ``sf43camp.runner_executor.reduce``: ``<reduced>/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv``.
+  THE window rule: the file stem is ``d%g-%g`` of the window bounds (``window_stem``), whatever the semantic label of the window in the
+  pre-registration (``main``, ``h1``, ``h2``, ``far``); ``reduced_pattern`` has ``{arm}``, ``{segment}`` = ``<segdir>``, ``{stem}``,
+  ``{window}``, ``{lo}``, ``{hi}``.  A consumer row carries its ``seed``; a Par2 row has ``seed = nan`` and the realization index ``r`` of its
+  segment, its seed is ``seed0 + r`` (seed0 from the ``seed`` records).  Rows are keyed by ``(code, family, weights, basis, set, hmax_div,
+  seed)`` with ``code`` in ``consumer``, ``par2``, ``pollock``.
 
 Analysis set of an arm = the longest COMPLETE prefix of its pre-registered seed order, after the group-wide replacements of the ledger
-(a replaced seed's position is taken by its reserve; chains are followed), cut at ``n_conf``.  A position is complete when the
+(a replaced seed's position is taken by its reserve; chains are followed), cut at the arm's ``n_conf`` (planned) or, for an entry with
+``reest: true`` whose engine arm has a ``reest`` record, at ``n_new`` (never below ``n_conf``, never beyond the seeds listed).  A position is complete when the
 ledger's latest record for (source arm, seed) is completed with a usable verdict (``ok_verdicts``) AND the reduced table of that
 record's segment has the selected rows (both bases) with finite ``alpha_TP``, ``alpha_TAP``, ``alpha_LP``, ``U_r`` in the primary
 window.  The first incomplete position ends the prefix (nothing later is used, whatever its state): no outcome-dependent selection.
@@ -57,16 +60,23 @@ class Ledger:
     """Parsed campaign ledger (see the module docstring)."""
 
     def __init__(self):
-        self.seeds = {}      # (arm, seed) -> normalized record
+        self.seeds = {}      # (arm, seed) -> normalized latest ``seed`` record
         self.repl = {}       # group -> {seed: replacement}
         self.halted = {}     # arm -> reason
         self.seg_seed0 = {}  # (arm, segdir) -> seed0
+        self.unreduced = {}  # (arm, segdir) -> [seeds] listed ``unreduced`` and not reduced afterwards
+        self.reest = {}      # arm -> n_new of the (last) blinded re-estimation record
         self.n = 0
         self.verdict_unknown = 0
 
 
 def segdir(path):
     return os.path.basename(os.path.normpath(path))
+
+
+def window_stem(lo, hi):
+    """The executor's file stem of a window (``sf43camp.runner_executor.reduce``: ``d%g-%g``): THE rule, whatever the window's label."""
+    return "d%g-%g" % (lo, hi)
 
 
 def read_ledger(path):
@@ -87,25 +97,24 @@ def read_ledger(path):
         kind = r.get("kind")
         if kind == "replacement":
             g = L.repl.setdefault(r["group"], {})
-            s, t = int(r["seed"]), int(r["replacement"])
+            s, t = int(r["seed"]), int(r["replaced_by"])
             if s in g and g[s] != t:
                 raise LoadError("%s:%d: seed %s replaced twice in group %s" % (path, ln + 1, s, r["group"]))
             g[s] = t
         elif kind == "arm_halt":
             L.halted[r["arm"]] = r.get("reason", "")
-        elif kind == "unit_end":
+        elif kind == "seed":
             seg = segdir(r["segment"])
-            L.seg_seed0[(r["arm"], seg)] = int(r["segment_seed0"])
-            verd = r.get("verdicts") or {}
-            for s in r.get("completed", []):
-                v = verd.get(str(s))
-                L.seeds[(r["arm"], int(s))] = {"arm": r["arm"], "segment": seg, "segment_rel": r["segment"], "seed": int(s), "verdict": v,
-                                               "class": "ok", "unit_class": r.get("cls"), "seed0": int(r["segment_seed0"])}
-            if r.get("cls") == "unusable_solve" and r.get("failed_seed") is not None:
-                s = int(r["failed_seed"])
-                L.seeds[(r["arm"], s)] = {"arm": r["arm"], "segment": seg, "segment_rel": r["segment"], "seed": s,
-                                          "verdict": verd.get(str(s)), "class": "unusable_solve", "unit_class": r.get("cls"),
-                                          "seed0": int(r["segment_seed0"])}
+            L.seg_seed0[(r["arm"], seg)] = int(r["seed0"])
+            L.seeds[(r["arm"], int(r["seed"]))] = {
+                "arm": r["arm"], "segment": seg, "seed": int(r["seed"]), "verdict": r.get("verdict"), "class": r.get("class"),
+                "iterations": r.get("iterations"), "rel": r.get("rel"), "max_div": r.get("max_div"), "seed0": int(r["seed0"])}
+        elif kind == "unreduced":
+            L.unreduced[(r["arm"], segdir(r["segment"]))] = [int(x) for x in r.get("seeds", [])]
+        elif kind == "reduced":
+            L.unreduced.pop((r["arm"], segdir(r["segment"])), None)  # reduced in a later session
+        elif kind == "reest":
+            L.reest[r["arm"]] = int(r["n_new"])
     L.verdict_unknown = sum(1 for r in L.seeds.values() if r["class"] == "ok" and r["verdict"] is None)
     return L
 
@@ -147,7 +156,8 @@ class TableCache:
 
     def path(self, arm, segment, window):
         lo, hi = self.p["windows"][window]
-        return os.path.join(self.dir, self.p["reduced_pattern"].format(arm=arm, segment=segment, window=window, lo=lo, hi=hi))
+        return os.path.join(self.dir, self.p["reduced_pattern"].format(arm=arm, segment=segment, window=window, lo=lo, hi=hi,
+                                                                       stem=window_stem(lo, hi)))
 
     def table(self, arm, segment, window):
         p = self.path(arm, segment, window)
@@ -186,6 +196,7 @@ class ArmData:
         self.id, self.cfg = cfg["id"], cfg
         self.amplitude, self.group = cfg["amplitude"], cfg["group"]
         self.n_conf, self.floor = cfg["n_conf"], cfg["floor"]
+        self.n_cut = cfg["n_conf"]  # analysis cut: n_conf (planned), or n_new of the blinded re-estimation (load_arm)
         self.seeds = np.zeros(0, dtype=int)
         self.verdicts, self.segments = [], []
         self.values = {}  # (window, basis, column) -> array (N,)
@@ -255,10 +266,14 @@ def load_arm(cfg, prereg, ledger, tables):
     order, applied = effective_order(cfg["seeds"], ledger.repl.get(cfg["group"], {}))
     ok = set(prereg["ok_verdicts"])
     sel = selection_of(prereg, cfg)
-    info = {"n_conf": a.n_conf, "floor": a.floor, "replacements_applied": [{"seed": s, "replaced_by": t} for s, t in applied],
-            "stopped_at": None, "missing_tables": [], "selection": sel}
+    n_new = ledger.reest.get(cfg["source"]) if cfg.get("reest") else None
+    if n_new is not None:
+        a.n_cut = min(max(n_new, a.n_conf), len(order))
+    info = {"n_conf": a.n_conf, "n_cut": a.n_cut, "reest_n_new": n_new, "floor": a.floor,
+            "replacements_applied": [{"seed": s, "replaced_by": t} for s, t in applied], "stopped_at": None, "missing_tables": [],
+            "selection": sel}
     seg_of, verd, n = {}, [], 0
-    for pos in range(a.n_conf):
+    for pos in range(a.n_cut):
         s = order[pos]
         rec = ledger.seeds.get((cfg["source"], s))
         why = None
@@ -266,6 +281,8 @@ def load_arm(cfg, prereg, ledger, tables):
             why = "no ledger record"
         elif rec["class"] != "ok":
             why = "class %r (verdict %r)" % (rec["class"], rec["verdict"])
+        elif (cfg["source"], rec["segment"]) in ledger.unreduced:
+            why = "unreduced segment %s (ledger 'unreduced': completed, never reduced)" % rec["segment"]
         elif rec["verdict"] is not None and rec["verdict"] not in ok:
             why = "verdict %r" % (rec["verdict"],)
         else:
@@ -301,7 +318,7 @@ def load_arm(cfg, prereg, ledger, tables):
     a.extra = _extra_columns(cfg, prereg, sel, seg_of, a.seeds, tables)
     info["N"] = n
     info["status"] = "ok" if n >= a.floor else "below_floor"
-    info["complete_prefix_equals_n_conf"] = n == a.n_conf
+    info["complete_prefix_equals_n_cut"] = n == a.n_cut
     a.info = info
     return a
 
@@ -312,7 +329,8 @@ def load_all(prereg, campaign_dir, reduced_dir):
     tables = TableCache(reduced_dir, prereg, ledger)
     arms = {aid: load_arm(cfg, prereg, ledger, tables) for aid, cfg in prereg.arms.items()}
     proc = {"ledger_records": ledger.n, "replacement_groups": {g: len(m) for g, m in ledger.repl.items()},
-            "halted_arms": dict(ledger.halted), "verdict_unknown": ledger.verdict_unknown}
+            "halted_arms": dict(ledger.halted), "verdict_unknown": ledger.verdict_unknown,
+            "unreduced": {"%s/%s" % k: v for k, v in sorted(ledger.unreduced.items())}, "reest_n_new": dict(ledger.reest)}
     return arms, proc, ledger
 
 
@@ -347,4 +365,5 @@ def build_data(prereg, arms, ledger, coverage_summary=None):
     for aid, cfg in prereg.arms.items():
         sources.setdefault(cfg["source"], []).append(aid)
     return {"arms": {aid: a.as_data(prereg) for aid, a in arms.items()}, "ledger": recs, "halted": sorted(ledger.halted),
-            "sources": sources, "coverage_summary": coverage_summary}
+            "sources": sources, "coverage_summary": coverage_summary,
+            "unreduced": {"%s/%s" % k: v for k, v in sorted(ledger.unreduced.items())}}

@@ -40,22 +40,35 @@ def read(path, mode="r"):
         return f.read()
 
 
-def generate(out, binaries="placeholder", campaign_dir="sf43_campaign"):
+def generate(out, binaries="placeholder", campaign_dir="sf43_campaign", coverage=None):
+    """``coverage``: (summary path, qualification path); None: a smoke-only plan."""
     old = sys.stderr, sys.stdout
+    cov = ["--coverage-summary", coverage[0], "--coverage-qualification", coverage[1]] if coverage else ["--smoke-only"]
     with open(os.devnull, "w") as dn:
         sys.stderr = sys.stdout = dn
         try:
-            CLI.main(["generate", "--variant", "A", "--campaign-dir", campaign_dir, "--binaries", binaries, "--out", out])
+            CLI.main(["generate", "--variant", "A", "--campaign-dir", campaign_dir, "--binaries", binaries, "--out", out] + cov)
         finally:
             sys.stderr, sys.stdout = old
+
+
+def coverage_files(d):
+    out = []
+    for n in ("summary.json", "qualification.json"):
+        p = os.path.join(d, "cov_" + n)
+        with open(p, "w") as f:
+            json.dump({"fixture": n}, f)
+        out.append(p)
+    return tuple(out)
 
 
 class Generated(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
-        cls.out = cls.tmp.name
-        generate(cls.out)
+        cls.out = os.path.join(cls.tmp.name, "out")
+        cls.cov = coverage_files(cls.tmp.name)
+        generate(cls.out, coverage=cls.cov)
         cls.plan = load(os.path.join(cls.out, "plan.json"))
         cls.smoke = cls.plan["smoke"]
 
@@ -84,12 +97,13 @@ class Generated(unittest.TestCase):
         self.assertEqual(len(s["arms"]), 40)
 
     def test_prereg_validates(self):
-        for name, narms, floor in (("prereg.json", 55, None), ("prereg_smoke.json", 47, 2)):
-            r = load_prereg(self.path(name))
+        for name, narms, floor in (("prereg.json", 64, None), ("prereg_smoke.json", 56, 2)):
+            r = load_prereg(self.path(name))                           # strict: every key the generator emits is accepted
             self.assertEqual(len(r.arms), narms)
             self.assertEqual(r.family_ids(), D.PRIMARY_FAMILY)        # a FIXED family of m = 8
             if floor:
                 self.assertTrue(all(a["floor"] == floor for a in r.arms.values()))
+                self.assertEqual(set(r.raw["floors"].values()), {2})
         r = load_prereg(self.path("prereg.json"))
         self.assertEqual(r.sigma2("s4"), 4.0)
         self.assertAlmostEqual(r.null_value("s1"), 7.992e-5)
@@ -97,10 +111,12 @@ class Generated(unittest.TestCase):
 
     def test_prereg_matches_engine_outputs(self):
         """Reduced tables are reduced/<arm>/<segment>/<arm>__<segment>__d<lo>-<hi>.csv; ok verdicts are the engine's; hmax_div labels."""
+        from sf43ana.loader import window_stem
         r = load("%s/prereg.json" % self.out)
-        for label, (lo, hi) in r["windows"].items():
-            self.assertEqual(r["reduced_pattern"].format(arm="A", segment="S", window=label), "A/S/A__S__d%g-%g.csv" % (lo, hi))
-        self.assertEqual(r["primary_window"], "d25-94")
+        self.assertEqual(r["windows"], {"main": [25, 94], "h1": [25, 59.5], "h2": [59.5, 94], "far": [94, 194]})   # semantic labels
+        self.assertNotIn("reduced_pattern", r)
+        self.assertEqual({k: window_stem(*v) for k, v in r["windows"].items()}, {"main": "d25-94", "h1": "d25-59.5", "h2": "d59.5-94", "far": "d94-194"})
+        self.assertEqual(r["primary_window"], "main")
         self.assertEqual(r["ok_verdicts"], ["converged", "fallback"])
         arms = {a["id"]: a for a in r["arms"]}
         plan = {a["id"]: a for a in self.plan["arms"]}
@@ -110,7 +126,7 @@ class Generated(unittest.TestCase):
             if a["role"] == "h_max_pass":
                 self.assertEqual(a["hmax_div"], 16 if aid.endswith("_h16") else 8)
             else:
-                self.assertEqual(a["hmax_div"], 8 if has_first else -1, aid)
+                self.assertEqual(a["hmax_div"], 8 if has_first else -1, aid)            # Pollock entries too: the production label
         for lo, hi in ([25, 94], [25, 59.5], [59.5, 94]):
             self.assertIn([lo, hi], plan["s225_prod"]["reduce"]["d_windows"])
         self.assertIn([94, 194], plan["s4_dist"]["reduce"]["d_windows"])
@@ -127,10 +143,13 @@ class Generated(unittest.TestCase):
         arms = {a["id"]: a for a in self.plan["arms"]}
         for a in load(self.path("prereg.json"))["arms"]:
             e = arms[a.get("source", a["id"])]
-            if a["role"] in ("h_max_pass", "gate5_consumer_twin"):
+            if a["role"] in ("h_max_pass", "gate5_consumer_twin", "gate5_pollock_twin"):
                 self.assertEqual(a["seeds"], list(range(e["seeds"]["start"], e["seeds"]["start"] + len(a["seeds"]))))
-            else:
+                self.assertEqual(a["n_max"], a["n_conf"])
+            else:                      # the PLANNED n_conf and the n_max the engine may run (the loader cuts at n_conf, or n_new after a re-estimation)
                 self.assertEqual(a["seeds"], list(range(e["seeds"]["start"], e["seeds"]["start"] + e["seeds"]["count"])))
+                self.assertEqual((a["n_conf"], a["n_max"]), (e["n_conf"], e["n_max"]), a["id"])
+                self.assertEqual(bool(a.get("reest")), e["id"] in self.plan["blinded_reestimation"]["arms"], a["id"])
             r = self.plan["groups"][a["group"]]["reserves"]
             self.assertEqual(a["reserves"], list(range(r["start"], r["start"] + r["count"])))
 
@@ -247,7 +266,7 @@ class Generated(unittest.TestCase):
                 "s4_w24_8": (832, 192, 192), "s4_w24_16": (1664, 384, 384), "s4_dist": (3328, 192, 192), "pc_s004": (1040, 240, 240)}
         nn = {"s025_prod": (200, 400), "s025_eh5": (100, 100), "s025_eh20": (100, 100), "s025_w48": (150, 300), "s1_dist": (100, 100),
               "s225_prod": (200, 400), "s225_eh4": (150, 150), "s225_eh8": (150, 150), "s225_w48_8": (150, 300), "s225_w48_12": (150, 300),
-              "s225_c12": (200, 200), "s225_dist": (100, 100), "s4_prod": (200, 400), "s4_l4": (100, 100), "s4_l8": (150, 150),
+              "s225_c12": (200, 200), "s225_dist": (100, 100), "s4_prod": (200, 400), "s4_l4": (150, 150), "s4_l8": (150, 150),
               "s4_l16": (250, 250), "s4_w24_8": (150, 300), "s4_w24_16": (150, 300), "s4_dist": (100, 100), "pc_s004": (30, 30),
               "s225_g5p": (200, 200), "s4_g5p": (250, 250), "s025_g5p": (200, 200), "s1_g5p": (200, 200)}
         byid = {a["id"]: a for a in self.plan["arms"]}
@@ -382,22 +401,118 @@ class Generated(unittest.TestCase):
         arms_h, extra_h = B.total_gpu_h(ents)
         self.assertAlmostEqual(arms_h + extra_h, 59.6, delta=0.15)         # design_cost.py variant A: 59.6 GPU-h planning
         self.assertEqual(round(extra_h, 2), 1.88)
-        # the only differences from design_cost: the 2.25 rung 416x96 has 150 (design_cost 100)
-        self.assertAlmostEqual(50 * 5.1 / 3600.0, 0.0708, places=3)
+        # the differences from design_cost: the 2.25 rung 416x96 has 150 (design_cost 100) and the 4 rung 416x48 has 150 (100, H9)
+        self.assertAlmostEqual(50 * 5.1 / 3600.0 + 50 * 4.0 / 3600.0, 0.1263, places=3)
 
     def test_analysis_hashes_and_command(self):
         import hashlib
-        h = self.plan["analysis"]["sha256_list"]
-        self.assertGreater(len(h), 20)
-        repo = B.REPO
-        for rel, want in h.items():
-            self.assertFalse(os.path.isabs(rel))
-            self.assertNotIn("/tests/", rel)
-            with open(os.path.join(repo, rel), "rb") as f:
-                self.assertEqual(hashlib.sha256(f.read()).hexdigest(), want)
-        self.assertTrue(any(k.endswith("sf43ana/gate4.py") for k in h))
-        self.assertEqual(self.plan["analysis"]["command"][:2], ["bash", B.ART_REL + "/scripts/analyse_sf43.sh"])
-        self.assertEqual(self.plan["analysis"]["command"][2:], ["{campaign_dir}", "{build_dir}"])
+        sha = lambda b: hashlib.sha256(b).hexdigest()  # noqa: E731
+        art = B.ART_REL
+        for h, prereg, smoke in ((self.plan["analysis"]["sha256_list"], "prereg.json", False), (self.smoke["analysis"]["sha256_list"], "prereg_smoke.json", True)):
+            self.assertGreater(len(h), 20)
+            gen = {art + "/" + prereg: read(self.path(prereg), "rb"), art + "/coverage/summary.json": read(self.cov[0], "rb"),
+                   art + "/coverage/qualification.json": read(self.cov[1], "rb")}
+            for rel, want in h.items():
+                self.assertFalse(os.path.isabs(rel))
+                self.assertNotIn("/tests/", rel)
+                if rel in gen:
+                    self.assertEqual(sha(gen[rel]), want, rel)
+                else:
+                    self.assertEqual(sha(read(os.path.join(B.REPO, rel), "rb")), want, rel)
+            self.assertIn(art + "/" + prereg, h)
+            self.assertEqual((art + "/coverage/summary.json" in h), not smoke)           # a smoke plan does not need the coverage files
+            self.assertEqual((art + "/coverage/qualification.json" in h), not smoke)
+            self.assertNotIn(art + "/" + ("prereg_smoke.json" if not smoke else "prereg.json"), h)
+            for must in ("sf43ana/gate4.py", "sf43ana/pollock.py", "mcstat/budget.py", "scripts/analyse_sf43.sh", "sf43cov/qualify.py"):
+                self.assertTrue(any(k.endswith(must) for k in h), must)
+        self.assertEqual(self.plan["analysis"]["command"], ["bash", art + "/scripts/analyse_sf43.sh", "{campaign_dir}", "{build_dir}"])
+        self.assertEqual(self.smoke["analysis"]["command"], ["bash", art + "/scripts/analyse_sf43.sh", "{campaign_dir}", "{build_dir}", "--smoke"])
+        self.assertNotIn("coverage_note", self.plan)
+
+    def test_production_plan_needs_the_coverage_files_and_smoke_only_fails_safe(self):
+        with tempfile.TemporaryDirectory() as d, self.assertRaises(SystemExit) as cm:
+            with open(os.devnull, "w") as dn:
+                old = sys.stderr
+                sys.stderr = dn
+                try:
+                    CLI.main(["generate", "--variant", "A", "--campaign-dir", "x", "--binaries", "placeholder", "--out", os.path.join(d, "o")])
+                finally:
+                    sys.stderr = old
+        self.assertIn("--coverage-summary", str(cm.exception))
+        with tempfile.TemporaryDirectory() as d:
+            generate(os.path.join(d, "o"))                                     # --smoke-only
+            p = load(os.path.join(d, "o", "plan.json"))
+            h = p["analysis"]["sha256_list"]
+            self.assertEqual(h[B.ART_REL + "/coverage/summary.json"], "0" * 64)
+            self.assertIn("SMOKE-ONLY", p["coverage_note"])
+            self.assertIn("SMOKE-ONLY", read(os.path.join(d, "o", "design_table.md")))
+            self.assertNotIn("0" * 64, p["smoke"]["analysis"]["sha256_list"].values())
+            load_plan(os.path.join(d, "o", "plan.json"), smoke=True, now=1.0e9)
+
+    def test_recompute_names_the_primary_arms_and_the_single_pass_label(self):
+        c = self.plan["recompute"]["command"]
+        prim = [c[i + 1] for i, x in enumerate(c) if x == "--primary-arm"]
+        self.assertEqual(prim, ["s025_prod", "s1_prod", "s225_prod", "s4_prod"])
+        self.assertEqual(c[c.index("--single-pass-hmax") + 1], "8")
+        sc = self.smoke["recompute"]["command"]
+        self.assertEqual([sc[i + 1] for i, x in enumerate(sc) if x == "--primary-arm"], ["sm_" + p for p in prim])
+
+    def test_failure_detector_and_expected_rates(self):
+        self.assertEqual(self.plan["failure"], {"halt_rate": 0.25, "min_for_rate": 20})
+        f = load(self.path("prereg.json"))["failures"]
+        self.assertEqual(f["failure_classes"], ["unusable_solve"])
+        self.assertEqual(f["expected"]["unusable_solve_rate"]["s025"], "< 0.01")
+        self.assertIn("0.02", f["expected"]["unusable_solve_rate"]["s4"])
+        self.assertIn("stagnation", f["expected"]["note"])
+
+    def test_gate5_pollock_and_g7_entries_are_real_arms(self):
+        r = load(self.path("prereg.json"))
+        arms = {a["id"]: a for a in r["arms"]}
+        for amp in ("s025", "s1", "s225", "s4"):
+            g5 = r["gate5"]["amplitudes"][amp]
+            c, p, pol = arms[g5["consumer"]], arms[g5["par2"]], arms[amp + "_g5pol"]
+            self.assertEqual((c["selection"], c["code"]), ({"weights": "unif"}, "consumer"))                  # consumer twin on the uniform weights
+            self.assertEqual((p["selection"], p["code"]), ({"weights": "unif"}, "par2"))
+            self.assertEqual((pol["code"], pol["source"], pol["selection"]), ("pollock", c["source"], {"weights": "unif"}))
+            self.assertEqual((pol["hmax_div"], pol["seeds"], pol["n_conf"]), (c["hmax_div"], c["seeds"], c["n_conf"]))
+            self.assertEqual(c["hmax_div"], 8 if amp in ("s025", "s1") else -1)          # single_pass_hmax label for production arms, -1 otherwise
+            self.assertEqual(r["g7"]["twins"][amp], {"consumer": c["id"], "pollock": pol["id"], "par2": p["id"]})
+            self.assertEqual(g5["floor"], p["n_conf"])
+            self.assertEqual(g5.get("j3b", False), amp == "s4")
+            prod, pp = arms[amp + "_prod"], arms[amp + "_prodpol"]                       # acceptance B: the production set, flux, label 8
+            self.assertEqual((pp["code"], pp["source"], pp["hmax_div"], pp["reest"], pp.get("selection")), ("pollock", prod["id"], 8, True, None))
+            self.assertEqual((pp["seeds"], pp["n_conf"], pp["n_max"]), (prod["seeds"], prod["n_conf"], prod["n_max"]))
+            self.assertEqual(r["pollock"]["contrast"][amp], {"consumer": prod["id"], "pollock": pp["id"]})
+            self.assertEqual(r["pollock"]["decomposition"][amp], {"consumer": c["id"], "pollock": pol["id"], "par2": p["id"]})
+        self.assertNotIn("procedures", r["gate5"])
+        self.assertEqual(r["gate5"]["coverage_summary"], B.ART_REL + "/coverage/summary.json")
+        sm = load(self.path("prereg_smoke.json"))
+        self.assertNotIn("coverage_summary", sm["gate5"])                                 # the wrapper passes the smoke job's own output
+
+    def test_positive_control_arm_and_preregistered_statistic(self):
+        r = load(self.path("prereg.json"))
+        pc = r["positive_control"]
+        self.assertEqual((pc["arm"], pc["R_bounds"], pc["R_weights"]), ("pc_s004", [0.8, 1.25], "flux"))
+        self.assertIn("EXPECTED", pc["expectation"])
+        self.assertIn("4 %", pc["expectation"])
+        self.assertEqual(r["amplitudes"]["s004"], {"sigma2": 0.04, "control": True})
+        arm = next(a for a in r["arms"] if a["id"] == "pc_s004")
+        self.assertEqual((arm["amplitude"], arm["n_conf"], arm["role"]), ("s004", 30, "positive_control"))
+        self.assertEqual(load(self.path("prereg_smoke.json"))["positive_control"]["arm"], "sm_pc_s004")
+
+    def test_bootstrap_sizes_are_the_analysis_defaults(self):
+        from sf43ana import config
+        self.assertEqual(load(self.path("prereg.json"))["bootstrap"], config.DEFAULTS["bootstrap"])
+
+    def test_par2_time_window_parameters_are_fixed_a_priori(self):
+        import math
+        for a in self.plan["arms"]:
+            if a["family"] == "gate5_par2":
+                amp = a["amplitude"]
+                self.assertEqual(a["reduce"]["U_time"], round(math.exp(amp / 6.0), 6))
+                g = a["par2"]["grid"]
+                self.assertAlmostEqual(a["reduce"]["par2_exit_x"], g[0] / g[1])                # the outlet plane in box units
+                self.assertEqual(a["par2"]["snapshots_every"] % 1000, 0)
 
     def test_smoke_section(self):
         s = self.smoke
@@ -425,12 +540,13 @@ class Generated(unittest.TestCase):
             self.assertEqual((a["seeds"], a["priority"], a["group"]), (b["seeds"], b["priority"], b["group"]))
             self.assertEqual(a.get("consumer", a.get("par2")), b.get("consumer", b.get("par2")))
             self.assertEqual(a["priority"], 0)
+            self.assertFalse(a["heavy"] or b["heavy"])          # the lane pin alone places the pair
         self.assertEqual({byid[p[0]]["runner"] for p in pairs}, {"consumer", "par2"})
         bg = s["background"][0]
         self.assertEqual((bg["name"], bg["nice"]), ("coverage", 19))
         self.assertEqual(s["background_wait_minutes"], 300)
         self.assertTrue(bg["argv"][1].endswith("sf43cov/run_cov.sh"))
-        self.assertIn("32", bg["argv"])
+        self.assertEqual(bg["argv"][2:], ["{campaign_dir}/coverage", "--workers", "32", "--profile", "sf43"])
         self.assertTrue(os.path.isfile(os.path.join(B.REPO, bg["argv"][1])))
         self.assertGreater(s["budget_gpu_h"], 0)
         self.assertLess(s["budget_gpu_h"], 10)
@@ -453,7 +569,7 @@ class Generated(unittest.TestCase):
             bj = os.path.join(d, "md5.json")
             with open(bj, "w") as f:
                 json.dump(MD5S, f)
-            generate(os.path.join(d, "o"), binaries=bj)
+            generate(os.path.join(d, "o"), binaries=bj, coverage=self.cov)
             p = load(os.path.join(d, "o", "plan.json"))
             self.assertEqual(p["binaries"], MD5S)
             self.assertNotIn("binaries_note", p)
@@ -462,8 +578,8 @@ class Generated(unittest.TestCase):
 
     def test_deterministic_byte_identical(self):
         with tempfile.TemporaryDirectory() as d:
-            generate(os.path.join(d, "a"))
-            generate(os.path.join(d, "b"))
+            generate(os.path.join(d, "a"), coverage=self.cov)
+            generate(os.path.join(d, "b"), coverage=self.cov)
             for name in sorted(os.listdir(os.path.join(d, "a"))):
                 self.assertEqual(read(os.path.join(d, "a", name), "rb"), read(os.path.join(d, "b", name), "rb"), name)
                 self.assertEqual(read(os.path.join(d, "a", name), "rb"), read(self.path(name), "rb"), name)
@@ -488,7 +604,7 @@ class Generated(unittest.TestCase):
         self.assertLess(d["gpu_h"], D.BUDGET_GPU_H)
         # the sum of est_seconds over the n_conf realizations is the design_cost.py planning figure minus the three-pass extras
         work = sum(a["n_conf"] * a["est_seconds"] for a in self.plan["arms"]) / 3600.0
-        self.assertAlmostEqual(work, 57.77, delta=0.1)
+        self.assertAlmostEqual(work, 57.83, delta=0.1)
         self.assertGreaterEqual(d["gpu_h"], work)
 
     def test_engine_dry_run_smoke(self):

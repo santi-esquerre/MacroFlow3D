@@ -199,8 +199,8 @@ def smoke_entries():
     amp, nx, ny, lh, W = S["det_par2"]
     rp = D.row("det_p", amp, "determinism", "p", W, lh, 104, S["n"], "smoke_detp", 0, ("par2_1040x240", "0.25"), flags=("det",))
     for r in (rc, rp):
-        for lane in ("A", "B"):   # heavy: the lane-B member must be claimable by lane B (heavy units only); memory stays the measured one
-            out.append(Entry("sm_%s_%s" % (r.id, lane), r, S["n"], S["n"], r.grp, 0, D.SMOKE_START[r.grp], lane, True, None))
+        for lane in ("A", "B"):   # not heavy: the engine's lane pin alone puts the member on its lane (a pinned light arm may run on lane B)
+            out.append(Entry("sm_%s_%s" % (r.id, lane), r, S["n"], S["n"], r.grp, 0, D.SMOKE_START[r.grp], lane, False, None))
     return out
 
 
@@ -267,7 +267,29 @@ def plan_arm(e, blocks):
     return a
 
 
-def build_plan(binaries, campaign_dir, analysis_hashes):
+ANALYSE_SH = ART_REL + "/scripts/analyse_sf43.sh"
+COV_SUMMARY_REL = ART_REL + "/coverage/summary.json"
+COV_QUAL_REL = ART_REL + "/coverage/qualification.json"
+ZERO_SHA256 = "0" * 64
+
+
+def analysis_section(hashes, smoke=False):
+    """Engine ``analysis``: the wrapper (``analyse_sf43.sh``) and the files it was frozen with; the smoke overlay passes ``--smoke``."""
+    cmd = ["bash", ANALYSE_SH, "{campaign_dir}", "{build_dir}"] + (["--smoke"] if smoke else [])
+    return OrderedDict([("command", cmd), ("sha256_list", hashes)])
+
+
+def recompute_section(ents, campaign_dir_key="{campaign_dir}"):
+    """``recompute43`` command: every primary arm must have its plane arrays (H21); single-pass roots of the three-pass arms carry hmax_div 8."""
+    prim = [e.id for e in ents if "primary" in e.row.flags]
+    cmd = ["python3", "-W", "error", "-m", "recompute43", "run", "--campaign", "{campaign_dir}", "--reduced", "{campaign_dir}/reduced", "--out",
+           "{campaign_dir}.recompute.txt"]
+    for p in prim:
+        cmd += ["--primary-arm", p]
+    return {"command": cmd + ["--single-pass-hmax", str(D.HMAX_FIRST["divs"][0])]}
+
+
+def build_plan(binaries, campaign_dir, hashes, smoke_hashes):
     ents = production_entries()
     blocks = group_blocks(ents, reserve_frac)
     plan = OrderedDict()
@@ -284,21 +306,23 @@ def build_plan(binaries, campaign_dir, analysis_hashes):
     plan["binaries"] = OrderedDict(sorted(binaries.items()))
     if all(v == PLACEHOLDER_MD5 for v in binaries.values()):
         plan["binaries_note"] = "PLACEHOLDER md5 (all zeros): the md5 gate refuses to start until the generator is re-run with the real binaries.json"
-    plan["analysis"] = OrderedDict([("command", ["bash", "%s/scripts/analyse_sf43.sh" % ART_REL, "{campaign_dir}", "{build_dir}"]),
-                                    ("sha256_list", analysis_hashes)])
-    plan["recompute"] = {"command": ["python3", "-W", "error", "-m", "recompute43", "run", "--campaign", "{campaign_dir}", "--reduced",
-                                     "{campaign_dir}/reduced", "--out", "{campaign_dir}.recompute.txt"]}
+    if ZERO_SHA256 in hashes.values():
+        plan["coverage_note"] = ("SMOKE-ONLY plan: the sha256 of the coverage summary / qualification are all-zero placeholders, so the analysis gate "
+                                 "refuses a production run; regenerate with --coverage-summary / --coverage-qualification (the smoke job's outputs, "
+                                 "committed under coverage/)")
+    plan["analysis"] = analysis_section(hashes)
+    plan["recompute"] = recompute_section(ents)
     plan["reconcile"] = {"command": ["python3", "-W", "error", "-m", "reconcile43", "run", "--campaign", "{campaign_dir}", "--out",
                                      "{campaign_dir}.reconcile.txt"]}
     plan["blinded_reestimation"] = blinded_section(ents)
     plan["failure"] = dict(D.FAILURE)
     plan["groups"] = OrderedDict((g, {"reserves": b["reserves"]}) for g, b in blocks.items())
     plan["arms"] = [plan_arm(e, blocks) for e in ents]
-    plan["smoke"] = build_smoke(campaign_dir)
+    plan["smoke"] = build_smoke(campaign_dir, smoke_hashes)
     return plan, blocks
 
 
-def build_smoke(campaign_dir):
+def build_smoke(campaign_dir, smoke_hashes):
     ents = smoke_entries()
     blocks = group_blocks(ents, lambda g: 0.15)
     arms = [plan_arm(e, blocks) for e in ents]
@@ -315,6 +339,8 @@ def build_smoke(campaign_dir):
     sm["stage1_max_hours"] = D.SMOKE["stage1_max_hours"]
     sm["groups"] = OrderedDict((g, {"reserves": b["reserves"]}) for g, b in blocks.items())
     sm["blinded_reestimation"] = blinded_section(red, hw_scale=D.SMOKE["reest_hw_scale"], fraction=D.SMOKE["reest_fraction"])
+    sm["analysis"] = analysis_section(smoke_hashes, smoke=True)          # --smoke: prereg_smoke.json, outputs to files, only check-finite on stdout
+    sm["recompute"] = recompute_section(ents)
     sm["arms"] = arms
     sm.update(EM.smoke_fields([("det_consumer", "sm_det_c_A", "sm_det_c_B"), ("det_par2", "sm_det_p_A", "sm_det_p_B")], campaign_dir,
                               D.SMOKE["background_wait_minutes"], ART_REL))
@@ -325,9 +351,14 @@ def build_smoke(campaign_dir):
 # ---------------------------------------------------------------------------------------------------------------------------
 # pre-registration (one builder for the production universe and the smoke universe)
 # ---------------------------------------------------------------------------------------------------------------------------
-def prereg_arm(aid, amp, grp, start, n_seeds, reserves, n_conf, floor, source=None, hmax=-1, code="consumer", role="", weights=None):
-    a = OrderedDict([("id", aid), ("amplitude", amp), ("group", grp), ("seeds", list(range(start, start + n_seeds))),
-                     ("reserves", list(range(reserves["start"], reserves["start"] + reserves["count"]))), ("n_conf", n_conf), ("floor", floor)])
+def prereg_arm(aid, amp, grp, start, n_seeds, reserves, n_conf, floor, source=None, hmax=-1, code="consumer", role="", weights=None, n_max=None,
+               reest=False):
+    """One analysis entry.  ``seeds`` = the first ``n_max`` seeds of the group's block (what the engine may run), ``n_conf`` = the PLANNED size:
+    the loader cuts at ``n_conf``, or at the engine's ``n_new`` (ledger ``reest``) for a ``reest`` entry."""
+    n_max = n_conf if n_max is None else n_max
+    a = OrderedDict([("id", aid), ("amplitude", amp), ("group", grp), ("seeds", list(range(start, start + n_max))),
+                     ("reserves", list(range(reserves["start"], reserves["start"] + reserves["count"]))), ("n_conf", n_conf), ("n_max", n_max),
+                     ("floor", floor)])
     if source:
         a["source"] = source
     a["hmax_div"] = hmax
@@ -335,14 +366,25 @@ def prereg_arm(aid, amp, grp, start, n_seeds, reserves, n_conf, floor, source=No
     a["role"] = role
     if weights:
         a["selection"] = {"weights": weights}
+    if reest:
+        a["reest"] = True
     return a
 
 
-FLOOR = {"production": 100, "E_h": 30, "E_W": 30, "gate5_consumer": 30, "distance": 30, "g7_par2": 30}
+FLOOR = {"production": 100, "E_h": 30, "E_W": 30, "gate5_consumer": 30, "distance": 30, "g7_par2": 30, "positive_control": 20}
 G5C = OrderedDict([("s025", "s025_prod"), ("s1", "s1_prod"), ("s225", "s225_c12"), ("s4", "s4_l16")])    # engine arm that is the consumer twin
+B_PROD = OrderedDict([("B_sampling", 33599), ("B_budget", 4000), ("B_ucl", 4000), ("B_bca", 5000), ("seed", 20261103)])  # = sf43ana.config.DEFAULTS
+B_SMOKE = OrderedDict([("B_sampling", 3999), ("B_budget", 400), ("B_ucl", 400), ("B_bca", 200), ("seed", 20261103)])
+POSITIVE_CONTROL_EXPECTATION = (
+    "R = (mean over the window planes [25, 94] of the measured FLUX-weighted displacement-basis second moment X22(d)) / (the same mean of the "
+    "first-order box prediction at sigma^2 = 0.04, W = 24 lambda, L = 104 lambda), with a 90 % seed-bootstrap interval.  EXPECTED: the interval "
+    "inside [0.8, 1.25] (positive_control_ok); inconclusive if it straddles a bound; failed if entirely outside.  Rationale: the prediction is "
+    "first order in sigma^2 and the O(sigma^2) nonlinear corrections are about 4 % at 0.04; the discretization (lambda/h = 10) and the Dirichlet "
+    "inflow/outflow faces of medium (b), which the prediction neglects, are expected to move the window mean by a few per cent at most.  A value "
+    "outside the bounds indicts the estimand pipeline or the runner, not the physics.  Descriptive; never a gate of the family.")
 
 
-def build_prereg(smoke=False):
+def build_prereg(smoke=False, coverage_summary_rel=COV_SUMMARY_REL):
     ents = smoke_entries() if smoke else production_entries()
     pre_ = "sm_" if smoke else ""
     blocks = group_blocks(ents, (lambda g: 0.15) if smoke else reserve_frac)
@@ -353,13 +395,14 @@ def build_prereg(smoke=False):
     arms = []
     for e in ents:
         r = e.row
-        if r.fam in ("positive_control", "determinism") or (smoke and r.fam == "g7_par2" and False):
+        if r.fam == "determinism":
             continue
         b = blocks[e.grp]
-        nconf = max(2, e.nmax) if smoke else (r.n if r.run == "p" else e.nmax)
+        n_conf, n_max = (max(2, e.n), max(2, e.nmax)) if smoke else (e.n, e.nmax)
         fl = lo or (r.n if r.fam == "gate5_par2" else FLOOR[r.fam])
-        arms.append(prereg_arm(e.id, r.amp, e.grp, b["start"], nconf, b["reserves"], nconf, fl, code="par2" if r.run == "p" else "consumer",
-                               hmax=8 if r.fam == "production" else -1, role=r.fam, weights="unif" if r.run == "p" else None))
+        arms.append(prereg_arm(e.id, r.amp, e.grp, b["start"], n_max, b["reserves"], n_conf, fl, code="par2" if r.run == "p" else "consumer",
+                               hmax=8 if r.fam == "production" else -1, role=r.fam, weights="unif" if r.run == "p" else None, n_max=n_max,
+                               reest="reest" in r.flags))
     for amp in G5C:
         if not has(amp + "_prod"):
             continue
@@ -369,15 +412,23 @@ def build_prereg(smoke=False):
         for tag, div in (("h16", 16), ("h8", 8)):
             arms.append(prereg_arm(nm("%s_%s" % (amp, tag)), amp, e.grp, b["start"], n, b["reserves"], n, lo or 20, source=e.id, hmax=div,
                                    role="h_max_pass"))
+        # Pollock contrast of acceptance B: the production analysis set (flux weights, hmax_div 8, grows with the re-estimation)
+        n_conf, n_max = (max(2, e.n), max(2, e.nmax)) if smoke else (e.n, e.nmax)
+        arms.append(prereg_arm(nm(amp + "_prodpol"), amp, e.grp, b["start"], n_max, b["reserves"], n_conf, lo or FLOOR["production"], source=e.id,
+                               hmax=8, code="pollock", role="pollock_production", n_max=n_max, reest=True))
     for amp, src in G5C.items():
         e = by[nm(src)]
         b = blocks[e.grp]
         n = max(2, by[nm(amp + "_g5p")].n) if smoke else by[amp + "_g5p"].n
+        hm = 8 if e.row.fam == "production" else -1
         arms.append(prereg_arm(nm(amp + "_g5c"), amp, e.grp, b["start"], n, b["reserves"], n, lo or n, source=e.id, role="gate5_consumer_twin",
-                               hmax=8 if e.row.fam == "production" else -1, weights="unif"))
+                               hmax=hm, weights="unif"))
+        arms.append(prereg_arm(nm(amp + "_g5pol"), amp, e.grp, b["start"], n, b["reserves"], n, lo or n, source=e.id, role="gate5_pollock_twin",
+                               hmax=hm, code="pollock", weights="unif"))
     amps = OrderedDict()
     for amp, (sigma2, label, eps, M, S) in D.AMPS.items():
         if amp == "s004":
+            amps[amp] = OrderedDict([("sigma2", sigma2), ("control", True)])
             continue
         c = OrderedDict([("sigma2", sigma2), ("primary", True), ("production", nm(amp + "_prod"))])
         if amp in ("s025", "s1"):
@@ -388,49 +439,53 @@ def build_prereg(smoke=False):
         elif amp == "s225":
             c["components"] = ["E_h", "E_W", "E_WxH", "E_int"]
             c["ladder"] = OrderedDict([("arms", [nm("s225_eh4"), nm("s225_eh8"), nm("s225_prod")]), ("resolutions", [4, 8, 16]),
-                                       ("production_index", 2), ("gate_level", {"arm": nm("s225_c12"), "resolution": 12})])
+                                       ("production_index", 2),
+                                       ("gates", [OrderedDict([("type", "extra_level"), ("triple", [0, 1, 2]), ("arm", nm("s225_c12")), ("resolution", 12)])])])
             c["width"] = OrderedDict([("wide_fine", nm("s225_w48_12")), ("prod_fine", nm("s225_c12")), ("wide_coarse", nm("s225_w48_8")),
                                       ("prod_coarse", nm("s225_eh8"))])
         else:
             c["components"] = ["E_h", "E_W", "E_WxH", "E_int"]
             c["ladder"] = OrderedDict([("arms", [nm("s4_l4"), nm("s4_l8"), nm("s4_l16"), nm("s4_prod")]), ("resolutions", [4, 8, 16, 32]),
-                                       ("production_index", 3), ("triples", [[0, 1, 2], [1, 2, 3]]), ("gate_orders_agree", [[0, 1, 2], [1, 2, 3]])])
+                                       ("production_index", 3), ("triples", [[0, 1, 2], [1, 2, 3]]),
+                                       ("gates", [OrderedDict([("type", "orders_agree"), ("triples", [[0, 1, 2], [1, 2, 3]])])])])
             c["width"] = OrderedDict([("wide_fine", nm("s4_w24_16")), ("prod_fine", nm("s4_l16")), ("wide_coarse", nm("s4_w24_8")),
                                       ("prod_coarse", nm("s4_l8"))])
         c["hmax"] = OrderedDict([("h16", nm(amp + "_h16")), ("h8", nm(amp + "_h8"))])
         if has(amp + "_dist"):
             c["distance_arm"] = nm(amp + "_dist")
         amps[amp] = c
-    pre = _prereg_common(amps, arms, lo)
+    pre = _prereg_common(amps, arms, smoke)
     if smoke:
         pre["name"] = D.CAMPAIGN + "-smoke"
-        pre["_smoke"] = "floors lowered to 2; arms of the smoke plan (sm_ prefix); arms with one realization exercise the below_floor paths"
-    pre["gate5"] = _gate5_section(nm, by, smoke)
+        pre["note"] = ("smoke: arms of the smoke plan (sm_ prefix); every floor 2 so that every analysis code path runs; arms with one realization "
+                       "exercise the below_floor paths; B reduced; Gate 5 reads the smoke job's own coverage output (analyse_sf43.sh --smoke)")
+        pre["floors"] = OrderedDict((k, 2) for k in ("production", "ladder", "width", "hmax", "gate5"))
+    pre["gate5"] = _gate5_section(nm, by, smoke, coverage_summary_rel)
     pre["g7"] = _g7_section(nm, by)
+    pre["pollock"] = _pollock_section(nm)
     pre["secondaries"] = _secondaries(nm, by)
     pre["failures"] = _failures()
-    if not smoke:
-        pre["positive_control"] = _positive_control(by["pc_s004"], blocks["g_pc"])
-    pre["engine_alignment"] = _alignment_notes()
+    pre["positive_control"] = _positive_control(nm("pc_s004"), smoke)
     return pre
 
 
-def _prereg_common(amps, arms, floors):
+def _prereg_common(amps, arms, smoke=False):
     pre = OrderedDict()
     pre["name"] = D.CAMPAIGN
     pre["variant"] = D.VARIANT
-    pre["windows"] = OrderedDict([("d25-94", [25, 94]), ("d25-59.5", [25, 59.5]), ("d59.5-94", [59.5, 94]), ("d94-194", [94, 194])])
-    pre["primary_window"] = "d25-94"
+    # semantic window labels; the executor's table stem d%g-%g is derived from the bounds by sf43ana.loader.window_stem (one rule)
+    pre["windows"] = OrderedDict([("main", [25, 94]), ("h1", [25, 59.5]), ("h2", [59.5, 94]), ("far", [94, 194])])
+    pre["primary_window"] = "main"
     pre["selection"] = {"code": "consumer", "family": "plane", "weights": "flux", "set": "perplane"}
     pre["bases"] = {"primary": "disp", "secondary": "pos"}
     pre["ledger"] = "ledger.jsonl"
-    pre["reduced_pattern"] = "{arm}/{segment}/{arm}__{segment}__{window}.csv"
     pre["ok_verdicts"] = ["converged", "fallback"]
+    pre["fallback_verdicts"] = ["fallback"]
     pre["levels"] = {"fwer": 0.05, "interval": 0.90, "ucl": 0.05}
     pre["null_per_sigma2"] = D.NULL_PER_SIGMA2
     pre["numerical_fraction"] = 0.5
     pre["eh"] = {"p_range": [0.5, 2.1], "p_cap": 2.0, "safety": 1.25, "fallback_factor": 3.0}
-    pre["bootstrap"] = {"B_sampling": 4000, "B_budget": 4000, "B_ucl": 4000, "B_bca": 5000, "seed": 20261103}
+    pre["bootstrap"] = OrderedDict(B_SMOKE if smoke else B_PROD)
     pre["sampling_method"] = "bootstrap-t"
     pre["family"] = list(D.PRIMARY_FAMILY)
     pre["report_levels"] = [0.05, 0.05 / 8]
@@ -441,18 +496,24 @@ def _prereg_common(amps, arms, floors):
     return pre
 
 
-def _gate5_section(nm, by, smoke):
+def _gate5_section(nm, by, smoke, coverage_summary_rel):
     amps = OrderedDict()
     for amp in G5C:
-        amps[amp] = OrderedDict([("consumer", nm(amp + "_g5c")), ("par2", nm(amp + "_g5p")), ("n_pairs", by[nm(amp + "_g5p")].n)])
-    cov = "{campaign_dir}/coverage/summary.json" if smoke else "%s/coverage/summary.json" % ART_REL
-    return OrderedDict([("family_m", 8), ("fwer", 0.05), ("margin_ratio", 1.10), ("level", 0.90), ("B", 33599), ("seed", 20261103),
-                        ("key", "alpha_LP"), ("ref", "t"), ("procedures", ["hall", "boott", "boott_half"]), ("coverage_summary", cov),
-                        ("amplitudes", amps)])
+        a = OrderedDict([("consumer", nm(amp + "_g5c")), ("par2", nm(amp + "_g5p")), ("floor", 2 if smoke else by[nm(amp + "_g5p")].n)])
+        if amp == "s4":
+            a["j3b"] = True                                   # sigma^2 = 4: the J3B-bound family is part of the qualification (H5)
+        amps[amp] = a
+    g = OrderedDict([("family_m", 8), ("fwer", 0.05), ("margin_ratio", 1.10), ("level", 0.90), ("B", 399 if smoke else 33599), ("seed", 20261103),
+                     ("key", "alpha_LP"), ("ref", "t")])
+    if not smoke:                  # the smoke run reads its own coverage output: analyse_sf43.sh --smoke passes --coverage-summary
+        g["coverage_summary"] = coverage_summary_rel
+    g["floor"] = 2 if smoke else 200
+    g["amplitudes"] = amps
+    return g
 
 
 def _g7_section(nm, by):
-    twins = OrderedDict((amp, OrderedDict([("consumer", nm(amp + "_g5c")), ("pollock", nm(amp + "_g5pollock")), ("par2", nm(amp + "_g5p"))]))
+    twins = OrderedDict((amp, OrderedDict([("consumer", nm(amp + "_g5c")), ("pollock", nm(amp + "_g5pol")), ("par2", nm(amp + "_g5p"))]))
                         for amp in G5C)
     fac = OrderedDict()
     for amp in D.G7_AMPS:
@@ -464,9 +525,21 @@ def _g7_section(nm, by):
                         ("factorial", fac)])
 
 
+def _pollock_section(nm):
+    """Acceptance B (production set, flux, both bases) and the G5.5 / item 8 decomposition on the Gate 5 pairs; reported, outside the family."""
+    return OrderedDict([
+        ("level", 0.90), ("B", 2000), ("seed", 20261103), ("responses", ["alpha_LP", "alpha_TP:disp", "alpha_TP", "alpha_TAP:disp", "alpha_TAP"]),
+        ("estimands", ["alpha_TP", "alpha_TAP", "alpha_LP", "U_r"]),
+        ("contrast", OrderedDict((amp, OrderedDict([("consumer", nm(amp + "_prod")), ("pollock", nm(amp + "_prodpol"))])) for amp in G5C)),
+        ("decomposition", OrderedDict((amp, OrderedDict([("consumer", nm(amp + "_g5c")), ("pollock", nm(amp + "_g5pol")), ("par2", nm(amp + "_g5p"))]))
+                                      for amp in G5C))])
+
+
 def _secondaries(nm, by):
     tw, bdd, par2t, expi = OrderedDict(), [], OrderedDict(), OrderedDict()
     for rid in [r.id for r in D.ROWS if r.fam in ("production", "distance", "gate5_par2")]:
+        if nm(rid) not in by:
+            continue
         tw[nm(rid)] = {"amplitude": by[nm(rid)].row.amp}
         if by[nm(rid)].row.fam != "production":
             bdd.append(OrderedDict([("name", "bdd_" + nm(rid)), ("arm", nm(rid)), ("amplitude", by[nm(rid)].row.amp), ("t_key", "curve_t"),
@@ -475,29 +548,24 @@ def _secondaries(nm, by):
         par2t[amp] = {"par2": nm(amp + "_g5p"), "consumer": nm(amp + "_g5c")}
         expi["expI_" + amp] = {"arm": nm(amp + "_prod")}
     return OrderedDict([("level", 0.90), ("seed", 20261103), ("B", 1000), ("t_scale", 1.0), ("time_window", tw), ("expI", expi),
-                        ("par2_transverse", par2t), ("bdd_fit", bdd)])
+                        ("par2_transverse", par2t), ("bdd_fit", bdd),
+                        ("note", "Par2 time-window parameters fixed a priori (reduce.U_time = exp(sigma^2 / 6), reduce.par2_exit_x = the outlet plane L / W in "
+                                 "box units, regular snapshots every plan par2.snapshots_every steps, about 100 per realization): sf43plan/design.py")])
 
 
 def _failures():
-    return OrderedDict([("max_rate", 0.01), ("failure_classes", ["failed", "unusable_solve"]), ("fallback_verdicts", ["fallback"]),
-                        ("estimands", ["alpha_TP", "alpha_TAP", "alpha_LP"]), ("q_low", 0.05), ("q_high", 0.95)])
+    return OrderedDict([("max_rate", 0.01), ("failure_classes", ["unusable_solve"]), ("fallback_verdicts", ["fallback"]),
+                        ("estimands", ["alpha_TP", "alpha_TAP", "alpha_LP"]), ("q_low", 0.05), ("q_high", 0.95),
+                        ("expected", OrderedDict([("unusable_solve_rate", OrderedDict(D.EXPECTED_FAILURE_RATE)),
+                                                  ("engine_halt_rate", D.FAILURE["halt_rate"]),
+                                                  ("note", "pre-registered expectation, compared with the observed rates in the report; the engine halts an arm only above "
+                                                           "halt_rate (a systematic-failure detector); particle-stagnation fractions are reported, never failures")]))])
 
 
-def _positive_control(e, b):
-    return OrderedDict([("arm", e.id), ("sigma2", 0.04), ("eps", 0.2), ("n", e.n), ("seeds", {"start": b["start"], "count": b["count"]}),
-                        ("reserves", b["reserves"]), ("estimand", "per-plane variance profile (reduced <arm>.planes.csv)"),
-                        ("reference", "firstorder_box.py of the pre-activation review (box first-order prediction)"),
-                        ("acceptance", "NOT FIXED in the sources read (H9 only says: compared with the box first-order prediction); no analysis code at this base")])
-
-
-def _alignment_notes():
-    return OrderedDict([
-        ("production_rows_hmax_div", "resolved by the engine: the production pass has hmax_div 8 in both layouts (arms with hmax_div_first); "
-                                     "the other consumer arms are single-pass (-1) and Par2 is -1"),
-        ("window_labels", "reduced tables are <arm>__<segment>__d<lo>-<hi>.csv, so the window labels are those stems; sf43ana.estimands reads the "
-                          "halves and the far window under the labels h1, h2, far, which then find no table (needs a label -> stem alias)"),
-        ("arm_selection_override", "arms[].selection (weights unif for the Gate 5 twin and Par2 arms) is not read by sf43ana.config / loader at the base"),
-        ("pollock_twin", "g7.twins.pollock names arms <amp>_g5pollock that do not exist: the reducer has no Pollock-bridge table yet")])
+def _positive_control(aid, smoke):
+    return OrderedDict([("arm", aid), ("sigma2", 0.04), ("width_lambda", 24), ("length_lambda", 104), ("window", [25, 94]),
+                        ("weights", ["flux", "unif"]), ("level", 0.90), ("B", 200 if smoke else 2000), ("seed", 20261103), ("kmax", 12.0),
+                        ("R_bounds", [0.8, 1.25]), ("R_weights", "flux"), ("expectation", POSITIVE_CONTROL_EXPECTATION)])
 
 
 # ---------------------------------------------------------------------------------------------------------------------------
@@ -562,9 +630,11 @@ def total_gpu_h(ents):
     return sum(e.n * D.SEC[e.row.sec] for e in ents) / 3600.0, sum((e.hm_n or 0) * D.H3_EXTRA.get(e.row.amp, 0.0) for e in ents) / 3600.0
 
 
-def design_table_md(plan, reg, placeholder):
+def design_table_md(plan, reg, placeholder, smoke_only=False):
     ents = production_entries()
     out = ["# SF-43 design table, variant A (generated by `python3 -m sf43plan generate`; do not edit)", ""]
+    if smoke_only:
+        out += ["**SMOKE-ONLY plan: the coverage sha256 are placeholders; regenerate with the smoke job's coverage files before the production run.**", ""]
     if placeholder:
         out += ["**The binaries md5 are PLACEHOLDERS (all zeros): the campaign engine's md5 gate refuses to start until the plan is regenerated.**", ""]
     out += ["## Arms", "", "| arm | sigma^2 | family | runner | grid | W | lambda/h | L | M | n_conf | n_max | group | prio | heavy | min_free MiB | unit | est s | GPU-h (n_conf) |",
@@ -597,7 +667,7 @@ def design_table_md(plan, reg, placeholder):
 # ---------------------------------------------------------------------------------------------------------------------------
 def analysis_files():
     """Repo-relative paths of the analysis files present now: non-test .py/.sh/.json of the analysis packages and of the SF-42 libraries
-    they import."""
+    they import, plus the wrapper ``analyse_sf43.sh``."""
     pk = [(ART_REL + "/scripts", ("sf43ana", "sf43cov", "recompute43", "reconcile43")), (SF42_REL, ("mcstat", "sf42red", "seedlattice"))]
     out = []
     for base, names in pk:
@@ -605,18 +675,32 @@ def analysis_files():
             for dp, dns, fns in os.walk(os.path.join(REPO, base, n)):
                 dns[:] = sorted(d for d in dns if d not in ("__pycache__", "tests"))
                 out += [os.path.relpath(os.path.join(dp, f), REPO).replace(os.sep, "/") for f in sorted(fns) if f.endswith((".py", ".sh", ".json"))]
-    extra = ART_REL + "/scripts/analyse_sf43.sh"
-    if os.path.isfile(os.path.join(REPO, extra)):
-        out.append(extra)
-    return sorted(out)
+    if not os.path.isfile(os.path.join(REPO, ANALYSE_SH)):
+        raise FileNotFoundError(ANALYSE_SH)
+    return sorted(out + [ANALYSE_SH])
 
 
-def analysis_hashes():
+def sha256_bytes(b):
+    return hashlib.sha256(b).hexdigest()
+
+
+def analysis_hashes(prereg_text, prereg_rel, coverage_files=None):
+    """{repo-relative path: sha256}: the analysis files, the pre-registration (its text, as generated) and, for a production plan, the coverage
+    summary and qualification (``coverage_files`` = (summary path, qualification path); None: not included, see ``with_coverage_placeholders``)."""
     h = OrderedDict()
     for p in analysis_files():
         with open(os.path.join(REPO, p), "rb") as f:
-            h[p] = hashlib.sha256(f.read()).hexdigest()
-    return h
+            h[p] = sha256_bytes(f.read())
+    h[prereg_rel] = sha256_bytes(prereg_text.encode())
+    if coverage_files is not None:
+        for rel, path in zip((COV_SUMMARY_REL, COV_QUAL_REL), coverage_files):
+            with open(path, "rb") as f:
+                h[rel] = sha256_bytes(f.read())
+    return OrderedDict(sorted(h.items()))
+
+
+def with_coverage_placeholders(h):
+    return OrderedDict(sorted(dict(h, **{COV_SUMMARY_REL: ZERO_SHA256, COV_QUAL_REL: ZERO_SHA256}).items()))
 
 
 def dumps(o):

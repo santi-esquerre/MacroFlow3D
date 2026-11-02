@@ -62,8 +62,16 @@ def table_path(root, src, seg, lo, hi):
     return os.path.join(root, "reduced", src, seg, "%s__%s__d%g-%g.csv" % (src, seg, lo, hi))
 
 
-def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), segments=2, extra_rows=None, ell=0.1):
-    """Writes ``prereg.json``, ``campaign/ledger.jsonl`` (``unit_end`` / ``replacement`` records of the engine) and the reduced tables
+def seed_record(arm_id, group, segment_path, seed, seed0, unit, verdict, cls):
+    """The engine's per-solve ledger record (``sf43camp/lanes.py`` ``seed_records``)."""
+    return {"kind": "seed", "arm": arm_id, "group": group, "segment": os.path.basename(segment_path), "segment_path": segment_path, "seed": seed,
+            "seed0": seed0, "unit": unit, "verdict": verdict, "class": cls, "iterations": 30, "rel": 1e-12, "balance": 1e-10, "max_div": 2e-8,
+            "field_seed": seed}
+
+
+def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), segments=2, extra_rows=None, ell=0.1, unreduced=(), reest=None):
+    """Writes ``prereg.json``, ``campaign/ledger.jsonl`` (``seed`` / ``replacement`` / ``unreduced`` / ``reest`` records of the engine; ``unit_end``
+    too, which the loader ignores) and the reduced tables
     ``reduced/<arm>/<segdir>/<arm>__<segdir>__d<lo>-<hi>.csv`` of every arm.
 
     ``mean_of(arm_cfg, window, basis, est)`` -> mean of the estimator; ``fail``: iterable of (arm id, seed) that end their unit as an
@@ -75,7 +83,7 @@ def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), 
     pp = os.path.join(root, "prereg.json")
     with open(pp, "w") as f:
         json.dump(dict(prereg, windows=WINDOWS), f)
-    fail = set(fail)
+    fail, unreduced = set(fail), set(unreduced)
     ledger, rows, sources = [], {}, {}
     for a in prereg["arms"]:
         sources.setdefault(a.get("source", a["id"]), []).append(a)
@@ -93,15 +101,24 @@ def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), 
             ledger.append({"kind": "unit_end", "unit": unit, "arm": src, "cls": "ok", "completed": ok, "failed_seed": None,
                            "segment": "segments/%s/%s" % (src, seg), "segment_seed0": seg_seeds[0],
                            "verdicts": {str(s): "converged" for s in ok}})
+            for s in ok:
+                ledger.append(seed_record(src, group_arms[0]["group"], "segments/%s/%s" % (src, seg), s, seg_seeds[0], unit, "converged", "ok"))
+            skip_seg = any((src, s) in unreduced for s in seg_seeds)
+            if skip_seg:
+                ledger.append({"kind": "unreduced", "arm": src, "segment": "segments/%s/%s" % (src, seg), "seeds": ok})
             for s in seg_seeds:
                 if (src, s) in fail:
                     unit += 1
                     ledger.append({"kind": "unit_end", "unit": unit, "arm": src, "cls": "unusable_solve", "completed": [], "failed_seed": s,
                                    "segment": "segments/%s/u%06d_s%d" % (src, unit, s), "segment_seed0": s, "verdicts": {str(s): "stagnated"}})
+                    ledger.append(seed_record(src, group_arms[0]["group"], "segments/%s/u%06d_s%d" % (src, unit, s), s, s, unit, "stagnated",
+                                              "unusable_solve"))
+                    continue
+                if skip_seg:
                     continue
                 for a in group_arms:
-                    if s not in set(a["seeds"]) | set(a.get("reserves", [])):
-                        continue
+                    if a["code"] == "pollock" or s not in set(a["seeds"]) | set(a.get("reserves", [])):
+                        continue  # a Pollock entry reads rows of the table that ``extra_rows`` adds
                     for wname, (lo, hi) in WINDOWS.items():
                         for basis in ("pos", "disp"):
                             mu = lambda est: mean_of(a, wname, basis, est)  # noqa: E731
@@ -121,7 +138,9 @@ def write_world(root, prereg, mean_of, fail=(), replace=(), sd=(0.002, 0.0005), 
         os.makedirs(os.path.dirname(path), exist_ok=True)
         red.write_table(path, rs, red.COLUMNS)
     for g, s, t in replace:
-        ledger.append({"kind": "replacement", "group": g, "seed": s, "replacement": t, "arm": "?"})
+        ledger.append({"kind": "replacement", "group": g, "seed": s, "replaced_by": t, "arm": "?"})
+    for arm_id, n_new in (reest or {}).items():
+        ledger.append({"kind": "reest", "arm": arm_id, "sd": {}, "n_obs": 0, "n_req": n_new, "n_old": 0, "n_new": n_new})
     with open(os.path.join(root, "campaign", "ledger.jsonl"), "w") as f:
         for r in ledger:
             f.write(json.dumps(r) + "\n")

@@ -5,7 +5,8 @@ Not a pre-registration itself: the generated files are what the pre-registration
 
 ```bash
 cd <A>/scripts          # A = docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion
-python3 -m sf43plan generate --variant A --campaign-dir sf43_campaign --binaries <md5.json|placeholder> --out <A>
+python3 -m sf43plan generate --variant A --campaign-dir sf43_campaign --binaries <md5.json|placeholder> \
+    (--coverage-summary <summary.json> --coverage-qualification <qualification.json> | --smoke-only) --out <A>
 python3 -W error -m unittest discover -s sf43plan/tests -t .        # ~4 s, no GPU
 ```
 
@@ -15,9 +16,9 @@ python3 -W error -m unittest discover -s sf43plan/tests -t .        # ~4 s, no G
 
 | file | content |
 |---|---|
-| `plan.json` | campaign-engine plan (`sf43camp/plan.py` schema): 44 arms, groups with reserves, blinded re-estimation, analysis / recompute / reconcile commands, `analysis.sha256_list` of the analysis files PRESENT at generation time (regenerate last, after the analysis nodes are integrated), and the `smoke` overlay (`run_sf43.sh ... --smoke`) |
-| `prereg.json` | analysis pre-registration (`sf43ana/config.py` schema) plus the sections `gate5`, `g7`, `secondaries`, `failures`, `positive_control`, `engine_alignment` (config.py accepts unknown keys, so there is no separate `prereg_extra.json`) |
-| `prereg_smoke.json` | the same for the smoke arms (`sm_` ids), floors lowered to 2, so that every analysis code path runs |
+| `plan.json` | campaign-engine plan (`sf43camp/plan.py` schema): 44 arms, groups with reserves, blinded re-estimation, analysis / recompute / reconcile commands, `analysis.sha256_list` (analysis files, pre-registration, coverage files: regenerate last), and the `smoke` overlay (`run_sf43.sh ... --smoke`) |
+| `prereg.json` | analysis pre-registration (`sf43ana/config.py` schema, strict; every key emitted is accepted) with the sections `gate5`, `g7`, `pollock`, `secondaries`, `failures`, `positive_control` |
+| `prereg_smoke.json` | the same for the smoke arms (`sm_` ids), every floor 2 and B reduced, so that every analysis code path runs |
 | `seeds_registry.json` | every seed block (group, purpose, start, count, end, reserves, arms), the smoke blocks, the forbidden ranges, checked disjoint (`build.check_seeds`) |
 | `design_table.md` | arms, GPU-h per arm and total, seed blocks |
 
@@ -45,16 +46,28 @@ consumer dict of the production arms `hmax_div_first` (`{n: 30, divs: [8, 16, 32
 `determinism_pairs` `[[a, b]]`, `background` `[{name, argv, nice}]`, `background_wait_minutes`; `build` sets top-level `lane_b_min_free_mib` (17000).
 The planning extras of the three-pass realizations are in `arms[].hmax_extra` (ignored by the engine).
 
-## Alignments still open (see also `engine_alignment` in `prereg.json`)
+## Alignments (all closed; the toolchain is tested as a whole by `tests_integration`)
 
-1. Window labels: the executor's tables are `<arm>__<segment>__d<lo>-<hi>.csv`, so `prereg.json` uses the stems as window labels
-   (`d25-94`, `d25-59.5`, `d59.5-94`, `d94-194`) with `reduced_pattern` `{arm}/{segment}/{arm}__{segment}__{window}.csv`. `sf43ana.estimands`
-   reads the halves and the far window under the labels `h1`, `h2`, `far`, which therefore find no table until the analysis accepts aliases.
-2. Gate 5 twin and Par2 entries carry `selection: {weights: unif}`; `config.py` / `loader.py` ignore it at the base.
-3. `g7.twins.pollock` refers to arms `<amp>_g5pollock` that do not exist (no Pollock-bridge reduced table yet).
-4. Provisional numbers: Par2 `snapshots_every` (about 100 snapshots, a multiple of 1000), `U_time` = exp(sigma^2 / 6), `par2_exit_x` = box length.
-5. The positive control's acceptance rule is not fixed in the sources read; `positive_control` only names the arm, the estimand and the reference.
-6. `background` runs `sf43cov/run_cov.sh` (the real harness; already `nice -n 19`), not the placeholder `python3 -m sf43cov run --profile sf43`.
-7. `analysis.command` calls `<A>/scripts/analyse_sf43.sh {campaign_dir} {build_dir}` (another node; absent at this base, so not hashed).
-8. The engine's `--dry-run` builds lane B without its class threshold and with unreadable memory, so lane B takes near-empty units there
-   (stage 1 20.0 h, 61.3 GPU-h); with the class (17000 MiB) and live memory it leaves after its 11.8 h of half-class units (stage 1 12.2 h).
+1. Window labels: `prereg.json` keeps the semantic labels `main` [25, 94], `h1` [25, 59.5], `h2` [59.5, 94], `far` [94, 194]; `sf43ana.loader.window_stem` derives the
+   executor's file stem `d%g-%g` from the bounds (one rule; no `reduced_pattern` in the pre-registration).
+2. Arm entries: `n_conf` = the PLANNED size and `n_max` = the seeds the engine may run (`seeds` has `n_max` entries); `reest: true` on the entries that follow the
+   engine's blinded re-estimation (`ledger` record `reest`, `n_new`): the production arms, their Pollock partners and the width cells. Gate 5 twins (`selection: {weights: unif}`,
+   `hmax_div` 8 for a production source, -1 otherwise) and Par2 arms read the uniform-weight rows.
+3. Pollock: `<amp>_prodpol` (acceptance B: the production set, flux, label 8) and `<amp>_g5pol` (the Gate 5 twin, uniform weights) are arms with `code: pollock` and
+   the consumer's engine arm as `source`; `g7.twins.pollock` points at `<amp>_g5pol`; the `pollock` block lists the contrast and the decomposition.
+4. Par2 time-window parameters (a priori, `design.py`): `U_time = exp(sigma^2 / 6)`, `par2_exit_x` = the outlet plane (L / W in box units), `snapshots_every` about
+   100 snapshots per realization (a multiple of 1000).
+5. Positive control: arm `pc_s004` under the control amplitude `s004`; the pre-registered statistic `R` with its expectation [0.8, 1.25] and rationale is in
+   `positive_control.expectation` (see `sf43ana/README.md`).
+6. Analysis: `analysis.command` = `bash <A>/scripts/analyse_sf43.sh {campaign_dir} {build_dir}` (the smoke overlay adds `--smoke` and its own `sha256_list`).
+   `analysis.sha256_list` covers the wrapper, `sf43ana`, `sf43cov`, `recompute43`, `reconcile43`, `mcstat`, `sf42red`, `seedlattice`, the pre-registration and, for
+   the production plan, the coverage summary and qualification: the generator takes `--coverage-summary` and `--coverage-qualification` (the smoke job's outputs,
+   committed as `<A>/coverage/summary.json` and `<A>/coverage/qualification.json`) and REFUSES a production plan without them; `--smoke-only` writes a plan that
+   is good for the smoke run only (the coverage hashes are all-zero placeholders: the analysis gate refuses a production run). The smoke prereg has no
+   `gate5.coverage_summary`: `analyse_sf43.sh --smoke` passes the smoke job's own `{campaign_dir}/coverage/summary.json` when it exists.
+7. `background` = `bash <A>/scripts/sf43cov/run_cov.sh {campaign_dir}/coverage --workers 32 --profile sf43` (nice 19; ends with `sf43cov qualify`).
+8. `recompute`: `--primary-arm` for each production arm and `--single-pass-hmax 8`.
+9. `failure.halt_rate` 0.25 (systematic-failure detector; the expected rates per amplitude are pre-registered in `failures.expected`); `s4_l4` has 150 realizations (H9);
+   the determinism-pair arms are not `heavy` (the lane pins place them).
+10. The engine's `--dry-run` builds lane B without its class threshold and with unreadable memory, so lane B takes near-empty units there (stage 1 20.0 h, 61.4 GPU-h);
+    with the class (17000 MiB) and live memory it leaves after its 11.8 h of half-class units (stage 1 12.2 h).

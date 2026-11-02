@@ -58,7 +58,7 @@ def check(summary):
         if sec in ("estimands", "gate4", "budgets") and f == 0:
             reasons.append("no finite number in section %s" % sec)
     errs = []
-    for sec in ("gate5", "g7", "secondaries", "failures", "positive_control"):
+    for sec in ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock"):
         if sec in summary:
             _errors(summary[sec], sec, errs)
     for e in errs:

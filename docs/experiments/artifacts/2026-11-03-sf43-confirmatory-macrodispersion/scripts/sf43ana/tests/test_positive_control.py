@@ -104,6 +104,23 @@ class PositiveControl(unittest.TestCase):
         ws = r["weights"]["flux"]["centred"]["window_slope"]
         self.assertAlmostEqual(ws["alpha_T_equivalent_predicted"], 0.5 * ws["predicted"], places=15)
 
+    def test_preregistered_statistic_R_ok_and_failed(self):
+        r = self.run_pc(self.build(1.0))["R"]
+        self.assertEqual((r["weights"], r["status"], r["positive_control_ok"]), ("flux", "ok", True))
+        self.assertAlmostEqual(r["value"], 1.0, delta=0.05)
+        self.assertTrue(0.8 <= r["interval"][0] <= r["value"] <= r["interval"][1] <= 1.25)
+        r = self.run_pc(self.build(2.0))["R"]  # (the inconclusive case is the rule test below: the window-mean interval here is a few 1e-3 wide)
+        self.assertEqual((r["status"], r["positive_control_ok"]), ("failed", False))
+        self.assertGreater(r["interval"][0], 1.25)
+
+    def test_r_verdict_rule(self):
+        self.assertEqual(pcm.r_verdict(0.9, 1.1, [0.8, 1.25]), (True, "ok"))
+        self.assertEqual(pcm.r_verdict(0.8, 1.25, [0.8, 1.25]), (True, "ok"))
+        self.assertEqual(pcm.r_verdict(0.7, 1.1, [0.8, 1.25]), (False, "inconclusive"))
+        self.assertEqual(pcm.r_verdict(1.0, 1.3, [0.8, 1.25]), (False, "inconclusive"))
+        self.assertEqual(pcm.r_verdict(0.5, 0.79, [0.8, 1.25]), (False, "failed"))
+        self.assertEqual(pcm.r_verdict(1.26, 1.5, [0.8, 1.25]), (False, "failed"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -256,7 +256,7 @@ def recrossings(cfg, spec, data):
     return out
 
 
-KEYS = {"level", "seed", "B", "t_scale", "time_window", "expI", "par2_transverse", "bdd_fit", "recrossings"}
+KEYS = {"level", "seed", "B", "t_scale", "time_window", "expI", "par2_transverse", "bdd_fit", "recrossings", "note"}
 
 
 def analyse(ctx):

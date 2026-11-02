@@ -27,7 +27,7 @@ from .gate4 import (CLASS_PHYS, RobustTest, classify_amplitude, classify_estimat
 from .holm import holm
 from .loader import build_data, load_all
 
-OPTIONAL = ("gate5", "g7", "secondaries", "failures", "positive_control")
+OPTIONAL = ("gate5", "g7", "secondaries", "failures", "positive_control", "pollock")
 
 
 class Context:
@@ -159,8 +159,27 @@ def precision_section(prereg, est):
     return out
 
 
-def run(prereg_path, campaign, reduced, gate5_path, out_dir):
+def gate5_reporting(optional, by_id):
+    """Labels what decides and what only describes in the Gate 5 block: the confirmatory outcome is the Holm TOST decision of ``gate5:<amp>``;
+    the G5.5 verdict (agree / disagree / inconclusive from the 90 % Fieller interval) is descriptive (acceptance D)."""
+    for amp, a in optional["gate5"]["amplitudes"].items():
+        h = by_id.get("gate5:%s" % amp)
+        a["reporting"] = {
+            "confirmatory_outcome": {
+                "what": "Holm TOST decision of the family hypothesis gate5:%s (equivalence of mu_L / mu_P within [1/m, m] at the Holm level)" % amp,
+                "decided": h is not None, "testable": None if h is None else h["testable"], "rejected": None if h is None else h["rejected"],
+                "p_tost": None if h is None else h["p"], "holm_level": None if h is None else h["level"]},
+            "descriptive_verdict": {
+                "what": "G5.5 verdict from the %g %% Fieller interval of the ratio (agree | disagree | inconclusive); descriptive, never decides "
+                        "the hypothesis" % (100 * optional["gate5"]["config"]["level"]),
+                "verdict": a.get("verdict")}}
+
+
+def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
+    """``coverage``: None (the pre-registration's ``gate5.coverage_summary``), ``"none"`` (no coverage summary: Gate 5 descriptive) or a path."""
     prereg = cfgmod.load_prereg(prereg_path)
+    if coverage is not None and prereg.raw.get("gate5"):
+        prereg.raw["gate5"]["coverage_summary"] = None if coverage == "none" else coverage
     arms, proc, ledger = load_all(prereg, campaign, reduced)
     auto = gate5_path in (None, "auto", "")
     gate5_p = read_gate5(gate5_path)
@@ -178,6 +197,8 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir):
     by_id = {r["id"]: r for r in res}
     for r, h in zip(res, hyps):
         r["note"] = h["note"]
+    if optional.get("gate5") is not None:
+        gate5_reporting(optional, by_id)
     pb = prereg["bases"]["primary"]
     gate4 = {}
     for amp in prereg.amps:
@@ -201,7 +222,9 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir):
     levels = prereg.raw.get("report_levels") or [fwer, fwer / info["m"]]
     summary = {"estimands": est, "gate4": gate4, "family": {"info": info, "hypotheses": res, "gate5_p_supplied": gate5_p},
                "budgets": budgets_section(prereg, tests, levels), "precision": precision_section(prereg, est)}
-    summary["process"] = {"prereg_sha256": sha256(prereg_path), "prereg_effective": {k: v for k, v in prereg.raw.items() if k != "arms"},
+    cov_path = (prereg.raw.get("gate5") or {}).get("coverage_summary")
+    summary["process"] = {"prereg_sha256": sha256(prereg_path),
+                          "coverage_summary": {"path": cov_path, "sha256": sha256(cov_path) if cov_path and os.path.isfile(cov_path) else None}, "prereg_effective": {k: v for k, v in prereg.raw.items() if k != "arms"},
                           "loader": proc, "arms": {a: d.info for a, d in arms.items()},
                           "classes_legend": [CLASS_PHYS, "numerical", "unresolved (bounded)", "unresolved"]}
     bs, m = prereg["bootstrap"], info["m"]

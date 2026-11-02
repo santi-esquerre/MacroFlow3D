@@ -130,7 +130,7 @@ class PrefixAndReplacement(Base):
     def test_data_contract(self):
         arms, _, ledger = self.build(fail=[("p1", 1005)], replace=[("g1", 1005, 1900)])
         d = build_data(self.prereg, arms, ledger)
-        self.assertEqual(sorted(d), ["arms", "coverage_summary", "halted", "ledger", "sources"])
+        self.assertEqual(sorted(d), ["arms", "coverage_summary", "halted", "ledger", "sources", "unreduced"])
         p = d["arms"]["p1"]
         self.assertEqual(p["N"], 40)
         self.assertEqual(sorted(p["cols"])[:4], ["U_r", "U_r:disp", "alpha_LP", "alpha_LP:disp"])
@@ -141,6 +141,107 @@ class PrefixAndReplacement(Base):
         rep = [r for r in d["ledger"] if r["arm"] == "p1" and r["seed"] == 1900]
         self.assertEqual(rep[0]["replaces"], 1005)
         self.assertTrue(np.array_equal(p["seed"], arms["p1"].seeds))
+
+
+class LedgerDrivenCuts(Base):
+    """The engine's ledger vocabulary (sf43camp/lanes.py): seed records, unreduced, reest."""
+
+    def build(self, mutate=None, **kw):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self.pr = fx.prereg_dict()
+        if mutate:
+            mutate(self.pr)
+        self.paths = fx.write_world(self._tmp.name, self.pr, flat_mean, **kw)
+        self.prereg = config.load_prereg(self.paths["prereg"])
+        return load_all(self.prereg, self.paths["campaign"], self.paths["reduced"])
+
+    @staticmethod
+    def grow_p1(pr, n_max=60):
+        a = next(x for x in pr["arms"] if x["id"] == "p1")
+        a.update(seeds=list(range(1000, 1000 + n_max)), n_max=n_max, reest=True)
+
+    def test_window_stem_is_the_executors_rule(self):
+        from sf43ana.loader import window_stem
+        self.assertEqual([window_stem(*b) for b in ([25.0, 94.0], [25, 59.5], [59.5, 94], [94, 194.0])], ["d25-94", "d25-59.5", "d59.5-94", "d94-194"])
+
+    def test_replacement_record_key_is_replaced_by(self):
+        self.build(fail=[("p1", 1005)], replace=[("g1", 1005, 1900)])
+        lp = os.path.join(self.paths["campaign"], "ledger.jsonl")
+        with open(lp) as f:
+            rec = [json.loads(x) for x in f if '"replacement"' in x]
+        self.assertEqual(rec, [{"kind": "replacement", "group": "g1", "seed": 1005, "replaced_by": 1900, "arm": "?"}])
+        self.assertEqual(read_ledger(lp).repl, {"g1": {1005: 1900}})
+
+    def test_seed_records_carry_verdict_and_class(self):
+        arms, proc, ledger = self.build(fail=[("p1", 1005)])
+        r = ledger.seeds[("p1", 1005)]
+        self.assertEqual((r["class"], r["verdict"]), ("unusable_solve", "stagnated"))
+        self.assertEqual(ledger.seeds[("p1", 1006)]["verdict"], "converged")
+        self.assertEqual(proc["verdict_unknown"], 0)
+        self.assertEqual((arms["p1"].N, set(arms["p1"].verdicts)), (5, {"converged"}))
+
+    def test_verdict_outside_the_ok_vocabulary_ends_the_prefix(self):
+        self.build()
+        lp = os.path.join(self.paths["campaign"], "ledger.jsonl")
+        with open(lp) as f:
+            recs = [json.loads(x) for x in f]
+        for r in recs:
+            if r["kind"] == "seed" and r["arm"] == "p1" and r["seed"] == 1010:
+                r["verdict"] = "stagnated"
+        with open(lp, "w") as f:
+            f.writelines(json.dumps(r) + "\n" for r in recs)
+        arms, _, _ = load_all(self.prereg, self.paths["campaign"], self.paths["reduced"])
+        self.assertEqual(arms["p1"].N, 10)
+        self.assertIn("verdict 'stagnated'", arms["p1"].info["stopped_at"]["reason"])
+
+    def test_unreduced_segment_is_missing_explicitly(self):
+        arms, proc, _ = self.build(unreduced=[("p1", 1030)])
+        a = arms["p1"]
+        seg2_first = a.info["stopped_at"]
+        self.assertIsNotNone(seg2_first)
+        self.assertIn("unreduced segment", seg2_first["reason"])
+        self.assertLess(a.N, 40)
+        self.assertEqual(list(proc["unreduced"]), ["p1/" + next(iter(proc["unreduced"])).split("/")[1]])
+        self.assertEqual(arms["l5"].N, 40)  # other arms unaffected
+        self.assertEqual(arms["h16"].N, 20)
+
+    def test_unreduced_then_reduced_in_a_later_session_is_not_missing(self):
+        self.build(unreduced=[("p1", 1030)])
+        lp = os.path.join(self.paths["campaign"], "ledger.jsonl")
+        with open(lp) as f:
+            recs = [json.loads(x) for x in f]
+        un = next(r for r in recs if r["kind"] == "unreduced")
+        self.assertEqual(read_ledger(lp).unreduced.keys(), {(un["arm"], os.path.basename(un["segment"]))})
+        with open(lp, "a") as f:
+            f.write(json.dumps({"kind": "reduced", "arm": un["arm"], "segment": un["segment"], "seeds": un["seeds"]}) + "\n")
+        self.assertEqual(read_ledger(lp).unreduced, {})
+
+    def test_reest_cut_is_n_new_for_entries_that_follow_it_else_n_conf(self):
+        arms, proc, _ = self.build(mutate=self.grow_p1, reest={"p1": 50})
+        self.assertEqual((arms["p1"].N, arms["p1"].info["n_cut"], arms["p1"].info["reest_n_new"]), (50, 50, 50))
+        self.assertEqual(arms["l5"].N, 40)  # an entry without reest keeps its planned n_conf
+        self.assertEqual(arms["h16"].N, 20)
+        self.assertEqual(proc["reest_n_new"], {"p1": 50})
+        arms, _, _ = self.build(mutate=self.grow_p1)  # no reest record: the planned n_conf
+        self.assertEqual((arms["p1"].N, arms["p1"].info["n_cut"]), (40, 40))
+        arms, _, _ = self.build(mutate=self.grow_p1, reest={"p1": 200})  # beyond the seeds listed: clipped
+        self.assertEqual((arms["p1"].N, arms["p1"].info["n_cut"]), (60, 60))
+        arms, _, _ = self.build(mutate=self.grow_p1, reest={"p1": 10})  # never below n_conf
+        self.assertEqual(arms["p1"].N, 40)
+
+    def test_prefix_stops_inside_the_extension_positions(self):
+        arms, _, _ = self.build(mutate=self.grow_p1, reest={"p1": 50}, fail=[("p1", 1045)])
+        self.assertEqual(arms["p1"].N, 45)
+        self.assertEqual(arms["p1"].info["stopped_at"]["seed"], 1045)
+
+    def test_n_max_validation(self):
+        pr = fx.prereg_dict()
+        pr["arms"][0]["n_max"] = 99  # more than the seeds listed
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = fx.write_world(tmp, pr, flat_mean)
+            with self.assertRaises(config.ConfigError):
+                config.load_prereg(paths["prereg"])
 
 
 class RealReducerTable(unittest.TestCase):

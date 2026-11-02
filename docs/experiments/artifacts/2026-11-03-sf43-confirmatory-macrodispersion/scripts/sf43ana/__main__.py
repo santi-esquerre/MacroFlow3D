@@ -1,6 +1,6 @@
 """CLI (from the scripts/ directory):
 
-  python3 -m sf43ana run --prereg P.json --campaign DIR --reduced DIR [--gate5 auto|none|G.json] --out DIR
+  python3 -m sf43ana run --prereg P.json --campaign DIR --reduced DIR [--gate5 auto|none|G.json] [--coverage-summary PATH|none] --out DIR
   python3 -m sf43ana check-finite --summary DIR/summary.json
 """
 import argparse
@@ -20,6 +20,8 @@ def main(argv=None):
     r.add_argument("--reduced", required=True, help="directory of the sf43camp reduced tables (pre-registration `reduced_pattern`)")
     r.add_argument("--gate5", default="auto", help="auto (default): Gate 5 from the pre-registration's gate5 block; none: no Gate 5 p-values (p = 1); "
                    "or a JSON of p-values per amplitude")
+    r.add_argument("--coverage-summary", default=None, help="path of the sf43cov summary.json, or 'none' (Gate 5 descriptive); default: the "
+                   "pre-registration's gate5.coverage_summary")
     r.add_argument("--out", required=True)
     c = sub.add_parser("check-finite", help="structure and counts of finite values of a summary.json; never prints an estimate")
     c.add_argument("--summary", required=True)
@@ -28,7 +30,7 @@ def main(argv=None):
         from . import finite
         return finite.run(a.summary)
     try:
-        _, path = summary.run(a.prereg, a.campaign, a.reduced, a.gate5, a.out)
+        _, path = summary.run(a.prereg, a.campaign, a.reduced, a.gate5, a.out, a.coverage_summary)
     except (ConfigError, LoadError) as e:
         print("sf43ana: %s" % e, file=sys.stderr)
         return 2

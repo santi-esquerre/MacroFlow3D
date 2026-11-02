@@ -35,6 +35,7 @@ def smoke_fields(pairs, campaign_dir, wait_minutes, art_rel):
     run_cov = "%s/scripts/sf43cov/run_cov.sh" % art_rel
     return OrderedDict([
         ("determinism_pairs", [[a, b] for _, a, b in pairs]),
-        ("background", [OrderedDict([("name", "coverage"), ("nice", 19), ("argv", ["bash", run_cov, "{campaign_dir}/coverage", "--workers", "32"])])]),
+        # the real coverage command of profile sf43 (every block of H15; run_cov.sh ends with `sf43cov qualify`), 32 workers at most, nice 19
+        ("background", [OrderedDict([("name", "coverage"), ("nice", 19), ("argv", ["bash", run_cov, "{campaign_dir}/coverage"] + list(D.COVERAGE_ARGS))])]),
         ("background_wait_minutes", wait_minutes),
     ])

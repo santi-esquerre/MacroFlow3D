@@ -16,6 +16,15 @@ particles that crossed it) in the DISPLACEMENT basis (``x23(d) - x23(seed)``), f
     ``centred``        ``E_r[(var_x2 + var_x3)/2]``: per-realization centred, the quantity the estimand ``alpha_TP`` is the slope of.
 Lengths of the tables are in box units; ``/ ell^2`` converts to lambda^2 (``ell`` from the ``ell`` column of the reduced table).
 
+PRE-REGISTERED STATISTIC ``R`` (descriptive; outside the family and the budget): the mean over the window planes of the measured
+FLUX-weighted displacement-basis second moment (``X22`` as measured) divided by the same mean of the box first-order prediction at
+``sigma^2 = 0.04``, with a ``level`` (90 %) seed-bootstrap percentile interval.  ``positive_control_ok`` = the interval lies within
+``R_bounds`` (default [0.8, 1.25]); ``R_status`` = ``ok`` | ``inconclusive`` (the interval straddles a bound) | ``failed`` (entirely outside).
+The EXPECTATION (pre-registered, README): ``R`` in [0.8, 1.25] -- the prediction is first order in ``sigma^2`` (the O(sigma^2) nonlinear
+corrections are about 4 % at 0.04), ignores the Dirichlet in/outflow faces of medium (b) and the discretization of the flow and tracking
+(lambda/h = 10), none of which is expected to move the window mean by more than a few per cent; a result outside the bounds means the
+pipeline (weights, displacement basis, plane moments, normalization by ``ell``) or the runner is wrong, not that ``alpha_T`` is anything.
+
 REPORTED (descriptive; no verdict, outside the family): per plane the ratio measured / predicted with a seed-bootstrap percentile interval
 (realizations resampled; ``level``, ``B``), the OLS slope of the measured and of the predicted profile over the window planes (the
 estimand is half the slope of the centred profile), their difference and ratio with seed-bootstrap intervals, and a count of the planes
@@ -33,7 +42,17 @@ import numpy as np
 
 from .loader import TableCache
 
-KEYS = {"arm", "sigma2", "width_lambda", "length_lambda", "window", "weights", "level", "B", "seed", "kmax"}
+KEYS = {"arm", "sigma2", "width_lambda", "length_lambda", "window", "weights", "level", "B", "seed", "kmax", "R_bounds", "R_weights", "expectation", "note"}
+
+
+def r_verdict(lo, hi, bounds):
+    """``(ok, status)`` of the pre-registered statistic ``R``: ok iff ``[lo, hi]`` is within ``bounds``; ``failed`` iff entirely outside."""
+    b0, b1 = bounds
+    if lo >= b0 and hi <= b1:
+        return True, "ok"
+    if hi < b0 or lo > b1:
+        return False, "failed"
+    return False, "inconclusive"
 
 
 def x22_box(d, L1, W, kmax=12.0):
@@ -147,6 +166,16 @@ def analyse_arm(pc, arm, tables, cfg_defaults):
                                           "alpha_T_equivalent_measured": 0.5 * slope, "alpha_T_equivalent_predicted": 0.5 * ps,
                                           "difference_interval_contains_0": bool(dlo <= 0.0 <= dhi)}}
         res["note"] = "descriptive; first order in sigma^2, one-particle, Dirichlet faces not modelled"
+        if w == pc.get("R_weights", "flux"):
+            bounds = [float(x) for x in pc.get("R_bounds", [0.8, 1.25])]
+            pm = float(pred[inw].mean())
+            Rb = V2[idx][:, :, inw].mean(axis=(1, 2)) / pm
+            R = float(V2[:, inw].mean() / pm)
+            lo_r, hi_r = (float(x) for x in np.quantile(Rb, [a, 1.0 - a]))
+            ok, status = r_verdict(lo_r, hi_r, bounds)
+            out["R"] = {"weights": w, "basis": "disp", "statistic": "mean over the window planes of the measured second moment / the same mean of "
+                        "the first-order box prediction", "value": R, "interval": [lo_r, hi_r], "level": level, "bounds": bounds,
+                        "positive_control_ok": ok, "status": status, "planes_in_window": int(inw.sum()), "n": int(n)}
         out["weights"][w] = res
     return out
 
