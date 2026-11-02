@@ -6,6 +6,8 @@ Daniel R. Lester, Marco Dentz, Prajwal Singh, and Aditya Bandopadhyay.
 **Under What Conditions Does Transverse Macrodispersion Exist in Groundwater Flow?**
 *Water Resources Research*, 59, e2022WR033059, 2023.
 
+Changelog: 2026-11-02: corrected after the full reading of SF-43's pre-activation review (bibliography section 7); see docs/decisions/2026-11-02-sf43-pre-activation-decisions.md H19. Page references: L23 by page number of the PDF ("p. n"); Lester et al. 2021 (JFM 918 A27) as "A27-n". "Inference" marks reasoning of this project, not a statement of the paper.
+
 ---
 
 ## Why this paper matters for this repository
@@ -15,7 +17,7 @@ This paper is the main scientific basis for the current Lester equation (14) str
 Its core claim is not merely that some numerical methods are inaccurate. It is stronger:
 
 - for **steady 3D Darcy flow with smooth, locally isotropic scalar conductivity**, the flow is **helicity-free** (L23 eq. 10, p. 5: `h = k grad(phi) . (grad(k) x grad(phi)) = 0`; this follows from local isotropy and smoothness alone and needs no condition on stagnation points),
-- the separate **stagnation-free** condition (eq. 11, `v != 0`, pp. 5-6) is what gives `grad(psi_i) != 0` and excludes knots/braids; it holds for pressure-driven Darcy flow and can fail for source-driven flow,
+- the separate **stagnation-free** condition (eq. 11, `v != 0`, pp. 5-6) gives `grad(psi_i) != 0`; zero helicity *and* no stagnation points *together* mean the streamlines have no "knots or braided structures" (p. 5; neither condition alone suffices). Stagnation-freedom holds for pressure-driven Darcy flow and can fail for source-driven flow,
 - such flows admit **two invariants / streamfunctions**,
 - those invariants constrain trajectories to 2D streamsurfaces,
 - therefore, **under the paper's assumptions (bounded label fluctuations, §4 of the paper)**, purely advective transverse macrodispersion is zero in that regime,
@@ -76,10 +78,11 @@ In the paper this is the conceptual bridge between:
 - integrability,
 - and the absence of purely advective transverse macrodispersion.
 
-**Inconsistency in the sources (recorded, not resolved).** L23 p. 6 states "all steady 3D helicity-free flows admit the dual streamfunctions" (via the Clebsch/Euler-potential argument with Yoshida 2009 and Arnol'd 1997), and Lester et al. 2021 (JFM 918 A27, p. A27-8) calls the helicity-free condition "a necessary and sufficient condition for the existence of a pair of 2-D streamfunctions". L23 itself says on p. 11 (§5.1) that "the helicity-free condition is a necessary but not sufficient condition for the existence of streamfunctions". The project does not rely on either reading: local existence is the Euler-potential statement below, and the existence of the target object is checked independently of the solver.
+**Inconsistency in the sources (the papers' own figures resolve it; the resolution is an inference).** L23 p. 6 states "all steady 3D helicity-free flows admit the dual streamfunctions" (via the Clebsch/Euler-potential argument with Yoshida 2009 and Arnol'd 1997), and Lester et al. 2021 (JFM 918 A27, p. A27-8) calls the helicity-free condition "a necessary and sufficient condition for the existence of a pair of 2-D streamfunctions". L23 itself says on p. 11 (§5.1) that "the helicity-free condition is a necessary but not sufficient condition for the existence of streamfunctions". Resolution (inference from the papers' own material, not a statement of either paper): L23's own test flow (Fig. 2b) is built from streamfunctions yet has non-zero helicity; Lester et al. 2021 Fig. 3 places the helicity-free class inside the integrable class, and A27-10 says the results hold for integrable flows "not just helicity-free flows". So zero helicity is not *necessary* for a streamfunction pair: both A27-8 ("necessary and sufficient") and L23 p. 11 ("necessary but not sufficient") get that direction wrong. A minimal counterexample (checked by hand): `v = (0, -sin x, 1)` has invariants `psi1 = x`, `psi2 = y + z sin x` and `v = grad psi1 x grad psi2`, but helicity `h = -cos x`. The project does not rely on either reading: local existence is the Euler-potential statement below, and the existence of the target object is checked independently of the solver.
 
 **Verified / refuted in this project** (`docs/experiments/2026-10-02-streamline-closure-and-eq14-vs-darcy.md`; limits: CPU probes, smooth Gaussian-covariance field, amplitude <= 1, `L/ell = 4`, one realization; the production-stack repeat is pending in SF-30).
 - Two invariants exist **locally**: Euler potentials exist locally for any divergence-free field, so §1 (helicity-free) and local existence stand.
+- Supporting statements in L23 itself (and its dependence on L21): L23 asserts that "integrable steady 3D periodic flows (such as zero helicity flows) admit periodic streamlines" (p. 10) and "As streamlines are periodic within Omega (due to periodicity of the streamfunctions)" (p. 13), and its error metric (eq. 34) presupposes that streamlines close. That eq. (14) reproduces the Darcy flow for its random `sigma^2_ln k = 4` field is supported only by citing L21 (p. 10), and L21 checked only a deterministic mirror-symmetric field (its §3), and only by the angle between velocities (see §11).
 - A **global, affine + triply periodic** nondegenerate pair does **not** exist for a generic smooth scalar periodic `k`. Such a pair forces every Darcy streamline to close on the torus; the return map of the face `x1 = 0` instead differs from the identity at second order in the amplitude, independently of resolution. A 2-D control and the mirror-symmetric Lester (2021) §3 field close to roundoff; breaking the symmetry breaks closure.
 - The periodic solution of equation (14) exists, but it is the closed-streamline field nearest to Darcy in the `1/k` energy (`e_v ~ amplitude^2`, resolution independent). Equation (14) imposes only the two components of `curl(c/k) = 0` across `c`; the helicity component `B . c = 0` is not imposed.
 
@@ -177,8 +180,10 @@ D^m_{22} = D^m_{33} = 0
 - statistical stationarity and ergodicity of `K` (§3, p. 4: "we assume that these random fields [...] are statistically stationary and ergodic"); Lester et al. 2021 argues stationarity of the streamfunction fluctuation `psi~` from that of `v~` (A27-20), asserted, not proven;
 - the purely advective limit `Pe -> infinity` (eqs. 6-7, p. 4);
 - the infinite-volume coarse-graining (eqs. 3, 27: the macrodispersion coefficient is the `V -> infinity` limit of a volume average);
-- bounded fluctuations of `psi~` are an explicit assumption (p. 8: "we assume that the fluctuations `psi~_i` are also bounded"); the bounded gradients of eq. 20 are presented as following from the stagnation-free condition (p. 8), which is logically weak: eq. 20 `|grad psi~_i| < |grad psi_i|` bounds gradients pointwise and does not by itself bound `psi~_i` over an unbounded domain;
+- bounded fluctuations of `psi~` are an explicit assumption (p. 8: "we assume that the fluctuations `psi~_i` are also bounded"); the bounded gradients of eq. 20 are presented as following from the stagnation-free condition (p. 8). Eq. 20 reads `|grad psi~_i| < |grad psibar_i|`, with the *mean* gradient on the right-hand side (read from the page image; the PDF text layer drops the overbars here and in eq. 21; Lester et al. 2021 eq. 5.6 is likewise bounded by the constant `C_i^2 = ||grad psibar_i||^2`, A27-19). A bound by a constant is strictly stronger than `v != 0` and does not follow from it (inference). It also bounds gradients pointwise and does not by itself bound `psi~_i` over an unbounded domain (inference);
 - the argument has the form `D^m_22 = lim (1/V) \oint n . f d^2x` with `f` finite (eq. 26-27): the surface integral scales as `L^2` and `1/V` as `L^-3`, hence `D^m_22 -> 0` (p. 9).
+
+**Scope of the claim in time (L23).** The work is "relevant to ... the non-Fickian pre-asymptotic regime" but "we shall focus mainly on the Fickian regime" (p. 2; also "relevant to both ... regimes", p. 22). The paper studies "a steady, continuously injected solute plume" and explicitly excludes the Dagan (1994) mechanism, which gives "ln t growth of transverse variance when longitudinal dispersion is non-zero" but "does not lead to broadening ... at fixed longitudinal locations" (p. 3). The paper gives no decay law for finite-time transverse spreading in pure advection.
 
 **First-order context (derived in this project, `docs/experiments/2026-10-27-sf39-pre-activation-review.md`; not a claim of the paper).** For Gaussian covariance, first-order theory gives `alpha_T(tau) = sqrt(pi) sigma^2 lambda / (8 tau^2) + O(tau^-4)` with `tau = U t / lambda`, positive at every finite time. A finite-time positive `alpha_T` is therefore expected even if its asymptote is zero.
 
@@ -203,7 +208,9 @@ A reconstruction may preserve divergence but fail to preserve the helicity-free 
 
 Example discussed in the paper (§5.2, pp. 11-13):
 - Pollock-like / linearly reconstructed cellwise velocity fields (zero-order Raviart-Thomas-Nédélec space on cuboid cells; exact integration within the cell, so all error is the reconstruction).
-- Scaling: the variance of the transverse position error grows as `(Delta/Delta0)^2` (Fig. 3c, p. 13); if that variance grows linearly in time the spurious coefficient is `D^m_22 = sigma_x2^2 / (2 <tau_Omega>)` (eq. 36, p. 13; the linear-growth assumption is the paper's).
+- Scaling: the variance of the transverse position error after one pass through the cell is Gaussian with zero mean and grows as `(Delta/Delta0)^2` (Fig. 3c, p. 12, not p. 13): approximately `1e-3` in domain units at `Delta/Delta0 = 1`, rising to about 0.1 at 8 (figure reading, approximate). If that variance grows linearly in time the spurious coefficient is `D^m_22 = sigma_x2^2 / (2 <tau_Omega>)` (eq. 36, p. 13; the linear-growth assumption is the paper's, "under the assumption that the variances ... grow linearly with time").
+
+Inconsistencies in the paper about Fig. 3c: it calls Pollock "second order in space", but a variance proportional to `Delta^2` means a standard deviation proportional to `Delta`, i.e. a first-order error (inference); the text says the `x3` errors are larger, but Fig. 3c shows `x2` (blue) above `x3` (red); and the `x3` variance stops growing at `Delta/Delta0 >= 4`.
 
 The message is:
 
@@ -216,9 +223,11 @@ Even if the velocity field is exact or structure-consistent, a time integrator c
 
 Example discussed in the paper (§5.3, p. 13):
 - Runge–Kutta tracking (4th order, adaptive, `tol` in `1e-4 .. 1e-8`) of the exact streamfunction velocity, without explicit invariant preservation.
-- Scaling: the error variance grows as `sqrt(tol)` (Fig. 4b, p. 14).
+- Scaling: the per-pass error is Gaussian with zero mean and its variance grows as `sqrt(tol)` (Fig. 4b, p. 14), from about `4e-7` (`tol = 1e-8`) to about `6e-5` (`tol = 1e-4`) (figure reading, approximate).
 
 The paper shows that both kinds of error can mimic Brownian-like transverse spreading ("in a manner that mimics Brownian motion", p. 21) and thus be falsely interpreted as macrodispersion.
+
+Test setup (Table 1, p. 10): periodic unit cube, `sigma^2_ln k = 4`, correlation length `l = 1/16`, grid spacing `Delta0 = 1/256` (16 points per `l`), "mean velocity v = 1". The covariance function is not stated, only "log-Gaussian isotropic random field with correlation length `l`", so mapping `l` onto the project's `lambda` (covariance `sigma^2 exp(-(r/lambda)^2)`) is uncertain. The spline-interpolated streamfunction velocity of the test is itself "not exactly helicity-free" (Fig. 2b, `|h|` up to about 0.004).
 
 Caveats on what the paper reports: no numerical `alpha_T` value is given for any method in pure advection (the figures show error variances, not dispersivities); p. 13 doubts that a refinement ladder removes the error ("even highly resolved grids [...] can impart significant spatial errors") while p. 21 says the true coefficients can be obtained by rigorous convergence studies. The project treats refinement evidence as necessary, not sufficient (Rule 3).
 
@@ -241,7 +250,7 @@ The paper's message still sets what must be measured; it no longer fixes which t
 
 Further locators and limits found on a full reading (2026-10-27):
 - L23 p. 11 (§5.2) explicitly recommends interpolating `phi` and `k` separately and forming `v = -k grad(phi)` analytically: helicity-free "even if the potential field contains small numerical errors and the resultant velocity is not strictly divergence-free". This is the Lagrangian consumer's construction.
-- The pseudo-symplectic tracker was never run in pure advection (p. 15: "We do not implement this algorithm to transverse dispersion in the purely advective case as the results are trivial"); the paper's zero there holds by construction (§4 argument, p. 10; the 1D integral eq. 38, p. 14, keeps `x2, x3` on the label surfaces), not by measurement. Eq. 38 implicitly needs `v1 > 0` (the label inverse functions `X2, X3` are parametrized by `x1`).
+- The pseudo-symplectic tracker was never run in pure advection (p. 15: "We do not implement this algorithm to transverse dispersion in the purely advective case as the results are trivial"); the paper's zero there holds by construction (§4 argument, pp. 8-9; the pseudo-symplectic zero, pp. 14-15; the 1D integral eq. 38, p. 14, keeps `x2, x3` on the label surfaces), not by measurement. Eq. 38 implicitly needs `v1 > 0` (the label inverse functions `X2, X3` are parametrized by `x1`).
 - Lester et al. (2025, JFM 1018, A35, doi:10.1017/jfm.2025.10551, arXiv:2412.05419; not in `docs/references`, read via arXiv HTML, App. D) avoided Runge-Kutta on a spline `k grad(phi)` for the isotropic case, citing spurious transverse dispersion (L23). That group therefore regards the consumer's construction as insufficient without drift evidence; this is why SF-39 records pathwise drift (decision 2026-10-27 F8).
 
 ---
@@ -258,7 +267,9 @@ Interpretation (**what the paper states**, under its bounded-label-fluctuation a
 - the limit is **regular**, not singular, in the non-chaotic isotropic Darcy case,
 - the project measures `D_T(Pe)` in a later phase instead of assuming this scaling.
 
-What the local-dispersion result rests on: first-order truncation of the velocity field about a streamline (eqs. 40, 44, p. 15), Markovian decorrelation of `v` and `m` along streamlines (eq. 52, p. 16), a waiting-time index `beta > 1` (eq. 53, p. 17), and periodic random re-injection of streamlines in the numerical test (p. 18); eq. 68 holds only for `t < t_d` (`t_d = l^2/D_0`, p. 18).
+What the local-dispersion result rests on: first-order truncation of the velocity field about a streamline (eqs. 40, 44, p. 15), Markovian decorrelation of `v` and `m` along streamlines (eq. 52, p. 16), a waiting-time index `beta > 1` (eq. 53, p. 17), and periodic random re-injection of streamlines in the numerical test (p. 18); eq. 68 holds only for `t < t_d` (`t_d = l^2/D_0`, defined on p. 19; pp. 18-19).
+
+Inconsistencies in the paper in the local-dispersion test (p. 18): Table 1 gives "mean velocity v = 1", but the text of §6.2 gives a mean speed of about 0.1453, and a mean speed cannot be smaller than the magnitude of the mean velocity; and the formula "`<1/v> = 1/(beta(alpha - 1))`" has `alpha` and `beta` swapped (its value 8.116 matches `1/(alpha(beta - 1))`).
 
 ---
 
@@ -283,7 +294,7 @@ This distinction is critical. The repository must never overgeneralize the Leste
 
 For MacroFlow3D validation, Gaussian-covariance log-conductivity fields are the main smooth benchmark for invariant existence and equation (14) solver development.
 
-Project inference, not a claim of either Lester paper: Lester et al. 2021 and 2023 define smooth as "not discontinuous" (L21 A27-27; L23 pp. 7, 22), so neither says anything about exponential covariance. The statement below is the project's own reading.
+Neither Lester paper defines "smooth" (correction of 2026-11-02: earlier versions of this note said both define it as "not discontinuous"). L21 A27-27 writes "smooth (i.e. not discontinuous)" parenthetically; L23 p. 7 describes non-smooth conductivity as "a singular limit of a smooth but rapidly varying conductivity field" and in terms of "a discontinuity in the spatial conductivity gradient". Read literally (inference), the latter also covers continuous fields whose gradient jumps, which matters for exponential-covariance fields and for cell-wise constant discretized `K`. Neither paper says anything explicit about exponential covariance; the statement below is the project's own reading.
 
 Exponential-covariance fields are not automatically equivalent. Their reduced smoothness can violate the classical hypotheses needed for a global two-streamfunction representation. If they are used after regularization, the run must state:
 
@@ -297,6 +308,20 @@ Project status (2026-10-07): the code generates Gaussian covariance only; expone
 ## 10. Tensor conductivity and local anisotropy
 
 Do not assume two global invariants exist for locally anisotropic tensor conductivity. That case can break the helicity-free structure and is outside the initial equation (14) solver scope.
+
+---
+
+## 11. Lester et al. 2021 (JFM 918 A27) statements the L23 claims rest on
+
+Items found on a full reading (bibliography section 7, 2026-11-02) that earlier versions of this note did not record. All are what L21 states, except where marked as inference.
+
+- Verification of eq. (14) against the Darcy flow uses the divergence error and **only the angle** between the potential-based and streamfunction-based velocities (eq. 3.7, Fig. 4b); magnitudes are never compared. The test field (eq. 3.1) is deterministic and mirror-symmetric, with `sigma^2_ln k = 0.165` (weak; the variance is the review's calculation).
+- The mean streamfunction gradient is set by `<k/theta>`, the arithmetic mean, not the effective conductivity. This affects velocity magnitude, not direction.
+- No backflow is assumed: "As `d phi/d x1 < 0` for all x" (A27-23).
+- The asymptotic result uses an assumed exponential label autocorrelation, `exp(-x1/zeta)` ("we may approximate", eq. 5.41), giving `<sigma^2> ~ sigma^2_0 + sigma^2_psi (1 - e^{-x1/zeta})` (eq. 5.43) and zero asymptotic dispersion (eq. 5.46). Neither `zeta` nor `sigma^2_psi` is ever estimated.
+- Transverse macrodispersion is defined on planes: `D_T,inf = lim_{x1 -> inf} <d sigma^2_c / d x1>` (eq. 5.28), with `sigma^2_c` the concentration-weighted transverse moment of a steady Gaussian line-source plume (unnormalized, without the factor 1/2).
+- A27-10 states that the results cover integrable flows, "not just helicity-free flows".
+- No Lyapunov exponent, finite-time Lyapunov exponent or stretching rate is computed anywhere; deformation is algebraic (A27-7, A27-18).
 
 ---
 
