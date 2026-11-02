@@ -22,6 +22,7 @@ case "$*" in
     [ -f "$f" ] || f="$(ls "$NV_DIR"/csv.* | sort -V | tail -1)"
     cat "$f" ;;
   *query-gpu=index,uuid*) printf '0, GPU-a\n1, GPU-b\n' ;;
+  *query-compute-apps=gpu_uuid*) cat "$NV_DIR/apps" 2>/dev/null || true ;;
   *) ;;
 esac
 EOF
@@ -124,6 +125,49 @@ expect_eq second-below-both-strict-75 "$(jstate t2c)" "failed 75 "
 reset_nv; csv 1 "0, 20000, 32768, 0" "1, 29000, 32768, 0"
 ( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=3000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch t2d )
 expect_eq first-must-meet-high-75 "$(jstate t2d)" "failed 75 "
+
+# --- 2c. sharing policy (owner decision of 2026-11-02, session): third-party compute processes ---
+# apps <gpu_uuid>...   one line per compute process (GPU-a = GPU 0, GPU-b = GPU 1)
+apps() { printf '%s\n' "$@" >"$NV_DIR/apps"; }
+# GPU 0 has a third-party process, GPU 1 free: count 2 starts AT ONCE (WAIT=600 would otherwise re-sample) with GPU 1
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps GPU-a
+( export REMOTE_GPU_WAIT=600 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch p1 )
+got="$(jlog p1)"
+grep -qxF 'job=p1 two-GPU request degraded to 1: GPU 0 has 1 third-party compute process(es)' <<<"$got" \
+  && grep -qx 'CVD=1 GRANTED=1' <<<"$got" && ! grep -q 're-sampling' <<<"$got" && grep -q 'compute_procs=1' <<<"$got" \
+  && ok policy-busy-gpu0-degrades-to-free-gpu1 || bad "policy-busy-gpu0-degrades-to-free-gpu1: $got"
+# the free GPU is the WORSE one by load (util 84): free-first beats the old ordering
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps GPU-b GPU-b
+( export REMOTE_GPU_WAIT=600 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch p2 )
+got="$(jlog p2)"
+grep -qxF 'job=p2 two-GPU request degraded to 1: GPU 1 has 2 third-party compute process(es)' <<<"$got" \
+  && grep -qx 'CVD=0 GRANTED=1' <<<"$got" && ok policy-free-gpu-beats-less-utilized-busy || bad "policy-free-gpu-beats-less-utilized-busy: $got"
+# none free: previous single-GPU policy (least loaded = GPU 1), one id, no waiting
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps GPU-a GPU-b
+( export REMOTE_GPU_WAIT=600 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch p3 )
+got="$(jlog p3)"
+grep -q 'GPU 0 has 1 third-party' <<<"$got" && grep -q 'GPU 1 has 1 third-party' <<<"$got" && grep -qx 'CVD=1 GRANTED=1' <<<"$got" \
+  && ! grep -q 're-sampling' <<<"$got" && ok policy-none-free-least-loaded || bad "policy-none-free-least-loaded: $got"
+# both free (no apps): two GPUs, as before
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps
+( export REMOTE_GPU_WAIT=600 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch p4 )
+grep -qx 'CVD=1,0 GRANTED=2' <<<"$(jlog p4)" && ok policy-both-free-two || bad policy-both-free-two
+# a process on a GPU of another uuid is not ours to count: unknown uuid ignored
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps GPU-zzz
+( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1; launch p5 )
+grep -qx 'CVD=1,0 GRANTED=2' <<<"$(jlog p5)" && ok policy-unknown-uuid-ignored || bad policy-unknown-uuid-ignored
+# COUNT_MIN=2 keeps waiting/taking two as before even with a third-party process
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps GPU-a
+( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=2; launch p6 )
+got="$(jlog p6)"
+grep -qx 'CVD=1,0 GRANTED=2' <<<"$got" && ! grep -q 'degraded' <<<"$got" && ok policy-min2-unchanged || bad "policy-min2-unchanged: $got"
+# count 1: the free GPU (util 84) is preferred over the less-utilized busy one (util 0); log shape unchanged
+reset_nv; csv 1 "${ONE_BUSY[@]}"; apps GPU-b
+( export REMOTE_GPU_WAIT=0 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_COUNT=1 REMOTE_GPU_COUNT_MIN=1; launch p7 )
+got="$(jlog p7)"
+grep -qx 'job=p7 chose GPU 0 (auto: least-loaded)' <<<"$got" && grep -qx 'CVD=0 GRANTED=1' <<<"$got" && ! grep -q degraded <<<"$got" \
+  && ok policy-count1-prefers-free || bad "policy-count1-prefers-free: $got"
+rm -f "$NV_DIR/apps"
 
 # --- 3. count 2, second GPU appears while waiting (round 2): waits, then takes both ---
 reset_nv; csv 1 "${ONE_ELIG[@]}"; csv 2 "${ONE_BUSY[@]}"

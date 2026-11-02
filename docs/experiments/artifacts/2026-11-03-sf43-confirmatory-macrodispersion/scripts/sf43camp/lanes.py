@@ -39,10 +39,11 @@ class SpawnFailed:
 
 class Engine:
     def __init__(self, st, ledger, ex, build_dir, cdir, lanes, *, clock, sleep, disk_free_gb, gpu_free_mib, spawn, worker, log, poll_s=2.0, dry=False,
-                 bg=None):
+                 bg=None, third_party=lambda gpu: []):
         self.st, self.ledger, self.ex, self.build_dir, self.cdir = st, ledger, ex, build_dir, cdir
         self.lanes, self.clock, self.sleep, self.disk_free_gb, self.gpu_free_mib = lanes, clock, sleep, disk_free_gb, gpu_free_mib
         self.spawn, self.worker, self.log, self.poll_s, self.dry, self.bg = spawn, worker, log, poll_s, dry, bg
+        self.third_party = third_party  # gpu -> pids of compute processes that are not the engine's own (owner decision 2026-11-02)
         self.pin_logged = set()
         self.retention = {}
         self.unreduced = []  # [(arm, segment, seeds)] still unreduced after the final rounds
@@ -158,6 +159,11 @@ class Engine:
                 continue
             if ln.unit or not ln.alive or ln.retry_at > now or self.stopping:
                 continue
+            if ln.heavy_only:  # claim boundary of lane B: a colleague's process on its GPU releases the GPU (a unit in flight finished first)
+                tp = self.third_party(ln.gpu)
+                if tp:
+                    self.release(ln, "third_party", len(tp))
+                    continue
             try:
                 u, wake = self.st.pick(ln, now, lambda ln=ln: self.gpu_free_mib(ln.gpu), self.cap if ln.heavy_only else None)
                 ln.nothing = u is None and wake is None
@@ -314,10 +320,11 @@ class Engine:
         self.rec(kind="replacement", group=g.id, seed=s, replaced_by=r, arm=a.id)
         self.log("REPLACEMENT group=%s seed=%d -> %d (unusable solve in %s)" % (g.id, s, r, a.id))
 
-    def release(self, ln):
+    def release(self, ln, reason=None, pids=0):
         ln.alive = ln.held = False
-        self.rec(kind="lane_release", lane=ln.name, gpu=ln.gpu)
-        self.log("LANE_B_RELEASED gpu=%s utc=%s" % (ln.gpu, utc_iso(self.clock())))
+        extra = {"reason": reason, "pids": pids} if reason else {}
+        self.rec(kind="lane_release", lane=ln.name, gpu=ln.gpu, **extra)
+        self.log("LANE_B_RELEASED gpu=%s%s utc=%s" % (ln.gpu, " reason=%s pids=%d" % (reason, pids) if reason else "", utc_iso(self.clock())))
 
     def crash(self, ln, tb):
         self.crashed += 1

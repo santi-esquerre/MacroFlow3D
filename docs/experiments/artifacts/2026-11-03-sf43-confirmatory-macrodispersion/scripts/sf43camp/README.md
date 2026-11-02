@@ -58,6 +58,11 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
 * **Stage 1** (two GPUs): lane B also leaves when the next unit of its class would end after `stage1_start + stage1_max_hours` (never exceeded, nothing is
   killed), and at the cap even if it was waiting for memory. `stage1_start` is written once and reused on resume. After the release, or on a
   resume past the cap, only lane A runs (`RESUME_SINGLE_LANE`: relaunch with one GPU). One GPU granted: lane A only.
+* **Third-party processes** (owner decision of 2026-11-02 (session), recorded in docs/decisions/2026-11-02-sf43-gpu-sharing-policy.md; the helper's side is in
+  `docs/runbooks/remote-v100.md`): before each claim lane B reads the compute processes on its GPU (`nvidia-smi --query-compute-apps=gpu_uuid,pid` with
+  `--query-gpu=index,uuid`, injectable as `third_party=`; unreadable = none) and ignores those that are descendants of the engine. If any other process is
+  present it releases its GPU at that claim boundary (a unit in flight finishes first): `LANE_B_RELEASED gpu=<id> reason=third_party pids=<n> utc=<..>`
+  (ledger `lane_release` with `reason`, `pids`); it never comes back (a resume gives `RESUME_SINGLE_LANE`). Lane A is not affected.
 * **Lane pin** (optional arm field `lane: "A"|"B"`): only that lane claims the arm's units (a pinned light arm may run on lane B); when that lane does not exist
   (one GPU, or lane B already released) the pin is ignored and `LANE_PIN_IGNORED arm=<id>` is logged once.
 * Job log: one `SF43_UNIT lane= gpu= arm= seed0= nr= segment= utc=` and one `SF43_UNIT_END ... cls= completed= seconds=` line per unit, plus `STOP`, `OOM`,
@@ -123,8 +128,9 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
   timing files (`*.log *timing* *texit* *mem_phase* prune_log.csv retained.txt`, extended by the plan's `determinism_exclude`), and the reduced rows value by value (all columns but `source`, `r`).
   `DETERMINISM.txt` has PASS/FAIL per file, the REPORT one line per pair; a FAIL never stops the job.
 * **Background jobs** (plan `background: [{name, argv, nice (19), env}]`, `background_wait_minutes` default 0): started once at engine start with `CUDA_VISIBLE_DEVICES=""`, `nice`, the
-  launcher's own process group (no new session: the helper's group signal on a cancel reaches them), `{campaign_dir}`/`{build_dir}` substituted in `argv`, log `background/<name>.log`; the exit code goes to `background/<name>.done` and the ledger (`background_start`,
-  `background_end`); a resumed session skips a job whose done file exists (a job that was running when the launcher died has none and starts again). SIGTERM terminates them with the units.
+  launcher's own process group (no new session: the helper's group signal on a cancel reaches them), `{campaign_dir}`/`{build_dir}` substituted in `argv`, log `background/<name>.log`; the exit code goes to the ledger (`background_start`, `background_end`); `background/<name>.done` is written ONLY by a job that exited by itself with rc 0 (a job killed
+  by a signal, e.g. the group kill of a cancel, or by the engine's `terminate`, or one that exits non-zero, is recorded without a done file). A resumed session skips a job whose done file exists
+  (a job that was running when the launcher died, was terminated, or failed has none and starts again). SIGTERM terminates them with the units.
   The final analysis waits up to `background_wait_minutes` for them, the rest is terminated; the REPORT lists their state. The wait checks the engine's signal flag at least every
   2 s: a signal terminates the jobs at once and the run ends 143 without analysis.
 

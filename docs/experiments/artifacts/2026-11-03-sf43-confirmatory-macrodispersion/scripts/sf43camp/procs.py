@@ -80,6 +80,40 @@ def nvidia_free_mib(gpu):
         return None
 
 
+def _smi(*args):
+    return subprocess.run(["nvidia-smi"] + list(args) + ["--format=csv,noheader"], capture_output=True, text=True, timeout=30, check=True).stdout
+
+
+def _is_descendant(pid, root):
+    """True if `root` is an ancestor of `pid` (a vanished / invisible process is not a descendant)."""
+    for _ in range(64):
+        if pid == root:
+            return True
+        try:
+            with open("/proc/%d/stat" % pid) as f:
+                pid = int(f.read().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            return False
+        if pid <= 1:
+            return False
+    return False
+
+
+def third_party_pids(gpu, root=None):
+    """Compute processes on one GPU that are not descendants of `root` (default: this engine).  Read-only query; unreadable = [] (assume none)."""
+    root = os.getpid() if root is None else root
+    try:
+        uuid = next(u for i, u in (tuple(x.strip() for x in ln.split(",", 1)) for ln in _smi("--query-gpu=index,uuid").splitlines() if "," in ln) if i == str(gpu))
+        pids = []
+        for ln in _smi("--query-compute-apps=gpu_uuid,pid").splitlines():
+            u, _, p = (x.strip() for x in ln.partition(","))
+            if u == uuid and p.isdigit() and not _is_descendant(int(p), root):
+                pids.append(int(p))
+        return pids
+    except (OSError, ValueError, StopIteration, subprocess.SubprocessError):
+        return []
+
+
 class Worker:
     """Background executor of reduction and pruning jobs (one thread; never between units of a lane).  threaded=False runs the job
     inline at submit (deterministic tests).  Results are collected by the main thread, which alone touches the ledger."""

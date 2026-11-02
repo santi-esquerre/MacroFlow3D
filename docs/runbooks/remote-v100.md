@@ -196,6 +196,33 @@ REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=170
   `exec-blinded.log` line of a `run` submission gains `gpu_count=N` only when
   `N` is not `1`.
 
+##### Sharing with third-party processes (owner decision of 2026-11-02 (session), recorded in docs/decisions/2026-11-02-sf43-gpu-sharing-policy.md)
+
+Supersedes the selection part of the two-GPU request above: before launching,
+check whether anything runs on the GPUs; one GPU if a colleague is using one,
+both only if both are free.
+
+- A GPU is **free** iff `nvidia-smi --query-compute-apps` lists no compute
+  process on it in any of the snapshot's samples (taken before and after the 5
+  utilization samples; unreadable = none). At selection time the job has not
+  started, so every process seen is third-party. Free GPUs rank before busy
+  ones; the remaining order (lowest mean utilization, more free memory, lower
+  index) and the memory thresholds are unchanged. This applies to
+  `REMOTE_GPU_COUNT=1` too (the only change there is free-first).
+- `REMOTE_GPU_COUNT=2` takes two GPUs only if BOTH chosen GPUs are free. If a
+  chosen GPU has a third-party process and `REMOTE_GPU_COUNT_MIN=1`, the job
+  starts AT ONCE (no waiting for the colleague) with the best single GPU (a free
+  one if any; if none is free, the least loaded as before) and logs
+  `two-GPU request degraded to 1: GPU <n> has <k> third-party compute
+  process(es)` (one line per busy GPU of the pair). With `REMOTE_GPU_COUNT_MIN=2`
+  the launcher keeps waiting as before.
+- During the run the campaign engine applies the same rule to lane B (see
+  `sf43camp/README.md`): at each claim boundary a third-party process on lane
+  B's GPU releases that GPU (`LANE_B_RELEASED gpu=<id> reason=third_party
+  pids=<n>`); lane A is not affected.
+- Tests: `bash scripts/tests/remote_gpu_select_test.sh`,
+  `bash scripts/tests/remote_gpu_count_test.sh` (canned CSV / fake host).
+
 #### Mirror lifecycle
 
 ```bash

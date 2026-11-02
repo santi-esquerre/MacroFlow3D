@@ -102,6 +102,63 @@ class LaneB(unittest.TestCase):
         self.assertEqual([x for x in s.ex.spawned if x[2] == "0"], [])
 
 
+class ThirdParty(unittest.TestCase):
+    """Owner decision of 2026-11-02 (session): a colleague's compute process on lane B's GPU releases that GPU at the next claim boundary."""
+
+    def plan(self):
+        return mk_plan(tmpdir(self), [arm("H", n=40, mem=1000, est=1000)])
+
+    def test_present_from_the_start_lane_b_never_claims_and_lane_a_finishes(self):
+        s, seen = Sim(self.plan()), []
+        self.assertEqual(s.run(third_party=lambda g: seen.append(g) or ([4242, 4243] if g == "0" else [])), DONE)
+        self.assertEqual([x for x in s.ex.spawned if x[2] == "0"], [])
+        self.assertIn("LANE_B_RELEASED gpu=0 reason=third_party pids=2 utc=", s.log())
+        rec = kinds(s, "lane_release")
+        self.assertEqual([(r["gpu"], r["reason"], r["pids"]) for r in rec], [("0", "third_party", 2)])
+        self.assertEqual(set(seen), {"0"})  # lane A is never checked
+        self.assertEqual(len(s.state().arms["H"].done), 40)
+
+    def test_appearing_mid_run_the_unit_in_flight_finishes_first_and_B_never_comes_back(self):
+        s = Sim(self.plan())
+        t_on = T0 + 1500.0
+        self.assertEqual(s.run(third_party=lambda g: [7] if g == "0" and s.t >= t_on else []), DONE)
+        b = [x for x in s.ex.spawned if x[2] == "0"]
+        rel = kinds(s, "lane_release")
+        self.assertTrue(b and len(rel) == 1 and rel[0]["reason"] == "third_party")
+        self.assertTrue(all(t <= t_on for *_, t in b))  # nothing claimed after the process appeared
+        ends = [r for r in s.records() if r["kind"] == "unit_end" and r["lane"] == "B"]
+        self.assertTrue(ends and all(r["cls"] == "ok" for r in ends))  # the running unit was not killed
+        self.assertGreaterEqual(rel[0]["t"], max(r["t"] for r in ends))
+        s.run(resume=True)  # a resumed session does not bring B back
+        self.assertIn("RESUME_SINGLE_LANE", s.log())
+
+    def test_no_third_party_changes_nothing(self):
+        s = Sim(self.plan())
+        self.assertEqual(s.run(third_party=lambda g: []), DONE)
+        self.assertTrue([x for x in s.ex.spawned if x[2] == "0"])
+        self.assertNotIn("reason=third_party", s.log())
+
+    def test_nvidia_reader_excludes_the_engines_descendants_and_an_unreadable_query_means_none(self):
+        import subprocess
+        from unittest import mock
+        from sf43camp import procs
+        kid = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+        self.addCleanup(lambda: (kid.kill(), kid.wait()))
+        d = tmpdir(self)
+        smi = os.path.join(d, "nvidia-smi")
+        with open(smi, "w") as f:  # fake nvidia-smi: GPU 1 has our child and the test runner's parent, GPU 0 a foreign pid
+            f.write("#!%s\nimport os, sys\nif os.path.exists(%r): sys.exit(1)\n" % (sys.executable, os.path.join(d, "fail")))
+            f.write("a = ' '.join(sys.argv)\nif 'query-gpu=index,uuid' in a: print('0, GPU-a\\n1, GPU-b')\n")
+            f.write("elif 'query-compute-apps' in a: print('GPU-b, %d\\nGPU-b, %d\\nGPU-a, 99999')\n" % (kid.pid, os.getppid()))
+        os.chmod(smi, 0o755)
+        with mock.patch.dict(os.environ, {"PATH": d + os.pathsep + os.environ["PATH"]}):
+            self.assertEqual(procs.third_party_pids("1"), [os.getppid()])  # the engine's own child is not third-party
+            self.assertEqual(procs.third_party_pids("0"), [99999])
+            self.assertEqual(procs.third_party_pids("7"), [])  # unknown GPU
+            open(os.path.join(d, "fail"), "w").close()
+            self.assertEqual(procs.third_party_pids("1"), [])  # unreadable = assume none
+
+
 class Reductions(unittest.TestCase):
     def test_a_failed_reduction_is_retried_and_nothing_is_blocked(self):
         p = mk_plan(tmpdir(self), [arm("A", n=10, est=2000)])
@@ -256,6 +313,39 @@ class Background(unittest.TestCase):
         s.run(resume=True)
         self.assertIn("BACKGROUND_SKIPPED name=cov", s.log())
         self.assertEqual(len(kinds(s, "background_start")), 1)
+
+    def test_only_a_job_that_exits_by_itself_with_rc0_writes_the_done_file(self):
+        import signal
+        import time
+        from sf43camp.background import Background
+        d = tmpdir(self)
+        p = {"background": [{"name": "k", "argv": self.py("import time; time.sleep(60)")}, {"name": "f", "argv": self.py("import sys; sys.exit(3)")},
+                            {"name": "ok", "argv": self.py("pass")}]}
+        recs = []
+        b = Background(p, "bd", d, lambda m: None)
+        b.start(lambda **r: recs.append(r))
+        os.kill(b.procs["k"].pid, signal.SIGTERM)  # killed from outside (the group kill of a cancel)
+        for _ in range(100):
+            b.poll(lambda **r: recs.append(r))
+            if not b.procs:
+                break
+            time.sleep(0.1)
+
+        def done(n):
+            return os.path.exists(b.done_file(n))
+        self.assertEqual((done("k"), done("f"), done("ok")), (False, False, True))
+        self.assertEqual({r["name"]: r["rc"] for r in recs if r["kind"] == "background_end"}, {"k": -15, "f": 3, "ok": 0})
+        # terminated by the engine: no done file either
+        q = {"background": [{"name": "t", "argv": self.py("import time; time.sleep(60)")}]}
+        b2 = Background(q, "bd", d, lambda m: None)
+        b2.start(lambda **r: None)
+        b2.terminate(lambda **r: None)
+        self.assertFalse(done("t"))
+        # resume: killed / failed jobs restart, the finished one is skipped
+        b3, started = Background({"background": p["background"] + q["background"]}, "bd", d, lambda m: None), []
+        b3.start(lambda **r: started.append(r["name"]))
+        self.assertEqual(sorted(started), ["f", "k", "t"])
+        b3.terminate(lambda **r: None)
 
     def test_default_does_not_wait_and_the_job_is_terminated_and_reported(self):
         p = mk_plan(tmpdir(self), [arm("A", n=5)],

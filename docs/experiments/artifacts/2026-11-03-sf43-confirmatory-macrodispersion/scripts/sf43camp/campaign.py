@@ -110,7 +110,8 @@ def report(st, eng, status, an, cdir, extra=()):
 
 
 def run_campaign(plan, build_dir, ex, *, resume, gpus, clock=time.time, sleep=time.sleep, disk_free_gb=procs.disk_free_gb,
-                 gpu_free_mib=procs.nvidia_free_mib, spawn=procs.spawn, threaded=True, log=None, poll_s=2.0, runner=run_cmd, on_engine=None):
+                 gpu_free_mib=procs.nvidia_free_mib, spawn=procs.spawn, threaded=True, log=None, poll_s=2.0, runner=run_cmd, on_engine=None,
+                 third_party=procs.third_party_pids):
     log = log or (lambda m: print(m, flush=True))
     cdir = plan["campaign_dir"]
     os.makedirs(cdir, exist_ok=True)
@@ -122,12 +123,12 @@ def run_campaign(plan, build_dir, ex, *, resume, gpus, clock=time.time, sleep=ti
         lock.close()
         return REFUSED
     try:
-        return _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free_mib, spawn, threaded, log, poll_s, runner, on_engine)
+        return _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free_mib, spawn, threaded, log, poll_s, runner, on_engine, third_party)
     finally:
         lock.close()
 
 
-def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free_mib, spawn, threaded, log, poll_s, runner, on_engine):
+def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free_mib, spawn, threaded, log, poll_s, runner, on_engine, third_party):
     cdir = plan["campaign_dir"]
     build_dir = os.path.abspath(build_dir)  # units run with cwd = their segment directory: no relative path may reach a child
     ledger = Ledger(os.path.join(cdir, "ledger.jsonl"), clock)
@@ -156,7 +157,8 @@ def _run(plan, build_dir, ex, resume, gpus, clock, sleep, disk_free_gb, gpu_free
             lanes.append(Lane("B", gpus[1], True, lane_b_class_mib(plan)))
     log("CAMPAIGN %s lanes=%s stage1_start=%s utc=%s" % (plan["campaign"], ",".join("%s:gpu%s" % (ln.name, ln.gpu) for ln in lanes), utc_iso(st.stage1_start), utc_iso(clock())))
     eng = Engine(st, ledger, ex, build_dir, cdir, lanes, clock=clock, sleep=sleep, disk_free_gb=disk_free_gb, gpu_free_mib=gpu_free_mib,
-                 spawn=spawn, worker=procs.Worker(threaded), log=log, poll_s=poll_s, bg=Background(plan, build_dir, cdir, log, clock, sleep))
+                 spawn=spawn, worker=procs.Worker(threaded), log=log, poll_s=poll_s, bg=Background(plan, build_dir, cdir, log, clock, sleep),
+                 third_party=third_party)
     if on_engine:
         on_engine(eng)
     eng.recover()

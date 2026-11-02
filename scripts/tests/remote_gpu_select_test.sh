@@ -9,8 +9,9 @@ source "$here/../remote"   # main is not run when sourced
 fails=0
 # check <name> <min_free> <req> <expected_rc> <expected_CHOSEN_line> [count] [min_free_2] <<< csv
 check() {
-  local name="$1" minfree="$2" req="$3" want_rc="$4" want="$5" count="${6-}" minfree2="${7-}" out rc=0 got
-  if [[ -n "$minfree2" ]]; then out="$(gpu_select "$minfree" "$req" "$count" "$minfree2")" || rc=$?
+  local name="$1" minfree="$2" req="$3" want_rc="$4" want="$5" count="${6-}" minfree2="${7-}" procs="${8-}" allfree="${9-0}" out rc=0 got
+  if [[ -n "$procs" ]]; then out="$(gpu_select "$minfree" "$req" "$count" "${minfree2:-$minfree}" "$procs" "$allfree")" || rc=$?
+  elif [[ -n "$minfree2" ]]; then out="$(gpu_select "$minfree" "$req" "$count" "$minfree2")" || rc=$?
   elif [[ -n "$count" ]]; then out="$(gpu_select "$minfree" "$req" "$count")" || rc=$?
   else out="$(gpu_select "$minfree" "$req")" || rc=$?; fi
   got="$(grep -E '^(CHOSEN|ERROR)' <<<"$out" || true)"
@@ -75,5 +76,23 @@ check t2-none-high 30000 auto 1 "CHOSEN none" 2 17000 < <(rep5 "0, 20000, 32768,
 check t2-second-stricter 10000 auto 3 "CHOSEN 0" 2 20000 < <(rep5 "0, 100, 32768, 0" "1, 20000, 32768, 0")
 # min_free_2 is ignored for count 1
 check t1-ignores-second 30000 auto 0 "CHOSEN 0" 1 17000 < <(rep5 "0, 100, 32768, 50" "1, 10000, 32768, 0")
+
+# sharing policy (owner decision of 2026-11-02): args ... <count> <min_free_2> <procs> <allfree>
+# count 1: the free GPU0 (util 84) beats the less-utilized busy GPU1
+check p-count1-free-first 0 auto 0 "CHOSEN 0" 1 "" "1=1" < <(rep5 "0, 1281, 32768, 84" "1, 4, 32768, 0")
+# count 1, none free: old order (GPU1 least loaded)
+check p-count1-none-free 0 auto 0 "CHOSEN 1" 1 "" "0=2 1=1" < <(rep5 "0, 1281, 32768, 84" "1, 4, 32768, 0")
+# count 2 with allfree=0 (COUNT_MIN=2): both, free first
+check p-c2-nofree-flag 0 auto 0 "CHOSEN 0,1" 2 "" "1=1" 0 < <(rep5 "0, 1281, 32768, 84" "1, 4, 32768, 0")
+# count 2 with allfree=1, both free: both
+check p-c2-allfree-both 0 auto 0 "CHOSEN 1,0" 2 "" "0=0" 1 < <(rep5 "0, 1281, 32768, 84" "1, 4, 32768, 0")
+# count 2 with allfree=1, GPU0 busy: GPU1 only, rc 3, BUSY line names GPU 0
+check p-c2-allfree-degrades 0 auto 3 "CHOSEN 1" 2 "" "0=3" 1 < <(rep5 "0, 4, 32768, 0" "1, 1281, 32768, 84")
+# count 2 with allfree=1, none free: single least-loaded
+check p-c2-allfree-none-free 0 auto 3 "CHOSEN 1" 2 "" "0=1 1=1" 1 < <(rep5 "0, 1281, 32768, 84" "1, 4, 32768, 0")
+# a busy but memory-ineligible GPU does not degrade (normal rc 3 path), nor does a busy ineligible one block a free pair
+check p-c2-busy-ineligible 10000 auto 3 "CHOSEN 1" 2 "" "0=1" 1 < <(rep5 "0, 29000, 32768, 0" "1, 2000, 32768, 90")
+out="$(gpu_select 0 auto 2 0 "0=3" 1 < <(rep5 "0, 4, 32768, 0" "1, 1281, 32768, 84") || true)"
+grep -qx 'BUSY 0 3' <<<"$out" && echo "PASS busy-line" || { echo "FAIL busy-line: $out"; fails=$((fails + 1)); }
 
 (( fails == 0 )) && echo "ALL PASS" || { echo "$fails FAILED"; exit 1; }

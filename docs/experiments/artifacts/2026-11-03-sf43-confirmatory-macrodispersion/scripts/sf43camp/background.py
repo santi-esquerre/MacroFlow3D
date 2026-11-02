@@ -3,7 +3,9 @@
 Each entry {name, argv, nice (default 19), env}: started once at engine start with `CUDA_VISIBLE_DEVICES=""` in the LAUNCHER'S process group
 (no new session: the helper's group signal on a cancel must reach them; `terminate` still kills each job's tree)
 (`argv` may contain `{campaign_dir}` / `{build_dir}`), output in `<campaign_dir>/background/<name>.log`; its end writes
-`<name>.done` (the exit code) and the ledger record `background_end`.  A resumed session skips the jobs whose done file exists.
+`<name>.done` (the exit code, always 0) and the ledger record `background_end`.  Only a job that EXITED BY ITSELF with rc 0 writes the done file; a
+non-zero rc (also a signal that killed it, e.g. the group kill of a cancel, or the engine's `terminate`) is recorded but writes none, so a resumed
+session restarts it.  A resumed session skips the jobs whose done file exists.
 SIGTERM / SIGINT terminate them with the units.  `wait(seconds, rec, stop)` is the final analysis' wait (plan `background_wait_minutes`); what is
 still running after it is terminated and reported; `stop()` (the engine's signal flag) is checked at least every 2 s and ends the wait at once.
 """
@@ -57,8 +59,9 @@ class Background:
             if rc is not None:
                 del self.procs[n]
                 self.state[n] = "done rc=%d" % rc
-                with open(self.done_file(n), "w") as f:
-                    f.write("%d\n" % rc)
+                if rc == 0:
+                    with open(self.done_file(n), "w") as f:
+                        f.write("%d\n" % rc)
                 rec(kind="background_end", name=n, rc=rc)
                 self.log("BACKGROUND_END name=%s rc=%d" % (n, rc))
 
