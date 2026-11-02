@@ -30,6 +30,8 @@ Classes (G5.7 with levels; ``classify_estimator`` / ``classify_amplitude``), in 
   unresolved (bounded)   otherwise, if ``U(ucl) + sum_k B_k(ucl / K)`` is finite (the reported bound);
   unresolved             anything else.  The two estimators must agree; discordance gives ``unresolved``.
 """
+import sys
+import traceback
 import zlib
 
 import numpy as np
@@ -246,6 +248,33 @@ class RobustTest:
     def report(self, levels):
         rep = self.rl.report(np.asarray(levels, dtype=float))
         return rep
+
+
+class FailedTest:
+    """Stand-in for a ``RobustTest`` whose construction or evaluation raised: untestable, ``p = 1``, never rejects."""
+    design = None
+
+    def __init__(self, label, null):
+        self.label, self.null, self.testable, self.missing = label, null, False, ["error"]
+
+    def p_value(self):
+        return 1.0, True
+
+    def reject(self, a):
+        return False
+
+    def upper_bound(self, tail):
+        return np.inf
+
+
+def record_error(sink, hid, exc, status="error"):
+    """Per-hypothesis isolation: append ``{id, status, type, message, traceback}`` to ``sink`` (a list, or None) and print ``HYPOTHESIS_ERROR``
+    on stderr.  The hypothesis is then untestable (``p = 1``); the caller continues with the rest of the family."""
+    tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    print("HYPOTHESIS_ERROR %s: %s: %s" % (hid, type(exc).__name__, exc), file=sys.stderr)
+    print(tb, file=sys.stderr)
+    if sink is not None:
+        sink.append({"id": hid, "status": status, "type": type(exc).__name__, "message": str(exc), "traceback": tb})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

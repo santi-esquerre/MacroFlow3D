@@ -9,9 +9,9 @@ The toolchain, in the order it runs (each README has the details):
 | analyse | `analyse_sf43.sh <campaign_dir> <build_dir> [--smoke]` (the engine's `analysis.command`) -> `<campaign_dir>/analysis/summary.json`, figures | `sf43ana/README.md` |
 | coverage | CPU harness of the Gate 5 / sampling / pipeline coverage (the smoke job's background command) | `sf43cov/README.md` |
 
-`analyse_sf43.sh`: production = `python3 -W error -m sf43ana run` with `<A>/prereg.json`, Gate 5 `auto` with the committed coverage summary; `--smoke` =
+`analyse_sf43.sh`: production = `python3 -W default -m sf43ana run` (warnings are recorded in `summary.json`, never fatal; the unit tests keep `-W error`) with `<A>/prereg.json`, Gate 5 `auto` with the committed coverage summary, then `check-finite` (output printed, exit status ignored so the recompute / reconcile steps still run); `--smoke` =
 `<A>/prereg_smoke.json`, the smoke job's own coverage output (or Gate 5 descriptive), analysis stdout / stderr to files in `analysis/`, and ONLY the
-output of `check-finite` (structure and counts, `STRUCTURE_OK`) on stdout: no estimand, bound, p-value, decision or class reaches the job log.
+output of `check-finite` (structure and counts, `STRUCTURE_OK`, `warnings_count`, `errors_count`) on stdout: no estimand, bound, p-value, decision or class reaches the job log.
 
 Tests (from this directory, no GPU, no data):
 

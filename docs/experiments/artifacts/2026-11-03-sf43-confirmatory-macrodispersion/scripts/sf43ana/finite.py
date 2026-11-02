@@ -90,6 +90,8 @@ def check(summary):
                     if isinstance(s, dict) and "mean" in s and not (isinstance(s["mean"], (int, float)) and math.isfinite(s["mean"])):
                         nz += 1
     lines.append("estimands: nonfinite_means=%d" % nz)
+    pr = summary.get("process", {})
+    lines.append("process: warnings_count=%s errors_count=%s" % (pr.get("warnings_count"), pr.get("errors_count")))  # counts only, never the texts
     if nz:
         reasons.append("a reported mean of a production arm is not finite")
     return lines, reasons

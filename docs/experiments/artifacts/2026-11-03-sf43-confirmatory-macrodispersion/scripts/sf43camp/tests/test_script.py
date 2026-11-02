@@ -92,6 +92,27 @@ class Script(unittest.TestCase):
         self.assertEqual(self.sh("all", "--plan", str(bad)).returncode, 13)
         self.assertEqual(subprocess.run(["bash", str(SH), "x"], capture_output=True).returncode, 13)
 
+    def test_analysis_sha256_gate_at_start_resume_and_dry_run(self):
+        frozen = self.d / "frozen.py"
+        frozen.write_text("x")
+        f = self.plan_file([arm("H", n=2, unit=2)])
+        plan = json.loads(Path(f).read_text())
+        plan["analysis"]["sha256_list"] = {str(frozen): hashlib.sha256(b"x").hexdigest(), str(self.d / "absent.py"): "0" * 64}
+        Path(f).write_text(json.dumps(plan))
+        r = self.sh("all", "--plan", f)  # a listed file is absent: refused before any unit is claimed
+        self.assertEqual(r.returncode, 13, r.stdout)
+        self.assertIn("REFUSED analysis file sha256 mismatch: %s" % (self.d / "absent.py"), r.stdout)
+        self.assertNotIn("frozen.py", r.stdout)
+        self.assertFalse(os.path.exists(self.cdir))
+        self.assertEqual(self.sh("all", "--plan", f, "--dry-run").returncode, 0)  # dry run skips the gate
+        del plan["analysis"]["sha256_list"][str(self.d / "absent.py")]
+        Path(f).write_text(json.dumps(plan))
+        self.assertEqual(self.sh("all", "--plan", f).returncode, 0)
+        frozen.write_text("changed")  # edited after the start: --resume re-verifies
+        r = self.sh("all", "--plan", f, "--resume")
+        self.assertEqual(r.returncode, 13, r.stdout)
+        self.assertIn("REFUSED analysis file sha256 mismatch: %s" % frozen, r.stdout)
+
     def test_dry_run_prints_schedule_and_touches_nothing(self):
         f = self.plan_file([arm("H", n=10, unit=5, est=600.0), arm("L", heavy=False, n=10, unit=5, est=600.0)])
         r = self.sh("all", "--plan", f, "--dry-run")

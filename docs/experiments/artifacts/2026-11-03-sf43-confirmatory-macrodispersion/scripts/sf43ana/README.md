@@ -200,6 +200,14 @@ Sections `estimands`, `gate4`, `family`, `budgets`, `precision`, `process`, and 
 configured; non-finite numbers are the strings `"nan"`, `"inf"`, `"-inf"`. Figures (H18) in `figures/` if matplotlib imports, else
 `FIGURES_SKIPPED` on stderr; never fatal.
 
+**Isolation and warnings.** A descriptive block that raises is recorded as `{"error": ...}` (`BLOCK_ERROR` on stderr). An exception while computing ONE
+hypothesis of the fixed family (the robust sign at one amplitude, Gate 5 at one amplitude), or a non-finite p-value, makes that hypothesis untestable:
+`p = 1`, `status` `error` (`error: non-finite p`), Holm runs over the whole fixed family (`m` never shrinks). The record (id, status, exception type,
+message, traceback) is in `process.errors` (`process.errors_count`) and `HYPOTHESIS_ERROR <id>: ...` goes to stderr; the family entry carries `status`.
+Every warning (category, message, `file:line`, count) is recorded per block in `process.warnings` (`process.warnings_count`); `-W default` is the
+production setting (the unit tests keep `-W error`, where a warning stays an exception). `sf43ana run` exits 0 whenever `summary.json` was written
+(2: pre-registration / data refused); `check-finite` prints `warnings_count` and `errors_count` (counts only) but does not fail on them.
+
 ## Tests (`sf43ana/tests`)
 
 `test_eh` (known answers, per-triple range, fallback levels, the gate on an exact power law and a pre-asymptotic law, `>= LadderBound` on random

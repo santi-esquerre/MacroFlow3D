@@ -1,3 +1,5 @@
+import contextlib
+import io
 import math
 import unittest
 
@@ -306,8 +308,14 @@ class Run(unittest.TestCase):
         self.assertTrue(r["pairing"]["stopped_at_nonfinite"])
         self.assertIsNone(r["procedure"])  # no coverage summary: descriptive
         data["arms"]["P"]["seed"] = data["arms"]["P"]["seed"][::-1].copy()
-        with self.assertRaises(ValueError):  # seed orders differ: not a paired prefix
-            g5.run(self.prereg, dict(data, coverage_summary=None))
+        errors = []
+        with contextlib.redirect_stderr(io.StringIO()) as err:  # seed orders differ: not a paired prefix -> the hypothesis is untestable (p = 1)
+            a = g5.run(self.prereg, dict(data, coverage_summary=None), errors)["amplitudes"]["s1"]
+        self.assertEqual((a["status"], a["p_tost"]), ("error", 1.0))
+        self.assertEqual([(e["id"], e["type"]) for e in errors], [("gate5:s1", "ValueError")])
+        self.assertIn("HYPOTHESIS_ERROR gate5:s1: ValueError", err.getvalue())
+        self.assertIn("seed orders", errors[0]["message"])
+        self.assertIn("Traceback", errors[0]["traceback"])
 
     def test_floor_makes_gate5_untestable(self):
         data = arms_for(n=150)

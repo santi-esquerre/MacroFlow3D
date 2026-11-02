@@ -51,21 +51,29 @@ def md5_gate(plan, build_dir):
     return bad
 
 
-def run_cmd(argv, log_path):
-    with open(log_path, "ab") as f:
-        return subprocess.run(argv, stdout=f, stderr=subprocess.STDOUT).returncode
-
-
-def analysis(plan, build_dir, log, runner=run_cmd):
-    """Verify the sha256 of the analysis files, then run analysis, recompute and reconcile commands.  -> (ok, detail)."""
-    cdir = plan["campaign_dir"]
+def sha256_gate(plan):
+    """Files of ``analysis.sha256_list`` that are absent or whose sha256 differs from the plan (empty list = gate passed)."""
+    bad = []
     for path, want in plan["analysis"]["sha256_list"].items():
         got = "absent"
         if os.path.isfile(path):
             with open(path, "rb") as f:
                 got = hashlib.sha256(f.read()).hexdigest()
         if got != want:
-            return False, "sha256 mismatch %s (%s != %s)" % (path, got, want)
+            bad.append((path, got, want))
+    return bad
+
+
+def run_cmd(argv, log_path):
+    with open(log_path, "ab") as f:
+        return subprocess.run(argv, stdout=f, stderr=subprocess.STDOUT).returncode
+
+
+def analysis(plan, build_dir, log, runner=run_cmd):
+    """Re-verify the sha256 of the analysis files (also checked at start, ``sha256_gate``), then run analysis, recompute and reconcile commands.  -> (ok, detail)."""
+    cdir = plan["campaign_dir"]
+    for path, got, want in sha256_gate(plan)[:1]:
+        return False, "sha256 mismatch %s (%s != %s)" % (path, got, want)
     for name in ("analysis", "recompute", "reconcile"):
         if name in plan:
             argv = [x.replace("{campaign_dir}", cdir).replace("{build_dir}", build_dir) for x in plan[name]["command"]]
@@ -233,6 +241,10 @@ def main(argv=None):
     bad = md5_gate(plan, a.build_dir)
     if bad:
         log("REFUSED binaries do not match the plan: " + "; ".join(bad))
+        return REFUSED
+    badsha = sha256_gate(plan)  # at START (also on --resume): a frozen-file mismatch must not surface after two days
+    if badsha:
+        log("REFUSED analysis file sha256 mismatch: " + "; ".join(p for p, _, _ in badsha))
         return REFUSED
     if not gpus:
         log("REFUSED CUDA_VISIBLE_DEVICES is empty (the helper exports the granted GPUs)")

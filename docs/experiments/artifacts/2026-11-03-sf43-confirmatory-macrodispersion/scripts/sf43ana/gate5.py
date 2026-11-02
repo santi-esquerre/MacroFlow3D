@@ -584,8 +584,9 @@ def config(prereg):
             "fallback_verdicts": list(g.get("fallback_verdicts", prereg.get("fallback_verdicts", ["fallback"])))}
 
 
-def run(prereg, data):
-    """Gate 5 at every amplitude of ``prereg['gate5']['amplitudes']`` (see the module docstring)."""
+def run(prereg, data, errors=None):
+    """Gate 5 at every amplitude of ``prereg['gate5']['amplitudes']`` (see the module docstring).  An exception at one amplitude makes its
+    hypothesis untestable (``p = 1``, ``status = "error"``; recorded in ``errors`` and on stderr) and the other amplitudes continue."""
     g = prereg["gate5"]
     cfg = config(prereg)
     summary = data.get("coverage_summary")
@@ -593,7 +594,13 @@ def run(prereg, data):
         summary = load_coverage_summary(g["coverage_summary"])
     amps = {}
     for amp, spec in g["amplitudes"].items():
-        amps[amp] = _amplitude(cfg, amp, spec, data, summary, cfg["seed"])
+        try:
+            amps[amp] = _amplitude(cfg, amp, spec, data, summary, cfg["seed"])
+        except Exception as e:  # noqa: BLE001  (one hypothesis of the family: never costs the others)
+            from .gate4 import record_error
+            record_error(errors, "gate5:%s" % amp, e)
+            amps[amp] = {"amplitude": amp, "procedure": None, "p_tost": 1.0, "verdict": "undefined", "status": "error",
+                         "note": "%s: %s; Gate 5 untestable, its p-value is 1" % (type(e).__name__, e)}
     return jsonable({"amplitudes": amps, "pvalues": {a: r["p_tost"] for a, r in amps.items()}, "holm_order": list(amps),
                      "config": cfg, "coverage_plan_hash": None if summary is None else summary.get("plan_hash")})
 
@@ -602,4 +609,4 @@ def analyse(ctx):
     """Block of ``summary.json``: Gate 5 from the loaded campaign (None if the pre-registration has no ``gate5`` block)."""
     if not ctx.prereg.raw.get("gate5"):
         return None
-    return run(ctx.prereg.raw, ctx.data)
+    return run(ctx.prereg.raw, ctx.data, getattr(ctx, "errors", None))

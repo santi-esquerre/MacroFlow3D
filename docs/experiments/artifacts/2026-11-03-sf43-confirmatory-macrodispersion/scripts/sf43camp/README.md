@@ -23,7 +23,7 @@ The script enters the repository root: `<build_dir>`, `campaign_dir` and every r
 | 10 | DONE_PARTIAL: cutoff reached, or an arm halted, or a lane crashed (analysis ok) |
 | 11 | STOPPED: budget or disk guard (analysis ok) |
 | 12 | final analysis failed (sha256 mismatch of an analysis file, or a command rc != 0); marker `ANALYSIS_FAILED` |
-| 13 | refused to start: md5 mismatch of a binary, invalid plan, stale state (ledger exists without `--resume`, or a different plan), another launcher holds `campaign_dir/LOCK`, usage |
+| 13 | refused to start: md5 mismatch of a binary, sha256 mismatch of an analysis file (`REFUSED analysis file sha256 mismatch: <paths>`; checked at start and again on `--resume`, before any unit is claimed), invalid plan, stale state (ledger exists without `--resume`, or a different plan), another launcher holds `campaign_dir/LOCK`, usage |
 | 143 | SIGTERM/SIGINT: units terminated and recorded, no analysis (a cancel); `--resume` continues |
 
 `campaign_dir` receives: `ledger.jsonl`, `LOCK`, `segments/<arm>/u<unit>_s<seed0>/` (one new directory per run of a unit; `run.log`, `segment.json`,
@@ -58,7 +58,7 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
   `REPLACEMENT`, `ARM_HALT`, `REESTIMATE`, `PROJECTION` (hourly, vs budget and cutoff), `DISK_GUARD`, `LANE_CRASH`, `FINAL` lines. Runner output goes to the unit's own
   `runner.log`.
 * `--dry-run`: simulates the whole plan on a virtual clock with `est_seconds` (no process, no file): the ordered schedule (`DRYRUN SF43_UNIT ...`) and
-  `DRYRUN_SUMMARY` (stage-1 / stage-2 hours, GPU-h, end vs cutoff). The md5 gate is skipped. `--smoke`: the plan's `smoke` section overlays the plan
+  `DRYRUN_SUMMARY` (stage-1 / stage-2 hours, GPU-h, end vs cutoff). The md5 and analysis sha256 gates are skipped. `--smoke`: the plan's `smoke` section overlays the plan
   (its own `arms`, `groups`, `campaign_dir`, `budget_gpu_h`, ...; `cutoff_minutes` = cutoff relative to the start).
 
 ## Guards and rules
@@ -121,7 +121,7 @@ then `recompute`, then `reconcile`) ALWAYS runs after the loop ends, except afte
 ## Plan JSON (`plan_example.json`; validated by `plan.py`)
 
 Top level: `campaign`, `schema_version`, `cutoff_utc` (`YYYY-MM-DDTHH:MM:SSZ`), `grace_minutes`, `stage1_max_hours` (30), `budget_gpu_h`, `disk_min_free_gb`, `campaign_dir`,
-`binaries` (name -> md5, relative to `<build_dir>`), `analysis` {`command` (argv list; `{campaign_dir}`, `{build_dir}` substituted), `sha256_list` (path -> sha256, verified first)},
+`binaries` (name -> md5, relative to `<build_dir>`), `analysis` {`command` (argv list; `{campaign_dir}`, `{build_dir}` substituted), `sha256_list` (path -> sha256, verified at start, before any unit, and again before the analysis)},
 optional `recompute` / `reconcile` {`command`}, optional `blinded_reestimation` {`fraction`, `max_factor`, `arms`, `hw_target` {arm: {estimator: half-width}}},
 `failure` {`halt_rate`, `min_for_rate`}, `groups` {id: {`reserves`: {`start`, `count`}}} (outside the group's seed ranges), optional `executor` (`module:Class`, default
 `sf43camp.runner_executor:RunnerExecutor`, built as `Class(plan, build_dir)`), optional `min_retained` (5), `lane_b_min_free_mib`, `determinism_pairs`, `determinism_exclude`,

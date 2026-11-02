@@ -203,7 +203,7 @@ class Chain(unittest.TestCase):
         self.assertEqual(lines[-1], "STRUCTURE_OK", self.analysis_log[-2000:])
         import re
         for ln in lines:
-            self.assertRegex(ln, r"^(section \w+: finite=\d+ nonfinite=\d+ other=\d+|family: hypotheses=\d+ m=\d+|estimands: nonfinite_means=\d+|STRUCTURE_OK)$")
+            self.assertRegex(ln, r"^(section \w+: finite=\d+ nonfinite=\d+ other=\d+|family: hypotheses=\d+ m=\d+|estimands: nonfinite_means=\d+|process: warnings_count=\d+ errors_count=\d+|STRUCTURE_OK)$")
         for word in ("physical", "rejected", "numerical", "unresolved", "alpha", "p="):
             self.assertNotIn(word, self.analysis_log)
         self.assertIsNone(re.search(r"\d\.\d", self.analysis_log))                 # no decimal number at all
@@ -211,8 +211,27 @@ class Chain(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(out, "run.stdout.txt")) and os.path.isfile(os.path.join(out, "run.stderr.txt")))
         self.assertIsNotNone(self.S)
 
+    def test_production_mode_wrapper_prints_the_check_finite_after_the_run(self):
+        """Production branch of the wrapper (no --smoke, ``-W default``) on a copy of the smoke campaign: ``wrote ...`` then the check-finite
+        output, exit 0; the summary records process.errors_count == 0 and the warnings of the run (counts only in check-finite)."""
+        art_t = os.path.dirname(os.path.dirname(self.wrapper))
+        shutil.copy(os.path.join(art_t, "prereg_smoke.json"), os.path.join(art_t, "prereg.json"))
+        self.addCleanup(os.remove, os.path.join(art_t, "prereg.json"))
+        cdir2 = os.path.join(self.root, "camp_prod")
+        shutil.copytree(self.cdir, cdir2)
+        r = subprocess.run(["bash", self.wrapper, cdir2, self.build_dir], capture_output=True, text=True, timeout=600)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        lines = [x for x in r.stdout.splitlines() if x.strip()]
+        self.assertRegex(lines[0], r"^wrote .*summary\.json$")
+        self.assertEqual(lines[-1], "STRUCTURE_OK")
+        self.assertRegex(r.stdout, r"process: warnings_count=\d+ errors_count=0")
+        S2 = jload(os.path.join(cdir2, "analysis", "summary.json"))
+        self.assertEqual((S2["process"]["errors"], S2["process"]["errors_count"]), ([], 0))
+        self.assertEqual(S2["process"]["warnings_count"], sum(w["count"] for ws in S2["process"]["warnings"].values() for w in ws))
+
     def test_every_family_hypothesis_is_evaluated(self):
         fam = self.S["family"]
+        self.assertEqual(self.S["process"]["errors_count"], 0)                    # no hypothesis was isolated as an error
         self.assertEqual((fam["info"]["m"], len(fam["hypotheses"])), (8, 8))
         for h in fam["hypotheses"]:
             self.assertTrue(h["testable"], h)                                      # no p = 1 from wiring (floors, arms, pairs, coverage)

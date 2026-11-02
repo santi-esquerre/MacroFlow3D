@@ -7,6 +7,8 @@ import sys
 import tempfile
 import types
 import unittest
+import warnings
+from unittest import mock
 
 import sf43ana  # noqa: F401
 from sf43ana import __main__ as cli
@@ -248,6 +250,7 @@ class EndToEnd(World):
         self.assertEqual(rc, 0)
         self.assertIn("STRUCTURE_OK", text)
         self.assertIn("section gate4: finite=", text)
+        self.assertIn("process: warnings_count=0 errors_count=0", text)
         for tok in re.findall(r"[-+]?\d+\.\d+(?:[eE][-+]?\d+)?", text):  # every number printed is an integer count
             self.fail("a non-integer number was printed: " + tok)
         for word in ("physical", "rejected", "numerical"):
@@ -346,6 +349,117 @@ class EndToEnd(World):
                            "--gate5", "none", "--out", self.out])
         self.assertEqual(rc, 2)
         self.assertIn("production_index", err.getvalue())
+
+
+class Isolation(World):
+    """Per-hypothesis isolation (an exception or a non-finite p makes ONE hypothesis untestable, p = 1; the family stays fixed) and warnings."""
+
+    def fam(self, J):
+        return {h["id"]: h for h in J["family"]["hypotheses"]}
+
+    def test_robust_sign_failure_at_one_amplitude(self):
+        self.build()
+        base, _ = self.run_({"1": 0.001, "2.25": 0.002})
+        bad = "2.25/alpha_TP/" + "disp"
+
+        class Boom(summary.RobustTest):
+            def p_value(self):
+                if self.label == bad:
+                    raise RuntimeError("injected failure")
+                return super().p_value()
+
+        self.out = os.path.join(self.root, "out_boom")
+        with mock.patch.object(summary, "RobustTest", Boom), contextlib.redirect_stderr(io.StringIO()) as err:
+            J, _ = self.run_({"1": 0.001, "2.25": 0.002})
+        f, f0 = self.fam(J), self.fam(base)
+        self.assertEqual((f["robust:2.25"]["p"], f["robust:2.25"]["testable"], f["robust:2.25"]["rejected"], f["robust:2.25"]["status"]),
+                         (1.0, False, False, "error"))
+        self.assertEqual((J["family"]["info"]["m"], len(f)), (4, 4))  # the fixed family never shrinks
+        self.assertEqual(f["robust:1"]["p"], f0["robust:1"]["p"])  # the other amplitude is unaffected
+        self.assertEqual(f["robust:1"]["status"], "ok")  # (its Holm decision may differ: the step-down runs over the whole fixed family)
+        self.assertEqual(f["gate5:2.25"]["p"], f0["gate5:2.25"]["p"])
+        self.assertEqual(J["process"]["errors_count"], 1)
+        e = J["process"]["errors"][0]
+        self.assertEqual((e["id"], e["type"], e["message"]), ("robust:2.25", "RuntimeError", "injected failure"))
+        self.assertIn("Traceback", e["traceback"])
+        self.assertIn("HYPOTHESIS_ERROR robust:2.25: RuntimeError: injected failure", err.getvalue())
+        self.assertEqual(J["gate4"]["2.25"]["bases"]["disp"]["estimators"]["alpha_TP"]["testable"], False)
+        self.assertEqual(J["gate4"]["2.25"]["class"], "unresolved")  # untestable amplitude
+
+    def test_gate5_failure_at_one_amplitude_and_nonfinite_p(self):
+        from sf43ana import gate5
+        from sf43ana.tests.test_gate5 import fake_summary
+        self.build()
+        cov = os.path.join(self.root, "cov.json")
+        ok = {"student": {20: False, 40: False}, "hall": {20: True, 40: True}, "boott": {20: True, 40: True}}
+        with open(cov, "w") as f:
+            json.dump(fake_summary(ok, ns=(20, 40)), f)
+        with open(self.paths["prereg"]) as f:
+            raw = json.load(f)
+        raw["gate5"] = {"B": 999, "seed": 3, "coverage_summary": cov, "floor": 20,
+                        "amplitudes": {"1": {"consumer": "g5c", "par2": "g5p"}, "2.25": {"consumer": "g5c", "par2": "g5p"}}}
+        with open(self.paths["prereg"], "w") as f:
+            json.dump(raw, f)
+        J0, _ = self.run_()
+        orig = gate5._amplitude
+
+        def amp(cfg, a, *args):
+            if a == "1":
+                raise ArithmeticError("injected gate5 failure")
+            return orig(cfg, a, *args)
+
+        self.out = os.path.join(self.root, "out_g5")
+        with mock.patch.object(gate5, "_amplitude", amp), contextlib.redirect_stderr(io.StringIO()) as err:
+            J, _ = self.run_()
+        f, f0 = self.fam(J), self.fam(J0)
+        self.assertEqual((f["gate5:1"]["p"], f["gate5:1"]["testable"], f["gate5:1"]["rejected"], f["gate5:1"]["status"]), (1.0, False, False, "error"))
+        self.assertEqual((f["gate5:2.25"]["p"], f["gate5:2.25"]["testable"], f["gate5:2.25"]["status"]), (f0["gate5:2.25"]["p"], True, "ok"))
+        self.assertEqual(J["family"]["info"]["m"], 4)
+        self.assertEqual(J["gate5"]["amplitudes"]["1"]["status"], "error")
+        self.assertEqual(J["process"]["errors_count"], 1)
+        self.assertEqual((J["process"]["errors"][0]["id"], J["process"]["errors"][0]["type"]), ("gate5:1", "ArithmeticError"))
+        self.assertIn("HYPOTHESIS_ERROR gate5:1: ArithmeticError", err.getvalue())
+        self.assertEqual(f["robust:1"]["p"], f0["robust:1"]["p"])
+        # a non-finite supplied p is the same: p = 1, "error: non-finite p"
+        self.out = os.path.join(self.root, "out_nan")
+        with contextlib.redirect_stderr(io.StringIO()):
+            J2, _ = self.run_({"1": float("nan"), "2.25": 0.002})
+        h = self.fam(J2)["gate5:1"]
+        self.assertEqual((h["p"], h["testable"], h["status"]), (1.0, False, "error: non-finite p"))
+        self.assertEqual(J2["process"]["errors"][0]["status"], "error: non-finite p")
+        self.assertEqual(J2["family"]["info"]["m"], 4)
+
+    def test_warnings_are_recorded_per_block_and_counted(self):
+        from sf43ana import finite
+        self.build()
+        name = "sf43ana.g7"
+        fake = types.ModuleType(name)
+        fake.__spec__ = importlib.machinery.ModuleSpec(name, None)
+
+        def analyse(ctx):
+            for _ in range(3):
+                warnings.warn("w one", RuntimeWarning)
+            warnings.warn("w two", UserWarning)
+            return {"ok": 1}
+        fake.analyse = analyse
+        old = sys.modules.get(name)
+        sys.modules[name] = fake
+        try:
+            with mock.patch.object(sys, "warnoptions", []):  # as the production wrapper (-W default): every occurrence is recorded
+                J, path = self.run_({"1": 0.001, "2.25": 0.002})
+        finally:
+            if old is None:
+                del sys.modules[name]
+            else:
+                sys.modules[name] = old
+        w = J["process"]["warnings"]["g7"]
+        self.assertEqual([(x["category"], x["message"], x["count"]) for x in w], [("RuntimeWarning", "w one", 3), ("UserWarning", "w two", 1)])
+        self.assertRegex(w[0]["location"], r"test_e2e\.py:\d+$")
+        self.assertEqual(J["process"]["warnings_count"], 4)
+        self.assertEqual(J["g7"], {"ok": 1})
+        buf = io.StringIO()
+        finite.run(path, buf)
+        self.assertIn("process: warnings_count=4 errors_count=0", buf.getvalue())
 
 
 if __name__ == "__main__":

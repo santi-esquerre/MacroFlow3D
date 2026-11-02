@@ -4,8 +4,14 @@ Optional blocks of the sibling modules ``gate5``, ``g7``, ``secondaries``, ``fai
 ``sf43ana.<name>`` exists and defines ``analyse(ctx) -> dict | None``, the dictionary is merged under the key ``<name>`` (``ctx`` is a
 ``Context``: ``prereg``, ``arms``, ``campaign``, ``reduced``, ``gate5_p``, ``ledger`` and the lazily built ``data`` of ``loader``).  Absent
 modules are skipped, ``None`` (block not configured) is omitted.  A failure of a DESCRIPTIVE block (all but ``gate5``) is recorded as
-``{"error": ...}`` under its key and on stderr (``BLOCK_ERROR``): a descriptive analysis never costs the primary results; Gate 5
-errors propagate (they decide a hypothesis of the family).
+``{"error": ...}`` under its key and on stderr (``BLOCK_ERROR``): a descriptive analysis never costs the primary results.
+
+Per-hypothesis isolation: an exception while computing ONE hypothesis of the family (the robust sign at one amplitude, Gate 5 at one
+amplitude) or a non-finite p-value makes that hypothesis untestable (``p = 1``, ``status`` ``error`` / ``error: non-finite p``); it is
+recorded in ``process.errors`` (id, status, exception type, message, traceback; ``process.errors_count``) and on stderr
+(``HYPOTHESIS_ERROR <id>``), and the analysis continues with the rest of the family (Holm over the FIXED family, ``m`` never shrinks).
+Every warning is recorded per block under ``process.warnings`` (category, message, ``file:line``, count; ``process.warnings_count``);
+under ``-W error`` (the unit tests) warnings stay exceptions.  ``run`` exits 0 whenever ``summary.json`` was written.
 
 Gate 5 p-values (``--gate5``): omitted or ``auto``: computed by ``sf43ana.gate5`` from the pre-registration's ``gate5`` block (none ->
 no p-values); ``none``: no p-values; a path: JSON ``{"p": {"<amplitude>": p, ...}}`` (the ``p`` wrapper optional; a value may also be
@@ -17,13 +23,17 @@ import importlib.util
 import json
 import math
 import os
+import sys
+import warnings
+from collections import Counter
+from contextlib import contextmanager
 
 import numpy as np
 
 from . import config as cfgmod
 from . import figures
 from .estimands import TRANSVERSE, amplitude_estimands
-from .gate4 import (CLASS_PHYS, RobustTest, classify_amplitude, classify_estimator, design_from_arms)
+from .gate4 import (CLASS_PHYS, FailedTest, RobustTest, classify_amplitude, classify_estimator, design_from_arms, record_error)
 from .holm import holm
 from .loader import build_data, load_all
 
@@ -34,12 +44,29 @@ class Context:
     def __init__(self, prereg, arms, campaign, reduced, gate5_p, ledger=None):
         self.prereg, self.arms, self.campaign, self.reduced, self.gate5_p, self.ledger = prereg, arms, campaign, reduced, gate5_p, ledger
         self._data = None
+        self.errors = []    # per-hypothesis errors (``gate4.record_error``) -> process.errors
+        self.warnings = {}  # block -> [{category, message, location, count}] -> process.warnings
 
     @property
     def data(self):
         if self._data is None:
             self._data = build_data(self.prereg, self.arms, self.ledger)
         return self._data
+
+
+@contextmanager
+def watch(ctx, block):
+    """Records the warnings raised inside the block into ``ctx.warnings[block]`` (counted per category / message / location).  Unless ``-W error``
+    is active (unit tests: warnings stay fatal) every occurrence is recorded, not only the first per location."""
+    with warnings.catch_warnings(record=True) as w:
+        if "error" not in sys.warnoptions:
+            warnings.simplefilter("always")
+        try:
+            yield
+        finally:
+            c = Counter((x.category.__name__, str(x.message), "%s:%d" % (x.filename, x.lineno)) for x in w)
+            if c:
+                ctx.warnings.setdefault(block, []).extend({"category": k[0], "message": k[1], "location": k[2], "count": n} for k, n in sorted(c.items()))
 
 
 def _analyse(name, ctx):
@@ -49,12 +76,13 @@ def _analyse(name, ctx):
     fn = getattr(importlib.import_module("sf43ana." + name), "analyse", None)
     if not callable(fn):
         return None
-    if name == "gate5":
-        return fn(ctx)
+    if name == "gate5":  # per-amplitude errors are isolated inside the block (hypotheses of the family)
+        with watch(ctx, name):
+            return fn(ctx)
     try:
-        return fn(ctx)
+        with watch(ctx, name):
+            return fn(ctx)
     except Exception as e:  # noqa: BLE001  (descriptive block: recorded, never fatal)
-        import sys
         import traceback
         print("BLOCK_ERROR %s: %s: %s" % (name, type(e).__name__, e), file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
@@ -95,14 +123,19 @@ def sha256(path):
     return h.hexdigest()
 
 
-def gate4_tests(prereg, arms):
-    """{(amp, basis, estimator): RobustTest} for every amplitude, both bases, both transverse estimators."""
+def gate4_tests(prereg, arms, errors=None):
+    """{(amp, basis, estimator): RobustTest} for every amplitude, both bases, both transverse estimators.  A construction failure is recorded
+    in ``errors`` (id ``robust:<amp>`` for the primary basis) and the entry is an untestable ``FailedTest``."""
     out = {}
     for amp in prereg.amps:
         for role, b in prereg["bases"].items():
             for e in TRANSVERSE:
                 label = "%s/%s/%s" % (amp, e, b)
-                out[(amp, b, e)] = RobustTest(design_from_arms(prereg, amp, arms, e, b), prereg.null_value(amp), prereg.raw, label)
+                try:
+                    out[(amp, b, e)] = RobustTest(design_from_arms(prereg, amp, arms, e, b), prereg.null_value(amp), prereg.raw, label)
+                except Exception as ex:  # noqa: BLE001
+                    record_error(errors, "robust:%s" % amp if role == "primary" else "gate4:" + label, ex)
+                    out[(amp, b, e)] = FailedTest(label, prereg.null_value(amp))
     return out
 
 
@@ -110,32 +143,71 @@ def _scalar(v):
     return float(np.asarray(v).reshape(-1)[0])
 
 
-def build_family(prereg, tests, gate5_p):
+def build_family(prereg, tests, gate5_p, errors=None):
+    """Hypotheses of the FIXED family in order.  Any exception of a hypothesis (or a non-finite p) makes it untestable with ``p = 1`` and ``status``
+    ``error``; ``errors`` (list) receives the record (``gate4.record_error``); ``errors`` entries of ``gate5:<amp>`` already there mark Gate 5."""
     pb = prereg["bases"]["primary"]
+    gate5_failed = {e["id"] for e in errors or []}
     hyps = []
     for hid in prereg.family_ids():
         kind, _, amp = hid.partition(":")
-        if kind == "robust":
-            ts = [tests[(amp, pb, e)] for e in TRANSVERSE]
-            ok = all(t.testable for t in ts)
-            hyps.append({"id": hid, "testable": ok, "p": max(_scalar(t.p_value()[0]) for t in ts) if ok else 1.0,
-                         "exact": (lambda lv, ts=ts: all(t.reject(lv) for t in ts)) if ok else None,
-                         "note": "" if ok else "; ".join(r for t in ts for r in t.missing)})
-        else:
-            ok = amp in gate5_p
-            hyps.append({"id": hid, "testable": ok, "p": gate5_p[amp] if ok else 1.0, "exact": None,
-                         "note": "" if ok else "no Gate 5 p-value supplied"})
+        h = {"id": hid, "testable": False, "p": 1.0, "exact": None, "note": "", "status": "ok"}
+        hyps.append(h)
+        try:
+            if kind == "robust":
+                ts = []
+                for e in TRANSVERSE:
+                    t = tests[(amp, pb, e)]
+                    try:
+                        if t.testable:
+                            t.p_value()
+                    except Exception as ex:  # noqa: BLE001
+                        record_error(errors, hid, ex)
+                        t = tests[(amp, pb, e)] = FailedTest(t.label, t.null)
+                    ts.append(t)
+                if not all(t.testable for t in ts):
+                    h["note"] = "; ".join(r for t in ts for r in t.missing)
+                    h["status"] = "error" if any(isinstance(t, FailedTest) for t in ts) else "ok"
+                    continue
+                h["p"] = max(_scalar(t.p_value()[0]) for t in ts)
+                h["testable"] = True
+
+                def exact(lv, ts=ts, h=h):
+                    try:
+                        return all(t.reject(lv) for t in ts)
+                    except Exception as ex:  # noqa: BLE001  (conservative: not rejected)
+                        record_error(errors, h["id"], ex)
+                        h["status"] = "error"
+                        return False
+                h["exact"] = exact
+            elif hid in gate5_failed:
+                h["status"], h["note"] = "error", "Gate 5 computation failed (process.errors)"
+            elif amp in gate5_p:
+                h["p"], h["testable"] = gate5_p[amp], True
+            else:
+                h["note"] = "no Gate 5 p-value supplied"
+            if h["testable"] and not math.isfinite(h["p"]):
+                record_error(errors, hid, ValueError("non-finite p-value"), status="error: non-finite p")
+                h.update(p=1.0, testable=False, exact=None, status="error: non-finite p", note="non-finite p-value")
+        except Exception as ex:  # noqa: BLE001
+            record_error(errors, hid, ex)
+            h.update(p=1.0, testable=False, exact=None, status="error", note="%s: %s" % (type(ex).__name__, ex))
     return hyps
 
 
-def budgets_section(prereg, tests, levels):
+def budgets_section(prereg, tests, levels, errors=None):
     out = {}
     for (amp, b, e), t in tests.items():
         entry = out.setdefault(amp, {}).setdefault(b, {})
         if not t.testable:
             entry[e] = {"testable": False, "reasons": t.missing}
             continue
-        rep = t.report(levels)
+        try:
+            rep = t.report(levels)
+        except Exception as ex:  # noqa: BLE001
+            record_error(errors, "budgets:%s/%s/%s" % (amp, e, b), ex)
+            entry[e] = {"testable": False, "reasons": ["error: %s: %s" % (type(ex).__name__, ex)]}
+            continue
         comps = {}
         for name, c in rep["components"].items():
             comps[name] = {"raw": c["raw"], "enforced": c["enforced"], "details": c.get("details")}
@@ -175,40 +247,22 @@ def gate5_reporting(optional, by_id):
                 "verdict": a.get("verdict")}}
 
 
-def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
-    """``coverage``: None (the pre-registration's ``gate5.coverage_summary``), ``"none"`` (no coverage summary: Gate 5 descriptive) or a path."""
-    prereg = cfgmod.load_prereg(prereg_path)
-    if coverage is not None and prereg.raw.get("gate5"):
-        prereg.raw["gate5"]["coverage_summary"] = None if coverage == "none" else coverage
-    arms, proc, ledger = load_all(prereg, campaign, reduced)
-    auto = gate5_path in (None, "auto", "")
-    gate5_p = read_gate5(gate5_path)
-    ctx = Context(prereg, arms, campaign, reduced, gate5_p, ledger)
-    optional = {}
-    if auto and prereg.raw.get("gate5"):
-        optional["gate5"] = _analyse("gate5", ctx)
-        if optional["gate5"] is not None:
-            gate5_p.update({str(k): float(v) for k, v in optional["gate5"]["pvalues"].items()})
-    est = {amp: amplitude_estimands(prereg, amp, arms) for amp in prereg.amps}
-    tests = gate4_tests(prereg, arms)
-    hyps = build_family(prereg, tests, gate5_p)
-    fwer = prereg["levels"]["fwer"]
-    res, info = holm(hyps, fwer, prereg["tie_rtol"])
-    by_id = {r["id"]: r for r in res}
-    for r, h in zip(res, hyps):
-        r["note"] = h["note"]
-    if optional.get("gate5") is not None:
-        gate5_reporting(optional, by_id)
-    pb = prereg["bases"]["primary"]
-    gate4 = {}
+def _gate4_section(prereg, tests, by_id, pb, gate4, errors):
+    """``gate4`` entries per amplitude.  An exception of a test (p-value, class inputs) replaces it by an untestable ``FailedTest`` (recorded)."""
     for amp in prereg.amps:
         g = {"sigma2": prereg.sigma2(amp), "null_value": prereg.null_value(amp), "primary_basis": pb, "bases": {}}
         for role, b in prereg["bases"].items():
             per = {}
             for e in TRANSVERSE:
+                label = "%s/%s/%s" % (amp, e, b)
                 t = tests[(amp, b, e)]
-                p, never = t.p_value()
-                cl = classify_estimator(t, prereg.raw, "%s/%s/%s" % (amp, e, b))
+                try:
+                    p, never = t.p_value()
+                    cl = classify_estimator(t, prereg.raw, label)
+                except Exception as ex:  # noqa: BLE001
+                    record_error(errors, "gate4:" + label, ex)  # after the Holm step: a class-input failure does not change a decided hypothesis
+                    t = tests[(amp, b, e)] = FailedTest(label, t.null)
+                    p, never, cl = 1.0, True, classify_estimator(t, prereg.raw, label)
                 per[e] = {"testable": t.testable, "reasons": t.missing, "p": _scalar(p) if t.testable else 1.0,
                           "never_positive": bool(_scalar(never)) if t.testable else True, "class_inputs": cl}
             ps = [per[e]["p"] for e in TRANSVERSE]
@@ -219,9 +273,52 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
         g["bound_unresolved_bounded"] = ({e: g["bases"][pb]["estimators"][e]["class_inputs"]["bound"] for e in TRANSVERSE}
                                          if cls == "unresolved (bounded)" else None)
         gate4[amp] = g
+
+
+def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
+    """``coverage``: None (the pre-registration's ``gate5.coverage_summary``), ``"none"`` (no coverage summary: Gate 5 descriptive) or a path."""
+    prereg = cfgmod.load_prereg(prereg_path)
+    if coverage is not None and prereg.raw.get("gate5"):
+        prereg.raw["gate5"]["coverage_summary"] = None if coverage == "none" else coverage
+    ctx = Context(prereg, None, campaign, reduced, {}, None)
+    with watch(ctx, "loader"):
+        arms, proc, ledger = load_all(prereg, campaign, reduced)
+    auto = gate5_path in (None, "auto", "")
+    gate5_p = read_gate5(gate5_path)
+    ctx.arms, ctx.gate5_p, ctx.ledger = arms, gate5_p, ledger
+    errors = ctx.errors
+    optional = {}
+    if auto and prereg.raw.get("gate5"):
+        optional["gate5"] = _analyse("gate5", ctx)
+        if optional["gate5"] is not None:
+            gate5_p.update({str(k): float(v) for k, v in optional["gate5"]["pvalues"].items()})
+    est = {}
+    with watch(ctx, "estimands"):
+        for amp in prereg.amps:
+            try:
+                est[amp] = amplitude_estimands(prereg, amp, arms)
+            except Exception as ex:  # noqa: BLE001  (not a hypothesis: recorded, the rest continues)
+                record_error(errors, "estimands:%s" % amp, ex)
+                est[amp] = {}
+    with watch(ctx, "gate4"):
+        tests = gate4_tests(prereg, arms, errors)
+        hyps = build_family(prereg, tests, gate5_p, errors)
+        fwer = prereg["levels"]["fwer"]
+        res, info = holm(hyps, fwer, prereg["tie_rtol"])
+    by_id = {r["id"]: r for r in res}
+    for r, h in zip(res, hyps):
+        r["note"], r["status"] = h["note"], h["status"]
+    if optional.get("gate5") is not None:
+        gate5_reporting(optional, by_id)
+    pb = prereg["bases"]["primary"]
+    gate4 = {}
+    with watch(ctx, "gate4_classes"):
+        _gate4_section(prereg, tests, by_id, pb, gate4, errors)
     levels = prereg.raw.get("report_levels") or [fwer, fwer / info["m"]]
+    with watch(ctx, "budgets"):
+        budgets = budgets_section(prereg, tests, levels, errors)
     summary = {"estimands": est, "gate4": gate4, "family": {"info": info, "hypotheses": res, "gate5_p_supplied": gate5_p},
-               "budgets": budgets_section(prereg, tests, levels), "precision": precision_section(prereg, est)}
+               "budgets": budgets, "precision": precision_section(prereg, est)}
     cov_path = (prereg.raw.get("gate5") or {}).get("coverage_summary")
     summary["process"] = {"prereg_sha256": sha256(prereg_path),
                           "coverage_summary": {"path": cov_path, "sha256": sha256(cov_path) if cov_path and os.path.isfile(cov_path) else None}, "prereg_effective": {k: v for k, v in prereg.raw.items() if k != "arms"},
@@ -239,6 +336,8 @@ def run(prereg_path, campaign, reduced, gate5_path, out_dir, coverage=None):
         out = optional[name] if name in optional else _analyse(name, ctx)
         if out is not None:
             summary[name] = out
+    summary["process"].update(errors=errors, errors_count=len(errors), warnings=ctx.warnings,
+                              warnings_count=sum(w["count"] for ws in ctx.warnings.values() for w in ws))
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "summary.json")
     with open(path, "w") as f:
