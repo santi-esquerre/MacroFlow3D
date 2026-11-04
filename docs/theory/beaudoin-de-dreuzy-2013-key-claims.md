@@ -6,7 +6,7 @@ A. Beaudoin and J.-R. de Dreuzy.
 **Numerical assessment of 3-D macrodispersion in heterogeneous porous media**
 *Water Resources Research*, 49, 2489–2496, 2013. doi:10.1002/wrcr.20206 (p. 2489).
 
-Changelog: 2026-11-02: corrected after the full reading of SF-43's pre-activation review (bibliography section 7); see docs/decisions/2026-11-02-sf43-pre-activation-decisions.md H19. Page references are journal pages of WRR 49 with paragraph numbers [n]. Figure values are read from page images (about ±10-20 % on log axes). "Inference" marks reasoning of this project, not a statement of the paper.
+Changelog: 2026-11-04: the SF-43 project comparison no longer says "close to `sigma^4` scaling at small amplitude"; it gives `alpha_TP/sigma^4` and the local exponents. 2026-11-02: corrected after the full reading of SF-43's pre-activation review (bibliography section 7); see docs/decisions/2026-11-02-sf43-pre-activation-decisions.md H19. Page references are journal pages of WRR 49 with paragraph numbers [n]. Figure values are read from page images (about ±10-20 % on log axes). "Inference" marks reasoning of this project, not a statement of the paper.
 
 ---
 
@@ -259,7 +259,7 @@ From the perspective of the current project, it does **not** settle:
 
 That is exactly where the later Lester framework becomes decisive.
 
-Project comparison (SF-43, `docs/experiments/2026-11-03-sf43-confirmatory-macrodispersion.md`; different estimands, order of magnitude only): the plane-based `alpha_TP` over `[25, 94] lambda` is 5.3e-4 / 7.2e-3 / 2.9e-2 / 6.8e-2 `lambda` at `sigma_Y^2` 0.25 / 1 / 2.25 / 4, about 0.6-0.7 of this paper's `alpha_TA` (Table 2; Fig. 4b at 4) and close to `sigma^4` scaling at small amplitude; the consumer's time-window `alpha_LAM` is 0.96 / 0.86 / 0.67 / 0.47 of eq. 6 with Table 1 parameters averaged over the same window (the gap is recorded as open question G9b).
+Project comparison (SF-43, `docs/experiments/2026-11-03-sf43-confirmatory-macrodispersion.md`; different estimands, order of magnitude only): the plane-based `alpha_TP` over `[25, 94] lambda` is 5.3e-4 / 7.2e-3 / 2.9e-2 / 6.8e-2 `lambda` at `sigma_Y^2` 0.25 / 1 / 2.25 / 4, about 0.6-0.7 of this paper's `alpha_TA` (Table 2; Fig. 4b at 4) while `alpha_TP / sigma^4` falls from 8.4e-3 (0.25) to 7.2e-3, 5.7e-3 and 4.3e-3 (4), with local exponents `d ln alpha_TP / d ln sigma^2` of 1.89 [1.86, 1.92], 1.70 [1.67, 1.74] and 1.51 [1.45, 1.57] (0.25 -> 1 -> 2.25 -> 4; 1.93 [1.77, 2.09] from 0.04 to 0.25), so there is no `sigma^4` law over this range (post hoc S of the SF-43 note, section 3.4); the consumer's time-window `alpha_LAM` is 0.96 / 0.86 / 0.67 / 0.47 of eq. 6 with Table 1 parameters averaged over the same window (the gap is recorded as open question G9b).
 
 ---
 
