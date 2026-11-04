@@ -251,3 +251,12 @@ j1_base10 → H3 → D → DH3 → H2 → J3 → J9 → (J8 si corresponde)
 `budget_gpu_h` y `cutoff_utc` van en el plan nuevo; el motor corta, nunca los resultados.
 
 ```
+
+## Amendment A1 (pre-run clarification, 2026-11-04T18:30Z; before any addendum script ran on data and before any addendum run)
+
+J1 class 4 (section 3.1.3) reads "any other case, or lower limit of IC90(`q_DH3`) above 1.10". Under the first-match order the second
+clause would be redundant (class 3 already requires IC90(`q_DH3`) within [1/1.10, 1.10], and "any other case" covers the rest). It is
+therefore applied as an OVERRIDE **[T]**: if the lower limit of IC90(`q_DH3`) is above 1.10, the J1 class is `abierto` even when class 1
+(`horizonte dominante`) or class 2 (`paso dominante`) matched. This can only make an attribution rarer (a tightening). The class that
+would have matched without the override is stored and reported beside it. Machine-readable: `prereg_addendum.json`
+`j1.classes[order 4].override_if` and `amendments[A1]`. Nothing else changes.

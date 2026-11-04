@@ -465,7 +465,15 @@
    {
     "order": 4,
     "name": "abierto",
-    "rule": "any other case, or ci(q_DH3).lo > 1.10"
+    "rule": "any other case, or ci(q_DH3).lo > 1.10",
+    "override_if": [
+     [
+      "ci(q_DH3).lo",
+      ">",
+      1.1
+     ]
+    ],
+    "override_note": "Amendment A1 (pre-run, 2026-11-04): a lower IC90 limit of q_DH3 above 1.10 makes the J1 class `abierto` even when class 1 or 2 matched (tightening; the clause is otherwise redundant under first match)"
    }
   ],
   "always_report": [
@@ -639,5 +647,14 @@
   "sigma^2 = 0.0625",
   "generator contrast with Par2",
   "tracker on the random-spectral generator"
+ ],
+ "amendments": [
+  {
+   "id": "A1",
+   "utc": "2026-11-04T18:30Z",
+   "before_any_addendum_run": true,
+   "change": "J1 class 4 override: ci(q_DH3).lo > 1.10 forces `abierto` over classes 1-2 (tightening)",
+   "why": "under first-match the owner's clause 'o cota inferior del IC90 de q_DH3 > 1.10' would be redundant; the override is the only reading that gives it effect and it can only make attributions rarer"
+  }
  ]
 }
