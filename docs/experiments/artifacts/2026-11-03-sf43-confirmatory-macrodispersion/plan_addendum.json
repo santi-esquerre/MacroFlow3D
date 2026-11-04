@@ -4,8 +4,8 @@
  "cutoff_utc": "2026-11-07T02:30:00Z",
  "grace_minutes": 30,
  "stage1_max_hours": 0,
- "budget_gpu_h": 7.2,
- "disk_min_free_gb": 100,
+ "budget_gpu_h": 7.41,
+ "disk_min_free_gb": 434.0,
  "campaign_dir": "/home/sesquerre/sf43_addendum",
  "executor": "sf43camp.runner_executor:RunnerExecutor",
  "binaries": {
@@ -229,8 +229,8 @@
    "n_conf": 10,
    "n_max": 10,
    "unit_size": 10,
-   "est_seconds": 17.5,
-   "raw_gb": 0.065,
+   "est_seconds": 27.7,
+   "raw_gb": 0.0437,
    "par2": {
     "grid": [
      1664,
@@ -363,8 +363,8 @@
    "n_conf": 60,
    "n_max": 60,
    "unit_size": 10,
-   "est_seconds": 52.5,
-   "raw_gb": 0.195,
+   "est_seconds": 33.9,
+   "raw_gb": 0.1311,
    "par2": {
     "grid": [
      1664,
@@ -497,8 +497,8 @@
    "n_conf": 60,
    "n_max": 60,
    "unit_size": 10,
-   "est_seconds": 35.0,
-   "raw_gb": 0.13,
+   "est_seconds": 31.5,
+   "raw_gb": 0.0874,
    "par2": {
     "grid": [
      1664,
@@ -631,8 +631,8 @@
    "n_conf": 60,
    "n_max": 60,
    "unit_size": 10,
-   "est_seconds": 105.0,
-   "raw_gb": 0.39,
+   "est_seconds": 56.2,
+   "raw_gb": 0.2621,
    "par2": {
     "grid": [
      1664,
@@ -765,8 +765,8 @@
    "n_conf": 60,
    "n_max": 60,
    "unit_size": 10,
-   "est_seconds": 35.0,
-   "raw_gb": 0.13,
+   "est_seconds": 31.5,
+   "raw_gb": 0.0874,
    "par2": {
     "grid": [
      1664,
@@ -899,8 +899,8 @@
    "n_conf": 100,
    "n_max": 100,
    "unit_size": 10,
-   "est_seconds": 6.8,
-   "raw_gb": 0.561,
+   "est_seconds": 20.7,
+   "raw_gb": 0.4669,
    "consumer": {
     "grid": [
      1040,
@@ -1136,8 +1136,8 @@
    "n_conf": 150,
    "n_max": 150,
    "unit_size": 10,
-   "est_seconds": 27.0,
-   "raw_gb": 0.561,
+   "est_seconds": 29.0,
+   "raw_gb": 0.4669,
    "consumer": {
     "grid": [
      1040,
@@ -2390,7 +2390,7 @@
   "prereg_addendum_sha256": "2305529cf1823784901bd5bcd7cc7d33f784c6bfab34215aeabbfcb593d1cc5e",
   "binaries_path": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/binaries_addendum.json",
   "binaries_sha256": "adb3490d326ad177e6b89363ebfa50a355ad96d2ee0aa0b2e87167699f114107",
-  "costs_sha256": null,
+  "costs_sha256": "ca94d4edf7ad8387740bc156a55c3087c38e9ae68d95cb4e04e6d26b1146d73e",
   "dropped": [],
   "missing_allowed": []
  }

@@ -1,0 +1,97 @@
+{
+ "schema": 1,
+ "campaign": "sf43_addendum_smoke",
+ "status": "DONE",
+ "gpu_h_held": 0.07,
+ "suggested_budget_gpu_h": 7.43,
+ "arms": {
+  "j1_DH3": {
+   "planned": 2,
+   "n": 2,
+   "seconds_per_realization": 44.951,
+   "seconds_max": 48.97,
+   "wall_per_realization": 47.468,
+   "peak_mib": null,
+   "max_iterations": 60,
+   "raw_gb_per_realization": 0.26214,
+   "verdicts": {
+    "converged": 2
+   },
+   "unit_classes": {
+    "ok": 1
+   },
+   "structural_failures": []
+  },
+  "j1_H3": {
+   "planned": 2,
+   "n": 2,
+   "seconds_per_realization": 27.119,
+   "seconds_max": 29.16,
+   "wall_per_realization": 29.304,
+   "peak_mib": null,
+   "max_iterations": 60,
+   "raw_gb_per_realization": 0.13108,
+   "verdicts": {
+    "converged": 2
+   },
+   "unit_classes": {
+    "ok": 1
+   },
+   "structural_failures": []
+  },
+  "j1_base10": {
+   "planned": 1,
+   "n": 1,
+   "seconds_per_realization": 22.195,
+   "seconds_max": 22.195,
+   "wall_per_realization": 26.666,
+   "peak_mib": null,
+   "max_iterations": 60,
+   "raw_gb_per_realization": 0.04371,
+   "verdicts": {
+    "converged": 1
+   },
+   "unit_classes": {
+    "ok": 1
+   },
+   "structural_failures": []
+  },
+  "j3_l5": {
+   "planned": 1,
+   "n": 1,
+   "seconds_per_realization": 16.526,
+   "seconds_max": 16.526,
+   "wall_per_realization": 24.716,
+   "peak_mib": 1385.0,
+   "max_iterations": 120,
+   "raw_gb_per_realization": 0.46695,
+   "verdicts": {
+    "converged": 1
+   },
+   "unit_classes": {
+    "ok": 1
+   },
+   "structural_failures": []
+  },
+  "j9_w48": {
+   "planned": 1,
+   "n": 1,
+   "seconds_per_realization": 23.233,
+   "seconds_max": 23.233,
+   "wall_per_realization": 30.778,
+   "peak_mib": 3975.0,
+   "max_iterations": 70,
+   "raw_gb_per_realization": 0.46695,
+   "verdicts": {
+    "converged": 1
+   },
+   "unit_classes": {
+    "ok": 1
+   },
+   "structural_failures": []
+  }
+ },
+ "drop": [],
+ "decisions": {},
+ "notes": []
+}
