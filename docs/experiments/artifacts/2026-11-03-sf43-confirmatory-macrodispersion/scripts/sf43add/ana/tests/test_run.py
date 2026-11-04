@@ -86,7 +86,20 @@ class J1EndToEnd(Base):
         self.check_class({"j1_H3": 1.0, "j1_D": 1.08, "j1_DH3": 1.10, "j1_H2": 1.0}, "paso dominante")
         self.check_class({"j1_H3": 1.06, "j1_D": 1.06, "j1_DH3": 1.12, "j1_H2": 1.03}, "mixto")
         S = self.check_class({"j1_H3": 1.0, "j1_D": 1.0, "j1_DH3": 1.0, "j1_H2": 1.0}, "abierto")
-        self.assertTrue(S["j1"]["n60"]["q_DH3_lower_limit_above_1.10"])
+        self.assertTrue(S["j1"]["n60"]["override"]["holds"])  # q_DH3 lower limit above 1.10, but nothing to override: `abierto` was the fall-through
+
+    def test_amendment_a1_override_at_n60_and_n100(self):
+        # class 1 would match (r_H 1.12, r_D 1.0, q_H3 1.036) but q_DH3 = 1.16 / 1.0 has its lower limit above 1.10 -> `abierto`
+        c = self.world(dict(lp={"j1_H3": 1.12, "j1_D": 1.0, "j1_DH3": 1.0}), only=J1_ARMS)
+        j8 = self.world(dict(lp={"j8_H3": 1.12, "j8_D": 1.0, "j8_DH3": 1.0}), job="j8_conditional")
+        rc, so, se, S, out = self.run_cli(c, j8=j8)
+        self.assertEqual(rc, 0, se)
+        for lab in ("n60", "n100"):
+            j = S["j1"][lab]
+            self.assertEqual((j["class"], j["class_before_override"], j["override"]["applied"]), ("abierto", "horizonte dominante", True), lab)
+        with open(os.path.join(out, "addendum_summary.md")) as f:
+            self.assertIn("Amendment A1 override", f.read())
+        self.assertStructureOnly(so, se)
 
     def test_manipulation_failure_class(self):
         c = self.world(dict(lp={"j1_H3": 1.12, "j1_DH3": 1.13}, lost={"j1_H3": 40}), only=J1_ARMS)  # 40-120 particles of 10000 never cross: mean completeness < 0.999

@@ -1,4 +1,5 @@
 """The pre-registered rules on in-memory views (no files): every J1 / J3 / J9 class, the gates, the precedence and the J8 trigger."""
+import json
 import unittest
 import zlib
 
@@ -57,13 +58,61 @@ class J1(unittest.TestCase):
         self.assertEqual(r["class"], "mixto")
         self.assertFalse(r["conditions"]["paso dominante"][1]["truth"])  # r_H < 1.05 fails: that is why class 2 does not match
 
-    def test_abierto_and_the_q_DH3_flag(self):
-        r = self.run_j1(h3=1.0, d=1.0, dh3=1.0, pol=1.16)
-        self.assertEqual(r["class"], "abierto")
-        self.assertTrue(r["q_DH3_lower_limit_above_1.10"])
+    def test_abierto_fall_through_with_and_without_the_override_condition(self):
+        r = self.run_j1(h3=1.0, d=1.0, dh3=1.0, pol=1.16)  # nothing matched; q_DH3 lower limit above 1.10 holds but changes nothing
+        self.assertEqual((r["class"], r["class_before_override"]), ("abierto", "abierto"))
+        self.assertTrue(r["override"]["holds"])
+        self.assertFalse(r["override"]["applied"])
         r = self.run_j1(h3=1.0, d=1.0, dh3=1.0, pol=1.0)
-        self.assertEqual(r["class"], "abierto")
-        self.assertFalse(r["q_DH3_lower_limit_above_1.10"])
+        self.assertEqual((r["class"], r["class_before_override"]), ("abierto", "abierto"))
+        self.assertFalse(r["override"]["holds"])
+
+    def test_amendment_a1_override_over_class_2(self):
+        r = self.run_j1(h3=1.0, d=1.08, dh3=1.0, pol=1.16)  # class 2 matches (r_D 1.08, r_H 1.0) but ci(q_DH3).lo = 1.16 > 1.10
+        self.assertTrue(all(c["truth"] for c in r["conditions"]["paso dominante"]))
+        self.assertEqual((r["status"], r["class"], r["class_before_override"]), ("classified", "abierto", "paso dominante"))
+        self.assertTrue(r["override"]["holds"] and r["override"]["applied"])
+        self.assertEqual(r["override"]["conditions"][0]["lhs"], "ci(q_DH3).lo")
+        self.assertGreater(r["override"]["conditions"][0]["value"], 1.10)
+        self.assertIn("Amendment A1", r["reason"])
+        self.assertIn("paso dominante", r["reason"])
+        self.assertIn("Amendment A1", r["override"]["note"])
+
+    def test_amendment_a1_override_over_class_1(self):
+        r = self.run_j1(h3=1.12, d=1.0, dh3=1.0, pol=1.14)  # class 1 matches (q_H3 1.02) but q_DH3 = 1.14
+        self.assertTrue(all(c["truth"] for c in r["conditions"]["horizonte dominante"]))
+        self.assertEqual((r["class"], r["class_before_override"]), ("abierto", "horizonte dominante"))
+        self.assertTrue(r["override"]["applied"])
+
+    def test_no_override_when_the_lower_limit_is_not_above_1_10(self):
+        r = self.run_j1(h3=1.12, d=1.0, dh3=1.03, pol=1.12)  # class 1; q_DH3 = 1.087, ci lower limit below 1.10
+        self.assertLessEqual(r["quantities"]["q_DH3"]["ci90"][0], 1.10)
+        self.assertEqual((r["class"], r["class_before_override"]), ("horizonte dominante", "horizonte dominante"))
+        self.assertEqual((r["override"]["holds"], r["override"]["applied"]), (False, False))
+        self.assertNotIn("Amendment A1", r["reason"])
+        r = self.run_j1(h3=1.0, d=1.08, dh3=1.08, pol=1.16)  # class 2; q_DH3 = 1.074
+        self.assertEqual((r["class"], r["class_before_override"], r["override"]["applied"]), ("paso dominante", "paso dominante", False))
+
+    def test_override_is_read_from_the_json_not_hard_coded(self):
+        add = json.loads(json.dumps(ADD))
+        add["j1"]["classes"][-1]["override_if"] = [["ci(q_DH3).lo", ">", 1.30]]  # a threshold the data do not reach
+        r = rules.evaluate_j1(add, j1_views(h3=1.0, d=1.08, dh3=1.0, pol=1.16), REPRO_OK, "n60")
+        self.assertEqual((r["class"], r["override"]["applied"]), ("paso dominante", False))
+        del add["j1"]["classes"][-1]["override_if"]  # no override clause at all: first match stands
+        r = rules.evaluate_j1(add, j1_views(h3=1.0, d=1.08, dh3=1.0, pol=1.16), REPRO_OK, "n60")
+        self.assertEqual((r["class"], r["override"]["holds"], r["override"]["conditions"]), ("paso dominante", False, []))
+
+    def test_the_override_is_only_in_the_classification_path(self):
+        kw = dict(h3=1.12, d=1.0, dh3=1.0, pol=1.14)  # would be overridden
+        r = self.run_j1({"evaluated": True, "passed": False}, **kw)
+        self.assertEqual((r["class"], r["class_before_override"], r["override"]["applied"]), (None, None, False))
+        r = self.run_j1(complete=False, **kw)  # manipulation failure: classes 1-3 are not assigned, nothing to override
+        self.assertEqual((r["class"], r["class_before_override"], r["override"]["applied"]), ("abierto (horizonte no saturado)", None, False))
+        v = j1_views(**kw)
+        del v["j1_DH3"]  # q_DH3 not evaluable: status "not evaluable", the override condition is undetermined
+        r = rules.evaluate_j1(ADD, v, REPRO_OK, "n60")
+        self.assertEqual((r["status"], r["class"], r["override"]["holds"]), ("not evaluable", None, False))
+        self.assertIsNone(r["override"]["conditions"][0]["truth"])
 
     def test_first_match_wins_when_two_classes_hold(self):
         r = self.run_j1(h3=1.12, d=1.0, dh3=1.12, pol=1.12)

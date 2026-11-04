@@ -180,7 +180,11 @@ def md(S):
         if "error" in j:
             o += ["## J1 (%s): ERROR %s" % (lab, j["error"]), ""]
             continue
-        o += ["## J1 (%s)" % lab, "", "- status: %s; class: **%s**; %s" % (j["status"], j["class"], j["reason"]), ""] + QHEAD
+        ov = j["override"]
+        o += ["## J1 (%s)" % lab, "", "- status: %s; class: **%s**; %s" % (j["status"], j["class"], j["reason"]),
+              "- Amendment A1 override (%s): holds %s, applied %s; class before the override: %s" % (
+                  "; ".join("%s %s %s -> %s %s" % (c["lhs"], c["op"], f(c["rhs"]), f(c["value"]), c["truth"]) for c in ov["conditions"]), ov["holds"],
+                  ov["applied"], j["class_before_override"]), ""] + QHEAD
         o += [qrow(k, v) for k, v in j["quantities"].items()] + ["", "Completeness (mean, fraction complete, n):", ""]
         o += ["| arm | n | mean | fraction complete | quantiles 0/5/25/50/75/95/100 |", "|---|---|---|---|---|"]
         for a, c in j["completeness"].items():

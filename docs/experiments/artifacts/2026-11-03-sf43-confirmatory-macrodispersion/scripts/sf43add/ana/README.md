@@ -12,7 +12,7 @@ python3 -W default -m sf43add.ana run --prereg A/prereg_addendum.json --campaign
 python3 -W default -m sf43add.ana check --prereg A/prereg_addendum.json --campaign C --out O         # S0 structure check -> O/smoke_check.json
 python3 -W default -m sf43add.ana repro --campaign C --arm j1_base10 --seeds 434001[-434010] --frozen-reduced R --frozen-manifest M [--frozen-segments S]
 python3 -W default -m sf43add.ana j8-trigger --summary O/addendum_summary.json --gpu-h-used X --j8-gpu-h-projected Y --j8-end-utc 2026-11-06T22:00:00Z
-python3 -W error -m unittest discover -s A/scripts/sf43add/ana/tests -t A/scripts                     # 79 tests, about 15 s, no GPU, no host
+python3 -W error -m unittest discover -s A/scripts/sf43add/ana/tests -t A/scripts                     # 85 tests, about 15-30 s, no GPU, no host
 ```
 
 ## Blinded phase: what reaches the log
@@ -49,7 +49,7 @@ Exit codes: `run` 0 analysis completed (a "not evaluable" rule is a result), 1 a
 
 Every condition of every class is evaluated and stored with its value and truth; the first class whose conditions hold wins; the fall-through (`abierto`, `inconcluso`) is last.
 * J1: reproduction gate (not evaluated / failed: NOT classified, reason stored) -> manipulation check on `j1_H3` (failed: `abierto (horizonte no saturado)`; not evaluable: not
-  classified) -> classification (needs `r_H, r_D, q_H3, q_DH3` evaluable, else "not evaluable"). `q_H3`, `q_DH3`, completeness per arm, `q_base` against the frozen 1.164 [1.131, 1.198]
+  classified) -> classification (needs `r_H, r_D, q_H3, q_DH3` evaluable, else "not evaluable"), then the Amendment A1 override read from `j1.classes[order 4].override_if` (here `ci(q_DH3).lo > 1.10`): when it holds the class is `abierto` even if class 1 or 2 matched, and `class_before_override`, the override conditions (`override`) and the reason are stored (classification path only; n60 and n100). `q_H3`, `q_DH3`, completeness per arm, `q_base` against the frozen 1.164 [1.131, 1.198]
   and the J8 trigger inputs (which IC90 contain which threshold in their interior) are always stored. With `--j8-campaign` the same at `n = 100` (`S.j1.n100`, the 60 seeds
   of each arm plus 434061-434100; no `j8` arm for H2); `n = 60` (`S.j1.n60`) is primary.
 * J3: `m_main`, `m_far`, `F5`, `m_far/m_main`; `lambda/h = 5 equivalente` iff the three IC90 are within [0.97, 1.03], [0.97, 1.03], [0.98, 1.02]; otherwise (also with `j3_l5` missing)

@@ -14,7 +14,6 @@ from .data import LP, TP_FAR, TP_MAIN, common_all, pair
 
 QUANTILES = (0, 5, 25, 50, 75, 95, 100)
 J3_CLASSES = ("lambda/h = 5 equivalente", "lambda/h = 5 no equivalente")
-ABIERTO_Q_LO = 1.10  # 3.1.3 class 4: lower limit of IC90(q_DH3) above 1.10 (informational: `abierto` is the fall-through)
 
 
 def ratio(va, ka, vb, kb, label=""):
@@ -67,8 +66,12 @@ def first_match(Q, classes):
     return hit, conds
 
 
+def _fall_entry(classes):
+    return [c for c in classes if "all" not in c][-1]
+
+
 def _fall_through(classes):
-    return [c["name"] for c in classes if "all" not in c][-1]
+    return _fall_entry(classes)["name"]
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------
@@ -125,9 +128,18 @@ def evaluate_j1(add, views, repro_result, label):
         status, cls, why = "not evaluable", None, "not evaluable: %s" % ", ".join(missing)
     else:
         status, cls, why = "classified", hit or _fall_through(j1["classes"]), "first match of the pre-registered order" if hit else "no earlier class holds (fall-through)"
+    # Amendment A1 (pre-run): the fall-through class's `override_if` (here ci(q_DH3).lo > 1.10) forces it over a class 1-3 match; classification path only
+    fall = _fall_entry(j1["classes"])
+    ov_conds = [eval_cond(Q, *t) for t in fall.get("override_if", [])]
+    holds = bool(ov_conds) and all(c["truth"] is True for c in ov_conds)
+    before = cls if status == "classified" and man["passed"] is True else None
+    applied = before is not None and holds and before != fall["name"]
+    if applied:
+        why = "Amendment A1 override (%s) gives %s over the first match %s" % ("; ".join("%s %s %s" % tuple(t) for t in fall["override_if"]), fall["name"], before)
+        cls = fall["name"]
     return {"label": label, "quantities": Q, "completeness": comp, "manipulation": man, "representativity": repres, "conditions": conds,
-            "status": status, "class": cls, "reason": why,
-            "q_DH3_lower_limit_above_1.10": bool(Q["q_DH3"].get("evaluable") and Q["q_DH3"]["ci90"][0] > ABIERTO_Q_LO)}
+            "status": status, "class": cls, "reason": why, "class_before_override": before,
+            "override": {"conditions": ov_conds, "holds": holds, "applied": bool(applied), "note": fall.get("override_note")}}
 
 
 def j8_inputs(add, j1_result):
