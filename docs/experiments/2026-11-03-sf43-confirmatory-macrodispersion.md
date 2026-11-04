@@ -1,0 +1,479 @@
+# SF-43: confirmatory Monte Carlo study of macrodispersion at `sigma_Y^2` in {0.25, 1, 2.25, 4} with quantified error budgets
+
+- What this is: the run record and the pre-registered result of increment SF-43
+  (`docs/plans/active/lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md`): plane-based `alpha_TP`, `alpha_TAP` and
+  `alpha_LP` over the common travel window `[25, 94] lambda`, each with a sampling interval and the error budget of decision G5.4, the
+  robust sign of the transverse growth (Gate 4) and the matched, paired comparison of `alpha_LP` with Par2 RWPT (Gate 5), both inside one
+  Holm family of eight hypotheses.
+- What it is not: an asymptotic statement, a test of the Lester et al. (2023) zero-transverse claim at `t -> infinity`, or a statement
+  about other covariance models, anisotropic `K`, finite Péclet, other media or `sigma^2 > 4`.
+- Status: **results frozen and audited by the orchestrator; awaiting human review** (State `awaiting_review`). The confirmatory outcomes
+  below are the frozen analysis's output; nothing in this note changes a pre-registered rule. Where SF-43 overlaps SF-39
+  (`docs/experiments/2026-10-27-sf39-macrodispersion-study.md`, the exploratory pilot), SF-43 supersedes it.
+- Normative contract: `A/preregistration.md` (sha256 `3c5e05b27d5edb71734f99b0ae7c507360c2434ce3c42e5e2ddeabc709ccc43e`, commit
+  `cbbd69da`, pushed to draft PR #87 before the first production run) with its companions `A/plan.json` (`a9e599a1...`) and
+  `A/prereg.json` (`9b92a524...`); governance `docs/decisions/2026-10-29-sf39-remediation-sf42-sf43.md` (G1-G11) and
+  `docs/decisions/2026-11-02-sf43-pre-activation-decisions.md` (H1-H21, owner consultation of 2026-11-02); GPU use
+  `docs/decisions/2026-11-02-sf43-gpu-sharing-policy.md`. Theory: `docs/theory/lester-2023-key-claims.md` (helicity-free regime, the
+  zero-transverse claim and its limits, first-order context), `docs/theory/beaudoin-de-dreuzy-2013-key-claims.md` (classical 3D
+  baseline, context only).
+- Artifact root `A = docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/`; results under `A/results/` (layout at
+  the end of this note).
+
+Reading key. **Confirmatory** = the eight family hypotheses and their Holm decisions (section 3.1). **Descriptive (pre-registered)** =
+every other block the frozen analysis computes (budgets, classes, verdicts, contrasts, controls, secondaries); reported, never deciding.
+**Exploratory (post hoc)** = observations made by the orchestrator after the freeze, from the frozen outputs only, flagged as such
+(section 3.3); they suggest, they do not test.
+
+## 1. Question
+
+Within the model of the decision record (smooth Gaussian log-conductivity `C(r) = sigma^2 exp(-(r/lambda)^2)`, scalar isotropic `K`,
+medium (b) with Dirichlet `x` faces and periodic transverse faces, SF-18 periodic normalized generator, purely advective transport):
+
+1. Is the transverse growth of the first-passage distribution over `[25, 94] lambda` larger than the first-order window value
+   `c = 7.992e-5 sigma^2 lambda` once sampling, discretization (`E_h`), width (`E_W`, `E_WxH`) and integration (`E_int`) errors are
+   bounded, at each `sigma^2` in {0.25, 1, 2.25, 4} (robust sign, G5.4; class G5.7)?
+2. Is the consumer's `alpha_LP` equivalent within a factor 1.10 to Par2's on the same field, grid and window (Gate 5, G5.5)?
+3. With what error budget are `alpha_TP`, `alpha_TAP`, `alpha_LP` measured (acceptance B, E)?
+
+## 2. Hypotheses, design and execution (summary; the pre-registration is normative)
+
+**Family** (m = 8, Holm at family-wise 0.05) [prereg 5.1]: `robust:<a>` -- null `alpha_e <= c` for both `e` in {`alpha_TP`,
+`alpha_TAP`} (displacement basis; intersection-union), rejected iff `RL_e(a) = L_e(a/2) - sum_k B_k(a/2K) > c` with `L_e` the one-sided
+bootstrap-t lower limit of the production mean (`B` = 33599); `gate5:<a>` -- TOST in Fieller form of `mu_L / mu_P` within
+`[1/1.10, 1.10]`, Hall's skewness-corrected `t` (the procedure the coverage run qualified at the planned pair counts). Pre-registered
+expectation [prereg 6]: at `sigma^2 = 4` the plane-based `alpha_LP` is a slow-tail, non-Fickian quantity and a Gate 5 `disagree` is
+plausible. No `alpha_T` value was presupposed (sizing used the SF-42 pilot means as design inputs only).
+
+**Design** (variant A, owner-accepted) [prereg 2]: 44 engine arms (68 analysis entries), production `N = 200` per amplitude
+(1040x240x240 at 0.25 and 1, `lambda/h` 10, width 24 `lambda`; 1664x384x384 at 2.25, `lambda/h` 16; 3328x384x384 at 4, `lambda/h` 32,
+width 12), `E_h` ladders paired by seed (5/10/20; 4/8/12/16; 4/8/16/32), unpaired width cells (48 vs 24 `lambda`; 24 vs 12 at 4, with a
+2x2 interaction at 2.25 and 4), `h_max` passes `h/8, h/16, h/32` on the first 30 production seeds, Gate 5 Par2 arms (200 / 200 / 200 /
+250 pairs), distance arms (L = 208 `lambda`, 100 realizations at 1, 2.25, 4), the G7 Par2 factorial at 0.25 and 1 (8 cells x 60), and the
+positive control `sigma^2 = 0.04` (30 realizations). Source: centred square of fixed size per amplitude (19.2 / 19.2 / 19.2 / 9.6
+`lambda`), flux weights, seed lattice `M` = 128 / 128 / 100 / 100 (`N_p = M^2`). Planes `x0 + d`, `d` = 25..94 (70; 25..194 on the
+distance arms). Seeds 431001-436510 / 437001-437363 in disjoint blocks with reserves [prereg 3].
+
+**Builds** [prereg 1.4]: host clean rebuild (`cmake --preset v100-release`, target clean, `-j 32`, `TMPDIR` on /home; 305/305 steps, 0
+assembler messages); `lagrangian_ensemble` md5 `d8b673b769aabfb7662a2cd0cb34b3fe`, `macroflow3d_pipeline` md5
+`5f8158b55cd54598d3267bc6f7219552`, verified by the engine at start (`A/binaries.json`). Mirror `scripts/remote --increment SF-43` at the
+tree of `e85ec5a1` (analysis files identical to the pre-registration commit `cbbd69da`; sha256 of every analysis file verified by the
+engine at start and again before the analysis).
+
+**Commands** (exact; owner rules: one remote job at a time, `REMOTE_GPU_WAIT=7200`, CUDA jobs `REMOTE_GPU_MIN_FREE_MIB=30000`, never
+`--gpu` or `CUDA_VISIBLE_DEVICES`):
+
+```bash
+scripts/remote --increment SF-43 blinded start --label "SF-43 production campaign (pre-registration cbbd69da)"
+REMOTE_GPU_WAIT=7200 REMOTE_GPU_MIN_FREE_MIB=30000 REMOTE_GPU_MIN_FREE_MIB_2=17000 REMOTE_GPU_COUNT=2 REMOTE_GPU_COUNT_MIN=1 \
+  scripts/remote --increment SF-43 run sf43-campaign -- \
+  "bash docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/run_sf43.sh build/v100-release all"
+# in-job, after the unit loop (plan.json `analysis`, `recompute`, `reconcile`):
+#   bash A/scripts/analyse_sf43.sh ~/sf43_campaign build/v100-release      (python3 -W default -m sf43ana run ...; check-finite)
+#   python3 -W error -m recompute43 run --campaign ~/sf43_campaign --reduced ~/sf43_campaign/reduced --out ~/sf43_campaign.recompute.txt \
+#       --primary-arm s025_prod --primary-arm s1_prod --primary-arm s225_prod --primary-arm s4_prod --single-pass-hmax 8
+#   python3 -W error -m reconcile43 run --campaign ~/sf43_campaign --out ~/sf43_campaign.reconcile.txt
+# freeze (bitácora row, commit 40135561, 2026-11-04T13:15:43Z), then:
+scripts/remote --increment SF-43 blinded stop        # 2026-11-04T13:15:57Z
+```
+
+**Execution record** (job log `A/results/logs/sf43-campaign.log`, `A/results/REPORT.txt`):
+
+- `sf43-campaign` launched 2026-11-02T21:18:05Z, GPUs granted 21:18:57Z (both free under the owner's GPU-sharing policy: lane A GPU 0,
+  lane B GPU 1); stage 1 (two GPUs, H14) from 21:18:58Z to `LANE_B_RELEASED gpu=1` at 2026-11-03T14:04:00Z (normal release: no unit of
+  its class left; 16.75 h, inside the 30-h cap); then one GPU. Unit loop ended 2026-11-04T07:38:31Z; analysis, recompute and reconcile
+  `rc=0`; `FINAL status=DONE analysis=ok exit=0` at 08:50:49Z.
+- **GPU-h** (GPUs held x wall from the grant): lane A 35.53 h, lane B 16.75 h, **52.28 GPU-h** (engine count 51.14, to the end of the
+  unit loop; the job held GPU 0 during the ~1.2 h CPU-only analysis). SF-43 total with the smoke jobs (1.42): **53.70 GPU-h** of the
+  150 GPU-h guard (G10); planning was 59.70. CPU-only slot-hours (not G10): builds 0.21, coverage 0.58, smoke post-processing 0.12.
+- **Completeness**: every arm complete at its planned size; 5294 solves (consumer 3483, Par2 1811); 0 halted arms, 0 OOM, 0 lane
+  crashes, 0 unreduced segments; 68 analysis entries `ok`, each a complete prefix equal to its planned `n`.
+- **Failures** (all at `sigma^2 = 4`, `not_converged_beyond_fallback`, replaced group-wide by the next reserve [prereg 3]): `s4_prod`
+  seed 434153 -> 434401, `s4_l16` 434222 -> 434402 (group `g_s4`: applied to every arm that planned the seed, including the Gate 5
+  twins), `s4_dist` 436437 -> 436501. Rate 3 / 5294 = 5.7e-4 (largest per arm 1 / 101 = 0.99 %, below the 1 % imputation trigger); no
+  `fallback`-accepted solve anywhere, so every fallback sensitivity equals the main analysis.
+- **Blinded re-estimation** (H9): all 10 listed arms, `N` unchanged (`N_req` 1-24 against `n_conf` 150-200).
+- **Blinded phase** (G8): from 2026-11-02T21:18:01Z; only costs, verdicts, re-estimation lines and counts were read; the host log
+  `exec-blinded.log` records the `run` and 8 `exec` commands of the phase (one GPU-process query on 2026-11-03, seven reads of counts,
+  reports and hashes on 2026-11-04); the freeze row (UTC, analysis commit, sha256 of `summary.json`, of the 2409 reduced tables via a sorted manifest, of the
+  ledger and of the exec log) was committed and pushed at 13:15:43Z, before `blinded stop` (13:15:57Z) and before `summary.json` was
+  read.
+
+## 3. Results
+
+Units: `lambda`. Intervals 90 % unless stated. Estimands per realization over the window, ensemble means over the analysis set
+[prereg 4]. Tables T1-T11 are generated from the frozen `A/results/analysis/summary.json` (no recomputation).
+
+### 3.1 Confirmatory (the Holm family)
+
+#### T1. Confirmatory family (Holm, m = 8, FWER 0.05)
+
+| hypothesis | p | Holm rank | Holm level | rejected | Holm-adjusted p |
+|---|---|---|---|---|---|
+| `gate5:s025` | 2.89e-128 | 1 | 6.25e-03 | yes | 2.31e-127 |
+| `gate5:s1` | 1.84e-112 | 2 | 7.14e-03 | yes | 1.29e-111 |
+| `gate5:s225` | 3.30e-61 | 3 | 8.33e-03 | yes | 1.98e-60 |
+| `robust:s025` | 5.96e-05 | 4 | 0.01 | yes | 2.98e-04 |
+| `robust:s1` | 5.96e-05 | 5 | 0.0125 | yes | 2.98e-04 |
+| `robust:s225` | 5.96e-05 | 6 | 0.01667 | yes | 2.98e-04 |
+| `robust:s4` | 5.96e-05 | 7 | 0.025 | yes | 2.98e-04 |
+| `gate5:s4` | 1 | 8 | 0.05 | **no** | 1 |
+
+**Robust sign (Gate 4).** All four `robust:<a>` hypotheses are rejected: at every amplitude both transverse estimators exceed `c` after
+the budget is subtracted, with `p` at the lattice minimum (5.96e-5) and `RL` at the strictest Holm level `0.05/8` between 0.75 and
+0.88 of the production mean (T2). The pre-registered class is therefore **`physical (restricted)` at `sigma^2` = 0.25, 1, 2.25 and 4**,
+for `alpha_TP` and `alpha_TAP` alike: *within this model, medium, width range (24-48 `lambda`; 12-24 at `sigma^2 = 4`) and travel
+window `[25, 94] lambda`, under the stated transfer assumptions* [prereg 5.2, 6]. Qualification held at the realized sizes (pipeline
+profile `half` of `K = 3` at 0.25 and 1, `full` of `K = 4` at 2.25 and 4; all floors met; see 4.2 for why `half` was the largest
+eligible profile at 0.25 and 1). By H16, only an `E_h` or `E_int` artifact would support the attribution of `alpha_T` to numerics; both
+are bounded far below the estimates (T3).
+
+#### T2. Robust sign (Gate 4), displacement basis, window [25, 94] `lambda`; units of `lambda`
+
+| `sigma^2` | N | estimator | mean | 90 % bootstrap-t | `c` | mean / `c` | `L(a/2)` at a = 0.05 / 0.00625 | `RL` at a = 0.05 / 0.00625 | p | class |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 200 | `alpha_TP` | 5.263e-04 | [5.111e-04, 5.410e-04] | 2.00e-05 | 26 | 5.08e-04 / 5.01e-04 | 4.38e-04 / 4.19e-04 | 5.96e-05 | physical (restricted) |
+| 0.25 | 200 | `alpha_TAP` | 5.263e-04 | [5.112e-04, 5.410e-04] | 2.00e-05 | 26 | 5.08e-04 / 5.00e-04 | 4.38e-04 / 4.18e-04 | 5.96e-05 | physical (restricted) |
+| 1 | 200 | `alpha_TP` | 7.219e-03 | [7.061e-03, 7.377e-03] | 7.99e-05 | 90 | 7.03e-03 / 6.96e-03 | 6.53e-03 / 6.33e-03 | 5.96e-05 | physical (restricted) |
+| 1 | 200 | `alpha_TAP` | 7.219e-03 | [7.062e-03, 7.376e-03] | 7.99e-05 | 90 | 7.03e-03 / 6.96e-03 | 6.54e-03 / 6.32e-03 | 5.96e-05 | physical (restricted) |
+| 2.25 | 200 | `alpha_TP` | 0.028691 | [0.028213, 0.029173] | 1.80e-04 | 160 | 0.02812 / 0.02789 | 0.02539 / 0.02463 | 5.96e-05 | physical (restricted) |
+| 2.25 | 200 | `alpha_TAP` | 0.02869 | [0.028207, 0.029174] | 1.80e-04 | 160 | 0.02812 / 0.0279 | 0.02539 / 0.02464 | 5.96e-05 | physical (restricted) |
+| 4 | 200 | `alpha_TP` | 0.068402 | [0.066463, 0.070422] | 3.20e-04 | 214 | 0.06612 / 0.06521 | 0.05492 / 0.05162 | 5.96e-05 | physical (restricted) |
+| 4 | 200 | `alpha_TAP` | 0.068381 | [0.066471, 0.070412] | 3.20e-04 | 214 | 0.06609 / 0.06522 | 0.05488 / 0.05162 | 5.96e-05 | physical (restricted) |
+
+**Gate 5.** Equivalence of `alpha_LP` within `[1/1.10, 1.10]` is **established at 0.25, 1 and 2.25** and **not established at 4**
+(`p_tost` = 1; the 90 % Fieller interval of the ratio, [1.159, 1.228], lies entirely above 1.10). The descriptive G5.5 verdict is
+`agree` / `agree` / `agree` / **`disagree`** (T5). Per the specification (acceptance D) and prereg 6, a `disagree` keeps SF-43 open until
+it is attributed or decided by the owner; the pre-registered attribution is in 3.2 (T6).
+
+#### T5. Gate 5: `alpha_LP` consumer twin (uniform weights) / Par2, paired by seed
+
+| `sigma^2` | pairs | consumer | Par2 | ratio | 90 % Fieller (Hall) | `p_tost` | Holm level | equivalence (confirmatory) | verdict (descriptive) | pair corr. | Par2 completeness < 0.999 | power at ratio 1 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 200 | 0.23297 | 0.23212 | 1.0037 | [1.0014, 1.006] | 2.89e-128 | 6.25e-03 | established | agree | 0.9855 | 0 of 200 | 1 |
+| 1 | 200 | 1.0894 | 1.0814 | 1.0073 | [1.0046, 1.0102] | 1.84e-112 | 7.14e-03 | established | agree | 0.9762 | 0 of 200 | 1 |
+| 2.25 | 200 | 3.2662 | 3.2104 | 1.0174 | [1.0121, 1.0228] | 3.30e-61 | 8.33e-03 | established | agree | 0.8833 | 0 of 200 | 1 |
+| 4 | 250 | 9.4 | 7.9114 | 1.1882 | [1.159, 1.2285] | 1 | 0.05 | **not established** | disagree | 0.3088 | 40 of 250 | 0.9774 |
+
+### 3.2 Descriptive (pre-registered, outside the family)
+
+**Error budgets** (T3). The width term dominates at 0.25 and 1 (`E_W` bound 13 % and 6 % of the mean, with measured width differences
+`dW` of 5 % and 0.4 %); at 2.25 and 4 the `E_h` ladders are non-monotone (level differences change sign), so no real order exists and
+the pre-registered fallback `3 UCB(max |a_i - a_j|)/(r_min - 1)` applies (gate failed by construction: `E_h = max(order, fallback)`).
+`E_int` is negligible at every amplitude (passes `h/8` and `h/16` agree to about 1e-10 relative): the integration error at `h/8` is not
+material, consistent with SF-37's finding that tolerances 1e-6 to 1e-10 give bitwise-identical results at `h/8`. Budgets sum to 7-16 %
+of the estimates; even the full sum at the strictest level leaves `RL` far above `c` (T2).
+
+#### T3. Error-budget components `B_k` of `alpha_TP` (displacement basis) at a = 0.05 / 0.00625; units of `lambda`
+
+| `sigma^2` | `E_h` | `E_h` branch (order `p_use`) | `E_W` (est. `dW`) | `E_WxH` | `E_int` | sum of `B_k` at 0.05, % of mean |
+|---|---|---|---|---|---|---|
+| 0.25 | 2.42e-06 / 2.51e-06 | order (1.598) | 6.79e-05 / 7.98e-05 (2.71e-05) | - | 1.25e-13 / 1.61e-13 | 13.4 % |
+| 1 | 5.85e-05 / 7.25e-05 | order (0.8339) | 4.40e-04 / 5.59e-04 (3.14e-05) | - | 6.18e-12 / 7.56e-12 | 6.9 % |
+| 2.25 | 8.94e-04 / 1.05e-03 | fallback (order undefined) | 1.73e-03 / 2.07e-03 (4.67e-04) | 1.12e-04 / 1.38e-04 | 5.12e-10 / 6.37e-10 | 9.5 % |
+| 4 | 5.12e-03 / 6.05e-03 | fallback (order undefined) | 5.28e-03 / 6.56e-03 (5.65e-04) | 8.04e-04 / 9.82e-04 | 1.95e-07 / 2.38e-07 | 16.4 % |
+
+**Longitudinal `alpha_LP`, halves and distance** (T4). `alpha_LP` = 0.233 / 1.092 / 3.261 / 9.44 `lambda`. The halves are reported as
+intervals, without a claim (no equivalence margin was pre-registered). The far window `[94, 194]` of the distance arms gives
+`alpha_TP(far) / alpha_TP(main)` = 1.02 / 1.04 / 0.99 at 1 / 2.25 / 4: no decay of the transverse growth rate is visible up to 194
+`lambda` (descriptive; a plateau here separates "decay toward zero" from "plateau", not physics from numerics [prereg 12]).
+`alpha_LP(far)/alpha_LP(main)` = 1.06 [1.02, 1.10] at 4: still growing, the expected non-Fickian behaviour.
+
+#### T4. `alpha_LP` (travel-time, plane-based) and the transverse windows; units of `lambda`
+
+| `sigma^2` | `alpha_LP` mean | 90 % bootstrap-t | `U_r` | h1 [25, 59.5] `alpha_LP` | h2 [59.5, 94] `alpha_LP` | h1 `alpha_TP` | h2 `alpha_TP` | far/main `alpha_TP` (L = 208) | far/main `alpha_LP` |
+|---|---|---|---|---|---|---|---|---|---|
+| 0.25 | 0.23341 | [0.23046, 0.23646] | 1.0441 | 0.2306 [0.2266, 0.2346] | 0.2319 [0.2264, 0.2374] | 5.09e-04 [4.81e-04, 5.37e-04] | 5.42e-04 [5.10e-04, 5.73e-04] | - | - |
+| 1 | 1.0918 | [1.0802, 1.1037] | 1.1835 | 1.083 [1.069, 1.098] | 1.108 [1.089, 1.127] | 7.18e-03 [6.96e-03, 7.41e-03] | 7.07e-03 [6.81e-03, 7.32e-03] | 1.021 [0.9756, 1.068] | 1.002 [0.9761, 1.03] |
+| 2.25 | 3.2611 | [3.2279, 3.2967] | 1.4463 | 3.266 [3.229, 3.303] | 3.259 [3.211, 3.307] | 0.02893 [0.02823, 0.02962] | 0.02839 [0.02752, 0.02926] | 1.036 [1.001, 1.072] | 0.9908 [0.973, 1.009] |
+| 4 | 9.4392 | [9.0163, 10.841] | 1.8761 | 9.651 [8.38, 10.92] | 9.414 [8.999, 9.829] | 0.06983 [0.0672, 0.07246] | 0.06717 [0.06434, 0.07] | 0.9877 [0.9354, 1.044] | 1.062 [1.023, 1.102] |
+
+**Attribution of the `sigma^2 = 4` Gate 5 offset** (T6; decomposition fixed in prereg 7, same pairs, uniform weights). The total
+consumer/Par2 ratio 1.188 splits into consumer/Pollock **1.021 [0.987, 1.056]** (velocity representation: spline `v_s` against Pollock's
+face-flux interpolation on the same realizations, lattice and integrator-free cell integration; interval contains 1) and Pollock/Par2
+**1.164 [1.131, 1.198]** (Euler stepping with fixed `dt`, random against lattice injection, Par2's own crossing bookkeeping and horizon).
+The offset therefore sits on the Par2 side of the bridge, not in the consumer's representation. The pre-registered decomposition does
+not separate the Par2-side mechanisms at `sigma^2 = 4` (the G7 factorial runs only at 0.25 and 1). Par2 crossing completeness:
+40 of 250 Par2 realizations have `n_last / n_traced < 0.999` (minimum 0.9914); removing those pairs leaves ratio 1.154 [1.126, 1.198]
+(`disagree`). At 0.25 to 2.25 the same decomposition shows consumer/Pollock offsets of 0.4-1.0 % and Pollock/Par2 within 0.7 %.
+
+#### T6. Attribution (pre-registered decomposition on the Gate 5 pairs, uniform weights): ratio of means, 90 % paired interval
+
+| `sigma^2` | response | consumer / Pollock (velocity representation) | Pollock / Par2 (Euler stepping, injection) | consumer / Par2 (total) |
+|---|---|---|---|---|
+| 0.25 | `alpha_LP` | 1.0042 [1.004, 1.0043] | 0.99952 [0.99721, 1.0018] | 1.0037 [1.0014, 1.006] |
+| 0.25 | `alpha_TP:disp` | 1.0019 [1.0017, 1.0022] | 0.9976 [0.99513, 1.0001] | 0.99953 [0.99703, 1.002] |
+| 1 | `alpha_LP` | 1.0078 [1.0072, 1.0085] | 0.99952 [0.99683, 1.0022] | 1.0073 [1.0046, 1.0101] |
+| 1 | `alpha_TP:disp` | 1.004 [1.0036, 1.0044] | 0.99852 [0.99667, 1.0004] | 1.0025 [1.0006, 1.0044] |
+| 2.25 | `alpha_LP` | 1.0104 [1.0062, 1.0147] | 1.0069 [1.0013, 1.0124] | 1.0174 [1.0121, 1.0227] |
+| 2.25 | `alpha_TP:disp` | 1.0018 [1.0009, 1.0028] | 1.0001 [0.99811, 1.0022] | 1.002 [0.99993, 1.004] |
+| 4 | `alpha_LP` | 1.0207 [0.98695, 1.0556] | 1.1641 [1.1313, 1.1979] | 1.1882 [1.1551, 1.2222] |
+| 4 | `alpha_TP:disp` | 1.0015 [0.99989, 1.003] | 0.99579 [0.9917, 0.9999] | 0.99724 [0.99311, 1.0014] |
+
+**Pollock contrast on the production set** (T7). The transverse estimands of the consumer and of the Pollock bridge agree within 0.4 %
+at every amplitude (intervals contain or nearly contain 1); `alpha_LP` differs by 0.4 % / 0.8 % / 1.5 % / 5.4 % [0.0 %, 12.3 %].
+Together with T6 and T9 (Par2 / consumer transverse 0.998-1.003), **three independent trackers -- the spline consumer (DP5(4)), the
+Pollock face-flux tracker and Par2 (Euler, separate code) -- give the same transverse growth within 0.5 % at every amplitude**. They share
+the SF-18 field and the finite-volume Darcy solution; that shared part is what the `E_h` ladders refine.
+
+#### T7. Pollock contrast on the production set (flux weights): consumer / Pollock ratio of means, 90 % paired seed-bootstrap
+
+| `sigma^2` | `alpha_TP` disp | `alpha_TAP` disp | `alpha_TP` pos | `alpha_LP` | `U_r` |
+|---|---|---|---|---|---|
+| 0.25 | 1.002 [1.0017, 1.0022] | 1.002 [1.0017, 1.0022] | 1.0014 [0.9991, 1.0045] | 1.0042 [1.004, 1.0043] | 1.0008 [1.0008, 1.0008] |
+| 1 | 1.0039 [1.0035, 1.0043] | 1.0039 [1.0035, 1.0043] | 1.0036 [1.0017, 1.0055] | 1.0076 [1.0069, 1.0084] | 1.0022 [1.0022, 1.0023] |
+| 2.25 | 1.0007 [0.99951, 1.0019] | 1.0007 [0.99953, 1.0019] | 0.99867 [0.99532, 1.0022] | 1.0145 [1.008, 1.0211] | 1.0001 [0.99966, 1.0006] |
+| 4 | 0.99898 [0.99688, 1.001] | 0.99898 [0.9969, 1.001] | 0.99836 [0.99547, 1.0013] | 1.0537 [0.99979, 1.123] | 0.99814 [0.99687, 0.99949] |
+
+**Basis contrast and precision** (T8). No basis flag: the position-minus-displacement difference and its uniform-weight control (zero
+by transverse stationarity) contain 0 at every amplitude. The primary (displacement) half-widths meet their targets with a wide margin
+(1.5e-5 / 1.6e-4 / 4.8e-4 / 2.0e-3 against 2.5e-4 / 6e-4 / 2.8e-3 / 6.6e-3); the position-basis secondary does not meet them at 0.25 and
+1 (reported, not extended).
+
+#### T8. Basis contrast `pos - disp` (flux; uniform-weight control) and precision of the primary estimand
+
+| `sigma^2` | `alpha_TP` pos - disp, 90 % bootstrap-t | uniform control, 90 % bootstrap-t | flag | target half-width | achieved (disp) | achieved (pos) |
+|---|---|---|---|---|---|---|
+| 0.25 | 3.09e-04 [-1.71e-04, 7.69e-04] | 2.63e-04 [-2.23e-04, 7.32e-04] | False | 2.50e-04 | 1.50e-05 | 4.79e-04 (not met) |
+| 1 | 5.39e-04 [-4.02e-04, 1.46e-03] | 4.44e-04 [-5.78e-04, 1.41e-03] | False | 6.00e-04 | 1.58e-04 | 9.65e-04 (not met) |
+| 2.25 | -1.97e-04 [-1.75e-03, 1.37e-03] | -5.27e-04 [-2.22e-03, 1.19e-03] | False | 2.80e-03 | 4.80e-04 | 1.63e-03 |
+| 4 | 2.82e-04 [-7.60e-04, 1.42e-03] | -4.93e-04 [-1.66e-03, 7.22e-04] | False | 6.60e-03 | 1.98e-03 | 2.20e-03 |
+
+**Achieved Gate 4 power** (block `gate4_power`; Student sampling limit, normal draws, realized sizes and observed SDs, R = 1000): 1.00
+for both estimators at `fwer/m` and at `fwer`, in both scenarios (`no_bias`, `observed`), at every amplitude.
+
+**Positive control** (T10). `R` = 1.145 [1.122, 1.168], inside the pre-registered `[0.8, 1.25]`: status `ok`. It is above the "few per
+cent" anticipated in the rationale (prereg 7); the window slope of the ensemble transverse second moment, 1.5e-5 `lambda`
+(`alpha_T`-equivalent), exceeds the box first-order slope (-1.4e-6), difference [2.5e-5, 4.2e-5]. Read with 3.3 (item 1).
+
+#### T10. Positive control `sigma^2 = 0.04` (`pc_s004`, N = 30)
+
+| statistic | value | 90 % interval | bounds / reference | status |
+|---|---|---|---|---|
+| `R` (flux, displacement second moment / first-order box) | 1.1447 | [1.1221, 1.1681] | [0.8, 1.25] | ok |
+| window slope, `alpha_T`-equivalent (measured vs box first order) | 1.53e-05 | difference [2.52e-05, 4.22e-05] | -1.40e-06 | descriptive |
+
+**G7 factorial at 0.25 and 1** (Par2 cells, 60 seeds each, `2^(4-1)` with `I = GIDR`; effects as ratios of cell means at the `+1`
+and `-1` levels, from the log-scale block `log_effects`, 90 % bootstrap; the responses are Par2's uniform-weight position-basis plane
+estimands; `alpha_TP` at 0.25 not analysed because a cell mean was not positive). Time step (D, `dt/2` against `dt`) and solver
+tolerance (R, 1e-10 against 1e-6): ratios within 0.2 % of 1 everywhere (resolved at 0.25, practically nil). Injection (I, window against
+full plane): `alpha_LP` ratio 0.973 [0.962, 0.984] at 0.25 (with its alias `GI = DR` 1.029: about -5.5 % with the random-spectral
+generator, +0.2 % with SF-18), 0.999 [0.989, 1.010] at 1; `alpha_TP` 1.06 [0.97, 1.16] at 1. **Generator** (G, SF-18 periodic
+normalized against Par2's random-spectral with 10 000 modes; whole plot, unpaired): `alpha_LP` 0.965 [0.935, 0.999] at 0.25 and 1.002
+[0.968, 1.038] at 1, but **`alpha_TP` 1.48 [1.11, 2.10] at 1**: on the same Par2 tracker the SF-18 fields give about 1.5 times the
+transverse growth of the random-spectral fields (cell means 0.0086-0.0089 against 0.0057-0.0062 `lambda`; both far above `c`).
+The generator class is a model restriction of the decision record, not a budget component; this is the largest single sensitivity of
+the transverse magnitude that SF-43 measured (see sections 5 and 6). Full tables in `summary.json` (`g7.factorial`). None of these
+factors was varied at `sigma^2 = 4`.
+
+**Secondary estimators** (T9). SF-39-style time-window `alpha_LAM` and `alpha_TAM` on the production and distance arms; B&dD eq. 6
+averaged over the same time window with their Table 1 parameters gives consumer/B&dD = 0.96 / 0.86 / 0.67 / 0.47 (production arms) and
+0.86 / 0.73 / 0.54 (distance arms at 1, 2.25, 4): the gap to B&dD widens with `sigma^2` and shrinks with travel time (G9b, recorded, not
+scheduled). Par2's matched transverse dispersivity equals the consumer's within 0.3 %. The `exp(-I)` weight check changes no estimate
+by more than 0.2 %.
+
+#### T9. Secondary (descriptive) estimators; units of `lambda`
+
+| arm | `alpha_LAM` (time window) | `alpha_TAM` (time window) | `t_end` (adv. times) | B&dD eq. 6 over the window (Table 1) | consumer / B&dD |
+|---|---|---|---|---|---|
+| `s025_prod` | 0.2303 [0.2254, 0.2352] | 2.61e-03 [1.33e-03, 3.89e-03] | 78.47 | 0.24 | 0.9596 |
+| `s1_dist` | 1.093 [1.071, 1.114] | 7.98e-03 [6.60e-03, 9.36e-03] | 139.1 | 1.27 | 0.8603 |
+| `s1_prod` | 1.094 [1.078, 1.111] | 6.49e-03 [4.67e-03, 8.31e-03] | 59.12 | 1.27 | 0.8618 |
+| `s225_dist` | 3.163 [3.125, 3.202] | 0.02964 [0.02801, 0.03128] | 111.3 | 4.35 | 0.7272 |
+| `s225_prod` | 2.934 [2.906, 2.963] | 0.03057 [0.02817, 0.03297] | 43.41 | 4.349 | 0.6748 |
+| `s4_dist` | 6.749 [6.656, 6.842] | 0.0677 [0.06516, 0.07024] | 86.51 | 12.53 | 0.5386 |
+| `s4_prod` | 5.207 [5.136, 5.279] | 0.0749 [0.07168, 0.07813] | 32.83 | 11.02 | 0.4725 |
+
+| `sigma^2` | Par2 / consumer transverse (displacement, matched) | `expI` / flux, `alpha_TP` | `expI` / flux, `alpha_LP` |
+|---|---|---|---|
+| 0.25 | 1.0005 [0.99797, 1.003] | 0.99844 [0.9946, 1.0023] | 1 [0.9999, 1.0001] |
+| 1 | 0.99752 [0.99563, 0.99941] | 0.99883 [0.99627, 1.0014] | 0.99996 [0.99964, 1.0003] |
+| 2.25 | 0.99805 [0.99604, 1.0001] | 1.0005 [0.99949, 1.0016] | 0.99963 [0.99923, 1] |
+| 4 | 1.0028 [0.99862, 1.0069] | 0.99977 [0.99947, 1.0001] | 0.99975 [0.99885, 1.0007] |
+
+**Failures and tracker counts** (T11). Particle backflow is absent at 0.25 and 1, rare at 2.25 (about 0.3 % of particles meet `v1 < 0`)
+and frequent at 4 (15.5 % of particles on average, up to 38 % in one realization; recrossings 0.6 % of traced particles; seed backflow
+in 23 of 200 production realizations). The estimand is the first-passage distribution at each plane in both codes (Par2's recorder
+takes the first step with `x_n < X <= x_{n+1}`, `src/runtime/stats/PlaneCrossingRecorder.cuh`). The H17 `alpha_LP` sensitivity without
+backflow-encounter particles is not computable (departure D2).
+
+#### T11. Failures and tracker counts
+
+Total 5294 attempted, 3 unusable (rate 5.67e-04, Clopper-Pearson 95 % [1.17e-04, 1.66e-03]); halted arms: none; unreduced segments: none.
+
+| arm | attempted | unusable | rate | CP 95 % |
+|---|---|---|---|---|
+| `s4_dist` | 101 | 1 | 9.90e-03 | [2.51e-04, 0.05393] |
+| `s4_l16` | 251 | 1 | 3.98e-03 | [1.01e-04, 0.022] |
+| `s4_prod` | 201 | 1 | 4.98e-03 | [1.26e-04, 0.02741] |
+
+| amplitude | family | realizations | `recrossings_per_traced` mean (max) | `frac_backflow` mean (max) | `seed_backflow` positive |
+|---|---|---|---|---|---|
+| s004 | positive_control | 30 | 0 (0) | 0 (0) | 0 |
+| s025 | E_W | 150 | 0 (0) | 0 (0) | 0 |
+| s025 | E_h | 200 | 0 (0) | 0 (0) | 0 |
+| s025 | h_max_pass | 60 | 0 (0) | 0 (0) | 0 |
+| s025 | production | 200 | 0 (0) | 0 (0) | 0 |
+| s1 | E_W | 150 | 0 (0) | 0 (0) | 0 |
+| s1 | E_h | 200 | 0 (0) | 0 (0) | 0 |
+| s1 | distance | 100 | 0 (0) | 0 (0) | 0 |
+| s1 | h_max_pass | 60 | 0 (0) | 0 (0) | 0 |
+| s1 | production | 200 | 0 (0) | 0 (0) | 0 |
+| s225 | E_W | 300 | 5.67e-05 (1.00e-03) | 2.89e-03 (0.0163) | 0 |
+| s225 | E_h | 300 | 3.20e-05 (8.00e-04) | 2.50e-03 (0.022) | 2 |
+| s225 | distance | 100 | 1.50e-04 (1.80e-03) | 6.67e-03 (0.0284) | 3 |
+| s225 | gate5_consumer | 200 | 2.60e-05 (7.00e-04) | 2.84e-03 (0.0212) | 2 |
+| s225 | h_max_pass | 60 | 1.33e-05 (1.00e-04) | 2.09e-03 (9.20e-03) | 0 |
+| s225 | production | 200 | 3.25e-05 (8.00e-04) | 2.93e-03 (0.0203) | 2 |
+| s4 | E_W | 300 | 6.10e-03 (0.0347) | 0.1666 (0.3236) | 40 |
+| s4 | E_h | 300 | 5.08e-03 (0.0329) | 0.133 (0.3692) | 28 |
+| s4 | distance | 100 | 0.0132 (0.0444) | 0.2797 (0.4783) | 15 |
+| s4 | gate5_consumer | 250 | 6.29e-03 (0.0393) | 0.154 (0.3846) | 25 |
+| s4 | h_max_pass | 60 | 4.86e-03 (0.0227) | 0.1463 (0.2258) | 6 |
+| s4 | production | 200 | 6.44e-03 (0.0427) | 0.1554 (0.3833) | 23 |
+
+### 3.3 Exploratory (post hoc; not pre-registered, not tested)
+
+1. **Amplitude scaling of the transverse growth.** `alpha_TP / sigma^4` = 8.4e-3 / 7.2e-3 / 5.7e-3 / 4.3e-3 at 0.25 / 1 / 2.25 / 4
+   (displacement basis, production means), and about 9.5e-3 at 0.04 if the positive control's ensemble window slope (a related but not
+   identical estimator) is used. Over `[25, 94] lambda` the growth beyond first order is thus close to quadratic in `sigma^2` at small
+   amplitude and sub-quadratic at large amplitude. B&dD's eq. 7 states `alpha_TAM ~ alpha_TAM(1) sigma^4` for their asymptotic
+   time-based estimator (`docs/theory/beaudoin-de-dreuzy-2013-key-claims.md`); SF-43's plane-based values are 0.6-0.7 of B&dD's tabulated
+   `alpha_TA` (0.01 at 1, 0.044 at 2.25; about 0.11 read from their Fig. 4b at 4); different estimands, order of magnitude only [prereg 12].
+2. **`alpha_LP` across grids and widths** (per-arm means of the frozen `failures` block, unpaired view): at 0.25 and 1 the `lambda/h`
+   5 / 10 / 20 values differ by at most 0.9 %; at 2.25 the 4 / 8 / 12 / 16 sequence is 3.405 / 3.281 / 3.265 / 3.261 (converging); at 4 the
+   4 / 8 / 16 / 32 sequence is 11.25 / 9.32 / 9.17 / 9.44 (the finest level with a heavy right tail, [8.86, 10.02]). Width doubling moves
+   `alpha_LP` by at most 1 %. The frozen analysis computes no `E_h`/`E_W` bound for `alpha_LP` (deviation D6 below).
+3. **Box length at `sigma^2 = 4`.** On the same window, grid and width, the L = 208 arm gives `alpha_LP` = 8.63 [8.41, 8.86] against
+   9.17 [8.95, 9.39] on the L = 104 rung (`s4_l16`), about -6 %, and `alpha_TP` about -2 %; at 1 and 2.25 the differences are below 1 %.
+   The outlet boundary layer or the generator's period in `x` (equal to the box length) may matter for the slow tail at `sigma^2 = 4`;
+   no SF-43 budget covers the box length.
+4. **Candidate Par2-side mechanisms for the `sigma^2 = 4` offset** (not separable with these data): (a) explicit Euler with fixed `dt`
+   (`U dt = 0.0244 dx`) in fast channels, where `|v|` reaches tens of `U` at `sigma^2 = 4`, so a step approaches a cell; D was nil at 0.25
+   and 1 but was not varied at 4; (b) truncation of the slow tail by Par2's finite horizon (`3.6 (L1 - 10 ell) / dt` steps; 40 realizations
+   below 0.999 completeness, and `alpha_LP` is a variance of travel times dominated by the slow tail); (c) random against lattice
+   injection (the G7 injection factor moved `alpha_LP` by up to about 3 % at 0.25, mostly with the random-spectral generator; unknown at
+   4). A discriminating follow-up would rerun a subset of `s4_g5p` with `dt/2` and a longer
+   horizon; it is an owner decision, not part of this increment.
+
+## 4. Independent checks, audit and deviations
+
+### 4.1 Independent checks (acceptance F)
+
+- `recompute43` (independent of `sf43ana`, from raw per-realization moments and the retained plane arrays): **RECOMPUTE PASS**, 22 289
+  174 values compared, 0 beyond 1e-10 relative (1e-15 absolute), 0 problems, maximum relative difference 8.97e-11. Coverage: every
+  realization-window row of the four production arms from the plane arrays (displacement and position bases, `perplane` and `common`,
+  flux and uniform weights; a production realization without arrays would have been a `PROBLEM`, none); the position-basis `perplane`
+  rows of every consumer realization and the Par2 plane rows from the moment files. Not covered, by design [prereg 10]: 2738
+  non-production realization-window rows outside the retained subset for the variants that need per-particle arrays, and the time
+  family. (The report's `realizations=` and `PRIMARY_ARM ... passes=` counters count distinct source names, which repeat across
+  segments; they undercount and do not measure coverage.)
+- `reconcile43`: **RECONCILE OK**, 5294 solves = 5294 ledger seed records, 3 unusable = 3 replacements, 0 conflicts / unmapped /
+  unparsed findings.
+- Determinism across GPUs: PASS in the smoke test (72 consumer and 4 Par2 raw files) [prereg 1.5]; production lanes used the same
+  binaries.
+- Frozen analysis: `process.prereg_sha256` = `prereg.json`; coverage summary and qualification document hashes as pre-registered; 0
+  errors, 0 warnings recorded; `check-finite` STRUCTURE_OK (64 non-finite leaves in `budgets` are the undefined orders of the non-monotone
+  ladders, `p_L = -inf`, `p_use = nan`, by design).
+- Human-review independent reduction of at least three realizations: **pending** (retained arrays on the host, below).
+
+### 4.2 Audit findings (orchestrator, `PHASE4` audit)
+
+- Gate 5 at `sigma^2 = 4`: `disagree`, attributed by the pre-registered decomposition to the Pollock -> Par2 step (3.2); the mechanism
+  inside Par2 is not identified (3.3, item 4). **Owner decision required** (acceptance D).
+- Gate 5 qualification at `sigma^2 = 4`: the observed moments of `D_hi`, `D_lo` (skewness 3.8-4.1, excess kurtosis 21-23) exceed the
+  J3B-bound family (2.73, 7.59) used to qualify Hall's procedure. The decision is insensitive to this: the point ratio (1.188) is outside
+  the margin and the bootstrap-t also gives `p` = 1.
+- Qualification profile at 0.25 and 1: the frozen code counts the production-width cell at the ladder's paired prefix (100 seeds,
+  `gate4.design_from_arms`), so the realized width size is 100 and the largest eligible profile is `half` (qualified; `full` was
+  qualified too). `E_W` there uses 100 production seeds against 150 wide ones (conservative).
+- `E_h` at 2.25 and 4: order undefined (non-monotone ladders), fallback applied; the gate intervals are reported but have no role.
+- Positive control: inside its bounds but 14 % above first order (3.2).
+- Process: the freeze row is labelled 13:20Z; its commit time is 13:15:43Z, before `blinded stop` (13:15:57Z); the order of G8 is
+  respected (corrected in the next bitácora row). Matplotlib mathtext `UserWarning`s in `analysis.log` come from figure rendering and are
+  outside `process.warnings`.
+
+### 4.3 Deviations (section 13 of the pre-registration; all recorded in the bitácora)
+
+Recorded before data: D1-D4 (prereg 14). Found after data, none changes a decision:
+
+- **D5. B&dD eq. 6 fit and Par2 time-window estimators not computed.** The reduced tables carry no snapshot-time curves (`curve_t`,
+  `curve_alpha`) and no Par2 `alpha_*:time` columns; the frozen analysis records `input absent` for every `bdd_fit` entry and only
+  `t_end_adv` for the Gate 5 Par2 arms. The `sf43ana` README listed the dependency; prereg 7 listed the fit without flagging it. The
+  B&dD-window comparison for the consumer is computed (T9). Not recoverable post hoc: Par2 snapshots and consumer time arrays were pruned
+  after reduction except the retained subset [H21].
+- **D6. `E_h`/`E_W`/`E_int` computed for the transverse estimands only.** Prereg 7 says "budgets per estimand"; the frozen companion
+  computes them for `alpha_TP` and `alpha_TAP` (both bases). `alpha_LP` carries its sampling interval, the Pollock contrast, the halves,
+  the distance ratio and the per-arm means (3.3, item 2), but no budget bound. Under the rule of section 13 the companion ran.
+- **D7. Recompute coverage counters** (4.1): reporting only; the comparisons are per row and the coverage is as pre-registered.
+
+## 5. Conclusion
+
+1. **Confirmatory.** At every `sigma^2` in {0.25, 1, 2.25, 4}, the plane-based transverse growth over `[25, 94] lambda` (displacement
+   basis, `alpha_TP` and `alpha_TAP`) exceeds the first-order window value `7.992e-5 sigma^2 lambda` after the discretization, width and
+   integration errors are bounded; Holm rejects all four robust-sign hypotheses at family-wise 5 %. Class `physical (restricted)`,
+   within this model, medium, width range and travel window, under the stated transfer assumptions. Estimates: `alpha_TP` = 5.26e-4
+   [5.11e-4, 5.41e-4], 7.22e-3 [7.06e-3, 7.38e-3], 2.87e-2 [2.82e-2, 2.92e-2], 6.84e-2 [6.65e-2, 7.04e-2] `lambda`, with budgets of
+   13 %, 7 %, 10 % and 16 % of the estimate.
+2. **Confirmatory.** `alpha_LP` of the consumer and of Par2 are equivalent within 10 % at 0.25, 1 and 2.25 (ratios 1.004, 1.007,
+   1.017). At 4 equivalence is not established (ratio 1.188 [1.159, 1.228]); the offset is on the Par2 side of the Pollock bridge, not in
+   the consumer's velocity representation. Until the owner decides on this attribution, SF-43 is not `done`.
+3. **Descriptive.** The transverse growth is the same, within 0.5 %, for three trackers that share the field and the Darcy solution, so
+   it is not an artefact of the consumer's spline representation or integrator; the shared discretization is bounded by `E_h` (at most
+   7.5 % of the estimate). No decay of the transverse growth rate is seen between `[25, 94]` and `[94, 194] lambda`. Its magnitude
+   depends on the generator class: at `sigma^2 = 1` Par2 on SF-18 fields gives 1.48 [1.11, 2.10] times the transverse growth it gives on
+   random-spectral fields (G7), both far above `c`. The confirmed values are values of this model with the SF-18 generator.
+4. Nothing here bears on `t -> infinity`. A positive finite-window `alpha_T` beyond first order is now a confirmed property of this
+   model's discrete Darcy flow at these widths and distances; it is not a demonstration that the asymptotic transverse dispersivity is
+   positive, and it does not refute Lester et al.'s asymptotic claim, which concerns `t -> infinity` and bounded label fluctuations
+   (`docs/theory/lester-2023-key-claims.md`).
+
+## 6. Caveats
+
+- **Model**: Gaussian covariance, scalar isotropic `K`, medium (b) (Dirichlet `x` faces, periodic transverse faces), SF-18 periodic
+  normalized generator (periodic in `x` with the box length), purely advective transport; widths 24-48 `lambda` (12-24 at 4); window
+  `[25, 94] lambda` from the injection plane.
+- **Generator dependence**: the G7 generator factor shows the transverse magnitude at `sigma^2 = 1` about 1.5 times larger on SF-18
+  fields than on Par2's random-spectral fields (10 000 modes), descriptive, 60 seeds per generator, position basis, Par2 only. Which
+  generator better represents the target Gaussian field at these box sizes is not established here (open question for the owner).
+- **Transfer assumptions** [prereg 5.2]: `E_W` measured at `lambda/h` 12 (2.25) and 16 (4) and transferred to production 16 and 32; the
+  residual beyond the widest width; the outlet layer (about `W/2 pi`) inside the 5-`lambda` buffer. The box length is not budgeted (3.3,
+  item 3).
+- **Qualification assumptions**: coverage qualified at a smaller size carries over to larger sizes; the Gate 5 `sigma^2 = 4` moments
+  exceed the qualified family (4.2).
+- **Shared components**: the three trackers share the SF-18 field and the Darcy discretization; their agreement tests tracking, not
+  the field. The `E_h` ladders refine the field sampling, the Darcy solve and the spline together.
+- **`sigma^2 = 4`**: `alpha_LP` is a slow-tail, non-Fickian, pre-asymptotic quantity (far/main 1.06), with frequent backflow (15.5 %
+  of particles) and no backflow-free sensitivity (D2); its Gate 5 comparison is open (3.2).
+- **Not computed**: the B&dD eq. 6 fit (D5), `alpha_LP` budgets (D6).
+- **Pending**: the human review's independent reduction of at least three realizations.
+
+## 7. Open items for the human review
+
+1. **Acceptance D at `sigma^2 = 4`**: accept the pre-registered decomposition (offset on the Par2 side; consumer representation not
+   implicated) as the attribution, or schedule a discriminating Par2 follow-up (`dt/2`, longer horizon on a subset of `s4_g5p`).
+2. **Acceptance F**: independent reduction of at least three realizations from the retained arrays, without importing the analysis
+   package. Retained on the host (`~/sf43_campaign/segments/<arm>/...`): for each production arm the first five seeds and the seeds at
+   0.4, 0.7 and 1.0 of `n_conf` (e.g. `s1_prod`: 432001-432005, 432080, 432140, 432200; `s4_prod`: 434001-434005, 434080, 434140, 434200);
+   the full plane arrays of every production realization are kept.
+3. Deviations D5-D7 and the audit findings (4.2).
+4. The generator dependence of the transverse magnitude (G7 at `sigma^2 = 1`, 3.2): record as a model-scope caveat, or schedule a
+   comparison of generators (not in SF-43's scope; the decision record lists the generator class as a model restriction).
+
+## 8. Artifact layout (`A/results/`)
+
+- `analysis/summary.json` (sha256 `c5c543d5c0b4614a4f9d081e6bfaa368b2e0a03d11dc724df8ad128b200a718c`) and `analysis/figures/`
+  (`estimates.png`, `budget.png`, `gate5.png`, `positive_control.png`; made in the job, H18).
+- `REPORT.txt`, `ledger.jsonl` (solver-verdict and failure ledger, 7985 records), `DONE`.
+- `recompute.txt`, `reconcile.txt` (the independent checks), `logs/` (`sf43-campaign.log` job log, `analysis.log`, `recompute.log`,
+  `reconcile.log`, `exec-blinded.log`).
+- `reduced/tables/<arm>.tar.xz` (per-realization estimator tables and reduction manifests of every arm, both codes) and
+  `reduced/planes/<arm>.tar.xz` (per-plane moment tables), one archive per engine arm [H21]; `reduced/freeze.reduced.sha256` (sha256 of
+  every reduced file at the freeze; manifest sha256 `250395ed5319052ddf1e5338e0d081d60610a41e85e1f66252b828daeb492dd6`) and
+  `SHA256SUMS` (the archives). Extract with `tar xJf <archive>`; `sha256sum -c` against the freeze manifest from the extraction root.
+- On the host only: segment raw outputs (about 70 GB: plane arrays of every production realization, the retained subsets).
+
+Re-running the analysis from the committed tables (CPU; not re-run for this note): extract the archives into `<C>/reduced/` (the
+archives contain `<arm>/<segment>/...`), copy `ledger.jsonl` to `<C>/`, then `bash A/scripts/analyse_sf43.sh <C> build/v100-release`
+from the repository root; every bootstrap stream is seeded with 20261103, so the same inputs and library versions should give the same
+`summary.json`.

@@ -192,6 +192,8 @@ D^m_{22} = D^m_{33} = 0
 - The paper's `D_T = 0` for the periodic surrogate is a property of the surrogate (closed streamlines by construction), not a measurement on the Darcy flow.
 - The project does not use `D_T = 0` as an oracle (owner decision O3). The value of `alpha_T` in a random, non-periodic medium is not established.
 
+**Finite-window measurement (SF-43, confirmatory, pre-registered; `docs/experiments/2026-11-03-sf43-confirmatory-macrodispersion.md`).** In the project's model (Gaussian covariance, isotropic `K`, medium (b), SF-18 periodic normalized generator, purely advective, widths 24-48 `lambda`, 12-24 at `sigma^2 = 4`), the plane-based transverse growth over `[25, 94] lambda` exceeds the first-order window value `7.992e-5 sigma^2 lambda` after discretization, width and integration bounds at `sigma^2` = 0.25, 1, 2.25 and 4 (Holm, family-wise 5 %; class `physical (restricted)`); `alpha_TP` = 5.3e-4 / 7.2e-3 / 2.9e-2 / 6.8e-2 `lambda`. Three trackers (spline consumer, Pollock, Par2) agree on it within 0.5 %; its magnitude depends on the generator class (about 1.5x between SF-18 and random-spectral fields at `sigma^2 = 1`). This is a finite-distance statement: it neither tests nor refutes the paper's `t -> infinity` claim.
+
 So for this repository:
 
 - a numerically positive `α_T` in a smooth-isotropic purely advective Darcy case is **not validation by itself and not automatically physical**; it must be classified physical / numerical / unresolved,

@@ -1,0 +1,52 @@
+RECONCILE43 campaign=/home/sesquerre/sf43_campaign segments consumer=451 par2=106 solves=5294 (consumer 3483, par2 1811) arms=44 solver_b_json=3480 ledger_seed_records=5294 replacements=3
+
+COUNTS_BY_VERDICT (code arm: verdict=count)
+  par2     g7_s025_RFHT   converged=60
+  par2     g7_s025_RFNL   converged=60
+  par2     g7_s025_RWHL   converged=60
+  par2     g7_s025_RWNT   converged=60
+  par2     g7_s025_SFHL   converged=60
+  par2     g7_s025_SFNT   converged=60
+  par2     g7_s025_SWHT   converged=60
+  par2     g7_s025_SWNL   converged=60
+  par2     g7_s1_RFHT     converged=60
+  par2     g7_s1_RFNL     converged=60
+  par2     g7_s1_RWHL     converged=60
+  par2     g7_s1_RWNT     converged=60
+  par2     g7_s1_SFHL     converged=60
+  par2     g7_s1_SFNT     converged=60
+  par2     g7_s1_SWHT     converged=60
+  par2     g7_s1_SWNL     converged=60
+  consumer pc_s004        converged=30
+  consumer s025_eh20      converged=100
+  consumer s025_eh5       converged=100
+  par2     s025_g5p       converged=200
+  consumer s025_prod      converged=200
+  consumer s025_w48       converged=150
+  consumer s1_dist        converged=100
+  consumer s1_eh20        converged=100
+  consumer s1_eh5         converged=100
+  par2     s1_g5p         converged=200
+  consumer s1_prod        converged=200
+  consumer s1_w48         converged=150
+  consumer s225_c12       converged=200
+  consumer s225_dist      converged=100
+  consumer s225_eh4       converged=150
+  consumer s225_eh8       converged=150
+  par2     s225_g5p       converged=200
+  consumer s225_prod      converged=200
+  consumer s225_w48_12    converged=150
+  consumer s225_w48_8     converged=150
+  consumer s4_dist        converged=100 not_converged_beyond_fallback=1
+  par2     s4_g5p         converged=251
+  consumer s4_l16         converged=250 not_converged_beyond_fallback=1
+  consumer s4_l4          converged=150
+  consumer s4_l8          converged=150
+  consumer s4_prod        converged=200 not_converged_beyond_fallback=1
+  consumer s4_w24_16      converged=150
+  consumer s4_w24_8       converged=150
+  TOTAL converged=5291 not_converged_beyond_fallback=3
+UNUSABLE 3 solves; REPLACEMENTS 3; reserve seeds not yet run 0
+
+FINDINGS conflicts=0 unmapped=0 unparsed=0 json=0 ledger=0 replacement=0 rule=0
+RECONCILE OK

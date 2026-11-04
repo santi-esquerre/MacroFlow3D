@@ -1,0 +1,117 @@
+SF-43 campaign sf43-confirmatory-A: DONE
+analysis: ok
+stage1_start: 2026-11-02T21:18:58Z
+lane_b_released: True
+gpu_h_used: 51.14 of 150.00
+stopping: None
+lane_crashes: 0
+
+arm                       planned completed replaced failed   oom  run  peak_mib halted
+s025_prod                     200       200        0      0     0    0      5001 
+s025_eh5                      100       100        0      0     0    0      1969 
+s025_eh20                     100       100        0      0     0    0     29233 
+s025_w48                      150       150        0      0     0    0     15395 
+s025_g5p                      200       200        0      0     0    0         - 
+s1_prod                       200       200        0      0     0    0      5001 
+s1_eh5                        100       100        0      0     0    0      1969 
+s1_eh20                       100       100        0      0     0    0     29233 
+s1_w48                        150       150        0      0     0    0     15395 
+s1_g5p                        200       200        0      0     0    0         - 
+s1_dist                       100       100        0      0     0    0      8475 
+s225_prod                     200       200        0      0     0    0     15707 
+s225_eh4                      150       150        0      0     0    0      1757 
+s225_eh8                      150       150        0      0     0    0      3305 
+s225_w48_8                    150       150        0      0     0    0      8625 
+s225_w48_12                   150       150        0      0     0    0     25467 
+s225_c12                      200       200        0      0     0    0      7521 
+s225_g5p                      200       200        0      0     0    0         - 
+s225_dist                     100       100        0      0     0    0     29885 
+s4_prod                       201       200        0      1     0    0     29885 
+s4_l4                         150       150        0      0     0    0      1607 
+s4_l8                         150       150        0      0     0    0      1985 
+s4_l16                        251       250        1      1     0    0      5081 
+s4_w24_8                      150       150        0      0     0    0      3305 
+s4_w24_16                     150       150        0      0     0    0     15707 
+s4_g5p                        251       251        1      0     0    0         - 
+s4_dist                       101       100        0      1     0    0      8625 
+pc_s004                        30        30        0      0     0    0      5001 
+g7_s025_SFNT                   60        60        0      0     0    0         - 
+g7_s025_SFHL                   60        60        0      0     0    0         - 
+g7_s025_SWNL                   60        60        0      0     0    0         - 
+g7_s025_SWHT                   60        60        0      0     0    0         - 
+g7_s025_RFNL                   60        60        0      0     0    0         - 
+g7_s025_RFHT                   60        60        0      0     0    0         - 
+g7_s025_RWNT                   60        60        0      0     0    0         - 
+g7_s025_RWHL                   60        60        0      0     0    0         - 
+g7_s1_SFNT                     60        60        0      0     0    0         - 
+g7_s1_SFHL                     60        60        0      0     0    0         - 
+g7_s1_SWNL                     60        60        0      0     0    0         - 
+g7_s1_SWHT                     60        60        0      0     0    0         - 
+g7_s1_RFNL                     60        60        0      0     0    0         - 
+g7_s1_RFHT                     60        60        0      0     0    0         - 
+g7_s1_RWNT                     60        60        0      0     0    0         - 
+g7_s1_RWHL                     60        60        0      0     0    0         - 
+
+retention (raw-array realizations kept / required per arm):
+  s025_prod                8 / 5
+  s025_eh5                 8 / 5
+  s025_eh20                8 / 5
+  s025_w48                 8 / 5
+  s025_g5p                 5 / 5
+  s1_prod                  8 / 5
+  s1_eh5                   8 / 5
+  s1_eh20                  8 / 5
+  s1_w48                   8 / 5
+  s1_g5p                   5 / 5
+  s1_dist                  37 / 5
+  s225_prod                8 / 5
+  s225_eh4                 8 / 5
+  s225_eh8                 8 / 5
+  s225_w48_8               8 / 5
+  s225_w48_12              8 / 5
+  s225_c12                 8 / 5
+  s225_g5p                 5 / 5
+  s225_dist                8 / 5
+  s4_prod                  8 / 5
+  s4_l4                    8 / 5
+  s4_l8                    8 / 5
+  s4_l16                   8 / 5
+  s4_w24_8                 8 / 5
+  s4_w24_16                8 / 5
+  s4_g5p                   5 / 5
+  s4_dist                  8 / 5
+  pc_s004                  8 / 5
+  g7_s025_SFNT             5 / 5
+  g7_s025_SFHL             5 / 5
+  g7_s025_SWNL             5 / 5
+  g7_s025_SWHT             5 / 5
+  g7_s025_RFNL             5 / 5
+  g7_s025_RFHT             5 / 5
+  g7_s025_RWNT             5 / 5
+  g7_s025_RWHL             5 / 5
+  g7_s1_SFNT               5 / 5
+  g7_s1_SFHL               5 / 5
+  g7_s1_SWNL               5 / 5
+  g7_s1_SWHT               5 / 5
+  g7_s1_RFNL               5 / 5
+  g7_s1_RFHT               5 / 5
+  g7_s1_RWNT               5 / 5
+  g7_s1_RWHL               5 / 5
+
+UNREDUCED (completed, not reduced: MISSING for the analysis, not the end of a prefix):
+  none
+
+events:
+  2026-11-03T00:39:43Z reest REESTIMATE arm=s4_w24_16 n_obs=40 sd={'alpha_TP': 0.0168752, 'alpha_TAP': 0.0168715, 'alpha_LP': 1.47807} N_req=24 N 150 -> 150
+  2026-11-03T01:38:34Z reest REESTIMATE arm=s025_w48 n_obs=40 sd={'alpha_TP': 0.000138325, 'alpha_TAP': 0.000138325, 'alpha_LP': 0.0300946} N_req=2 N 150 -> 150
+  2026-11-03T01:48:32Z reest REESTIMATE arm=s225_w48_12 n_obs=40 sd={'alpha_TP': 0.00487927, 'alpha_TAP': 0.00487915, 'alpha_LP': 0.303897} N_req=11 N 150 -> 150
+  2026-11-03T01:53:22Z reest REESTIMATE arm=s1_w48 n_obs=40 sd={'alpha_TP': 0.00114262, 'alpha_TAP': 0.00114262, 'alpha_LP': 0.107685} N_req=13 N 150 -> 150
+  2026-11-03T01:58:02Z reest REESTIMATE arm=s4_prod n_obs=50 sd={'alpha_TP': 0.0168622, 'alpha_TAP': 0.0168602, 'alpha_LP': 1.97878} N_req=23 N 200 -> 200
+  2026-11-03T02:21:01Z reest REESTIMATE arm=s225_prod n_obs=50 sd={'alpha_TP': 0.00397459, 'alpha_TAP': 0.00397446, 'alpha_LP': 0.230249} N_req=7 N 200 -> 200
+  2026-11-03T09:21:48Z replacement group g_s4 seed 434153 -> 434401 (failed in s4_prod)
+  2026-11-03T15:27:44Z reest REESTIMATE arm=s225_w48_8 n_obs=40 sd={'alpha_TP': 0.00492921, 'alpha_TAP': 0.00492909, 'alpha_LP': 0.192138} N_req=11 N 150 -> 150
+  2026-11-03T18:47:28Z replacement group g_s4 seed 434222 -> 434402 (failed in s4_l16)
+  2026-11-03T20:17:36Z reest REESTIMATE arm=s025_prod n_obs=50 sd={'alpha_TP': 0.000124948, 'alpha_TAP': 0.000124948, 'alpha_LP': 0.0269727} N_req=1 N 200 -> 200
+  2026-11-03T20:20:20Z reest REESTIMATE arm=s1_prod n_obs=50 sd={'alpha_TP': 0.00123319, 'alpha_TAP': 0.00123318, 'alpha_LP': 0.102809} N_req=15 N 200 -> 200
+  2026-11-03T22:21:46Z reest REESTIMATE arm=s4_w24_8 n_obs=40 sd={'alpha_TP': 0.0167414, 'alpha_TAP': 0.0167366, 'alpha_LP': 3.41062} N_req=23 N 150 -> 150
+  2026-11-04T00:57:04Z replacement group g_d_s4 seed 436437 -> 436501 (failed in s4_dist)

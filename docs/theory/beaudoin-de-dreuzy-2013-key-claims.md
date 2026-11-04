@@ -259,6 +259,8 @@ From the perspective of the current project, it does **not** settle:
 
 That is exactly where the later Lester framework becomes decisive.
 
+Project comparison (SF-43, `docs/experiments/2026-11-03-sf43-confirmatory-macrodispersion.md`; different estimands, order of magnitude only): the plane-based `alpha_TP` over `[25, 94] lambda` is 5.3e-4 / 7.2e-3 / 2.9e-2 / 6.8e-2 `lambda` at `sigma_Y^2` 0.25 / 1 / 2.25 / 4, about 0.6-0.7 of this paper's `alpha_TA` (Table 2; Fig. 4b at 4) and close to `sigma^4` scaling at small amplitude; the consumer's time-window `alpha_LAM` is 0.96 / 0.86 / 0.67 / 0.47 of eq. 6 with Table 1 parameters averaged over the same window (the gap is recorded as open question G9b).
+
 ---
 
 ## Operational implications for MacroFlow3D
