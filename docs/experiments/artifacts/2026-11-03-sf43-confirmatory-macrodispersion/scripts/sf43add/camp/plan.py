@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 import os
+import re
 
 from sf43camp.plan import utc_epoch
 
@@ -29,6 +30,8 @@ EST_FACTOR = 1.25                # finalization: est_seconds = 1.25 x measured s
 # files that must exist unless --allow-missing: the packages of both addendum nodes (the plan hashes what is on disk)
 REQUIRED = ("sf43add/__init__.py", "sf43add/camp/__init__.py", "sf43add/camp/__main__.py", "sf43add/ana/__init__.py", "sf43add/ana/__main__.py")
 MISSING = "<missing>"
+BINARY_KEYS = ("lagrangian_ensemble", "macroflow3d_pipeline")       # the md5 gate of the engine checks exactly these two
+DEFAULT_BINARIES = os.path.join(ART, "binaries.json")
 
 
 class AddendumPlanError(ValueError):
@@ -46,6 +49,20 @@ def sha256_file(path):
         for b in iter(lambda: f.read(1 << 20), b""):
             h.update(b)
     return h.hexdigest()
+
+
+def load_binaries(path):
+    """{name: md5} for BINARY_KEYS from the JSON file `path`; other keys (including those starting with `_`, e.g. `_provenance`) are ignored; a missing
+    key or an md5 that is not 32 lowercase hex digits is an error."""
+    d = jload(path)
+    if not isinstance(d, dict):
+        raise AddendumPlanError("%s: not a JSON object" % path)
+    out = {}
+    for k in BINARY_KEYS:
+        if not isinstance(d.get(k), str) or not re.fullmatch(r"[0-9a-f]{32}", d[k]):
+            raise AddendumPlanError("%s: %s is %r, not an md5 (32 lowercase hex digits)" % (path, k, d.get(k)))
+        out[k] = d[k]
+    return out
 
 
 def canon(x):
@@ -251,12 +268,14 @@ def smoke_section(arms, pre, groups_of, sha):
             "arms": sm_arms, "analysis": {"command": analysis_command(pre, "production", smoke=True), "sha256_list": sha}}
 
 
-def build_plan(job="production", costs=None, budget_gpu_h=None, disk_min_free_gb=None, drop=(), allow_missing=False):
+def build_plan(job="production", costs=None, budget_gpu_h=None, disk_min_free_gb=None, drop=(), allow_missing=False, binaries_path=None):
     """The plan dict of `job` ('production' with its `smoke` section, or 'j8').  Deterministic: same inputs and files, same output.  The smoke
     section never takes the costs (S0 runs before any measurement and its record must not change when the plan is finalized)."""
     if job not in ("production", "j8"):
         raise AddendumPlanError("job must be production or j8")
-    frozen, pre, bins = (jload(os.path.join(ART, n)) for n in ("plan.json", "prereg_addendum.json", "binaries.json"))
+    frozen, pre = (jload(os.path.join(ART, n)) for n in ("plan.json", "prereg_addendum.json"))
+    bpath = os.path.abspath(binaries_path or DEFAULT_BINARIES)
+    bins = load_binaries(bpath)
     made, root = build_arms(frozen, pre)
     prov = copy.deepcopy(made)
     if costs:
@@ -278,7 +297,7 @@ def build_plan(job="production", costs=None, budget_gpu_h=None, disk_min_free_gb
         "budget_gpu_h": round(pre["budget_gpu_h_cap"] - S0_EXPECTED_GPU_H - pre["plan_tail_reserve_gpu_h"], 6) if budget_gpu_h is None else budget_gpu_h,
         "disk_min_free_gb": DEFAULT_DISK_MIN_FREE_GB if disk_min_free_gb is None else disk_min_free_gb,
         "campaign_dir": pre["campaign_dir"] + ("_j8" if job == "j8" else ""), "executor": "sf43camp.runner_executor:RunnerExecutor",
-        "binaries": dict(bins), "analysis": {"command": analysis_command(pre, job), "sha256_list": sha},
+        "binaries": bins, "analysis": {"command": analysis_command(pre, job), "sha256_list": sha},
         # no --primary-arm (no primary arm) and no --single-pass-hmax (no hmax_div_first arm: single-pass roots carry the label -1)
         "recompute": {"command": ["python3", "-W", "error", "-m", "recompute43", "run", "--campaign", "{campaign_dir}", "--reduced",
                                   "{campaign_dir}/reduced", "--out", "{campaign_dir}.recompute.txt"]},
@@ -290,7 +309,8 @@ def build_plan(job="production", costs=None, budget_gpu_h=None, disk_min_free_gb
         plan["smoke"] = smoke_section(prov, pre, groups_of, sha)
     plan["_provenance"] = {"generator": "python3 -m sf43add.camp plan", "job": job, "frozen_plan_sha256": sha256_file(os.path.join(ART, "plan.json")),
                            "prereg_addendum_sha256": sha256_file(os.path.join(ART, "prereg_addendum.json")),
-                           "binaries_sha256": sha256_file(os.path.join(ART, "binaries.json")),
+                           "binaries_path": os.path.relpath(bpath, REPO).replace(os.sep, "/") if bpath.startswith(REPO + os.sep) else bpath,
+                           "binaries_sha256": sha256_file(bpath),
                            "costs_sha256": (costs or {}).get("sha256"), "dropped": dropped, "missing_allowed": missing}
     return plan
 

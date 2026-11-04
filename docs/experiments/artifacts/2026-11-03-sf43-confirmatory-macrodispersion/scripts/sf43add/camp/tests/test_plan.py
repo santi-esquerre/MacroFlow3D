@@ -250,6 +250,51 @@ class J8(unittest.TestCase):
         self.assertEqual([a["est_seconds"] for a in build(job="j8", costs=c)["arms"]], [25.0, 15.0, 37.5])
 
 
+class Binaries(unittest.TestCase):
+    NEW = {"lagrangian_ensemble": "4099aa1aa7ce1ac5cdb0482552fdcb0f", "macroflow3d_pipeline": "de66d6a20e15ccbc1c429a51f5a06a87"}
+
+    def write(self, t, d):
+        path = os.path.join(t, "binaries_x.json")
+        with open(path, "w") as f:
+            json.dump(d, f)
+        return path
+
+    def test_default_is_binaries_json(self):
+        plan = build()
+        self.assertEqual(plan["binaries"], P.jload(os.path.join(P.ART, "binaries.json")))
+        pv = plan["_provenance"]
+        self.assertEqual((pv["binaries_path"], pv["binaries_sha256"]), (P.ART_REL + "/binaries.json", P.sha256_file(os.path.join(P.ART, "binaries.json"))))
+
+    def test_other_file_with_provenance_key_is_used(self):
+        with tempfile.TemporaryDirectory() as t:
+            path = self.write(t, dict(self.NEW, _provenance="rebuilt at the addendum tree", _note={"x": 1}, extra="ignored"))
+            for job in ("production", "j8"):
+                plan = build(job=job, binaries_path=path)
+                self.assertEqual(plan["binaries"], self.NEW)                                   # only the two md5 keys, no `_provenance`
+                self.assertEqual((plan["_provenance"]["binaries_path"], plan["_provenance"]["binaries_sha256"]), (os.path.abspath(path),
+                                                                                                                  P.sha256_file(path)))
+                self.assertEqual(plan["arms"], build(job=job)["arms"])                       # nothing else moves
+                pf = os.path.join(t, "plan_%s.json" % job)
+                with open(pf, "w") as f:
+                    f.write(P.dumps(plan))
+                self.assertEqual(load_plan(pf)["binaries"], self.NEW)
+            with mock.patch("sys.stdout"):
+                o = os.path.join(t, "o.json")
+                self.assertEqual(cli.main(["plan", "--allow-missing", "--binaries", path, "--out", o]), 0)
+            self.assertEqual(P.jload(o)["binaries"], self.NEW)
+
+    def test_invalid_or_missing_md5_fails(self):
+        with tempfile.TemporaryDirectory() as t:
+            for bad in (dict(self.NEW, macroflow3d_pipeline="de66d6a20e15ccbc1c429a51f5a0"), dict(self.NEW, lagrangian_ensemble="4099AA1AA7CE1AC5CDB0482552FDCB0F"),
+                        dict(self.NEW, lagrangian_ensemble="z" * 32), dict(self.NEW, lagrangian_ensemble=12345), {"lagrangian_ensemble": self.NEW["lagrangian_ensemble"]}, []):
+                path = self.write(t, bad)
+                with self.assertRaisesRegex(P.AddendumPlanError, "md5|JSON object"):
+                    build(binaries_path=path)
+                with mock.patch("sys.stderr"):
+                    self.assertEqual(cli.main(["plan", "--allow-missing", "--binaries", path, "--out", os.path.join(t, "never.json")]), 1)
+                self.assertFalse(os.path.exists(os.path.join(t, "never.json")))
+
+
 class Committed(unittest.TestCase):
     def test_committed_plans_are_current(self):
         """The committed plans are what the generator gives now.  Fails (by design) when a file the plan hashes changed, e.g. after the sibling

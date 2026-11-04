@@ -18,6 +18,7 @@ def _plan_args(ap, finalize):
     ap.add_argument("--budget-gpu-h", type=float, required=finalize, help="default 7.2 (= 8 - 0.3 - 0.5) until S0 is measured")
     ap.add_argument("--disk-min-free-gb", type=float, required=finalize, help="default 100 until finalization (host free GB - 60)")
     ap.add_argument("--drop", action="append", default=[], metavar="ARM|J1|J3|J8|J9", help="remove arms (repeatable; e.g. J1 after a failed reproduction check)")
+    ap.add_argument("--binaries", default=None, help="JSON with the md5 of lagrangian_ensemble and macroflow3d_pipeline (keys starting with _ ignored); default <A>/binaries.json")
     ap.add_argument("--allow-missing", action="store_true", help="do not fail when a file to hash (e.g. sf43add/ana) is not on disk yet; listed in _provenance")
     ap.add_argument("--out", default=None, help="output file ('-' = stdout); default <A>/plan_addendum[_j8].json")
 
@@ -29,7 +30,7 @@ def cmd_plan(a):
             raw = f.read()
         costs = json.loads(raw)
         costs["sha256"] = hashlib.sha256(raw).hexdigest()
-    plan = P.build_plan(a.job, costs, a.budget_gpu_h, a.disk_min_free_gb, a.drop, a.allow_missing)
+    plan = P.build_plan(a.job, costs, a.budget_gpu_h, a.disk_min_free_gb, a.drop, a.allow_missing, a.binaries)
     text = P.dumps(plan)
     if a.out == "-":
         sys.stdout.write(text)

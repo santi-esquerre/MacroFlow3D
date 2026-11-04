@@ -40,6 +40,7 @@ compatible, runs on the host. The analysis is the sibling package `sf43add.ana` 
   max(1.25 x measured peak, the frozen origin's); an arm that was not in S0 (`j1_D`, `j1_H2`) takes the least-squares line of the measured Par2 arms against the step
   multiplier (proportional bound `max(y/m) m` if the line is not increasing from a non-negative intercept); `j8_*` use the measured `j1_*` of the same factor.
   `costs["drop"]` and `--drop` remove arms (and their groups).
+* `--binaries PATH` (plan/finalize; default `A/binaries.json`): JSON read for ONLY the md5 of `lagrangian_ensemble` and `macroflow3d_pipeline` (32 lowercase hex digits or the command fails; keys starting with `_`, e.g. `_provenance`, and any other key are ignored); `_provenance.binaries_path` / `binaries_sha256` record the file used (e.g. `--binaries A/binaries_addendum.json` when the build embeds another git revision).
 * The plan carries a `_provenance` block (sha256 of the frozen plan, prereg, binaries and costs files, dropped arms, missing files allowed); no timestamps, so two runs are byte-identical.
 
 ## S0 cut rules in `s0-report` (preregistration section 4)
