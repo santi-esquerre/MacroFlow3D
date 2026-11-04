@@ -10,7 +10,7 @@ reduction than one you write yourself; the comparison and the verdict are yours.
 
 | arm | seed | segment (index) | pass |
 |---|---|---|---|
-| `s025_prod` | 431001 | `u000350_s431001` (r 0) | single |
+| `s025_prod` | 431001 | `u000350_s431001` (r 0) | multi-pass, production `hmax_8` |
 | `s1_prod` | 432080 | `u000365_s432071` (r 9) | single |
 | `s225_prod` | 433140 | `u000185_s433131` (r 9) | single |
 | `s4_prod` | 434001 | `u000006_s434001` (r 0) | multi-pass, production `hmax_8` |
