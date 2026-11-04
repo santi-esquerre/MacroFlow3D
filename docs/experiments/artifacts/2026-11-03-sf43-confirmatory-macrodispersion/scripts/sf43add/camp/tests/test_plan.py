@@ -298,10 +298,10 @@ class Binaries(unittest.TestCase):
 class Committed(unittest.TestCase):
     def test_committed_plans_are_current(self):
         """The committed plans are what the generator gives now.  Fails (by design) when a file the plan hashes changed, e.g. after the sibling
-        package sf43add.ana is integrated: regenerate with `python3 -m sf43add.camp plan [--job j8]` (and `finalize` after S0) and commit."""
+        package sf43add.ana is integrated: regenerate with `python3 -m sf43add.camp plan [--job j8] --binaries binaries_addendum.json` (and `finalize` after S0) and commit."""
         for job, name in (("production", "plan_addendum.json"), ("j8", "plan_addendum_j8.json")):
             with open(os.path.join(P.ART, name)) as f:
-                self.assertEqual(f.read(), P.dumps(build(job=job)), "%s is stale: regenerate it (see this docstring)" % name)
+                self.assertEqual(f.read(), P.dumps(build(job=job, binaries_path=os.path.join(P.ART, "binaries_addendum.json"))), "%s is stale: regenerate it (see this docstring)" % name)
 
 
 class Cli(unittest.TestCase):
