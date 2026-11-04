@@ -2,6 +2,7 @@
 Run from `scripts/`:  python3 -W error -m unittest discover -s sf43add/camp/tests -t .
 """
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -297,11 +298,30 @@ class Binaries(unittest.TestCase):
 
 class Committed(unittest.TestCase):
     def test_committed_plans_are_current(self):
-        """The committed plans are what the generator gives now.  Fails (by design) when a file the plan hashes changed, e.g. after the sibling
-        package sf43add.ana is integrated: regenerate with `python3 -m sf43add.camp plan [--job j8] --binaries binaries_addendum.json` (and `finalize` after S0) and commit."""
-        for job, name in (("production", "plan_addendum.json"), ("j8", "plan_addendum_j8.json")):
-            with open(os.path.join(P.ART, name)) as f:
-                self.assertEqual(f.read(), P.dumps(build(job=job, binaries_path=os.path.join(P.ART, "binaries_addendum.json"))), "%s is stale: regenerate it (see this docstring)" % name)
+        """Each committed plan is byte-identical to a rebuild with the inputs its own `_provenance` records: the binaries file (path, sha256), the
+        costs file when `costs_sha256` is set (A/s0_costs.json, sha256 asserted, as `finalize --costs` loads it) with the plan's own `budget_gpu_h`
+        and `disk_min_free_gb`, the dropped arms, and `allow_missing` iff files were allowed to be missing.  Fails (by design) when a file the plan
+        hashes changed: regenerate with `python3 -m sf43add.camp plan [--job j8] --binaries ...` (`finalize` after S0) and commit."""
+        for name in ("plan_addendum.json", "plan_addendum_j8.json"):
+            with self.subTest(name):
+                path = os.path.join(P.ART, name)
+                with open(path) as f:
+                    text = f.read()
+                plan = json.loads(text)
+                pv = plan["_provenance"]
+                bpath = os.path.join(P.REPO, pv["binaries_path"])
+                self.assertEqual(P.sha256_file(bpath), pv["binaries_sha256"], "binaries file changed since the plan was generated")
+                costs, budget, disk = None, None, None
+                if pv["costs_sha256"]:
+                    cpath = os.path.join(P.ART, "s0_costs.json")
+                    with open(cpath, "rb") as f:
+                        raw = f.read()
+                    self.assertEqual(hashlib.sha256(raw).hexdigest(), pv["costs_sha256"], "s0_costs.json changed since the plan was finalized")
+                    costs = json.loads(raw)
+                    costs["sha256"] = pv["costs_sha256"]
+                    budget, disk = plan["budget_gpu_h"], plan["disk_min_free_gb"]
+                rebuilt = P.build_plan(pv["job"], costs, budget, disk, pv["dropped"], bool(pv["missing_allowed"]), bpath)
+                self.assertEqual(text, P.dumps(rebuilt), "%s is stale: regenerate it (see this docstring)" % name)
 
 
 class Cli(unittest.TestCase):
