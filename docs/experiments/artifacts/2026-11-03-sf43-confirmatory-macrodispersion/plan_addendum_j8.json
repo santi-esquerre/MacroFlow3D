@@ -9,8 +9,8 @@
  "campaign_dir": "/home/sesquerre/sf43_addendum_j8",
  "executor": "sf43camp.runner_executor:RunnerExecutor",
  "binaries": {
-  "lagrangian_ensemble": "d8b673b769aabfb7662a2cd0cb34b3fe",
-  "macroflow3d_pipeline": "5f8158b55cd54598d3267bc6f7219552"
+  "lagrangian_ensemble": "4099aa1aa7ce1ac5cdb0482552fdcb0f",
+  "macroflow3d_pipeline": "de66d6a20e15ccbc1c429a51f5a06a87"
  },
  "analysis": {
   "command": [
@@ -89,8 +89,8 @@
    "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/ana/trigger.py": "5978818642d7c64ce8574427c8c1a87717fcca67f144d4f4bb985674d90d82dc",
    "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/__init__.py": "66623dcb07a0b89af6493f9e5a4cb8ce7d1795e5ef4cd546f7706bbc24034435",
    "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/__main__.py": "7b8c5f6e9ea3ded163845180f117804e7c54b31c090cb513177bd14e093e2297",
-   "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/cli.py": "d75736ba4970b8d0422c82136c6a02b41586cb1cb86e93decfb8cbde4b59d69a",
-   "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/plan.py": "2c5380a011643becaf0fe8327ce130534e52a2a086df84508b0e2a1d37cbb62b",
+   "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/cli.py": "d24673daeb2cba48cc7e796cf6da163ba526919ff84617a398909d24da67118e",
+   "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/plan.py": "94df758e7ccd6d061270d9986bc286265d7999001d3a25ad5f477f001710fcd8",
    "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/s0.py": "fa26b28eb594c570914dafcfa0e281ce18174b906d66dd08c49af99e723370e7",
    "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/camp/seeds.py": "2a887bf965f94f01ea348b974bb737e963966dd445b3782b0e0a6df17ee67814",
    "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43ana/__init__.py": "dfb847499130e4902dccc6de8734652f476cd3a18fbb8eb0cb9cb4842dff8e7a",
@@ -599,7 +599,8 @@
   "job": "j8",
   "frozen_plan_sha256": "a9e599a12c32cc7246479d2097fb9eaa15c9975452a08e43642e4501ca5ca53d",
   "prereg_addendum_sha256": "2305529cf1823784901bd5bcd7cc7d33f784c6bfab34215aeabbfcb593d1cc5e",
-  "binaries_sha256": "c975728a1febb9c1e42d65f59cdc504cdbbe4677524f727b0abe752e20176f0c",
+  "binaries_path": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/binaries_addendum.json",
+  "binaries_sha256": "adb3490d326ad177e6b89363ebfa50a355ad96d2ee0aa0b2e87167699f114107",
   "costs_sha256": null,
   "dropped": [],
   "missing_allowed": []
