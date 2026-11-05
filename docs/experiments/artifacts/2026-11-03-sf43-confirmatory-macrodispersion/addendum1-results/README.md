@@ -37,4 +37,18 @@ cd /tmp/a1x && sha256sum -c $R/reduced/freeze.reduced.sha256     # must be run f
 The raw segment outputs (plane arrays, Pollock arrays; about 54 GB of unpruned `j9_w48` arrays among them, deviation AD3) stay on the
 host only.
 
-The conditional J8 extension (seeds 434061-434100) is recorded in a sibling `j8/` directory when it exists.
+## `j8/`: the conditional J8 extension (seeds 434061-434100 in `j8_H3`, `j8_D`, `j8_DH3`; job `sf43add-j8`)
+
+Same layout as above, for the J8 campaign `~/sf43_addendum_j8` (plan `A/plan_addendum_j8.json`, sha256 `40ef528d...`; freeze row commit
+`188054d4`, blinded stop 2026-11-05T10:34:41Z). `j8/analysis/addendum_summary.{json,md}` is the J8 job's frozen analysis: its `n60`
+block is identical to the production one and it adds the `J1 (n100)` block (secondary). Differences with the production part:
+
+- `j8/recompute.txt` and `j8/reconcile.txt` are the independent-check outputs (`sf43_addendum_j8.recompute.txt` / `.reconcile.txt` on the
+  host); `j8/logs/` has the job log `sf43add-j8.log` and `exec-blinded.log` in its 29-line version: **lines 1-27 are the frozen version**
+  (sha256 `87bbdaa2...`), line 28 a structure read after the job, line 29 the `blinded-stop`.
+- `j8/reduced/` has 36 files in 3 arms; `j8/reduced/freeze.reduced.sha256` (manifest sha256
+  `9e0d3d037c202cace16ed522c3a6a39b3c5f76941cd76807557c0a5f25d516e3`) is checked the same way (`sha256sum -c` from the parent of the
+  extracted `reduced/`; 36/36).
+- The raw J8 segment outputs (retention 22/2, 22/2, 32/2; 13 GB) stay on the host.
+
+`SHA256SUMS` (this directory only, one file) covers every file here including `j8/`; there is no `j8/SHA256SUMS`.

@@ -9,8 +9,10 @@
   about other covariance models, anisotropic `K`, finite Péclet, other media or `sigma^2 > 4`.
 - Status: **results frozen and audited by the orchestrator; awaiting human review** (State `awaiting_review`). The confirmatory outcomes
   below are the frozen analysis's output; nothing in this note changes a pre-registered rule. On 2026-11-04 the owner reopened SF-43
-  (`active`) for addendum 1 (exploratory follow-up arms and post hoc analyses, outside the family;
-  `docs/decisions/2026-11-04-sf43-addendum-1.md`); this note's text was corrected accordingly (end of section 4). Where SF-43 overlaps SF-39
+  (`active`) for addendum 1 (exploratory follow-up arms J1, J3, J9 and the conditional J8, plus post hoc analyses, outside the family;
+  `docs/decisions/2026-11-04-sf43-addendum-1.md`); this note's text was corrected accordingly (end of section 4). The addendum-1
+  results are now **frozen and audited** (section 3.5); the increment returns to `awaiting_review`, and acceptance D at `sigma^2 = 4`
+  is the owner's decision (the J1 class is an input to it). Where SF-43 overlaps SF-39
   (`docs/experiments/2026-10-27-sf39-macrodispersion-study.md`, the exploratory pilot), SF-43 supersedes it.
 - Normative contract: `A/preregistration.md` (sha256 `3c5e05b27d5edb71734f99b0ae7c507360c2434ce3c42e5e2ddeabc709ccc43e`, commit
   `cbbd69da`, pushed to draft PR #87 before the first production run) with its companions `A/plan.json` (`a9e599a1...`) and
@@ -378,7 +380,7 @@ Total 5294 attempted, 3 unusable (rate 5.67e-04, Clopper-Pearson 95 % [1.17e-04,
    injection (the G7 injection factor moved `alpha_LP` by up to about 3 % at 0.25, mostly with the random-spectral generator; unknown at
    4). A discriminating follow-up would rerun a subset of `s4_g5p` with `dt/2` and a longer
    horizon. The owner decided on 2026-11-04 to run it as addendum 1 of SF-43 (`docs/decisions/2026-11-04-sf43-addendum-1.md`); its
-   results are in section 3.5 of this note (J1: horizon dominant at n = 60; the step `dt/2` alone moves `alpha_LP` by 1.7 %).
+   results are in section 3.5 of this note (J1: class `horizonte dominante` at n = 60 and n = 100; Par2's ratio for `dt/2` alone is `r_D` = 1.017 [1.000, 1.037] at n = 60 and 1.008 [0.9962, 1.022] at n = 100).
 
 ### 3.4 Post hoc (2026-11-04)
 
@@ -487,7 +489,7 @@ design), the J9 block 438001-438150 is new and disjoint.
 | arm | origin | manipulated factor (only change) | seeds | n |
 |---|---|---|---|---|
 | `j1_base10` | `s4_g5p` | none (reproduction check) | 434001-434010 | 10 |
-| `j1_H3` | `s4_g5p` | horizon `hz` 3.6 -> 10.8 | 434001-434060 | 60 |
+| `j1_H3` | `s4_g5p` | horizon factor `hz` (dimensionless multiplier of the number of steps) 3.6 -> 10.8 | 434001-434060 | 60 |
 | `j1_D` | `s4_g5p` | `dt/2` (`2 x n_steps`) | 434001-434060 | 60 |
 | `j1_DH3` | `s4_g5p` | both | 434001-434060 | 60 |
 | `j1_H2` | `s4_g5p` | `hz` 3.6 -> 7.2 (dose-response) | 434001-434060 | 60 |
@@ -505,15 +507,23 @@ build/v100-release all --plan A/plan_addendum.json"`; S0 (smoke, structure and c
 100, 150), 0 replaced, 0 failed, 0 OOM; `recompute43` PASS and `reconcile43` OK on the addendum campaign; analysis `errors = 0`,
 `warnings = 0`, 77 frozen files verified.
 
+**J8 (conditional extension, triggered after the freeze).** Job `sf43add-j8`, same command form with `--plan A/plan_addendum_j8.json`
+(sha256 `40ef528d9e9e9c3c84b641d66e89758bed78c05cb2dc0d577c198a0d1713200a`, finalized from the production-measured costs
+`A/j8_costs.json` `021727c4...`, budget 3.10 GPU-h, disk guard 378 GB); arms `j8_H3`, `j8_D`, `j8_DH3` (seeds 434061-434100, identical
+settings; no `j8_H2` arm, so `r_H2` and `q_H2` are not evaluable at n = 100 by design). Own blinded phase 2026-11-05T09:31:33Z -> freeze
+(commit `188054d4`) -> `blinded stop` 2026-11-05T10:34:41Z; GPU granted 09:32:22Z, `DONE` 10:33:01Z. Result: 12 units, all `cls=ok`,
+40/40 realizations per arm, 0 replaced, 0 failed, 0 OOM; `RECOMPUTE PASS`, `RECONCILE OK`, `STRUCTURE_OK`. Artifacts:
+`A/addendum1-results/j8/`.
+
 **GPU-h per job** (held = GPUs x wall from the grant):
 
 | job | held GPU-h | note |
 |---|---|---|
 | `sf43add-s0` (S0 smoke) | 0.084 | engine 0.07 |
 | `sf43add-prod` (production) | 4.307 | engine `gpu_h_used` 3.81 of 7.41; the rest is the in-job analysis, recompute and reconcile |
-| `sf43add-j8` (conditional J8) | <!-- J8: to be filled --> | running at the time of this entry |
-| addendum total so far | 4.391 | of the 8 GPU-h cap (S0 + production + J8) |
-| SF-43 total so far | 58.09 | of 150 (cap 61.7 for the addendum, decision 2026-11-04) |
+| `sf43add-j8` (conditional J8) | 1.011 | engine 1.00 of 3.10 |
+| addendum total | 5.402 | 0.084 + 4.307 + 1.011, of the 8 GPU-h cap (4.391 before J8) |
+| SF-43 total | 59.10 | of 150 (cap 61.7 for the addendum, decision 2026-11-04; 58.09 before J8) |
 
 #### T12. Every rule of section 3 of the pre-registration (n = 60 for J1; class conditions in the order of the first match)
 
@@ -550,6 +560,23 @@ build/v100-release all --plan A/plan_addendum.json"`; S0 (smoke, structure and c
 | 3.3 J9 class 2 `decae con el ancho` | upper limit of IC90(`F48`) | 1.042 | < 0.95 | false | not met |
 | **J9 class** | first match; J3 qualification: none (J3 equivalent) | | | | **`meseta robusta al ancho`** |
 
+#### T12b. J1 rules at n = 100 (SECONDARY; same rule, +40 seeds 434061-434100 in H3, D and DH3; n = 60 above stays PRIMARY)
+
+| rule | condition | value (IC90) | threshold | truth | outcome |
+|---|---|---|---|---|---|
+| 3.1.2 manipulation (`j1_H3`) | mean completeness | 0.99997 | >= 0.999 | true | PASS |
+| 3.1.2 manipulation (`j1_H3`) | fraction of complete realizations | 0.92 | >= 0.90 | true | PASS |
+| 3.1.3 class 1 `horizonte dominante` | `r_H` | 1.105 [1.079, 1.14] | >= 1.10 | true | |
+| 3.1.3 class 1 | `abs(r_D - 1)` | 0.008484 (`r_D` = 1.008 [0.9962, 1.022]) | <= 0.03 | true | |
+| 3.1.3 class 1 | IC90(`q_H3`) within | [1.004, 1.062] | [0.9091, 1.10] | true | **MATCH (first match)** |
+| 3.1.3 class 2 `paso dominante` | `r_D` | 1.008 | >= 1.05 | false | |
+| 3.1.3 class 2 | `r_H` | 1.105 | < 1.05 | false | not met |
+| 3.1.3 class 3 `mixto` | `r_H` | 1.105 | >= 1.03 | true | |
+| 3.1.3 class 3 | `r_D` | 1.008 | >= 1.03 | false | |
+| 3.1.3 class 3 | IC90(`q_DH3`) within | [0.9764, 1.024] | [0.9091, 1.10] | true | not met (`r_D`) |
+| Amendment A1 override | lower limit of IC90(`q_DH3`) above 1.10 | 0.9764 | > 1.10 | false | not applied |
+| **J1 class (n = 100, SECONDARY)** | first match | | | | **`horizonte dominante`** |
+
 #### T13. J1 (Par2 at `sigma^2 = 4`: horizon against step), paired by seed, n = 60 common seeds
 
 `r_X = Par2(X)/Par2(s4_g5p)`; `q_X = Pollock(s4_g5pol)/Par2(X)` (`q_base` on the same 60 seeds).
@@ -583,13 +610,46 @@ the 250 for this quantity.
 
 **Class at n = 60 (PRIMARY): `horizonte dominante`** (first match). Plainly: `r_H` = 1.104 clears the 1.10 threshold by **0.004 on the
 point estimate**, while its IC90 [1.066, 1.16] **contains 1.10**; the class is therefore fragile on `r_H`, which is why the
-pre-registered J8 extension was triggered (T12). The step alone moves `alpha_LP` by 1.7 % (`r_D` = 1.017 [1.000, 1.037]), inside the 3 % band of class 1; at the long
-horizon 0.92 of the realizations are complete against 0.12 at the base horizon. The class at n = 100 (SECONDARY; same rule, +40 seeds in H3, D and DH3): <!-- J8: to be filled -->.
+pre-registered J8 extension was triggered (T12). For the step alone, Par2's ratio is `r_D` = 1.017 [1.000, 1.037] (Student [0.9987, 1.035]): its bootstrap-t interval reaches 1, and no
+effect of the step alone is claimed (the class 1 condition `abs(r_D - 1) <= 0.03` holds on the point estimate); at the long
+horizon 0.92 of the realizations are complete against 0.12 at the base horizon. The class at n = 100 (SECONDARY; same rule, +40 seeds in H3, D and DH3) is given in T13b.
 
 Descriptive observations (not rule results): (i) `r_H2` (`hz` 7.2) equals `r_H` (`hz` 10.8) to 5e-5, so the horizon effect on `alpha_LP`
 is saturated by `hz` 7.2; (ii) with both factors `q_DH3` = 1.004 [0.9725, 1.041], i.e. Pollock/Par2 is not distinguished from 1 when
 the horizon is long and the step is halved; (iii) descriptive arithmetic on the point estimates: `r_DH3 / r_H` = 1.041 with the long horizon, against `r_D` = 1.017 alone; (iv) the residual `q_H3` = 1.045 [1.011, 1.096] is **not attributed by the rule** (about 5 %
 was expected from the post hoc completeness strata, N8) and is not called a step effect here.
+
+#### T13b. J1 at n = 100 (SECONDARY): `j8_*` seeds 434061-434100 added to 434001-434060 in H3, D and DH3
+
+`j1_H2` and `j1_base10` have no seeds 434061-434100, so `r_H2` and `q_H2` are not evaluable at n = 100 by design (no `j8_H2` arm).
+
+| quantity | n | ratio | IC90 bootstrap-t | IC90 Student |
+|---|---|---|---|---|
+| `r_H` | 100 | 1.105 | [1.079, 1.14] | [1.076, 1.135] |
+| `r_D` | 100 | 1.008 | [0.9962, 1.022] | [0.9957, 1.021] |
+| `r_DH3` (descriptive) | 100 | 1.138 | [1.105, 1.185] | [1.099, 1.178] |
+| `q_base` | 100 | 1.137 | [1.101, 1.19] | [1.096, 1.179] |
+| `q_H3` (residual; not attributed by the rule) | 100 | 1.029 | [1.004, 1.062] | [1.002, 1.057] |
+| `q_D` | 100 | 1.128 | [1.093, 1.171] | [1.092, 1.165] |
+| `q_DH3` (residual; not attributed by the rule) | 100 | 0.9995 | [0.9764, 1.024] | [0.9762, 1.023] |
+
+| arm | n | mean | fraction complete | quantiles 0 / 5 / 25 / 50 / 75 / 95 / 100 % |
+|---|---|---|---|---|
+| `s4_g5p` (base) | 100 | 0.9992 | 0.13 | 0.9914, 0.9954, 0.9996, 0.9998, 0.9999, 1, 1 |
+| `j1_H3` | 100 | 1.000 (0.99997) | 0.92 | 0.998, 0.9999, 1, 1, 1, 1, 1 |
+| `j1_D` | 100 | 0.9992 | 0.13 | 0.9911, 0.9956, 0.9994, 0.9998, 0.9999, 1, 1 |
+| `j1_DH3` | 100 | 1.000 | 0.92 | 0.9981, 0.9999, 1, 1, 1, 1, 1 |
+
+Manipulation (`j1_H3`): passed (mean 0.99997 >= 0.999, fraction 0.92 >= 0.90). Representativity: `q_base` on the 100 seeds is 1.137
+[1.101, 1.19] (Student [1.096, 1.179]) against the frozen 1.164 [1.131, 1.198]; the frozen ratio lies in both intervals and the Student
+intervals overlap. Conditions: T12b.
+
+**Class at n = 100 (SECONDARY): `horizonte dominante`, the same as at n = 60 (PRIMARY).** Plainly: `r_H` = 1.105 [1.079, 1.14] **still
+contains 1.10**; the class rests on the point estimate clearing the threshold by **0.005**, as at n = 60 (0.004), although the interval
+is narrower. `r_D` = 1.008 [0.9962, 1.022] (n = 60: 1.017 [1.000, 1.037]); the residual `q_H3` = 1.029 [1.004, 1.062] (n = 60:
+1.045 [1.011, 1.096]) is **not attributed by the rule**; `q_DH3` = 0.9995 [0.9764, 1.024] (descriptive: Pollock/Par2 not distinguished
+from 1 with the long horizon and the half step, as at n = 60). Descriptive arithmetic on the point estimates: `r_DH3 / r_H` = 1.029
+at n = 100 (1.041 at n = 60). Adding the 40 seeds does not change the class or any rule outcome.
 
 #### T14. J3 (`lambda/h = 5` twin of `s1_dist`; `alpha_TP:disp`, flux weights; paired, n = 100) and J9 (W = 48 `lambda`)
 
@@ -634,7 +694,9 @@ realizations themselves are left to the owner (section 7).
   before any script ran on data; not applied in this result (T12).
 - **AD3. Retention.** The engine runs no final prune, so `j9_w48` kept the raw Pollock arrays of 122 realizations (about 54 GB on the
   host) instead of at most 2; the reduced tables are complete and the analysis is unaffected. No deletion without the owner (open item,
-  section 7).
+  section 7). The J8 campaign shows the same engine behaviour (retention
+  `j8_H3` 22/2, `j8_D` 22/2, `j8_DH3` 32/2; 13 GB on the host in `~/sf43_addendum_j8`); nothing was deleted (the owner's answer of
+  2026-11-05 authorized running, not deleting).
 - **AD4. Ledger hash in the summary.** The summary records the campaign-ledger sha256 at analysis time (`8520abbd...`), before the
   engine appended its final records (final ledger `9c736b2f...`, in the freeze row); informational.
 
@@ -749,12 +811,15 @@ Recorded before data: D1-D4 (prereg 14). Found after data, none changes a decisi
    positive, and it does not refute Lester et al.'s asymptotic claim, which concerns `t -> infinity` and bounded label fluctuations
    (`docs/theory/lester-2023-key-claims.md`).
 5. **Exploratory (addendum 1; descriptive, outside the Holm family; 3.5).** Par2 at `sigma^2 = 4`, J1 at n = 60 (PRIMARY): class
-   `horizonte dominante` (`r_H` = 1.104 [1.066, 1.16] for horizon 3.6 -> 10.8 `lambda`; `r_D` = 1.017 [1.000, 1.037] for `dt/2`;
-   residual `q_H3` = 1.045 [1.011, 1.096], not attributed by the rule). The class is fragile: `r_H` clears the 1.10 threshold by 0.004
-   on the point estimate and its interval contains 1.10, which triggered the pre-registered J8 extension (n = 100 class, secondary:
-   <!-- J8: to be filled -->). J3: `lambda/h = 5` equivalent to `lambda/h` 10 (`m_main` 0.9956, `m_far` 0.9951). J9: the far/main
-   plateau is robust to the width at `lambda/h` = 5 (`F48` = 0.9978 [0.9572, 1.042], `F48/F5` = 0.9779 [0.9192, 1.040]: width 24 -> 48
-   `lambda` within +-10 %). All descriptive; acceptance D at `sigma^2 = 4` is the owner's decision, with the J1 class as an input.
+   `horizonte dominante` (`r_H` = 1.104 [1.066, 1.16] for the horizon factor `hz` 3.6 -> 10.8; `r_D` = 1.017 [1.000, 1.037] for
+   `dt/2` alone; residual `q_H3` = 1.045 [1.011, 1.096], not attributed by the rule; `q_DH3` = 1.004 [0.9725, 1.041]). The class is
+   fragile: `r_H` clears the 1.10 threshold by 0.004 on the point estimate and its interval contains 1.10, which triggered the
+   pre-registered J8 extension. At n = 100 (SECONDARY; +40 seeds) the class is the same, `horizonte dominante`, with the same fragility
+   (`r_H` = 1.105 [1.079, 1.14], 0.005 above the threshold; `r_D` = 1.008 [0.9962, 1.022]; `q_H3` = 1.029 [1.004, 1.062], not
+   attributed; `q_DH3` = 0.9995 [0.9764, 1.024]). J3: `lambda/h = 5` equivalent to `lambda/h` 10 (`m_main` 0.9956, `m_far` 0.9951).
+   J9: the far/main plateau is robust to the width at `lambda/h` = 5 (`F48` = 0.9978 [0.9572, 1.042], `F48/F5` = 0.9779
+   [0.9192, 1.040]: width 24 -> 48 `lambda` within +-10 %). All descriptive; acceptance D at `sigma^2 = 4` is the owner's decision,
+   with the J1 class as an input.
 
 ## 6. Caveats
 
@@ -785,7 +850,7 @@ Recorded before data: D1-D4 (prereg 14). Found after data, none changes a decisi
    implicated) as the attribution, or use the discriminating Par2 follow-up (`dt/2`, longer horizon on a subset of `s4_g5p`), which the
    owner scheduled on 2026-11-04 as addendum 1 (`docs/decisions/2026-11-04-sf43-addendum-1.md`); acceptance D stays the owner's
    decision, with the follow-up as input. The follow-up has run: the J1 class is `horizonte dominante` at n = 60 (primary; fragile on
-   `r_H`, 3.5) and the n = 100 class is <!-- J8: to be filled -->; `gate5:4` is not recomputed.
+   `r_H`, 3.5) and also at n = 100 (secondary, with the same fragility: `r_H` = 1.105 [1.079, 1.14]); `gate5:4` is not recomputed.
 2. **Acceptance F**: independent reduction of at least three realizations from the retained arrays, without importing the analysis
    package. Retained on the host (`~/sf43_campaign/segments/<arm>/...`): for each production arm the first five seeds and the seeds at
    0.4, 0.7 and 1.0 of `n_conf` (e.g. `s1_prod`: 432001-432005, 432080, 432140, 432200; `s4_prod`: 434001-434005, 434080, 434140, 434200);
@@ -794,9 +859,10 @@ Recorded before data: D1-D4 (prereg 14). Found after data, none changes a decisi
 4. The generator caveat (G7, 3.2 and 3.4 N1; wording proposed in section 6): record it as a model-scope caveat in the primary-basis
    form, or schedule a comparison of generators (not in SF-43's scope; the decision record lists the generator class as a model
    restriction).
-5. **Addendum retention (AD3, 3.5).** The `j9_w48` arm kept the raw Pollock arrays of 122 realizations (about 54 GB on the host)
-   because the engine runs no final prune: prune them with the engine's verified pruner (reduced tables are complete) or keep them.
-   No deletion has been done without the owner.
+5. **Addendum retention (AD3, 3.5).** The `j9_w48` arm kept the raw Pollock arrays of 122 realizations (about 54 GB on the host) and
+   the J8 arms kept 22, 22 and 32 realizations (`j8_H3`, `j8_D`, `j8_DH3`; 13 GB in `~/sf43_addendum_j8`), because the engine runs no
+   final prune: prune them with the engine's verified pruner (reduced tables are complete) or keep them. No deletion has been done
+   without the owner.
 
 ## 8. Artifact layout (`A/results/`)
 
@@ -816,8 +882,12 @@ Addendum 1 (`A/addendum1-results/`, section 3.5; its own `README.md` and `SHA256
 `REPORT.txt`, `ledger.jsonl`, `DONE`; `logs/` (`sf43add-prod.log`, `sf43add-s0.log`, `exec-blinded.log`, `analysis.log`,
 `recompute.log`, `reconcile.log`); `reduced/tables/<arm>.tar.xz`, `reduced/planes/<arm>.tar.xz` (one per addendum arm, same member layout
 as above) and `reduced/freeze.reduced.sha256` (225 files; manifest sha256 `63bb2def4238224aae9d460ba2a75aad3b05ea8769e0819a2c3b0db9d07f0dd6`;
-its paths are relative to the campaign root, so run `sha256sum -c` from the parent of the extracted `reduced/`). A sibling `j8/`
-holds the J8 extension when present. The raw segment outputs (about 54 GB of unpruned `j9_w48` arrays among them) stay on the host.
+its paths are relative to the campaign root, so run `sha256sum -c` from the parent of the extracted `reduced/`). `j8/` has the same layout
+for the J8 extension (job `sf43add-j8`; its `analysis/addendum_summary.{json,md}` adds the `J1 (n100)` block and has sha256
+`ab5b816f857dac710a7b7c38b696892515e1cb18c81c2dace4f387187c939201` / `0616d047...`; 36 reduced files, freeze manifest sha256
+`9e0d3d037c202cace16ed522c3a6a39b3c5f76941cd76807557c0a5f25d516e3`; `recompute.txt`, `reconcile.txt`, `logs/exec-blinded.log` with 29
+lines of which the first 27 are the frozen version). One `addendum1-results/SHA256SUMS` covers every file including `j8/`. The raw
+segment outputs (about 54 GB of unpruned `j9_w48` arrays and 13 GB of J8 arrays among them) stay on the host.
 
 Re-running the analysis from the committed tables (CPU; not re-run for this note): extract the archives into `<C>/reduced/` (the
 archives contain `<arm>/<segment>/...`), copy `ledger.jsonl` to `<C>/`, then `bash A/scripts/analyse_sf43.sh <C> build/v100-release`
