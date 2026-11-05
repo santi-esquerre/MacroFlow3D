@@ -4,8 +4,8 @@
  "cutoff_utc": "2026-11-07T02:30:00Z",
  "grace_minutes": 30,
  "stage1_max_hours": 0,
- "budget_gpu_h": 7.2,
- "disk_min_free_gb": 100,
+ "budget_gpu_h": 3.1,
+ "disk_min_free_gb": 378.0,
  "campaign_dir": "/home/sesquerre/sf43_addendum_j8",
  "executor": "sf43camp.runner_executor:RunnerExecutor",
  "binaries": {
@@ -207,7 +207,7 @@
    "n_conf": 40,
    "n_max": 40,
    "unit_size": 10,
-   "est_seconds": 52.5,
+   "est_seconds": 32.1,
    "raw_gb": 0.195,
    "par2": {
     "grid": [
@@ -341,7 +341,7 @@
    "n_conf": 40,
    "n_max": 40,
    "unit_size": 10,
-   "est_seconds": 35.0,
+   "est_seconds": 33.2,
    "raw_gb": 0.13,
    "par2": {
     "grid": [
@@ -475,7 +475,7 @@
    "n_conf": 40,
    "n_max": 40,
    "unit_size": 10,
-   "est_seconds": 105.0,
+   "est_seconds": 51.3,
    "raw_gb": 0.39,
    "par2": {
     "grid": [
@@ -601,7 +601,7 @@
   "prereg_addendum_sha256": "2305529cf1823784901bd5bcd7cc7d33f784c6bfab34215aeabbfcb593d1cc5e",
   "binaries_path": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/binaries_addendum.json",
   "binaries_sha256": "adb3490d326ad177e6b89363ebfa50a355ad96d2ee0aa0b2e87167699f114107",
-  "costs_sha256": null,
+  "costs_sha256": "021727c46c795e209e0731b0e58220f8a1b8cfe8d7cdb800711a7c0281b42708",
   "dropped": [],
   "missing_allowed": []
  }

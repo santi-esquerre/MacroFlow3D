@@ -1,0 +1,131 @@
+{
+ "schema": 1,
+ "campaign": "sf43_addendum",
+ "status": "DONE",
+ "gpu_h_held": 3.81,
+ "suggested_budget_gpu_h": 3.69,
+ "arms": {
+  "j1_D": {
+   "planned": null,
+   "n": 60,
+   "seconds_per_realization": 26.54,
+   "seconds_max": 29.51,
+   "wall_per_realization": 26.621,
+   "peak_mib": null,
+   "max_iterations": 70,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 60
+   },
+   "unit_classes": {
+    "ok": 6
+   },
+   "structural_failures": []
+  },
+  "j1_DH3": {
+   "planned": 2,
+   "n": 60,
+   "seconds_per_realization": 41.059,
+   "seconds_max": 51.606,
+   "wall_per_realization": 41.376,
+   "peak_mib": null,
+   "max_iterations": 70,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 60
+   },
+   "unit_classes": {
+    "ok": 6
+   },
+   "structural_failures": []
+  },
+  "j1_H2": {
+   "planned": null,
+   "n": 60,
+   "seconds_per_realization": 21.956,
+   "seconds_max": 27.268,
+   "wall_per_realization": 22.374,
+   "peak_mib": null,
+   "max_iterations": 70,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 60
+   },
+   "unit_classes": {
+    "ok": 6
+   },
+   "structural_failures": []
+  },
+  "j1_H3": {
+   "planned": 2,
+   "n": 60,
+   "seconds_per_realization": 25.711,
+   "seconds_max": 30.649,
+   "wall_per_realization": 26.117,
+   "peak_mib": null,
+   "max_iterations": 70,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 60
+   },
+   "unit_classes": {
+    "ok": 6
+   },
+   "structural_failures": []
+  },
+  "j1_base10": {
+   "planned": 1,
+   "n": 10,
+   "seconds_per_realization": 17.981,
+   "seconds_max": 22.239,
+   "wall_per_realization": 18.477,
+   "peak_mib": null,
+   "max_iterations": 60,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 10
+   },
+   "unit_classes": {
+    "ok": 1
+   },
+   "structural_failures": []
+  },
+  "j3_l5": {
+   "planned": 1,
+   "n": 100,
+   "seconds_per_realization": 17.148,
+   "seconds_max": 18.735,
+   "wall_per_realization": 17.922,
+   "peak_mib": 2411.0,
+   "max_iterations": 130,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 100
+   },
+   "unit_classes": {
+    "ok": 10
+   },
+   "structural_failures": []
+  },
+  "j9_w48": {
+   "planned": 1,
+   "n": 150,
+   "seconds_per_realization": 23.365,
+   "seconds_max": 25.579,
+   "wall_per_realization": 24.156,
+   "peak_mib": 5001.0,
+   "max_iterations": 70,
+   "raw_gb_per_realization": null,
+   "verdicts": {
+    "converged": 150
+   },
+   "unit_classes": {
+    "ok": 15
+   },
+   "structural_failures": []
+  }
+ },
+ "drop": [],
+ "decisions": {},
+ "notes": []
+}
