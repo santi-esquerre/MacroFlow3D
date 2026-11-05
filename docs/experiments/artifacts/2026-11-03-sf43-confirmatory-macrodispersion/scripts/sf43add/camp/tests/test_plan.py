@@ -299,7 +299,7 @@ class Binaries(unittest.TestCase):
 class Committed(unittest.TestCase):
     def test_committed_plans_are_current(self):
         """Each committed plan is byte-identical to a rebuild with the inputs its own `_provenance` records: the binaries file (path, sha256), the
-        costs file when `costs_sha256` is set (A/s0_costs.json, sha256 asserted, as `finalize --costs` loads it) with the plan's own `budget_gpu_h`
+        costs file when `costs_sha256` is set (the one of A/s0_costs.json, A/j8_costs.json whose sha256 equals it, as `finalize --costs` loads it) with the plan's own `budget_gpu_h`
         and `disk_min_free_gb`, the dropped arms, and `allow_missing` iff files were allowed to be missing.  Fails (by design) when a file the plan
         hashes changed: regenerate with `python3 -m sf43add.camp plan [--job j8] --binaries ...` (`finalize` after S0) and commit."""
         for name in ("plan_addendum.json", "plan_addendum_j8.json"):
@@ -313,11 +313,13 @@ class Committed(unittest.TestCase):
                 self.assertEqual(P.sha256_file(bpath), pv["binaries_sha256"], "binaries file changed since the plan was generated")
                 costs, budget, disk = None, None, None
                 if pv["costs_sha256"]:
-                    cpath = os.path.join(P.ART, "s0_costs.json")
-                    with open(cpath, "rb") as f:
-                        raw = f.read()
-                    self.assertEqual(hashlib.sha256(raw).hexdigest(), pv["costs_sha256"], "s0_costs.json changed since the plan was finalized")
-                    costs = json.loads(raw)
+                    raws = []
+                    for cname in ("s0_costs.json", "j8_costs.json"):
+                        with open(os.path.join(P.ART, cname), "rb") as f:
+                            raws.append((cname, f.read()))
+                    hits = [r for n, r in raws if hashlib.sha256(r).hexdigest() == pv["costs_sha256"]]
+                    self.assertEqual(len(hits), 1, "exactly one of s0_costs.json / j8_costs.json must hash to the plan's costs_sha256 (found %d)" % len(hits))
+                    costs = json.loads(hits[0])
                     costs["sha256"] = pv["costs_sha256"]
                     budget, disk = plan["budget_gpu_h"], plan["disk_min_free_gb"]
                 rebuilt = P.build_plan(pv["job"], costs, budget, disk, pv["dropped"], bool(pv["missing_allowed"]), bpath)
