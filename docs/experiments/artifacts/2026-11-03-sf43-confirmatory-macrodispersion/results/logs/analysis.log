@@ -1,0 +1,24 @@
+/home/sesquerre/anaconda3/lib/python3.11/site-packages/matplotlib/_mathtext.py:2046: UserWarning: warn_name_set_on_empty_Forward: setting results name 'sym' on Forward expression that has no contained expression
+  - p.placeable("sym"))
+/home/sesquerre/anaconda3/lib/python3.11/site-packages/matplotlib/_mathtext.py:2092: UserWarning: warn_name_set_on_empty_Forward: setting results name 'nucleus' on Forward expression that has no contained expression
+  | (p.placeable("nucleus") + Regex("'*")("apostrophes"))
+FIGURES_WRITTEN 4
+wrote /home/sesquerre/sf43_campaign/analysis/summary.json
+section basis: finite=291 nonfinite=0 other=38
+section budgets: finite=828 nonfinite=64 other=140
+section estimands: finite=647 nonfinite=0 other=27
+section failures: finite=1566 nonfinite=0 other=94
+section family: finite=39 nonfinite=0 other=56
+section g7: finite=714 nonfinite=0 other=135
+section gate4: finite=252 nonfinite=0 other=148
+section gate4_power: finite=317 nonfinite=0 other=21
+section gate5: finite=362 nonfinite=0 other=165
+section pollock: finite=1295 nonfinite=0 other=73
+section positive_control: finite=1465 nonfinite=0 other=12
+section precision: finite=48 nonfinite=0 other=16
+section process: finite=589 nonfinite=0 other=868
+section secondaries: finite=2260 nonfinite=0 other=208
+family: hypotheses=8 m=8
+estimands: nonfinite_means=0
+process: warnings_count=0 errors_count=0
+STRUCTURE_OK

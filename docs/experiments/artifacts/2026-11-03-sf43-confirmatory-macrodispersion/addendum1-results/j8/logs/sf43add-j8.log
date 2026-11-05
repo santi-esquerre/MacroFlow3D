@@ -1,0 +1,39 @@
+[2026-11-05T09:32:22Z] job=sf43add-j8 GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-11-05T09:32:22Z] job=sf43add-j8 chose GPU 0 (auto: least-loaded)
+[2026-11-05T09:32:22Z] job=sf43add-j8 session=macroflow3d-SF-43-sf43add-j8 started
+[2026-11-05T09:32:22Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-11-05T09:32:22Z] cwd=/home/sesquerre/MacroFlow3D-SF-43
+[2026-11-05T09:32:22Z] command=bash docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/run_sf43.sh build/v100-release all --plan docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/plan_addendum_j8.json
+CAMPAIGN sf43-addendum-1-j8 lanes=A:gpu0 stage1_start=2026-11-05T09:32:24Z utc=2026-11-05T09:32:24Z
+PROJECTION used_gpu_h=0.00 projected_gpu_h=1.30 budget_gpu_h=3.10 completion=2026-11-05T10:50:08Z cutoff=2026-11-07T02:30:00Z
+SF43_UNIT lane=A gpu=0 arm=j8_H3 seed0=434061 nr=10 segment=segments/j8_H3/u000001_s434061 utc=2026-11-05T09:32:24Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_H3 seed0=434061 nr=10 segment=segments/j8_H3/u000001_s434061 cls=ok completed=10 seconds=255.1 utc=2026-11-05T09:36:39Z
+SF43_UNIT lane=A gpu=0 arm=j8_D seed0=434061 nr=10 segment=segments/j8_D/u000002_s434061 utc=2026-11-05T09:36:39Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_D seed0=434061 nr=10 segment=segments/j8_D/u000002_s434061 cls=ok completed=10 seconds=237.0 utc=2026-11-05T09:40:36Z
+SF43_UNIT lane=A gpu=0 arm=j8_DH3 seed0=434061 nr=10 segment=segments/j8_DH3/u000003_s434061 utc=2026-11-05T09:40:36Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_DH3 seed0=434061 nr=10 segment=segments/j8_DH3/u000003_s434061 cls=ok completed=10 seconds=391.6 utc=2026-11-05T09:47:08Z
+SF43_UNIT lane=A gpu=0 arm=j8_H3 seed0=434071 nr=10 segment=segments/j8_H3/u000004_s434071 utc=2026-11-05T09:47:08Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_H3 seed0=434071 nr=10 segment=segments/j8_H3/u000004_s434071 cls=ok completed=10 seconds=261.3 utc=2026-11-05T09:51:29Z
+SF43_UNIT lane=A gpu=0 arm=j8_D seed0=434071 nr=10 segment=segments/j8_D/u000005_s434071 utc=2026-11-05T09:51:29Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_D seed0=434071 nr=10 segment=segments/j8_D/u000005_s434071 cls=ok completed=10 seconds=241.3 utc=2026-11-05T09:55:30Z
+SF43_UNIT lane=A gpu=0 arm=j8_DH3 seed0=434071 nr=10 segment=segments/j8_DH3/u000006_s434071 utc=2026-11-05T09:55:30Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_DH3 seed0=434071 nr=10 segment=segments/j8_DH3/u000006_s434071 cls=ok completed=10 seconds=391.4 utc=2026-11-05T10:02:02Z
+SF43_UNIT lane=A gpu=0 arm=j8_H3 seed0=434081 nr=10 segment=segments/j8_H3/u000007_s434081 utc=2026-11-05T10:02:02Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_H3 seed0=434081 nr=10 segment=segments/j8_H3/u000007_s434081 cls=ok completed=10 seconds=261.5 utc=2026-11-05T10:06:23Z
+SF43_UNIT lane=A gpu=0 arm=j8_D seed0=434081 nr=10 segment=segments/j8_D/u000008_s434081 utc=2026-11-05T10:06:23Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_D seed0=434081 nr=10 segment=segments/j8_D/u000008_s434081 cls=ok completed=10 seconds=243.0 utc=2026-11-05T10:10:26Z
+SF43_UNIT lane=A gpu=0 arm=j8_DH3 seed0=434081 nr=10 segment=segments/j8_DH3/u000009_s434081 utc=2026-11-05T10:10:26Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_DH3 seed0=434081 nr=10 segment=segments/j8_DH3/u000009_s434081 cls=ok completed=10 seconds=404.8 utc=2026-11-05T10:17:11Z
+SF43_UNIT lane=A gpu=0 arm=j8_H3 seed0=434091 nr=10 segment=segments/j8_H3/u000010_s434091 utc=2026-11-05T10:17:11Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_H3 seed0=434091 nr=10 segment=segments/j8_H3/u000010_s434091 cls=ok completed=10 seconds=257.1 utc=2026-11-05T10:21:28Z
+SF43_UNIT lane=A gpu=0 arm=j8_D seed0=434091 nr=10 segment=segments/j8_D/u000011_s434091 utc=2026-11-05T10:21:28Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_D seed0=434091 nr=10 segment=segments/j8_D/u000011_s434091 cls=ok completed=10 seconds=239.0 utc=2026-11-05T10:25:27Z
+SF43_UNIT lane=A gpu=0 arm=j8_DH3 seed0=434091 nr=10 segment=segments/j8_DH3/u000012_s434091 utc=2026-11-05T10:25:27Z
+SF43_UNIT_END lane=A gpu=0 arm=j8_DH3 seed0=434091 nr=10 segment=segments/j8_DH3/u000012_s434091 cls=ok completed=10 seconds=389.4 utc=2026-11-05T10:31:56Z
+ANALYSIS_STEP analysis rc=0
+ANALYSIS_STEP recompute rc=0
+ANALYSIS_STEP reconcile rc=0
+FINAL status=DONE analysis=ok exit=0 gpu_h=1.00 utc=2026-11-05T10:33:01Z
+[2026-11-05T10:33:02Z] job=sf43add-j8 finished exit=0

@@ -1,0 +1,1465 @@
+{
+ "arms": {
+  "j1_D": {
+   "N": 60,
+   "finite": {
+    "main/pos/alpha_LP": 60
+   },
+   "missing_tables": 0,
+   "n_conf": 60,
+   "seed_range": [
+    434001,
+    434060
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "j1_DH3": {
+   "N": 60,
+   "finite": {
+    "main/pos/alpha_LP": 60
+   },
+   "missing_tables": 0,
+   "n_conf": 60,
+   "seed_range": [
+    434001,
+    434060
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "j1_H2": {
+   "N": 60,
+   "finite": {
+    "main/pos/alpha_LP": 60
+   },
+   "missing_tables": 0,
+   "n_conf": 60,
+   "seed_range": [
+    434001,
+    434060
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "j1_H3": {
+   "N": 60,
+   "finite": {
+    "main/pos/alpha_LP": 60
+   },
+   "missing_tables": 0,
+   "n_conf": 60,
+   "seed_range": [
+    434001,
+    434060
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "j1_base10": {
+   "N": 10,
+   "finite": {
+    "main/pos/alpha_LP": 10
+   },
+   "missing_tables": 0,
+   "n_conf": 10,
+   "seed_range": [
+    434001,
+    434010
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "j3_l5": {
+   "N": 100,
+   "finite": {
+    "far/disp/alpha_TP": 100,
+    "main/disp/alpha_TP": 100
+   },
+   "missing_tables": 0,
+   "n_conf": 100,
+   "seed_range": [
+    436001,
+    436100
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "j8_D": {
+   "N": 40,
+   "finite": {
+    "main/pos/alpha_LP": 40
+   },
+   "missing_tables": 0,
+   "n_conf": 40,
+   "seed_range": [
+    434061,
+    434100
+   ],
+   "source": "j8 campaign",
+   "stopped_at": null
+  },
+  "j8_DH3": {
+   "N": 40,
+   "finite": {
+    "main/pos/alpha_LP": 40
+   },
+   "missing_tables": 0,
+   "n_conf": 40,
+   "seed_range": [
+    434061,
+    434100
+   ],
+   "source": "j8 campaign",
+   "stopped_at": null
+  },
+  "j8_H3": {
+   "N": 40,
+   "finite": {
+    "main/pos/alpha_LP": 40
+   },
+   "missing_tables": 0,
+   "n_conf": 40,
+   "seed_range": [
+    434061,
+    434100
+   ],
+   "source": "j8 campaign",
+   "stopped_at": null
+  },
+  "j9_w48": {
+   "N": 150,
+   "finite": {
+    "far/disp/alpha_TP": 150,
+    "main/disp/alpha_TP": 150
+   },
+   "missing_tables": 0,
+   "n_conf": 150,
+   "seed_range": [
+    438001,
+    438150
+   ],
+   "source": "campaign",
+   "stopped_at": null
+  },
+  "s1_dist": {
+   "N": 100,
+   "finite": {
+    "far/disp/alpha_TP": 100,
+    "main/disp/alpha_TP": 100
+   },
+   "missing_tables": 0,
+   "n_conf": 100,
+   "seed_range": [
+    436001,
+    436100
+   ],
+   "source": "frozen",
+   "stopped_at": null
+  },
+  "s4_g5p": {
+   "N": 250,
+   "finite": {
+    "main/pos/alpha_LP": 250
+   },
+   "missing_tables": 0,
+   "n_conf": 250,
+   "seed_range": [
+    434001,
+    434402
+   ],
+   "source": "frozen",
+   "stopped_at": null
+  },
+  "s4_g5pol": {
+   "N": 250,
+   "finite": {
+    "main/pos/alpha_LP": 250
+   },
+   "missing_tables": 0,
+   "n_conf": 250,
+   "seed_range": [
+    434001,
+    434402
+   ],
+   "source": "frozen",
+   "stopped_at": null
+  }
+ },
+ "config": {
+  "budget_gpu_h_cap": 8.0,
+  "hard_end_utc": "2026-11-07T03:00:00Z",
+  "inference": "mcstat.gate5.gate5_paired(X, Y, level=0.90, method='bootstrap-t', B=2000, seed=20261104); Student interval of the same function reported, never used by a rule"
+ },
+ "inputs": {
+  "campaign_ledger_sha256": "9c736b2f6845e60855bd4a89cd4fcad916f9cf2ce6421f7cfe1fbcf8e5c4f972",
+  "frozen_files_verified": 77,
+  "frozen_ledger_sha256": "940326fd4d37da7bdd4cb2ecc05245685a591527b168dba128ac96426eaaa04c",
+  "frozen_manifest_sha256": "250395ed5319052ddf1e5338e0d081d60610a41e85e1f66252b828daeb492dd6",
+  "j8_campaign": "/home/sesquerre/sf43_addendum_j8",
+  "prereg_addendum_sha256": "2305529cf1823784901bd5bcd7cc7d33f784c6bfab34215aeabbfcb593d1cc5e"
+ },
+ "j1": {
+  "n100": {
+   "class": "horizonte dominante",
+   "class_before_override": "horizonte dominante",
+   "completeness": {
+    "j1_D": {
+     "evaluable": true,
+     "fraction_complete": 0.13,
+     "mean": 0.999199,
+     "n": 100,
+     "quantiles": {
+      "0": 0.9911,
+      "100": 1.0,
+      "25": 0.9994,
+      "5": 0.9955700000000001,
+      "50": 0.9998,
+      "75": 0.9999,
+      "95": 1.0
+     }
+    },
+    "j1_DH3": {
+     "evaluable": true,
+     "fraction_complete": 0.92,
+     "mean": 0.999973,
+     "n": 100,
+     "quantiles": {
+      "0": 0.9981,
+      "100": 1.0,
+      "25": 1.0,
+      "5": 0.9999,
+      "50": 1.0,
+      "75": 1.0,
+      "95": 1.0
+     }
+    },
+    "j1_H2": {
+     "evaluable": false,
+     "reason": "arm not available"
+    },
+    "j1_H3": {
+     "evaluable": true,
+     "fraction_complete": 0.92,
+     "mean": 0.999972,
+     "n": 100,
+     "quantiles": {
+      "0": 0.998,
+      "100": 1.0,
+      "25": 1.0,
+      "5": 0.9999,
+      "50": 1.0,
+      "75": 1.0,
+      "95": 1.0
+     }
+    },
+    "j1_base10": {
+     "evaluable": false,
+     "reason": "arm not available"
+    },
+    "s4_g5p": {
+     "evaluable": true,
+     "fraction_complete": 0.13,
+     "mean": 0.9992330000000001,
+     "n": 100,
+     "quantiles": {
+      "0": 0.9914,
+      "100": 1.0,
+      "25": 0.9996,
+      "5": 0.9953949999999999,
+      "50": 0.99975,
+      "75": 0.9999,
+      "95": 1.0
+     }
+    }
+   },
+   "conditions": {
+    "horizonte dominante": [
+     {
+      "lhs": "r_H",
+      "op": ">=",
+      "rhs": 1.1,
+      "truth": true,
+      "value": 1.1051254853437953
+     },
+     {
+      "lhs": "abs(r_D-1)",
+      "op": "<=",
+      "rhs": 0.03,
+      "truth": true,
+      "value": 0.008483841964503913
+     },
+     {
+      "lhs": "ci(q_H3)",
+      "op": "within",
+      "rhs": [
+       0.9090909090909091,
+       1.1
+      ],
+      "truth": true,
+      "value": [
+       1.0043127221375032,
+       1.0620322148312624
+      ]
+     }
+    ],
+    "mixto": [
+     {
+      "lhs": "r_H",
+      "op": ">=",
+      "rhs": 1.03,
+      "truth": true,
+      "value": 1.1051254853437953
+     },
+     {
+      "lhs": "r_D",
+      "op": ">=",
+      "rhs": 1.03,
+      "truth": false,
+      "value": 1.008483841964504
+     },
+     {
+      "lhs": "ci(q_DH3)",
+      "op": "within",
+      "rhs": [
+       0.9090909090909091,
+       1.1
+      ],
+      "truth": true,
+      "value": [
+       0.9764385977491544,
+       1.0244475424637507
+      ]
+     }
+    ],
+    "paso dominante": [
+     {
+      "lhs": "r_D",
+      "op": ">=",
+      "rhs": 1.05,
+      "truth": false,
+      "value": 1.008483841964504
+     },
+     {
+      "lhs": "r_H",
+      "op": "<",
+      "rhs": 1.05,
+      "truth": false,
+      "value": 1.1051254853437953
+     }
+    ]
+   },
+   "label": "n100",
+   "manipulation": {
+    "arm": "j1_H3",
+    "evaluable": true,
+    "fraction_complete": 0.92,
+    "fraction_complete_min": 0.9,
+    "mean": 0.999972,
+    "mean_completeness_min": 0.999,
+    "n": 100,
+    "passed": true
+   },
+   "override": {
+    "applied": false,
+    "conditions": [
+     {
+      "lhs": "ci(q_DH3).lo",
+      "op": ">",
+      "rhs": 1.1,
+      "truth": false,
+      "value": 0.9764385977491544
+     }
+    ],
+    "holds": false,
+    "note": "Amendment A1 (pre-run, 2026-11-04): a lower IC90 limit of q_DH3 above 1.10 makes the J1 class `abierto` even when class 1 or 2 matched (tightening; the clause is otherwise redundant under first match)"
+   },
+   "quantities": {
+    "q_D": {
+     "ci90": [
+      1.0933883921695025,
+      1.170691115644139
+     ],
+     "evaluable": true,
+     "mean_den": 7.966456345223455,
+     "mean_num": 8.982347714838129,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1275211117203678,
+     "se": 0.019462859404633014,
+     "student_ci90": [
+      1.0916666410539835,
+      1.1645531791167625
+     ],
+     "theta": 0.12002151658336026
+    },
+    "q_DH3": {
+     "ci90": [
+      0.9764385977491544,
+      1.0244475424637507
+     ],
+     "evaluable": true,
+     "mean_den": 8.986880254824284,
+     "mean_num": 8.982347714838129,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 0.9994956492289168,
+     "se": 0.014204616257535389,
+     "student_ci90": [
+      0.976198143583457,
+      1.0233491626611846
+     ],
+     "theta": -0.0005044779987135307
+    },
+    "q_H2": {
+     "evaluable": false,
+     "n": 0,
+     "reason": "arm not available (s4_g5pol/j1_H2)"
+    },
+    "q_H3": {
+     "ci90": [
+      1.0043127221375032,
+      1.0620322148312624
+     ],
+     "evaluable": true,
+     "mean_den": 8.729871088301586,
+     "mean_num": 8.982347714838129,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.0289210028398785,
+     "se": 0.015990522059285656,
+     "student_ci90": [
+      1.0019620840636,
+      1.0566052817002813
+     ],
+     "theta": 0.028510683098156932
+    },
+    "q_base": {
+     "ci90": [
+      1.1007300398578417,
+      1.1895988271434361
+     ],
+     "evaluable": true,
+     "mean_den": 7.899438755215926,
+     "mean_num": 8.982347714838129,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.137086822643845,
+     "se": 0.02195357909674671,
+     "student_ci90": [
+      1.0963846055509778,
+      1.1793000701432752
+     ],
+     "theta": 0.12846957301736533
+    },
+    "r_D": {
+     "ci90": [
+      0.9962329704628273,
+      1.0224045963376704
+     ],
+     "evaluable": true,
+     "mean_den": 7.899438755215926,
+     "mean_num": 7.966456345223455,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.008483841964504,
+     "se": 0.007656223623063829,
+     "student_ci90": [
+      0.995744809529404,
+      1.0213858508427944
+     ],
+     "theta": 0.008448056434005188
+    },
+    "r_DH3": {
+     "ci90": [
+      1.1050735820231437,
+      1.1849259213470167
+     ],
+     "evaluable": true,
+     "mean_den": 7.899438755215926,
+     "mean_num": 8.986880254824284,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.137660602646021,
+     "se": 0.02076451314361615,
+     "student_ci90": [
+      1.0991056866929376,
+      1.177567965012717
+     ],
+     "theta": 0.12897405101607906
+    },
+    "r_H": {
+     "ci90": [
+      1.0792031005727574,
+      1.1400295957607032
+     ],
+     "evaluable": true,
+     "mean_den": 7.899438755215926,
+     "mean_num": 8.729871088301586,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1051254853437953,
+     "se": 0.016257087576840655,
+     "student_ci90": [
+      1.0756937104308286,
+      1.1353625353700474
+     ],
+     "theta": 0.09995888991920862
+    },
+    "r_H2": {
+     "evaluable": false,
+     "n": 0,
+     "reason": "arm not available (j1_H2/s4_g5p)"
+    }
+   },
+   "reason": "first match of the pre-registered order",
+   "representativity": {
+    "frozen": {
+     "n": 250,
+     "ratio": 1.164,
+     "student_ci90": [
+      1.131,
+      1.198
+     ]
+    },
+    "frozen_ratio_in_bootstrap_t_ci": true,
+    "frozen_ratio_in_student_ci": true,
+    "quantity": "q_base",
+    "result": {
+     "ci90": [
+      1.1007300398578417,
+      1.1895988271434361
+     ],
+     "evaluable": true,
+     "mean_den": 7.899438755215926,
+     "mean_num": 8.982347714838129,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 100,
+     "pairing": {
+      "n_common": 100,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.137086822643845,
+     "se": 0.02195357909674671,
+     "student_ci90": [
+      1.0963846055509778,
+      1.1793000701432752
+     ],
+     "theta": 0.12846957301736533
+    },
+    "student_ci_overlap_with_frozen": true
+   },
+   "status": "classified"
+  },
+  "n60": {
+   "class": "horizonte dominante",
+   "class_before_override": "horizonte dominante",
+   "completeness": {
+    "j1_D": {
+     "evaluable": true,
+     "fraction_complete": 0.18333333333333332,
+     "mean": 0.99906,
+     "n": 60,
+     "quantiles": {
+      "0": 0.9911,
+      "100": 1.0,
+      "25": 0.9994,
+      "5": 0.994925,
+      "50": 0.9997,
+      "75": 0.9999,
+      "95": 1.0
+     }
+    },
+    "j1_DH3": {
+     "evaluable": true,
+     "fraction_complete": 0.9,
+     "mean": 0.9999883333333334,
+     "n": 60,
+     "quantiles": {
+      "0": 0.9998,
+      "100": 1.0,
+      "25": 1.0,
+      "5": 0.9999,
+      "50": 1.0,
+      "75": 1.0,
+      "95": 1.0
+     }
+    },
+    "j1_H2": {
+     "evaluable": true,
+     "fraction_complete": 0.8333333333333334,
+     "mean": 0.9999566666666666,
+     "n": 60,
+     "quantiles": {
+      "0": 0.9989,
+      "100": 1.0,
+      "25": 1.0,
+      "5": 0.9998,
+      "50": 1.0,
+      "75": 1.0,
+      "95": 1.0
+     }
+    },
+    "j1_H3": {
+     "evaluable": true,
+     "fraction_complete": 0.9166666666666666,
+     "mean": 0.99999,
+     "n": 60,
+     "quantiles": {
+      "0": 0.9998,
+      "100": 1.0,
+      "25": 1.0,
+      "5": 0.9999,
+      "50": 1.0,
+      "75": 1.0,
+      "95": 1.0
+     }
+    },
+    "j1_base10": {
+     "evaluable": true,
+     "fraction_complete": 0.2,
+     "mean": 0.9994099999999999,
+     "n": 10,
+     "quantiles": {
+      "0": 0.9954,
+      "100": 1.0,
+      "25": 0.999725,
+      "5": 0.997335,
+      "50": 0.99985,
+      "75": 0.9999,
+      "95": 1.0
+     }
+    },
+    "s4_g5p": {
+     "evaluable": true,
+     "fraction_complete": 0.11666666666666667,
+     "mean": 0.9990799999999999,
+     "n": 60,
+     "quantiles": {
+      "0": 0.9914,
+      "100": 1.0,
+      "25": 0.999475,
+      "5": 0.9952,
+      "50": 0.9997,
+      "75": 0.9999,
+      "95": 1.0
+     }
+    }
+   },
+   "conditions": {
+    "horizonte dominante": [
+     {
+      "lhs": "r_H",
+      "op": ">=",
+      "rhs": 1.1,
+      "truth": true,
+      "value": 1.1042916071922066
+     },
+     {
+      "lhs": "abs(r_D-1)",
+      "op": "<=",
+      "rhs": 0.03,
+      "truth": true,
+      "value": 0.016668417173654637
+     },
+     {
+      "lhs": "ci(q_H3)",
+      "op": "within",
+      "rhs": [
+       0.9090909090909091,
+       1.1
+      ],
+      "truth": true,
+      "value": [
+       1.0106203098752697,
+       1.0963371445344936
+      ]
+     }
+    ],
+    "mixto": [
+     {
+      "lhs": "r_H",
+      "op": ">=",
+      "rhs": 1.03,
+      "truth": true,
+      "value": 1.1042916071922066
+     },
+     {
+      "lhs": "r_D",
+      "op": ">=",
+      "rhs": 1.03,
+      "truth": false,
+      "value": 1.0166684171736546
+     },
+     {
+      "lhs": "ci(q_DH3)",
+      "op": "within",
+      "rhs": [
+       0.9090909090909091,
+       1.1
+      ],
+      "truth": true,
+      "value": [
+       0.9725441537762021,
+       1.0413287908852016
+      ]
+     }
+    ],
+    "paso dominante": [
+     {
+      "lhs": "r_D",
+      "op": ">=",
+      "rhs": 1.05,
+      "truth": false,
+      "value": 1.0166684171736546
+     },
+     {
+      "lhs": "r_H",
+      "op": "<",
+      "rhs": 1.05,
+      "truth": false,
+      "value": 1.1042916071922066
+     }
+    ]
+   },
+   "label": "n60",
+   "manipulation": {
+    "arm": "j1_H3",
+    "evaluable": true,
+    "fraction_complete": 0.9166666666666666,
+    "fraction_complete_min": 0.9,
+    "mean": 0.99999,
+    "mean_completeness_min": 0.999,
+    "n": 60,
+    "passed": true
+   },
+   "override": {
+    "applied": false,
+    "conditions": [
+     {
+      "lhs": "ci(q_DH3).lo",
+      "op": ">",
+      "rhs": 1.1,
+      "truth": false,
+      "value": 0.9725441537762021
+     }
+    ],
+    "holds": false,
+    "note": "Amendment A1 (pre-run, 2026-11-04): a lower IC90 limit of q_DH3 above 1.10 makes the J1 class `abierto` even when class 1 or 2 matched (tightening; the clause is otherwise redundant under first match)"
+   },
+   "quantities": {
+    "q_D": {
+     "ci90": [
+      1.0896477513891147,
+      1.1997309224456671
+     ],
+     "evaluable": true,
+     "mean_den": 7.965743313004255,
+     "mean_num": 9.043667197030148,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1353199370944025,
+     "se": 0.02814930845738246,
+     "student_ci90": [
+      1.0831509946674607,
+      1.1900015472540466
+     ],
+     "theta": 0.12691449411440225
+    },
+    "q_DH3": {
+     "ci90": [
+      0.9725441537762021,
+      1.0413287908852016
+     ],
+     "evaluable": true,
+     "mean_den": 9.009449604139641,
+     "mean_num": 9.043667197030148,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.0037979670672428,
+     "se": 0.02035825679286807,
+     "student_ci90": [
+      0.9702225817633267,
+      1.0385352574015052
+     ],
+     "theta": 0.003790772999788279
+    },
+    "q_H2": {
+     "ci90": [
+      1.0131019231846532,
+      1.0968187531079936
+     ],
+     "evaluable": true,
+     "mean_den": 8.651893901844081,
+     "mean_num": 9.043667197030148,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.0452817960588447,
+     "se": 0.0227453339347161,
+     "student_ci90": [
+      1.0062966825933153,
+      1.0857772385339097
+     ],
+     "theta": 0.0442865103650308
+    },
+    "q_H3": {
+     "ci90": [
+      1.0106203098752697,
+      1.0963371445344936
+     ],
+     "evaluable": true,
+     "mean_den": 8.65228361283454,
+     "mean_num": 9.043667197030148,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.0452347151005361,
+     "se": 0.023886046981011558,
+     "student_ci90": [
+      1.0043350304506151,
+      1.0877999636845483
+     ],
+     "theta": 0.04424146794793888
+    },
+    "q_base": {
+     "ci90": [
+      1.103951240945307,
+      1.2321958656600696
+     ],
+     "evaluable": true,
+     "mean_den": 7.835143866423113,
+     "mean_num": 9.043667197030148,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1542439234314592,
+     "se": 0.03157125104495099,
+     "student_ci90": [
+      1.0949262618648314,
+      1.2167751210107682
+     ],
+     "theta": 0.1434455178742825
+    },
+    "r_D": {
+     "ci90": [
+      1.0003214881603175,
+      1.0372664184842817
+     ],
+     "evaluable": true,
+     "mean_den": 7.835143866423113,
+     "mean_num": 7.965743313004255,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.0166684171736546,
+     "se": 0.010680922963469203,
+     "student_ci90": [
+      0.9986830757260223,
+      1.0349776576788061
+     ],
+     "theta": 0.016531023759880352
+    },
+    "r_DH3": {
+     "ci90": [
+      1.0994034393993586,
+      1.228725824618361
+     ],
+     "evaluable": true,
+     "mean_den": 7.835143866423113,
+     "mean_num": 9.009449604139641,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1498767294814995,
+     "se": 0.031142292426717285,
+     "student_ci90": [
+      1.0915656884341054,
+      1.2113027250790944
+     ],
+     "theta": 0.13965474487449414
+    },
+    "r_H": {
+     "ci90": [
+      1.066268765286294,
+      1.1596385514678005
+     ],
+     "evaluable": true,
+     "mean_den": 7.835143866423113,
+     "mean_num": 8.65228361283454,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1042916071922066,
+     "se": 0.024061470533366245,
+     "student_ci90": [
+      1.060770036776143,
+      1.1495987927989453
+     ],
+     "theta": 0.09920404992634366
+    },
+    "r_H2": {
+     "ci90": [
+      1.0729959888494147,
+      1.1658972050871557
+     ],
+     "evaluable": true,
+     "mean_den": 7.835143866423113,
+     "mean_num": 8.651893901844081,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1042418683492317,
+     "se": 0.02137044102410598,
+     "student_ci90": [
+      1.0655030258797573,
+      1.144389151601533
+     ],
+     "theta": 0.09915900750925175
+    }
+   },
+   "reason": "first match of the pre-registered order",
+   "representativity": {
+    "frozen": {
+     "n": 250,
+     "ratio": 1.164,
+     "student_ci90": [
+      1.131,
+      1.198
+     ]
+    },
+    "frozen_ratio_in_bootstrap_t_ci": true,
+    "frozen_ratio_in_student_ci": true,
+    "quantity": "q_base",
+    "result": {
+     "ci90": [
+      1.103951240945307,
+      1.2321958656600696
+     ],
+     "evaluable": true,
+     "mean_den": 7.835143866423113,
+     "mean_num": 9.043667197030148,
+     "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+     "n": 60,
+     "pairing": {
+      "n_common": 60,
+      "n_nonfinite_dropped": 0,
+      "n_only_a": 0,
+      "n_only_b": 0
+     },
+     "ratio": 1.1542439234314592,
+     "se": 0.03157125104495099,
+     "student_ci90": [
+      1.0949262618648314,
+      1.2167751210107682
+     ],
+     "theta": 0.1434455178742825
+    },
+    "student_ci_overlap_with_frozen": true
+   },
+   "status": "classified"
+  }
+ },
+ "j3": {
+  "class": "lambda/h = 5 equivalente",
+  "conditions": [
+   {
+    "lhs": "ci(m_main)",
+    "op": "within",
+    "rhs": [
+     0.97,
+     1.03
+    ],
+    "truth": true,
+    "value": [
+     0.9942092873010387,
+     0.9969349371466111
+    ]
+   },
+   {
+    "lhs": "ci(m_far)",
+    "op": "within",
+    "rhs": [
+     0.97,
+     1.03
+    ],
+    "truth": true,
+    "value": [
+     0.9926532627404168,
+     0.9976077471054117
+    ]
+   },
+   {
+    "lhs": "ci(m_far/m_main)",
+    "op": "within",
+    "rhs": [
+     0.98,
+     1.02
+    ],
+    "truth": true,
+    "value": [
+     0.996709824586299,
+     1.0023479003999263
+    ]
+   }
+  ],
+  "equivalent": true,
+  "quantities": {
+   "F5": {
+    "ci90": [
+     0.9731453391917344,
+     1.0677159586442644
+    ],
+    "evaluable": true,
+    "mean_den": 0.0071622816788815494,
+    "mean_num": 0.007308216774350885,
+    "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+    "n": 100,
+    "pairing": {
+     "n_common": 100,
+     "n_nonfinite_dropped": 0,
+     "n_only_a": 0,
+     "n_only_b": 0
+    },
+    "ratio": 1.0203755035074416,
+    "se": 0.0276066680790036,
+    "student_ci90": [
+     0.9746594341772542,
+     1.0682358695239547
+    ],
+    "theta": 0.020170700242591207
+   },
+   "m_far": {
+    "ci90": [
+     0.9926532627404168,
+     0.9976077471054117
+    ],
+    "evaluable": true,
+    "mean_den": 0.0073444787978924056,
+    "mean_num": 0.007308216774350885,
+    "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+    "n": 100,
+    "pairing": {
+     "n_common": 100,
+     "n_nonfinite_dropped": 0,
+     "n_only_a": 0,
+     "n_only_b": 0
+    },
+    "ratio": 0.9950626825211987,
+    "se": 0.0014787672847534883,
+    "student_ci90": [
+     0.9926224701458334,
+     0.9975088937900163
+    ],
+    "theta": -0.0049495462990617285
+   },
+   "m_far/m_main": {
+    "ci90": [
+     0.996709824586299,
+     1.0023479003999263
+    ],
+    "evaluable": true,
+    "method": "log-contrast studentized seed bootstrap, B=2000, seed=20261104",
+    "n": 100,
+    "ratio": 0.9994870482594379,
+    "se": 0.001644486277499946,
+    "theta": -0.0005130833453127942
+   },
+   "m_main": {
+    "ci90": [
+     0.9942092873010387,
+     0.9969349371466111
+    ],
+    "evaluable": true,
+    "mean_den": 0.007194127465307157,
+    "mean_num": 0.0071622816788815494,
+    "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+    "n": 100,
+    "pairing": {
+     "n_common": 100,
+     "n_nonfinite_dropped": 0,
+     "n_only_a": 0,
+     "n_only_b": 0
+    },
+    "ratio": 0.9955733636109202,
+    "se": 0.0008234158944671116,
+    "student_ci90": [
+     0.994213153252513,
+     0.9969354349105279
+    ],
+    "theta": -0.004436462953749006
+   }
+  },
+  "reason": "all three IC90 within their margins"
+ },
+ "j8_trigger_inputs": {
+  "any_contained": true,
+  "quantities": {
+   "q_DH3": {
+    "ci90": [
+     0.9725441537762021,
+     1.0413287908852016
+    ],
+    "contained": [],
+    "thresholds": [
+     0.9090909090909091,
+     1.1
+    ]
+   },
+   "q_H3": {
+    "ci90": [
+     1.0106203098752697,
+     1.0963371445344936
+    ],
+    "contained": [],
+    "thresholds": [
+     0.9090909090909091,
+     1.1
+    ]
+   },
+   "r_D": {
+    "ci90": [
+     1.0003214881603175,
+     1.0372664184842817
+    ],
+    "contained": [
+     1.03
+    ],
+    "thresholds": [
+     0.97,
+     1.03,
+     1.05
+    ]
+   },
+   "r_H": {
+    "ci90": [
+     1.066268765286294,
+     1.1596385514678005
+    ],
+    "contained": [
+     1.1
+    ],
+    "thresholds": [
+     1.03,
+     1.05,
+     1.1
+    ]
+   }
+  }
+ },
+ "j9": {
+  "F24_frozen": {
+   "arm": "s1_dist",
+   "percentile_ci90": [
+    0.9755743453061486,
+    1.0675588086589274
+   ],
+   "ratio": 1.0208991755164611
+  },
+  "class": "meseta robusta al ancho",
+  "conditions": {
+   "decae con el ancho": [
+    {
+     "lhs": "ci(F48).hi",
+     "op": "<",
+     "rhs": 0.95,
+     "truth": false,
+     "value": 1.0418246564394382
+    }
+   ],
+   "meseta robusta al ancho": [
+    {
+     "lhs": "ci(F48)",
+     "op": "within",
+     "rhs": [
+      0.9,
+      1.1
+     ],
+     "truth": true,
+     "value": [
+      0.9571639733033636,
+      1.0418246564394382
+     ]
+    },
+    {
+     "lhs": "ci(F48/F5)",
+     "op": "within",
+     "rhs": [
+      0.9,
+      1.1
+     ],
+     "truth": true,
+     "value": [
+      0.9192125386425503,
+      1.040345544161313
+     ]
+    }
+   ]
+  },
+  "descriptive_levels": {
+   "W48/W24 far": {
+    "ci90": [
+     0.9217302702244303,
+     1.0067482943935908
+    ],
+    "evaluable": true,
+    "method": "Welch on the log (Satterthwaite nu)",
+    "n": [
+     150,
+     100
+    ],
+    "nu": 237.32878891817876,
+    "ratio": 0.9633018101505825,
+    "se": 0.026714801882147938,
+    "theta": -0.03738851010625588
+   },
+   "W48/W24 main": {
+    "ci90": [
+     0.9502411591985552,
+     1.0211683922721972
+    ],
+    "evaluable": true,
+    "method": "Welch on the log (Satterthwaite nu)",
+    "n": [
+     150,
+     100
+    ],
+    "nu": 216.7287196317618,
+    "ratio": 0.9850666154172811,
+    "se": 0.02178893620206492,
+    "theta": -0.015046010231584361
+   }
+  },
+  "j3_equivalent": true,
+  "j3_qualification": null,
+  "min_completed": 100,
+  "n_completed": 150,
+  "quantities": {
+   "F24": {
+    "ci90": [
+     0.9740875713523951,
+     1.068232059958975
+    ],
+    "evaluable": true,
+    "mean_den": 0.007194127465307157,
+    "mean_num": 0.0073444787978924056,
+    "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+    "n": 100,
+    "pairing": {
+     "n_common": 100,
+     "n_nonfinite_dropped": 0,
+     "n_only_a": 0,
+     "n_only_b": 0
+    },
+    "ratio": 1.0208991755164611,
+    "se": 0.027389119348324505,
+    "student_ci90": [
+     0.9755119508942675,
+     1.0683981120013513
+    ],
+    "theta": 0.020683783587903907
+   },
+   "F48": {
+    "ci90": [
+     0.9571639733033636,
+     1.0418246564394382
+    ],
+    "evaluable": true,
+    "mean_den": 0.00705532457208105,
+    "mean_num": 0.007040018447705059,
+    "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+    "n": 150,
+    "pairing": {
+     "n_common": 150,
+     "n_nonfinite_dropped": 0,
+     "n_only_a": 0,
+     "n_only_b": 0
+    },
+    "ratio": 0.9978305570183746,
+    "se": 0.02534573146627646,
+    "student_ci90": [
+     0.9568365956802832,
+     1.040580831684965
+    ],
+    "theta": -0.0021717996320801676
+   },
+   "F48/F24": {
+    "ci90": [
+     0.91898476236776,
+     1.039536115637219
+    ],
+    "evaluable": true,
+    "method": "Welch on the log (Satterthwaite nu)",
+    "n": [
+     150,
+     100
+    ],
+    "nu": 229.38849879452886,
+    "ratio": 0.9774036270658986,
+    "se": 0.03731715372636772,
+    "theta": -0.022855583219984155
+   },
+   "F48/F5": {
+    "ci90": [
+     0.9192125386425503,
+     1.040345544161313
+    ],
+    "evaluable": true,
+    "method": "Welch on the log (Satterthwaite nu)",
+    "n": [
+     150,
+     100
+    ],
+    "nu": 228.40916689846384,
+    "ratio": 0.9779052452635613,
+    "se": 0.037477116030784345,
+    "theta": -0.022342499874671518
+   },
+   "F5": {
+    "ci90": [
+     0.9731453391917344,
+     1.0677159586442644
+    ],
+    "evaluable": true,
+    "mean_den": 0.0071622816788815494,
+    "mean_num": 0.007308216774350885,
+    "method": "gate5_paired bootstrap-t, B=2000, seed=20261104",
+    "n": 100,
+    "pairing": {
+     "n_common": 100,
+     "n_nonfinite_dropped": 0,
+     "n_only_a": 0,
+     "n_only_b": 0
+    },
+    "ratio": 1.0203755035074416,
+    "se": 0.0276066680790036,
+    "student_ci90": [
+     0.9746594341772542,
+     1.0682358695239547
+    ],
+    "theta": 0.020170700242591207
+   }
+  },
+  "reason": "first match of the pre-registered order"
+ },
+ "label": "SF-43 addendum 1: exploratory and descriptive; outside the confirmatory Holm family (m = 8 unchanged)",
+ "process": {
+  "errors": [],
+  "errors_count": 0,
+  "warnings": {},
+  "warnings_count": 0
+ },
+ "reproduction": {
+  "abs_tol_zero": 1e-15,
+  "arm": "j1_base10",
+  "csv_sha_differ": 0,
+  "csv_sha_equal": 10,
+  "csv_sha_unavailable": 0,
+  "evaluated": true,
+  "frozen_arm": "s4_g5p",
+  "frozen_files_verified": 77,
+  "max_rel": 0.0,
+  "n_rows": 30,
+  "n_seeds": 10,
+  "n_seeds_requested": 10,
+  "passed": true,
+  "problems": [],
+  "rel_tol": 1e-12,
+  "seeds": [
+   434001,
+   434010
+  ]
+ },
+ "version": 1
+}

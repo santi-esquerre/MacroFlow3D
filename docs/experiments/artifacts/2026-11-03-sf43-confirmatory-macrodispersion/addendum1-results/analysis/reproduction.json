@@ -1,0 +1,21 @@
+{
+ "abs_tol_zero": 1e-15,
+ "arm": "j1_base10",
+ "csv_sha_differ": 0,
+ "csv_sha_equal": 10,
+ "csv_sha_unavailable": 0,
+ "evaluated": true,
+ "frozen_arm": "s4_g5p",
+ "frozen_files_verified": 77,
+ "max_rel": 0.0,
+ "n_rows": 30,
+ "n_seeds": 10,
+ "n_seeds_requested": 10,
+ "passed": true,
+ "problems": [],
+ "rel_tol": 1e-12,
+ "seeds": [
+  434001,
+  434010
+ ]
+}

@@ -455,7 +455,9 @@ Authority: `docs/decisions/2026-10-17-lagrangian-consumer-sigma4.md` (owner requ
    both codes; MMS order of the Dirichlet Darcy solver; spectral comparator; robust-test and error-budget library; design pilots):
    [SF-42](lester-eq14/increments/SF-42-confirmatory-tooling-verification.md); the confirmatory Monte Carlo study on control planes over a
    common physical window with quantified error budgets per estimate, Gate 5 on matched fields and grids and the V100 memory limit
-   at `sigma^2 = 4` declared: [SF-43](lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md).
+   at `sigma^2 = 4` declared: [SF-43](lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md) (result: transverse growth
+   over `[25, 94] lambda` above first order at all four amplitudes, Holm, class `physical (restricted)`; Gate 5 equivalence at 0.25,
+   1 and 2.25, not at 4, attributed to the Par2 side of the Pollock bridge; `docs/experiments/2026-11-03-sf43-confirmatory-macrodispersion.md`).
 6. Local dispersion and `D_T(Pe)` (Lester 2023 figure 5); cross-validation of the Lagrangian consumer against the
    SF-31 pseudo-symplectic tracker on gridded labels (deferred: future work, not a requirement).
 

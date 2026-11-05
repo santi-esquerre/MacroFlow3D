@@ -1,0 +1,952 @@
+RECOMPUTE43 campaign=/home/sesquerre/sf43_campaign reduced=/home/sesquerre/sf43_campaign/reduced roots=/home/sesquerre/sf43_campaign rtol=1e-10 atol=1e-15 primary_arms=s025_prod,s1_prod,s225_prod,s4_prod
+TABLE g7_s025_RFHT/u000505_s437101/g7_s025_RFHT__u000505_s437101__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RFHT/u000521_s437121/g7_s025_RFHT__u000521_s437121__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RFHT/u000537_s437141/g7_s025_RFHT__u000537_s437141__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RFNL/u000504_s437101/g7_s025_RFNL__u000504_s437101__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RFNL/u000520_s437121/g7_s025_RFNL__u000520_s437121__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RFNL/u000536_s437141/g7_s025_RFNL__u000536_s437141__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RWHL/u000507_s437101/g7_s025_RWHL__u000507_s437101__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RWHL/u000523_s437121/g7_s025_RWHL__u000523_s437121__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RWHL/u000539_s437141/g7_s025_RWHL__u000539_s437141__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RWNT/u000506_s437101/g7_s025_RWNT__u000506_s437101__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RWNT/u000522_s437121/g7_s025_RWNT__u000522_s437121__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_RWNT/u000538_s437141/g7_s025_RWNT__u000538_s437141__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SFHL/u000501_s437001/g7_s025_SFHL__u000501_s437001__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SFHL/u000517_s437021/g7_s025_SFHL__u000517_s437021__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SFHL/u000533_s437041/g7_s025_SFHL__u000533_s437041__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SFNT/u000500_s437001/g7_s025_SFNT__u000500_s437001__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SFNT/u000516_s437021/g7_s025_SFNT__u000516_s437021__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SFNT/u000532_s437041/g7_s025_SFNT__u000532_s437041__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SWHT/u000503_s437001/g7_s025_SWHT__u000503_s437001__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SWHT/u000519_s437021/g7_s025_SWHT__u000519_s437021__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SWHT/u000535_s437041/g7_s025_SWHT__u000535_s437041__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SWNL/u000502_s437001/g7_s025_SWNL__u000502_s437001__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SWNL/u000518_s437021/g7_s025_SWNL__u000518_s437021__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s025_SWNL/u000534_s437041/g7_s025_SWNL__u000534_s437041__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RFHT/u000513_s437301/g7_s1_RFHT__u000513_s437301__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RFHT/u000529_s437321/g7_s1_RFHT__u000529_s437321__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RFHT/u000545_s437341/g7_s1_RFHT__u000545_s437341__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RFNL/u000512_s437301/g7_s1_RFNL__u000512_s437301__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RFNL/u000528_s437321/g7_s1_RFNL__u000528_s437321__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RFNL/u000544_s437341/g7_s1_RFNL__u000544_s437341__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RWHL/u000515_s437301/g7_s1_RWHL__u000515_s437301__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RWHL/u000531_s437321/g7_s1_RWHL__u000531_s437321__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RWHL/u000547_s437341/g7_s1_RWHL__u000547_s437341__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RWNT/u000514_s437301/g7_s1_RWNT__u000514_s437301__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RWNT/u000530_s437321/g7_s1_RWNT__u000530_s437321__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_RWNT/u000546_s437341/g7_s1_RWNT__u000546_s437341__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SFHL/u000509_s437201/g7_s1_SFHL__u000509_s437201__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SFHL/u000525_s437221/g7_s1_SFHL__u000525_s437221__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SFHL/u000541_s437241/g7_s1_SFHL__u000541_s437241__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SFNT/u000508_s437201/g7_s1_SFNT__u000508_s437201__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SFNT/u000524_s437221/g7_s1_SFNT__u000524_s437221__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SFNT/u000540_s437241/g7_s1_SFNT__u000540_s437241__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SWHT/u000511_s437201/g7_s1_SWHT__u000511_s437201__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SWHT/u000527_s437221/g7_s1_SWHT__u000527_s437221__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SWHT/u000543_s437241/g7_s1_SWHT__u000543_s437241__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SWNL/u000510_s437201/g7_s1_SWNL__u000510_s437201__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SWNL/u000526_s437221/g7_s1_SWNL__u000526_s437221__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE g7_s1_SWNL/u000542_s437241/g7_s1_SWNL__u000542_s437241__d25-94.csv rows=40 planes_rows=2800 manifest inputs=20 verified=20 pruned_or_absent=0 problems=0
+TABLE pc_s004/u000485_s435001/pc_s004__u000485_s435001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE pc_s004/u000486_s435011/pc_s004__u000486_s435011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE pc_s004/u000487_s435021/pc_s004__u000487_s435021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=62 pruned_or_absent=88 problems=0
+TABLE s025_eh20/u000001_s431001/s025_eh20__u000001_s431001__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s025_eh20/u000010_s431006/s025_eh20__u000010_s431006__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000017_s431011/s025_eh20__u000017_s431011__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000024_s431016/s025_eh20__u000024_s431016__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000030_s431021/s025_eh20__u000030_s431021__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000040_s431026/s025_eh20__u000040_s431026__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000046_s431031/s025_eh20__u000046_s431031__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000054_s431036/s025_eh20__u000054_s431036__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s025_eh20/u000060_s431041/s025_eh20__u000060_s431041__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000069_s431046/s025_eh20__u000069_s431046__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000075_s431051/s025_eh20__u000075_s431051__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000083_s431056/s025_eh20__u000083_s431056__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000089_s431061/s025_eh20__u000089_s431061__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000098_s431066/s025_eh20__u000098_s431066__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s025_eh20/u000105_s431071/s025_eh20__u000105_s431071__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000113_s431076/s025_eh20__u000113_s431076__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000119_s431081/s025_eh20__u000119_s431081__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000128_s431086/s025_eh20__u000128_s431086__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000134_s431091/s025_eh20__u000134_s431091__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_eh20/u000142_s431096/s025_eh20__u000142_s431096__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s025_eh5/u000420_s431001/s025_eh5__u000420_s431001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s025_eh5/u000427_s431011/s025_eh5__u000427_s431011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s025_eh5/u000432_s431021/s025_eh5__u000432_s431021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s025_eh5/u000437_s431031/s025_eh5__u000437_s431031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s025_eh5/u000442_s431041/s025_eh5__u000442_s431041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s025_eh5/u000449_s431051/s025_eh5__u000449_s431051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s025_eh5/u000454_s431061/s025_eh5__u000454_s431061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s025_eh5/u000459_s431071/s025_eh5__u000459_s431071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s025_eh5/u000464_s431081/s025_eh5__u000464_s431081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s025_eh5/u000471_s431091/s025_eh5__u000471_s431091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s025_g5p/u000262_s431001/s025_g5p__u000262_s431001__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=390 pruned_or_absent=1050 problems=0
+TABLE s025_g5p/u000265_s431021/s025_g5p__u000265_s431021__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000268_s431041/s025_g5p__u000268_s431041__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000271_s431061/s025_g5p__u000271_s431061__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000273_s431081/s025_g5p__u000273_s431081__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000275_s431101/s025_g5p__u000275_s431101__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000277_s431121/s025_g5p__u000277_s431121__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000279_s431141/s025_g5p__u000279_s431141__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000281_s431161/s025_g5p__u000281_s431161__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_g5p/u000283_s431181/s025_g5p__u000283_s431181__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s025_prod/u000350_s431001/s025_prod__u000350_s431001__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s025_prod/u000350_s431001/s025_prod__u000350_s431001__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s025_prod/u000350_s431001/s025_prod__u000350_s431001__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s025_prod/u000352_s431011/s025_prod__u000352_s431011__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s025_prod/u000352_s431011/s025_prod__u000352_s431011__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s025_prod/u000352_s431011/s025_prod__u000352_s431011__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s025_prod/u000354_s431021/s025_prod__u000354_s431021__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s025_prod/u000354_s431021/s025_prod__u000354_s431021__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s025_prod/u000354_s431021/s025_prod__u000354_s431021__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s025_prod/u000356_s431031/s025_prod__u000356_s431031__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000356_s431031/s025_prod__u000356_s431031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000356_s431031/s025_prod__u000356_s431031__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000358_s431041/s025_prod__u000358_s431041__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000358_s431041/s025_prod__u000358_s431041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000358_s431041/s025_prod__u000358_s431041__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000360_s431051/s025_prod__u000360_s431051__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000360_s431051/s025_prod__u000360_s431051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000360_s431051/s025_prod__u000360_s431051__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000362_s431061/s025_prod__u000362_s431061__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000362_s431061/s025_prod__u000362_s431061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000362_s431061/s025_prod__u000362_s431061__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000364_s431071/s025_prod__u000364_s431071__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000364_s431071/s025_prod__u000364_s431071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000364_s431071/s025_prod__u000364_s431071__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000366_s431081/s025_prod__u000366_s431081__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000366_s431081/s025_prod__u000366_s431081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000366_s431081/s025_prod__u000366_s431081__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000368_s431091/s025_prod__u000368_s431091__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000368_s431091/s025_prod__u000368_s431091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000368_s431091/s025_prod__u000368_s431091__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000370_s431101/s025_prod__u000370_s431101__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000370_s431101/s025_prod__u000370_s431101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000370_s431101/s025_prod__u000370_s431101__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000372_s431111/s025_prod__u000372_s431111__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000372_s431111/s025_prod__u000372_s431111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000372_s431111/s025_prod__u000372_s431111__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000374_s431121/s025_prod__u000374_s431121__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000374_s431121/s025_prod__u000374_s431121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000374_s431121/s025_prod__u000374_s431121__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000376_s431131/s025_prod__u000376_s431131__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000376_s431131/s025_prod__u000376_s431131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000376_s431131/s025_prod__u000376_s431131__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000378_s431141/s025_prod__u000378_s431141__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000378_s431141/s025_prod__u000378_s431141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000378_s431141/s025_prod__u000378_s431141__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000380_s431151/s025_prod__u000380_s431151__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000380_s431151/s025_prod__u000380_s431151__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000380_s431151/s025_prod__u000380_s431151__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000382_s431161/s025_prod__u000382_s431161__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000382_s431161/s025_prod__u000382_s431161__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000382_s431161/s025_prod__u000382_s431161__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000384_s431171/s025_prod__u000384_s431171__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000384_s431171/s025_prod__u000384_s431171__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000384_s431171/s025_prod__u000384_s431171__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000386_s431181/s025_prod__u000386_s431181__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000386_s431181/s025_prod__u000386_s431181__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000386_s431181/s025_prod__u000386_s431181__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s025_prod/u000388_s431191/s025_prod__u000388_s431191__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000388_s431191/s025_prod__u000388_s431191__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_prod/u000388_s431191/s025_prod__u000388_s431191__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s025_w48/u000002_s431001/s025_w48__u000002_s431001__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s025_w48/u000011_s431006/s025_w48__u000011_s431006__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000019_s431011/s025_w48__u000019_s431011__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000026_s431016/s025_w48__u000026_s431016__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000034_s431021/s025_w48__u000034_s431021__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000041_s431026/s025_w48__u000041_s431026__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000048_s431031/s025_w48__u000048_s431031__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000055_s431036/s025_w48__u000055_s431036__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000062_s431041/s025_w48__u000062_s431041__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000071_s431046/s025_w48__u000071_s431046__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000078_s431051/s025_w48__u000078_s431051__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000085_s431056/s025_w48__u000085_s431056__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s025_w48/u000092_s431061/s025_w48__u000092_s431061__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000101_s431066/s025_w48__u000101_s431066__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000106_s431071/s025_w48__u000106_s431071__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000115_s431076/s025_w48__u000115_s431076__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000121_s431081/s025_w48__u000121_s431081__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000130_s431086/s025_w48__u000130_s431086__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000137_s431091/s025_w48__u000137_s431091__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000144_s431096/s025_w48__u000144_s431096__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000151_s431101/s025_w48__u000151_s431101__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s025_w48/u000158_s431106/s025_w48__u000158_s431106__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000162_s431111/s025_w48__u000162_s431111__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000169_s431116/s025_w48__u000169_s431116__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000172_s431121/s025_w48__u000172_s431121__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000179_s431126/s025_w48__u000179_s431126__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000182_s431131/s025_w48__u000182_s431131__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000187_s431136/s025_w48__u000187_s431136__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000191_s431141/s025_w48__u000191_s431141__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s025_w48/u000198_s431146/s025_w48__u000198_s431146__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s1_dist/u000548_s436001/s1_dist__u000548_s436001__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s1_dist/u000548_s436001/s1_dist__u000548_s436001__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s1_dist/u000549_s436011/s1_dist__u000549_s436011__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000549_s436011/s1_dist__u000549_s436011__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000550_s436021/s1_dist__u000550_s436021__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000550_s436021/s1_dist__u000550_s436021__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000551_s436031/s1_dist__u000551_s436031__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_dist/u000551_s436031/s1_dist__u000551_s436031__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_dist/u000552_s436041/s1_dist__u000552_s436041__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000552_s436041/s1_dist__u000552_s436041__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000553_s436051/s1_dist__u000553_s436051__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000553_s436051/s1_dist__u000553_s436051__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_dist/u000554_s436061/s1_dist__u000554_s436061__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_dist/u000554_s436061/s1_dist__u000554_s436061__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_dist/u000555_s436071/s1_dist__u000555_s436071__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=150 pruned_or_absent=0 problems=0
+TABLE s1_dist/u000555_s436071/s1_dist__u000555_s436071__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=150 pruned_or_absent=0 problems=0
+TABLE s1_dist/u000556_s436081/s1_dist__u000556_s436081__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=150 pruned_or_absent=0 problems=0
+TABLE s1_dist/u000556_s436081/s1_dist__u000556_s436081__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=150 pruned_or_absent=0 problems=0
+TABLE s1_dist/u000557_s436091/s1_dist__u000557_s436091__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=150 pruned_or_absent=0 problems=0
+TABLE s1_dist/u000557_s436091/s1_dist__u000557_s436091__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=150 pruned_or_absent=0 problems=0
+TABLE s1_eh20/u000003_s432001/s1_eh20__u000003_s432001__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s1_eh20/u000012_s432006/s1_eh20__u000012_s432006__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000018_s432011/s1_eh20__u000018_s432011__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000025_s432016/s1_eh20__u000025_s432016__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000031_s432021/s1_eh20__u000031_s432021__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000042_s432026/s1_eh20__u000042_s432026__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000047_s432031/s1_eh20__u000047_s432031__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000056_s432036/s1_eh20__u000056_s432036__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s1_eh20/u000061_s432041/s1_eh20__u000061_s432041__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000070_s432046/s1_eh20__u000070_s432046__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000077_s432051/s1_eh20__u000077_s432051__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000084_s432056/s1_eh20__u000084_s432056__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000091_s432061/s1_eh20__u000091_s432061__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000100_s432066/s1_eh20__u000100_s432066__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s1_eh20/u000107_s432071/s1_eh20__u000107_s432071__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000114_s432076/s1_eh20__u000114_s432076__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000120_s432081/s1_eh20__u000120_s432081__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000129_s432086/s1_eh20__u000129_s432086__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000136_s432091/s1_eh20__u000136_s432091__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_eh20/u000143_s432096/s1_eh20__u000143_s432096__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s1_eh5/u000421_s432001/s1_eh5__u000421_s432001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s1_eh5/u000428_s432011/s1_eh5__u000428_s432011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_eh5/u000433_s432021/s1_eh5__u000433_s432021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_eh5/u000438_s432031/s1_eh5__u000438_s432031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_eh5/u000443_s432041/s1_eh5__u000443_s432041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_eh5/u000450_s432051/s1_eh5__u000450_s432051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_eh5/u000455_s432061/s1_eh5__u000455_s432061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_eh5/u000460_s432071/s1_eh5__u000460_s432071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_eh5/u000465_s432081/s1_eh5__u000465_s432081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s1_eh5/u000472_s432091/s1_eh5__u000472_s432091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s1_g5p/u000263_s432001/s1_g5p__u000263_s432001__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=390 pruned_or_absent=1050 problems=0
+TABLE s1_g5p/u000266_s432021/s1_g5p__u000266_s432021__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000269_s432041/s1_g5p__u000269_s432041__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000272_s432061/s1_g5p__u000272_s432061__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000274_s432081/s1_g5p__u000274_s432081__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000276_s432101/s1_g5p__u000276_s432101__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000278_s432121/s1_g5p__u000278_s432121__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000280_s432141/s1_g5p__u000280_s432141__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000282_s432161/s1_g5p__u000282_s432161__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_g5p/u000284_s432181/s1_g5p__u000284_s432181__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1440 verified=40 pruned_or_absent=1400 problems=0
+TABLE s1_prod/u000351_s432001/s1_prod__u000351_s432001__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s1_prod/u000351_s432001/s1_prod__u000351_s432001__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s1_prod/u000351_s432001/s1_prod__u000351_s432001__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s1_prod/u000353_s432011/s1_prod__u000353_s432011__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s1_prod/u000353_s432011/s1_prod__u000353_s432011__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s1_prod/u000353_s432011/s1_prod__u000353_s432011__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s1_prod/u000355_s432021/s1_prod__u000355_s432021__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s1_prod/u000355_s432021/s1_prod__u000355_s432021__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s1_prod/u000355_s432021/s1_prod__u000355_s432021__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s1_prod/u000357_s432031/s1_prod__u000357_s432031__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000357_s432031/s1_prod__u000357_s432031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000357_s432031/s1_prod__u000357_s432031__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000359_s432041/s1_prod__u000359_s432041__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000359_s432041/s1_prod__u000359_s432041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000359_s432041/s1_prod__u000359_s432041__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000361_s432051/s1_prod__u000361_s432051__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000361_s432051/s1_prod__u000361_s432051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000361_s432051/s1_prod__u000361_s432051__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000363_s432061/s1_prod__u000363_s432061__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000363_s432061/s1_prod__u000363_s432061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000363_s432061/s1_prod__u000363_s432061__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000365_s432071/s1_prod__u000365_s432071__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000365_s432071/s1_prod__u000365_s432071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000365_s432071/s1_prod__u000365_s432071__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000367_s432081/s1_prod__u000367_s432081__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000367_s432081/s1_prod__u000367_s432081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000367_s432081/s1_prod__u000367_s432081__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000369_s432091/s1_prod__u000369_s432091__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000369_s432091/s1_prod__u000369_s432091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000369_s432091/s1_prod__u000369_s432091__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000371_s432101/s1_prod__u000371_s432101__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000371_s432101/s1_prod__u000371_s432101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000371_s432101/s1_prod__u000371_s432101__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000373_s432111/s1_prod__u000373_s432111__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000373_s432111/s1_prod__u000373_s432111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000373_s432111/s1_prod__u000373_s432111__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000375_s432121/s1_prod__u000375_s432121__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000375_s432121/s1_prod__u000375_s432121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000375_s432121/s1_prod__u000375_s432121__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000377_s432131/s1_prod__u000377_s432131__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000377_s432131/s1_prod__u000377_s432131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000377_s432131/s1_prod__u000377_s432131__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000379_s432141/s1_prod__u000379_s432141__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000379_s432141/s1_prod__u000379_s432141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000379_s432141/s1_prod__u000379_s432141__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000381_s432151/s1_prod__u000381_s432151__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000381_s432151/s1_prod__u000381_s432151__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000381_s432151/s1_prod__u000381_s432151__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000383_s432161/s1_prod__u000383_s432161__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000383_s432161/s1_prod__u000383_s432161__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000383_s432161/s1_prod__u000383_s432161__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000385_s432171/s1_prod__u000385_s432171__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000385_s432171/s1_prod__u000385_s432171__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000385_s432171/s1_prod__u000385_s432171__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000387_s432181/s1_prod__u000387_s432181__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000387_s432181/s1_prod__u000387_s432181__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000387_s432181/s1_prod__u000387_s432181__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s1_prod/u000389_s432191/s1_prod__u000389_s432191__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000389_s432191/s1_prod__u000389_s432191__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_prod/u000389_s432191/s1_prod__u000389_s432191__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s1_w48/u000005_s432001/s1_w48__u000005_s432001__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s1_w48/u000013_s432006/s1_w48__u000013_s432006__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000020_s432011/s1_w48__u000020_s432011__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000027_s432016/s1_w48__u000027_s432016__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000036_s432021/s1_w48__u000036_s432021__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000045_s432026/s1_w48__u000045_s432026__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000049_s432031/s1_w48__u000049_s432031__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000058_s432036/s1_w48__u000058_s432036__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000063_s432041/s1_w48__u000063_s432041__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000072_s432046/s1_w48__u000072_s432046__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000080_s432051/s1_w48__u000080_s432051__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000087_s432056/s1_w48__u000087_s432056__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s1_w48/u000094_s432061/s1_w48__u000094_s432061__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000103_s432066/s1_w48__u000103_s432066__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000108_s432071/s1_w48__u000108_s432071__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000117_s432076/s1_w48__u000117_s432076__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000122_s432081/s1_w48__u000122_s432081__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000131_s432086/s1_w48__u000131_s432086__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000139_s432091/s1_w48__u000139_s432091__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000146_s432096/s1_w48__u000146_s432096__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000153_s432101/s1_w48__u000153_s432101__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s1_w48/u000160_s432106/s1_w48__u000160_s432106__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000163_s432111/s1_w48__u000163_s432111__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000170_s432116/s1_w48__u000170_s432116__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000173_s432121/s1_w48__u000173_s432121__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000181_s432126/s1_w48__u000181_s432126__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000184_s432131/s1_w48__u000184_s432131__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000189_s432136/s1_w48__u000189_s432136__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000192_s432141/s1_w48__u000192_s432141__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s1_w48/u000199_s432146/s1_w48__u000199_s432146__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_c12/u000286_s433001/s225_c12__u000286_s433001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s225_c12/u000288_s433011/s225_c12__u000288_s433011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000290_s433021/s225_c12__u000290_s433021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000292_s433031/s225_c12__u000292_s433031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000294_s433041/s225_c12__u000294_s433041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000296_s433051/s225_c12__u000296_s433051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000298_s433061/s225_c12__u000298_s433061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000300_s433071/s225_c12__u000300_s433071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_c12/u000302_s433081/s225_c12__u000302_s433081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000304_s433091/s225_c12__u000304_s433091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000306_s433101/s225_c12__u000306_s433101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000308_s433111/s225_c12__u000308_s433111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000310_s433121/s225_c12__u000310_s433121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000312_s433131/s225_c12__u000312_s433131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_c12/u000314_s433141/s225_c12__u000314_s433141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000315_s433151/s225_c12__u000315_s433151__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000316_s433161/s225_c12__u000316_s433161__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000317_s433171/s225_c12__u000317_s433171__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000318_s433181/s225_c12__u000318_s433181__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_c12/u000319_s433191/s225_c12__u000319_s433191__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_dist/u000209_s436201/s225_dist__u000209_s436201__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s225_dist/u000209_s436201/s225_dist__u000209_s436201__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s225_dist/u000211_s436206/s225_dist__u000211_s436206__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000211_s436206/s225_dist__u000211_s436206__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000214_s436211/s225_dist__u000214_s436211__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000214_s436211/s225_dist__u000214_s436211__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000216_s436216/s225_dist__u000216_s436216__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000216_s436216/s225_dist__u000216_s436216__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000218_s436221/s225_dist__u000218_s436221__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000218_s436221/s225_dist__u000218_s436221__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000221_s436226/s225_dist__u000221_s436226__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000221_s436226/s225_dist__u000221_s436226__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000223_s436231/s225_dist__u000223_s436231__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000223_s436231/s225_dist__u000223_s436231__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000225_s436236/s225_dist__u000225_s436236__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_dist/u000225_s436236/s225_dist__u000225_s436236__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_dist/u000229_s436241/s225_dist__u000229_s436241__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000229_s436241/s225_dist__u000229_s436241__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000233_s436246/s225_dist__u000233_s436246__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000233_s436246/s225_dist__u000233_s436246__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000237_s436251/s225_dist__u000237_s436251__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000237_s436251/s225_dist__u000237_s436251__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000240_s436256/s225_dist__u000240_s436256__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000240_s436256/s225_dist__u000240_s436256__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000244_s436261/s225_dist__u000244_s436261__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000244_s436261/s225_dist__u000244_s436261__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000250_s436266/s225_dist__u000250_s436266__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_dist/u000250_s436266/s225_dist__u000250_s436266__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_dist/u000254_s436271/s225_dist__u000254_s436271__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000254_s436271/s225_dist__u000254_s436271__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000258_s436276/s225_dist__u000258_s436276__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000258_s436276/s225_dist__u000258_s436276__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000261_s436281/s225_dist__u000261_s436281__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000261_s436281/s225_dist__u000261_s436281__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000264_s436286/s225_dist__u000264_s436286__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000264_s436286/s225_dist__u000264_s436286__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000267_s436291/s225_dist__u000267_s436291__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000267_s436291/s225_dist__u000267_s436291__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_dist/u000270_s436296/s225_dist__u000270_s436296__d25-94.csv rows=115 planes_rows=8500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_dist/u000270_s436296/s225_dist__u000270_s436296__d94-194.csv rows=115 planes_rows=8500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_eh4/u000422_s433001/s225_eh4__u000422_s433001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s225_eh4/u000429_s433011/s225_eh4__u000429_s433011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000434_s433021/s225_eh4__u000434_s433021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000439_s433031/s225_eh4__u000439_s433031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000444_s433041/s225_eh4__u000444_s433041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000451_s433051/s225_eh4__u000451_s433051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_eh4/u000456_s433061/s225_eh4__u000456_s433061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000461_s433071/s225_eh4__u000461_s433071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000466_s433081/s225_eh4__u000466_s433081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000473_s433091/s225_eh4__u000473_s433091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000476_s433101/s225_eh4__u000476_s433101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_eh4/u000479_s433111/s225_eh4__u000479_s433111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000482_s433121/s225_eh4__u000482_s433121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000483_s433131/s225_eh4__u000483_s433131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh4/u000484_s433141/s225_eh4__u000484_s433141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_eh8/u000390_s433001/s225_eh8__u000390_s433001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s225_eh8/u000393_s433011/s225_eh8__u000393_s433011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000395_s433021/s225_eh8__u000395_s433021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000397_s433031/s225_eh8__u000397_s433031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000399_s433041/s225_eh8__u000399_s433041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000402_s433051/s225_eh8__u000402_s433051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_eh8/u000404_s433061/s225_eh8__u000404_s433061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000406_s433071/s225_eh8__u000406_s433071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000408_s433081/s225_eh8__u000408_s433081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000411_s433091/s225_eh8__u000411_s433091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000413_s433101/s225_eh8__u000413_s433101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_eh8/u000415_s433111/s225_eh8__u000415_s433111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000417_s433121/s225_eh8__u000417_s433121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000418_s433131/s225_eh8__u000418_s433131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_eh8/u000419_s433141/s225_eh8__u000419_s433141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_g5p/u000208_s433001/s225_g5p__u000208_s433001__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=460 pruned_or_absent=1260 problems=0
+TABLE s225_g5p/u000210_s433021/s225_g5p__u000210_s433021__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000212_s433041/s225_g5p__u000212_s433041__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000213_s433061/s225_g5p__u000213_s433061__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000215_s433081/s225_g5p__u000215_s433081__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000217_s433101/s225_g5p__u000217_s433101__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000219_s433121/s225_g5p__u000219_s433121__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000220_s433141/s225_g5p__u000220_s433141__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000222_s433161/s225_g5p__u000222_s433161__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_g5p/u000224_s433181/s225_g5p__u000224_s433181__d25-94.csv rows=60 planes_rows=2800 manifest inputs=1720 verified=40 pruned_or_absent=1680 problems=0
+TABLE s225_prod/u000007_s433001/s225_prod__u000007_s433001__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s225_prod/u000007_s433001/s225_prod__u000007_s433001__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s225_prod/u000007_s433001/s225_prod__u000007_s433001__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=255 pruned_or_absent=75 problems=0
+TABLE s225_prod/u000022_s433011/s225_prod__u000022_s433011__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s225_prod/u000022_s433011/s225_prod__u000022_s433011__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s225_prod/u000022_s433011/s225_prod__u000022_s433011__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s225_prod/u000037_s433021/s225_prod__u000037_s433021__d25-59.5.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s225_prod/u000037_s433021/s225_prod__u000037_s433021__d25-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s225_prod/u000037_s433021/s225_prod__u000037_s433021__d59.5-94.csv rows=690 planes_rows=21000 manifest inputs=330 verified=180 pruned_or_absent=150 problems=0
+TABLE s225_prod/u000051_s433031/s225_prod__u000051_s433031__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000051_s433031/s225_prod__u000051_s433031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000051_s433031/s225_prod__u000051_s433031__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000065_s433041/s225_prod__u000065_s433041__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000065_s433041/s225_prod__u000065_s433041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000065_s433041/s225_prod__u000065_s433041__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000081_s433051/s225_prod__u000081_s433051__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000081_s433051/s225_prod__u000081_s433051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000081_s433051/s225_prod__u000081_s433051__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000096_s433061/s225_prod__u000096_s433061__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000096_s433061/s225_prod__u000096_s433061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000096_s433061/s225_prod__u000096_s433061__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000110_s433071/s225_prod__u000110_s433071__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000110_s433071/s225_prod__u000110_s433071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000110_s433071/s225_prod__u000110_s433071__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000124_s433081/s225_prod__u000124_s433081__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000124_s433081/s225_prod__u000124_s433081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000124_s433081/s225_prod__u000124_s433081__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000140_s433091/s225_prod__u000140_s433091__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000140_s433091/s225_prod__u000140_s433091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000140_s433091/s225_prod__u000140_s433091__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000154_s433101/s225_prod__u000154_s433101__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000154_s433101/s225_prod__u000154_s433101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000154_s433101/s225_prod__u000154_s433101__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000165_s433111/s225_prod__u000165_s433111__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000165_s433111/s225_prod__u000165_s433111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000165_s433111/s225_prod__u000165_s433111__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000174_s433121/s225_prod__u000174_s433121__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000174_s433121/s225_prod__u000174_s433121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000174_s433121/s225_prod__u000174_s433121__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000185_s433131/s225_prod__u000185_s433131__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000185_s433131/s225_prod__u000185_s433131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000185_s433131/s225_prod__u000185_s433131__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000194_s433141/s225_prod__u000194_s433141__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000194_s433141/s225_prod__u000194_s433141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000194_s433141/s225_prod__u000194_s433141__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000201_s433151/s225_prod__u000201_s433151__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000201_s433151/s225_prod__u000201_s433151__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000201_s433151/s225_prod__u000201_s433151__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000204_s433161/s225_prod__u000204_s433161__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000204_s433161/s225_prod__u000204_s433161__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000204_s433161/s225_prod__u000204_s433161__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000205_s433171/s225_prod__u000205_s433171__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000205_s433171/s225_prod__u000205_s433171__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000205_s433171/s225_prod__u000205_s433171__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000206_s433181/s225_prod__u000206_s433181__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000206_s433181/s225_prod__u000206_s433181__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000206_s433181/s225_prod__u000206_s433181__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=80 pruned_or_absent=70 problems=0
+TABLE s225_prod/u000207_s433191/s225_prod__u000207_s433191__d25-59.5.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000207_s433191/s225_prod__u000207_s433191__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_prod/u000207_s433191/s225_prod__u000207_s433191__d59.5-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=87 pruned_or_absent=63 problems=0
+TABLE s225_w48_12/u000004_s433001/s225_w48_12__u000004_s433001__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=75 pruned_or_absent=0 problems=0
+TABLE s225_w48_12/u000014_s433006/s225_w48_12__u000014_s433006__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000021_s433011/s225_w48_12__u000021_s433011__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000028_s433016/s225_w48_12__u000028_s433016__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000033_s433021/s225_w48_12__u000033_s433021__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000043_s433026/s225_w48_12__u000043_s433026__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000050_s433031/s225_w48_12__u000050_s433031__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000057_s433036/s225_w48_12__u000057_s433036__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000064_s433041/s225_w48_12__u000064_s433041__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000073_s433046/s225_w48_12__u000073_s433046__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000079_s433051/s225_w48_12__u000079_s433051__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000086_s433056/s225_w48_12__u000086_s433056__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_w48_12/u000093_s433061/s225_w48_12__u000093_s433061__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000102_s433066/s225_w48_12__u000102_s433066__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000109_s433071/s225_w48_12__u000109_s433071__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000116_s433076/s225_w48_12__u000116_s433076__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000123_s433081/s225_w48_12__u000123_s433081__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000132_s433086/s225_w48_12__u000132_s433086__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000138_s433091/s225_w48_12__u000138_s433091__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000145_s433096/s225_w48_12__u000145_s433096__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000148_s433101/s225_w48_12__u000148_s433101__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_w48_12/u000155_s433106/s225_w48_12__u000155_s433106__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000159_s433111/s225_w48_12__u000159_s433111__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000164_s433116/s225_w48_12__u000164_s433116__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000168_s433121/s225_w48_12__u000168_s433121__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000178_s433126/s225_w48_12__u000178_s433126__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000183_s433131/s225_w48_12__u000183_s433131__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000188_s433136/s225_w48_12__u000188_s433136__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000193_s433141/s225_w48_12__u000193_s433141__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=20 pruned_or_absent=55 problems=0
+TABLE s225_w48_12/u000197_s433146/s225_w48_12__u000197_s433146__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=31 pruned_or_absent=44 problems=0
+TABLE s225_w48_8/u000285_s433001/s225_w48_8__u000285_s433001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s225_w48_8/u000287_s433011/s225_w48_8__u000287_s433011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000289_s433021/s225_w48_8__u000289_s433021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000291_s433031/s225_w48_8__u000291_s433031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000293_s433041/s225_w48_8__u000293_s433041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000295_s433051/s225_w48_8__u000295_s433051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_w48_8/u000297_s433061/s225_w48_8__u000297_s433061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000299_s433071/s225_w48_8__u000299_s433071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000301_s433081/s225_w48_8__u000301_s433081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000303_s433091/s225_w48_8__u000303_s433091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000305_s433101/s225_w48_8__u000305_s433101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s225_w48_8/u000307_s433111/s225_w48_8__u000307_s433111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000309_s433121/s225_w48_8__u000309_s433121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000311_s433131/s225_w48_8__u000311_s433131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s225_w48_8/u000313_s433141/s225_w48_8__u000313_s433141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_dist/u000488_s436401/s4_dist__u000488_s436401__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_dist/u000488_s436401/s4_dist__u000488_s436401__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_dist/u000489_s436411/s4_dist__u000489_s436411__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000489_s436411/s4_dist__u000489_s436411__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000490_s436421/s4_dist__u000490_s436421__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000490_s436421/s4_dist__u000490_s436421__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000491_s436431/s4_dist__u000491_s436431__d25-94.csv rows=138 planes_rows=10200 manifest inputs=90 verified=24 pruned_or_absent=66 problems=0
+TABLE s4_dist/u000491_s436431/s4_dist__u000491_s436431__d94-194.csv rows=138 planes_rows=10200 manifest inputs=90 verified=24 pruned_or_absent=66 problems=0
+TABLE s4_dist/u000492_s436501/s4_dist__u000492_s436501__d25-94.csv rows=23 planes_rows=1700 manifest inputs=15 verified=4 pruned_or_absent=11 problems=0
+TABLE s4_dist/u000492_s436501/s4_dist__u000492_s436501__d94-194.csv rows=23 planes_rows=1700 manifest inputs=15 verified=4 pruned_or_absent=11 problems=0
+TABLE s4_dist/u000493_s436438/s4_dist__u000493_s436438__d25-94.csv rows=69 planes_rows=5100 manifest inputs=45 verified=23 pruned_or_absent=22 problems=0
+TABLE s4_dist/u000493_s436438/s4_dist__u000493_s436438__d94-194.csv rows=69 planes_rows=5100 manifest inputs=45 verified=23 pruned_or_absent=22 problems=0
+TABLE s4_dist/u000494_s436441/s4_dist__u000494_s436441__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000494_s436441/s4_dist__u000494_s436441__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000495_s436451/s4_dist__u000495_s436451__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000495_s436451/s4_dist__u000495_s436451__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000496_s436461/s4_dist__u000496_s436461__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_dist/u000496_s436461/s4_dist__u000496_s436461__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_dist/u000497_s436471/s4_dist__u000497_s436471__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000497_s436471/s4_dist__u000497_s436471__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000498_s436481/s4_dist__u000498_s436481__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000498_s436481/s4_dist__u000498_s436481__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_dist/u000499_s436491/s4_dist__u000499_s436491__d25-94.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_dist/u000499_s436491/s4_dist__u000499_s436491__d94-194.csv rows=230 planes_rows=17000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_g5p/u000226_s434001/s4_g5p__u000226_s434001__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=390 pruned_or_absent=370 problems=0
+TABLE s4_g5p/u000227_s434011/s4_g5p__u000227_s434011__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000228_s434021/s4_g5p__u000228_s434021__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000230_s434031/s4_g5p__u000230_s434031__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000231_s434041/s4_g5p__u000231_s434041__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000232_s434051/s4_g5p__u000232_s434051__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000234_s434061/s4_g5p__u000234_s434061__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000235_s434071/s4_g5p__u000235_s434071__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000236_s434081/s4_g5p__u000236_s434081__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000238_s434091/s4_g5p__u000238_s434091__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000239_s434101/s4_g5p__u000239_s434101__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000241_s434111/s4_g5p__u000241_s434111__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000242_s434121/s4_g5p__u000242_s434121__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000243_s434131/s4_g5p__u000243_s434131__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000245_s434141/s4_g5p__u000245_s434141__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000246_s434151/s4_g5p__u000246_s434151__d25-94.csv rows=6 planes_rows=280 manifest inputs=152 verified=4 pruned_or_absent=148 problems=0
+TABLE s4_g5p/u000247_s434401/s4_g5p__u000247_s434401__d25-94.csv rows=3 planes_rows=140 manifest inputs=76 verified=2 pruned_or_absent=74 problems=0
+TABLE s4_g5p/u000248_s434154/s4_g5p__u000248_s434154__d25-94.csv rows=21 planes_rows=980 manifest inputs=532 verified=14 pruned_or_absent=518 problems=0
+TABLE s4_g5p/u000249_s434161/s4_g5p__u000249_s434161__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000251_s434171/s4_g5p__u000251_s434171__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000252_s434181/s4_g5p__u000252_s434181__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000253_s434191/s4_g5p__u000253_s434191__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000255_s434201/s4_g5p__u000255_s434201__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000256_s434211/s4_g5p__u000256_s434211__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000257_s434221/s4_g5p__u000257_s434221__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000259_s434231/s4_g5p__u000259_s434231__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000260_s434241/s4_g5p__u000260_s434241__d25-94.csv rows=30 planes_rows=1400 manifest inputs=760 verified=20 pruned_or_absent=740 problems=0
+TABLE s4_g5p/u000345_s434402/s4_g5p__u000345_s434402__d25-94.csv rows=3 planes_rows=140 manifest inputs=76 verified=2 pruned_or_absent=74 problems=0
+TABLE s4_l16/u000320_s434001/s4_l16__u000320_s434001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_l16/u000321_s434011/s4_l16__u000321_s434011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000322_s434021/s4_l16__u000322_s434021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000323_s434031/s4_l16__u000323_s434031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000324_s434041/s4_l16__u000324_s434041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000325_s434051/s4_l16__u000325_s434051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000326_s434061/s4_l16__u000326_s434061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000327_s434071/s4_l16__u000327_s434071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000328_s434081/s4_l16__u000328_s434081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000329_s434091/s4_l16__u000329_s434091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l16/u000330_s434101/s4_l16__u000330_s434101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000331_s434111/s4_l16__u000331_s434111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000332_s434121/s4_l16__u000332_s434121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000333_s434131/s4_l16__u000333_s434131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000334_s434141/s4_l16__u000334_s434141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000335_s434151/s4_l16__u000335_s434151__d25-94.csv rows=46 planes_rows=1400 manifest inputs=30 verified=8 pruned_or_absent=22 problems=0
+TABLE s4_l16/u000336_s434401/s4_l16__u000336_s434401__d25-94.csv rows=23 planes_rows=700 manifest inputs=15 verified=4 pruned_or_absent=11 problems=0
+TABLE s4_l16/u000337_s434154/s4_l16__u000337_s434154__d25-94.csv rows=161 planes_rows=4900 manifest inputs=105 verified=28 pruned_or_absent=77 problems=0
+TABLE s4_l16/u000338_s434161/s4_l16__u000338_s434161__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000339_s434171/s4_l16__u000339_s434171__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l16/u000340_s434181/s4_l16__u000340_s434181__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000341_s434191/s4_l16__u000341_s434191__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000342_s434201/s4_l16__u000342_s434201__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000343_s434211/s4_l16__u000343_s434211__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000344_s434221/s4_l16__u000344_s434221__d25-94.csv rows=23 planes_rows=700 manifest inputs=15 verified=4 pruned_or_absent=11 problems=0
+TABLE s4_l16/u000346_s434402/s4_l16__u000346_s434402__d25-94.csv rows=23 planes_rows=700 manifest inputs=15 verified=4 pruned_or_absent=11 problems=0
+TABLE s4_l16/u000347_s434223/s4_l16__u000347_s434223__d25-94.csv rows=184 planes_rows=5600 manifest inputs=120 verified=32 pruned_or_absent=88 problems=0
+TABLE s4_l16/u000348_s434231/s4_l16__u000348_s434231__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l16/u000349_s434241/s4_l16__u000349_s434241__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l4/u000423_s434001/s4_l4__u000423_s434001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_l4/u000425_s434011/s4_l4__u000425_s434011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000430_s434021/s4_l4__u000430_s434021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000435_s434031/s4_l4__u000435_s434031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000440_s434041/s4_l4__u000440_s434041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000445_s434051/s4_l4__u000445_s434051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l4/u000447_s434061/s4_l4__u000447_s434061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000452_s434071/s4_l4__u000452_s434071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000457_s434081/s4_l4__u000457_s434081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000462_s434091/s4_l4__u000462_s434091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000467_s434101/s4_l4__u000467_s434101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l4/u000469_s434111/s4_l4__u000469_s434111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000474_s434121/s4_l4__u000474_s434121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000477_s434131/s4_l4__u000477_s434131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l4/u000480_s434141/s4_l4__u000480_s434141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l8/u000424_s434001/s4_l8__u000424_s434001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_l8/u000426_s434011/s4_l8__u000426_s434011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000431_s434021/s4_l8__u000431_s434021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000436_s434031/s4_l8__u000436_s434031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000441_s434041/s4_l8__u000441_s434041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000446_s434051/s4_l8__u000446_s434051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l8/u000448_s434061/s4_l8__u000448_s434061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000453_s434071/s4_l8__u000453_s434071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000458_s434081/s4_l8__u000458_s434081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000463_s434091/s4_l8__u000463_s434091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000468_s434101/s4_l8__u000468_s434101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_l8/u000470_s434111/s4_l8__u000470_s434111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000475_s434121/s4_l8__u000475_s434121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000478_s434131/s4_l8__u000478_s434131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_l8/u000481_s434141/s4_l8__u000481_s434141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_prod/u000006_s434001/s4_prod__u000006_s434001__d25-59.5.csv rows=345 planes_rows=10500 manifest inputs=165 verified=165 pruned_or_absent=0 problems=0
+TABLE s4_prod/u000006_s434001/s4_prod__u000006_s434001__d25-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=165 pruned_or_absent=0 problems=0
+TABLE s4_prod/u000006_s434001/s4_prod__u000006_s434001__d59.5-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=165 pruned_or_absent=0 problems=0
+TABLE s4_prod/u000008_s434006/s4_prod__u000008_s434006__d25-59.5.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000008_s434006/s4_prod__u000008_s434006__d25-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000008_s434006/s4_prod__u000008_s434006__d59.5-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000015_s434011/s4_prod__u000015_s434011__d25-59.5.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000015_s434011/s4_prod__u000015_s434011__d25-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000015_s434011/s4_prod__u000015_s434011__d59.5-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000023_s434016/s4_prod__u000023_s434016__d25-59.5.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000023_s434016/s4_prod__u000023_s434016__d25-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000023_s434016/s4_prod__u000023_s434016__d59.5-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000029_s434021/s4_prod__u000029_s434021__d25-59.5.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000029_s434021/s4_prod__u000029_s434021__d25-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000029_s434021/s4_prod__u000029_s434021__d59.5-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000035_s434026/s4_prod__u000035_s434026__d25-59.5.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000035_s434026/s4_prod__u000035_s434026__d25-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000035_s434026/s4_prod__u000035_s434026__d59.5-94.csv rows=345 planes_rows=10500 manifest inputs=165 verified=90 pruned_or_absent=75 problems=0
+TABLE s4_prod/u000038_s434031/s4_prod__u000038_s434031__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000038_s434031/s4_prod__u000038_s434031__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000038_s434031/s4_prod__u000038_s434031__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000044_s434036/s4_prod__u000044_s434036__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000044_s434036/s4_prod__u000044_s434036__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000044_s434036/s4_prod__u000044_s434036__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000052_s434041/s4_prod__u000052_s434041__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000052_s434041/s4_prod__u000052_s434041__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000052_s434041/s4_prod__u000052_s434041__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000059_s434046/s4_prod__u000059_s434046__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000059_s434046/s4_prod__u000059_s434046__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000059_s434046/s4_prod__u000059_s434046__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000066_s434051/s4_prod__u000066_s434051__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000066_s434051/s4_prod__u000066_s434051__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000066_s434051/s4_prod__u000066_s434051__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000068_s434056/s4_prod__u000068_s434056__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000068_s434056/s4_prod__u000068_s434056__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000068_s434056/s4_prod__u000068_s434056__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000074_s434061/s4_prod__u000074_s434061__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000074_s434061/s4_prod__u000074_s434061__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000074_s434061/s4_prod__u000074_s434061__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000082_s434066/s4_prod__u000082_s434066__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000082_s434066/s4_prod__u000082_s434066__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000082_s434066/s4_prod__u000082_s434066__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000088_s434071/s4_prod__u000088_s434071__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000088_s434071/s4_prod__u000088_s434071__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000088_s434071/s4_prod__u000088_s434071__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000095_s434076/s4_prod__u000095_s434076__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000095_s434076/s4_prod__u000095_s434076__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000095_s434076/s4_prod__u000095_s434076__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000097_s434081/s4_prod__u000097_s434081__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000097_s434081/s4_prod__u000097_s434081__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000097_s434081/s4_prod__u000097_s434081__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000104_s434086/s4_prod__u000104_s434086__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000104_s434086/s4_prod__u000104_s434086__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000104_s434086/s4_prod__u000104_s434086__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000111_s434091/s4_prod__u000111_s434091__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000111_s434091/s4_prod__u000111_s434091__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000111_s434091/s4_prod__u000111_s434091__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000118_s434096/s4_prod__u000118_s434096__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000118_s434096/s4_prod__u000118_s434096__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000118_s434096/s4_prod__u000118_s434096__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000125_s434101/s4_prod__u000125_s434101__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000125_s434101/s4_prod__u000125_s434101__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000125_s434101/s4_prod__u000125_s434101__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000127_s434106/s4_prod__u000127_s434106__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000127_s434106/s4_prod__u000127_s434106__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000127_s434106/s4_prod__u000127_s434106__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000133_s434111/s4_prod__u000133_s434111__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000133_s434111/s4_prod__u000133_s434111__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000133_s434111/s4_prod__u000133_s434111__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000141_s434116/s4_prod__u000141_s434116__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000141_s434116/s4_prod__u000141_s434116__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000141_s434116/s4_prod__u000141_s434116__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000147_s434121/s4_prod__u000147_s434121__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000147_s434121/s4_prod__u000147_s434121__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000147_s434121/s4_prod__u000147_s434121__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000149_s434126/s4_prod__u000149_s434126__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000149_s434126/s4_prod__u000149_s434126__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000149_s434126/s4_prod__u000149_s434126__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000152_s434131/s4_prod__u000152_s434131__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000152_s434131/s4_prod__u000152_s434131__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000152_s434131/s4_prod__u000152_s434131__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000157_s434136/s4_prod__u000157_s434136__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000157_s434136/s4_prod__u000157_s434136__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000157_s434136/s4_prod__u000157_s434136__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000161_s434141/s4_prod__u000161_s434141__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000161_s434141/s4_prod__u000161_s434141__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000161_s434141/s4_prod__u000161_s434141__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000166_s434146/s4_prod__u000166_s434146__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000166_s434146/s4_prod__u000166_s434146__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000166_s434146/s4_prod__u000166_s434146__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000171_s434151/s4_prod__u000171_s434151__d25-59.5.csv rows=46 planes_rows=1400 manifest inputs=30 verified=16 pruned_or_absent=14 problems=0
+TABLE s4_prod/u000171_s434151/s4_prod__u000171_s434151__d25-94.csv rows=46 planes_rows=1400 manifest inputs=30 verified=16 pruned_or_absent=14 problems=0
+TABLE s4_prod/u000171_s434151/s4_prod__u000171_s434151__d59.5-94.csv rows=46 planes_rows=1400 manifest inputs=30 verified=16 pruned_or_absent=14 problems=0
+TABLE s4_prod/u000175_s434156/s4_prod__u000175_s434156__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000175_s434156/s4_prod__u000175_s434156__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000175_s434156/s4_prod__u000175_s434156__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000176_s434401/s4_prod__u000176_s434401__d25-59.5.csv rows=23 planes_rows=700 manifest inputs=15 verified=8 pruned_or_absent=7 problems=0
+TABLE s4_prod/u000176_s434401/s4_prod__u000176_s434401__d25-94.csv rows=23 planes_rows=700 manifest inputs=15 verified=8 pruned_or_absent=7 problems=0
+TABLE s4_prod/u000176_s434401/s4_prod__u000176_s434401__d59.5-94.csv rows=23 planes_rows=700 manifest inputs=15 verified=8 pruned_or_absent=7 problems=0
+TABLE s4_prod/u000177_s434154/s4_prod__u000177_s434154__d25-59.5.csv rows=46 planes_rows=1400 manifest inputs=30 verified=16 pruned_or_absent=14 problems=0
+TABLE s4_prod/u000177_s434154/s4_prod__u000177_s434154__d25-94.csv rows=46 planes_rows=1400 manifest inputs=30 verified=16 pruned_or_absent=14 problems=0
+TABLE s4_prod/u000177_s434154/s4_prod__u000177_s434154__d59.5-94.csv rows=46 planes_rows=1400 manifest inputs=30 verified=16 pruned_or_absent=14 problems=0
+TABLE s4_prod/u000180_s434161/s4_prod__u000180_s434161__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000180_s434161/s4_prod__u000180_s434161__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000180_s434161/s4_prod__u000180_s434161__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000186_s434166/s4_prod__u000186_s434166__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000186_s434166/s4_prod__u000186_s434166__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000186_s434166/s4_prod__u000186_s434166__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000190_s434171/s4_prod__u000190_s434171__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000190_s434171/s4_prod__u000190_s434171__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000190_s434171/s4_prod__u000190_s434171__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000195_s434176/s4_prod__u000195_s434176__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000195_s434176/s4_prod__u000195_s434176__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000195_s434176/s4_prod__u000195_s434176__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000196_s434181/s4_prod__u000196_s434181__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000196_s434181/s4_prod__u000196_s434181__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000196_s434181/s4_prod__u000196_s434181__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000200_s434186/s4_prod__u000200_s434186__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000200_s434186/s4_prod__u000200_s434186__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000200_s434186/s4_prod__u000200_s434186__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000202_s434191/s4_prod__u000202_s434191__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000202_s434191/s4_prod__u000202_s434191__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000202_s434191/s4_prod__u000202_s434191__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=40 pruned_or_absent=35 problems=0
+TABLE s4_prod/u000203_s434196/s4_prod__u000203_s434196__d25-59.5.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000203_s434196/s4_prod__u000203_s434196__d25-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_prod/u000203_s434196/s4_prod__u000203_s434196__d59.5-94.csv rows=115 planes_rows=3500 manifest inputs=75 verified=47 pruned_or_absent=28 problems=0
+TABLE s4_w24_16/u000009_s434001/s4_w24_16__u000009_s434001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_w24_16/u000016_s434011/s4_w24_16__u000016_s434011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000032_s434021/s4_w24_16__u000032_s434021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000039_s434031/s4_w24_16__u000039_s434031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000053_s434041/s4_w24_16__u000053_s434041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000067_s434051/s4_w24_16__u000067_s434051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_w24_16/u000076_s434061/s4_w24_16__u000076_s434061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000090_s434071/s4_w24_16__u000090_s434071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000099_s434081/s4_w24_16__u000099_s434081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000112_s434091/s4_w24_16__u000112_s434091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000126_s434101/s4_w24_16__u000126_s434101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_w24_16/u000135_s434111/s4_w24_16__u000135_s434111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000150_s434121/s4_w24_16__u000150_s434121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000156_s434131/s4_w24_16__u000156_s434131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_16/u000167_s434141/s4_w24_16__u000167_s434141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_w24_8/u000391_s434001/s4_w24_8__u000391_s434001__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=95 pruned_or_absent=55 problems=0
+TABLE s4_w24_8/u000392_s434011/s4_w24_8__u000392_s434011__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000394_s434021/s4_w24_8__u000394_s434021__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000396_s434031/s4_w24_8__u000396_s434031__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000398_s434041/s4_w24_8__u000398_s434041__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000400_s434051/s4_w24_8__u000400_s434051__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_w24_8/u000401_s434061/s4_w24_8__u000401_s434061__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000403_s434071/s4_w24_8__u000403_s434071__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000405_s434081/s4_w24_8__u000405_s434081__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000407_s434091/s4_w24_8__u000407_s434091__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000409_s434101/s4_w24_8__u000409_s434101__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+TABLE s4_w24_8/u000410_s434111/s4_w24_8__u000410_s434111__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000412_s434121/s4_w24_8__u000412_s434121__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000414_s434131/s4_w24_8__u000414_s434131__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=40 pruned_or_absent=110 problems=0
+TABLE s4_w24_8/u000416_s434141/s4_w24_8__u000416_s434141__d25-94.csv rows=230 planes_rows=7000 manifest inputs=150 verified=51 pruned_or_absent=99 problems=0
+
+COVERAGE (values compared per code / family / origin / column, realizations covered, max relative difference)
+  consumer plane        arrays    U_r          values=28728  realizations=40   max_rel=6.159e-16
+  consumer plane        arrays    alpha_LP     values=28728  realizations=40   max_rel=1.295e-15
+  consumer plane        arrays    alpha_TAP    values=28728  realizations=40   max_rel=1.679e-12
+  consumer plane        arrays    alpha_TP     values=28728  realizations=40   max_rel=2.918e-14
+  consumer plane        arrays    d_first      values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    d_last       values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    ell          values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    hmax_div     values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_common     values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_first      values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_last       values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_max        values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_min        values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_planes     values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    n_traced     values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    r            values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    seed         values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    set_differs  values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    sigT2_first  values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    sigT2_last   values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    tilt         values=28728  realizations=40   max_rel=4.358e-16
+  consumer plane        arrays    wfrac_min    values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        arrays    x0           values=28728  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       U_r          values=12200  realizations=40   max_rel=1.041e-13
+  consumer plane        csv       alpha_LP     values=12200  realizations=40   max_rel=2.999e-13
+  consumer plane        csv       alpha_TP     values=12200  realizations=40   max_rel=8.966e-11
+  consumer plane        csv       d_first      values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       d_last       values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       ell          values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       hmax_div     values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       n_common     values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       n_first      values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       n_last       values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       n_max        values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       n_min        values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       n_planes     values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       r            values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       seed         values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       set_differs  values=12200  realizations=40   max_rel=0.000e+00
+  consumer plane        csv       sigT2_first  values=12200  realizations=40   max_rel=1.004e-13
+  consumer plane        csv       sigT2_last   values=12200  realizations=40   max_rel=9.962e-14
+  consumer plane        csv       tilt         values=12200  realizations=40   max_rel=7.671e-12
+  consumer plane        csv       x0           values=12200  realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    cov_x2x3     values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    mean_tau     values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    mean_x2      values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    mean_x3      values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    n            values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    var_tau      values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    var_x2       values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    var_x3       values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table arrays    x1           values=1069080 realizations=40   max_rel=0.000e+00
+  consumer planes-table csv       mean_tau     values=974000 realizations=40   max_rel=1.068e-13
+  consumer planes-table csv       mean_x2      values=974000 realizations=40   max_rel=1.082e-13
+  consumer planes-table csv       mean_x3      values=974000 realizations=40   max_rel=1.112e-13
+  consumer planes-table csv       n            values=974000 realizations=40   max_rel=0.000e+00
+  consumer planes-table csv       var_tau      values=974000 realizations=40   max_rel=1.089e-13
+  consumer planes-table csv       var_x2       values=974000 realizations=40   max_rel=1.075e-13
+  consumer planes-table csv       var_x3       values=974000 realizations=40   max_rel=1.062e-13
+  consumer planes-table csv       x1           values=974000 realizations=40   max_rel=0.000e+00
+  par2     plane        crossings U_r          values=3622   realizations=20   max_rel=5.672e-16
+  par2     plane        crossings alpha_LP     values=3622   realizations=20   max_rel=1.118e-15
+  par2     plane        crossings alpha_TAP    values=3622   realizations=20   max_rel=2.409e-12
+  par2     plane        crossings alpha_TP     values=3622   realizations=20   max_rel=1.016e-14
+  par2     plane        crossings d_first      values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings d_last       values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_common     values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_first      values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_last       values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_max        values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_min        values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_planes     values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings n_traced     values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings r            values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings set_differs  values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings sigT2_first  values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings sigT2_last   values=3622   realizations=20   max_rel=0.000e+00
+  par2     plane        crossings tilt         values=3622   realizations=20   max_rel=4.049e-16
+  par2     plane        crossings wfrac_min    values=3622   realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings cov_x2x3     values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings mean_tau     values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings mean_x2      values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings mean_x3      values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings n            values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings var_tau      values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings var_x2       values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings var_x3       values=253540 realizations=20   max_rel=0.000e+00
+  par2     planes-table crossings x1           values=253540 realizations=20   max_rel=0.000e+00
+  pollock  plane        arrays    U_r          values=3664   realizations=10   max_rel=5.996e-16
+  pollock  plane        arrays    alpha_LP     values=3664   realizations=10   max_rel=1.073e-15
+  pollock  plane        arrays    alpha_TAP    values=3664   realizations=10   max_rel=1.755e-13
+  pollock  plane        arrays    alpha_TP     values=3664   realizations=10   max_rel=3.767e-15
+  pollock  plane        arrays    d_first      values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    d_last       values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    ell          values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    hmax_div     values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_common     values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_first      values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_last       values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_max        values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_min        values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_planes     values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    n_traced     values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    r            values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    seed         values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    set_differs  values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    sigT2_first  values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    sigT2_last   values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    tilt         values=3664   realizations=10   max_rel=3.421e-16
+  pollock  plane        arrays    wfrac_min    values=3664   realizations=10   max_rel=0.000e+00
+  pollock  plane        arrays    x0           values=3664   realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    cov_x2x3     values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    mean_tau     values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    mean_x2      values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    mean_x3      values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    n            values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    var_tau      values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    var_x2       values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    var_x3       values=170640 realizations=10   max_rel=0.000e+00
+  pollock  planes-table arrays    x1           values=170640 realizations=10   max_rel=0.000e+00
+REALIZATIONS consumer=40 (with plane arrays 40) par2=20
+POLLOCK realizations=3480 (arrays on disk 221)
+PRIMARY_ARM s025_prod realization passes=40 with_arrays=40
+PRIMARY_ARM s1_prod realization passes=40 with_arrays=40
+PRIMARY_ARM s225_prod realization passes=40 with_arrays=40
+PRIMARY_ARM s4_prod realization passes=20 with_arrays=20
+NOT_COVERED 2738 x flux/pos/common: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x flux/disp/perplane: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x flux/disp/common: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x unif/pos/common: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x unif/disp/perplane: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x unif/disp/common: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5642 x expI/pos/perplane: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5642 x expI/pos/common: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5642 x expI/disp/perplane: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5642 x expI/disp/common: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x planes table flux/disp: variant needs the per-particle arrays (pruned)
+NOT_COVERED 2738 x planes table unif/disp: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5642 x planes table expI/pos: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5642 x planes table expI/disp: variant needs the per-particle arrays (pruned)
+NOT_COVERED 5042 x Pollock arrays (or seeds) pruned: realization outside the retained subset
+NOT_RECOMPUTED_ROWS 6100 x flux/pos/perplane: family time is not recomputed
+NOT_RECOMPUTED_ROWS 6951 x unif/pos/perplane: family time is not recomputed
+NOT_RECOMPUTED_ROWS 6100 x expI/pos/perplane: family time is not recomputed
+RECOMPUTE compared=22289174 beyond_tolerance=0 problems=0 max_rel=8.966e-11
+RECOMPUTE PASS

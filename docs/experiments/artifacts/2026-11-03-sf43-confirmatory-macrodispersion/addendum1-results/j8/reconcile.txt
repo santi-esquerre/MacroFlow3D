@@ -1,0 +1,11 @@
+RECONCILE43 campaign=/home/sesquerre/sf43_addendum_j8 segments consumer=0 par2=12 solves=120 (consumer 0, par2 120) arms=3 solver_b_json=0 ledger_seed_records=120 replacements=0
+
+COUNTS_BY_VERDICT (code arm: verdict=count)
+  par2     j8_D           converged=40
+  par2     j8_DH3         converged=40
+  par2     j8_H3          converged=40
+  TOTAL converged=120
+UNUSABLE 0 solves; REPLACEMENTS 0; reserve seeds not yet run 0
+
+FINDINGS conflicts=0 unmapped=0 unparsed=0 json=0 ledger=0 replacement=0 rule=0
+RECONCILE OK

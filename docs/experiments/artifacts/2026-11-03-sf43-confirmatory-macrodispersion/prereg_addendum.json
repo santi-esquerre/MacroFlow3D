@@ -1,0 +1,660 @@
+{
+ "name": "sf43-addendum-1",
+ "decision": "docs/decisions/2026-11-04-sf43-addendum-1.md",
+ "text": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/preregistration-addendum-1.md",
+ "frozen_prereg": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/prereg.json",
+ "frozen_plan": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/plan.json",
+ "frozen_reduced": {
+  "host_dir": "~/sf43_campaign/reduced",
+  "archives": "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/results/reduced",
+  "manifest": "~/sf43_campaign.freeze.reduced.sha256",
+  "manifest_sha256": "250395ed5319052ddf1e5338e0d081d60610a41e85e1f66252b828daeb492dd6"
+ },
+ "holm_family": "unchanged (m = 8); everything here is descriptive and outside it",
+ "campaign_dir": "/home/sesquerre/sf43_addendum",
+ "smoke_campaign_dir": "/home/sesquerre/sf43_addendum_smoke",
+ "budget_gpu_h_cap": 8.0,
+ "plan_tail_reserve_gpu_h": 0.5,
+ "cutoff_utc": "2026-11-07T02:30:00Z",
+ "grace_minutes": 30,
+ "hard_end_utc": "2026-11-07T03:00:00Z",
+ "disk_peak_gb": 60,
+ "min_retained": 2,
+ "failure": {
+  "halt_rate": 0.25,
+  "min_for_rate": 20
+ },
+ "arms": [
+  {
+   "id": "j1_base10",
+   "origin": "s4_g5p",
+   "runner": "par2",
+   "factor": {},
+   "seeds": {
+    "start": 434001,
+    "count": 10
+   },
+   "group": "a1_j1_base",
+   "reserves": {
+    "start": 438201,
+    "count": 3
+   },
+   "priority": 0,
+   "unit_size": 10,
+   "retained": [
+    434001,
+    434002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j1_H3",
+   "origin": "s4_g5p",
+   "runner": "par2",
+   "factor": {
+    "hz": 10.8
+   },
+   "seeds": {
+    "start": 434001,
+    "count": 60
+   },
+   "group": "a1_j1_H3",
+   "reserves": {
+    "start": 438211,
+    "count": 5
+   },
+   "priority": 1,
+   "unit_size": 10,
+   "retained": [
+    434001,
+    434002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j1_D",
+   "origin": "s4_g5p",
+   "runner": "par2",
+   "factor": {
+    "dt_half": true
+   },
+   "seeds": {
+    "start": 434001,
+    "count": 60
+   },
+   "group": "a1_j1_D",
+   "reserves": {
+    "start": 438221,
+    "count": 5
+   },
+   "priority": 2,
+   "unit_size": 10,
+   "retained": [
+    434001,
+    434002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j1_DH3",
+   "origin": "s4_g5p",
+   "runner": "par2",
+   "factor": {
+    "hz": 10.8,
+    "dt_half": true
+   },
+   "seeds": {
+    "start": 434001,
+    "count": 60
+   },
+   "group": "a1_j1_DH3",
+   "reserves": {
+    "start": 438231,
+    "count": 5
+   },
+   "priority": 3,
+   "unit_size": 10,
+   "retained": [
+    434001,
+    434002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j1_H2",
+   "origin": "s4_g5p",
+   "runner": "par2",
+   "factor": {
+    "hz": 7.2
+   },
+   "seeds": {
+    "start": 434001,
+    "count": 60
+   },
+   "group": "a1_j1_H2",
+   "reserves": {
+    "start": 438241,
+    "count": 5
+   },
+   "priority": 4,
+   "unit_size": 10,
+   "retained": [
+    434001,
+    434002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j3_l5",
+   "origin": "s1_dist",
+   "runner": "consumer",
+   "factor": {
+    "grid": [
+     1040,
+     120,
+     120
+    ]
+   },
+   "seeds": {
+    "start": 436001,
+    "count": 100
+   },
+   "group": "a1_j3",
+   "reserves": {
+    "start": 438301,
+    "count": 5
+   },
+   "priority": 5,
+   "unit_size": 10,
+   "retained": [
+    436001,
+    436002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j9_w48",
+   "origin": "j3_l5",
+   "runner": "consumer",
+   "factor": {
+    "grid": [
+     1040,
+     240,
+     240
+    ],
+    "ell": 0.020833333333333332,
+    "window": "0.3,0.7,0.3,0.7"
+   },
+   "seeds": {
+    "start": 438001,
+    "count": 150
+   },
+   "group": "a1_j9",
+   "reserves": {
+    "start": 438151,
+    "count": 15
+   },
+   "priority": 6,
+   "unit_size": 10,
+   "retained": [
+    438001,
+    438002
+   ],
+   "job": "production"
+  },
+  {
+   "id": "j8_H3",
+   "origin": "j1_H3",
+   "runner": "par2",
+   "factor": {},
+   "seeds": {
+    "start": 434061,
+    "count": 40
+   },
+   "group": "a1_j8_H3",
+   "reserves": {
+    "start": 438251,
+    "count": 5
+   },
+   "priority": 0,
+   "unit_size": 10,
+   "retained": [
+    434061,
+    434062
+   ],
+   "job": "j8_conditional"
+  },
+  {
+   "id": "j8_D",
+   "origin": "j1_D",
+   "runner": "par2",
+   "factor": {},
+   "seeds": {
+    "start": 434061,
+    "count": 40
+   },
+   "group": "a1_j8_D",
+   "reserves": {
+    "start": 438256,
+    "count": 5
+   },
+   "priority": 0,
+   "unit_size": 10,
+   "retained": [
+    434061,
+    434062
+   ],
+   "job": "j8_conditional"
+  },
+  {
+   "id": "j8_DH3",
+   "origin": "j1_DH3",
+   "runner": "par2",
+   "factor": {},
+   "seeds": {
+    "start": 434061,
+    "count": 40
+   },
+   "group": "a1_j8_DH3",
+   "reserves": {
+    "start": 438261,
+    "count": 5
+   },
+   "priority": 0,
+   "unit_size": 10,
+   "retained": [
+    434061,
+    434062
+   ],
+   "job": "j8_conditional"
+  }
+ ],
+ "inference": {
+  "level": 0.9,
+  "B": 2000,
+  "seed": 20261104,
+  "paired": "mcstat.gate5.gate5_paired(X, Y, level=0.90, method='bootstrap-t', B=2000, seed=20261104); Student interval of the same function reported, never used by a rule",
+  "paired_ratio_of_ratios": "linearized per-seed contrast, studentized seed bootstrap B=2000 seed 20261104, rank rule of gate5_paired; must reproduce gate5_paired exactly with two series",
+  "unpaired": "theta1 - theta2, se = sqrt(se1^2 + se2^2), Welch-Satterthwaite nu, theta +- t(0.95, nu) se",
+  "within": "lo >= a and hi <= b (closed)"
+ },
+ "responses": {
+  "J1": {
+   "key": "alpha_LP",
+   "code": "par2",
+   "family": "plane",
+   "weights": "unif",
+   "set": "perplane",
+   "window": "main",
+   "pollock_reference": "s4_g5pol",
+   "par2_reference": "s4_g5p",
+   "completeness": "n_last / n_traced of the main-window row"
+  },
+  "J3_J9": {
+   "key": "alpha_TP:disp",
+   "code": "consumer",
+   "family": "plane",
+   "weights": "flux",
+   "set": "perplane",
+   "windows": {
+    "main": [
+     25,
+     94
+    ],
+    "far": [
+     94,
+     194
+    ]
+   },
+   "reference": "s1_dist"
+  }
+ },
+ "windows": {
+  "main": [
+   25,
+   94
+  ],
+  "far": [
+   94,
+   194
+  ]
+ },
+ "j1": {
+  "seeds": {
+   "start": 434001,
+   "count": 60
+  },
+  "reproduction": {
+   "arm": "j1_base10",
+   "reference": "s4_g5p",
+   "seeds": {
+    "start": 434001,
+    "count": 10
+   },
+   "rel_tol": 1e-12,
+   "abs_tol_zero": 1e-15,
+   "excluded_columns": [
+    "source",
+    "r"
+   ],
+   "crossing_csv_sha256": "reported where the frozen CSVs are on the host",
+   "smoke_precheck_seed": 434001,
+   "on_fail": "J1 not classified; diagnose; no re-run with other settings without a new owner decision"
+  },
+  "manipulation": {
+   "arm": "j1_H3",
+   "mean_completeness_min": 0.999,
+   "fraction_complete_min": 0.9,
+   "complete": "n_last == n_traced",
+   "on_fail": "abierto (horizonte no saturado)"
+  },
+  "quantities": {
+   "r_H": [
+    "j1_H3",
+    "s4_g5p"
+   ],
+   "r_D": [
+    "j1_D",
+    "s4_g5p"
+   ],
+   "r_H2": [
+    "j1_H2",
+    "s4_g5p"
+   ],
+   "r_DH3": [
+    "j1_DH3",
+    "s4_g5p"
+   ],
+   "q_base": [
+    "s4_g5pol",
+    "s4_g5p"
+   ],
+   "q_H2": [
+    "s4_g5pol",
+    "j1_H2"
+   ],
+   "q_H3": [
+    "s4_g5pol",
+    "j1_H3"
+   ],
+   "q_D": [
+    "s4_g5pol",
+    "j1_D"
+   ],
+   "q_DH3": [
+    "s4_g5pol",
+    "j1_DH3"
+   ]
+  },
+  "representativity": {
+   "quantity": "q_base",
+   "frozen": {
+    "ratio": 1.164,
+    "student_ci90": [
+     1.131,
+     1.198
+    ],
+    "n": 250
+   }
+  },
+  "classes": [
+   {
+    "order": 1,
+    "name": "horizonte dominante",
+    "all": [
+     [
+      "r_H",
+      ">=",
+      1.1
+     ],
+     [
+      "abs(r_D-1)",
+      "<=",
+      0.03
+     ],
+     [
+      "ci(q_H3)",
+      "within",
+      [
+       0.9090909090909091,
+       1.1
+      ]
+     ]
+    ]
+   },
+   {
+    "order": 2,
+    "name": "paso dominante",
+    "all": [
+     [
+      "r_D",
+      ">=",
+      1.05
+     ],
+     [
+      "r_H",
+      "<",
+      1.05
+     ]
+    ]
+   },
+   {
+    "order": 3,
+    "name": "mixto",
+    "all": [
+     [
+      "r_H",
+      ">=",
+      1.03
+     ],
+     [
+      "r_D",
+      ">=",
+      1.03
+     ],
+     [
+      "ci(q_DH3)",
+      "within",
+      [
+       0.9090909090909091,
+       1.1
+      ]
+     ]
+    ]
+   },
+   {
+    "order": 4,
+    "name": "abierto",
+    "rule": "any other case, or ci(q_DH3).lo > 1.10",
+    "override_if": [
+     [
+      "ci(q_DH3).lo",
+      ">",
+      1.1
+     ]
+    ],
+    "override_note": "Amendment A1 (pre-run, 2026-11-04): a lower IC90 limit of q_DH3 above 1.10 makes the J1 class `abierto` even when class 1 or 2 matched (tightening; the clause is otherwise redundant under first match)"
+   }
+  ],
+  "always_report": [
+   "q_H3",
+   "q_DH3"
+  ],
+  "j8_trigger": {
+   "thresholds": {
+    "r_H": [
+     1.03,
+     1.05,
+     1.1
+    ],
+    "r_D": [
+     0.97,
+     1.03,
+     1.05
+    ],
+    "q_H3": [
+     0.9090909090909091,
+     1.1
+    ],
+    "q_DH3": [
+     0.9090909090909091,
+     1.1
+    ]
+   },
+   "condition": "J1 reproduction passed AND some IC90 (bootstrap-t) of r_H, r_D, q_H3, q_DH3 contains a listed threshold in its interior AND used + 1.2 x projected J8 GPU-h <= 8 AND the J8 job ends before hard_end_utc",
+   "seeds": {
+    "start": 434061,
+    "count": 40
+   },
+   "arms": [
+    "j8_H3",
+    "j8_D",
+    "j8_DH3"
+   ],
+   "report": "class at n=60 primary, n=100 secondary"
+  }
+ },
+ "j3": {
+  "arm": "j3_l5",
+  "reference": "s1_dist",
+  "equivalent": {
+   "ci(m_main)": [
+    0.97,
+    1.03
+   ],
+   "ci(m_far)": [
+    0.97,
+    1.03
+   ],
+   "ci(m_far/m_main)": [
+    0.98,
+    1.02
+   ]
+  },
+  "on_fail": "J9 reported with grid-bias caveat and no width conclusion"
+ },
+ "j9": {
+  "arm": "j9_w48",
+  "min_completed": 100,
+  "classes": [
+   {
+    "order": 0,
+    "name": "inconcluso por N",
+    "rule": "fewer than 100 j9_w48 realizations completed (precedence)"
+   },
+   {
+    "order": 1,
+    "name": "meseta robusta al ancho",
+    "all": [
+     [
+      "ci(F48)",
+      "within",
+      [
+       0.9,
+       1.1
+      ]
+     ],
+     [
+      "ci(F48/F5)",
+      "within",
+      [
+       0.9,
+       1.1
+      ]
+     ]
+    ]
+   },
+   {
+    "order": 2,
+    "name": "decae con el ancho",
+    "all": [
+     [
+      "ci(F48).hi",
+      "<",
+      0.95
+     ]
+    ]
+   },
+   {
+    "order": 3,
+    "name": "inconcluso",
+    "rule": "otherwise"
+   }
+  ],
+  "compare": {
+   "F24_frozen": {
+    "ratio": 1.0208991755164611,
+    "percentile_ci90": [
+     0.9755743453061486,
+     1.0675588086589274
+    ],
+    "arm": "s1_dist"
+   }
+  },
+  "descriptive": [
+   "W48/W24 main (j9_w48 vs j3_l5, unpaired Welch on log)",
+   "W48/W24 far"
+  ]
+ },
+ "smoke": {
+  "units": {
+   "j3_l5": [
+    436001
+   ],
+   "j9_w48": [
+    438001
+   ],
+   "j1_H3": [
+    434001,
+    434002
+   ],
+   "j1_DH3": [
+    434001,
+    434002
+   ],
+   "j1_base10": [
+    434001
+   ]
+  },
+  "retain_all": true,
+  "j9_drop_if": {
+   "seconds_per_realization_gt": 180,
+   "peak_mib_gt": 20480,
+   "cg_iterations_gt": 1500,
+   "runner_rejects_geometry": true
+  },
+  "j1_stop_if": "any J1 smoke unit fails structurally or the 434001 reproduction pre-check fails",
+  "j3_drop_if": "fails structurally",
+  "finalize": {
+   "est_seconds_factor": 1.25,
+   "raw_gb": "measured",
+   "min_free_mib": "measured peak x 1.25, at least the origin arm's",
+   "budget_gpu_h": "8 - S0 held GPU-h - 0.5",
+   "disk_min_free_gb": "host free GB at finalization - 60"
+  }
+ },
+ "scripts_to_freeze": [
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/plan_addendum.json",
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/seeds_registry_addendum.json",
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/prereg_addendum.json",
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/preregistration-addendum-1.md",
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/sf43add/",
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/posthoc/",
+  "docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/review_f/"
+ ],
+ "not_authorized": [
+  "832 lambda box",
+  "sigma^2 = 0.0625",
+  "generator contrast with Par2",
+  "tracker on the random-spectral generator"
+ ],
+ "amendments": [
+  {
+   "id": "A1",
+   "utc": "2026-11-04T18:30Z",
+   "before_any_addendum_run": true,
+   "change": "J1 class 4 override: ci(q_DH3).lo > 1.10 forces `abierto` over classes 1-2 (tightening)",
+   "why": "under first-match the owner's clause 'o cota inferior del IC90 de q_DH3 > 1.10' would be redundant; the override is the only reading that gives it effect and it can only make attributions rarer"
+  }
+ ]
+}

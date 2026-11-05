@@ -1,0 +1,5 @@
+{
+  "lagrangian_ensemble": "4099aa1aa7ce1ac5cdb0482552fdcb0f",
+  "macroflow3d_pipeline": "de66d6a20e15ccbc1c429a51f5a06a87",
+  "_provenance": "md5 on the host (mirror ~/MacroFlow3D-SF-43, build/v100-release) after `cmake --build build/v100-release` at the synced tree fb8b3bc4 on 2026-11-04T18:31Z (local -03:00 15:31). No file outside docs/ changed since the production tree e85ec5a1 (git diff e85ec5a1 fb8b3bc4); ninja regenerated only the build-time revision unit (cmake/git_rev.cmake: mf3d_git_rev = \"fb8b3bc4bccd\") and re-linked, so the md5 differs from binaries.json (production, built at e85ec5a1) only through the embedded revision string. Numerical identity is tested by the J1 reproduction check (j1_base10 against s4_g5p, 1e-12; smoke pre-check on seed 434001). Pre-run deviation of addendum section 5, disclosed in the bitacora."
+}

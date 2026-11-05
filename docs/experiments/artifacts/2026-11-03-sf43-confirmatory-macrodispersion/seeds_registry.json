@@ -1,0 +1,419 @@
+{
+ "forbidden_field_seeds": [
+  {
+   "first": 1,
+   "last": 99999,
+   "why": "every earlier campaign (SF-35..SF-39: 3001-3005, 3101-3103, 4001-4010, 4242, 4901, 5001-5101, 6001-6103, 7001-7010, 7101+, 7201-7231, 9001-9021)"
+  },
+  {
+   "first": 240000,
+   "last": 240999,
+   "why": "SF-40 note"
+  },
+  {
+   "first": 420000,
+   "last": 420999,
+   "why": "SF-42 pilots and cross-checks (J1 420601+, J2 420701+, J3 420801+, J1B 420901+, spectral 420001/2, MMS/identity 4202xx)"
+  }
+ ],
+ "forbidden_transport_seeds": [
+  {
+   "first": 420800001,
+   "last": 420899001,
+   "why": "SF-42 J3/J3B Par2 transport series 420800001 + 1000 r"
+  },
+  {
+   "first": 123456789,
+   "last": 123555789,
+   "why": "SF-39 Par2 pilot transport series"
+  },
+  {
+   "first": 123476789,
+   "last": 123575789,
+   "why": "SF-39 Par2 extension transport series"
+  }
+ ],
+ "par2_transport_rule": "transport.seed of a unit = 420800001 + 1000 * seed0; realization r of a unit gets +1000 r, so field seed s uses 420800001 + 1000 s",
+ "blocks": [
+  {
+   "group": "g_s025",
+   "purpose": "CRN group of sigma^2 0.25: production, ladders, widths, Gate 5 twin and Par2, h_max passes",
+   "start": 431001,
+   "count": 400,
+   "end": 431400,
+   "reserves": {
+    "start": 431401,
+    "count": 20
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "s025_prod",
+    "s025_eh5",
+    "s025_eh20",
+    "s025_w48",
+    "s025_g5p"
+   ]
+  },
+  {
+   "group": "g_s1",
+   "purpose": "CRN group of sigma^2 1: production, ladders, widths, Gate 5 twin and Par2, h_max passes",
+   "start": 432001,
+   "count": 400,
+   "end": 432400,
+   "reserves": {
+    "start": 432401,
+    "count": 20
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "s1_prod",
+    "s1_eh5",
+    "s1_eh20",
+    "s1_w48",
+    "s1_g5p"
+   ]
+  },
+  {
+   "group": "g_d_s1",
+   "purpose": "distance arm sigma^2 1 (L = 208 lambda)",
+   "start": 436001,
+   "count": 100,
+   "end": 436100,
+   "reserves": {
+    "start": 436101,
+    "count": 5
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "s1_dist"
+   ]
+  },
+  {
+   "group": "g_s225",
+   "purpose": "CRN group of sigma^2 2.25: production, ladders, widths, Gate 5 twin and Par2, h_max passes",
+   "start": 433001,
+   "count": 400,
+   "end": 433400,
+   "reserves": {
+    "start": 433401,
+    "count": 20
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "s225_prod",
+    "s225_eh4",
+    "s225_eh8",
+    "s225_w48_8",
+    "s225_w48_12",
+    "s225_c12",
+    "s225_g5p"
+   ]
+  },
+  {
+   "group": "g_d_s225",
+   "purpose": "distance arm sigma^2 2.25 (L = 208 lambda)",
+   "start": 436201,
+   "count": 100,
+   "end": 436300,
+   "reserves": {
+    "start": 436301,
+    "count": 5
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "s225_dist"
+   ]
+  },
+  {
+   "group": "g_s4",
+   "purpose": "CRN group of sigma^2 4: production, ladders, widths, Gate 5 twin and Par2, h_max passes",
+   "start": 434001,
+   "count": 400,
+   "end": 434400,
+   "reserves": {
+    "start": 434401,
+    "count": 40
+   },
+   "reserve_fraction": 0.1,
+   "arms": [
+    "s4_prod",
+    "s4_l4",
+    "s4_l8",
+    "s4_l16",
+    "s4_w24_8",
+    "s4_w24_16",
+    "s4_g5p"
+   ]
+  },
+  {
+   "group": "g_d_s4",
+   "purpose": "distance extension sigma^2 4 (L = 208 lambda, 3328x192x192)",
+   "start": 436401,
+   "count": 100,
+   "end": 436500,
+   "reserves": {
+    "start": 436501,
+    "count": 10
+   },
+   "reserve_fraction": 0.1,
+   "arms": [
+    "s4_dist"
+   ]
+  },
+  {
+   "group": "g_pc",
+   "purpose": "positive control sigma^2 = 0.04",
+   "start": 435001,
+   "count": 30,
+   "end": 435030,
+   "reserves": {
+    "start": 435031,
+    "count": 3
+   },
+   "reserve_fraction": 0.1,
+   "arms": [
+    "pc_s004"
+   ]
+  },
+  {
+   "group": "g7_s025_S",
+   "purpose": "G7 cells of sigma^2 0.25, generator SF-18 (whole plot: own seeds)",
+   "start": 437001,
+   "count": 60,
+   "end": 437060,
+   "reserves": {
+    "start": 437061,
+    "count": 3
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "g7_s025_SFNT",
+    "g7_s025_SFHL",
+    "g7_s025_SWNL",
+    "g7_s025_SWHT"
+   ]
+  },
+  {
+   "group": "g7_s025_R",
+   "purpose": "G7 cells of sigma^2 0.25, generator Par2 random-spectral (whole plot: own seeds)",
+   "start": 437101,
+   "count": 60,
+   "end": 437160,
+   "reserves": {
+    "start": 437161,
+    "count": 3
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "g7_s025_RFNL",
+    "g7_s025_RFHT",
+    "g7_s025_RWNT",
+    "g7_s025_RWHL"
+   ]
+  },
+  {
+   "group": "g7_s1_S",
+   "purpose": "G7 cells of sigma^2 1, generator SF-18 (whole plot: own seeds)",
+   "start": 437201,
+   "count": 60,
+   "end": 437260,
+   "reserves": {
+    "start": 437261,
+    "count": 3
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "g7_s1_SFNT",
+    "g7_s1_SFHL",
+    "g7_s1_SWNL",
+    "g7_s1_SWHT"
+   ]
+  },
+  {
+   "group": "g7_s1_R",
+   "purpose": "G7 cells of sigma^2 1, generator Par2 random-spectral (whole plot: own seeds)",
+   "start": 437301,
+   "count": 60,
+   "end": 437360,
+   "reserves": {
+    "start": 437361,
+    "count": 3
+   },
+   "reserve_fraction": 0.05,
+   "arms": [
+    "g7_s1_RFNL",
+    "g7_s1_RFHT",
+    "g7_s1_RWNT",
+    "g7_s1_RWHL"
+   ]
+  }
+ ],
+ "smoke_blocks": [
+  {
+   "group": "smoke_s025",
+   "purpose": "smoke test",
+   "start": 439001,
+   "count": 14,
+   "end": 439014,
+   "reserves": {
+    "start": 439015,
+    "count": 3
+   },
+   "reserve_fraction": 0.2143,
+   "arms": [
+    "sm_s025_prod",
+    "sm_s025_eh5",
+    "sm_s025_eh20",
+    "sm_s025_w48",
+    "sm_s025_g5p"
+   ]
+  },
+  {
+   "group": "smoke_s1",
+   "purpose": "smoke test",
+   "start": 439101,
+   "count": 2,
+   "end": 439102,
+   "reserves": {
+    "start": 439103,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_s1_prod",
+    "sm_s1_eh5",
+    "sm_s1_eh20",
+    "sm_s1_w48",
+    "sm_s1_g5p",
+    "sm_s1_dist"
+   ]
+  },
+  {
+   "group": "smoke_s225",
+   "purpose": "smoke test",
+   "start": 439201,
+   "count": 2,
+   "end": 439202,
+   "reserves": {
+    "start": 439203,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_s225_prod",
+    "sm_s225_eh4",
+    "sm_s225_eh8",
+    "sm_s225_w48_8",
+    "sm_s225_w48_12",
+    "sm_s225_c12",
+    "sm_s225_g5p",
+    "sm_s225_dist"
+   ]
+  },
+  {
+   "group": "smoke_s4",
+   "purpose": "smoke test",
+   "start": 439301,
+   "count": 2,
+   "end": 439302,
+   "reserves": {
+    "start": 439303,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_s4_prod",
+    "sm_s4_l4",
+    "sm_s4_l8",
+    "sm_s4_l16",
+    "sm_s4_w24_8",
+    "sm_s4_w24_16",
+    "sm_s4_g5p",
+    "sm_s4_dist"
+   ]
+  },
+  {
+   "group": "smoke_s004",
+   "purpose": "smoke test",
+   "start": 439401,
+   "count": 2,
+   "end": 439402,
+   "reserves": {
+    "start": 439403,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_pc_s004"
+   ]
+  },
+  {
+   "group": "smoke_g7_S",
+   "purpose": "smoke test",
+   "start": 439501,
+   "count": 2,
+   "end": 439502,
+   "reserves": {
+    "start": 439503,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_g7_s025_SFNT",
+    "sm_g7_s025_SFHL",
+    "sm_g7_s025_SWNL",
+    "sm_g7_s025_SWHT"
+   ]
+  },
+  {
+   "group": "smoke_g7_R",
+   "purpose": "smoke test",
+   "start": 439601,
+   "count": 2,
+   "end": 439602,
+   "reserves": {
+    "start": 439603,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_g7_s025_RFNL",
+    "sm_g7_s025_RFHT",
+    "sm_g7_s025_RWNT",
+    "sm_g7_s025_RWHL"
+   ]
+  },
+  {
+   "group": "smoke_detc",
+   "purpose": "smoke test",
+   "start": 439901,
+   "count": 2,
+   "end": 439902,
+   "reserves": {
+    "start": 439903,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_det_c_A",
+    "sm_det_c_B"
+   ]
+  },
+  {
+   "group": "smoke_detp",
+   "purpose": "smoke test",
+   "start": 439911,
+   "count": 2,
+   "end": 439912,
+   "reserves": {
+    "start": 439913,
+    "count": 3
+   },
+   "reserve_fraction": 1.5,
+   "arms": [
+    "sm_det_p_A",
+    "sm_det_p_B"
+   ]
+  }
+ ]
+}

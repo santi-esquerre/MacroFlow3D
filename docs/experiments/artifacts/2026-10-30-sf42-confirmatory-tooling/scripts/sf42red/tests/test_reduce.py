@@ -285,6 +285,28 @@ class TestPar2(Base):
         self.assertEqual(len([p for p in pl if p["basis"] == "pos"]), 6)
         self.assertTrue(math.isnan(float(pick(pl, basis="pos", plane=5)["var_x2"])))
 
+    def test_par2_seed0_gives_rows_a_seed(self):
+        x1 = X0 + np.array([25, 40, 70, 94]) * ELL
+        path = os.path.join(self.tmp, "cs", "realization_0002_planes.csv")
+        synth.write_par2(path, self._rows(x1))
+        rows = self.reduce(par2=[path], ell=ELL, x0=X0)
+        self.assertTrue(all(math.isnan(float(r["seed"])) for r in rows))  # default: unchanged (NaN)
+        out = os.path.join(self.tmp, "t7.csv")
+        rows = red.reduce_all([], [path], [], ELL, X0, 25.0, 94.0, None, out, par2_seed0=5000)
+        self.assertEqual({r["seed"] for r in rows}, {5002})
+        self.assertEqual({r["seed"] for r in read_table(out)}, {"5002"})
+
+    def test_single_pass_hmax_label(self):
+        arm = os.path.join(self.tmp, "armS")
+        synth.write_pass(arm, r=0, seed=11)
+        synth.write_pass(arm, r=1, seed=12, hmax=8)
+        out = os.path.join(self.tmp, "tS.csv")
+        rows = red.reduce_all([arm], [], [], None, None, 25.0, 94.0, None, out)
+        self.assertEqual({(r["r"], r["hmax_div"]) for r in rows if r["family"] == "plane"}, {(0, -1), (1, 8)})
+        out2 = os.path.join(self.tmp, "tS2.csv")
+        rows = red.reduce_all([arm], [], [], None, None, 25.0, 94.0, None, out2, single_pass_hmax=8)
+        self.assertEqual({r["hmax_div"] for r in read_table(out2)}, {"8"})
+
     def test_tilted_displacement_alpha_TAP(self):
         x1 = X0 + np.array([25, 40, 70, 94]) * ELL
         synth.write_par2(os.path.join(self.tmp, "c", "realization_0000_planes.csv"), self._rows(x1, drift=0.5))

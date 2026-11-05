@@ -1,0 +1,164 @@
+{
+ "B": 2000,
+ "bases": {
+  "disp": {
+   "arms": {
+    "denominator": "s4_prod (lambda/h 32)",
+    "numerator": "s4_l16 (lambda/h 16)"
+   },
+   "bootstrap_t": {
+    "B": 2000,
+    "ratio_hi": 1.0097039706990478,
+    "ratio_lo": 0.8472354421742067,
+    "se_log": 0.03856042034259152
+   },
+   "column": "alpha_LP:disp",
+   "corr": 0.10223676729817674,
+   "loo_max_abs_change": 0.033025740495381095,
+   "loo_ratio_max": 0.9940758492555454,
+   "loo_ratio_min": 0.9555284541619609,
+   "mean_l16": 9.071509469292042,
+   "mean_prod": 9.439163875643336,
+   "n": 200,
+   "pairing": {
+    "n_common": 200,
+    "n_nonfinite_dropped": 0,
+    "n_only_a": 50,
+    "n_only_b": 0
+   },
+   "ratio_of_means": 0.9610501087601643,
+   "sd_l16": 1.8473827663680726,
+   "sd_prod": 4.975601929501422,
+   "skewness_log_ratio_terms_note": "per-seed ratio L_r/P_r: min 0.128 median 0.996 max 2.208",
+   "student": {
+    "dof": 199,
+    "ratio_hi": 1.0242843443565273,
+    "ratio_lo": 0.9017196412663668,
+    "se_log": 0.03856042034259152
+   },
+   "top5_influence": [
+    {
+     "alpha_LP_l16": 9.21102892782479,
+     "alpha_LP_prod": 71.9845515928068,
+     "change": 0.033025740495381095,
+     "change_percent": 3.4364223253652284,
+     "ratio_without_seed": 0.9940758492555454,
+     "seed": 434111
+    },
+    {
+     "alpha_LP_l16": 8.289738300668674,
+     "alpha_LP_prod": 30.096603222775133,
+     "change": 0.011107392864467713,
+     "change_percent": 1.1557558511488217,
+     "ratio_without_seed": 0.972157501624632,
+     "seed": 434151
+    },
+    {
+     "alpha_LP_l16": 18.374827781902745,
+     "alpha_LP_prod": 8.320911034981094,
+     "change": -0.005521654598203418,
+     "change_percent": -0.5745438815179802,
+     "ratio_without_seed": 0.9555284541619609,
+     "seed": 434077
+    },
+    {
+     "alpha_LP_l16": 21.0236780370037,
+     "alpha_LP_prod": 11.895536757208701,
+     "change": -0.005112895541779627,
+     "change_percent": -0.5320113379286429,
+     "ratio_without_seed": 0.9559372132183847,
+     "seed": 434144
+    },
+    {
+     "alpha_LP_l16": 14.663121211653175,
+     "alpha_LP_prod": 7.249112400419459,
+     "change": -0.004092538451413663,
+     "change_percent": -0.4258402776410257,
+     "ratio_without_seed": 0.9569575703087506,
+     "seed": 434109
+    }
+   ]
+  },
+  "pos": {
+   "arms": {
+    "denominator": "s4_prod (lambda/h 32)",
+    "numerator": "s4_l16 (lambda/h 16)"
+   },
+   "bootstrap_t": {
+    "B": 2000,
+    "ratio_hi": 1.0097039706990478,
+    "ratio_lo": 0.8472354421742067,
+    "se_log": 0.03856042034259152
+   },
+   "column": "alpha_LP",
+   "corr": 0.10223676729817674,
+   "loo_max_abs_change": 0.033025740495381095,
+   "loo_ratio_max": 0.9940758492555454,
+   "loo_ratio_min": 0.9555284541619609,
+   "mean_l16": 9.071509469292042,
+   "mean_prod": 9.439163875643336,
+   "n": 200,
+   "pairing": {
+    "n_common": 200,
+    "n_nonfinite_dropped": 0,
+    "n_only_a": 50,
+    "n_only_b": 0
+   },
+   "ratio_of_means": 0.9610501087601643,
+   "sd_l16": 1.8473827663680726,
+   "sd_prod": 4.975601929501422,
+   "skewness_log_ratio_terms_note": "per-seed ratio L_r/P_r: min 0.128 median 0.996 max 2.208",
+   "student": {
+    "dof": 199,
+    "ratio_hi": 1.0242843443565273,
+    "ratio_lo": 0.9017196412663668,
+    "se_log": 0.03856042034259152
+   },
+   "top5_influence": [
+    {
+     "alpha_LP_l16": 9.21102892782479,
+     "alpha_LP_prod": 71.9845515928068,
+     "change": 0.033025740495381095,
+     "change_percent": 3.4364223253652284,
+     "ratio_without_seed": 0.9940758492555454,
+     "seed": 434111
+    },
+    {
+     "alpha_LP_l16": 8.289738300668674,
+     "alpha_LP_prod": 30.096603222775133,
+     "change": 0.011107392864467713,
+     "change_percent": 1.1557558511488217,
+     "ratio_without_seed": 0.972157501624632,
+     "seed": 434151
+    },
+    {
+     "alpha_LP_l16": 18.374827781902745,
+     "alpha_LP_prod": 8.320911034981094,
+     "change": -0.005521654598203418,
+     "change_percent": -0.5745438815179802,
+     "ratio_without_seed": 0.9555284541619609,
+     "seed": 434077
+    },
+    {
+     "alpha_LP_l16": 21.0236780370037,
+     "alpha_LP_prod": 11.895536757208701,
+     "change": -0.005112895541779627,
+     "change_percent": -0.5320113379286429,
+     "ratio_without_seed": 0.9559372132183847,
+     "seed": 434144
+    },
+    {
+     "alpha_LP_l16": 14.663121211653175,
+     "alpha_LP_prod": 7.249112400419459,
+     "change": -0.004092538451413663,
+     "change_percent": -0.4258402776410257,
+     "ratio_without_seed": 0.9569575703087506,
+     "seed": 434109
+    }
+   ]
+  }
+ },
+ "label": "post hoc (2026-11-04)",
+ "level": 0.9,
+ "seed": 20261104
+}
