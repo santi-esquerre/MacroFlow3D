@@ -4,7 +4,9 @@
 
 A. Beaudoin and J.-R. de Dreuzy.
 **Numerical assessment of 3-D macrodispersion in heterogeneous porous media**
-*Water Resources Research*, 49, 2489–2496, 2013.
+*Water Resources Research*, 49, 2489–2496, 2013. doi:10.1002/wrcr.20206 (p. 2489).
+
+Changelog: 2026-11-04: the SF-43 project comparison no longer says "close to `sigma^4` scaling at small amplitude"; it gives `alpha_TP/sigma^4` and the local exponents. 2026-11-02: corrected after the full reading of SF-43's pre-activation review (bibliography section 7); see docs/decisions/2026-11-02-sf43-pre-activation-decisions.md H19. Page references are journal pages of WRR 49 with paragraph numbers [n]. Figure values are read from page images (about ±10-20 % on log axes). "Inference" marks reasoning of this project, not a statement of the paper.
 
 ---
 
@@ -52,7 +54,7 @@ This is directly relevant to MacroFlow3D, which also studies large 3D lognormal 
 
 ## 1. 3D transverse macrodispersion is non-zero in their numerical study
 
-The paper reports that the transverse macrodispersivity in 3D is significantly non-zero, unlike the 2D case.
+The paper reports that the transverse macrodispersivity in 3D is significantly non-zero, unlike the 2D case. The paper states this "significantly non-zero" for `sigma_Y^2 >= 1` (p. 2493, [12]), while the same paper calls braiding mechanisms "negligible at low levels of heterogeneities (`sigma_Y^2 <= 1`)" (p. 2494, [18]); the tabulated `alpha_TA` is `< 1e-3` at `sigma_Y^2 = 0.25` and 0.01 at `sigma_Y^2 = 1` (Table 2, p. 2493).
 
 Interpretation in the paper:
 - in 2D, streamlines are confined to finite-width tubes and cannot diverge indefinitely,
@@ -67,7 +69,7 @@ This was one of the numerical pillars supporting the “3D implies positive tran
 
 A major numerical result is that the transverse macrodispersivity increases strongly with `σ_Y^2`.
 
-The paper characterizes this increase as steep: `alpha_TAM ~ alpha_TAM(1) sigma_Y^4` for `sigma_Y^2 >= 1` (eq. 7, p. 2493), i.e. proportional to `sigma_Y^4` and quadratic in `sigma_Y^2` (not "approximately quadratic in `sigma_Y`"). At `sigma_Y^2 = 4`, `alpha_TAM ~ 0.11` (read from Fig. 4b, p. 2493; approximate, the paper tabulates `alpha_TA` only up to `sigma_Y^2 = 2.25`).
+The paper characterizes this increase as steep: `alpha_TAM ~ alpha_TAM(1) sigma_Y^4` (eq. 7, p. 2493), i.e. proportional to `sigma_Y^4` and quadratic in `sigma_Y^2` (not "approximately quadratic in `sigma_Y`"). The range of validity is stated inconsistently in the paper: "for `sigma_Y^2 >= 1`" (p. 2493, [12]) but "for `sigma_Y^2 >= 2.25`" (p. 2494, [18]). At `sigma_Y^2 = 4`, `alpha_TAM ~ 0.11` (read from Fig. 4b; approximate, the paper tabulates `alpha_TA` only up to `sigma_Y^2 = 2.25`); eq. 7 with `alpha_TAM(1) = 0.01` gives 0.16 there, about 50 % above the plotted value (inference: the power law is only approximate; the paper does not point this out).
 
 Interpretation:
 - stronger heterogeneity produces stronger streamline deflection and braiding,
@@ -104,6 +106,8 @@ The paper reports that:
 - transverse effective dispersivity tends to reach its asymptotic regime faster,
 - longitudinal effective dispersivity converges much more slowly, especially at high heterogeneity.
 
+Caution: the paper's claim that `alpha_T` has converged by `t ~ 1-10` is contradicted by its own Fig. 2b (see "Reading cautions" below).
+
 This matters operationally for MacroFlow3D because it implies:
 
 - domain length matters a lot,
@@ -124,7 +128,7 @@ Their study relies on:
 These are not side details.
 They shape the inferred macrodispersion.
 
-**Tracking scheme (p. 2490, [6]).** Transport is "restricted to the sole advection process and is simulated by a first-order explicit particle tracking method", `x(t + dt) = x(t) + v[x(t)] dt`, with the velocity "obtained with a linear interpolation in each direction from its grid values [Pollock, 1988]", the time step adapted to about 10 steps per cell, and no local dispersion. In Lester et al. 2023's terms (`docs/theory/lester-2023-key-claims.md` §5) both error sources are present: (A) a linearly interpolated velocity that is not helicity-free, and (B) a first-order integrator with no invariant preservation. The paper never considers numerical artefacts as a cause of `alpha_T`.
+**Tracking scheme (p. 2490, [6]).** "Velocity v at the grid center is derived from the hydraulic head h by Darcy's law" (cell-centre vectors; the paper does not say whether face fluxes, Pollock-style, or cell-centre vectors are interpolated, so face-flux interpolation is not established). Transport is "restricted to the sole advection process and is simulated by a first-order explicit particle tracking method", `x(t + dt) = x(t) + v[x(t)] dt`, with the velocity "obtained with a linear interpolation in each direction from its grid values [Pollock, 1988]", the time step adapted to about 10 steps per cell, and no local dispersion. The integrator is explicit Euler, not Pollock's semi-analytic scheme, so the Pollock analysis of Lester et al. 2023 (exact integration within cells, `docs/theory/lester-2023-key-claims.md` §5A) is not this paper's scheme. Inference: in Lester et al. 2023's terms, error source (B) (a first-order integrator with no invariant preservation) is present, and source (A) (a linearly interpolated velocity that is not helicity-free) is probably present but depends on what is interpolated. The paper never considers numerical artefacts as a cause of `alpha_T`.
 
 For MacroFlow3D, this means any comparison to Beaudoin & de Dreuzy must respect:
 - geometry,
@@ -143,18 +147,21 @@ Locators are journal pages of WRR 49 (2489-2496).
 - Covariance (eq. 1, p. 2489): `<Y'(x) Y'(x')> = sigma_Y^2 exp(-(|x - x'|/lambda)^2)`.
 - First-order predictions (eqs. 2-3, pp. 2489-2490): `D_LA = (sqrt(pi)/2) <v> lambda sigma_Y^2`; `D_TA = 0` (first order, no local diffusion).
 - Variances: `sigma_Y^2` in {0.25, 1, 2.25, 4, 6.25, 7.56, 9}; `lambda/Delta = 10`.
-- Domain: `L_T = 25.6 lambda` (Fig. 1 caption, p. 2491); `L_L` up to 1638.4 `lambda` (p. 2492). Fixed heads on the `L` faces, periodic transverse faces; finite volume with harmonic-mean `K`; HYPRE AMG (p. 2490).
+- Domain width: `L_T = 25.6 lambda` is stated only in the `sigma_Y^2 = 6.25` captions (Fig. 1, Fig. 5); for the other variances it is only implied by the injection window "around (20 lambda)^2 = 400 lambda^2" with "25 particles per correlation square" (p. 2491).
+- Domain length: `L_L = 102.4 lambda` "is enough" for `sigma_Y^2 <= 1` (p. 2492, [9]); the longest domain is `L_L = 1638.4 lambda` (p. 2492, [10]); `L_L` for `sigma_Y^2 = 2.25` and 4 is not stated (Fig. 2 data run to about `t ~ 60-100` and `t ~ 200`, so those domains were much longer than 102.4 lambda; read from the figure). Fixed heads on the `L` faces, periodic transverse faces; finite volume with harmonic-mean `K`; HYPRE AMG (p. 2490).
 - Injection: flux-weighted over `0.8 L_T x 0.8 L_T`, at least 5 `lambda` from the inlet (p. 2490). `N_p = 1e4`, `N_R = 500` (p. 2491).
-- Estimator (eq. 4, p. 2490): `alpha_k(t) = (1/(2 lambda |<v>|)) (1/N_R) sum_i d/dt [ (1/N_p) sum_j x_k^{j,i}(t)^2 - ((1/N_p) sum_j x_k^{j,i}(t))^2 ]`, centred per realization in fixed axes; time normalized by `lambda/|<v>|`.
+- Estimator (eq. 4, p. 2490): `alpha_k(t) = (1/(2 lambda |<v>|)) (1/N_R) sum_i d/dt [ (1/N_p) sum_j x_k^{j,i}(t)^2 - ((1/N_p) sum_j x_k^{j,i}(t))^2 ]`, centred per realization in fixed axes; time normalized by `lambda/|<v>|`, with `|<v>| = (K_eq/theta)|h_+ - h_-|/L_L` and "K_eq the equivalent permeability [Matheron, 1967]" (p. 2490). The paper does not say whether `K_eq` comes from Matheron's formula or is computed; any mismatch with the true mean velocity rescales both the time axis and `alpha`.
 - Asymptotic value (eq. 5, p. 2492): the mean of `alpha_k(t)` over `[0.75 t_b, t_b]`, with `t_b` "the time at which the first particle steps out of the simulation domain" (p. 2492, [9]).
 - Table 1 (p. 2492), longitudinal fit `alpha_LAF / t_LF / a_LF`: 0.25: 0.24 / 1.35 / 1; 1: 1.27 / 2.21 / 0.80; 2.25: 4.35 / 4.83 / 0.63; 4: 12.7 / 20.5 / 0.49; "6.52" (printed so; probably 6.25): 58.6 / 41.9 / 0.40; 7.56: 131 / 208 / 0.39.
-- Table 2 (p. 2493), `alpha_TA` this study: `< 1e-3` / 0.01 / 0.044 at `sigma_Y^2` = 0.25 / 1 / 2.25. The Dentz (0.007, 0.028) and Schwarze (0.009) non-zero values came from first-order synthetic (linearized) velocity fields, not from a full Darcy solve.
-- Eq. 7 (p. 2493): `alpha_TAM ~ alpha_TAM(1) sigma_Y^4` for `sigma_Y^2 >= 1`.
+- Table 2 (p. 2493), "This study": `alpha_LA` = 0.26 / 1.27 / 4.35 and `alpha_TA` = `< 1e-3` / 0.01 / 0.044 at `sigma_Y^2` = 0.25 / 1 / 2.25. Inconsistencies in the paper: the caption says "Late-Time Averaging Method of Equation (6)" but eq. 6 is the fit and the late-time average is eq. 5; `alpha_LA` equals Table 1's `alpha_LAF` at `sigma_Y^2` = 1 and 2.25 but not at 0.25 (0.26 vs 0.24). The Dentz (0.007, 0.028) and Schwarze (0.009) non-zero values came from first-order synthetic (linearized) velocity fields, not from a full Darcy solve.
+- Eq. 7 (p. 2493): `alpha_TAM ~ alpha_TAM(1) sigma_Y^4`; validity "for `sigma_Y^2 >= 1`" (p. 2493, [12]) vs "for `sigma_Y^2 >= 2.25`" (p. 2494, [18]), an inconsistency in the paper. Fig. 4b points (approximate): `alpha_TAM` about 0.11 (`sigma_Y^2 = 4`), 0.35 (6.25), 0.5 (7.56), 0.7 (9). Eq. 7 with `alpha_TAM(1) = 0.01` gives 0.16 at `sigma_Y^2 = 4`, about 50 % above the plotted 0.11. Fig. 1b (`sigma_Y^2 = 6.25`, linear axis) shows an `alpha_T` plateau of about 0.27 from `t ~ 10` to 150.
 
 Reading cautions:
-- `alpha_T(t)` is not monotone (Fig. 2b, p. 2491): it rises, peaks near `t ~ 1-3`, and reaches a plateau at `t ~ 10-30`. This is in tension with the statement that the transverse asymptotic regime is reached "around the advection time" ([9], p. 2491).
-- The only resolution / `N_p` / `N_R` check is at `sigma_Y^2 = 6.25` (Fig. 1 and [7], pp. 2490-2491): `alpha_LAM` and `alpha_TAM` change by at most 2 % (longitudinal) and 4 % (transverse). "Smaller `sigma_Y^2` cases lead to similar conclusions" is asserted, not shown.
+- `alpha_T(t)` is not monotone (Fig. 2b, p. 2491), and its shape depends on `sigma_Y^2` (figure readings, approximate): for `sigma_Y^2 <= 4` it rises to a peak at `t ~ 1-5`; for `sigma_Y^2 >= 6.25` the curves start high and decline slightly (they do not rise); at `sigma_Y^2 = 1` there is no clear plateau before the data end (`t ~ 30-40`); at `sigma_Y^2 = 2.25` it levels off only around `t ~ 30-50`.
+- The paper states that the transverse asymptotic regime is reached "around the advection time ... at all levels of heterogeneity" ([9], p. 2491) and that at "10 times the advection time" it has converged (pp. 2491-2492). Fig. 2b contradicts this: at `t = 10`, `alpha_T` is about 0.015 (`sigma_Y^2 = 1`) and about 0.08 (`sigma_Y^2 = 2.25`), against the tabulated 0.01 and 0.044 (Table 2). Treat the "converged at `t = 10`" statement as not supported by the paper's own figure.
+- The only resolution / `N_p` / `N_R` check is at `sigma_Y^2 = 6.25` (Fig. 1 and [7], pp. 2490-2491): `alpha_LAM` and `alpha_TAM` change by at most 2 % (longitudinal) and 4 % (transverse) when `N_p` is multiplied by 10, `N_R` goes 500 to 250 and `lambda/Delta` goes 10 to 20. "Smaller `sigma_Y^2` cases lead to similar conclusions" is asserted, not shown. Consequence (inference): `lambda/Delta = 20` also halves `dt` (10 steps per cell), so an error scaling like Lester et al. 2023's Pollock variance (proportional to `Delta^2`) should have shrunk about 4x; a change of at most 4 % argues against a pure `Delta^2`-interpolation origin of this paper's `alpha_T` at `sigma_Y^2 = 6.25`.
 - No error bars are reported.
+- Fig. 2's caption ("Full ... `alpha_LAM`, dashed ... fit") looks swapped relative to the plot (inference from the page image); take care if the figure is digitized.
 - Numerical artefacts are never considered as a cause of the non-zero `alpha_T`.
 
 ---
@@ -251,6 +258,8 @@ From the perspective of the current project, it does **not** settle:
 - whether a measured positive `α_T` comes from physics or from streamsurface leakage.
 
 That is exactly where the later Lester framework becomes decisive.
+
+Project comparison (SF-43, `docs/experiments/2026-11-03-sf43-confirmatory-macrodispersion.md`; different estimands, order of magnitude only): the plane-based `alpha_TP` over `[25, 94] lambda` is 5.3e-4 / 7.2e-3 / 2.9e-2 / 6.8e-2 `lambda` at `sigma_Y^2` 0.25 / 1 / 2.25 / 4, about 0.6-0.7 of this paper's `alpha_TA` (Table 2; Fig. 4b at 4) while `alpha_TP / sigma^4` falls from 8.4e-3 (0.25) to 7.2e-3, 5.7e-3 and 4.3e-3 (4), with local exponents `d ln alpha_TP / d ln sigma^2` of 1.89 [1.86, 1.92], 1.70 [1.67, 1.74] and 1.51 [1.45, 1.57] (0.25 -> 1 -> 2.25 -> 4; 1.93 [1.77, 2.09] from 0.04 to 0.25), so there is no `sigma^4` law over this range (post hoc S of the SF-43 note, section 3.4); the consumer's time-window `alpha_LAM` is 0.96 / 0.86 / 0.67 / 0.47 of eq. 6 with Table 1 parameters averaged over the same window (the gap is recorded as open question G9b).
 
 ---
 

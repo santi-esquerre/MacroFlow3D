@@ -13,11 +13,23 @@
   5. Only the `.npy` of realizations NOT in the retained list are deletion candidates.  The retained list is a text file with
      one realization directory per line, relative to `--root` (e.g. `armA/realizations/r_0003`), '#' comments; an entry that
      is not a realization of the arms refuses.  Decision G8: at least `min_retained` (default 5, the G8 number) realizations
-     of every arm are retained (an arm with fewer realizations must be retained whole); The CLI always uses the G8 number; a
-     lower `min_retained` is an explicit API argument (tests only) and is reported in the plan.
+     of every arm are retained (an arm with fewer realizations must be retained whole).  The CLI default is the G8 number.
+     SF-43 (disclosed change to this SF-42 tooling): `--min-retained N` (CLI) / `min_retained=N` (API) lowers it, down to 0, because
+     the SF-43 campaign prunes per segment directory (a consecutive seed range of one arm) against an ARM-level retained list (the
+     first seeds of the arm plus a human-review sample), so a single segment may legitimately retain fewer than 5 (or none); the G8
+     arm-level minimum is then enforced by the SF-43 caller.  The value used is reported in the plan line.
   6. Symlinks: the `realizations/` directory, every realization directory and every directory below one must not be a symlink,
      and the realpath of every `.npy` that would be deleted must lie inside the realpath of its arm and not contain
      `sf39_campaign`; any violation refuses BEFORE anything is deleted (`os.walk` never follows links).
+  SF-43 (disclosed, backward-compatible): `--keep-arrays name,...` (CLI) / `keep_arrays=(name, ...)` (API) names `.npy` arrays
+     (file name without the extension, e.g. `seeds`, `weights`, `planes_x23`, `planes_tau`) that are NEVER deletion candidates in any
+     realization (recorded with action `keep` in the log); the default is empty, which is the previous behaviour.  The SF-43 campaign
+     uses it to keep the plane arrays of every realization of its primary arms (the independent recomputation then covers the
+     displacement basis for all of them) and to delete only the others (time-pass and Pollock arrays).
+  SF-43 (disclosed, backward-compatible): the Pollock bridge arrays (`<realization>/pollock/pollock_*.npy`) are deletion candidates only
+     when the table holds `code=pollock` plane rows of that directory (`source` = `<realization>/pollock`) with a finite plane estimator
+     (`sf42red reduce --pollock`); otherwise they are recorded with action `keep` (never deleted unreduced) and the plan line says how
+     many.  Tables without Pollock arrays on disk behave exactly as before.
   Dry run by default (prints the plan, writes nothing); `execute=True` needs a log path, writes the log (path, size, sha256,
   action) BEFORE deleting, then deletes only `*.npy` files inside the arms' realization directories.  CSV, JSON and every
   other file are never touched.
@@ -93,12 +105,12 @@ def verify(table, root):
     return man
 
 
-def _covered_sources(table):
-    """(sources with a consumer plane row, sources with a consumer plane row that has a finite plane estimator)."""
+def _covered_sources(table, code="consumer"):
+    """(sources with a plane row of `code`, sources with such a row that has a finite plane estimator)."""
     seen, finite = set(), set()
     with open(table) as f:
         for r in csv.DictReader(f):
-            if r["code"] == "consumer" and r["family"] == "plane":
+            if r["code"] == code and r["family"] == "plane":
                 seen.add(r["source"])
                 if any(r[e] != "" and math.isfinite(float(r[e])) for e in PLANE_EST):
                     finite.add(r["source"])
@@ -116,7 +128,7 @@ def _retained(path, root):
     return out
 
 
-def prune(arms, retained_file, table, root, execute=False, log=None, out=print, min_retained=MIN_RETAINED):
+def prune(arms, retained_file, table, root, execute=False, log=None, out=print, min_retained=MIN_RETAINED, keep_arrays=()):
     """Plan (and with `execute` carry out) the deletion; returns the list of deleted (or, in a dry run, planned) paths."""
     root = os.path.abspath(root)
     arms = [os.path.abspath(a) for a in arms]
@@ -125,8 +137,12 @@ def prune(arms, retained_file, table, root, execute=False, log=None, out=print, 
         raise PruneRefused("--execute needs a --log path")
     if min_retained < 0:
         raise PruneRefused("min_retained must be >= 0")
+    keep_arrays = set(keep_arrays)
+    if any(not re.fullmatch(r"[A-Za-z0-9_]+", k) for k in keep_arrays):
+        raise PruneRefused("keep_arrays entries must be array names without extension, got %s" % sorted(keep_arrays))
     verify(table, root)
     covered, finite = _covered_sources(table)
+    pollock_ok = _covered_sources(table, "pollock")[1]
     keep = _retained(retained_file, root)
     all_R, per_arm = [], []
     real_root = os.path.realpath(root)
@@ -152,7 +168,7 @@ def prune(arms, retained_file, table, root, execute=False, log=None, out=print, 
         need, have = min(min_retained, len(Rs)), len(keep & set(Rs))
         if have < need:
             raise PruneRefused("arm %s retains %d realization(s), decision G8 requires at least %d" % (arm, have, need))
-    records = []  # (path, size, sha, action)
+    records, n_unreduced = [], 0  # records: (path, size, sha, action)
     for R in all_R:
         real_R = os.path.realpath(R)
         for dp, dn, fn in os.walk(R, followlinks=False):
@@ -166,10 +182,15 @@ def prune(arms, retained_file, table, root, execute=False, log=None, out=print, 
                     _guard(p)
                     if os.path.commonpath([real_R, rp]) != real_R:
                         raise PruneRefused("%s resolves outside its realization directory (%s)" % (p, rp))
-                    records.append((p, os.path.getsize(p), sha256_file(p), "keep" if R in keep else "delete"))
+                    kept = R in keep or n[:-4] in keep_arrays
+                    unreduced = not kept and n.startswith("pollock_") and os.path.relpath(dp, root) not in pollock_ok
+                    n_unreduced += unreduced  # only the arrays this rule saves from deletion
+                    records.append((p, os.path.getsize(p), sha256_file(p), "keep" if kept or unreduced else "delete"))
     todo = [r for r in records if r[3] == "delete"]
-    out("%s: %d .npy recorded, %d retained realization(s) (min per arm %d), %d file(s) / %d bytes to delete"
-        % ("EXECUTE" if execute else "DRY RUN", len(records), len(keep), min_retained, len(todo), sum(r[1] for r in todo)))
+    out("%s: %d .npy recorded, %d retained realization(s) (min per arm %d)%s%s, %d file(s) / %d bytes to delete"
+        % ("EXECUTE" if execute else "DRY RUN", len(records), len(keep), min_retained,
+           (", kept arrays %s" % sorted(keep_arrays)) if keep_arrays else "",
+           (", %d unreduced pollock array(s) kept" % n_unreduced) if n_unreduced else "", len(todo), sum(r[1] for r in todo)))
     if not execute:
         for r in todo:
             out("would delete %s" % os.path.relpath(r[0], root))

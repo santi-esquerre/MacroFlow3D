@@ -1,0 +1,110 @@
+{
+ "all_pairs": {
+  "hi": 1.1978569778860404,
+  "lo": 1.131256766474913,
+  "n": 250,
+  "ratio": 1.164080672248609
+ },
+ "corr_log_ratio_vs_1_minus_c": {
+  "n": 250,
+  "pearson": 0.48960104301949997,
+  "pearson_p": 1.7806396465768284e-16,
+  "spearman": 0.34885291781027405,
+  "spearman_p": 1.4511287364829398e-08
+ },
+ "interval_methods": "gate5_paired Student (delta method) 90 %, bootstrap-t B 2000 seed 20261104",
+ "label": "post hoc (2026-11-04)",
+ "missing_particles_summary": {
+  "max": 86.0,
+  "median": 3.0,
+  "min": 0.0,
+  "n_traced_max": 10000.0,
+  "n_traced_min": 10000.0
+ },
+ "n_pairs": 250,
+ "note": "selection by an outcome-correlated Par2 property, not causal",
+ "pairing": {
+  "n_common": 250,
+  "n_nonfinite_dropped": 0,
+  "n_only_a": 0,
+  "n_only_b": 0
+ },
+ "reproduction": {
+  "frozen_pollock_over_par2": [
+   1.164080672248609,
+   1.131256766474913,
+   1.1978569778860404
+  ],
+  "here": [
+   1.164080672248609,
+   1.131256766474913,
+   1.1978569778860404
+  ]
+ },
+ "strata": {
+  "0": {
+   "bootstrap_t": [
+    1.0154641563706628,
+    1.0820857152460883
+   ],
+   "mean_completeness": 1.0,
+   "mean_missing": 0.0,
+   "mean_par2": 8.041758170158039,
+   "mean_pollock": 8.431205559873781,
+   "n": 25,
+   "ratio": 1.0484281399011641,
+   "student": [
+    1.0161347160553653,
+    1.0817478698136749
+   ]
+  },
+  "1-2": {
+   "bootstrap_t": [
+    1.0832447876326614,
+    1.2967458086566568
+   ],
+   "mean_completeness": 0.9998463917525775,
+   "mean_missing": 1.5360824742268042,
+   "mean_par2": 8.274005392979351,
+   "mean_pollock": 9.37553417384882,
+   "n": 97,
+   "ratio": 1.1331312621338314,
+   "student": [
+    1.0708652126772005,
+    1.1990178054388365
+   ]
+  },
+  "3-9": {
+   "bootstrap_t": [
+    1.119420478266254,
+    1.1989695996020293
+   ],
+   "mean_completeness": 0.9995639534883723,
+   "mean_missing": 4.3604651162790695,
+   "mean_par2": 8.06163837454187,
+   "mean_pollock": 9.296683872807854,
+   "n": 86,
+   "ratio": 1.1532003100221138,
+   "student": [
+    1.116286651197545,
+    1.1913346393674262
+   ]
+  },
+  ">=10": {
+   "bootstrap_t": [
+    1.2591514588534394,
+    1.482074290291154
+   ],
+   "mean_completeness": 0.9970666666666669,
+   "mean_missing": 29.333333333333332,
+   "mean_par2": 6.688784817485808,
+   "mean_pollock": 9.110902727107597,
+   "n": 42,
+   "ratio": 1.3621162850522404,
+   "student": [
+    1.2578641643828403,
+    1.4750088495563685
+   ]
+  }
+ }
+}

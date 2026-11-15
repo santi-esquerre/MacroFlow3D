@@ -1,0 +1,47 @@
+RECOMPUTE43 campaign=/home/sesquerre/sf43_addendum_j8 reduced=/home/sesquerre/sf43_addendum_j8/reduced roots=/home/sesquerre/sf43_addendum_j8 rtol=1e-10 atol=1e-15 primary_arms=-
+TABLE j8_D/u000002_s434061/j8_D__u000002_s434061__d25-94.csv rows=30 planes_rows=1400 manifest inputs=1500 verified=316 pruned_or_absent=1184 problems=0
+TABLE j8_D/u000005_s434071/j8_D__u000005_s434071__d25-94.csv rows=30 planes_rows=1400 manifest inputs=1500 verified=20 pruned_or_absent=1480 problems=0
+TABLE j8_D/u000008_s434081/j8_D__u000008_s434081__d25-94.csv rows=30 planes_rows=1400 manifest inputs=1500 verified=1500 pruned_or_absent=0 problems=0
+TABLE j8_D/u000011_s434091/j8_D__u000011_s434091__d25-94.csv rows=30 planes_rows=1400 manifest inputs=1500 verified=1500 pruned_or_absent=0 problems=0
+TABLE j8_DH3/u000003_s434061/j8_DH3__u000003_s434061__d25-94.csv rows=30 planes_rows=1400 manifest inputs=4460 verified=908 pruned_or_absent=3552 problems=0
+TABLE j8_DH3/u000006_s434071/j8_DH3__u000006_s434071__d25-94.csv rows=30 planes_rows=1400 manifest inputs=4460 verified=4460 pruned_or_absent=0 problems=0
+TABLE j8_DH3/u000009_s434081/j8_DH3__u000009_s434081__d25-94.csv rows=30 planes_rows=1400 manifest inputs=4460 verified=4460 pruned_or_absent=0 problems=0
+TABLE j8_DH3/u000012_s434091/j8_DH3__u000012_s434091__d25-94.csv rows=30 planes_rows=1400 manifest inputs=4460 verified=4460 pruned_or_absent=0 problems=0
+TABLE j8_H3/u000001_s434061/j8_H3__u000001_s434061__d25-94.csv rows=30 planes_rows=1400 manifest inputs=2240 verified=464 pruned_or_absent=1776 problems=0
+TABLE j8_H3/u000004_s434071/j8_H3__u000004_s434071__d25-94.csv rows=30 planes_rows=1400 manifest inputs=2240 verified=20 pruned_or_absent=2220 problems=0
+TABLE j8_H3/u000007_s434081/j8_H3__u000007_s434081__d25-94.csv rows=30 planes_rows=1400 manifest inputs=2240 verified=2240 pruned_or_absent=0 problems=0
+TABLE j8_H3/u000010_s434091/j8_H3__u000010_s434091__d25-94.csv rows=30 planes_rows=1400 manifest inputs=2240 verified=2240 pruned_or_absent=0 problems=0
+
+COVERAGE (values compared per code / family / origin / column, realizations covered, max relative difference)
+  par2     plane        crossings U_r          values=240    realizations=10   max_rel=4.816e-16
+  par2     plane        crossings alpha_LP     values=240    realizations=10   max_rel=1.001e-15
+  par2     plane        crossings alpha_TAP    values=240    realizations=10   max_rel=5.415e-16
+  par2     plane        crossings alpha_TP     values=240    realizations=10   max_rel=6.061e-16
+  par2     plane        crossings d_first      values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings d_last       values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_common     values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_first      values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_last       values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_max        values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_min        values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_planes     values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings n_traced     values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings r            values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings set_differs  values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings sigT2_first  values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings sigT2_last   values=240    realizations=10   max_rel=0.000e+00
+  par2     plane        crossings tilt         values=240    realizations=10   max_rel=2.188e-16
+  par2     plane        crossings wfrac_min    values=240    realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings cov_x2x3     values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings mean_tau     values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings mean_x2      values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings mean_x3      values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings n            values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings var_tau      values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings var_x2       values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings var_x3       values=16800  realizations=10   max_rel=0.000e+00
+  par2     planes-table crossings x1           values=16800  realizations=10   max_rel=0.000e+00
+REALIZATIONS consumer=0 (with plane arrays 0) par2=10
+NOT_RECOMPUTED_ROWS 120 x unif/pos/perplane: family time is not recomputed
+RECOMPUTE compared=155760 beyond_tolerance=0 problems=0 max_rel=1.001e-15
+RECOMPUTE PASS

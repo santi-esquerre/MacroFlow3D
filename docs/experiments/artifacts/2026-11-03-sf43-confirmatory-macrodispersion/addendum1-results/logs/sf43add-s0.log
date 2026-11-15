@@ -1,0 +1,25 @@
+[2026-11-04T18:40:14Z] job=sf43add-s0 GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-11-04T18:40:14Z] job=sf43add-s0 chose GPU 0 (auto: least-loaded)
+[2026-11-04T18:40:14Z] job=sf43add-s0 session=macroflow3d-SF-43-sf43add-s0 started
+[2026-11-04T18:40:14Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-11-04T18:40:14Z] cwd=/home/sesquerre/MacroFlow3D-SF-43
+[2026-11-04T18:40:14Z] command=bash docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/run_sf43.sh build/v100-release all --smoke --plan docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/plan_addendum.json
+CAMPAIGN sf43-addendum-1 lanes=A:gpu0 stage1_start=2026-11-04T18:40:16Z utc=2026-11-04T18:40:16Z
+PROJECTION used_gpu_h=0.00 projected_gpu_h=0.10 budget_gpu_h=1.00 completion=2026-11-04T18:46:22Z cutoff=2026-11-04T22:40:15Z
+SF43_UNIT lane=A gpu=0 arm=j1_base10 seed0=434001 nr=1 segment=segments/j1_base10/u000001_s434001 utc=2026-11-04T18:40:16Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_base10 seed0=434001 nr=1 segment=segments/j1_base10/u000001_s434001 cls=ok completed=1 seconds=26.7 utc=2026-11-04T18:40:43Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434001 nr=2 segment=segments/j1_H3/u000002_s434001 utc=2026-11-04T18:40:43Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434001 nr=2 segment=segments/j1_H3/u000002_s434001 cls=ok completed=2 seconds=58.6 utc=2026-11-04T18:41:41Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434001 nr=2 segment=segments/j1_DH3/u000003_s434001 utc=2026-11-04T18:41:41Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434001 nr=2 segment=segments/j1_DH3/u000003_s434001 cls=ok completed=2 seconds=94.9 utc=2026-11-04T18:43:16Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436001 nr=1 segment=segments/j3_l5/u000004_s436001 utc=2026-11-04T18:43:16Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436001 nr=1 segment=segments/j3_l5/u000004_s436001 cls=ok completed=1 seconds=24.7 utc=2026-11-04T18:43:41Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438001 nr=1 segment=segments/j9_w48/u000005_s438001 utc=2026-11-04T18:43:41Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438001 nr=1 segment=segments/j9_w48/u000005_s438001 cls=ok completed=1 seconds=30.8 utc=2026-11-04T18:44:12Z
+ANALYSIS_STEP analysis rc=0
+ANALYSIS_STEP recompute rc=0
+ANALYSIS_STEP reconcile rc=0
+FINAL status=DONE analysis=ok exit=0 gpu_h=0.07 utc=2026-11-04T18:45:17Z
+[2026-11-04T18:45:17Z] job=sf43add-s0 finished exit=0

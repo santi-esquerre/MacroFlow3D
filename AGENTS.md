@@ -200,7 +200,12 @@ project. This project uses one GPU at a time, the least-loaded one:
 `scripts/remote run` holds a single host-wide slot and picks the GPU itself
 (decision `docs/decisions/2026-10-27-remote-single-gpu.md`). Every command that
 runs on a GPU goes through `run`; never pin GPUs or set `CUDA_VISIBLE_DEVICES`
-by hand.
+by hand. One time-limited exception (owner decision of 2026-11-02, H14 of
+`docs/decisions/2026-11-02-sf43-pre-activation-decisions.md`): SF-43's stage 1
+only, the single job may hold two GPUs chosen by the helper
+(`REMOTE_GPU_COUNT=2`; at most about 30 h, ending as soon as its queue empties);
+it expires at the end of that stage and in any case on 2026-11-09 (runbook
+`docs/runbooks/remote-v100.md`, "Two-GPU request").
 
 ---
 

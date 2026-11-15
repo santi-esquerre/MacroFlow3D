@@ -1,0 +1,8 @@
+frozen arms: s4_g5p realizations=250 finite=250 s4_g5pol realizations=250 finite=250 s1_dist realizations=100 finite=100/100
+campaign arms: j1_base10 realizations=10 finite=10 j1_H3 realizations=60 finite=60 j1_D realizations=60 finite=60 j1_DH3 realizations=60 finite=60 j1_H2 realizations=60 finite=60 j3_l5 realizations=100 finite=100/100 j9_w48 realizations=150 finite=150/150
+j8 campaign arms: j8_H3 realizations=40 finite=40 j8_D realizations=40 finite=40 j8_DH3 realizations=40 finite=40
+common seeds per contrast: j1:n60:r_H=60 j1:n60:r_D=60 j1:n60:r_H2=60 j1:n60:r_DH3=60 j1:n60:q_base=60 j1:n60:q_H2=60 j1:n60:q_H3=60 j1:n60:q_D=60 j1:n60:q_DH3=60 j1:n100:r_H=100 j1:n100:r_D=100 j1:n100:r_H2=0 j1:n100:r_DH3=100 j1:n100:q_base=100 j1:n100:q_H2=0 j1:n100:q_H3=100 j1:n100:q_D=100 j1:n100:q_DH3=100 j3:m_main=100 j3:m_far=100 j3:F5=100 j3:m_far/m_main=100 j9:F48=150 j9:F5=100 j9:F24=100 j9:F48/F5=150+100 j9:F48/F24=150+100
+reproduction evaluated: yes
+frozen files verified: 77
+warnings=0 errors=0
+STRUCTURE_OK

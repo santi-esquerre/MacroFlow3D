@@ -1,0 +1,30 @@
+SF-43 campaign sf43-addendum-1: DONE
+analysis: ok
+stage1_start: 2026-11-04T18:48:27Z
+lane_b_released: False
+gpu_h_used: 3.81 of 7.41
+stopping: None
+lane_crashes: 0
+
+arm                       planned completed replaced failed   oom  run  peak_mib halted
+j1_base10                      10        10        0      0     0    0         - 
+j1_H3                          60        60        0      0     0    0         - 
+j1_D                           60        60        0      0     0    0         - 
+j1_DH3                         60        60        0      0     0    0         - 
+j1_H2                          60        60        0      0     0    0         - 
+j3_l5                         100       100        0      0     0    0      2411 
+j9_w48                        150       150        0      0     0    0      5001 
+
+retention (raw-array realizations kept / required per arm):
+  j1_base10                2 / 2
+  j1_H3                    2 / 2
+  j1_D                     2 / 2
+  j1_DH3                   2 / 2
+  j1_H2                    2 / 2
+  j3_l5                    2 / 2
+  j9_w48                   122 / 2
+
+UNREDUCED (completed, not reduced: MISSING for the analysis, not the end of a prefix):
+  none
+
+events:

@@ -1,0 +1,118 @@
+[2026-11-04T18:48:25Z] job=sf43add-prod GPU snapshot (5 samples, min_free_required=30000 MiB, request=auto):
+  gpu 0: mean_util=0.0% min_free=32510/32510 MiB compute_procs=0
+  gpu 1: mean_util=2.0% min_free=32510/32510 MiB compute_procs=0
+[2026-11-04T18:48:25Z] job=sf43add-prod chose GPU 0 (auto: least-loaded)
+[2026-11-04T18:48:25Z] job=sf43add-prod session=macroflow3d-SF-43-sf43add-prod started
+[2026-11-04T18:48:25Z] GPU=0 (CUDA_VISIBLE_DEVICES=0, request=auto)
+[2026-11-04T18:48:25Z] cwd=/home/sesquerre/MacroFlow3D-SF-43
+[2026-11-04T18:48:25Z] command=bash docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/scripts/run_sf43.sh build/v100-release all --plan docs/experiments/artifacts/2026-11-03-sf43-confirmatory-macrodispersion/plan_addendum.json
+CAMPAIGN sf43-addendum-1 lanes=A:gpu0 stage1_start=2026-11-04T18:48:27Z utc=2026-11-04T18:48:27Z
+PROJECTION used_gpu_h=0.00 projected_gpu_h=4.41 budget_gpu_h=7.41 completion=2026-11-04T23:13:10Z cutoff=2026-11-07T02:30:00Z
+SF43_UNIT lane=A gpu=0 arm=j1_base10 seed0=434001 nr=10 segment=segments/j1_base10/u000001_s434001 utc=2026-11-04T18:48:27Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_base10 seed0=434001 nr=10 segment=segments/j1_base10/u000001_s434001 cls=ok completed=10 seconds=184.8 utc=2026-11-04T18:51:32Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434001 nr=10 segment=segments/j1_H3/u000002_s434001 utc=2026-11-04T18:51:32Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434001 nr=10 segment=segments/j1_H3/u000002_s434001 cls=ok completed=10 seconds=257.1 utc=2026-11-04T18:55:49Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434011 nr=10 segment=segments/j1_H3/u000003_s434011 utc=2026-11-04T18:55:49Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434011 nr=10 segment=segments/j1_H3/u000003_s434011 cls=ok completed=10 seconds=257.2 utc=2026-11-04T19:00:06Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434021 nr=10 segment=segments/j1_H3/u000004_s434021 utc=2026-11-04T19:00:06Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434021 nr=10 segment=segments/j1_H3/u000004_s434021 cls=ok completed=10 seconds=263.3 utc=2026-11-04T19:04:29Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434031 nr=10 segment=segments/j1_H3/u000005_s434031 utc=2026-11-04T19:04:29Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434031 nr=10 segment=segments/j1_H3/u000005_s434031 cls=ok completed=10 seconds=254.9 utc=2026-11-04T19:08:44Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434041 nr=10 segment=segments/j1_H3/u000006_s434041 utc=2026-11-04T19:08:44Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434041 nr=10 segment=segments/j1_H3/u000006_s434041 cls=ok completed=10 seconds=255.2 utc=2026-11-04T19:13:00Z
+SF43_UNIT lane=A gpu=0 arm=j1_H3 seed0=434051 nr=10 segment=segments/j1_H3/u000007_s434051 utc=2026-11-04T19:13:00Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H3 seed0=434051 nr=10 segment=segments/j1_H3/u000007_s434051 cls=ok completed=10 seconds=279.3 utc=2026-11-04T19:17:39Z
+SF43_UNIT lane=A gpu=0 arm=j1_D seed0=434001 nr=10 segment=segments/j1_D/u000008_s434001 utc=2026-11-04T19:17:39Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_D seed0=434001 nr=10 segment=segments/j1_D/u000008_s434001 cls=ok completed=10 seconds=266.7 utc=2026-11-04T19:22:06Z
+SF43_UNIT lane=A gpu=0 arm=j1_D seed0=434011 nr=10 segment=segments/j1_D/u000009_s434011 utc=2026-11-04T19:22:06Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_D seed0=434011 nr=10 segment=segments/j1_D/u000009_s434011 cls=ok completed=10 seconds=266.5 utc=2026-11-04T19:26:32Z
+SF43_UNIT lane=A gpu=0 arm=j1_D seed0=434021 nr=10 segment=segments/j1_D/u000010_s434021 utc=2026-11-04T19:26:32Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_D seed0=434021 nr=10 segment=segments/j1_D/u000010_s434021 cls=ok completed=10 seconds=268.6 utc=2026-11-04T19:31:01Z
+SF43_UNIT lane=A gpu=0 arm=j1_D seed0=434031 nr=10 segment=segments/j1_D/u000011_s434031 utc=2026-11-04T19:31:01Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_D seed0=434031 nr=10 segment=segments/j1_D/u000011_s434031 cls=ok completed=10 seconds=262.5 utc=2026-11-04T19:35:23Z
+SF43_UNIT lane=A gpu=0 arm=j1_D seed0=434041 nr=10 segment=segments/j1_D/u000012_s434041 utc=2026-11-04T19:35:23Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_D seed0=434041 nr=10 segment=segments/j1_D/u000012_s434041 cls=ok completed=10 seconds=264.5 utc=2026-11-04T19:39:48Z
+SF43_UNIT lane=A gpu=0 arm=j1_D seed0=434051 nr=10 segment=segments/j1_D/u000013_s434051 utc=2026-11-04T19:39:48Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_D seed0=434051 nr=10 segment=segments/j1_D/u000013_s434051 cls=ok completed=10 seconds=268.5 utc=2026-11-04T19:44:16Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434001 nr=10 segment=segments/j1_DH3/u000014_s434001 utc=2026-11-04T19:44:16Z
+PROJECTION used_gpu_h=1.00 projected_gpu_h=4.09 budget_gpu_h=7.41 completion=2026-11-04T22:53:49Z cutoff=2026-11-07T02:30:00Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434001 nr=10 segment=segments/j1_DH3/u000014_s434001 cls=ok completed=10 seconds=438.9 utc=2026-11-04T19:51:35Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434011 nr=10 segment=segments/j1_DH3/u000015_s434011 utc=2026-11-04T19:51:35Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434011 nr=10 segment=segments/j1_DH3/u000015_s434011 cls=ok completed=10 seconds=424.8 utc=2026-11-04T19:58:40Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434021 nr=10 segment=segments/j1_DH3/u000016_s434021 utc=2026-11-04T19:58:40Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434021 nr=10 segment=segments/j1_DH3/u000016_s434021 cls=ok completed=10 seconds=438.9 utc=2026-11-04T20:05:59Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434031 nr=10 segment=segments/j1_DH3/u000017_s434031 utc=2026-11-04T20:05:59Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434031 nr=10 segment=segments/j1_DH3/u000017_s434031 cls=ok completed=10 seconds=387.2 utc=2026-11-04T20:12:26Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434041 nr=10 segment=segments/j1_DH3/u000018_s434041 utc=2026-11-04T20:12:26Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434041 nr=10 segment=segments/j1_DH3/u000018_s434041 cls=ok completed=10 seconds=395.6 utc=2026-11-04T20:19:02Z
+SF43_UNIT lane=A gpu=0 arm=j1_DH3 seed0=434051 nr=10 segment=segments/j1_DH3/u000019_s434051 utc=2026-11-04T20:19:02Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_DH3 seed0=434051 nr=10 segment=segments/j1_DH3/u000019_s434051 cls=ok completed=10 seconds=397.1 utc=2026-11-04T20:25:39Z
+SF43_UNIT lane=A gpu=0 arm=j1_H2 seed0=434001 nr=10 segment=segments/j1_H2/u000020_s434001 utc=2026-11-04T20:25:39Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H2 seed0=434001 nr=10 segment=segments/j1_H2/u000020_s434001 cls=ok completed=10 seconds=223.1 utc=2026-11-04T20:29:22Z
+SF43_UNIT lane=A gpu=0 arm=j1_H2 seed0=434011 nr=10 segment=segments/j1_H2/u000021_s434011 utc=2026-11-04T20:29:22Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H2 seed0=434011 nr=10 segment=segments/j1_H2/u000021_s434011 cls=ok completed=10 seconds=222.8 utc=2026-11-04T20:33:05Z
+SF43_UNIT lane=A gpu=0 arm=j1_H2 seed0=434021 nr=10 segment=segments/j1_H2/u000022_s434021 utc=2026-11-04T20:33:05Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H2 seed0=434021 nr=10 segment=segments/j1_H2/u000022_s434021 cls=ok completed=10 seconds=229.2 utc=2026-11-04T20:36:54Z
+SF43_UNIT lane=A gpu=0 arm=j1_H2 seed0=434031 nr=10 segment=segments/j1_H2/u000023_s434031 utc=2026-11-04T20:36:54Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H2 seed0=434031 nr=10 segment=segments/j1_H2/u000023_s434031 cls=ok completed=10 seconds=221.0 utc=2026-11-04T20:40:35Z
+SF43_UNIT lane=A gpu=0 arm=j1_H2 seed0=434041 nr=10 segment=segments/j1_H2/u000024_s434041 utc=2026-11-04T20:40:35Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H2 seed0=434041 nr=10 segment=segments/j1_H2/u000024_s434041 cls=ok completed=10 seconds=221.2 utc=2026-11-04T20:44:16Z
+SF43_UNIT lane=A gpu=0 arm=j1_H2 seed0=434051 nr=10 segment=segments/j1_H2/u000025_s434051 utc=2026-11-04T20:44:16Z
+SF43_UNIT_END lane=A gpu=0 arm=j1_H2 seed0=434051 nr=10 segment=segments/j1_H2/u000025_s434051 cls=ok completed=10 seconds=225.2 utc=2026-11-04T20:48:01Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436001 nr=10 segment=segments/j3_l5/u000026_s436001 utc=2026-11-04T20:48:01Z
+PROJECTION used_gpu_h=2.00 projected_gpu_h=3.73 budget_gpu_h=7.41 completion=2026-11-04T22:32:03Z cutoff=2026-11-07T02:30:00Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436001 nr=10 segment=segments/j3_l5/u000026_s436001 cls=ok completed=10 seconds=173.1 utc=2026-11-04T20:50:54Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436011 nr=10 segment=segments/j3_l5/u000027_s436011 utc=2026-11-04T20:50:54Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436011 nr=10 segment=segments/j3_l5/u000027_s436011 cls=ok completed=10 seconds=173.1 utc=2026-11-04T20:53:47Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436021 nr=10 segment=segments/j3_l5/u000028_s436021 utc=2026-11-04T20:53:47Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436021 nr=10 segment=segments/j3_l5/u000028_s436021 cls=ok completed=10 seconds=186.9 utc=2026-11-04T20:56:54Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436031 nr=10 segment=segments/j3_l5/u000029_s436031 utc=2026-11-04T20:56:54Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436031 nr=10 segment=segments/j3_l5/u000029_s436031 cls=ok completed=10 seconds=183.2 utc=2026-11-04T20:59:58Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436041 nr=10 segment=segments/j3_l5/u000030_s436041 utc=2026-11-04T20:59:57Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436041 nr=10 segment=segments/j3_l5/u000030_s436041 cls=ok completed=10 seconds=187.0 utc=2026-11-04T21:03:04Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436051 nr=10 segment=segments/j3_l5/u000031_s436051 utc=2026-11-04T21:03:04Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436051 nr=10 segment=segments/j3_l5/u000031_s436051 cls=ok completed=10 seconds=187.0 utc=2026-11-04T21:06:12Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436061 nr=10 segment=segments/j3_l5/u000032_s436061 utc=2026-11-04T21:06:11Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436061 nr=10 segment=segments/j3_l5/u000032_s436061 cls=ok completed=10 seconds=175.0 utc=2026-11-04T21:09:06Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436071 nr=10 segment=segments/j3_l5/u000033_s436071 utc=2026-11-04T21:09:06Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436071 nr=10 segment=segments/j3_l5/u000033_s436071 cls=ok completed=10 seconds=176.9 utc=2026-11-04T21:12:03Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436081 nr=10 segment=segments/j3_l5/u000034_s436081 utc=2026-11-04T21:12:03Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436081 nr=10 segment=segments/j3_l5/u000034_s436081 cls=ok completed=10 seconds=174.9 utc=2026-11-04T21:14:58Z
+SF43_UNIT lane=A gpu=0 arm=j3_l5 seed0=436091 nr=10 segment=segments/j3_l5/u000035_s436091 utc=2026-11-04T21:14:58Z
+SF43_UNIT_END lane=A gpu=0 arm=j3_l5 seed0=436091 nr=10 segment=segments/j3_l5/u000035_s436091 cls=ok completed=10 seconds=175.0 utc=2026-11-04T21:17:53Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438001 nr=10 segment=segments/j9_w48/u000036_s438001 utc=2026-11-04T21:17:53Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438001 nr=10 segment=segments/j9_w48/u000036_s438001 cls=ok completed=10 seconds=242.7 utc=2026-11-04T21:21:56Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438011 nr=10 segment=segments/j9_w48/u000037_s438011 utc=2026-11-04T21:21:56Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438011 nr=10 segment=segments/j9_w48/u000037_s438011 cls=ok completed=10 seconds=243.3 utc=2026-11-04T21:25:59Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438021 nr=10 segment=segments/j9_w48/u000038_s438021 utc=2026-11-04T21:25:59Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438021 nr=10 segment=segments/j9_w48/u000038_s438021 cls=ok completed=10 seconds=249.0 utc=2026-11-04T21:30:08Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438031 nr=10 segment=segments/j9_w48/u000039_s438031 utc=2026-11-04T21:30:08Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438031 nr=10 segment=segments/j9_w48/u000039_s438031 cls=ok completed=10 seconds=237.2 utc=2026-11-04T21:34:06Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438041 nr=10 segment=segments/j9_w48/u000040_s438041 utc=2026-11-04T21:34:06Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438041 nr=10 segment=segments/j9_w48/u000040_s438041 cls=ok completed=10 seconds=233.3 utc=2026-11-04T21:37:59Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438051 nr=10 segment=segments/j9_w48/u000041_s438051 utc=2026-11-04T21:37:59Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438051 nr=10 segment=segments/j9_w48/u000041_s438051 cls=ok completed=10 seconds=259.3 utc=2026-11-04T21:42:18Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438061 nr=10 segment=segments/j9_w48/u000042_s438061 utc=2026-11-04T21:42:18Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438061 nr=10 segment=segments/j9_w48/u000042_s438061 cls=ok completed=10 seconds=253.3 utc=2026-11-04T21:46:32Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438071 nr=10 segment=segments/j9_w48/u000043_s438071 utc=2026-11-04T21:46:31Z
+PROJECTION used_gpu_h=3.00 projected_gpu_h=3.48 budget_gpu_h=7.41 completion=2026-11-04T22:17:26Z cutoff=2026-11-07T02:30:00Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438071 nr=10 segment=segments/j9_w48/u000043_s438071 cls=ok completed=10 seconds=251.3 utc=2026-11-04T21:50:43Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438081 nr=10 segment=segments/j9_w48/u000044_s438081 utc=2026-11-04T21:50:43Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438081 nr=10 segment=segments/j9_w48/u000044_s438081 cls=ok completed=10 seconds=249.0 utc=2026-11-04T21:54:52Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438091 nr=10 segment=segments/j9_w48/u000045_s438091 utc=2026-11-04T21:54:52Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438091 nr=10 segment=segments/j9_w48/u000045_s438091 cls=ok completed=10 seconds=241.3 utc=2026-11-04T21:58:53Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438101 nr=10 segment=segments/j9_w48/u000046_s438101 utc=2026-11-04T21:58:53Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438101 nr=10 segment=segments/j9_w48/u000046_s438101 cls=ok completed=10 seconds=241.2 utc=2026-11-04T22:02:54Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438111 nr=10 segment=segments/j9_w48/u000047_s438111 utc=2026-11-04T22:02:54Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438111 nr=10 segment=segments/j9_w48/u000047_s438111 cls=ok completed=10 seconds=231.2 utc=2026-11-04T22:06:46Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438121 nr=10 segment=segments/j9_w48/u000048_s438121 utc=2026-11-04T22:06:45Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438121 nr=10 segment=segments/j9_w48/u000048_s438121 cls=ok completed=10 seconds=229.1 utc=2026-11-04T22:10:35Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438131 nr=10 segment=segments/j9_w48/u000049_s438131 utc=2026-11-04T22:10:35Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438131 nr=10 segment=segments/j9_w48/u000049_s438131 cls=ok completed=10 seconds=231.0 utc=2026-11-04T22:14:26Z
+SF43_UNIT lane=A gpu=0 arm=j9_w48 seed0=438141 nr=10 segment=segments/j9_w48/u000050_s438141 utc=2026-11-04T22:14:26Z
+SF43_UNIT_END lane=A gpu=0 arm=j9_w48 seed0=438141 nr=10 segment=segments/j9_w48/u000050_s438141 cls=ok completed=10 seconds=231.2 utc=2026-11-04T22:18:17Z
+ANALYSIS_STEP analysis rc=0
+ANALYSIS_STEP recompute rc=0
+ANALYSIS_STEP reconcile rc=0
+FINAL status=DONE analysis=ok exit=0 gpu_h=3.81 utc=2026-11-04T23:06:51Z
+[2026-11-04T23:06:51Z] job=sf43add-prod finished exit=0
