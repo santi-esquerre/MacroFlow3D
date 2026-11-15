@@ -147,7 +147,7 @@ until that closure state is merged and visible on the default branch.
 - [x] [SF-40 — Lean parametric Lagrangian stage (Grid3D, memory level S+), bitwise tracker speedups and Par2 dead-buffer cleanup](lester-eq14/increments/SF-40-lean-lagrangian-stage.md)
 - [x] [SF-41 — Medium (b) for the Lagrangian consumer: lean Dirichlet stage, non-periodic-in-x1 spline and x-exit handling](lester-eq14/increments/SF-41-medium-b-lagrangian-stage.md)
 - [x] [SF-42 — Tooling and verification for the confirmatory macrodispersion study](lester-eq14/increments/SF-42-confirmatory-tooling-verification.md)
-- [ ] [SF-43 — Confirmatory Monte Carlo study of macrodispersion with quantified error budgets](lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md)
+- [x] [SF-43 — Confirmatory Monte Carlo study of macrodispersion with quantified error budgets](lester-eq14/increments/SF-43-confirmatory-macrodispersion-study.md)
 
 Re-sequencing 2026-10-02: CPU probes showed that for a generic smooth triply
 periodic scalar `k` (including a Gaussian-covariance field) Darcy streamlines do
